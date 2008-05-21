@@ -1,169 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934907AbYEUGqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935013AbYEUGtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934907AbYEUGqB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 02:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbYEUGpv
+	id S935013AbYEUGtQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 02:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759072AbYEUGtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 02:45:51 -0400
-Received: from wm26.inbox.com ([64.135.83.26]:4883 "HELO WM26.inbox.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756377AbYEUGpv convert rfc822-to-8bit (ORCPT
+	Wed, 21 May 2008 02:49:03 -0400
+Received: from mga06.intel.com ([134.134.136.21]:57821 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756377AbYEUGtC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 02:45:51 -0400
-X-Greylist: delayed 608 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 02:45:51 EDT
-Mime-Version: 1.0
-Date: Tue, 20 May 2008 22:35:37 -0800
-Message-ID: <8E0F58A2820.00000313zw@zh-kernel.org>
-From: Zhang Wei <zw@zh-kernel.org>
-Subject: RE: [PATCH] fsldma: fix incorrect exit path for initialization
-To: Li Yang <leoli@freescale.com>, dan.j.williams@intel.com
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1211351459-32355-1-git-send-email-leoli@freescale.com>
-X-Mailer: INBOX.COM
-X-Originating-IP: 65.113.40.1
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-IWM-ACU: tX17z_7ICMsuYVkBp8AESeb5FnBv14XJRTUXoY3rKsvlAUwQ1Prq7mpbazYU
-  Vj87T3EvPOu3MNVmJhberZQXO06-CWZGPbbOdgEKIPxL9L5JrWVryeXaxLP5
-  SYLon8yaQNV3adY4@
+	Wed, 21 May 2008 02:49:02 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,519,1204531200"; 
+   d="scan'208";a="283478483"
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Organization: Intel Corporation
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH 09/15] rfkill: add the WWAN radio type
+Date: Tue, 20 May 2008 23:48:38 -0700
+User-Agent: KMail/1.9.9
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "David S. Miller" <davem@davemloft.net>
+References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <200805202035.20529.inaky@linux.intel.com> <20080521034213.GE26427@khazad-dum.debian.net>
+In-Reply-To: <20080521034213.GE26427@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805202348.39807.inaky@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: leoli@freescale.com
+On Tuesday 20 May 2008, Henrique de Moraes Holschuh wrote:
+> On Tue, 20 May 2008, Inaky Perez-Gonzalez wrote:
+> > > Stuff like "WiMax", "802.1a", "EDGE", "GRPS", "802.1bg" would be the
+> > > type, and class would be "WLAN", "WWAN", etc.
+> > > 
+> > > We would only deal with classes on rfkill-input.  Anything else more
+> > > specific should be done in userspace instead, disabling rfkill-input.
+> > 
+> > How would this apply to the case where I want to use the HW key to switch
+> > one off and turn the other one off (say I have both a WiMAX and EDGE
+> > cards in my machine); how could we do it to distinguish which key is which?
+> > I might be missing something.
 > 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Cc: Zhang Wei <zw@zh-kernel.org>
+> I don't understand.  Switch one off and turn the other one off?  Isn't
+> that the same thing?
 
-Acked-by: Zhang Wei <zw@zh-kernel.org>
+-EOPERATORISDUMB, sorry; I meant turn one off and the other on. 
 
-> ---
->  drivers/dma/fsldma.c |   31 ++++++++++++++++---------------
->  1 files changed, 16 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 054eabf..724f6fd 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -809,8 +809,7 @@ static int fsl_dma_self_test(struct fsl_dma_chan
-> *fsl_chan)
->  	if (!src) {
->  		dev_err(fsl_chan->dev,
->  				"selftest: Cannot alloc memory for test!\n");
-> -		err = -ENOMEM;
-> -		goto out;
-> +		return -ENOMEM;
->  	}
-> 
->  	dest = src + test_size;
-> @@ -842,7 +841,7 @@ static int fsl_dma_self_test(struct fsl_dma_chan
-> *fsl_chan)
->  	if (fsl_dma_is_complete(chan, cookie, NULL, NULL) != DMA_SUCCESS) {
->  		dev_err(fsl_chan->dev, "selftest: Time out!\n");
->  		err = -ENODEV;
-> -		goto out;
-> +		goto free_resources;
->  	}
-> 
->  	/* Test free and re-alloc channel resources */
-> @@ -927,8 +926,7 @@ static int __devinit of_fsl_dma_chan_probe(struct
-> of_device *dev,
->  	if (!new_fsl_chan) {
->  		dev_err(&dev->dev, "No free memory for allocating "
->  				"dma channels!\n");
-> -		err = -ENOMEM;
-> -		goto err;
-> +		return -ENOMEM;
->  	}
-> 
->  	/* get dma channel register base */
-> @@ -936,7 +934,7 @@ static int __devinit of_fsl_dma_chan_probe(struct
-> of_device *dev,
->  	if (err) {
->  		dev_err(&dev->dev, "Can't get %s property 'reg'\n",
->  				dev->node->full_name);
-> -		goto err;
-> +		goto err_no_reg;
->  	}
-> 
->  	new_fsl_chan->feature = *(u32 *)match->data;
-> @@ -958,7 +956,7 @@ static int __devinit of_fsl_dma_chan_probe(struct
-> of_device *dev,
->  		dev_err(&dev->dev, "There is no %d channel!\n",
->  				new_fsl_chan->id);
->  		err = -EINVAL;
-> -		goto err;
-> +		goto err_no_chan;
->  	}
->  	fdev->chan[new_fsl_chan->id] = new_fsl_chan;
->  	tasklet_init(&new_fsl_chan->tasklet, dma_do_tasklet,
-> @@ -997,23 +995,26 @@ static int __devinit of_fsl_dma_chan_probe(struct
-> of_device *dev,
->  		if (err) {
->  			dev_err(&dev->dev, "DMA channel %s request_irq error "
->  				"with return %d\n", dev->node->full_name, err);
-> -			goto err;
-> +			goto err_no_irq;
->  		}
->  	}
-> 
->  	err = fsl_dma_self_test(new_fsl_chan);
->  	if (err)
-> -		goto err;
-> +		goto err_self_test;
-> 
->  	dev_info(&dev->dev, "#%d (%s), irq %d\n", new_fsl_chan->id,
->  				match->compatible, new_fsl_chan->irq);
-> 
->  	return 0;
-> -err:
-> -	dma_halt(new_fsl_chan);
-> -	iounmap(new_fsl_chan->reg_base);
-> +
-> +err_self_test:
->  	free_irq(new_fsl_chan->irq, new_fsl_chan);
-> +err_no_irq:
->  	list_del(&new_fsl_chan->common.device_node);
-> +err_no_chan:
-> +	iounmap(new_fsl_chan->reg_base);
-> +err_no_reg:
->  	kfree(new_fsl_chan);
->  	return err;
->  }
-> @@ -1054,8 +1055,7 @@ static int __devinit of_fsl_dma_probe(struct
-> of_device *dev,
->  	fdev = kzalloc(sizeof(struct fsl_dma_device), GFP_KERNEL);
->  	if (!fdev) {
->  		dev_err(&dev->dev, "No enough memory for 'priv'\n");
-> -		err = -ENOMEM;
-> -		goto err;
-> +		return -ENOMEM;
->  	}
->  	fdev->dev = &dev->dev;
->  	INIT_LIST_HEAD(&fdev->common.channels);
-> @@ -1065,7 +1065,7 @@ static int __devinit of_fsl_dma_probe(struct
-> of_device *dev,
->  	if (err) {
->  		dev_err(&dev->dev, "Can't get %s property 'reg'\n",
->  				dev->node->full_name);
-> -		goto err;
-> +		goto err_no_reg;
->  	}
-> 
->  	dev_info(&dev->dev, "Probe the Freescale DMA driver for %s "
-> @@ -1103,6 +1103,7 @@ static int __devinit of_fsl_dma_probe(struct
-> of_device *dev,
-> 
->  err:
->  	iounmap(fdev->reg_base);
-> +err_no_reg:
->  	kfree(fdev);
->  	return err;
->  }
-> --
-> 1.5.5.1.248.g4b17
-
-____________________________________________________________
-FREE 3D MARINE AQUARIUM SCREENSAVER - Watch dolphins, sharks & orcas on your desktop!
-Check it out at http://www.inbox.com/marineaquarium
+-- 
+Inaky
