@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934246AbYEUA4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934504AbYEUA4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934246AbYEUA4J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbYEUAzz
+	id S934504AbYEUA4n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762300AbYEUA4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:55:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49390 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757034AbYEUAzy (ORCPT
+	Tue, 20 May 2008 20:56:32 -0400
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:12122 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759746AbYEUA4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:55:54 -0400
-Date: Tue, 20 May 2008 17:55:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, mchehab@infradead.org,
+	Tue, 20 May 2008 20:56:31 -0400
+Date: Wed, 21 May 2008 09:56:24 +0900 (JST)
+Message-Id: <20080521.095624.25479790.nemoto@toshiba-tops.co.jp>
+To: macro@linux-mips.org
+Cc: a.zummo@towertech.it, hvr@gnu.org, akpm@linux-foundation.org,
+       rtc-linux@googlegroups.com, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] or51132.c: unaligned
-In-Reply-To: <20080521004548.GD28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.10.0805201752230.3081@woody.linux-foundation.org>
-References: <E1JycGV-0004yJ-SP@ZenIV.linux.org.uk> <1211330472.5915.228.camel@brick> <20080521004548.GD28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: Re: [PATCH] RTC: M41T80: Century Bit support
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <Pine.LNX.4.55.0805202045320.31790@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805171959030.10067@cliff.in.clinika.pl>
+	<20080519.011034.25909336.anemo@mba.ocn.ne.jp>
+	<Pine.LNX.4.55.0805202045320.31790@cliff.in.clinika.pl>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 21 May 2008, Al Viro wrote:
-
-> On Tue, May 20, 2008 at 05:41:12PM -0700, Harvey Harrison wrote:
+On Tue, 20 May 2008 20:51:56 +0100 (BST), "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+>  Well, Andrew has applied this patch to the -mm tree now and after a bit
+> of thinking I have made up my mind and decided we should keep the patch.  
+> This is an I2C device which means it will always only be explicitly
+> requested by platform code.  This is an opportunity for the platform to
+> express the will and the way to use the century bit.
 > 
-> > > +	return buf[0] | (buf[1] << 8);
-> > 
-> > return get_unaligned_le16(buf);
-> 
-> And the point of that would be?
+>  I'll cook-up a follow-on patch as soon as the SWARM bits propagate to
+> upstream, to add a set of flags that will let platforms specify the
+> desired way the century bit is meant to be handled and which this driver
+> will honour.  Please feel free to keep the interpretation within your pet
+> board intact -- the flags will be capable to express your needs.
 
-Perhaps better code generation?
+OK, it would be the best way to handle the century bit.
+I'll test your patch (if my board is still alive at the time ;-))
 
-I didn't look what 
-
-	buf[0] | (buf[1] << 8)
-
-generates, but on x86, get_unaligned_le16() should just boil down to
-
-	*(unsigned short *)buf
-
-which is certainly going to mostly generate better code (smaller, faster) 
-than at least the most likely and straigthforward of the former.
-
-(Just checked. Gcc is not smart enough to make those two loads plus a 
-shift be one word load. At least not my version)
-
-		Linus
+---
+Atsushi Nemoto
