@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936700AbYEURZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936505AbYEUR0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936700AbYEURZB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936387AbYEURXu
+	id S936505AbYEUR0s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764332AbYEUR0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:23:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44530 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934432AbYEURXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:23:46 -0400
-Date: Wed, 21 May 2008 13:20:32 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and
-	control (v5)
-Message-ID: <20080521172032.GD16367@redhat.com>
-References: <20080521152921.15001.65968.sendpatchset@localhost.localdomain> <20080521153012.15001.96490.sendpatchset@localhost.localdomain>
+	Wed, 21 May 2008 13:26:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:12619 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764002AbYEUR0g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 13:26:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=H24NwoRGI2RpZrz21nQOFPJCyod0XVIywl3DIyft4SIiFRr2LcHUHVeKC9v8uxydjuiYdBDnw/xfl98KlJTCBwDXjYaeCKgEk0WzCuVHJrIKT25IMkpVfZPz4bKZVUJm3PTqQ7PPzxe6IKNa9fJaZOONOrjNpnH/8vl0CSlOtIs=
+Message-ID: <48345B31.50904@googlemail.com>
+Date: Wed, 21 May 2008 19:26:09 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080521153012.15001.96490.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: jdike@addtoit.com
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net
+Subject: linux-next: UML build error
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 09:00:12PM +0530, Balbir Singh wrote:
+Hi,
 
-[..]
-> +static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
-> +					struct cgroup *cgrp,
-> +					struct cgroup *old_cgrp,
-> +					struct task_struct *p)
-> +{
-> +	struct mm_struct *mm;
-> +	struct memrlimit_cgroup *memrcg, *old_memrcg;
-> +
-> +	mm = get_task_mm(p);
-> +	if (mm == NULL)
-> +		return;
-> +
-> +	/*
-> +	 * Hold mmap_sem, so that total_vm does not change underneath us
-> +	 */
-> +	down_read(&mm->mmap_sem);
-> +
-> +	rcu_read_lock();
-> +	if (p != rcu_dereference(mm->owner))
-> +		goto out;
-> +
+I get the following UML compile error on linux-next-20080521 , 64bit box :
 
-Hi Balbir,
+...
 
-How does rcu help here? We are not dereferencing mm->owner. So even if
-task_struct it was pointing to goes away, should not be a problem.
+  CC      arch/um/sys-x86_64/ksyms.o
+arch/um/sys-x86_64/ksyms.c:5: error: '__memcpy' undeclared here (not in a function)
+arch/um/sys-x86_64/ksyms.c:5: warning: type defaults to 'int' in declaration of '__memcpy'
+make[1]: *** [arch/um/sys-x86_64/ksyms.o] Error 1
+make: *** [arch/um/sys-x86_64] Error 2
 
-OTOH, while updating the mm->owner in mmm_update_next_owner(), we
-are not using rcu_assing_pointer() and synchronize_rcu()/call_rcu(). Is
-this the right usage if mm->owner is rcu protected?
+...
 
-Thanks
-Vivek
+config is UM's defconfig.
+
+
+Regards,
+
+Gabriel 
