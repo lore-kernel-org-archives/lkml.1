@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937301AbYEUUk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937631AbYEUUl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937301AbYEUUk4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936020AbYEUUkm
+	id S937631AbYEUUl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936054AbYEUUkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:40:42 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47663 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936905AbYEUUkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:40:41 -0400
-Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
-       takata@linux-m32r.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       Luke Browning <LukeBrowning@us.ibm.com>
-In-Reply-To: <20080521114147.59ca3551.akpm@linux-foundation.org>
-References: <20080410032354.90CB1DDF0F@ozlabs.org>
-	 <20080413171953.bde5e9ac.akpm@linux-foundation.org>
-	 <1208133506.6958.82.camel@pasglop>
-	 <20080413191338.9776ebd0.akpm@linux-foundation.org>
-	 <1208491086.6958.381.camel@pasglop>
-	 <20080417211905.8ff769fa.akpm@linux-foundation.org>
-	 <1208501061.6958.394.camel@pasglop> <1211392585.8297.218.camel@pasglop>
-	 <20080521114147.59ca3551.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 21 May 2008 15:44:41 -0400
-Message-Id: <1211399081.8297.234.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 21 May 2008 16:40:46 -0400
+Received: from rn-out-0910.google.com ([64.233.170.186]:20705 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937349AbYEUUkp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 16:40:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=T6LZJm5mmcAdn0QdviyjS7Lr4Om7/dJXqP87ySfRLj/2SnQoSot+pXY3OeFomYkSL/FDKKU4sBVw9rB1n9Y15yyAYnCibCTOj/HoxjKa5cqCGWpqL8q2Qpm4wgGWND/gMR6DeAnmJ3WFUo6/pckL4amcjp/1EJK9jJn0BBjWxiA=
+Message-ID: <dd18b0c30805211340s837a737g25141119024cbdcf@mail.gmail.com>
+Date: Wed, 21 May 2008 20:40:41 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Subject: Re: completely lost as to what to do, or where to look.
+Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Oliver Pinter" <oliver.pntr@gmail.com>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <75b66ecd0805211331r6b2e079wc4d028d368463e49@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30805202110x7c412b3bq523f91d968072482@mail.gmail.com>
+	 <20080520223410.9a8f200d.akpm@linux-foundation.org>
+	 <dd18b0c30805202351h133147adg5bb526e3f74e3bd6@mail.gmail.com>
+	 <20080521075917.GB18352@cs181133002.pp.htv.fi>
+	 <dd18b0c30805210733m6d853709xf59331cfed3bfea@mail.gmail.com>
+	 <6101e8c40805210751y350e3513ndd48621ac9d2b5d3@mail.gmail.com>
+	 <dd18b0c30805211004m6106b65occ97eff00cdbf630@mail.gmail.com>
+	 <dd18b0c30805211303k6e43d6d1l903da0c794521519@mail.gmail.com>
+	 <2c0942db0805211309y2871009fv34669d384df820d4@mail.gmail.com>
+	 <75b66ecd0805211331r6b2e079wc4d028d368463e49@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 21, 2008 at 8:31 PM, Lee Revell <rlrevell@joe-job.com> wrote:
+> On Wed, May 21, 2008 at 4:09 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
+>> Or are you using the closed-source nvidia drivers? (No judgement from
+>> me if you are, but it would really help clear up what the heck is
+>> going on.)
+>>
+>
+> Yes, the whole problem was that he was trying to use an incompatible
+> kernel with the closed source ATI driver.
+>
+> Lee
+>
 
-On Wed, 2008-05-21 at 11:41 -0700, Andrew Morton wrote:
-> 
-> yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
-> 4.1.{0,1} __weak problem".  I don't think anything ended up happening
-> about it though.
+Just so I can have suspend working properly, now the next question is
+seeing if radeohd can wakeup from suspend
+That way I don't have to be confined to using one module
+But for the time being I need a nice cold beer from this headache..  : - )
+regards;
 
-Hrm... do you think we should work around ? ie. move the stubs to a
-separate .c file ?
-
-Ben.
-
-
+-- 
+Justin P. Mattock
