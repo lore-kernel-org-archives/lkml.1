@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932563AbYEUJ5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933496AbYEUJ5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932563AbYEUJ5Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYEUJ45
+	id S933496AbYEUJ5e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 05:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbYEUJ5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:56:57 -0400
-Received: from stinky.trash.net ([213.144.137.162]:35228 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbYEUJ45 (ORCPT
+	Wed, 21 May 2008 05:57:01 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41396 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759761AbYEUJ5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:56:57 -0400
-Message-ID: <4833F1E7.5050700@trash.net>
-Date: Wed, 21 May 2008 11:56:55 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+	Wed, 21 May 2008 05:57:00 -0400
+Date: Wed, 21 May 2008 11:57:52 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       macro@ds2.pg.gda.pl
+Subject: i8259: cleanup codingstyle
+Message-ID: <20080521095752.GE12763@elf.ucw.cz>
+References: <20080520151528.GA1596@elf.ucw.cz> <20080520204750.GA31409@elte.hu>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: greg@nest.cx, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: include/linux/netfilter.h after make headers_install is incomplete
-References: <a27c0c970805161521k332fba8cg808d52396b5cdce5@mail.gmail.com>	<a27c0c970805201139i38e12d15ue807fc0239b1c10e@mail.gmail.com>	<a27c0c970805201144j12189201g9567460d4d3d8361@mail.gmail.com> <20080520.142121.15017166.davem@davemloft.net>
-In-Reply-To: <20080520.142121.15017166.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520204750.GA31409@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: "Greg Steuck" <greg@nest.cx>
-> Date: Tue, 20 May 2008 11:44:56 -0700
-> 
->> I ran make headers_install in 2.6.25 tree and the installed netfilter.h is
->> not complete. Namely, it declares
->> union nf_inet_addr {
->>       __u32           all[4];
->>       __be32          ip;
->>       __be32          ip6[4];
->> ...
->> }
->>
->> The __u32, __be32 types are declared in <linux/types.h> and the #include
->> directive is removed by the installation process. This in turn makes some
->> applications unbuildable against such an exported tree, e.g.
->>
->> busybox-1.10.1/networking/tcpudp.c:#include <linux/netfilter_ipv4.h>
->>
->> If I correctly understand the purpose of make headers_install, it is
->> supposed to generate an API for applications. I could certainly
->> make tcpudp.c include linux/types.h, but given that the application
->> does not even use nf_inet_addr, this would be the wrong place for
->> the fix.
+i8259: trivial codingstyle cleanup.
 
-These types are used by countless header files. I don't know
-why types.h is stripped, I guess this question can be best
-answered by whoever maintains the header-install stuff (Sam?
-I don't know).
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
+---
+commit 3333c67ab415a0debec8e178c563e81b49f73bf9
+tree 9f868e4422e7d58bfe398541335b8574ea4c11ee
+parent 800e1add46a2686995af98432a7971150318676d
+author Pavel <pavel@amd.ucw.cz> Wed, 21 May 2008 11:57:12 +0200
+committer Pavel <pavel@amd.ucw.cz> Wed, 21 May 2008 11:57:12 +0200
+
+ arch/x86/kernel/i8259.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
+index 433e49e..7a0fda8 100644
+--- a/arch/x86/kernel/i8259.c
++++ b/arch/x86/kernel/i8259.c
+@@ -129,14 +129,14 @@ static inline int i8259A_irq_real(unsign
+ 	int irqmask = 1<<irq;
+ 
+ 	if (irq < 8) {
+-		outb(0x0B,PIC_MASTER_CMD);	/* ISR register */
++		outb(0x0B, PIC_MASTER_CMD);	/* ISR register */
+ 		value = inb(PIC_MASTER_CMD) & irqmask;
+-		outb(0x0A,PIC_MASTER_CMD);	/* back to the IRR register */
++		outb(0x0A, PIC_MASTER_CMD);	/* back to the IRR register */
+ 		return value;
+ 	}
+-	outb(0x0B,PIC_SLAVE_CMD);	/* ISR register */
++	outb(0x0B, PIC_SLAVE_CMD);	/* ISR register */
+ 	value = inb(PIC_SLAVE_CMD) & (irqmask >> 8);
+-	outb(0x0A,PIC_SLAVE_CMD);	/* back to the IRR register */
++	outb(0x0A, PIC_SLAVE_CMD);	/* back to the IRR register */
+ 	return value;
+ }
+ 
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
