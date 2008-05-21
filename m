@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935421AbYEUOJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934574AbYEUON4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935421AbYEUOJj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 10:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758239AbYEUOJb
+	id S934574AbYEUON4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 10:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbYEUONr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 10:09:31 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57912 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756525AbYEUOJa (ORCPT
+	Wed, 21 May 2008 10:13:47 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55807 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753836AbYEUONr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 10:09:30 -0400
-X-Sasl-enc: V/Rfwj96K2SEvYbKeR6hlNQRBozxQou3jl1gZ28vG5wP 1211378969
-Date: Wed, 21 May 2008 11:09:27 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: Re: Accelerometer, Gyros and ADC's etc within the kernel.
-Message-ID: <20080521140927.GB3677@khazad-dum.debian.net>
-References: <4832A211.4040206@gmail.com> <20080520132817.03fb74ea@hyperion.delvare> <20080521093520.ZZRA012@mailhub.coreip.homeip.net>
+	Wed, 21 May 2008 10:13:47 -0400
+Date: Wed, 21 May 2008 10:13:45 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
+       <linux-usb@vger.kernel.org>, <lchiquitto@novell.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] USB: fix deadlock in HCD code
+In-Reply-To: <200805211547.46399.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0805211005071.2490-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080521093520.ZZRA012@mailhub.coreip.homeip.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008, Dmitry Torokhov wrote:
-> I don't think that input subsystem woudl be the best choice. While we
-> do support the event-driven mechanism for delivering information to
-> userspace input is mostly oriented for human interface devices, not
-> general data acquisition. If anything input_dev is too fat. Another
-> thing is that input layer anonymizes input devices, makes them
-> capability-oriented. I.e. we dont really care what model of joystick
-> we have, we want something that reports ABS_X, ABS_Y, BTN_FIRE and
-> userpsace can use it whether it a simple analog joystick or something
-> fancy and USB connected. For your purposes you probably do want to know
-> what the device is and what exactly being sampled/measured.
-> 
-> I'd go with a lean and mean new subsytem.
+On Wed, 21 May 2008, Oliver Neukum wrote:
 
-Agreed.  I have put some thought on it in the past, and while the input
-subsystem is the only thing even remotely usable for this *right now*, a
-new subsystem for data acquisition would be the best way forward.
+> Am Mittwoch 21 Mai 2008 15:36:49 schrieb Jiri Kosina:
+> > On Wed, 21 May 2008, Oliver Neukum wrote:
+> > 
+> > > This turns out not to be the case. Interrupts are disabled.
+> > 
+> > You're right, this callchain can't cause the deadlock indeed. I'll go 
+> > through the other possibilities.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+The functions you are worried about (usb_hcd_link_urb_to_ep and 
+usb_hcd_unlink_urb_from_ep) are documented as requiring that interrupts 
+be disabled by their callers.  This patch isn't needed.
+
+(Of course, other patches may be needed to insure that the callers do 
+indeed disable interrupts.  But I'm not aware of any such need.)
+
+> usb_hcd_flush_endpoint() is an obvious case.
+
+It's not obvious to me.  Where does usb_hcd_flush_endpoint() acquire 
+hcd_urb_list_lock with interrupts enabled?
+
+> Used in the suspend code.
+> Your patch is indeed correct, but I fear there might be a second bug caused
+> by wrong calling conditions.
+
+The problem in the Novell bugzilla entry was caused by the fact that 
+the OHCI irq routine was invoked with interrupts enabled, owing to a 
+missing IRQF_DISABLED flag.  That bug has already been fixed in 2.6.25.
+
+Alan Stern
+
