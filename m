@@ -1,43 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937674AbYEUVMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937299AbYEUVMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937674AbYEUVMf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937104AbYEUVKD
+	id S937299AbYEUVMz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbYEUVKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:10:03 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63929 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S937377AbYEUVKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:10:00 -0400
-Date: Wed, 21 May 2008 22:09:43 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 5/8] x86: APIC/SMP: Correct the message for "nosmp"
-Message-ID: <Pine.LNX.4.55.0805212035240.4894@cliff.in.clinika.pl>
+	Wed, 21 May 2008 17:10:36 -0400
+Received: from testure.choralone.org ([194.9.77.134]:47373 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937424AbYEUVKc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:10:32 -0400
+Date: Wed, 21 May 2008 17:11:39 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080521211139.GA22591@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Andres Salomon <dilinger@queued.net>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	linux-kbuild <linux-kbuild@vger.kernel.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Roland McGrath <roland@redhat.com>,
+	Roman Zippel <zippel@linux-m68k.org>
+References: <20080429183531.GB19652@uranus.ravnborg.org> <20080502190949.GA30270@uranus.ravnborg.org> <20080521164703.61c7d715@ephemeral>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521164703.61c7d715@ephemeral>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The local APIC is no longer forced off when "nosmp" has been specified.  
-Correct the message printed.
+On Wed, May 21, 2008 at 04:47:03PM -0400, Andres Salomon wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-patch-2.6.26-rc1-20080505-nosmp-apic-0
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/smpboot.c linux-2.6.26-rc1-20080505/arch/x86/kernel/smpboot.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/smpboot.c	2008-05-05 02:56:19.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/smpboot.c	2008-05-21 06:24:25.000000000 +0000
-@@ -1145,8 +1145,7 @@ static int __init smp_sanity_check(unsig
- 	 * If SMP should be disabled, then really disable it!
- 	 */
- 	if (!max_cpus) {
--		printk(KERN_INFO "SMP mode deactivated,"
--				 "forcing use of dummy APIC emulation.\n");
-+		printk(KERN_INFO "SMP mode deactivated.\n");
- 		smpboot_clear_io_apic();
- #ifdef CONFIG_X86_32
- 		connect_bsp_APIC();
+ > > 3) Implement newsymbolsconfig (any better name?)
+ > >    Shall list all new symbols and shall not write
+ > >    any config
+ > 
+ > I'm not sure I see the point of #3.
+
+It's something we've had in Fedora kernels forever, because
+when rebasing to a new upstream version the process becomes
+
+make newsymbolsconfig
+take list of symbols, and make decisions on them
+make oldconfig
+
+
+without it, the process would be..
+
+make oldconfig
+note new symbol, make decision
+make oldconfig
+note a 2nd new symbol, make decision
+make oldconfig
+note a 3rd new symbol..
+make oldconfig..
+you get the idea.
+
+The way we have it isn't perfect, (adding a new symbol may unhide
+another set of new symbols), but it reduces the number of iterations
+needed dramatically.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
