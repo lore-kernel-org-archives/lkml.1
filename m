@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbYEUJXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYEUJXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932331AbYEUJXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYEUJXI
+	id S1754894AbYEUJXg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 05:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932706AbYEUJXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:23:08 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:33447 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754513AbYEUJXH (ORCPT
+	Wed, 21 May 2008 05:23:19 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39743 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763421AbYEUJXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:23:07 -0400
-From: Li Yang <leoli@freescale.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, Kong Wei <weikong@redflag-linux.com>
-Subject: [PATCH] [mm] limit the min_free_kbytes
-Date: Wed, 21 May 2008 17:34:41 +0800
-Message-Id: <1211362481-2136-1-git-send-email-leoli@freescale.com>
-X-Mailer: git-send-email 1.5.5.1.248.g4b17
-X-OriginalArrivalTime: 21 May 2008 09:23:01.0584 (UTC) FILETIME=[441A2500:01C8BB24]
+	Wed, 21 May 2008 05:23:17 -0400
+Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
+	lockdep-friendly
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Joel Becker <Joel.Becker@oracle.com>,
+       Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+In-Reply-To: <20080520151341.058f2df4@infradead.org>
+References: <20080520163320.025971210@kerlabs.com>
+	 <20080520095810.1d50d247@infradead.org>
+	 <20080520215639.GG26609@mail.oracle.com>
+	 <20080520151341.058f2df4@infradead.org>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 11:23:04 +0200
+Message-Id: <1211361784.6463.68.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kong Wei <weikong@redflag-linux.com>
+On Tue, 2008-05-20 at 15:13 -0700, Arjan van de Ven wrote:
+> On Tue, 20 May 2008 14:56:39 -0700
+> Joel Becker <Joel.Becker@oracle.com> wrote:
+> 
+> > On Tue, May 20, 2008 at 09:58:10AM -0700, Arjan van de Ven wrote:
+> > > On Tue, 20 May 2008 18:33:20 +0200
+> > > Louis Rilling <Louis.Rilling@kerlabs.com> wrote:
+> > > 
+> > > > The following patches fix lockdep warnings resulting from
+> > > > (correct) recursive locking in configfs.
+> > > >
+> > > > ...
+> > > >
+> > > > Since lockdep does not handle such correct recursion, the idea is
+> > > > to insert lockdep_off()/lockdep_on() for inode mutexes as soon as
+> > > > the level of recursion of the I_MUTEX_PARENT -> I_MUTEX_CHILD
+> > > > dependency pattern increases.
+> > > 
+> > > I'm... not entirely happy with such a solution ;(
+> > > 
+> > > there must be a better one.
+> > 
+> > 	We're trying to find it.  I really appreciate Louis taking the
+> > time to approach the issue.  His first pass was to add 1 to
+> > MUTEX_CHILD for each level of recursion.  This has a very tight limit
+> > (4 or 5 levels), but probably covers all users that exist and perhaps
+> > all that ever will exist.  However, it means passing the lockdep
+> > annotation level throughout the entire call chain across multiple
+> > files.  It was definitely less readable.
+> > 	This approach takes a different tack - it's very readable, but
+> > it assumes that the currently correct locking will always remain so -
+> > a particular invariant that lockdep exists to verify :-)
+> > 	Louis, what about sticking the recursion level on
+> > configfs_dirent?  That is, you could add sd->s_level and then use it
+> > when needed.  THis would hopefully avoid having to pass the level as
+> > an argument to every function.  Then we can go back to your original
+> > scheme.  If they recurse too much and hit the lockdep limit, just
+> > rewind everything and return -ELOOP.
+> 
+> you can also make a new lockdep key for each level... not pretty but it
+> works
 
-Unlimited of min_free_kbytes is dangerous,
-An user of our company set this value bigger than 3584*1024*K,
-cause the system OOM on DMA.
-And I try a even more bigger number will cause the system hang immediately.
-Limited as 64M may not a good value, but as default in init_per_zone_pages_min.
-And this option may not need again?
+Yeah, that is what I've done in the past for trees:
 
-Signed-off-by: Kong Wei <weikong@redflag-linux.com>
----
- kernel/sysctl.c |    5 ++++-
- mm/page_alloc.c |    2 +-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+http://programming.kicks-ass.net/kernel-patches/concurrent-pagecache/23-rc1-rt/radix-concurrent-lockdep.patch
 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 8b7e954..d052522 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -103,6 +103,8 @@ static int minolduid;
- static int min_percpu_pagelist_fract = 8;
- 
- static int ngroups_max = NGROUPS_MAX;
-+static int min_min_free_kbytes = 128;
-+static int max_min_free_kbytes = 65536;
- 
- #ifdef CONFIG_KMOD
- extern char modprobe_path[];
-@@ -1010,7 +1012,8 @@ static struct ctl_table vm_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &min_free_kbytes_sysctl_handler,
- 		.strategy	= &sysctl_intvec,
--		.extra1		= &zero,
-+		.extra1		= &min_min_free_kbytes,
-+		.extra2		= &max_min_free_kbytes,
- 	},
- 	{
- 		.ctl_name	= VM_PERCPU_PAGELIST_FRACTION,
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 75b9793..52979e9 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -4179,7 +4179,7 @@ module_init(init_per_zone_pages_min)
- int min_free_kbytes_sysctl_handler(ctl_table *table, int write, 
- 	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
- {
--	proc_dointvec(table, write, file, buffer, length, ppos);
-+	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
- 	if (write)
- 		setup_per_zone_pages_min();
- 	return 0;
--- 
-1.5.0.3
+
 
