@@ -1,90 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936366AbYEUR6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936441AbYEUSHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936366AbYEUR6X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933984AbYEUR6N
+	id S936441AbYEUSHq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYEUSHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:58:13 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:27839 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932912AbYEUR6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:58:11 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5300"; a="3124121"
-Message-ID: <483462B1.6050501@qualcomm.com>
-Date: Wed, 21 May 2008 10:58:09 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 21 May 2008 14:07:35 -0400
+Received: from deliver.hol.gr ([62.38.3.175]:36891 "EHLO deliver.hol.gr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753904AbYEUSHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:07:34 -0400
+X-Greylist: delayed 619 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 14:07:34 EDT
+From: "P. Christeas" <p_christ@hol.gr>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Patch: usblp quirk for zebra printers
+Date: Wed, 21 May 2008 20:57:49 +0300
+User-Agent: KMail/1.9.9
+Cc: Pete Zaitcev <zaitcev@redhat.com>, lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: a.p.zijlstra@chello.nl, menage@google.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: IRQ affinities
-References: <47D73086.2030008@qualcomm.com>	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	<47D7411E.1000009@qualcomm.com>	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>	<47D74595.4080100@qualcomm.com>	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>	<20080311235939.1ebee8e3.pj@sgi.com>	<47D81FE1.6030205@qualcomm.com>	<20080312135746.89456f2a.pj@sgi.com>	<47D82AD2.1070108@qualcomm.com>	<20080312143253.3dd72c7f.pj@sgi.com>	<47D83858.4030806@qualcomm.com>	<20080312153712.bc5df7a1.pj@sgi.com>	<47D8593A.6040503@qualcomm.com>	<20080312183059.6716d630.pj@sgi.com>	<47D87BE5.4010702@qualcomm.com>	<20080313020300.92244956.pj@sgi.com>	<47FE5655.10900@qualcomm.com>	<20080414133902.7878cfce.pj@sgi.com>	<1210329926.13978.224.camel@twins>	<20080509061727.5057de1f.pj@sgi.com>	<48337792.20606@qualcomm.com> <20080521013424.6600780a.pj@sgi.com>
-In-Reply-To: <20080521013424.6600780a.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_fKGNIxRbmD9uRLV"
+Message-Id: <200805212057.52050.p_christ@hol.gr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+--Boundary-00=_fKGNIxRbmD9uRLV
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Paul Jackson wrote:
-> Max wrote:
->> What I realized now is that all I need is
->> /proc/irq/default_smp_affinity.
-> 
-> I suspect that something like you're proposing to do here will answer
-> your needs, to "tell the kernel to not route IRQs to certain CPUs."
-> 
-> I suspect that other folks will have some additional needs, that perhaps
-> my idea of May 9, 2008:
-> 
->        How about this.  We add two files to each cpuset:
->        
->            irq_affinity_include	# IRQs to direct to CPUs in this cpuset
->            irq_affinity_exclude	# IRQs -not- to direct to these CPUs
->        
->        where irq_affinity_exclude overrides irq_affinity_include.
-> 
-> could meet.
+Hi,
+I guess such a quirk may be a little odd, but it has been a blocking point in 
+my system not being able to support more than one printer.
 
-I saw your earlier email with that proposal. Just had to digest it a bit :) 
-(still catching up with things after vacation).
-
-> So, to determine to which CPUs a given interrupt (IRQ) can be directed:
->  1) Combine (union) the 'cpus' of all the cpusets for which
->     that IRQ is in that cpusets irq_affinity_include, then
->  2) Remove (set substraction) the 'cpus' of any cpuset for which
->     that IRQ is in that cpusets irq_affinity_exclude.
-
-That would work. But wouldn't it be hard for the users to debug things ? I 
-mean if you have a complex cpuset hierarchy it may be hard to figure out why a 
-certain irq is not getting to cpuX and vice versa.
-btw How would we represent "all irqs", are you implying that those files 
-contain masks ?
-We'll also need to handle conflicts like "irq excluded from all cpusets", etc.
-I still prefer "irq as a task" approach. It's very simple and straightforward 
-  mapping of an irq -> cpuset, no conflicts, etc. Easy to figure out for the 
-user where an irq will end up.
-
-btw I did not quite get the idea behind the "exclude" part. Why is "include" 
-not enough ? Can you give me an example.
-
-> It makes sense to me to deal with your "default_smp_affinity" patch
-> first, and then come back around and see what remains to be done, and
-> how to do it, perhaps with additional cpuset based mechanisms such as
-> the above two irq_affinity_* IRQ masks.
-> 
->> I'm in the process of making a patch for exposing default affinity mask.
-> 
-> Peter, et al: how does Max's planned "default_smp_affinity" patch sound
-> to you, as the next step we take on this?
-
-I think it makes sense regardless of the cpuset based approach. Seems like a 
-logical extension of the existing interface (ie per IRQ mask plus the default).
-
-Max
+Please comment. (and cc. me)
 
 
+--Boundary-00=_fKGNIxRbmD9uRLV
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="0001-USB-Quirk-for-Zebra-printers-not-reporting-their-S.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="0001-USB-Quirk-for-Zebra-printers-not-reporting-their-S.patch"
+
+=46rom 2c87e2cbc8d33b49b6e7a20b9b85570840bb0e12 Mon Sep 17 00:00:00 2001
+=46rom: P.Christeas <p_christ@hol.gr>
+Date: Wed, 21 May 2008 20:47:52 +0300
+Subject: [PATCH] USB: Quirk for Zebra printers not reporting their S/N.
+
+Those printers (and maybe others) don't report their Serial
+Number as a part of their IEEE1284 device id string. Thus,
+printing backends like CUPS cannot select among multiple
+devices at the same host.
+Workaround this situation by appending the SN in usblp.c .
+=2D--
+ drivers/usb/class/usblp.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/usb/class/usblp.c b/drivers/usb/class/usblp.c
+index 0647164..a4d324b 100644
+=2D-- a/drivers/usb/class/usblp.c
++++ b/drivers/usb/class/usblp.c
+@@ -210,6 +210,7 @@ struct quirk_printer_struct {
+ #define USBLP_QUIRK_BIDIR	0x1	/* reports bidir but requires unidirectional=
+ mode (no INs/reads) */
+ #define USBLP_QUIRK_USB_INIT	0x2	/* needs vendor USB init string */
+ #define USBLP_QUIRK_BAD_CLASS	0x4	/* descriptor uses vendor-specific Class=
+ or SubClass */
++#define USBLP_QUIRK_ID_NO_SERIAL 0x8	/* Printer does not report its serial=
+ no. in GET_ID request */
+=20
+ static const struct quirk_printer_struct quirk_printers[] =3D {
+ 	{ 0x03f0, 0x0004, USBLP_QUIRK_BIDIR }, /* HP DeskJet 895C */
+@@ -227,6 +228,7 @@ static const struct quirk_printer_struct quirk_printers=
+[] =3D {
+ 	{ 0x0409, 0xf1be, USBLP_QUIRK_BIDIR }, /* NEC Picty800 (HP OEM) */
+ 	{ 0x0482, 0x0010, USBLP_QUIRK_BIDIR }, /* Kyocera Mita FS 820, by zut <ke=
+rnel@zut.de> */
+ 	{ 0x04b8, 0x0202, USBLP_QUIRK_BAD_CLASS }, /* Seiko Epson Receipt Printer=
+ M129C */
++	{ 0x0a5f, 0x000a, USBLP_QUIRK_ID_NO_SERIAL }, /* Zebra printers don't rep=
+ort their serial */
+ 	{ 0, 0 }
+ };
+=20
+@@ -1330,6 +1332,23 @@ static int usblp_cache_device_id_string(struct usblp=
+ *usblp)
+ 		length =3D 2;
+ 	else if (length >=3D USBLP_DEVICE_ID_SIZE)
+ 		length =3D USBLP_DEVICE_ID_SIZE - 1;
++=09
++	/* If printer doesn't report its serial, we append it */
++	if ((usblp->quirks & USBLP_QUIRK_ID_NO_SERIAL) && (usblp->dev->serial) &&
++		(length + strlen(usblp->dev->serial) + 5 <USBLP_DEVICE_ID_SIZE) ) {
++	=09
++		if (usblp->device_id_string[length-1] !=3D ';')
++			usblp->device_id_string[length++]=3D ';';
++
++		strcpy(&usblp->device_id_string[length],"SN:");
++		length+=3D3;
++		strcat(&usblp->device_id_string[length],usblp->dev->serial);
++		length +=3D strlen(usblp->dev->serial);
++		usblp->device_id_string[length++]=3D ';';
++
++		*((__be16 *)usblp->device_id_string) =3D cpu_to_be16(length);
++	}
++=09
+ 	usblp->device_id_string[length] =3D '\0';
+=20
+ 	dbg("usblp%d Device ID string [len=3D%d]=3D\"%s\"",
+=2D-=20
+1.5.4.3
+
+
+--Boundary-00=_fKGNIxRbmD9uRLV--
