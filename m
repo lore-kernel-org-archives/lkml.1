@@ -1,91 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbYEUXEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933894AbYEUXFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933415AbYEUXEV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 19:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbYEUXEN
+	id S933894AbYEUXFy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 19:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbYEUXFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 19:04:13 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:57380 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755650AbYEUXEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 19:04:12 -0400
-Date: Thu, 22 May 2008 02:01:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, tytso@mit.edu, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
-	indentation of arguments)
-Message-ID: <20080521230155.GC16376@cs181133002.pp.htv.fi>
-References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu> <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123127.3b3b66af.akpm@linux-foundation.org>
+	Wed, 21 May 2008 19:05:46 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:43263 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758385AbYEUXFp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 19:05:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=EvxtGcpaldOzDe+G4R078qHqjAuVXQ8v3wKwgGuVhVcGAvR3idHGJFqCRdRHjl94RmTI8mkbRxJitTGXEf4Ic0yCdxbJrjq0UTRi56hneK9A80UKz/GPQWfKbo2mD9YM1yAnhxrWh6QS6g2LSsNIMIrIew8Gp6tNlQCz1SdLmH4=  ;
+X-YMail-OSG: MVMm_X4VM1nTUq5nVp8SLmgfkytdYATaFXUuKdLBMdMOI5e.p7qig6Zr.kTeBNTHF7Y7shMnCovZF4h60Tp9rIkOF5jOchqjZzHd_rv2GiVfmf_reDeHIodR3pcaeiVXR3U-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Stas Sergeev <stsp@aknet.ru>
+Subject: Re: [patch] provide rtc_cmos platform device
+Date: Wed, 21 May 2008 16:05:39 -0700
+User-Agent: KMail/1.9.9
+Cc: Linux kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <483317B4.7060601@aknet.ru>
+In-Reply-To: <483317B4.7060601@aknet.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080521123127.3b3b66af.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805211605.39930.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 12:31:27PM -0700, Andrew Morton wrote:
->...
-> For more substantial starter projects the best we have (as far as I
-> know) is http://kernelnewbies.org/KernelProjects, but that's just a
-> teeny subset.
+On Tuesday 20 May 2008, Stas Sergeev wrote:
+> Hello.
 > 
-> We're not very good at this, I'm afraid.  I seem to recall that Rik has
-> offered to help out here, so perhaps whenever one notices a
-> hey-someone-should-do-this project, it could be forwarded to Rik and he
-> can put it up there.
->...
+> Recently (around 2.6.25) I've noticed
+> that RTC no longer works for me.
+> It turned out this is because I use
+> pnpacpi=off kernel option to work
+> around the parport_pc bugs.
+> I always did so, but RTC used to work
+> fine in the past, and now it have
+> regressed.
 
-Let's look at it from another angle:
+Well, "regression" is the wrong phrase.  You've switched
+drivers (from the legacy RTC to the new one), so this is
+not the thing which worked for you before.
 
-We should not aim at being good at this.
+Nonetheless, this should get fixed soonish; it just happens
+to be something nobody reported before.
 
-What do we need more in the kernel:
-- people testing development kernels
-- people fixing bugs
-- people maintaining code
-- people reviewing code
+See two comments about patch brokenness below, though ...
+this patch is broken and should not be merged.
 
-What do we already have more than enough:
-- people developing new bugs^Wfeatures
 
-If someone wants to do a project that's OK.
-And if some kernel developer wants to assist him that's OK.
+> The attached patch fixes the problem
+> by creating the platform device for
+> the RTC when PNP is disabled.
 
-But in my opinion stuff like "I need a project for university" requests 
-are not our problem, and they tend to not bring much for us.
+If I had realized there was a "pnpacpi=off" option, I'd
+have sent in my patch addressing this problem way back
+when the rtc-cmos code merged!  I was deluded into thinking
+this was a non-problem once ACPI and PNPACPI entered the
+"always selected" mode, right about that time.
 
-Offering any serious mentoring for newbies will only keep developers 
-busy who could otherwise do things that would bring more value to the 
-kernel.
 
-And we've just seen that having people who do not even know the basics 
-of C sending dozens of checkpatch cleanups doesn't bring us any gain.
+> This may also help running the
+> PNP-enabled kernel on an older PCs.
 
-There are many other open source projects where it might be easier to 
-get started and that are really looking for people wanting to get 
-involved.
+As in, pre-PNP.  That's pretty darn old!  Although one
+person mentioned an example of a system with broken PNP
+support, which didn't report the RTC device (just stuck
+its resources in the middle of a bunch of reserved
+addresses).  So you might want to consider looking at
+the case where PNP exists, but an RTC device doesn't ...
 
-> The #1 project for all kernel beginners should surely be "make sure
-> that the kernel runs perfectly at all times on all machines which you
-> can lay your hands on".  Usually the way to do this is to work with
-> others on getting things fixed up (this can require persistence!) but
-> that's fine - it's a part of kernel development.
+- Dave
 
-Fully agreed, and this is the only area I see where a newbie can be a 
-net win for us from the first second.
 
-cu
-Adrian
+(1) On an ARM build (with no PNP configured):
 
--- 
+  CC      drivers/rtc/rtc-cmos.o
+drivers/rtc/rtc-cmos.c: In function 'cmos_init':
+drivers/rtc/rtc-cmos.c:949: error: 'pnp_platform_devices' undeclared (first use in this function)
+drivers/rtc/rtc-cmos.c:949: error: (Each undeclared identifier is reported only once
+drivers/rtc/rtc-cmos.c:949: error: for each function it appears in.)
+drivers/rtc/rtc-cmos.c:950: error: implicit declaration of function 'pnp_register_driver'
+drivers/rtc/rtc-cmos.c:950: error: 'cmos_pnp_driver' undeclared (first use in this function)
+drivers/rtc/rtc-cmos.c: In function 'cmos_exit':
+drivers/rtc/rtc-cmos.c:959: error: 'pnp_platform_devices' undeclared (first use in this function)
+drivers/rtc/rtc-cmos.c:960: error: implicit declaration of function 'pnp_unregister_driver'
+drivers/rtc/rtc-cmos.c:960: error: 'cmos_pnp_driver' undeclared (first use in this function)
+make[1]: *** [drivers/rtc/rtc-cmos.o] Error 1
+make: *** [drivers/rtc/rtc-cmos.o] Error 2
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+(2)
+
+> --- a/include/asm-x86/rtc.h
+> +++ b/include/asm-x86/rtc.h
+> @@ -1 +1,5 @@
+>  #include <asm-generic/rtc.h>
+> +
+> +#define RTC_PORT_START 0x70
+> +#define RTC_PORT_END 0x71
+> +#define RTC_IRQ 8
+
+You shouldn't define those symbols; the right values are already
+defined in <asm/mc146818rtc.h>.  RTC_PORT(0) and RTC_PORT(1) are
+the symbolss to use; RTC_IRQ is already defined.  All this stuff
+is used in the <asm-generic/rtc.h> code ...
 
