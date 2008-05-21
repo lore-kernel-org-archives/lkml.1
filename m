@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932936AbYEUKyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764368AbYEULAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932936AbYEUKyK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 06:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbYEUKx4
+	id S1764368AbYEULAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 07:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbYEUK7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 06:53:56 -0400
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:3242 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755425AbYEUKxz (ORCPT
+	Wed, 21 May 2008 06:59:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44389 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755027AbYEUK7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 06:53:55 -0400
-Date: Wed, 21 May 2008 12:53:34 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: torvalds@linux-foundation.org, geert@linux-m68k.org,
-       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] provide out-of-line strcat() for m68k
-In-Reply-To: <20080521053012.GL28946@ZenIV.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0805211250180.19545@localhost.localdomain>
-References: <E1JycsB-0000M9-36@ZenIV.linux.org.uk>
- <Pine.LNX.4.64.0805210531170.18184@localhost.localdomain>
- <20080521053012.GL28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 May 2008 06:59:50 -0400
+Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default
+	groups	lockdep-friendly
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Joel Becker <Joel.Becker@oracle.com>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+In-Reply-To: <4833F89F.7080707@kerlabs.com>
+References: <20080520163320.025971210@kerlabs.com>
+	 <20080520095810.1d50d247@infradead.org>
+	 <20080520215639.GG26609@mail.oracle.com>
+	 <20080520151341.058f2df4@infradead.org>
+	 <1211361784.6463.68.camel@lappy.programming.kicks-ass.net>
+	 <4833F89F.7080707@kerlabs.com>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 12:59:37 +0200
+Message-Id: <1211367577.6463.91.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2008-05-21 at 12:25 +0200, Louis Rilling wrote:
 
-On Wed, 21 May 2008, Al Viro wrote:
-
-> > It actually was strlen that was generated and not strcat.
+> > http://programming.kicks-ass.net/kernel-patches/concurrent-pagecache/23-rc1-rt/radix-concurrent-lockdep.patch
 > 
-> Here it replaced strncat() with call of strcat() (gcc 4.0.1, FWIW).
-> And yes, I can show you init/main.s with
-> 	jbsr strcat	|
-> in it generated on kernel in b0rken range...
+> Thanks for pointing this out.
+> 
+> Yes this could solve part of the issue, at the price of duplicating the
+> inode mutex class. However, this still does not solve the issue when
+> deleting config_groups, since in that case all nodes of the tree are
+> locked. Thinking about adding lockdep support for concurrent locking of
+> the direct children of a node in a tree...
 
-Please use a more recent compiler, 4.0 created too many problems on m68k, 
-which we only got under control with 4.1, so at least on m68k 4.0 is not 
-really supported.
+Why doesn't sysfs have this problem? - the code says configfs was
+derived from sysfs.
 
-bye, Roman
+Also, do you really need to hold all locks when removing something?
+sound like a bit overdone. Also realise there is a maximum number of
+held locks - various people have already requested it to be increased or
+made dynamic. We're reluctant in doing so because we feel lock chains
+should not be of unlimited length. The deeper the chains the bigger the
+PI overhead etc..
+
+As to modifying lockdep - it currently doesn't know about trees and
+teaching it about them isn't easy.
+
