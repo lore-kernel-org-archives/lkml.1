@@ -1,302 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936583AbYEURXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936561AbYEURXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936583AbYEURXB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936001AbYEURQb
+	id S936561AbYEURXm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936204AbYEURRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:16:31 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33088 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935731AbYEURQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:16:15 -0400
-Message-Id: <20080521171600.082178318@szeredi.hu>
-References: <20080521171458.077908538@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Wed, 21 May 2008 19:15:11 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: linux-fsdevel@vger.kernel.org
-Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: [patch 13/14] vfs: dont use dentry_permission()
-Content-Disposition: inline; filename=path_permission_dentry.patch
+	Wed, 21 May 2008 13:17:44 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:44480 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936195AbYEURRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 13:17:42 -0400
+Subject: Re: [PATCH-v2] JBD: Fix race between free buffer and commit
+	trasanction
+From: Mingming <cmm@us.ibm.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, pbadari@us.ibm.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20080520235303.GB23521@atrey.karlin.mff.cuni.cz>
+References: <1210786872.3657.48.camel@localhost.localdomain>
+	 <20080514181444.GI24363@duck.suse.cz>
+	 <1210947250.3608.18.camel@localhost.localdomain>
+	 <1210957976.4231.31.camel@badari-desktop>
+	 <1210971693.3608.46.camel@localhost.localdomain>
+	 <20080518223739.GB11006@atrey.karlin.mff.cuni.cz>
+	 <1211227158.3663.25.camel@localhost.localdomain>
+	 <20080519132553.de9b78b0.akpm@linux-foundation.org>
+	 <1211234829.3663.39.camel@localhost.localdomain>
+	 <1211306575.3664.19.camel@localhost.localdomain>
+	 <20080520235303.GB23521@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 10:14:53 -0700
+Message-Id: <1211390093.5571.16.camel@BVR-FS.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
 
-Move most calls of dentry_permission() to path_permission().  The
-remaining few uses are all in namei.c, so dentry_permission() can be
-made static, further simplifying the API.
+On Wed, 2008-05-21 at 01:53 +0200, Jan Kara wrote:
+> > JBD: fix race between journal_try_to_free_buffers() and jbd commit transaction
+> > 
+> > From: Mingming Cao <cmm@us.ibm.com>
+> > 
+> > journal_try_to_free_buffers() could race with jbd commit transaction when
+> > the later is holding the buffer reference while waiting for the data buffer
+> > to flush to disk. If the caller of journal_try_to_free_buffers() request
+> > tries hard to release the buffers, it will treat the failure as error and return
+> > back to the caller. We have seen the directo IO failed due to this race. 
+> > Some of the caller of releasepage() also expecting the buffer to be dropped
+> > when passed with GFP_KERNEL mask to the releasepage()->journal_try_to_free_buffers().
+> > 
+> > With this patch, if the caller is passing the GFP_KERNEL to indicating this
+> > call could wait, in case of try_to_free_buffers() failed, let's waiting for
+> > journal_commit_transaction() to finish commit the current committing transaction
+> > , then try to free those buffers again with journal locked.
+> > 
+> > Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> > Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
+> > ---
+> >  fs/jbd/transaction.c |   55 +++++++++++++++++++++++++++++++++++++++++++++++++--
+> >  mm/filemap.c         |    3 --
+> >  2 files changed, 54 insertions(+), 4 deletions(-)
+> > 
+> > Index: linux-2.6.26-rc2/fs/jbd/transaction.c
+> > ===================================================================
+> > --- linux-2.6.26-rc2.orig/fs/jbd/transaction.c	2008-05-11 17:09:41.000000000 -0700
+> > +++ linux-2.6.26-rc2/fs/jbd/transaction.c	2008-05-19 16:16:41.000000000 -0700
+> > @@ -1648,12 +1648,39 @@ out:
+> >  	return;
+> >  }
+> >  
+> > +/*
+> > + * journal_try_to_free_buffers() could race with journal_commit_transaction()
+> > + * The later might still hold the reference count to the buffers when inspecting
+> > + * them on t_syncdata_list or t_locked_list.
+> > + *
+> > + * Journal_try_to_free_buffers() will call this function to
+> > + * wait for the current transaction to finish syncing data buffers, before
+> > + * try to free that buffer.
+> > + *
+> > + * Called with journal->j_state_lock hold.
+> > + */
+> > +static void journal_wait_for_transaction_sync_data(journal_t *journal)
+> > +{
+> > +	transaction_t *transaction = NULL;
+> > +	tid_t tid;
+> > +
+> > +	transaction = journal->j_committing_transaction;
+> > +
+> > +	if (!transaction)
+> > +		return;
+> > +
+> > +	tid = transaction->t_tid;
+> > +	spin_unlock(&journal->j_state_lock);
+> > +	log_wait_commit(journal, tid);
+> > +	spin_lock(&journal->j_state_lock);
+> > +}
+>   What is actually the point of entering the function with j_state_lock
+> held and also keeping it after return? It should be enough to take it
+> and release it just inside this function, shouldn't it?
+> 
 
-This will have the side effect, that MNT_NOEXEC checking on the mount
-will be performed for these callers as well.  But this should not
-cause any problems.
+I was worried about the case when we call try_to_free_buffers() again,
+it races with the current transaction commit again. Is it possible? I
+guess the question is whether it is possible to have buffers on the same
+page attached to different transaction.  If so, I think we need to keep
+the journal state lock while retry try_to_free_buffers(), so that the
+retry won't race with the commit transaction again...
 
-At this point file_permission() is just a helper for
-path_permission(), so remove comment about not being preferred.
+> >  /**
+> >   * int journal_try_to_free_buffers() - try to free page buffers.
+> >   * @journal: journal for operation
+> >   * @page: to try and free
+> > - * @unused_gfp_mask: unused
+> > + * @gfp_mask: specifies whether the call may block
+> > + * 		(__GFP_WAIT & __GFP_FS via GFP_KERNEL)
+>   This comment seems a bit misleading to me - I'd rather write there:
+> 
+> @gfp_mask: we use the mask to detect how hard should we try to release
+> buffers. If __GFP_WAIT and __GFP_FS is set, we wait for commit code to
+> release the buffers.
+> 
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/ecryptfs/inode.c |    7 +++++--
- fs/namei.c          |   12 +++---------
- fs/nfsd/nfsfh.c     |   11 ++++++-----
- fs/nfsd/vfs.c       |    8 ++++++--
- fs/xattr.c          |   22 ++++++++++++----------
- include/linux/fs.h  |    1 -
- ipc/mqueue.c        |   15 +++++++++------
- 7 files changed, 41 insertions(+), 35 deletions(-)
+Sure.
 
-Index: linux-2.6/fs/ecryptfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-21 18:16:31.000000000 +0200
-+++ linux-2.6/fs/ecryptfs/inode.c	2008-05-21 18:17:08.000000000 +0200
-@@ -810,9 +810,12 @@ out:
- static int
- ecryptfs_permission(struct dentry *dentry, int mask, int flags)
- {
--	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
-+	struct path lower_path;
-+
-+	lower_path.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
-+	lower_path.dentry = ecryptfs_dentry_to_lower(dentry);
- 
--	return dentry_permission(lower_dentry, mask, flags);
-+	return path_permission(&lower_path, mask, flags);
- }
- 
- /**
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-21 18:16:31.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-21 18:17:08.000000000 +0200
-@@ -246,7 +246,7 @@ int exec_permission(struct inode *inode,
- 	return 0;
- }
- 
--int dentry_permission(struct dentry *dentry, int mask, int flags)
-+static int dentry_permission(struct dentry *dentry, int mask, int flags)
- {
- 	struct inode *inode = dentry->d_inode;
- 	int retval, submask;
-@@ -320,16 +320,11 @@ int path_permission(struct path *path, i
-  * @file:	file to check access rights for
-  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
-  *
-- * Used to check for read/write/execute permissions on an already opened
-- * file.
-- *
-- * Note:
-- *	Do not use this function in new code.  All access checks should
-- *	be done using path_permission().
-+ * This is a helper for path_permission().
-  */
- int file_permission(struct file *file, int mask)
- {
--	return dentry_permission(file->f_path.dentry, mask, 0);
-+	return path_permission(&file->f_path, mask, 0);
- }
- 
- /*
-@@ -3061,7 +3056,6 @@ EXPORT_SYMBOL(page_symlink);
- EXPORT_SYMBOL(page_symlink_inode_operations);
- EXPORT_SYMBOL(path_lookup);
- EXPORT_SYMBOL(vfs_path_lookup);
--EXPORT_SYMBOL(dentry_permission);
- EXPORT_SYMBOL(path_permission);
- EXPORT_SYMBOL(file_permission);
- EXPORT_SYMBOL(unlock_rename);
-Index: linux-2.6/fs/nfsd/nfsfh.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/nfsfh.c	2008-05-21 18:16:31.000000000 +0200
-+++ linux-2.6/fs/nfsd/nfsfh.c	2008-05-21 18:17:08.000000000 +0200
-@@ -41,7 +41,7 @@ static int nfsd_acceptable(void *expv, s
- 	struct svc_export *exp = expv;
- 	int rv;
- 	struct dentry *tdentry;
--	struct dentry *parent;
-+	struct path parent = { .mnt = exp->ex_path.mnt };
- 
- 	if (exp->ex_flags & NFSEXP_NOSUBTREECHECK)
- 		return 1;
-@@ -50,14 +50,15 @@ static int nfsd_acceptable(void *expv, s
- 	while (tdentry != exp->ex_path.dentry && !IS_ROOT(tdentry)) {
- 		/* make sure parents give x permission to user */
- 		int err;
--		parent = dget_parent(tdentry);
--		err = dentry_permission(parent, MAY_EXEC, 0);
-+
-+		parent.dentry = dget_parent(tdentry);
-+		err = path_permission(&parent, MAY_EXEC, 0);
- 		if (err < 0) {
--			dput(parent);
-+			dput(parent.dentry);
- 			break;
- 		}
- 		dput(tdentry);
--		tdentry = parent;
-+		tdentry = parent.dentry;
- 	}
- 	if (tdentry != exp->ex_path.dentry)
- 		dprintk("nfsd_acceptable failed at %p %s\n", tdentry, tdentry->d_name.name);
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-21 18:16:31.000000000 +0200
-+++ linux-2.6/fs/nfsd/vfs.c	2008-05-21 18:17:08.000000000 +0200
-@@ -1878,6 +1878,10 @@ nfsd_permission(struct svc_rqst *rqstp, 
- {
- 	struct inode	*inode = dentry->d_inode;
- 	int		err;
-+	struct path	path = {
-+		.mnt = exp->ex_path.mnt,
-+		.dentry = dentry,
-+	};
- 
- 	if (acc == MAY_NOP)
- 		return 0;
-@@ -1942,12 +1946,12 @@ nfsd_permission(struct svc_rqst *rqstp, 
- 	    inode->i_uid == current->fsuid)
- 		return 0;
- 
--	err = dentry_permission(dentry, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), 0);
-+	err = path_permission(&path, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), 0);
- 
- 	/* Allow read access to binaries even when mode 111 */
- 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
- 	    acc == (MAY_READ | MAY_OWNER_OVERRIDE))
--		err = dentry_permission(dentry, MAY_EXEC, 0);
-+		err = path_permission(&path, MAY_EXEC, 0);
- 
- 	return err? nfserrno(err) : 0;
- }
-Index: linux-2.6/ipc/mqueue.c
-===================================================================
---- linux-2.6.orig/ipc/mqueue.c	2008-05-21 18:16:31.000000000 +0200
-+++ linux-2.6/ipc/mqueue.c	2008-05-21 18:17:08.000000000 +0200
-@@ -647,19 +647,22 @@ static struct file *do_open(struct dentr
- static int oflag2acc[O_ACCMODE] = { MAY_READ, MAY_WRITE,
- 					MAY_READ | MAY_WRITE };
- 
-+	struct path path = {
-+		.mnt = mqueue_mnt,
-+		.dentry = dentry,
-+	};
-+
- 	if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY)) {
--		dput(dentry);
--		mntput(mqueue_mnt);
-+		path_put(&path);
- 		return ERR_PTR(-EINVAL);
- 	}
- 
--	if (dentry_permission(dentry, oflag2acc[oflag & O_ACCMODE], 0)) {
--		dput(dentry);
--		mntput(mqueue_mnt);
-+	if (path_permission(&path, oflag2acc[oflag & O_ACCMODE], 0)) {
-+		path_put(&path);
- 		return ERR_PTR(-EACCES);
- 	}
- 
--	return dentry_open(dentry, mqueue_mnt, oflag);
-+	return dentry_open(path.dentry, path.mnt, oflag);
- }
- 
- asmlinkage long sys_mq_open(const char __user *u_name, int oflag, mode_t mode,
-Index: linux-2.6/fs/xattr.c
-===================================================================
---- linux-2.6.orig/fs/xattr.c	2008-05-21 18:16:31.000000000 +0200
-+++ linux-2.6/fs/xattr.c	2008-05-21 18:17:08.000000000 +0200
-@@ -26,9 +26,9 @@
-  * because different namespaces have very different rules.
-  */
- static int
--xattr_permission(struct dentry *dentry, const char *name, int mask)
-+xattr_permission(struct path *path, const char *name, int mask)
- {
--	struct inode *inode = dentry->d_inode;
-+	struct inode *inode = path->dentry->d_inode;
- 
- 	/*
- 	 * We can never set or remove an extended attribute on a read-only
-@@ -65,17 +65,18 @@ xattr_permission(struct dentry *dentry, 
- 			return -EPERM;
- 	}
- 
--	return dentry_permission(dentry, mask, 0);
-+	return path_permission(path, mask, 0);
- }
- 
- static int
--vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
-+vfs_setxattr(struct path *path, const char *name, const void *value,
- 		size_t size, int flags)
- {
-+	struct dentry *dentry = path->dentry;
- 	struct inode *inode = dentry->d_inode;
- 	int error;
- 
--	error = xattr_permission(dentry, name, MAY_WRITE);
-+	error = xattr_permission(path, name, MAY_WRITE);
- 	if (error)
- 		return error;
- 
-@@ -110,7 +111,7 @@ int path_setxattr(struct path *path, con
- 	int error = mnt_want_write(path->mnt);
- 
- 	if (!error) {
--		error = vfs_setxattr(path->dentry, name, value, size, flags);
-+		error = vfs_setxattr(path, name, value, size, flags);
- 		mnt_drop_write(path->mnt);
- 	}
- 
-@@ -152,7 +153,7 @@ path_getxattr(struct path *path, const c
- 	struct inode *inode = dentry->d_inode;
- 	int error;
- 
--	error = xattr_permission(dentry, name, MAY_READ);
-+	error = xattr_permission(path, name, MAY_READ);
- 	if (error)
- 		return error;
- 
-@@ -204,15 +205,16 @@ path_listxattr(struct path *path, char *
- EXPORT_SYMBOL_GPL(path_listxattr);
- 
- static int
--vfs_removexattr(struct dentry *dentry, const char *name)
-+vfs_removexattr(struct path *path, const char *name)
- {
-+	struct dentry *dentry = path->dentry;
- 	struct inode *inode = dentry->d_inode;
- 	int error;
- 
- 	if (!inode->i_op->removexattr)
- 		return -EOPNOTSUPP;
- 
--	error = xattr_permission(dentry, name, MAY_WRITE);
-+	error = xattr_permission(path, name, MAY_WRITE);
- 	if (error)
- 		return error;
- 
-@@ -234,7 +236,7 @@ int path_removexattr(struct path *path, 
- 	int error = mnt_want_write(path->mnt);
- 
- 	if (!error) {
--		error = vfs_removexattr(path->dentry, name);
-+		error = vfs_removexattr(path, name);
- 		mnt_drop_write(path->mnt);
- 	}
- 
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-21 18:15:02.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-21 18:17:08.000000000 +0200
-@@ -1758,7 +1758,6 @@ extern sector_t bmap(struct inode *, sec
- #endif
- extern int notify_change(struct dentry *, struct iattr *);
- extern int path_setattr(struct path *, struct iattr *);
--extern int dentry_permission(struct dentry *, int, int);
- extern int generic_permission(struct inode *, int,
- 		int (*check_acl)(struct inode *, int));
- extern int exec_permission(struct inode *, int);
+> >   *
+> >   *
+> >   * For all the buffers on this page,
+> > @@ -1682,9 +1709,11 @@ out:
+> >   * journal_try_to_free_buffer() is changing its state.  But that
+> >   * cannot happen because we never reallocate freed data as metadata
+> >   * while the data is part of a transaction.  Yes?
+> > + *
+> > + * Return 0 on failure, 1 on success
+> >   */
+> >  int journal_try_to_free_buffers(journal_t *journal,
+> > -				struct page *page, gfp_t unused_gfp_mask)
+> > +				struct page *page, gfp_t gfp_mask)
+> >  {
+> >  	struct buffer_head *head;
+> >  	struct buffer_head *bh;
+> > @@ -1713,7 +1742,30 @@ int journal_try_to_free_buffers(journal_
+> >  		if (buffer_jbd(bh))
+> >  			goto busy;
+> >  	} while ((bh = bh->b_this_page) != head);
+> > +
+> >  	ret = try_to_free_buffers(page);
+> > +
+> > + 	/*
+> > +	 * There are a number of places where journal_try_to_free_buffers()
+> > +	 * could race with journal_commit_transaction(), the later still
+> > +	 * holds the reference to the buffers to free while processing them.
+> > +	 * try_to_free_buffers() failed to free those buffers. Some of the
+> > +	 * caller of releasepage() request page buffers to be dropped, otherwise
+> > +	 * treat the fail-to-free as errors (such as generic_file_direct_IO())
+> > +	 *
+> > +	 * So, if the caller of try_to_release_page() wants the synchronous
+> > +	 * behaviour(i.e make sure buffers are dropped upon return),
+> > +	 * let's wait for the current transaction to finish flush of
+> > +	 * dirty data buffers, then try to free those buffers again,
+> > +	 * with the journal locked.
+> > +	 */
+> > +	if (ret == 0 && gfp_mask & GFP_KERNEL) {
+>   I think this test is wrong - it should rather be something like
+> (ret == 0 && (gfp_mask & GFP_KERNEL == GFP_KERNEL)) - or even expand the
+> test to gfp_mask & __GFP_WAIT && gfp_mask & __GFP_FS && gfp_mask &
+> __GFP_IO.
+> 
 
---
+Thanks for pointing this out.
+
+> > +        	spin_lock(&journal->j_state_lock);
+> > +		journal_wait_for_transaction_sync_data(journal);
+> > +		ret = try_to_free_buffers(page);
+> > +		spin_unlock(&journal->j_state_lock);
+> > +	}
+> > +
+> >  busy:
+> >  	return ret;
+> >  }
+> > Index: linux-2.6.26-rc2/mm/filemap.c
+> > ===================================================================
+> > --- linux-2.6.26-rc2.orig/mm/filemap.c	2008-05-19 16:00:01.000000000 -0700
+> > +++ linux-2.6.26-rc2/mm/filemap.c	2008-05-19 16:01:34.000000000 -0700
+> > @@ -2581,9 +2581,8 @@ out:
+> >   * Otherwise return zero.
+> >   *
+> >   * The @gfp_mask argument specifies whether I/O may be performed to release
+> > - * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
+> > + * this page (__GFP_IO), and whether the call may block (__GFP_WAIT & __GFP_FS).
+>   Probably __GFP_WAIT | __GFP_IO here... But I'm not sure why do we
+> really change this...
+> 
+
+For try_to_release_page(),we should wait only when (__GFP_WAIT &
+__GFP_FS), isn't it?
+
+> >   *
+> > - * NOTE: @gfp_mask may go away, and this function may become non-blocking.
+> >   */
+> >  int try_to_release_page(struct page *page, gfp_t gfp_mask)
+> >  {
+> > 
+> 
+> 								Honza
+
+Thanks, patch v3 to follow.
+
+Mingming
+
