@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932427AbYEUSnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765710AbYEUSrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932427AbYEUSnw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYEUSnm
+	id S1765710AbYEUSrZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757124AbYEUSrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:43:42 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:38450 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756416AbYEUSnl (ORCPT
+	Wed, 21 May 2008 14:47:16 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:5294 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755892AbYEUSrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:43:41 -0400
-Date: Wed, 21 May 2008 19:41:47 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: werner <werner@sys-linux.yi.org>
-cc: Chas Williams <chas@cmf.nrl.navy.mil>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rcX: Problem with mem config > 4GB ; fore2000 atm driver
- options
-In-Reply-To: <1211312990.4898@sys-linux.yi.org>
-Message-ID: <Pine.LNX.4.64.0805211930520.20306@blonde.site>
-References: <1211312990.4898@sys-linux.yi.org>
+	Wed, 21 May 2008 14:47:15 -0400
+Date: Wed, 21 May 2008 22:47:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card
+	detect line
+Message-ID: <20080521184713.GA30284@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru> <20080517133633.5aa26938@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20080517133633.5aa26938@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, werner wrote:
-> I observed the following problems with 2.6.26-rcX-gitY:
+On Sat, May 17, 2008 at 01:36:33PM +0200, Pierre Ossman wrote:
+> On Fri, 16 May 2008 20:50:57 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
-> Steady-steady I got segmentation faults. On 2.6.25.4 no problems.  I compiled plenty times the newer kernels to find out the reason.   I thing the problem is the memory configuration as > 4 GB.  In my config file, since earlier kernels, i configured >4 GB. When I use  config files with that, then occure the problems, with <4 GB not. It seems that the menuconfig of the new kernels accept only until 4 GB.
-
-It's worth now trying 2.6.26-rc3-git2 or later: there was indeed a
-problem introduced in 2.6.26-rc2-git<I-haven't-looked-which> which
-caused segfaults in various things when CONFIG_HIGHMEM64G.
-
-(See http://lkml.org/lkml/2008/5/19/446 for what I'm talking about;
-but Linus put in Jeremy's proper fixes instead of that brief hack.)
-
+> > Some boards do not use interrupts on the CD line, so we want to poll
+> > the CD and see if there was a change. 1 second poll interval seems
+> > resonable.
+> > 
 > 
-> Another problem with the fore2000 atm configuration. When one affirms the default config of menuconfig, then the compilation crashs because it wouldn't find the path of these drivers. When one explicitely click  x  , affirming the default path (what would be default anyway) then the compilation works.   This seems to be an error of the menuconfig and should be corrected
+> The idea isn't bad, but I'm not sure about the mechanism.
+> 
+> To poll a MMC slot, you do not really need a card detect at all. The
+> MMC layer can just shoot off some requests and see if anything
+> responds.  The PXA driver (if my memory serves me right) already does
+> this. So the best idea there would be to add this feature to the MMC
+> core and let the host indicate that it needs it via MMC_CAP_NEEDS_POLL
+> or something like that.
+> 
+> The card detection pin then becomes an optimisation, something that is
+> also useful in other ways. Have the host driver check the card detection
+> pin at the start of every request, and quickly fail it if there is no
+> card present.
 
-Sorry, I've not looked into that at all: Cc'ed ATM maintainer.
+Calling get_cd() for every request smells like overhead, especially given
+that that get_cd() could ask for GPIO status via relatively slow bus (like
+I2C GPIO expanders). So, polling seems most reasonable solution here, no
+need to call it very often.
 
-Hugh
+How about these patches? Tested with and without get_cd() optimization.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
