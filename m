@@ -1,33 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934835AbYEUA6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934977AbYEUA64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934835AbYEUA6g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764223AbYEUA6V
+	id S934977AbYEUA64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933746AbYEUA60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:58:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40178 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934128AbYEUA6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:58:20 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 May 2008 20:58:26 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:49992 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765003AbYEUA6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 20:58:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=vjVZIhv5fbrUdXeEMsTw7HpHTYezqOt572gAsIznbAb3t8k9zxZRfExDdWL/SKoIWVv/GgvEeDJbZVLeuoFy2HomRbxgBTJKPlDdz5iUv0jYM+G09p8RSNEEGRuKeZ2RTjF9mT/yfZ99fdb/pJtzSo5+27vWsuXTh4DP7A9qXN0=
+Subject: Re: [PATCH] misc drivers/net endianness noise
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080521005502.GF28946@ZenIV.linux.org.uk>
+References: <20080521003430.GB28946@ZenIV.linux.org.uk>
+	 <1211330880.5915.236.camel@brick>
+	 <20080521005502.GF28946@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Tue, 20 May 2008 17:58:21 -0700
+Message-Id: <1211331501.5915.248.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] signals: collect_signal: simplify the "still_pending" logic
-In-Reply-To: Oleg Nesterov's message of  Saturday, 17 May 2008 19:14:24 +0400 <20080517151424.GA9508@tv-sign.ru>
-References: <20080517151424.GA9508@tv-sign.ru>
-X-Zippy-Says: My mind is a potato field...
-Message-Id: <20080521005815.74E9D26FA1C@magilla.localdomain>
-Date: Tue, 20 May 2008 17:58:15 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Factor out sigdelset() calls and remove the "still_pending" variable.
+On Wed, 2008-05-21 at 01:55 +0100, Al Viro wrote:
+> On Tue, May 20, 2008 at 05:48:00PM -0700, Harvey Harrison wrote:
+> > I was contemplating an api like:
+> > 
+> > void put_le16(u16 val, __le16 *ptr)
+> > {
+> > 	*ptr = cpu_to_le16(val);
+> > }
+> > 
+> > which would allow the above to become:
+> > 
+> > 	if (catc->is_f5u011)
+> > 		put_be16(skb->len, tx_buf);
+> > 	else
+> > 		put_le16(skb->len, tx_buf);
+> > 
+> > Thoughts?
+> 
+> Do not grow API too much.  Mental savings on recognizing what's done are
+> offset by need to remember more helper functions...
 
-Acked-by: Roland McGrath <roland@redhat.com>
+Fair point, I was hoping to get the following family:
+
+get_le16
+put_le16
+
+get_unaligned_le16
+put_unaligned_le16
+
+And get rid of the le16_to_cpup api.
+
+Then the it's explicit when alignment is an issue, and the endianess is
+also explicit.  That and I think it just looks nicer than the existing
+*p versions.
+
+Just a thought,
+
+Harvey
+
