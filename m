@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbYEUVoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbYEUVpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762290AbYEUVoW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYEUVoA
+	id S932225AbYEUVpW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYEUVpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:44:00 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:33688 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151AbYEUVn6 (ORCPT
+	Wed, 21 May 2008 17:45:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55976 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753539AbYEUVpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:43:58 -0400
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>, netdev <netdev@vger.kernel.org>,
-       Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080521210352.GA11827@tuxdriver.com>
-References: <1211026337.3827.25.camel@johannes.berg>
-	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
-	 <1211303731.6252.105.camel@johannes.berg>
-	 <20080521210352.GA11827@tuxdriver.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-GgAVnm/Q+ru1odfsGrha"
-Date: Wed, 21 May 2008 23:37:44 +0200
-Message-Id: <1211405864.3698.7.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Wed, 21 May 2008 17:45:06 -0400
+Date: Wed, 21 May 2008 14:44:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Takashi Iwai <tiwai@suse.de>
+cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, perex@perex.cz
+Subject: Re: Moving sound/* to drivers/ ?
+In-Reply-To: <s5hzlqjz74d.wl%tiwai@suse.de>
+Message-ID: <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
+References: <s5hzlqjz74d.wl%tiwai@suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-GgAVnm/Q+ru1odfsGrha
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
+On Wed, 21 May 2008, Takashi Iwai wrote:
+> 
+> One thing that annoys me sometimes is that the sound driver codes are
+> on a different subdirectory than other normal drivers, namely under
+> /sound. 
 
-> > I have filed a patch to fix HAL to use the canonical SIOCGIWNAME at
-> > https://bugs.freedesktop.org/show_bug.cgi?id=3D16037. Any further
-> > objections to this patch?
->=20
-> I think this is going to fall under the "userland ABI" category.
-> We can make it a configurable option, but I don't think we are free
-> to remove it completely since there is at least existing versions of
-> HAL that use it.
+I would certainly personally like drivers/sound more, and the placement at 
+the top level is actually because the sound maintainers wanted it that 
+way, probably to avoid the confusion with the old OSS drivers that used to 
+live in drivers/sound.
 
-Well, yes, I gave it a year in the feature removal schedule since I
-thought nobody was actually using it. But if you look at how hal/sysfs
-are always dependent on new versions of each other *anyway*, I think we
-can get away with removing this in maybe two years time, and
-distributors can unset the option if they know their hal is new enough?
+I forget the exact details. It's been many many years, and there may have 
+been some real technical issues too. But basically sound/ was created when 
+ALSA was first merged, and we had a lot of renames from drivers/sound/xyz 
+to sound/oss/xyz.
 
-johannes
+(It may have been that it was simply easier to have a new subdirectory 
+than it was to re-use the old one. In fact, with BK and patches, that 
+was generally the best way to guarantee that the rename-tool did the 
+right thing, so details like that may have been part of it. I forget).
 
---=-GgAVnm/Q+ru1odfsGrha
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+So I would personally certainly not mind somebody doing a 
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+	git mv sound drivers/sound
+	.. edit makefiles and Kconfig files appropriately ..
+	git commit -a
 
-iQIVAwUASDSWJ6Vg1VMiehFYAQL2xA//dOA4+OvOlayV5I1wpYkP2bp5Oy6YlLHy
-a5VGdyqJXxa0dURRNLeX5XXojoUfIrAh1OaS5kh0lVdAVsABOKXIUChloYyzR0id
-zlrG2TJ/f4gw7Zm/mnMDxiWCT2QrP1mCLzHbBsmFHSH61IYJ+pErLsSLYEOViLqF
-jRVmw4ZY2ED5LaHHi6s6R6pDvE6Mk7NSCwQufcOvK7auS+OzyqxgdzR5JmtbAKK5
-02DbVHV3sxbdMzK81gXsY+l1fYAQVqiqdwMBuaxrrZ4cbeJLQDrt/XihZsr6g+kq
-GpTnitLxYbrLXyPAdkeSvzYnmk6MLk8i9gddMvaIuqhFI44lFSY4ysq5VtHnMCJa
-3nnsSjYlA8tzY6YrPFeDzT6HE6gS1S7u98eDPgmXP1i3vis8ixfK78j2coRz7UID
-/qeIgldOCxkY3q3lY2/DowXFjiDVkQD9r1HWsx9WzN1pD5zdozMyEZNmCP/ayMg4
-+zXgxXGzEUwj1JmSmfvbNhpCndSEsyQVnxKIL59NA7gncMgK+QADpUn+wOE/v0+9
-U2FlA5BN1mUvoSGSCZObvm4uUDihH1Z2MM0tlDBotwSf9wRXXcZU+7D0S/o7mVYk
-dDg4ufldmY5clIbKJ23id02Mfx1IAGI5xVa1nFKXoG4OBVtgJ0mOj005KELs3cdB
-C+57s5Bv/ik=
-=ntSr
------END PGP SIGNATURE-----
+and it wouldn't be a problem for git (ie the repository wouldn't grow or 
+anything like that).
 
---=-GgAVnm/Q+ru1odfsGrha--
+And doing pure renames (and not editing up a lot of actual files) would 
+make rename detection easy for subsequent merges. The only real pain of 
+renames is the efficiency of detection when you have lots and lots of 
+files, but if the SHA1 of the file stays the same for the big bulk of 
+them, that makes the problem basically go away (it becomes a much more 
+interesting problem when you move hundreds of files around and _also_ edit 
+the bulk of them - even if the edits are trivial, now you need to 
+actually look at the contents to figure out the renames).
 
+> If I understand correctly, with git, we can move the files in
+> relatively little costs.  So, what about moving sound/* back to
+> drivers/sound/* or drivers/media/sound/*?
+
+I'd personally prefer just drivers/sound - no point in making it any 
+deeper than that. 
+
+But I'd not be much affected myself, so I don't much care. I do agree that 
+it would fit better under drivers/, but it's really mostly up to you guys.
+
+> Of course, the primary question is whether it's really worth.
+> The obvious drawback is that patches won't be applicable after the
+> move.
+
+Well, git merging is actually pretty good at this, so you can apply the 
+patches to the old release and then merge it, and it will do the right 
+thing (perhaps not for newly created files, but that's pretty easy to fix 
+up). 
+
+Also, even if you keep it as patches, as long as you move the whole 
+subdirectory, then fixing up the patch is just a trivial 
+search-and-replace, so I doubt it would be a big issue.
+
+But it's really up to you guys.
+
+Me personally, I've been more irritated by include/asm-xyz vs arch/xyz. It 
+would be so nice if all the arch-specific changes woudl always show up 
+under arch/ (both from a statistics standpoint, and just because then a 
+diffstat really shows arch-specific stuff really obviously, and sorts all 
+the arch-specific stuff together).
+
+		Linus
