@@ -1,84 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbYEUKET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933514AbYEUKEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932174AbYEUKET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 06:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbYEUKEH
+	id S933514AbYEUKEz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 06:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758993AbYEUKEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 06:04:07 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:53463 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752004AbYEUKEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 06:04:06 -0400
-Date: Wed, 21 May 2008 12:04:43 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Patrick McHardy <kaber@trash.net>
-Cc: David Miller <davem@davemloft.net>, greg@nest.cx,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: include/linux/netfilter.h after make headers_install is incomplete
-Message-ID: <20080521100443.GA7976@uranus.ravnborg.org>
-References: <a27c0c970805161521k332fba8cg808d52396b5cdce5@mail.gmail.com> <a27c0c970805201139i38e12d15ue807fc0239b1c10e@mail.gmail.com> <a27c0c970805201144j12189201g9567460d4d3d8361@mail.gmail.com> <20080520.142121.15017166.davem@davemloft.net> <4833F1E7.5050700@trash.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4833F1E7.5050700@trash.net>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 21 May 2008 06:04:44 -0400
+Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:55463 "EHLO
+	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbYEUKEn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 06:04:43 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4833F3B6.6020806@gmail.com>
+Date: Wed, 21 May 2008 11:04:38 +0100
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
+MIME-Version: 1.0
+To: "Hans J. Koch" <hjk@linutronix.de>
+CC: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net,
+       LM Sensors <lm-sensors@lm-sensors.org>, Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: Accelerometer, Gyros and ADC's etc within the kernel.
+References: <4832A211.4040206@gmail.com> <20080520132817.03fb74ea@hyperion.delvare> <20080520214005.GH3220@local>
+In-Reply-To: <20080520214005.GH3220@local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 11:56:55AM +0200, Patrick McHardy wrote:
-> David Miller wrote:
-> >From: "Greg Steuck" <greg@nest.cx>
-> >Date: Tue, 20 May 2008 11:44:56 -0700
-> >
-> >>I ran make headers_install in 2.6.25 tree and the installed netfilter.h is
-> >>not complete. Namely, it declares
-> >>union nf_inet_addr {
-> >>      __u32           all[4];
-> >>      __be32          ip;
-> >>      __be32          ip6[4];
-> >>...
-> >>}
-> >>
-> >>The __u32, __be32 types are declared in <linux/types.h> and the #include
-> >>directive is removed by the installation process. This in turn makes some
-> >>applications unbuildable against such an exported tree, e.g.
-> >>
-> >>busybox-1.10.1/networking/tcpudp.c:#include <linux/netfilter_ipv4.h>
-> >>
-> >>If I correctly understand the purpose of make headers_install, it is
-> >>supposed to generate an API for applications. I could certainly
-> >>make tcpudp.c include linux/types.h, but given that the application
-> >>does not even use nf_inet_addr, this would be the wrong place for
-> >>the fix.
-> 
-> These types are used by countless header files. I don't know
-> why types.h is stripped, I guess this question can be best
-> answered by whoever maintains the header-install stuff (Sam?
-> I don't know).
+Hi Hans and Jean, 
 
-Everything inside
-#ifdef __KERNEL__
-...
-#endif
+Thanks for your responses.
+> On Tue, May 20, 2008 at 01:28:17PM +0200, Jean Delvare wrote:
+>   
+>> Hi Jonathan,
+>>
+>> On Tue, 20 May 2008 11:04:01 +0100, Jonathan Cameron wrote:
+>>     
+>>> This email is basically a request for opinions on how and where such sensors
+>>> should be integrated into the kernel.
+>>>
+>>> To set the scene...
+>>>
+>>> Increasing numbers of embedded devices are being supplied attached MEMS
+>>> devices (www.xbow.com imote2 etc). Along with more traditional sensors such
+>>> as ADC's not being used for hardware monitoring, these do not really 
+>>> seem to
+>>> fit with in an particular subsystem of the kernel.  A previous 
+>>> discussion on
+>>> lkml in 2006 considered the accelerometers to be found within some laptop
+>>> hard drives, but I haven't been able to track down any more general 
+>>> discussions
+>>> of such non hardware monitoring sensors.
+>>>
+>>> The obvious possibilities are:
+>>>
+>>> * To place the various drivers within the spi / i2c etc subsystems as 
+>>> relevant.
+>>>       
+>> Bad idea. Grouping drivers by connectivity is almost always the wrong
+>> thing to do, as it means that different persons will maintain them and
+>> they have all chances to diverge. You really want to group drivers by
+>> functionality. On top of that, I am busy enough maintaining the i2c
+>> core and bus drivers without having more i2c device drivers added to my
+>> plate. These days I am trying to _empty_ drivers/i2c/chips, if anything.
+>>     
+I can certainly see your point there. 
+>
+> 100% ACK. And the functionality here is something like "industrial
+> control" or "automation I/O".
+Hmm.. Going to be interesting coming up with a name!   Guess that can 
+come at a
+later stage anyway.
+>  If this sort of hardware appears as device
+> with mappable memory, we can handle it with UIO, but for SPI, I2C, USB,
+> serial, we should have a new subsystem. It should handle not only input,
+> but also similar output devices. It doesn't make sense to have ADCs in
+> one subsystem, and DACs in a different one.
+>   
+Definitely agreed that it makes sense to put DACs and ADCs in the same 
+general place
+and obviously there are plenty of devices out there that do both.
+>>> * To place within the hwmon subsystem as this is probably closest.
+>>> (there is already at least one straight ADC driver in hwmon)
+>>>       
+>> Probably not the wisest choice, if nothing else, because the hwmon
+>> maintainer is already overloaded. And I don't think that these devices
+>> have much in common with the traditional hardware monitoring components
+>> anyway.
+>>     
+>
+> Agreed, hwmon devices are not really tuned for maximum performance, for
+> example. Performance is often critical in automation control
+> applications.
+>   
+It would indeed by stretching the point to make drivers in that 
+subsystem have more performance
+critical drivers!  We seem to have a consensus that neither hwmon or 
+i2c/chips is good idea.
+>> I'm not sure what "straight ADC driver" you are referring to, but
+>> anything which measures a voltage and exports the reading to user-space
+>> is, well, a voltage sensor, and thus fix within hwmon. If the same chip
+>> is used for a higher-level, dedicated function then we would probably
+>> have a separate driver for it, outside of hwmon.
+>>
+>>     
+>>> * To create a new subsystem, or perhaps merely sysfs class to contain these
+>>>   elements.
+>>>       
+>> Would be OK.
+>>     
+> Definitely.
+>
+>   
+>> Or:
+>>
+>> * Place these within the input subsystem. You might want to discuss
+>> this with the input subsystem maintainer Dmitry Torokhov (Cc'd). The
+>> Wii remote is essentially a joystick, and joysticks belong to the input
+>> subsystem.
+>>     
+>
+> This might apply to some devices, but not all. And the requirements are
+> quite different, I think.
+>   
+Although I don't know much about the input subsystem it doesn't seem 
+likely that all the devices
+we are considering would share all that much functionality with the 
+devices in there, particularly if
+as you have suggested, we include DACs.  
+>> This all sounds quite different from our hwmon drivers. Our hwmon
+>> drivers read all the sensor values at once and cache the readings for a
+>> couple seconds, so you can't get an instant reading at any time, and
+>> they also don't support interrupts in general.
+>>     
+>
+> Exactly.
+>   
+Ok, so the consensus so far is we are looking at a new subsystem.  Will 
+give this a few more days
+on the lists, then if the consensus is still heading that way, I'll have 
+a think about exact functionality
+this would need.  I guess it would be something that would probably 
+evolve for some time, centered
+around an initial half dozen or so drivers.
 
-are stripped.
+Thanks for all your comments,
 
->From netfilter.h:
-#ifdef __KERNEL__
-#include <linux/init.h>
-#include <linux/types.h>
-#include <linux/skbuff.h>
-#include <linux/net.h>
-#include <linux/netdevice.h>
-#include <linux/if.h>
-#include <linux/in.h>
-#include <linux/in6.h>
-#include <linux/wait.h>
-#include <linux/list.h>
-#include <net/net_namespace.h>
-#endif
+--
+Jonathan Cameron
 
-Include of types.h should be outside the #ifdef block.
-
-	Sam
