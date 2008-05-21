@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932916AbYEUKmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYEUKmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932916AbYEUKmb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 06:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932922AbYEUKmH
+	id S1759974AbYEUKmv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 06:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932610AbYEUKmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 06:42:07 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:35309 "EHLO
+	Wed, 21 May 2008 06:42:16 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:35330 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932610AbYEUKlu (ORCPT
+	with ESMTP id S932855AbYEUKmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 06:41:50 -0400
-Date: Wed, 21 May 2008 12:41:45 +0200
+	Wed, 21 May 2008 06:42:01 -0400
+Date: Wed, 21 May 2008 12:41:53 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Jonathan Corbet <corbet@lwn.net>
+To: Francis Moreau <francis.moro@gmail.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Tracking and crediting bug reporters
-Message-ID: <20080521104145.GB4948@ucw.cz>
-References: <4388.1210613272@vena.lwn.net>
+Subject: Re: How to avoid data copies in a driver ?
+Message-ID: <20080521104153.GC4948@ucw.cz>
+References: <38b2ab8a0805141254i2437a0ccq130b914748f53db0@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4388.1210613272@vena.lwn.net>
+In-Reply-To: <38b2ab8a0805141254i2437a0ccq130b914748f53db0@mail.gmail.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> So here's what we would like to try instead.  Whenever somebody sends up a
-> patch fixing a reported bug, the name of the person who reported the bug
-> would be immortalized with this tag:
+On Wed 2008-05-14 21:54:03, Francis Moreau wrote:
+> Hello,
 > 
-> 	Reported-by: A. Bug Reporter <email@goes.here>
+> I'd like to optimize my driver, which receives data through a fifo and gives
+> them to a user space application. In turns this application moves this data
+> into a file.
 > 
-> In particular, reporters who work with the developers toward the resolution
-> of the bug should be thanked in this way.  If we wanted to take things
+> To avoid several useless copies, I'd like the application to pass to the driver
+> a  file descriptor (?) to  the driver and then the driver can directly move the
+> received data to that file.
+> 
+> Could anybody give me some example of such scheme ?
 
-I believe we have enough tags already. Plus, if the reporter really
-works with the developer till the end, there's already accepter
-Tested-by: flag, right?
+man splice?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
