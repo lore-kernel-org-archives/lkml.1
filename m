@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbYEUEhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbYEUEjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488AbYEUEhz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 00:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYEUEhr
+	id S1758950AbYEUEjy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 00:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYEUEjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 00:37:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54248 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751336AbYEUEhq (ORCPT
+	Wed, 21 May 2008 00:39:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46859 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751503AbYEUEjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 00:37:46 -0400
-Date: Tue, 20 May 2008 21:36:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       wim@iguana.be, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 18/57] iTCO: unlocked_ioctl, coding style and cleanup
-Message-Id: <20080520213654.a25d286e.akpm@linux-foundation.org>
-In-Reply-To: <200805211426.16234.rusty@rustcorp.com.au>
-References: <20080519124659.31722.51847.stgit@core>
-	<20080519130625.31722.68489.stgit@core>
-	<20080520012658.274b0c1e.akpm@linux-foundation.org>
-	<200805211426.16234.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 00:39:44 -0400
+Date: Tue, 20 May 2008 21:37:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: akpm@linux-foundation.org, matthew@wil.cx, kay.sievers@vrfy.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3][-mm] reclassify the sg_sysfs_class mutex
+Message-ID: <20080521043720.GB8950@kroah.com>
+References: <20080520095851.GB3201@darkstar.te-china.tietoenator.com> <20080520172259.GB11666@kroah.com> <a8e1da0805201825w4c8e35d7o55db8af9e04981df@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0805201825w4c8e35d7o55db8af9e04981df@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 14:26:15 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> > decent-sized smashup during the merge window.  There are lessons
-> > here...
+On Wed, May 21, 2008 at 09:25:58AM +0800, Dave Young wrote:
+> On Wed, May 21, 2008 at 1:22 AM, Greg KH <greg@kroah.com> wrote:
+> > On Tue, May 20, 2008 at 05:58:51PM +0800, Dave Young wrote:
+> >> [Please first apply the patch 1/3 before this]
+> >>
+> >> To please lockdep here we use class_reclassify to change
+> >> the lock class of sg_sysfs_class
+> >
+> > Are you suggesting we do this for every struct class in the kernel?  If
+> > so, why not just do it in the class core, instead of having to modify
+> > every single caller?
 > 
-> I've been pulling out s/down_trylock/down_nowait/ patches which effect others' 
-> changes.  Those patches get moved to the end of my queue, and I'll revisit 
-> them before an actual merge with Linus.
-> 
-> As down_trylock still works (but marked deprecated) with my patches, they're 
-> fine to drop.  Just tell me which ones...
+> I don't think it necessary to do this for every class, because only
+> class_interface_* calls could cause the issue, and the
+> class_interface_* are only used by pcmcia & scsi, do you think there
+> will be other users of them?
 
-Well, a simple patch which does
+I do not know, there might be in the future.
 
-/*
- * comment goes here
- */
-static inline int __must_check down_nowait(struct semaphore *sem)
-{
-	return !down_trylock(sem);
-}
+thanks,
 
-and which does not deprecate down_trylock() could go into mainline
-right now, (assuming that the overall concept doesn't get shot down in
-review - did it get reviewed?)
-
-Then you can start trickling stuff out to people straight away.
+greg k-h
