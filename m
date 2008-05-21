@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935845AbYEUQSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935465AbYEUQW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935845AbYEUQSY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 12:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760583AbYEUQSJ
+	id S935465AbYEUQW6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 12:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765015AbYEUQWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 12:18:09 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:51390 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759519AbYEUQSH (ORCPT
+	Wed, 21 May 2008 12:22:50 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:57317 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764120AbYEUQWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 12:18:07 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5299"; a="3297899"
-Message-ID: <48344B3D.5010404@qualcomm.com>
-Date: Wed, 21 May 2008 09:18:05 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 21 May 2008 12:22:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=J5lyy8rJi7ACBa3rDWCcuBRNjICC2UVPwp4jHFp5aPtw2MTiBsaoXpsIC+dPieUR2Gbpnbpv1xkcXjcj3QvfxljXl2rpyxnizzUYXxZ+jqzeXOTH17CFnRInvKKVe3Ag5h732ygXfU8s82EAVyC3zApisjxmfQ6RcupddRJ1aZo=
+Message-ID: <8bd0f97a0805210922n2dc871b6y67377944cc60b566@mail.gmail.com>
+Date: Wed, 21 May 2008 12:22:46 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Jonathan Corbet" <corbet@lwn.net>
+Subject: Re: [PATCH 1/3, RFC] misc char dev BKL pushdown
+Cc: "Arnd Bergmann" <arnd@arndb.de>, "Wu, Bryan" <Bryan.Wu@analog.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Alexander Viro" <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <9968.1211325938@vena.lwn.net>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Paul Jackson <pj@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       menage@google.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: IRQ affinities
-References: <47D73086.2030008@qualcomm.com>	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	<47D7411E.1000009@qualcomm.com>	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>	<47D74595.4080100@qualcomm.com>	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>	<20080311235939.1ebee8e3.pj@sgi.com>	<47D81FE1.6030205@qualcomm.com>	<20080312135746.89456f2a.pj@sgi.com>	<47D82AD2.1070108@qualcomm.com>	<20080312143253.3dd72c7f.pj@sgi.com>	<47D83858.4030806@qualcomm.com>	<20080312153712.bc5df7a1.pj@sgi.com>	<47D8593A.6040503@qualcomm.com>	<20080312183059.6716d630.pj@sgi.com>	<47D87BE5.4010702@qualcomm.com>	<20080313020300.92244956.pj@sgi.com>	<47FE5655.10900@qualcomm.com>	<20080414133902.7878cfce.pj@sgi.com>	<1210329926.13978.224.camel@twins>	<20080509061727.5057de1f.pj@sgi.com>	<48337792.20606@qualcomm.com> <20080520214523.60323aae@infradead.org>
-In-Reply-To: <20080520214523.60323aae@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8bd0f97a0805201601h1b08df6fw3fbf6c58759b07b4@mail.gmail.com>
+	 <9968.1211325938@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 20 May 2008 18:14:58 -0700
-> Max Krasnyanskiy <maxk@qualcomm.co
-> 
->> For the IRQs specifically all I need is to be able to tell the kernel
->> to not route IRQs to certain CPUs. That's mostly works already via 
->> /proc/irq/N/smp_affinity, the problem is dynamically allocated irqs
->> because /proc/irq/N directory does not exist until those IRQs are
->> allocated/enabled.
-> \\
-> 
-> why don't you tell irqbalance instead? it'll make sure the irq stays
-> out of the wind...
-> 
+On Tue, May 20, 2008 at 7:25 PM, Jonathan Corbet wrote:
+> Mike Frysinger wrote:
+>> please drop the coreb.c changes from your patch
+>
+> At a minimum, I would hope such a request would say something like "I've
+> looked at the driver's locking and am convinced that the BKL is not
+> needed."  Have you done that?  There is a certain leap of faith involved
+> in removing that protection from a driver.
+>
+> I decided to take a quick look...
+>
+> - You use spin_lock_irq(&coreb_lock) in a number of places, but you do
+>  not take the lock in the interrupt handler.  You also do not take the
+>  lock in coreb_write() or coreb_read(), so those can race with the
+>  interrupt handler, with ioctl(), and with each other.
 
-That will be too late. By the time irqbalance sees that IRQ it may have 
-already fired (possibly several times) on the "wrong" processor.
+the lock is to protect one thing: coreb_status.  we lock around any
+access to it, so it not being grabbed in the irq handler or any other
+function where coreb_status is not utilized is irrelevant.  that means
+the BKL is not needed in the driver.
 
-Max
-
+the rest of your comments are more or less on target, but again
+irrelevant to the topic of the BKL.  i'll keep them in mind when i
+rewrite the driver, thanks.
+-mike
