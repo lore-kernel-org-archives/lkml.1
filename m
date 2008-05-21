@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933348AbYEUCC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765032AbYEUCF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933348AbYEUCC3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 22:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbYEUCCU
+	id S1765032AbYEUCF7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 22:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbYEUCFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 22:02:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33082 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756402AbYEUCCT (ORCPT
+	Tue, 20 May 2008 22:05:48 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:40808 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756687AbYEUCFq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 22:02:19 -0400
-Date: Tue, 20 May 2008 19:02:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] or51132.c: unaligned
-In-Reply-To: <20080521011843.GH28946@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.10.0805201856200.3081@woody.linux-foundation.org>
-References: <E1JycGV-0004yJ-SP@ZenIV.linux.org.uk> <1211330472.5915.228.camel@brick> <20080521004548.GD28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0805201752230.3081@woody.linux-foundation.org> <20080521011843.GH28946@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 20 May 2008 22:05:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=We0t2GtWzkXC21LbpqDnR5TiiFxUUlou4r1ZFFQdBssqLdR+1qZssW0EOmVK6o5N7RONw0D7k74G1qSptbGBaYY8fj1mlzeKtHQrRPByok0EgxYAJFP1Vfz/SfuY0sT1AU+OIj/4uTA7Nm1lsf2u+hNEXemCz0crocDfCXc2JAY=
+Message-ID: <a8e1da0805201905p4c74f309r4dc09ee919102a1d@mail.gmail.com>
+Date: Wed, 21 May 2008 10:05:42 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
+Cc: "Matthew Wilcox" <matthew@wil.cx>, greg@kroah.com, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080520122356.63bd0000.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
+	 <20080520030232.fc91b64e.akpm@linux-foundation.org>
+	 <a8e1da0805200405t10fae448w589449e75a5abec6@mail.gmail.com>
+	 <20080520103045.2bb0a033.akpm@linux-foundation.org>
+	 <20080520173640.GP2638@parisc-linux.org>
+	 <20080520122356.63bd0000.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 21, 2008 at 3:23 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 20 May 2008 11:36:41 -0600
+> Matthew Wilcox <matthew@wil.cx> wrote:
+>
+>> On Tue, May 20, 2008 at 10:30:45AM -0700, Andrew Morton wrote:
+>> > Well what are these lockdep warnings?  Normally such a warning means that
+>> > we have a locking bug. I _assume_ that you've determined that the warnings
+>> > are false-positives?
+>>
+>> Andrew, we already discussed this on the thread you started that you
+>> then ignored ...
+>
+> rofl.
+>
+> All pertinent information should be in a patch's changelog.  Then this
+> sort of confusion will not occur.
 
+My wrong. should do this in advance.
 
-On Wed, 21 May 2008, Al Viro wrote:
-> 
-> FWIW, I wonder how they really compare on misaligned and whether it would
-> make sense for gcc to try and generate a single load on targets that are
-> known to allow that...
-
-It would almost certainly help on x86. The cost of an unaligned integer 
-access that doesn't cross a cache-fetch boundary (8 bytes on older CPU's, 
-16 or 32 bytes on newer ones) is zero, last I saw. IOW, there are 
-misaligned cases that have a higher cost, but they are pretty rare, and 
-especially so with small data and modern CPU's.
-
-So no disadvantage for 95% of all cases, and the advantage of doing just a 
-single instruction, rather than four (2 zero-extending loads, a shift and 
-an add/or, with data dependencies on most of them).
-
-			Linus
+>
+>> > The warning which Mariusz Kozlowski discovered ("Subject: Re:
+>> > 2.6.26-rc2-mm1: possible circular locking dependency detected") was
+>> > triggered by the "class semaphore to mutex" conversion and it looks
+>> > like a real bug to me.  Would your patch prevent warnings such as that
+>> > one from being available to us?
+>>
+>> The problem is that you add one type of class which then adds devices
+>> that are of another class.  This is not a bug.  My proposal is to give
+>> each sysfs class its own lock class; Dave's is to only do it for the
+>> two classes he knows about that do this.
+>
+> Well that sounds reasonable.  I'm not sure that we should introduce
+> generic-looking helper infrastructure to do it, however.
+>
+> Anyway I'll happily sit back and let you guys and Greg sort this one out ;)
+>
