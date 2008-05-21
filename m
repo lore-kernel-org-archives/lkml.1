@@ -1,123 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934106AbYEUMPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934164AbYEUMTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934106AbYEUMPM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 08:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760351AbYEUMO7
+	id S934164AbYEUMTB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 08:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761864AbYEUMSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 08:14:59 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:39558 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759429AbYEUMO6 (ORCPT
+	Wed, 21 May 2008 08:18:52 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:19665 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761633AbYEUMSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 08:14:58 -0400
-Message-ID: <483410BE.1010905@suse.de>
-Date: Wed, 21 May 2008 16:08:30 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Wed, 21 May 2008 08:18:51 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-2.tower-164.messagelabs.com!1211372328!8508732!3
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Wed, 21 May 2008 14:09:06 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+CC: "Hans J. Koch" <hjk@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       <lethal@linux-sh.org>, <gregkh@suse.de>, <linux-sh@vger.kernel.org>
+Subject: Re: [PATCH 00/03][RFC] Reusable UIO Platform Driver
+Message-ID: <20080521120906.GA27413@digi.com>
+References: <20080520105132.1474.73941.sendpatchset@rx1.opensource.se> <20080520210713.GE3220@local> <aec7e5c30805202031x62b3b463lfde0b9e7eb32d35@mail.gmail.com> <20080521064938.GA11580@digi.com> <aec7e5c30805210109p664fd917r32f8dc6aa1c4c746@mail.gmail.com> <20080521092533.GB29607@digi.com> <aec7e5c30805210350l41b537c3n70cfef2e10b54548@mail.gmail.com> <20080521110416.GA10407@digi.com> <aec7e5c30805210456r6f09b1a4sfef5bcefc82f5ba6@mail.gmail.com>
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Sony laptop battery has odd behavior with 2.6.26-rc3ish build.
-References: <20080521115723.GF4287@sgi.com>
-In-Reply-To: <20080521115723.GF4287@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aec7e5c30805210456r6f09b1a4sfef5bcefc82f5ba6@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 21 May 2008 12:09:06.0760 (UTC) FILETIME=[77CF5480:01C8BB3B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Could you please open bug report at bugzilla.kernel.org under ACPI/Battery and
-attach all the information to it?
-dmesg might be helpful too.
+Magnus Damm wrote:
+> Would you like to fold in the irq_handler and irq_enable function in
+> your patch, or would you like me to make a patch that fits on top of
+> your latest version?
+I would prefer the latter, because my patch already has acks and is
+complete as such.  Moreover your suggestion needs the irq_enable patch.
 
-Thanks,
-Alex.
-Robin Holt wrote:
-> A couple days ago, I updated my test build to commit
-> 8033c6e9736c29cce5f0d0abbca9a44dffb20c39 and noticed an odd behavior
-> with the battery.  If I unplug the power, the battery discharges and
-> that is reflected in /proc/acpi/battery/BAT0/state.  I am not certain
-> the discharge is continuous and uniform or if it goes in steps.  When I
-> plug the power back in, the level stays at a constant value (+-1mAh)
-> for a considerable period of time.  It then does a single step back to
-> the fully charged value.
-> 
-> I have not done any searching to see when this began.  I had been running
-> the ubuntu 2.6.22-14 kernel before this and the behavior was normal.
-> 
-> I am not certain what information you will need.  Commit is above.
-> 
-> $ cat /proc/acpi/battery/BAT0/alarm
-> alarm:                   unsupported
-> $ cat /proc/acpi/battery/BAT0/info
-> present:                 yes
-> design capacity:         4800 mAh
-> last full capacity:      4096 mAh
-> battery technology:      non-rechargeable
-> design voltage:          12588 mV
-> design capacity warning: 1000 mAh
-> design capacity low:     400 mAh
-> capacity granularity 1:  100 mAh
-> capacity granularity 2:  100 mAh
-> model number:            
-> serial number:           
-> battery type:            LiOn
-> OEM info:                Sony Corp.
-> $ cat /proc/acpi/battery/BAT0/state
-> present:                 yes
-> capacity state:          ok
-> charging state:          charging
-> present rate:            unknown
-> remaining capacity:      4096 mAh
-> present voltage:         unknown
-> 
-> What I think is relevant .config information:
-> CONFIG_ACPI=y
-> CONFIG_ACPI_SLEEP=y
-> CONFIG_ACPI_PROCFS=y
-> CONFIG_ACPI_PROCFS_POWER=y
-> CONFIG_ACPI_SYSFS_POWER=y
-> CONFIG_ACPI_PROC_EVENT=y
-> CONFIG_ACPI_AC=m
-> CONFIG_ACPI_BATTERY=m
-> CONFIG_ACPI_BUTTON=m
-> CONFIG_ACPI_VIDEO=m
-> CONFIG_ACPI_FAN=m
-> CONFIG_ACPI_DOCK=m
-> CONFIG_ACPI_BAY=m
-> CONFIG_ACPI_PROCESSOR=m
-> CONFIG_ACPI_HOTPLUG_CPU=y
-> CONFIG_ACPI_THERMAL=m
-> CONFIG_ACPI_WMI=m
-> CONFIG_ACPI_ASUS=m
-> CONFIG_ACPI_TOSHIBA=m
-> # CONFIG_ACPI_CUSTOM_DSDT is not set
-> CONFIG_ACPI_BLACKLIST_YEAR=2000
-> # CONFIG_ACPI_DEBUG is not set
-> CONFIG_ACPI_EC=y
-> CONFIG_ACPI_POWER=y
-> CONFIG_ACPI_SYSTEM=y
-> CONFIG_ACPI_CONTAINER=m
-> CONFIG_ACPI_SBS=m
-> CONFIG_X86_ACPI_CPUFREQ=m
-> CONFIG_X86_POWERNOW_K7_ACPI=y
-> CONFIG_X86_POWERNOW_K8_ACPI=y
-> # CONFIG_X86_ACPI_CPUFREQ_PROC_INTF is not set
-> CONFIG_HOTPLUG_PCI_ACPI=m
-> CONFIG_HOTPLUG_PCI_ACPI_IBM=m
-> CONFIG_PNPACPI=y
-> CONFIG_THINKPAD_ACPI=m
-> # CONFIG_THINKPAD_ACPI_DEBUG is not set
-> CONFIG_THINKPAD_ACPI_BAY=y
-> CONFIG_THINKPAD_ACPI_VIDEO=y
-> CONFIG_THINKPAD_ACPI_HOTKEY_POLL=y
-> CONFIG_BLK_DEV_IDEACPI=y
-> CONFIG_ATA_ACPI=y
-> CONFIG_PATA_ACPI=m
-> CONFIG_SONY_LAPTOP=m
-> CONFIG_SONYPI_COMPAT=y
-> CONFIG_SONYPI=m
-> 
-> Thanks,
-> Robin Holt
+Best regards
+Uwe
 
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
