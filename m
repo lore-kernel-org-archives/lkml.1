@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935693AbYEUDpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935664AbYEUDpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935693AbYEUDpB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 23:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933149AbYEUDeS
+	id S935664AbYEUDpk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 23:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934105AbYEUDeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 23:34:18 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44154 "EHLO
+	Tue, 20 May 2008 23:34:22 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44156 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765795AbYEUDdM (ORCPT
+	with ESMTP id S1765981AbYEUDdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 May 2008 23:33:12 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [AUFS PATCH v2.6.26-rc2-mm1 19/39] aufs dentry (except lookup)
-Date: Wed, 21 May 2008 12:22:49 +0900
-Message-Id: <1211340189-11813-20-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [AUFS PATCH v2.6.26-rc2-mm1 23/39] aufs virtual or vertical(stacked) directory
+Date: Wed, 21 May 2008 12:22:53 +0900
+Message-Id: <1211340189-11813-24-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.5.5.1.308.g1fbb5.dirty
 In-Reply-To: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -26,22 +26,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 initial commit
-dentry operations and private data
+main readdir function
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/dentry.h |  381 ++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/aufs/dinfo.c  |  409 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 790 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/dentry.h
- create mode 100644 fs/aufs/dinfo.c
+ fs/aufs/vdir.c |  928 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 928 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/vdir.c
 
-diff --git a/fs/aufs/dentry.h b/fs/aufs/dentry.h
+diff --git a/fs/aufs/vdir.c b/fs/aufs/vdir.c
 new file mode 100644
-index 0000000..87afc1b
+index 0000000..6371160
 --- /dev/null
-+++ b/fs/aufs/dentry.h
-@@ -0,0 +1,381 @@
++++ b/fs/aufs/vdir.c
+@@ -0,0 +1,928 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -61,782 +59,914 @@ index 0000000..87afc1b
 + */
 +
 +/*
-+ * lookup and dentry operations
-+ */
-+
-+#ifndef __AUFS_DENTRY_H__
-+#define __AUFS_DENTRY_H__
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/fs.h>
-+#include <linux/namei.h>
-+#include <linux/aufs_type.h>
-+#include "misc.h"
-+#include "super.h"
-+#include "vfsub.h"
-+
-+/* nameidata open_intent */
-+enum {
-+	AuIntent_AUFS,
-+	AuIntent_BRANCH,
-+	AuIntent_Last
-+};
-+
-+struct au_hdintent {
-+	struct list_head	hdi_list;
-+	struct file		*hdi_file[AuIntent_Last];
-+};
-+
-+struct au_hdentry {
-+	struct dentry		*hd_dentry;
-+
-+#ifdef CONFIG_AUFS_BR_NFS
-+	spinlock_t		hd_lock; /* intest_list */
-+	struct list_head	*hd_intent_list;
-+#endif
-+};
-+
-+struct au_dinfo {
-+	atomic_t		di_generation;
-+
-+	struct au_rwsem		di_rwsem;
-+	aufs_bindex_t		di_bstart, di_bend, di_bwh, di_bdiropq;
-+	struct au_hdentry	*di_hdentry;
-+};
-+
-+/* nameidata extension flags */
-+#define AuNdx_DLGT	1
-+#define AuNdx_DIRPERM1	(1 << 1)
-+#define au_ftest_ndx(flags, name)	((flags) & AuNdx_##name)
-+#define au_fset_ndx(flags, name)	{ (flags) |= AuNdx_##name; }
-+#define au_fclr_ndx(flags, name)	{ (flags) &= ~AuNdx_##name; }
-+#ifndef CONFIG_AUFS_DLGT
-+#undef AuNdx_DLGT
-+#define AuNdx_DLGT	0
-+#undef AuNdx_DIRPERM1
-+#define AuNdx_DIRPERM1	0
-+#endif
-+
-+struct au_ndx {
-+	struct vfsmount *nfsmnt;
-+	unsigned int flags;
-+	struct nameidata *nd;
-+	struct au_branch *br;
-+	struct file *nd_file;
-+};
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static inline void au_do_h_dentry_init(struct au_hdentry *hdentry)
-+{
-+	hdentry->hd_dentry = NULL;
-+}
-+
-+#ifdef CONFIG_AUFS_BR_NFS
-+static inline void au_h_dentry_init(struct au_hdentry *hdentry)
-+{
-+	au_do_h_dentry_init(hdentry);
-+	spin_lock_init(&hdentry->hd_lock);
-+}
-+
-+static inline void au_h_dentry_init_all(struct au_hdentry *hdentry, int n)
-+{
-+	while (n--)
-+		spin_lock_init(&hdentry[n].hd_lock);
-+}
-+
-+/* br_nfs.c */
-+struct file *au_h_intent(struct dentry *dentry, aufs_bindex_t bindex,
-+			 struct file *file);
-+int au_br_nfs_h_intent(struct file *nd_file, struct dentry *dentry,
-+		       aufs_bindex_t bindex, struct nameidata *nd);
-+void au_hintent_put(struct au_hdentry *hd, int do_free);
-+int au_fake_intent(struct nameidata *nd, int perm);
-+int au_hin_after_reval(struct nameidata *nd, struct dentry *dentry,
-+		       aufs_bindex_t bindex, struct file *file);
-+struct dentry *au_lkup_hash(const char *name, struct dentry *parent, int len,
-+			    struct au_ndx *ndx);
-+#else
-+
-+static inline void au_h_dentry_init(struct au_hdentry *hdentry)
-+{
-+	au_do_h_dentry_init(hdentry);
-+}
-+
-+static inline void au_h_dentry_init_all(struct au_hdentry *hdentry, int n)
-+{
-+	/* nothing */
-+}
-+
-+static inline
-+struct file *au_h_intent(struct dentry *dentry, aufs_bindex_t bindex,
-+			 struct file *file)
-+{
-+	/* return ERR_PTR(-ENOSYS); */
-+	return NULL;
-+}
-+
-+static inline
-+int au_br_nfs_h_intent(struct file *nd_file, struct dentry *dentry,
-+		       aufs_bindex_t bindex, struct nameidata *nd)
-+{
-+	return 0;
-+}
-+
-+static inline void au_hintent_put(struct au_hdentry *hd, int do_free)
-+{
-+	/* empty */
-+}
-+
-+static inline int au_fake_intent(struct nameidata *nd, int perm)
-+{
-+	return 0;
-+}
-+
-+static inline
-+int au_hin_after_reval(struct nameidata *nd, struct dentry *dentry,
-+		       aufs_bindex_t bindex, struct file *file)
-+{
-+	return 0;
-+}
-+
-+#ifdef CONFIG_AUFS_DLGT
-+static inline
-+struct dentry *au_lkup_hash(const char *name, struct dentry *parent, int len,
-+			    struct au_ndx *ndx)
-+{
-+	/* return ERR_PTR(-ENOSYS); */
-+	return vfsub_lookup_one_len(name, parent, len);
-+}
-+#endif
-+#endif /* CONFIG_AUFS_BR_NFS */
-+
-+#ifdef CONFIG_AUFS_DLGT
-+/* dlgt.c */
-+struct dentry *au_lkup_one_dlgt(const char *name, struct dentry *parent,
-+				int len, unsigned int flags);
-+#elif defined(CONFIG_AUFS_BR_NFS)
-+/* regardelss kernel version */
-+static inline
-+struct dentry *au_lkup_one_dlgt(const char *name, struct dentry *parent,
-+				int len, unsigned int flags)
-+{
-+	return vfsub_lookup_one_len(name, parent, len);
-+}
-+#endif
-+
-+/* dentry.c */
-+extern struct dentry_operations aufs_dop;
-+#if defined(CONFIG_AUFS_BR_NFS) || defined(CONFIG_AUFS_DLGT)
-+struct dentry *au_lkup_one(const char *name, struct dentry *parent, int len,
-+			   struct au_ndx *ndx);
-+#else
-+static inline
-+struct dentry *au_lkup_one(const char *name, struct dentry *parent, int len,
-+			   struct au_ndx *ndx)
-+{
-+	/* todo? ndx->nd_file = NULL; */
-+	return vfsub_lookup_one_len(name, parent, len);
-+}
-+#endif
-+struct dentry *au_sio_lkup_one(const char *name, struct dentry *parent, int len,
-+			       struct au_ndx *ndx);
-+int au_lkup_dentry(struct dentry *dentry, aufs_bindex_t bstart, mode_t type,
-+		   struct nameidata *nd);
-+int au_lkup_neg(struct dentry *dentry, aufs_bindex_t bindex);
-+int au_refresh_hdentry(struct dentry *dentry, mode_t type);
-+int au_reval_dpath(struct dentry *dentry, au_gen_t sgen);
-+
-+/* dinfo.c */
-+int au_alloc_dinfo(struct dentry *dentry);
-+struct au_dinfo *au_di(struct dentry *dentry);
-+
-+void di_read_lock(struct dentry *d, int flags, unsigned int lsc);
-+void di_read_unlock(struct dentry *d, int flags);
-+void di_downgrade_lock(struct dentry *d, int flags);
-+void di_write_lock(struct dentry *d, unsigned int lsc);
-+void di_write_unlock(struct dentry *d);
-+void di_write_lock2_child(struct dentry *d1, struct dentry *d2, int isdir);
-+void di_write_lock2_parent(struct dentry *d1, struct dentry *d2, int isdir);
-+void di_write_unlock2(struct dentry *d1, struct dentry *d2);
-+
-+struct dentry *au_h_dptr(struct dentry *dentry, aufs_bindex_t bindex);
-+
-+aufs_bindex_t au_dbtail(struct dentry *dentry);
-+aufs_bindex_t au_dbtaildir(struct dentry *dentry);
-+#if 0 /* reserved for future use */
-+aufs_bindex_t au_dbtail_generic(struct dentry *dentry);
-+#endif
-+
-+void au_set_dbdiropq(struct dentry *dentry, aufs_bindex_t bindex);
-+void au_set_h_dptr(struct dentry *dentry, aufs_bindex_t bindex,
-+		   struct dentry *h_dentry);
-+
-+void au_update_dbrange(struct dentry *dentry, int do_put_zero);
-+void au_update_dbstart(struct dentry *dentry);
-+void au_update_dbend(struct dentry *dentry);
-+int au_find_dbindex(struct dentry *dentry, struct dentry *h_dentry);
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* todo: memory barrier? */
-+static inline au_gen_t au_digen(struct dentry *d)
-+{
-+	return atomic_read(&au_di(d)->di_generation);
-+}
-+
-+#ifdef CONFIG_AUFS_HINOTIFY
-+static inline au_gen_t au_digen_dec(struct dentry *d)
-+{
-+	return atomic_dec_return(&au_di(d)->di_generation);
-+}
-+#endif /* CONFIG_AUFS_HINOTIFY */
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* lock subclass for dinfo */
-+enum {
-+	AuLsc_DI_CHILD,		/* child first */
-+	AuLsc_DI_CHILD2,	/* rename(2), link(2), and cpup at hinotify */
-+	AuLsc_DI_CHILD3,	/* copyup dirs */
-+	AuLsc_DI_PARENT,
-+	AuLsc_DI_PARENT2,
-+	AuLsc_DI_PARENT3
-+};
-+
-+/*
-+ * di_read_lock_child, di_write_lock_child,
-+ * di_read_lock_child2, di_write_lock_child2,
-+ * di_read_lock_child3, di_write_lock_child3,
-+ * di_read_lock_parent, di_write_lock_parent,
-+ * di_read_lock_parent2, di_write_lock_parent2,
-+ * di_read_lock_parent3, di_write_lock_parent3,
-+ */
-+#define AuReadLockFunc(name, lsc) \
-+static inline void di_read_lock_##name(struct dentry *d, int flags) \
-+{ di_read_lock(d, flags, AuLsc_DI_##lsc); }
-+
-+#define AuWriteLockFunc(name, lsc) \
-+static inline void di_write_lock_##name(struct dentry *d) \
-+{ di_write_lock(d, AuLsc_DI_##lsc); }
-+
-+#define AuRWLockFuncs(name, lsc) \
-+	AuReadLockFunc(name, lsc) \
-+	AuWriteLockFunc(name, lsc)
-+
-+AuRWLockFuncs(child, CHILD);
-+AuRWLockFuncs(child2, CHILD2);
-+AuRWLockFuncs(child3, CHILD3);
-+AuRWLockFuncs(parent, PARENT);
-+AuRWLockFuncs(parent2, PARENT2);
-+AuRWLockFuncs(parent3, PARENT3);
-+
-+#undef AuReadLockFunc
-+#undef AuWriteLockFunc
-+#undef AuRWLockFuncs
-+
-+/* to debug easier, do not make them inlined functions */
-+#define DiMustReadLock(d) do { \
-+	SiMustAnyLock((d)->d_sb); \
-+	AuRwMustReadLock(&au_di(d)->di_rwsem); \
-+} while (0)
-+
-+#define DiMustWriteLock(d) do { \
-+	SiMustAnyLock((d)->d_sb); \
-+	AuRwMustWriteLock(&au_di(d)->di_rwsem); \
-+} while (0)
-+
-+#define DiMustAnyLock(d) do { \
-+	SiMustAnyLock((d)->d_sb); \
-+	AuRwMustAnyLock(&au_di(d)->di_rwsem); \
-+} while (0)
-+
-+#define DiMustNoWaiters(d)	AuRwMustNoWaiters(&au_di(d)->di_rwsem)
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static inline aufs_bindex_t au_dbstart(struct dentry *dentry)
-+{
-+	DiMustAnyLock(dentry);
-+	return au_di(dentry)->di_bstart;
-+}
-+
-+static inline aufs_bindex_t au_dbend(struct dentry *dentry)
-+{
-+	DiMustAnyLock(dentry);
-+	return au_di(dentry)->di_bend;
-+}
-+
-+static inline aufs_bindex_t au_dbwh(struct dentry *dentry)
-+{
-+	DiMustAnyLock(dentry);
-+	return au_di(dentry)->di_bwh;
-+}
-+
-+static inline aufs_bindex_t au_dbdiropq(struct dentry *dentry)
-+{
-+	DiMustAnyLock(dentry);
-+	AuDebugOn(dentry->d_inode
-+		  && dentry->d_inode->i_mode
-+		  && !S_ISDIR(dentry->d_inode->i_mode));
-+	return au_di(dentry)->di_bdiropq;
-+}
-+
-+/* todo: hard/soft set? */
-+static inline void au_set_dbstart(struct dentry *dentry, aufs_bindex_t bindex)
-+{
-+	DiMustWriteLock(dentry);
-+	AuDebugOn(au_sbend(dentry->d_sb) < bindex);
-+	/* */
-+	au_di(dentry)->di_bstart = bindex;
-+}
-+
-+static inline void au_set_dbend(struct dentry *dentry, aufs_bindex_t bindex)
-+{
-+	DiMustWriteLock(dentry);
-+	AuDebugOn(au_sbend(dentry->d_sb) < bindex
-+		  || bindex < au_dbstart(dentry));
-+	au_di(dentry)->di_bend = bindex;
-+}
-+
-+static inline void au_set_dbwh(struct dentry *dentry, aufs_bindex_t bindex)
-+{
-+	DiMustWriteLock(dentry);
-+	AuDebugOn(au_sbend(dentry->d_sb) < bindex);
-+	/* dbwh can be outside of bstart - bend range */
-+	au_di(dentry)->di_bwh = bindex;
-+}
-+
-+static inline void au_hdput(struct au_hdentry *hd, int do_free)
-+{
-+	au_hintent_put(hd, do_free);
-+	dput(hd->hd_dentry);
-+}
-+
-+static inline void au_update_digen(struct dentry *dentry)
-+{
-+	AuDebugOn(!dentry->d_sb);
-+	atomic_set(&au_di(dentry)->di_generation, au_sigen(dentry->d_sb));
-+	/* smp_mb(); */ /* atomic_set */
-+}
-+
-+#endif /* __KERNEL__ */
-+#endif /* __AUFS_DENTRY_H__ */
-diff --git a/fs/aufs/dinfo.c b/fs/aufs/dinfo.c
-new file mode 100644
-index 0000000..183efe7
---- /dev/null
-+++ b/fs/aufs/dinfo.c
-@@ -0,0 +1,409 @@
-+/*
-+ * Copyright (C) 2005-2008 Junjiro Okajima
-+ *
-+ * This program, aufs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+/*
-+ * dentry private data
++ * virtual or vertical directory
 + */
 +
 +#include "aufs.h"
 +
-+int au_alloc_dinfo(struct dentry *dentry)
++static int calc_size(int namelen)
 +{
-+	struct au_dinfo *dinfo;
-+	struct super_block *sb;
-+	int nbr;
++	int sz;
 +
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+	AuDebugOn(dentry->d_fsdata);
-+
-+	dinfo = au_cache_alloc_dinfo();
-+	if (dinfo) {
-+		sb = dentry->d_sb;
-+		nbr = au_sbend(sb) + 1;
-+		if (unlikely(nbr <= 0))
-+			nbr = 1;
-+		dinfo->di_hdentry = kcalloc(nbr, sizeof(*dinfo->di_hdentry),
-+					    GFP_KERNEL);
-+		if (dinfo->di_hdentry) {
-+			au_h_dentry_init_all(dinfo->di_hdentry, nbr);
-+			atomic_set(&dinfo->di_generation, au_sigen(sb));
-+			/* smp_mb(); */ /* atomic_set */
-+			au_rw_init_wlock_nested(&dinfo->di_rwsem,
-+						AuLsc_DI_PARENT);
-+			dinfo->di_bstart = -1;
-+			dinfo->di_bend = -1;
-+			dinfo->di_bwh = -1;
-+			dinfo->di_bdiropq = -1;
-+
-+			dentry->d_fsdata = dinfo;
-+			dentry->d_op = &aufs_dop;
-+			return 0; /* success */
++	sz = sizeof(struct au_vdir_de) + namelen;
++	if (sizeof(ino_t) == sizeof(long)) {
++		const int mask = sizeof(ino_t) - 1;
++		if (sz & mask) {
++			sz += sizeof(ino_t);
++			sz &= ~mask;
 +		}
-+		au_cache_free_dinfo(dinfo);
 +	}
-+	AuTraceErr(-ENOMEM);
-+	return -ENOMEM;
++
++	AuDebugOn(sz % sizeof(ino_t));
++	return sz;
 +}
 +
-+struct au_dinfo *au_di(struct dentry *dentry)
++static int set_deblk_end(union au_vdir_deblk_p *p,
++			 union au_vdir_deblk_p *deblk_end)
 +{
-+	struct au_dinfo *dinfo = dentry->d_fsdata;
-+	AuDebugOn(!dinfo
-+		 || !dinfo->di_hdentry
-+		 /* || au_sbi(dentry->d_sb)->si_bend < dinfo->di_bend */
-+		 || dinfo->di_bend < dinfo->di_bstart
-+		 /* dbwh can be outside of this range */
-+		 || (0 <= dinfo->di_bdiropq
-+		     && (dinfo->di_bdiropq < dinfo->di_bstart
-+			 /* || dinfo->di_bend < dinfo->di_bdiropq */))
-+		);
-+	return dinfo;
++	if (calc_size(0) <= deblk_end->p - p->p) {
++		p->de->de_str.len = 0;
++		/* smp_mb(); */
++		return 0;
++	}
++	return -1; /* error */
++}
++
++/* returns true or false */
++static int is_deblk_end(union au_vdir_deblk_p *p,
++			union au_vdir_deblk_p *deblk_end)
++{
++	if (calc_size(0) <= deblk_end->p - p->p)
++		return !p->de->de_str.len;
++	return 1;
++}
++
++static au_vdir_deblk_t *last_deblk(struct au_vdir *vdir)
++{
++	return vdir->vd_deblk[vdir->vd_nblk - 1];
++}
++
++void au_nhash_init(struct au_nhash *nhash)
++{
++	int i;
++	for (i = 0; i < AuSize_NHASH; i++)
++		INIT_HLIST_HEAD(nhash->heads + i);
++}
++
++struct au_nhash *au_nhash_new(gfp_t gfp)
++{
++	struct au_nhash *nhash;
++
++	nhash = kmalloc(sizeof(*nhash), gfp);
++	if (nhash) {
++		au_nhash_init(nhash);
++		return nhash;
++	}
++	return ERR_PTR(-ENOMEM);
++}
++
++void au_nhash_del(struct au_nhash *nhash)
++{
++	au_nhash_fin(nhash);
++	kfree(nhash);
++}
++
++void au_nhash_move(struct au_nhash *dst, struct au_nhash *src)
++{
++	int i;
++
++	AuTraceEnter();
++
++	*dst = *src;
++	for (i = 0; i < AuSize_NHASH; i++) {
++		struct hlist_head *h;
++		h = dst->heads + i;
++		if (h->first)
++			h->first->pprev = &h->first;
++		INIT_HLIST_HEAD(src->heads + i);
++	}
++	/* smp_mb(); */
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+static void do_ii_write_lock(struct inode *inode, unsigned int lsc)
++void au_nhash_fin(struct au_nhash *whlist)
 +{
-+	switch (lsc) {
-+	case AuLsc_DI_CHILD:
-+		ii_write_lock_child(inode);
-+		break;
-+	case AuLsc_DI_CHILD2:
-+		ii_write_lock_child2(inode);
-+		break;
-+	case AuLsc_DI_CHILD3:
-+		ii_write_lock_child3(inode);
-+		break;
-+	case AuLsc_DI_PARENT:
-+		ii_write_lock_parent(inode);
-+		break;
-+	case AuLsc_DI_PARENT2:
-+		ii_write_lock_parent2(inode);
-+		break;
-+	case AuLsc_DI_PARENT3:
-+		ii_write_lock_parent3(inode);
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
++	int i;
++	struct hlist_head *head;
++	struct au_vdir_wh *tpos;
++	struct hlist_node *pos, *n;
 +
-+static void do_ii_read_lock(struct inode *inode, unsigned int lsc)
-+{
-+	switch (lsc) {
-+	case AuLsc_DI_CHILD:
-+		ii_read_lock_child(inode);
-+		break;
-+	case AuLsc_DI_CHILD2:
-+		ii_read_lock_child2(inode);
-+		break;
-+	case AuLsc_DI_CHILD3:
-+		ii_read_lock_child3(inode);
-+		break;
-+	case AuLsc_DI_PARENT:
-+		ii_read_lock_parent(inode);
-+		break;
-+	case AuLsc_DI_PARENT2:
-+		ii_read_lock_parent2(inode);
-+		break;
-+	case AuLsc_DI_PARENT3:
-+		ii_read_lock_parent3(inode);
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+void di_read_lock(struct dentry *d, int flags, unsigned int lsc)
-+{
-+	SiMustAnyLock(d->d_sb);
-+	/* todo: always nested? */
-+	au_rw_read_lock_nested(&au_di(d)->di_rwsem, lsc);
-+	if (d->d_inode) {
-+		if (au_ftest_lock(flags, IW))
-+			do_ii_write_lock(d->d_inode, lsc);
-+		else if (au_ftest_lock(flags, IR))
-+			do_ii_read_lock(d->d_inode, lsc);
-+	}
-+}
-+
-+void di_read_unlock(struct dentry *d, int flags)
-+{
-+	SiMustAnyLock(d->d_sb);
-+	if (d->d_inode) {
-+		if (au_ftest_lock(flags, IW))
-+			ii_write_unlock(d->d_inode);
-+		else if (au_ftest_lock(flags, IR))
-+			ii_read_unlock(d->d_inode);
-+	}
-+	au_rw_read_unlock(&au_di(d)->di_rwsem);
-+}
-+
-+void di_downgrade_lock(struct dentry *d, int flags)
-+{
-+	SiMustAnyLock(d->d_sb);
-+	au_rw_dgrade_lock(&au_di(d)->di_rwsem);
-+	if (d->d_inode && au_ftest_lock(flags, IR))
-+		ii_downgrade_lock(d->d_inode);
-+}
-+
-+void di_write_lock(struct dentry *d, unsigned int lsc)
-+{
-+	SiMustAnyLock(d->d_sb);
-+	/* todo: always nested? */
-+	au_rw_write_lock_nested(&au_di(d)->di_rwsem, lsc);
-+	if (d->d_inode)
-+		do_ii_write_lock(d->d_inode, lsc);
-+}
-+
-+void di_write_unlock(struct dentry *d)
-+{
-+	SiMustAnyLock(d->d_sb);
-+	if (d->d_inode)
-+		ii_write_unlock(d->d_inode);
-+	au_rw_write_unlock(&au_di(d)->di_rwsem);
-+}
-+
-+void di_write_lock2_child(struct dentry *d1, struct dentry *d2, int isdir)
-+{
 +	AuTraceEnter();
-+	AuDebugOn(d1 == d2
-+		  || d1->d_inode == d2->d_inode
-+		  || d1->d_sb != d2->d_sb);
 +
-+	if (isdir && au_test_subdir(d1, d2)) {
-+		di_write_lock_child(d1);
-+		di_write_lock_child2(d2);
-+	} else {
-+		/* there should be no races */
-+		di_write_lock_child(d2);
-+		di_write_lock_child2(d1);
++	for (i = 0; i < AuSize_NHASH; i++) {
++		head = whlist->heads + i;
++		hlist_for_each_entry_safe(tpos, pos, n, head, wh_hash) {
++			/* hlist_del(pos); */
++			kfree(tpos);
++		}
 +	}
 +}
 +
-+void di_write_lock2_parent(struct dentry *d1, struct dentry *d2, int isdir)
++int au_nhash_test_longer_wh(struct au_nhash *whlist, aufs_bindex_t btgt,
++			    int limit)
 +{
-+	AuTraceEnter();
-+	AuDebugOn(d1 == d2
-+		  || d1->d_inode == d2->d_inode
-+		  || d1->d_sb != d2->d_sb);
++	int n, i;
++	struct hlist_head *head;
++	struct au_vdir_wh *tpos;
++	struct hlist_node *pos;
 +
-+	if (isdir && au_test_subdir(d1, d2)) {
-+		di_write_lock_parent(d1);
-+		di_write_lock_parent2(d2);
-+	} else {
-+		/* there should be no races */
-+		di_write_lock_parent(d2);
-+		di_write_lock_parent2(d1);
++	LKTRTrace("limit %d\n", limit);
++
++	n = 0;
++	for (i = 0; i < AuSize_NHASH; i++) {
++		head = whlist->heads + i;
++		hlist_for_each_entry(tpos, pos, head, wh_hash)
++			if (tpos->wh_bindex == btgt && ++n > limit)
++				return 1;
 +	}
++	return 0;
 +}
 +
-+void di_write_unlock2(struct dentry *d1, struct dentry *d2)
++static unsigned int au_name_hash(const unsigned char *name, unsigned int len)
 +{
-+	di_write_unlock(d1);
-+	if (d1->d_inode == d2->d_inode)
-+		au_rw_write_unlock(&au_di(d2)->di_rwsem);
-+	else
-+		di_write_unlock(d2);
++	return (full_name_hash(name, len) % AuSize_NHASH);
++}
++
++/* returns found(true) or not */
++int au_nhash_test_known_wh(struct au_nhash *whlist, char *name, int namelen)
++{
++	struct hlist_head *head;
++	struct au_vdir_wh *tpos;
++	struct hlist_node *pos;
++	struct au_vdir_destr *str;
++
++	LKTRTrace("%.*s\n", namelen, name);
++
++	head = whlist->heads + au_name_hash(name, namelen);
++	hlist_for_each_entry(tpos, pos, head, wh_hash) {
++		str = &tpos->wh_str;
++		LKTRTrace("%.*s\n", str->len, str->name);
++		if (str->len == namelen && !memcmp(str->name, name, namelen))
++			return 1;
++	}
++	return 0;
++}
++
++int au_nhash_append_wh(struct au_nhash *whlist, char *name, int namelen,
++		       ino_t ino, unsigned int d_type, aufs_bindex_t bindex,
++		       unsigned char shwh)
++{
++	int err;
++	struct au_vdir_destr *str;
++	struct au_vdir_wh *wh;
++
++	LKTRTrace("%.*s\n", namelen, name);
++
++	err = -ENOMEM;
++	wh = kmalloc(sizeof(*wh) + namelen, GFP_TEMPORARY);
++	if (unlikely(!wh))
++		goto out;
++	err = 0;
++	wh->wh_bindex = bindex;
++	if (unlikely(shwh))
++		au_shwh_init_wh(wh, ino, d_type);
++	str = &wh->wh_str;
++	str->len = namelen;
++	memcpy(str->name, name, namelen);
++	hlist_add_head(&wh->wh_hash,
++		       whlist->heads + au_name_hash(name, namelen));
++	/* smp_mb(); */
++
++ out:
++	AuTraceErr(err);
++	return err;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+struct dentry *au_h_dptr(struct dentry *dentry, aufs_bindex_t bindex)
++void au_vdir_free(struct au_vdir *vdir)
 +{
-+	struct dentry *d;
++	au_vdir_deblk_t **deblk;
 +
-+	DiMustAnyLock(dentry);
-+	if (au_dbstart(dentry) < 0 || bindex < au_dbstart(dentry))
-+		return NULL;
-+	AuDebugOn(bindex < 0
-+		  /* || bindex > au_sbend(dentry->d_sb) */);
-+	d = au_di(dentry)->di_hdentry[0 + bindex].hd_dentry;
-+	AuDebugOn(d && (atomic_read(&d->d_count) <= 0));
-+	return d;
-+}
++	AuTraceEnter();
 +
-+aufs_bindex_t au_dbtail(struct dentry *dentry)
-+{
-+	aufs_bindex_t bend, bwh;
-+
-+	bend = au_dbend(dentry);
-+	if (0 <= bend) {
-+		bwh = au_dbwh(dentry);
-+		if (!bwh)
-+			return bwh;
-+		if (0 < bwh && bwh < bend)
-+			return bwh - 1;
++	deblk = vdir->vd_deblk;
++	while (vdir->vd_nblk--) {
++		kfree(*deblk);
++		deblk++;
 +	}
-+	return bend;
++	kfree(vdir->vd_deblk);
++	au_cache_free_vdir(vdir);
 +}
 +
-+aufs_bindex_t au_dbtaildir(struct dentry *dentry)
++static int append_deblk(struct au_vdir *vdir)
 +{
-+	aufs_bindex_t bend, bopq;
++	int err, sz, i;
++	au_vdir_deblk_t **o;
++	union au_vdir_deblk_p p, deblk_end;
 +
-+	AuDebugOn(dentry->d_inode
-+		  && dentry->d_inode->i_mode
-+		  && !S_ISDIR(dentry->d_inode->i_mode));
++	AuTraceEnter();
 +
-+	bend = au_dbtail(dentry);
-+	if (0 <= bend) {
-+		bopq = au_dbdiropq(dentry);
-+		AuDebugOn(bend < bopq);
-+		if (0 <= bopq && bopq < bend)
-+			bend = bopq;
++	err = -ENOMEM;
++	sz = sizeof(*o) * vdir->vd_nblk;
++	o = au_kzrealloc(vdir->vd_deblk, sz, sz + sizeof(*o), GFP_KERNEL);
++	if (unlikely(!o))
++		goto out;
++	vdir->vd_deblk = o;
++	p.deblk = kmalloc(sizeof(*p.deblk), GFP_KERNEL);
++	if (p.deblk) {
++		i = vdir->vd_nblk++;
++		vdir->vd_deblk[i] = p.deblk;
++		vdir->vd_last.i = i;
++		vdir->vd_last.p.p = p.p;
++		deblk_end.deblk = p.deblk + 1;
++		err = set_deblk_end(&p, &deblk_end);
++		AuDebugOn(err);
 +	}
-+	return bend;
++
++ out:
++	AuTraceErr(err);
++	return err;
 +}
 +
++static struct au_vdir *alloc_vdir(void)
++{
++	struct au_vdir *vdir;
++	int err;
++
++	AuTraceEnter();
++
++	err = -ENOMEM;
++	vdir = au_cache_alloc_vdir();
++	if (unlikely(!vdir))
++		goto out;
++	vdir->vd_deblk = kzalloc(sizeof(*vdir->vd_deblk), GFP_KERNEL);
++	if (unlikely(!vdir->vd_deblk))
++		goto out_free;
++
++	vdir->vd_nblk = 0;
++	vdir->vd_version = 0;
++	vdir->vd_jiffy = 0;
++	err = append_deblk(vdir);
++	if (!err)
++		return vdir; /* success */
++
++	kfree(vdir->vd_deblk);
++
++ out_free:
++	au_cache_free_vdir(vdir);
++ out:
++	vdir = ERR_PTR(err);
++	AuTraceErrPtr(vdir);
++	return vdir;
++}
++
++static int reinit_vdir(struct au_vdir *vdir)
++{
++	int err;
++	union au_vdir_deblk_p p, deblk_end;
++
++	AuTraceEnter();
++
++	while (vdir->vd_nblk > 1) {
++		kfree(vdir->vd_deblk[vdir->vd_nblk - 1]);
++		vdir->vd_deblk[vdir->vd_nblk - 1] = NULL;
++		vdir->vd_nblk--;
++	}
++	p.deblk = vdir->vd_deblk[0];
++	deblk_end.deblk = p.deblk + 1;
++	err = set_deblk_end(&p, &deblk_end);
++	AuDebugOn(err);
++	vdir->vd_version = 0;
++	vdir->vd_jiffy = 0;
++	vdir->vd_last.i = 0;
++	vdir->vd_last.p.deblk = vdir->vd_deblk[0];
++	/* smp_mb(); */
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++static void free_dehlist(struct au_nhash *dehlist)
++{
++	int i;
++	struct hlist_head *head;
++	struct au_vdir_dehstr *tpos;
++	struct hlist_node *pos, *n;
++
++	AuTraceEnter();
++
++	for (i = 0; i < AuSize_NHASH; i++) {
++		head = dehlist->heads + i;
++		hlist_for_each_entry_safe(tpos, pos, n, head, hash) {
++			/* hlist_del(pos); */
++			au_cache_free_dehstr(tpos);
++		}
++	}
++}
++
++/* returns found(true) or not */
++static int test_known(struct au_nhash *delist, char *name, int namelen)
++{
++	struct hlist_head *head;
++	struct au_vdir_dehstr *tpos;
++	struct hlist_node *pos;
++	struct au_vdir_destr *str;
++
++	LKTRTrace("%.*s\n", namelen, name);
++
++	head = delist->heads + au_name_hash(name, namelen);
++	hlist_for_each_entry(tpos, pos, head, hash) {
++		str = tpos->str;
++		LKTRTrace("%.*s\n", str->len, str->name);
++		if (str->len == namelen && !memcmp(str->name, name, namelen))
++			return 1;
++	}
++	return 0;
++
++}
++
++static int append_de(struct au_vdir *vdir, char *name, int namelen, ino_t ino,
++		     unsigned int d_type, struct au_nhash *delist)
++{
++	int err, sz;
++	union au_vdir_deblk_p p, *room, deblk_end;
++	struct au_vdir_dehstr *dehstr;
++
++	LKTRTrace("%.*s %d, i%lu, dt%u\n", namelen, name, namelen, ino, d_type);
++
++	p.deblk = last_deblk(vdir);
++	deblk_end.deblk = p.deblk + 1;
++	room = &vdir->vd_last.p;
++	AuDebugOn(room->p < p.p || deblk_end.p <= room->p
++		  || !is_deblk_end(room, &deblk_end));
++
++	sz = calc_size(namelen);
++	if (unlikely(sz > deblk_end.p - room->p)) {
++		err = append_deblk(vdir);
++		if (unlikely(err))
++			goto out;
++		p.deblk = last_deblk(vdir);
++		deblk_end.deblk = p.deblk + 1;
++		/* smp_mb(); */
++		AuDebugOn(room->p != p.p);
++	}
++
++	err = -ENOMEM;
++	dehstr = au_cache_alloc_dehstr();
++	if (unlikely(!dehstr))
++		goto out;
++	dehstr->str = &room->de->de_str;
++	hlist_add_head(&dehstr->hash,
++		       delist->heads + au_name_hash(name, namelen));
++
++	room->de->de_ino = ino;
++	room->de->de_type = d_type;
++	room->de->de_str.len = namelen;
++	memcpy(room->de->de_str.name, name, namelen);
++
++	err = 0;
++	room->p += sz;
++	if (unlikely(set_deblk_end(room, &deblk_end)))
++		err = append_deblk(vdir);
++	/* smp_mb(); */
++
++ out:
++	AuTraceErr(err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++static int au_ino(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
++		  ino_t *ino)
++{
++	int err;
++	struct au_xino_entry xinoe;
++	static DEFINE_MUTEX(mtx);
++
++	/* a race condition for hardlinks */
++	mutex_lock(&mtx);
++	err = au_xino_read(sb, bindex, h_ino, &xinoe);
++	if (unlikely(err))
++		goto out;
++
++	if (!xinoe.ino) {
++		err = -EIO;
++		xinoe.ino = au_xino_new_ino(sb);
++		if (unlikely(!xinoe.ino))
++			goto out;
 +#if 0 /* reserved for future use */
-+aufs_bindex_t au_dbtail_generic(struct dentry *dentry)
-+{
-+	struct inode *inode;
++		struct inode *h_inode;
++		xinoe.h_gen = AuXino_INVALID_HGEN;
++		h_inode = ilookup(au_sbr_sb(sb, bindex), h_ino);
++		if (h_inode) {
++			if (!is_bad_inode(h_inode)) {
++				xinoe.h_gen = h_inode->i_generation;
++				WARN_ON(xinoe.h_gen == AuXino_INVALID_HGEN);
++			}
++			iput(h_inode);
++		}
++#endif
++		err = au_xino_write(sb, bindex, h_ino, &xinoe);
++		if (unlikely(err))
++			goto out;
++	}
 +
-+	inode = dentry->d_inode;
-+	if (inode && S_ISDIR(inode->i_mode))
-+		return au_dbtaildir(dentry);
-+	else
-+		return au_dbtail(dentry);
++	*ino = xinoe.ino;
++
++ out:
++	mutex_unlock(&mtx);
++	AuTraceErr(err);
++	return err;
 +}
++
++static int au_wh_ino(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
++		     ino_t *ino)
++{
++#ifdef CONFIG_AUFS_SHWH
++	return au_ino(sb, bindex, h_ino, ino);
++#else
++	return 0;
++#endif
++}
++
++#define AuFillVdir_CALLED	1
++#define AuFillVdir_SHWH		(1 << 1)
++#define au_ftest_fillvdir(flags, name)	((flags) & AuFillVdir_##name)
++#define au_fset_fillvdir(flags, name)	{ (flags) |= AuFillVdir_##name; }
++#define au_fclr_fillvdir(flags, name)	{ (flags) &= ~AuFillVdir_##name; }
++#ifndef CONFIG_AUFS_SHWH
++#undef AuFillVdir_SHWH
++#define AuFillVdir_SHWH		0
 +#endif
 +
-+/* ---------------------------------------------------------------------- */
++struct fillvdir_arg {
++	struct file		*file;
++	struct au_vdir 	*vdir;
++	struct au_nhash	*delist;
++	struct au_nhash	*whlist;
++	aufs_bindex_t		bindex;
++	unsigned int		flags;
++	int			err;
++};
 +
-+void au_set_dbdiropq(struct dentry *dentry, aufs_bindex_t bindex)
++static int fillvdir(void *__arg, const char *__name, int namelen, loff_t offset,
++		    u64 h_ino, unsigned int d_type)
 +{
-+	DiMustWriteLock(dentry);
-+	AuDebugOn(au_sbend(dentry->d_sb) < bindex);
-+	AuDebugOn((bindex >= 0
-+		   && (bindex < au_dbstart(dentry)
-+		       || au_dbend(dentry) < bindex))
-+		  || (dentry->d_inode
-+		      && dentry->d_inode->i_mode
-+		      && !S_ISDIR(dentry->d_inode->i_mode)));
-+	au_di(dentry)->di_bdiropq = bindex;
++	struct fillvdir_arg *arg = __arg;
++	char *name = (void *)__name;
++	aufs_bindex_t bindex, bend;
++	struct super_block *sb;
++	ino_t ino;
++
++	LKTRTrace("%.*s, namelen %d, i%Lu, dt%u\n",
++		  namelen, name, namelen, (u64)h_ino, d_type);
++
++	sb = arg->file->f_dentry->d_sb;
++	bend = arg->bindex;
++	arg->err = 0;
++	au_fset_fillvdir(arg->flags, CALLED);
++	/* smp_mb(); */
++	if (namelen <= AUFS_WH_PFX_LEN
++	    || memcmp(name, AUFS_WH_PFX, AUFS_WH_PFX_LEN)) {
++		for (bindex = 0; bindex < bend; bindex++)
++			if (test_known(arg->delist + bindex, name, namelen)
++			    || au_nhash_test_known_wh(arg->whlist + bindex,
++						      name, namelen))
++				goto out; /* already exists or whiteouted */
++
++		ino = 1; /* why does gcc warns? */
++		arg->err = au_ino(sb, bend, h_ino, &ino);
++		if (!arg->err)
++			arg->err = append_de(arg->vdir, name, namelen, ino,
++					     d_type, arg->delist + bend);
++	} else {
++		name += AUFS_WH_PFX_LEN;
++		namelen -= AUFS_WH_PFX_LEN;
++		for (bindex = 0; bindex < bend; bindex++)
++			if (au_nhash_test_known_wh(arg->whlist + bend, name,
++						   namelen))
++				goto out; /* already whiteouted */
++
++		ino = 1; /* dummy */
++		if (unlikely(au_ftest_fillvdir(arg->flags, SHWH)))
++			arg->err = au_wh_ino(sb, bend, h_ino, &ino);
++		if (!arg->err)
++			arg->err = au_nhash_append_wh
++				(arg->whlist + bend, name, namelen, ino, d_type,
++				 bend, au_ftest_fillvdir(arg->flags, SHWH));
++	}
++
++ out:
++	if (!arg->err)
++		arg->vdir->vd_jiffy = jiffies;
++	/* smp_mb(); */
++	AuTraceErr(arg->err);
++	return arg->err;
 +}
 +
-+void au_set_h_dptr(struct dentry *dentry, aufs_bindex_t bindex,
-+		   struct dentry *h_dentry)
++static int au_handle_shwh(struct super_block *sb, struct au_vdir *vdir,
++			  aufs_bindex_t bstart, aufs_bindex_t bend,
++			  struct au_nhash *_whlist, struct au_nhash *_delist)
 +{
-+	struct au_hdentry *hd = au_di(dentry)->di_hdentry + bindex;
-+	DiMustWriteLock(dentry);
-+	AuDebugOn(bindex < au_di(dentry)->di_bstart
-+		  || bindex > au_di(dentry)->di_bend
-+		  || (h_dentry && atomic_read(&h_dentry->d_count) <= 0)
-+		  || (h_dentry && hd->hd_dentry)
-+		);
-+	if (hd->hd_dentry)
-+		au_hdput(hd, /*do_free*/0);
-+	hd->hd_dentry = h_dentry;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+void au_update_dbrange(struct dentry *dentry, int do_put_zero)
-+{
-+	struct au_dinfo *dinfo;
++#ifdef CONFIG_AUFS_SHWH
++	int err, i;
++	struct hlist_head *head;
++	struct au_vdir_wh *tpos;
++	struct hlist_node *pos, *n;
++	char *p, *o;
++	struct au_nhash *whlist, *delist;
++	struct au_vdir_destr *destr;
 +	aufs_bindex_t bindex;
-+	struct dentry *h_d;
 +
-+	LKTRTrace("%.*s, %d\n", AuDLNPair(dentry), do_put_zero);
-+	DiMustWriteLock(dentry);
++	AuTraceEnter();
++	AuDebugOn(!au_opt_test(au_mntflags(sb), SHWH));
 +
-+	dinfo = au_di(dentry);
-+	if (unlikely(!dinfo) || dinfo->di_bstart < 0)
-+		return;
++	err = -ENOMEM;
++	o = p = __getname();
++	if (unlikely(!p))
++		goto out;
 +
-+	if (do_put_zero) {
-+		for (bindex = dinfo->di_bstart; bindex <= dinfo->di_bend;
-+		     bindex++) {
-+			h_d = dinfo->di_hdentry[0 + bindex].hd_dentry;
-+			if (h_d && !h_d->d_inode)
-+				au_set_h_dptr(dentry, bindex, NULL);
++	err = 0;
++	memcpy(p, AUFS_WH_PFX, AUFS_WH_PFX_LEN);
++	p += AUFS_WH_PFX_LEN;
++	for (bindex = bstart; !err && bindex <= bend; bindex++) {
++		whlist = _whlist + bindex;
++		delist = _delist + bindex;
++
++		for (i = 0; i < AuSize_NHASH; i++) {
++			head = whlist->heads + i;
++			hlist_for_each_entry_safe(tpos, pos, n, head, wh_hash) {
++				destr = &tpos->wh_str;
++				memcpy(p, destr->name, destr->len);
++				err = append_de(vdir, o,
++						destr->len + AUFS_WH_PFX_LEN,
++						tpos->wh_ino, tpos->wh_type,
++						delist);
++				if (unlikely(err))
++					break;
++			}
 +		}
 +	}
 +
-+	dinfo->di_bstart = -1;
-+	while (++dinfo->di_bstart <= dinfo->di_bend)
-+		if (dinfo->di_hdentry[0 + dinfo->di_bstart].hd_dentry)
-+			break;
-+	if (dinfo->di_bstart > dinfo->di_bend) {
-+		dinfo->di_bstart = -1;
-+		dinfo->di_bend = -1;
-+		return;
-+	}
++	__putname(o);
 +
-+	dinfo->di_bend++;
-+	while (0 <= --dinfo->di_bend)
-+		if (dinfo->di_hdentry[0 + dinfo->di_bend].hd_dentry)
-+			break;
-+	AuDebugOn(dinfo->di_bstart > dinfo->di_bend || dinfo->di_bend < 0);
++ out:
++	AuTraceErr(err);
++	return err;
++#else
++	return 0;
++#endif
 +}
 +
-+void au_update_dbstart(struct dentry *dentry)
++static int au_do_read_vdir(struct fillvdir_arg *arg)
 +{
-+	aufs_bindex_t bindex,
-+		bstart = au_dbstart(dentry),
-+		bend = au_dbend(dentry);
-+	struct dentry *h_dentry;
++	int err, dlgt, shwh;
++	aufs_bindex_t bend, bindex, bstart;
++	struct super_block *sb;
++	unsigned int mnt_flags;
++	struct file *hf;
++	loff_t offset;
 +
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+	DiMustWriteLock(dentry);
++	AuTraceEnter();
++
++	err = -ENOMEM;
++	bend = au_fbend(arg->file);
++	arg->delist = kmalloc(sizeof(*arg->delist) * (bend + 1), GFP_TEMPORARY);
++	if (unlikely(!arg->delist))
++		goto out;
++	arg->whlist = kmalloc(sizeof(*arg->whlist) * (bend + 1), GFP_TEMPORARY);
++	if (unlikely(!arg->whlist))
++		goto out_delist;
++	err = 0;
++	for (bindex = 0; bindex <= bend; bindex++) {
++		au_nhash_init(arg->delist + bindex);
++		au_nhash_init(arg->whlist + bindex);
++	}
++
++	sb = arg->file->f_dentry->d_sb;
++	mnt_flags = au_mntflags(sb);
++	dlgt = !!au_opt_test_dlgt(mnt_flags);
++	arg->flags = 0;
++	shwh = 0;
++	if (unlikely(au_opt_test(mnt_flags, SHWH))) {
++		shwh = 1;
++		au_fset_fillvdir(arg->flags, SHWH);
++	}
++	bstart = au_fbstart(arg->file);
++	for (bindex = bstart; !err && bindex <= bend; bindex++) {
++		hf = au_h_fptr(arg->file, bindex);
++		if (!hf)
++			continue;
++
++		offset = vfsub_llseek(hf, 0, SEEK_SET);
++		err = offset;
++		if (unlikely(offset))
++			break;
++		arg->bindex = bindex;
++		do {
++			arg->err = 0;
++			au_fclr_fillvdir(arg->flags, CALLED);
++			/* smp_mb(); */
++			err = vfsub_readdir(hf, fillvdir, arg, dlgt);
++			if (err >= 0)
++				err = arg->err;
++		} while (!err && au_ftest_fillvdir(arg->flags, CALLED));
++	}
++
++	if (unlikely(!err && shwh))
++		err = au_handle_shwh(sb, arg->vdir, bstart, bend, arg->whlist,
++				     arg->delist);
 +
 +	for (bindex = bstart; bindex <= bend; bindex++) {
-+		h_dentry = au_h_dptr(dentry, bindex);
-+		if (!h_dentry)
-+			continue;
-+		if (h_dentry->d_inode) {
-+			au_set_dbstart(dentry, bindex);
-+			return;
-+		}
-+		au_set_h_dptr(dentry, bindex, NULL);
++		free_dehlist(arg->delist + bindex);
++		au_nhash_fin(arg->whlist + bindex);
 +	}
++	kfree(arg->whlist);
++
++ out_delist:
++	kfree(arg->delist);
++ out:
++	AuTraceErr(err);
++	return err;
 +}
 +
-+void au_update_dbend(struct dentry *dentry)
++static int read_vdir(struct file *file, int may_read)
 +{
-+	aufs_bindex_t bindex,
-+		bstart = au_dbstart(dentry),
-+		bend = au_dbend(dentry);
-+	struct dentry *h_dentry;
++	int err, do_read;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct au_vdir *vdir, *allocated;
++	unsigned long expire;
++	struct fillvdir_arg arg;
++	struct super_block *sb;
 +
-+	DiMustWriteLock(dentry);
-+	for (bindex = bend; bindex <= bstart; bindex--) {
-+		h_dentry = au_h_dptr(dentry, bindex);
-+		if (!h_dentry)
-+			continue;
-+		if (h_dentry->d_inode) {
-+			au_set_dbend(dentry, bindex);
-+			return;
-+		}
-+		au_set_h_dptr(dentry, bindex, NULL);
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, may %d\n", AuDLNPair(dentry), may_read);
++	FiMustWriteLock(file);
++	inode = dentry->d_inode;
++	IMustLock(inode);
++	IiMustWriteLock(inode);
++	AuDebugOn(!S_ISDIR(inode->i_mode));
++
++	err = 0;
++	allocated = NULL;
++	do_read = 0;
++	sb = inode->i_sb;
++	expire = au_sbi(sb)->si_rdcache;
++	vdir = au_ivdir(inode);
++	if (!vdir) {
++		AuDebugOn(au_fvdir_cache(file));
++		do_read = 1;
++		vdir = alloc_vdir();
++		err = PTR_ERR(vdir);
++		if (IS_ERR(vdir))
++			goto out;
++		err = 0;
++		allocated = vdir;
++	} else if (may_read
++		   && (inode->i_version != vdir->vd_version
++		       || time_after(jiffies, vdir->vd_jiffy + expire))) {
++		LKTRTrace("iver %Lu, vdver %lu, exp %lu\n",
++			  inode->i_version, vdir->vd_version,
++			  vdir->vd_jiffy + expire);
++		do_read = 1;
++		err = reinit_vdir(vdir);
++		if (unlikely(err))
++			goto out;
 +	}
++
++	if (!do_read)
++		return 0; /* success */
++
++	arg.file = file;
++	arg.vdir = vdir;
++	err = au_do_read_vdir(&arg);
++	if (!err) {
++		/* todo: necessary? */
++		/* file->f_pos = 0; */
++		vdir->vd_version = inode->i_version;
++		vdir->vd_last.i = 0;
++		vdir->vd_last.p.deblk = vdir->vd_deblk[0];
++		if (allocated)
++			au_set_ivdir(inode, allocated);
++	} else if (allocated)
++		au_vdir_free(allocated);
++
++ out:
++	AuTraceErr(err);
++	return err;
 +}
 +
-+int au_find_dbindex(struct dentry *dentry, struct dentry *h_dentry)
++static int copy_vdir(struct au_vdir *tgt, struct au_vdir *src)
 +{
-+	aufs_bindex_t bindex, bend;
++	int err, i, rerr, n;
 +
-+	bend = au_dbend(dentry);
-+	for (bindex = au_dbstart(dentry); bindex <= bend; bindex++)
-+		if (au_h_dptr(dentry, bindex) == h_dentry)
-+			return bindex;
-+	return -1;
++	AuTraceEnter();
++	AuDebugOn(tgt->vd_nblk != 1);
++
++	err = -ENOMEM;
++	if (tgt->vd_nblk < src->vd_nblk) {
++		au_vdir_deblk_t **p;
++		p = au_kzrealloc(tgt->vd_deblk, sizeof(*p) * tgt->vd_nblk,
++				 sizeof(*p) * src->vd_nblk, GFP_KERNEL);
++		if (unlikely(!p))
++			goto out;
++		tgt->vd_deblk = p;
++	}
++
++	tgt->vd_nblk = src->vd_nblk;
++	n = src->vd_nblk;
++	memcpy(tgt->vd_deblk[0], src->vd_deblk[0], AuSize_DEBLK);
++	/* tgt->vd_last.i = 0; */
++	/* tgt->vd_last.p.deblk = tgt->vd_deblk[0]; */
++	tgt->vd_version = src->vd_version;
++	tgt->vd_jiffy = src->vd_jiffy;
++
++	for (i = 1; i < n; i++) {
++		tgt->vd_deblk[i] = kmalloc(AuSize_DEBLK, GFP_KERNEL);
++		if (tgt->vd_deblk[i])
++			memcpy(tgt->vd_deblk[i], src->vd_deblk[i],
++			       AuSize_DEBLK);
++		else
++			goto out;
++	}
++	/* smp_mb(); */
++	return 0; /* success */
++
++ out:
++	rerr = reinit_vdir(tgt);
++	BUG_ON(rerr);
++	AuTraceErr(err);
++	return err;
++}
++
++int au_vdir_init(struct file *file)
++{
++	int err;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct au_vdir *vdir_cache, *allocated;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, pos %Ld\n", AuDLNPair(dentry), file->f_pos);
++	FiMustWriteLock(file);
++	inode = dentry->d_inode;
++	IiMustWriteLock(inode);
++	AuDebugOn(!S_ISDIR(inode->i_mode));
++
++	err = read_vdir(file, !file->f_pos);
++	if (unlikely(err))
++		goto out;
++
++	allocated = NULL;
++	vdir_cache = au_fvdir_cache(file);
++	if (!vdir_cache) {
++		vdir_cache = alloc_vdir();
++		err = PTR_ERR(vdir_cache);
++		if (IS_ERR(vdir_cache))
++			goto out;
++		allocated = vdir_cache;
++	} else if (!file->f_pos && vdir_cache->vd_version != file->f_version) {
++		err = reinit_vdir(vdir_cache);
++		if (unlikely(err))
++			goto out;
++	} else
++		return 0; /* success */
++
++	err = copy_vdir(vdir_cache, au_ivdir(inode));
++	if (!err) {
++		file->f_version = inode->i_version;
++		if (allocated)
++			au_set_fvdir_cache(file, allocated);
++	} else if (allocated)
++		au_vdir_free(allocated);
++
++ out:
++	AuTraceErr(err);
++	return err;
++}
++
++static loff_t calc_offset(struct au_vdir *vdir)
++{
++	loff_t offset;
++	union au_vdir_deblk_p p;
++
++	p.deblk = vdir->vd_deblk[vdir->vd_last.i];
++	offset = vdir->vd_last.p.p - p.p;
++	offset += sizeof(*p.deblk) * vdir->vd_last.i;
++	return offset;
++}
++
++/* returns true or false */
++static int seek_vdir(struct file *file)
++{
++	int valid, i, n;
++	struct dentry *dentry;
++	struct au_vdir *vdir_cache;
++	loff_t offset;
++	union au_vdir_deblk_p p, deblk_end;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, pos %Ld\n", AuDLNPair(dentry), file->f_pos);
++	vdir_cache = au_fvdir_cache(file);
++	AuDebugOn(!vdir_cache);
++
++	valid = 1;
++	offset = calc_offset(vdir_cache);
++	LKTRTrace("offset %Ld\n", offset);
++	if (file->f_pos == offset)
++		goto out;
++
++	vdir_cache->vd_last.i = 0;
++	vdir_cache->vd_last.p.deblk = vdir_cache->vd_deblk[0];
++	if (!file->f_pos)
++		goto out;
++
++	valid = 0;
++	i = file->f_pos / AuSize_DEBLK;
++	LKTRTrace("i %d\n", i);
++	if (i >= vdir_cache->vd_nblk)
++		goto out;
++
++	n = vdir_cache->vd_nblk;
++	for (; i < n; i++) {
++		p.deblk = vdir_cache->vd_deblk[i];
++		deblk_end.deblk = p.deblk + 1;
++		offset = i;
++		offset *= AuSize_DEBLK;
++		while (!is_deblk_end(&p, &deblk_end) && offset < file->f_pos) {
++			int l;
++			l = calc_size(p.de->de_str.len);
++			offset += l;
++			p.p += l;
++		}
++		if (!is_deblk_end(&p, &deblk_end)) {
++			valid = 1;
++			vdir_cache->vd_last.i = i;
++			vdir_cache->vd_last.p = p;
++			break;
++		}
++	}
++
++ out:
++	/* smp_mb(); */
++	AuTraceErr(!valid);
++	return valid;
++}
++
++int au_vdir_fill_de(struct file *file, void *dirent, filldir_t filldir)
++{
++	int err, l;
++	struct dentry *dentry;
++	struct au_vdir *vdir_cache;
++	struct au_vdir_de *de;
++	union au_vdir_deblk_p deblk_end;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, pos %Ld\n", AuDLNPair(dentry), file->f_pos);
++	vdir_cache = au_fvdir_cache(file);
++	AuDebugOn(!vdir_cache);
++
++	if (!seek_vdir(file))
++		return 0;
++
++	while (1) {
++		deblk_end.deblk
++			= vdir_cache->vd_deblk[vdir_cache->vd_last.i] + 1;
++		while (!is_deblk_end(&vdir_cache->vd_last.p, &deblk_end)) {
++			de = vdir_cache->vd_last.p.de;
++			LKTRTrace("%.*s, off%Ld, i%lu, dt%d\n",
++				  de->de_str.len, de->de_str.name,
++				  file->f_pos, de->de_ino, de->de_type);
++			err = filldir(dirent, de->de_str.name, de->de_str.len,
++				      file->f_pos, de->de_ino, de->de_type);
++			if (unlikely(err)) {
++				AuTraceErr(err);
++				/* todo: ignore the error caused by udba? */
++				/* return err; */
++				return 0;
++			}
++
++			l = calc_size(de->de_str.len);
++			vdir_cache->vd_last.p.p += l;
++			file->f_pos += l;
++		}
++		if (vdir_cache->vd_last.i < vdir_cache->vd_nblk - 1) {
++			vdir_cache->vd_last.i++;
++			vdir_cache->vd_last.p.deblk
++				= vdir_cache->vd_deblk[vdir_cache->vd_last.i];
++			file->f_pos = sizeof(*vdir_cache->vd_last.p.deblk)
++				* vdir_cache->vd_last.i;
++			continue;
++		}
++		break;
++	}
++
++	/* smp_mb(); */
++	return 0;
 +}
 -- 
 1.5.5.1.308.g1fbb5.dirty
