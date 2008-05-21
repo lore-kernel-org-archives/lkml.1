@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934418AbYEULJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbYEULQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934418AbYEULJy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 07:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933879AbYEULJc
+	id S932875AbYEULQz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 07:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbYEULQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 07:09:32 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35025 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933915AbYEULJa (ORCPT
+	Wed, 21 May 2008 07:16:45 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:43891 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757441AbYEULQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 07:09:30 -0400
-Date: Wed, 21 May 2008 12:09:27 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Al Viro <viro@ftp.linux.org.uk>, torvalds@linux-foundation.org,
-       geert@linux-m68k.org, linux-m68k@vger.kernel.org,
+	Wed, 21 May 2008 07:16:44 -0400
+Date: Wed, 21 May 2008 13:16:37 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Oliver Hartkopp <oliver@hartkopp.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Greg KH <greg@kroah.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] provide out-of-line strcat() for m68k
-Message-ID: <20080521110927.GO28946@ZenIV.linux.org.uk>
-References: <E1JycsB-0000M9-36@ZenIV.linux.org.uk> <Pine.LNX.4.64.0805210531170.18184@localhost.localdomain> <20080521053012.GL28946@ZenIV.linux.org.uk> <Pine.LNX.4.64.0805211250180.19545@localhost.localdomain>
-MIME-Version: 1.0
+Subject: Re: [RFC] Kernel naming convention in the merge phase
+Message-ID: <20080521111637.GA5416@ucw.cz>
+References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805211250180.19545@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4819050C.9060800@zytor.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 12:53:34PM +0200, Roman Zippel wrote:
-> Hi,
+On Wed 2008-04-30 16:47:24, H. Peter Anvin wrote:
+> Oliver Hartkopp wrote:
+> >Hi all,
+> >
+> >i wonder about the Kernel naming convention in the 
+> >merge phase before
+> >the -rc1 is officially tagged by Linus.
+> >
+> >Won't it be more precisely to name the current snapshot
+> >2.6.26-merge-git16 instead of 2.6.25-git16?
+> >
+> >It is not that i would suggest to have a new git tag in 
+> >this merge phase but only the Makefile should be 
+> >changed at the beginning of this phase to identify the 
+> >ongoing work for the 2.6.26:
+> >
+> >------
+> >diff --git a/Makefile b/Makefile
+> >index d3634cd..b8c85a4 100644
+> >--- a/Makefile
+> >+++ b/Makefile
+> >@@ -1,8 +1,8 @@
+> >VERSION = 2
+> >PATCHLEVEL = 6
+> >-SUBLEVEL = 25
+> >-EXTRAVERSION =
+> >-NAME = Funky Weasel is Jiggy wit it
+> >+SUBLEVEL = 26
+> >+EXTRAVERSION = -merge
+> >+NAME = unnamed
+> >
+> ># *DOCUMENTATION*
+> ># To see a list of typical targets execute "make help"
+> >------
+> >
+> >Introducing the new '-merge' version _that_ early helps 
+> >to avoid the version confusion in /lib/modules and also 
+> >allows people to work with kernel version depended 
+> >stuff in a very early phase.
+> >
 > 
-> On Wed, 21 May 2008, Al Viro wrote:
+> And it'll break all the robotic stuff again.
 > 
-> > > It actually was strlen that was generated and not strcat.
-> > 
-> > Here it replaced strncat() with call of strcat() (gcc 4.0.1, FWIW).
-> > And yes, I can show you init/main.s with
-> > 	jbsr strcat	|
-> > in it generated on kernel in b0rken range...
-> 
-> Please use a more recent compiler, 4.0 created too many problems on m68k, 
-> which we only got under control with 4.1, so at least on m68k 4.0 is not 
-> really supported.
+> Foo-gitX has always been a development snapshot which 
+> *follows* Foo.
 
-Then it's worth mentioning in Documentation/Changes, IMO...  Anyway,
-updating m68k toolchain is not a problem; I'll get around to it tonight.
-I still think that out-of-line implementation is a good idea, if nothing
-else it would prevent future crap of the same kind if some later version
-decides that strlen(a) + strlen(b) can be proven to be less than size
-argument of strncat(), etc.
+Well, unfortunately its not there in the makefile, so you can't tell
+2.6.25 from 2.6.26-rc0...
 
-Technically we _are_ in nasal daemon country with redefining str*, unless
-we pass -ffreestanding; m68k doesn't, so we can't guarantee that new stuff
-of that kind won't crop up.  IOW, it might be a good policy to have fallback
-implementations of potentially affected primitives...
+Would 'rc0' make robots happy?
+							Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
