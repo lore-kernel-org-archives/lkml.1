@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934159AbYEUTmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936856AbYEUTnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934159AbYEUTmd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbYEUTmT
+	id S936856AbYEUTnW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758986AbYEUTm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:42:19 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:16525 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755513AbYEUTmS (ORCPT
+	Wed, 21 May 2008 15:42:59 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:59568 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758208AbYEUTm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:42:18 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Jamie Lokier <jamie@shareable.org>
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Date: Wed, 21 May 2008 15:40:35 -0400
-User-Agent: KMail/1.9.9
-Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>, Eric Sandeen <sandeen@redhat.com>,
+	Wed, 21 May 2008 15:42:57 -0400
+Date: Wed, 21 May 2008 20:42:18 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@suse.cz>,
+       Chris Mason <chris.mason@oracle.com>, Eric Sandeen <sandeen@redhat.com>,
        Andi Kleen <andi@firstfloor.org>, linux-ext4@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <20080521182949.GL8581@mit.edu> <20080521193633.GA26780@shareable.org>
-In-Reply-To: <20080521193633.GA26780@shareable.org>
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080521194218.GB26780@shareable.org>
+References: <482DDA56.6000301@redhat.com> <20080518211140.b29bee30.akpm@linux-foundation.org> <200805191316.27551.chris.mason@oracle.com> <200805191439.36577.chris.mason@oracle.com> <20080521112224.GD5028@ucw.cz> <20080521110324.668048e0.akpm@linux-foundation.org> <20080521182949.GL8581@mit.edu> <20080521114917.60bf42c7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805211540.36276.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20080521114917.60bf42c7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 May 2008, Jamie Lokier wrote:
-> Theodore Tso wrote:
-> > On Wed, May 21, 2008 at 11:03:24AM -0700, Andrew Morton wrote:
-> > > afaik there is no need to enable this feature if the machine (actually
-> > > the disks) are on a UPS, yes?
-> >
-> > Yes, as long as you're confident that there won't be a kernel
-> > bug/regression causing a lockup while the server is under severe
-> > memory pressure while doing lots of fsync's, file creations, renames,
-> > etc.  And as long as your 100% confident that UPS's will never fail,
+Andrew Morton wrote:
+> >  And as long as your 100% confident that UPS's will never fail,
 > > janitors will never accidentally hit the Emergency Power Office
->
-> Can a kernel lockup cause this kind of corruption?
+> > switch, and so on.
+> 
+> Well.  The product of two very small numbers is...
 
-No
+Another unquantified very small number.
 
->
-> Will a system reboot wipe the disk's write cache?
->
+You have a UPS, but the first time you discover it's not wired up
+properly is when it fails.
 
-Only if you reboot with the power switch (some test rigs do)
+This happened recently in a customer's office...  The UPS power wiring
+melted, leaving a big stinking hole, and all the servers went down -
+quickly.
 
-> I had imagined only power loss would prevent the disk from
-> writing it's cache eventually; is that wrong?
->
+Another is misconfiguring the UPS daemon so it continues writing to
+disk for 30 minutes until the battery runs down...
 
--chris
+Like the chance of two disks going wrong in a RAID at the same
+time... that would *never* happen would it?
+
+*tip-toes out of the room*
+
+-- Jamie
