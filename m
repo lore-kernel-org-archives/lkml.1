@@ -1,118 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936441AbYEUSHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936202AbYEUSKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936441AbYEUSHq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYEUSHf
+	id S936202AbYEUSKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbYEUSKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:07:35 -0400
-Received: from deliver.hol.gr ([62.38.3.175]:36891 "EHLO deliver.hol.gr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753904AbYEUSHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:07:34 -0400
-X-Greylist: delayed 619 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 14:07:34 EDT
-From: "P. Christeas" <p_christ@hol.gr>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Patch: usblp quirk for zebra printers
-Date: Wed, 21 May 2008 20:57:49 +0300
-User-Agent: KMail/1.9.9
-Cc: Pete Zaitcev <zaitcev@redhat.com>, lkml <linux-kernel@vger.kernel.org>
+	Wed, 21 May 2008 14:10:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57259 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932579AbYEUSKe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:10:34 -0400
+Date: Wed, 21 May 2008 11:09:57 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Adrian Bunk <bunk@kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@sunset.davemloft.net>,
+       systemtap@sources.redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-cifs-client@lists.samba.org, linux-nfs@vger.kernel.org
+Subject: Re: [PATCH] usb-storage: don't call utsname()
+Message-ID: <20080521180957.GA17598@kroah.com>
+References: <20080521123700.GA8770@infradead.org> <Pine.LNX.4.44L0.0805211349480.3409-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_fKGNIxRbmD9uRLV"
-Message-Id: <200805212057.52050.p_christ@hol.gr>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0805211349480.3409-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_fKGNIxRbmD9uRLV
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wed, May 21, 2008 at 01:51:17PM -0400, Alan Stern wrote:
+> This patch (as1100) replaces the core-kernel function call to utsname()
+> in usb-storage with the UTS_RELEASE macro.  It's used only for warning
+> about extra unusual_devs entries.
+> 
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-Hi,
-I guess such a quirk may be a little odd, but it has been a blocking point in 
-my system not being able to support more than one printer.
+Why?  With this change, if you change the version number, the file will
+have to be rebuilt.  Without the change, the file will not need to be
+rebuilt, right?
 
-Please comment. (and cc. me)
+I thought that was why this change was made a while ago, to prevent
+things from having to be rebuilt that didn't need to be.
 
+thanks,
 
---Boundary-00=_fKGNIxRbmD9uRLV
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="0001-USB-Quirk-for-Zebra-printers-not-reporting-their-S.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="0001-USB-Quirk-for-Zebra-printers-not-reporting-their-S.patch"
-
-=46rom 2c87e2cbc8d33b49b6e7a20b9b85570840bb0e12 Mon Sep 17 00:00:00 2001
-=46rom: P.Christeas <p_christ@hol.gr>
-Date: Wed, 21 May 2008 20:47:52 +0300
-Subject: [PATCH] USB: Quirk for Zebra printers not reporting their S/N.
-
-Those printers (and maybe others) don't report their Serial
-Number as a part of their IEEE1284 device id string. Thus,
-printing backends like CUPS cannot select among multiple
-devices at the same host.
-Workaround this situation by appending the SN in usblp.c .
-=2D--
- drivers/usb/class/usblp.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/class/usblp.c b/drivers/usb/class/usblp.c
-index 0647164..a4d324b 100644
-=2D-- a/drivers/usb/class/usblp.c
-+++ b/drivers/usb/class/usblp.c
-@@ -210,6 +210,7 @@ struct quirk_printer_struct {
- #define USBLP_QUIRK_BIDIR	0x1	/* reports bidir but requires unidirectional=
- mode (no INs/reads) */
- #define USBLP_QUIRK_USB_INIT	0x2	/* needs vendor USB init string */
- #define USBLP_QUIRK_BAD_CLASS	0x4	/* descriptor uses vendor-specific Class=
- or SubClass */
-+#define USBLP_QUIRK_ID_NO_SERIAL 0x8	/* Printer does not report its serial=
- no. in GET_ID request */
-=20
- static const struct quirk_printer_struct quirk_printers[] =3D {
- 	{ 0x03f0, 0x0004, USBLP_QUIRK_BIDIR }, /* HP DeskJet 895C */
-@@ -227,6 +228,7 @@ static const struct quirk_printer_struct quirk_printers=
-[] =3D {
- 	{ 0x0409, 0xf1be, USBLP_QUIRK_BIDIR }, /* NEC Picty800 (HP OEM) */
- 	{ 0x0482, 0x0010, USBLP_QUIRK_BIDIR }, /* Kyocera Mita FS 820, by zut <ke=
-rnel@zut.de> */
- 	{ 0x04b8, 0x0202, USBLP_QUIRK_BAD_CLASS }, /* Seiko Epson Receipt Printer=
- M129C */
-+	{ 0x0a5f, 0x000a, USBLP_QUIRK_ID_NO_SERIAL }, /* Zebra printers don't rep=
-ort their serial */
- 	{ 0, 0 }
- };
-=20
-@@ -1330,6 +1332,23 @@ static int usblp_cache_device_id_string(struct usblp=
- *usblp)
- 		length =3D 2;
- 	else if (length >=3D USBLP_DEVICE_ID_SIZE)
- 		length =3D USBLP_DEVICE_ID_SIZE - 1;
-+=09
-+	/* If printer doesn't report its serial, we append it */
-+	if ((usblp->quirks & USBLP_QUIRK_ID_NO_SERIAL) && (usblp->dev->serial) &&
-+		(length + strlen(usblp->dev->serial) + 5 <USBLP_DEVICE_ID_SIZE) ) {
-+	=09
-+		if (usblp->device_id_string[length-1] !=3D ';')
-+			usblp->device_id_string[length++]=3D ';';
-+
-+		strcpy(&usblp->device_id_string[length],"SN:");
-+		length+=3D3;
-+		strcat(&usblp->device_id_string[length],usblp->dev->serial);
-+		length +=3D strlen(usblp->dev->serial);
-+		usblp->device_id_string[length++]=3D ';';
-+
-+		*((__be16 *)usblp->device_id_string) =3D cpu_to_be16(length);
-+	}
-+=09
- 	usblp->device_id_string[length] =3D '\0';
-=20
- 	dbg("usblp%d Device ID string [len=3D%d]=3D\"%s\"",
-=2D-=20
-1.5.4.3
-
-
---Boundary-00=_fKGNIxRbmD9uRLV--
+greg k-h
