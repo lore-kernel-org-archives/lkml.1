@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936096AbYEUSsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935835AbYEUSs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936096AbYEUSsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761261AbYEUSrx
+	id S935835AbYEUSs7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935721AbYEUSrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:47:53 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:5330 "EHLO
+	Wed, 21 May 2008 14:47:55 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:5341 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760546AbYEUSrv (ORCPT
+	by vger.kernel.org with ESMTP id S1760430AbYEUSry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:47:51 -0400
-Date: Wed, 21 May 2008 22:47:50 +0400
+	Wed, 21 May 2008 14:47:54 -0400
+Date: Wed, 21 May 2008 22:47:52 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>,
        David Brownell <dbrownell@users.sourceforge.net>,
@@ -18,8 +18,8 @@ To: Kumar Gala <galak@kernel.crashing.org>,
 Cc: Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
        linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        spi-devel-general@lists.sourceforge.net
-Subject: [PATCH 1/2] mmc: add support for card-detection polling
-Message-ID: <20080521184750.GA32052@polina.dev.rtsoft.ru>
+Subject: [PATCH 2/2] mmc_spi: add support for card-detection polling
+Message-ID: <20080521184752.GB32052@polina.dev.rtsoft.ru>
 References: <20080521184713.GA30284@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -30,106 +30,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some hosts (and boards that use mmc_spi) do not use interrupts on the CD
-line, so they can't trigger mmc_detect_change. We want to poll the card
-and see if there was a change. 1 second poll interval seems resonable.
+If platform_data lacks init() callback (solely used to request
+card-detect interrupt), we mark the host as MMC_CAP_NEEDS_POLL.
 
-This patch also implements .get_cd() host operation, that could be used
-by the hosts that are able to report card-detect status without need to
-talk MMC.
+get_cd() host operation provided to optimize polling.
+
+p.s. Since mmc_host_ops no longer the same for every instance of
+mmc_spi, struct mmc_host_ops can't be const and should be allocated
+dynamically.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/core/core.c  |   19 ++++++++++++++++---
- include/linux/mmc/host.h |    3 +++
- 2 files changed, 19 insertions(+), 3 deletions(-)
+ drivers/mmc/host/mmc_spi.c  |   31 +++++++++++++++++++++----------
+ include/linux/spi/mmc_spi.h |    6 ++++++
+ 2 files changed, 27 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 01ced4c..e455ebd 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -631,6 +631,16 @@ void mmc_rescan(struct work_struct *work)
+diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
+index 3550858..667855a 100644
+--- a/drivers/mmc/host/mmc_spi.c
++++ b/drivers/mmc/host/mmc_spi.c
+@@ -115,6 +115,7 @@ struct scratch {
  
- 	mmc_bus_get(host);
+ struct mmc_spi_host {
+ 	struct mmc_host		*mmc;
++	struct mmc_host_ops	mmc_spi_ops;
+ 	struct spi_device	*spi;
  
-+	if (host->ops->get_cd) {
-+		int old_cd_status = host->cd_status;
-+
-+		host->cd_status = !!host->ops->get_cd(host);
-+		if (!(old_cd_status ^ host->cd_status)) {
-+			mmc_bus_put(host);
-+			goto out;
-+		}
-+	}
-+
- 	if (host->bus_ops == NULL) {
- 		/*
- 		 * Only we can add a new handler, so it's safe to
-@@ -652,7 +662,7 @@ void mmc_rescan(struct work_struct *work)
- 		if (!err) {
- 			if (mmc_attach_sdio(host, ocr))
- 				mmc_power_off(host);
--			return;
-+			goto out;
- 		}
- 
- 		/*
-@@ -662,7 +672,7 @@ void mmc_rescan(struct work_struct *work)
- 		if (!err) {
- 			if (mmc_attach_sd(host, ocr))
- 				mmc_power_off(host);
--			return;
-+			goto out;
- 		}
- 
- 		/*
-@@ -672,7 +682,7 @@ void mmc_rescan(struct work_struct *work)
- 		if (!err) {
- 			if (mmc_attach_mmc(host, ocr))
- 				mmc_power_off(host);
--			return;
-+			goto out;
- 		}
- 
- 		mmc_release_host(host);
-@@ -683,6 +693,9 @@ void mmc_rescan(struct work_struct *work)
- 
- 		mmc_bus_put(host);
- 	}
-+out:
-+	if (host->caps & MMC_CAP_NEEDS_POLL)
-+		mmc_schedule_delayed_work(&host->detect, HZ);
+ 	unsigned char		power_mode;
+@@ -1131,13 +1132,12 @@ static int mmc_spi_get_ro(struct mmc_host *mmc)
+ 	return 0;
  }
  
- void mmc_start_host(struct mmc_host *host)
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 7ab962f..05d03a4 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -53,6 +53,7 @@ struct mmc_host_ops {
- 	void	(*request)(struct mmc_host *host, struct mmc_request *req);
- 	void	(*set_ios)(struct mmc_host *host, struct mmc_ios *ios);
- 	int	(*get_ro)(struct mmc_host *host);
-+	int	(*get_cd)(struct mmc_host *host);
- 	void	(*enable_sdio_irq)(struct mmc_host *host, int enable);
- };
++static int mmc_spi_get_cd(struct mmc_host *mmc)
++{
++	struct mmc_spi_host *host = mmc_priv(mmc);
  
-@@ -94,6 +95,7 @@ struct mmc_host {
- #define MMC_CAP_SD_HIGHSPEED	(1 << 3)	/* Can do SD high-speed timing */
- #define MMC_CAP_SDIO_IRQ	(1 << 4)	/* Can signal pending SDIO IRQs */
- #define MMC_CAP_SPI		(1 << 5)	/* Talks only SPI protocols */
-+#define MMC_CAP_NEEDS_POLL	(1 << 6)	/* Needs polling for card-detection */
+-static const struct mmc_host_ops mmc_spi_ops = {
+-	.request	= mmc_spi_request,
+-	.set_ios	= mmc_spi_set_ios,
+-	.get_ro		= mmc_spi_get_ro,
+-};
+-
++	return host->pdata->get_cd(mmc->parent);
++}
  
- 	/* host specific block data */
- 	unsigned int		max_seg_size;	/* see blk_queue_max_segment_size */
-@@ -114,6 +116,7 @@ struct mmc_host {
- 	unsigned int		use_spi_crc:1;
- 	unsigned int		claimed:1;	/* host exclusively claimed */
- 	unsigned int		bus_dead:1;	/* bus has been released */
-+	unsigned int		cd_status:1;	/* card-detect status */
- #ifdef CONFIG_MMC_DEBUG
- 	unsigned int		removed:1;	/* host is being removed */
- #endif
+ /****************************************************************************/
+ 
+@@ -1236,8 +1236,12 @@ static int mmc_spi_probe(struct spi_device *spi)
+ 	mmc = mmc_alloc_host(sizeof(*host), &spi->dev);
+ 	if (!mmc)
+ 		goto nomem;
++	host = mmc_priv(mmc);
+ 
+-	mmc->ops = &mmc_spi_ops;
++	host->mmc_spi_ops.request = mmc_spi_request,
++	host->mmc_spi_ops.set_ios = mmc_spi_set_ios,
++	host->mmc_spi_ops.get_ro = mmc_spi_get_ro,
++	mmc->ops = &host->mmc_spi_ops;
+ 	mmc->max_blk_size = MMC_SPI_BLOCKSIZE;
+ 
+ 	/* As long as we keep track of the number of successfully
+@@ -1256,7 +1260,6 @@ static int mmc_spi_probe(struct spi_device *spi)
+ 	mmc->f_min = 400000;
+ 	mmc->f_max = spi->max_speed_hz;
+ 
+-	host = mmc_priv(mmc);
+ 	host->mmc = mmc;
+ 	host->spi = spi;
+ 
+@@ -1323,13 +1326,21 @@ static int mmc_spi_probe(struct spi_device *spi)
+ 	if (status != 0)
+ 		goto fail_add_host;
+ 
+-	dev_info(&spi->dev, "SD/MMC host %s%s%s%s\n",
++	if (host->pdata && !host->pdata->init)
++		mmc->caps |= MMC_CAP_NEEDS_POLL;
++
++	if (host->pdata && host->pdata->get_cd)
++		host->mmc_spi_ops.get_cd = mmc_spi_get_cd;
++
++	dev_info(&spi->dev, "SD/MMC host %s%s%s%s%s\n",
+ 			mmc->class_dev.bus_id,
+ 			host->dma_dev ? "" : ", no DMA",
+ 			(host->pdata && host->pdata->get_ro)
+ 				? "" : ", no WP",
+ 			(host->pdata && host->pdata->setpower)
+-				? "" : ", no poweroff");
++				? "" : ", no poweroff",
++			(mmc->caps & MMC_CAP_NEEDS_POLL)
++				? ", cd polling" : "");
+ 	return 0;
+ 
+ fail_add_host:
+diff --git a/include/linux/spi/mmc_spi.h b/include/linux/spi/mmc_spi.h
+index d5ca78b..915faf3 100644
+--- a/include/linux/spi/mmc_spi.h
++++ b/include/linux/spi/mmc_spi.h
+@@ -23,6 +23,12 @@ struct mmc_spi_platform_data {
+ 	/* sense switch on sd cards */
+ 	int (*get_ro)(struct device *);
+ 
++	/*
++	 * if board does not use CD interrupts, driver can poll the CD
++	 * line using this function.
++	 */
++	int (*get_cd)(struct device *);
++
+ 	/* how long to debounce card detect, in msecs */
+ 	u16 detect_delay;
+ 
 -- 
 1.5.5.1
-
