@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935505AbYEUDrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935847AbYEUDrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935505AbYEUDrK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 23:47:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934231AbYEUDei
+	id S935847AbYEUDrn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 23:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934272AbYEUDeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 23:34:38 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44145 "EHLO
+	Tue, 20 May 2008 23:34:44 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44143 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759596AbYEUDdJ (ORCPT
+	with ESMTP id S1764143AbYEUDdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 23:33:09 -0400
+	Tue, 20 May 2008 23:33:08 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [AUFS PATCH v2.6.26-rc2-mm1 21/39] aufs file (vm op)
-Date: Wed, 21 May 2008 12:22:51 +0900
-Message-Id: <1211340189-11813-22-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [AUFS PATCH v2.6.26-rc2-mm1 11/39] aufs workqueue
+Date: Wed, 21 May 2008 12:22:41 +0900
+Message-Id: <1211340189-11813-12-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.5.5.1.308.g1fbb5.dirty
 In-Reply-To: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -26,20 +26,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 initial commit
-file operations and vm operations
+workqueue for asynchronous, super-io or delegated operations.
+they are used in various places such as,
+- handling 'opaque' directory and whiteout
+- lookup and copy-up/down with credential
+- create/remove files and file i/o by delegation
+- internal xino file i/o
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/f_op.c |  645 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 645 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/f_op.c
+ fs/aufs/wkq.c |  294 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/wkq.h |  158 +++++++++++++++++++++++++++++++
+ 2 files changed, 452 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/wkq.c
+ create mode 100644 fs/aufs/wkq.h
 
-diff --git a/fs/aufs/f_op.c b/fs/aufs/f_op.c
+diff --git a/fs/aufs/wkq.c b/fs/aufs/wkq.c
 new file mode 100644
-index 0000000..cf48f45
+index 0000000..4c7d1d3
 --- /dev/null
-+++ b/fs/aufs/f_op.c
-@@ -0,0 +1,645 @@
++++ b/fs/aufs/wkq.c
+@@ -0,0 +1,294 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -59,632 +66,445 @@ index 0000000..cf48f45
 + */
 +
 +/*
-+ * file and vm operations
++ * workqueue for asynchronous/super-io/delegated operations
 + */
 +
-+#include <linux/fs_stack.h>
-+#include <linux/poll.h>
++#include <linux/module.h>
 +#include "aufs.h"
 +
-+/* common function to regular file and dir */
-+int aufs_flush(struct file *file, fl_owner_t id)
++struct au_wkq *au_wkq;
++
++struct au_cred {
++#ifdef CONFIG_AUFS_DLGT
++	int umask;
++	uid_t fsuid;
++	gid_t fsgid;
++	kernel_cap_t cap_effective, cap_inheritable, cap_permitted;
++#if 0 /* reserved for future use */
++	unsigned keep_capabilities:1;
++	struct user_struct *user;
++	struct fs_struct *fs;
++	struct nsproxy *nsproxy;
++#endif
++#endif
++};
++
++struct au_wkinfo {
++	struct work_struct wk;
++	struct vfsmount *mnt;
++
++	unsigned int flags;
++	struct au_cred cred;
++
++	au_wkq_func_t func;
++	void *args;
++
++	atomic_t *busyp;
++	struct completion *comp;
++};
++
++/* ---------------------------------------------------------------------- */
++
++#ifdef CONFIG_AUFS_DLGT
++static void cred_store(struct au_cred *cred)
++{
++	cred->umask = current->fs->umask;
++	cred->fsuid = current->fsuid;
++	cred->fsgid = current->fsgid;
++	cred->cap_effective = current->cap_effective;
++	cred->cap_inheritable = current->cap_inheritable;
++	cred->cap_permitted = current->cap_permitted;
++}
++
++static void cred_revert(struct au_cred *cred)
++{
++	AuDebugOn(!au_test_wkq(current));
++	current->fs->umask = cred->umask;
++	current->fsuid = cred->fsuid;
++	current->fsgid = cred->fsgid;
++	current->cap_effective = cred->cap_effective;
++	current->cap_inheritable = cred->cap_inheritable;
++	current->cap_permitted = cred->cap_permitted;
++}
++
++static void cred_switch(struct au_cred *old, struct au_cred *new)
++{
++	cred_store(old);
++	cred_revert(new);
++}
++
++static void dlgt_cred_store(unsigned int flags, struct au_wkinfo *wkinfo)
++{
++	if (unlikely(au_ftest_wkq(flags, DLGT)))
++		cred_store(&wkinfo->cred);
++}
++
++static void dlgt_func(struct au_wkinfo *wkinfo)
++{
++	if (!au_ftest_wkq(wkinfo->flags, DLGT))
++		wkinfo->func(wkinfo->args);
++	else {
++		struct au_cred cred;
++		cred_switch(&cred, &wkinfo->cred);
++		wkinfo->func(wkinfo->args);
++		cred_revert(&cred);
++	}
++}
++#else
++static void dlgt_cred_store(unsigned int flags, struct au_wkinfo *wkinfo)
++{
++	/* empty */
++}
++
++static void dlgt_func(struct au_wkinfo *wkinfo)
++{
++	wkinfo->func(wkinfo->args);
++}
++#endif /* CONFIG_AUFS_DLGT */
++
++/* ---------------------------------------------------------------------- */
++
++static void update_busy(struct au_wkq *wkq, struct au_wkinfo *wkinfo)
++{
++#ifdef CONFIG_AUFS_STAT
++	unsigned int new, old;
++
++	do {
++		new = atomic_read(wkinfo->busyp);
++		old = wkq->max_busy;
++		if (new <= old)
++			break;
++	} while (cmpxchg(&wkq->max_busy, old, new) == old);
++#endif
++}
++
++static int enqueue(struct au_wkq *wkq, struct au_wkinfo *wkinfo)
++{
++	AuTraceEnter();
++	wkinfo->busyp = &wkq->busy;
++	update_busy(wkq, wkinfo);
++	if (au_ftest_wkq(wkinfo->flags, WAIT))
++		return !queue_work(wkq->q, &wkinfo->wk);
++	else
++		return !schedule_work(&wkinfo->wk);
++}
++
++static void do_wkq(struct au_wkinfo *wkinfo)
++{
++	unsigned int idle, n;
++	int i, idle_idx;
++
++	AuTraceEnter();
++
++	while (1) {
++		if (au_ftest_wkq(wkinfo->flags, WAIT)) {
++			idle_idx = 0;
++			idle = UINT_MAX;
++			for (i = 0; i < aufs_nwkq; i++) {
++				n = atomic_inc_return(&au_wkq[i].busy);
++				if (n == 1 && !enqueue(au_wkq + i, wkinfo))
++					return; /* success */
++
++				if (n < idle) {
++					idle_idx = i;
++					idle = n;
++				}
++				atomic_dec_return(&au_wkq[i].busy);
++			}
++		} else
++			idle_idx = aufs_nwkq;
++
++		atomic_inc_return(&au_wkq[idle_idx].busy);
++		if (!enqueue(au_wkq + idle_idx, wkinfo))
++			return; /* success */
++
++		/* impossible? */
++		AuWarn1("failed to queue_work()\n");
++		yield();
++	}
++}
++
++static void wkq_func(struct work_struct *wk)
++{
++	struct au_wkinfo *wkinfo = container_of(wk, struct au_wkinfo, wk);
++
++	LKTRTrace("wkinfo{0x%x, %p, %p, %p}\n",
++		  wkinfo->flags, wkinfo->func, wkinfo->busyp, wkinfo->comp);
++
++	dlgt_func(wkinfo);
++	atomic_dec_return(wkinfo->busyp);
++	if (au_ftest_wkq(wkinfo->flags, WAIT))
++		complete(wkinfo->comp);
++	else {
++		mntput(wkinfo->mnt);
++		module_put(THIS_MODULE);
++		kfree(wkinfo);
++	}
++}
++
++int au_wkq_run(au_wkq_func_t func, void *args, struct super_block *sb,
++	       unsigned int flags)
 +{
 +	int err;
-+	struct dentry *dentry;
-+	aufs_bindex_t bindex, bend;
++	DECLARE_COMPLETION_ONSTACK(comp);
++	struct au_wkinfo _wkinfo = {
++		.flags	= flags,
++		.func	= func,
++		.args	= args,
++		.comp	= &comp
++	}, *wkinfo = &_wkinfo;
 +
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+
-+	si_noflush_read_lock(dentry->d_sb);
-+	fi_read_lock(file);
-+	di_read_lock_child(dentry, AuLock_IW);
++	LKTRTrace("0x%x\n", flags);
++	AuDebugOn(au_test_wkq(current));
 +
 +	err = 0;
-+	bend = au_fbend(file);
-+	for (bindex = au_fbstart(file); !err && bindex <= bend; bindex++) {
-+		struct file *h_file;
-+		h_file = au_h_fptr(file, bindex);
-+		if (h_file && h_file->f_op && h_file->f_op->flush) {
-+			err = h_file->f_op->flush(h_file, id);
-+			if (!err)
-+				au_update_fuse_h_inode
-+					(h_file->f_vfsmnt, h_file->f_dentry);
-+			/*ignore*/
-+		}
++	if (unlikely(!au_ftest_wkq(flags, WAIT))) {
++		AuDebugOn(!sb);
++		/*
++		 * wkq_func() must free this wkinfo.
++		 * it highly depends upon the implementation of workqueue.
++		 */
++		err = -ENOMEM;
++		wkinfo = kmalloc(sizeof(*wkinfo), GFP_TEMPORARY);
++		if (unlikely(!wkinfo))
++			goto out;
++		err = 0;
++		/* prohibit umount */
++		wkinfo->mnt = au_mntcache_get(sb);
++		wkinfo->flags = flags;
++		wkinfo->func = func;
++		wkinfo->args = args;
++		wkinfo->comp = NULL;
++		__module_get(THIS_MODULE);
 +	}
-+	au_cpup_attr_timesizes(dentry->d_inode);
 +
-+	di_read_unlock(dentry, AuLock_IW);
-+	fi_read_unlock(file);
-+	si_read_unlock(dentry->d_sb);
++	INIT_WORK(&wkinfo->wk, wkq_func);
++	dlgt_cred_store(flags, wkinfo);
++	do_wkq(wkinfo);
++	if (au_ftest_wkq(flags, WAIT))
++		/* no timeout, no interrupt */
++		wait_for_completion(wkinfo->comp);
++ out:
 +	AuTraceErr(err);
 +	return err;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+static int do_open_nondir(struct file *file, int flags)
++void au_wkq_fin(void)
 +{
-+	int err;
-+	aufs_bindex_t bindex;
-+	struct super_block *sb;
-+	struct file *h_file;
-+	struct dentry *dentry;
-+	struct inode *inode;
-+	struct au_finfo *finfo;
++	int i;
 +
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, flags 0%o\n", AuDLNPair(dentry), flags);
-+	FiMustWriteLock(file);
-+	inode = dentry->d_inode;
-+	AuDebugOn(!inode || S_ISDIR(inode->i_mode));
++	AuTraceEnter();
++
++	for (i = 0; i < aufs_nwkq; i++)
++		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q))
++			destroy_workqueue(au_wkq[i].q);
++	kfree(au_wkq);
++}
++
++int __init au_wkq_init(void)
++{
++	int err, i;
++	struct au_wkq *nowaitq;
++
++	LKTRTrace("%d\n", aufs_nwkq);
++
++	/* '+1' is for accounting  of nowait queue */
++	err = -ENOMEM;
++	au_wkq = kcalloc(aufs_nwkq + 1, sizeof(*au_wkq), GFP_KERNEL);
++	if (unlikely(!au_wkq))
++		goto out;
 +
 +	err = 0;
-+	finfo = au_fi(file);
-+	finfo->fi_h_vm_ops = NULL;
-+	sb = dentry->d_sb;
-+	bindex = au_dbstart(dentry);
-+	AuDebugOn(!au_h_dptr(dentry, bindex)->d_inode);
-+	/* O_TRUNC is processed already */
-+	BUG_ON(au_test_ro(sb, bindex, inode) && (flags & O_TRUNC));
++	for (i = 0; i < aufs_nwkq; i++) {
++		au_wkq[i].q = create_singlethread_workqueue(AUFS_WKQ_NAME);
++		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q)) {
++			atomic_set(&au_wkq[i].busy, 0);
++			au_wkq[i].max_busy = 0;
++			continue;
++		}
 +
-+	h_file = au_h_open(dentry, bindex, flags, file);
-+	if (!IS_ERR(h_file)) {
-+		au_set_fbstart(file, bindex);
-+		au_set_fbend(file, bindex);
-+		au_set_h_fptr(file, bindex, h_file);
-+		au_update_figen(file);
-+		/* todo: necessary? */
-+		/* file->f_ra = h_file->f_ra; */
-+		return 0; /* success */
++		err = PTR_ERR(au_wkq[i].q);
++		au_wkq_fin();
++		break;
 +	}
-+	err = PTR_ERR(h_file);
++
++	/* nowait accounting */
++	nowaitq = au_wkq + aufs_nwkq;
++	atomic_set(&nowaitq->busy, 0);
++	nowaitq->max_busy = 0;
++	nowaitq->q = NULL;
++	/* smp_mb(); */ /* atomic_set */
++
++ out:
 +	AuTraceErr(err);
 +	return err;
 +}
+diff --git a/fs/aufs/wkq.h b/fs/aufs/wkq.h
+new file mode 100644
+index 0000000..2b9690a
+--- /dev/null
++++ b/fs/aufs/wkq.h
+@@ -0,0 +1,158 @@
++/*
++ * Copyright (C) 2005-2008 Junjiro Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
 +
-+static int aufs_open_nondir(struct inode *inode, struct file *file)
++/*
++ * workqueue for asynchronous/super-io/delegated operations
++ */
++
++#ifndef __AUFS_WKQ_H__
++#define __AUFS_WKQ_H__
++
++#ifdef __KERNEL__
++
++#include <linux/fs.h>
++#include <linux/sched.h>
++#include <linux/workqueue.h>
++#include <linux/aufs_type.h>
++
++/* ---------------------------------------------------------------------- */
++
++/* internal workqueue named AUFS_WKQ_NAME */
++struct au_wkq {
++	struct workqueue_struct	*q;
++
++	/* accounting */
++	atomic_t		busy;
++	unsigned int		max_busy; /* todo: STAT only */
++};
++
++/*
++ * in the next operation, wait for the 'nowait' tasks in system-wide workqueue
++ */
++struct au_nowait_tasks {
++#ifdef CONFIG_AUFS_HINOTIFY
++	/*
++	 * currently, the 'nowait' task which should be waited in the next
++	 * operation is only hinotify.
++	 */
++	atomic_t		nw_len;
++	wait_queue_head_t	nw_wq;
++#endif
++};
++
++/* ---------------------------------------------------------------------- */
++
++extern struct au_wkq *au_wkq;
++typedef void (*au_wkq_func_t)(void *args);
++
++/* wkq flags */
++#define AuWkq_WAIT	1
++#define AuWkq_DLGT	(1 << 1)
++#define au_ftest_wkq(flags, name)	((flags) & AuWkq_##name)
++#define au_fset_wkq(flags, name)	{ (flags) |= AuWkq_##name; }
++#define au_fclr_wkq(flags, name)	{ (flags) &= ~AuWkq_##name; }
++#ifndef CONFIG_AUFS_DLGT
++#undef AuWkq_DLGT
++#define AuWkq_DLGT	0
++#endif
++
++int au_wkq_run(au_wkq_func_t func, void *args, struct super_block *sb,
++	       unsigned int flags);
++int __init au_wkq_init(void);
++void au_wkq_fin(void);
++
++/* ---------------------------------------------------------------------- */
++
++static inline int au_test_wkq(struct task_struct *tsk)
 +{
-+	return au_do_open(inode, file, do_open_nondir);
++	return (!tsk->mm && !strcmp(tsk->comm, AUFS_WKQ_NAME));
++#if 0 /* reserved for future use, per-cpu workqueue */
++	return (!tsk->mm
++		&& !memcmp(tsk->comm, AUFS_WKQ_NAME "/",
++			   sizeof(AUFS_WKQ_NAME)));
++#endif
 +}
 +
-+static int aufs_release_nondir(struct inode *inode, struct file *file)
++static inline int au_wkq_wait(au_wkq_func_t func, void *args, int dlgt)
 +{
-+	struct super_block *sb = file->f_dentry->d_sb;
++	unsigned int flags = AuWkq_WAIT;
++	if (unlikely(dlgt))
++		au_fset_wkq(flags, DLGT);
++	return au_wkq_run(func, args, /*sb*/NULL, flags);
++}
 +
-+	LKTRTrace("i%lu, %.*s\n", inode->i_ino, AuDLNPair(file->f_dentry));
++static inline int au_wkq_nowait(au_wkq_func_t func, void *args,
++				struct super_block *sb, int dlgt)
++{
++	unsigned int flags = !AuWkq_WAIT;
++	if (unlikely(dlgt))
++		au_fset_wkq(flags, DLGT);
++	return au_wkq_run(func, args, sb, flags);
++}
 +
-+	si_noflush_read_lock(sb);
-+	au_finfo_fin(file);
-+	si_read_unlock(sb);
++#ifdef CONFIG_AUFS_HINOTIFY
++/* todo: memory barrier? */
++static inline void au_nwt_init(struct au_nowait_tasks *nwt)
++{
++	atomic_set(&nwt->nw_len, 0);
++	smp_mb(); /* atomic_set */
++	init_waitqueue_head(&nwt->nw_wq);
++}
++
++static inline int au_nwt_inc(struct au_nowait_tasks *nwt)
++{
++	return atomic_inc_return(&nwt->nw_len);
++}
++
++static inline int au_nwt_dec(struct au_nowait_tasks *nwt)
++{
++	int ret = atomic_dec_return(&nwt->nw_len);
++	if (!ret)
++		wake_up_all(&nwt->nw_wq);
++	return ret;
++}
++
++static inline int au_nwt_flush(struct au_nowait_tasks *nwt)
++{
++	wait_event(nwt->nw_wq, !atomic_read(&nwt->nw_len));
++	return 0;
++}
++#else
++static inline void au_nwt_init(struct au_nowait_tasks *nwt)
++{
++	/* nothing */
++}
++
++static inline int au_nwt_inc(struct au_nowait_tasks *nwt)
++{
 +	return 0;
 +}
 +
-+/* ---------------------------------------------------------------------- */
-+
-+static ssize_t aufs_read(struct file *file, char __user *buf, size_t count,
-+			 loff_t *ppos)
++static inline int au_nwt_dec(struct au_nowait_tasks *nwt)
 +{
-+	ssize_t err;
-+	struct dentry *dentry;
-+	struct file *h_file;
-+	struct super_block *sb;
-+	struct inode *h_inode;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, cnt %lu, pos %Ld\n",
-+		  AuDLNPair(dentry), (unsigned long)count, *ppos);
-+
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
-+				      /*locked*/0);
-+	if (unlikely(err))
-+		goto out;
-+
-+	/* support LSM and notify */
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	h_inode = h_file->f_dentry->d_inode;
-+	err = vfsub_read_u(h_file, buf, count, ppos,
-+			   au_opt_test_dlgt(au_mntflags(sb)));
-+	/* todo: necessary? */
-+	/* file->f_ra = h_file->f_ra; */
-+	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
-+
-+	fi_read_unlock(file);
-+ out:
-+	si_read_unlock(sb);
-+	AuTraceErr(err);
-+	return err;
++	return 0;
 +}
 +
-+static ssize_t aufs_write(struct file *file, const char __user *ubuf,
-+			  size_t count, loff_t *ppos)
++static inline int au_nwt_flush(struct au_nowait_tasks *nwt)
 +{
-+	ssize_t err;
-+	struct dentry *dentry, *parent;
-+	struct inode *inode, *dir;
-+	struct super_block *sb;
-+	unsigned int mnt_flags;
-+	struct file *h_file;
-+	char __user *buf = (char __user *)ubuf;
-+	struct au_hin_ignore ign;
-+	struct vfsub_args vargs;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, cnt %lu, pos %Ld\n",
-+		  AuDLNPair(dentry), (unsigned long)count, *ppos);
-+
-+	inode = dentry->d_inode;
-+	mutex_lock(&inode->i_mutex);
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/1,
-+				      /*locked*/1);
-+	if (unlikely(err))
-+		goto out;
-+	err = au_ready_to_write(file, -1);
-+	if (unlikely(err))
-+		goto out_unlock;
-+
-+	/* support LSM and notify */
-+	mnt_flags = au_mntflags(sb);
-+	vfsub_args_init(&vargs, &ign, au_opt_test_dlgt(mnt_flags), 0);
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	if (!au_opt_test(mnt_flags, UDBA_INOTIFY))
-+		err = vfsub_write_u(h_file, buf, count, ppos, &vargs);
-+	else {
-+		parent = dget_parent(dentry);
-+		dir = parent->d_inode;
-+		ii_read_lock_parent(dir);
-+		vfsub_ign_hinode(&vargs, IN_MODIFY,
-+				 au_hi(dir, au_fbstart(file)));
-+		err = vfsub_write_u(h_file, buf, count, ppos, &vargs);
-+		ii_read_unlock(dir);
-+		dput(parent);
-+	}
-+	ii_write_lock_child(inode);
-+	au_cpup_attr_timesizes(inode);
-+	ii_write_unlock(inode);
-+
-+ out_unlock:
-+	fi_write_unlock(file);
-+ out:
-+	si_read_unlock(sb);
-+	mutex_unlock(&inode->i_mutex);
-+	AuTraceErr(err);
-+	return err;
++	return 0;
 +}
++#endif /* CONFIG_AUFS_HINOTIFY */
 +
-+static int au_test_loopback(void)
-+{
-+	const char c = current->comm[4];
-+	/* true if a kernel thread named 'loop[0-9].*' accesses a file */
-+	const int loopback = (current->mm == NULL
-+			      && '0' <= c && c <= '9'
-+			      && strncmp(current->comm, "loop", 4) == 0);
-+	return loopback;
-+}
-+
-+static ssize_t aufs_splice_read(struct file *file, loff_t *ppos,
-+				struct pipe_inode_info *pipe, size_t len,
-+				unsigned int flags)
-+{
-+	ssize_t err;
-+	struct file *h_file;
-+	struct dentry *dentry;
-+	struct super_block *sb;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, pos %Ld, len %lu\n",
-+		  AuDLNPair(dentry), *ppos, (unsigned long)len);
-+
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
-+				      /*locked*/0);
-+	if (unlikely(err))
-+		goto out;
-+
-+	err = -EINVAL;
-+	/* support LSM and notify */
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	if (/* unlikely */(au_test_loopback())) {
-+		file->f_mapping = h_file->f_mapping;
-+		smp_mb(); /* unnecessary? */
-+	}
-+	err = vfsub_splice_to(h_file, ppos, pipe, len, flags,
-+			      au_opt_test_dlgt(au_mntflags(sb)));
-+	/* todo: necessasry? */
-+	/* file->f_ra = h_file->f_ra; */
-+	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
-+	fi_read_unlock(file);
-+
-+ out:
-+	si_read_unlock(sb);
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+static ssize_t
-+aufs_splice_write(struct pipe_inode_info *pipe, struct file *file, loff_t *ppos,
-+		  size_t len, unsigned int flags)
-+{
-+	ssize_t err;
-+	struct dentry *dentry;
-+	struct inode *inode, *h_inode;
-+	struct super_block *sb;
-+	struct file *h_file;
-+	struct au_hin_ignore ign;
-+	struct vfsub_args vargs;
-+	unsigned int mnt_flags;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, len %lu, pos %Ld\n",
-+		  AuDLNPair(dentry), (unsigned long)len, *ppos);
-+
-+	inode = dentry->d_inode;
-+	mutex_lock(&inode->i_mutex);
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/1,
-+				      /*locked*/1);
-+	if (unlikely(err))
-+		goto out;
-+	err = au_ready_to_write(file, -1);
-+	if (unlikely(err))
-+		goto out_unlock;
-+
-+	/* support LSM and notify */
-+	mnt_flags = au_mntflags(sb);
-+	vfsub_args_init(&vargs, &ign, au_opt_test_dlgt(mnt_flags), 0);
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	h_inode = h_file->f_dentry->d_inode;
-+	/* current do_splice_from() doesn't fire up the inotify event */
-+	if (1 || !au_opt_test(mnt_flags, UDBA_INOTIFY))
-+		err = vfsub_splice_from(pipe, h_file, ppos, len, flags, &vargs);
-+#if 0 /* reserved for future use */
-+	else {
-+		struct dentry *parent = dget_parent(dentry);
-+		vfsub_ign_hinode(&vargs, IN_MODIFY,
-+		au_hi(parent->d_inode, au_fbstart(file));
-+		err = vfsub_splice_from(pipe, h_file, ppos, len, flags, &vargs);
-+		dput(parent);
-+	}
-+#endif
-+	ii_write_lock_child(inode);
-+	au_cpup_attr_timesizes(inode);
-+	ii_write_unlock(inode);
-+
-+ out_unlock:
-+	fi_write_unlock(file);
-+ out:
-+	si_read_unlock(sb);
-+	mutex_unlock(&inode->i_mutex);
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static int aufs_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	int err;
-+	struct dentry *dentry;
-+	struct file *file, *h_file;
-+	struct inode *inode;
-+	static DECLARE_WAIT_QUEUE_HEAD(wq);
-+	struct au_finfo *finfo;
-+
-+	AuTraceEnter();
-+	AuDebugOn(!vma || !vma->vm_file);
-+	/* todo: non-robr mode, user vm_file as it is? */
-+	wait_event(wq, (file = au_robr_safe_file(vma)));
-+	AuDebugOn(!au_test_aufs(file->f_dentry->d_sb));
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+	inode = dentry->d_inode;
-+	AuDebugOn(!S_ISREG(inode->i_mode));
-+
-+	/* do not revalidate, no si lock */
-+	finfo = au_fi(file);
-+	h_file = finfo->fi_hfile[0 + finfo->fi_bstart].hf_file;
-+	AuDebugOn(!h_file || !au_test_mmapped(file));
-+	fi_write_lock(file);
-+	vma->vm_file = h_file;
-+	err = finfo->fi_h_vm_ops->fault(vma, vmf);
-+	/* todo: necessary? */
-+	/* file->f_ra = h_file->f_ra; */
-+	au_robr_reset_file(vma, file);
-+	fi_write_unlock(file);
-+#if 0 /* def CONFIG_SMP */
-+	/* wake_up_nr(&wq, online_cpu - 1); */
-+	wake_up_all(&wq);
-+#else
-+	wake_up(&wq);
-+#endif
-+
-+	if (!(err & VM_FAULT_ERROR)) {
-+#if 0 /* debug */
-+		struct page *page;
-+		page = vmf->page;
-+		AuDbg("%p, %d\n", page, page_mapcount(page));
-+
-+		page->mapping = file->f_mapping;
-+		get_page(page);
-+		file->f_mapping = h_file->f_mapping;
-+		touch_atime(NULL, dentry);
-+		inode->i_atime = h_file->f_dentry->d_inode->i_atime;
-+#endif
-+	}
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+static struct vm_operations_struct aufs_vm_ops = {
-+	.fault		= aufs_fault,
-+#if 0 /* reserved for future use */
-+	.open		= aufs_vmaopen,
-+	.close		= aufs_vmaclose,
-+	unsigned long (*nopfn)(struct vm_area_struct *area,
-+			       unsigned long address);
-+	page_mkwrite(struct vm_area_struct *vma, struct page *page)
-+#endif
-+};
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static struct vm_operations_struct *au_vm_ops(struct file *h_file,
-+					      struct vm_area_struct *vma)
-+{
-+	struct vm_operations_struct *vm_ops;
-+	int err;
-+
-+	AuTraceEnter();
-+
-+	if (!au_test_nfs(h_file->f_vfsmnt->mnt_sb))
-+		err = h_file->f_op->mmap(h_file, vma);
-+	else {
-+		lockdep_off();
-+		err = h_file->f_op->mmap(h_file, vma);
-+		lockdep_on();
-+	}
-+	vm_ops = ERR_PTR(err);
-+	if (unlikely(err))
-+		goto out;
-+	vm_ops = vma->vm_ops;
-+	err = do_munmap(current->mm, vma->vm_start,
-+			vma->vm_end - vma->vm_start);
-+	if (unlikely(err)) {
-+		AuIOErr("failed internal unmapping %.*s, %d\n",
-+			AuDLNPair(h_file->f_dentry), err);
-+		vm_ops = ERR_PTR(-EIO);
-+	}
-+
-+ out:
-+	AuTraceErrPtr(vm_ops);
-+	return vm_ops;
-+}
-+
-+static int aufs_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	int err, wlock, mmapped;
-+	struct dentry *dentry;
-+	struct super_block *sb;
-+	struct file *h_file;
-+	struct vm_operations_struct *vm_ops;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, %lx, len %lu\n",
-+		  AuDLNPair(dentry), vma->vm_start,
-+		  vma->vm_end - vma->vm_start);
-+	AuDebugOn(!S_ISREG(dentry->d_inode->i_mode));
-+	AuDebugOn(down_write_trylock(&vma->vm_mm->mmap_sem));
-+
-+	mmapped = au_test_mmapped(file); /* can be harmless race condition */
-+	wlock = !!(file->f_mode & FMODE_WRITE);
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir,
-+				      wlock | !mmapped, /*locked*/0);
-+	if (unlikely(err))
-+		goto out;
-+
-+	if (wlock) {
-+		err = au_ready_to_write(file, -1);
-+		if (unlikely(err))
-+			goto out_unlock;
-+	}
-+
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	if (unlikely(au_test_fuse(h_file->f_dentry->d_sb))) {
-+		/*
-+		 * by this assignment, f_mapping will differs from aufs inode
-+		 * i_mapping.
-+		 * if someone else mixes the use of f_dentry->d_inode and
-+		 * f_mapping->host, then a problem may arise.
-+		 */
-+		file->f_mapping = h_file->f_mapping;
-+	}
-+
-+	if (0 && h_file->f_op->mmap == generic_file_mmap) {
-+		err = generic_file_mmap(file, vma); /* instead of h_file */
-+		if (unlikely(err))
-+			goto out_unlock;
-+		au_fi(file)->fi_h_vm_ops = vma->vm_ops;
-+	} else {
-+		vm_ops = NULL;
-+		if (!mmapped) {
-+			vm_ops = au_vm_ops(h_file, vma);
-+			err = PTR_ERR(vm_ops);
-+			if (IS_ERR(vm_ops))
-+				goto out_unlock;
-+		}
-+
-+		err = generic_file_mmap(file, vma);
-+		if (unlikely(err))
-+			goto out_unlock;
-+		vma->vm_ops = &aufs_vm_ops;
-+		/* test again */
-+		if (!au_test_mmapped(file)) {
-+			FiMustWriteLock(file);
-+			au_fi(file)->fi_h_vm_ops = vm_ops;
-+		}
-+	}
-+
-+	file_accessed(h_file);
-+	au_update_fuse_h_inode(h_file->f_vfsmnt, h_file->f_dentry); /*ignore*/
-+	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
-+
-+ out_unlock:
-+	if (!wlock && mmapped)
-+		fi_read_unlock(file);
-+	else
-+		fi_write_unlock(file);
-+ out:
-+	si_read_unlock(sb);
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static unsigned int aufs_poll(struct file *file, poll_table *wait)
-+{
-+	unsigned int mask;
-+	struct file *h_file;
-+	int err;
-+	struct dentry *dentry;
-+	struct super_block *sb;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, wait %p\n", AuDLNPair(dentry), wait);
-+	AuDebugOn(S_ISDIR(dentry->d_inode->i_mode));
-+
-+	/* We should pretend an error happened. */
-+	mask = POLLERR /* | POLLIN | POLLOUT */;
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
-+				      /*locked*/0);
-+	if (unlikely(err))
-+		goto out;
-+
-+	/* it is not an error of hidden_file has no operation */
-+	mask = DEFAULT_POLLMASK;
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	if (h_file->f_op && h_file->f_op->poll)
-+		mask = h_file->f_op->poll(h_file, wait);
-+	fi_read_unlock(file);
-+
-+ out:
-+	si_read_unlock(sb);
-+	AuTraceErr((int)mask);
-+	return mask;
-+}
-+
-+static int aufs_fsync_nondir(struct file *file, struct dentry *dentry,
-+			     int datasync)
-+{
-+	int err;
-+	struct inode *inode;
-+	struct file *h_file;
-+	struct super_block *sb;
-+
-+	LKTRTrace("%.*s, %d\n", AuDLNPair(dentry), datasync);
-+	inode = dentry->d_inode;
-+
-+	IMustLock(file->f_mapping->host);
-+	if (unlikely(inode != file->f_mapping->host)) {
-+		mutex_unlock(&file->f_mapping->host->i_mutex);
-+		mutex_lock(&inode->i_mutex);
-+	}
-+	IMustLock(inode);
-+
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = 0; /* -EBADF; */ /* posix? */
-+	if (unlikely(!(file->f_mode & FMODE_WRITE)))
-+		goto out;
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/1,
-+				      /*locked*/1);
-+	if (unlikely(err))
-+		goto out;
-+	err = au_ready_to_write(file, -1);
-+	if (unlikely(err))
-+		goto out_unlock;
-+
-+	err = -EINVAL;
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	if (h_file->f_op && h_file->f_op->fsync) {
-+		ii_write_lock_child(inode);
-+		mutex_lock_nested(&h_file->f_dentry->d_inode->i_mutex,
-+				  AuLsc_I_CHILD);
-+		err = h_file->f_op->fsync(h_file, h_file->f_dentry, datasync);
-+		if (!err)
-+			au_update_fuse_h_inode(h_file->f_vfsmnt,
-+					       h_file->f_dentry);
-+		au_cpup_attr_timesizes(inode);
-+		mutex_unlock(&h_file->f_dentry->d_inode->i_mutex);
-+		ii_write_unlock(inode);
-+	}
-+
-+ out_unlock:
-+	fi_write_unlock(file);
-+ out:
-+	si_read_unlock(sb);
-+	if (unlikely(inode != file->f_mapping->host)) {
-+		mutex_unlock(&inode->i_mutex);
-+		mutex_lock(&file->f_mapping->host->i_mutex);
-+	}
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+static int aufs_fasync(int fd, struct file *file, int flag)
-+{
-+	int err;
-+	struct file *h_file;
-+	struct dentry *dentry;
-+	struct super_block *sb;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, %d\n", AuDLNPair(dentry), flag);
-+
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
-+				      /*locked*/0);
-+	if (unlikely(err))
-+		goto out;
-+
-+	h_file = au_h_fptr(file, au_fbstart(file));
-+	if (h_file->f_op && h_file->f_op->fasync)
-+		err = h_file->f_op->fasync(fd, h_file, flag);
-+	fi_read_unlock(file);
-+
-+ out:
-+	si_read_unlock(sb);
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+struct file_operations aufs_file_fop = {
-+	.read		= aufs_read,
-+	.write		= aufs_write,
-+	.poll		= aufs_poll,
-+	.mmap		= aufs_mmap,
-+	.open		= aufs_open_nondir,
-+	.flush		= aufs_flush,
-+	.release	= aufs_release_nondir,
-+	.fsync		= aufs_fsync_nondir,
-+	.fasync		= aufs_fasync,
-+	.splice_write	= aufs_splice_write,
-+	.splice_read	= aufs_splice_read,
-+};
++#endif /* __KERNEL__ */
++#endif /* __AUFS_WKQ_H__ */
 -- 
 1.5.5.1.308.g1fbb5.dirty
 
