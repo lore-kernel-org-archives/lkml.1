@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764727AbYEUCiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762728AbYEUC4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764727AbYEUCiH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 22:38:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbYEUChz
+	id S1762728AbYEUC4g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 22:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYEUC4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 22:37:55 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61949 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752044AbYEUChy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 22:37:54 -0400
-Date: Wed, 21 May 2008 03:37:27 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: gshan <gshan@alcatel-lucent.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: PIIX4 DMA Timeout
-In-Reply-To: <48337608.7010000@alcatel-lucent.com>
-Message-ID: <Pine.LNX.4.55.0805210309340.31790@cliff.in.clinika.pl>
-References: <003b01c8ba7a$19f01500$01fca8c0@microsof60b8d6> 
- <Pine.LNX.4.55.0805201746130.31790@cliff.in.clinika.pl>
- <48337608.7010000@alcatel-lucent.com>
+	Tue, 20 May 2008 22:56:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52249 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756479AbYEUC4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 22:56:24 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] signals: collect_signal: remove the unneeded
+ sigismember() check
+In-Reply-To: Linus Torvalds's message of  Tuesday, 20 May 2008 19:14:15 -0700 <alpine.LFD.1.10.0805201903150.3081@woody.linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20080517151424.GA9505@tv-sign.ru>
+	<20080521005646.1BD5426FA1C@magilla.localdomain>
+	<alpine.LFD.1.10.0805201903150.3081@woody.linux-foundation.org>
+X-Zippy-Says: Hmmm...  a PINHEAD, during an EARTHQUAKE, encounters an ALL-MIDGET
+    FIDDLE ORCHESTRA...  ha..  ha..
+Message-Id: <20080521025617.612D726FA1C@magilla.localdomain>
+Date: Tue, 20 May 2008 19:56:17 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008, gshan wrote:
+> It's basically the equivalent of a "spin_lock_irq()" for DRM, where 
+> signals are the "interrupts" that need to be blocked while holding the 
+> lock.
 
-> Maciej, thank you very much for your reply. I don't think this was caused by
-> interrupt routing. I added lots of "printk" before following output, and saw
-> interrupts could be triggered correctly.
+Well, sure, that makes sense.  But that's not what it does.  I can see what
+it does, I just can't tell why it really makes any sense.
 
- As I wrote, that was a restriction that did not affect PIO operation.  
-IIRC, you had to wire IDE interrupt lines to motherboard interrupt (MIRQ)  
-lines of the south-bridge rather than regular IRQ14/15 lines and then
-route them to IRQ14/15 inputs of the embedded slave 8259A core via some
-internal interrupt routing register for DMA to work correctly.  PIO worked
-just fine either way, because the interrupts were delivered to the CPU
-after all, but some internal logic of the IDE adapter used them too in the
-DMA mode and expected them on MIRQ lines.
+Despite the name, block_all_signals() in fact blocks no signals.  What
+it does is install notifier/notifier_mask, which makes the hook get
+called for those particular signals and it can decide to delay the
+signal (in a kooky fashion that's not really reliable).
 
- This is from memory -- I have the relevant datasheets somewhere, but you
-could double-check it as well as cross-check with board documentation
-yourself.  It may not apply to the PIIX4 specifically -- it may have only
-been earlier south-bridges of the PIIX line, but I cannot remember for
-sure.
+drm_lock uses a mask containing only the stop signals (SIGSTOP, SIGTSTP,
+SIGTTOU, SIGTTIN).  So for other signals, its hook (drm_notifier) never
+gets called, and signal_pending() stays set, handlers get run, etc.
 
-> hdc: 195371568 sectors (100030 MB) w/7539KiB Cache, CHS=16383/255/63, UDMA(33)
-> 
-> LynxOS has been run successfully on this board, and we want port it to Linux recently.
+So I can't tell what it's actually good for (that's at all reliable
+now).  But you just told me not to ask you how it's supposed to work,
+and I respect that. ;-)
 
- That does not mean anything here -- do you know for sure it uses DMA with
-IDE?  I suppose Linux would run correctly if you configured the IDE driver
-for PIO operation too.  Of course you do not want to make regular use of
-IDE PIO modes unless you cannot spell performance; never mind additional
-data protection in UDMA modes.
+The best I can figure is that the user-level code in question really
+does want to have signal handlers run, and to process fatal signals,
+during those critical sections.  It just wants to prevent a ^Z or
+SIGSTOP at the critical spot leaving the lock held while the process
+goes into TASK_STOPPED for an arbitrary period.
 
-> I'm not sure which resource (I/O or Memory space) should be used for DMA operation because
-> all memory resources haven't been set (the flag is 0x2xxxxxxx). So my question is DMA operation
-> could succeed with I/O resource?
 
- The I/O BAR has been configured, though I have to admit the values set
-may be problematic:
-
-    ide0: BM-DMA at 0xd8000000-0xd8000007, BIOS settings: hda:pio, hdb:pio
-    ide1: BM-DMA at 0xd8000008-0xd800000f, BIOS settings: hdc:pio, hdd:pio
-
-Port I/O over PCI is generally not supported outside the low 64kB of
-space, although it may work in some configurations.  Also here you need a
-couple of ports in a range above 3GB as well as the usual ports in the
-first 1kB implied by the PIIX4.  Given host bridges can usually only
-allocate contiguous areas for I/O purposes you would need over 3GB of host
-address space for port I/O.  That may be available in a 64-bit system, but
-I would be suspicious.
-
- Linux's PCI subsystem can automatically assign address space to PCI port
-and memory I/O resources reasonably if you ask it to do so.  You have to
-tell it what host CPU address space is available for this purpose first
-though.  You can get this information from configuration registers of the
-host bridge.  Of course these registers have to be set in a sensible way
-in the first place, which may not necessarily be the case.  This is the
-area I would look into first.  Good luck!
-
-  Maciej
+Thanks,
+Roland
