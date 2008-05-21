@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbYEUCO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764152AbYEUCRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932736AbYEUCO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 22:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYEUCOr
+	id S1764152AbYEUCRm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 22:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbYEUCRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 22:14:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60976 "EHLO
+	Tue, 20 May 2008 22:17:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36786 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757235AbYEUCOr (ORCPT
+	by vger.kernel.org with ESMTP id S1754725AbYEUCRa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 22:14:47 -0400
-Date: Tue, 20 May 2008 19:14:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] signals: collect_signal: remove the unneeded
- sigismember() check
-In-Reply-To: <20080521005646.1BD5426FA1C@magilla.localdomain>
-Message-ID: <alpine.LFD.1.10.0805201903150.3081@woody.linux-foundation.org>
-References: <20080517151424.GA9505@tv-sign.ru> <20080521005646.1BD5426FA1C@magilla.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 May 2008 22:17:30 -0400
+Date: Tue, 20 May 2008 19:17:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Karel Zak <kzak@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng 2.14-rc3
+Message-Id: <20080520191704.ea856364.akpm@linux-foundation.org>
+In-Reply-To: <20080519112402.GF17439@nb.net.home>
+References: <20080519112402.GF17439@nb.net.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 19 May 2008 13:24:02 +0200 Karel Zak <kzak@redhat.com> wrote:
 
-
-On Tue, 20 May 2008, Roland McGrath wrote:
+> The third util-linux-ng 2.14 release candidate is available at
 > 
-> drm_lock is using block_all_signals to catch all the stop signals
-> for a purpose that is not immediately clear to me.  
+>    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
+> 
+> 
+> Feedback and bug reports, as always, are welcomed.
 
-It's basically the equivalent of a "spin_lock_irq()" for DRM, where 
-signals are the "interrupts" that need to be blocked while holding the 
-lock.
+I think it would be useful to have a util-linux mention in the kernel's
+./MAINTAINERS.  We're rather joined-at-the-hip and you guys are a bit
+hard to find.  If agreeable, please send a patch.
 
-In order for the user-level direct-rendering code to be able to do a lock 
-that is safe in the presense of signals, the locking code needs to have 
-some way to basically disable signals. And it could disable/re-enable them 
-all the time, but that would be very expensive and defeat the whole 
-purpose (which is that you can get the lock cheaply in user space and only 
-take a system call on a lock conflict).
+Have you considered adding collectl to util-linux?  If so, what was the
+outcome?
 
-So instead, when it gets the DRM lock, it also does that 
-"block_all_signals()" thing, which means that *if* a signal happens, it 
-can temporarily disable the signal so that the handler won't be invoced in 
-the critical region.
+Thanks.
 
-Now, I have to admit that I do not know if the current user-level code 
-needs that any more, and even if it does, if it could possibly be replaced 
-by better models. It's a hack, no question about it. The whole DRI locking 
-is something really odd. Don't even ask me how it's supposed to work.
-
-			Linus
