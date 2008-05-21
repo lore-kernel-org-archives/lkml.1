@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937340AbYEUULd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936333AbYEUUSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937340AbYEUULd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937277AbYEUUKw
+	id S936333AbYEUUSV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbYEUUSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:10:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54825
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933322AbYEUUKv (ORCPT
+	Wed, 21 May 2008 16:18:05 -0400
+Received: from saeurebad.de ([85.214.36.134]:46809 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754490AbYEUUSC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:10:51 -0400
-Date: Wed, 21 May 2008 13:10:46 -0700 (PDT)
-Message-Id: <20080521.131046.242739198.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: gorcunov@gmail.com, tytso@mit.edu, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: CFD: linux-wanking@vger.kernel.org
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080521123127.3b3b66af.akpm@linux-foundation.org>
-References: <20080521104644.5b6f4e63.akpm@linux-foundation.org>
-	<20080521185725.GD6932@cvg>
-	<20080521123127.3b3b66af.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 16:18:02 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Philipp Marek <philipp@marek.priv.at>
+Cc: linux-kernel@vger.kernel.org, linux-trivial@kernel.org
+Subject: Re: [patch] kmalloc returns (void*), don't do type conversions
+References: <200805212113.51936@marek.priv.at>
+Date: Wed, 21 May 2008 22:17:34 +0200
+In-Reply-To: <200805212113.51936@marek.priv.at> (Philipp Marek's message of
+	"Wed, 21 May 2008 21:13:51 +0200")
+Message-ID: <877idn4dk1.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 21 May 2008 12:31:27 -0700
+Hi Phillip,
 
-> The #1 project for all kernel beginners should surely be "make sure
-> that the kernel runs perfectly at all times on all machines which you
-> can lay your hands on".  Usually the way to do this is to work with
-> others on getting things fixed up (this can require persistence!) but
-> that's fine - it's a part of kernel development.
+Philipp Marek <philipp@marek.priv.at> writes:
 
-Indeed.  A lot of the time I see new people, or people making
-suggestions to them, so fixated on wanting to implement new features.
+> I tried a "make allyesconfig", but that gave some compile errors 
+> that don't seem related to my changes:
+> 	drivers/block/cciss_scsi.c:75: error: ‘MAX_CTLR’ undeclared here (not in a function)
+> 	drivers/block/cciss_scsi.c:76: error: field name not in record or union initializer
 
-To me that is absolutely the wrong way to go about this.
+You probably should write another email regarding this.
 
-It's so much more useful, for both the community and the individual,
-to fix bugs.  Fixing a bug forces you to learn how the kernel works at
-least on some level, and fixing a bug always makes Linux better.
+> Please tell me if that's the correct approach; I'm sorry that I 
+> couldn't find out who the correct maintainer for these changes is.
 
-Implementing a new feature does not necessarily have either of those
-two important qualities, so it is never the place for new people to
-start.
+Added the trivial tree maintainer to CC.  Jesper?
 
-Fixing bugs will give someone a real identity and place in the
-community.
+> $ diffstat kmalloc-type-changes.patch
+>  arch/cris/arch-v32/mm/intmem.c                |   13 +++++--------
+>  arch/ia64/kernel/mca_drv.c                    |    4 ++--
+>  arch/powerpc/kernel/nvram_64.c                |    3 +--
+>  drivers/block/cciss.c                         |    3 +--
+>  drivers/block/cciss_scsi.c                    |    3 +--
+>  drivers/block/floppy.c                        |    3 +--
+>  drivers/i2c/i2c-dev.c                         |    3 +--
+>  drivers/isdn/capi/capidrv.c                   |    3 +--
+>  drivers/isdn/hisax/hfc_sx.c                   |    5 +++--
+>  drivers/media/video/vino.c                    |    8 ++++----
+>  drivers/message/i2o/i2o_config.c              |    3 +--
+>  drivers/mtd/maps/tqm8xxl.c                    |    2 +-
+>  drivers/net/gianfar.c                         |    6 ++----
+>  drivers/net/s2io.c                            |    4 ++--
+>  drivers/net/tulip/eeprom.c                    |    8 ++++----
+>  drivers/net/wireless/hostap/hostap_80211_rx.c |    3 +--
+>  drivers/net/wireless/hostap/hostap_ioctl.c    |    3 +--
+>  drivers/net/wireless/ipw2100.c                |   10 ++++------
+>  drivers/net/wireless/zd1211rw/zd_chip.c       |    2 +-
+>  drivers/s390/net/ctcm_mpc.c                   |    6 ++----
+>  drivers/s390/net/qeth_core_main.c             |    4 ++--
+>  drivers/scsi/osst.c                           |    5 ++---
+>  drivers/usb/storage/isd200.c                  |    3 +--
+>  fs/befs/btree.c                               |    4 ++--
+>  fs/ufs/util.c                                 |    3 +--
+>  net/ipv4/igmp.c                               |    3 +--
+>  net/ipv6/mcast.c                              |    3 +--
+>  net/sctp/protocol.c                           |    4 ++--
+>  security/selinux/ss/conditional.c             |    4 ++--
+>  29 files changed, 53 insertions(+), 75 deletions(-)
 
-You want real Linux kernel "street cred"?  Fix a lot of bugs, then you
-can implement a thousand new features and people will take you
-seriously because you've shown that you can and will fix things.
+You can include the diffstat in the patch as comment.  And please don't
+attach patches, include them inline.  See
+Documentation/SubmittingPatches.
+
+> Remove type conversions that are done on the result of kmalloc() -
+> this is defined as (void*).
+
+How about:
+
+  Remove unneeded explicit casting from kmalloc() return values.
+
+> Signed-off-by: philipp@marek.priv.at
+
+Better use:  Real Name <user@domain>
+
+Hope that helps,
+
+	Hannes
