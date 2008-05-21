@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934705AbYEUNBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbYEUNCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934705AbYEUNBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbYEUNBX
+	id S932337AbYEUNCg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbYEUNC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:01:23 -0400
-Received: from hs-out-0708.google.com ([64.233.178.246]:54561 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755675AbYEUNBW (ORCPT
+	Wed, 21 May 2008 09:02:28 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:46143 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754594AbYEUNC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:01:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=tXoWf/HartjvILcFMwNCcjQxMxpmPGcA+EMfwm5M21CI+wm4oSEMnmmyw0okHAsC+4Vh9/mYuUWHdr0qVTq2oNP1AnJaDy7hUFCiRsRYCJFQtucKwme1GWIULofnidhNmWrjb3S8FpRYC8XDrwRCO2GQf/fp59HnBItJEb/O0tk=
-Message-ID: <b49af93b0805210601n38030150w643565b60edc85da@mail.gmail.com>
-Date: Wed, 21 May 2008 18:31:21 +0530
-From: "vijay anand" <vijayanand.sj@gmail.com>
-To: linux-kernel@vger.kernel.org, dave@awk.cz
-Subject: [BUG] cdc-acm driver module
+	Wed, 21 May 2008 09:02:27 -0400
+Message-ID: <48341DF5.4090307@keyaccess.nl>
+Date: Wed, 21 May 2008 15:04:53 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Takashi Iwai <tiwai@suse.de>
+CC: Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] HG -> GIT migration
+References: <Pine.LNX.4.61.0805201314190.1798@tm8103-a.perex-int.cz>	<200805211430.06653.linux@audioscience.com>	<Pine.LNX.4.61.0805210805080.1798@tm8103-a.perex-int.cz>	<s5hve18vtml.wl%tiwai@suse.de>	<483415E7.5080402@keyaccess.nl> <s5hfxsbx27f.wl%tiwai@suse.de>
+In-Reply-To: <s5hfxsbx27f.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On 21-05-08 14:37, Takashi Iwai wrote:
 
-This is vijay and new to this group. Normally I use to go through the
-Linux kernel source and try to understand how things work.
+> At Wed, 21 May 2008 14:30:31 +0200,
+> Rene Herman wrote:
 
-Last week I was going through the cdc-acm driver source(linux-2.6.25).
-I think there is a bug with that driver and I am not sure about it. So
-I decided to post you guys and get your views on that.
+>> $ git remote show sound-2.6
+>> * remote sound-2.6
+>>    URL: git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
+>>    Tracked remote branches
+>>      master
+>>
+>> What's the status of that one now? Should I continue pulling that one or 
+>> should I switch to the new alsa-kernel GIT repo? I want to pull it into 
+>> a Linus clone tree...
+> 
+> We are working on this right now.  alsa.git is far currently behind my
+> tree.
+> 
+> One problem we hit is about multiple committers and rebase.  If you do
+> git-rebase, the commiter information is touched although the sign-off
+> isn't updated.  git-rebase looks apparently designed for the
+> single-commiter model.
 
-The interface is claimed in 'acm_probe' using 'usb_driver_claim_interface' and
-it has been released in 'acm_disconnect' using 'usb_driver_release_interface'.
-This works fine as long as the control reaches 'acm_disconnect'.
+It's "worse" than that; rebasing is designed for a _private_ development 
+model. git-rebase is a very handy tool for people like myself (people 
+without a downstream that is) and it basically enables the quilt model 
+of a stack of patches on top of git but public trees that have people 
+pulling from them should generally not rebase or everyone who _is_ 
+pulling finds a different tree each time.
 
-What happens when the control never reaches the 'acm_disconnect'. Like simply
-loading the driver and unloading the driver when the device is still in use.
-In this case I hope the 'usb_driver_release_interface' never gets called.
-Is it a bug? Do we have to do a 'usb_driver_release_interface' in  'acm_exit'.
+Linus is vehement about this also. There have a few threads about it and 
+the most recent was:
 
-Please clarify.
+http://lkml.org/lkml/2008/5/17/190
 
-Thanks,
-VJ
+I'm also not an experienced git user (not other than in my own leafnode 
+developer mode, certainly) but I expect Linus might not terribly mind 
+answering a few questions about the model -- ALSA is a significant 
+subsystem and it switching to GIT might even make for a nice "this is 
+how you do that as a subsystem" treatise...
+
+(ie, also added linux-kernel)
+
+Rene.
