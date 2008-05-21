@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932964AbYEUNVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934831AbYEUNZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932964AbYEUNVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764002AbYEUNVO
+	id S934831AbYEUNZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762701AbYEUNZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:21:14 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:53399 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762314AbYEUNVN (ORCPT
+	Wed, 21 May 2008 09:25:14 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:33510 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755753AbYEUNZM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:21:13 -0400
+	Wed, 21 May 2008 09:25:12 -0400
 From: Oliver Neukum <oliver@neukum.org>
 Organization: NOvell
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] USB: fix deadlock in HCD code
-Date: Wed, 21 May 2008 15:21:00 +0200
+To: "vijay anand" <vijayanand.sj@gmail.com>
+Subject: Re: [BUG] cdc-acm driver module
+Date: Wed, 21 May 2008 15:25:07 +0200
 User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>, lchiquitto@novell.com,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0805211405520.6718@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0805211405520.6718@jikos.suse.cz>
+Cc: linux-kernel@vger.kernel.org, dave@awk.cz
+References: <b49af93b0805210601n38030150w643565b60edc85da@mail.gmail.com>
+In-Reply-To: <b49af93b0805210601n38030150w643565b60edc85da@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200805211521.01435.oliver@neukum.org>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805211525.08054.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 21 Mai 2008 14:09:43 schrieb Jiri Kosina:
-> hcd_urb_list_lock is used for synchronization between IRQ and non-IRQ 
-> contexts, so the non-IRQ context has to disable IRQs in order to prevent 
-> deadlocking with IRQ context.
+Am Mittwoch 21 Mai 2008 15:01:21 schrieb vijay anand:
+> What happens when the control never reaches the 'acm_disconnect'. Like simply
+> loading the driver and unloading the driver when the device is still in use.
 
-Which non-irq context is that?
+Even in this case disconnect() will be called.
+The only time it will not be called is if probe() was never called. But
+in that case no interface has been claimed. All is well.
 
 	Regards
 		Oliver
