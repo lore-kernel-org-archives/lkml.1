@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936656AbYEUR7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936648AbYEUSBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936656AbYEUR7Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935400AbYEUR7N
+	id S936648AbYEUSBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765791AbYEUSBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:59:13 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:44641 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933984AbYEUR7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:59:12 -0400
-Date: Wed, 21 May 2008 21:58:58 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: iput() in reclaim context
-Message-ID: <20080521175858.GA2548@2ka.mipt.ru>
-References: <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com> <20080520002503.GC173056135@sgi.com> <20080520065622.GA13968@2ka.mipt.ru> <20080520214617.GU103491721@sgi.com> <20080520222505.GA23988@2ka.mipt.ru> <20080520231942.GX103491721@sgi.com> <20080520162816.e5dfeffa.akpm@linux-foundation.org> <20080521061531.GA27362@2ka.mipt.ru> <20080520232444.8bff5ccf.akpm@linux-foundation.org> <Pine.LNX.4.64.0805211840200.13797@blonde.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 21 May 2008 14:01:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:28139 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757560AbYEUSBK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:01:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sMQu0DAmVOOZab+KMzoYC8TuUBXAF3N3F5JGEOFzsQcNqgAmD48N7v3m/wlEF5XEKNlIMUH95WyIEvQcGFyay8L/t/s4ldnN14Q9TLb4iRAZ8++SfF5ggm0XEnETj0XP5H/bRz2Zl35j0rR1fjbPSlnDgzuce2Zugqd9V0yY+rc=
+Message-ID: <7b9198260805211101s1fb96533tc86a614008833741@mail.gmail.com>
+Date: Wed, 21 May 2008 19:01:10 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Subject: Re: 2.6.24 not recognizing 2G MMC card?
+Cc: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
+In-Reply-To: <20080521172104.GC2592@fieldses.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805211840200.13797@blonde.site>
-User-Agent: Mutt/1.5.9i
+References: <20080521172104.GC2592@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh.
+2008/5/21 J. Bruce Fields <bfields@fieldses.org>:
+> Please forgive a somewhat naive question--I'm not sure how to go about
+> debugging this kind of thing:
+>
+> I have a Dell 1420n with card readers reported by lspci as:
+>
+> 03:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
+> 03:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+>
+> I have a 512MB MicroSD card which seems to be recognized fine, but a 2GB
+> MMC card is not.
+>
+> I'm using a stock Ubuntu 8.04 kernel, which reports itself as
+> 2.6.24-16-generic.
+>
+> Skimming through commits to drivers/mmc,
+> 5ae70296c85f96a9969891d9de3410ebdf210b71 "mmc: Disabler for Ricoh MMC
+> controller", looks relevant, but seems to be included in 2.6.24.
+>
+> Anything I should try?  Thanks in advance for any suggestions.
+>
+> --b.
 
-On Wed, May 21, 2008 at 06:52:27PM +0100, Hugh Dickins (hugh@veritas.com) wrote:
-> I happened to notice your remark in the buffer heads defrag thread.
-> Do you remember what that limitation was about?
-> 
-> Because just a few months ago I discovered a shmem race which I fixed
-> by doing igrab+iput in shmem_writepage, in the reclaim context.  Feeling
-> guilty now: I'd better investigate, but would welcome a starting pointer.
-> 
-> (If I'm lucky, it'll be that the generic code in vmscan.c cannot
-> use iput, but particular filesystems might themselves be safe to.)
+Hi,
 
-If we are talking about the same things, its waiting for pages to be
-synced (wither written back or truncated) when inode is about to be
-destroyed. Thus reclaim can sleep wating for pages to be synced, which
-it is about to move somewhere itself. Deadlock. The same for writepage -
-if we drop inode there it can wait for pages to be synced, which inturn
-requires writeback, where we are sleeping already...
+What does: lsmod | grep ricoh, give you?  Anything?
 
 -- 
-	Evgeniy Polyakov
+Tom Spink
