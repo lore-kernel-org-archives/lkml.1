@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936670AbYEUSUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936844AbYEUSUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936670AbYEUSUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbYEUSUO
+	id S936844AbYEUSUt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936098AbYEUSUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:20:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33621 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756902AbYEUSUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:20:12 -0400
-Message-ID: <483466B0.6000606@redhat.com>
-Date: Wed, 21 May 2008 13:15:12 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	Wed, 21 May 2008 14:20:24 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:54343 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936045AbYEUSUX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:20:23 -0400
+Message-ID: <483467E1.6090808@ct.jp.nec.com>
+Date: Wed, 21 May 2008 11:20:17 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-References: <482DDA56.6000301@redhat.com>	<20080518211140.b29bee30.akpm@linux-foundation.org>	<200805191316.27551.chris.mason@oracle.com>	<200805191439.36577.chris.mason@oracle.com>	<20080521112224.GD5028@ucw.cz> <20080521110324.668048e0.akpm@linux-foundation.org>
-In-Reply-To: <20080521110324.668048e0.akpm@linux-foundation.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jiri Slaby <jirislaby@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merging nmi 32/64 to nmi.c v2
+References: <20080521163051.GB6932@cvg>
+In-Reply-To: <20080521163051.GB6932@cvg>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 21 May 2008 13:22:25 +0200 Pavel Machek <pavel@suse.cz> wrote:
+Cyrill Gorcunov wrote:
+> This is a second attempt to merge nmi-32/64 to nmi.c
 
->>> I tested this one with a larger FS (40GB instead of 2GB) and larger log (128MB 
->>> instead of 32MB).  barrier-test -s 32 -p 1500 was still able to get a 50% 
->>> corruption rate on the larger FS.
->> Ok, Andrew, is this enough to get barrier patch applied and stop
->> corrupting data in default config, or do you want some more testing?
->>
->> I guess 20% benchmark regression is bad, but seldom and impossible to
->> debug data corruption is worse...
+Hi Cyrill,
+
+cool work!
+
+> Summary changes:
 > 
-> It is 20%?  I recall 30% from a few years ago, but that's vague and it
-> might have changed.  Has much quantitative testing been done recently? 
-> I might have missed it.
-> 
-> If we do make this change I think it should be accompanied by noisy
-> printks so that as many people as possible know about the decision
-> which we just made for them.
-> 
-> afaik there is no need to enable this feature if the machine (actually
-> the disks) are on a UPS, yes?
+...
+> - last_irq_sums and alert_counter was defined as static arrays in 32bit
+>   mode, so they were changed to per_cpu variables
 
-As long as your power supply (or your UPS) doesn't go boom, I suppose so.
+This was already done, see http://lkml.org/lkml/2008/5/2/525.
+But it doesn't affect the unified file.
 
-It is too bad that there is no way to determine no-barrier safety from
-software.  (maybe apcupsd could do something... ;)
+> +#ifdef CONFIG_X86_64
+> +static unsigned ignore_nmis;
+> +
+> +asmlinkage notrace __kprobes void
+> +do_nmi(struct pt_regs *regs, long error_code)
+> +{
+> +	nmi_enter();
+> +	add_pda(__nmi_count,1);
+> +	if (!ignore_nmis)
+> +		default_do_nmi(regs);
+> +	nmi_exit();
+> +}
+> +
+> +void stop_nmi(void)
+> +{
+> +	acpi_nmi_disable();
+> +	ignore_nmis++;
+> +}
+> +
+> +void restart_nmi(void)
+> +{
+> +	ignore_nmis--;
+> +	acpi_nmi_enable();
+> +}
+> +#endif /* CONFIG_X86_64 */
 
-I guess it's levels of confidence.  I agree that a user education
-campaign is probably in order... maybe if this thread is long enough to
-make LWN it'll raise some awareness.  :)
+I'm guessing we can move these functions to traps_64.c.
+I've tried to move these functions from traps_32.c to nmi_32.c,
+but it caused build error on some 32bit configs.
 
--Eric
+thanks,
+Hiroshi Shimamoto
