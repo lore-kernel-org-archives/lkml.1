@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbYEUSgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbYEUSir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760087AbYEUSgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbYEUSgk
+	id S1760636AbYEUSir (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbYEUSij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:36:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:59147 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755162AbYEUSgj (ORCPT
+	Wed, 21 May 2008 14:38:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39267 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751199AbYEUSij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:36:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=ViewqTO1Dx9dAIV8CYHT7RNazhMiWciMHce1k2SNQ3ALGJyx3AO7wUuoWwfbtsFpUuyEEtbpwlN6o4zcjVmsn6+QC4swSL7cOWai2poEeccMiCrn7aixBTx1bkptzO1KuDtJ/4wkeF7DeDR9EzxLysO9IVazQzmFmoirynQ3MDE=
-Message-ID: <48346BA3.2050806@googlemail.com>
-Date: Wed, 21 May 2008 20:36:19 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] scripts/ver_linux use 'gcc -dumpversion'
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 21 May 2008 14:38:39 -0400
+Date: Wed, 21 May 2008 11:38:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ed L. Cashin" <ecashin@coraid.com>
+Cc: Matthias Kaehlcke <matthias@kaehlcke.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ATA over Ethernet: Convert emsgs_sema in a completion
+Message-Id: <20080521113830.8eaa4ce1.akpm@linux-foundation.org>
+In-Reply-To: <20080521144924.GD22566@coraid.com>
+References: <20080516191133.GI24569@traven>
+	<20080519165122.9d94cc1c.akpm@linux-foundation.org>
+	<20080521144924.GD22566@coraid.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 21 May 2008 10:49:24 -0400 "Ed L. Cashin" <ecashin@coraid.com> wrote:
 
-These magic greps and hacks in ver_linux to get the gcc version always break after some gcc releases.
+> On Mon, May 19, 2008 at 04:51:22PM -0700, Andrew Morton wrote:
+> > On Fri, 16 May 2008 21:11:33 +0200
+> > Matthias Kaehlcke <matthias@kaehlcke.net> wrote:
+> > 
+> > > @@ -216,7 +217,7 @@ aoechr_read(struct file *filp, char __user *buf, size_t cnt, loff_t *off)
+> > >  
+> > >  		spin_unlock_irqrestore(&emsgs_lock, flags);
+> > >  
+> > > -		n = down_interruptible(&emsgs_sema);
+> > > +		n = wait_for_completion_interruptible(&emsgs_comp);
+> > 
+> > Patch looks OK, but I worry about this code.  Suppose a signal is sent
+> > and we return to userspace with the complete() still outstanding.  Then
+> > someone removes the module.  
+> > 
+> > Perhaps there is synchronisation code which prevents that crash?
+> 
+> I plan to answer this question soon.  Right now I am quite busy.
+> 
+> This emsgs_sema part of the aoe driver has never caused any problems
+> for users but has caused many problems for me, because it is tricky to
+> think about, to talk about, and for others to patch.
+> 
+> I hope that there is a more straightforward way to get the current
+> read-from-the-file-forever behavior using an existing kernel
+> facility.  A user currently can do,
+> 
+>   cat /dev/etherd/err
+> 
+> ... and have it block, waiting until there is an error to report,
+> printing it, and then blocking again, like reading from a pipe.
 
-Since now gcc >4.3 allows compiling with '--with-pkgversion' ( which can be everything 'My Cool Gcc' or something )
-ver_linux will report random junk for these.
-
-Simply use 'gcc -dumpversion' to get the gcc version which should always work.
-
-Signed-off-by: Gabriel C <nix.or.die@googlemail.com>
----
-
-Andrew sorry to bug you about that but
-I have no clue how is maintaining scripts/*
-
- scripts/ver_linux |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
-
-diff --git a/scripts/ver_linux b/scripts/ver_linux
-index ab69ece..7ac0e30 100755
---- a/scripts/ver_linux
-+++ b/scripts/ver_linux
-@@ -12,12 +12,9 @@ echo ' '
- uname -a
- echo ' '
- 
--gcc --version 2>&1| head -n 1 | grep -v gcc | awk \
-+gcc -dumpversion 2>&1| awk \
- 'NR==1{print "Gnu C                 ", $1}'
- 
--gcc --version 2>&1| grep gcc | awk \
--'NR==1{print "Gnu C                 ", $3}'
--
- make --version 2>&1 | awk -F, '{print $1}' | awk \
-       '/GNU Make/{print "Gnu make              ",$NF}'
- 
-
-
-
+That's fine - the normal way of handling that is for the user's fd to
+hold a reference against the module itself.
