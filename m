@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbYEUVyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936917AbYEUVzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758551AbYEUVyU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765804AbYEUVyA
+	id S936917AbYEUVzv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759159AbYEUVzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:54:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33763 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932225AbYEUVxz (ORCPT
+	Wed, 21 May 2008 17:55:42 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:56882 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758835AbYEUVzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:53:55 -0400
-Date: Wed, 21 May 2008 14:53:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH] serial: fix enable_irq_wake/disable_irq_wake imbalance
- in serial_core.c
-Message-Id: <20080521145338.022abd3b.akpm@linux-foundation.org>
-In-Reply-To: <20080519201141.1dbe6cc1@linux.intel.com>
-References: <20080519201141.1dbe6cc1@linux.intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 May 2008 17:55:41 -0400
+Message-ID: <48349AF2.30009@keyaccess.nl>
+Date: Wed, 21 May 2008 23:58:10 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] Moving sound/* to drivers/ ?
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 20:11:41 -0700
-Arjan van de Ven <arjan@linux.intel.com> wrote:
+On 21-05-08 23:44, Linus Torvalds wrote:
 
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: [PATCH] serial: fix enable_irq_wake/disable_irq_wake imbalance in serial_core.c
+> So I would personally certainly not mind somebody doing a 
 > 
-> enable_irq_wake() and disable_irq_wake() need to be balanced.
-> However, serial_core.c calls these for different conditions during
-> the suspend and resume functions...
+> 	git mv sound drivers/sound
+> 	.. edit makefiles and Kconfig files appropriately ..
+> 	git commit -a
 > 
-> This is causing a regular WARN_ON() as found at
-> http://www.kerneloops.org/search.php?search=set_irq_wake
-> 
-> This patch makes the conditions for triggering the _wake
-> enable/disable sequence identical.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> ---
->  drivers/serial/serial_core.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-> index eab0327..4df9ee1 100644
-> --- a/drivers/serial/serial_core.c
-> +++ b/drivers/serial/serial_core.c
-> @@ -2054,6 +2054,8 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
->  int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
->  {
->  	struct uart_state *state = drv->state + port->line;
-> +	struct device *tty_dev;
-> +	struct uart_match match = {port, drv};
->  
->  	mutex_lock(&state->mutex);
->  
-> @@ -2063,7 +2065,8 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
->  		return 0;
->  	}
->  
-> -	if (!port->suspended) {
-> +	tty_dev = device_find_child(port->dev, &match, serial_match_port);
-> +	if (!port->suspended && device_may_wakeup(tty_dev)) {
->  		disable_irq_wake(port->irq);
->  		mutex_unlock(&state->mutex);
->  		return 0;
+> and it wouldn't be a problem for git (ie the repository wouldn't grow or 
+> anything like that).
 
-erp, is that the easiest way of going from a uart_driver* to a device*?
-Doing a lookup each time is a bit unusual.
+I'd personally like the net/ structure more. So subsystem code under 
+sound/ and drivers moved to drivers/sound/.
 
+>> Of course, the primary question is whether it's really worth.
+>> The obvious drawback is that patches won't be applicable after the
+>> move.
+> 
+> Well, git merging is actually pretty good at this, so you can apply the 
+> patches to the old release and then merge it, and it will do the right 
+> thing (perhaps not for newly created files, but that's pretty easy to fix 
+> up).
+
+And a few symlinks will do wonders as well. I do/did that when I "port" 
+patches developped against mainline to the alsa-kernel HG repo. Not a 
+problem that way. Apply and rediff to get the new paths.
+
+> Me personally, I've been more irritated by include/asm-xyz vs arch/xyz. It 
+> would be so nice if all the arch-specific changes woudl always show up 
+> under arch/ (both from a statistics standpoint, and just because then a 
+> diffstat really shows arch-specific stuff really obviously, and sorts all 
+> the arch-specific stuff together).
+
+And one would not forget to add the include directory to a "git log" or 
+"git bisect" path specification...
+
+Rene.
