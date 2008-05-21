@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbYEUHvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbYEUHy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbYEUHvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 03:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757432AbYEUHv3
+	id S1759194AbYEUHy5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 03:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbYEUHys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 03:51:29 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:29263 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755590AbYEUHv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 03:51:28 -0400
-Date: Wed, 21 May 2008 16:49:50 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>, "Hans J. Koch" <hjk@linutronix.de>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, linux-sh@vger.kernel.org
-Subject: Re: [PATCH 00/03][RFC] Reusable UIO Platform Driver
-Message-ID: <20080521074950.GA27310@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Uwe Kleine-K?nig <Uwe.Kleine-Koenig@digi.com>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	"Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
-	gregkh@suse.de, linux-sh@vger.kernel.org
-References: <20080520105132.1474.73941.sendpatchset@rx1.opensource.se> <20080520210713.GE3220@local> <aec7e5c30805202031x62b3b463lfde0b9e7eb32d35@mail.gmail.com> <20080521064938.GA11580@digi.com>
+	Wed, 21 May 2008 03:54:48 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:59124 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755112AbYEUHyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 03:54:47 -0400
+Date: Wed, 21 May 2008 10:52:34 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: torvalds@linux-foundation.org, geert@linux-m68k.org,
+       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: -ffreestanding or not -ffreestanding
+Message-ID: <20080521075233.GA18352@cs181133002.pp.htv.fi>
+References: <E1JycsB-0000M9-36@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080521064938.GA11580@digi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <E1JycsB-0000M9-36@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 08:49:38AM +0200, Uwe Kleine-K?nig wrote:
-> Magnus Damm wrote:
-> >         Extending uio_pdrv driver with a chunk of physically
-> > contiguous memory isn't a big deal though.
-> I wonder how you use that memory.  Isn't it just some kind of shared
-> memory?  If so, why not use normal shared memory?  Do you really need
-> that?
+On Wed, May 21, 2008 at 02:12:07AM +0100, Al Viro wrote:
+> Content-Length: 788
+> Lines: 30
 > 
-Physically contiguous memory is a real requirement, especially for DMA.
-I'm not sure what's confusing about that?
+> Whether we sidestep it in init/main.c or not, such situations
+> will arise again; compiler does generate calls of strcat()
+> on optimizations, so we really ought to have an out-of-line
+> version...
+>...
+
+Can we try to get this sorted out properly instead of constantly 
+fiddling with it?
+
+Currently we use -ffreestanding on some architectures and fix breakages 
+on the other architectures when they arise.
+
+The options I see for getting this fixed properly are:
+- use -ffreestanding on all architectures or
+- don't use -ffreestanding on any architecture and move the string
+  functions (and perhaps other functions if required) out-of-line
+
+I'd prefer the first option, but I know that not everyone agrees with me.
+
+No matter which option we choose, if we get an agreement on this one
+I can send patches for it.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
