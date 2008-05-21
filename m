@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932999AbYEUJix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765526AbYEUJmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932999AbYEUJix (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbYEUJio
+	id S1765526AbYEUJmH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 05:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbYEUJl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:38:44 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55537 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756011AbYEUJin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:38:43 -0400
-Message-ID: <4833ED6D.8030606@cn.fujitsu.com>
-Date: Wed, 21 May 2008 17:37:49 +0800
-From: Shi Weihua <shiwh@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
-MIME-Version: 1.0
+	Wed, 21 May 2008 05:41:56 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49301 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbYEUJlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 05:41:55 -0400
+Date: Wed, 21 May 2008 10:41:54 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: morgan@kernel.org, linux-security-module@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, serue@us.ibm.com,
-       jmorris@namei.org
-Subject: [PATCH] capabilities: fix sys_prctl() returned uninitialized value
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080521094153.GN28946@ZenIV.linux.org.uk>
+References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521015037.add0b78e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we test kernel by the latest LTP(20080430) on ia64,
-the following failure occured:
--------------------------------------
-prctl01     1  PASS  :  Test Passed
-prctl01     0  WARN  :  prctl() returned 2048 errno = 0 : Success
-prctl01     1  PASS  :  Test Passed
-prctl01     2  FAIL  :  Test Failed
--------------------------------------
+On Wed, May 21, 2008 at 01:50:37AM -0700, Andrew Morton wrote:
+> On Wed, 21 May 2008 09:34:13 +0100 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> 
+> > This is a call for discussion for new maillist on vger.
+> > 
+> > List name: linux-wanking@vger.kernel.org
+> 
+> Oh, what a marvellous way to encourage new contributors that was. Thank
+> you so much.
+> 
+> For the record: Al speaks only for himself and a lack of expressed
+> disagrement from others should not be taken as agreement.
 
-We found commit 3898b1b4ebff8dcfbcf1807e0661585e06c9a91c
-causes this failure by git-bisect.
-And, we found *rc_p has not been initialized if switch-default 
-of the function cap_task_prctl()(security/commoncap.c). When *rc_p
-uninitialized, sys_prctl() will return a wrong value.
+Of course I speak for myself.  And I am absolutely open about my belief
+that such _contribution_s_ need to be discouraged.  Actively.
 
-Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
----
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 5edabc7..a4b28c8 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -649,6 +649,7 @@ int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
- 
- 	default:
- 		/* No functionality available - continue with default */
-+		*rc_p = 0;
- 		return 0;
- 	}
- 
+Hell, a month ago I mentioned right-justifying text in comments as
+"we'll never reach _that_" kind of pointless idiocy.  And there we
+are, much closer to that than I ever expected.
 
+I have nothing against contributors.  I *DO* have a lot against a very
+specific class of contributions.  Exactly because they actively prevent
+people from moving on to saner stuff.  Rule of the thumb: if a pointless
+activity can be carried indefinitely long and creates an impression of
+busy doing something, it ought to be discouraged.
 
+Basically, something one could do as infinitely stretchable time-filler
+when one _really_ doesn't feel like doing anything that might require
+thinking.  Think of this situations like "I need to write the next
+part of paper, but I just can't get around to starting it; anything
+but that - let's rearrange the order of references, rearrange the
+pencils, whatever".
 
+And that is where I believe Ingo is wrong - dropping the level of acceptable
+pointlessness of patches does *not* encourage meaningful contributions; it
+discourages them.  Ladder doesn't become more accessible if you extend it
+down into swamp; there's a reasonable starting level from which one _does_
+go up.  It's impossible to define formally, but it's quite real and I'm
+very afraid that it's rapidly getting harder to find.  Harder for newbies.
 
+> Sheesh
+
+Sheesh, indeed.
