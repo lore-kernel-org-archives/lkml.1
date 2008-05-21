@@ -1,111 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYEUHTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934026AbYEUHUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbYEUHTt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 03:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764313AbYEUHTf
+	id S934026AbYEUHUn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 03:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759611AbYEUHUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 03:19:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45277 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756134AbYEUHTe (ORCPT
+	Wed, 21 May 2008 03:20:34 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:24928 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759406AbYEUHUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 03:19:34 -0400
-Date: Wed, 21 May 2008 00:19:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] VFS: Pagecache usage optimization on pagesize !=
- blocksize environment
-Message-Id: <20080521001930.202446eb.akpm@linux-foundation.org>
-In-Reply-To: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
-References: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 May 2008 03:20:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=iYQR3nItK4ZfSppjPx/RtqPEC1qM2jk/2JZa3BppCgrG6Cjl4FdYQCwToJI+0au9d9LoTAeDMxMNlQnjN0rgH5DZPbwZwFELVuwq3lTgGEavlAoUpU25N9iir7rHb4Wnj0HKN8AE35az5Q93US8M8dO4r4b7LSvC8+nnbz2bWyk=
+Message-ID: <4833CD18.9030402@gmail.com>
+Date: Wed, 21 May 2008 09:19:52 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Jianjun Kong <kongjianjun@gmail.com>
+CC: torvalds@linux-foundation.org, xiyou.wangcong@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Standard indentation of arguments
+References: 0002-Standard-indentation-of-arguments.patch <12113495282137-git-send-email-kongjianjun@gmail.com>
+In-Reply-To: <12113495282137-git-send-email-kongjianjun@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 15:52:04 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
-
-> Hi.
+On 05/21/2008 07:58 AM, Jianjun Kong wrote:
+> Standard indentation of arguments.
+> I use right blank space to displace the last table, in order to make the arguments alining. For example:
 > 
-> When we read some part of a file through pagecache, if there is a pagecache 
-> of corresponding index but this page is not uptodate, read IO is issued and
-> this page will be uptodate.
-> I think this is good for pagesize == blocksize environment but there is room
-> for improvement on pagesize != blocksize environment. Because in this case
-> a page can have multiple buffers and even if a page is not uptodate, some buffers 
-> can be uptodate. So I suggest that when all buffers which correspond to a part
-> of a file that we want to read are uptodate, use this pagecache and copy data
-> from this pagecache to user buffer even if a page is not uptodate. This can
-> reduce read IO and improve system throughput.
+> old:
+> extern void test_fun(struct list_head *new,
+> 			struct list_head *prev,
+> 			struct list_head *next);
+> new:
+> extern void test_fun(struct list_head *new,
+> 		     struct list_head *prev,
+> 		     struct list_head *next);
 
-I suppose that makes sense.
-
-> I did a performance test using the sysbench.
-
-That's not a terribly good benchmark, IMO.  It's too complex.
-
-To work out the best-case for a change like this I'd suggest a
-microbenchmark which does something such as seeking all around a file
-doing single-byte reads.
-
-Then one should think up a benchmark which demonstrates the worst-case,
-such as reading one-byte-quantities from a file at offsets 0, 0x2000,
-0x4000, 0x6000, ...  and then read more one-byte-quantities at offsets
-0x1000, 0x3000, 0x5000, etc.  That would be a pretty cruel comparison,
-but as one tosses in more such artificial worklaods, one is in a better
-position to work out whether the change is an aggregate benefit.
-
-The results from a great big lumped-together benchmark such as sysbench 
-aren't a lot of use to us in predicting how effective this change will
-be across all the workloads which the kernel implements.
-
-> @@ -932,8 +932,16 @@ find_page:
->  					ra, filp, page,
->  					index, last_index - index);
->  		}
-> -		if (!PageUptodate(page))
-> -			goto page_not_up_to_date;
-> +		if (!PageUptodate(page)) {
-> +			if (inode->i_blkbits == PAGE_CACHE_SHIFT)
-> +				goto page_not_up_to_date;
-> +			if (TestSetPageLocked(page))
-> +				goto page_not_up_to_date;
-> +			if (!page_has_buffers(page) ||
-> +			      !check_buffers_uptodate(offset, desc, page))
-
-We shouldn't do this.
-
-> +				goto page_not_up_to_date_locked;
-> +			unlock_page(page);
-> +		}
-
-See, the code which you have here is assuming that if PagePrivate is
-set, then the thing which is at page.private is a ring of buffer_heads.
-
-But this code (do_generic_file_read) doesn't know that!  Take a look at
-afs, nfs, perhaps other filesystems, grep for set_page_private().
-
-Only the address_space implementation (ie: the filesystem) knows
-whether page.private holds buffer_heads and only the
-address_space_operations functions are allowed to call into library
-functions which treat page.private as a buffer_head ring.
-
-Now, your code _may_ not crash, because perhaps there is no filesystem
-which puts something else into page.private which also uses
-do_generic_file_read().  But it's still wrong.
-
-I guess a suitable fix might be to implement the above using a new
-address_space_operations callback:
-
-	if (PagePrivate(page) && aops->is_partially_uptodate) {
-		if (aops->is_partially_uptodate(page, desc, offset))
-			<OK, we can copy the data>
-
-then implement a generic_file_is_partially_uptodate() in fs/buffer.c
-and wire that up in the filesystems.
-
-Note that things like network filesystems can then implement this also.
+I think, there is no "standard" on this. I personally do prefer indentation by tabs.
