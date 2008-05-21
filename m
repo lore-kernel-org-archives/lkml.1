@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937631AbYEUUl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937688AbYEUUlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937631AbYEUUl0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936054AbYEUUkq
+	id S937688AbYEUUlt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937637AbYEUUl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:40:46 -0400
-Received: from rn-out-0910.google.com ([64.233.170.186]:20705 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937349AbYEUUkp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:40:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T6LZJm5mmcAdn0QdviyjS7Lr4Om7/dJXqP87ySfRLj/2SnQoSot+pXY3OeFomYkSL/FDKKU4sBVw9rB1n9Y15yyAYnCibCTOj/HoxjKa5cqCGWpqL8q2Qpm4wgGWND/gMR6DeAnmJ3WFUo6/pckL4amcjp/1EJK9jJn0BBjWxiA=
-Message-ID: <dd18b0c30805211340s837a737g25141119024cbdcf@mail.gmail.com>
-Date: Wed, 21 May 2008 20:40:41 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Lee Revell" <rlrevell@joe-job.com>
-Subject: Re: completely lost as to what to do, or where to look.
-Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <75b66ecd0805211331r6b2e079wc4d028d368463e49@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 21 May 2008 16:41:26 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47678 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937631AbYEUUlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 16:41:25 -0400
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Trent Piepho <tpiepho@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Scott Wood <scottwood@freescale.com>
+In-Reply-To: <Pine.LNX.4.64.0805211238440.5706@t2.domain.actdsltmp>
+References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
+	 <1211318219.8297.177.camel@pasglop>
+	 <Pine.LNX.4.64.0805201425250.7453@t2.domain.actdsltmp>
+	 <1211378410.8297.192.camel@pasglop>
+	 <Pine.LNX.4.64.0805211238440.5706@t2.domain.actdsltmp>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 16:41:12 -0400
+Message-Id: <1211402472.8297.244.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30805202110x7c412b3bq523f91d968072482@mail.gmail.com>
-	 <20080520223410.9a8f200d.akpm@linux-foundation.org>
-	 <dd18b0c30805202351h133147adg5bb526e3f74e3bd6@mail.gmail.com>
-	 <20080521075917.GB18352@cs181133002.pp.htv.fi>
-	 <dd18b0c30805210733m6d853709xf59331cfed3bfea@mail.gmail.com>
-	 <6101e8c40805210751y350e3513ndd48621ac9d2b5d3@mail.gmail.com>
-	 <dd18b0c30805211004m6106b65occ97eff00cdbf630@mail.gmail.com>
-	 <dd18b0c30805211303k6e43d6d1l903da0c794521519@mail.gmail.com>
-	 <2c0942db0805211309y2871009fv34669d384df820d4@mail.gmail.com>
-	 <75b66ecd0805211331r6b2e079wc4d028d368463e49@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 8:31 PM, Lee Revell <rlrevell@joe-job.com> wrote:
-> On Wed, May 21, 2008 at 4:09 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
->> Or are you using the closed-source nvidia drivers? (No judgement from
->> me if you are, but it would really help clear up what the heck is
->> going on.)
->>
->
-> Yes, the whole problem was that he was trying to use an incompatible
-> kernel with the closed source ATI driver.
->
-> Lee
->
 
-Just so I can have suspend working properly, now the next question is
-seeing if radeohd can wakeup from suspend
-That way I don't have to be confined to using one module
-But for the time being I need a nice cold beer from this headache..  : - )
-regards;
+On Wed, 2008-05-21 at 12:44 -0700, Trent Piepho wrote:
+> 
+> Someone should update memory-barriers.txt, because it doesn't say
+> that, and
+> all I/O accessors for all the arches, because none of them are.
 
--- 
-Justin P. Mattock
+There have been long discussions about that. The end result was that
+being too weakly ordered is just asking for trouble because the majority
+of drivers are written & tested on x86 which is in order.
+
+If you look at our accessors, minus that gcc problem you found, the
+barriers in there should pretty much guarantee ordering in the cases
+that matter, which are basically MMIO read followed by memory accesses
+and memory writes followed by MMIO. In fact, MMIO read are fully
+sychronous.
+
+> No, it's compiled with a normal kernel build, which includes
+> -fno-strict-aliasing
+
+Ok, so there is a very bad bug indeed, we need to fix that.
+
+Ben.
+
+
