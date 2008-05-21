@@ -1,148 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbYEUXCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbYEUXEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbYEUXCg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 19:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758372AbYEUXC2
+	id S933415AbYEUXEV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 19:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbYEUXEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 19:02:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60830 "EHLO mx1.redhat.com"
+	Wed, 21 May 2008 19:04:13 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:57380 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757360AbYEUXC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 19:02:27 -0400
+	id S1755650AbYEUXEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 19:04:12 -0400
+Date: Thu, 22 May 2008 02:01:55 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, tytso@mit.edu, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080521230155.GC16376@cs181133002.pp.htv.fi>
+References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu> <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123127.3b3b66af.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it
- is queued
-In-Reply-To: Linus Torvalds's message of  Wednesday, 21 May 2008 13:07:50 -0700 <alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org>
-References: <20080517151420.GA9496@tv-sign.ru>
-	<20080521022046.1501F26FA1C@magilla.localdomain>
-	<20080521115414.GA147@tv-sign.ru>
-	<20080521184245.5BABF26FA24@magilla.localdomain>
-	<alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
-	<20080521193348.64E8C26FA24@magilla.localdomain>
-	<alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org>
-X-Shopping-List: (1) Scrumptious benedictions
-   (2) Public reinforcements
-   (3) Synonymous self-propelled circumlocutions
-   (4) Elegant scorpions
-   (5) Quixotic temptations
-Message-Id: <20080521230135.BF65A26FA24@magilla.localdomain>
-Date: Wed, 21 May 2008 16:01:35 -0700 (PDT)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080521123127.3b3b66af.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The timer_delete/sigqueue_free behavior predates my involvement with the
-code.  I think it is fine to leave pending signals queued.  (POSIX makes it
-unspecified for deleted timers.  A robust application cannot even assume
-that they will or won't be removed consistently on one running system.)
+On Wed, May 21, 2008 at 12:31:27PM -0700, Andrew Morton wrote:
+>...
+> For more substantial starter projects the best we have (as far as I
+> know) is http://kernelnewbies.org/KernelProjects, but that's just a
+> teeny subset.
+> 
+> We're not very good at this, I'm afraid.  I seem to recall that Rik has
+> offered to help out here, so perhaps whenever one notices a
+> hey-someone-should-do-this project, it could be forwarded to Rik and he
+> can put it up there.
+>...
 
-What I think everyone agrees is wrong in the abstract is the status quo,
-where (effectively) signals stay queued but with zeroed siginfo_t values.
-(This violates POSIX.)  If there is a signal, its siginfo_t must be intact.
+Let's look at it from another angle:
 
-A robust application has to drain any pending timer signals by unblocking
-the signal or using sigwait.  This is true if signals might remain
-properly queued as POSIX permits.  It's also true of existing Linux
-kernels, where a bogus infoless signal remains pending.
+We should not aim at being good at this.
 
-There is also the caveat I mentioned before about RLIMIT_SIGPENDING.
-An existing dumb application might do many iterations of timer_create,
-timer_settime, (timer fires), timer_delete, all with the timer signal
-blocked, and not expect that it can hit its rlimit and not be able to
-create more timers until it drains those signals.  I don't mind breaking
-any such application.  It's dumb.
+What do we need more in the kernel:
+- people testing development kernels
+- people fixing bugs
+- people maintaining code
+- people reviewing code
 
-As I read it, POSIX leaves it the same unspecified what is the
-disposition of pending timer signals at the time of the implicit timer
-deletion at exec.  But people sure find it surprising on exec.
+What do we already have more than enough:
+- people developing new bugs^Wfeatures
 
-So maybe this (wholly untested)?
-The last hunk could go alone (just keep queued) before the rest (exec flush).
+If someone wants to do a project that's OK.
+And if some kernel developer wants to assist him that's OK.
 
+But in my opinion stuff like "I need a project for university" requests 
+are not our problem, and they tend to not bring much for us.
 
-Thanks,
-Roland
+Offering any serious mentoring for newbies will only keep developers 
+busy who could otherwise do things that would bring more value to the 
+kernel.
 
+And we've just seen that having people who do not even know the basics 
+of C sending dozens of checkpatch cleanups doesn't bring us any gain.
 
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 72bb4f5..0000000 100644  
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -205,18 +205,25 @@ static void __sigqueue_free(struct sigqu
- 	kmem_cache_free(sigqueue_cachep, q);
- }
- 
--void flush_sigqueue(struct sigpending *queue)
-+static void __flush_sigqueue(struct sigpending *queue, int timers)
- {
- 	struct sigqueue *q;
- 
- 	sigemptyset(&queue->signal);
- 	while (!list_empty(&queue->list)) {
- 		q = list_entry(queue->list.next, struct sigqueue , list);
-+		if (timers && q->info.si_code != SI_TIMER)
-+			continue;
- 		list_del_init(&q->list);
- 		__sigqueue_free(q);
- 	}
- }
- 
-+void flush_sigqueue(struct sigpending *queue)
-+{
-+	__flush_sigqueue(queue, 0);
-+}
-+
- /*
-  * Flush all pending signals for a task.
-  */
-@@ -243,6 +250,7 @@ void ignore_signals(struct task_struct *
- 
- /*
-  * Flush all handlers for a task.
-+ * Also flush all SI_TIMER signals from the queues.
-  */
- 
- void
-@@ -257,6 +265,9 @@ flush_signal_handlers(struct task_struct
- 		sigemptyset(&ka->sa.sa_mask);
- 		ka++;
- 	}
-+
-+	__flush_sigqueue(&t->pending, 1);
-+	__flush_sigqueue(&t->signal->shared_pending, 1);
- }
- 
- int unhandled_signal(struct task_struct *tsk, int sig)
-@@ -1240,17 +1251,18 @@ void sigqueue_free(struct sigqueue *q)
- 
- 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
- 	/*
--	 * If the signal is still pending remove it from the
--	 * pending queue. We must hold ->siglock while testing
-+	 * If the signal is still pending, leave it to be dequeued.
-+	 * We must hold ->siglock while testing
- 	 * q->list to serialize with collect_signal().
- 	 */
- 	spin_lock_irqsave(lock, flags);
-+	q->flags &= ~SIGQUEUE_PREALLOC;
- 	if (!list_empty(&q->list))
--		list_del_init(&q->list);
-+		q = NULL;
- 	spin_unlock_irqrestore(lock, flags);
- 
--	q->flags &= ~SIGQUEUE_PREALLOC;
--	__sigqueue_free(q);
-+	if (q)
-+		__sigqueue_free(q);
- }
- 
- int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
+There are many other open source projects where it might be easier to 
+get started and that are really looking for people wanting to get 
+involved.
+
+> The #1 project for all kernel beginners should surely be "make sure
+> that the kernel runs perfectly at all times on all machines which you
+> can lay your hands on".  Usually the way to do this is to work with
+> others on getting things fixed up (this can require persistence!) but
+> that's fine - it's a part of kernel development.
+
+Fully agreed, and this is the only area I see where a newbie can be a 
+net win for us from the first second.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
