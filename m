@@ -1,102 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbYEVSlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYEVSm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758326AbYEVSlU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 14:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYEVSke
+	id S1757912AbYEVSm5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 14:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYEVSmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 14:40:34 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:48422 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754102AbYEVSkd (ORCPT
+	Thu, 22 May 2008 14:42:49 -0400
+Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:51201 "HELO
+	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754645AbYEVSms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 14:40:33 -0400
-Subject: Re: [RFC][Patch 4/4]integrity: IMA as an integrity service provider
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-In-Reply-To: <Xine.LNX.4.64.0805221212110.32056@us.intercode.com.au>
-References: <1211385314.20922.28.camel@localhost.localdomain>
-	 <Xine.LNX.4.64.0805221212110.32056@us.intercode.com.au>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 14:39:43 -0400
-Message-Id: <1211481583.4867.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Thu, 22 May 2008 14:42:48 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: early dump pci conf space
+Date: Thu, 22 May 2008 11:42:28 -0700
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200805210012.35939.yhlu.kernel@gmail.com>
+In-Reply-To: <200805210012.35939.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805221142.28511.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday, May 21, 2008 12:12 am Yinghai Lu wrote:
+> so we can printout pci config before kernel touch it
+>
+> also fix write_pci_config_byte with offset
+> and add write_pci_config_16
 
-Thank you for reviewing the code.  Will fix these and add
-locking around integrity_templates.
+I like the idea.  Can you submit the write config byte fix separately?  I'll 
+queue it up for 2.6.27 unless there are other comments.
 
-Mimi
-
-On Thu, 2008-05-22 at 12:39 +1000, James Morris wrote:
-> On Wed, 21 May 2008, Mimi Zohar wrote:
-> 
-> > +#define IMA_HASH_KEY(digest) (hash_long(\
-> > +	(unsigned long)(*digest), IMA_HASH_BITS));
-> 
-> Please make this a static inline and use hash_ptr().
-> 
-> > +	i_size = i_size_read(file->f_dentry->d_inode);
-> > +	while (offset < i_size) {
-> > +		int error;
-> > +
-> > +		rbuf_len = kernel_read(file, offset, rbuf, PAGE_SIZE);
-> > +		if (rbuf_len <= 0)
-> > +			break;
-> 
-> Why is the return value of kernel_read() not being propagated to the 
-> caller?
-> 
-> > +		error = crypto_hash_update(desc, sg, rbuf_len);
-> > +		if (error) {
-> > +			result = -EINVAL;
-> > +			break;
-> > +		}
-> 
-> Why are you replacing the error code from crypto_hash_update() with 
-> -EINVAL ?
-> 
-> > +	tfm = crypto_alloc_hash(ima_hash, 0, CRYPTO_ALG_ASYNC);
-> > +	if (IS_ERR(tfm)) {
-> > +		printk(KERN_INFO "%s: failed to load %s transform: %ld\n",
-> > +		       __func__, ima_hash, PTR_ERR(tfm));
-> > +		return -ENOSYS;
-> > +	}
-> 
-> Similarly, why not propagate the actual error ?
-> 
-> (This kind of thing happens quite a lot in the code).
-> 
-> 
-> 
-> > +static int __init init_ima(void)
-> > +{
-> > +	int error;
-> > +	tfm_hash = crypto_alloc_hash(ima_hash, 0, CRYPTO_ALG_ASYNC);
-> > +
-> > +	error = ima_init();
-> > +	if (error)
-> > +		goto out;
-> > +	ima_fixup_inodes();
-> > +	if (ima_base_hooks)
-> > +		error = register_integrity(&ima_base_ops);
-> > +	else
-> > +		error = register_integrity(&ima_integrity_ops);
-> > +	register_template("ima", &ima_template_ops);
-> > +out:
-> > +	return error;
-> > +}
-> 
-> What if crypto_alloc_hash() fails ?  Actually, where is it used?
-> 
-> 
-> - James
-
+Thanks,
+Jesse
