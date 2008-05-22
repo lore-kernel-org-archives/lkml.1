@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934849AbYEVIuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935439AbYEVIux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934849AbYEVIuH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 04:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763068AbYEVItv
+	id S935439AbYEVIux (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765288AbYEVIuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 04:49:51 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37147 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762679AbYEVItu (ORCPT
+	Thu, 22 May 2008 04:50:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40414 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764588AbYEVIui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 04:49:50 -0400
-To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 0/3] freeze feature ver 1.4
-Message-Id: <20080522174924t-sato@mail.jp.nec.com>
+	Thu, 22 May 2008 04:50:38 -0400
+Date: Thu, 22 May 2008 01:49:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthias Cramer <matthias.cramer@interway.ch>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: Wired behaviour with IPv6 over PPP
+Message-Id: <20080522014959.0f6191aa.akpm@linux-foundation.org>
+In-Reply-To: <48341C0B.7010003@interway.ch>
+References: <48341C0B.7010003@interway.ch>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: Takashi Sato <t-sato@yk.jp.nec.com>
-Date: Thu, 22 May 2008 17:49:24 +0900
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 21 May 2008 14:56:43 +0200 Matthias Cramer <matthias.cramer@interway.ch> wrote:
 
-The freeze feature can suspend accesses to the filesystem
-keeping the filesystem's consistency.
-We can take the consistent backup with it cooperating with
-the backup software.
+> Hi All
+> 
+> I have a very wired behaviour when doing IPv6 over PPPoE.
+> 
+> The situation:
+> 
+> A linux box connected to a DSL Modem, on the other side is a Cisco LNS which terminates the PPP session (actually L2TP).
+> I have control over both ends.
+> 
+> When I have net.ipv6.conf.all.forwarding set to 0 then the ppp Interface gets a IPv6 address from the Cisco via IP6CP.
+> When I have net.ipv6.conf.all.forwarding set to 1 them the ppp Interface does not get an address, it has only a normal link local address.
+> 
+> When I start the ppp session with forwarding set to 0 I can ping out and there exists a default route to ppp0 , then I switch forwarding to 1
+> the default route disappears and therefore routing does not work any longer.
+> 
+> Is this a known behaviour ?
+> 
+> Or am I doing something the wrong way ?
+> 
+> Kernel version is 2.6.25
+> 
 
-I've modified [PATCH 1/3] to set the suitable error number (EOPNOTSUPP)
-in case the filesystem doesn't support the freeze feature.
-This was pointed out by Andreas Dilger.
-In addition, the patches are re-based from linux-2.6.26-rc2 to
-linux-2.6.26-rc3.
-
-The patch-set consists of the following three patches.
-
-[PATCH 1/3] Implement generic freeze feature
-  I have modified to set the suitable error number (EOPNOTSUPP)
-  in case the filesystem doesn't support the freeze feature.
-
-  The ioctls for the generic freeze feature are below.
-  o Freeze the filesystem
-    int ioctl(int fd, int FIFREEZE, arg)
-      fd: The file descriptor of the mountpoint
-      FIFREEZE: request code for the freeze
-      arg: Ignored
-      Return value: 0 if the operation succeeds. Otherwise, -1
-
-  o Unfreeze the filesystem
-    int ioctl(int fd, int FITHAW, arg)
-      fd: The file descriptor of the mountpoint
-      FITHAW: request code for unfreeze
-      arg: Ignored
-      Return value: 0 if the operation succeeds. Otherwise, -1
-
-[PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
-  It removes XFS specific ioctl interfaces and request codes
-  for freeze feature.
-  This patch has been supplied by David Chinner.
-
-[PATCH 3/3] Add timeout feature
-  The timeout feature is added to freeze ioctl.  And new ioctl
-  to reset the timeout period is added.
-  o Freeze the filesystem
-    int ioctl(int fd, int FIFREEZE, long *timeval)
-      fd: The file descriptor of the mountpoint
-      FIFREEZE: request code for the freeze
-      timeval: the timeout period in seconds
-               If it's 0 or 1, the timeout isn't set.
-               This special case of "1" is implemented to keep
-               the compatibility with XFS applications.
-      Return value: 0 if the operation succeeds. Otherwise, -1
-
-  o Reset the timeout period
-    This is useful for the application to set the timeval more accurately.
-    For example, the freezer resets the timeval to 10 seconds every 5
-    seconds.  In this approach, even if the freezer causes a deadlock
-    by accessing the frozen filesystem, it will be solved by the timeout
-    in 10 seconds and the freezer can recognize that at the next reset
-    of timeval.
-    int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
-      fd:file descriptor of mountpoint
-      FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
-      timeval: new timeout period in seconds
-      Return value: 0 if the operation succeeds. Otherwise, -1
-      Error number: If the filesystem has already been unfrozen,
-                    errno is set to EINVAL.
-
-Any comments are very welcome.
-
-Cheers, Takashi
+(cc netdev)
