@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbYEVQYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbYEVQ2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757071AbYEVQYp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 12:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYEVQYc
+	id S1755697AbYEVQ2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 12:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYEVQ2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 12:24:32 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39669 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753854AbYEVQYb (ORCPT
+	Thu, 22 May 2008 12:28:33 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:60630 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753210AbYEVQ2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 12:24:31 -0400
-Message-ID: <48359DE1.8050600@s5r6.in-berlin.de>
-Date: Thu, 22 May 2008 18:22:57 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
+	Thu, 22 May 2008 12:28:33 -0400
+Date: Thu, 22 May 2008 12:27:31 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, Takashi Iwai <tiwai@suse.de>,
        linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com> <20080522144114.GC27301@cs181133002.pp.htv.fi> <20080522075135.4933161c@infradead.org> <20080522155425.GA2727@cs181133002.pp.htv.fi>
-In-Reply-To: <20080522155425.GA2727@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: Moving include/asm-* [was: Re: Moving sound/* to drivers/ ?]
+Message-ID: <20080522162731.GB9500@c2.user-mode-linux.org>
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org> <18484.44691.477859.334222@cargo.ozlabs.ibm.com> <alpine.LFD.1.10.0805211635040.3081@woody.linux-foundation.org> <20080522005657.GU28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0805211818550.3081@woody.linux-foundation.org> <1211419419.6908.12.camel@brick> <alpine.LFD.1.10.0805211827010.3081@woody.linux-foundation.org> <20080522042059.GA17173@c2.user-mode-linux.org> <20080522052607.GY28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080522052607.GY28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Thu, May 22, 2008 at 07:51:35AM -0700, Arjan van de Ven wrote:
->> Maybe some other data:
->> * The incoming rate of ACPI bugs has been pretty much flat the last 3
->> years, while the number of Linux (and ACPI) users has grown
->> significantly. The number of unfixed bugs has more than halved, from
->> over 200 to well below 100.
->> * The SCSI maintainer also reports that he sees flat to declining bug
->> rates; again with the increase in Linux user base that is a good sign
+On Thu, May 22, 2008 at 06:26:07AM +0100, Al Viro wrote:
+> It's a bit worse, though - there is target-dependent stuff in arch/um/include
+> *and* in include/asm-um; the latter is done in a very painful way - see
+> include/asm-um/module-i386.h and include/asm-um/module-x86_64.h, etc. and
+> logics that creates a symlink for each of those.
 > 
-> Andrew sees and handles the majority of incoming bug reports.
-> Ask him whether he agress with this.
+> Is there any reason why module.h is not simply
 > 
-> And ALSA alone has 2000 open bug reports, which makes the open ACPI or 
-> SCSI bug numbers relatively irrelevant in any "number of bugs" 
-> statistics.
+> #include <sysdep/module.h>
+> 
+> with these suckers sitting in arch/um/include/sysdep-{i386,x86_64}/ resp.?
 
-Central facilities like ACPI and SCSI having relatively few [and
-according to Arjan a decreasing number of] reported unfixed bugs is...
-irrelevant?
+My thinking was that include/asm-um is for stuff that's visible to the
+rest of the kernel and arch/um/include is for UML-internal stuff.
+
+Your patch does simplify things somewhat, though.
+
+Would you consider a include/asm-um/$(ARCH) containing all the
+foo-$(ARCH) headers to be worse than moving them to
+arch/um/include/sysdep-$(ARCH)?
+
+				Jeff
+
 -- 
-Stefan Richter
--=====-==--- -=-= =-==-
-http://arcgraph.de/sr/
+Work email - jdike at linux dot intel dot com
