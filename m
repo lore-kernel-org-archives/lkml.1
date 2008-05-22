@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935938AbYEVIzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935586AbYEVI6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935938AbYEVIzj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 04:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932892AbYEVIza
+	id S935586AbYEVI6T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760439AbYEVI6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 04:55:30 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:51605 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763069AbYEVIz3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 04:55:29 -0400
-Date: Thu, 22 May 2008 10:55:28 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Takashi Iwai <tiwai@suse.de>
-cc: Rene Herman <rene.herman@keyaccess.nl>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       alsa-devel@alsa-project.org, perex@perex.cz
-Subject: Re: Moving sound/* to drivers/ ?
-In-Reply-To: <s5hy7623fqs.wl%tiwai@suse.de>
-Message-ID: <alpine.LNX.1.10.0805221052050.971@fbirervta.pbzchgretzou.qr>
-References: <s5hzlqjz74d.wl%tiwai@suse.de> <4834B252.1080700@garzik.org> <4834B5E2.3040301@keyaccess.nl> <s5hy7623fqs.wl%tiwai@suse.de>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 22 May 2008 04:58:04 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:36796 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760169AbYEVI6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 04:58:01 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18485.13663.51624.694435@harpo.it.uu.se>
+Date: Thu, 22 May 2008 10:57:03 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+In-Reply-To: <4834BE39.2000904@zytor.com>
+References: <20080513011030.GA31448@linux-os.sc.intel.com>
+	<18477.35703.679574.760417@harpo.it.uu.se>
+	<20080518013416.GB30034@linux-os.sc.intel.com>
+	<18481.37905.297556.288317@harpo.it.uu.se>
+	<20080520015723.GD30034@linux-os.sc.intel.com>
+	<4832A173.6020203@firstfloor.org>
+	<18482.53246.642835.894623@harpo.it.uu.se>
+	<4832E705.2010900@zytor.com>
+	<18482.60491.764019.292031@harpo.it.uu.se>
+	<20080520175325.GE30034@linux-os.sc.intel.com>
+	<4834BE39.2000904@zytor.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin writes:
+ > Suresh Siddha wrote:
+ > >>
+ > >> An ugly workaround could be to start clearing one of these fields,
+ > >> and say that the data there is only valid for kernels >= 2.6.26.
+ > >> (I said it was ugly...)
+ > >>
+ > >> Or we go back to stashing a flag in uc_flags (which is kosher),
+ > >> and try to figure out how to mark non-rt sigframes.
+ > > 
+ > > This issue of not-zeroing, is present in only 64bit kernels and for 64bit apps,
+ > > right?
+ > > 
+ > > 64bit app signal handling uses only rt_frame, so we can add an uc_flag for
+ > > them and for 32bit apps, kernel was always zero'ing the reserved bits
+ > > at the end of _fpstate.
+ > > 
+ > > In short, for non-rt frames, they can check the reserved bits at the end
+ > > of fpstate frame and for rt-frames (perhaps even for 32bit rt frame handling)
+ > > apps can check for uc_flag aswell, for extended state presence. Is this
+ > > good enough?
+ > > 
+ > 
+ > Okay, trying to close on this :)
+ > 
+ > I would suggest using the uc_flag for the rt frames, and simply rely on 
+ > the OSXSAVE flag for non-rt signal frames.  It a rather sucky approach 
+ > (as previously discussed), but since any sane user of these fields (as 
+ > opposed to just relying on the kernel to save/restore) should use the 
+ > SIGINFO frames, I don't see a problem *as long as it's possible to get 
+ > the information* -- any solution which demands performance should just 
+ > turn on SIGINFO and be happy.
 
-On Thursday 2008-05-22 10:27, Takashi Iwai wrote:
->> 
->>> Speaking as a former OSS driver maintainer, I always preferred
->>> drivers/sound.
->>> 
->>> Though Rene's suggestion (use both sound/ and drivers/sound/)
->>> might make sense if the subsystem code is huge -- I supported the
->>> drivers/block/ -> block/ code movement for example.
->> 
->> Well, not _huge_ but ALSA is very much structured like that; large
->> middle layer with "miniport" drivers (I do by the way expect this
->> was also Takashi plan originally due to him using sound/* and not
->> just "sound/"; that is, I took the * to be shorthand for isa, pci,
->> usb and so on)
->
->Well, no, I originally thought moving all $LINUX/sound to
->$LINUX/drivers/sound.  The sound core stuff is already in
->sound/core, so it can be peacefully in drivers/sound/core, just like
->other drivers like USB, V4L, etc.
+I don't have the luxury to unconditionally change non-rt signal delivery
+to rt signal delivery, but using uc_flags plus OSXSAVE or prctl() to
+announce these layout changes would work for us. Of course, any existing
+sigframe mangling (as opposed to just reading it) code must be updated
+to avoid breakage, but that's unavoidable.
 
-I am in favor of keeping /sound around with the
-non-hardware-dependent code, much like /block does with regard to
-/drivers/block.
+ > The biggest potential problem with this that I see is that relying on 
+ > CPUID can mess with certain virtualization solutions.  Another option to 
+ > accomplish the same thing would be to have a system call (preferrably a 
+ > prctl, since it is at least in theory personality-dependent) to query 
+ > what information is included in the fpstate data - since it will always 
+ > be the same for any particular kernel.
+ > 
+ > Thoughts?
 
-So that's /sound for PCM/mixer etc. and /drivers/sound with the
-actual driver parts like cs46xx.
+Ok for me.
 
-Just like:
-
->>  From a structural view, the PCM core is just as much not a driver as 
->> the IP protocol isn't one and moving all of sound/ to drivers/ would 
->> trade the current "why are the drivers not under drivers/?" issue for a 
->> "why is all this non-driver code under drivers/?".
->> 
->> This "net model" of sound/ and drivers/sound/ would be cleanest I feel.
->
->I think it's a question of the balance.  The net stuff is huge, 10
->times more codes than the sound core.
->
->An argument for keeping the sound core in /sound is that this is used
->not only by sound drivers but also by some video drivers.
-
-
-PS. But then again, I could also imagine
-	/block (core)
-	/block/drivers (drivers)
-	/net (core)
-	/net/drivers
-	/sound
-	/sound/drivers
-And the sound parts are already mostly there.
+/Mikael
