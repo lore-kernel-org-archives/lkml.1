@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764235AbYEVEgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760215AbYEVEgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764235AbYEVEgG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 00:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYEVEfy
+	id S1760215AbYEVEgs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 00:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbYEVEgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 00:35:54 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:40590 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750777AbYEVEfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 00:35:53 -0400
-Date: Thu, 22 May 2008 13:34:10 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       mpm@selenic.com, dhowells@redhat.com
-Subject: Re: [RFC/PATCH 1/3] SLAB: Add PageSlab checking to ksize()
-Message-ID: <20080522043410.GA4050@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-	mpm@selenic.com, dhowells@redhat.com
-References: <Pine.LNX.4.64.0805212124250.22291@sbz-30.cs.Helsinki.FI> <20080521234555.GB32707@linux-sh.org> <4834F2E2.3070806@cs.helsinki.fi> <Pine.LNX.4.64.0805212116260.19431@schroedinger.engr.sgi.com> <4834F4DC.3040009@cs.helsinki.fi>
+	Thu, 22 May 2008 00:36:36 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58060 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750820AbYEVEgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 00:36:35 -0400
+Message-ID: <4834F7F3.8050800@cn.fujitsu.com>
+Date: Thu, 22 May 2008 12:34:59 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4834F4DC.3040009@cs.helsinki.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Shi Weihua <shiwh@cn.fujitsu.com>, ltp-list@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, jmorris@namei.org,
+       linux-security-module@vger.kernel.org, morgan@kernel.org
+Subject: Re: [LTP] [PATCH] fix sys_prctl() returned uninitialized value
+References: <4834E639.2010209@cn.fujitsu.com> <20080521203212.ddf05254.akpm@linux-foundation.org>
+In-Reply-To: <20080521203212.ddf05254.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 07:21:48AM +0300, Pekka Enberg wrote:
-> Christoph Lameter wrote:
-> >>That's probably due to the fact that we use PageSlab for all pages with 
-> >>SLUB
-> >>and for bigblock pages in SLOB with this patch. Christoph, Matt, any
-> >>suggestions how to fix the PageSlab check in nommu btw?
-> >
-> >I already posted a patch and commented numerous times. What else needs 
-> >to be said? SLUB only uses PageSlab for kmalloc <=4kb.
+Andrew Morton wrote:
+> On Thu, 22 May 2008 11:19:21 +0800 Shi Weihua <shiwh@cn.fujitsu.com> wrote:
 > 
-> (I missed your patch, btw.)
+>> When we test kernel by the latest LTP(20080430) on ia64,
+>> the following failure occured:
+>> -------------------------------------
+>> prctl01     1  PASS  :  Test Passed
+>> prctl01     0  WARN  :  prctl() returned 2048 errno = 0 : Success
+>> prctl01     1  PASS  :  Test Passed
+>> prctl01     2  FAIL  :  Test Failed
+>> -------------------------------------
+>>
+>> We found commit 3898b1b4ebff8dcfbcf1807e0661585e06c9a91c
+>> causes this failure by git-bisect.
+>> And, we found 'error' has not been initialized in the function 
+>> sys_prctl()(kernel/sys.c). When the capability module is not taking
+>> responsibility for this call, sys_prctl() may return a wrong value.
+>>
+>> Now, i fixed it.
+>>
+>> Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
+>> ---
+>> diff --git a/kernel/sys.c b/kernel/sys.c
+>> index 895d2d4..26eb0f7 100644
+>> --- a/kernel/sys.c
+>> +++ b/kernel/sys.c
+>> @@ -1652,7 +1652,7 @@ asmlinkage long sys_umask(int mask)
+>>  asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
+>>  			  unsigned long arg4, unsigned long arg5)
+>>  {
+>> -	long uninitialized_var(error);
+>> +	long error = 0;
+>>  
+>>  	if (security_task_prctl(option, arg2, arg3, arg4, arg5, &error))
+>>  		return error;
 > 
-> For SLOB, we will never use ksize() as it doesn't set PageSlab. Is that 
-> not a problem?
+> Oh dear, there are so many things wrong with this...
 > 
-That means that kobjsize() will hand back PAGE_SIZE for non-compound
-pages, which is what it's presently doing anyways. In the case of SLOB
-bigblock pages allocated on pass-through to the page allocator, these are
-compound pages anyways, so compound_page() should do the right thing
-there? That only handles the kmalloc() path though, and not the
-kmem_cache_alloc() cases.
+> - if security_task_prctl() is returning "fail" then why on earth
+>   isn't it setting the error code?
+> 
 
-Shouldn't SLOB's PageSlab usage should mimic that of SLUB in this case
-instead? PG_slab doesn't buy us much if we can already sort out the size
-through compound_order(), it's the kmem_cache_alloc() and <= PAGE_SIZE
-kmalloc()'s where __GFP_COMP isn't true and where PG_slab should be set.
+See comments in security.h:
+
+ * @task_prctl:
+	...
+ *      @rc_p contains a pointer to communicate back the forced return code
+ *	Return 0 if permission is granted, and non-zero if the security module
+ *      has taken responsibility (setting *rc_p) for the prctl call.
+
+But I don't know why can't just set *rc_p to 0 before returning 0 (as Shi's previous
+patch did).
+
+> - cap_task_prctl() _does_ set `error' is if returns non-zero, so it
+>   must be one of the other myriad backend implementations of
+>   security_task_prctl() which is busted.  Which one is it?
+> 
+> - With the above patch applied, sys_prctl() will return zero (ie:
+>   "success") even though it just failed.
+> 
+
+This won't happen. We initialize error to 0, and it will be set to some error
+value when it should be. The alternative is to set error to -EFXXX or 0 in every
+switch cases.
+
+> - Can't we remove the sixth argument to security_task_prctl() and
+>   just return the result code like a sane function would do?  
+> 
+
+It used to have 5 arguments, but this commit changed it (and caused this ltp failure):
+	3898b1b4ebff8dcfbcf1807e0661585e06c9a91c
+	(capabilities: implement per-process securebits)
+
+
