@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYEVQER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbYEVQEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbYEVQER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 12:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYEVQEB
+	id S1755836AbYEVQEs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 12:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYEVQEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 12:04:01 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:40136 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752972AbYEVQEA (ORCPT
+	Thu, 22 May 2008 12:04:38 -0400
+Received: from wx-out-0506.google.com ([66.249.82.235]:35435 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753655AbYEVQEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 12:04:00 -0400
+	Thu, 22 May 2008 12:04:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=HG+vbWNdDydcaOin/oRdlA2qpKQ6tiSJ1hLsolVmfFoINcJKFfPtKSt24LlCXOXM2cSm3meSGXXstwRfPALcE4ws2UEngvxUQegPmHKRPOmTr6PQPxF1135NnqfaI93KocQTmCTCcaZgqEFxZBEk23ffwoXt/FFkbxl3eDW1o9g=
-Date: Thu, 22 May 2008 18:03:27 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
-       tom@opengridcomputing.com
-Subject: Re: [PATCH 1/6] ERR_PTR: if errno value is known at compile time,
-	make sure it's valid
-Message-ID: <20080522160323.GB8447@joi>
-References: <20080513201813.GA5869@joi> <1211147818-16056-2-git-send-email-marcin.slusarz@gmail.com> <20080519063852.GA4707@martell.zuzino.mipt.ru>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SkDIfQv+DMvMzkxGJ0CQO57DfawcPzyDj6M3hexGaHAA5OwYWGbCCysU1zAr5whqZ7k0jGV1RAEQ6j8GD6PabUFX7Op+FSSc1riHYjrr5jjxf78N3P9zO5kmqG9F2/uqikpe/WKv/36KCsiAbJysfnxh3LqvlgwGj9aJ1FQyAX0=
+Message-ID: <ee101c360805220904h1c69db12q3048d0347d27c461@mail.gmail.com>
+Date: Fri, 23 May 2008 00:04:35 +0800
+From: "Shuduo Sang" <sangshuduo@gmail.com>
+To: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
+Subject: Re: Inserting code from userspace to kernel space
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <d6c8ef150805220541v711c5acahc60541e3fd9f44fc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080519063852.GA4707@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <d6c8ef150805220541v711c5acahc60541e3fd9f44fc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 10:38:52AM +0400, Alexey Dobriyan wrote:
-> On Sun, May 18, 2008 at 11:56:53PM +0200, Marcin Slusarz wrote:
-> > ERR_PTR is easy to call with wrong argument (positive errno),
-> > and this error lead to catastrophic event - oops or kernel panic
-> > (dereference of invalid pointer).
-> > 
-> > As most of error handling code paths are rarely tested, this kind of
-> > bug can be hidden for years.
-> > 
-> > (Currently there are > 1400 calls of ERR_PTR with constant argument.)
-> 
-> > --- a/include/linux/err.h
-> > +++ b/include/linux/err.h
-> > @@ -19,11 +19,13 @@
-> >  
-> >  #define IS_ERR_VALUE(x) unlikely((x) >= (unsigned long)-MAX_ERRNO)
-> >  
-> > -static inline void *ERR_PTR(long error)
-> > +static inline void *__ERR_PTR(long error)
-> >  {
-> >  	return (void *) error;
-> >  }
-> >  
-> > +#define ERR_PTR(error) (BUILD_BUG_ON(__builtin_constant_p(error) && !IS_ERR_VALUE(error)), __ERR_PTR(error))
-> 
-> This needs comment that this construct must be a macro, otherwise gcc
-> does something stupid and doesn't break the build (at least in the case
-> below).
-Thanks, added to new version.
+On Thu, May 22, 2008 at 8:41 PM, Bosko Radivojevic
+<bosko.radivojevic@gmail.com> wrote:
+> Hi!
+>
+> I'm looking for a way to insert code from user space to the kernel
+> space, but without using kernel module. Actually, we are working on a
+> system that has to allow end user to change part of code (one or two
+> functions) that is executed from the kernel space.
+>
+> For now we have two different kernel modules, one exporting a function
+> which another module uses. Process of compiling kernel module is quite
+> ineligible for standard end user (along with the requirement to
+> support multi platform cross compiling) compared to just cross
+> compiling a simple code that doesn't use any libraries than libc.
+>
+> I know this sounds quite weird, but maybe there is a project that can help us ;)
+>
 
-> BTW, I used grep(1) to find it.
+actually you can implement a parser/interpretor, whatever you name it,
+in kernel space. And you can send the
+function code from user space to kernel space by device driver
+interface. the parser can parse that and do something
+practical function in kernel.
 
-http://lkml.org/lkml/2008/5/11/159
+I have worked on a similar task in a product powered by linux. It works great.
 
-> 
-> [PATCH] xprtrdma: fix ERR_PTR(E typo
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
-> 
->  net/sunrpc/xprtrdma/svc_rdma_transport.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/net/sunrpc/xprtrdma/svc_rdma_transport.c
-> +++ b/net/sunrpc/xprtrdma/svc_rdma_transport.c
-> @@ -661,7 +661,7 @@ static struct svc_xprt *svc_rdma_create(struct svc_serv *serv,
->  
->  	cma_xprt = rdma_create_xprt(serv, 1);
->  	if (!cma_xprt)
-> -		return ERR_PTR(ENOMEM);
-> +		return ERR_PTR(-ENOMEM);
->  	xprt = &cma_xprt->sc_xprt;
->  
->  	listen_id = rdma_create_id(rdma_listen_handler, cma_xprt, RDMA_PS_TCP);
-> 
+> Sincerely,
+> Bosko
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
