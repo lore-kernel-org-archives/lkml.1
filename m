@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYEVPEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYEVPGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbYEVPEb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 11:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYEVPEW
+	id S1754522AbYEVPGB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 11:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYEVPFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 11:04:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49539 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYEVPEV (ORCPT
+	Thu, 22 May 2008 11:05:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53302 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752349AbYEVPFu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 11:04:21 -0400
-Date: Thu, 22 May 2008 17:05:17 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-Subject: Re: [RFC][Patch 1/4]integrity: TPM internel kernel interface
-Message-ID: <20080522150516.GB25721@elf.ucw.cz>
-References: <1211385256.20922.25.camel@localhost.localdomain>
+	Thu, 22 May 2008 11:05:50 -0400
+Date: Thu, 22 May 2008 08:04:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@medozas.de>
+cc: Takashi Iwai <tiwai@suse.de>, Rene Herman <rene.herman@keyaccess.nl>,
+       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org, perex@perex.cz
+Subject: Re: Moving sound/* to drivers/ ?
+In-Reply-To: <alpine.LNX.1.10.0805221052050.971@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.1.10.0805220758000.3081@woody.linux-foundation.org>
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <4834B252.1080700@garzik.org> <4834B5E2.3040301@keyaccess.nl> <s5hy7623fqs.wl%tiwai@suse.de> <alpine.LNX.1.10.0805221052050.971@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211385256.20922.25.camel@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-05-21 11:54:16, Mimi Zohar wrote:
-> This is a request for comments for a redesign of the integrity patches.
-> This patchset contains 4 patches.
-> 	Patch 1/4 integrity: TPM internal kernel interface
-> 	Patch 2/4 integrity: special fs magic
-> 	Patch 3/4 integrity: Linux Integrity Module(LIM)
-> 	Patch 4/4 integrity: IMA as an integrity service provider
->  
-> Resubmitting integrity-tpm-internal-kernel-interface.patch, which
-> was previously Signed-off-by Kylene Hall.
+
+
+On Thu, 22 May 2008, Jan Engelhardt wrote:
 > 
-> Adds the following support: 
-> - internal kernel interface to transmit TPM commands
-> - reading a pcr value
-> - extending a pcr value
-> - lookup the tpm_chip for given chip number and type
-> 
-> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+> I am in favor of keeping /sound around with the
+> non-hardware-dependent code, much like /block does with regard to
+> /drivers/block.
 
->  /*
-> - * Returns max number of jiffies to wait
-> + * tpm_calc_ordinal_duration - returns max number of jiffies to wait
->   */
-> -unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip,
-> -					   u32 ordinal)
-> +unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal)
+I'd personally *much* rather have just one subdirectory.
 
-Please don't mix real changes and cleanups... and lots of your changes
-are just cleanups.
+I realize that block/ and drivers/block/ (and net/ vs drivers/net/) has 
+come up several times as an example that isn't that way, BUT:
 
-> @@ -544,7 +549,7 @@ duration:
->  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_DURATION;
->  
->  	rc = transmit_cmd(chip, data, sizeof(data),
-> -			"attempting to determine the durations");
-> +			  "attempting to determine the durations");
->  	if (rc)
->  		return;
->
+ - that's actually the odd man out. It's more common to do it the other 
+   way (and examples have already been given: drivers/usb/core, just plain 
+   drivers/base, drivers/scsi/ (where it's all mixed up and a lot of 
+   low-level drivers are in subdirectories of their own), etc etc.
 
-...like this.
-									Pavel
+ - perhaps more importantly, it's totally different from 'sound' in that 
+   the block/ and drivers/block/ maintainership is actually *separate*.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+   The same is actually true of net/ and drivers/net/ too. It so happens 
+   that within the last few months, drivers/net/ gets merged through the 
+   same maintainer as net/, but they really end up being maintained 
+   separately other than that.
+
+So the block/ and net/ layers have very much a higher level of separation 
+from their drivers. sound has always been very much _maintained_ as a 
+block, even if it then internally may be separate pieces. Partly this is 
+from historical reasons, I'm sure, but it's true none-the-less.
+
+So from an outside view, having a single subdirectory makes sense, because 
+that's how it has always been maintained.
+
+So I'd personally much rather see just one drivers/sound/ than have this 
+split up.
+
+		Linus
