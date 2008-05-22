@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932586AbYEVE0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbYEVE1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932586AbYEVE0a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 00:26:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765091AbYEVEZM
+	id S1759626AbYEVE1O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 00:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYEVE05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 00:25:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39880 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760331AbYEVEZJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 00:25:09 -0400
-Date: Wed, 21 May 2008 21:24:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and
- control (v5)
-Message-Id: <20080521212408.6f535259.akpm@linux-foundation.org>
-In-Reply-To: <20080521153012.15001.96490.sendpatchset@localhost.localdomain>
-References: <20080521152921.15001.65968.sendpatchset@localhost.localdomain>
-	<20080521153012.15001.96490.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 May 2008 00:26:57 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36422 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751332AbYEVE04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 00:26:56 -0400
+Date: Wed, 21 May 2008 23:26:08 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: dougthompson@xmission.com
+cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@osdl.org>,
+       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] edac: mpc85xx - Fix building as a module
+Message-ID: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 21:00:12 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+including of <asm/mpc85xx.h> causes build problems since it doesn't exist.
 
-> 
-> This patch adds support for accounting and control of virtual address space
-> limits. The accounting is done via the rlimit_cgroup_(un)charge_as functions.
-> The core of the accounting takes place during fork time in copy_process(),
-> may_expand_vm(), remove_vma_list() and exit_mmap(). 
-> 
-> Changelog v5->v4
-> 
-> Move specific hooks in code to insert_vm_struct
-> Use mmap_sem to protect mm->owner from changing and mm->owner from
-> changing cgroups.
-> 
-> ...
->
-> + * brk(), sbrk()), stack expansion, mremap(), etc - called with
-> + * mmap_sem held.
-> + * decreasing - called with mmap_sem held.
-> + * This callback is called with mmap_sem held
+Also removed warning:
+drivers/edac/mpc85xx_edac.c:45: warning: 'mpc85xx_ctl_name' defined but not used
 
-It's good to document the locking prerequisites but for rwsems, one
-should specify whether it must be held for reading or for writing.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Of course, down_write() is a superset of down_read(), so if it's "held
-for reading" then either mode-of-holding is OK.  But it's best to spell
-all that out.
+This is a fix for 2.6.26.
+
+- k
+
+ drivers/edac/mpc85xx_edac.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 065732d..d49361b 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -20,7 +20,6 @@
+
+ #include <linux/of_platform.h>
+ #include <linux/of_device.h>
+-#include <asm/mpc85xx.h>
+ #include "edac_module.h"
+ #include "edac_core.h"
+ #include "mpc85xx_edac.h"
+@@ -43,8 +42,6 @@ static u32 orig_pci_err_en;
+ static u32 orig_l2_err_disable;
+ static u32 orig_hid1;
+
+-static const char *mpc85xx_ctl_name = "MPC85xx";
+-
+ /************************ MC SYSFS parts ***********************************/
+
+ static ssize_t mpc85xx_mc_inject_data_hi_show(struct mem_ctl_info *mci,
+-- 
+1.5.4.5
 
