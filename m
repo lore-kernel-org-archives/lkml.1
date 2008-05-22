@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934261AbYEVWAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935670AbYEVWAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934261AbYEVWAS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760249AbYEVWAB
+	id S935670AbYEVWAk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935129AbYEVWAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:00:01 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56090 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756451AbYEVWAA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:00:00 -0400
-Date: Thu, 22 May 2008 22:47:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [PATCH] rio100: Push down the BKL
-Message-ID: <20080522224731.10cdac01@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 May 2008 18:00:25 -0400
+Received: from www.tglx.de ([62.245.132.106]:54012 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934928AbYEVWAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 18:00:23 -0400
+Date: Fri, 23 May 2008 00:00:02 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] x86: move mp_bus_not_pci from mpparse.c
+In-Reply-To: <20080519154715.15071.44328.stgit@thinkpad>
+Message-ID: <alpine.LFD.1.10.0805222351400.3295@apollo.tec.linutronix.de>
+References: <20080519154656.15071.96979.stgit@thinkpad> <20080519154715.15071.44328.stgit@thinkpad>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The BKL is actually probably not needed as the mutex seems sufficient. If
-so then a further patch to drop it would be a good followup.
+On Mon, 19 May 2008, Alexey Starikovskiy wrote:
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+> +++ b/arch/x86/kernel/io_apic_32.c
+> @@ -81,6 +81,12 @@ struct mp_config_intsrc mp_irqs[MAX_IRQ_SOURCES];
+>  /* # of MP IRQ source entries */
+>  int mp_irq_entries;
+>  
+> +#if defined (CONFIG_MCA) || defined (CONFIG_EISA)
+> +int mp_bus_id_to_type[MAX_MP_BUSSES];
+> +#endif
+> +
+> +DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+> +
 
-diff --git a/drivers/usb/misc/rio500.c b/drivers/usb/misc/rio500.c
-index 330c18e..248a12a 100644
---- a/drivers/usb/misc/rio500.c
-+++ b/drivers/usb/misc/rio500.c
-@@ -104,9 +104,7 @@ static int close_rio(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int
--ioctl_rio(struct inode *inode, struct file *file, unsigned int cmd,
--	  unsigned long arg)
-+static long ioctl_rio(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	struct RioCommand rio_cmd;
- 	struct rio_usb_data *rio = &rio_instance;
-@@ -116,6 +114,7 @@ ioctl_rio(struct inode *inode, struct file *file, unsigned int cmd,
- 	int retries;
- 	int retval=0;
- 
-+	lock_kernel();
- 	mutex_lock(&(rio->lock));
-         /* Sanity check to make sure rio is connected, powered, etc */
-         if (rio->present == 0 || rio->rio_dev == NULL) {
-@@ -254,6 +253,7 @@ ioctl_rio(struct inode *inode, struct file *file, unsigned int cmd,
- 
- err_out:
- 	mutex_unlock(&(rio->lock));
-+	unlock_kernel();
- 	return retval;
- }
- 
-@@ -433,7 +433,7 @@ file_operations usb_rio_fops = {
- 	.owner =	THIS_MODULE,
- 	.read =		read_rio,
- 	.write =	write_rio,
--	.ioctl =	ioctl_rio,
-+	.unlocked_ioctl = ioctl_rio,
- 	.open =		open_rio,
- 	.release =	close_rio,
- };
+> +++ b/arch/x86/kernel/io_apic_64.c
+> @@ -117,6 +117,8 @@ struct mp_config_intsrc mp_irqs[MAX_IRQ_SOURCES];
+>  /* # of MP IRQ source entries */
+>  int mp_irq_entries;
+>  
+> +DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+> +
+
+NAK for the whole series. If you want to move out stuff from mpparse,
+then please look for a useful place, which is
+
+1) related to the code (mp_bus_not_pci has no obvious association to
+io_apic)
+
+2) not duplicating code into 32/64 bit files again. We work hard on
+unifying and also distangling things and I refuse to accept a patch
+which moves code to a random place where it happens to compile.
+
+Thanks,
+
+	tglx
