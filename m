@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935509AbYEVWqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765034AbYEVWvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935509AbYEVWqv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760371AbYEVWpd
+	id S1765034AbYEVWvn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbYEVWvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:45:33 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:17088 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762245AbYEVWpa (ORCPT
+	Thu, 22 May 2008 18:51:33 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42698 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755873AbYEVWvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:45:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VXgzD6UfYDFmO3GO2FWuH86fPUNWPezD+lJBfZ4WERwwyWlh/1Q1Gx/gleWOEu4MR7cE7ssi/nDBVKXpuj+LlLhQbOa1nLNNv2kh4qk1WG8CZWc+f0IccBpDkp6CzzT4lmIUYfdRMKJFtp4vfv6bWN3Otir9bH/v7aWCXHsxEdY=
-Subject: [PATCH 2/5] acpi: fix integer as NULL pointer warning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "Brown, Len" <len.brown@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 15:45:06 -0700
-Message-Id: <1211496306.6888.9.camel@brick>
+	Thu, 22 May 2008 18:51:31 -0400
+Date: Fri, 23 May 2008 00:59:49 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Glauber Costa <gcosta@redhat.com>,
+       Miquel van Smoorenburg <miquels@cistron.nl>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       andi-suse@firstfloor.org
+Subject: Re: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
+Message-ID: <20080522225949.GE31727@one.firstfloor.org>
+References: <20080521113028.GA24632@xs4all.net> <48341A57.1030505@redhat.com> <20080522084736.GC31727@one.firstfloor.org> <alpine.LFD.1.10.0805222157300.3295@apollo.tec.linutronix.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805222157300.3295@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/acpi/dispatcher/dsmethod.c:568:50: warning: Using plain integer as NULL pointer
-drivers/acpi/executer/exmutex.c:329:30: warning: Using plain integer as NULL pointer
-drivers/acpi/executer/exmutex.c:466:31: warning: Using plain integer as NULL pointer
+On Thu, May 22, 2008 at 09:58:11PM +0200, Thomas Gleixner wrote:
+> On Thu, 22 May 2008, Andi Kleen wrote:
+> > On Wed, May 21, 2008 at 09:49:27AM -0300, Glauber Costa wrote:
+> > > probably andi has a better idea on why it was added, since it used to 
+> > > live in his tree?
+> > 
+> > d_a_c() tries a couple of zones, and running the oom killer for each
+> > is inconvenient. Especially for the 16MB DMA zone which is unlikely
+> > to be cleared by the OOM killer anyways because normal user applications
+> > don't put pages in there. There was a real report with some problems
+> > in this area.
+> 
+> Can you give some pointers please ?
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/acpi/dispatcher/dsmethod.c |    2 +-
- drivers/acpi/executer/exmutex.c    |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+To the bug report? Memory is fuzzy, but I think it was some SUSE bugzilla
+report, might have been for SLES.
 
-diff --git a/drivers/acpi/dispatcher/dsmethod.c b/drivers/acpi/dispatcher/dsmethod.c
-index e48a3ea..2509809 100644
---- a/drivers/acpi/dispatcher/dsmethod.c
-+++ b/drivers/acpi/dispatcher/dsmethod.c
-@@ -565,7 +565,7 @@ acpi_ds_terminate_control_method(union acpi_operand_object *method_desc,
- 
- 				acpi_os_release_mutex(method_desc->method.
- 						      mutex->mutex.os_mutex);
--				method_desc->method.mutex->mutex.thread_id = 0;
-+				method_desc->method.mutex->mutex.thread_id = NULL;
- 			}
- 		}
- 
-diff --git a/drivers/acpi/executer/exmutex.c b/drivers/acpi/executer/exmutex.c
-index c873ab4..a8bf3d7 100644
---- a/drivers/acpi/executer/exmutex.c
-+++ b/drivers/acpi/executer/exmutex.c
-@@ -326,7 +326,7 @@ acpi_status acpi_ex_release_mutex_object(union acpi_operand_object *obj_desc)
- 
- 	/* Clear mutex info */
- 
--	obj_desc->mutex.thread_id = 0;
-+	obj_desc->mutex.thread_id = NULL;
- 	return_ACPI_STATUS(status);
- }
- 
-@@ -463,7 +463,7 @@ void acpi_ex_release_all_mutexes(struct acpi_thread_state *thread)
- 		/* Mark mutex unowned */
- 
- 		obj_desc->mutex.owner_thread = NULL;
--		obj_desc->mutex.thread_id = 0;
-+		obj_desc->mutex.thread_id = NULL;
- 
- 		/* Update Thread sync_level (Last mutex is the important one) */
- 
--- 
-1.5.5.1.579.g4e43
+Anyways the reasoning is still valid. Longer term the mask allocator
+would be the right fix, shorter term a new GFP flag as proposed 
+sounds reasonable.
 
+The trick is just that you need different __GFP_ flags for the different
+allocations. e.g. the first the "higher zone" quick try should
+continue to use __GFP_NORETRY. And the 16MB one should too. It would
+only make sense for the main request.
 
+In the mask allocator patchkit kernel it should be also ok already.
+
+-Andi
