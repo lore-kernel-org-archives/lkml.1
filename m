@@ -1,106 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759375AbYEVVve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934425AbYEVVwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759375AbYEVVve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbYEVVvX
+	id S934425AbYEVVwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757557AbYEVVwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:51:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58150 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755562AbYEVVvV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 17:51:21 -0400
-Date: Thu, 22 May 2008 22:38:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [PATCH] 3ware: BKL elimination
-Message-ID: <20080522223853.1762065a@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 May 2008 17:52:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38628 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756761AbYEVVwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 17:52:06 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it is queued
+In-Reply-To: Oleg Nesterov's message of  Thursday, 22 May 2008 15:12:11 +0400 <20080522111211.GA117@tv-sign.ru>
+References: <20080517151420.GA9496@tv-sign.ru>
+	<20080521022046.1501F26FA1C@magilla.localdomain>
+	<20080521115414.GA147@tv-sign.ru>
+	<20080521184245.5BABF26FA24@magilla.localdomain>
+	<alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
+	<20080521193348.64E8C26FA24@magilla.localdomain>
+	<alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org>
+	<20080521230135.BF65A26FA24@magilla.localdomain>
+	<20080522111211.GA117@tv-sign.ru>
+Emacs: because you deserve a brk today.
+Message-Id: <20080522215057.DCDF326FA24@magilla.localdomain>
+Date: Thu, 22 May 2008 14:50:57 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 3ware driver internal locking appears complete so we just stop taking
-the BKL on ioctls from the management handle
+> This is not enough. Again, we remove and free sigqueue but don't discard
+> the pending signal. (and we must take into account other rt signals with
+> the same si_signo if we want to discard the signal).
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Right, of course.  The sigset_t collecting while checking the queue is the
+only way to do it.  Note that you need to make it:
 
-diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
-index b31faec..5e6b47f 100644
---- a/drivers/scsi/3w-9xxx.c
-+++ b/drivers/scsi/3w-9xxx.c
-@@ -111,7 +111,7 @@ static void twa_aen_queue_event(TW_Device_Extension *tw_dev, TW_Command_Apache_H
- static int twa_aen_read_queue(TW_Device_Extension *tw_dev, int request_id);
- static char *twa_aen_severity_lookup(unsigned char severity_code);
- static void twa_aen_sync_time(TW_Device_Extension *tw_dev, int request_id);
--static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg);
-+static long twa_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
- static int twa_chrdev_open(struct inode *inode, struct file *file);
- static int twa_fill_sense(TW_Device_Extension *tw_dev, int request_id, int copy_sense, int print_host);
- static void twa_free_request_id(TW_Device_Extension *tw_dev,int request_id);
-@@ -202,7 +202,7 @@ static struct device_attribute *twa_host_attrs[] = {
- /* File operations struct for character device */
- static const struct file_operations twa_fops = {
- 	.owner		= THIS_MODULE,
--	.ioctl		= twa_chrdev_ioctl,
-+	.unlocked_ioctl	= twa_chrdev_ioctl,
- 	.open		= twa_chrdev_open,
- 	.release	= NULL
- };
-@@ -619,7 +619,7 @@ out:
- } /* End twa_check_srl() */
- 
- /* This function handles ioctl for the character device */
--static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-+static long twa_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	long timeout;
- 	unsigned long *cpu_addr, data_buffer_length_adjusted = 0, flags = 0;
-@@ -635,7 +635,8 @@ static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int
- 	TW_Event *event;
- 	struct timeval current_time;
- 	u32 current_time_ms;
--	TW_Device_Extension *tw_dev = twa_device_extension_list[iminor(inode)];
-+	unsigned int minor = iminor(file->f_path.dentry->d_inode);
-+	TW_Device_Extension *tw_dev = twa_device_extension_list[minor];
- 	int retval = TW_IOCTL_ERROR_OS_EFAULT;
- 	void __user *argp = (void __user *)arg;
- 
-diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
-index 8c22329..33a6a2e 100644
---- a/drivers/scsi/3w-xxxx.c
-+++ b/drivers/scsi/3w-xxxx.c
-@@ -874,7 +874,7 @@ static int tw_allocate_memory(TW_Device_Extension *tw_dev, int size, int which)
- } /* End tw_allocate_memory() */
- 
- /* This function handles ioctl for the character device */
--static int tw_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-+static long tw_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	int request_id;
- 	dma_addr_t dma_handle;
-@@ -886,7 +886,8 @@ static int tw_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int
- 	long timeout;
- 	TW_New_Ioctl *tw_ioctl;
- 	TW_Passthru *passthru;
--	TW_Device_Extension *tw_dev = tw_device_extension_list[iminor(inode)];
-+	unsigned int minor = iminor(file->f_path.dentry->d_inode);
-+	TW_Device_Extension *tw_dev = tw_device_extension_list[minor];
- 	int retval = -EFAULT;
- 	void __user *argp = (void __user *)arg;
- 
-@@ -1043,7 +1044,7 @@ static int tw_chrdev_open(struct inode *inode, struct file *file)
- /* File operations struct for character device */
- static const struct file_operations tw_fops = {
- 	.owner		= THIS_MODULE,
--	.ioctl		= tw_chrdev_ioctl,
-+	.unlocked_ioctl	= tw_chrdev_ioctl,
- 	.open		= tw_chrdev_open,
- 	.release	= NULL
- };
+	if (q->info.si_code == SI_TIMER && sig >= SIGRTMIN)
+
+because a SI_TIMER could be using a legacy_queue signal number.  In that
+case there might have been a second non-timer signal pending with that
+number too, which must not get cleared.  Since the only siginfo_t still
+recorded is the SI_TIMER one, better to leave it queued than turn it into
+an infoless signal, seems to me.
+
+
+Thanks,
+Roland
