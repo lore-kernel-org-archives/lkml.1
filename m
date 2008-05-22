@@ -1,131 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935654AbYEVWw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935247AbYEVWxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935654AbYEVWw7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933729AbYEVWw2
+	id S935247AbYEVWxg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760368AbYEVWw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:52:28 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:52843 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762008AbYEVWw1 (ORCPT
+	Thu, 22 May 2008 18:52:59 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:53594 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759320AbYEVWw5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:52:27 -0400
-Message-ID: <4835F929.7010200@kernel.org>
-Date: Thu, 22 May 2008 15:52:25 -0700
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Thu, 22 May 2008 18:52:57 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: Moving include/asm-* [was: Re: Moving sound/* to drivers/ ?]
+Date: Fri, 23 May 2008 00:52:45 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, Takashi Iwai <tiwai@suse.de>,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <alpine.LFD.1.10.0805211818550.3081@woody.linux-foundation.org> <20080522013035.GV28946@ZenIV.linux.org.uk>
+In-Reply-To: <20080522013035.GV28946@ZenIV.linux.org.uk>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com
-Subject: Re: capget() overflows buffers.
-References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org>
-In-Reply-To: <20080522205341.GA30402@sequoia.sous-sol.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200805230052.46976.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX190qo7LUFKqnfBnkCHoRJUAHbOqmI0k6r69mXE
+ IlcqAYU8kzBQQ2pzEfs8PPmi3LyLfWnHIU4F/HVF+G3bNnEUGJ
+ ZVTYT/KciKOqiRzlJo/lg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Thursday 22 May 2008, Al Viro wrote:
 
-Chris Wright wrote:
-| * Chris Wright (chrisw@sous-sol.org) wrote:
-|> Yes, this thing is broken.
-|
-| Andrew, I think this should be considered a serious problem.  The
-| interface ABI is stable for old programs, and fine for anything new
-| or old that's using libcap.  But the API has changed subtly (taking a
-| pointer to a blob, to a pointer to an array of blobs), and is easily
-| broken for programs recompiled against new headers not using libcap.
+> On Wed, May 21, 2008 at 06:20:27PM -0700, Linus Torvalds wrote:
+> > On Thu, 22 May 2008, Al Viro wrote:
+> > 
+> > > Nice, but... how do you pull what's currently asm-generic/foo.h from what's
+> > > currently asm-bar/foo.h?  #include_next is _ugly_...
+> > 
+> > I was actually going to suggest #include_next, yes. But if people hate it, 
+> > we can certainly just keep the current <asm-generic/xyz.h> approach.
+> 
+> Another alternative is to replace asm-generic/ with generic/asm and have
+> -I include -I arch/$ARCH/include -I include/generic. Then we'd have
 
-[There is a warning about this issue in the kernel header file.]
+Neither #include_next nor the generic/asm approach seems to have a
+straightforward way of handling exported user space headers.
+The current include/asm-generic way of doing this isn't nice either,
+but at least it's a known evil.
 
-The kernel is not crashing, the application is...
+Since the question of asm-generic is almost entirely independent of 
+where the regular arch headers are, I'd vote for leaving asm-generic
+alone for now and only doing the obvious move of all other headers to
+arch/*/include/asm as a significant step in the right direction.
+Nobody seemed to object that part so far, and the only significant
+changes it needs are in sparc64, m68knommu and um as well as a few
+scripts changes.
 
-If you take this compiled binary, that crashes on 2.6.25, and try to run
-it on 2.6.24 it will fail there too - since the magic its 'forcing' is
-not valid on that kernel. So the compiled 'binary' we're discussing does
-not have an existence proof that it will successfully run anywhere.
-
-In point of fact, the kernel is binary compatible with old binaries. The
-problem is that _LINUX_CAPABILITY_VERSION #define now points to _2
-instead of _1 by default and Squid etc., are not paying attention to the
-value of the new magic cookie but expecting the previous revision of the
-ABI to work.
-
-As such, I don't agree that there is a problem with the ABI, and I don't
-agree with your assertion about things being broken. I maintain there is
-a problem with the application source code.
-
-One 'solution' is to force everyone to notice at compile time by simply
-removing the definition of _LINUX_CAPABILITY_VERSION and force all new
-source code to be explicit about which ABI it wants to use...
-
-Cheers
-
-Andrew
-
-| For the squid issue at least it does capget/capset, so it's likely to
-| write back in capset the caps it got in capget (when it doesn't hit
-| glibc heap overflow protection).
-|
-| But bind, for example, could have garbage in the upper 32bits on a 64bit
-| caps system that does not HAVE_LIBCAP:
-|
-| (Note: snipped it down to make it readable, removed some ifdef
-| HAVE_LIBCAP, etc)
-|
-| linux_setcaps(cap_t caps) {
-| 	struct __user_cap_header_struct caphead;
-| 	struct __user_cap_data_struct cap;	<-- just one set of u32s
-| <snip>
-| 	memset(&caphead, 0, sizeof(caphead));
-| 	caphead.version = _LINUX_CAPABILITY_VERSION; <-- v2
-| 	caphead.pid = 0;
-| 	memset(&cap, 0, sizeof(cap));
-| 	cap.effective = caps;
-| 	cap.permitted = caps;
-| 	cap.inheritable = 0;			<-- fill in just that set
-| <snip>
-| 	if (syscall(SYS_capset, &caphead, &cap) < 0) {
-|                                           ^^^ kernel pulls 2 sets of
-| 					  u32s, send is just junk from
-| 					  stack
-|
-|
-|
-| For the squid case that Bojan described:
-| (Note: snipped it down again)
-|
-| restoreCapabilities(int keep)
-| {
-|     cap_user_header_t head = (cap_user_header_t) xcalloc(1,
-sizeof(cap_user_header_t));
-|     cap_user_data_t cap = (cap_user_data_t) xcalloc(1,
-sizeof(cap_user_data_t));
-|     head->version = _LINUX_CAPABILITY_VERSION;
-|     if (capget(head, cap) != 0) {
-| <snip>
-|     head->pid = 0;
-|     cap->inheritable = 0;
-|     cap->effective = (1 << CAP_NET_BIND_SERVICE);
-| <snip>
-|     if (!keep)
-|         cap->permitted &= cap->effective;
-|     if (capset(head, cap) != 0) {
-|
-| I don't see a nice solution, short reverting, and adding a new set of
-| syscalls to support 64-bit.
-|
-| thanks,
-| -chris
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFINfkp+bHCR3gb8jsRAll6AKCfgKejl/TtJX6KfbbEb8dQbleMXgCgp20B
-fsAGaykQUensyYfL9hxlp9Q=
-=w+GH
------END PGP SIGNATURE-----
+	Arnd <><
