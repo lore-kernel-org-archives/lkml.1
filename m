@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763030AbYEVLxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934611AbYEVLxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763030AbYEVLxU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 07:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbYEVLw2
+	id S934611AbYEVLxe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 07:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759368AbYEVLw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 07:52:28 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:49744 "EHLO
+	Thu, 22 May 2008 07:52:57 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:37527 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755309AbYEVLw0 (ORCPT
+	with ESMTP id S1756998AbYEVLw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 07:52:26 -0400
-Message-Id: <20080522114947.310735375@kerlabs.com>
+	Thu, 22 May 2008 07:52:28 -0400
+Message-Id: <20080522114947.449481659@kerlabs.com>
 References: <20080522114048.265996107@kerlabs.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 22 May 2008 13:40:49 +0200
+Date: Thu, 22 May 2008 13:40:50 +0200
 From: Louis Rilling <Louis.Rilling@kerlabs.com>
 To: Joel.Becker@oracle.com
 Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
        Louis Rilling <Louis.Rilling@kerlabs.com>
-Subject: [RFC][PATCH 1/4] Prepare i_mutex lockdep subclasses for locking of variable path lengths
-Content-Disposition: inline; filename=prepare-variable-path-lengths-inode-locking.patch
+Subject: [RFC][PATCH 2/4] Prepare vfs_rmdir() for further nested i_mutex locking
+Content-Disposition: inline; filename=prepare-vfs-rmdir-for-further-nested-inode-locking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some filesystems, like configfs, need to lock more than two regular inodes
-recursively in a tree, which i_mutex lockdep subclasses do not permit.
+configfs_rmdir() needs to lock recursively a whole tree of i_mutex in order to
+provide userspace and client sub-systems with atomic semantics. However,
+vfs_rmdir() locks the to-be-removed inode with sub-class I_MUTEX_NORMAL, which
+does not allow futher I_MUTEX_CHILD + x nested locks. Luckily this is a case of
+I_MUTEX_PARENT -> I_MUTEX_CHILD lock dependency pattern, where do_rmdir() takes
+parent's inode with sub-class I_MUTEX_PARENT.
 
-This patch reorders the definitions (but not the semantics) of i_mutex lockdep
-sub-classes so that nested i_mutex locking can be done with sub-classes
-I_MUTEX_PARENT -> I_MUTEX_CHILD -> I_MUTEX_CHILD + 1 -> I_MUTEX_CHILD + 2 -> ...
-until MAX_LOCKDEP_SUBCLASSES - 1.
+This patch changes the sub-class of i_mutex lock in vfs_rmdir() from
+I_MUTEX_NORMAL to I_MUTEX_CHILD, which allows further nested i_mutex locking as
+configfs needs. Existing lock dependencies should not be impacted since
+I_MUTEX_CHILD can only preceed I_MUTEX_NORMAL in locking order, and nobody locks
+with sub-class I_MUTEX_CHILD before calling vfs_rmdir().
 
 Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
 ---
- include/linux/fs.h |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ fs/namei.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 
-Index: b/include/linux/fs.h
+Index: b/fs/namei.c
 ===================================================================
---- a/include/linux/fs.h	2008-05-21 09:40:28.000000000 +0200
-+++ b/include/linux/fs.h	2008-05-22 12:20:20.000000000 +0200
-@@ -660,20 +660,23 @@ struct inode {
-  * inode->i_mutex nesting subclasses for the lock validator:
-  *
-  * 0: the object of the current VFS operation
-- * 1: parent
-- * 2: child/target
-- * 3: quota file
-+ * 1: xattrs
-+ * 2: quota file
-+ * 3: parent
-+ * 4: child/target
-+ * ...: lower-level children
-  *
-  * The locking order between these classes is
-- * parent -> child -> normal -> xattr -> quota
-+ * parent -> child -> sub-children... -> normal -> xattr -> quota
-  */
- enum inode_i_mutex_lock_class
- {
- 	I_MUTEX_NORMAL,
-+	I_MUTEX_XATTR,
-+	I_MUTEX_QUOTA,
- 	I_MUTEX_PARENT,
- 	I_MUTEX_CHILD,
--	I_MUTEX_XATTR,
--	I_MUTEX_QUOTA
-+	/* Reserved for variable paths of nested inode locks */
- };
+--- a/fs/namei.c	2008-05-21 09:40:26.000000000 +0200
++++ b/fs/namei.c	2008-05-22 12:21:27.000000000 +0200
+@@ -2232,7 +2232,7 @@ int vfs_rmdir(struct inode *dir, struct 
  
- extern void inode_double_lock(struct inode *inode1, struct inode *inode2);
+ 	DQUOT_INIT(dir);
+ 
+-	mutex_lock(&dentry->d_inode->i_mutex);
++	mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_CHILD);
+ 	dentry_unhash(dentry);
+ 	if (d_mountpoint(dentry))
+ 		error = -EBUSY;
 
 -- 
 Dr Louis Rilling			Kerlabs
