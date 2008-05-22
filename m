@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936122AbYEVJfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936246AbYEVJgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936122AbYEVJfX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 05:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932795AbYEVJfH
+	id S936246AbYEVJgr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 05:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933808AbYEVJgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 05:35:07 -0400
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:42704 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760509AbYEVJfG (ORCPT
+	Thu, 22 May 2008 05:36:38 -0400
+Received: from ns.miraclelinux.com ([219.118.163.66]:37624 "EHLO
+	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932070AbYEVJgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 05:35:06 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <48353E45.2080903@cam.ac.uk>
-Date: Thu, 22 May 2008 10:35:01 +0100
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
+	Thu, 22 May 2008 05:36:37 -0400
+Message-ID: <48353D60.2050704@miraclelinux.com>
+Date: Thu, 22 May 2008 18:31:12 +0900
+From: Hirofumi Nakagawa <hnakagawa@miraclelinux.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: Jean Delvare <khali@linux-fr.org>, spi-devel-general@lists.sourceforge.net,
-       Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       LM Sensors <lm-sensors@lm-sensors.org>, linux-kernel@vger.kernel.org,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [spi-devel-general] Accelerometer,	Gyros and ADC's etc within
- the kernel.
-References: <4832A211.4040206@gmail.com>	<20080520132817.03fb74ea@hyperion.delvare> <200805211752.15670.david-b@pacbell.net>
-In-Reply-To: <200805211752.15670.david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC][PATCH 0/1] MAZE: Mazed processes monitor
+References: <48297FD0.2090905@miraclelinux.com> <20080513084157.098ae2dc.akpm@linux-foundation.org>
+In-Reply-To: <20080513084157.098ae2dc.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2008.5.22.21216
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-> On Tuesday 20 May 2008, Jean Delvare wrote:
->> This all sounds quite different from our hwmon drivers. Our hwmon
->> drivers read all the sensor values at once and cache the readings for a
->> couple seconds, so you can't get an instant reading at any time, and
->> they also don't support interrupts in general.
-> 
-> That's something of an issue when the hardware monitor
-> triggers alarms though, right?  I couldn't figure out
-> how to get a TMP75 alert out to any userspace code that
-> would care, to pick one example, even after teaching
-> the i2c core how to handle SMBus alerts.  ;)
-> 
-> I suppose this just emphasizes the point made by Hans
-> that we kind of need (industrial) "control" components
-> (or "data acquisition"?) not just "monitoring" ones.
-I get the feeling even the name is going to evolve for some time to come, 
-getting broader as and when we add more classes of device.
-> Such alarms are of course different from the "data
-> ready" signals of an accelerometer.
-Whilst this is true, most accelerometers also have "alarm" triggers, for example
-the ST LIS3L02DQ will raise a pin on configurable conditions such as thresholds
-and even a double click detector (though I've never tried them!).  I suppose we
-will ideally support this functionality as well.
---
-Jonathan Cameron
+Hi Andrew,
+
+Thank you for your comment and review.
+
+> The immediate quesstion is, of course, "why does this need to be done
+> in-kernel?".  I am unable to answer that from the provided changelog
+> information, and I should be able to do that.
+
+It needs to be done in kernel because excessive CPU cycle usage
+is directly detected watching kernel internal task_struct.state.
+It's hard to get that information outside the kernel.
+
+Additionally, this patch's aim is to implement a
+CGL (Carrier Grade Linux) requirement (AVL.14.0).
+
+There are specs that can not be implemented outside the kernel.
+These are;
+  - Communication between the monitoring process and the kernel
+  - Ability to define policy based on process events including
+    process/thread creation and exit, and,
+  - Ability to set the CPU cycle threshold to a resolution of
+    one millisecond.
+
+Thanks.
+Hirofumi Nakagawa
+
+
