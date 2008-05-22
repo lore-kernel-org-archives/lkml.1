@@ -1,48 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763966AbYEVDtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765515AbYEVDtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763966AbYEVDtH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 23:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbYEVDsx
+	id S1765515AbYEVDtg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 23:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbYEVDtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 23:48:53 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:42622 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753517AbYEVDsx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 23:48:53 -0400
-Subject: [PATCH] for_each_online_pgdat: kerneldoc fix
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Thu, 22 May 2008 12:48:51 +0900
-Message-Id: <1211428131.3207.18.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 23:49:23 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63046 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757696AbYEVDtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 23:49:22 -0400
+Date: Thu, 22 May 2008 04:47:00 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Clemens Ladisch <clemens@ladisch.de>
+cc: Kevin Hao <kexin.hao@windriver.com>, venkatesh.pallipadi@intel.com,
+       bob.picco@hp.com, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>
+Subject: Re: [PATCH] x86: Get irq for hpet timer
+In-Reply-To: <4833DD38.2010702@ladisch.de>
+Message-ID: <Pine.LNX.4.55.0805220105560.4894@cliff.in.clinika.pl>
+References: <1210917912.10881.1.camel@kevin-desktop>  <482D49CF.4030902@ladisch.de>
+ <1210929270.11912.3.camel@kevin-desktop>  <4831A678.5070208@ladisch.de>
+ <1211274219.8718.7.camel@kevin-desktop> <Pine.LNX.4.55.0805201631010.31790@cliff.in.clinika.pl>
+ <4833DD38.2010702@ladisch.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for_each_pgdat was renamed for_each_online_pgdat and kerneldoc comments
-should be updated accordingly.
+On Wed, 21 May 2008, Clemens Ladisch wrote:
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+> >  Hmm, you probably want to skip all lines that are edge-triggered.
+> > Otherwise you may have problems with sharing.
+> 
+> HPET interrupts can be either edge or level triggered.  Probably we
+> should modify it according to the type of the interrupt line we're
+> trying to grab.
 
-diff -urNp linux-2.6.26-rc3-git3-orig/include/linux/mmzone.h linux-2.6.26-rc3-git3/include/linux/mmzone.h
---- linux-2.6.26-rc3-git3-orig/include/linux/mmzone.h	2008-05-22 12:26:59.000000000 +0900
-+++ linux-2.6.26-rc3-git3/include/linux/mmzone.h	2008-05-22 12:33:00.000000000 +0900
-@@ -703,7 +703,7 @@ extern struct pglist_data *next_online_p
- extern struct zone *next_zone(struct zone *zone);
- 
- /**
-- * for_each_pgdat - helper macro to iterate over all nodes
-+ * for_each_online_pgdat - helper macro to iterate over all online nodes
-  * @pgdat - pointer to a pg_data_t variable
-  */
- #define for_each_online_pgdat(pgdat)			\
+ Edge-triggered lines are generally associated with legacy devices.  It
+may not be possible to grab one without disturbing the other device.
 
+> >  This driver is quite platform-specific -- how about instead of blindly
+> > probing for interrupt lines, you actually allocate one somehow in platform
+> > code?
+> 
+> I don't have much of a clue about that "somehow", but this sound like a
+> good idea.  ;-)
+> 
+> I think hpet_reserve_platform_timers() might be the place for this.
+> 
+> It gets called from hpet_late_init(), which is a fs_initcall, so I think
+> we should be careful not to grab some unsharable interrupt that might be
+> needed by some ISA device whose driver is initialized later.
+> (This was a bug in 2.6.25-rc5: <http://bugzilla.kernel.org/show_bug.cgi?id=10382>)
 
+ I have had a look at the relevant areas of ACPI and HPET specs and it
+looks pretty straightforward, although not all the information is recorded
+in system tables.  Essentially you are free to choose an arbitrary
+interrupt supported by the HPET -- which you can find in the timer's
+routing capability (as the proposed patch is doing).
+
+ However you are right you really want to select one which does not
+conflict with a legacy device, so it's probably best to avoid the legacy
+range altogether (worth noting as for example the system I have handy has
+the capability of its timer #2 set to 0x00f00800 -- here IRQ11 may not be
+safe to use) and then you have to check how many inputs beyond the legacy
+range are supported by the I/O APICs in the system -- you can have a look
+at mp_find_ioapic() to see how obtain that information and then you can
+call mp_register_gsi() on the interrupt line selected like this to set up
+routing in the I/O APIC as necessary.  Level-triggered mode has to be used
+as the resulting interrupt entry may happen to be shared with a PCI
+interrupt.
+
+ Though I have just noticed there is something wrong with the spec -- it
+says that "The interrupts are all active high." which precludes sharing,
+hmm... -- broken spec?  If hardware designers actually followed it in this
+respect (I wouldn't be surprised as for some of them software is abstract
+enough a concept not to be bothered with, and then it is a spec after
+all), then I am afraid we need to have a way to get an exclusive
+reservation of an I/O APIC line.  It could be tough with a system using
+fixed routing and reusing a legacy IRQ might be the only choice -- if
+supported by the HPET router, that is.
+
+ Of course if the HPET supports MSI delivery and the kernel configuration
+has it enabled, then you can avoid all the hassle with finding an
+available IRQ line altogether.
+
+  Maciej
