@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbYEVQNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbYEVQNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbYEVQNS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 12:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbYEVQM7
+	id S1757545AbYEVQNa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 12:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbYEVQNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 12:12:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35286
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754185AbYEVQM6 (ORCPT
+	Thu, 22 May 2008 12:13:15 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:31912 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756919AbYEVQNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 12:12:58 -0400
-Date: Thu, 22 May 2008 09:12:54 -0700 (PDT)
-Message-Id: <20080522.091254.39363717.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: vegard.nossum@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: initialization of static per-cpu variables
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200805221820.07290.rusty@rustcorp.com.au>
-References: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com>
-	<200805221820.07290.rusty@rustcorp.com.au>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 22 May 2008 12:13:14 -0400
+Message-ID: <48359B96.2020303@mvista.com>
+Date: Thu, 22 May 2008 09:13:10 -0700
+From: Dave Jiang <djiang@mvista.com>
+Organization: MontaVista Software, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: dougthompson@xmission.com, Andrew Morton <akpm@osdl.org>,
+       linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] edac: mpc85xx - Fix building as a module
+References: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 22 May 2008 18:20:06 +1000
+Acked-by: Dave Jiang <djiang@mvista.com>
 
-> On Thursday 22 May 2008 04:28:02 Vegard Nossum wrote:
-> > Hi,
-> >
-> > I encountered this comment in kernel/softirq.c:
-> >
-> > /* Some compilers disobey section attribute on statics when not
-> >    initialized -- RR */
-> > static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
-> > static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
-> >
-> > So I assume it's the combination of static and whatever section
-> > DFINE_PER_CPU puts the variable in which is the problem.
-> >
-> > However, there's a LOT of these "static DEFINE_PER_CPU" without any
-> > initializer in the rest of the code, e.g.:
+Kumar Gala wrote:
+> including of <asm/mpc85xx.h> causes build problems since it doesn't exist.
 > 
-> Yep, it was an old toolchain used by Sparc: DaveM found this one.  As you say, 
-> it's ancient: I'm happy to queue a cleanup patch now everyone is on a modern 
-> compiler.
+> Also removed warning:
+> drivers/edac/mpc85xx_edac.c:45: warning: 'mpc85xx_ctl_name' defined but not used
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> 
+> This is a fix for 2.6.26.
+> 
+> - k
+> 
+>  drivers/edac/mpc85xx_edac.c |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+> index 065732d..d49361b 100644
+> --- a/drivers/edac/mpc85xx_edac.c
+> +++ b/drivers/edac/mpc85xx_edac.c
+> @@ -20,7 +20,6 @@
+> 
+>  #include <linux/of_platform.h>
+>  #include <linux/of_device.h>
+> -#include <asm/mpc85xx.h>
+>  #include "edac_module.h"
+>  #include "edac_core.h"
+>  #include "mpc85xx_edac.h"
+> @@ -43,8 +42,6 @@ static u32 orig_pci_err_en;
+>  static u32 orig_l2_err_disable;
+>  static u32 orig_hid1;
+> 
+> -static const char *mpc85xx_ctl_name = "MPC85xx";
+> -
+>  /************************ MC SYSFS parts ***********************************/
+> 
+>  static ssize_t mpc85xx_mc_inject_data_hi_show(struct mem_ctl_info *mci,
 
-Yes, that workaround certainly can die now.
+
+-- 
+
+------------------------------------------------------
+Dave Jiang
+Software Engineer
+MontaVista Software, Inc.
+http://www.mvista.com
+------------------------------------------------------
+
