@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763039AbYEVD7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbYEVEPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763039AbYEVD7u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 23:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbYEVD7k
+	id S1752107AbYEVEPl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 00:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbYEVEPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 23:59:40 -0400
-Received: from mga06.intel.com ([134.134.136.21]:53774 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751360AbYEVD7j (ORCPT
+	Thu, 22 May 2008 00:15:33 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40058 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbYEVEPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 23:59:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,523,1204531200"; 
-   d="scan'208";a="283823780"
-Message-ID: <4834EFA9.6050407@linux.intel.com>
-Date: Wed, 21 May 2008 20:59:37 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 22 May 2008 00:15:32 -0400
+Message-ID: <4834F2E2.3070806@cs.helsinki.fi>
+Date: Thu, 22 May 2008 07:13:22 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH] serial: fix enable_irq_wake/disable_irq_wake imbalance
- in serial_core.c
-References: <20080519201141.1dbe6cc1@linux.intel.com> <20080521145338.022abd3b.akpm@linux-foundation.org>
-In-Reply-To: <20080521145338.022abd3b.akpm@linux-foundation.org>
+To: Paul Mundt <lethal@linux-sh.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, clameter@sgi.com, mpm@selenic.com,
+       dhowells@redhat.com
+Subject: Re: [RFC/PATCH 1/3] SLAB: Add PageSlab checking to ksize()
+References: <Pine.LNX.4.64.0805212124250.22291@sbz-30.cs.Helsinki.FI> <20080521234555.GB32707@linux-sh.org>
+In-Reply-To: <20080521234555.GB32707@linux-sh.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>  	}
->>  
->> -	if (!port->suspended) {
->> +	tty_dev = device_find_child(port->dev, &match, serial_match_port);
->> +	if (!port->suspended && device_may_wakeup(tty_dev)) {
->>  		disable_irq_wake(port->irq);
->>  		mutex_unlock(&state->mutex);
->>  		return 0;
-> 
-> erp, is that the easiest way of going from a uart_driver* to a device*?
-> Doing a lookup each time is a bit unusual.
-> 
+Paul Mundt wrote:
+> This series seems to work ok with all of SLAB/SLUB/SLOB when also
+> applying the kobjsize() patch. Without the kobjsize() patch in place,
+> SLAB and SLUB both work, while SLOB still triggers the >= MAX_ORDER
+> BUG_ON() for page cache pages. Note that this is still an improvement
+> over SLUB blowing up, as it was before, even without the kobjsize()
+> change.
 
-this is during suspend/resume only, so I figured it wasn't going to be that performance critical;
-I wanted the code to be as symmetric as possible rather than fastest..
+That's probably due to the fact that we use PageSlab for all pages with 
+SLUB and for bigblock pages in SLOB with this patch. Christoph, Matt, 
+any suggestions how to fix the PageSlab check in nommu btw?
+
+		Pekka
