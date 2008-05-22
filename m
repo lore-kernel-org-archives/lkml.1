@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764491AbYETJfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763680AbYETJmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764491AbYETJfL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761566AbYETJfA
+	id S1763680AbYETJmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbYETJm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:35:00 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55098 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1762065AbYETJe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:34:59 -0400
-Message-ID: <48329AE0.2010505@cn.fujitsu.com>
-Date: Tue, 20 May 2008 17:33:20 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [RFC][PATCH 3/3] memcg: per node information
-References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com> <20080520180955.70aa5459.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080520180955.70aa5459.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 05:42:29 -0400
+Received: from sineb-mail-1.sun.com ([192.18.19.6]:64968 "EHLO
+	sineb-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbYETJm2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:42:28 -0400
+X-Greylist: delayed 1029 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 05:42:28 EDT
+Date: Thu, 22 May 2008 09:23:10 +0800
+From: Jike Song <albcamus@gmail.com>
+Subject: [PATCH] [.gitignore] match ncscope.out
+To: sam@ravnborg.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Reply-to: albcamus@gmail.com
+Message-id: <4834CAFE.2070607@gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=UTF-8
+Content-transfer-encoding: 7BIT
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
->  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
-> Index: mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-> ===================================================================
-> --- mm-2.6.26-rc2-mm1.orig/Documentation/controllers/memory_files.txt
-> +++ mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-> @@ -74,3 +74,13 @@ Files under memory resource controller a
->    (write)
->    Reset to 0.
->  
-> +* memory.numa_stat
-> +
-> +  This file appears only when the kernel is configured as NUMA.
-> +
-> +  (read)
-> +  Show per-node accounting information of acitve/inactive pages.
-> +  formated as following.
+ From e8e67fca3f9227b612a59d8afd0464222231e362 Mon Sep 17 00:00:00 2001
+From: Jike Song <albcamus@gmail.com>
+Date: Tue, 20 May 2008 16:15:05 +0800
+Subject: [PATCH] [.gitignore] match ncscope.out
 
-formatted
+Sometimes I got this:
 
-> +  nodeid  total active inactive
+    $ git-status
+    {snip}
+    # On branch master
+    # Untracked files:
+    #   (use "git add <file>..." to include in what will be committed)
+    #
+    #       ncscope.out
+    nothing added to commit but untracked files present (use "git add" 
+to track)
 
-2 spaces?  ^^
+Fix it.
 
-> +
-> +  total = active + inactive.
-> 
-> 
+Signed-off-by: Jike Song <albcamus@gmail.com>
+---
+ .gitignore |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index 090b293..a48b1e1 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -51,7 +51,7 @@ patches
+ series
+ 
+ # cscope files
+-cscope.*
++*cscope.*
+ 
+ *.orig
+ *.rej
+-- 
+1.5.4.1
+
