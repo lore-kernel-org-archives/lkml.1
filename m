@@ -1,149 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbYEVUCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbYEVUC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757639AbYEVUCn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 16:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbYEVUCd
+	id S1758400AbYEVUC7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 16:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbYEVUCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 16:02:33 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:5312 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754259AbYEVUCc (ORCPT
+	Thu, 22 May 2008 16:02:43 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:60850 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757006AbYEVUCm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 16:02:32 -0400
-Message-Id: <20080522195406.490863853@mvista.com>
-References: <20080522195404.061391772@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 22 May 2008 00:00:02 -0700
-Subject: [PATCH 2/3] ps3: gelic: assoc_stat_lock semaphore to mutex
-From: Daniel Walker <dwalker@mvista.com>
-To: jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, matthew@wil.cx, rusty@rustcorp.com.au,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, arjan@infradead.org,
-       mokuno@sm.sony.co.jp, geoffrey.levand@am.sony.com
-Content-Disposition: inline; filename=ps3-gelic-wireless-assoc_stat_lock-semaphore-to-mutex.patch
+	Thu, 22 May 2008 16:02:42 -0400
+Message-ID: <4835D14B.20904@nortel.com>
+Date: Thu, 22 May 2008 14:02:19 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, vatsa@linux.vnet.ibm.com, mingo@elte.hu,
+       pj@sgi.com
+Subject: Re: fair group scheduler not so fair?
+References: <4834B75A.40900@nortel.com> <1211439417.29104.7.camel@twins>
+In-Reply-To: <1211439417.29104.7.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 May 2008 20:02:23.0490 (UTC) FILETIME=[BFFE3620:01C8BC46]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+Peter Zijlstra wrote:
 
----
- drivers/net/ps3_gelic_wireless.c |   22 +++++++++++-----------
- drivers/net/ps3_gelic_wireless.h |    2 +-
- 2 files changed, 12 insertions(+), 12 deletions(-)
+> Could you see if the patches found here:
+> 
+>  http://programming.kicks-ass.net/kernel-patches/sched-smp-group-fixes/
+> 
+> make any difference for you?
 
-Index: linux-2.6.25/drivers/net/ps3_gelic_wireless.c
-===================================================================
---- linux-2.6.25.orig/drivers/net/ps3_gelic_wireless.c
-+++ linux-2.6.25/drivers/net/ps3_gelic_wireless.c
-@@ -240,12 +240,12 @@ static u32 gelic_wl_get_link(struct net_
- 	u32 ret;
- 
- 	pr_debug("%s: <-\n", __func__);
--	down(&wl->assoc_stat_lock);
-+	mutex_lock(&wl->assoc_stat_lock);
- 	if (wl->assoc_stat == GELIC_WL_ASSOC_STAT_ASSOCIATED)
- 		ret = 1;
- 	else
- 		ret = 0;
--	up(&wl->assoc_stat_lock);
-+	mutex_unlock(&wl->assoc_stat_lock);
- 	pr_debug("%s: ->\n", __func__);
- 	return ret;
- }
-@@ -979,7 +979,7 @@ static int gelic_wl_get_essid(struct net
- 	unsigned long irqflag;
- 
- 	pr_debug("%s: <- \n", __func__);
--	down(&wl->assoc_stat_lock);
-+	mutex_lock(&wl->assoc_stat_lock);
- 	spin_lock_irqsave(&wl->lock, irqflag);
- 	if (test_bit(GELIC_WL_STAT_ESSID_SET, &wl->stat) ||
- 	    wl->assoc_stat == GELIC_WL_ASSOC_STAT_ASSOCIATED) {
-@@ -989,7 +989,7 @@ static int gelic_wl_get_essid(struct net
- 	} else
- 		data->essid.flags = 0;
- 
--	up(&wl->assoc_stat_lock);
-+	mutex_unlock(&wl->assoc_stat_lock);
- 	spin_unlock_irqrestore(&wl->lock, irqflag);
- 	pr_debug("%s: -> len=%d \n", __func__, data->essid.length);
- 
-@@ -1170,7 +1170,7 @@ static int gelic_wl_get_ap(struct net_de
- 	unsigned long irqflag;
- 
- 	pr_debug("%s: <-\n", __func__);
--	down(&wl->assoc_stat_lock);
-+	mutex_lock(&wl->assoc_stat_lock);
- 	spin_lock_irqsave(&wl->lock, irqflag);
- 	if (wl->assoc_stat == GELIC_WL_ASSOC_STAT_ASSOCIATED) {
- 		data->ap_addr.sa_family = ARPHRD_ETHER;
-@@ -1180,7 +1180,7 @@ static int gelic_wl_get_ap(struct net_de
- 		memset(data->ap_addr.sa_data, 0, ETH_ALEN);
- 
- 	spin_unlock_irqrestore(&wl->lock, irqflag);
--	up(&wl->assoc_stat_lock);
-+	mutex_unlock(&wl->assoc_stat_lock);
- 	pr_debug("%s: ->\n", __func__);
- 	return 0;
- }
-@@ -2151,7 +2151,7 @@ static void gelic_wl_disconnect_event(st
- 	 * As it waits with timeout, just leave assoc_done
- 	 * uncompleted, then it terminates with timeout
- 	 */
--	if (down_trylock(&wl->assoc_stat_lock)) {
-+	if (!mutex_trylock(&wl->assoc_stat_lock)) {
- 		pr_debug("%s: already locked\n", __func__);
- 		lock = 0;
- 	} else {
-@@ -2170,7 +2170,7 @@ static void gelic_wl_disconnect_event(st
- 	netif_carrier_off(port_to_netdev(wl_port(wl)));
- 
- 	if (lock)
--		up(&wl->assoc_stat_lock);
-+		mutex_unlock(&wl->assoc_stat_lock);
- }
- /*
-  * event worker
-@@ -2258,7 +2258,7 @@ static void gelic_wl_assoc_worker(struct
- 
- 	wl = container_of(work, struct gelic_wl_info, assoc_work.work);
- 
--	down(&wl->assoc_stat_lock);
-+	mutex_lock(&wl->assoc_stat_lock);
- 
- 	if (wl->assoc_stat != GELIC_WL_ASSOC_STAT_DISCONN)
- 		goto out;
-@@ -2304,7 +2304,7 @@ static void gelic_wl_assoc_worker(struct
- scan_lock_out:
- 	mutex_unlock(&wl->scan_lock);
- out:
--	up(&wl->assoc_stat_lock);
-+	mutex_unlock(&wl->assoc_stat_lock);
- }
- /*
-  * Interrupt handler
-@@ -2432,7 +2432,7 @@ static struct net_device *gelic_wl_alloc
- 	INIT_DELAYED_WORK(&wl->event_work, gelic_wl_event_worker);
- 	INIT_DELAYED_WORK(&wl->assoc_work, gelic_wl_assoc_worker);
- 	mutex_init(&wl->scan_lock);
--	init_MUTEX(&wl->assoc_stat_lock);
-+	mutex_init(&wl->assoc_stat_lock);
- 
- 	init_completion(&wl->scan_done);
- 	/* for the case that no scan request is issued and stop() is called */
-Index: linux-2.6.25/drivers/net/ps3_gelic_wireless.h
-===================================================================
---- linux-2.6.25.orig/drivers/net/ps3_gelic_wireless.h
-+++ linux-2.6.25/drivers/net/ps3_gelic_wireless.h
-@@ -266,7 +266,7 @@ struct gelic_wl_info {
- 	enum gelic_wl_wpa_level wpa_level; /* wpa/wpa2 */
- 
- 	/* association handling */
--	struct semaphore assoc_stat_lock;
-+	struct mutex assoc_stat_lock;
- 	struct delayed_work assoc_work;
- 	enum gelic_wl_assoc_state assoc_stat;
- 	struct completion assoc_done;
+Not much difference.  In the following case pid 2438 is in group "a" and
+pids 2439/2440 are in group "b".  Pid 2438 still gets stuck with only 66%.
 
--- 
+  2439 cfriesen  20   0  3800  392  336 R 99.7  0.0   3:17.37 cat 
+
+  2438 cfriesen  20   0  3800  392  336 R 66.2  0.0   2:33.63 cat 
+
+  2440 cfriesen  20   0  3800  392  336 R 33.6  0.0   1:47.53 cat 
+
+
+
+With 3 tasks in group a, 2 in group b, it's still pretty poor:
+
+  2514 cfriesen  20   0  3800  392  336 R 52.5  0.0   0:48.11 cat 
+
+  2515 cfriesen  20   0  3800  392  336 R 50.2  0.0   0:42.53 cat 
+
+  2439 cfriesen  20   0  3800  392  336 R 35.4  0.0   4:37.07 cat 
+
+  2438 cfriesen  20   0  3800  392  336 R 33.3  0.0   3:34.97 cat 
+
+  2440 cfriesen  20   0  3800  392  336 R 28.3  0.0   2:26.17 cat 
+
+
+
+
+If I boot with "nosmp" it behaves more or less as expected:
+
+3 tasks in default:
+  2427 cfriesen  20   0  3800  392  336 R 33.7  0.0   0:36.54 cat 
+
+  2429 cfriesen  20   0  3800  392  336 R 33.5  0.0   0:35.63 cat 
+
+  2428 cfriesen  20   0  3800  392  336 R 32.9  0.0   0:35.84 cat 
+
+
+1 task in a, 2 in b:
+  2427 cfriesen  20   0  3800  392  336 R 49.8  0.0   1:45.74 cat 
+
+  2428 cfriesen  20   0  3800  392  336 R 25.0  0.0   1:38.65 cat 
+
+  2429 cfriesen  20   0  3800  392  336 R 25.0  0.0   1:38.18 cat 
+
+
+3 tasks in a, 2 in b:
+  2521 cfriesen  20   0  3800  392  336 R 25.2  0.0   0:08.52 cat 
+
+  2522 cfriesen  20   0  3800  392  336 R 25.2  0.0   0:08.23 cat 
+
+  2427 cfriesen  20   0  3800  392  336 R 16.6  0.0   1:59.39 cat 
+
+  2429 cfriesen  20   0  3800  392  336 R 16.6  0.0   1:47.63 cat 
+
+  2428 cfriesen  20   0  3800  392  336 R 16.4  0.0   1:48.65 cat 
+
+
+
+I haven't really dug into the scheduler yet (although that's next), but 
+based on these results it doesn't really look like the load balancer is 
+properly group-aware.
+
+Chris
