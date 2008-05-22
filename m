@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757459AbYEVTmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYEVTr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757459AbYEVTmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 15:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYEVTmK
+	id S1756814AbYEVTr0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 15:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYEVTrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 15:42:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36543 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752720AbYEVTmJ (ORCPT
+	Thu, 22 May 2008 15:47:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:62077 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753209AbYEVTrQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 15:42:09 -0400
-Date: Thu, 22 May 2008 12:41:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, prussell@au1.ibm.com, shaggy@us.ibm.com,
-       sergeh@us.ibm.com
-Subject: Re: [PATCH] eCryptfs: Clean up kthread synchronization
-Message-Id: <20080522124142.a850ab0e.akpm@linux-foundation.org>
-In-Reply-To: <20080522193155.GB4057@halcrowt61p.ibm.com>
-References: <20080520214610.GD32643@halcrowt61p.austin.ibm.com>
-	<20080521160000.717fb1ef.akpm@linux-foundation.org>
-	<20080522193155.GB4057@halcrowt61p.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 May 2008 15:47:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MjX8iGlnGRQnnhuhdwJBADG/uT7VlMrL43ow6pZ67EtFRIrNjxccr0bXHUWHwwOtueXPn4idhiT/Y8/8kMVEUfxkAjM8qN+YGFf4aT6XUZhwSSftQr3+OeSrXmblg9cHsHC4RoVpD/fmUYZdihlQYI2RC3Zyv+rZdN5GYyDqIx0=
+Message-ID: <7b9198260805221247t715660d1l4085fe8c310f89c@mail.gmail.com>
+Date: Thu, 22 May 2008 20:47:16 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable interrupts
+Cc: linux-kernel@vger.kernel.org, "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Jan Altenberg" <jan.altenberg@linutronix.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "=?ISO-8859-1?Q?Uwe_Kleine-K=C3=B6nig?=" <Uwe.Kleine-Koenig@digi.com>,
+       "Magnus Damm" <magnus.damm@gmail.com>
+In-Reply-To: <20080522192637.GC3226@local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080522192252.GB3226@local> <20080522192637.GC3226@local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008 14:31:55 -0500
-Michael Halcrow <mhalcrow@us.ibm.com> wrote:
+2008/5/22 Hans J. Koch <hjk@linutronix.de>:
+> Sometimes it is necessary to enable/disable the interrupt of a UIO device
+> from the userspace part of the driver. With this patch, the UIO kernel driver
+> can implement an "irqcontrol()" function that does this. Userspace can write
+> an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
+> UIO core will then call the driver's irqcontrol function.
+>
+> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-> > > +void ecryptfs_destroy_kthread(void)
-> > > +{
-> > > +	struct ecryptfs_open_req tmp_req;
-> > > +	struct ecryptfs_open_req *req;
-> > > +
-> > > +	mutex_lock(&ecryptfs_kthread_ctl.mux);
-> > > +	ecryptfs_kthread_ctl.flags |= ECRYPTFS_KTHREAD_ZOMBIE;
-> > > +	list_for_each_entry(req, &ecryptfs_kthread_ctl.req_list,
-> > > +			    kthread_ctl_list) {
-> > > +		mutex_lock(&req->mux);
-> > > +		req->flags |= ECRYPTFS_REQ_ZOMBIE;
-> > > +		wake_up_process(req->requesting_task);
-> > > +		mutex_unlock(&req->mux);
-> > > +	}
-> > > +	memset(&tmp_req, 0, sizeof(tmp_req));
-> > > +	tmp_req.flags = ECRYPTFS_REQ_ZOMBIE;
-> > > +	list_add_tail(&tmp_req.kthread_ctl_list,
-> > > +		      &ecryptfs_kthread_ctl.req_list);
-> > > +	mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> > > +	wake_up(&ecryptfs_kthread_ctl.wait);
-> > > +}
-> > 
-> > eh?  We attach a local variable to a global list and then return?
-> > That won't last very long.
-> 
-> Adding this dummy entry to the list is just my own way of getting the
-> kthread to wake up and shut down. This actually works, albeit a little
-> ugly. The list and its contents get dropped on the floor at this point
-> because (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE). The
-> only consumer of this list (the kthread) checks for this flag
-> immediately after getting the mux, and if it is there, it just
-> exits. The only producer on this list (ecryptfs_privileged_open())
-> checks for this flag immediately after getting the mux and bows out if
-> it is set. In other words, once this flag is set, the list and its
-> contents become untouchable by anything other than
-> ecryptfs_destroy_kthread().
+<snip>
 
-Unconvinced.
+Hi,
 
-As soon as ecryptfs_destroy_kthread() returns, tmp_req is destroyed. 
-But it remains on ecryptfs_kthread_ctl.req_list.
+I wonder if it would be better to implement this as an ioctl, rather
+than a write to the device.  Writing to a device is a pretty generic
+thing, and this patch would tie that up to specifically controlling
+interrupts.  An ioctl would be more appropriate, IMO, as you are
+issuing a controlling command, i.e. disable or enable interrupts.
 
-> 	memset(&tmp_req, 0, sizeof(tmp_req));
-> 	tmp_req.flags = ECRYPTFS_REQ_ZOMBIE;
-> 	list_add_tail(&tmp_req.kthread_ctl_list,
-> 		      &ecryptfs_kthread_ctl.req_list);
-> 	mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> 	wake_up(&ecryptfs_kthread_ctl.wait);
+By the way, I have absolutely no idea how the UIO driver works, other
+than reading http://lwn.net/Articles/232575/
 
--> it's dead.
-
-> }
-
+-- 
+Tom Spink
