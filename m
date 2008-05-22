@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbYEVVLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761674AbYEVVMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759956AbYEVVLR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbYEVVK5
+	id S1761674AbYEVVMd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbYEVVMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:10:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38020 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755290AbYEVVK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 17:10:56 -0400
-Message-ID: <4835DF64.6080104@zytor.com>
-Date: Thu, 22 May 2008 14:02:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 22 May 2008 17:12:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51734 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757000AbYEVVMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 17:12:20 -0400
+Date: Thu, 22 May 2008 16:40:48 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: another cpufreq pull request for .26
+Message-ID: <20080522204048.GA16727@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <20080518013416.GB30034@linux-os.sc.intel.com> <18481.37905.297556.288317@harpo.it.uu.se> <20080520015723.GD30034@linux-os.sc.intel.com> <4832A173.6020203@firstfloor.org> <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com>
-In-Reply-To: <20080522205619.GB7998@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> 
-> hpa, What is the virtualization problem? Are you referring to perf problem?
-> As you noted, regular non-rt signal handlers won't need this cpuid check. It's
-> needed only for those who manually look at non-rt signal frames and interpret it.
-> And also, they can do this check only once and not everytime.
-> 
+Please pull from ..
+master.kernel.org:/pub/scm/linux/kernel/git/davej/cpufreq.git/ fixes
 
-No, relying on CPUID and vdso both have implications for virtualization.
+ Documentation/cpu-freq/governors.txt      |    8 --------
+ arch/x86/kernel/cpu/cpufreq/longrun.c     |    2 +-
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   15 +++++++++++++--
+ drivers/cpufreq/freq_table.c              |    5 +++++
+ 4 files changed, 19 insertions(+), 11 deletions(-)
 
-> To me, prtcl() just seems to be an overkill.
+commit 4f74369422b883164c50b5936517d010a3e1ce59
+Author: Dominik Brodowski <linux@dominikbrodowski.net>
+Date:   Thu May 22 08:52:05 2008 +0200
 
-I don't think it is ... it's not overkill but rather "underkill"... it's 
-a low-performance solution but it's guaranteed to be safe in the 
-presence of virtualization of all its various ilk.  Note that you don't 
-need to be able to *set* the format via prctl(), just *query* (get) it.
+    [CPUFREQ] clarify license of freq_table.c
+    
+    Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+    Signed-off-by: Dave Jones <davej@redhat.com>
 
-Using prctl() allows us to make this personality-dependent if we ever 
-need to.
+commit da8395be0bb04f685d55f124d046766d9209214a
+Author: Dave Jones <davej@redhat.com>
+Date:   Tue May 20 22:13:09 2008 -0400
 
-> While restoring from the user, kernel also need to find out what layout
-> the user is passing. So it's bi-directional. I prefer the same mechanism
-> (using cookies/magic numbers etc inaddition to uc_flags or cpuid checks) to
-> interpret the fpstate for both user/kernel.
+    [CPUFREQ] Remove documentation of removed ondemand tunable.
+    
+    sampling_down_factor was removed in ccb2fe209dac9ff67f6351e783e610073afaaeaf
+    back in June 2006.
+    
+    Signed-off-by: Dave Jones <davej@redhat.com>
 
-No, it really doesn't: the kernel only needs to be able to read the same 
-format as it itself wrote.
+commit 667ad4f70110357e8f024e81741c7bd1d7906e7d
+Author: maximilian attems <max@stro.at>
+Date:   Thu May 8 22:10:01 2008 +0200
 
-> ARM also seem to be using similar things while extending their ucontext_t,
-> with out other kernel interfaces to indicate the layout.
-> 
-> BTW, how come 32bit kernel doesn't have the X86_FXSR_MAGIC checks, while restoring
-> the extended fxsave data from _fpstate?
+    [CPUFREQ] Crusoe: longrun cpufreq module reports false min freq
+    
+    The longrun cpufreq module reports a false minimum frequency 3MHz on
+    300-600MHz Crusoe processor.  This may be due to a calculation bug
+    in the module.
+    
+    Original patch from Kaz Sasayama <kazssym@hypercore.co.jp>
+    submitted as http://bugs.debian.org/468149 patch ported to x86
+    
+    Cc: Kaz Sasayama <kazssym@hypercore.co.jp>
+    Signed-off-by: maximilian attems <max@stro.at>
+    Signed-off-by: Dave Jones <davej@redhat.com>
 
-Again, the kernel already knows the format, so it doesn't need to check.
+commit eba9fe93a2959ec7f195c47c9db6ce7b5114ce1f
+Author: Mark Langsdorf <mark.langsdorf@amd.com>
+Date:   Tue Mar 18 15:24:32 2008 -0500
 
-	-hpa
+    [CPUFREQ] powernow-k8: improve error messages
+    
+    The most common error with powernow-k8 is an ACPI _PSS error
+    caused either by failure to load the ACPI processor module
+    or a bad parse of the _PSS object.  Make the error message
+    returned to the user in these situations more straightforward
+    and easier to understand.
+    
+    -Mark Langsdorf
+    Operating System Research Center
+    AMD
+    
+    Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+    Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+    Signed-off-by: Dave Jones <davej@redhat.com>
+
+-- 
+http://www.codemonkey.org.uk
