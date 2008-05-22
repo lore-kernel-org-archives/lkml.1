@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937839AbYEVAh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937651AbYEVAlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937839AbYEVAh7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 20:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765081AbYEVAhs
+	id S937651AbYEVAlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 20:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764628AbYEVAlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 20:37:48 -0400
-Received: from el-out-1112.google.com ([209.85.162.178]:52369 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764041AbYEVAhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 20:37:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bDymn+n2S17mgZyHEj/tbKrfO6v0Npiq6qIK5+BK4iuTNu+7VQXue/KYsC2g1uvLvtxofaKneI/sYhXzYb+fSxiMsTYzmhLkqL+OxL49xsQdAq1WZjvEWUrR9celq/bvZQrBwNICEJMzYh193wC/QGhpqOePL0KVzH1biWfgOJg=
-Subject: Re: [PATCH] net/ipv4/arp.c: Use the exported hex_asc from
-	lib/hexdump.c instead
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: crquan@gmail.com, herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080521.173521.265981118.davem@davemloft.net>
-References: <1211323212.5915.220.camel@brick>
-	 <20080520.154551.54365414.davem@davemloft.net>
-	 <91b13c310805201927k4fccf8dcwa3fabe61777b2eda@mail.gmail.com>
-	 <20080521.173521.265981118.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 21 May 2008 17:37:44 -0700
-Message-Id: <1211416664.6908.11.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 20:41:02 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:60121 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756199AbYEVAlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 20:41:01 -0400
+Date: Thu, 22 May 2008 03:38:44 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, tytso@mit.edu, hch@infradead.org,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080522003844.GF16376@cs181133002.pp.htv.fi>
+References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu> <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123127.3b3b66af.akpm@linux-foundation.org> <20080521230155.GC16376@cs181133002.pp.htv.fi> <20080521233539.GR28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080521233539.GR28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-21 at 17:35 -0700, David Miller wrote:
-> From: "rae l" <crquan@gmail.com>
-> Date: Wed, 21 May 2008 10:27:41 +0800
+On Thu, May 22, 2008 at 12:35:39AM +0100, Al Viro wrote:
+> On Thu, May 22, 2008 at 02:01:55AM +0300, Adrian Bunk wrote:
 > 
-> > net/ipv4/arp.c: Use common hex_asc helpers
-> > 
-> > Here the local hexbuf is a duplicate of global const char hex_asc from
-> > lib/hexdump.c, except the hex letters' cases:
-> > 
-> > 	const char hexbuf[] = "0123456789ABCDEF";
-> > 
-> > 	const char hex_asc[] = "0123456789abcdef";
-> > 
-> > and here to print HW addresses, the hex cases are not significant.
-> > 
-> > Thanks to Harvey Harrison to introduce the hex_asc_hi/hex_asc_lo helpers.
-> > 
-> > Signed-off-by: Denis Cheng <crquan@gmail.com>
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > There are many other open source projects where it might be easier to 
+> > get started and that are really looking for people wanting to get 
+> > involved.
 > 
-> Applied, thanks.
+> *blink*
 > 
-> Harvey I know you posted a nearly identical patch, I had
-> to choose one and he did credit you with the idea for the
-> updated patch, so I hope this is OK.
+> OK, I give up; how was it supposed to be parsed?  I can't come up with any
+> way of reading that sentence that would not be an obvious glaring idiocy
+> and I don't see any obvious typos or word omissions that could have created
+> that.
+> 
+> Surely you are not saying that we are not really looking for more people
+> doing useful work?  And doing that without "getting involved"... could
+> any resident Zen master enlighten me?  I seem to be unable to figure out
+> how the hell one could pull off such a feat...
 
-His had the better changelog, I just sent mine to make my point clear
-what the patch could look like.
+Sorry, I am not a native English speaker.
 
-No problems here.
+Perhaps my phrase was too long?
+Or did I take a word wrongly from the dictionary?
 
-Harvey
+Is it perhaps better understandable as follows:
+
+There are many other open source projects where it might be easier to 
+get started. This is since they are really (=desperately) looking for 
+more people who want to get involved (=want to participate).
+
+
+Or completely paraphrased:
+
+We cannot offer intensive mentoring for everyone.
+
+But people looking for more mentoring can find this in other open source 
+projects.
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
