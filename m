@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbYEVSrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbYEVSzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756650AbYEVSrt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 14:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYEVSri
+	id S1754253AbYEVSzv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 14:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYEVSzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 14:47:38 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:47353 "EHLO
+	Thu, 22 May 2008 14:55:39 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53880 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbYEVSrh (ORCPT
+	with ESMTP id S1750994AbYEVSzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 14:47:37 -0400
-Date: Thu, 22 May 2008 21:47:34 +0300 (EEST)
+	Thu, 22 May 2008 14:55:38 -0400
+Date: Thu, 22 May 2008 21:55:37 +0300 (EEST)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: kaber@trash.net
 cc: netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, mpm@selenic.com, clameter@sgi.com
-Subject: [PATCH] netfilter: use krealloc() in nf_conntrack_extend.c
-Message-ID: <Pine.LNX.4.64.0805222145320.6071@sbz-30.cs.Helsinki.FI>
+Subject: [PATCH] netfilter: use krealloc() in nf_conntrack_extend.c V2
+In-Reply-To: <Pine.LNX.4.64.0805222145320.6071@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0805222155150.6294@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0805222145320.6071@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -24,25 +26,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To: kaber@trash.net
+[PATCH] netfilter: use krealloc() in nf_conntrack_extend.c V2
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
 The ksize() API is going away because it is being abused and it doesn't even
-work consistenly across different allocators. Therefore, convert the use 
-of ksize() in net/netfilter/nf_conntrack_extend.c to krealloc() that is 
-open-coded there.
+work consistenly across different allocators. Therefore, convert
+net/netfilter/nf_conntrack_extend.c to use krealloc().
 
+Cc: <netfilter-devel@vger.kernel.org>
+Cc: <netdev@vger.kernel.org>
 Cc: Matt Mackall <mpm@selenic.com>
 Cc: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- net/netfilter/nf_conntrack_extend.c |   31 +++++++++++++------------------
- 1 file changed, 13 insertions(+), 18 deletions(-)
+Patrick, please use this patch instead. The previous one did the moving
+unconditionally which is wrong. This one moves entries around only if
+krealloc() allocated a new buffer.
+
+ net/netfilter/nf_conntrack_extend.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
 Index: slab-2.6/net/netfilter/nf_conntrack_extend.c
 ===================================================================
---- slab-2.6.orig/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:38:14.000000000 +0300
-+++ slab-2.6/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:38:21.000000000 +0300
-@@ -88,27 +88,22 @@
+--- slab-2.6.orig/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:52:12.000000000 +0300
++++ slab-2.6/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:52:26.000000000 +0300
+@@ -88,13 +88,11 @@
  	newlen = newoff + t->len;
  	rcu_read_unlock();
  
@@ -50,36 +59,13 @@ Index: slab-2.6/net/netfilter/nf_conntrack_extend.c
 -		new = kmalloc(newlen, gfp);
 -		if (!new)
 -			return NULL;
+-
+-		memcpy(new, ct->ext, ct->ext->len);
 +	new = krealloc(ct->ext, newlen, gfp);
 +	if (!new)
 +		return NULL;
  
--		memcpy(new, ct->ext, ct->ext->len);
--
--		for (i = 0; i < NF_CT_EXT_NUM; i++) {
--			if (!nf_ct_ext_exist(ct, i))
--				continue;
-+	for (i = 0; i < NF_CT_EXT_NUM; i++) {
-+		if (!nf_ct_ext_exist(ct, i))
-+			continue;
- 
--			rcu_read_lock();
--			t = rcu_dereference(nf_ct_ext_types[i]);
--			if (t && t->move)
--				t->move((void *)new + new->offset[i],
--					(void *)ct->ext + ct->ext->offset[i]);
--			rcu_read_unlock();
--		}
--		kfree(ct->ext);
--		ct->ext = new;
-+		rcu_read_lock();
-+		t = rcu_dereference(nf_ct_ext_types[i]);
-+		if (t && t->move)
-+			t->move((void *)new + new->offset[i],
-+				(void *)ct->ext + ct->ext->offset[i]);
-+		rcu_read_unlock();
- 	}
-+	ct->ext = new;
- 
- 	ct->ext->offset[id] = newoff;
- 	ct->ext->len = newlen;
++	if (new != ct->ext) {
+ 		for (i = 0; i < NF_CT_EXT_NUM; i++) {
+ 			if (!nf_ct_ext_exist(ct, i))
+ 				continue;
