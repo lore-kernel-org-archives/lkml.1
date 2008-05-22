@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937545AbYEVARg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936306AbYEVAVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937545AbYEVARg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 20:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbYEVAR0
+	id S936306AbYEVAVa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 20:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761335AbYEVAVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 20:17:26 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38668 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754039AbYEVAR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 20:17:26 -0400
-Date: Thu, 22 May 2008 10:17:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: rolandd@cisco.com, Linux Kernel list <linux-kernel@vger.kernel.org>,
-       general@lists.openfabrics.org, sean.hefty@intel.com,
-       hal.rosenstock@gmail.com, linux-next@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: [PATCH] infiniband/hw/ipath/ipath_sdma.c , fix
- compiler warnings
-Message-Id: <20080522101714.3f2c5a82.sfr@canb.auug.org.au>
-In-Reply-To: <48342C6C.2010502@googlemail.com>
-References: <48342C6C.2010502@googlemail.com>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Wed, 21 May 2008 20:21:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36575 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760985AbYEVAVO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 20:21:14 -0400
+Date: Wed, 21 May 2008 17:20:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Divy Le Ray <divy@chelsio.com>
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2/3 2.6.27] cxgb3 - Add page support to jumbo frame Rx
+ queue
+Message-Id: <20080521172024.a1044aea.akpm@linux-foundation.org>
+In-Reply-To: <20080521015737.6218.32204.stgit@speedy5>
+References: <20080521015737.6218.32204.stgit@speedy5>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__22_May_2008_10_17_14_+1000_c55k.Xbnz4g=xY=V"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__22_May_2008_10_17_14_+1000_c55k.Xbnz4g=xY=V
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 20 May 2008 18:57:37 -0700
+Divy Le Ray <divy@chelsio.com> wrote:
 
-Hi Gabriel,
-
-We appreciate the reports, thanks.
-
-On Wed, 21 May 2008 16:06:36 +0200 Gabriel C <nix.or.die@googlemail.com> wr=
-ote:
+> From: Divy Le Ray <divy@chelsio.com>
+> 
+> Add page support to Jumbo frame Rx queues.
+> 
+> ...
 >
-> On linux-next from today, allmodconfig, I see the following warnings on 6=
-4bit:
+> @@ -460,7 +464,8 @@ nomem:				q->alloc_failed++;
+>  			if (q->use_pages) {
+>  				if (q->pg_chunk.page) {
+>  					put_page(q->pg_chunk.page);
+> -					__free_page(q->pg_chunk.page);
+> +					__free_pages(q->pg_chunk.page,
+> +						     q->order);
+>  					q->pg_chunk.page =
+>  						sd->pg_chunk.page = NULL;
+>  				}
 
-What architecture are you building on?
+This hunk doesn't apply to 2.6.26-rc3, afacit.  The code it's patching
+just isn't there.  But I think I fixed it up OK.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__22_May_2008_10_17_14_+1000_c55k.Xbnz4g=xY=V
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFINLuNTgG2atn1QN8RAhQoAJ4gFNHRd6D8/2dGib87vCL36bb/ZwCbBBcX
-obAKgN2E9zcK2/TgRaeFneU=
-=2Ljb
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_May_2008_10_17_14_+1000_c55k.Xbnz4g=xY=V--
