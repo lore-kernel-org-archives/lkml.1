@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932402AbYEVBI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbYEVBLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932402AbYEVBI0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 21:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbYEVBIR
+	id S933219AbYEVBLO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 21:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbYEVBK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 21:08:17 -0400
-Received: from saeurebad.de ([85.214.36.134]:49422 "EHLO saeurebad.de"
+	Wed, 21 May 2008 21:10:58 -0400
+Received: from mga01.intel.com ([192.55.52.88]:33269 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbYEVBIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 21:08:16 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Cc: "Jonathan Corbet" <corbet@lwn.net>, "Cyrill Gorcunov" <gorcunov@gmail.com>,
-       rdunlap@xenotime.net, tytso@mit.edu, hch@infradead.org,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard indentation of arguments)
-References: <9a8748490805211306l50b8411ax4462be18c94ca065@mail.gmail.com>
-	<32279.1211401651@vena.lwn.net>
-	<9a8748490805211337q1e7ceab7i80e4820c46f8171b@mail.gmail.com>
-	<9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
-Date: Thu, 22 May 2008 03:07:48 +0200
-In-Reply-To: <9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
-	(Jesper Juhl's message of "Thu, 22 May 2008 01:46:28 +0200")
-Message-ID: <87d4nf2ljv.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S1751693AbYEVBK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 21:10:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,523,1204531200"; 
+   d="scan'208";a="567302181"
+Subject: Re: [BISECTED] pata_jmicron: no drives found on post 2.6.25 kernels
+From: Shaohua Li <shaohua.li@intel.com>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: Plamen Petrov <pvp-lsts@fs.ru.acad.bg>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <68676e00805211245u1a1973e5g847bd7e8a6c9e5a7@mail.gmail.com>
+References: <courier.4832011A.000041C2@fs.ru.acad.bg>
+	 <1211248108.19834.2.camel@sli10-desk.sh.intel.com>
+	 <courier.4832F7AF.00000DCD@fs.ru.acad.bg>
+	 <1211360320.22210.5.camel@sli10-desk.sh.intel.com>
+	 <68676e00805211245u1a1973e5g847bd7e8a6c9e5a7@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 22 May 2008 09:15:24 +0800
+Message-Id: <1211418924.15223.1.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2008-05-21 at 21:45 +0200, Luca Tettamanti wrote:
+> On Wed, May 21, 2008 at 10:58 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > On Tue, 2008-05-20 at 19:09 +0300, Plamen Petrov wrote:
+> >> Shaohua Li написа:
+> >>
+> >> > On Tue, 2008-05-20 at 01:37 +0300, Plamen Petrov wrote:
+> >> >> Hello, folks!
+> >> >>
+> >> >> After 2.6.26 merge window opened, the optical drives in my
+> >> >> computer, hanging off a JMicron controler were not detected
+> >> >> by linux any more.
+> >> >>
+> >> >> Luca Tettamanti reported similar troubles:
+> >> >> http://marc.info/?l=linux-kernel&m=120958791323911&w=2
+> >> >>
+> >> >> Its been 20 days, so I decided to bisect.
+> >> >> git bisect revealed that commit
+> >> >> 7d715a6c1ae5785d00fb9a876b5abdfc43abc44b
+> >> >> is the one causing pata_jmicron to fail to detect drives,
+> >> >> connected to the JMicron controler on my motherboard.
+> >> >> At least in my case, anyway...
+> >> >> Changing kernel config to CONFIG_PCIEASPM=n makes the drives
+> >> >> attached to the JMicron SATA/PATA controller usable again.
+> >> > When you enable this option, did you change any ASPM policy? By default,
+> >> > we are using the BIOS setting, so it shouldn't change any thing.
+> >> >
+> >>
+> >> No, I did not change any ASPM policy, mainly because I do not how.
+> >>
+> >> > Also can you please send me the 'lspci -vvvxxxx' output with/without the
+> >> > ASPM enabled?
+> >> >
+> > Can you please try below patch?
+> 
+> I confirm that the patch fixes the issue when CONFIG_ASPM is enabled.
+> 
+> > The Slot 03:00.* of JMicron controller has two functions, but one is
+> > PCIE endpoint the other isn't PCIE device, very strange.
+> 
+> Right, that's what I'm seeing here (motherboard is an ASUS P5B-E). I'm
+> attaching the output of lspci.
+Jesse, can you take this patch. It should be safe for 2.6.26.
 
-"Jesper Juhl" <jesper.juhl@gmail.com> writes:
+Thanks,
+Shaohua
 
-> 2. How to find things to work on as a beginner
-> ---
->
-> Many people new to kernel development have a hard time finding
-> projects to start out with. The kernel is a large project and it's not
-> surprising that some people find it hard to work out where to begin.
->
-> A good way to start is by trying to fix some bugs.
->
-> There are plenty of bugs to go around and fixing bugs is a great way
-> to learn since you need to understand (and thus learn) the code
-> surrounding the bug in order to fix it properly, so it usually teaches
-> a lot.  Submitting small bug fixes is also a great way to get
-> comfortable with the patch submission process.
->
-> Finding bugs to fix is easy. Here are some ways to find useful work to
-> do:
->
-  - Run a recent development kernel.  If you already know an area that
-    might interest you, use the tree of that subsystem.  Otherwise
-    Linus' tree.  Or the -mm tree.
-
-> - Build a bunch of 'randconfig' kernels and log the output from the
-> build. Building some 10-20 randconfig kernels usually exposes plenty
-> of warnings and/or errors during the build. Fixing some of those
-> should keep you busy for a while.
->
-> - Grep the kernel source for "FIXME", "XXX" and similar comments. They
-> often describe areas of the code that has known bugs, could be
-> optimized, needs review etc. Lots of work to do can be found that way.
->
-> - Look through the Kernel Janitors TODO list
-> (http://kernelnewbies.org/KernelJanitors/Todo) for items of interest,
-> then try to fix some of the issues on the list.
->
-> - Go through the kernel Bugzilla (http://bugzilla.kernel.org/) and see
-> if you can fix any of the many bugs filed in it. There's a metric
-> butload of bugs filed in there that need attention.
-
-  - Read the mailing list.  Again, if you are interested in a specific
-    area, there are also subsystem-related mailing lists, check
-    http://vger.kernel.org/vger-lists.html.
-
-Probably needs some rephrasing...
-
-	Hannes
