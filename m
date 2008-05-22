@@ -1,98 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYEVUHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbYEVUIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYEVUHq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 16:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYEVUHf
+	id S1758024AbYEVUIe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 16:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYEVUI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 16:07:35 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:7571 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753028AbYEVUHe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 16:07:34 -0400
-Message-Id: <20080522195406.642307415@mvista.com>
-References: <20080522195404.061391772@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 22 May 2008 00:00:03 -0700
-Subject: [PATCH 3/3] ps3: gelic: updown_lock semaphore to mutex
-From: Daniel Walker <dwalker@mvista.com>
-To: jgarzik@pobox.com
-Cc: netdev@vger.kernel.org, matthew@wil.cx, rusty@rustcorp.com.au,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, arjan@infradead.org,
-       mokuno@sm.sony.co.jp, geoffrey.levand@am.sony.com
-Content-Disposition: inline; filename=ps3-gelic-net-updown_lock-semaphore-to-mutex.patch
+	Thu, 22 May 2008 16:08:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:43202 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753001AbYEVUIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 16:08:25 -0400
+Date: Thu, 22 May 2008 22:08:15 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Tom Spink <tspink@gmail.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Uwe =?utf-8?B?S2xlaW5lLUvDg8K2bmln?= <Uwe.Kleine-Koenig@digi.com>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
+	interrupts
+Message-ID: <20080522200814.GD3226@local>
+References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <7b9198260805221247t715660d1l4085fe8c310f89c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7b9198260805221247t715660d1l4085fe8c310f89c@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+On Thu, May 22, 2008 at 08:47:16PM +0100, Tom Spink wrote:
 
----
- drivers/net/ps3_gelic_net.c |   10 +++++-----
- drivers/net/ps3_gelic_net.h |    2 +-
- 2 files changed, 6 insertions(+), 6 deletions(-)
+Hi Tom,
 
-Index: linux-2.6.25/drivers/net/ps3_gelic_net.c
-===================================================================
---- linux-2.6.25.orig/drivers/net/ps3_gelic_net.c
-+++ linux-2.6.25/drivers/net/ps3_gelic_net.c
-@@ -110,7 +110,7 @@ static void gelic_card_get_ether_port_st
- void gelic_card_up(struct gelic_card *card)
- {
- 	pr_debug("%s: called\n", __func__);
--	down(&card->updown_lock);
-+	mutex_lock(&card->updown_lock);
- 	if (atomic_inc_return(&card->users) == 1) {
- 		pr_debug("%s: real do\n", __func__);
- 		/* enable irq */
-@@ -120,7 +120,7 @@ void gelic_card_up(struct gelic_card *ca
- 
- 		napi_enable(&card->napi);
- 	}
--	up(&card->updown_lock);
-+	mutex_unlock(&card->updown_lock);
- 	pr_debug("%s: done\n", __func__);
- }
- 
-@@ -128,7 +128,7 @@ void gelic_card_down(struct gelic_card *
- {
- 	u64 mask;
- 	pr_debug("%s: called\n", __func__);
--	down(&card->updown_lock);
-+	mutex_lock(&card->updown_lock);
- 	if (atomic_dec_if_positive(&card->users) == 0) {
- 		pr_debug("%s: real do\n", __func__);
- 		napi_disable(&card->napi);
-@@ -146,7 +146,7 @@ void gelic_card_down(struct gelic_card *
- 		/* stop tx */
- 		gelic_card_disable_txdmac(card);
- 	}
--	up(&card->updown_lock);
-+	mutex_unlock(&card->updown_lock);
- 	pr_debug("%s: done\n", __func__);
- }
- 
-@@ -1534,7 +1534,7 @@ static struct gelic_card *gelic_alloc_ca
- 	INIT_WORK(&card->tx_timeout_task, gelic_net_tx_timeout_task);
- 	init_waitqueue_head(&card->waitq);
- 	atomic_set(&card->tx_timeout_task_counter, 0);
--	init_MUTEX(&card->updown_lock);
-+	mutex_init(&card->updown_lock);
- 	atomic_set(&card->users, 0);
- 
- 	return card;
-Index: linux-2.6.25/drivers/net/ps3_gelic_net.h
-===================================================================
---- linux-2.6.25.orig/drivers/net/ps3_gelic_net.h
-+++ linux-2.6.25/drivers/net/ps3_gelic_net.h
-@@ -298,7 +298,7 @@ struct gelic_card {
- 	wait_queue_head_t waitq;
- 
- 	/* only first user should up the card */
--	struct semaphore updown_lock;
-+	struct mutex updown_lock;
- 	atomic_t users;
- 
- 	u64 ether_port_status;
+> 2008/5/22 Hans J. Koch <hjk@linutronix.de>:
+> > Sometimes it is necessary to enable/disable the interrupt of a UIO device
+> > from the userspace part of the driver. With this patch, the UIO kernel driver
+> > can implement an "irqcontrol()" function that does this. Userspace can write
+> > an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
+> > UIO core will then call the driver's irqcontrol function.
+> >
+> > Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+> 
+> <snip>
+> 
+> Hi,
+> 
+> I wonder if it would be better to implement this as an ioctl,
 
--- 
+No way. We don't want to introduce new ioctls.
+
+> rather
+> than a write to the device.  Writing to a device is a pretty generic
+> thing, and this patch would tie that up to specifically controlling
+> interrupts.  
+
+UIO userspace drivers do their whole work by accessing the device's
+memory directly. The purpose of the kernel part is mainly
+
+1) allow this memory to be mapped
+2) handle interrupts
+
+We have an mmap() implementation for 1) and a read() implementation to
+wait for interrupts. Now we add write to enable/disable interrupts,
+which completes 2). Looks clean to me.
+
+> An ioctl would be more appropriate, IMO, as you are
+> issuing a controlling command, i.e. disable or enable interrupts.
+> 
+> By the way, I have absolutely no idea how the UIO driver works, other
+> than reading http://lwn.net/Articles/232575/
+
+You could read the docs that come with the kernel sources:
+Documentation/DocBook/uio_howto
+
+Thanks,
+Hans
+
