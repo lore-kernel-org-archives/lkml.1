@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbYEVDfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761824AbYEVDig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760899AbYEVDfZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 23:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbYEVDfO
+	id S1761824AbYEVDig (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 23:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbYEVDi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 23:35:14 -0400
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:34887 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755285AbYEVDfN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 23:35:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=iFwEfWO3RSs9vsKdro3tAyW0oy4pqLihBUueDRUcWu46SNa5RP4Spw2AV3qC8LnZgODGrAp0dbWPlBgCXik3UGIdXNlJG5sM7SvrliV9TxRR+PYCCPOGE0Vo/fu1/+b1KH/uBa5BCNIVOD2hhoWXAsKH3N/qsLhZWhdOD9yKArI=  ;
-X-YMail-OSG: BC6I9zIVM1kUGNymThD0OVaSWZNGPZYoeIGyP1vXdYwtRhteseOOIFvRf3KIeTno12Bbstan_c4F3810UW_WFDSPI_2m3NYcewENFmuEGeuIqtRWDH1K6UKlKuDtZt.6VvQ-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH/RFC] spi: Change modalias from a pointer to a character array
-Date: Wed, 21 May 2008 17:03:25 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
-References: <20080509173146.2932.16141.stgit@trillian.secretlab.ca>
-In-Reply-To: <20080509173146.2932.16141.stgit@trillian.secretlab.ca>
+	Wed, 21 May 2008 23:38:27 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:51388 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756189AbYEVDi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 23:38:26 -0400
+Date: Wed, 21 May 2008 23:38:22 -0400
+To: Tom Spink <tspink@gmail.com>
+Cc: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24 not recognizing 2G MMC card?
+Message-ID: <20080522033822.GD14376@fieldses.org>
+References: <20080521172104.GC2592@fieldses.org> <7b9198260805211101s1fb96533tc86a614008833741@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805211703.25822.david-b@pacbell.net>
+In-Reply-To: <7b9198260805211101s1fb96533tc86a614008833741@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 May 2008, Grant Likely wrote:
-> This patch changes modalias from a 'const char *' to a fixed char array.
-> By copying the modalias string instead of referencing it, the dependency
-> on the spi_board_info structure is eliminated and an outside caller does
-> not need to maintain a separate spi_board_info allocation for each device.
+On Wed, May 21, 2008 at 07:01:10PM +0100, Tom Spink wrote:
+> 2008/5/21 J. Bruce Fields <bfields@fieldses.org>:
+> > Please forgive a somewhat naive question--I'm not sure how to go about
+> > debugging this kind of thing:
+> >
+> > I have a Dell 1420n with card readers reported by lspci as:
+> >
+> > 03:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
+> > 03:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+> >
+> > I have a 512MB MicroSD card which seems to be recognized fine, but a 2GB
+> > MMC card is not.
+> >
+> > I'm using a stock Ubuntu 8.04 kernel, which reports itself as
+> > 2.6.24-16-generic.
+> >
+> > Skimming through commits to drivers/mmc,
+> > 5ae70296c85f96a9969891d9de3410ebdf210b71 "mmc: Disabler for Ricoh MMC
+> > controller", looks relevant, but seems to be included in 2.6.24.
+> >
+> > Anything I should try?  Thanks in advance for any suggestions.
+> >
+> > --b.
+> 
+> Hi,
+> 
+> What does: lsmod | grep ricoh, give you?  Anything?
 
-Looks fine to me.
+root@pig:/home/bfields# lsmod | grep ricoh
+ricoh_mmc               4352  0 
 
+--b.
