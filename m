@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652AbYEVOGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbYEVOWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757652AbYEVOGx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 10:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYEVOGp
+	id S1752436AbYEVOWX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 10:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYEVOWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 10:06:45 -0400
-Received: from sinclair.provo.novell.com ([137.65.248.137]:4823 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbYEVOGo convert rfc822-to-8bit (ORCPT
+	Thu, 22 May 2008 10:22:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:44231 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbYEVOWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 10:06:44 -0400
-Message-Id: <483545B4.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Thu, 22 May 2008 08:06:44 -0600
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <rostedt@goodmis.org>,
-       "Peter Zijlstra" <peterz@infradead.org>, <suresh.b.siddha@intel.com>,
-       <aneesh.kumar@linux.vnet.ibm.com>, <dhaval@linux.vnet.ibm.com>,
-       <vatsa@linux.vnet.ibm.com>, "David Bahi" <DBahi@novell.com>
-Subject: [ANNOUNCE] sched: schedtop utility
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 22 May 2008 10:22:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=rzz08hAf+PfiXraqxlQQRKjnhwvHHt7+3dtUR8WSvK/5B8mNeX+oOOBFVBoK7/YeF3EAJm0MFE6MkEU6eue4HGK14O99m9qF3MtGKo+3Qa244p+ziJ55Qy/rDHqZDlybuVRl+Dn0/zqLNIugX4HopLhR+Wl6yM+KvIMkV99qwT8=
+Message-ID: <524f69650805220722x3e1178cdsa8035aab0828ab7d@mail.gmail.com>
+Date: Thu, 22 May 2008 09:22:10 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>, davej@redhat.com
+Subject: Re: [CIFS] Fix reversed memset arguments.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all scheduler developers,
-  I had an itch to scratch w.r.t. watching the stats in /proc/schedstats, and it appears that the perl scripts referenced in Documentation/scheduler/sched-stats.txt do not support v14 from HEAD so I whipped up a little utility I call "schedtop".
+Dave Jones <davej@redhat.com> wrote on 05/22/2008 08:07:22 AM:
+Merged into cifs-2.6.git
 
-This utility will process statistics from /proc/schedstat such that the busiest stats will bubble up to the top.  It can alternately be sorted by the largest stat, or by name.  Stats can be included or excluded based on reg-ex pattern matching.
+Thanks for spotting this.
 
-You can download the tarball here:
+> size is the 3rd argument.
+>
+> Signed-off-by: Dave Jones <davej@redhat.com>
+>
+> --- linux-2.6/fs/cifs/inode.c~   2008-05-22 09:05:31.000000000 -0400
+> +++ linux-2.6/fs/cifs/inode.c   2008-05-22 09:05:58.000000000 -0400
+> @@ -172,7 +172,7 @@ static void fill_fake_finddataunix(FILE_
+>  {
+>     struct inode *pinode = NULL;
+>
+> -   memset(pfnd_dat, sizeof(FILE_UNIX_BASIC_INFO), 0);
+> +   memset(pfnd_dat, 0, sizeof(FILE_UNIX_BASIC_INFO));
+>
+>  /*   __le64 pfnd_dat->EndOfFile = cpu_to_le64(0);
+>     __le64 pfnd_dat->NumOfBytes = cpu_to_le64(0);
+> @@ -384,7 +384,7 @@ static int get_sfu_mode(struct inode *in
+>  static void fill_fake_finddata(FILE_ALL_INFO *pfnd_dat,
+>                  struct super_block *sb)
+>  {
+> -   memset(pfnd_dat, sizeof(FILE_ALL_INFO), 0);
+> +   memset(pfnd_dat, 0, sizeof(FILE_ALL_INFO));
+>
+>  /*   __le64 pfnd_dat->AllocationSize = cpu_to_le64(0);
+>     __le64 pfnd_dat->EndOfFile = cpu_to_le64(0);
+> --
+> http://www.codemonkey.org.uk
 
-ftp://ftp.novell.com/dev/ghaskins/schedtop.tar.gz
+-- 
+Thanks,
 
-I have also posted it to the opensuse build service for generating RPMS for a handful of 32/64-bit x86 distros for your convenience:
-
-http://download.opensuse.org/repositories/home:/ghaskins/
-
-(Note that the build is still in progress for some of the favors, so if you do not see the flavor you are looking for, check back in a little while)
-
-Comments/feedback/bug-fixes welcome!
-
-Regards
--Greg
-
+Steve
