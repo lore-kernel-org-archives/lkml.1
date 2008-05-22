@@ -1,100 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYEVSQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbYEVSR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbYEVSQV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 14:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYEVSQH
+	id S1758825AbYEVSR2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 14:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYEVSRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 14:16:07 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:44443 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbYEVSQG convert rfc822-to-8bit (ORCPT
+	Thu, 22 May 2008 14:17:16 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8437 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750991AbYEVSRP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 14:16:06 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 22 May 2008 14:17:15 -0400
+Date: Thu, 22 May 2008 22:17:13 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card
+	detect line
+Message-ID: <20080522181713.GA26918@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru> <20080517133633.5aa26938@mjolnir.drzeus.cx> <20080521184713.GA30284@polina.dev.rtsoft.ru> <20080521212831.523f344b@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6 patch] make struct mpt_proc_root_dir static
-Date: Fri, 23 May 2008 01:51:21 +0800
-Message-ID: <5AE055B67BB5764693E2900C7E3699BE011105DF@pamail.ad.lsil.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6 patch] make struct mpt_proc_root_dir static
-Thread-Index: Aciu3stIEgoZKdi/TmS53OWz6k4XpwNVaNfg
-From: "Prakash, Sathya" <Sathya.Prakash@lsi.com>
-To: "Adrian Bunk" <bunk@kernel.org>, "Moore, Eric" <Eric.Moore@lsi.com>
-Cc: <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 22 May 2008 17:52:28.0201 (UTC) FILETIME=[99A38190:01C8BC34]
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20080521212831.523f344b@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK 
+On Wed, May 21, 2008 at 09:28:31PM +0200, Pierre Ossman wrote:
+> On Wed, 21 May 2008 22:47:13 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > 
+> > Calling get_cd() for every request smells like overhead, especially given
+> > that that get_cd() could ask for GPIO status via relatively slow bus (like
+> > I2C GPIO expanders). So, polling seems most reasonable solution here, no
+> > need to call it very often.
+> > 
+> 
+> Fair enough. You should probably add a comment about this somewhere so
+> that people do not call get_cd() in the core request function and
+> similar places. Place it so that both get_cd() and get_ro() are covered
+> though, as it should be relevant for both.
 
------Original Message-----
-From: linux-scsi-owner@vger.kernel.org
-[mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Adrian Bunk
-Sent: Monday, May 05, 2008 11:56 PM
-To: Moore, Eric
-Cc: linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; Andrew
-Morton
-Subject: [2.6 patch] make struct mpt_proc_root_dir static
+I think this is applicable to the .set_ios() too.
 
-This patch makes the needlessly global struct mpt_proc_root_dir static.
+[...]
+> > +	if (host->ops->get_cd) {
+> > +		int old_cd_status = host->cd_status;
+> > +
+> > +		host->cd_status = !!host->ops->get_cd(host);
+> > +		if (!(old_cd_status ^ host->cd_status)) {
+> > +			mmc_bus_put(host);
+> > +			goto out;
+> > +		}
+> > +	}
+> > +
+> 
+> This should only be done when there is no bus handler. Since we are
+> polling, we might actually miss the user removing and reinserting the
+> card. The only way to check for that is to poke the card and see if it
+> is still alive. This also means you won't need that state variable.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Yeah, this makes sense. Indeed pretty easy to trigger [if poll interval
+increased to 3 seconds, for example].
 
----
+> Also, that second if clause seems fit for an obfuscation contest. ;)
 
-This patch has been sent on:
-- 22 Apr 2008
-- 13 Apr 2008
+cd_status was a bitfield, so I thought that bit operations would be
+appropriate. :-)
 
- drivers/message/fusion/mptbase.c |    3 +--
- drivers/message/fusion/mptbase.h |    1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+> > p.s. Since mmc_host_ops no longer the same for every instance of
+> > mmc_spi, struct mmc_host_ops can't be const and should be allocated
+> > dynamically.
+> 
+> This can be solved by allowing get_cd() to return an error that will be
+> treated as if get_cd() wasn't defined. -ENODEV seems suitable.
 
-0206a6da1d1b4ca0e1eb7f6e34ced21c79d58c7b diff --git
-a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index c6be6eb..7e4e69e 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -103,7 +103,7 @@ static int mfcounter = 0;
-  *  Public data...
-  */
- 
--struct proc_dir_entry *mpt_proc_root_dir;
-+static struct proc_dir_entry *mpt_proc_root_dir;
- 
- #define WHOINIT_UNKNOWN		0xAA
- 
-@@ -7444,7 +7444,6 @@ EXPORT_SYMBOL(mpt_resume);
-EXPORT_SYMBOL(mpt_suspend);  #endif  EXPORT_SYMBOL(ioc_list);
--EXPORT_SYMBOL(mpt_proc_root_dir);
- EXPORT_SYMBOL(mpt_register);
- EXPORT_SYMBOL(mpt_deregister);
- EXPORT_SYMBOL(mpt_event_register);
-diff --git a/drivers/message/fusion/mptbase.h
-b/drivers/message/fusion/mptbase.h
-index caadc68..7630031 100644
---- a/drivers/message/fusion/mptbase.h
-+++ b/drivers/message/fusion/mptbase.h
-@@ -918,7 +918,6 @@ extern int	 mpt_raid_phys_disk_pg0(MPT_ADAPTER
-*ioc, u8 phys_disk_num, pRaidPhys
-  *  Public data decl's...
-  */
- extern struct list_head	  ioc_list;
--extern struct proc_dir_entry	*mpt_proc_root_dir;
- 
- 
-/*=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-=-=-=*/
- #endif		/* } __KERNEL__ */
+-ENOSYS (not implemented) sounds better for this purpose...
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-the body of a message to majordomo@vger.kernel.org More majordomo info
-at  http://vger.kernel.org/majordomo-info.html
+> (get_ro() needs the same treatment, but I haven't gotten around to
+> that)
+
+Ok. How about this version?
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
