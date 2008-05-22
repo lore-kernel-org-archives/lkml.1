@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbYEVKzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbYEVLAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757985AbYEVKzM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 06:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYEVKy6
+	id S1759368AbYEVLAm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 07:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYEVLAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 06:54:58 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:35091 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbYEVKy5 (ORCPT
+	Thu, 22 May 2008 07:00:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36536 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751925AbYEVLAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 06:54:57 -0400
-Message-ID: <483550C5.1010100@yandex.ru>
-Date: Thu, 22 May 2008 13:53:57 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>	<1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com>	<20080507002345.831bc379.akpm@linux-foundation.org>	<48218F21.4090304@yandex.ru>	<20080507083835.6ba126e6.akpm@linux-foundation.org>	<4832C7FF.2090904@yandex.ru> <20080520104907.e77ae05d.akpm@linux-foundation.org>
-In-Reply-To: <20080520104907.e77ae05d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 22 May 2008 10:53:59.0179 (UTC) FILETIME=[237ECDB0:01C8BBFA]
-X-Nokia-AV: Clean
+	Thu, 22 May 2008 07:00:31 -0400
+Date: Thu, 22 May 2008 11:17:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: mahalcro@us.ibm.com, linux-kernel@vger.kernel.org
+Subject: BUG: Ecryptfs ioctl handling
+Message-ID: <20080522111746.6c78507b@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Artem Bityutskiy <dedekind@yandex.ru> wrote:
->> is it OK for you if ubifs-2.6.git will have some patches which ubi-2.6.git
->> also contains. Will your -mm system handle this?
-> 
-> It happens occasionally and I usually manage to work it out.  Sometimes
-> with git hackery, sometimes manually.  It'd be better if it was a
-> once-off thing, rather than having new conflicts arise each time I
-> repull the trees, if possible.
+Ecryptfs has an ioctl method that checks for the underlying fs ioctl
+method and can call down into. Unfortunately however it doesn't check for
+an underlying unlocked_ioctl method and call that if present.
 
-OK. The thing is that we'd like to have UBI patches in UBIFS tree to give
-them a test. So what I've done I've created a branch named "for_andrew".
-Could you please switch your scripts from "master" branch to "for_andrew"
-branch? This branch will have the same but UBI patches which are already
-in the UBI tree and would cause conflicts.
+Notices while removing the remaining users of ->ioctl from my dev tree.
 
-Thanks.
+Really ecryptfs needs its own ->unlocked_ioctl op to call into either
+unlocked ioctl below or lock_kernel/ioctl/unlock_kernel below.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Alan
