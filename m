@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbYEVR6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbYEVR6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbYEVR6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 13:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbYEVR6L
+	id S1756145AbYEVR6i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 13:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYEVR63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 13:58:11 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:29181 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755001AbYEVR6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 13:58:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PIse/E1cE8zbNg9JW6vs+wCLaN8fBKsipdQtdwtdv7P1DpThwpkVe7QFdi9lBS5ZJ3tHdlbOq7v33ssHxa58K5xXvcFmH3YNHxfhajs1FRsubxg8Uw9kQPVNeokaPf5mL+b3TS5x7Kp9/b9iImIcisidvsWlycSI8bx/tDQKKZ8=
-Message-ID: <86802c440805221058k3b8d02bbm981ae0f8df698a66@mail.gmail.com>
-Date: Thu, 22 May 2008 10:58:10 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4835471D.3090000@goop.org>
+	Thu, 22 May 2008 13:58:29 -0400
+Received: from sous-sol.org ([216.99.217.87]:52059 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756970AbYEVR62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 13:58:28 -0400
+Date: Thu, 22 May 2008 10:58:03 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Dave Jones <davej@codemonkey.org.uk>, Andrew Morgan <morgan@kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com
+Subject: Re: capget() overflows buffers.
+Message-ID: <20080522175744.GE4018@sequoia.sous-sol.org>
+References: <20080522140402.GB2071@codemonkey.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200805110030.15510.yhlu.kernel@gmail.com>
-	 <200805180118.57863.yhlu.kernel@gmail.com>
-	 <200805211840.18619.yhlu.kernel@gmail.com> <4835471D.3090000@goop.org>
+In-Reply-To: <20080522140402.GB2071@codemonkey.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 3:12 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Yinghai Lu wrote:
->>
->> use find_e820_area to find addess for new RAMDISK, instead of using ram
->> blindly
->>
->
-> Unfortunately this patch does not resolve the problem for me either.
+* Dave Jones (davej@codemonkey.org.uk) wrote:
+> We had a user file a bug report recently that sys_capget is overflowing
+> a user buffer.
+> 
+> More details and test program are available at
+> https://bugzilla.redhat.com/show_bug.cgi?id=447518
+> 
+> The only recent change in this area was e338d263a76af78fe8f38a72131188b58fceb591
+> "Add 64-bit capability support to the kernel".
 
-boot log from serial console?
+Yes, this thing is broken.
 
-doesn't fail with dom0 or domU? FV?
+Trouble is, it's expecting an array of 2, and getting an array of 1.
 
-YH
+The userspace fix is to do this (note, this does not fix the fact that
+the ABI is broken, it's so opaque that it's difficult to follow).
+
+cap_user_data_t data=malloc(sizeof(*data)*_LINUX_CAPABILITY_U32S);
+
+Bojan, is there a capset involved as well, because that will pull in
+garbage and set caps accordingly?
