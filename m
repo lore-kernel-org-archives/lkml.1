@@ -1,88 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbYEVUyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761396AbYEVUzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761396AbYEVUyj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 16:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbYEVUy3
+	id S1761396AbYEVUzc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 16:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbYEVUzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 16:54:29 -0400
-Received: from sous-sol.org ([216.99.217.87]:54135 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756145AbYEVUy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 16:54:28 -0400
-Date: Thu, 22 May 2008 13:53:53 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Dave Jones <davej@codemonkey.org.uk>, Andrew Morgan <morgan@kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com
-Subject: Re: capget() overflows buffers.
-Message-ID: <20080522205341.GA30402@sequoia.sous-sol.org>
-References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080522175744.GE4018@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 22 May 2008 16:55:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54311 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754134AbYEVUzN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 16:55:13 -0400
+Date: Thu, 22 May 2008 21:42:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] mmtimer: Push BKL down into the ioctl handler
+Message-ID: <20080522214244.457da3d7@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Wright (chrisw@sous-sol.org) wrote:
-> Yes, this thing is broken.
+Switches to unlocked_ioctl read to remove ioctl BKL method. Fix the
+unknown ioctl return. Probably a nice easy one to kill off BKL usage
+entirely later
 
-Andrew, I think this should be considered a serious problem.  The
-interface ABI is stable for old programs, and fine for anything new
-or old that's using libcap.  But the API has changed subtly (taking a
-pointer to a blob, to a pointer to an array of blobs), and is easily
-broken for programs recompiled against new headers not using libcap.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-For the squid issue at least it does capget/capset, so it's likely to
-write back in capset the caps it got in capget (when it doesn't hit
-glibc heap overflow protection).
-
-But bind, for example, could have garbage in the upper 32bits on a 64bit
-caps system that does not HAVE_LIBCAP:
-
-(Note: snipped it down to make it readable, removed some ifdef
-HAVE_LIBCAP, etc)
-
-linux_setcaps(cap_t caps) {
-	struct __user_cap_header_struct caphead;
-	struct __user_cap_data_struct cap;	<-- just one set of u32s
-<snip>
-	memset(&caphead, 0, sizeof(caphead));
-	caphead.version = _LINUX_CAPABILITY_VERSION; <-- v2
-	caphead.pid = 0;
-	memset(&cap, 0, sizeof(cap));
-	cap.effective = caps;
-	cap.permitted = caps;
-	cap.inheritable = 0;			<-- fill in just that set
-<snip>
-	if (syscall(SYS_capset, &caphead, &cap) < 0) {
-                                          ^^^ kernel pulls 2 sets of
-					  u32s, send is just junk from
-					  stack
-
-
-
-For the squid case that Bojan described:
-(Note: snipped it down again)
-
-restoreCapabilities(int keep)
-{
-    cap_user_header_t head = (cap_user_header_t) xcalloc(1, sizeof(cap_user_header_t));
-    cap_user_data_t cap = (cap_user_data_t) xcalloc(1, sizeof(cap_user_data_t));
-    head->version = _LINUX_CAPABILITY_VERSION;
-    if (capget(head, cap) != 0) {
-<snip>
-    head->pid = 0;
-    cap->inheritable = 0;
-    cap->effective = (1 << CAP_NET_BIND_SERVICE);
-<snip>
-    if (!keep)
-        cap->permitted &= cap->effective;
-    if (capset(head, cap) != 0) {
-
-I don't see a nice solution, short reverting, and adding a new set of
-syscalls to support 64-bit.
-
-thanks,
--chris
+diff --git a/drivers/char/mmtimer.c b/drivers/char/mmtimer.c
+index 192961f..918711a 100644
+--- a/drivers/char/mmtimer.c
++++ b/drivers/char/mmtimer.c
+@@ -32,6 +32,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/time.h>
+ #include <linux/math64.h>
++#include <linux/smp_lock.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/sn/addrs.h>
+@@ -57,8 +58,8 @@ extern unsigned long sn_rtc_cycles_per_second;
+ 
+ #define rtc_time()              (*RTC_COUNTER_ADDR)
+ 
+-static int mmtimer_ioctl(struct inode *inode, struct file *file,
+-			 unsigned int cmd, unsigned long arg);
++static long mmtimer_ioctl(struct file *file, unsigned int cmd,
++						unsigned long arg);
+ static int mmtimer_mmap(struct file *file, struct vm_area_struct *vma);
+ 
+ /*
+@@ -67,9 +68,9 @@ static int mmtimer_mmap(struct file *file, struct vm_area_struct *vma);
+ static unsigned long mmtimer_femtoperiod = 0;
+ 
+ static const struct file_operations mmtimer_fops = {
+-	.owner =	THIS_MODULE,
+-	.mmap =		mmtimer_mmap,
+-	.ioctl =	mmtimer_ioctl,
++	.owner = THIS_MODULE,
++	.mmap =	mmtimer_mmap,
++	.unlocked_ioctl = mmtimer_ioctl,
+ };
+ 
+ /*
+@@ -339,7 +340,6 @@ restart:
+ 
+ /**
+  * mmtimer_ioctl - ioctl interface for /dev/mmtimer
+- * @inode: inode of the device
+  * @file: file structure for the device
+  * @cmd: command to execute
+  * @arg: optional argument to command
+@@ -365,11 +365,13 @@ restart:
+  * %MMTIMER_GETCOUNTER - Gets the current value in the counter and places it
+  * in the address specified by @arg.
+  */
+-static int mmtimer_ioctl(struct inode *inode, struct file *file,
+-			 unsigned int cmd, unsigned long arg)
++static long mmtimer_ioctl(struct file *file, unsigned int cmd,
++						unsigned long arg)
+ {
+ 	int ret = 0;
+ 
++	lock_kernel();
++
+ 	switch (cmd) {
+ 	case MMTIMER_GETOFFSET:	/* offset of the counter */
+ 		/*
+@@ -384,15 +386,14 @@ static int mmtimer_ioctl(struct inode *inode, struct file *file,
+ 	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
+ 		if(copy_to_user((unsigned long __user *)arg,
+ 				&mmtimer_femtoperiod, sizeof(unsigned long)))
+-			return -EFAULT;
++			ret = -EFAULT;
+ 		break;
+ 
+ 	case MMTIMER_GETFREQ: /* frequency in Hz */
+ 		if(copy_to_user((unsigned long __user *)arg,
+ 				&sn_rtc_cycles_per_second,
+ 				sizeof(unsigned long)))
+-			return -EFAULT;
+-		ret = 0;
++			ret = -EFAULT;
+ 		break;
+ 
+ 	case MMTIMER_GETBITS: /* number of bits in the clock */
+@@ -406,13 +407,13 @@ static int mmtimer_ioctl(struct inode *inode, struct file *file,
+ 	case MMTIMER_GETCOUNTER:
+ 		if(copy_to_user((unsigned long __user *)arg,
+ 				RTC_COUNTER_ADDR, sizeof(unsigned long)))
+-			return -EFAULT;
++			ret = -EFAULT;
+ 		break;
+ 	default:
+-		ret = -ENOSYS;
++		ret = -ENOTTY;
+ 		break;
+ 	}
+-
++	unlock_kernel();
+ 	return ret;
+ }
+ 
