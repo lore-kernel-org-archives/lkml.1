@@ -1,119 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764699AbYEVVmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbYEVVma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764699AbYEVVmB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbYEVVlu
+	id S932737AbYEVVma (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761791AbYEVVmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:41:50 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55615 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756151AbYEVVlt (ORCPT
+	Thu, 22 May 2008 17:42:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59428 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764651AbYEVVmE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 17:41:49 -0400
-Date: Thu, 22 May 2008 22:29:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: perex@perex.cz, linux-kernel@vger.kernel.org
-Subject: [PATCH] tea575x: Switch to unlocked_ioctl
-Message-ID: <20080522222920.33732923@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 May 2008 17:42:04 -0400
+Message-ID: <4835E6F5.5010801@zytor.com>
+Date: Thu, 22 May 2008 14:34:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <20080520015723.GD30034@linux-os.sc.intel.com> <4832A173.6020203@firstfloor.org> <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <20080522212920.GC7998@linux-os.sc.intel.com>
+In-Reply-To: <20080522212920.GC7998@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not sure why this is hiding in the sound directory or why it has an
-ancient and buggy V4L1 interface on it but it is and it needs to use
-unlocked_ioctl.
+Suresh Siddha wrote:
+> 
+> can you please elaborate? even in presence of virtualization, appropriate
+> cpuid bits need to be set/visible for application, for xsave/xrstor to work
+> properly.
+> 
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+For many paravirtualization solutions, CPUID "leak" from the hypervisor. 
+  The fact that CPUID cannot be disabled (made ring 0 only) is a major 
+flaw in the architecture.
 
-diff --git a/sound/i2c/other/tea575x-tuner.c b/sound/i2c/other/tea575x-tuner.c
-index 87e3aef..c1d6184 100644
---- a/sound/i2c/other/tea575x-tuner.c
-+++ b/sound/i2c/other/tea575x-tuner.c
-@@ -25,6 +25,7 @@
- #include <linux/interrupt.h>
- #include <linux/init.h>
- #include <sound/core.h>
-+#include <linux/smp_lock.h>
- #include <sound/tea575x-tuner.h>
- 
- MODULE_AUTHOR("Jaroslav Kysela <perex@perex.cz>");
-@@ -84,12 +85,14 @@ static void snd_tea575x_set_freq(struct snd_tea575x *tea)
-  * Linux Video interface
-  */
- 
--static int snd_tea575x_ioctl(struct inode *inode, struct file *file,
--			     unsigned int cmd, unsigned long data)
-+static long snd_tea575x_ioctl(struct file *file, unsigned int cmd,
-+						unsigned long data)
- {
- 	struct video_device *dev = video_devdata(file);
- 	struct snd_tea575x *tea = video_get_drvdata(dev);
- 	void __user *arg = (void __user *)data;
-+
-+#warning "Video4Linux 1 is obsolete. Please update this driver"
- 	
- 	switch(cmd) {
- 		case VIDIOCGCAP:
-@@ -103,7 +106,9 @@ static int snd_tea575x_ioctl(struct inode *inode, struct file *file,
- 			v.maxheight = 0;
- 			v.minwidth = 0;
- 			v.minheight = 0;
-+			lock_kernel();
- 			strcpy(v.name, tea->tea5759 ? "TEA5759" : "TEA5757");
-+			unlock_kernel();
- 			if (copy_to_user(arg,&v,sizeof(v)))
- 				return -EFAULT;
- 			return 0;
-@@ -136,13 +141,16 @@ static int snd_tea575x_ioctl(struct inode *inode, struct file *file,
- 			return 0;
- 		}
- 		case VIDIOCGFREQ:
-+			/* FIXME: freq locking is needed ?? */
- 			if(copy_to_user(arg, &tea->freq, sizeof(tea->freq)))
- 				return -EFAULT;
- 			return 0;
- 		case VIDIOCSFREQ:
- 			if(copy_from_user(&tea->freq, arg, sizeof(tea->freq)))
- 				return -EFAULT;
-+			lock_kernel();
- 			snd_tea575x_set_freq(tea);
-+			unlock_kernel();
- 			return 0;
- 		case VIDIOCGAUDIO:
- 		{	
-@@ -158,16 +166,18 @@ static int snd_tea575x_ioctl(struct inode *inode, struct file *file,
- 			struct video_audio v;
- 			if(copy_from_user(&v, arg, sizeof(v))) 
- 				return -EFAULT;	
-+			lock_kernel();
- 			if (tea->ops->mute)
- 				tea->ops->mute(tea,
- 					       (v.flags &
- 						VIDEO_AUDIO_MUTE) ? 1 : 0);
-+			unlock_kernel();
- 			if(v.audio) 
- 				return -EINVAL;
- 			return 0;
- 		}
- 		default:
--			return -ENOIOCTLCMD;
-+			return -ENOTTY;
- 	}
- }
- 
-@@ -198,7 +208,7 @@ void snd_tea575x_init(struct snd_tea575x *tea)
- 	tea->fops.owner = tea->card->module;
- 	tea->fops.open = video_exclusive_open;
- 	tea->fops.release = video_exclusive_release;
--	tea->fops.ioctl = snd_tea575x_ioctl;
-+	tea->fops.unlocked_ioctl = snd_tea575x_ioctl;
- 	if (video_register_device(&tea->vd, VFL_TYPE_RADIO, tea->dev_nr - 1) < 0) {
- 		snd_printk(KERN_ERR "unable to register tea575x tuner\n");
- 		return;
+Therefore, relying on CPUID is too dangerous.
+
+>> I don't think it is ... it's not overkill but rather "underkill"... it's 
+>> a low-performance solution but it's guaranteed to be safe in the 
+>> presence of virtualization of all its various ilk.  Note that you don't 
+>> need to be able to *set* the format via prctl(), just *query* (get) it.
+>>
+>> Using prctl() allows us to make this personality-dependent if we ever 
+>> need to.
+>>
+>>> While restoring from the user, kernel also need to find out what layout
+>>> the user is passing. So it's bi-directional. I prefer the same mechanism
+>>> (using cookies/magic numbers etc inaddition to uc_flags or cpuid checks) to
+>>> interpret the fpstate for both user/kernel.
+>> No, it really doesn't: the kernel only needs to be able to read the same 
+>> format as it itself wrote.
+> 
+> But user can potentially change the _fpstate pointer in sigcontext struct.
+
+If so, they get what they bargained for... I am not even sure the kernel 
+will successfully clean up the stack frame if they do that.  I don't 
+think it has ever been supported doing that, and as you have correctly 
+pointed out, we don't check the magic number, so if we had had offenders 
+we ought to have smoked them out a long time ago.
+
+>>> ARM also seem to be using similar things while extending their ucontext_t,
+>>> with out other kernel interfaces to indicate the layout.
+>>>
+>>> BTW, how come 32bit kernel doesn't have the X86_FXSR_MAGIC checks, while 
+>>> restoring
+>>> the extended fxsave data from _fpstate?
+>> Again, the kernel already knows the format, so it doesn't need to check.
+> 
+> What happens with some old applications which change the _fpstate
+> pointer. they may or may not be fxsave aware...
+
+That is not, and has never been, supported.
+
+	-hpa
+
