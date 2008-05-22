@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbYEVBa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936992AbYEVBaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932929AbYEVBa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 21:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbYEVBaU
+	id S936992AbYEVBaw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 21:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbYEVBai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 21:30:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42846 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755483AbYEVBaT (ORCPT
+	Wed, 21 May 2008 21:30:38 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51951 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758383AbYEVBai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 21:30:19 -0400
-Date: Wed, 21 May 2008 18:29:43 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, Paul Mackerras <paulus@samba.org>,
-       Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+	Wed, 21 May 2008 21:30:38 -0400
+Date: Thu, 22 May 2008 02:30:35 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>, Takashi Iwai <tiwai@suse.de>,
+       linux-kernel@vger.kernel.org
 Subject: Re: Moving include/asm-* [was: Re: Moving sound/* to drivers/ ?]
-In-Reply-To: <1211419419.6908.12.camel@brick>
-Message-ID: <alpine.LFD.1.10.0805211827010.3081@woody.linux-foundation.org>
-References: <s5hzlqjz74d.wl%tiwai@suse.de>  <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>  <18484.44691.477859.334222@cargo.ozlabs.ibm.com>  <alpine.LFD.1.10.0805211635040.3081@woody.linux-foundation.org>  <20080522005657.GU28946@ZenIV.linux.org.uk>
-  <alpine.LFD.1.10.0805211818550.3081@woody.linux-foundation.org> <1211419419.6908.12.camel@brick>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+Message-ID: <20080522013035.GV28946@ZenIV.linux.org.uk>
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org> <18484.44691.477859.334222@cargo.ozlabs.ibm.com> <alpine.LFD.1.10.0805211635040.3081@woody.linux-foundation.org> <20080522005657.GU28946@ZenIV.linux.org.uk> <alpine.LFD.1.10.0805211818550.3081@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805211818550.3081@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 21 May 2008, Harvey Harrison wrote:
+On Wed, May 21, 2008 at 06:20:27PM -0700, Linus Torvalds wrote:
 > 
-> What about say, sparc64 that has a lot of #include <asm-sparc/foo.h>
+> 
+> On Thu, 22 May 2008, Al Viro wrote:
+> > 
+> > Eh?  git mv include/asm-$i arch/$i/include/asm, then?
+> 
+> Yeah, sorry, I dropped an "include/" there. 
+> 
+> > Nice, but... how do you pull what's currently asm-generic/foo.h from what's
+> > currently asm-bar/foo.h?  #include_next is _ugly_...
+> 
+> I was actually going to suggest #include_next, yes. But if people hate it, 
+> we can certainly just keep the current <asm-generic/xyz.h> approach.
 
-Ahh, I didn't realize people did that.
+Another alternative is to replace asm-generic/ with generic/asm and have
+-I include -I arch/$ARCH/include -I include/generic. Then we'd have
 
-I assume (but am too lazy to check) that UML probably does something 
-similar for its arch-specific stuff.
+linux/foo.h => include/linux/foo.h (one lookup)
+asm/foo.h => arch/include/asm/foo.h if it exists (negative on include/asm,
+                                                  then one lookup)
+          => include/generic/asm/foo.h otherwise (negative on include/asm,
+                                                  negative lookup,
+                                                  lookup)
+generic/asm/foo.h => include/generic/asm/foo.h   (one lookup)
 
-So yeah, it's probably more pain than it _should_ be, for reasons like 
-that.
-
-But I suspect that things like <asm-sparc/foo.h> may be because sparc64 
-would actually like to add another -Iarch/sparc/include (until it 
-eventually can get rid of the thing _entirely_, of course, as it gets 
-unified under one architecture)
-
-		Linus
+No #include_next at all.  Kludgy, though...  Note that arch/um will need
+more interesting treatment in any case and so may things like arch/arm
+with its include/asm/arch symlink ;-/
