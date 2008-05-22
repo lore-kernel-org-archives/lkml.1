@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934624AbYEVIQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765409AbYEVIUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934624AbYEVIQY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 04:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762058AbYEVIQK
+	id S1765409AbYEVIUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbYEVIUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 04:16:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33758 "EHLO mx3.mail.elte.hu"
+	Thu, 22 May 2008 04:20:19 -0400
+Received: from ozlabs.org ([203.10.76.45]:51644 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761166AbYEVIQH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 04:16:07 -0400
-Date: Thu, 22 May 2008 10:15:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netfilter-devel@vger.kernel.org,
-       apw@shadowen.org, Franck Bui-Huu <fbuihuu@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] linux-next: Tree for May 21 - build failure with
-	netfilter on __nf_ct_helper_find()
-Message-ID: <20080522081546.GB7222@elte.hu>
-References: <20080521155936.466bbe86.sfr@canb.auug.org.au> <20080521113230.GA10830@linux.vnet.ibm.com> <20080521225214.507eb400.sfr@canb.auug.org.au> <4834239D.90500@linux.vnet.ibm.com> <20080522101148.fbabee96.sfr@canb.auug.org.au>
+	id S1759154AbYEVIUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 04:20:16 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Subject: Re: initialization of static per-cpu variables
+Date: Thu, 22 May 2008 18:20:06 +1000
+User-Agent: KMail/1.9.9
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+References: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com>
+In-Reply-To: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080522101148.fbabee96.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200805221820.07290.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 22 May 2008 04:28:02 Vegard Nossum wrote:
+> Hi,
+>
+> I encountered this comment in kernel/softirq.c:
+>
+> /* Some compilers disobey section attribute on statics when not
+>    initialized -- RR */
+> static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
+> static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
+>
+> So I assume it's the combination of static and whatever section
+> DFINE_PER_CPU puts the variable in which is the problem.
+>
+> However, there's a LOT of these "static DEFINE_PER_CPU" without any
+> initializer in the rest of the code, e.g.:
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+Yep, it was an old toolchain used by Sparc: DaveM found this one.  As you say, 
+it's ancient: I'm happy to queue a cleanup patch now everyone is on a modern 
+compiler.
 
-> Actually this is caused by the splitting out of the rcu stuff from 
-> list.h that is in linux-next, sorry.
-
-this bug has been fixed in the -tip tree 9 days ago:
-
-|  commit db3c7a9f07a212d1774e6b432a08b231340e984d
-|  Author: Ingo Molnar <mingo@elte.hu>
-|  Date:   Tue May 13 15:37:05 2008 +0200
-
-that commit was in intermediate testing phase in the 'scratch' branch, 
-and a few days ago linux-next stopped picking up the scratch branch.
-
-I've now cherry-picked this fix over into the rcu branch and everything 
-should be fine again in the next linux-next iteration.
-
-	Ingo
+Thanks,
+Rusty.
