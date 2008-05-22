@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYEVQie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYEVQkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbYEVQie (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 12:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYEVQiW
+	id S1756626AbYEVQkf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 12:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYEVQk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 12:38:22 -0400
-Received: from gv-out-0910.google.com ([216.239.58.188]:27957 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756180AbYEVQiU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 12:38:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z6k+iPh6KDdUGMq06KvNMfGYo+EmBzbzIvLLBNguu6qePwYB7Rh49+9qhdqq+W2Afa29WUpggp145S26CcvI8VmGQTLqEJ7dn9ORPCYApif6MGU8j3Cy43MYE4FyZdQSjPBqZUTj2Ae73OPyVD2GiyY8RRp9U9mVaN8H69OPBDw=
-Message-ID: <e2e108260805220938w718d39ddh633c48a6373fd682@mail.gmail.com>
-Date: Thu, 22 May 2008 18:38:18 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: Number of bugs - statistics
-Cc: "Adrian Bunk" <bunk@kernel.org>, "Arjan van de Ven" <arjan@infradead.org>,
-       "Bosko Radivojevic" <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "Natalie Protasevich" <protasnb@gmail.com>
-In-Reply-To: <48359DE1.8050600@s5r6.in-berlin.de>
+	Thu, 22 May 2008 12:40:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44792 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbYEVQkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 12:40:25 -0400
+Date: Thu, 22 May 2008 10:07:53 -0400
+From: Dave Jones <davej@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [X86] Add recent Centaur CPUs to PAT whitelist
+Message-ID: <20080522140753.GB20613@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Yinghai Lu <yhlu.kernel@gmail.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <200805200409.m4K49V3G024332@gelk.kernelslacker.org> <86802c440805192249y77e78918u8392f5a43331365@mail.gmail.com> <20080520131943.GA4843@redhat.com> <4834B6AC.9090503@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com>
-	 <20080522144114.GC27301@cs181133002.pp.htv.fi>
-	 <20080522075135.4933161c@infradead.org>
-	 <20080522155425.GA2727@cs181133002.pp.htv.fi>
-	 <48359DE1.8050600@s5r6.in-berlin.de>
+In-Reply-To: <4834B6AC.9090503@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 2:28 PM, Bosko Radivojevic
-<bosko.radivojevic@gmail.com> wrote:
-> Is there any kind of analysis of number of (reported or resolved) bugs
-> through time in Linux kernel floating around? I'm trying to convince
-> my colleagues that newer kernel version does not mean more bugs than
-> the previous 'well tested' ones.
+On Wed, May 21, 2008 at 04:56:28PM -0700, H. Peter Anvin wrote:
+ > Dave Jones wrote:
+ > > 
+ > > From conversation with Centaur engineers, both the newer generations
+ > > of the VIA C7, and their future CPUs support PAT, with no known errata.
+ > > 
+ > > Signed-off-by: Dave Jones <davej@redhat.com>
+ > > 
+ > 
+ > Question: are there any VIA CPUs that display the PAT CPUID flag that 
+ > aren't covered by the above?
 
-The following summary of a speech by Andrew Morton contains good
-arguments as why you should use a recent kernel:
-http://lwn.net/Articles/278647/
+No.  They only added PAT support with the current Esther (C7) generation iirc.
 
-Bart.
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
