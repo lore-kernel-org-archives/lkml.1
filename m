@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934184AbYEVIri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934849AbYEVIuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934184AbYEVIri (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 04:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758668AbYEVIr2
+	id S934849AbYEVIuH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763068AbYEVItv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 04:47:28 -0400
-Received: from styx.suse.cz ([82.119.242.94]:57125 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756578AbYEVIr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 04:47:27 -0400
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a
-	race
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Luming Yu <luming.yu@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>
-In-Reply-To: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: SuSE CR
-Date: Thu, 22 May 2008 10:47:25 +0200
-Message-Id: <1211446045.5610.33.camel@elijah.suse.cz>
+	Thu, 22 May 2008 04:49:51 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37147 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762679AbYEVItu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 04:49:50 -0400
+To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 0/3] freeze feature ver 1.4
+Message-Id: <20080522174924t-sato@mail.jp.nec.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Thu, 22 May 2008 17:49:24 +0900
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-22 at 10:47 +0800, Luming Yu wrote:
-> Hello list,
-> 
-> The following patch is to fixed a race in ptrace_stop handling which
-> causes "strace" hang if the target process blocks SIGTRAP with the
-> test case filed at
-> https://bugzilla.redhat.com/show_bug.cgi?id=446200#c16.
-> Please note this is just IA64 problem because just IA64 has
-> arch_ptrace_stop_needed defined, and has arch_ptrace_stop defined that
-> would set notify_resume flags for syncing rbs...but it also opens the
-> door to invoke ia64_do_signal->get_signal_to_deliver before setting
-> current PTRACED flag. Please help review.
-> 
-> **The patch is enclosed in text attachment*
-> **I'm using web client to send the patch* *
+Hi,
 
-I'm inlining the patch for sake of convenience:
+The freeze feature can suspend accesses to the filesystem
+keeping the filesystem's consistency.
+We can take the consistent backup with it cooperating with
+the backup software.
 
-> 
-> Signed-off-by: Yu Luming <luming.yu@intel.com>
-> --------------------------------------
->  signal.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> --- 0/kernel/signal.c	2008-05-14 02:24:51.000000000 +0800
-> +++ 1/kernel/signal.c	2008-05-22 13:54:42.000000000 +0800
-> @@ -1488,6 +1488,9 @@
->  {
->  	int killed = 0;
->  
-> +	/* Let the debugger run.  */
-> +	__set_current_state(TASK_TRACED);
-> +
+I've modified [PATCH 1/3] to set the suitable error number (EOPNOTSUPP)
+in case the filesystem doesn't support the freeze feature.
+This was pointed out by Andreas Dilger.
+In addition, the patches are re-based from linux-2.6.26-rc2 to
+linux-2.6.26-rc3.
 
-That's probably not what we want. What happens if the task then sleeps
-during the user-space access? Unless I forgot something obvious, it will
-never get scheduled again...
+The patch-set consists of the following three patches.
 
-Petr Tesarik
+[PATCH 1/3] Implement generic freeze feature
+  I have modified to set the suitable error number (EOPNOTSUPP)
+  in case the filesystem doesn't support the freeze feature.
 
->  	if (arch_ptrace_stop_needed(exit_code, info)) {
->  		/*
->  		 * The arch code has something special to do before a
-> @@ -1516,8 +1519,6 @@
->  	current->last_siginfo = info;
->  	current->exit_code = exit_code;
->  
-> -	/* Let the debugger run.  */
-> -	__set_current_state(TASK_TRACED);
->  	spin_unlock_irq(&current->sighand->siglock);
->  	read_lock(&tasklist_lock);
->  	if (!unlikely(killed) && may_ptrace_stop()) {
+  The ioctls for the generic freeze feature are below.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, arg)
+      fd: The file descriptor of the mountpoint
+      FIFREEZE: request code for the freeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
 
+  o Unfreeze the filesystem
+    int ioctl(int fd, int FITHAW, arg)
+      fd: The file descriptor of the mountpoint
+      FITHAW: request code for unfreeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+[PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
+  It removes XFS specific ioctl interfaces and request codes
+  for freeze feature.
+  This patch has been supplied by David Chinner.
+
+[PATCH 3/3] Add timeout feature
+  The timeout feature is added to freeze ioctl.  And new ioctl
+  to reset the timeout period is added.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, long *timeval)
+      fd: The file descriptor of the mountpoint
+      FIFREEZE: request code for the freeze
+      timeval: the timeout period in seconds
+               If it's 0 or 1, the timeout isn't set.
+               This special case of "1" is implemented to keep
+               the compatibility with XFS applications.
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+  o Reset the timeout period
+    This is useful for the application to set the timeval more accurately.
+    For example, the freezer resets the timeval to 10 seconds every 5
+    seconds.  In this approach, even if the freezer causes a deadlock
+    by accessing the frozen filesystem, it will be solved by the timeout
+    in 10 seconds and the freezer can recognize that at the next reset
+    of timeval.
+    int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
+      fd:file descriptor of mountpoint
+      FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
+      timeval: new timeout period in seconds
+      Return value: 0 if the operation succeeds. Otherwise, -1
+      Error number: If the filesystem has already been unfrozen,
+                    errno is set to EINVAL.
+
+Any comments are very welcome.
+
+Cheers, Takashi
