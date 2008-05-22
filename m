@@ -1,46 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbYEVT6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbYEVUCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756976AbYEVT6o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 15:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbYEVT6f
+	id S1757639AbYEVUCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 16:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbYEVUCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 15:58:35 -0400
-Received: from www.tglx.de ([62.245.132.106]:60652 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753147AbYEVT6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 15:58:34 -0400
-Date: Thu, 22 May 2008 21:58:11 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Glauber Costa <gcosta@redhat.com>,
-       Miquel van Smoorenburg <miquels@cistron.nl>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       andi-suse@firstfloor.org
-Subject: Re: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
-In-Reply-To: <20080522084736.GC31727@one.firstfloor.org>
-Message-ID: <alpine.LFD.1.10.0805222157300.3295@apollo.tec.linutronix.de>
-References: <20080521113028.GA24632@xs4all.net> <48341A57.1030505@redhat.com> <20080522084736.GC31727@one.firstfloor.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 22 May 2008 16:02:33 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:5312 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754259AbYEVUCc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 16:02:32 -0400
+Message-Id: <20080522195406.490863853@mvista.com>
+References: <20080522195404.061391772@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 22 May 2008 00:00:02 -0700
+Subject: [PATCH 2/3] ps3: gelic: assoc_stat_lock semaphore to mutex
+From: Daniel Walker <dwalker@mvista.com>
+To: jgarzik@pobox.com
+Cc: netdev@vger.kernel.org, matthew@wil.cx, rusty@rustcorp.com.au,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, arjan@infradead.org,
+       mokuno@sm.sony.co.jp, geoffrey.levand@am.sony.com
+Content-Disposition: inline; filename=ps3-gelic-wireless-assoc_stat_lock-semaphore-to-mutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008, Andi Kleen wrote:
-> On Wed, May 21, 2008 at 09:49:27AM -0300, Glauber Costa wrote:
-> > probably andi has a better idea on why it was added, since it used to 
-> > live in his tree?
-> 
-> d_a_c() tries a couple of zones, and running the oom killer for each
-> is inconvenient. Especially for the 16MB DMA zone which is unlikely
-> to be cleared by the OOM killer anyways because normal user applications
-> don't put pages in there. There was a real report with some problems
-> in this area.
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-Can you give some pointers please ?
+---
+ drivers/net/ps3_gelic_wireless.c |   22 +++++++++++-----------
+ drivers/net/ps3_gelic_wireless.h |    2 +-
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
-Thanks,
-	tglx
+Index: linux-2.6.25/drivers/net/ps3_gelic_wireless.c
+===================================================================
+--- linux-2.6.25.orig/drivers/net/ps3_gelic_wireless.c
++++ linux-2.6.25/drivers/net/ps3_gelic_wireless.c
+@@ -240,12 +240,12 @@ static u32 gelic_wl_get_link(struct net_
+ 	u32 ret;
+ 
+ 	pr_debug("%s: <-\n", __func__);
+-	down(&wl->assoc_stat_lock);
++	mutex_lock(&wl->assoc_stat_lock);
+ 	if (wl->assoc_stat == GELIC_WL_ASSOC_STAT_ASSOCIATED)
+ 		ret = 1;
+ 	else
+ 		ret = 0;
+-	up(&wl->assoc_stat_lock);
++	mutex_unlock(&wl->assoc_stat_lock);
+ 	pr_debug("%s: ->\n", __func__);
+ 	return ret;
+ }
+@@ -979,7 +979,7 @@ static int gelic_wl_get_essid(struct net
+ 	unsigned long irqflag;
+ 
+ 	pr_debug("%s: <- \n", __func__);
+-	down(&wl->assoc_stat_lock);
++	mutex_lock(&wl->assoc_stat_lock);
+ 	spin_lock_irqsave(&wl->lock, irqflag);
+ 	if (test_bit(GELIC_WL_STAT_ESSID_SET, &wl->stat) ||
+ 	    wl->assoc_stat == GELIC_WL_ASSOC_STAT_ASSOCIATED) {
+@@ -989,7 +989,7 @@ static int gelic_wl_get_essid(struct net
+ 	} else
+ 		data->essid.flags = 0;
+ 
+-	up(&wl->assoc_stat_lock);
++	mutex_unlock(&wl->assoc_stat_lock);
+ 	spin_unlock_irqrestore(&wl->lock, irqflag);
+ 	pr_debug("%s: -> len=%d \n", __func__, data->essid.length);
+ 
+@@ -1170,7 +1170,7 @@ static int gelic_wl_get_ap(struct net_de
+ 	unsigned long irqflag;
+ 
+ 	pr_debug("%s: <-\n", __func__);
+-	down(&wl->assoc_stat_lock);
++	mutex_lock(&wl->assoc_stat_lock);
+ 	spin_lock_irqsave(&wl->lock, irqflag);
+ 	if (wl->assoc_stat == GELIC_WL_ASSOC_STAT_ASSOCIATED) {
+ 		data->ap_addr.sa_family = ARPHRD_ETHER;
+@@ -1180,7 +1180,7 @@ static int gelic_wl_get_ap(struct net_de
+ 		memset(data->ap_addr.sa_data, 0, ETH_ALEN);
+ 
+ 	spin_unlock_irqrestore(&wl->lock, irqflag);
+-	up(&wl->assoc_stat_lock);
++	mutex_unlock(&wl->assoc_stat_lock);
+ 	pr_debug("%s: ->\n", __func__);
+ 	return 0;
+ }
+@@ -2151,7 +2151,7 @@ static void gelic_wl_disconnect_event(st
+ 	 * As it waits with timeout, just leave assoc_done
+ 	 * uncompleted, then it terminates with timeout
+ 	 */
+-	if (down_trylock(&wl->assoc_stat_lock)) {
++	if (!mutex_trylock(&wl->assoc_stat_lock)) {
+ 		pr_debug("%s: already locked\n", __func__);
+ 		lock = 0;
+ 	} else {
+@@ -2170,7 +2170,7 @@ static void gelic_wl_disconnect_event(st
+ 	netif_carrier_off(port_to_netdev(wl_port(wl)));
+ 
+ 	if (lock)
+-		up(&wl->assoc_stat_lock);
++		mutex_unlock(&wl->assoc_stat_lock);
+ }
+ /*
+  * event worker
+@@ -2258,7 +2258,7 @@ static void gelic_wl_assoc_worker(struct
+ 
+ 	wl = container_of(work, struct gelic_wl_info, assoc_work.work);
+ 
+-	down(&wl->assoc_stat_lock);
++	mutex_lock(&wl->assoc_stat_lock);
+ 
+ 	if (wl->assoc_stat != GELIC_WL_ASSOC_STAT_DISCONN)
+ 		goto out;
+@@ -2304,7 +2304,7 @@ static void gelic_wl_assoc_worker(struct
+ scan_lock_out:
+ 	mutex_unlock(&wl->scan_lock);
+ out:
+-	up(&wl->assoc_stat_lock);
++	mutex_unlock(&wl->assoc_stat_lock);
+ }
+ /*
+  * Interrupt handler
+@@ -2432,7 +2432,7 @@ static struct net_device *gelic_wl_alloc
+ 	INIT_DELAYED_WORK(&wl->event_work, gelic_wl_event_worker);
+ 	INIT_DELAYED_WORK(&wl->assoc_work, gelic_wl_assoc_worker);
+ 	mutex_init(&wl->scan_lock);
+-	init_MUTEX(&wl->assoc_stat_lock);
++	mutex_init(&wl->assoc_stat_lock);
+ 
+ 	init_completion(&wl->scan_done);
+ 	/* for the case that no scan request is issued and stop() is called */
+Index: linux-2.6.25/drivers/net/ps3_gelic_wireless.h
+===================================================================
+--- linux-2.6.25.orig/drivers/net/ps3_gelic_wireless.h
++++ linux-2.6.25/drivers/net/ps3_gelic_wireless.h
+@@ -266,7 +266,7 @@ struct gelic_wl_info {
+ 	enum gelic_wl_wpa_level wpa_level; /* wpa/wpa2 */
+ 
+ 	/* association handling */
+-	struct semaphore assoc_stat_lock;
++	struct mutex assoc_stat_lock;
+ 	struct delayed_work assoc_work;
+ 	enum gelic_wl_assoc_state assoc_stat;
+ 	struct completion assoc_done;
 
-
+-- 
