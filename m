@@ -1,68 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYEWEbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757210AbYEWEgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbYEWEbZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 00:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYEWEbN
+	id S1757210AbYEWEgy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 00:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYEWEgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 00:31:13 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:50714 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbYEWEbM (ORCPT
+	Fri, 23 May 2008 00:36:43 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:38057 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750982AbYEWEgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 00:31:12 -0400
-X-Greylist: delayed 1807 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 May 2008 00:31:12 EDT
-Message-Id: <200805230430.m4N4UsWC016579@www262.sakura.ne.jp>
-Subject: Re: [git patch] vfs: permission API cleanup (v2)
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, trond.myklebust@fys.uio.no,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-2022-JP"
-Content-Transfer-Encoding: 7bit
-Date: Fri, 23 May 2008 13:30:54 +0900
-References: <E1JzDzC-0008MT-Hb@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1JzDzC-0008MT-Hb@pomaz-ex.szeredi.hu>
+	Fri, 23 May 2008 00:36:43 -0400
+Message-Id: <20080523042923.916202203@mvista.com>
+References: <20080523042923.594531457@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 22 May 2008 00:00:03 -0700
+Subject: [PATCH 3/3] futex: fix miss ordered wakeups
+From: Daniel Walker <dwalker@mvista.com>
+To: linux-kernel@vger.kernel.org
+Content-Disposition: inline; filename=blocked_on-futex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Reuse local variable in vfs_link().
+When the plist was added to futexes it added overhead to sort based
+on priority for the futex waiters. If there is a miss order the value of
+this, from my perspective, is lost. Since we don't re-order tasks
+when their priority is changed after they sleep then we get a miss ordered
+scenerio, and tasks aren't woken in priority order.
 
-Why not reuse "inode" which is assigned as
+This patch corrects this issue, so the tasks are always woken in priority
+order.
 
-  struct inode *inode = old_dentry->d_inode;
+Signed-off-by: Daniel Walker <dwalker@mvista.com>
 
-in the beginning of vfs_link() ?
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 ---
- fs/namei.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/linux/sched.h |    2 ++
+ kernel/futex.c        |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched.c        |    1 +
+ 3 files changed, 48 insertions(+)
 
---- vfs.orig/fs/namei.c
-+++ vfs/fs/namei.c
-@@ -2554,19 +2554,19 @@ static int vfs_link(struct dentry *old_d
- 		return -EPERM;
- 	if (!dir->i_op || !dir->i_op->link)
- 		return -EPERM;
--	if (S_ISDIR(old_dentry->d_inode->i_mode))
-+	if (S_ISDIR(inode->i_mode))
- 		return -EPERM;
+Index: linux-2.6.25/include/linux/sched.h
+===================================================================
+--- linux-2.6.25.orig/include/linux/sched.h
++++ linux-2.6.25/include/linux/sched.h
+@@ -1664,6 +1664,8 @@ static inline int rt_mutex_getprio(struc
+ # define rt_mutex_adjust_pi(p)		do { } while (0)
+ #endif
  
- 	error = security_inode_link(old_dentry, dir, new_dentry);
- 	if (error)
- 		return error;
- 
--	mutex_lock(&old_dentry->d_inode->i_mutex);
-+	mutex_lock(&inode->i_mutex);
- 	DQUOT_INIT(dir);
- 	error = dir->i_op->link(old_dentry, dir, new_dentry);
--	mutex_unlock(&old_dentry->d_inode->i_mutex);
-+	mutex_unlock(&inode->i_mutex);
- 	if (!error)
--		fsnotify_link(dir, old_dentry->d_inode, new_dentry);
-+		fsnotify_link(dir, inode, new_dentry);
- 	return error;
++extern void futex_adjust_waiters(struct task_struct *p);
++
+ extern void set_user_nice(struct task_struct *p, long nice);
+ extern int task_prio(const struct task_struct *p);
+ extern int task_nice(const struct task_struct *p);
+Index: linux-2.6.25/kernel/futex.c
+===================================================================
+--- linux-2.6.25.orig/kernel/futex.c
++++ linux-2.6.25/kernel/futex.c
+@@ -326,6 +326,42 @@ static int get_futex_value_locked(u32 *d
+ 	return ret ? -EFAULT : 0;
  }
  
++void futex_adjust_waiters(struct task_struct *p)
++{
++	struct futex_hash_bucket *hb;
++	union futex_key key;
++	struct futex_q *q;
++	int prio;
++
++	spin_lock(&p->pi_lock);
++	if (p->blocked_on && p->blocked_on->lock_type == FUTEX_WAITER) {
++		q = p->blocked_on->futex_blocked_on;
++retry:
++		key = q->key;
++
++		hb = hash_futex(&key);
++		spin_lock(&hb->lock);
++
++		/*
++		 * Check if the waiter got requeued to a new page, if so retry.
++		 */
++		if (unlikely(!match_futex(&q->key, &key))) {
++			spin_unlock(&hb->lock);
++			goto retry;
++		}
++
++		if (likely(!plist_node_empty(&q->list))) {
++			plist_del(&q->list, &hb->chain);
++			prio = min(p->normal_prio, MAX_RT_PRIO);
++			plist_node_init(&q->list, prio);
++			plist_add(&q->list, &hb->chain);
++		}
++		spin_unlock(&hb->lock);
++	}
++	spin_unlock(&p->pi_lock);
++}
++
++
+ /*
+  * Fault handling.
+  * if fshared is non NULL, current->mm->mmap_sem is already held
+@@ -1155,6 +1191,8 @@ static int futex_wait(u32 __user *uaddr,
+ 	DECLARE_WAITQUEUE(wait, curr);
+ 	struct futex_hash_bucket *hb;
+ 	struct futex_q q;
++	struct lock_waiter_state blocked_on =
++		{ .lock_type = FUTEX_WAITER, { .futex_blocked_on = &q} };
+ 	u32 uval;
+ 	int ret;
+ 	struct hrtimer_sleeper t;
+@@ -1215,6 +1253,10 @@ static int futex_wait(u32 __user *uaddr,
+ 	if (uval != val)
+ 		goto out_unlock_release_sem;
+ 
++	spin_lock(&current->pi_lock);
++	current->blocked_on = &blocked_on;
++	spin_unlock(&current->pi_lock);
++
+ 	/* Only actually queue if *uaddr contained val.  */
+ 	queue_me(&q, hb);
+ 
+@@ -1272,6 +1314,9 @@ static int futex_wait(u32 __user *uaddr,
+ 	}
+ 	__set_current_state(TASK_RUNNING);
+ 
++	spin_lock(&current->pi_lock);
++	current->blocked_on = NULL;
++	spin_unlock(&current->pi_lock);
+ 	/*
+ 	 * NOTE: we don't remove ourselves from the waitqueue because
+ 	 * we are the only user of it.
+Index: linux-2.6.25/kernel/sched.c
+===================================================================
+--- linux-2.6.25.orig/kernel/sched.c
++++ linux-2.6.25/kernel/sched.c
+@@ -5209,6 +5209,7 @@ recheck:
+ 	spin_unlock_irqrestore(&p->pi_lock, flags);
+ 
+ 	rt_mutex_adjust_pi(p);
++	futex_adjust_waiters(p);
+ 
+ 	return 0;
+ }
+
+-- 
