@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933211AbYEVBqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764595AbYEVBz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933211AbYEVBqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 21:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755733AbYEVBqh
+	id S1764595AbYEVBz6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 21:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbYEVBzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 21:46:37 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:52119 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755268AbYEVBqh (ORCPT
+	Wed, 21 May 2008 21:55:47 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:15610 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755733AbYEVBzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 21:46:37 -0400
-Message-ID: <4834CE97.9080708@zytor.com>
-Date: Wed, 21 May 2008 18:38:31 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 21 May 2008 21:55:46 -0400
+Message-ID: <4834D292.5020907@chelsio.com>
+Date: Wed, 21 May 2008 18:55:30 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, drepper@redhat.com, Hongjiu.lu@intel.com,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
-       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <20080513011030.GA31448@linux-os.sc.intel.com>	<18477.35703.679574.760417@harpo.it.uu.se>	<20080518013416.GB30034@linux-os.sc.intel.com>	<18481.37905.297556.288317@harpo.it.uu.se>	<20080520015723.GD30034@linux-os.sc.intel.com>	<4832A173.6020203@firstfloor.org>	<18482.53246.642835.894623@harpo.it.uu.se>	<4832E705.2010900@zytor.com>	<18482.60491.764019.292031@harpo.it.uu.se>	<20080520175325.GE30034@linux-os.sc.intel.com>	<4834BE39.2000904@zytor.com> <20080522005345.B994F26FA24@magilla.localdomain>
-In-Reply-To: <20080522005345.B994F26FA24@magilla.localdomain>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2/3 2.6.27] cxgb3 - Add page support to jumbo frame Rx
+ queue
+References: <20080521015737.6218.32204.stgit@speedy5> <20080521172024.a1044aea.akpm@linux-foundation.org>
+In-Reply-To: <20080521172024.a1044aea.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 May 2008 01:54:59.0984 (UTC) FILETIME=[D7D54100:01C8BBAE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
->> The biggest potential problem with this that I see is that relying on 
->> CPUID can mess with certain virtualization solutions.  Another option to 
->> accomplish the same thing would be to have a system call (preferrably a 
->> prctl, since it is at least in theory personality-dependent) to query 
->> what information is included in the fpstate data - since it will always 
->> be the same for any particular kernel.
-> 
-> It's easy and cheap to add an indicator to the vDSO for this.
+Andrew Morton wrote:
+> On Tue, 20 May 2008 18:57:37 -0700
+> Divy Le Ray <divy@chelsio.com> wrote:
+>
+>   
+>> From: Divy Le Ray <divy@chelsio.com>
+>>
+>> Add page support to Jumbo frame Rx queues.
+>>
+>> ...
+>>
+>> @@ -460,7 +464,8 @@ nomem:				q->alloc_failed++;
+>>  			if (q->use_pages) {
+>>  				if (q->pg_chunk.page) {
+>>  					put_page(q->pg_chunk.page);
+>> -					__free_page(q->pg_chunk.page);
+>> +					__free_pages(q->pg_chunk.page,
+>> +						     q->order);
+>>  					q->pg_chunk.page =
+>>  						sd->pg_chunk.page = NULL;
+>>  				}
+>>     
+>
+> This hunk doesn't apply to 2.6.26-rc3, afacit.  The code it's patching
+> just isn't there.  But I think I fixed it up OK.
+>   
 
-Yes, but I suspect for legacy apps running without vDSO might matter.
+My bad.
+I modified the first patch just before submission - namely to avoid 
+freeing the Rx page if the DMA mapping failed.
+I managed to submit without locally pushing the follwing patches first. 
+Sorry about that.
+I'm resubmitting the series.
 
-	-hpa
+Cheers,
+Divy
+
