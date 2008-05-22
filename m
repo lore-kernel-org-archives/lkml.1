@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936618AbYEVKXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937040AbYEVKX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936618AbYEVKXB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 06:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936725AbYEVKWU
+	id S937040AbYEVKX3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 06:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936780AbYEVKWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 06:22:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59326 "EHLO mail.dvmed.net"
+	Thu, 22 May 2008 06:22:32 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59353 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936646AbYEVKWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 06:22:18 -0400
-Message-ID: <48354958.2060905@garzik.org>
-Date: Thu, 22 May 2008 06:22:16 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	id S934948AbYEVKW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 06:22:27 -0400
+Message-ID: <4835495E.8020506@pobox.com>
+Date: Thu, 22 May 2008 06:22:22 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Bryan Wu <cooloney@kernel.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Huang Weiyi <weiyi.huang@gmail.com>
-Subject: Re: [PATCH 1/1] Blackfin EMAC Driver: Removed duplicated include
- <linux/ethtool.h> in drivers/net/bfin_mac.c.
-References: <1210565644-4272-1-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1210565644-4272-1-git-send-email-cooloney@kernel.org>
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: Julia Lawall <julia@diku.dk>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] au1000_eth: remove useless check
+References: <Pine.LNX.4.64.0805121537320.3694@ask.diku.dk> <20080512161734.GA22190@electric-eye.fr.zoreil.com> <Pine.LNX.4.64.0805121852510.16384@ask.diku.dk> <20080512164421.GB22190@electric-eye.fr.zoreil.com>
+In-Reply-To: <20080512164421.GB22190@electric-eye.fr.zoreil.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -30,26 +29,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Wu wrote:
-> From: Huang Weiyi <weiyi.huang@gmail.com>
+Francois Romieu wrote:
+> The lifespan of the device covers the request_irq .. free_irq interval.
 > 
-> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  drivers/net/bfin_mac.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+> The cast of a void * pointer is not needed either.
 > 
-> diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
-> index 89c0018..4144343 100644
-> --- a/drivers/net/bfin_mac.c
-> +++ b/drivers/net/bfin_mac.c
-> @@ -22,7 +22,6 @@
->  #include <linux/crc32.h>
->  #include <linux/device.h>
->  #include <linux/spinlock.h>
-> -#include <linux/ethtool.h>
->  #include <linux/mii.h>
->  #include <linux/phy.h>
+> Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+> 
+> diff --git a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
+> index 3634b5f..7023d77 100644
+> --- a/drivers/net/au1000_eth.c
+> +++ b/drivers/net/au1000_eth.c
+> @@ -1239,12 +1239,7 @@ static int au1000_rx(struct net_device *dev)
+>   */
+>  static irqreturn_t au1000_interrupt(int irq, void *dev_id)
+>  {
+> -	struct net_device *dev = (struct net_device *) dev_id;
+> -
+> -	if (dev == NULL) {
+> -		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
+> -		return IRQ_RETVAL(1);
+> -	}
+> +	struct net_device *dev = dev_id;
+>  
 
 applied
 
