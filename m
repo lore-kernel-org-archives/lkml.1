@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbYEVUTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756951AbYEVUYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbYEVUTc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 16:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757264AbYEVUS4
+	id S1756951AbYEVUYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 16:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYEVUYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 16:18:56 -0400
-Received: from mga11.intel.com ([192.55.52.93]:37248 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756927AbYEVUSv convert rfc822-to-8bit (ORCPT
+	Thu, 22 May 2008 16:24:41 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37071 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbYEVUYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 16:18:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,526,1204531200"; 
-   d="scan'208";a="331347865"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 22 May 2008 16:24:40 -0400
+Message-ID: <4835D64A.5070703@zytor.com>
+Date: Thu, 22 May 2008 13:23:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: fair group scheduler not so fair?
-Date: Thu, 22 May 2008 13:18:33 -0700
-Message-ID: <5FD5754DDBA0B1499B5A0B4BB54194850357ED61@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <1211486868.6463.134.camel@lappy.programming.kicks-ass.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: fair group scheduler not so fair?
-thread-index: Aci8SC27kjmthjtiTTiBAmRXsgeE8wAAFbQQ
-References: <4834B75A.40900@nortel.com> <1211439417.29104.7.camel@twins> <4835D14B.20904@nortel.com> <1211486868.6463.134.camel@lappy.programming.kicks-ass.net>
-From: "Li, Tong N" <tong.n.li@intel.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Chris Friesen" <cfriesen@nortel.com>
-Cc: <linux-kernel@vger.kernel.org>, <vatsa@linux.vnet.ibm.com>,
-       <mingo@elte.hu>, <pj@sgi.com>
-X-OriginalArrivalTime: 22 May 2008 20:18:50.0416 (UTC) FILETIME=[0C3F2B00:01C8BC49]
+To: Dave Jones <davej@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [X86] Add recent Centaur CPUs to PAT whitelist
+References: <200805200409.m4K49V3G024332@gelk.kernelslacker.org> <86802c440805192249y77e78918u8392f5a43331365@mail.gmail.com> <20080520131943.GA4843@redhat.com> <4834B6AC.9090503@zytor.com> <20080522140753.GB20613@redhat.com> <4835A3EC.1030307@zytor.com> <20080522170223.GA32314@redhat.com>
+In-Reply-To: <20080522170223.GA32314@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter,
+Dave Jones wrote:
+> 
+> Like so?
+> 
+> Unconditionally enable PAT support on Centaur and Transmeta CPUs.
+> All known models that advertise PAT have no known errata.
+> 
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
 
-I didn't look at your patches, but I thought you were flattening group
-weights down to task-level so that the scheduler only looks at per-task
-weights. That'd make group fairness as good as task fairness gets. Is
-this still the case?
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-  tong
+Eventually the whitelist should decay into a blacklist.
 
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
->owner@vger.kernel.org] On Behalf Of Peter Zijlstra
->Sent: Thursday, May 22, 2008 1:08 PM
->To: Chris Friesen
->Cc: linux-kernel@vger.kernel.org; vatsa@linux.vnet.ibm.com;
-mingo@elte.hu;
->pj@sgi.com
->Subject: Re: fair group scheduler not so fair?
->
->On Thu, 2008-05-22 at 14:02 -0600, Chris Friesen wrote:
->
->> I haven't really dug into the scheduler yet (although that's next),
-but
->> based on these results it doesn't really look like the load balancer
-is
->> properly group-aware.
->
->I'm trying, but its turning out to be rather more difficult than
->expected. Any help here would be much appreciated.
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+	-hpa
