@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761769AbYEVHHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762916AbYEVHKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761769AbYEVHHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 03:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYEVHHW
+	id S1762916AbYEVHKY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 03:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbYEVHKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 03:07:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:33038 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbYEVHHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 03:07:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hLUOgOkvF/ELZUjoJI38IDBEQVB5l9IGcHxhTtb1MVr1PcZhYpIWPc0JXY+jt0+e/6WbIi9MH6Vuo8WcDWaUUjrwMdUvMibhkkZlu00j9RC4Iu5UWJKLlzmtKRJ+9Ot96aL59m0Zhs9X26T4jXwP4tAcrJkhPI+STj2/RNlEvL4=
-Message-ID: <863e9df20805220007r36089c93p6f2a787818aa150c@mail.gmail.com>
-Date: Thu, 22 May 2008 12:37:20 +0530
-From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
-To: "Srinivasa D S" <srinivasa@in.ibm.com>,
-       "Jim Keniston" <jkenisto@us.ibm.com>
-Subject: Re: [RFC] [PATCH] To improve kretprobe scalability
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ananth Mavinakayanahalli" <ananth@in.ibm.com>,
-       "Masami Hiramatsu" <mhiramat@redhat.com>,
-       "Srikar Dronamraju" <srikar@linux.vnet.ibm.com>
-In-Reply-To: <200805210632.17655.srinivasa@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 22 May 2008 03:10:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50403 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755569AbYEVHKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 03:10:11 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/pvDdOJKnpCOOlsmkdMzTMYhIUbSCMQ/V7kPFiLl
+	JWaQ10GrALh4d1
+Subject: Re: PostgreSQL pgbench performance regression in 2.6.23+
+From: Mike Galbraith <efault@gmx.de>
+To: Greg Smith <gsmith@gregsmith.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <Pine.GSO.4.64.0805211115390.8451@westnet.com>
+References: <Pine.GSO.4.64.0805211115390.8451@westnet.com>
+Content-Type: text/plain
+Date: Thu, 22 May 2008 09:10:07 +0200
+Message-Id: <1211440207.5733.8.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200805210632.17655.srinivasa@in.ibm.com>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/21/08, Srinivasa D S <srinivasa@in.ibm.com> wrote:
->  Solution:
->    1) Instead of having one global lock to protect kretprobe instances
->  present in kretprobe object and kretprobe hash table. We will have two locks,
->  one lock for protecting kretprobe hash table and another lock for kretporbe
->  object.
 
-Is it possible to get rid of the kretprobe hash table itself and lose
-the kretprobe_lock? It seems like it is just doing a pid-to-instance
-mapping. These return instances could be queued in the "current"
-task_struct in a LIFO manner. Mutation to this per-task list can be
-done with local irqs off...
+On Wed, 2008-05-21 at 13:34 -0400, Greg Smith wrote:
+> PostgreSQL ships with a simple database benchmarking tool named pgbench, 
+> in what's labeled the contrib section (in many distributions it's a 
+> separate package from the main server/client ones).  I see there's been 
+> some work done already improving how the PostgreSQL server works under the 
+> new scheduler (the "Poor PostgreSQL scaling on Linux 2.6.25-rc5" thread). 
+> I wanted to provide you a different test case using pgbench that has taken 
+> a sharp dive starting with 2.6.23, and the server improvement changes in 
+> 2.6.25 actually made this problem worse.
+> 
+> I think it will be easy for someone else to replicate my results and I'll 
+> go over the exact procedure below.
 
---
-Regards,
-Abhishek Sagar
+Yup, I can reproduce.  Running the test with 2.6.25.4, everything is
+waking/running on one CPU, leaving my box 75% idle.  Not good.
+
+	-Mike
+
