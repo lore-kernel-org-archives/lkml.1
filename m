@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbYEVAaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934249AbYEVAc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933298AbYEVAaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 20:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbYEVAah
+	id S934249AbYEVAc6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 20:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762416AbYEVAct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 20:30:37 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:37035 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755926AbYEVAah (ORCPT
+	Wed, 21 May 2008 20:32:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57453 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757539AbYEVAcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 20:30:37 -0400
-Date: Thu, 22 May 2008 08:30:31 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: martin@strongswan.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.26-rc3] xfrm: Installing NULL encryption IPSec SAs fails
-Message-ID: <20080522003031.GE27138@gondor.apana.org.au>
-References: <1211388907.26331.10.camel@martin> <20080521.133756.240329422.davem@davemloft.net> <20080521235922.GB27138@gondor.apana.org.au> <20080521.172341.95895019.davem@davemloft.net>
+	Wed, 21 May 2008 20:32:48 -0400
+Message-ID: <4834BE39.2000904@zytor.com>
+Date: Wed, 21 May 2008 17:28:41 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080521.172341.95895019.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <20080513011030.GA31448@linux-os.sc.intel.com> <18477.35703.679574.760417@harpo.it.uu.se> <20080518013416.GB30034@linux-os.sc.intel.com> <18481.37905.297556.288317@harpo.it.uu.se> <20080520015723.GD30034@linux-os.sc.intel.com> <4832A173.6020203@firstfloor.org> <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com>
+In-Reply-To: <20080520175325.GE30034@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 05:23:41PM -0700, David Miller wrote:
->
-> Signed-off-by: David S. Miller <davem@davemloft.net>
+Suresh Siddha wrote:
+>>
+>> An ugly workaround could be to start clearing one of these fields,
+>> and say that the data there is only valid for kernels >= 2.6.26.
+>> (I said it was ugly...)
+>>
+>> Or we go back to stashing a flag in uc_flags (which is kosher),
+>> and try to figure out how to mark non-rt sigframes.
+> 
+> This issue of not-zeroing, is present in only 64bit kernels and for 64bit apps,
+> right?
+> 
+> 64bit app signal handling uses only rt_frame, so we can add an uc_flag for
+> them and for 32bit apps, kernel was always zero'ing the reserved bits
+> at the end of _fpstate.
+> 
+> In short, for non-rt frames, they can check the reserved bits at the end
+> of fpstate frame and for rt-frames (perhaps even for 32bit rt frame handling)
+> apps can check for uc_flag aswell, for extended state presence. Is this
+> good enough?
+> 
 
-Looks good to me!
+Okay, trying to close on this :)
 
-Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
+I would suggest using the uc_flag for the rt frames, and simply rely on 
+the OSXSAVE flag for non-rt signal frames.  It a rather sucky approach 
+(as previously discussed), but since any sane user of these fields (as 
+opposed to just relying on the kernel to save/restore) should use the 
+SIGINFO frames, I don't see a problem *as long as it's possible to get 
+the information* -- any solution which demands performance should just 
+turn on SIGINFO and be happy.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+The biggest potential problem with this that I see is that relying on 
+CPUID can mess with certain virtualization solutions.  Another option to 
+accomplish the same thing would be to have a system call (preferrably a 
+prctl, since it is at least in theory personality-dependent) to query 
+what information is included in the fpstate data - since it will always 
+be the same for any particular kernel.
+
+Thoughts?
+
+	-hpa
+
