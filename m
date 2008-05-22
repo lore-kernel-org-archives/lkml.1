@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765034AbYEVWvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762479AbYEVWwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765034AbYEVWvn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbYEVWvd
+	id S1762479AbYEVWwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYEVWwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:51:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42698 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755873AbYEVWvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:51:31 -0400
-Date: Fri, 23 May 2008 00:59:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Glauber Costa <gcosta@redhat.com>,
-       Miquel van Smoorenburg <miquels@cistron.nl>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       andi-suse@firstfloor.org
-Subject: Re: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
-Message-ID: <20080522225949.GE31727@one.firstfloor.org>
-References: <20080521113028.GA24632@xs4all.net> <48341A57.1030505@redhat.com> <20080522084736.GC31727@one.firstfloor.org> <alpine.LFD.1.10.0805222157300.3295@apollo.tec.linutronix.de>
+	Thu, 22 May 2008 18:52:11 -0400
+Received: from iron2.pdx.net ([69.64.224.71]:60199 "EHLO iron2.pdx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754143AbYEVWwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 18:52:10 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 May 2008 18:52:10 EDT
+Subject: Re: [PATCH] firewire: fix some broken hardware NMI interrupt
+From: Sean Bruno <sean.bruno@dsl-only.net>
+To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
+Cc: stefanr@s5r6.in-berlin.de, krh@redhat.com,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <411458028.04591@ustc.edu.cn>
+References: <411458028.04591@ustc.edu.cn>
+Content-Type: text/plain
+Date: Thu, 22 May 2008 15:45:24 -0700
+Message-Id: <1211496325.1374.99.camel@home-desk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805222157300.3295@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 09:58:11PM +0200, Thomas Gleixner wrote:
-> On Thu, 22 May 2008, Andi Kleen wrote:
-> > On Wed, May 21, 2008 at 09:49:27AM -0300, Glauber Costa wrote:
-> > > probably andi has a better idea on why it was added, since it used to 
-> > > live in his tree?
-> > 
-> > d_a_c() tries a couple of zones, and running the oom killer for each
-> > is inconvenient. Especially for the 16MB DMA zone which is unlikely
-> > to be cleared by the OOM killer anyways because normal user applications
-> > don't put pages in there. There was a real report with some problems
-> > in this area.
+
+On Thu, 2008-05-22 at 20:07 +0800, JiSheng Zhang wrote:
+> Hi,
 > 
-> Can you give some pointers please ?
+> 
+> >From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> >Reply-To: 
+> >To: jszhang3@mail.ustc.edu.cn
+> >Subject: Re: [PATCH] firewire: fix some broken hardware NMI interrupt
+> >Date:Wed, 21 May 2008 17:28:25 +0200
+> >
+> >jszhang3@mail.ustc.edu.cn wrote:
+> > > Some broken pci-1394 card does not clear completely on-chip memory during
+> boot, it
+> > > may cause pci parity error, then NMI interrupt.
+> > 
+> > Which card?
+> hmm, one card using VIA chip.
+> > 
+> > Is the problem still present in linux-2.6.26-rc3?
+> It seems that the problem disappeared. Thanks
+> > 
+> > Or if you don't want to test 2.6.26-rc yet, please test 2.6.25.4 with
+> > the firewire patchkit from
+> > http://me.in-berlin.de/~s5r6/linux1394/updates/.  There were changes to
+> > fw-ohci which influence chip initialization.
+> > -- 
+> > Stefan Richter
+> > -=====-==--- -=-= =-=-=
+> > http://arcgraph.de/sr/
+> >
+> 
+> 
+I've got a VIA board causing the same error reported here.
 
-To the bug report? Memory is fuzzy, but I think it was some SUSE bugzilla
-report, might have been for SLES.
+If someone at Redhat has the time to roll a test kernel for this issue I
+can test it in about 15 minutes.
 
-Anyways the reasoning is still valid. Longer term the mask allocator
-would be the right fix, shorter term a new GFP flag as proposed 
-sounds reasonable.
+Right now I'm running RHEL 5, 2.6.18-53.1.21.el5
 
-The trick is just that you need different __GFP_ flags for the different
-allocations. e.g. the first the "higher zone" quick try should
-continue to use __GFP_NORETRY. And the 16MB one should too. It would
-only make sense for the main request.
+Se
 
-In the mask allocator patchkit kernel it should be also ok already.
-
--Andi
