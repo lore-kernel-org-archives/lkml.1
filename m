@@ -1,60 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935364AbYEVIv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934350AbYEVIvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935364AbYEVIv3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 04:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935325AbYEVIuu
+	id S934350AbYEVIvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935630AbYEVIvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 04:50:50 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:36653 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934287AbYEVIus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 04:50:48 -0400
-MIME-Version: 1.0
+	Thu, 22 May 2008 04:51:18 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:52278 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935614AbYEVIvM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 04:51:12 -0400
+To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 1/3] Implement generic freeze feature
+Message-Id: <20080522175020t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Thu, 22 May 2008 17:50:20 +0900
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18485.13215.945.950687@harpo.it.uu.se>
-Date: Thu, 22 May 2008 10:49:34 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Roland McGrath <roland@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, drepper@redhat.com, Hongjiu.lu@intel.com,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
-       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-In-Reply-To: <20080522005345.B994F26FA24@magilla.localdomain>
-References: <20080513011030.GA31448@linux-os.sc.intel.com>
-	<18477.35703.679574.760417@harpo.it.uu.se>
-	<20080518013416.GB30034@linux-os.sc.intel.com>
-	<18481.37905.297556.288317@harpo.it.uu.se>
-	<20080520015723.GD30034@linux-os.sc.intel.com>
-	<4832A173.6020203@firstfloor.org>
-	<18482.53246.642835.894623@harpo.it.uu.se>
-	<4832E705.2010900@zytor.com>
-	<18482.60491.764019.292031@harpo.it.uu.se>
-	<20080520175325.GE30034@linux-os.sc.intel.com>
-	<4834BE39.2000904@zytor.com>
-	<20080522005345.B994F26FA24@magilla.localdomain>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath writes:
- > > The biggest potential problem with this that I see is that relying on 
- > > CPUID can mess with certain virtualization solutions.  Another option to 
- > > accomplish the same thing would be to have a system call (preferrably a 
- > > prctl, since it is at least in theory personality-dependent) to query 
- > > what information is included in the fpstate data - since it will always 
- > > be the same for any particular kernel.
- > 
- > It's easy and cheap to add an indicator to the vDSO for this.
+I have modified to set the suitable error number (EOPNOTSUPP)
+in case the filesystem doesn't support the freeze feature.
+This was pointed out by Andreas Dilger.
 
-For our user-space virtualisation code a plain system call,
-like prctl(), would be strongly preferable. Right now I
-can't say whether a vDSO solution would work at all for us,
-but a system call solution would be no problem at all.
+The ioctls for the generic freeze feature are below.
+o Freeze the filesystem
+  int ioctl(int fd, int FIFREEZE, arg)
+    fd: The file descriptor of the mountpoint
+    FIFREEZE: request code for the freeze
+    arg: Ignored
+    Return value: 0 if the operation succeeds. Otherwise, -1
 
-/Mikael
+o Unfreeze the filesystem
+  int ioctl(int fd, int FITHAW, arg)
+    fd: The file descriptor of the mountpoint
+    FITHAW: request code for unfreeze
+    arg: Ignored
+    Return value: 0 if the operation succeeds. Otherwise, -1
+
+Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
+Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
+---
+ fs/buffer.c                 |   30 ++++++++++++++++++++++++
+ fs/ioctl.c                  |   53 ++++++++++++++++++++++++++++++++++++++++++++
+ fs/super.c                  |   32 +++++++++++++++++++++++++-
+ include/linux/buffer_head.h |    2 -
+ include/linux/fs.h          |   14 +++++++++++
+ 5 files changed, 128 insertions(+), 3 deletions(-)
+
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc3.org/fs/buffer.c linux-2.6.26-rc3-freeze/fs/buffer.c
+--- linux-2.6.26-rc3.org/fs/buffer.c	2008-05-19 06:36:41.000000000 +0900
++++ linux-2.6.26-rc3-freeze/fs/buffer.c	2008-05-19 21:03:29.000000000 +0900
+@@ -201,6 +201,21 @@ struct super_block *freeze_bdev(struct b
+ {
+ 	struct super_block *sb;
+ 
++	if (test_and_set_bit(BD_FREEZE_OP, &bdev->bd_state))
++		return ERR_PTR(-EBUSY);
++
++	sb = get_super_without_lock(bdev);
++
++	/* If super_block has been already frozen, return. */
++	if (sb && sb->s_frozen != SB_UNFROZEN) {
++		put_super(sb);
++		clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++		return sb;
++	}
++
++	if (sb)
++		put_super(sb);
++
+ 	down(&bdev->bd_mount_sem);
+ 	sb = get_super(bdev);
+ 	if (sb && !(sb->s_flags & MS_RDONLY)) {
+@@ -219,6 +234,8 @@ struct super_block *freeze_bdev(struct b
+ 	}
+ 
+ 	sync_blockdev(bdev);
++	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++
+ 	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
+ }
+ EXPORT_SYMBOL(freeze_bdev);
+@@ -230,8 +247,17 @@ EXPORT_SYMBOL(freeze_bdev);
+  *
+  * Unlocks the filesystem and marks it writeable again after freeze_bdev().
+  */
+-void thaw_bdev(struct block_device *bdev, struct super_block *sb)
++int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+ {
++
++	if (test_and_set_bit(BD_FREEZE_OP, &bdev->bd_state))
++		return -EBUSY;
++
++	if (sb && sb->s_frozen == SB_UNFROZEN) {
++		clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++		return 0;
++	}
++
+ 	if (sb) {
+ 		BUG_ON(sb->s_bdev != bdev);
+ 
+@@ -244,6 +270,8 @@ void thaw_bdev(struct block_device *bdev
+ 	}
+ 
+ 	up(&bdev->bd_mount_sem);
++	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++	return 0;
+ }
+ EXPORT_SYMBOL(thaw_bdev);
+ 
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc3.org/fs/ioctl.c linux-2.6.26-rc3-freeze/fs/ioctl.c
+--- linux-2.6.26-rc3.org/fs/ioctl.c	2008-05-19 06:36:41.000000000 +0900
++++ linux-2.6.26-rc3-freeze/fs/ioctl.c	2008-05-21 11:43:39.000000000 +0900
+@@ -13,6 +13,7 @@
+ #include <linux/security.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
++#include <linux/buffer_head.h>
+ 
+ #include <asm/ioctls.h>
+ 
+@@ -141,6 +142,49 @@ static int ioctl_fioasync(unsigned int f
+ }
+ 
+ /*
++ * ioctl_freeze - Freeze the filesystem.
++ *
++ * @filp:	target file
++ *
++ * Call freeze_bdev() to freeze the filesystem.
++ */
++static int ioctl_freeze(struct file *filp)
++{
++	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/* If filesystem doesn't support freeze feature, return. */
++	if (sb->s_op->write_super_lockfs == NULL)
++		return -EOPNOTSUPP;
++
++	/* Freeze */
++	sb = freeze_bdev(sb->s_bdev);
++	if (IS_ERR(sb))
++		return PTR_ERR(sb);
++	return 0;
++}
++
++/*
++ * ioctl_thaw - Thaw the filesystem.
++ *
++ * @filp:	target file
++ *
++ * Call thaw_bdev() to thaw the filesystem.
++ */
++static int ioctl_thaw(struct file *filp)
++{
++	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/* Thaw */
++	return thaw_bdev(sb->s_bdev, sb);
++}
++
++/*
+  * When you add any new common ioctls to the switches above and below
+  * please update compat_sys_ioctl() too.
+  *
+@@ -181,6 +225,15 @@ int do_vfs_ioctl(struct file *filp, unsi
+ 		} else
+ 			error = -ENOTTY;
+ 		break;
++
++	case FIFREEZE:
++		error = ioctl_freeze(filp);
++		break;
++
++	case FITHAW:
++		error = ioctl_thaw(filp);
++		break;
++
+ 	default:
+ 		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
+ 			error = file_ioctl(filp, cmd, arg);
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc3.org/fs/super.c linux-2.6.26-rc3-freeze/fs/super.c
+--- linux-2.6.26-rc3.org/fs/super.c	2008-05-19 06:36:41.000000000 +0900
++++ linux-2.6.26-rc3-freeze/fs/super.c	2008-05-19 21:03:29.000000000 +0900
+@@ -156,7 +156,7 @@ int __put_super_and_need_restart(struct 
+  *	Drops a temporary reference, frees superblock if there's no
+  *	references left.
+  */
+-static void put_super(struct super_block *sb)
++void put_super(struct super_block *sb)
+ {
+ 	spin_lock(&sb_lock);
+ 	__put_super(sb);
+@@ -509,6 +509,36 @@ rescan:
+ 
+ EXPORT_SYMBOL(get_super);
+  
++/*
++ * get_super_without_lock - Get super_block from block_device without lock.
++ * @bdev:	block device struct
++ *
++ * Scan the superblock list and finds the superblock of the file system
++ * mounted on the block device given. This doesn't lock anyone.
++ * %NULL is returned if no match is found.
++ */
++struct super_block *get_super_without_lock(struct block_device *bdev)
++{
++	struct super_block *sb;
++
++	if (!bdev)
++		return NULL;
++
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &super_blocks, s_list) {
++		if (sb->s_bdev == bdev) {
++			if (sb->s_root) {
++				sb->s_count++;
++				spin_unlock(&sb_lock);
++				return sb;
++			}
++		}
++	}
++	spin_unlock(&sb_lock);
++	return NULL;
++}
++EXPORT_SYMBOL(get_super_without_lock);
++
+ struct super_block * user_get_super(dev_t dev)
+ {
+ 	struct super_block *sb;
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc3.org/include/linux/buffer_head.h linux-2.6.26-rc3-fre
+eze/include/linux/buffer_head.h
+--- linux-2.6.26-rc3.org/include/linux/buffer_head.h	2008-05-19 06:36:41.000000000 +0900
++++ linux-2.6.26-rc3-freeze/include/linux/buffer_head.h	2008-05-19 21:03:29.000000000 +0900
+@@ -171,7 +171,7 @@ void __wait_on_buffer(struct buffer_head
+ wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
+ int fsync_bdev(struct block_device *);
+ struct super_block *freeze_bdev(struct block_device *);
+-void thaw_bdev(struct block_device *, struct super_block *);
++int thaw_bdev(struct block_device *, struct super_block *);
+ int fsync_super(struct super_block *);
+ int fsync_no_super(struct block_device *);
+ struct buffer_head *__find_get_block(struct block_device *bdev, sector_t block,
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc3.org/include/linux/fs.h linux-2.6.26-rc3-freeze/inclu
+de/linux/fs.h
+--- linux-2.6.26-rc3.org/include/linux/fs.h	2008-05-19 06:36:41.000000000 +0900
++++ linux-2.6.26-rc3-freeze/include/linux/fs.h	2008-05-19 21:03:29.000000000 +0900
+@@ -223,6 +223,8 @@ extern int dir_notify_enable;
+ #define BMAP_IOCTL 1		/* obsolete - kept for compatibility */
+ #define FIBMAP	   _IO(0x00,1)	/* bmap access */
+ #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
++#define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
++#define FITHAW		_IOWR('X', 120, int)	/* Thaw */
+ 
+ #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
+ #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
+@@ -494,6 +496,13 @@ int pagecache_write_end(struct file *, s
+ 				loff_t pos, unsigned len, unsigned copied,
+ 				struct page *page, void *fsdata);
+ 
++/*
++ * Bits in block_device.bd_state.
++ */
++enum bd_state {
++	BD_FREEZE_OP	/* In freeze operation */
++};
++
+ struct backing_dev_info;
+ struct address_space {
+ 	struct inode		*host;		/* owner: inode, block_device */
+@@ -547,6 +556,9 @@ struct block_device {
+ 	 * care to not mess up bd_private for that case.
+ 	 */
+ 	unsigned long		bd_private;
++
++	/* State of the block device. (Used by freeze feature) */
++	unsigned long		bd_state;
+ };
+ 
+ /*
+@@ -1964,7 +1976,9 @@ extern int do_vfs_ioctl(struct file *fil
+ extern void get_filesystem(struct file_system_type *fs);
+ extern void put_filesystem(struct file_system_type *fs);
+ extern struct file_system_type *get_fs_type(const char *name);
++extern void put_super(struct super_block *sb);
+ extern struct super_block *get_super(struct block_device *);
++extern struct super_block *get_super_without_lock(struct block_device *);
+ extern struct super_block *user_get_super(dev_t);
+ extern void drop_super(struct super_block *sb);
+ 
