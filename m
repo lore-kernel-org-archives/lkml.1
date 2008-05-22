@@ -1,96 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbYEVAMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933738AbYEVAOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933027AbYEVAMK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 20:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbYEVALz
+	id S933738AbYEVAOa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 20:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757710AbYEVAOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 20:11:55 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44487 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757717AbYEVALy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 20:11:54 -0400
-Date: Thu, 22 May 2008 10:11:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netfilter-devel@vger.kernel.org, apw@shadowen.org,
-       Franck Bui-Huu <fbuihuu@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] linux-next: Tree for May 21 - build failure with
- netfilter on __nf_ct_helper_find()
-Message-Id: <20080522101148.fbabee96.sfr@canb.auug.org.au>
-In-Reply-To: <4834239D.90500@linux.vnet.ibm.com>
-References: <20080521155936.466bbe86.sfr@canb.auug.org.au>
-	<20080521113230.GA10830@linux.vnet.ibm.com>
-	<20080521225214.507eb400.sfr@canb.auug.org.au>
-	<4834239D.90500@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 21 May 2008 20:14:21 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44399 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756729AbYEVAOU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 20:14:20 -0400
+Date: Thu, 22 May 2008 01:14:12 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       rdunlap@xenotime.net, tytso@mit.edu, hch@infradead.org,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080522001412.GS28946@ZenIV.linux.org.uk>
+References: <9a8748490805211306l50b8411ax4462be18c94ca065@mail.gmail.com> <32279.1211401651@vena.lwn.net> <9a8748490805211337q1e7ceab7i80e4820c46f8171b@mail.gmail.com> <9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, May 22, 2008 at 01:46:28AM +0200, Jesper Juhl wrote:
 
-On Wed, 21 May 2008 18:59:01 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->
-> Stephen Rothwell wrote:
-> > 
-> > Thanks for the report and patch.  This looks like it is probably broken in
-> > Linus' kernel.  What config did you use to get the error?
+0.  Use your common sense.  No hard rules will ever replace that.
+
+> - Sign up with Coverity (http://www.coverity.com/) to get access to
+> the results of their regular runs of Coverity Prevent against the
+> kernel source. Their static analysis of the kernel source finds many
+> bugs that need fixing. There is lots of good work there that needs
+> doing.
 > 
-> Please find the .config file used to reproduce this build failure attached.
+> Naturally there's also other work that can be done, like writing a
+> driver for some, currently unsupported, hardware etc, but its probably
+> best to get your feet wet with some bug fixing first.
 
-Actually this is caused by the splitting out of the rcu stuff from list.h
-that is in linux-next, sorry.
+If you are familiar with C, reading the kernel source (e.g. starting
+at system call and going down from there) can be very useful; you will
+need such skills anyway and you might actually find real bugs.
 
-Your patch looks good to me (reproduced below for new cc's).
+Asking the questions along the lines "code seems to assume that <this> never
+happens; why can't it happen and what happens if it does?" is generally
+welcome, assuming that question is more or less coherent.  "I do not
+understand this code at all" will be less useful and "<this> is <expletives>
+BROKEN!!!  I've found a major hole!!!" would better be right - which is not
+impossible.  Use common sense; if you turn out to be wrong (which is also
+quite possible), the size of crow you'll have to eat will be directly
+proportional to the vehemence of the original posting.  That applies to all
+of us - pretty much everyone had been there and probably will be there again
+and again.  On the other hand, do not be surprised if the answer will be
+"It's because...  Umm...  Oh, !@#!@#, looks like you've spotted a nasty hole".
+It also happens and assuming that code is correct just because it is in the
+tree is a bad mistake.  Newbies can and do find serious bugs and doing that
+can earn one a lot of good will.
 
-Ingo, this should probably go into the rcu tree.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> Try to stay away from doing pointless work, like just fixing up the
+> coding style in a file, reformatting comments etc - it's not worth the
+> effort and your patch is likely to be rejected. Fixing up incorrect
+> comments to be correct, fixing up references to removed or renamed
+> functions/arguments etc is, however, useful and worth doing.
 
-Date: Wed, 21 May 2008 17:02:30 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: [PATCH] linux-next: Tree for May 21 - build failure with netfilter on __nf_ct_helper_find()
-
-The next-20080521 kernel build fails, on x86_64 machine 
-
-CC net/netfilter/nf_conntrack_helper.o
-net/netfilter/nf_conntrack_helper.c: In function ‘__nf_ct_helper_find’:
-net/netfilter/nf_conntrack_helper.c:58: error: implicit declaration of function ‘hlist_for_each_entry_rcu’
-net/netfilter/nf_conntrack_helper.c:58: error: ‘hnode’ undeclared (first use in this function)
-net/netfilter/nf_conntrack_helper.c:58: error: (Each undeclared identifier is reported only once
-net/netfilter/nf_conntrack_helper.c:58: error: for each function it appears in.)
-net/netfilter/nf_conntrack_helper.c:58: error: expected ‘;’ before ‘{’ token
-net/netfilter/nf_conntrack_helper.c:50: warning: unused variable ‘mask’
-net/netfilter/nf_conntrack_helper.c: In function ‘__nf_conntrack_helper_find_byname’:
-net/netfilter/nf_conntrack_helper.c:74: error: ‘hnode’ undeclared (first use in this function)
-net/netfilter/nf_conntrack_helper.c:74: error: expected ‘;’ before ‘{’ token
-net/netfilter/nf_conntrack_helper.c: In function ‘nf_conntrack_helper_register’:
-net/netfilter/nf_conntrack_helper.c:117: error: implicit declaration of function ‘hlist_add_head_rcu’
-net/netfilter/nf_conntrack_helper.c: In function ‘nf_conntrack_helper_unregister’:
-net/netfilter/nf_conntrack_helper.c:133: error: implicit declaration of function ‘hlist_del_rcu’
-make[2]: *** [net/netfilter/nf_conntrack_helper.o] Error 1
-make[1]: *** [net/netfilter] Error 2
-make: *** [net] Error 2
-
-This build error is because of the missing include file.I have tested
-the patch for the build failure only.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
---- linux-2.6.26-rc3/net/netfilter/nf_conntrack_helper.c	2008-05-20 20:24:14.000000000 +0530
-+++ linux-2.6.26-rc3/net/netfilter/~nf_conntrack_helper.c	2008-05-22 00:17:32.000000000 +0530
-@@ -20,6 +20,7 @@
- #include <linux/err.h>
- #include <linux/kernel.h>
- #include <linux/netdevice.h>
-+#include <linux/rculist.h>
- 
- #include <net/netfilter/nf_conntrack.h>
- #include <net/netfilter/nf_conntrack_l3proto.h>
+Note that fixing up coding style in the code you are modifying is fine,
+provided that coding style part does not obscure the real changes you
+are making and the scale of coding style changes is not wildly out of
+proportion.  Again, use the common sense - changing two lines in a function
+is not a reason to reformat every file in directory while you are at it.
