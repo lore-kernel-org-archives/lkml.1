@@ -1,44 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765469AbYEVLlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbYEVLnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765469AbYEVLlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 07:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbYEVLla
+	id S932258AbYEVLnD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 07:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757720AbYEVLmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 07:41:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47035 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757640AbYEVLla (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 07:41:30 -0400
-Date: Thu, 22 May 2008 12:29:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Andre Pietsch" <andre.pietsch@scai.de>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: Limit SATA link speed to 1.5 Gbps
-Message-ID: <20080522122905.49cca18d@core>
-In-Reply-To: <F7D77F204D5F7641AB3864C88E39498F18614E@taube3.scailokal.intern>
-References: <F7D77F204D5F7641AB3864C88E39498F18614E@taube3.scailokal.intern>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 May 2008 07:42:52 -0400
+Received: from eracle.polito.it ([130.192.3.44]:43053 "EHLO polito.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756838AbYEVLmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 07:42:51 -0400
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 May 2008 07:42:51 EDT
+X-ExtScanner: Niversoft's FindAttachments (free)
+Message-ID: <48354E2B.8010003@libero.it>
+Date: Thu, 22 May 2008 12:42:51 +0200
+From: Fabio Tosetto <tosettofabio83@libero.it>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+CC: avorontsov@ru.mvista.com, drzeus-mmc@drzeus.cx,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, galak@kernel.crashing.org,
+       garyj@denx.de, g.liakhovetski@gmx.de
+Subject: SD-MMC over SPI on PSC6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I tested 2.6.25 and the error still occurrs once but then it gave me a "limiting SATA link speed to 1.5 Gbps" in the log.
+Hello, I have an embedded system with an on-board processor powerpc 
+MPC5200B
+and Linux kernel 2.6.22,
+I must turn over to MMC SPI on the PSC6.
 
-The later kernels will drop the SATA speed on repeated errors if they see
-what appears to be a consistent problem that might be cabling/noise.
+The MMC over SPI is connected to MPC5200b, here's how:
 
-> Is it possible to set the SATA link speed somewhere?
+  MPC5200B
+----------------                                        
+                       
+|                                                                 
+|------------------
+         PSC1_2 |--->------------Chip_Select (out)---------|      
+                       
+|                                                                 |
+                       |                        
+                                         |     SD CARD
+         ETH_17 |---<------------IRQ (in)------------------|   MMC over SPI
+                       |                                                
+                 |
+                       
+|                                                                 |
+         PSC6_0 |---<------------SPI_RXD (in)------------|
+                       
+|                                                                 |
+                       
+|                                                                 |
+         PSC6_2 |--->------------SPI_TXD (out)-----------|
+                       |                                                 
+                |
+                       |                                                 
+                |
+         PSC6_3 |--->------------SPI_CLK (out)-----------|
+                       
+|                                                                 
+|------------------
+----------------
 
-Not sure. I've not looked whether that is in the new "force" code. I
-don't think you can in 2.6.24 however, and 2.6.25 will fall back nicely.
+Now on the menuconfig enabling these options:
 
-Other than being annoying during the install it should not cause any
-other problems beyond all the retries.
+$ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- menuconfig
 
+Platform support  --->
+   [*] MPC5200 (L25R) bugfix support
+   [*] Freescale Lite5200 Eval Board
+
+Device Drivers  ---> SPI Support --->
+   [*] SPI support
+  <*> Freescale MPC52xx PSC SPI controller
+
+Now I have applied those patch:
+http://www.mail-archive.com/spi-devel-general@lists.sourceforge.net/msg00150.html
+
+Now on the menuconfig enabling these options:
+
+$ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- menuconfig
+
+Device Drivers  --->  MMC/SD card support --->
+ [*] MMC debugging
+<*> MMC block device driver
+<*> MMC host test driver
+<*> MMC/SD over SPI
+
+Is correct applied those patch and enable those options into menuconfig?
+
+thanks Fabio
