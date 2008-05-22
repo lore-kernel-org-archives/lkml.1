@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937234AbYEVAKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbYEVAMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937234AbYEVAKU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 20:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760918AbYEVAKG
+	id S933027AbYEVAMK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 20:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbYEVALz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 20:10:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35168 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759084AbYEVAKE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 20:10:04 -0400
-Message-ID: <4834B8DB.6030504@zytor.com>
-Date: Wed, 21 May 2008 17:05:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, mingo@elte.hu, tglx@linutronix.de,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       drepper@redhat.com, Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <20080513011030.GA31448@linux-os.sc.intel.com>	<18477.35703.679574.760417@harpo.it.uu.se>	<20080518013416.GB30034@linux-os.sc.intel.com>	<18481.37905.297556.288317@harpo.it.uu.se>	<20080520015723.GD30034@linux-os.sc.intel.com>	<4832A173.6020203@firstfloor.org>	<4832E672.3090702@zytor.com>	<4832E85B.4080303@firstfloor.org> <20080520201044.ED62B26FA1C@magilla.localdomain>
-In-Reply-To: <20080520201044.ED62B26FA1C@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 20:11:55 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44487 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757717AbYEVALy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 20:11:54 -0400
+Date: Thu, 22 May 2008 10:11:48 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, apw@shadowen.org,
+       Franck Bui-Huu <fbuihuu@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] linux-next: Tree for May 21 - build failure with
+ netfilter on __nf_ct_helper_find()
+Message-Id: <20080522101148.fbabee96.sfr@canb.auug.org.au>
+In-Reply-To: <4834239D.90500@linux.vnet.ibm.com>
+References: <20080521155936.466bbe86.sfr@canb.auug.org.au>
+	<20080521113230.GA10830@linux.vnet.ibm.com>
+	<20080521225214.507eb400.sfr@canb.auug.org.au>
+	<4834239D.90500@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
->> I don't think there is one. We never copy fxsave completely out of the
->> kernel. x86-64 does FXSAVE directly in/out user space, but the
->> only leak is what there was before.
+Hi all,
+
+On Wed, 21 May 2008 18:59:01 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>
+> Stephen Rothwell wrote:
+> > 
+> > Thanks for the report and patch.  This looks like it is probably broken in
+> > Linus' kernel.  What config did you use to get the error?
 > 
-> ptrace/user_regset copies out and in the whole fxsave block from the ptrace
-> caller.  (Only the mxcsr word is constrained after copy-in.)
+> Please find the .config file used to reproduce this build failure attached.
 
-I see two problems with that:
+Actually this is caused by the splitting out of the rcu stuff from list.h
+that is in linux-next, sorry.
 
-1. potential information leak out of the kernel if the memory area isn't 
-zeroed before the first FXSAVE - I haven't verified if so is the case. 
-This would be a (potentially very serious) security hole.
+Your patch looks good to me (reproduced below for new cc's).
 
-2. Hidden state in the kernel - this means user space can set 
-nonarchitectural state in the kernel.  There are a few risks with that:
+Ingo, this should probably go into the rcu tree.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-    a. Malware might use it to hide state.
-    b. The possibility of using the stability or lack thereof of this
-       state to extract information about kernel internals and/or
-       provide a covert channel in the presence of hardware changes.
-    c. It is not certain that future architectures will not have
-       off-limit fields here, like the equivalent of MXCSR.  This is
-       somewhat of a tricky judgement, of course, but it seems safer
-       to me if we would explicitly list the modifiable fields.
+Date: Wed, 21 May 2008 17:02:30 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: [PATCH] linux-next: Tree for May 21 - build failure with netfilter on __nf_ct_helper_find()
 
-Thoughts?
+The next-20080521 kernel build fails, on x86_64 machine 
 
-	-hpa
+CC net/netfilter/nf_conntrack_helper.o
+net/netfilter/nf_conntrack_helper.c: In function ‘__nf_ct_helper_find’:
+net/netfilter/nf_conntrack_helper.c:58: error: implicit declaration of function ‘hlist_for_each_entry_rcu’
+net/netfilter/nf_conntrack_helper.c:58: error: ‘hnode’ undeclared (first use in this function)
+net/netfilter/nf_conntrack_helper.c:58: error: (Each undeclared identifier is reported only once
+net/netfilter/nf_conntrack_helper.c:58: error: for each function it appears in.)
+net/netfilter/nf_conntrack_helper.c:58: error: expected ‘;’ before ‘{’ token
+net/netfilter/nf_conntrack_helper.c:50: warning: unused variable ‘mask’
+net/netfilter/nf_conntrack_helper.c: In function ‘__nf_conntrack_helper_find_byname’:
+net/netfilter/nf_conntrack_helper.c:74: error: ‘hnode’ undeclared (first use in this function)
+net/netfilter/nf_conntrack_helper.c:74: error: expected ‘;’ before ‘{’ token
+net/netfilter/nf_conntrack_helper.c: In function ‘nf_conntrack_helper_register’:
+net/netfilter/nf_conntrack_helper.c:117: error: implicit declaration of function ‘hlist_add_head_rcu’
+net/netfilter/nf_conntrack_helper.c: In function ‘nf_conntrack_helper_unregister’:
+net/netfilter/nf_conntrack_helper.c:133: error: implicit declaration of function ‘hlist_del_rcu’
+make[2]: *** [net/netfilter/nf_conntrack_helper.o] Error 1
+make[1]: *** [net/netfilter] Error 2
+make: *** [net] Error 2
 
+This build error is because of the missing include file.I have tested
+the patch for the build failure only.
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux-2.6.26-rc3/net/netfilter/nf_conntrack_helper.c	2008-05-20 20:24:14.000000000 +0530
++++ linux-2.6.26-rc3/net/netfilter/~nf_conntrack_helper.c	2008-05-22 00:17:32.000000000 +0530
+@@ -20,6 +20,7 @@
+ #include <linux/err.h>
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
++#include <linux/rculist.h>
+ 
+ #include <net/netfilter/nf_conntrack.h>
+ #include <net/netfilter/nf_conntrack_l3proto.h>
