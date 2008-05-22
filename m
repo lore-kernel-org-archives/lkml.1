@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764934AbYEVGaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763697AbYEVGkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764934AbYEVGaB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 02:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757379AbYEVG3w
+	id S1763697AbYEVGkv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 02:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbYEVGkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 02:29:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36558 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757232AbYEVG3v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 02:29:51 -0400
-Date: Wed, 21 May 2008 23:29:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] scripts/ver_linux use 'gcc -dumpversion'
-Message-Id: <20080521232919.70f47341.akpm@linux-foundation.org>
-In-Reply-To: <48346BA3.2050806@googlemail.com>
-References: <48346BA3.2050806@googlemail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 May 2008 02:40:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34489 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755950AbYEVGkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 02:40:40 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, drepper@redhat.com, Hongjiu.lu@intel.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+In-Reply-To: H. Peter Anvin's message of  Wednesday, 21 May 2008 18:38:31 -0700 <4834CE97.9080708@zytor.com>
+References: <20080513011030.GA31448@linux-os.sc.intel.com>
+	<18477.35703.679574.760417@harpo.it.uu.se>
+	<20080518013416.GB30034@linux-os.sc.intel.com>
+	<18481.37905.297556.288317@harpo.it.uu.se>
+	<20080520015723.GD30034@linux-os.sc.intel.com>
+	<4832A173.6020203@firstfloor.org>
+	<18482.53246.642835.894623@harpo.it.uu.se>
+	<4832E705.2010900@zytor.com>
+	<18482.60491.764019.292031@harpo.it.uu.se>
+	<20080520175325.GE30034@linux-os.sc.intel.com>
+	<4834BE39.2000904@zytor.com>
+	<20080522005345.B994F26FA24@magilla.localdomain>
+	<4834CE97.9080708@zytor.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080522064027.07B6B26FA24@magilla.localdomain>
+Date: Wed, 21 May 2008 23:40:26 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 20:36:19 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+> Yes, but I suspect for legacy apps running without vDSO might matter.
 
-> 
-> These magic greps and hacks in ver_linux to get the gcc version always break after some gcc releases.
-> 
-> Since now gcc >4.3 allows compiling with '--with-pkgversion' ( which can be everything 'My Cool Gcc' or something )
-> ver_linux will report random junk for these.
+"Legacy" apps want to be changed to make a new kind of kernel query
+and care about new details of signal frame layout for new features
+they never used before, but don't want to handle the vDSO?
 
-gcc sometimes looks like an anti-Linux plot.
 
-> Simply use 'gcc -dumpversion' to get the gcc version which should always work.
-> 
-> Signed-off-by: Gabriel C <nix.or.die@googlemail.com>
-> ---
-> 
-> Andrew sorry to bug you about that but
-> I have no clue how is maintaining scripts/*
-
-Depends on the script, really.  Most of them are Sam stuff.
-
->  scripts/ver_linux |    5 +----
->  1 files changed, 1 insertions(+), 4 deletions(-)
-> 
-> diff --git a/scripts/ver_linux b/scripts/ver_linux
-> index ab69ece..7ac0e30 100755
-> --- a/scripts/ver_linux
-> +++ b/scripts/ver_linux
-> @@ -12,12 +12,9 @@ echo ' '
->  uname -a
->  echo ' '
->  
-> -gcc --version 2>&1| head -n 1 | grep -v gcc | awk \
-> +gcc -dumpversion 2>&1| awk \
->  'NR==1{print "Gnu C                 ", $1}'
->  
-> -gcc --version 2>&1| grep gcc | awk \
-> -'NR==1{print "Gnu C                 ", $3}'
-> -
->  make --version 2>&1 | awk -F, '{print $1}' | awk \
->        '/GNU Make/{print "Gnu make              ",$NF}'
-
-including this one, I believe.
+Thanks,
+Roland
