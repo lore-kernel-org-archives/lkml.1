@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765742AbYEVH6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933127AbYEVIDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765742AbYEVH6h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 03:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbYEVH6a
+	id S933127AbYEVIDn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:03:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760617AbYEVID2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 03:58:30 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:40826 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759141AbYEVH63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 03:58:29 -0400
-To: zippel@linux-m68k.org
-CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-In-reply-to: <Pine.LNX.4.64.0805212232500.18302@localhost.localdomain>
-	(message from Roman Zippel on Wed, 21 May 2008 22:35:23 +0200 (CEST))
-Subject: Re: [patch 06/14] hfsplus: remove hfsplus_permission()
-References: <20080521171458.077908538@szeredi.hu> <20080521171549.964767446@szeredi.hu> <Pine.LNX.4.64.0805212232500.18302@localhost.localdomain>
-Message-Id: <E1Jz5gq-0007F4-AQ@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 22 May 2008 09:58:20 +0200
+	Thu, 22 May 2008 04:03:28 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:43558 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760172AbYEVIDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 04:03:24 -0400
+Date: Thu, 22 May 2008 03:03:24 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove unnecessary memmove() in cgroup_path()
+Message-Id: <20080522030324.2b650f93.pj@sgi.com>
+In-Reply-To: <48352127.20804@cn.fujitsu.com>
+References: <48352127.20804@cn.fujitsu.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > I'm not sure what this function is trying to achieve, but it's not
-> > succeeding: the condition for which it is returning zero is exactly
-> > the same as checked by permission(), which results in -EACCES.
-> > 
-> > So in the end this is equivalent to the default action.
-> 
-> No, it's not, it allows for HFS+ specific special case to allow the lookup 
-> of the resource fork.
+Lai wrote:
+> memmove() is unnecessary in cgroup_path(), the following patch will remove it.
 
-Sorry I just don't see how that code would allow anything.  The only
-place hfsplus_permission() is called is from permission() in namei.c,
-and in that case it _is_ equivalent.  Look:
+True, I think -- memmove() can be removed as you suggest.
 
-hfsplus_permission():
+However, it makes the code a little harder to read, in my opinion,
+because the meaning of the "@buf" parameter passed into cgroup_path()
+is no longer quite the same as the meaning of that same parameter,
+upon return from cgroup_path().
 
-	if (S_ISREG(inode->i_mode) && mask & MAY_EXEC && !(inode->i_mode & 0111))
-		return 0;
+I have a fairly consistent preference for code clarity, even if it
+means an occassional extra bit of code gets executed, unless we're
+on some code path where the performance gained from the tighter code
+is important.  I don't think that cgroup_path() is on such a path;
+however I could be wrong on that point.  Did you discover this non-
+essential call to memmove() by code reading, or by observing that
+it was causing some noticeable performance loss for some situation
+that you care about?
 
-permission():
+If we did go with this patch as you suggest, then I would like to
+suggest that we elaborate your explanation of what the "@buf"
+parameter to cgroup_path() means.
 
-		retval = inode->i_op->permission(inode, submask, nd);
-		if (!retval) {
-			/*
-			 * Exec permission on a regular file is denied if none
-			 * of the execute bits are set.
-			 *
-			 * This check should be done by the ->permission()
-			 * method.
-			 */
-			if ((mask & MAY_EXEC) && S_ISREG(inode->i_mode) &&
-			    !(inode->i_mode & S_IXUGO))
-				return -EACCES;
+Your patch states:
 
-Miklos
++ * @buf: *buf is the buffer to write the path into, and it was set
++ *       to the start of the path when return
+
+I would suggest stating instead something like:
+
+  * @buf: On entry, @buf is a pointer to a pointer to a buffer of
+  *       length @buflen into which the path will be written.  In most
+  *       cases, excepting some trivial cases such as returning "/",
+  *       the path will be written into the -high- end of the buffer,
+  *       and the pointer to which buf points will be updated on
+  *       return from cgroup_path() to point to the beginning of that
+  *       path, somewhere within the original passed in buffer.
+
+
+One more minor suggestion ... your patch has:
+-		char *pathbuf;
++		char *pathbuf, *path;
+
+and later on it has:
+-	char *buf;
++	char *buf, *path;
+
+Could you use the same variable names, when referring to the same
+things, in both places?  It makes the code a little easier to read.
+
+Overall, however, I am not sure I like this patch, unless you have good
+performance reasons to get rid of that memmove().  The complications to
+what the "@buf" parameter to cgroup_path() means just aren't worth it,
+in my current opinion.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
