@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbYEVAI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935813AbYEVAJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933213AbYEVAI0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 20:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYEVAIR
+	id S935813AbYEVAJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 20:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYEVAJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 20:08:17 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:60952 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755549AbYEVAIR (ORCPT
+	Wed, 21 May 2008 20:09:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:64291 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756736AbYEVAJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 20:08:17 -0400
-Message-ID: <4834B9F8.6050009@keyaccess.nl>
-Date: Thu, 22 May 2008 02:10:32 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 21 May 2008 20:09:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pu2OyLrpS9gn8sj1Dv1n126u5yLkngcG8S0LcT/0S56u8awtIjhEX+Qaq/3druuzUW31P43nDTm2caj4L4jy6zjkiztUU193RsKr5OFV6IJNN83g4Cm6PylWaeGCzLV2e8rno261bQmgvzLJE9B5RRIBarPHYENx5kjzBR9B6wY=
+Message-ID: <82fa9e310805211709i3993cac2n58152cf11a3ef8a4@mail.gmail.com>
+Date: Wed, 21 May 2008 17:09:01 -0700
+From: mark <markkicks@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: fork: Resource temporarily unavailable / cant start new threads
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080521163503.000afd61.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, tytso@mit.edu, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard	indentation
- of arguments)
-References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu> <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123127.3b3b66af.akpm@linux-foundation.org> <20080521230155.GC16376@cs181133002.pp.htv.fi> <4834AD90.8050307@keyaccess.nl> <20080521235528.GD16376@cs181133002.pp.htv.fi>
-In-Reply-To: <20080521235528.GD16376@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+References: <82fa9e310805201126q45e869bdub74a947068fe612a@mail.gmail.com>
+	 <20080521132845.72db5748.randy.dunlap@oracle.com>
+	 <82fa9e310805211339o3090e0d0le8503051d3e0aa38@mail.gmail.com>
+	 <48348AFA.1070900@oracle.com>
+	 <82fa9e310805211408o65b49923jd9bf4a6c89b97c30@mail.gmail.com>
+	 <20080521143248.baee1391.randy.dunlap@oracle.com>
+	 <82fa9e310805211551oea0dfd9mdb7dfaed2b2d98fc@mail.gmail.com>
+	 <20080521163503.000afd61.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22-05-08 01:55, Adrian Bunk wrote:
+On Wed, May 21, 2008 at 4:35 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> > I can send you some debug patches that will print out the specific
+>> > problem area.  Do you want to do that?  Can you rebuild and install
+>> > a new kernel?
+>> Is it possible to get this debug messages by turning on some flags?
+>> If not yes, pl. send debug patches. its a live box and  I will try to do it!
+>>
+>> This is my system / kernel info:
+>> uname -a
+>> Linux XXX 2.6.25.3-18.fc9.x86_64 #1 SMP Tue May 13 04:54:47 EDT 2008
+>> x86_64 x86_64 x86_64 GNU/Linux
+>
+> I made a small patch to a vanilla kernel.org 2.6.25.3 kernel tree.
+> Hopefully it applies cleanly to that fc9 kernel source, but check/verify
+> that first before going any further.
 
-> We are drowning in new code, and our biggest problem is to get it 
-> properly integrated.
+Thanks a lot for the patch,
+This is kind of weird..  but there is no file  kernel/fork.c
 
-No, your biggest problem is getting _quality_ new code submitted.
-
-> We don't have any shortage in the sheer number of people, and it
-> doesn't seem we'll ever have.
-
-I'd worry that it does seem exactly like that. This thread is (again) 
-about newbies being distracted by the robotic aspects and not moving out 
-  of that easily or quickly -- about a worry that too few new developers 
-appear.
-
-> And we have many newbies who come and find themselves areas for
-> useful contributions.
-
-Useful contributions don't translate one on one into capable future 
-developers.
-
-Rene.
+[mark@localhost 2.6.25.3-18.fc9.i686]$ find . -iname '*fork*' -print
+[mark@localhost 2.6.25.3-18.fc9.i686]$ rpm -ql
+[mark@localhost 2.6.25.3-18.fc9.i686]$ rpm -ql kernel-devel | grep fork
+[mark@localhost 2.6.25.3-18.fc9.i686]$ pwd
+/usr/src/kernels/2.6.25.3-18.fc9.i686
