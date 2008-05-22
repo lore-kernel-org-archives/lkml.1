@@ -1,40 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933928AbYEVVus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759375AbYEVVve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933928AbYEVVus (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758361AbYEVVuh
+	id S1759375AbYEVVve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbYEVVvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:50:37 -0400
-Received: from www.tglx.de ([62.245.132.106]:46202 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755562AbYEVVuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 17:50:37 -0400
-Date: Thu, 22 May 2008 23:50:18 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] x86: mp_bus_id_to_pci_bus is not needed, 
-In-Reply-To: <20080519154709.15071.79793.stgit@thinkpad>
-Message-ID: <alpine.LFD.1.10.0805222348110.3295@apollo.tec.linutronix.de>
-References: <20080519154656.15071.96979.stgit@thinkpad> <20080519154709.15071.79793.stgit@thinkpad>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 22 May 2008 17:51:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58150 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755562AbYEVVvV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 17:51:21 -0400
+Date: Thu, 22 May 2008 22:38:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [PATCH] 3ware: BKL elimination
+Message-ID: <20080522223853.1762065a@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008, Alexey Starikovskiy wrote:
-> @@ -101,7 +94,6 @@ static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
->  static void __init MP_bus_info(struct mpc_config_bus *m)
->  {
->  	char str[7];
-> -
->  	memcpy(str, m->mpc_bustype, 6);
->  	str[6] = 0;
+The 3ware driver internal locking appears complete so we just stop taking
+the BKL on ioctls from the management handle
 
-Please avoid such unrelated whitespace noise.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Thanks,
-	tglx
-
+diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
+index b31faec..5e6b47f 100644
+--- a/drivers/scsi/3w-9xxx.c
++++ b/drivers/scsi/3w-9xxx.c
+@@ -111,7 +111,7 @@ static void twa_aen_queue_event(TW_Device_Extension *tw_dev, TW_Command_Apache_H
+ static int twa_aen_read_queue(TW_Device_Extension *tw_dev, int request_id);
+ static char *twa_aen_severity_lookup(unsigned char severity_code);
+ static void twa_aen_sync_time(TW_Device_Extension *tw_dev, int request_id);
+-static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg);
++static long twa_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+ static int twa_chrdev_open(struct inode *inode, struct file *file);
+ static int twa_fill_sense(TW_Device_Extension *tw_dev, int request_id, int copy_sense, int print_host);
+ static void twa_free_request_id(TW_Device_Extension *tw_dev,int request_id);
+@@ -202,7 +202,7 @@ static struct device_attribute *twa_host_attrs[] = {
+ /* File operations struct for character device */
+ static const struct file_operations twa_fops = {
+ 	.owner		= THIS_MODULE,
+-	.ioctl		= twa_chrdev_ioctl,
++	.unlocked_ioctl	= twa_chrdev_ioctl,
+ 	.open		= twa_chrdev_open,
+ 	.release	= NULL
+ };
+@@ -619,7 +619,7 @@ out:
+ } /* End twa_check_srl() */
+ 
+ /* This function handles ioctl for the character device */
+-static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
++static long twa_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	long timeout;
+ 	unsigned long *cpu_addr, data_buffer_length_adjusted = 0, flags = 0;
+@@ -635,7 +635,8 @@ static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int
+ 	TW_Event *event;
+ 	struct timeval current_time;
+ 	u32 current_time_ms;
+-	TW_Device_Extension *tw_dev = twa_device_extension_list[iminor(inode)];
++	unsigned int minor = iminor(file->f_path.dentry->d_inode);
++	TW_Device_Extension *tw_dev = twa_device_extension_list[minor];
+ 	int retval = TW_IOCTL_ERROR_OS_EFAULT;
+ 	void __user *argp = (void __user *)arg;
+ 
+diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
+index 8c22329..33a6a2e 100644
+--- a/drivers/scsi/3w-xxxx.c
++++ b/drivers/scsi/3w-xxxx.c
+@@ -874,7 +874,7 @@ static int tw_allocate_memory(TW_Device_Extension *tw_dev, int size, int which)
+ } /* End tw_allocate_memory() */
+ 
+ /* This function handles ioctl for the character device */
+-static int tw_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
++static long tw_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	int request_id;
+ 	dma_addr_t dma_handle;
+@@ -886,7 +886,8 @@ static int tw_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int
+ 	long timeout;
+ 	TW_New_Ioctl *tw_ioctl;
+ 	TW_Passthru *passthru;
+-	TW_Device_Extension *tw_dev = tw_device_extension_list[iminor(inode)];
++	unsigned int minor = iminor(file->f_path.dentry->d_inode);
++	TW_Device_Extension *tw_dev = tw_device_extension_list[minor];
+ 	int retval = -EFAULT;
+ 	void __user *argp = (void __user *)arg;
+ 
+@@ -1043,7 +1044,7 @@ static int tw_chrdev_open(struct inode *inode, struct file *file)
+ /* File operations struct for character device */
+ static const struct file_operations tw_fops = {
+ 	.owner		= THIS_MODULE,
+-	.ioctl		= tw_chrdev_ioctl,
++	.unlocked_ioctl	= tw_chrdev_ioctl,
+ 	.open		= tw_chrdev_open,
+ 	.release	= NULL
+ };
