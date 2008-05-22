@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935930AbYEVWFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764185AbYEVWI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935930AbYEVWFn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbYEVWFe
+	id S1764185AbYEVWI3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756479AbYEVWIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:05:34 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51516 "EHLO
+	Thu, 22 May 2008 18:08:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43005 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756479AbYEVWFd (ORCPT
+	with ESMTP id S1754877AbYEVWIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:05:33 -0400
-Date: Thu, 22 May 2008 22:52:43 +0100
+	Thu, 22 May 2008 18:08:18 -0400
+Date: Thu, 22 May 2008 22:55:48 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, sfrench@samba.org
-Subject: [PATCH] cifs: Push the BKL down into the fs ioctl code
-Message-ID: <20080522225243.0da12b58@core>
+To: vandrove@vc.cvut.cz, linux-kernel@vger.kernel.org
+Subject: [PATCH] ncpfs: Push the BKL for ioctls down into the fs
+Message-ID: <20080522225548.38fa0966@core>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -26,120 +26,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Switch to unlocked_ioctl. Wrap the ioctl handler internally with
-lock_kernel until someone can prove it isn't needed or fix it so it isn't.
-
 Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
-index 427a7c6..b6436b8 100644
---- a/fs/cifs/cifsfs.c
-+++ b/fs/cifs/cifsfs.c
-@@ -657,7 +657,7 @@ const struct file_operations cifs_file_ops = {
- 	.splice_read = generic_file_splice_read,
- 	.llseek = cifs_llseek,
- #ifdef CONFIG_CIFS_POSIX
--	.ioctl	= cifs_ioctl,
-+	.unlocked_ioctl	= cifs_ioctl,
- #endif /* CONFIG_CIFS_POSIX */
- 
- #ifdef CONFIG_CIFS_EXPERIMENTAL
-@@ -677,7 +677,7 @@ const struct file_operations cifs_file_direct_ops = {
- 	.flush = cifs_flush,
- 	.splice_read = generic_file_splice_read,
- #ifdef CONFIG_CIFS_POSIX
--	.ioctl  = cifs_ioctl,
-+	.unlocked_ioctl  = cifs_ioctl,
- #endif /* CONFIG_CIFS_POSIX */
- 	.llseek = cifs_llseek,
- #ifdef CONFIG_CIFS_EXPERIMENTAL
-@@ -697,7 +697,7 @@ const struct file_operations cifs_file_nobrl_ops = {
- 	.splice_read = generic_file_splice_read,
- 	.llseek = cifs_llseek,
- #ifdef CONFIG_CIFS_POSIX
--	.ioctl	= cifs_ioctl,
-+	.unlocked_ioctl	= cifs_ioctl,
- #endif /* CONFIG_CIFS_POSIX */
- 
- #ifdef CONFIG_CIFS_EXPERIMENTAL
-@@ -716,7 +716,7 @@ const struct file_operations cifs_file_direct_nobrl_ops = {
- 	.flush = cifs_flush,
- 	.splice_read = generic_file_splice_read,
- #ifdef CONFIG_CIFS_POSIX
--	.ioctl  = cifs_ioctl,
-+	.unlocked_ioctl  = cifs_ioctl,
- #endif /* CONFIG_CIFS_POSIX */
- 	.llseek = cifs_llseek,
- #ifdef CONFIG_CIFS_EXPERIMENTAL
-@@ -731,7 +731,7 @@ const struct file_operations cifs_dir_ops = {
- #ifdef CONFIG_CIFS_EXPERIMENTAL
- 	.dir_notify = cifs_dir_notify,
- #endif /* CONFIG_CIFS_EXPERIMENTAL */
--	.ioctl  = cifs_ioctl,
-+	.unlocked_ioctl  = cifs_ioctl,
- };
- 
- static void
-diff --git a/fs/cifs/cifsfs.h b/fs/cifs/cifsfs.h
-index cd1301a..1312ae7 100644
---- a/fs/cifs/cifsfs.h
-+++ b/fs/cifs/cifsfs.h
-@@ -95,8 +95,8 @@ extern int 	cifs_setxattr(struct dentry *, const char *, const void *,
- 			size_t, int);
- extern ssize_t	cifs_getxattr(struct dentry *, const char *, void *, size_t);
- extern ssize_t	cifs_listxattr(struct dentry *, char *, size_t);
--extern int cifs_ioctl(struct inode *inode, struct file *filep,
--		       unsigned int command, unsigned long arg);
-+extern long cifs_ioctl(struct file *filep, unsigned int command,
-+							unsigned long arg);
- 
- #ifdef CONFIG_CIFS_EXPERIMENTAL
- extern const struct export_operations cifs_export_ops;
-diff --git a/fs/cifs/ioctl.c b/fs/cifs/ioctl.c
-index 5c792df..396811f 100644
---- a/fs/cifs/ioctl.c
-+++ b/fs/cifs/ioctl.c
-@@ -22,6 +22,7 @@
-  */
- 
- #include <linux/fs.h>
-+#include <linux/smp_lock.h>
- #include "cifspdu.h"
- #include "cifsglob.h"
- #include "cifsproto.h"
-@@ -30,9 +31,9 @@
- 
- #define CIFS_IOC_CHECKUMOUNT _IO(0xCF, 2)
- 
--int cifs_ioctl(struct inode *inode, struct file *filep,
--		unsigned int command, unsigned long arg)
-+long cifs_ioctl(struct file *filep, unsigned int command, unsigned long arg)
+diff --git a/fs/ncpfs/dir.c b/fs/ncpfs/dir.c
+index 011ef0b..d1c4dc7 100644
+--- a/fs/ncpfs/dir.c
++++ b/fs/ncpfs/dir.c
+@@ -52,7 +52,7 @@ const struct file_operations ncp_dir_operations =
  {
-+	struct inode *inode = filep->f_path.dentry->d_inode;
- 	int rc = -ENOTTY; /* strange error - but the precedent */
- 	int xid;
- 	struct cifs_sb_info *cifs_sb;
-@@ -45,6 +46,8 @@ int cifs_ioctl(struct inode *inode, struct file *filep,
- 		(struct cifsFileInfo *)filep->private_data;
- #endif /* CONFIG_CIFS_POSIX */
+ 	.read		= generic_read_dir,
+ 	.readdir	= ncp_readdir,
+-	.ioctl		= ncp_ioctl,
++	.unlocked_ioctl	= ncp_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= ncp_compat_ioctl,
+ #endif
+diff --git a/fs/ncpfs/file.c b/fs/ncpfs/file.c
+index 2b145de..83e67e4 100644
+--- a/fs/ncpfs/file.c
++++ b/fs/ncpfs/file.c
+@@ -286,7 +286,7 @@ const struct file_operations ncp_file_operations =
+ 	.llseek		= remote_llseek,
+ 	.read		= ncp_file_read,
+ 	.write		= ncp_file_write,
+-	.ioctl		= ncp_ioctl,
++	.unlocked_ioctl	= ncp_ioctl,
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= ncp_compat_ioctl,
+ #endif
+diff --git a/fs/ncpfs/ioctl.c b/fs/ncpfs/ioctl.c
+index 3a97c95..f0f7887 100644
+--- a/fs/ncpfs/ioctl.c
++++ b/fs/ncpfs/ioctl.c
+@@ -262,9 +262,10 @@ ncp_get_charsets(struct ncp_server* server, struct ncp_nls_ioctl __user *arg)
+ }
+ #endif /* CONFIG_NCPFS_NLS */
+ 
+-static int __ncp_ioctl(struct inode *inode, struct file *filp,
+-	      unsigned int cmd, unsigned long arg)
++static long __ncp_ioctl(struct file *filp, unsigned int cmd,
++							unsigned long arg)
+ {
++	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	struct ncp_server *server = NCP_SERVER(inode);
+ 	int result;
+ 	struct ncp_ioctl_request request;
+@@ -852,11 +853,12 @@ static int ncp_ioctl_need_write(unsigned int cmd)
+ 	}
+ }
+ 
+-int ncp_ioctl(struct inode *inode, struct file *filp,
++long ncp_ioctl(struct file *filp,
+ 	      unsigned int cmd, unsigned long arg)
+ {
+ 	int ret;
  
 +	lock_kernel();
-+
- 	xid = GetXid();
- 
- 	cFYI(1, ("ioctl file %p  cmd %u  arg %lu", filep, command, arg));
-@@ -58,6 +61,7 @@ int cifs_ioctl(struct inode *inode, struct file *filep,
- 	else {
- 		rc = -EIO;
- 		FreeXid(xid);
-+		unlock_kernel();
- 		return -EIO;
+ 	if (ncp_ioctl_need_write(cmd)) {
+ 		/*
+ 		 * inside the ioctl(), any failures which
+@@ -864,24 +866,26 @@ int ncp_ioctl(struct inode *inode, struct file *filp,
+ 		 * -EACCESS, so it seems consistent to keep
+ 		 *  that here.
+ 		 */
+-		if (mnt_want_write(filp->f_path.mnt))
++		if (mnt_want_write(filp->f_path.mnt)) {
++			unlock_kernel();
+ 			return -EACCES;
++		}
  	}
- #endif /* CONFIG_CIFS_POSIX */
-@@ -106,5 +110,6 @@ int cifs_ioctl(struct inode *inode, struct file *filep,
- 	}
- 
- 	FreeXid(xid);
+-	ret = __ncp_ioctl(inode, filp, cmd, arg);
++	ret = __ncp_ioctl(filp, cmd, arg);
+ 	if (ncp_ioctl_need_write(cmd))
+ 		mnt_drop_write(filp->f_path.mnt);
 +	unlock_kernel();
- 	return rc;
+ 	return ret;
+ }
+ 
+ #ifdef CONFIG_COMPAT
+ long ncp_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+-	struct inode *inode = file->f_path.dentry->d_inode;
+ 	int ret;
+ 
+ 	lock_kernel();
+ 	arg = (unsigned long) compat_ptr(arg);
+-	ret = ncp_ioctl(inode, file, cmd, arg);
++	ret = ncp_ioctl(file, cmd, arg);
+ 	unlock_kernel();
+ 	return ret;
  }
