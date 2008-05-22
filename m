@@ -1,89 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYEVP45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbYEVP56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYEVP45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 11:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYEVP4r
+	id S1755445AbYEVP56 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 11:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYEVP5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 11:56:47 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52340 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753488AbYEVP4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 11:56:46 -0400
-Date: Thu, 22 May 2008 18:54:25 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Bosko Radivojevic <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-Message-ID: <20080522155425.GA2727@cs181133002.pp.htv.fi>
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com> <20080522144114.GC27301@cs181133002.pp.htv.fi> <20080522075135.4933161c@infradead.org>
+	Thu, 22 May 2008 11:57:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:25822 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753510AbYEVP5p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 11:57:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=jVi/PoCbOlMlU5jiEQFO6Oi7jQ0mkw5hRe9uXGPnStxuw13CupbLPG7yGHbPX/TARl69hQ/wzGXDx2cbe8TzxVBD5/5FpBZ15m0fddC9hgqQskqDQyeRuXBj/XQXk5HKh7Lsspt9lTxPt4cuu4s5t5lUbIuemgrK3WS95Ud6W6s=
+Date: Thu, 22 May 2008 17:57:05 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH 3/6] vfs: open_exec cleanup
+Message-ID: <20080522155645.GA8447@joi>
+References: <20080513201813.GA5869@joi> <1211148109-16149-1-git-send-email-marcin.slusarz@gmail.com> <20080519055334.GA14902@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080522075135.4933161c@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080519055334.GA14902@lst.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 07:51:35AM -0700, Arjan van de Ven wrote:
-> On Thu, 22 May 2008 17:41:14 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, May 19, 2008 at 07:53:34AM +0200, Christoph Hellwig wrote:
+> On Mon, May 19, 2008 at 12:01:49AM +0200, Marcin Slusarz wrote:
+> > open_exec is needlessly indented, calls ERR_PTR with 0 argument
+> > (which is not valid errno) and jumps into middle of function
+> > just to return value.
+> > So clean it up a bit.
 > 
-> > On Thu, May 22, 2008 at 02:28:17PM +0200, Bosko Radivojevic wrote:
-> > 
-> > > Hi!
-> > 
-> > Hi Bosko!
-> > 
-> > > Is there any kind of analysis of number of (reported or resolved)
-> > > bugs through time in Linux kernel floating around? I'm trying to
-> > > convince my colleagues that newer kernel version does not mean more
-> > > bugs than the previous 'well tested' ones.
-> > 
-> > We definitely have many regressions (something that previously worked
-> > does no longer work) in each kernel.
+> Still looks rather messy.  See below for a better version.
+
+looks much better, thanks
+Reviewed-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+ 
 > 
-> ... and many of those regressions are things people are unlikely to
-> hit. And we fix many long standing bugs as well.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 > 
-> Maybe some other data:
-> * The incoming rate of ACPI bugs has been pretty much flat the last 3
-> years, while the number of Linux (and ACPI) users has grown
-> significantly. The number of unfixed bugs has more than halved, from
-> over 200 to well below 100.
-> * The SCSI maintainer also reports that he sees flat to declining bug
-> rates; again with the increase in Linux user base that is a good sign
-
-Andrew sees and handles the majority of incoming bug reports.
-Ask him whether he agress with this.
-
-And ALSA alone has 2000 open bug reports, which makes the open ACPI or 
-SCSI bug numbers relatively irrelevant in any "number of bugs" 
-statistics.
-
-> > > Any kind of (research) reports or papers that address this issue is
-> > > more than welcome.
-> > 
-> > Any such reports or papers would anyway be flawed since we have no
-> > data one could use for doing serious statistics.
+> Index: linux-2.6/fs/exec.c
+> ===================================================================
+> --- linux-2.6.orig/fs/exec.c	2008-05-19 07:45:18.000000000 +0200
+> +++ linux-2.6/fs/exec.c	2008-05-19 07:53:17.000000000 +0200
+> @@ -654,38 +654,40 @@ EXPORT_SYMBOL(setup_arg_pages);
+>  struct file *open_exec(const char *name)
+>  {
+>  	struct nameidata nd;
+> -	int err;
+>  	struct file *file;
+> +	int err;
+>  
+> -	err = path_lookup_open(AT_FDCWD, name, LOOKUP_FOLLOW, &nd, FMODE_READ|FMODE_EXEC);
+> -	file = ERR_PTR(err);
+> +	err = path_lookup_open(AT_FDCWD, name, LOOKUP_FOLLOW, &nd,
+> +				FMODE_READ|FMODE_EXEC);
+> +	if (err)
+> +		goto out;
+>  
+> -	if (!err) {
+> -		struct inode *inode = nd.path.dentry->d_inode;
+> -		file = ERR_PTR(-EACCES);
+> -		if (S_ISREG(inode->i_mode)) {
+> -			int err = vfs_permission(&nd, MAY_EXEC);
+> -			file = ERR_PTR(err);
+> -			if (!err) {
+> -				file = nameidata_to_filp(&nd,
+> -							O_RDONLY|O_LARGEFILE);
+> -				if (!IS_ERR(file)) {
+> -					err = deny_write_access(file);
+> -					if (err) {
+> -						fput(file);
+> -						file = ERR_PTR(err);
+> -					}
+> -				}
+> -out:
+> -				return file;
+> -			}
+> -		}
+> -		release_open_intent(&nd);
+> -		path_put(&nd.path);
+> +	err = -EACCES;
+> +	if (!S_ISREG(nd.path.dentry->d_inode->i_mode))
+> +		goto out_path_put;
+> +
+> +	err = vfs_permission(&nd, MAY_EXEC);
+> +	if (err)
+> +		goto out_path_put;
+> +
+> +	file = nameidata_to_filp(&nd, O_RDONLY|O_LARGEFILE);
+> +	if (IS_ERR(file))
+> +		return file;
+> +
+> +	err = deny_write_access(file);
+> +	if (err) {
+> +		fput(file);
+> +		goto out;
+>  	}
+> -	goto out;
+> -}
+>  
+> +	return file;
+> +
+> + out_path_put:
+> +	release_open_intent(&nd);
+> +	path_put(&nd.path);
+> + out:
+> +	return ERR_PTR(err);
+> +}
+>  EXPORT_SYMBOL(open_exec);
+>  
+>  int kernel_read(struct file *file, unsigned long offset,
 > 
-> We have data for 2.6.25 at least, on which we can and do serious
-> statistics.
->...
-
-Where do we have data for 2.6.25 covering all kinds of bugs?
-
-Regressions reported before 2.6.25 and Oops'es etc. are only a small 
-part of the picture.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
