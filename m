@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbYEVQNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbYEVQOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbYEVQNa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 12:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbYEVQNP
+	id S1755135AbYEVQOP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 12:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbYEVQN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 12:13:15 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:31912 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756919AbYEVQNO (ORCPT
+	Thu, 22 May 2008 12:13:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:65331 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754760AbYEVQN4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 12:13:14 -0400
-Message-ID: <48359B96.2020303@mvista.com>
-Date: Thu, 22 May 2008 09:13:10 -0700
-From: Dave Jiang <djiang@mvista.com>
-Organization: MontaVista Software, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 22 May 2008 12:13:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jYslh5XSDnC53kyVcYow3znmktoAT7PYCyXtzQLopUIl8NLohpoxkgcdHetOnfpQzizeqRLlSL/vgU69MmF2JRQj0HTkwHSh/AIVYm84qHk6Rfxr9p/jwy76ntZGNSA3VHT7gCeJvC3t5TKL5f6h850PzWeBznYhzEgzN677gTQ=
+Message-ID: <84144f020805220913g344baedaqb0996adecdadae99@mail.gmail.com>
+Date: Thu, 22 May 2008 19:13:56 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: [RFC/PATCH 1/3] SLAB: Add PageSlab checking to ksize()
+Cc: "Paul Mundt" <lethal@linux-sh.org>, "Christoph Lameter" <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com
+In-Reply-To: <1211468502.18026.350.camel@calx>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: dougthompson@xmission.com, Andrew Morton <akpm@osdl.org>,
-       linuxppc-dev@ozlabs.org, bluesmoke-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] edac: mpc85xx - Fix building as a module
-References: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0805212326000.32442@blarg.am.freescale.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0805212124250.22291@sbz-30.cs.Helsinki.FI>
+	 <20080521234555.GB32707@linux-sh.org>
+	 <4834F2E2.3070806@cs.helsinki.fi>
+	 <Pine.LNX.4.64.0805212116260.19431@schroedinger.engr.sgi.com>
+	 <4834F4DC.3040009@cs.helsinki.fi> <20080522043410.GA4050@linux-sh.org>
+	 <4834F9D6.7080706@cs.helsinki.fi> <1211468502.18026.350.camel@calx>
+X-Google-Sender-Auth: 5d15c68dab93ed06
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Dave Jiang <djiang@mvista.com>
+Hi Matt,
 
-Kumar Gala wrote:
-> including of <asm/mpc85xx.h> causes build problems since it doesn't exist.
-> 
-> Also removed warning:
-> drivers/edac/mpc85xx_edac.c:45: warning: 'mpc85xx_ctl_name' defined but not used
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> 
-> This is a fix for 2.6.26.
-> 
-> - k
-> 
->  drivers/edac/mpc85xx_edac.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-> index 065732d..d49361b 100644
-> --- a/drivers/edac/mpc85xx_edac.c
-> +++ b/drivers/edac/mpc85xx_edac.c
-> @@ -20,7 +20,6 @@
-> 
->  #include <linux/of_platform.h>
->  #include <linux/of_device.h>
-> -#include <asm/mpc85xx.h>
->  #include "edac_module.h"
->  #include "edac_core.h"
->  #include "mpc85xx_edac.h"
-> @@ -43,8 +42,6 @@ static u32 orig_pci_err_en;
->  static u32 orig_l2_err_disable;
->  static u32 orig_hid1;
-> 
-> -static const char *mpc85xx_ctl_name = "MPC85xx";
-> -
->  /************************ MC SYSFS parts ***********************************/
-> 
->  static ssize_t mpc85xx_mc_inject_data_hi_show(struct mem_ctl_info *mci,
+On Thu, May 22, 2008 at 6:01 PM, Matt Mackall <mpm@selenic.com> wrote:
+> As I've said several times, ksize() on kmem_cache_alloced objects
+> -cannot work- on SLOB. Calling ksize() on something returned by
+> kmem_cache_alloc is a categorical error.
 
+Well, it's a historical fact that ksize() worked for both kmalloc()
+and kmem_cache_alloc() (see the kernedoc comment in mm/slab.c).
+However, I think we should just look at getting rid of ksize()
+altogether as it's only (ab)used by the nommu code and few call-sites
+that open-code krealloc().
 
--- 
-
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
-
+                       Pekka
