@@ -1,549 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYEVB5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933277AbYEVCD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbYEVB5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 21:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934041AbYEVB4h
+	id S933277AbYEVCD3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 22:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbYEVCDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 21:56:37 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:31169 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933668AbYEVB4d (ORCPT
+	Wed, 21 May 2008 22:03:17 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:42254 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754860AbYEVCDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 21:56:33 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 3/3 2.6.27 RESEND] cxgb3 - Add LRO support
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 21 May 2008 18:56:26 -0700
-Message-ID: <20080522015626.25371.88690.stgit@speedy5>
-User-Agent: StGIT/0.12
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 21 May 2008 22:03:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArwEALpwNEhMQWqh/2dsb2JhbACBVa5U
+Date: Wed, 21 May 2008 22:03:09 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Fix Immediate Values x86_64 support old gcc (v3)
+Message-ID: <20080522020309.GB19848@Krystal>
+References: <20080521133122.GA18084@Krystal> <48344239.9070003@zytor.com> <20080521160217.GA26974@Krystal> <20080521170150.GA29428@Krystal> <20080521203743.GA12982@uranus.ravnborg.org> <20080521212809.GE6158@Krystal> <20080521214608.GA15136@uranus.ravnborg.org> <20080521215756.GA9869@Krystal> <20080521223842.GE15136@uranus.ravnborg.org> <20080521232430.GA14754@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080521232430.GA14754@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:01:57 up 82 days, 22:12,  4 users,  load average: 2.68, 1.72,
+	1.31
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+> GCC < 4, on x86_64, does not accept symbol+offset operands for "i" constraints
+> asm statements. Fallback on generic immediate values if this compiler is
+> detected.
+> 
 
-Add LRO support.
+Please replace the previous paragraph in the changelog by :
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+GCC < 4, on x86_64, does not accept symbol+offset operands for "i"
+constraints asm statements. Fallback on a memory read in lieue of
+immediate value if this compiler is detected.
 
- drivers/net/Kconfig             |    1 
- drivers/net/cxgb3/adapter.h     |   14 ++
- drivers/net/cxgb3/common.h      |    1 
- drivers/net/cxgb3/cxgb3_ioctl.h |    1 
- drivers/net/cxgb3/cxgb3_main.c  |   19 +++
- drivers/net/cxgb3/sge.c         |  233 +++++++++++++++++++++++++++++++++++++--
- drivers/net/cxgb3/t3_cpl.h      |   11 ++
- 7 files changed, 268 insertions(+), 12 deletions(-)
+As Peter pointed out, talking of "generic immediate value" is rather
+confusing.
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index 9f6cc8a..daeb23d 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2409,6 +2409,7 @@ config CHELSIO_T3
- 	tristate "Chelsio Communications T3 10Gb Ethernet support"
- 	depends on PCI
- 	select FW_LOADER
-+	select INET_LRO
- 	help
- 	  This driver supports Chelsio T3-based gigabit and 10Gb Ethernet
- 	  adapters.
-diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
-index 263e4fa..2711404 100644
---- a/drivers/net/cxgb3/adapter.h
-+++ b/drivers/net/cxgb3/adapter.h
-@@ -42,6 +42,7 @@
- #include <linux/cache.h>
- #include <linux/mutex.h>
- #include <linux/bitops.h>
-+#include <linux/inet_lro.h>
- #include "t3cdev.h"
- #include <asm/io.h>
- 
-@@ -173,16 +174,29 @@ enum {				/* per port SGE statistics */
- 	SGE_PSTAT_TX_CSUM,	/* # of TX checksum offloads */
- 	SGE_PSTAT_VLANEX,	/* # of VLAN tag extractions */
- 	SGE_PSTAT_VLANINS,	/* # of VLAN tag insertions */
-+	SGE_PSTAT_LRO_AGGR,	/* # of page chunks added to LRO sessions */
-+	SGE_PSTAT_LRO_FLUSHED,	/* # of flushed LRO sessions */
-+	SGE_PSTAT_LRO_NO_DESC,	/* # of overflown LRO sessions */
- 
- 	SGE_PSTAT_MAX		/* must be last */
- };
- 
-+#define T3_MAX_LRO_SES 8
-+#define T3_MAX_LRO_MAX_PKTS 64
-+
- struct sge_qset {		/* an SGE queue set */
- 	struct adapter *adap;
- 	struct napi_struct napi;
- 	struct sge_rspq rspq;
- 	struct sge_fl fl[SGE_RXQ_PER_SET];
- 	struct sge_txq txq[SGE_TXQ_PER_SET];
-+	struct net_lro_mgr lro_mgr;
-+	struct net_lro_desc lro_desc[T3_MAX_LRO_SES];
-+	struct skb_frag_struct *lro_frag_tbl;
-+	int lro_nfrags;
-+	int lro_enabled;
-+	int lro_frag_len;
-+	void *lro_va;
- 	struct net_device *netdev;
- 	unsigned long txq_stopped;	/* which Tx queues are stopped */
- 	struct timer_list tx_reclaim_timer;	/* reclaims TX buffers */
-diff --git a/drivers/net/cxgb3/common.h b/drivers/net/cxgb3/common.h
-index 579bee4..d444f58 100644
---- a/drivers/net/cxgb3/common.h
-+++ b/drivers/net/cxgb3/common.h
-@@ -351,6 +351,7 @@ struct tp_params {
- 
- struct qset_params {		/* SGE queue set parameters */
- 	unsigned int polling;	/* polling/interrupt service for rspq */
-+	unsigned int lro;	/* large receive offload */
- 	unsigned int coalesce_usecs;	/* irq coalescing timer */
- 	unsigned int rspq_size;	/* # of entries in response queue */
- 	unsigned int fl_size;	/* # of entries in regular free list */
-diff --git a/drivers/net/cxgb3/cxgb3_ioctl.h b/drivers/net/cxgb3/cxgb3_ioctl.h
-index 0a82fcd..68200a1 100644
---- a/drivers/net/cxgb3/cxgb3_ioctl.h
-+++ b/drivers/net/cxgb3/cxgb3_ioctl.h
-@@ -90,6 +90,7 @@ struct ch_qset_params {
- 	int32_t fl_size[2];
- 	int32_t intr_lat;
- 	int32_t polling;
-+	int32_t lro;
- 	int32_t cong_thres;
- };
- 
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 3a31272..5447f3e 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -1212,6 +1212,9 @@ static char stats_strings[][ETH_GSTRING_LEN] = {
- 	"VLANinsertions     ",
- 	"TxCsumOffload      ",
- 	"RxCsumGood         ",
-+	"LroAggregated      ",
-+	"LroFlushed         ",
-+	"LroNoDesc          ",
- 	"RxDrops            ",
- 
- 	"CheckTXEnToggled   ",
-@@ -1340,6 +1343,9 @@ static void get_stats(struct net_device *dev, struct ethtool_stats *stats,
- 	*data++ = collect_sge_port_stats(adapter, pi, SGE_PSTAT_VLANINS);
- 	*data++ = collect_sge_port_stats(adapter, pi, SGE_PSTAT_TX_CSUM);
- 	*data++ = collect_sge_port_stats(adapter, pi, SGE_PSTAT_RX_CSUM_GOOD);
-+	*data++ = collect_sge_port_stats(adapter, pi, SGE_PSTAT_LRO_AGGR);
-+	*data++ = collect_sge_port_stats(adapter, pi, SGE_PSTAT_LRO_FLUSHED);
-+	*data++ = collect_sge_port_stats(adapter, pi, SGE_PSTAT_LRO_NO_DESC);
- 	*data++ = s->rx_cong_drops;
- 
- 	*data++ = s->num_toggled;
-@@ -1558,6 +1564,13 @@ static int set_rx_csum(struct net_device *dev, u32 data)
- 	struct port_info *p = netdev_priv(dev);
- 
- 	p->rx_csum_offload = data;
-+	if (!data) {
-+		struct adapter *adap = p->adapter;
-+		int i;
-+
-+		for (i = p->first_qset; i < p->first_qset + p->nqsets; i++)
-+			adap->sge.qs[i].lro_enabled = 0;
-+	}
- 	return 0;
- }
- 
-@@ -1830,6 +1843,11 @@ static int cxgb_extension_ioctl(struct net_device *dev, void __user *useraddr)
- 				}
- 			}
- 		}
-+		if (t.lro >= 0) {
-+			struct sge_qset *qs = &adapter->sge.qs[t.qset_idx];
-+			q->lro = t.lro;
-+			qs->lro_enabled = t.lro;
-+		}
- 		break;
- 	}
- 	case CHELSIO_GET_QSET_PARAMS:{
-@@ -1849,6 +1867,7 @@ static int cxgb_extension_ioctl(struct net_device *dev, void __user *useraddr)
- 		t.fl_size[0] = q->fl_size;
- 		t.fl_size[1] = q->jumbo_size;
- 		t.polling = q->polling;
-+		t.lro = q->lro;
- 		t.intr_lat = q->coalesce_usecs;
- 		t.cong_thres = q->cong_thres;
- 
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-index 3e91be5..a96331c 100644
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -584,6 +584,8 @@ static void t3_reset_qset(struct sge_qset *q)
- 	memset(q->txq, 0, sizeof(struct sge_txq) * SGE_TXQ_PER_SET);
- 	q->txq_stopped = 0;
- 	memset(&q->tx_reclaim_timer, 0, sizeof(q->tx_reclaim_timer));
-+	kfree(q->lro_frag_tbl);
-+	q->lro_nfrags = q->lro_frag_len = 0;
- }
- 
- 
-@@ -796,7 +798,7 @@ recycle:
- 		goto recycle;
- 
- 	if (!skb)
--		newskb = alloc_skb(SGE_RX_PULL_LEN, GFP_ATOMIC);	
-+		newskb = alloc_skb(SGE_RX_PULL_LEN, GFP_ATOMIC);
- 	if (unlikely(!newskb)) {
- 		if (!drop_thres)
- 			return NULL;
-@@ -1868,9 +1870,10 @@ static void restart_tx(struct sge_qset *qs)
-  *	if it was immediate data in a response.
-  */
- static void rx_eth(struct adapter *adap, struct sge_rspq *rq,
--		   struct sk_buff *skb, int pad)
-+		   struct sk_buff *skb, int pad, int lro)
- {
- 	struct cpl_rx_pkt *p = (struct cpl_rx_pkt *)(skb->data + pad);
-+	struct sge_qset *qs = rspq_to_qset(rq);
- 	struct port_info *pi;
- 
- 	skb_pull(skb, sizeof(*p) + pad);
-@@ -1887,18 +1890,202 @@ static void rx_eth(struct adapter *adap, struct sge_rspq *rq,
- 	if (unlikely(p->vlan_valid)) {
- 		struct vlan_group *grp = pi->vlan_grp;
- 
--		rspq_to_qset(rq)->port_stats[SGE_PSTAT_VLANEX]++;
-+		qs->port_stats[SGE_PSTAT_VLANEX]++;
- 		if (likely(grp))
--			__vlan_hwaccel_rx(skb, grp, ntohs(p->vlan),
--					  rq->polling);
-+			if (lro)
-+				lro_vlan_hwaccel_receive_skb(&qs->lro_mgr, skb,
-+							     grp,
-+							     ntohs(p->vlan),
-+							     p);
-+			else
-+				__vlan_hwaccel_rx(skb, grp, ntohs(p->vlan),
-+					  	  rq->polling);
- 		else
- 			dev_kfree_skb_any(skb);
--	} else if (rq->polling)
--		netif_receive_skb(skb);
--	else
-+	} else if (rq->polling) {
-+		if (lro)
-+			lro_receive_skb(&qs->lro_mgr, skb, p);
-+		else
-+			netif_receive_skb(skb);
-+	} else
- 		netif_rx(skb);
- }
- 
-+static inline int is_eth_tcp(u32 rss)
-+{
-+	return G_HASHTYPE(ntohl(rss)) == RSS_HASH_4_TUPLE;
-+}
-+
-+/**
-+ *	lro_frame_ok - check if an ingress packet is eligible for LRO
-+ *	@p: the CPL header of the packet
-+ *
-+ *	Returns true if a received packet is eligible for LRO.
-+ *	The following conditions must be true:
-+ *	- packet is TCP/IP Ethernet II (checked elsewhere)
-+ *	- not an IP fragment
-+ *	- no IP options
-+ *	- TCP/IP checksums are correct
-+ *	- the packet is for this host
-+ */
-+static inline int lro_frame_ok(const struct cpl_rx_pkt *p)
-+{
-+	const struct ethhdr *eh = (struct ethhdr *)(p + 1);
-+	const struct iphdr *ih = (struct iphdr *)(eh + 1);
-+
-+	return (*((u8 *)p + 1) & 0x90) == 0x10 && p->csum == htons(0xffff) &&
-+		eh->h_proto == htons(ETH_P_IP) && ih->ihl == (sizeof(*ih) >> 2);
-+}
-+
-+#define TCP_FLAG_MASK (TCP_FLAG_CWR | TCP_FLAG_ECE | TCP_FLAG_URG |\
-+                       TCP_FLAG_ACK | TCP_FLAG_PSH | TCP_FLAG_RST |\
-+		                       TCP_FLAG_SYN | TCP_FLAG_FIN)
-+#define TSTAMP_WORD ((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16) |\
-+                     (TCPOPT_TIMESTAMP << 8) | TCPOLEN_TIMESTAMP)
-+
-+/**
-+ *	lro_segment_ok - check if a TCP segment is eligible for LRO
-+ *	@tcph: the TCP header of the packet
-+ *
-+ *	Returns true if a TCP packet is eligible for LRO.  This requires that
-+ *	the packet have only the ACK flag set and no TCP options besides
-+ *	time stamps.
-+ */
-+static inline int lro_segment_ok(const struct tcphdr *tcph)
-+{
-+	int optlen;
-+
-+	if (unlikely((tcp_flag_word(tcph) & TCP_FLAG_MASK) != TCP_FLAG_ACK))
-+		return 0;
-+
-+	optlen = (tcph->doff << 2) - sizeof(*tcph);
-+	if (optlen) {
-+		const u32 *opt = (const u32 *)(tcph + 1);
-+
-+		if (optlen != TCPOLEN_TSTAMP_ALIGNED ||
-+		    *opt != htonl(TSTAMP_WORD) || !opt[2])
-+			return 0;
-+	}
-+	return 1;
-+}
-+
-+static int t3_get_lro_header(void **eh,  void **iph, void **tcph,
-+			     u64 *hdr_flags, void *priv)
-+{
-+	const struct cpl_rx_pkt *cpl = priv;
-+
-+	if (!lro_frame_ok(cpl))
-+		return -1;
-+
-+	*eh = (struct ethhdr *)(cpl + 1);
-+	*iph = (struct iphdr *)((struct ethhdr *)*eh + 1);
-+	*tcph = (struct tcphdr *)((struct iphdr *)*iph + 1);
-+
-+	 if (!lro_segment_ok(*tcph))
-+		return -1;
-+
-+	*hdr_flags = LRO_IPV4 | LRO_TCP;
-+	return 0;
-+}
-+
-+static int t3_get_skb_header(struct sk_buff *skb,
-+			      void **iph, void **tcph, u64 *hdr_flags,
-+			      void *priv)
-+{
-+	void *eh;
-+
-+	return t3_get_lro_header(&eh, iph, tcph, hdr_flags, priv);
-+}
-+
-+static int t3_get_frag_header(struct skb_frag_struct *frag, void **eh,
-+			      void **iph, void **tcph, u64 *hdr_flags,
-+			      void *priv)
-+{
-+	return t3_get_lro_header(eh, iph, tcph, hdr_flags, priv);
-+}
-+
-+/**
-+ *	lro_add_page - add a page chunk to an LRO session
-+ *	@adap: the adapter
-+ *	@qs: the associated queue set
-+ *	@fl: the free list containing the page chunk to add
-+ *	@len: packet length
-+ *	@complete: Indicates the last fragment of a frame
-+ *
-+ *	Add a received packet contained in a page chunk to an existing LRO
-+ *	session.
-+ */
-+static void lro_add_page(struct adapter *adap, struct sge_qset *qs,
-+			 struct sge_fl *fl, int len, int complete)
-+{
-+	struct rx_sw_desc *sd = &fl->sdesc[fl->cidx];
-+	struct cpl_rx_pkt *cpl;
-+	struct skb_frag_struct *rx_frag = qs->lro_frag_tbl;
-+	int nr_frags = qs->lro_nfrags, frag_len = qs->lro_frag_len;
-+	int offset = 0;
-+
-+	if (!nr_frags) {
-+		offset = 2 + sizeof(struct cpl_rx_pkt);
-+		qs->lro_va = cpl = sd->pg_chunk.va + 2;
-+	}
-+
-+	fl->credits--;
-+
-+	len -= offset;
-+	pci_unmap_single(adap->pdev, pci_unmap_addr(sd, dma_addr),
-+			 fl->buf_size, PCI_DMA_FROMDEVICE);
-+
-+	rx_frag += nr_frags;
-+	rx_frag->page = sd->pg_chunk.page;
-+	rx_frag->page_offset = sd->pg_chunk.offset + offset;
-+	rx_frag->size = len;
-+	frag_len += len;
-+	qs->lro_nfrags++;
-+	qs->lro_frag_len = frag_len;
-+
-+	if (!complete)
-+		return;
-+
-+	qs->lro_nfrags = qs->lro_frag_len = 0;
-+	cpl = qs->lro_va;
-+
-+	if (unlikely(cpl->vlan_valid)) {
-+		struct net_device *dev = qs->netdev;
-+		struct port_info *pi = netdev_priv(dev);
-+		struct vlan_group *grp = pi->vlan_grp;
-+
-+		if (likely(grp != NULL)) {
-+			lro_vlan_hwaccel_receive_frags(&qs->lro_mgr,
-+						       qs->lro_frag_tbl,
-+						       frag_len, frag_len,
-+						       grp, ntohs(cpl->vlan),
-+						       cpl, 0);
-+			return;
-+		}
-+	}
-+	lro_receive_frags(&qs->lro_mgr, qs->lro_frag_tbl,
-+			  frag_len, frag_len, cpl, 0);
-+}
-+
-+/**
-+ *	init_lro_mgr - initialize a LRO manager object
-+ *	@lro_mgr: the LRO manager object
-+ */
-+static void init_lro_mgr(struct sge_qset *qs, struct net_lro_mgr *lro_mgr)
-+{
-+	lro_mgr->dev = qs->netdev;
-+	lro_mgr->features = LRO_F_NAPI;
-+	lro_mgr->ip_summed = CHECKSUM_UNNECESSARY;
-+	lro_mgr->ip_summed_aggr = CHECKSUM_UNNECESSARY;
-+	lro_mgr->max_desc = T3_MAX_LRO_SES;
-+	lro_mgr->lro_arr = qs->lro_desc;
-+	lro_mgr->get_frag_header = t3_get_frag_header;
-+	lro_mgr->get_skb_header = t3_get_skb_header;
-+	lro_mgr->max_aggr = T3_MAX_LRO_MAX_PKTS;
-+	if (lro_mgr->max_aggr > MAX_SKB_FRAGS)
-+		lro_mgr->max_aggr = MAX_SKB_FRAGS;
-+}
-+
- /**
-  *	handle_rsp_cntrl_info - handles control information in a response
-  *	@qs: the queue set corresponding to the response
-@@ -2027,7 +2214,7 @@ static int process_responses(struct adapter *adap, struct sge_qset *qs,
- 	q->next_holdoff = q->holdoff_tmr;
- 
- 	while (likely(budget_left && is_new_response(r, q))) {
--		int packet_complete, eth, ethpad = 2;
-+		int packet_complete, eth, ethpad = 2, lro = qs->lro_enabled;
- 		struct sk_buff *skb = NULL;
- 		u32 len, flags = ntohl(r->flags);
- 		__be32 rss_hi = *(const __be32 *)r,
-@@ -2059,6 +2246,9 @@ no_mem:
- 		} else if ((len = ntohl(r->len_cq)) != 0) {
- 			struct sge_fl *fl;
- 
-+			if (eth)
-+				lro = qs->lro_enabled && is_eth_tcp(rss_hi);
-+
- 			fl = (len & F_RSPD_FLQ) ? &qs->fl[1] : &qs->fl[0];
- 			if (fl->use_pages) {
- 				void *addr = fl->sdesc[fl->cidx].pg_chunk.va;
-@@ -2068,6 +2258,12 @@ no_mem:
- 				prefetch(addr + L1_CACHE_BYTES);
- #endif
- 				__refill_fl(adap, fl);
-+				if (lro > 0) {
-+					lro_add_page(adap, qs, fl,
-+						     G_RSPD_LEN(len),
-+						     flags & F_RSPD_EOP);
-+					 goto next_fl;
-+				}
- 
- 				skb = get_packet_pg(adap, fl, q,
- 						    G_RSPD_LEN(len),
-@@ -2083,7 +2279,7 @@ no_mem:
- 				q->rx_drops++;
- 			} else if (unlikely(r->rss_hdr.opcode == CPL_TRACE_PKT))
- 				__skb_pull(skb, 2);
--
-+next_fl:
- 			if (++fl->cidx == fl->size)
- 				fl->cidx = 0;
- 		} else
-@@ -2113,7 +2309,7 @@ no_mem:
- 
- 		if (skb != NULL && packet_complete) {
- 			if (eth)
--				rx_eth(adap, q, skb, ethpad);
-+				rx_eth(adap, q, skb, ethpad, lro);
- 			else {
- 				q->offload_pkts++;
- 				/* Preserve the RSS info in csum & priority */
-@@ -2125,12 +2321,17 @@ no_mem:
- 			}
- 
- 			if (flags & F_RSPD_EOP)
--				clear_rspq_bufstate(q);	
-+				clear_rspq_bufstate(q);
- 		}
- 		--budget_left;
- 	}
- 
- 	deliver_partial_bundle(&adap->tdev, q, offload_skbs, ngathered);
-+	lro_flush_all(&qs->lro_mgr);
-+	qs->port_stats[SGE_PSTAT_LRO_AGGR] = qs->lro_mgr.stats.aggregated;
-+	qs->port_stats[SGE_PSTAT_LRO_FLUSHED] = qs->lro_mgr.stats.flushed;
-+	qs->port_stats[SGE_PSTAT_LRO_NO_DESC] = qs->lro_mgr.stats.no_desc;
-+
- 	if (sleeping)
- 		check_ring_db(adap, qs, sleeping);
- 
-@@ -2674,6 +2875,7 @@ int t3_sge_alloc_qset(struct adapter *adapter, unsigned int id, int nports,
- {
- 	int i, avail, ret = -ENOMEM;
- 	struct sge_qset *q = &adapter->sge.qs[id];
-+	struct net_lro_mgr *lro_mgr = &q->lro_mgr;
- 
- 	init_qset_cntxt(q, id);
- 	init_timer(&q->tx_reclaim_timer);
-@@ -2754,6 +2956,10 @@ int t3_sge_alloc_qset(struct adapter *adapter, unsigned int id, int nports,
- 	q->fl[0].order = FL0_PG_ORDER;
- 	q->fl[1].order = FL1_PG_ORDER;
- 
-+	q->lro_frag_tbl = kcalloc(MAX_FRAME_SIZE / FL1_PG_CHUNK_SIZE + 1,
-+				  sizeof(struct skb_frag_struct),
-+				  GFP_KERNEL);
-+	q->lro_nfrags = q->lro_frag_len = 0;
- 	spin_lock_irq(&adapter->sge.reg_lock);
- 
- 	/* FL threshold comparison uses < */
-@@ -2803,6 +3009,9 @@ int t3_sge_alloc_qset(struct adapter *adapter, unsigned int id, int nports,
- 	q->adap = adapter;
- 	q->netdev = dev;
- 	t3_update_qset_coalesce(q, p);
-+
-+	init_lro_mgr(q, lro_mgr);
-+
- 	avail = refill_fl(adapter, &q->fl[0], q->fl[0].size,
- 			  GFP_KERNEL | __GFP_COMP);
- 	if (!avail) {
-diff --git a/drivers/net/cxgb3/t3_cpl.h b/drivers/net/cxgb3/t3_cpl.h
-index b7a1a31..a666c5d 100644
---- a/drivers/net/cxgb3/t3_cpl.h
-+++ b/drivers/net/cxgb3/t3_cpl.h
-@@ -174,6 +174,13 @@ enum {				/* TCP congestion control algorithms */
- 	CONG_ALG_HIGHSPEED
- };
- 
-+enum {			/* RSS hash type */
-+	RSS_HASH_NONE = 0,
-+	RSS_HASH_2_TUPLE = 1,
-+	RSS_HASH_4_TUPLE = 2,
-+	RSS_HASH_TCPV6 = 3
-+};
-+
- union opcode_tid {
- 	__be32 opcode_tid;
- 	__u8 opcode;
-@@ -184,6 +191,10 @@ union opcode_tid {
- #define G_OPCODE(x) (((x) >> S_OPCODE) & 0xFF)
- #define G_TID(x)    ((x) & 0xFFFFFF)
- 
-+#define S_HASHTYPE 22
-+#define M_HASHTYPE 0x3
-+#define G_HASHTYPE(x) (((x) >> S_HASHTYPE) & M_HASHTYPE)
-+
- /* tid is assumed to be 24-bits */
- #define MK_OPCODE_TID(opcode, tid) (V_OPCODE(opcode) | (tid))
- 
+Mathieu
+
+> Changelog :
+> - USE_IMMEDIATE must now be used in lieue of CONFIG_IMMEDIATE in Makefiles and
+>   in C code.
+> - Every architecture implementing immediate values must declare USE_IMMEDIATE
+>   in their Makefile.
+> - Tab -> spaces in Makefiles.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: Sam Ravnborg <sam@ravnborg.org>
+> CC: "H. Peter Anvin" <hpa@zytor.com>
+> CC: Jeremy Fitzhardinge <jeremy@goop.org>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: David Miller <davem@davemloft.net>
+> CC: Paul Mackerras <paulus@samba.org>
+> ---
+>  Makefile                     |    5 +++++
+>  arch/powerpc/Makefile        |    2 ++
+>  arch/powerpc/kernel/Makefile |    2 +-
+>  arch/x86/Makefile            |    5 +++++
+>  arch/x86/kernel/Makefile     |    2 +-
+>  arch/x86/kernel/traps_32.c   |    4 ++--
+>  include/linux/immediate.h    |    2 +-
+>  include/linux/module.h       |    4 ++--
+>  kernel/Makefile              |    2 +-
+>  kernel/module.c              |    8 ++++----
+>  10 files changed, 24 insertions(+), 12 deletions(-)
+> 
+> Index: linux-2.6-sched-devel/arch/x86/Makefile
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/arch/x86/Makefile	2008-05-21 15:16:06.000000000 -0400
+> +++ linux-2.6-sched-devel/arch/x86/Makefile	2008-05-21 15:53:00.000000000 -0400
+> @@ -43,6 +43,7 @@
+>  
+>          # temporary until string.h is fixed
+>          KBUILD_CFLAGS += -ffreestanding
+> +        export USE_IMMEDIATE := $(CONFIG_IMMEDIATE)
+>  else
+>          BITS := 64
+>          UTS_MACHINE := x86_64
+> @@ -78,6 +79,10 @@
+>                  "$(CC)" -fstack-protector-all )
+>  
+>          KBUILD_CFLAGS += $(stackp-y)
+> +
+> +        # x86_64 gcc 3.x has problems with passing symbol+offset in
+> +        # asm "i" constraint.
+> +        export USE_IMMEDIATE := $(call cc-ifversion, -ge, 0400, $(CONFIG_IMMEDIATE))
+>  endif
+>  
+>  # Stackpointer is addressed different for 32 bit and 64 bit x86
+> Index: linux-2.6-sched-devel/include/linux/immediate.h
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/include/linux/immediate.h	2008-05-21 15:16:06.000000000 -0400
+> +++ linux-2.6-sched-devel/include/linux/immediate.h	2008-05-21 15:16:59.000000000 -0400
+> @@ -10,7 +10,7 @@
+>   * See the file COPYING for more details.
+>   */
+>  
+> -#ifdef CONFIG_IMMEDIATE
+> +#ifdef USE_IMMEDIATE
+>  
+>  #include <asm/immediate.h>
+>  
+> Index: linux-2.6-sched-devel/arch/x86/kernel/Makefile
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/arch/x86/kernel/Makefile	2008-05-21 15:16:51.000000000 -0400
+> +++ linux-2.6-sched-devel/arch/x86/kernel/Makefile	2008-05-21 15:16:59.000000000 -0400
+> @@ -75,7 +75,7 @@
+>  obj-$(CONFIG_KPROBES)		+= kprobes.o
+>  obj-$(CONFIG_MODULES)		+= module_$(BITS).o
+>  obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
+> -obj-$(CONFIG_IMMEDIATE)		+= immediate.o
+> +obj-$(USE_IMMEDIATE)		+= immediate.o
+>  obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
+>  obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault_32.o
+>  obj-$(CONFIG_KGDB)		+= kgdb.o
+> Index: linux-2.6-sched-devel/kernel/Makefile
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/kernel/Makefile	2008-05-21 15:16:52.000000000 -0400
+> +++ linux-2.6-sched-devel/kernel/Makefile	2008-05-21 15:16:59.000000000 -0400
+> @@ -75,7 +75,7 @@
+>  obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+>  obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
+>  obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
+> -obj-$(CONFIG_IMMEDIATE) += immediate.o
+> +obj-$(USE_IMMEDIATE) += immediate.o
+>  obj-$(CONFIG_MARKERS) += marker.o
+>  obj-$(CONFIG_LATENCYTOP) += latencytop.o
+>  obj-$(CONFIG_FTRACE) += trace/
+> Index: linux-2.6-sched-devel/arch/powerpc/Makefile
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/arch/powerpc/Makefile	2008-05-21 15:16:06.000000000 -0400
+> +++ linux-2.6-sched-devel/arch/powerpc/Makefile	2008-05-21 15:16:59.000000000 -0400
+> @@ -98,6 +98,8 @@
+>  endif
+>  endif
+>  
+> +export USE_IMMEDIATE := $(CONFIG_IMMEDIATE)
+> +
+>  ifeq ($(CONFIG_TUNE_CELL),y)
+>  	KBUILD_CFLAGS += $(call cc-option,-mtune=cell)
+>  endif
+> Index: linux-2.6-sched-devel/Makefile
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/Makefile	2008-05-21 15:16:51.000000000 -0400
+> +++ linux-2.6-sched-devel/Makefile	2008-05-21 15:16:59.000000000 -0400
+> @@ -532,6 +532,11 @@
+>  KBUILD_CFLAGS	+= -pg
+>  endif
+>  
+> +# arch Makefile detects if the compiler permits use of immediate values
+> +ifdef USE_IMMEDIATE
+> +KBUILD_CFLAGS	+= -DUSE_IMMEDIATE
+> +endif
+> +
+>  # We trigger additional mismatches with less inlining
+>  ifdef CONFIG_DEBUG_SECTION_MISMATCH
+>  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
+> Index: linux-2.6-sched-devel/arch/powerpc/kernel/Makefile
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/arch/powerpc/kernel/Makefile	2008-05-21 15:16:06.000000000 -0400
+> +++ linux-2.6-sched-devel/arch/powerpc/kernel/Makefile	2008-05-21 15:16:59.000000000 -0400
+> @@ -45,7 +45,7 @@
+>  obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
+>  obj-$(CONFIG_MODULES)		+= module_$(CONFIG_WORD_SIZE).o
+>  obj-$(CONFIG_44x)		+= cpu_setup_44x.o
+> -obj-$(CONFIG_IMMEDIATE)		+= immediate.o
+> +obj-$(USE_IMMEDIATE)		+= immediate.o
+>  
+>  ifeq ($(CONFIG_PPC_MERGE),y)
+>  
+> Index: linux-2.6-sched-devel/kernel/module.c
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/kernel/module.c	2008-05-21 15:16:52.000000000 -0400
+> +++ linux-2.6-sched-devel/kernel/module.c	2008-05-21 15:16:59.000000000 -0400
+> @@ -2013,7 +2013,7 @@
+>  	mod->gpl_future_syms = (void *)sechdrs[gplfutureindex].sh_addr;
+>  	if (gplfuturecrcindex)
+>  		mod->gpl_future_crcs = (void *)sechdrs[gplfuturecrcindex].sh_addr;
+> -#ifdef CONFIG_IMMEDIATE
+> +#ifdef USE_IMMEDIATE
+>  	mod->immediate = (void *)sechdrs[immediateindex].sh_addr;
+>  	mod->num_immediate =
+>  		sechdrs[immediateindex].sh_size / sizeof(*mod->immediate);
+> @@ -2097,7 +2097,7 @@
+>  		marker_update_probe_range(mod->markers,
+>  			mod->markers + mod->num_markers);
+>  #endif
+> -#ifdef CONFIG_IMMEDIATE
+> +#ifdef USE_IMMEDIATE
+>  		/* Immediate values must be updated after markers */
+>  		imv_update_range(mod->immediate,
+>  			mod->immediate + mod->num_immediate);
+> @@ -2258,7 +2258,7 @@
+>  	/* Drop initial reference. */
+>  	module_put(mod);
+>  	unwind_remove_table(mod->unwind_info, 1);
+> -#ifdef CONFIG_IMMEDIATE
+> +#ifdef USE_IMMEDIATE
+>  	imv_unref(mod->immediate, mod->immediate + mod->num_immediate,
+>  		mod->module_init, mod->init_size);
+>  #endif
+> @@ -2657,7 +2657,7 @@
+>  }
+>  #endif
+>  
+> -#ifdef CONFIG_IMMEDIATE
+> +#ifdef USE_IMMEDIATE
+>  /**
+>   * _module_imv_update - update all immediate values in the kernel
+>   *
+> Index: linux-2.6-sched-devel/include/linux/module.h
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/include/linux/module.h	2008-05-21 15:16:52.000000000 -0400
+> +++ linux-2.6-sched-devel/include/linux/module.h	2008-05-21 15:16:59.000000000 -0400
+> @@ -339,7 +339,7 @@
+>  	/* The command line arguments (may be mangled).  People like
+>  	   keeping pointers to this stuff */
+>  	char *args;
+> -#ifdef CONFIG_IMMEDIATE
+> +#ifdef USE_IMMEDIATE
+>  	struct __imv *immediate;
+>  	unsigned int num_immediate;
+>  	unsigned long *immediate_cond_end;
+> @@ -563,7 +563,7 @@
+>  
+>  #endif /* CONFIG_MODULES */
+>  
+> -#if defined(CONFIG_MODULES) && defined(CONFIG_IMMEDIATE)
+> +#if defined(CONFIG_MODULES) && defined(USE_IMMEDIATE)
+>  extern void _module_imv_update(void);
+>  extern void module_imv_update(void);
+>  extern int is_imv_cond_end_module(unsigned long addr1, unsigned long addr2);
+> Index: linux-2.6-sched-devel/arch/x86/kernel/traps_32.c
+> ===================================================================
+> --- linux-2.6-sched-devel.orig/arch/x86/kernel/traps_32.c	2008-05-21 15:16:06.000000000 -0400
+> +++ linux-2.6-sched-devel/arch/x86/kernel/traps_32.c	2008-05-21 15:16:59.000000000 -0400
+> @@ -595,7 +595,7 @@
+>  }
+>  
+>  DO_VM86_ERROR_INFO(0, SIGFPE,  "divide error", divide_error, FPE_INTDIV, regs->ip)
+> -#if !defined(CONFIG_KPROBES) && !defined(CONFIG_IMMEDIATE)
+> +#if !defined(CONFIG_KPROBES) && !defined(USE_IMMEDIATE)
+>  DO_VM86_ERROR(3, SIGTRAP, "int3", int3)
+>  #endif
+>  DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
+> @@ -860,7 +860,7 @@
+>  	acpi_nmi_enable();
+>  }
+>  
+> -#if defined(CONFIG_KPROBES) || defined(CONFIG_IMMEDIATE)
+> +#if defined(CONFIG_KPROBES) || defined(USE_IMMEDIATE)
+>  void __kprobes do_int3(struct pt_regs *regs, long error_code)
+>  {
+>  	trace_hardirqs_fixup();
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
