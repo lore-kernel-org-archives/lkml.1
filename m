@@ -1,99 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbYEVMr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933357AbYEVM44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933530AbYEVMr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 08:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761400AbYEVMrp
+	id S933357AbYEVM44 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 08:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759827AbYEVM4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 08:47:45 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:37345 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761332AbYEVMro (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 08:47:44 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArwEAJoINUhMQWqh/2dsb2JhbACBVa13
-Date: Thu, 22 May 2008 08:47:39 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       systemtap@sources.redhat.com, "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: System call instrumentation
-Message-ID: <20080522124739.GA14980@Krystal>
-References: <20080504134838.GA21487@Krystal> <20080505065559.GD3350@elte.hu> <20080505105915.GA26444@Krystal> <20080505111029.GA9948@elte.hu> <20080505113057.GA28070@Krystal> <20080505122835.GA1523@elte.hu> <20080520034453.GA21313@Krystal> <20080520071804.482c173e@infradead.org>
+	Thu, 22 May 2008 08:56:45 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:55060 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759227AbYEVM4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 08:56:44 -0400
+Date: Thu, 22 May 2008 15:55:53 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it is queued
+Message-ID: <20080522115553.GB117@tv-sign.ru>
+References: <20080517151420.GA9496@tv-sign.ru> <20080521022046.1501F26FA1C@magilla.localdomain> <20080521115414.GA147@tv-sign.ru> <20080521184245.5BABF26FA24@magilla.localdomain> <alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org> <20080521193348.64E8C26FA24@magilla.localdomain> <alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org> <20080521230135.BF65A26FA24@magilla.localdomain> <20080522111211.GA117@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080520071804.482c173e@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:33:11 up 83 days,  8:44,  4 users,  load average: 0.30, 0.24,
-	0.28
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20080522111211.GA117@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven (arjan@infradead.org) wrote:
-> On Mon, 19 May 2008 23:44:53 -0400
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On 05/22, Oleg Nesterov wrote:
+>
+> On 05/21, Roland McGrath wrote:
+> >
+> > -void flush_sigqueue(struct sigpending *queue)
+> > +static void __flush_sigqueue(struct sigpending *queue, int timers)
+> >  {
+> >  	struct sigqueue *q;
+> >  
+> >  	sigemptyset(&queue->signal);
+> >  	while (!list_empty(&queue->list)) {
+> >  		q = list_entry(queue->list.next, struct sigqueue , list);
+> > +		if (timers && q->info.si_code != SI_TIMER)
+> > +			continue;
+> >  		list_del_init(&q->list);
+> >  		__sigqueue_free(q);
+> >  	}
+> >  }
 > 
-> > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > 
-> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > 
-> > > > Ideally, I'd like to have this kind of high-level information :
-> > > > 
-> > > > event name : kernel syscall
-> > > > syscall name : open
-> > > > arg1 (%s) : "somefile"    <-----
-> > > > arg2 (%d) : flags
-> > > > arg3 (%d) : mode
-> > > > 
-> > > > However, "somefile" has to be read from userspace. With the
-> > > > protection involved, it would cause a performance impact to read
-> > > > it a second time rather than tracing the string once it's been
-> > > > copied to kernel-space.
+> This is not enough. Again, we remove and free sigqueue but don't discard
+> the pending signal. (and we must take into account other rt signals with
+> the same si_signo if we want to discard the signal).
 > 
-> the audit subsystem already does all of this... why not use that??
-> (And it goes through great lengths to do it securely)
+> Oh, this problem is unexpectedly nasty. It is trivial and minor, we can
+> solve it in may ways, but personally I can't find a simple/clean way.
 > 
-> > > 
+> Let's look at my first attempt,
 > 
-> > Hrm, a quick benchmark on my pentium 4 comparing a normal open()
-> > system call executed in a loop to a modified open() syscall which
-> > executes the lines added in the following patch adds 450 cycles to
-> > each open() system call. I added a putname/getname on purpose to see
-> > the cost of a second userspace copy and it's not exactly free.
+> 	http://marc.info/?l=linux-kernel&m=120888210417700
 > 
-> copying twice does mean that if the user wants, he can cheat you. He
-> can, in another thread, change the string under you. So say you're
-> doing this for anti-virus purposes, he can make you scan one file and
-> open another.
-> 
-> 
-> The audit subsystem was carefully designed to avoid this trap... how
-> about using that?
+> the patch was "almost" correct.
+> We can add the "bool cancel" parameter to sigqueue_free(), true when
+> called from exec (or exit_itimers). In that case SIGQUEUE_SHARED_PENDING
+> is enough: the pending signal was either sent to current, or it is group
+> wide. Not nice too of course, but afaics a bit simpler.
 
-Hrm, given tracing will have to grab __user * parameters passed to
-various system calls, not limited to strings, the getname/putname
-infrastructure would need to be expanded a lot. I doubt it's worth
-adding such complexity (copy to temporary memory buffers and reference
-counting) in those system calls to support kernel-wide tracing.
+I take my words back. It is not simpler. How about
 
-On the other hand, adding a marker in the traced function, at a code
-location where the data copied into the kernel is accessible, won't add
-such complexity and will help to keep good locality of reference (the
-stack is meant to be a good cache-hot memory region). Because a dormant
-marker does not have a significant performance hit (actually, my
-benchmarks shows a small acceleration of the overall system, probably
-due to cache line code layout modifications), I think it's legitimate to
-add this kind of instrumentation in the existing kernel system call
-functions.
+	void xxx(struct sigpending *pending)
+	{
+		struct sigqueue *q;
+		sigset_t drop, retain;
 
-Mathieu
+		sigemptyset(&drop);
+		sigemptyset(&retain);
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+		list_for_each_entry_safe(q) {
+			int sig = q->info.si_signo;
+
+			// it is better to add another SIGQUEUE_ flag...
+			if (q->info.si_code == SI_TIMER) {
+				list_del_init(&q->list);
+				__sigqueue_free(q);
+				sigaddset(&drop, sig);
+			} else
+				sigaddset(&retain, sig);
+		}
+
+		// pseudo code
+		pending->signal &= ~(drop & ~retain);
+	}
+
+?
+
+This helper is called somewhere near flush_signal_handlers() or
+de_thread()->exit_itimers().
+
+We still need the "sigqueue_free: don't free sigqueue if it is queued"
+patch of course.
+
+Oleg.
+
