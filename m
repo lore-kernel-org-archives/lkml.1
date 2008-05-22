@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbYEVPGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYEVPIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754522AbYEVPGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 11:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYEVPFv
+	id S1754167AbYEVPIV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 11:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYEVPII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 11:05:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53302 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752349AbYEVPFu (ORCPT
+	Thu, 22 May 2008 11:08:08 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45257 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751536AbYEVPIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 11:05:50 -0400
-Date: Thu, 22 May 2008 08:04:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-cc: Takashi Iwai <tiwai@suse.de>, Rene Herman <rene.herman@keyaccess.nl>,
-       Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org, perex@perex.cz
-Subject: Re: Moving sound/* to drivers/ ?
-In-Reply-To: <alpine.LNX.1.10.0805221052050.971@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.1.10.0805220758000.3081@woody.linux-foundation.org>
-References: <s5hzlqjz74d.wl%tiwai@suse.de> <4834B252.1080700@garzik.org> <4834B5E2.3040301@keyaccess.nl> <s5hy7623fqs.wl%tiwai@suse.de> <alpine.LNX.1.10.0805221052050.971@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 22 May 2008 11:08:07 -0400
+X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 May 2008 11:08:07 EDT
+Date: Thu, 22 May 2008 16:01:19 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] wm97xx-core: Report a phys for WM97xx touchscreens
+Message-ID: <20080522150119.GA25172@opensource.wolfsonmicro.com>
+Mail-Followup-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <1211456106-10882-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20080522093759.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080522093759.ZZRA012@mailhub.coreip.homeip.net>
+X-Cookie: You dialed 5483.
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 22, 2008 at 09:41:48AM -0400, Dmitry Torokhov wrote:
+> On Thu, May 22, 2008 at 12:35:06PM +0100, Mark Brown wrote:
 
+> > phys is displayed in various diagnostic output so ensure that it is set
+> > to something sensible.
 
-On Thu, 22 May 2008, Jan Engelhardt wrote:
-> 
-> I am in favor of keeping /sound around with the
-> non-hardware-dependent code, much like /block does with regard to
-> /drivers/block.
+> Phys is used to describe the physical connection of a device that is
+> ideally not changing between reboots so having it set up based on
+> device's bus_id is not a best option I think.
 
-I'd personally *much* rather have just one subdirectory.
+It didn't seem terribly wonderful to me either but I saw that some other
+drivers were doing the same thing so I assumed it was idiomatic.  A
+quick survey of devices on my laptop suggets that it's getting filled in
+with USB bus IDs for some devices.
 
-I realize that block/ and drivers/block/ (and net/ vs drivers/net/) has 
-come up several times as an example that isn't that way, BUT:
+For a WM97xx device it should actually be OK almost all the time - AC97
+bus identifiers are fixed in hardware, there would only be a problem if
+additional AC97 buses are added which is relatively unlikely, especially
+in the embedded applications where the WM97xx devices get used.
+However, if it's supposed to be OK to leave this null then that would be
+better.
 
- - that's actually the odd man out. It's more common to do it the other 
-   way (and examples have already been given: drivers/usb/core, just plain 
-   drivers/base, drivers/scsi/ (where it's all mixed up and a lot of 
-   low-level drivers are in subdirectories of their own), etc etc.
+> What tools besides evbug use phys? They probably should display both
+> phys and sysfs paths (I will be changing evbug soon).
 
- - perhaps more importantly, it's totally different from 'sound' in that 
-   the block/ and drivers/block/ maintainership is actually *separate*.
-
-   The same is actually true of net/ and drivers/net/ too. It so happens 
-   that within the last few months, drivers/net/ gets merged through the 
-   same maintainer as net/, but they really end up being maintained 
-   separately other than that.
-
-So the block/ and net/ layers have very much a higher level of separation 
-from their drivers. sound has always been very much _maintained_ as a 
-block, even if it then internally may be separate pieces. Partly this is 
-from historical reasons, I'm sure, but it's true none-the-less.
-
-So from an outside view, having a single subdirectory makes sense, because 
-that's how it has always been maintained.
-
-So I'd personally much rather see just one drivers/sound/ than have this 
-split up.
-
-		Linus
+It was actually evbug that prompted this - it prints a rather alarming
+'Connected device: "foo", NULL' when phys is left empty.
