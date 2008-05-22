@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbYEVWTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbYEVWTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761186AbYEVWTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbYEVWTA
+	id S932353AbYEVWTf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760847AbYEVWTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:19:00 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:52409 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755092AbYEVWS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:18:59 -0400
-Date: Fri, 23 May 2008 01:18:09 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it is queued
-Message-ID: <20080522211809.GA451@tv-sign.ru>
-References: <20080517151420.GA9496@tv-sign.ru> <20080521022046.1501F26FA1C@magilla.localdomain> <20080521115414.GA147@tv-sign.ru> <20080521184245.5BABF26FA24@magilla.localdomain> <alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org> <20080521193348.64E8C26FA24@magilla.localdomain> <alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org> <20080521230135.BF65A26FA24@magilla.localdomain> <20080522111211.GA117@tv-sign.ru> <20080522215057.DCDF326FA24@magilla.localdomain>
+	Thu, 22 May 2008 18:19:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49956 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760740AbYEVWTL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 18:19:11 -0400
+Date: Thu, 22 May 2008 15:18:34 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Natalie Protasevich <protasnb@gmail.com>,
+       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Number of bugs - statistics
+Message-ID: <20080522151834.03f2790f@infradead.org>
+In-Reply-To: <20080522165008.GB2727@cs181133002.pp.htv.fi>
+References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com>
+ <20080522144114.GC27301@cs181133002.pp.htv.fi>
+ <20080522075135.4933161c@infradead.org>
+ <20080522155425.GA2727@cs181133002.pp.htv.fi>
+ <32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com>
+ <20080522165008.GB2727@cs181133002.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080522215057.DCDF326FA24@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/22, Roland McGrath wrote:
->
-> > This is not enough. Again, we remove and free sigqueue but don't discard
-> > the pending signal. (and we must take into account other rt signals with
-> > the same si_signo if we want to discard the signal).
+On Thu, 22 May 2008 19:50:08 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
+
+> > by various criteria: ALSA bugs
+> > are numerous, which is not important for most enterprise server
+> > users who would completely disregard this category, whereas desktop
+> > users will probably concentrate on those more than any other.
 > 
-> Right, of course.  The sigset_t collecting while checking the queue is the
-> only way to do it.  Note that you need to make it:
+> The majority of machines running Linux most likely runs with ARM CPUs.
+
+and on a 2.4 kernel, and with likely with some binary modules at that.
+it's cool to brag about market share, but these boxes unfortunately
+don't have any value for Linux development.
+
 > 
-> 	if (q->info.si_code == SI_TIMER && sig >= SIGRTMIN)
-> 
-> because a SI_TIMER could be using a legacy_queue signal number.
+> Show me any public source you want to use for getting serious data
+> for this area.
 
-Argh ;)
+You know, and I hate to say this, I'm getting a bit tired of your
+attitude of just throwing up your arms at the problem and at the same
+time trying to discredit anything and anybody who tries to improve the
+situation. Really, it's not helping nor does it improve ANYTHING. 
 
-I hoped you will not notice this. Because this is a separate problem
-which needs a separate discussion.
+I gave you real data before based on first hand experience from
+maintainers. We now have crash data, and we have data from every place
+in the kernel that dumps a backtrace. We track regressions and we can
+show that we attack the majority of those very agressively, and Linus
+has delayed releases for serious regressions. Just throwing your hands
+in the air and saying "it's hard don't even try and I don't want you to
+try" doesn't cut it.
 
-Please note that send_sigqueue() does not check if legacy_queue signal
-is already pending. The recent changes in signal.c carefully preserve
-this peculiarity. This is the question I was going to ask 1000 times
-but forgot all the time.
+Are we perfect? No. Can we do better? Absolutely. Should we try to do
+better? YES PLEASE. Lets get constructive and try to make things better.
 
-So. Let's suppose that (say) SIGHUP is pending, and the posix timer
-sends SIGHUP too. In that case the new SIGHUP is added, and if the
-previous one was infoless the new one "hides" it: collect_signal()
-won't see 2 distinct signals, it will find only 1 signal and clear
-the bit in sigpending->signal.
+In the past, a few simple things improved the situation, such as
+printk'ing the kernel version in the oops, as well as (longer back)
+kksymoops. Or think of things like lockdep, or the pagealloc-debug
+stuff. Going forward there are things we can do to improve things in the
+kernel, even if you don't have hardware. We need to make the kernel
+more selfdiagnosing. Detecting the problem, and if it's likely a
+driver/hw interaction bug, sticking in a WARN_ON(). That's the sort of
+thing even starting kernel developers can do to help improve the
+quality even wihtout hardware access, because it helps us improve the
+quality of bugreports, and it improves our ability to find patterns and
+group duplicates into a top 10. 
 
-So I think we shouldn't check "sig >= SIGRTMIN", but perhaps send_signal()
-should be fixed? Anyway, I believe this is a separate problem.
-
-Oleg.
+Adrian, how about working on that sort of thing rather than keep saying
+"impossible, we're doomed"... pretty please?
 
