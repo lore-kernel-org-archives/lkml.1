@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936583AbYEVKW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936618AbYEVKXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936583AbYEVKW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 06:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936469AbYEVKVU
+	id S936618AbYEVKXB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 06:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936725AbYEVKWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 06:21:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59272 "EHLO mail.dvmed.net"
+	Thu, 22 May 2008 06:22:20 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59326 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936456AbYEVKVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 06:21:18 -0400
-Message-ID: <4835491A.1020209@garzik.org>
-Date: Thu, 22 May 2008 06:21:14 -0400
+	id S936646AbYEVKWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 06:22:18 -0400
+Message-ID: <48354958.2060905@garzik.org>
+Date: Thu, 22 May 2008 06:22:16 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH 1/4] Restore multicast settings on resume
-References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080518130035.GA21417@yamamaya.is-a-geek.org>
-In-Reply-To: <20080518130035.GA21417@yamamaya.is-a-geek.org>
+To: Bryan Wu <cooloney@kernel.org>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Huang Weiyi <weiyi.huang@gmail.com>
+Subject: Re: [PATCH 1/1] Blackfin EMAC Driver: Removed duplicated include
+ <linux/ethtool.h> in drivers/net/bfin_mac.c.
+References: <1210565644-4272-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1210565644-4272-1-git-send-email-cooloney@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -30,16 +30,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tobias Diedrich wrote:
-> From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Bryan Wu wrote:
+> From: Huang Weiyi <weiyi.huang@gmail.com>
 > 
-> nv_open() resets multicast settings, call nv_set_multicast(dev) to restore them.
-> (Maybe this should rather be moved into nv_open())
+> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/net/bfin_mac.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 > 
-> Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+> diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
+> index 89c0018..4144343 100644
+> --- a/drivers/net/bfin_mac.c
+> +++ b/drivers/net/bfin_mac.c
+> @@ -22,7 +22,6 @@
+>  #include <linux/crc32.h>
+>  #include <linux/device.h>
+>  #include <linux/spinlock.h>
+> -#include <linux/ethtool.h>
+>  #include <linux/mii.h>
+>  #include <linux/phy.h>
 
 applied
-
-Ayaz, have you reviewed the other patches in this series?
 
 
