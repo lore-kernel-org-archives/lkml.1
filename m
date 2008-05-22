@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbYEVOZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbYEVObu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbYEVOZl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 10:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYEVOZ2
+	id S1753074AbYEVObu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 10:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbYEVObj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 10:25:28 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39878 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbYEVOZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 10:25:27 -0400
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: David Miller <davem@davemloft.net>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, tpiepho@freescale.com,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <20080520.155326.195407196.davem@davemloft.net>
-References: <4833524C.3040207@freescale.com>
-	 <20080520.153947.84346222.davem@davemloft.net>
-	 <4833542E.3040608@freescale.com>
-	 <20080520.155326.195407196.davem@davemloft.net>
-Content-Type: text/plain
-Date: Fri, 23 May 2008 00:24:43 -0400
-Message-Id: <1211516683.8297.271.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 22 May 2008 10:31:39 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:33852 "EHLO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbYEVObi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 10:31:38 -0400
+Message-ID: <483583C4.1080202@aitel.hist.no>
+Date: Thu, 22 May 2008 16:31:32 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+MIME-Version: 1.0
+To: Bosko Radivojevic <bosko.radivojevic@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Inserting code from userspace to kernel space
+References: <d6c8ef150805220541v711c5acahc60541e3fd9f44fc@mail.gmail.com>
+In-Reply-To: <d6c8ef150805220541v711c5acahc60541e3fd9f44fc@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bosko Radivojevic wrote:
+> Hi!
+>
+> I'm looking for a way to insert code from user space to the kernel
+> space, but without using kernel module. Actually, we are working on a
+> system that has to allow end user to change part of code (one or two
+> functions) that is executed from the kernel space.
+>
+> For now we have two different kernel modules, one exporting a function
+> which another module uses. Process of compiling kernel module is quite
+> ineligible for standard end user (along with the requirement to
+> support multi platform cross compiling) compared to just cross
+> compiling a simple code that doesn't use any libraries than libc.
+>
+> I know this sounds quite weird, but maybe there is a project that can help us ;)
+>   
+Consider telling exactly what you want to do, what is this for?
+Perhaps there is a better/more standard way of doing it.
 
-On Tue, 2008-05-20 at 15:53 -0700, David Miller wrote:
-> From: Scott Wood <scottwood@freescale.com>
-> Date: Tue, 20 May 2008 17:43:58 -0500
-> 
-> > David Miller wrote:
-> > > The __volatile__ in the asm construct disallows movement of the
-> > > inline asm relative to statements surrounding it.
-> > > 
-> > > The only reason barrier() in kernel.h needs a memory clobber is
-> > > because of a bug in ancient versions of gcc.  In fact, I think
-> > > that memory clobber might even be removable.
-> > 
-> > Current versions of GCC seem quite happy to move non-asm memory accesses 
-> > around a volatile asm without a memory clobber; see the test Trent posted.
-> 
-> Indeed, and even the GCC manual is clear about this.
+Looks like your end users are capable of compiling ordinary code
+but not kernel modules? If this is so, consider just automating
+the kernel module part for them. I.e. provide a module that call
+a function, they can then make that function and you can make a script
+that link their function with your kernel module. Then they won't need
+to know much about kernel modules.
 
-So what is the scope of that problem ?
+But the kernel module can't use libc (and what would you want to
+use libc for anyway? libc mostly helps userspace communicate
+with the kernel, no _need_ for that when your code is in the
+kernel already.)
 
-IE. Take an x86 version of that test, writing to memory, doing a writel
-to some MMIO, then another memory write, can those be re-ordered with
-the current x86 version of writel ?
+Or do you merely need your kernel code to run a user supplied program
+now and then?  The kernel code can't call userspace code directly,
+but you could make a device driver for this purpose.
 
-static inline void writel(unsigned int b, volatile void __iomem *addr)
-{
-	*(volatile unsigned int __force *)addr = b;
-}
+The userspace code can read from the device, and block. When the kernel
+need to run userspace code, it unblocks the userspace program.  If you
+need to transfer data to userspace, simply let the userpace program
+read the data from your device. and write stuff back, if needed.
 
-This is becoming a serious issue...
 
-Ben.
+
 
