@@ -1,140 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932949AbYEVFCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbYEVFIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932949AbYEVFCe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 01:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbYEVFCW
+	id S1760023AbYEVFIX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 01:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYEVFIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 01:02:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51578
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751959AbYEVFCV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 01:02:21 -0400
-Date: Wed, 21 May 2008 22:02:16 -0700 (PDT)
-Message-Id: <20080521.220216.244948557.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 22 May 2008 01:08:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37851 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752139AbYEVFIN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 01:08:13 -0400
+Date: Wed, 21 May 2008 22:06:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH -mm] remove node_ prefix_from ns subsystem
+Message-Id: <20080521220657.12e8e8c9.akpm@linux-foundation.org>
+In-Reply-To: <48344409.9090903@fr.ibm.com>
+References: <48344409.9090903@fr.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 21 May 2008 17:47:21 +0200 Cedric Le Goater <clg@fr.ibm.com> wrote:
 
-More fixes:
+> From: Cedric Le Goater <clg@fr.ibm.com>
+> 
+> This is a slight change in the namespace cgroup subsystem api.
+> 
 
-1) Pull in wireless bug fixes from John Linville.
+What are the reasons for making this change?
 
-2) Sridhar Samudrala discovered that we do not respect a
-   path MTU ICMP message that TCP receives after a certain	
-   number of retransmit retries.  This happens because at
-   this point the socket cached route is NULL, and we reload
-   it too late in retransmit processing for the PMTU to
-   properly take effect.
+> ---
+>  kernel/cgroup.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: 2.6.26-rc2-mm1/kernel/cgroup.c
+> ===================================================================
+> --- 2.6.26-rc2-mm1.orig/kernel/cgroup.c
+> +++ 2.6.26-rc2-mm1/kernel/cgroup.c
+> @@ -2903,7 +2903,7 @@ int cgroup_clone(struct task_struct *tsk
+>  	cg = tsk->cgroups;
+>  	parent = task_cgroup(tsk, subsys->subsys_id);
+>  
+> -	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "node_%d", tsk->pid);
+> +	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "%d", tsk->pid);
+>  
+>  	/* Pin the hierarchy */
+>  	atomic_inc(&parent->root->sb->s_active);
 
-   Reload the socket route to fix this bug.
+This is user-visible, isn't it?  Been there since October.  How can we
+safely change it now?
 
-3) Don't try to use IPV6 checksums provided by the HW in the
-   cassini driver, it doesn't work for some users and we're
-   not quite sure why yet.
-
-4) Family of IPSEC selector not set correctly in AF_KEY socket layer,
-   fix from Kazunori MIYAZAWA.  We had already fixed this in the
-   xfrm_user layer, but simply forgot to propagate that fix over
-   to AF_KEY.
-
-5) Zero length algorithm key checks in xfrm_user are removed, they
-   are valid in many cases, and the crypto layer will make sure the
-   length is OK for us.
-
-6) Several tunnel drivers have code which has existed for many
-   years which is protected by a CPP conditional that there is
-   no way to set without editing the code itself.  The build of
-   this continually breaks, and this code can never conceivable
-   be actually enabled, so it's better to just remove this stuff.
-
-7) prior_ssthresh needs to be a u32 instead of a u16 to avoid
-   potential overflows, fix from Ilpo Jarvinen.
-
-8) Netfilter headers need to not __KERNEL__ protect linux/types.h
-   inclusion, from Patrick McHardy.
-
-Please pull, thanks a lot!
-
-The following changes since commit d3ede327e83f202c3a0962e207318f65717c5eb7:
-  Denis V. Lunev (1):
-        pktgen: make sure that pktgen_thread_worker has been executed
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Bob Copeland (1):
-      ath5k: Fix loop variable initializations
-
-David S. Miller (3):
-      Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
-      cassini: Only use chip checksum for ipv4 packets.
-      xfrm_user: Remove zero length key checks.
-
-David Woodhouse (1):
-      libertas: Fix ethtool statistics
-
-Denis Cheng (1):
-      net/ipv4/arp.c: Use common hex_asc helpers
-
-Helmut Schaa (1):
-      mac80211: fix NULL pointer dereference in ieee80211_compatible_rates
-
-Ilpo Järvinen (1):
-      tcp: Make prior_ssthresh a u32
-
-Johannes Berg (1):
-      mac80211: don't claim iwspy support
-
-Kazunori MIYAZAWA (1):
-      af_key: Fix selector family initialization.
-
-Oliver Neukum (1):
-      rtl8187: resource leak in error case
-
-Patrick McHardy (1):
-      netfilter: Move linux/types.h inclusions outside of #ifdef __KERNEL__
-
-Pavel Roskin (2):
-      hostap_cs: add ID for Conceptronic CON11CPro
-      orinoco_cs: add ID for SpeedStream wireless adapters
-
-Rami Rosen (1):
-      net: The world is not perfect patch.
-
-Sridhar Samudrala (1):
-      tcp: TCP connection times out if ICMP frag needed is delayed
-
- drivers/net/cassini.c                     |   11 ++-
- drivers/net/wireless/ath5k/base.c         |    2 +
- drivers/net/wireless/ath5k/hw.c           |    6 +-
- drivers/net/wireless/hostap/hostap_cs.c   |    1 +
- drivers/net/wireless/libertas/ethtool.c   |   27 +++---
- drivers/net/wireless/orinoco_cs.c         |    1 +
- drivers/net/wireless/rtl8187_dev.c        |   14 +++-
- include/linux/netfilter.h                 |    2 +-
- include/linux/netfilter_arp/arp_tables.h  |    2 +-
- include/linux/netfilter_ipv4/ip_tables.h  |    2 +-
- include/linux/netfilter_ipv6/ip6_tables.h |    2 +-
- include/linux/tcp.h                       |    2 +-
- net/ipv4/arp.c                            |    5 +-
- net/ipv4/ip_gre.c                         |  146 +----------------------------
- net/ipv4/ipip.c                           |  130 +-------------------------
- net/ipv4/tcp_output.c                     |   10 +-
- net/ipv6/sit.c                            |   89 +-----------------
- net/key/af_key.c                          |    2 +-
- net/mac80211/mlme.c                       |   15 ++-
- net/mac80211/wext.c                       |    1 -
- net/xfrm/xfrm_user.c                      |   11 --
- 21 files changed, 68 insertions(+), 413 deletions(-)
