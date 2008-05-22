@@ -1,80 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759632AbYEVDdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbYEVDfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759632AbYEVDdF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 23:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYEVDcv
+	id S1760899AbYEVDfZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 23:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbYEVDfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 23:32:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54188 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754793AbYEVDcu (ORCPT
+	Wed, 21 May 2008 23:35:14 -0400
+Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:34887 "HELO
+	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755285AbYEVDfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 23:32:50 -0400
-Date: Wed, 21 May 2008 20:32:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Shi Weihua <shiwh@cn.fujitsu.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, morgan@kernel.org,
-       linux-security-module@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, jmorris@namei.org,
-       ltp-list@lists.sourceforge.net
-Subject: Re: [PATCH] fix sys_prctl() returned uninitialized value
-Message-Id: <20080521203212.ddf05254.akpm@linux-foundation.org>
-In-Reply-To: <4834E639.2010209@cn.fujitsu.com>
-References: <4834E639.2010209@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 May 2008 23:35:13 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=iFwEfWO3RSs9vsKdro3tAyW0oy4pqLihBUueDRUcWu46SNa5RP4Spw2AV3qC8LnZgODGrAp0dbWPlBgCXik3UGIdXNlJG5sM7SvrliV9TxRR+PYCCPOGE0Vo/fu1/+b1KH/uBa5BCNIVOD2hhoWXAsKH3N/qsLhZWhdOD9yKArI=  ;
+X-YMail-OSG: BC6I9zIVM1kUGNymThD0OVaSWZNGPZYoeIGyP1vXdYwtRhteseOOIFvRf3KIeTno12Bbstan_c4F3810UW_WFDSPI_2m3NYcewENFmuEGeuIqtRWDH1K6UKlKuDtZt.6VvQ-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH/RFC] spi: Change modalias from a pointer to a character array
+Date: Wed, 21 May 2008 17:03:25 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+References: <20080509173146.2932.16141.stgit@trillian.secretlab.ca>
+In-Reply-To: <20080509173146.2932.16141.stgit@trillian.secretlab.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805211703.25822.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008 11:19:21 +0800 Shi Weihua <shiwh@cn.fujitsu.com> wrote:
+On Friday 09 May 2008, Grant Likely wrote:
+> This patch changes modalias from a 'const char *' to a fixed char array.
+> By copying the modalias string instead of referencing it, the dependency
+> on the spi_board_info structure is eliminated and an outside caller does
+> not need to maintain a separate spi_board_info allocation for each device.
 
-> When we test kernel by the latest LTP(20080430) on ia64,
-> the following failure occured:
-> -------------------------------------
-> prctl01     1  PASS  :  Test Passed
-> prctl01     0  WARN  :  prctl() returned 2048 errno = 0 : Success
-> prctl01     1  PASS  :  Test Passed
-> prctl01     2  FAIL  :  Test Failed
-> -------------------------------------
-> 
-> We found commit 3898b1b4ebff8dcfbcf1807e0661585e06c9a91c
-> causes this failure by git-bisect.
-> And, we found 'error' has not been initialized in the function 
-> sys_prctl()(kernel/sys.c). When the capability module is not taking
-> responsibility for this call, sys_prctl() may return a wrong value.
-> 
-> Now, i fixed it.
-> 
-> Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
-> ---
-> diff --git a/kernel/sys.c b/kernel/sys.c
-> index 895d2d4..26eb0f7 100644
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -1652,7 +1652,7 @@ asmlinkage long sys_umask(int mask)
->  asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
->  			  unsigned long arg4, unsigned long arg5)
->  {
-> -	long uninitialized_var(error);
-> +	long error = 0;
->  
->  	if (security_task_prctl(option, arg2, arg3, arg4, arg5, &error))
->  		return error;
+Looks fine to me.
 
-Oh dear, there are so many things wrong with this...
-
-- if security_task_prctl() is returning "fail" then why on earth
-  isn't it setting the error code?
-
-- cap_task_prctl() _does_ set `error' is if returns non-zero, so it
-  must be one of the other myriad backend implementations of
-  security_task_prctl() which is busted.  Which one is it?
-
-- With the above patch applied, sys_prctl() will return zero (ie:
-  "success") even though it just failed.
-
-- Can't we remove the sixth argument to security_task_prctl() and
-  just return the result code like a sane function would do?  
