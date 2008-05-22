@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933019AbYEVV56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765746AbYEVV7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933019AbYEVV56 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbYEVV5t
+	id S1765746AbYEVV7I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbYEVV6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:57:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53901 "EHLO
+	Thu, 22 May 2008 17:58:54 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56088 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756228AbYEVV5s (ORCPT
+	with ESMTP id S1756228AbYEVV6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 17:57:48 -0400
-Date: Thu, 22 May 2008 22:45:09 +0100
+	Thu, 22 May 2008 17:58:53 -0400
+Date: Thu, 22 May 2008 22:46:25 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net
-Subject: [PATCH] spi: Push the BKL down into the drivers
-Message-ID: <20080522224509.29ede566@core>
+To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] auerwald: Push down the BKL into the driver
+Message-ID: <20080522224625.6fe88245@core>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -27,66 +26,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another step to removing ->ioctl and to removing the BKL
+Also fix the unknown ioctl return code
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
-index b3518ca..67e907c 100644
---- a/drivers/spi/spidev.c
-+++ b/drivers/spi/spidev.c
-@@ -29,6 +29,7 @@
- #include <linux/errno.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
+diff --git a/drivers/usb/misc/auerswald.c b/drivers/usb/misc/auerswald.c
+index 0939386..d2f61d5 100644
+--- a/drivers/usb/misc/auerswald.c
++++ b/drivers/usb/misc/auerswald.c
+@@ -1421,7 +1421,8 @@ ofail:	mutex_unlock(&cp->mutex);
  
- #include <linux/spi/spi.h>
- #include <linux/spi/spidev.h>
-@@ -240,9 +241,8 @@ done:
- 	return status;
- }
  
--static int
--spidev_ioctl(struct inode *inode, struct file *filp,
--		unsigned int cmd, unsigned long arg)
-+static long
-+spidev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+ /* IOCTL functions */
+-static int auerchar_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
++static long auerchar_ioctl(struct file *file, unsigned int cmd,
++							unsigned long arg)
  {
- 	int			err = 0;
- 	int			retval = 0;
-@@ -269,6 +269,7 @@ spidev_ioctl(struct inode *inode, struct file *filp,
- 	if (err)
- 		return -EFAULT;
- 
-+	lock_kernel();
- 	spidev = filp->private_data;
- 	spi = spidev->spi;
- 
-@@ -357,7 +358,8 @@ spidev_ioctl(struct inode *inode, struct file *filp,
- 		/* segmented and/or full-duplex I/O request */
- 		if (_IOC_NR(cmd) != _IOC_NR(SPI_IOC_MESSAGE(0))
- 				|| _IOC_DIR(cmd) != _IOC_WRITE)
--			return -ENOTTY;
-+			retval = -ENOTTY;
-+			break;
- 
- 		tmp = _IOC_SIZE(cmd);
- 		if ((tmp % sizeof(struct spi_ioc_transfer)) != 0) {
-@@ -385,6 +387,7 @@ spidev_ioctl(struct inode *inode, struct file *filp,
- 		kfree(ioc);
- 		break;
+ 	pauerchar_t ccp = (pauerchar_t) file->private_data;
+ 	int ret = 0;
+@@ -1452,7 +1453,7 @@ static int auerchar_ioctl (struct inode *inode, struct file *file, unsigned int
+ 		mutex_unlock(&ccp->mutex);
+                 return -ENODEV;
  	}
-+	unlock_kernel();
- 	return retval;
- }
+-
++	lock_kernel();
+ 	switch (cmd) {
  
-@@ -447,7 +450,7 @@ static struct file_operations spidev_fops = {
- 	 */
- 	.write =	spidev_write,
- 	.read =		spidev_read,
--	.ioctl =	spidev_ioctl,
-+	.unlocked_ioctl = spidev_ioctl,
- 	.open =		spidev_open,
- 	.release =	spidev_release,
+ 	/* return != 0 if Transmitt channel ready to send */
+@@ -1547,9 +1548,10 @@ static int auerchar_ioctl (struct inode *inode, struct file *file, unsigned int
+ 
+ 	default:
+ 		dbg ("IOCTL_AU_UNKNOWN");
+-		ret = -ENOIOCTLCMD;
++		ret = -ENOTTY;
+ 		break;
+         }
++        unlock_kernel();
+ 	/* release the mutexes */
+ 	mutex_unlock(&cp->mutex);
+ 	mutex_unlock(&ccp->mutex);
+@@ -1860,7 +1862,7 @@ static const struct file_operations auerswald_fops =
+ 	.llseek =	no_llseek,
+ 	.read =		auerchar_read,
+ 	.write =        auerchar_write,
+-	.ioctl =	auerchar_ioctl,
++	.unlocked_ioctl = auerchar_ioctl,
+ 	.open =		auerchar_open,
+ 	.release =	auerchar_release,
  };
