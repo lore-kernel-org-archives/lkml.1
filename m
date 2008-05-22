@@ -1,29 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765689AbYEVWEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935930AbYEVWFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765689AbYEVWEE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936031AbYEVWDl
+	id S935930AbYEVWFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbYEVWFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:03:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39464 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936027AbYEVWDk (ORCPT
+	Thu, 22 May 2008 18:05:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51516 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756479AbYEVWFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:03:40 -0400
-Date: Thu, 22 May 2008 15:03:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, prussell@au1.ibm.com, shaggy@us.ibm.com,
-       sergeh@us.ibm.com
-Subject: Re: [PATCH] eCryptfs: Clean up kthread synchronization
-Message-Id: <20080522150328.7e19a453.akpm@linux-foundation.org>
-In-Reply-To: <20080522211625.GC4057@halcrowt61p.ibm.com>
-References: <20080520214610.GD32643@halcrowt61p.austin.ibm.com>
-	<20080521160000.717fb1ef.akpm@linux-foundation.org>
-	<20080522193155.GB4057@halcrowt61p.ibm.com>
-	<20080522124142.a850ab0e.akpm@linux-foundation.org>
-	<20080522211625.GC4057@halcrowt61p.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 22 May 2008 18:05:33 -0400
+Date: Thu, 22 May 2008 22:52:43 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org, sfrench@samba.org
+Subject: [PATCH] cifs: Push the BKL down into the fs ioctl code
+Message-ID: <20080522225243.0da12b58@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,73 +26,120 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008 16:16:25 -0500
-Michael Halcrow <mhalcrow@us.ibm.com> wrote:
+Switch to unlocked_ioctl. Wrap the ioctl handler internally with
+lock_kernel until someone can prove it isn't needed or fix it so it isn't.
 
-> On Thu, May 22, 2008 at 12:41:42PM -0700, Andrew Morton wrote:
-> > On Thu, 22 May 2008 14:31:55 -0500
-> > Michael Halcrow <mhalcrow@us.ibm.com> wrote:
-> > 
-> > > > > +void ecryptfs_destroy_kthread(void)
-> > > > > +{
-> > > > > +	struct ecryptfs_open_req tmp_req;
-> > > > > +	struct ecryptfs_open_req *req;
-> > > > > +
-> > > > > +	mutex_lock(&ecryptfs_kthread_ctl.mux);
-> > > > > +	ecryptfs_kthread_ctl.flags |= ECRYPTFS_KTHREAD_ZOMBIE;
-> > > > > +	list_for_each_entry(req, &ecryptfs_kthread_ctl.req_list,
-> > > > > +			    kthread_ctl_list) {
-> > > > > +		mutex_lock(&req->mux);
-> > > > > +		req->flags |= ECRYPTFS_REQ_ZOMBIE;
-> > > > > +		wake_up_process(req->requesting_task);
-> > > > > +		mutex_unlock(&req->mux);
-> > > > > +	}
-> > > > > +	memset(&tmp_req, 0, sizeof(tmp_req));
-> > > > > +	tmp_req.flags = ECRYPTFS_REQ_ZOMBIE;
-> > > > > +	list_add_tail(&tmp_req.kthread_ctl_list,
-> > > > > +		      &ecryptfs_kthread_ctl.req_list);
-> > > > > +	mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> > > > > +	wake_up(&ecryptfs_kthread_ctl.wait);
-> > > > > +}
-> > > > 
-> > > > eh?  We attach a local variable to a global list and then return?
-> > > > That won't last very long.
-> > > 
-> > > Adding this dummy entry to the list is just my own way of getting the
-> > > kthread to wake up and shut down. This actually works, albeit a little
-> > > ugly. The list and its contents get dropped on the floor at this point
-> > > because (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE). The
-> > > only consumer of this list (the kthread) checks for this flag
-> > > immediately after getting the mux, and if it is there, it just
-> > > exits. The only producer on this list (ecryptfs_privileged_open())
-> > > checks for this flag immediately after getting the mux and bows out if
-> > > it is set. In other words, once this flag is set, the list and its
-> > > contents become untouchable by anything other than
-> > > ecryptfs_destroy_kthread().
-> > 
-> > Unconvinced.
-> > 
-> > As soon as ecryptfs_destroy_kthread() returns, tmp_req is destroyed. 
-> > But it remains on ecryptfs_kthread_ctl.req_list.
-> 
-> I intend for ecryptfs_kthread_ctl.req_list to be irrelevant once
-> ecryptfs_destroy_kthread() grabs the mux and sets
-> (ecryptfs_kthread_ctl.flags |= ECRYPTFS_KTHREAD_ZOMBIE); nobody will
-> ever do anything with that list any more. The state of the list --
-> including the dangling list pointer -- simply does not matter any
-> more.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-OK.
-
-> > > 	memset(&tmp_req, 0, sizeof(tmp_req));
-> > > 	tmp_req.flags = ECRYPTFS_REQ_ZOMBIE;
-> > > 	list_add_tail(&tmp_req.kthread_ctl_list,
-> > > 		      &ecryptfs_kthread_ctl.req_list);
-> > > 	mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> > > 	wake_up(&ecryptfs_kthread_ctl.wait);
-> > 
-> > -> it's dead.
-
-So the above horridly-wrong code is not needed at all, and tmp_req can
-be removed.
-
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index 427a7c6..b6436b8 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -657,7 +657,7 @@ const struct file_operations cifs_file_ops = {
+ 	.splice_read = generic_file_splice_read,
+ 	.llseek = cifs_llseek,
+ #ifdef CONFIG_CIFS_POSIX
+-	.ioctl	= cifs_ioctl,
++	.unlocked_ioctl	= cifs_ioctl,
+ #endif /* CONFIG_CIFS_POSIX */
+ 
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+@@ -677,7 +677,7 @@ const struct file_operations cifs_file_direct_ops = {
+ 	.flush = cifs_flush,
+ 	.splice_read = generic_file_splice_read,
+ #ifdef CONFIG_CIFS_POSIX
+-	.ioctl  = cifs_ioctl,
++	.unlocked_ioctl  = cifs_ioctl,
+ #endif /* CONFIG_CIFS_POSIX */
+ 	.llseek = cifs_llseek,
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+@@ -697,7 +697,7 @@ const struct file_operations cifs_file_nobrl_ops = {
+ 	.splice_read = generic_file_splice_read,
+ 	.llseek = cifs_llseek,
+ #ifdef CONFIG_CIFS_POSIX
+-	.ioctl	= cifs_ioctl,
++	.unlocked_ioctl	= cifs_ioctl,
+ #endif /* CONFIG_CIFS_POSIX */
+ 
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+@@ -716,7 +716,7 @@ const struct file_operations cifs_file_direct_nobrl_ops = {
+ 	.flush = cifs_flush,
+ 	.splice_read = generic_file_splice_read,
+ #ifdef CONFIG_CIFS_POSIX
+-	.ioctl  = cifs_ioctl,
++	.unlocked_ioctl  = cifs_ioctl,
+ #endif /* CONFIG_CIFS_POSIX */
+ 	.llseek = cifs_llseek,
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+@@ -731,7 +731,7 @@ const struct file_operations cifs_dir_ops = {
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+ 	.dir_notify = cifs_dir_notify,
+ #endif /* CONFIG_CIFS_EXPERIMENTAL */
+-	.ioctl  = cifs_ioctl,
++	.unlocked_ioctl  = cifs_ioctl,
+ };
+ 
+ static void
+diff --git a/fs/cifs/cifsfs.h b/fs/cifs/cifsfs.h
+index cd1301a..1312ae7 100644
+--- a/fs/cifs/cifsfs.h
++++ b/fs/cifs/cifsfs.h
+@@ -95,8 +95,8 @@ extern int 	cifs_setxattr(struct dentry *, const char *, const void *,
+ 			size_t, int);
+ extern ssize_t	cifs_getxattr(struct dentry *, const char *, void *, size_t);
+ extern ssize_t	cifs_listxattr(struct dentry *, char *, size_t);
+-extern int cifs_ioctl(struct inode *inode, struct file *filep,
+-		       unsigned int command, unsigned long arg);
++extern long cifs_ioctl(struct file *filep, unsigned int command,
++							unsigned long arg);
+ 
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+ extern const struct export_operations cifs_export_ops;
+diff --git a/fs/cifs/ioctl.c b/fs/cifs/ioctl.c
+index 5c792df..396811f 100644
+--- a/fs/cifs/ioctl.c
++++ b/fs/cifs/ioctl.c
+@@ -22,6 +22,7 @@
+  */
+ 
+ #include <linux/fs.h>
++#include <linux/smp_lock.h>
+ #include "cifspdu.h"
+ #include "cifsglob.h"
+ #include "cifsproto.h"
+@@ -30,9 +31,9 @@
+ 
+ #define CIFS_IOC_CHECKUMOUNT _IO(0xCF, 2)
+ 
+-int cifs_ioctl(struct inode *inode, struct file *filep,
+-		unsigned int command, unsigned long arg)
++long cifs_ioctl(struct file *filep, unsigned int command, unsigned long arg)
+ {
++	struct inode *inode = filep->f_path.dentry->d_inode;
+ 	int rc = -ENOTTY; /* strange error - but the precedent */
+ 	int xid;
+ 	struct cifs_sb_info *cifs_sb;
+@@ -45,6 +46,8 @@ int cifs_ioctl(struct inode *inode, struct file *filep,
+ 		(struct cifsFileInfo *)filep->private_data;
+ #endif /* CONFIG_CIFS_POSIX */
+ 
++	lock_kernel();
++
+ 	xid = GetXid();
+ 
+ 	cFYI(1, ("ioctl file %p  cmd %u  arg %lu", filep, command, arg));
+@@ -58,6 +61,7 @@ int cifs_ioctl(struct inode *inode, struct file *filep,
+ 	else {
+ 		rc = -EIO;
+ 		FreeXid(xid);
++		unlock_kernel();
+ 		return -EIO;
+ 	}
+ #endif /* CONFIG_CIFS_POSIX */
+@@ -106,5 +110,6 @@ int cifs_ioctl(struct inode *inode, struct file *filep,
+ 	}
+ 
+ 	FreeXid(xid);
++	unlock_kernel();
+ 	return rc;
+ }
