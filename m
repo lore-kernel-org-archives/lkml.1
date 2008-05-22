@@ -1,75 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbYEVRf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYEVRiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755899AbYEVRf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 13:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbYEVRft
+	id S1756598AbYEVRiU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 13:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYEVRiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 13:35:49 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:57515 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754602AbYEVRfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 13:35:39 -0400
-Date: Thu, 22 May 2008 20:33:18 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Natalie Protasevich <protasnb@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-Message-ID: <20080522173318.GD2727@cs181133002.pp.htv.fi>
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com> <20080522144114.GC27301@cs181133002.pp.htv.fi> <20080522075135.4933161c@infradead.org> <20080522155425.GA2727@cs181133002.pp.htv.fi> <32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com> <20080522165008.GB2727@cs181133002.pp.htv.fi> <32209efe0805221008m1850730cxdb26d9bdeb9c43fc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <32209efe0805221008m1850730cxdb26d9bdeb9c43fc@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 22 May 2008 13:38:12 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:9542 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbYEVRiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 13:38:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
+        b=I8b0AGSEYly1Axm7ShIcliuQqvHosBF1DAhCe46R5XFt7S3aMQ6Jgl0otFDrkbZyRH3rveDHVCluavJlS8jHFCUEcaiiRiW8qL4kxM686wc+k8DH4eDRFiNgGl4UzpsXGvkruomlXLhXmE34uGebGVf46bzcijiGARHylkF1acI=
+Date: Thu, 22 May 2008 20:38:00 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, proski@gnu.org,
+       sandmann@redhat.com, a.p.zijlstra@chello.nl,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/5] ftrace: limit use of check pages
+Message-ID: <20080522203800.47366817@daedalus.pq.iki.fi>
+In-Reply-To: <20080522042301.622087604@goodmis.org>
+References: <20080522042215.584408893@goodmis.org>
+	<20080522042301.622087604@goodmis.org>
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 10:08:49AM -0700, Natalie Protasevich wrote:
-> On Thu, May 22, 2008 at 9:50 AM, Adrian Bunk <bunk@kernel.org> wrote:
->...
-> >> by various criteria: ALSA bugs
-> >> are numerous, which is not important for most enterprise server users
-> >> who would completely disregard this category, whereas desktop users
-> >> will probably concentrate on those more than any other.
-> >
-> > The majority of machines running Linux most likely runs with ARM CPUs.
-> >
-> > Show me any public source you want to use for getting serious data for
-> > this area.
+On Thu, 22 May 2008 00:22:16 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> The check_pages function is called often enough that it can cause problems
+> with trace outputs or even bringing the system to a halt.
 > 
-> There is no one, except dispersed reports and ... appropriate
-> implementation involving search engine comes to mind.
-
-Much of this information will never be published at any place where 
-Google could find it.
-
-> >> So the answer
-> >> to question about kernel stability would be more adequate depending on
-> >> who's asking.
-> >
-> > You must not confuse "number of reported bugs" with "kernel stability" -
-> > these two can be quite decoupled.
+> This patch limits the check_pages to the places that are most likely to
+> have problems. The check is made at the flip between the global array and
+> the max save array, as well as when the size of the buffers changes and
+> the self tests.
 > 
-> Number of existing, proven and prioritized  bugs maybe better to say.
-> I think there is a correlation.
+> This patch also removes the BUG_ON from check_pages and replaces it with
+> a WARN_ON and disabling of the tracer.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  kernel/trace/trace.c          |   32 +++++++++++++++++++++++---------
+>  kernel/trace/trace_selftest.c |    1 +
+>  2 files changed, 24 insertions(+), 9 deletions(-)
+> 
+> Index: linux-tip.git/kernel/trace/trace.c
+> ===================================================================
+> --- linux-tip.git.orig/kernel/trace/trace.c	2008-05-21 13:25:34.000000000 -0400
+> +++ linux-tip.git/kernel/trace/trace.c	2008-05-21 21:32:23.000000000 -0400
+> @@ -249,24 +249,32 @@ __update_max_tr(struct trace_array *tr, 
+>  	tracing_record_cmdline(current);
+>  }
+>  
+> +#define CHECK_COND(cond)			\
+> +	if (unlikely(cond)) {			\
+> +		tracing_disabled = 0;		\
 
-Some correlaton.
+-----------------------------------^
+This looks like a typo.
 
-If people are aware of the weaknesses and the many obvious ways to 
-manipulate such statistics.
+I also quickly read through the other patches and didn't see any
+obvious problems in them.
 
-> --Natalie
+> +		WARN_ON(1);			\
+> +		return -1;			\
+> +	}
+> +
+>  /**
+>   * check_pages - integrity check of trace buffers
+>   *
+>   * As a safty measure we check to make sure the data pages have not
+> - * been corrupted. TODO: configure to disable this because it adds
+> - * a bit of overhead.
+> + * been corrupted.
+>   */
+> -void check_pages(struct trace_array_cpu *data)
+> +int check_pages(struct trace_array_cpu *data)
+>  {
+>  	struct page *page, *tmp;
+>  
+> -	BUG_ON(data->trace_pages.next->prev != &data->trace_pages);
+> -	BUG_ON(data->trace_pages.prev->next != &data->trace_pages);
+> +	CHECK_COND(data->trace_pages.next->prev != &data->trace_pages);
+> +	CHECK_COND(data->trace_pages.prev->next != &data->trace_pages);
+>  
+>  	list_for_each_entry_safe(page, tmp, &data->trace_pages, lru) {
+> -		BUG_ON(page->lru.next->prev != &page->lru);
+> -		BUG_ON(page->lru.prev->next != &page->lru);
+> +		CHECK_COND(page->lru.next->prev != &page->lru);
+> +		CHECK_COND(page->lru.prev->next != &page->lru);
+>  	}
+> +
+> +	return 0;
+>  }
 
-cu
-Adrian
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Pekka Paalanen
+http://www.iki.fi/pq/
