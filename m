@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbYEVRW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbYEVRf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbYEVRW6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 13:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbYEVRWs
+	id S1755899AbYEVRf7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 13:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbYEVRft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 13:22:48 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:62140 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753925AbYEVRWr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 13:22:47 -0400
-Message-ID: <4835ABDB.8020901@nortel.com>
-Date: Thu, 22 May 2008 11:22:35 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 22 May 2008 13:35:49 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:57515 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754602AbYEVRfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 13:35:39 -0400
+Date: Thu, 22 May 2008 20:33:18 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Natalie Protasevich <protasnb@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Number of bugs - statistics
+Message-ID: <20080522173318.GD2727@cs181133002.pp.htv.fi>
+References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com> <20080522144114.GC27301@cs181133002.pp.htv.fi> <20080522075135.4933161c@infradead.org> <20080522155425.GA2727@cs181133002.pp.htv.fi> <32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com> <20080522165008.GB2727@cs181133002.pp.htv.fi> <32209efe0805221008m1850730cxdb26d9bdeb9c43fc@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: section mismatch warnings in current git head for powerpc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 May 2008 17:22:39.0079 (UTC) FILETIME=[6F3D2770:01C8BC30]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <32209efe0805221008m1850730cxdb26d9bdeb9c43fc@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got the following warnings when building current git head for powerpc 
-64bit:
+On Thu, May 22, 2008 at 10:08:49AM -0700, Natalie Protasevich wrote:
+> On Thu, May 22, 2008 at 9:50 AM, Adrian Bunk <bunk@kernel.org> wrote:
+>...
+> >> by various criteria: ALSA bugs
+> >> are numerous, which is not important for most enterprise server users
+> >> who would completely disregard this category, whereas desktop users
+> >> will probably concentrate on those more than any other.
+> >
+> > The majority of machines running Linux most likely runs with ARM CPUs.
+> >
+> > Show me any public source you want to use for getting serious data for
+> > this area.
+> 
+> There is no one, except dispersed reports and ... appropriate
+> implementation involving search engine comes to mind.
 
+Much of this information will never be published at any place where 
+Google could find it.
 
-   LD      net/ipv4/built-in.o
-   LD      drivers/scsi/built-in.o
-   LD      net/built-in.o
-   LD      drivers/built-in.o
-   LD      vmlinux.o
-   MODPOST vmlinux.o
-WARNING: vmlinux.o(.text+0x73bc): Section mismatch in reference from the 
-function .start_secondary_prolog() to the function 
-.devinit.text:.start_secondary()
-The function .start_secondary_prolog() references
-the function __devinit .start_secondary().
-This is often because .start_secondary_prolog lacks a __devinit
-annotation or the annotation of .start_secondary is wrong.
+> >> So the answer
+> >> to question about kernel stability would be more adequate depending on
+> >> who's asking.
+> >
+> > You must not confuse "number of reported bugs" with "kernel stability" -
+> > these two can be quite decoupled.
+> 
+> Number of existing, proven and prioritized  bugs maybe better to say.
+> I think there is a correlation.
 
-WARNING: vmlinux.o(.text+0x260a8): Section mismatch in reference from 
-the function .pci_dn_reconfig_notifier() to the function 
-.devinit.text:.update_dn_pci_info()
-The function .pci_dn_reconfig_notifier() references
-the function __devinit .update_dn_pci_info().
-This is often because .pci_dn_reconfig_notifier lacks a __devinit
-annotation or the annotation of .update_dn_pci_info is wrong.
+Some correlaton.
 
+If people are aware of the weaknesses and the many obvious ways to 
+manipulate such statistics.
 
-Is this anything to worry about?
+> --Natalie
 
-Thanks,
-Chris
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
