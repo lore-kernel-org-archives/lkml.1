@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbYEVBLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933767AbYEVBMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933219AbYEVBLO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 21:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbYEVBK6
+	id S933767AbYEVBMS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 21:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758543AbYEVBMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 21:10:58 -0400
-Received: from mga01.intel.com ([192.55.52.88]:33269 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbYEVBK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 21:10:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,523,1204531200"; 
-   d="scan'208";a="567302181"
-Subject: Re: [BISECTED] pata_jmicron: no drives found on post 2.6.25 kernels
-From: Shaohua Li <shaohua.li@intel.com>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: Plamen Petrov <pvp-lsts@fs.ru.acad.bg>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <68676e00805211245u1a1973e5g847bd7e8a6c9e5a7@mail.gmail.com>
-References: <courier.4832011A.000041C2@fs.ru.acad.bg>
-	 <1211248108.19834.2.camel@sli10-desk.sh.intel.com>
-	 <courier.4832F7AF.00000DCD@fs.ru.acad.bg>
-	 <1211360320.22210.5.camel@sli10-desk.sh.intel.com>
-	 <68676e00805211245u1a1973e5g847bd7e8a6c9e5a7@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 22 May 2008 09:15:24 +0800
-Message-Id: <1211418924.15223.1.camel@sli10-desk.sh.intel.com>
+	Wed, 21 May 2008 21:12:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60761 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757744AbYEVBMD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 21:12:03 -0400
+Date: Wed, 21 May 2008 18:10:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, andi@firstfloor.org,
+       yhlu.kernel@gmail.com, ralf@linux-mips.org, rth@twiddle.net,
+       rmk@arm.linux.org.uk, tony.luck@intel.com, takata@linux-m32r.org,
+       geert@linux-m68k.org, kyle@parisc-linux.org, paulus@samba.org,
+       lethal@linux-sh.org, davem@davemloft.net
+Subject: Re: [RFC 0/3] bootmem rewrite
+Message-Id: <20080521181005.6af9474a.akpm@linux-foundation.org>
+In-Reply-To: <87hccr2n4m.fsf@saeurebad.de>
+References: <20080521013735.559724194@saeurebad.de>
+	<20080521165735.10c500dc.akpm@linux-foundation.org>
+	<87hccr2n4m.fsf@saeurebad.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-21 at 21:45 +0200, Luca Tettamanti wrote:
-> On Wed, May 21, 2008 at 10:58 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > On Tue, 2008-05-20 at 19:09 +0300, Plamen Petrov wrote:
-> >> Shaohua Li написа:
-> >>
-> >> > On Tue, 2008-05-20 at 01:37 +0300, Plamen Petrov wrote:
-> >> >> Hello, folks!
-> >> >>
-> >> >> After 2.6.26 merge window opened, the optical drives in my
-> >> >> computer, hanging off a JMicron controler were not detected
-> >> >> by linux any more.
-> >> >>
-> >> >> Luca Tettamanti reported similar troubles:
-> >> >> http://marc.info/?l=linux-kernel&m=120958791323911&w=2
-> >> >>
-> >> >> Its been 20 days, so I decided to bisect.
-> >> >> git bisect revealed that commit
-> >> >> 7d715a6c1ae5785d00fb9a876b5abdfc43abc44b
-> >> >> is the one causing pata_jmicron to fail to detect drives,
-> >> >> connected to the JMicron controler on my motherboard.
-> >> >> At least in my case, anyway...
-> >> >> Changing kernel config to CONFIG_PCIEASPM=n makes the drives
-> >> >> attached to the JMicron SATA/PATA controller usable again.
-> >> > When you enable this option, did you change any ASPM policy? By default,
-> >> > we are using the BIOS setting, so it shouldn't change any thing.
-> >> >
-> >>
-> >> No, I did not change any ASPM policy, mainly because I do not how.
-> >>
-> >> > Also can you please send me the 'lspci -vvvxxxx' output with/without the
-> >> > ASPM enabled?
-> >> >
-> > Can you please try below patch?
-> 
-> I confirm that the patch fixes the issue when CONFIG_ASPM is enabled.
-> 
-> > The Slot 03:00.* of JMicron controller has two functions, but one is
-> > PCIE endpoint the other isn't PCIE device, very strange.
-> 
-> Right, that's what I'm seeing here (motherboard is an ASUS P5B-E). I'm
-> attaching the output of lspci.
-Jesse, can you take this patch. It should be safe for 2.6.26.
+On Thu, 22 May 2008 02:33:45 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
 
-Thanks,
-Shaohua
+> > Anyway, if you can redo these patches against most-recent-mm or,
+> > better, against http://userweb.kernel.org/~akpm/mmotm then it would
+> > make things easier for me to handle.  I can then at least test it all
+> > on my seven-odd test boxes.  Please feel free to ping me if you want a
+> > single rolled-up patch - that's always trivial and I can do it in three
+> > minutes.
+> 
+> I guess I just apply the quilt series to the tree you forked off?
 
+yup.  http://userweb.kernel.org/~akpm/mmotm/mmotm-readme.txt
+
+> > Finally, if you haven't done so, I'd encourage you to stuff as many
+> > handy debugging printks into this code as you possibly can.  Just fill
+> > 'er up with them.  So that when people start running it and it goes
+> > boom, they can send you their debug output _without_ having to go
+> > through another handful of email-email-patch-rebuild-retest cycles.  We
+> > can pull them all out later on.
+> 
+> Okay, I will make it gossip and send you a -mmotm-based version of it.
+
+Good luck :)
