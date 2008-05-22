@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764202AbYEVXnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764752AbYEVXpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764202AbYEVXnn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 19:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759284AbYEVXnb
+	id S1764752AbYEVXpJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 19:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759035AbYEVXox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 19:43:31 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51071 "EHLO
+	Thu, 22 May 2008 19:44:53 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51128 "EHLO
 	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758916AbYEVXn3 (ORCPT
+	by vger.kernel.org with ESMTP id S1755272AbYEVXow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 19:43:29 -0400
-Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
+	Thu, 22 May 2008 19:44:52 -0400
+Subject: Re: build issue #503 for v2.6.26-rc2-433-gf26a398 :  undefined
+	reference to `request_firmware'
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org>
-	 <4831A60A.5010308@panasas.com>
-	 <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org>
-	 <4831B2E2.8030700@panasas.com>
-	 <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 09:23:21 +0100
-Message-Id: <1211444601.3956.8.camel@localhost.localdomain>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080517141749.GD3284@cs181133002.pp.htv.fi>
+References: <200805161906.19321.toralf.foerster@gmx.de>
+	 <1211018673.3603.7.camel@localhost.localdomain>
+	 <20080517141749.GD3284@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 22 May 2008 11:52:24 +0100
+Message-Id: <1211453544.3956.33.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-19 at 10:27 -0700, Linus Torvalds wrote:
-> 
-> On Mon, 19 May 2008, Boaz Harrosh wrote:
+On Sat, 2008-05-17 at 17:17 +0300, Adrian Bunk wrote:
+> On Sat, May 17, 2008 at 11:04:31AM +0100, James Bottomley wrote:
+> > On Fri, 2008-05-16 at 19:06 +0200, Toralf Förster wrote:
+> > > Hello,
+> > > 
+> > > the build (.config attached) failed, make ends with :
+> > > ...
+> > >   UPD     include/linux/compile.h
+> > >   CC      init/version.o
+> > >   LD      init/built-in.o
+> > >   LD      vmlinux
+> > > drivers/built-in.o: In function `sas_request_addr':
+> > > (.text+0x33bab): undefined reference to `request_firmware'
+> > > drivers/built-in.o: In function `sas_request_addr':
+> > > (.text+0x33c3f): undefined reference to `release_firmware'
+> > > make: *** [vmlinux] Error 1
 > > 
-> > Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
-> > spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
-> > places that initiate a MODE_SENSE command, specifically at
-> > scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
+> > There's a slight fault in the stub logic.  It fails for FW_LOADER=m and
+> > the user =y.
+> > 
+> > This should fix it.
 > 
-> I was actualyl more thinking that the safest thing to do would be to just 
-> pre-clear the sense buffer. Then, if some driver doesn't fill it 
-> correctly, big deal..
-> 
-> It's not like pre-clearing the bugger is a performance issue.
+> An interesting question is whether we actually want to have the stub at 
+> all - the compile errors catched cases where someone forgot to select 
+> FW_LOADER at compile time instead of turning them into possible runtime 
+> problems as will happen after your patch.
 
-It already is pre cleared, for precisely the reason that some devices
-lie about returning sense, so we use the zero return to mean no sense
-was collected.
+Well, the original intent of the stubs was to have the loader nop if it
+wasn't available.  There was simply one case forgotten (the fact that a
+modular loader isn't usable from built in components).
+
+> Are there any serious use cases where SCSI_SAS_LIBSAS is used in very 
+> space limited environments and without any other drivers that select 
+> FW_LOADER in the kernel?
+
+Probably in the future, certainly on embedded OSs used for storage
+devices.  Given the convergence of SAS/SATA chips, it's possible for
+other handhelds, but I'm not convinced of that.
 
 James
 
