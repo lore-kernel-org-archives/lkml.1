@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762025AbYEVXib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762528AbYEVXkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762025AbYEVXib (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 19:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758742AbYEVXiU
+	id S1762528AbYEVXkz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 19:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758142AbYEVXkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 19:38:20 -0400
-Received: from sous-sol.org ([216.99.217.87]:38723 "EHLO sous-sol.org"
+	Thu, 22 May 2008 19:40:47 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57096 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756531AbYEVXiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 19:38:19 -0400
-Date: Thu, 22 May 2008 16:37:57 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com
-Subject: Re: capget() overflows buffers.
-Message-ID: <20080522233757.GD30402@sequoia.sous-sol.org>
-References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4835F929.7010200@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1756707AbYEVXkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 19:40:46 -0400
+Date: Fri, 23 May 2008 09:40:38 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       ALSA development <alsa-devel@alsa-project.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] HG -> GIT migration
+Message-Id: <20080523094038.6381e980.sfr@canb.auug.org.au>
+In-Reply-To: <4835DAD8.2090204@keyaccess.nl>
+References: <Pine.LNX.4.61.0805201314190.1798@tm8103-a.perex-int.cz>
+	<200805211430.06653.linux@audioscience.com>
+	<Pine.LNX.4.61.0805210805080.1798@tm8103-a.perex-int.cz>
+	<s5hve18vtml.wl%tiwai@suse.de>
+	<483415E7.5080402@keyaccess.nl>
+	<s5hfxsbx27f.wl%tiwai@suse.de>
+	<48341DF5.4090307@keyaccess.nl>
+	<Pine.LNX.4.61.0805211517290.1798@tm8103-a.perex-int.cz>
+	<48343465.2030905@keyaccess.nl>
+	<s5h8wy3wvyv.wl%tiwai@suse.de>
+	<48343FF4.8090107@keyaccess.nl>
+	<20080522112412.4a8406fd.sfr@canb.auug.org.au>
+	<4835DAD8.2090204@keyaccess.nl>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__23_May_2008_09_40_38_+1000_NExqeUfKNcErrm1X"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew G. Morgan (morgan@kernel.org) wrote:
-> Chris Wright wrote:
-> | Andrew, I think this should be considered a serious problem.  The
-> | interface ABI is stable for old programs, and fine for anything new
-> | or old that's using libcap.  But the API has changed subtly (taking a
-> | pointer to a blob, to a pointer to an array of blobs), and is easily
-> | broken for programs recompiled against new headers not using libcap.
+--Signature=_Fri__23_May_2008_09_40_38_+1000_NExqeUfKNcErrm1X
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Rene,
+
+On Thu, 22 May 2008 22:43:04 +0200 Rene Herman <rene.herman@keyaccess.nl> w=
+rote:
 >
-> [There is a warning about this issue in the kernel header file.]
->
-> The kernel is not crashing, the application is...
+> On 22-05-08 03:24, Stephen Rothwell wrote:
+>=20
+> > Linux-next is rebuilt every day based on Linus' current kernel.  I merge
+> > all the trees I have been told about and fixup minor conflicts (sometim=
+es
+> > reverting commits, sometimes applying patches).  So everyday, linux-next
+> > is completely new.  I do not care if the trees I am merging get rebased.
+>=20
+> This means you're going to redo all those (same) minor conflict fixups=20
+> each day again, doesn't it? Or do you pass the fixups back to (one of)=20
+> the conflicting trees?
 
-It's not about crashing.  It's about app security.  Currently, there is
-nothing guaranteeing named has actually dropped privileges.  That's why
-I consider this serious.
+I send email about them and most go away after a day or so i.e. something
+changes to make the conflicts go away.  However, the saving grace here is
+"git rerere" which remembers these conflicts and their resolutions for me
+so I normally only have to fix them once.
 
-> If you take this compiled binary, that crashes on 2.6.25, and try to run
-> it on 2.6.24 it will fail there too - since the magic its 'forcing' is
-> not valid on that kernel. So the compiled 'binary' we're discussing does
-> not have an existence proof that it will successfully run anywhere.
+> > Does that answer your question?
+>=20
+> But yes, it does, thanks.
 
-Right, that's not the issue.
+OK, good.
 
-> In point of fact, the kernel is binary compatible with old binaries. The
-> problem is that _LINUX_CAPABILITY_VERSION #define now points to _2
-> instead of _1 by default and Squid etc., are not paying attention to the
-> value of the new magic cookie but expecting the previous revision of the
-> ABI to work.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Yes, as they should.  I don't think we should ever expect an existing
-userspace program change just by recompiling against a new kernel header
-when using an already existing mechanism.  Their app has been working
-fine since 2.2.
+--Signature=_Fri__23_May_2008_09_40_38_+1000_NExqeUfKNcErrm1X
+Content-Type: application/pgp-signature
 
-  int fd = open("foo", O_FLAGS, mode);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-compile once...binary compatible going forward (as is cap{s,g}et).
-update kernel, recompile...source API comaptible...still working
-(this is broken in cap{s,g}et).
+iD8DBQFINgR6TgG2atn1QN8RAjy3AJ0aL0tNueRTxFMV7yBWCsHTnJBFcQCfV1M6
+lzim+nnDV4E3WDHCBbJHnOk=
+=9CT3
+-----END PGP SIGNATURE-----
 
-> As such, I don't agree that there is a problem with the ABI, and I don't
-> agree with your assertion about things being broken. I maintain there is
-> a problem with the application source code.
-
-History bites us...libcap wasn't always there.  As we see, people roll
-their own.  You can argue that the interface is opaque, I'd agree.
-Also that it's their fault for poking into the guts of the opaque
-interface...yeah, I tend to even agree there.  However, it's not practical
-to argue that when this app code has worked fine for 10 years.
-
-> One 'solution' is to force everyone to notice at compile time by simply
-> removing the definition of _LINUX_CAPABILITY_VERSION and force all new
-> source code to be explicit about which ABI it wants to use...
-
-No, the solution there would be to keep _LINUX_CAPABILITY_VERSION as
-v1 (otherwise you just broke apps again).  And use another mechanism to
-signal the availability of 64bit caps.
-
-thanks,
--chris
+--Signature=_Fri__23_May_2008_09_40_38_+1000_NExqeUfKNcErrm1X--
