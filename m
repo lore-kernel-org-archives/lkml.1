@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbYEVQJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYEVQJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756299AbYEVQJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 12:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYEVQJ3
+	id S1756037AbYEVQJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 12:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbYEVQJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 12:09:29 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:59426 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbYEVQJ2 (ORCPT
+	Thu, 22 May 2008 12:09:37 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39643 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755634AbYEVQJf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 12:09:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=hmIBlrpQewqmQ6le4gvGmDNf4UaFy/ima6B0yAmIfMO234riwf5y7LFuoawLDpKYtzYicaKlv9hNC2+mMcmzdKhp7Ddaz2oStA1FTiANIAzh4m3gCew13R0nr6KDS5R8LV5aT0w5UfPxGSNigqVW6KgTviLjH7X0jGw5vTzeVaU=
-Date: Thu, 22 May 2008 18:08:53 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 6/6] ERR_PTR: warn when ERR_PTR parameter is not errno
-	value
-Message-ID: <20080522160851.GC8447@joi>
-References: <20080513201813.GA5869@joi> <1211148273-16226-1-git-send-email-marcin.slusarz@gmail.com> <87hccvurxr.fsf@saeurebad.de> <20080519064345.GB4707@martell.zuzino.mipt.ru> <8763tav6hi.fsf@saeurebad.de>
+	Thu, 22 May 2008 12:09:35 -0400
+Message-ID: <48359A61.6050301@s5r6.in-berlin.de>
+Date: Thu, 22 May 2008 18:08:01 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8763tav6hi.fsf@saeurebad.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Adrian Bunk <bunk@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, tytso@mit.edu, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard	indentation
+ of arguments)
+References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu> <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123127.3b3b66af.akpm@linux-foundation.org> <20080521230155.GC16376@cs181133002.pp.htv.fi>
+In-Reply-To: <20080521230155.GC16376@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 02:11:21PM +0200, Johannes Weiner wrote:
-> Hi,
+Adrian Bunk wrote:
+> On Wed, May 21, 2008 at 12:31:27PM -0700, Andrew Morton wrote:
+>>...
+>> For more substantial starter projects the best we have (as far as I
+>> know) is http://kernelnewbies.org/KernelProjects, but that's just a
+>> teeny subset.
+>> 
+>> We're not very good at this, I'm afraid.  I seem to recall that Rik has
+>> offered to help out here, so perhaps whenever one notices a
+>> hey-someone-should-do-this project, it could be forwarded to Rik and he
+>> can put it up there.
+>>...
 > 
-> Alexey Dobriyan <adobriyan@gmail.com> writes:
+> Let's look at it from another angle:
 > 
-> > On Mon, May 19, 2008 at 01:13:20AM +0200, Johannes Weiner wrote:
-> >> Marcin Slusarz <marcin.slusarz@gmail.com> writes:
-> >> 
-> >> > Check at runtime whether error argument of ERR_PTR and ERR_OR_0_PTR
-> >> > is valid. It can catch bugs which possibly lead to oops or panic earlier.
-> >> >
-> >> > Currently there are > 600 calls of ERR_PTR with non-constant argument
-> >> > in Linux kernel sources.
-> >
-> >> > --- a/include/linux/err.h
-> >> > +++ b/include/linux/err.h
-> >> > @@ -3,6 +3,7 @@
-> >> >  
-> >> >  #include <linux/compiler.h>
-> >> >  
-> >> > +#include <asm/bug.h>
-> >> >  #include <asm/errno.h>
-> >> >  
-> >> >  /*
-> >> > @@ -21,6 +22,7 @@
-> >> >  
-> >> >  static inline void *__ERR_PTR(long error)
-> >> >  {
-> >> > +	WARN_ON(!IS_ERR_VALUE(error));
-> >> >  	return (void *) error;
-> >> >  }
-> >> >  
-> >> > @@ -28,6 +30,7 @@ static inline void *__ERR_PTR(long error)
-> >> >  
-> >> >  static inline void *__ERR_OR_0_PTR(long error)
-> >> >  {
-> >> > +	WARN_ON(!IS_ERR_VALUE(error) && error);
-> >> >  	return (void *) error;
-> >> >  }
-> >> 
-> >> How about WARN_ON_ONCE() instead?  That would warn once for each erroneous user
-> >> which should be enough.
-> >
-> > And blow up .bss ?
+> We should not aim at being good at this.
 > 
-> Well, okay.  Perhaps ratelimiting?  I really prefer a bigger image size
-> over a spammed dmesg.
+> What do we need more in the kernel:
+> - people testing development kernels
+> - people fixing bugs
+> - people maintaining code
+> - people reviewing code
 
-Well, when I add 0 as a valid argument for ERR_PTR, this check won't add too many
-false positives, so I think simple WARN_ON is safe.
+  - encouragement to develop in the mainline rather than out-of-tree
 
-Marcin
+> What do we already have more than enough:
+> - people developing new bugs^Wfeatures
+
+  - companies being content with out-of-tree drivers or even closed
+    source drivers or no drivers at all, and users having to put up
+    with it
+-- 
+Stefan Richter
+-=====-==--- -=-= =-==-
+http://arcgraph.de/sr/
