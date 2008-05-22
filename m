@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYEVP1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbYEVPak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYEVP1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 11:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYEVP1E
+	id S1754614AbYEVPak (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 11:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYEVPac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 11:27:04 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61673 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752653AbYEVP1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 11:27:02 -0400
-Date: Thu, 22 May 2008 16:25:16 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Kevin Hao <kexin.hao@windriver.com>
-cc: Clemens Ladisch <clemens@ladisch.de>, venkatesh.pallipadi@intel.com,
-       bob.picco@hp.com, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>
-Subject: Re: [PATCH] x86: Get irq for hpet timer
-In-Reply-To: <1211441231.7323.10.camel@kevin-desktop>
-Message-ID: <Pine.LNX.4.55.0805221609280.13339@cliff.in.clinika.pl>
-References: <1210917912.10881.1.camel@kevin-desktop>  <482D49CF.4030902@ladisch.de>
- <1210929270.11912.3.camel@kevin-desktop>  <4831A678.5070208@ladisch.de>
- <1211274219.8718.7.camel@kevin-desktop>  <Pine.LNX.4.55.0805201631010.31790@cliff.in.clinika.pl>
-  <4833DD38.2010702@ladisch.de>  <Pine.LNX.4.55.0805220105560.4894@cliff.in.clinika.pl>
- <1211441231.7323.10.camel@kevin-desktop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 22 May 2008 11:30:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54075 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbYEVPab (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 11:30:31 -0400
+Date: Thu, 22 May 2008 08:29:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, rdunlap@xenotime.net,
+       tytso@mit.edu, hch@infradead.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+ indentation of arguments)
+Message-ID: <20080522082941.5431654b@infradead.org>
+In-Reply-To: <20080522001233.GE16376@cs181133002.pp.htv.fi>
+References: <9a8748490805211306l50b8411ax4462be18c94ca065@mail.gmail.com>
+	<32279.1211401651@vena.lwn.net>
+	<9a8748490805211337q1e7ceab7i80e4820c46f8171b@mail.gmail.com>
+	<9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
+	<20080522001233.GE16376@cs181133002.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008, Kevin Hao wrote:
+On Thu, 22 May 2008 03:12:33 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> But if we avoid all the legacy range, the hpet timer will have no chance
-> to work on a host using legacy PIC.
+> On Thu, May 22, 2008 at 01:46:28AM +0200, Jesper Juhl wrote:
+> >...
+> > 2. How to find things to work on as a beginner
+> >...
+> > Finding bugs to fix is easy. Here are some ways to find useful work
+> > to do:
+> >...
+> 
+> But fixing them is not so easy...
 
- It's not meant to be wired to the legacy PIC anyway (except from the
-timers #0 and #1 in some configurations, meant to emulate timer interrupts
-of the 8254 and the RTC), though I can imagine such a non-standard
-extension.
+math is hard, lets go shopping  -- Barbie
 
-> Yes, we should setup routing in the I/O APIC and use level-triggered
-> mode. I think it's better to use acpi_register_gsi than mp_register_gsi.
-> Is that right?
+> 
+> Sorry for being destructive, but we do not have easy coding tasks 
+> for newbies.
 
- It sounds right to me.
+Sorry but if it's too easy, you don't learn from it. If it's not a
+challenge .... you're going to get stuck and never really learn.
 
-  Maciej
+> 
+> If it's easy it's already fixed, and dozens of people following your 
+> advice to look at e.g. compile or sparse warnings will only generate 
+> much noise, but they'll have a hard time finding anything they are 
+> capable to fix.
+
+If they only go where they are already capable.. no gain for anyone.
+A bug can be a challenge, and need a lot of learning and investigating.
+And that's *FINE*. That's what you learn from. Not from the actual fix
+itself.
+
