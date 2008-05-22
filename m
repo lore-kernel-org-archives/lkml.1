@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935735AbYEVNkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbYEVNmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935735AbYEVNkQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 09:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760573AbYEVNkE
+	id S932995AbYEVNmE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 09:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbYEVNly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 09:40:04 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:39250 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758249AbYEVNkD (ORCPT
+	Thu, 22 May 2008 09:41:54 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:35372 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753356AbYEVNlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 09:40:03 -0400
-Message-ID: <48357756.3060602@s5r6.in-berlin.de>
-Date: Thu, 22 May 2008 15:38:30 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Thu, 22 May 2008 09:41:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=MdK6fDJGTw1nv4S4wKfusGmTbxCHVnCImlsTZwuZ1IE2Q5Nvq4CW0f7RCVr1IT66z/OleoL7C6pECmreT9tYqEI+tCrKq9C/Ja53QYDDoRFpdaUkx/ZRsZu/4CQFW6ftUKPIlXU+eLbqyS8J+suG1dvdylUfoue8Mu3dp30M+hY=
+Date: Thu, 22 May 2008 09:41:48 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] wm97xx-core: Report a phys for WM97xx touchscreens
+Message-ID: <20080522093759.ZZRA012@mailhub.coreip.homeip.net>
+References: <1211456106-10882-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-To: JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       krh@redhat.com
-Subject: Re: [PATCH] firewire: fix some broken hardware NMI interrupt
-References: <411458028.04591@ustc.edu.cn>
-In-Reply-To: <411458028.04591@ustc.edu.cn>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211456106-10882-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-JiSheng Zhang wrote:
->> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
->> jszhang3@mail.ustc.edu.cn wrote:
->>> Some broken pci-1394 card does not clear completely on-chip memory during
->>> boot, it
->>> may cause pci parity error, then NMI interrupt.
->> 
->> Which card?
-> hmm, one card using VIA chip.
->> 
->> Is the problem still present in linux-2.6.26-rc3?
-> It seems that the problem disappeared. Thanks
+Hi Mark,
 
-Great, thanks for testing.
+On Thu, May 22, 2008 at 12:35:06PM +0100, Mark Brown wrote:
+> phys is displayed in various diagnostic output so ensure that it is set
+> to something sensible.
+>
 
-I hope this is now permanently fixed.  Should it ever appear again, just
-tell us.
+Phys is used to describe the physical connection of a device that is
+ideally not changing between reboots so having it set up based on
+device's bus_id is not a best option I think.
+
+What tools besides evbug use phys? They probably should display both
+phys and sysfs paths (I will be changing evbug soon).
+
 -- 
-Stefan Richter
--=====-==--- -=-= =-==-
-http://arcgraph.de/sr/
+Dmitry
