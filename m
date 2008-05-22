@@ -1,84 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbYEVVma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933413AbYEVVnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932737AbYEVVma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761791AbYEVVmG
+	id S933413AbYEVVnG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758839AbYEVVmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:42:06 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59428 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764651AbYEVVmE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 17:42:04 -0400
-Message-ID: <4835E6F5.5010801@zytor.com>
-Date: Thu, 22 May 2008 14:34:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 22 May 2008 17:42:49 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:52442 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757942AbYEVVms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 17:42:48 -0400
+Date: Thu, 22 May 2008 16:44:54 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, prussell@au1.ibm.com, shaggy@us.ibm.com,
+       sergeh@us.ibm.com
+Subject: [PATCH] eCryptfs: Use kthread_should_stop() instead of the
+	non-empty list hack
+Message-ID: <20080522214454.GB942@halcrowt61p.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <20080520214610.GD32643@halcrowt61p.austin.ibm.com> <20080521160000.717fb1ef.akpm@linux-foundation.org> <20080522193155.GB4057@halcrowt61p.ibm.com> <20080522124142.a850ab0e.akpm@linux-foundation.org> <20080522211625.GC4057@halcrowt61p.ibm.com>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <20080520015723.GD30034@linux-os.sc.intel.com> <4832A173.6020203@firstfloor.org> <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <20080522212920.GC7998@linux-os.sc.intel.com>
-In-Reply-To: <20080522212920.GC7998@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080522211625.GC4057@halcrowt61p.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
+On Thu, May 22, 2008 at 04:16:25PM -0500, Michael Halcrow wrote:
+> This is what gets woken up:
 > 
-> can you please elaborate? even in presence of virtualization, appropriate
-> cpuid bits need to be set/visible for application, for xsave/xrstor to work
-> properly.
+> ---
+>                 wait_event_freezable(
+>                         ecryptfs_kthread_ctl.wait,
+>                         !list_empty(&ecryptfs_kthread_ctl.req_list));
+>                 mutex_lock(&ecryptfs_kthread_ctl.mux);
+>                 if (ecryptfs_kthread_ctl.flags &
+>                         ECRYPTFS_KTHREAD_ZOMBIE) {
+>                         mutex_unlock(&ecryptfs_kthread_ctl.mux);
+>                         goto out;
+>                 }
+> ---
 > 
+> So the flag causes the kthread to just quit, ignoring the list
+> altogether.
 
-For many paravirtualization solutions, CPUID "leak" from the hypervisor. 
-  The fact that CPUID cannot be disabled (made ring 0 only) is a major 
-flaw in the architecture.
+The code for shutting down the kthread is ugly. This patch uses the
+kthread_stop() call to shut down the kthread instead.
 
-Therefore, relying on CPUID is too dangerous.
+Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
+---
+ fs/ecryptfs/kthread.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
 
->> I don't think it is ... it's not overkill but rather "underkill"... it's 
->> a low-performance solution but it's guaranteed to be safe in the 
->> presence of virtualization of all its various ilk.  Note that you don't 
->> need to be able to *set* the format via prctl(), just *query* (get) it.
->>
->> Using prctl() allows us to make this personality-dependent if we ever 
->> need to.
->>
->>> While restoring from the user, kernel also need to find out what layout
->>> the user is passing. So it's bi-directional. I prefer the same mechanism
->>> (using cookies/magic numbers etc inaddition to uc_flags or cpuid checks) to
->>> interpret the fpstate for both user/kernel.
->> No, it really doesn't: the kernel only needs to be able to read the same 
->> format as it itself wrote.
-> 
-> But user can potentially change the _fpstate pointer in sigcontext struct.
-
-If so, they get what they bargained for... I am not even sure the kernel 
-will successfully clean up the stack frame if they do that.  I don't 
-think it has ever been supported doing that, and as you have correctly 
-pointed out, we don't check the magic number, so if we had had offenders 
-we ought to have smoked them out a long time ago.
-
->>> ARM also seem to be using similar things while extending their ucontext_t,
->>> with out other kernel interfaces to indicate the layout.
->>>
->>> BTW, how come 32bit kernel doesn't have the X86_FXSR_MAGIC checks, while 
->>> restoring
->>> the extended fxsave data from _fpstate?
->> Again, the kernel already knows the format, so it doesn't need to check.
-> 
-> What happens with some old applications which change the _fpstate
-> pointer. they may or may not be fxsave aware...
-
-That is not, and has never been, supported.
-
-	-hpa
+diff --git a/fs/ecryptfs/kthread.c b/fs/ecryptfs/kthread.c
+index 4295296..c440c6b 100644
+--- a/fs/ecryptfs/kthread.c
++++ b/fs/ecryptfs/kthread.c
+@@ -55,7 +55,8 @@ static int ecryptfs_threadfn(void *ignored)
+ 
+ 		wait_event_freezable(
+ 			ecryptfs_kthread_ctl.wait,
+-			!list_empty(&ecryptfs_kthread_ctl.req_list));
++			(!list_empty(&ecryptfs_kthread_ctl.req_list)
++			 || kthread_should_stop()));
+ 		mutex_lock(&ecryptfs_kthread_ctl.mux);
+ 		if (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE) {
+ 			mutex_unlock(&ecryptfs_kthread_ctl.mux);
+@@ -103,7 +104,6 @@ int ecryptfs_init_kthread(void)
+ 
+ void ecryptfs_destroy_kthread(void)
+ {
+-	struct ecryptfs_open_req tmp_req;
+ 	struct ecryptfs_open_req *req;
+ 
+ 	mutex_lock(&ecryptfs_kthread_ctl.mux);
+@@ -115,12 +115,8 @@ void ecryptfs_destroy_kthread(void)
+ 		wake_up(&req->wait);
+ 		mutex_unlock(&req->mux);
+ 	}
+-	memset(&tmp_req, 0, sizeof(tmp_req));
+-	tmp_req.flags = ECRYPTFS_REQ_ZOMBIE;
+-	/* Both the list and dummy entry are entirely defunct at this point */
+-	list_add_tail(&tmp_req.kthread_ctl_list,
+-		      &ecryptfs_kthread_ctl.req_list);
+ 	mutex_unlock(&ecryptfs_kthread_ctl.mux);
++	kthread_stop(ecryptfs_kthread);
+ 	wake_up(&ecryptfs_kthread_ctl.wait);
+ }
+ 
+-- 
+1.5.3.6
 
