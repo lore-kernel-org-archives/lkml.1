@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765286AbYEVHLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbYEVHMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765286AbYEVHLy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 03:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbYEVHLp
+	id S933057AbYEVHMV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 03:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765559AbYEVHLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 03:11:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:56464 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752534AbYEVHLo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 03:11:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iVnY7fIfJweHplH2smofT8wg4PShAty3kZCrffInZis/7LodffrtSIaRfMp+OFEePTRvlo1lyJ+tWo7CPFD6i/NbRz+2Q0S/tgbgBu/w5tKEccGvKcJ4oRPoeDOZ1xl2RtUZgkEinYuQ2dZGwKHVFU0vePw+CVH/d1a+dO2DX/c=
-Message-ID: <4e1d1a240805220011r6f0b4565l338293c66aec96b8@mail.gmail.com>
-Date: Thu, 22 May 2008 09:11:43 +0200
-From: "=?ISO-2022-JP?B?GyRCJDkkayQvJGEbKEI=?=" <surkum@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: fork: Resource temporarily unavailable / cant start new threads
-In-Reply-To: <82fa9e310805211709i3993cac2n58152cf11a3ef8a4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Thu, 22 May 2008 03:11:55 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57639 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765044AbYEVHLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 03:11:54 -0400
+Date: Thu, 22 May 2008 09:12:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jaroslav Kysela <perex@perex.cz>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, Jeff Garzik <jeff@garzik.org>,
+       Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       ALSA development <alsa-devel@alsa-project.org>
+Subject: Re: Moving sound/* to drivers/ ?
+Message-ID: <20080522071230.GB18607@uranus.ravnborg.org>
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <4834B252.1080700@garzik.org> <4834B5E2.3040301@keyaccess.nl> <Pine.LNX.4.61.0805220809370.1798@tm8103-a.perex-int.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <82fa9e310805201126q45e869bdub74a947068fe612a@mail.gmail.com>
-	 <20080521132845.72db5748.randy.dunlap@oracle.com>
-	 <82fa9e310805211339o3090e0d0le8503051d3e0aa38@mail.gmail.com>
-	 <48348AFA.1070900@oracle.com>
-	 <82fa9e310805211408o65b49923jd9bf4a6c89b97c30@mail.gmail.com>
-	 <20080521143248.baee1391.randy.dunlap@oracle.com>
-	 <82fa9e310805211551oea0dfd9mdb7dfaed2b2d98fc@mail.gmail.com>
-	 <20080521163503.000afd61.randy.dunlap@oracle.com>
-	 <82fa9e310805211709i3993cac2n58152cf11a3ef8a4@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.61.0805220809370.1798@tm8103-a.perex-int.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Take a look at this guide to install the kernel source on fedora 9
+On Thu, May 22, 2008 at 08:26:39AM +0200, Jaroslav Kysela wrote:
+> On Thu, 22 May 2008, Rene Herman wrote:
+> 
+> > On 22-05-08 01:37, Jeff Garzik wrote:
+> > 
+> > > Speaking as a former OSS driver maintainer, I always preferred
+> > > drivers/sound.
+> > > 
+> > > Though Rene's suggestion (use both sound/ and drivers/sound/) might make
+> > > sense if the subsystem code is huge -- I supported the drivers/block/ ->
+> > > block/ code movement for example.
+> > 
+> > Well, not _huge_ but ALSA is very much structured like that; large middle
+> > layer with "miniport" drivers (I do by the way expect this was also Takashi
+> > plan originally due to him using sound/* and not just "sound/"; that is, I
+> > took the * to be shorthand for isa, pci, usb and so on)
+> > 
+> > From a structural view, the PCM core is just as much not a driver as the IP
+> > protocol isn't one and moving all of sound/ to drivers/ would trade the
+> > current "why are the drivers not under drivers/?" issue for a "why is all this
+> > non-driver code under drivers/?".
+> > 
+> > This "net model" of sound/ and drivers/sound/ would be cleanest I feel.
+> 
+> Yes, it was one reason why I used 'sound/' as root of the ALSA tree. The 
+> second reason was to move old OSS tree to new directory to make less 
+> confusion. And the third reason was to just keep ALSA directory same as in 
+> our local development tree (which is out-of-kernel tree - containing only 
+> ALSA parts).
+That out-of-tree stuff could mirror the kernel directory layout - no?
+Then you could have both drivers/ and sound/ in that tree.
 
-http://www.mjmwired.net/resources/mjm-fedora-f9.html#kernelsrc
+We should try to opimize the kernel directory layout to fit the kernel best
+and then adapt the out-of-tree stuff to the kernel (IMHO).
 
-2008/5/22 mark <markkicks@gmail.com>:
-> On Wed, May 21, 2008 at 4:35 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>> > I can send you some debug patches that will print out the specific
->>> > problem area.  Do you want to do that?  Can you rebuild and install
->>> > a new kernel?
->>> Is it possible to get this debug messages by turning on some flags?
->>> If not yes, pl. send debug patches. its a live box and  I will try to do it!
->>>
->>> This is my system / kernel info:
->>> uname -a
->>> Linux XXX 2.6.25.3-18.fc9.x86_64 #1 SMP Tue May 13 04:54:47 EDT 2008
->>> x86_64 x86_64 x86_64 GNU/Linux
->>
->> I made a small patch to a vanilla kernel.org 2.6.25.3 kernel tree.
->> Hopefully it applies cleanly to that fc9 kernel source, but check/verify
->> that first before going any further.
->
-> Thanks a lot for the patch,
-> This is kind of weird..  but there is no file  kernel/fork.c
->
-> [mark@localhost 2.6.25.3-18.fc9.i686]$ find . -iname '*fork*' -print
-> [mark@localhost 2.6.25.3-18.fc9.i686]$ rpm -ql
-> [mark@localhost 2.6.25.3-18.fc9.i686]$ rpm -ql kernel-devel | grep fork
-> [mark@localhost 2.6.25.3-18.fc9.i686]$ pwd
-> /usr/src/kernels/2.6.25.3-18.fc9.i686
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
--- 
-するくめ
+	Sam
