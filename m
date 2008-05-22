@@ -1,48 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbYEVF2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761944AbYEVFmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933006AbYEVF2K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 01:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbYEVF15
+	id S1761944AbYEVFmQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 01:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbYEVFmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 01:27:57 -0400
-Received: from mail.lang.hm ([64.81.33.126]:44390 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757300AbYEVF14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 01:27:56 -0400
-Date: Wed, 21 May 2008 22:34:07 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Jonathan Corbet <corbet@lwn.net>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       rdunlap@xenotime.net, tytso@mit.edu, hch@infradead.org,
-       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
- indentation of arguments)
-In-Reply-To: <9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0805212232340.5412@asgard.lang.hm>
-References: <9a8748490805211306l50b8411ax4462be18c94ca065@mail.gmail.com>  <32279.1211401651@vena.lwn.net>  <9a8748490805211337q1e7ceab7i80e4820c46f8171b@mail.gmail.com> <9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 22 May 2008 01:42:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33088 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751359AbYEVFmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 01:42:01 -0400
+Date: Wed, 21 May 2008 22:41:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH] security: protect legacy apps from insufficient
+ privilege
+Message-Id: <20080521224137.8d5c0089.akpm@linux-foundation.org>
+In-Reply-To: <483444C1.6050308@kernel.org>
+References: <483444C1.6050308@kernel.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008, Jesper Juhl wrote:
+On Wed, 21 May 2008 08:50:25 -0700 "Andrew G. Morgan" <morgan@kernel.org> wrote:
 
-a couple minor corrections
+> +	CAP_FOR_EACH_U32(i) {
+> +		if (i >= tocopy) {
+> +			/*
+> +			 * Legacy capability sets have no upper bits
+> +			 */
+> +			bprm->cap_post_exec_permitted.cap[i] = 0;
+> +		} else {
+> +			__u32 value_cpu;
+> +			/*
+> +			 * pP' = (X & fP) | (pI & fI)
+> +			 */
+> +			value_cpu = le32_to_cpu(caps->data[i].permitted);
+> +			bprm->cap_post_exec_permitted.cap[i] = (
+> +					current->cap_bset.cap[i] & value_cpu
+> +				) | (
+> +					current->cap_inheritable.cap[i] &
+> +					le32_to_cpu(caps->data[i].inheritable)
+> +				);
+> +			if (value_cpu &
+> +			    ~bprm->cap_post_exec_permitted.cap[i]) {
+> +				/*
+> +				 * insufficient to execute correctly
+> +				 */
+> +				ret = -EPERM;
+> +			}
+> +		}
+>  	}
 
->
-> In some cases it's easy; if you are working on a very specific area
-> like the real-time properties of the kernel, then the experimental -tr
-> tree is probably what you want to develop against. In most cases
+That makes my eyes say ow.  The 80-col thing is a pain.
 
-here you mean the -rt tree, not the -tr tree
+With a judiciously placed `continue' we can do this:
 
-> If your patch did not get applied and you recieved an ACK or some
-> criticism about your patch, then your job is easy. If there's a very
+	CAP_FOR_EACH_U32(i) {
+		__u32 value_cpu;
 
-here you mean NACK not ACK
+		if (i >= tocopy) {
+			/*
+			 * Legacy capability sets have no upper bits
+			 */
+			bprm->cap_post_exec_permitted.cap[i] = 0;
+			continue;
+		}
+		/*
+		 * pP' = (X & fP) | (pI & fI)
+		 */
+		value_cpu = le32_to_cpu(caps->data[i].permitted);
+		bprm->cap_post_exec_permitted.cap[i] =
+			(current->cap_bset.cap[i] & value_cpu) |
+			(current->cap_inheritable.cap[i] &
+				le32_to_cpu(caps->data[i].inheritable));
+		if (value_cpu & ~bprm->cap_post_exec_permitted.cap[i]) {
+			/*
+			 * insufficient to execute correctly
+			 */
+			ret = -EPERM;
+		}
+	}
 
-David Lang
+OK?
