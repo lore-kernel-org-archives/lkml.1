@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763063AbYEVVOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760761AbYEVVO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763063AbYEVVOj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759473AbYEVVOZ
+	id S1760761AbYEVVO4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761347AbYEVVO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:14:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35130 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762698AbYEVVOY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 17:14:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44895 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762717AbYEVVOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 May 2008 17:14:24 -0400
-Date: Thu, 22 May 2008 22:01:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ixj: Push BKL into driver and wrap ioctls
-Message-ID: <20080522220152.4b805b6c@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+Date: Thu, 22 May 2008 17:13:31 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: akpm@linux-foundation.org, joe@perches.com, greg@kroah.com,
+       nick@nick-andrew.net, randy.dunlap@oracle.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 0/8] debug printk infrastructure
+Message-ID: <20080522211331.GA28070@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+hi,
 
-diff --git a/drivers/telephony/ixj.c b/drivers/telephony/ixj.c
-index 49cd979..ec7aeb5 100644
---- a/drivers/telephony/ixj.c
-+++ b/drivers/telephony/ixj.c
-@@ -6095,15 +6095,15 @@ static int capabilities_check(IXJ *j, struct phone_capability *pcreq)
- 	return retval;
- }
- 
--static int ixj_ioctl(struct inode *inode, struct file *file_p, unsigned int cmd, unsigned long arg)
-+static long do_ixj_ioctl(struct file *file_p, unsigned int cmd, unsigned long arg)
- {
- 	IXJ_TONE ti;
- 	IXJ_FILTER jf;
- 	IXJ_FILTER_RAW jfr;
- 	void __user *argp = (void __user *)arg;
--
--	unsigned int raise, mant;
-+	struct inode *inode = file_p->f_path.dentry->d_inode;
- 	unsigned int minor = iminor(inode);
-+	unsigned int raise, mant;
- 	int board = NUM(inode);
- 
- 	IXJ *j = get_ixj(NUM(inode));
-@@ -6661,6 +6661,15 @@ static int ixj_ioctl(struct inode *inode, struct file *file_p, unsigned int cmd,
- 	return retval;
- }
- 
-+static long ixj_ioctl(struct file *file_p, unsigned int cmd, unsigned long arg)
-+{
-+	long ret;
-+	lock_kernel();
-+	ret = do_ixj_ioctl(file_p, cmd, arg);
-+	unlock_kernel();
-+	return ret;
-+}
-+
- static int ixj_fasync(int fd, struct file *file_p, int mode)
- {
- 	IXJ *j = get_ixj(NUM(file_p->f_path.dentry->d_inode));
-@@ -6674,7 +6683,7 @@ static const struct file_operations ixj_fops =
-         .read           = ixj_enhanced_read,
-         .write          = ixj_enhanced_write,
-         .poll           = ixj_poll,
--        .ioctl          = ixj_ioctl,
-+        .unlocked_ioctl = ixj_ioctl,
-         .release        = ixj_release,
-         .fasync         = ixj_fasync
- };
+So i've attempted to make this infrastrucutre general enough to be used by the
+kernel as a whole. The basic interfaces i'm using are the basic, 'pr_debug()',
+and 'dev_dbg()' calls. And then i've added:
+
+-register_dev_dbg_handler(parent, type, max, init)
+This registers a handler that can support level, or flag printks. 'type' is
+either 'TYPE_LEVEL' or 'TYPE_FLAG'. The 'parent' field can be used to support
+a hierarchical debugging between modules, for example where we want to share
+the same levels across modules. 'init' is the initial setting for the flag
+or level. 'max' is currently unused and probably should be discarded.
+
+-dev_dbg_level(value, dev, format, ...)
+This call is used by code in the core driver as its interface into 'printk'.
+'value' is the level or flag value for the particular printk. So modules can
+do: #define dprintk dev_dbg_level(value, dev, format, ...)
+
+-dev_dbg_enabled(value)
+This call is used to allow the infrastructure to be more flexible and handle
+blocks of printks or even blocks of other debugging code.
+
+-'pr_debug' and 'dev_dbg' can continue to be used as before (no API change),
+but this infrastructure automatically detects where these calls are and displays
+the modules that have them in a debugfs file: debug/dynamic_printk/modules
+
+The debugfs file, then lists all the modules that can be 'enabled' for dynamic
+printk calls. Currently, the file has a 4 column format (excerpt from my system:
+
+<module_name> <enabled/disabled> <current level/flag setting> <# of call sites>
+
+8250 0 0 2
+acpi_cpufreq 0 0 1
+aio 0 0 24
+backlight 0 0 3
+
+I've converted a few subsysmts to this infrastructure to provide some examples
+of what it can do: module.c bonding aio and cpufreq (including sub-drivers).
+
+I realize the code is a bit rough around the edges, but the basic idea is here, 
+and i'm looking for feedback on the approach.
+
+todo:
+
+*free memory used in text sections to detect call sites
+*provide potential level settings in the debugfs file
+*convert more modules/subsystems
+*tidy up lib/dynamic_printk.c
+
+thanks,
+
+-Jason
+
+
+
