@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934287AbYEVIjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935009AbYEVIjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934287AbYEVIjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 04:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYEVIjK
+	id S935009AbYEVIjk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934324AbYEVIjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 04:39:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58434 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751857AbYEVIjG (ORCPT
+	Thu, 22 May 2008 04:39:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47410 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934224AbYEVIjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 04:39:06 -0400
-Date: Thu, 22 May 2008 03:39:06 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Paul Menage <menage@google.com>
-Cc: linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH] remove unnecessary memmove() in cgroup_path()
-Message-Id: <20080522033906.742aacb1.pj@sgi.com>
-In-Reply-To: <48352127.20804@cn.fujitsu.com>
-References: <48352127.20804@cn.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Thu, 22 May 2008 04:39:20 -0400
+Date: Thu, 22 May 2008 10:47:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Glauber Costa <gcosta@redhat.com>
+Cc: Miquel van Smoorenburg <miquels@cistron.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, andi-suse@firstfloor.org
+Subject: Re: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
+Message-ID: <20080522084736.GC31727@one.firstfloor.org>
+References: <20080521113028.GA24632@xs4all.net> <48341A57.1030505@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48341A57.1030505@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage -- since you are the MAINTAINER of kernel/cgroup.c,
-I should have CC'd you on my responses to this patch, sent out
-earlier this evening.  My apologies for not doing so.
+On Wed, May 21, 2008 at 09:49:27AM -0300, Glauber Costa wrote:
+> probably andi has a better idea on why it was added, since it used to 
+> live in his tree?
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+d_a_c() tries a couple of zones, and running the oom killer for each
+is inconvenient. Especially for the 16MB DMA zone which is unlikely
+to be cleared by the OOM killer anyways because normal user applications
+don't put pages in there. There was a real report with some problems
+in this area. Also for the earlier tries you don't want to really
+bring the system into swap.
+
+Mask allocator would clean most of that up.
+
+-Andi
