@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934526AbYEVIK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934441AbYEVINH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934526AbYEVIK2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 04:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761166AbYEVIKB
+	id S934441AbYEVINH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 04:13:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761775AbYEVIMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 04:10:01 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60809 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760229AbYEVIJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 04:09:59 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, viro@ZenIV.linux.org.uk, paulus@samba.org,
-       tiwai@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: Moving include/asm-*
-References: <alpine.LFD.1.10.0805211635040.3081@woody.linux-foundation.org>
-	<20080522005657.GU28946@ZenIV.linux.org.uk>
-	<alpine.LFD.1.10.0805211818550.3081@woody.linux-foundation.org>
-	<20080521.182335.28689253.davem@davemloft.net>
-X-Yow: My pants just went to high school in the Carlsbad Caverns!!!
-Date: Thu, 22 May 2008 10:09:51 +0200
-In-Reply-To: <20080521.182335.28689253.davem@davemloft.net> (David Miller's
-	message of "Wed, 21 May 2008 18:23:35 -0700 (PDT)")
-Message-ID: <je1w3uu5dc.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 22 May 2008 04:12:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46343 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761768AbYEVIMp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 04:12:45 -0400
+Date: Thu, 22 May 2008 01:10:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Paul Menage <menage@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH -mm] remove node_ prefix_from ns subsystem
+Message-Id: <20080522011053.680f7f65.akpm@linux-foundation.org>
+In-Reply-To: <48352277.4010703@fr.ibm.com>
+References: <48344409.9090903@fr.ibm.com>
+	<20080521220657.12e8e8c9.akpm@linux-foundation.org>
+	<6599ad830805220011u77313ed7s2c0c9d4a658133cc@mail.gmail.com>
+	<20080522003213.d677ba30.akpm@linux-foundation.org>
+	<48352277.4010703@fr.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+On Thu, 22 May 2008 09:36:23 +0200 Cedric Le Goater <clg@fr.ibm.com> wrote:
 
-> If you want to figure out where something is implemented for a given
-> target, you have to walk through the tree like a monkey in some
-> prioritized list of directories to find the source file or header file
-> that glibc ends up using.
+> > What is the reason for making this change?
+> 
+> the 'node_' prefix really is superfluous and misleading. what's a node ?
 
-The dependencies file contains the exact list of used files.
+For gawd's sake guys.  I've asked three times and now I'm getting
+rhetorical questions for answers.  It's like drawing teeth.
 
-Andreas.
+Will someone please write a halfway decent description of this change? 
+One which (at least) covers all the questions I've been asking?
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+What the change is, why it is being made, what the user-visible
+presentation is, what the impact upon users is, why we think it won't
+be a problem, etc?  The stuff which should have been right there from
+day one, before the code change was even made?
+
+Thanks.
