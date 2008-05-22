@@ -1,182 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbYEVT05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYEVT1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757908AbYEVT05 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 15:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbYEVT0s
+	id S1758646AbYEVT1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 15:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbYEVT0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 15:26:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:36103 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754676AbYEVT0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 15:26:49 -0400
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:1833 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754631AbYEVT0q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 May 2008 15:26:46 -0400
-Date: Thu, 22 May 2008 21:26:37 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Uwe =?utf-8?B?S2xlaW5lLUvDg8K2bmln?= <Uwe.Kleine-Koenig@digi.com>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH 1/1] UIO: Add a write() function to enable/disable
-	interrupts
-Message-ID: <20080522192637.GC3226@local>
-References: <20080522192252.GB3226@local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080522192252.GB3226@local>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Subject: Re: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
+From: Miquel van Smoorenburg <miquels@cistron.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Glauber Costa <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, andi-suse@firstfloor.org, miquels@cistron.nl
+In-Reply-To: <20080522084736.GC31727@one.firstfloor.org>
+References: <20080521113028.GA24632@xs4all.net>
+	 <48341A57.1030505@redhat.com>  <20080522084736.GC31727@one.firstfloor.org>
+Content-Type: text/plain
+Date: Thu, 22 May 2008 21:25:43 +0200
+Message-Id: <1211484343.30678.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes it is necessary to enable/disable the interrupt of a UIO device
-from the userspace part of the driver. With this patch, the UIO kernel driver
-can implement an "irqcontrol()" function that does this. Userspace can write
-an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
-UIO core will then call the driver's irqcontrol function.
+On Thu, 2008-05-22 at 10:47 +0200, Andi Kleen wrote:
+> On Wed, May 21, 2008 at 09:49:27AM -0300, Glauber Costa wrote:
+> > probably andi has a better idea on why it was added, since it used to 
+> > live in his tree?
+> 
+> d_a_c() tries a couple of zones, and running the oom killer for each
+> is inconvenient. Especially for the 16MB DMA zone which is unlikely
+> to be cleared by the OOM killer anyways because normal user applications
+> don't put pages in there. There was a real report with some problems
+> in this area. Also for the earlier tries you don't want to really
+> bring the system into swap.
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
----
- Documentation/DocBook/uio-howto.tmpl |   40 ++++++++++++++++++++++++++++++++++-
- drivers/uio/uio.c                    |   26 ++++++++++++++++++++++
- include/linux/uio_driver.h           |    2 +
- 3 files changed, 67 insertions(+), 1 deletion(-)
+I understand, but I do think using __GFP_NORETRY causes problems.
 
-Index: linux-2.6.26-rc/include/linux/uio_driver.h
-===================================================================
---- linux-2.6.26-rc.orig/include/linux/uio_driver.h	2008-05-22 20:22:57.000000000 +0200
-+++ linux-2.6.26-rc/include/linux/uio_driver.h	2008-05-22 20:23:12.000000000 +0200
-@@ -53,6 +53,7 @@
-  * @mmap:		mmap operation for this uio device
-  * @open:		open operation for this uio device
-  * @release:		release operation for this uio device
-+ * @irqcontrol:		disable/enable irqs when 0/1 is written to /dev/uioX
-  */
- struct uio_info {
- 	struct uio_device	*uio_dev;
-@@ -66,6 +67,7 @@
- 	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
- 	int (*open)(struct uio_info *info, struct inode *inode);
- 	int (*release)(struct uio_info *info, struct inode *inode);
-+	int (*irqcontrol)(struct uio_info *info, s32 irq_on);
- };
+Most drivers call pci_alloc_consistent() which calls
+dma_alloc_coherent(.... GFP_ATOMIC) which can dip deep into reserves so
+it won't fail so easily. Just a handful use dma_alloc_coherent()
+directly.
+
+However, in 2.6.26-rc1, dpt_i2o.c was updated for 64 bit support, and
+all it's kmalloc(.... GFP_KERNEL) + virt_to_bus() calls have been
+replaced by dma_alloc_coherent(.... GFP_KERNEL).
+
+In that case, it's not a very good idea to add __GFP_NORETRY. It will
+cause problems. It certainly does in 3w-xxxx.c and it probably will
+cause worse problems in dpt_i2o.c.
+
+I think we should do something. How about one of these two patches.
+
+# -----
+
+linux-2.6.26-d_a_c-fix-noretry.patch
+
+diff -ruN linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c
+--- linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c	2008-05-18 23:36:41.000000000 +0200
++++ linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c	2008-05-22 21:21:37.000000000 +0200
+@@ -398,7 +398,8 @@
+ 		return NULL;
  
- extern int __must_check
-Index: linux-2.6.26-rc/drivers/uio/uio.c
-===================================================================
---- linux-2.6.26-rc.orig/drivers/uio/uio.c	2008-05-22 20:23:07.000000000 +0200
-+++ linux-2.6.26-rc/drivers/uio/uio.c	2008-05-22 20:23:12.000000000 +0200
-@@ -420,6 +420,31 @@
- 	return retval;
- }
+ 	/* Don't invoke OOM killer */
+-	gfp |= __GFP_NORETRY;
++	if (!(gfp & __GFP_WAIT))
++		gfp |= __GFP_NORETRY;
  
-+static ssize_t uio_write(struct file *filep, const char __user *buf,
-+			size_t count, loff_t *ppos)
-+{
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+	ssize_t retval;
-+	s32 irq_on;
-+
-+	if (idev->info->irq == UIO_IRQ_NONE)
-+		return -EIO;
-+
-+	if (count != sizeof(s32))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&irq_on, buf, count))
-+		return -EFAULT;
-+
-+	if (!idev->info->irqcontrol)
-+		return -ENOSYS;
-+
-+	retval = idev->info->irqcontrol(idev->info, irq_on);
-+
-+	return retval ? retval : sizeof(s32);
-+}
-+
- static int uio_find_mem_index(struct vm_area_struct *vma)
- {
- 	int mi;
-@@ -539,6 +564,7 @@
- 	.open		= uio_open,
- 	.release	= uio_release,
- 	.read		= uio_read,
-+	.write		= uio_write,
- 	.mmap		= uio_mmap,
- 	.poll		= uio_poll,
- 	.fasync		= uio_fasync,
-Index: linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl
-===================================================================
---- linux-2.6.26-rc.orig/Documentation/DocBook/uio-howto.tmpl	2008-05-22 20:22:57.000000000 +0200
-+++ linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl	2008-05-22 20:23:12.000000000 +0200
-@@ -30,6 +30,12 @@
+ #ifdef CONFIG_X86_64
+ 	/* Why <=? Even when the mask is smaller than 4GB it is often
+
+
+# -----
+
+
+linux-2.6.26-gfp-no-oom.patch
+
+diff -ruN linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c
+--- linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c	2008-05-18 23:36:41.000000000 +0200
++++ linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c	2008-05-22 20:42:10.000000000 +0200
+@@ -398,7 +398,7 @@
+ 		return NULL;
  
- <revhistory>
- 	<revision>
-+	<revnumber>0.5</revnumber>
-+	<date>2008-05-22</date>
-+	<authorinitials>hjk</authorinitials>
-+	<revremark>Added description of write() function.</revremark>
-+	</revision>
-+	<revision>
- 	<revnumber>0.4</revnumber>
- 	<date>2007-11-26</date>
- 	<authorinitials>hjk</authorinitials>
-@@ -64,7 +70,7 @@
- <?dbhtml filename="copyright.html"?>
- <title>Copyright and License</title>
- <para>
--      Copyright (c) 2006 by Hans-JÃŒrgen Koch.</para>
-+      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
- <para>
- This documentation is Free Software licensed under the terms of the
- GPL version 2.
-@@ -189,6 +195,30 @@
- 	represents the total interrupt count. You can use this number
- 	to figure out if you missed some interrupts.
- 	</para>
-+	<para>
-+	For some hardware that has more than one interrupt source internally,
-+	but not seperate IRQ mask and status registers, there might be
-+	situations where userspace cannot determine what the interrupt source
-+	was if the kernel handler disables them by writing to the chip's IRQ
-+	register. In such a case, the kernel has to disable the IRQ completely
-+	to leave the chip's register untouched. Now the userspace part can
-+	determine the cause of the interrupt, but it cannot re-enable
-+	interrupts. Another cornercase are chips where re-enabling interrupts
-+	is a read-modify-write operation to a combined IRQ status/acknowledge
-+	register. This would be racy if a new interrupt occured
-+	simultaneously.
-+	</para>
-+	<para>
-+	To address these problems, UIO also implements a write() function. It
-+	is normally not used and can be ignored for hardware that has only a
-+	single interrupt source or has seperate IRQ mask and status registers.
-+	If you need it, however, a write to <filename>/dev/uioX</filename>
-+	will call the <function>irqcontrol()</function> function implemented
-+	by the driver. You have to write a 32-bit value that is usually either
-+	0 or 1 do disable or enable interrupts. If a driver does not implement
-+	<function>irqcontrol()</function>, <function>write()</function> will
-+	return with <varname>-ENOSYS</varname>.
-+	</para>
+ 	/* Don't invoke OOM killer */
+-	gfp |= __GFP_NORETRY;
++	gfp |= __GFP_NO_OOM;
  
- 	<para>
- 	To handle interrupts properly, your custom kernel module can
-@@ -362,6 +392,14 @@
- <function>open()</function>, you will probably also want a custom
- <function>release()</function> function.
- </para></listitem>
-+
-+<listitem><para>
-+<varname>int (*irqcontrol)(struct uio_info *info, s32 irq_on)
-+</varname>: Optional. If you need to be able to enable or disable
-+interrupts from userspace by writing to <filename>/dev/uioX</filename>,
-+you can implement this function. The parameter <varname>irq_on</varname>
-+will be 0 to disable interrupts and 1 to enable them.
-+</para></listitem>
- </itemizedlist>
- 
- <para>
+ #ifdef CONFIG_X86_64
+ 	/* Why <=? Even when the mask is smaller than 4GB it is often
+diff -ruN linux-2.6.26-rc3.orig/include/linux/gfp.h linux-2.6.26-rc3/include/linux/gfp.h
+--- linux-2.6.26-rc3.orig/include/linux/gfp.h	2008-05-18 23:36:41.000000000 +0200
++++ linux-2.6.26-rc3/include/linux/gfp.h	2008-05-22 21:17:36.000000000 +0200
+@@ -43,6 +43,7 @@
+ #define __GFP_REPEAT	((__force gfp_t)0x400u)	/* See above */
+ #define __GFP_NOFAIL	((__force gfp_t)0x800u)	/* See above */
+ #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* See above */
++#define __GFP_NO_OOM	((__force gfp_t)0x2000u)/* Don't invoke oomkiller */
+ #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+ #define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+diff -ruN linux-2.6.26-rc3.orig/mm/page_alloc.c linux-2.6.26-rc3/mm/page_alloc.c
+--- linux-2.6.26-rc3.orig/mm/page_alloc.c	2008-05-18 23:36:41.000000000 +0200
++++ linux-2.6.26-rc3/mm/page_alloc.c	2008-05-22 17:39:12.000000000 +0200
+@@ -1583,7 +1583,8 @@
+ 					zonelist, high_zoneidx, alloc_flags);
+ 		if (page)
+ 			goto got_pg;
+-	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
++	} else if ((gfp_mask & __GFP_FS) &&
++			!(gfp_mask & (__GFP_NORETRY|__GFP_NO_OOM))) {
+ 		if (!try_set_zone_oom(zonelist, gfp_mask)) {
+ 			schedule_timeout_uninterruptible(1);
+ 			goto restart;
+
+
