@@ -1,49 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbYEVNmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764648AbYEVNpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932995AbYEVNmE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 09:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbYEVNly
+	id S1764648AbYEVNpV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 09:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbYEVNpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 09:41:54 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:35372 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753356AbYEVNlx (ORCPT
+	Thu, 22 May 2008 09:45:09 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:63688 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752964AbYEVNpI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 09:41:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=MdK6fDJGTw1nv4S4wKfusGmTbxCHVnCImlsTZwuZ1IE2Q5Nvq4CW0f7RCVr1IT66z/OleoL7C6pECmreT9tYqEI+tCrKq9C/Ja53QYDDoRFpdaUkx/ZRsZu/4CQFW6ftUKPIlXU+eLbqyS8J+suG1dvdylUfoue8Mu3dp30M+hY=
-Date: Thu, 22 May 2008 09:41:48 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] wm97xx-core: Report a phys for WM97xx touchscreens
-Message-ID: <20080522093759.ZZRA012@mailhub.coreip.homeip.net>
-References: <1211456106-10882-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Thu, 22 May 2008 09:45:08 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211456106-10882-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 3/4] [MMC] mmc_spi: add polling support for the carddetectline
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Thu, 22 May 2008 21:44:57 +0800
+Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2F176EF@zch01exm21.fsl.freescale.net>
+In-Reply-To: <20080522123838.GA27149@polina.dev.rtsoft.ru>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 3/4] [MMC] mmc_spi: add polling support for the carddetectline
+Thread-Index: Aci8CMdRxik0uCeSQhq1GqJJzy+/wAACBy+w
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru> <58A20A281BAF1047B4EAE68DE5C0BDC2F16E6A@zch01exm21.fsl.freescale.net> <20080522123838.GA27149@polina.dev.rtsoft.ru>
+From: "Chen Gong" <G.Chen@freescale.com>
+To: <avorontsov@ru.mvista.com>
+Cc: "Kumar Gala" <galak@kernel.crashing.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Pierre Ossman" <drzeus-mmc@drzeus.cx>, <linuxppc-dev@ozlabs.org>,
+       <spi-devel-general@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, "Tabi Timur" <timur@freescale.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+ 
 
-On Thu, May 22, 2008 at 12:35:06PM +0100, Mark Brown wrote:
-> phys is displayed in various diagnostic output so ensure that it is set
-> to something sensible.
->
+> -----Original Message-----
+> From: Anton Vorontsov [mailto:avorontsov@ru.mvista.com] 
+> Sent: 2008?5?22? 20:39
+> To: Chen Gong
+> Cc: Kumar Gala; David Brownell; Pierre Ossman; 
+> linuxppc-dev@ozlabs.org; 
+> spi-devel-general@lists.sourceforge.net; 
+> linux-kernel@vger.kernel.org; Tabi Timur
+> Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support 
+> for the carddetectline
+> 
+> On Mon, May 19, 2008 at 11:02:13AM +0800, Chen Gong wrote:
+> > 
+> > > -----Original Message-----
+> > > From: linuxppc-dev-bounces+b11801=freescale.com@ozlabs.org
+> > > [mailto:linuxppc-dev-bounces+b11801=freescale.com@ozlabs.org]
+> > > On Behalf Of Anton Vorontsov
+> > > Sent: 2008?5?17? 0:51
+> > > To: Kumar Gala; David Brownell; Pierre Ossman
+> > > Cc: linuxppc-dev@ozlabs.org;
+> > > spi-devel-general@lists.sourceforge.net;
+> > > linux-kernel@vger.kernel.org; Tabi Timur
+> > > Subject: [PATCH 3/4] [MMC] mmc_spi: add polling support 
+> for the card 
+> > > detectline
+> > > 
+> > > Some boards do not use interrupts on the CD line, so we 
+> want to poll 
+> > > the CD and see if there was a change. 1 second poll 
+> interval seems 
+> > > resonable.
+> > > 
+> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > ---
+> > >  drivers/mmc/host/mmc_spi.c  |   51 
+> > 
+> > I want to know whether every card working well ? Because 
+> I'm working 
+> > For 83xx MMC-over-SPI support, the presented concrete 
+> methods I used 
+> > as you do, but only 256M card seems good, 512M or 1G/2G 
+> card all have 
+> > some problems
+> 
+> So far I don't have cards larger than 256M. Will try to get 
+> one though.
+> 
+Thanks, if you have any new test report pls contact me.
 
-Phys is used to describe the physical connection of a device that is
-ideally not changing between reboots so having it set up based on
-device's bus_id is not a best option I think.
-
-What tools besides evbug use phys? They probably should display both
-phys and sysfs paths (I will be changing evbug soon).
-
--- 
-Dmitry
+BTW, a fews days ago Joakim Tjernlund made a heavy fix for 
+spi_mpc83xx.c to resolve clock glitch. But it looks no any impact
+for me, but maybe it has positive effect for you.
