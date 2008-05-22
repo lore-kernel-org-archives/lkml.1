@@ -1,106 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbYEVF0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbYEVF2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933320AbYEVF0w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 01:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761069AbYEVF0Z
+	id S933006AbYEVF2K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 01:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbYEVF15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 01:26:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52617 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760314AbYEVF0Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 01:26:24 -0400
-Date: Wed, 21 May 2008 22:25:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Shi Weihua <shiwh@cn.fujitsu.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       linux-security-module@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, jmorris@namei.org,
-       ltp-list@lists.sourceforge.net
-Subject: Re: [PATCH] fix sys_prctl() returned uninitialized value
-Message-Id: <20080521222551.8d8e064a.akpm@linux-foundation.org>
-In-Reply-To: <4834FE1D.10909@kernel.org>
-References: <4834E639.2010209@cn.fujitsu.com>
-	<20080521203212.ddf05254.akpm@linux-foundation.org>
-	<4834FE1D.10909@kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 May 2008 01:27:57 -0400
+Received: from mail.lang.hm ([64.81.33.126]:44390 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757300AbYEVF14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 01:27:56 -0400
+Date: Wed, 21 May 2008 22:34:07 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Jonathan Corbet <corbet@lwn.net>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       rdunlap@xenotime.net, tytso@mit.edu, hch@infradead.org,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+ indentation of arguments)
+In-Reply-To: <9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0805212232340.5412@asgard.lang.hm>
+References: <9a8748490805211306l50b8411ax4462be18c94ca065@mail.gmail.com>  <32279.1211401651@vena.lwn.net>  <9a8748490805211337q1e7ceab7i80e4820c46f8171b@mail.gmail.com> <9a8748490805211646s5ef93f8ey43ebbc7746fb1a3b@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 22:01:17 -0700 "Andrew G. Morgan" <morgan@kernel.org> wrote:
+On Thu, 22 May 2008, Jesper Juhl wrote:
 
-> this is the default expected by the subsequent switch ().
-> 
-> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
-> ---
->  kernel/sys.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/sys.c b/kernel/sys.c
-> index 895d2d4..cb25a64 100644
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -1657,6 +1657,8 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
->  	if (security_task_prctl(option, arg2, arg3, arg4, arg5, &error))
->  		return error;
->  
-> +	error = 0;
-> +
->  	switch (option) {
->  		case PR_SET_PDEATHSIG:
->  			if (!valid_signal(arg2)) {
+a couple minor corrections
 
-Looking at it some more there are two cases which don't initialise
-`error': PR_SET_PDEATHSIG and PR_SET_DUMPABLE.  (let's set aside the
-silliness of having sys_prctl() perform set_dumpable()'s argument
-checking for it).
+>
+> In some cases it's easy; if you are working on a very specific area
+> like the real-time properties of the kernel, then the experimental -tr
+> tree is probably what you want to develop against. In most cases
 
-So I would propose this fix, mainly because it removes that nasty
-uninitialized_var().  Please review carefully.
+here you mean the -rt tree, not the -tr tree
 
+> If your patch did not get applied and you recieved an ACK or some
+> criticism about your patch, then your job is easy. If there's a very
 
+here you mean NACK not ACK
 
-From: Shi Weihua <shiwh@cn.fujitsu.com> 
-
-If none of the switch cases match, the PR_SET_PDEATHSIG and
-PR_SET_DUMPABLE cases of the switch statement will never write to local
-variable `error'.
-
-Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
-Cc: Andrew G. Morgan <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- kernel/sys.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff -puN kernel/sys.c~sys_prctl-fix-return-of-uninitialized-value kernel/sys.c
---- a/kernel/sys.c~sys_prctl-fix-return-of-uninitialized-value
-+++ a/kernel/sys.c
-@@ -1652,7 +1652,7 @@ asmlinkage long sys_umask(int mask)
- asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
- 			  unsigned long arg4, unsigned long arg5)
- {
--	long uninitialized_var(error);
-+	long error = 0;
- 
- 	if (security_task_prctl(option, arg2, arg3, arg4, arg5, &error))
- 		return error;
-@@ -1701,9 +1701,7 @@ asmlinkage long sys_prctl(int option, un
- 			error = PR_TIMING_STATISTICAL;
- 			break;
- 		case PR_SET_TIMING:
--			if (arg2 == PR_TIMING_STATISTICAL)
--				error = 0;
--			else
-+			if (arg2 != PR_TIMING_STATISTICAL)
- 				error = -EINVAL;
- 			break;
- 
-_
-
+David Lang
