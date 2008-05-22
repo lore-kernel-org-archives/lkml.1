@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbYEVCrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYEVDUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbYEVCrr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 22:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbYEVCri
+	id S1759597AbYEVDUk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 23:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756452AbYEVDU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 22:47:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:49940 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755243AbYEVCrh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 22:47:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=dneWS4D79GsdoWC1Mwwv0pYBKtZe1MZqbEytXSNqgjeUMwo+dT0GTl0sEIXVbWR4a5z8ETLqOHW3CeDNjVsz0qNusCpxevKKpvhYJLCOcwUhH57p/hFL8Exnl3bVM8xxqXFNByRScqGVcp9MssbOlnOFquMKRVkEFOqxnMkoFbE=
-Message-ID: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-Date: Thu, 22 May 2008 10:47:35 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
-Subject: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+	Wed, 21 May 2008 23:20:28 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64831 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756322AbYEVDU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 23:20:27 -0400
+Message-ID: <4834E639.2010209@cn.fujitsu.com>
+Date: Thu, 22 May 2008 11:19:21 +0800
+From: Shi Weihua <shiwh@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_8753_10367779.1211424456021"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, morgan@kernel.org,
+       linux-security-module@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, jmorris@namei.org,
+       ltp-list@lists.sourceforge.net
+Subject: [PATCH] fix sys_prctl() returned uninitialized value
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_8753_10367779.1211424456021
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+When we test kernel by the latest LTP(20080430) on ia64,
+the following failure occured:
+-------------------------------------
+prctl01     1  PASS  :  Test Passed
+prctl01     0  WARN  :  prctl() returned 2048 errno = 0 : Success
+prctl01     1  PASS  :  Test Passed
+prctl01     2  FAIL  :  Test Failed
+-------------------------------------
 
-Hello list,
+We found commit 3898b1b4ebff8dcfbcf1807e0661585e06c9a91c
+causes this failure by git-bisect.
+And, we found 'error' has not been initialized in the function 
+sys_prctl()(kernel/sys.c). When the capability module is not taking
+responsibility for this call, sys_prctl() may return a wrong value.
 
-The following patch is to fixed a race in ptrace_stop handling which
-causes "strace" hang if the target process blocks SIGTRAP with the
-test case filed at
-https://bugzilla.redhat.com/show_bug.cgi?id=446200#c16.
-Please note this is just IA64 problem because just IA64 has
-arch_ptrace_stop_needed defined, and has arch_ptrace_stop defined that
-would set notify_resume flags for syncing rbs...but it also opens the
-door to invoke ia64_do_signal->get_signal_to_deliver before setting
-current PTRACED flag. Please help review.
+Now, i fixed it.
 
-**The patch is enclosed in text attachment*
-**I'm using web client to send the patch* *
+Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
+---
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 895d2d4..26eb0f7 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1652,7 +1652,7 @@ asmlinkage long sys_umask(int mask)
+ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
+ 			  unsigned long arg4, unsigned long arg5)
+ {
+-	long uninitialized_var(error);
++	long error = 0;
+ 
+ 	if (security_task_prctl(option, arg2, arg3, arg4, arg5, &error))
+ 		return error;
 
-Signed-off-by: Yu Luming <luming.yu@intel.com>
---------------------------------------
- signal.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-------=_Part_8753_10367779.1211424456021
-Content-Type: application/force-download; name=446200.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fgiqpxnr0
-Content-Disposition: attachment; filename=446200.patch
-
-LS0tIDAva2VybmVsL3NpZ25hbC5jCTIwMDgtMDUtMTQgMDI6MjQ6NTEuMDAwMDAwMDAwICswODAw
-CisrKyAxL2tlcm5lbC9zaWduYWwuYwkyMDA4LTA1LTIyIDEzOjU0OjQyLjAwMDAwMDAwMCArMDgw
-MApAQCAtMTQ4OCw2ICsxNDg4LDkgQEAKIHsKIAlpbnQga2lsbGVkID0gMDsKIAorCS8qIExldCB0
-aGUgZGVidWdnZXIgcnVuLiAgKi8KKwlfX3NldF9jdXJyZW50X3N0YXRlKFRBU0tfVFJBQ0VEKTsK
-KwogCWlmIChhcmNoX3B0cmFjZV9zdG9wX25lZWRlZChleGl0X2NvZGUsIGluZm8pKSB7CiAJCS8q
-CiAJCSAqIFRoZSBhcmNoIGNvZGUgaGFzIHNvbWV0aGluZyBzcGVjaWFsIHRvIGRvIGJlZm9yZSBh
-CkBAIC0xNTE2LDggKzE1MTksNiBAQAogCWN1cnJlbnQtPmxhc3Rfc2lnaW5mbyA9IGluZm87CiAJ
-Y3VycmVudC0+ZXhpdF9jb2RlID0gZXhpdF9jb2RlOwogCi0JLyogTGV0IHRoZSBkZWJ1Z2dlciBy
-dW4uICAqLwotCV9fc2V0X2N1cnJlbnRfc3RhdGUoVEFTS19UUkFDRUQpOwogCXNwaW5fdW5sb2Nr
-X2lycSgmY3VycmVudC0+c2lnaGFuZC0+c2lnbG9jayk7CiAJcmVhZF9sb2NrKCZ0YXNrbGlzdF9s
-b2NrKTsKIAlpZiAoIXVubGlrZWx5KGtpbGxlZCkgJiYgbWF5X3B0cmFjZV9zdG9wKCkpIHsK
-------=_Part_8753_10367779.1211424456021--
