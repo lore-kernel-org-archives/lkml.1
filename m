@@ -1,177 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934928AbYEVLy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935006AbYEVLzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934928AbYEVLy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 07:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764471AbYEVLw7
+	id S935006AbYEVLzK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 07:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759227AbYEVLyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 07:52:59 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:49744 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760163AbYEVLwa (ORCPT
+	Thu, 22 May 2008 07:54:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:63921 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759495AbYEVLyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 07:52:30 -0400
-Message-Id: <20080522114947.927196541@kerlabs.com>
-References: <20080522114048.265996107@kerlabs.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 22 May 2008 13:40:52 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Joel.Becker@oracle.com
-Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
-       Louis Rilling <Louis.Rilling@kerlabs.com>
-Subject: [RFC][PATCH 4/4] configfs: Make multiple default_group destructions lockdep friendly
-Content-Disposition: inline; filename=configfs-make-default-group-destruction-lockdep-friendly-2.patch
+	Thu, 22 May 2008 07:54:54 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: BUG: Ecryptfs ioctl handling
+Date: Thu, 22 May 2008 13:53:44 +0200
+User-Agent: KMail/1.9.9
+Cc: mahalcro@us.ibm.com, linux-kernel@vger.kernel.org
+References: <20080522111746.6c78507b@core>
+In-Reply-To: <20080522111746.6c78507b@core>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805221353.45239.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/CO1Hwpo8VIi6cbRweG1R59vpUhnr/KmcbEpJ
+ AzukRIHGxU8uSySizhJDsLMTEivNYhQRG+X8xt2DcKe47c8dmU
+ Pfa8G0e3bmqLqgDq9rkhg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When destroying a config_group having multiple (nested or not) default groups,
-lockdep raises a warning because multiple locks of class I_MUTEX_NORMAL are
-taken in configfs_detach_prep().
+On Thursday 22 May 2008, Alan Cox wrote:
+> 
+> Ecryptfs has an ioctl method that checks for the underlying fs ioctl
+> method and can call down into. Unfortunately however it doesn't check for
+> an underlying unlocked_ioctl method and call that if present.
+> 
+> Notices while removing the remaining users of ->ioctl from my dev tree.
+> 
+> Really ecryptfs needs its own ->unlocked_ioctl op to call into either
+> unlocked ioctl below or lock_kernel/ioctl/unlock_kernel below.
 
-This patch makes such default group destructions lockdep-friendly by increasing
-the i_mutex sub-class from I_MUTEX_CHILD + 1 onwards for each default group
-locked under a being-destroyed config_group.
+Similarly, ecryptfs doesn't provide a ->compat_ioctl op that calls into
+the file system's ->compat_ioctl operation if present.
+This will be needed to make ioctl handling work on file systems that
+rely on ->compat_ioctl for 32 bit processes.
 
-With this patch and lockdep compiled-in, the number of default groups (whatever
-their depth in the tree) under a user-created config_group (resp. registered
-subsystem) is limited to MAX_LOCKDEP_SUBCLASSES - I_MUTEX_CHILD - 1 == 3. This
-limit is removed when not compiling lockdep.
+I wonder if there are other places in the kernel that just pass down
+ioctl calls to a slave file system or driver and need to have this
+added.
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.26-rc3 #5
----------------------------------------------
-rmdir/1499 is trying to acquire lock:
- (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff802d2529>] configfs_detach_prep+0x54/0x89
-
-but task is already holding lock:
- (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff80296513>] vfs_rmdir+0x49/0xac
-
-other info that might help us debug this:
-2 locks held by rmdir/1499:
- #0:  (&sb->s_type->i_mutex_key#3/1){--..}, at: [<ffffffff80298138>] do_rmdir+0x82/0x108
- #1:  (&sb->s_type->i_mutex_key#11){--..}, at: [<ffffffff80296513>] vfs_rmdir+0x49/0xac
-
-stack backtrace:
-Pid: 1499, comm: rmdir Not tainted 2.6.26-rc3 #5
-
-Call Trace:
- [<ffffffff8024afe9>] __lock_acquire+0x8d2/0xc78
- [<ffffffff80266399>] filemap_fault+0x1cf/0x332
- [<ffffffff802d2529>] configfs_detach_prep+0x54/0x89
- [<ffffffff8024b762>] lock_acquire+0x51/0x6c
- [<ffffffff802d2529>] configfs_detach_prep+0x54/0x89
- [<ffffffff80248331>] debug_mutex_lock_common+0x16/0x23
- [<ffffffff805d6244>] mutex_lock_nested+0xcd/0x23b
- [<ffffffff802d2529>] configfs_detach_prep+0x54/0x89
- [<ffffffff802d3656>] configfs_rmdir+0xb8/0x1c3
- [<ffffffff80296535>] vfs_rmdir+0x6b/0xac
- [<ffffffff8029816d>] do_rmdir+0xb7/0x108
- [<ffffffff8024a2a2>] trace_hardirqs_on+0xef/0x113
- [<ffffffff805d7364>] trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff8020b0cb>] system_call_after_swapgs+0x7b/0x80
-
-
-Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
----
- fs/configfs/dir.c |   33 ++++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
-
-Index: b/fs/configfs/dir.c
-===================================================================
---- a/fs/configfs/dir.c	2008-05-22 12:38:02.000000000 +0200
-+++ b/fs/configfs/dir.c	2008-05-22 12:49:08.000000000 +0200
-@@ -49,6 +49,12 @@ static inline int set_dirent_lock_level(
- 	return -ELOOP;
- }
- 
-+static inline void copy_dirent_lock_level(struct configfs_dirent *from,
-+					  struct configfs_dirent *to)
-+{
-+	to->s_lock_level = from->s_lock_level;
-+}
-+
- static inline void reset_dirent_lock_level(struct configfs_dirent *sd)
- {
- 	sd->s_lock_level = -1;
-@@ -62,6 +68,11 @@ static inline int set_dirent_lock_level(
- 	return 0;
- }
- 
-+static inline void copy_dirent_lock_level(struct configfs_dirent *from,
-+					  struct configfs_dirent *to)
-+{
-+}
-+
- static inline void reset_dirent_lock_level(struct configfs_dirent *sd)
- {
- }
-@@ -372,6 +383,7 @@ static int configfs_detach_prep(struct d
- {
- 	struct configfs_dirent *parent_sd = dentry->d_fsdata;
- 	struct configfs_dirent *sd;
-+	int lock_level;
- 	int ret;
- 
- 	ret = -EBUSY;
-@@ -383,7 +395,15 @@ static int configfs_detach_prep(struct d
- 		if (sd->s_type & CONFIGFS_NOT_PINNED)
- 			continue;
- 		if (sd->s_type & CONFIGFS_USET_DEFAULT) {
--			mutex_lock(&sd->s_dentry->d_inode->i_mutex);
-+			lock_level = set_dirent_lock_level(parent_sd, sd);
-+			if (lock_level < 0) {
-+				/* Bad bad bad! We cannot remove a directory
-+				 * that we let be created! */
-+				ret = -ELOOP;
-+				break;
-+			}
-+			mutex_lock_nested(&sd->s_dentry->d_inode->i_mutex,
-+					  I_MUTEX_CHILD + lock_level);
- 			/* Mark that we've taken i_mutex */
- 			sd->s_type |= CONFIGFS_USET_DROPPING;
- 
-@@ -392,6 +412,10 @@ static int configfs_detach_prep(struct d
- 			 * deep nesting of default_groups
- 			 */
- 			ret = configfs_detach_prep(sd->s_dentry);
-+			/* Update parent's lock_level so that remaining
-+			 * sibling children keep on globally increasing
-+			 * lock_level */
-+			copy_dirent_lock_level(sd, parent_sd);
- 			if (!ret)
- 				continue;
- 		} else
-@@ -1206,7 +1230,11 @@ static int configfs_rmdir(struct inode *
- 		return -EINVAL;
- 	}
- 
-+	/* The inode of the config_item being removed is already locked by
-+	 * vfs_rmdir() with subclass I_MUTEX_CHILD. Account for it. */
-+	set_dirent_lock_level(parent_item->ci_dentry->d_fsdata, sd);
- 	ret = configfs_detach_prep(dentry);
-+	reset_dirent_lock_level(sd);
- 	if (ret) {
- 		configfs_detach_rollback(dentry);
- 		config_item_put(parent_item);
-@@ -1492,10 +1520,13 @@ void configfs_unregister_subsystem(struc
- 
- 	mutex_lock_nested(&configfs_sb->s_root->d_inode->i_mutex,
- 			  I_MUTEX_PARENT);
-+	/* Sets subsys's configfs_dirent lock_level to 0 */
-+	set_dirent_lock_level(configfs_sb->s_root->d_fsdata, dentry->d_fsdata);
- 	mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_CHILD);
- 	if (configfs_detach_prep(dentry)) {
- 		printk(KERN_ERR "configfs: Tried to unregister non-empty subsystem!\n");
- 	}
-+	reset_dirent_lock_level(dentry->d_fsdata);
- 	configfs_detach_group(&group->cg_item);
- 	dentry->d_inode->i_flags |= S_DEAD;
- 	mutex_unlock(&dentry->d_inode->i_mutex);
-
--- 
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
+	Arnd <><
