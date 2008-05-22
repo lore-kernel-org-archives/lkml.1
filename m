@@ -1,87 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932353AbYEVWTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbYEVWT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932353AbYEVWTf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760847AbYEVWTO
+	id S1759616AbYEVWT6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765514AbYEVWTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:19:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49956 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760740AbYEVWTL (ORCPT
+	Thu, 22 May 2008 18:19:31 -0400
+Received: from el-out-1112.google.com ([209.85.162.177]:8842 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765123AbYEVWT3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:19:11 -0400
-Date: Thu, 22 May 2008 15:18:34 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>,
-       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-Message-ID: <20080522151834.03f2790f@infradead.org>
-In-Reply-To: <20080522165008.GB2727@cs181133002.pp.htv.fi>
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com>
- <20080522144114.GC27301@cs181133002.pp.htv.fi>
- <20080522075135.4933161c@infradead.org>
- <20080522155425.GA2727@cs181133002.pp.htv.fi>
- <32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com>
- <20080522165008.GB2727@cs181133002.pp.htv.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 May 2008 18:19:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=tuRPvGHvdkUIcdLLgORncziZhEcbAkRXpU4HHntb/5ODwdPTCYNiXPQ7n83JGtK9ugtRJfopJVlS9AvuVToANQftpGbQ/uzeJyS+f7X/HIJaXpqzBZmcZm1vVoCPLir8xU/rPGo2o6/mRQkOlku+sTYEns9GxQaUqKQehtXs8UA=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH] x86: extend e820 ealy_res support 32bit - fix v2
+Date: Thu, 22 May 2008 15:20:18 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200805110030.15510.yhlu.kernel@gmail.com> <200805180118.57863.yhlu.kernel@gmail.com> <200805211840.18619.yhlu.kernel@gmail.com>
+In-Reply-To: <200805211840.18619.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200805221520.19259.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008 19:50:08 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+[PATCH] x86: extend e820 ealy_res support 32bit - fix v2
 
-> > by various criteria: ALSA bugs
-> > are numerous, which is not important for most enterprise server
-> > users who would completely disregard this category, whereas desktop
-> > users will probably concentrate on those more than any other.
-> 
-> The majority of machines running Linux most likely runs with ARM CPUs.
+use find_e820_area to find addess for new RAMDISK, instead of using ram blindly
 
-and on a 2.4 kernel, and with likely with some binary modules at that.
-it's cool to brag about market share, but these boxes unfortunately
-don't have any value for Linux development.
+also print out low ram and bootmap info
 
-> 
-> Show me any public source you want to use for getting serious data
-> for this area.
+v2: remove extra -1 in reaseve_early calling
+    panic if can not find space for new RAMDISK
 
-You know, and I hate to say this, I'm getting a bit tired of your
-attitude of just throwing up your arms at the problem and at the same
-time trying to discredit anything and anybody who tries to improve the
-situation. Really, it's not helping nor does it improve ANYTHING. 
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-I gave you real data before based on first hand experience from
-maintainers. We now have crash data, and we have data from every place
-in the kernel that dumps a backtrace. We track regressions and we can
-show that we attack the majority of those very agressively, and Linus
-has delayed releases for serious regressions. Just throwing your hands
-in the air and saying "it's hard don't even try and I don't want you to
-try" doesn't cut it.
-
-Are we perfect? No. Can we do better? Absolutely. Should we try to do
-better? YES PLEASE. Lets get constructive and try to make things better.
-
-In the past, a few simple things improved the situation, such as
-printk'ing the kernel version in the oops, as well as (longer back)
-kksymoops. Or think of things like lockdep, or the pagealloc-debug
-stuff. Going forward there are things we can do to improve things in the
-kernel, even if you don't have hardware. We need to make the kernel
-more selfdiagnosing. Detecting the problem, and if it's likely a
-driver/hw interaction bug, sticking in a WARN_ON(). That's the sort of
-thing even starting kernel developers can do to help improve the
-quality even wihtout hardware access, because it helps us improve the
-quality of bugreports, and it improves our ability to find patterns and
-group duplicates into a top 10. 
-
-Adrian, how about working on that sort of thing rather than keep saying
-"impossible, we're doomed"... pretty please?
-
+Index: linux-2.6/arch/x86/kernel/setup_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_32.c
++++ linux-2.6/arch/x86/kernel/setup_32.c
+@@ -466,11 +466,11 @@ static bool do_relocate_initrd = false;
+ 
+ static void __init reserve_initrd(void)
+ {
+-	unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+-	unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
+-	unsigned long ramdisk_end   = ramdisk_image + ramdisk_size;
+-	unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
+-	unsigned long ramdisk_here;
++	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
++	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
++	u64 ramdisk_end   = ramdisk_image + ramdisk_size;
++	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
++	u64 ramdisk_here;
+ 
+ 	if (!boot_params.hdr.type_of_loader ||
+ 	    !ramdisk_image || !ramdisk_size)
+@@ -478,14 +478,8 @@ static void __init reserve_initrd(void)
+ 
+ 	initrd_start = 0;
+ 
+-	if (ramdisk_end < ramdisk_image) {
+-		free_bootmem(ramdisk_image, ramdisk_size);
+-		printk(KERN_ERR "initrd wraps around end of memory, "
+-		       "disabling initrd\n");
+-		return;
+-	}
+ 	if (ramdisk_size >= end_of_lowmem/2) {
+-		free_bootmem(ramdisk_image, ramdisk_size);
++		free_early(ramdisk_image, ramdisk_end);
+ 		printk(KERN_ERR "initrd too large to handle, "
+ 		       "disabling initrd\n");
+ 		return;
+@@ -495,8 +489,7 @@ static void __init reserve_initrd(void)
+ 		/* All in lowmem, easy case */
+ 		/*
+ 		 * don't need to reserve again, already reserved early
+-		 * in i386_start_kernel, and early_res_to_bootmem
+-		 * convert that to reserved in bootmem
++		 * in i386_start_kernel
+ 		 */
+ 		initrd_start = ramdisk_image + PAGE_OFFSET;
+ 		initrd_end = initrd_start+ramdisk_size;
+@@ -504,11 +497,18 @@ static void __init reserve_initrd(void)
+ 	}
+ 
+ 	/* We need to move the initrd down into lowmem */
+-	ramdisk_here = (end_of_lowmem - ramdisk_size) & PAGE_MASK;
++	ramdisk_here = find_e820_area(min_low_pfn<<PAGE_SHIFT,
++				 end_of_lowmem, ramdisk_size,
++				 PAGE_SIZE);
++
++	if (ramdisk_here == -1ULL)
++		panic("Cannot find placce for new RAMDISK of size %lld\n",
++			 ramdisk_size);
+ 
+ 	/* Note: this includes all the lowmem currently occupied by
+ 	   the initrd, we rely on that fact to keep the data intact. */
+-	reserve_bootmem(ramdisk_here, ramdisk_size, BOOTMEM_DEFAULT);
++	reserve_early(ramdisk_here, ramdisk_here + ramdisk_size,
++			 "NEW RAMDISK");
+ 	initrd_start = ramdisk_here + PAGE_OFFSET;
+ 	initrd_end   = initrd_start + ramdisk_size;
+ 
+@@ -519,10 +519,10 @@ static void __init reserve_initrd(void)
+ 
+ static void __init relocate_initrd(void)
+ {
+-	unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+-	unsigned long ramdisk_size  = boot_params.hdr.ramdisk_size;
+-	unsigned long end_of_lowmem = max_low_pfn << PAGE_SHIFT;
+-	unsigned long ramdisk_here;
++	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
++	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
++	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
++	u64 ramdisk_here;
+ 	unsigned long slop, clen, mapaddr;
+ 	char *p, *q;
+ 
+@@ -540,6 +540,8 @@ static void __init relocate_initrd(void)
+ 		memcpy(q, p, clen);
+ 		q += clen;
+ 		/* need to free these low pages...*/
++		printk(KERN_INFO "Freeing old partial RAMDISK %08llx-%08llx\n",
++			 ramdisk_image, ramdisk_image + clen - 1);
+ 		free_bootmem(ramdisk_image, clen);
+ 		ramdisk_image += clen;
+ 		ramdisk_size  -= clen;
+@@ -560,6 +562,11 @@ static void __init relocate_initrd(void)
+ 		ramdisk_size  -= clen;
+ 	}
+ 	/* high pages is not converted by early_res_to_bootmem */
++	ramdisk_image = boot_params.hdr.ramdisk_image;
++	ramdisk_size  = boot_params.hdr.ramdisk_size;
++	printk(KERN_INFO "Copied RAMDISK from %016llx - %016llx to %08llx - %08llx\n",
++		ramdisk_image, ramdisk_image + ramdisk_size - 1,
++		ramdisk_here, ramdisk_here + ramdisk_size - 1);
+ }
+ 
+ #endif /* CONFIG_BLK_DEV_INITRD */
+@@ -576,10 +583,17 @@ void __init setup_bootmem_allocator(void
+ 				 PAGE_SIZE);
+ 	if (bootmap == -1L)
+ 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
++	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
++#ifdef CONFIG_BLK_DEV_INITRD
++	reserve_initrd();
++#endif
+ 	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, max_low_pfn);
++	printk(KERN_INFO "  low ram: %08lx - %08lx\n",
++		 min_low_pfn<<PAGE_SHIFT, max_low_pfn<<PAGE_SHIFT);
++	printk(KERN_INFO "  bootmap %08lx - %08lx\n",
++		 bootmap, bootmap + bootmap_size);
+ 	register_bootmem_low_pages(max_low_pfn);
+ 	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
+-	reserve_bootmem(bootmap, bootmap_size, BOOTMEM_DEFAULT);
+ 
+ #ifdef CONFIG_ACPI_SLEEP
+ 	/*
+@@ -593,9 +607,6 @@ void __init setup_bootmem_allocator(void
+ 	 */
+ 	find_smp_config();
+ #endif
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	reserve_initrd();
+-#endif
+ 	numa_kva_reserve();
+ 	reserve_crashkernel();
+ 
