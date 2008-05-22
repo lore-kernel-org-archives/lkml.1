@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932555AbYEVHVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765905AbYEVH0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932555AbYEVHVF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 03:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757758AbYEVHUy
+	id S1765905AbYEVH0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 03:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758545AbYEVH0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 03:20:54 -0400
-Received: from mail1.perex.cz ([212.20.107.53]:57677 "EHLO mail1.perex.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753975AbYEVHUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 03:20:53 -0400
-Date: Thu, 22 May 2008 09:20:51 +0200 (CEST)
-From: Jaroslav Kysela <perex@perex.cz>
-X-X-Sender: perex@tm8103-a.perex-int.cz
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Rene Herman <rene.herman@keyaccess.nl>, Jeff Garzik <jeff@garzik.org>,
-       Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       ALSA development <alsa-devel@alsa-project.org>
-Subject: Re: Moving sound/* to drivers/ ?
-In-Reply-To: <20080522071230.GB18607@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.61.0805220916070.1798@tm8103-a.perex-int.cz>
-References: <s5hzlqjz74d.wl%tiwai@suse.de> <4834B252.1080700@garzik.org>
- <4834B5E2.3040301@keyaccess.nl> <Pine.LNX.4.61.0805220809370.1798@tm8103-a.perex-int.cz>
- <20080522071230.GB18607@uranus.ravnborg.org>
+	Thu, 22 May 2008 03:26:30 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58323 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758284AbYEVH03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 03:26:29 -0400
+Message-ID: <48351E49.8000707@zytor.com>
+Date: Thu, 22 May 2008 00:18:33 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland McGrath <roland@redhat.com>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, drepper@redhat.com, Hongjiu.lu@intel.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <20080513011030.GA31448@linux-os.sc.intel.com>	<18477.35703.679574.760417@harpo.it.uu.se>	<20080518013416.GB30034@linux-os.sc.intel.com>	<18481.37905.297556.288317@harpo.it.uu.se>	<20080520015723.GD30034@linux-os.sc.intel.com>	<4832A173.6020203@firstfloor.org>	<18482.53246.642835.894623@harpo.it.uu.se>	<4832E705.2010900@zytor.com>	<18482.60491.764019.292031@harpo.it.uu.se>	<20080520175325.GE30034@linux-os.sc.intel.com>	<4834BE39.2000904@zytor.com>	<20080522005345.B994F26FA24@magilla.localdomain>	<4834CE97.9080708@zytor.com> <20080522064027.07B6B26FA24@magilla.localdomain>
+In-Reply-To: <20080522064027.07B6B26FA24@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008, Sam Ravnborg wrote:
+Roland McGrath wrote:
+>> Yes, but I suspect for legacy apps running without vDSO might matter.
+> 
+> "Legacy" apps want to be changed to make a new kind of kernel query
+> and care about new details of signal frame layout for new features
+> they never used before, but don't want to handle the vDSO?
 
-> On Thu, May 22, 2008 at 08:26:39AM +0200, Jaroslav Kysela wrote:
-> > On Thu, 22 May 2008, Rene Herman wrote:
-> > 
-> > > On 22-05-08 01:37, Jeff Garzik wrote:
-> > > 
-> > > > Speaking as a former OSS driver maintainer, I always preferred
-> > > > drivers/sound.
-> > > > 
-> > > > Though Rene's suggestion (use both sound/ and drivers/sound/) might make
-> > > > sense if the subsystem code is huge -- I supported the drivers/block/ ->
-> > > > block/ code movement for example.
-> > > 
-> > > Well, not _huge_ but ALSA is very much structured like that; large middle
-> > > layer with "miniport" drivers (I do by the way expect this was also Takashi
-> > > plan originally due to him using sound/* and not just "sound/"; that is, I
-> > > took the * to be shorthand for isa, pci, usb and so on)
-> > > 
-> > > From a structural view, the PCM core is just as much not a driver as the IP
-> > > protocol isn't one and moving all of sound/ to drivers/ would trade the
-> > > current "why are the drivers not under drivers/?" issue for a "why is all this
-> > > non-driver code under drivers/?".
-> > > 
-> > > This "net model" of sound/ and drivers/sound/ would be cleanest I feel.
-> > 
-> > Yes, it was one reason why I used 'sound/' as root of the ALSA tree. The 
-> > second reason was to move old OSS tree to new directory to make less 
-> > confusion. And the third reason was to just keep ALSA directory same as in 
-> > our local development tree (which is out-of-kernel tree - containing only 
-> > ALSA parts).
-> That out-of-tree stuff could mirror the kernel directory layout - no?
-> Then you could have both drivers/ and sound/ in that tree.
+I'm talking mostly about semi-embedded ISVs that have managed to get 
+themselves funny ideas about what they don't want to change.  The vDSO 
+definitely involves more machinery to get to.
 
-We already translate Documentation/sound/alsa/ to Documentation/ and 
-include/sound/ to include/ directories in our mirror tree. So adding one 
-more exception is not a big deal.
-
-						Jaroslav
-
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, Red Hat, Inc.
-
+	-hpa
