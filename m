@@ -1,106 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934832AbYEVVwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762239AbYEVVyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934832AbYEVVwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 17:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761991AbYEVVw1
+	id S1762239AbYEVVyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 17:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbYEVVyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 17:52:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58152 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934589AbYEVVw0 (ORCPT
+	Thu, 22 May 2008 17:54:13 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:47026 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755391AbYEVVyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 17:52:26 -0400
-Date: Thu, 22 May 2008 22:39:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] aacraid: BKL push down
-Message-ID: <20080522223957.6c079b33@core>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 22 May 2008 17:54:12 -0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] x86: Set pic_mode only if local apic code is present
+Date: Fri, 23 May 2008 01:54:44 +0400
+Message-ID: <20080522215444.1697.15900.stgit@thinkpad>
+In-Reply-To: <alpine.LFD.1.10.0805222343430.3295@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.10.0805222343430.3295@apollo.tec.linutronix.de>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The aacraid definitely needs the BKL internally right now so push the
-lock take down into the driver but go no further
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+---
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+ arch/x86/kernel/mpparse.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
-index b31faec..5e6b47f 100644
---- a/drivers/scsi/3w-9xxx.c
-+++ b/drivers/scsi/3w-9xxx.c
-@@ -111,7 +111,7 @@ static void twa_aen_queue_event(TW_Device_Extension *tw_dev, TW_Command_Apache_H
- static int twa_aen_read_queue(TW_Device_Extension *tw_dev, int request_id);
- static char *twa_aen_severity_lookup(unsigned char severity_code);
- static void twa_aen_sync_time(TW_Device_Extension *tw_dev, int request_id);
--static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg);
-+static long twa_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
- static int twa_chrdev_open(struct inode *inode, struct file *file);
- static int twa_fill_sense(TW_Device_Extension *tw_dev, int request_id, int copy_sense, int print_host);
- static void twa_free_request_id(TW_Device_Extension *tw_dev,int request_id);
-@@ -202,7 +202,7 @@ static struct device_attribute *twa_host_attrs[] = {
- /* File operations struct for character device */
- static const struct file_operations twa_fops = {
- 	.owner		= THIS_MODULE,
--	.ioctl		= twa_chrdev_ioctl,
-+	.unlocked_ioctl	= twa_chrdev_ioctl,
- 	.open		= twa_chrdev_open,
- 	.release	= NULL
- };
-@@ -619,7 +619,7 @@ out:
- } /* End twa_check_srl() */
+
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index 59f051d..e61523a 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -609,7 +609,7 @@ static void __init __get_smp_config(unsigned early)
  
- /* This function handles ioctl for the character device */
--static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-+static long twa_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	long timeout;
- 	unsigned long *cpu_addr, data_buffer_length_adjusted = 0, flags = 0;
-@@ -635,7 +635,8 @@ static int twa_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int
- 	TW_Event *event;
- 	struct timeval current_time;
- 	u32 current_time_ms;
--	TW_Device_Extension *tw_dev = twa_device_extension_list[iminor(inode)];
-+	unsigned int minor = iminor(file->f_path.dentry->d_inode);
-+	TW_Device_Extension *tw_dev = twa_device_extension_list[minor];
- 	int retval = TW_IOCTL_ERROR_OS_EFAULT;
- 	void __user *argp = (void __user *)arg;
- 
-diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
-index 8c22329..33a6a2e 100644
---- a/drivers/scsi/3w-xxxx.c
-+++ b/drivers/scsi/3w-xxxx.c
-@@ -874,7 +874,7 @@ static int tw_allocate_memory(TW_Device_Extension *tw_dev, int size, int which)
- } /* End tw_allocate_memory() */
- 
- /* This function handles ioctl for the character device */
--static int tw_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-+static long tw_chrdev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	int request_id;
- 	dma_addr_t dma_handle;
-@@ -886,7 +886,8 @@ static int tw_chrdev_ioctl(struct inode *inode, struct file *file, unsigned int
- 	long timeout;
- 	TW_New_Ioctl *tw_ioctl;
- 	TW_Passthru *passthru;
--	TW_Device_Extension *tw_dev = tw_device_extension_list[iminor(inode)];
-+	unsigned int minor = iminor(file->f_path.dentry->d_inode);
-+	TW_Device_Extension *tw_dev = tw_device_extension_list[minor];
- 	int retval = -EFAULT;
- 	void __user *argp = (void __user *)arg;
- 
-@@ -1043,7 +1044,7 @@ static int tw_chrdev_open(struct inode *inode, struct file *file)
- /* File operations struct for character device */
- static const struct file_operations tw_fops = {
- 	.owner		= THIS_MODULE,
--	.ioctl		= tw_chrdev_ioctl,
-+	.unlocked_ioctl	= tw_chrdev_ioctl,
- 	.open		= tw_chrdev_open,
- 	.release	= NULL
- };
+ 	printk(KERN_INFO "Intel MultiProcessor Specification v1.%d\n",
+ 	       mpf->mpf_specification);
+-#ifdef CONFIG_X86_32
++#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_32)
+ 	if (mpf->mpf_feature2 & (1 << 7)) {
+ 		printk(KERN_INFO "    IMCR and PIC compatibility mode.\n");
+ 		pic_mode = 1;
+
