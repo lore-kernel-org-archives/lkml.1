@@ -1,93 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759729AbYEVUwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760983AbYEVUwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759729AbYEVUwQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 16:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbYEVUv7
+	id S1760983AbYEVUwf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 16:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760383AbYEVUwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 16:51:59 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:36297 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755771AbYEVUv5 (ORCPT
+	Thu, 22 May 2008 16:52:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50153 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759779AbYEVUwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 16:51:57 -0400
-X-Sasl-enc: W12e4tNZ0La/VlFvdGDA+R6rKPw0NybjUwa4ESjNA9A7 1211489516
-Date: Thu, 22 May 2008 17:51:53 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL
-	RADIOS OFF
-Message-ID: <20080522205153.GA18483@khazad-dum.debian.net>
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <1211136485-19878-15-git-send-email-hmh@hmh.eng.br> <200805201209.06902.IvDoorn@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805201209.06902.IvDoorn@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 22 May 2008 16:52:17 -0400
+Date: Thu, 22 May 2008 21:39:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: [PATCH] hpet: push BKL down into hpet driver
+Message-ID: <20080522213933.3639eac4@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, Ivo van Doorn wrote:
-> On Sunday 18 May 2008, Henrique de Moraes Holschuh wrote:
-> > SW_RFKILL_ALL is the "emergency power-off all radios" input event.  It must
-> > be handled, and must always do the same thing as far as the rfkill system
-> > is concerned: all transmitters are to go *immediately* offline.
-> 
-> I don't quite agree here. The SW_RFKILL_ALL key is the one send by thinkpad-acpi,
-> what makes that key so special that is has to be handled differently then a key
-> that only controls a single radio type?
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Well, first there is no KEY involved, it is a SWITCH :-)  But that's not
-the reason it is special.
-
-What makes SW_RFKILL_ALL special, is that it is the kernel view of *The*
-RFKill Switch.  SW_RFKILL_ALL is the event you get when the user
-manipulates the very *thing* that created the "rfkill switch" term.
-
-You get that event when someone moves that slider switch in the side/top
-of a laptop which has to kill all RF output in hardware as far as safety
-regulations go.  Therefore, it refers to the only rfkill switch that has
-guidelines that say that it must always work, and that it must not be
-possible to override it in software.
-
-Too bad that doesn't apply to "removable" radio transmitters, like
-PCMCIA and ExpressCard WLAN cards, USB RF transmitters, and so on...
-probably, the user is expected to yank them off when he moves the switch
-to the "no radios working here!" position.  Well, we can do better.  We
-can make it apply to these other radio transmitters, too.
-
-So yes, it *is* special when it is doing its "power DOWN the
-transmitters" function.  It is not special at all when it is in the
-"allow radios to function if they want to" position, which is why I
-special-cased only the "OFF" state.
-
-IMHO, that makes it special enough to implement it in a different way
-that is not subject to, e.g., brain damage in userspace.
-
-As for thinkpad-acpi being the only in-tree code issuing that event so
-far, well... I have seen laptops from many vendors with that switch, and
-it is likely that the firmware of at least some of these laptops let you
-know the state of the switch (like the thinkpad firmware does), so I'd
-expect more users of SW_RFKILL_ALL to show up soon.  I am just paving
-the way.
-
-That, and as an user, I'd really like to be able to implement a
-KEY_RFKILL_ALL keycode to use when I don't have a proper SW_RFKILL_ALL
-in my laptop.  But one thing at a time.  Small steps.
-
-> All keys should have the same rules when it is pressed, so either all keys should
-> force the change, or none of them should.
-
-IMO, "kill ALL radios" events are is the only kind of rfkill input event
-that have to *always work*, even if something in userspace tried to
-configure it not to.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index e7fb0bc..054060f 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -30,6 +30,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/bitops.h>
+ #include <linux/clocksource.h>
++#include <linux/smp_lock.h>
+ 
+ #include <asm/current.h>
+ #include <asm/uaccess.h>
+@@ -371,16 +372,19 @@ static int hpet_release(struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static int hpet_ioctl_common(struct hpet_dev *, int, unsigned long, int);
++static long hpet_ioctl_common(struct hpet_dev *, int, unsigned long, int);
+ 
+-static int
+-hpet_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-	   unsigned long arg)
++static long hpet_ioctl(struct file *file, unsigned int cmd,
++							unsigned long arg)
+ {
+-	struct hpet_dev *devp;
++	struct hpet_dev *devp = file->private_data;
++	long ret;
+ 
+-	devp = file->private_data;
+-	return hpet_ioctl_common(devp, cmd, arg, 0);
++	lock_kernel();
++	ret =  hpet_ioctl_common(devp, cmd, arg, 0);
++	unlock_kernel();
++
++	return ret;
+ }
+ 
+ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+@@ -476,8 +480,8 @@ static inline unsigned long hpet_time_div(struct hpets *hpets,
+ 	return (unsigned long)m;
+ }
+ 
+-static int
+-hpet_ioctl_common(struct hpet_dev *devp, int cmd, unsigned long arg, int kernel)
++static long hpet_ioctl_common(struct hpet_dev *devp, int cmd,
++					unsigned long arg, int kernel)
+ {
+ 	struct hpet_timer __iomem *timer;
+ 	struct hpet __iomem *hpet;
+@@ -582,7 +586,7 @@ static const struct file_operations hpet_fops = {
+ 	.llseek = no_llseek,
+ 	.read = hpet_read,
+ 	.poll = hpet_poll,
+-	.ioctl = hpet_ioctl,
++	.unlocked_ioctl = hpet_ioctl,
+ 	.open = hpet_open,
+ 	.release = hpet_release,
+ 	.fasync = hpet_fasync,
