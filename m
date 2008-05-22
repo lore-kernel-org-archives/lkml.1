@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbYEVSzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYEVTFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbYEVSzv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 14:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYEVSzj
+	id S1754877AbYEVTFg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 15:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYEVTFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 14:55:39 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53880 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbYEVSzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 14:55:38 -0400
-Date: Thu, 22 May 2008 21:55:37 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: kaber@trash.net
-cc: netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mpm@selenic.com, clameter@sgi.com
-Subject: [PATCH] netfilter: use krealloc() in nf_conntrack_extend.c V2
-In-Reply-To: <Pine.LNX.4.64.0805222145320.6071@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0805222155150.6294@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0805222145320.6071@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 May 2008 15:05:25 -0400
+Received: from mail.aknet.ru ([78.158.192.26]:52220 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752596AbYEVTFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 15:05:24 -0400
+Message-ID: <4835C3DE.8070209@aknet.ru>
+Date: Thu, 22 May 2008 23:05:02 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: dbrownell@users.sourceforge.net
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] provide rtc_cmos platform device
+References: <483317B4.7060601@aknet.ru> <20080521153223.e989cb88.akpm@linux-foundation.org>
+In-Reply-To: <20080521153223.e989cb88.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To: kaber@trash.net
-[PATCH] netfilter: use krealloc() in nf_conntrack_extend.c V2
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Hello.
 
-The ksize() API is going away because it is being abused and it doesn't even
-work consistenly across different allocators. Therefore, convert
-net/netfilter/nf_conntrack_extend.c to use krealloc().
+David, please CC me the replies.
 
-Cc: <netfilter-devel@vger.kernel.org>
-Cc: <netdev@vger.kernel.org>
-Cc: Matt Mackall <mpm@selenic.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-Patrick, please use this patch instead. The previous one did the moving
-unconditionally which is wrong. This one moves entries around only if
-krealloc() allocated a new buffer.
+David Brownell wrote:
+> Well, "regression" is the wrong phrase. You've switched
+> drivers (from the legacy RTC to the new one), so this is
+> not the thing which worked for you before.
+I am not sure how could that happen.
+I am always just taking an old kernel
+config and never change the options
+that are not supposed to be changed.
+Was the old RTC driver removed by any
+chance?
 
- net/netfilter/nf_conntrack_extend.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+>> This may also help running the
+>> PNP-enabled kernel on an older PCs.
+> As in, pre-PNP. That's pretty darn old!
+But... I think they should still be
+supported, unless it is too difficult.
 
-Index: slab-2.6/net/netfilter/nf_conntrack_extend.c
-===================================================================
---- slab-2.6.orig/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:52:12.000000000 +0300
-+++ slab-2.6/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:52:26.000000000 +0300
-@@ -88,13 +88,11 @@
- 	newlen = newoff + t->len;
- 	rcu_read_unlock();
- 
--	if (newlen >= ksize(ct->ext)) {
--		new = kmalloc(newlen, gfp);
--		if (!new)
--			return NULL;
--
--		memcpy(new, ct->ext, ct->ext->len);
-+	new = krealloc(ct->ext, newlen, gfp);
-+	if (!new)
-+		return NULL;
- 
-+	if (new != ct->ext) {
- 		for (i = 0; i < NF_CT_EXT_NUM; i++) {
- 			if (!nf_ct_ext_exist(ct, i))
- 				continue;
+> (1) On an ARM build (with no PNP configured):
+OK, but unfortunately I can't help
+with that. I won't touch any non-x86
+arch code, so I'll simply go for
+the #ifdef here, or someone else
+should make the patch instead. :)
+
+> You shouldn't define those symbols; the right values are already
+> defined in <asm/mc146818rtc.h>. RTC_PORT(0) and RTC_PORT(1) are
+> the symbolss to use; RTC_IRQ is already defined. All this stuff
+> is used in the <asm-generic/rtc.h> code ...
+OK, thanks.
+I'll update the patch, in todo for
+the week-end.
