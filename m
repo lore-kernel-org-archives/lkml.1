@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYEVSm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbYEVSrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757912AbYEVSm5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 14:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYEVSmt
+	id S1756650AbYEVSrt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 14:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbYEVSri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 14:42:49 -0400
-Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:51201 "HELO
-	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754645AbYEVSms (ORCPT
+	Thu, 22 May 2008 14:47:38 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47353 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbYEVSrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 14:42:48 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86: early dump pci conf space
-Date: Thu, 22 May 2008 11:42:28 -0700
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200805210012.35939.yhlu.kernel@gmail.com>
-In-Reply-To: <200805210012.35939.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 22 May 2008 14:47:37 -0400
+Date: Thu, 22 May 2008 21:47:34 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: kaber@trash.net
+cc: netfilter-devel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mpm@selenic.com, clameter@sgi.com
+Subject: [PATCH] netfilter: use krealloc() in nf_conntrack_extend.c
+Message-ID: <Pine.LNX.4.64.0805222145320.6071@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805221142.28511.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 21, 2008 12:12 am Yinghai Lu wrote:
-> so we can printout pci config before kernel touch it
->
-> also fix write_pci_config_byte with offset
-> and add write_pci_config_16
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-I like the idea.  Can you submit the write config byte fix separately?  I'll 
-queue it up for 2.6.27 unless there are other comments.
+The ksize() API is going away because it is being abused and it doesn't even
+work consistenly across different allocators. Therefore, convert the use 
+of ksize() in net/netfilter/nf_conntrack_extend.c to krealloc() that is 
+open-coded there.
 
-Thanks,
-Jesse
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ net/netfilter/nf_conntrack_extend.c |   31 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 18 deletions(-)
+
+Index: slab-2.6/net/netfilter/nf_conntrack_extend.c
+===================================================================
+--- slab-2.6.orig/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:38:14.000000000 +0300
++++ slab-2.6/net/netfilter/nf_conntrack_extend.c	2008-05-22 21:38:21.000000000 +0300
+@@ -88,27 +88,22 @@
+ 	newlen = newoff + t->len;
+ 	rcu_read_unlock();
+ 
+-	if (newlen >= ksize(ct->ext)) {
+-		new = kmalloc(newlen, gfp);
+-		if (!new)
+-			return NULL;
++	new = krealloc(ct->ext, newlen, gfp);
++	if (!new)
++		return NULL;
+ 
+-		memcpy(new, ct->ext, ct->ext->len);
+-
+-		for (i = 0; i < NF_CT_EXT_NUM; i++) {
+-			if (!nf_ct_ext_exist(ct, i))
+-				continue;
++	for (i = 0; i < NF_CT_EXT_NUM; i++) {
++		if (!nf_ct_ext_exist(ct, i))
++			continue;
+ 
+-			rcu_read_lock();
+-			t = rcu_dereference(nf_ct_ext_types[i]);
+-			if (t && t->move)
+-				t->move((void *)new + new->offset[i],
+-					(void *)ct->ext + ct->ext->offset[i]);
+-			rcu_read_unlock();
+-		}
+-		kfree(ct->ext);
+-		ct->ext = new;
++		rcu_read_lock();
++		t = rcu_dereference(nf_ct_ext_types[i]);
++		if (t && t->move)
++			t->move((void *)new + new->offset[i],
++				(void *)ct->ext + ct->ext->offset[i]);
++		rcu_read_unlock();
+ 	}
++	ct->ext = new;
+ 
+ 	ct->ext->offset[id] = newoff;
+ 	ct->ext->len = newlen;
