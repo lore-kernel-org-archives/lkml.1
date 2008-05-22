@@ -1,64 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763205AbYEVLOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbYEVLTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763205AbYEVLOS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 07:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbYEVLOF
+	id S1760859AbYEVLTT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 07:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYEVLTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 07:14:05 -0400
-Received: from mail.scaimas.com ([195.82.67.50]:19223 "EHLO mail.scaimas.com"
+	Thu, 22 May 2008 07:19:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37005 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755169AbYEVLOE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 07:14:04 -0400
-X-Greylist: delayed 792 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 May 2008 07:14:04 EDT
-content-class: urn:content-classes:message
+	id S1753229AbYEVLTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 07:19:05 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Limit SATA link speed to 1.5 Gbps 
-Date: Thu, 22 May 2008 13:00:50 +0200
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
-Message-ID: <F7D77F204D5F7641AB3864C88E39498F18614E@taube3.scailokal.intern>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Limit SATA link speed to 1.5 Gbps 
-Thread-Index: Aci7+xlYI8biyLzoRha3j8mmpXNxTA==
-From: "Andre Pietsch" <andre.pietsch@scai.de>
-To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "Luming Yu" <luming.yu@gmail.com>
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+In-Reply-To: Luming Yu's message of  Thursday, 22 May 2008 17:16:28 +0800 <3877989d0805220216o5add20ddye2a1fde98a0c1e69@mail.gmail.com>
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	<1211446045.5610.33.camel@elijah.suse.cz>
+	<3877989d0805220216o5add20ddye2a1fde98a0c1e69@mail.gmail.com>
+X-Shopping-List: (1) Academic inquisitive samples
+   (2) Enigmatic puppy prostitutes
+   (3) Cancerous illusion putty
+Message-Id: <20080522111826.BB90326FA24@magilla.localdomain>
+Date: Thu, 22 May 2008 04:18:26 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I really cannot figure out from anything you've said what the failure mode
+is or how you think it should be affected.
 
-I hope this is not OT or not allowed to post here as there might be better places elsewhere. I STW and read the FAQ but did not find something that forbids it.
 
-I own a DELL Vostro 1700 with
-ICH8
-2 x ST980813ASG, 80GB SATA drive.
-
-Many times the disk produces ATA bus errors and "hard resetting link" appear in the log. While this happens the system hangs (Ubuntu 8.0.4).
-
-In the past it resetted the link 3.0 Gbps and a few minutes later ATA bus errors and "hard resetting link" appear again.
-
-I tested 2.6.25 and the error still occurrs once but then it gave me a "limiting SATA link speed to 1.5 Gbps" in the log.
-
-After that the error does not show again for this boot.
-
-Going back to 2.6.24 it shows the same behaviour now (very odd, since SATA control seems to be kernel specific to me).
-
-All good one could think, but
-1) I need to reinstall, since I would like to install 64Bit Ubuntu (currently 32Bit) and
-2) I do not know if I can reproduce that "fix".
-
-Is it possible to set the SATA link speed somewhere?
-
-For a dmesg log see here
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/196076/comments/20
-
-This bug report was opened when I thought this was a drive specific NCQ issue...
-
-I still do not what the cause is but having the interface running at 1.5 Gbps stable would be sufficient for me.
-
-Regards,
-Andre Pietsch, SCAI GmbH 
+Thanks,
+Roland
