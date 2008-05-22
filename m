@@ -1,54 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763234AbYEVWXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762922AbYEVWXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763234AbYEVWXP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbYEVWW7
+	id S1762922AbYEVWXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762099AbYEVWXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:22:59 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:48408 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757337AbYEVWW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:22:59 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 22 May 2008 18:23:12 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34711 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760557AbYEVWXK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 18:23:10 -0400
+Date: Thu, 22 May 2008 23:10:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] lp: BKL push down
+Message-ID: <20080522231041.27c10d69@core>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18485.61966.193804.314820@harpo.it.uu.se>
-Date: Fri, 23 May 2008 00:22:06 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-In-Reply-To: <4835E6F5.5010801@zytor.com>
-References: <20080520015723.GD30034@linux-os.sc.intel.com>
-	<4832A173.6020203@firstfloor.org>
-	<18482.53246.642835.894623@harpo.it.uu.se>
-	<4832E705.2010900@zytor.com>
-	<18482.60491.764019.292031@harpo.it.uu.se>
-	<20080520175325.GE30034@linux-os.sc.intel.com>
-	<4834BE39.2000904@zytor.com>
-	<18485.13663.51624.694435@harpo.it.uu.se>
-	<20080522205619.GB7998@linux-os.sc.intel.com>
-	<4835DF64.6080104@zytor.com>
-	<20080522212920.GC7998@linux-os.sc.intel.com>
-	<4835E6F5.5010801@zytor.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin writes:
- > > But user can potentially change the _fpstate pointer in sigcontext struct.
- > 
- > If so, they get what they bargained for... I am not even sure the kernel 
- > will successfully clean up the stack frame if they do that.
+LP is quite complex and has a lot of ioctl logic. Just push the BKL down
+into a driver wrapper for the moment.
 
-Why would that be a problem? The stack is defined by the user's SP,
-which is in the integer state part of the sigframe. We do a sigreturn(),
-reload SP/PC/etc, and off we go. Where fpstate pointed to doesn't matter,
-as long as it was NULL or a valid fpstate image.
+Signed-off-by: Alan Cox <alan@redhat.com>
+
+diff --git a/drivers/char/lp.c b/drivers/char/lp.c
+index 60ac642..3a42f87 100644
+--- a/drivers/char/lp.c
++++ b/drivers/char/lp.c
+@@ -126,7 +126,7 @@
+ #include <linux/device.h>
+ #include <linux/wait.h>
+ #include <linux/jiffies.h>
+-
++#include <linux/smp_lock.h>
+ #include <linux/parport.h>
+ #undef LP_STATS
+ #include <linux/lp.h>
+@@ -557,10 +557,9 @@ static int lp_release(struct inode * inode, struct file * file)
+ 	return 0;
+ }
+ 
+-static int lp_ioctl(struct inode *inode, struct file *file,
+-		    unsigned int cmd, unsigned long arg)
++static long lp_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+-	unsigned int minor = iminor(inode);
++	unsigned int minor = iminor(file->f_path.dentry->d_inode);
+ 	int status;
+ 	int retval = 0;
+ 	void __user *argp = (void __user *)arg;
+@@ -570,9 +569,13 @@ static int lp_ioctl(struct inode *inode, struct file *file,
+ #endif
+ 	if (minor >= LP_NO)
+ 		return -ENODEV;
+-	if ((LP_F(minor) & LP_EXIST) == 0)
++		
++	lock_kernel();
++	if ((LP_F(minor) & LP_EXIST) == 0) {
++		unlock_kernel();
+ 		return -ENODEV;
+-	switch ( cmd ) {
++	}
++	switch (cmd ) {
+ 		struct timeval par_timeout;
+ 		long to_jiffies;
+ 
+@@ -604,12 +607,12 @@ static int lp_ioctl(struct inode *inode, struct file *file,
+ 			LP_WAIT(minor) = arg;
+ 			break;
+ 		case LPSETIRQ: 
+-			return -EINVAL;
++			retval = -EINVAL;
+ 			break;
+ 		case LPGETIRQ:
+ 			if (copy_to_user(argp, &LP_IRQ(minor),
+ 					sizeof(int)))
+-				return -EFAULT;
++				retval = -EFAULT;
+ 			break;
+ 		case LPGETSTATUS:
+ 			lp_claim_parport_or_block (&lp_table[minor]);
+@@ -617,7 +620,7 @@ static int lp_ioctl(struct inode *inode, struct file *file,
+ 			lp_release_parport (&lp_table[minor]);
+ 
+ 			if (copy_to_user(argp, &status, sizeof(int)))
+-				return -EFAULT;
++				retval = -EFAULT;
+ 			break;
+ 		case LPRESET:
+ 			lp_reset(minor);
+@@ -626,8 +629,8 @@ static int lp_ioctl(struct inode *inode, struct file *file,
+ 		case LPGETSTATS:
+ 			if (copy_to_user(argp, &LP_STAT(minor),
+ 					sizeof(struct lp_stats)))
+-				return -EFAULT;
+-			if (capable(CAP_SYS_ADMIN))
++				retval = -EFAULT;
++			else if (capable(CAP_SYS_ADMIN))
+ 				memset(&LP_STAT(minor), 0,
+ 						sizeof(struct lp_stats));
+ 			break;
+@@ -635,37 +638,40 @@ static int lp_ioctl(struct inode *inode, struct file *file,
+  		case LPGETFLAGS:
+  			status = LP_F(minor);
+ 			if (copy_to_user(argp, &status, sizeof(int)))
+-				return -EFAULT;
++				retval = -EFAULT;
+ 			break;
+ 
+ 		case LPSETTIMEOUT:
+ 			if (copy_from_user (&par_timeout, argp,
+ 					    sizeof (struct timeval))) {
+-				return -EFAULT;
++				retval = -EFAULT;
++				break;
+ 			}
+ 			/* Convert to jiffies, place in lp_table */
+ 			if ((par_timeout.tv_sec < 0) ||
+ 			    (par_timeout.tv_usec < 0)) {
+-				return -EINVAL;
++				retval = -EINVAL;
++				break;
+ 			}
+ 			to_jiffies = DIV_ROUND_UP(par_timeout.tv_usec, 1000000/HZ);
+ 			to_jiffies += par_timeout.tv_sec * (long) HZ;
+-			if (to_jiffies <= 0) {
+-				return -EINVAL;
+-			}
+-			lp_table[minor].timeout = to_jiffies;
++			if (to_jiffies <= 0)
++				retval = -EINVAL;
++			else
++				lp_table[minor].timeout = to_jiffies;
+ 			break;
+ 
+ 		default:
+-			retval = -EINVAL;
++			retval = -ENOTTY;
+ 	}
++	unlock_kernel();
+ 	return retval;
+ }
+ 
+ static const struct file_operations lp_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.write		= lp_write,
+-	.ioctl		= lp_ioctl,
++	.unlocked_ioctl	= lp_ioctl,
+ 	.open		= lp_open,
+ 	.release	= lp_release,
+ #ifdef CONFIG_PARPORT_1284
