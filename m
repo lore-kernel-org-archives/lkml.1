@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbYEVOYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752072AbYEVOZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753054AbYEVOYU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 10:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYEVOYK
+	id S1752072AbYEVOZJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 10:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYEVOY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 10:24:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:61498 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbYEVOYK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 10:24:10 -0400
-Date: Thu, 22 May 2008 10:24:07 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: trace_mark ugliness
-Message-ID: <Pine.LNX.4.58.0805220949560.14724@gandalf.stny.rr.com>
+	Thu, 22 May 2008 10:24:56 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:49323 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbYEVOY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 10:24:56 -0400
+Date: Thu, 22 May 2008 17:22:36 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Rene Herman <rene.herman@keyaccess.nl>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       alsa-devel@alsa-project.org, perex@perex.cz
+Subject: Re: Moving sound/* to drivers/ ?
+Message-ID: <20080522142236.GA27301@cs181133002.pp.htv.fi>
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <4834B252.1080700@garzik.org> <4834B5E2.3040301@keyaccess.nl> <s5hy7623fqs.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <s5hy7623fqs.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 22, 2008 at 10:27:55AM +0200, Takashi Iwai wrote:
+> At Thu, 22 May 2008 01:53:06 +0200,
+> Rene Herman wrote:
+>...
+> An argument for keeping the sound core in /sound is that this is used
+> not only by sound drivers but also by some video drivers.
 
-Mathieu,
+Same goes for e.g. some of the USB or PCI code.
 
-I'm working back on ftrace and I see that you have a lot of updates with
-the trace markers there. I'm going about cleaning up the code since some
-of the changes broke some of the functionality of ftrace.
+We could start splitting stuff like crazy, but what would we really 
+gain by doing it?
 
-That's not a big deal, the breakage is easily fixed, and it's not taking
-much of my time. But I've been discussing the trace_mark itself with Peter
-Zijlstra and it still makes us cringe when we see it.
+> Takashi
 
-The thing that bothers us the most is the force use of the "pretty print"
-interface. There's got to be a better way. I'd much rather see a
-file_marker.h file that has the interfaces defined, like what we have for
-sched.c.
+cu
+Adrian
 
-Where we have a sched_trace.h that has the defined prototypes. That is
-what the tracers should use too.
+-- 
 
-The trace_mark should just have the string to find the tracer, but get rid
-of the "pretty print" aspect of it. Sorry, but the more I think about it,
-the nastier it seems. It forces all the users to do a va_start.
-
-I know you developed trace_mark for LTT, and that's great. But where I'm
-disagreeing is that you should not force all other users of trace_mark to
-conform to the LTT way when it can be easier to have LTT conform to a more
-generic way.
-
-Hence, this is what I propose.
-
-Remove the format part altogether, the format should be checked via the
-prototype. I know that you are afraid of changes to markers and that
-breaking code, but honestly, that is up to the developers of the tracers
-to fix. This should not be placed in the code itself. The markers
-shouldn't change anyway. If there is to be a check, it should be a compile
-time check (i.e. prototype compare) not a runtime check (as it is now).
-
-I like the rest of trace_mark, it is just this print format ugliness that
-boths me (and others). It is very clumsy to work with. There just has to
-be a better way here.
-
-As for LTT, you can make your own LTT wrapper to add the print formats for
-userspace. Lets not force this on other traces like ftrace that just
-wastes time hopping over the parameters that it doesn't need.
-
-Thanks,
-
--- Steve
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
