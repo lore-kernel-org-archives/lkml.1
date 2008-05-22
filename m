@@ -1,104 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935377AbYEVNRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935404AbYEVNTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935377AbYEVNRL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 09:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763350AbYEVNQy
+	id S935404AbYEVNTp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 09:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761854AbYEVNTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 09:16:54 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52335 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1763045AbYEVNQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 09:16:54 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/rM65C8+Hrv+O9U7otaZS0ZfUl4zMnZek0uiyvdQ
-	nN99fCy3uaLWRc
-Subject: Re: PostgreSQL pgbench performance regression in 2.6.23+
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Greg Smith <gsmith@gregsmith.com>, lkml <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <1211459081.29104.40.camel@twins>
-References: <Pine.GSO.4.64.0805211115390.8451@westnet.com>
-	 <1211440207.5733.8.camel@marge.simson.net>
-	 <20080522082814.GA4499@linux.vnet.ibm.com>
-	 <1211447105.4823.7.camel@marge.simson.net>
-	 <1211452465.7606.8.camel@marge.simson.net>
-	 <1211455553.4381.9.camel@marge.simson.net>
-	 <1211456659.29104.20.camel@twins>
-	 <1211458176.5693.6.camel@marge.simson.net>
-	 <1211459081.29104.40.camel@twins>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 15:16:49 +0200
-Message-Id: <1211462209.5182.1.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 22 May 2008 09:19:35 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:50031 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760573AbYEVNTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 09:19:34 -0400
+Message-ID: <483572CC.9060705@kernel.org>
+Date: Thu, 22 May 2008 06:19:08 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH] security: protect legacy apps from insufficient privilege
+References: <483444C1.6050308@kernel.org> <20080521224137.8d5c0089.akpm@linux-foundation.org>
+In-Reply-To: <20080521224137.8d5c0089.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Thu, 2008-05-22 at 14:24 +0200, Peter Zijlstra wrote:
-> On Thu, 2008-05-22 at 14:09 +0200, Mike Galbraith wrote:
-> > On Thu, 2008-05-22 at 13:44 +0200, Peter Zijlstra wrote:
-> > 
-> > > Humm,.. how to fix this.. we'd need to somehow detect the 1:n nature of
-> > > its operation - I'm sure there are other scenarios that could benefit
-> > > from this.
-> > 
-> > Maybe simple (minded): cache waker's last non-interrupt context wakee,
-> > if the wakee != cached, ignore SYNC_WAKEUP unless sync was requested at
-> > call time?
-> 
-> Yeah, something like so - or perhaps like you say cache the wakee.
-> 
-> I picked the wake_affine() condition, because I think that is the
-> biggest factor in this behaviour. You could of course also disable all
-> of sync.
+Andrew Morton wrote:
+| With a judiciously placed `continue' we can do this:
+|
+| 	CAP_FOR_EACH_U32(i) {
+| 		__u32 value_cpu;
+|
+| 		if (i >= tocopy) {
+| 			/*
+| 			 * Legacy capability sets have no upper bits
+| 			 */
+| 			bprm->cap_post_exec_permitted.cap[i] = 0;
+| 			continue;
+| 		}
+| 		/*
+| 		 * pP' = (X & fP) | (pI & fI)
+| 		 */
+| 		value_cpu = le32_to_cpu(caps->data[i].permitted);
+| 		bprm->cap_post_exec_permitted.cap[i] =
+| 			(current->cap_bset.cap[i] & value_cpu) |
+| 			(current->cap_inheritable.cap[i] &
+| 				le32_to_cpu(caps->data[i].inheritable));
+| 		if (value_cpu & ~bprm->cap_post_exec_permitted.cap[i]) {
+| 			/*
+| 			 * insufficient to execute correctly
+| 			 */
+| 			ret = -EPERM;
+| 		}
+| 	}
+|
+| OK?
 
-Works fine (modulo booboo).
+Yes.
 
-	-Mike
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
 
+Cheers
 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index c86c5c5..856c2a8 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -950,6 +950,8 @@ struct sched_entity {
->  	u64			last_wakeup;
->  	u64			avg_overlap;
->  
-> +	struct sched_entity 	*waker;
-> +
->  #ifdef CONFIG_SCHEDSTATS
->  	u64			wait_start;
->  	u64			wait_max;
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index 894a702..8971044 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -1036,7 +1036,8 @@ wake_affine(struct rq *rq, struct sched_domain *this_sd, struct rq *this_rq,
->  	 * a reasonable amount of time then attract this newly
->  	 * woken task:
->  	 */
-> -	if (sync && curr->sched_class == &fair_sched_class) {
-> +	if (sync && curr->sched_class == &fair_sched_class &&
-> +	    p->se.waker == curr->se->waker) {
->  		if (curr->se.avg_overlap < sysctl_sched_migration_cost &&
->  				p->se.avg_overlap < sysctl_sched_migration_cost)
->  			return 1;
-> @@ -1210,6 +1211,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
->  	if (unlikely(se == pse))
->  		return;
->  
-> +	se->waker = pse;
->  	cfs_rq_of(pse)->next = pse;
->  
->  	/*
-> 
-> 
+Andrew
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
+iD8DBQFINXLL+bHCR3gb8jsRAiGUAJ49d61n7+uhc3M5vJjT5398w9tRGgCgwLRe
+vXHOIIJAoHvlGNACagKSPes=
+=oPN0
+-----END PGP SIGNATURE-----
