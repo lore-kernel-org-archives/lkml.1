@@ -1,105 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbYEVERR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbYEVERh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbYEVERR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 00:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750712AbYEVERB
+	id S1757754AbYEVERh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 00:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbYEVER1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 00:17:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50787 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750739AbYEVERA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 00:17:00 -0400
-Date: Wed, 21 May 2008 21:16:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 1/4] Add memrlimit controller documentation (v5)
-Message-Id: <20080521211603.9fed5e7f.akpm@linux-foundation.org>
-In-Reply-To: <20080521152937.15001.83385.sendpatchset@localhost.localdomain>
-References: <20080521152921.15001.65968.sendpatchset@localhost.localdomain>
-	<20080521152937.15001.83385.sendpatchset@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 May 2008 00:17:27 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40644 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750712AbYEVER0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 00:17:26 -0400
+Date: Wed, 21 May 2008 21:17:24 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       mpm@selenic.com, dhowells@redhat.com
+Subject: Re: [RFC/PATCH 1/3] SLAB: Add PageSlab checking to ksize()
+In-Reply-To: <4834F2E2.3070806@cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0805212116260.19431@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0805212124250.22291@sbz-30.cs.Helsinki.FI>
+ <20080521234555.GB32707@linux-sh.org> <4834F2E2.3070806@cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 20:59:37 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu, 22 May 2008, Pekka Enberg wrote:
 
+> Paul Mundt wrote:
+> > This series seems to work ok with all of SLAB/SLUB/SLOB when also
+> > applying the kobjsize() patch. Without the kobjsize() patch in place,
+> > SLAB and SLUB both work, while SLOB still triggers the >= MAX_ORDER
+> > BUG_ON() for page cache pages. Note that this is still an improvement
+> > over SLUB blowing up, as it was before, even without the kobjsize()
+> > change.
 > 
-> 
-> Documentation patch - describes the goals and usage of the memrlimit
-> controller.
-> 
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  Documentation/controllers/memrlimit.txt |   29 +++++++++++++++++++++++++++++
->  1 file changed, 29 insertions(+)
-> 
-> diff -puN /dev/null Documentation/controllers/memrlimit.txt
-> --- /dev/null	2008-05-16 21:23:36.290004010 +0530
-> +++ linux-2.6.26-rc2-balbir/Documentation/controllers/memrlimit.txt	2008-05-21 20:53:33.000000000 +0530
-> @@ -0,0 +1,29 @@
-> +This controller is enabled by the CONFIG_CGROUP_MEMRLIMIT_CTLR option. Prior
-> +to reading this documentation please read Documentation/cgroups.txt and
-> +Documentation/controllers/memory.txt. Several of the principles of this
-> +controller are similar to the memory resource controller.
-> +
-> +This controller framework is designed to be extensible to control any
-> +memory resource limit with little effort.
-> +
-> +This new controller, controls the address space expansion of the tasks
-> +belonging to a cgroup. Address space control is provided along the same lines as
-> +RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
+> That's probably due to the fact that we use PageSlab for all pages with SLUB
+> and for bigblock pages in SLOB with this patch. Christoph, Matt, any
+> suggestions how to fix the PageSlab check in nommu btw?
 
-Still would like to see more details here.  RLIMIT_AS is simple because
-it applies to a single mm.  But a control group may contain multiple
-mm's, and those mm's can share stuff.
-
-The sharing probably isn't important in this situation, where we're
-only concerned with virtual address space size, rather than real
-memory.  But still, readers will be wondering about this.
-
-They also will be wondering about the handling of threads versus
-heavyweight processes.  _we_ know that, but users and administrators
-may not.
+I already posted a patch and commented numerous times. What else needs 
+to be said? SLUB only uses PageSlab for kmalloc <=4kb.
 
 
-> +The interface for controlling address space is provided through
-> +"rlimit.limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t. the user
-> +interface. Please see section 3 of the memory resource controller documentation
-> +for more details on how to use the user interface to get and set values.
-> +
-> +The "memrlimit.usage_in_bytes" file provides information about the total address
-> +space usage of the tasks in the cgroup, in bytes.
-> +
-> +Advantages of providing this feature
-> +
-> +1. Control over virtual address space allows for a cgroup to fail gracefully
-> +   i.e., via a malloc or mmap failure as compared to OOM kill when no
-> +   pages can be reclaimed.
-
-Well it's more than "i.e.".  It would be better to precisely spell out
-the behaviour of this feature.  It's mmap() and brk() only, is it not? 
-malloc() isn't a system call ;)
-
-Ideally, either the changelog, this document or code comments should be
-sufficient for a manpage to be written.  And this level of description
-will lead to better code review and quite likely a better feature.
-
-> +2. It provides better control over how many pages can be swapped out when
-> +   the cgroup goes over its limit. A badly setup cgroup can cause excessive
-> +   swapping. Providing control over the address space allocations ensures
-> +   that the system administrator has control over the total swapping that
-> +   can take place.
-
-IOW: what, exactly and completely, does this feature do?
