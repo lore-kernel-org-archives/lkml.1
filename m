@@ -1,222 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765804AbYEVGw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbYEVGza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765804AbYEVGw3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 02:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbYEVGwS
+	id S932546AbYEVGza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 02:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbYEVGzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 02:52:18 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49606 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754535AbYEVGwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 02:52:16 -0400
-Date: Thu, 22 May 2008 16:52:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 22
-Message-Id: <20080522165209.ef2cb160.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Thu, 22 May 2008 02:55:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33187 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757516AbYEVGzR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 02:55:17 -0400
+Date: Wed, 21 May 2008 23:55:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kentaro Makita <k-makita@np.css.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, dgc@sgi.com,
+       viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH][RFC]fix soft lock up at NFS mount by per-SB LRU-list of
+ unused dentries
+Message-Id: <20080521235510.22bff69f.akpm@linux-foundation.org>
+In-Reply-To: <4834D8DA.30907@np.css.fujitsu.com>
+References: <4834D8DA.30907@np.css.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__22_May_2008_16_52_09_+1000_TI3cV0IVODvP2KIa"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__22_May_2008_16_52_09_+1000_TI3cV0IVODvP2KIa
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 22 May 2008 11:22:18 +0900 Kentaro Makita <k-makita@np.css.fujitsu.com> wrote:
 
-Hi all,
+> [Summary]
+>   Split LRU-list of unused dentries to each superblocks to avoid soft lock up
+>  at NFS mounts and remounting any filesystem.
+> 
+>  Previosly I posted are:
+>  http://lkml.org/lkml/2008/3/5/590
+> 
+> [Descriptions]
+> - background
+>  dentry_unused is a list of dentries which is not in use. This works
+>  as a cache against not-exisiting files. dentry_unused grows up when
+>  directories or files are removed. This list can be very long if
+>  there is huge free memory.
 
-Changes since next-20080522:
+The dentry_unused inodes are not actually not-existing files.  They are
+dentries which refer to live files (and, iirc, negative dentries) but
+which nobody is actually using - for example, regular files which
+nobody currently has open.
 
-The three patches reverted from the driver-core tree yesterday have been
-removed from there.
+I changed the changelog text to reflect that.
 
-The net tree (actually the wireless tree) had a trivial conflict with the
-wireless-current tree.
+> - what's problem
+>  When shrink_dcache_sb() is called, it scans all dentry_unused linearly
+>  under spin_lock(), and if dentry->d_sb is differnt from given superblock,
+>  scan next dentry. This scan costs very much if there are many entries,
+>  and very ineffective if there are many superblocks.
+>  IOW, When we need to shrink unused dentries on one dentry, but scans
+>  unused dentries on all superblocks in the system.
+>  For example, we scan 500 dentries to unmount a filesystem, but scans
+>  1,000,000 or more unused dentries on other superblocks.
+>  In our case , At mounting NFS*, shrink_dcache_sb() is called to shrink
+>  unused dentries on NFS, but scans  100,000,000 unused dentries on
+>  superblocks in the system such as local ext3 filesystems.
+>  I hear NFS mounting took 1 min on some system in use.
+>   * : NFS uses virtual filesystem in rpc layer, so NFS is affected from
+>       this problem.
+> 
+>   100,000,000 is possible number on large systems.
+> 
+>  Per-superblock LRU of unused dentried can reduce the cost in reasonable
+>  manner.
+> 
+> - How to fix
+>  I found this problem is solved by David Chinner's "Per-superblock
+>  unused dentry LRU lists V3"(1), so I rebase it and add some fix to
+>  reclaim with fairness, which is in Andrew Morton's comments(2).
+>   1) http://lkml.org/lkml/2006/5/25/318
+>   2) http://lkml.org/lkml/2006/5/25/320
+> 
+>  Split LRU-list of unused dentries to each superblocks. Then, NFS
+>  mounting will check dentries under a superblock instead of all.
+>  But this spliting will break LRU of dentry-unused.
+>  So, I've attempted to make reclaim unused dentrins with fairness by
+>  calculate number of dentries to scan on this sb based on following way
+> 
+>   number of dentries to scan on this sb =
+>   count * (number of dentries on this sb / number of dentries in the machine)
+> 
+>  This patch is against linux-2.6.26-rc3. Tested on x86_64.
 
-One of the sound tree build patches has been merged.
+Looks good to me, thanks.  And no, the loss of the strict global LRU
+handling of the dentry LRU is unlikely to be an issue.
 
-The semaphore-removal tree still needed three patches reverted because simi=
-lar
-patches were merged into upstream and the scsi-rc-fixes trees.
+> Based on David Chinner's "Per-superblock unused dentry LRU lists V3".
+> ...
+> Signed-off-by: Kentaro Makita <k-makita@np.css.fujitsu.com>
 
-The bkl-removal tree had a conflict with the arm tree because the arm
-tree removed a file that was changed.
+I guess we should ask David for his signed-off-by: on this.
 
-I have applied the following temporary patch for known build problems:
 
-	"Fix various 8390 builds" - the net tree broke builds on various
-architectures - hopefully this patch will go into the net tree shortly.
-	"build failure with netfilter on __nf_ct_helper_find()" - breakage
-due to the moving of stuff from list.h to rculist.h
+I fiddled with the comments somewhat:
 
-----------------------------------------------------------------------------
+--- a/fs/dcache.c~fix-soft-lock-up-at-nfs-mount-by-per-sb-lru-list-of-unused-dentries-fix
++++ a/fs/dcache.c
+@@ -120,8 +120,7 @@ static void dentry_iput(struct dentry * 
+ }
+ 
+ /*
+- * Following dentry_lru_(add|add_tail|del|del_init) is must
+- * called with dcache_lock held.
++ * dentry_lru_(add|add_tail|del|del_init) must be called with dcache_lock held.
+  */
+ static void dentry_lru_add(struct dentry *dentry)
+ {
+@@ -245,7 +244,7 @@ repeat:
+ unhash_it:
+ 	__d_drop(dentry);
+ kill_it:
+-	/* if dentry was on d_lru list delete it from there */
++	/* if dentry was on the d_lru list delete it from there */
+ 	dentry_lru_del(dentry);
+ 	dentry = d_kill(dentry);
+ 	if (dentry)
+@@ -468,11 +467,11 @@ restart:
+ 			BUG_ON(dentry->d_sb != sb);
+ 
+ 			spin_lock(&dentry->d_lock);
+-		/*
+-		 * If we are honouring the DCACHE_REFERENCED flag and the
+-		 * dentry has this flag set, don't free it. Clear the flag
+-		 * and put it back on the LRU
+-		 */
++			/*
++			 * If we are honouring the DCACHE_REFERENCED flag and
++			 * the dentry has this flag set, don't free it. Clear
++			 * the flag and put it back on the LRU.
++		 	 */
+ 			if ((flags & DCACHE_REFERENCED)
+ 				&& (dentry->d_flags & DCACHE_REFERENCED)) {
+ 				dentry->d_flags &= ~DCACHE_REFERENCED;
+@@ -501,10 +500,10 @@ restart:
+ 			continue;
+ 		}
+ 		prune_one_dentry(dentry);
+-		/* dentry->d_lock is dropped in prune_one_dentry() */
++		/* dentry->d_lock was dropped in prune_one_dentry() */
+ 		cond_resched_lock(&dcache_lock);
+ 	}
+-	if ((count == NULL) && (!list_empty(&sb->s_dentry_lru)))
++	if (count == NULL && !list_empty(&sb->s_dentry_lru))
+ 		goto restart;
+ 	if (count != NULL)
+ 		*count = cnt;
+@@ -515,17 +514,13 @@ restart:
+ 
+ /**
+  * prune_dcache - shrink the dcache
+- * @count: number of entries to try and free
++ * @count: number of entries to try to free
+  *
+- * Shrink the dcache. This is done when we need
+- * more memory, or simply when we need to unmount
+- * something (at which point we need to unuse
+- * all dentries).
++ * Shrink the dcache. This is done when we need more memory, or simply when we
++ * need to unmount something (at which point we need to unuse all dentries).
+  *
+- * This function may fail to free any resources if
+- * all the dentries are in use.
++ * This function may fail to free any resources if all the dentries are in use.
+  */
+- 
+ static void prune_dcache(int count)
+ {
+ 	struct super_block *sb;
+@@ -548,10 +543,10 @@ restart:
+ 			continue;
+ 		sb->s_count++;
+ 		/* Now, we reclaim unused dentrins with fairness.
+-		 * we reclaim them same percentage on each superblocks.
+-		 * we calculate number of dentries to scan on this sb
+-		 * based on following way, but impelementation is arranged
+-		 * to avoid overflow.
++		 * We reclaim them same percentage from each superblock.
++		 * We calculate number of dentries to scan on this sb
++		 * as follows, but the implementation is arranged to avoid
++		 * overflows:
+ 		 * number of dentries to scan on this sb =
+ 		 * count * (number of dentries on this sb /
+ 		 * number of dentries in the machine)
+diff -puN fs/super.c~fix-soft-lock-up-at-nfs-mount-by-per-sb-lru-list-of-unused-dentries-fix fs/super.c
+diff -puN include/linux/fs.h~fix-soft-lock-up-at-nfs-mount-by-per-sb-lru-list-of-unused-dentries-fix include/linux/fs.h
+--- a/include/linux/fs.h~fix-soft-lock-up-at-nfs-mount-by-per-sb-lru-list-of-unused-dentries-fix
++++ a/include/linux/fs.h
+@@ -1063,6 +1063,7 @@ struct super_block {
+ 	struct list_head	s_more_io;	/* parked for more writeback */
+ 	struct hlist_head	s_anon;		/* anonymous dentries for (nfs) exporting */
+ 	struct list_head	s_files;
++	/* s_dentry_lru and s_nr_dentry_unused are protected by dcache_lock */
+ 	struct list_head	s_dentry_lru;	/* unused dentry lru */
+ 	int			s_nr_dentry_unused;	/* # of dentry on lru */
+ 
+_
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 81 trees (counting Linus' and 13 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging quilt/driver-core
-Merging quilt/usb
-Merging x86/auto-x86-next
-Merging sched/auto-sched-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging hrt/mm
-Merging lblnet/master
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-CONFLICT (content): Merge conflict in net/mac80211/mlme.c
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-Merging sound/master
-Applying sound: "depends" requires "on"
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging rcu/rcu
-Merging locking/locking
-Merging safe-poison-pointers/safe-poison-pointers
-Merging stackprotector/stackprotector
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
-CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
-$ git reset --hard
-$ git checkout -b tmp semaphore-removal/semaphore-removal
-Created commit ebe8930: Revert "Convert qla_os to use mutex instead of sema=
-phore"
-Created commit fe5b285: Revert "9p: Convert from semaphore to spinlock"
-Created commit 1890536: Revert "qla2xxx: Turn vport_sem into vport_mutex"
-$ git checkout master
-CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
-Merging quilt/ldp.next
-Merging bkl-removal/bkl-removal
-CONFLICT (delete/modify): arch/arm/common/rtctime.c deleted in HEAD and mod=
-ified in bkl-removal/bkl-removal. Version bkl-removal/bkl-removal of arch/a=
-rm/common/rtctime.c left in tree.
-$ git rm arch/arm/common/rtctime.c
-rm 'arch/arm/common/rtctime.c'
-Merging trivial/next
-Applying Fix various 8390 builds
-Applying build failure with netfilter on __nf_ct_helper_find()
-
---Signature=_Thu__22_May_2008_16_52_09_+1000_TI3cV0IVODvP2KIa
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFINRgeTgG2atn1QN8RAjFOAJ4owaLIDwCsoV3zF3+fJ9rTPo2HMwCfdiEd
-aXPPpz6d9w4uGx1tgQxVZIs=
-=WRUA
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_May_2008_16_52_09_+1000_TI3cV0IVODvP2KIa--
