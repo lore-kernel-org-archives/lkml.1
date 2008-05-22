@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765549AbYEVWgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbYEVWhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765549AbYEVWgK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 18:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760260AbYEVWf5
+	id S933112AbYEVWhx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 18:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760516AbYEVWhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 18:35:57 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41357 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760213AbYEVWf4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 18:35:56 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] MAINTAINERS: reiserfs entry is out of date
-To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Date: Thu, 22 May 2008 23:23:22 +0100
-Message-ID: <20080522222321.721.16051.stgit@core>
-User-Agent: StGIT/0.14.1
+	Thu, 22 May 2008 18:37:45 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:48574 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760064AbYEVWho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 18:37:44 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18485.62848.335125.152538@harpo.it.uu.se>
+Date: Fri, 23 May 2008 00:36:48 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+In-Reply-To: <4835DF64.6080104@zytor.com>
+References: <20080518013416.GB30034@linux-os.sc.intel.com>
+	<18481.37905.297556.288317@harpo.it.uu.se>
+	<20080520015723.GD30034@linux-os.sc.intel.com>
+	<4832A173.6020203@firstfloor.org>
+	<18482.53246.642835.894623@harpo.it.uu.se>
+	<4832E705.2010900@zytor.com>
+	<18482.60491.764019.292031@harpo.it.uu.se>
+	<20080520175325.GE30034@linux-os.sc.intel.com>
+	<4834BE39.2000904@zytor.com>
+	<18485.13663.51624.694435@harpo.it.uu.se>
+	<20080522205619.GB7998@linux-os.sc.intel.com>
+	<4835DF64.6080104@zytor.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+H. Peter Anvin writes:
+ > Suresh Siddha wrote:
+ > > 
+ > > hpa, What is the virtualization problem? Are you referring to perf problem?
+ > > As you noted, regular non-rt signal handlers won't need this cpuid check. It's
+ > > needed only for those who manually look at non-rt signal frames and interpret it.
+ > > And also, they can do this check only once and not everytime.
+ > > 
+ > 
+ > No, relying on CPUID and vdso both have implications for virtualization.
+ > 
+ > > To me, prtcl() just seems to be an overkill.
+ > 
+ > I don't think it is ... it's not overkill but rather "underkill"... it's 
+ > a low-performance solution but it's guaranteed to be safe in the 
+ > presence of virtualization of all its various ilk.  Note that you don't 
+ > need to be able to *set* the format via prctl(), just *query* (get) it.
 
+I agree. It works, user-space only needs to query it once, so it's not
+a big deal that it's a syscall. Admittedly a sigcontext flag would have
+been better, but that doesn't seem to be viable.
 
+ > > While restoring from the user, kernel also need to find out what layout
+ > > the user is passing. So it's bi-directional. I prefer the same mechanism
+ > > (using cookies/magic numbers etc inaddition to uc_flags or cpuid checks) to
+ > > interpret the fpstate for both user/kernel.
+ > 
+ > No, it really doesn't: the kernel only needs to be able to read the same 
+ > format as it itself wrote.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+The kernel needs to accept one(*) of the formats it can produce, which
+is not necessarily what it last produced. It's not inconceivable that
+user-space will construct sigframes on the fly (to emulate setcontext),
+or that it will mangle sigframes (e.g. to map non-rt to rt before sigreturn).
 
- MAINTAINERS |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+(*) The format is determined by which version of sys_sigreturn the
+user invokes.
 
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index deda30e..163cd8c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3401,10 +3401,7 @@ L:	rtc-linux@googlegroups.com
- S:	Maintained
- 
- REISERFS FILE SYSTEM
--P:	Hans Reiser
--M:	reiserfs-dev@namesys.com
- L:	reiserfs-devel@vger.kernel.org
--W:	http://www.namesys.com
- S:	Supported
- 
- RFKILL
-
+/Mikael
