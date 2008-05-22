@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbYEVPDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYEVPEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754035AbYEVPDK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 11:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYEVPC5
+	id S1754305AbYEVPEb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 11:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYEVPEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 11:02:57 -0400
-Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2020 "EHLO
-	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752231AbYEVPC4 (ORCPT
+	Thu, 22 May 2008 11:04:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:49539 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbYEVPEV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 11:02:56 -0400
-Subject: [PATCH] block: reorder cfq_queue to save space on 64bit builds
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: axboe@kernel.dk
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 16:02:47 +0100
-Message-Id: <1211468567.3024.6.camel@castor.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 22 May 2008 11:04:21 -0400
+Date: Thu, 22 May 2008 17:05:17 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       CaseySchaufler <casey@schaufler-ca.com>
+Subject: Re: [RFC][Patch 1/4]integrity: TPM internel kernel interface
+Message-ID: <20080522150516.GB25721@elf.ucw.cz>
+References: <1211385256.20922.25.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211385256.20922.25.camel@localhost.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-saves 8 bytes of padding & increases objects/slab from 30 to 32 on my
-AMD64 config 
-    
-    
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+On Wed 2008-05-21 11:54:16, Mimi Zohar wrote:
+> This is a request for comments for a redesign of the integrity patches.
+> This patchset contains 4 patches.
+> 	Patch 1/4 integrity: TPM internal kernel interface
+> 	Patch 2/4 integrity: special fs magic
+> 	Patch 3/4 integrity: Linux Integrity Module(LIM)
+> 	Patch 4/4 integrity: IMA as an integrity service provider
+>  
+> Resubmitting integrity-tpm-internal-kernel-interface.patch, which
+> was previously Signed-off-by Kylene Hall.
+> 
+> Adds the following support: 
+> - internal kernel interface to transmit TPM commands
+> - reading a pcr value
+> - extending a pcr value
+> - lookup the tpm_chip for given chip number and type
+> 
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
----
+>  /*
+> - * Returns max number of jiffies to wait
+> + * tpm_calc_ordinal_duration - returns max number of jiffies to wait
+>   */
+> -unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip,
+> -					   u32 ordinal)
+> +unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal)
 
-patch against 2.6.26-rc2
-running successfully on my AMD64 desktop
+Please don't mix real changes and cleanups... and lots of your changes
+are just cleanups.
 
-Richard
+> @@ -544,7 +549,7 @@ duration:
+>  	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_DURATION;
+>  
+>  	rc = transmit_cmd(chip, data, sizeof(data),
+> -			"attempting to determine the durations");
+> +			  "attempting to determine the durations");
+>  	if (rc)
+>  		return;
+>
 
+...like this.
+									Pavel
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index b399c62..4df3f05 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -124,6 +124,8 @@ struct cfq_data {
- struct cfq_queue {
- 	/* reference count */
- 	atomic_t ref;
-+	/* various state flags, see below */
-+	unsigned int flags;
- 	/* parent cfq_data */
- 	struct cfq_data *cfqd;
- 	/* service_tree member */
-@@ -138,14 +140,14 @@ struct cfq_queue {
- 	int queued[2];
- 	/* currently allocated requests */
- 	int allocated[2];
--	/* pending metadata requests */
--	int meta_pending;
- 	/* fifo list of requests in sort_list */
- 	struct list_head fifo;
- 
- 	unsigned long slice_end;
- 	long slice_resid;
- 
-+	/* pending metadata requests */
-+	int meta_pending;
- 	/* number of requests that are on the dispatch list or inside driver */
- 	int dispatched;
- 
-@@ -153,8 +155,6 @@ struct cfq_queue {
- 	unsigned short ioprio, org_ioprio;
- 	unsigned short ioprio_class, org_ioprio_class;
- 
--	/* various state flags, see below */
--	unsigned int flags;
- };
- 
- enum cfqq_state_flags {
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
