@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbYEWPkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYEWPlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758479AbYEWPkv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYEWPko
+	id S1758854AbYEWPlL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbYEWPkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:40:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:51800 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754500AbYEWPkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:40:43 -0400
-Message-ID: <4836E55C.5000304@goop.org>
-Date: Fri, 23 May 2008 16:40:12 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 23 May 2008 11:40:49 -0400
+Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:45422 "HELO
+	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756084AbYEWPks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 11:40:48 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] remove debug printk from DRM suspend path
+Date: Fri, 23 May 2008 08:40:45 -0700
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemcheck: SMP support
-References: <20080523141759.GA1833@damson.getinternet.no>
-In-Reply-To: <20080523141759.GA1833@damson.getinternet.no>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805230840.46015.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> This works on real hw, but not on qemu. It seems to get stuck waiting for one
-> of the atomic values to change. Don't know why yet, it might just be yet
-> another bug in qemu... (we've hit at least two of them so far. And they were
-> real bugs too.)
->   
+Not sure how this snuck upstream, but it really doesn't belong there.  We
+don't need a KERN_ERR printk in the suspend path to know what's going on (at
+least not anymore).
 
-I've noticed that qemu mis-reports the eip of cmpxchg if it faults (it 
-reports the eip of the start of the basic block, I think).  Does that 
-match what you're seeing?
+Signed-off-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
 
-    J
+diff --git a/drivers/char/drm/drm_sysfs.c b/drivers/char/drm/drm_sysfs.c
+index 9a32169..af211a0 100644
+--- a/drivers/char/drm/drm_sysfs.c
++++ b/drivers/char/drm/drm_sysfs.c
+@@ -34,8 +34,6 @@ static int drm_sysfs_suspend(struct device *dev, pm_message_t state)
+ 	struct drm_minor *drm_minor = to_drm_minor(dev);
+ 	struct drm_device *drm_dev = drm_minor->dev;
+ 
+-	printk(KERN_ERR "%s\n", __func__);
+-
+ 	if (drm_dev->driver->suspend)
+ 		return drm_dev->driver->suspend(drm_dev, state);
+ 
