@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYEWS66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbYEWTFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbYEWS66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 14:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYEWS6t
+	id S1756787AbYEWTFf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYEWTFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 14:58:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57775 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751603AbYEWS6s (ORCPT
+	Fri, 23 May 2008 15:05:24 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:50901 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbYEWTFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 14:58:48 -0400
-Date: Fri, 23 May 2008 11:57:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
-       Zachary Amsden <zach@vmware.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 0 of 4] mm+paravirt+xen: add pte read-modify-write
- abstraction
-In-Reply-To: <patchbomb.1211552448@localhost>
-Message-ID: <alpine.LFD.1.10.0805231133130.3081@woody.linux-foundation.org>
-References: <patchbomb.1211552448@localhost>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 23 May 2008 15:05:23 -0400
+To: zippel@linux-m68k.org
+CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+In-reply-to: <Pine.LNX.4.64.0805232027220.18302@localhost.localdomain>
+	(message from Roman Zippel on Fri, 23 May 2008 20:33:30 +0200 (CEST))
+Subject: Re: [patch 06/14] hfsplus: remove hfsplus_permission()
+References: <20080521171458.077908538@szeredi.hu> <20080521171549.964767446@szeredi.hu>
+ <Pine.LNX.4.64.0805212232500.18302@localhost.localdomain>
+ <E1Jz5gq-0007F4-AQ@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221358080.18302@localhost.localdomain>
+ <E1Jz9jk-0007rg-5W@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221427300.18302@localhost.localdomain>
+ <E1JzA2r-0007uK-8L@pomaz-ex.szeredi.hu> <20080523092114.GD27119@infradead.org>
+ <Pine.LNX.4.64.0805231712120.18302@localhost.localdomain>
+ <E1JzZF5-0002Hz-5e@pomaz-ex.szeredi.hu> <E1JzZWC-0002M8-UP@pomaz-ex.szeredi.hu>
+ <Pine.LNX.4.64.0805231824370.18302@localhost.localdomain>
+ <E1Jzbai-0002d1-VC@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805232027220.18302@localhost.localdomain>
+Message-Id: <E1JzcZj-0002mJ-28@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 23 May 2008 21:05:11 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 23 May 2008, Jeremy Fitzhardinge wrote:
+> >  a) it's nontrivial to fix (even understanding the problem is
+> >  nontrivial, see Documentation/filesystems/directory-locking)
 > 
-> This series adds the pte_rmw_start() and pte_rmw_commit() operations,
-> which change this sequence to:
+> Please provide a concrete example, as long as I only get handwaving I can 
+> only wave back.
+
+Semi-concrete: link(2) locks the target's parent and the source.
+Cross-directory rename(2) locks both parents.  If link's target is a
+file which has children, this can result in an ABBA deadlock.  That's
+_before_ the filesystem's ->link() or ->rename() function is called.
+
+> >  b) the feature is obviously unused, so the easiest fix is simply to
+> >  remove it for the time being.
 > 
-> 	ptent = pte_rmw_start(mm, addr, pte);
-> 	ptent = pte_modify(ptent, newprot);
-> 	/* ... */
-> 	pte_rmw_commit(mm, addr, pte, ptent);
+> You have a weird definition of "obviously unused", not every user may even 
+> have noticed it's gone, e.g. there are some rsync versions, which support 
+> this and these won't complain if they can't open the resource fork.
 
-Can you please rename these.
+Dunno.  What's the difference between "it wasn't used" and "it didn't
+work and nobody noticed"?  I think not much :)
 
-It's not a general "read-modify-write" operation on the PTE, and this 
-*only* works for changing protection details. In particular, you cannot 
-use pte_rmw_start/commit to change the actual page. So it's very much 
-about just protection bits.
-
-It should probably also be called ptep_xyz(), since it takes a pte 
-pointer, not a pte.
-
-So maybe calling it "ptent = ptep_modify_prot_start(..)" ... 
-"ptep_modify_prot_commit(..)" or something.
-
-			Linus
+Miklos
