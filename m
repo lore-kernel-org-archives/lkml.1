@@ -1,121 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYEWQ6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYEWRF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbYEWQ6U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYEWQ6M
+	id S1753684AbYEWRF2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 13:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYEWRFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:58:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41426 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751102AbYEWQ6L (ORCPT
+	Fri, 23 May 2008 13:05:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45122 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910AbYEWRFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:58:11 -0400
-Date: Fri, 23 May 2008 09:56:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org,
-       Peter Oberparleiter <oberparleiter@googlemail.com>,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-       Sam Ravnborg <sam@ravnborg.org>, ltp-coverage@lists.sourceforge.net
-Subject: Re: [PATCH 0/7] gcov kernel support
-Message-Id: <20080523095623.5678a34f.akpm@linux-foundation.org>
-In-Reply-To: <ab1f935148982762bae55734ffb8acc7@kernel.crashing.org>
-References: <48313D8E.7020109@de.ibm.com>
-	<20080523011213.690363c7.akpm@linux-foundation.org>
-	<ab1f935148982762bae55734ffb8acc7@kernel.crashing.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 May 2008 13:05:16 -0400
+Message-ID: <4836F77C.309@zytor.com>
+Date: Fri, 23 May 2008 09:57:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, drepper@redhat.com, Hongjiu.lu@intel.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <18482.53246.642835.894623@harpo.it.uu.se>	<4832E705.2010900@zytor.com>	<18482.60491.764019.292031@harpo.it.uu.se>	<20080520175325.GE30034@linux-os.sc.intel.com>	<4834BE39.2000904@zytor.com>	<18485.13663.51624.694435@harpo.it.uu.se>	<20080522205619.GB7998@linux-os.sc.intel.com>	<4835DF64.6080104@zytor.com>	<18485.62848.335125.152538@harpo.it.uu.se>	<483610DA.7010606@zytor.com>	<20080523004206.GD7998@linux-os.sc.intel.com> <20080523013353.7FBB026FA24@magilla.localdomain>
+In-Reply-To: <20080523013353.7FBB026FA24@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 13:06:00 +0200 Segher Boessenkool <segher@kernel.crashing.org> wrote:
-
-> >> This is version #2 of the gcov kernel support patch set
-> >
-> > powerpc blew up:
-> >
-> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/ 
-> > gcc/powerpc64-unknown-linux-gnu/4.1.0/../../../../powerpc64-unknown- 
-> > linux-gnu/bin/ld: skipping incompatible  
-> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/ 
-> > gcc/powerpc64-unknown-linux-gnu/4.1.0/./libgcov.a when searching for  
-> > -lgcov
-> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/ 
-> > gcc/powerpc64-unknown-linux-gnu/4.1.0/../../../../powerpc64-unknown- 
-> > linux-gnu/bin/ld: cannot find -lgcov
-> > collect2: ld returned 1 exit status
-> > make[2]: *** [arch/powerpc/kernel/vdso32/vdso32.so.dbg] Error 1
-> > make[1]: *** [arch/powerpc/kernel/vdso32] Error 2
+Roland McGrath wrote:
+>> What I was doing in the RFC is: restore the state what ever that was
+>> present and init the state that was not present in the stack frame.
 > 
-> Sounds like your toolchain was built without biarch support, but you're
-> using it for the 32-bit parts of the kernel anyway.  Which works as long
-> as you're not using any libraries, but now you need libgcov.a .
-
-ok..
-
-> What does
+> That is consistent in spirit with the existing treatment of FPU data.
+> That is, if the sigcontext.fpstate pointer is NULL, the thread's FPU
+> state is reset to default.  (And despite what hpa said about being
+> "supported", the facts in the code are that sigreturn just follows the
+> sigcontext.fpstate pointer, whatever it is.  On 32-bit, the pointer is
+> NULL in the context saved when the thread had not used the FPU, so
+> modifying the sigcontext to include FP state when it didn't before
+> requires putting in some user-chosen pointer.  There in fact may well be
+> existing code that does user-level coroutine switching using sigreturn
+> and relies on this, for all we know.)
 > 
-> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/ 
-> powerpc64-unknown-linux-gnu-gcc -v
-> 
-> say?
 
-y:/home/akpm> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-gcc -v
-Using built-in specs.
-Target: powerpc64-unknown-linux-gnu
-Configured with: /home/axboe/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc-4.1.0-glibc-2.3.6/gcc-4.1.0/configure --target=powerpc64-unknown-linux-gnu --host=x86_64-host_unknown-linux-gnu --prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu --disable-multilib --with-sysroot=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --with-local-prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c --enable-shared --enable-c99 --enable-long-long
-Thread model: posix
-gcc version 4.1.0
+Okay.  Pretty much what it comes down to is that there is no ideal 
+solution.  Thus, we're trying to explore the potential tradeoffs.  The 
+scenario you describe above will crash horribly for a non-FXSAVE aware 
+application running on an FXSAVE kernel.
 
->  (Or whatever the correct path to that compiler is, the directory
-> structure is a bit unusual here it seems).  There shouldn't be a
-> --disable-biarch there.
-> 
-> Or, what does
-> 
-> find  
-> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/4.1.0/  
-> -name libgcov.a
-> 
-> say?  (It should usually find three versions: 64-bit, 32-bit, 32-bit no  
-> float).
+Either way, there has been a long time since, and new bad applications 
+have obviously emerged, partially "assisted" by our propensity to not 
+document, and the deep gulf between our kernel and userspace developers.
 
-Only a single hit:
+Let's try another strawman on for size:
 
-/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/gcc/powerpc64-unknown-linux-gnu/4.1.0/libgcov.a
+- It is clear it is desirable not just for the frame itself but for the 
+fpstate to be self-describing.
 
-and it contains
+- Thus, let's put a magic cookie in one of the reserved fields at the 
+end of the FXSAVE region, and make sure it is long enough to be unlikely 
+to pop up randomly; as well as another magic cookie outside the FXSAVE 
+region.
 
-y:/home/akpm/ppc> ar x libgcov.a 
-y:/home/akpm/ppc> l
-total 316
--rw-r--r-- 1 akpm akpm  44192 May 23 09:53 _gcov.o
--rw-r--r-- 1 akpm akpm   8448 May 23 09:53 _gcov_execl.o
--rw-r--r-- 1 akpm akpm   8584 May 23 09:53 _gcov_execle.o
--rw-r--r-- 1 akpm akpm   8456 May 23 09:53 _gcov_execlp.o
--rw-r--r-- 1 akpm akpm   7384 May 23 09:53 _gcov_execv.o
--rw-r--r-- 1 akpm akpm   7544 May 23 09:53 _gcov_execve.o
--rw-r--r-- 1 akpm akpm   7392 May 23 09:53 _gcov_execvp.o
--rw-r--r-- 1 akpm akpm   7264 May 23 09:53 _gcov_fork.o
--rw-r--r-- 1 akpm akpm   7240 May 23 09:53 _gcov_interval_profiler.o
--rw-r--r-- 1 akpm akpm   7464 May 23 09:53 _gcov_merge_add.o
--rw-r--r-- 1 akpm akpm   8544 May 23 09:53 _gcov_merge_delta.o
--rw-r--r-- 1 akpm akpm   8488 May 23 09:53 _gcov_merge_single.o
--rw-r--r-- 1 akpm akpm   6976 May 23 09:53 _gcov_one_value_profiler.o
--rw-r--r-- 1 akpm akpm   6856 May 23 09:53 _gcov_pow2_profiler.o
--rw-r--r-- 1 akpm akpm 146492 May 23 09:52 libgcov.a
-y:/home/akpm/ppc> file _gcov_merge_delta.o
-_gcov_merge_delta.o: ELF 64-bit MSB relocatable, 64-bit PowerPC or cisco 7500, version 1 (SYSV), not stripped
+- The signal delivery code will write the cookie (or zero, for !XSAVE) 
+regardless of any crap ptrace might have written into it.
 
-> 
-> You *can* build with a non-biarch compiler, but then you need to point
-> the kernel build system at a 32-bit toolchain to use for the 32-bit
-> parts (via CROSS32_COMPILE).
+- We will ALSO set bit 0 in uc_flags for RT sigframes as an additional 
+assurance.
 
-Jens built this one, using crosstool.  It is
-http://userweb.kernel.org/~akpm/cross-compilers/power64-cross.tar.bz2
+- We will introduce at least a 32-bit field for future use, to be 
+written unconditionally zero for now.  We don't want to have to go 
+through this particular torture yet again.
 
-It was all working happily until gcov came along :(
+- The XSAVE state beyond the FXSAVE region needs to be self-describing. 
+  This may mean adding information not provided by the hardware. 
+Furthermore, it must be possible for userspace to know the length of the 
+frame, even if it doesn't understand its detailed contents.
+
+
+None of this is foolproof on older kernels -- there simply *IS* no 
+option for older kernels that is 100% guaranteed, thanks to various 
+assumptions made and design decisions taken over the years.  There are a 
+couple of failure scenarious here:
+
+- XSAVE-aware application running on pre-XSAVE kernel:
+
+   Such an application will be aware that the XSAVE information may not
+   exist, but needs to know (with high probability) that it isn't
+   present.  We have CPUID.OSXSAVE, the uc_flags bit, and the magic
+   cookie to help here.  ptrace can introduce the magic cookie falsely
+   into the state, but ptrace can introduce all kinds of failures;
+   either way they would (probablistically) not see the *second*
+   cookie.
+
+   The fact that 64-bit kernels don't clear the unused fields is of
+   less concern, since 64-bit kernels get the uc_flags field.
+
+- Pre-XSAVE application running on XSAVE kernel with XSAVE enabled:
+
+   Here we have the potential for all kinds of corrupt state, including
+   userspace trying to save away the state and load it later, not
+   knowing the proper size of it.  Worse, some sick person might try to
+   save and restore state from different hosts, with potential for
+   all kinds of mayhem.
+
+   The saved state, if copied from the original, would contain the first
+   cookie but not the second cookie.
+
+   Again, the use of two cookies here adds some amount of assurance;
+   but that again amounts to probabilistic failure detection.  However,
+   I personally don't see any way to avoid that scenario at all.
+
+	-hpa
