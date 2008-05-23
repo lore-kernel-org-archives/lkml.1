@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYEWIsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYEWItv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbYEWIsS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 04:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYEWIsH
+	id S1756118AbYEWItv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 04:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYEWIto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 04:48:07 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:41459 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYEWIsG (ORCPT
+	Fri, 23 May 2008 04:49:44 -0400
+Received: from vigor.karmaclothing.net ([217.169.26.28]:57073 "EHLO
+	vigor.karmaclothing.net." rhost-flags-OK-OK-FAIL-FAIL)
+	by vger.kernel.org with ESMTP id S1752189AbYEWItn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 04:48:06 -0400
-Message-ID: <48368466.5040600@s5r6.in-berlin.de>
-Date: Fri, 23 May 2008 10:46:30 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Fri, 23 May 2008 04:49:43 -0400
+Date: Fri, 23 May 2008 09:45:07 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
+       linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Peter Oberparleiter <oberparleiter@googlemail.com>
+Subject: Re: [PATCH 5/7] gcov: add gcov profiling infrastructure
+Message-ID: <20080523084506.GB719@linux-mips.org>
+References: <48313DE6.30802@de.ibm.com> <20080523001136.59ec8b34.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i2c: Push ioctl BKL down into the i2c code
-References: <20080522222327.1af72794@core> <20080523093545.175c769c@hyperion.delvare>
-In-Reply-To: <20080523093545.175c769c@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080523001136.59ec8b34.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Thu, 22 May 2008 22:23:27 +0100, Alan Cox wrote:
->> Signed-off-by: Alan Cox <alan@redhat.com>
->> 
+On Fri, May 23, 2008 at 12:11:36AM -0700, Andrew Morton wrote:
+
+> On Mon, 19 May 2008 10:44:22 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
 > 
-> Description of what the patch does and why it is needed, please. I
-> can't apply it without that. My first impression is a patch making the
-> code bigger and more complex with no obvious benefit ;)
+> > +	Note that a kernel compiled with profiling flags will be significantly
+> > +        larger and run slower. Also be sure to exclude files from profiling
+> > +        which are not linked to the kernel image to prevent linker errors.
+> 
+> heh, it was all too much for mips.
+> 
+> {standard input}: Assembler messages:
+> {standard input}:2716: Error: Branch out of range
+> {standard input}:2819: Error: Branch out of range
+> {standard input}:2884: Error: Branch out of range
+> {standard input}:3032: Error: Branch out of range
+> {standard input}:3097: Error: Branch out of range
+> {standard input}:3151: Error: Branch out of range
+> {standard input}:3216: Error: Branch out of range
+> make[1]: *** [drivers/telephony/ixj.o] Error 1
+> make: *** [drivers/telephony/ixj.o] Error 2
 
-I wasn't asked, but:
+A known problem which I had decieded to ignore until it begins to actually
+bite.  It's triggered by something like this
 
-The patch description was factored out.  ;-)
-http://lkml.org/lkml/2008/5/22/333
+                __asm__ __volatile__(
+                "       .set    mips3                                   \n"
+                "1:     ll      %0, %1          # atomic_add            \n"
+                "       addu    %0, %2                                  \n"
+                "       sc      %0, %1                                  \n"
+                "       beqz    %0, 2f                                  \n"
+                "       .subsection 2                                   \n"
+                "2:     b       1b                                      \n"
+                "       .previous                                       \n"
+                "       .set    mips0                                   \n"
+                : "=&r" (temp), "=m" (v->counter)
+                : "Ir" (i), "m" (v->counter));
 
-AFAIU it's a preparation for
+when compiled into a large compilation unit.
 
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ ?? @@ struct file_operations {
- 	unsigned int (*poll) (struct file *, struct poll_table_struct *);
--	int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
- 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
-
-Obvious benefits:
-  - No new .ioctl()s.
-  - Heads up for subsystem people:  "Did you know you are taking the BKL?
-    You probably don't need to, and you definitely don't want to."
--- 
-Stefan Richter
--=====-==--- -=-= =-===
-http://arcgraph.de/sr/
+  Ralf
