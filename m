@@ -1,78 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbYEWEiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbYEWEoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760785AbYEWEiW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 00:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760477AbYEWEiD
+	id S1761193AbYEWEoq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 00:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYEWEof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 00:38:03 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:35062 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762757AbYEWEh7 (ORCPT
+	Fri, 23 May 2008 00:44:35 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:31074 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbYEWEod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 00:37:59 -0400
-To: "Andrew Morton" <akpm@linux-foundation.org>, zanussi@comcast.net
-Subject: Re: [RFC Patch 1/1] trace_printk and trace_dump interface - v2
-Reply-To: prasad@linux.vnet.ibm.com
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Organization: IBM
-Cc: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       dwilder@us.ibm.com, hch@infradead.org
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+	Fri, 23 May 2008 00:44:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=El3lD+pVQip8/ONgdLrpqjxc4kxfQD5bS2XIxkLHebiJ46sq8HQp1zPAPkg89m7LlAL758Lph9w17nscB/z2IKvJ4AGE1N6gBpsmjR1nbIt5/OXp92oxFZOVv2DI5TWzgf/i6j6k6l10YvUxxIzh2ceP3j1fsTv3y6BgVxpGNaU=
+Date: Fri, 23 May 2008 00:44:30 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bruno Pr??mont <bonbons@linux-vserver.org>
+Cc: Linux Input <linux-input@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Subject: Re: Input+S3: extra keycodes forgotten after suspend
+Message-ID: <20080523044430.GA9809@anvil.corenet.prv>
+References: <200805162225.44284.bonbons@linux-vserver.org> <20080516163318.ZZRA012@mailhub.coreip.homeip.net> <200805162300.06027.bonbons@linux-vserver.org> <20080519114827.ZZRA012@mailhub.coreip.homeip.net> <20080519184501.38647a94@neptune.home> <20080521135345.ZZRA012@mailhub.coreip.homeip.net> <20080521220833.2e4345cb@neptune.home> <20080521163638.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-In-Reply-To: <20080520131225.46175b3b.akpm@linux-foundation.org>
-References: <op.ua9axd2a03j166@prasadkr_t60p.in.ibm.com> <op.ua9a1r0y03j166@prasadkr_t60p.in.ibm.com> <op.ua90vfwv03j166@prasadkr_t60p.in.ibm.com> <20080519162149.50f58b80.akpm@linux-foundation.org> <op.ubgxivbq03j166@prasadkr_t60p.in.ibm.com> <20080520131225.46175b3b.akpm@linux-foundation.org>
-Content-Transfer-Encoding: 7bit
-Date: Fri, 23 May 2008 10:07:50 +0530
-Message-ID: <op.ubla5cik03j166@prasadkr_t60p.in.ibm.com>
-User-Agent: Opera Mail/9.26 (Linux)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080521163638.ZZRA012@mailhub.coreip.homeip.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 01:12:25PM -0700, Andrew Morton wrote:
-> On Wed, 21 May 2008 01:23:09 +0530
-> "K.Prasad" <prasad@linux.vnet.ibm.com> wrote:
->>> The name 'trace' (previously GTSC), I gather that it was the chosen
-> after
-> > much deliberation (http://tinyurl.com/6odoh4), however I'm open to the
-> > idea of changing the name (say dbg_printk/dbg_dump?).
-> >> Kindly let me know of your suggestions for this, and I will change  
-> them
-> > during the next version.
-> Well I was just putting it out there for consideration.  Yes, I think
-> the whole idea of consuming the "trace_*" namespace in this patchset
-> was ill-advised.
-Since "trace_*" uses relay infrastructure underneath, I am thinking, if it
-would be acceptable to rename them to "relay_*", say relay_printk() and
-relay_dump(). I would be glad to hear from the 'relay' folks about this
-thought.
+On Wed, May 21, 2008 at 04:38:08PM -0400, Dmitry Torokhov wrote:
+> 
+> Ah, ok, great.. I think we simply need to move dritek out of the place
+> where you put it in so it does not interfere with our efforts to
+> resume keyboard and mouse ;) I will see what I can do there..
+> 
 
-> Also, I don't know how to move forward with the whole feature - I
-> haven't seen a lot of interest from others and I haven't seen much
-> discussion of how this feature differs from all the other tracing
-> things which have been floating about.
-More than a tracing mechanism, this is a tool that aids in tracing, by
-providing a powerful function that directs its output onto the debugfs
-mount path which could be later harnessed by user-space applications
-too. A potential in-kernel user could be the 'marker' handlers which
-more often would be interested in logging data.
+So what about the patch below? Does it work for you?
 
-> And even if the proposed patches presently offer unique and useful
-> features, will one of the other tracing implementations (eg: ltt) later
-> grow to close that gap?
-> I'm also a bit dubious about the whole thing based on past experience
-> with kernel-developer-only in-kernel tools.  People just don't use them
-> much.  One example: fault injection.
+Thanks!
 
-Among the other enhancements that we were contemplating for this
-mechanism, to make it more powerful and unique, is the ability to
-a)Define callback functions typically invoked everytime before accessing/
-   printing each variable (which may say, acquire a lock or prefix a
-   timestamp) by adding fields to the trace_printk_data structure.
-b)Provide sequencing information for the output, along with ability to
-   prefix the output with essential data such as PID, Timestamp, CPUID,
-   etc.
+-- 
+Dmitry
 
-Thanks for letting us know your thoughts on this.
+From: Bruno Prémont <bonbons@linux-vserver.org>
 
---K.Prasad
+Input: i8042 - make sure Dritek quirk is invoked at resume
+
+Also do not fail i8042 entire initialization if enabling dritek extension
+fails.
+
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+ drivers/input/serio/i8042.c |   33 +++++++++++++++++++++++++--------
+ 1 file changed, 25 insertions(+), 8 deletions(-)
+
+Index: work/drivers/input/serio/i8042.c
+===================================================================
+--- work.orig/drivers/input/serio/i8042.c
++++ work/drivers/input/serio/i8042.c
+@@ -885,6 +885,20 @@ static long i8042_panic_blink(long count
+ 
+ #undef DELAY
+ 
++#ifdef CONFIG_X86
++static void i8042_dritek_enable(void)
++{
++	char param = 0x90;
++	int error;
++
++	error = i8042_command(&param, 0x1059);
++	if (error)
++		printk(KERN_WARNING
++			"Failed to enable DRITEK extension: %d\n",
++			error);
++}
++#endif
++
+ #ifdef CONFIG_PM
+ /*
+  * Here we try to restore the original BIOS settings. We only want to
+@@ -942,6 +956,12 @@ static int i8042_resume(struct platform_
+ 		return -EIO;
+ 	}
+ 
++
++#ifdef CONFIG_X86
++	if (i8042_dritek)
++		i8042_dritek_enable();
++#endif
++
+ 	if (i8042_mux_present) {
+ 		if (i8042_set_mux_mode(1, NULL) || i8042_enable_mux_ports())
+ 			printk(KERN_WARNING
+@@ -1160,6 +1180,11 @@ static int __devinit i8042_probe(struct 
+ 	if (error)
+ 		return error;
+ 
++#ifdef CONFIG_X86
++	if (i8042_dritek)
++		i8042_dritek_enable();
++#endif
++
+ 	if (!i8042_noaux) {
+ 		error = i8042_setup_aux();
+ 		if (error && error != -ENODEV && error != -EBUSY)
+@@ -1171,14 +1196,6 @@ static int __devinit i8042_probe(struct 
+ 		if (error)
+ 			goto out_fail;
+ 	}
+-#ifdef CONFIG_X86
+-	if (i8042_dritek) {
+-		char param = 0x90;
+-		error = i8042_command(&param, 0x1059);
+-		if (error)
+-			goto out_fail;
+-	}
+-#endif
+ /*
+  * Ok, everything is ready, let's register all serio ports
+  *
