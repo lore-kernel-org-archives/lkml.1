@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbYEWBtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYEWBwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760603AbYEWBtJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 21:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754314AbYEWBs5
+	id S1755581AbYEWBwD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 21:52:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756329AbYEWBvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 21:48:57 -0400
-Received: from mga14.intel.com ([143.182.124.37]:31252 "EHLO mga14.intel.com"
+	Thu, 22 May 2008 21:51:51 -0400
+Received: from ozlabs.org ([203.10.76.45]:37212 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753555AbYEWBs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 21:48:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,526,1204531200"; 
-   d="scan'208";a="251089108"
-Date: Thu, 22 May 2008 18:48:55 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-Message-ID: <20080523014855.GA18385@linux-os.sc.intel.com>
-References: <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <20080522212920.GC7998@linux-os.sc.intel.com> <4835E6F5.5010801@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754314AbYEWBvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 21:51:50 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Denis V. Lunev" <den@openvz.org>
+Subject: Re: [PATCH 3/4] modules: proper cleanup of kobject without CONFIG_SYSFS
+Date: Fri, 23 May 2008 11:51:39 +1000
+User-Agent: KMail/1.9.9
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <1211277589-8565-1-git-send-email-den@openvz.org> <200805221920.22920.rusty@rustcorp.com.au> <1211456661.7496.6.camel@iris.sw.ru>
+In-Reply-To: <1211456661.7496.6.camel@iris.sw.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4835E6F5.5010801@zytor.com>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200805231151.40161.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 02:34:45PM -0700, H. Peter Anvin wrote:
-> Suresh Siddha wrote:
+On Thursday 22 May 2008 21:44:21 Denis V. Lunev wrote:
+> On Thu, 2008-05-22 at 19:20 +1000, Rusty Russell wrote:
+> > On Tuesday 20 May 2008 19:59:48 Denis V. Lunev wrote:
+> > > kobject: '<NULL>' (ffffffffa0104050): is not initialized, yet
+> > > kobject_put()
 > >
-> >can you please elaborate? even in presence of virtualization, appropriate
-> >cpuid bits need to be set/visible for application, for xsave/xrstor to work
-> >properly.
+> > AFAICT, module_sysfs_initialized is not ever set if !CONFIG_SYSFS.
 > >
-> 
-> For many paravirtualization solutions, CPUID "leak" from the hypervisor. 
->  The fact that CPUID cannot be disabled (made ring 0 only) is a major 
-> flaw in the architecture.
-> 
-> Therefore, relying on CPUID is too dangerous.
+>
+> Basically you miss
+> static inline int mod_sysfs_init(struct module *mod)
+> {
+>         return 0;
+> }
+> in include/linux/module.h
+>
+> So, without CONFIG_SYSFS a dummy stab for mod_sysfs_init is called.
 
-hmm.. so the kernel needs to export all the cpuid info (that the kernel enables
-and supports) to the user through some mechanism then?
+Ah, thanks for the explanation.
 
-atleast in the xsave case, hypervisor can completely control the
-OSXSAVE flag. I am still not convinced whether I need to add prctl()
-to indicate the layout. If I have to add, then it should not just
-be about whether xsave information is included in _fpstate or not, it should also
-be about the whole cpuid information provided by the xsave architecture. Because
-the user potentially needs all that information, to make sense out of
-the data layout included in the extended state area.
+Basically, this code is a dog's breakfast.  There's no reason for this to be 
+in the header, and no reason for the other mod_sysfs_init() not to be static.  
+Ditto for most of the rest.
 
-thanks,
-suresh
+Patch applied, thanks!
+Rusty.
