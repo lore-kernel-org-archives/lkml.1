@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759660AbYEWUvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYEWUvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759660AbYEWUvK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 16:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbYEWUu5
+	id S1759998AbYEWUvr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 16:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbYEWUvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 16:50:57 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:17968 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756116AbYEWUu4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 16:50:56 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5302"; a="3207987"
-Message-ID: <48372E2E.4020902@qualcomm.com>
-Date: Fri, 23 May 2008 13:50:54 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 23 May 2008 16:51:40 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49030 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756395AbYEWUvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 16:51:39 -0400
+Date: Fri, 23 May 2008 23:49:12 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Steve French <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel coding style for if ... else which cross #ifdef
+Message-ID: <20080523204912.GB4886@cs181133002.pp.htv.fi>
+References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <20080523204228.GC6749@1wt.eu>
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org, pj@sgi.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de
-Subject: Re: [PATCH] [genirq] Expose default irq affinity mask
-References: <1211571995-17488-1-git-send-email-maxk@qualcomm.com> <20080523134702.e5fb9145.rdunlap@xenotime.net>
-In-Reply-To: <20080523134702.e5fb9145.rdunlap@xenotime.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080523204228.GC6749@1wt.eu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Fri, 23 May 2008 12:46:35 -0700 Max Krasnyansky wrote:
+On Fri, May 23, 2008 at 10:42:28PM +0200, Willy Tarreau wrote:
+> On Fri, May 23, 2008 at 02:11:43PM -0500, Steve French wrote:
+> > A question splitting "else" and "if" on distinct lines vs. using an
+> > extra line and extra #else came up as I was reviewing a proposed cifs
+> > patch.   Which is the preferred style?
+> >
+> > #ifdef CONFIG_SOMETHING
+> >    if (foo)
+> >       something ...
+> >    else
+> > #endif
+> >    if ((mode & S_IWUGO) == 0)
+> > 
+> > or alternatively
+> > 
+> > #ifdef CONFIG_SOMETHING
+> >    if (foo)
+> >       something ...
+> >    else if ((mode & S_IWUGO) == 0)
+> > #else
+> >    if ((mode & S_IWUGO) == 0)
+> > #endif
 > 
->> Current IRQ affinity interface does not provide a way to set affinity
->> for the IRQs that will be allocated/activated in the future.
->> This patch creates /proc/irq/default_smp_affinity that lets users set
->> default affinity mask for the newly allocated IRQs. Changing default
->> does not affect affinity masks for the currently active IRQs, they
->> have to be changed explicitly.
+> The second one is dangerous because if code evolves, chances are that
+> only one of the two identical lines will be updated.
 > 
-> Documentation, perhaps an update to Documentation/filesystems/proc.txt ?
-Absolutely. I wanted to see if it gets accepted first.
+> At least the first one is clearly readable.
 
-> 
->> Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
->> ---
->>  arch/alpha/kernel/irq.c |    5 +--
->>  include/linux/irq.h     |   14 ++++-------
->>  kernel/irq/manage.c     |   28 +++++++++++++++++++++-
->>  kernel/irq/proc.c       |   57 ++++++++++++++++++++++++++++++++++++++++++++++-
->>  4 files changed, 89 insertions(+), 15 deletions(-)
->>
->> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
->> index 438a014..90f9ccc 100644
->> --- a/kernel/irq/manage.c
->> +++ b/kernel/irq/manage.c
->> @@ -16,6 +16,8 @@
->>  
->>  #ifdef CONFIG_SMP
->>  
->> +cpumask_t irq_default_affinity = CPU_MASK_ALL;
->> +
->>  /**
->>   *	synchronize_irq - wait for pending IRQ handlers (on other CPUs)
->>   *	@irq: interrupt number to wait for
->> @@ -94,6 +96,27 @@ int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
->>  	return 0;
->>  }
->>  
->> +#ifndef CONFIG_AUTO_IRQ_AFFINITY
->> +/**
->> + * Generic version of the affinity autoselector.
->> + */
-> 
-> Please don't use /** as the beginning of a comment block unless that
-> comment block is in kernel-doc format (this one is not).
+I would consider the first one much harder to read since you can _very_ 
+easily miss that the "if" is in an "else" clause and completely misread 
+the code.
 
-Oops, my bad. Did it again. Will fix.
+> But if you have tons of
+> places with the same construct, it's better to create a macro which
+> will inhibit the if branch, which gcc will happily optimize away.
+> For instance :
+> 
+> #ifdef CONFIG_FOO
+> #define FOO_ENABLED 1
+> #else
+> #define FOO_ENABLED 0
+> #endif
+> 
+> if (FOO_ENABLED && foo)
+>     something
+> else if ((mode & S_IWUGO) == 0)
+>    ...
+>...
 
-Max
+I'd also say that's the best solution.
+
+> Regards,
+> Willy
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
