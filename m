@@ -1,68 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYEWQUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYEWQXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbYEWQUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYEWQUY
+	id S1755271AbYEWQXS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYEWQXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:20:24 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43209 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbYEWQUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:20:23 -0400
-Date: Fri, 23 May 2008 18:21:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Haroldo Gamal <gamal@alternex.com.br>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into kernel image
-Message-ID: <20080523162101.GA31107@uranus.ravnborg.org>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211550282.28967.8.camel@pmac.infradead.org>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 23 May 2008 12:23:10 -0400
+Received: from mga06.intel.com ([134.134.136.21]:33142 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751014AbYEWQXJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 12:23:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,530,1204531200"; 
+   d="scan'208";a="284390833"
+Message-ID: <4836EF69.4010407@linux.intel.com>
+Date: Fri, 23 May 2008 09:23:05 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Top 10 bugs/warnings for the week of May 23rd, 2008
+References: <4836EE8C.1010200@linux.intel.com>
+In-Reply-To: <4836EE8C.1010200@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David.
+Arjan van de Ven wrote:
 
-> +extern struct builtin_fw __start_builtin_fw[];
-> +extern struct builtin_fw __end_builtin_fw[];
-
-Could have these in include/linux/sections.h where we
-collect other linker symbols?
-
-> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> index f054778..8d71a40 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -86,6 +86,13 @@
->  		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
->  	}								\
->  									\
-> +	/* Built-in firmware blobs */					\
-> +	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
-> +		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
-> +		*(.builtin_fw)						\
-> +		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
-> +	}								\
-> +									\
-Looks good.
-But do we need the firmware after init?
-In other owrds could it be inside a discard after init block?
-
-
-> +
-> +#define DECLARE_BUILTIN_FIRMWARE_SIZE(name, blob, size)			     \
-> +	static const struct builtin_fw __fw_concat(__builtin_fw,__COUNTER__) \
-> +	__used __attribute__((__section__(".builtin_fw"))) =		     \
-
-Use __section():
-
-> +	__used __section(.builtin_fw))) =		     \
-(See compiler.h IIRC).
-
-	Sam
+eh make that May 23rd
