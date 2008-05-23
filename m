@@ -1,124 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbYEWUg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbYEWUjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759552AbYEWUg4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 16:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbYEWUgp
+	id S1759504AbYEWUjj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 16:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbYEWUja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 16:36:45 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:37926 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758480AbYEWUgn (ORCPT
+	Fri, 23 May 2008 16:39:30 -0400
+Received: from mail01.fortunecookiestudios.com ([209.208.125.101]:42175 "EHLO
+	mail01.fortunecookiestudios.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756715AbYEWUj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 16:36:43 -0400
-Message-ID: <48372900.6050600@oracle.com>
-Date: Fri, 23 May 2008 13:28:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Fri, 23 May 2008 16:39:29 -0400
+From: Andras Mantia <amantia@kde.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: libata (pata_via) timeouts causing unusable device: the famous DRDY issue?
+Date: Fri, 23 May 2008 23:39:20 +0300
+User-Agent: KMail/1.9.51 (Linux/2.6.25.4-2-default; KDE/4.0.80; x86_64; svn-810390; 2008-05-20)
+References: <200805232201.51701.amantia@kde.org> <48372989.3000700@garzik.org>
+In-Reply-To: <48372989.3000700@garzik.org>
 MIME-Version: 1.0
-To: sekharan@us.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, hare@suse.de,
-       scsi <linux-scsi@vger.kernel.org>
-Subject: Re: 2.6.26-rc2-mm1 (SCSI_DH build errors)
-References: <20080514010129.4f672378.akpm@linux-foundation.org>	 <20080514141348.e71feed6.randy.dunlap@oracle.com>	 <1210862779.15852.4.camel@localhost.localdomain>	 <1210881374.21974.285.camel@chandra-ubuntu>	 <20080522202543.d15e8c3b.akpm@linux-foundation.org> <1211571560.10532.7.camel@chandra-ubuntu>
-In-Reply-To: <1211571560.10532.7.camel@chandra-ubuntu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200805232339.20752.amantia@kde.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chandra Seetharaman wrote:
-> Yikes.... Sorry again... Hopefully this attached patch work properly.
+On Friday 23 May 2008, Jeff Garzik wrote:
+> Andras Mantia wrote:
+> > Hi,
+> >
+> >  since my upgrade to openSUSE 11.0, which comes with 2.6.25.4, soon
+> > after I start using my DVD player, I get the following in the log:
+> >
+> > May 23 21:34:04 stein klogd: ata1.00: exception Emask 0x0 SAct 0x0
+> > SErr 0x0 action 0x2 frozen
+> > May 23 21:34:04 stein klogd: ata1.00: cmd
+> > a0/01:00:00:00:08/00:00:00:00:00/a0 tag 0 dma 2048 in
+> > May 23 21:34:04 stein klogd:          cdb 28 00 00 00 01 b3 00 00 
+> > 01 00 00 00 00 00 00 00
+> > May 23 21:34:04 stein klogd:          res
+> > 40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+> > May 23 21:34:04 stein klogd: ata1.00: status: { DRDY }
+>
+> DRDY == device ready, and it occurs billions of times per day during
+> normal use.
 
-Did it build cleanly for you?
-Hint:
-Use SCSI_DH as module and MD_MULTIPATH=y.  Build errors for me.
+That wouldn't be a problem if it would not block the drive completely 
+and cause my load to go up to extreme values like 50 or so.
 
-> chandra
-> On Thu, 2008-05-22 at 20:25 -0700, Andrew Morton wrote:
->> On Thu, 15 May 2008 12:56:14 -0700 Chandra Seetharaman <sekharan@us.ibm.com> wrote:
->>
->>> Hi James, Andrew,
->>>
->>> Here is a patch to remove the automatic "select" of scsi_dh for
->>> dm-multipath.
->>>
->>> Sorry about the mishap.
->>>
->>>
->> This is busted.
->>
-> -------------------------
-> Do not automatically "select" SCSI_DH for dm-multipath. If SCSI_DH
-> doesn't exist,just do not allow  hardware handlers to be used.
-> 
-> Handle SCSI_DH being a module also.
-> 
-> Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
-> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Reported-by: Andrew Morton <akpm@linux-foundation.org>
-> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Cc: Alasdair G Kergon <agk@redhat.com>
-> Cc: Mike Christie <michaelc@cs.wisc.edu>
-> Cc: Hannes Reinecke <hare@suse.de>
-> ---
-> 
-> Index: scsi-misc-2.6/drivers/md/Kconfig
-> ===================================================================
-> --- scsi-misc-2.6.orig/drivers/md/Kconfig
-> +++ scsi-misc-2.6/drivers/md/Kconfig
-> @@ -252,7 +252,6 @@ config DM_ZERO
->  config DM_MULTIPATH
->  	tristate "Multipath target"
->  	depends on BLK_DEV_DM
-> -	select SCSI_DH
->  	---help---
->  	  Allow volume managers to support multipath hardware.
->  
-> Index: scsi-misc-2.6/drivers/md/dm-mpath.c
-> ===================================================================
-> --- scsi-misc-2.6.orig/drivers/md/dm-mpath.c
-> +++ scsi-misc-2.6/drivers/md/dm-mpath.c
-> @@ -664,6 +664,8 @@ static int parse_hw_handler(struct arg_s
->  	request_module("scsi_dh_%s", m->hw_handler_name);
->  	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
->  		ti->error = "unknown hardware handler type";
-> +		kfree(m->hw_handler_name);
-> +		m->hw_handler_name = NULL;
->  		return -EINVAL;
->  	}
->  	consume(as, hw_argc - 1);
-> Index: scsi-misc-2.6/include/scsi/scsi_dh.h
-> ===================================================================
-> --- scsi-misc-2.6.orig/include/scsi/scsi_dh.h
-> +++ scsi-misc-2.6/include/scsi/scsi_dh.h
-> @@ -54,6 +54,16 @@ enum {
->  	SCSI_DH_NOSYS,
->  	SCSI_DH_DRIVER_MAX,
->  };
-> -
-> +#if defined(CONFIG_SCSI_DH) || defined(CONFIG_SCSI_DH_MODULE)
->  extern int scsi_dh_activate(struct request_queue *);
->  extern int scsi_dh_handler_exist(const char *);
-> +#else
-> +static inline int scsi_dh_activate(struct request_queue *req)
-> +{
-> +	return 0;
-> +}
-> +static inline int scsi_dh_handler_exist(const char *name)
-> +{
-> +	return 0;
-> +}
-> +#endif
-> 
-> 
+> There is no "famous DRDY issue", you are simply seeing timeouts.
 
+Well, I found that many have this "error" and have real problems. 
+
+> Have you tried all of: pci=nomsi, acpi=off, or noapic?
+>
+
+Not yet, I will try them (but as I said it worked fine before, without 
+any such kernel options).
+
+Andras
 
 -- 
-~Randy
+ 
+Quanta Plus developer - http://quanta.kdewebdev.org
+K Desktop Environment - http://www.kde.org
