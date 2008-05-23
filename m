@@ -1,88 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYEWRtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbYEWRu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556AbYEWRtv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 13:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYEWRtn
+	id S1758086AbYEWRu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 13:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYEWRuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 13:49:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47083 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752312AbYEWRtm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 13:49:42 -0400
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into
-	kernel image
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Haroldo Gamal <gamal@alternex.com.br>, Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <20080523162101.GA31107@uranus.ravnborg.org>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <20080523162101.GA31107@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Fri, 23 May 2008 18:49:37 +0100
-Message-Id: <1211564977.28967.70.camel@pmac.infradead.org>
+	Fri, 23 May 2008 13:50:19 -0400
+Received: from mga02.intel.com ([134.134.136.20]:43207 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752720AbYEWRuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 13:50:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,531,1204531200"; 
+   d="scan'208";a="386588218"
+Date: Fri, 23 May 2008 10:50:14 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, drepper@redhat.com, Hongjiu.lu@intel.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+Message-ID: <20080523175014.GC18385@linux-os.sc.intel.com>
+References: <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <18485.62848.335125.152538@harpo.it.uu.se> <483610DA.7010606@zytor.com> <20080523004206.GD7998@linux-os.sc.intel.com> <20080523013353.7FBB026FA24@magilla.localdomain> <4836F77C.309@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4836F77C.309@zytor.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-23 at 18:21 +0200, Sam Ravnborg wrote:
-> Hi David.
+On Fri, May 23, 2008 at 09:57:32AM -0700, H. Peter Anvin wrote:
+> Roland McGrath wrote:
+> >>What I was doing in the RFC is: restore the state what ever that was
+> >>present and init the state that was not present in the stack frame.
+> >
+> >That is consistent in spirit with the existing treatment of FPU data.
+> >That is, if the sigcontext.fpstate pointer is NULL, the thread's FPU
+> >state is reset to default.  (And despite what hpa said about being
+> >"supported", the facts in the code are that sigreturn just follows the
+> >sigcontext.fpstate pointer, whatever it is.  On 32-bit, the pointer is
+> >NULL in the context saved when the thread had not used the FPU, so
+> >modifying the sigcontext to include FP state when it didn't before
+> >requires putting in some user-chosen pointer.  There in fact may well be
+> >existing code that does user-level coroutine switching using sigreturn
+> >and relies on this, for all we know.)
+> >
 > 
-> > +extern struct builtin_fw __start_builtin_fw[];
-> > +extern struct builtin_fw __end_builtin_fw[];
+> Okay.  Pretty much what it comes down to is that there is no ideal 
+> solution.  Thus, we're trying to explore the potential tradeoffs.  The 
+> scenario you describe above will crash horribly for a non-FXSAVE aware 
+> application running on an FXSAVE kernel.
+
+yes, who ever added fxsave extensions missed this and we def want to handle
+these kind of scenarios in xsave context.
+
+> Either way, there has been a long time since, and new bad applications 
+> have obviously emerged, partially "assisted" by our propensity to not 
+> document, and the deep gulf between our kernel and userspace developers.
 > 
-> Could have these in include/linux/sections.h where we
-> collect other linker symbols?
+> Let's try another strawman on for size:
+> 
+> - It is clear it is desirable not just for the frame itself but for the 
+> fpstate to be self-describing.
 
-Hm. But they're not 'extern char' like the other things in
-asm-generic/sections.h; they're 'struct builtin_fw'. So I'd want to
-include <linux/firmware.h> from asm-generic/sections.h in order to make
-that work... I think the simple answer is 'no'.
-
-We don't do this for PCI fixups either.
-
-> > diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> > index f054778..8d71a40 100644
-> > --- a/include/asm-generic/vmlinux.lds.h
-> > +++ b/include/asm-generic/vmlinux.lds.h
-> > @@ -86,6 +86,13 @@
-> >  		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
-> >  	}								\
-> >  									\
-> > +	/* Built-in firmware blobs */					\
-> > +	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
-> > +		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
-> > +		*(.builtin_fw)						\
-> > +		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
-> > +	}								\
-> > +									\
-> Looks good.
-> But do we need the firmware after init?
-> In other owrds could it be inside a discard after init block?
-
-If we don't want the firmware in-kernel at all times, stick it an
-initrd :)
+Yes.
 
 > 
-> > +
-> > +#define DECLARE_BUILTIN_FIRMWARE_SIZE(name, blob, size)			     \
-> > +	static const struct builtin_fw __fw_concat(__builtin_fw,__COUNTER__) \
-> > +	__used __attribute__((__section__(".builtin_fw"))) =		     \
+> - Thus, let's put a magic cookie in one of the reserved fields at the 
+> end of the FXSAVE region, and make sure it is long enough to be unlikely 
+> to pop up randomly; as well as another magic cookie outside the FXSAVE 
+> region.
 > 
-> Use __section():
+> - The signal delivery code will write the cookie (or zero, for !XSAVE) 
+> regardless of any crap ptrace might have written into it.
 > 
-> > +	__used __section(.builtin_fw))) =		     \
-> (See compiler.h IIRC).
+> - We will ALSO set bit 0 in uc_flags for RT sigframes as an additional 
+> assurance.
+> 
+> - We will introduce at least a 32-bit field for future use, to be 
+> written unconditionally zero for now.  We don't want to have to go 
+> through this particular torture yet again.
 
-Done. Thanks.
+This is exactly what I have been trying to say. CPU folks are going
+to document that bytes[464..511] of fxsave frame are going to be
+SW usable. We can use some of these to represent the cookie, size
+of the xsave frame, state that is saved in the frame etc. And the
+remaining unused bytes can be cleared to zero for future use.
 
--- 
-dwmw2
+you say:
 
+> as well as another magic cookie outside the FXSAVE region.
+
+Is this to avoid issues with memcpy, who end up copying only fxsave
+info but not the extended state? We don't need another magic
+cookie outside the fxsave region, we can include the
+address of the _fpstate pointer along side of the first cookie
+in the SW usable portion of the fxsave state.
+
+> - The XSAVE state beyond the FXSAVE region needs to be self-describing. 
+>  This may mean adding information not provided by the hardware. 
+
+In my RFC, I have added size of the xsave, state mask saved in xsave
+frame. I will move this to the sw usable portion of fxsave. We can
+add any thing more if desired.
+
+> Furthermore, it must be possible for userspace to know the length of the 
+> frame, even if it doesn't understand its detailed contents.
+
+With the above, we are just changing the _fpstate layout (which
+includes the length). But if we need frame size in the
+sigframe layout, we can add it (and it can be done outside the scope of xsave
+patches).
+
+> None of this is foolproof on older kernels -- there simply *IS* no 
+> option for older kernels that is 100% guaranteed, thanks to various 
+> assumptions made and design decisions taken over the years.  There are a 
+> couple of failure scenarious here:
+> 
+> - XSAVE-aware application running on pre-XSAVE kernel:
+> 
+>   Such an application will be aware that the XSAVE information may not
+>   exist, but needs to know (with high probability) that it isn't
+>   present.  We have CPUID.OSXSAVE, the uc_flags bit, and the magic
+>   cookie to help here.  ptrace can introduce the magic cookie falsely
+>   into the state, but ptrace can introduce all kinds of failures;
+>   either way they would (probablistically) not see the *second*
+>   cookie.
+
+Application can use cpuid.OSXSAVE (even in
+paravirtualization, hypervisors will prevent the leak of
+cpuid.osxsave for kernels which don't use it) reliably. And also,
+we have uc_flags (for rt-frame) and other cookies in the SW usable
+portion of fxsave frame.
+
+In all the cases, kernel should be as graceful as it can be. xsave
+aware kernel should try to find and restore xsave state and if there
+is any failure, try to restore just the fpstate and init the rest.
+
+>   The fact that 64-bit kernels don't clear the unused fields is of
+>   less concern, since 64-bit kernels get the uc_flags field.
+> 
+> - Pre-XSAVE application running on XSAVE kernel with XSAVE enabled:
+> 
+>   Here we have the potential for all kinds of corrupt state, including
+>   userspace trying to save away the state and load it later, not
+>   knowing the proper size of it.  Worse, some sick person might try to
+>   save and restore state from different hosts, with potential for
+>   all kinds of mayhem.
+> 
+>   The saved state, if copied from the original, would contain the first
+>   cookie but not the second cookie.
+> 
+>   Again, the use of two cookies here adds some amount of assurance;
+
+I think the pointer along with the first cookie is enough right? There
+is no SW usable portion in the xsave layout outside the fxsave area.
+And for compatibility reasons, its best to keep the xsave layout
+similar to what the cpu uses.
+
+>   but that again amounts to probabilistic failure detection.  However,
+>   I personally don't see any way to avoid that scenario at all.
+
+In this case, kernel will atleast not corrupt the fxsave state, which
+the application cares about.
+
+thanks,
+suresh
