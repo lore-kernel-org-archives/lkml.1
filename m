@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYEWPF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbYEWPGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbYEWPF7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYEWPFi
+	id S1758141AbYEWPGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbYEWPFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:05:38 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:43162 "EHLO
+	Fri, 23 May 2008 11:05:42 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:43180 "EHLO
 	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbYEWPFg (ORCPT
+	with ESMTP id S1755309AbYEWPFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:05:36 -0400
-Subject: [RFC][Patch 1/5]integrity: TPM cleanup
+	Fri, 23 May 2008 11:05:38 -0400
+Subject: [RFC][PATCH 4/5]integrity: Linux Integrity Module(LIM)
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
        zohar@us.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
        CaseySchaufler <casey@schaufler-ca.com>
 Content-Type: text/plain
-Date: Fri, 23 May 2008 11:05:24 -0400
-Message-Id: <1211555125.16195.15.camel@new-host>
+Date: Fri, 23 May 2008 11:05:33 -0400
+Message-Id: <1211555133.16195.17.camel@new-host>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
@@ -27,450 +27,1430 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a request for comments for a redesign of the integrity patches.
-This patchset contains 5 patches.
-	Patch 1/5 integrity: TPM cleanup (scripts/Lindent and other)
-	Patch 2/5 integrity: TPM internal kernel interface
-	Patch 3/5 integrity: special fs magic
-	Patch 4/5 integrity: Linux Integrity Module(LIM)
-	Patch 5/5 integrity: IMA as an integrity service provider
- 
+The new version addresses a number of issues, including
+  - generalizing the measurement API beyond just inode measurements.
+  - separation of the measurement into distinct collection, appraisal,
+    and commitment phases, for greater flexibility.
+  - redesigning the interactions with LSM modules (Selinux and Smack)
+    to be acceptable to those groups.
+
+Extended Verification Module(EVM) and the Integrity Measurement
+Architecture(IMA) were originally implemented as an LSM module.  Based
+on discussions on the LSM mailing list, a decision was made that the
+LSM hooks should only be used to enforce mandatory access control
+decisions and a new set of hooks should be defined specifically for
+integrity.
+
+EVM/IMA was limited to verifying and measuring a file's (i.e. an inode)
+integrity and the metadata associated with it.  Current research is
+looking into other types of integrity measurements. (i.e. "Linux kernel
+integrity measurement using contextual inspection",  by Peter A. Loscocco,
+Perry W. Wilson, J. Aaron Pendergrass, C. Durward McDonell, 
+http://doi.acm.org/10.1145/1314354.1314362) As a result, a requirement 
+of the new integrity framework is support for different types of integrity
+measurements.
+
+Our work has shown that requests for integrity verification/measurement 
+needs to be based on knowledge of the filesystem, requiring the system
+to either be labeled with integrity data or depend on the existent LSM
+security labels.  The previous set of integrity patches modified the LSM
+modules to be integrity context aware, meaning that the LSM modules made
+integrity data/metadata verification and measurement API calls based on 
+an understanding of the LSM security labels.  Both of the LSM maintainers
+felt that the changes were too intrusive and that integrity enforcement
+should be made by the integrity provider, not the LSM module.  
+
+To address these concerns, Stephen Smalley suggested using the 
+security_audit_rule_match(), renamed to security_filter_rule_match(), to 
+define LSM specific integrity measurement policy rules, in lieu of 
+modifying the LSM modules.  In the current set of patches, the integrity
+API calls can be made either by the integrity provider (i.e. IMA), based
+on an LSM specific integrity policy, or by an integrity context aware LSM
+module.  
+
+This patch provides an integrity framework(api and hooks), placement of 
+the integrity hooks in the appropriate places in the fs directory, and a 
+dummy provider for an integrity service. Collecting, appraising, and 
+storing of inode and other types of integrity data is supported.  Multiple
+integrity templates, which implement the integrity API, may register
+themselves.  For now, only a single integrity provider can register itself
+for the integrity hooks. (Support for multiple providers registering 
+themselves for the integrity hooks would require some form of stacking.)
+
+
+The ten integrity hooks are:
+	inode_setxattr, inode_post_setxattr, 
+	inode_alloc_integrity, inode_free_integrity, inode_init_integrity,
+	file_free_integrity, d_instantiate, 
+	bprm_check_integrity, file_mmap, inode_permission
+
+The five integrity API calls provided are:
+	integrity_must_measure, integrity_collect_measurement, 
+	integrity_appraise_measurement, integrity_store_measurement,
+	and integrity_display_template.
+
+The type of integrity data being collected, appraised, stored, or 
+displayed is template dependent.
+
+(Details on the calls and their exact arguments are in linux/integrity.h,
+included in the patch.)
+
 Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
-Index: linux-2.6.26-rc3-git2/drivers/char/tpm/tpm.c
+Index: linux-2.6.26-rc3-git2/include/linux/integrity.h
 ===================================================================
---- linux-2.6.26-rc3-git2.orig/drivers/char/tpm/tpm.c
-+++ linux-2.6.26-rc3-git2/drivers/char/tpm/tpm.c
-@@ -321,7 +321,7 @@ static const u8 tpm_ordinal_duration[TPM
- 
- static void user_reader_timeout(unsigned long ptr)
- {
--	struct tpm_chip *chip = (struct tpm_chip *) ptr;
-+	struct tpm_chip *chip = (struct tpm_chip *)ptr;
- 
- 	schedule_work(&chip->work);
- }
-@@ -337,10 +337,9 @@ static void timeout_work(struct work_str
- }
- 
- /*
-- * Returns max number of jiffies to wait
-+ * tpm_calc_ordinal_duration - returns max number of jiffies to wait
-  */
--unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip,
--					   u32 ordinal)
-+unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal)
- {
- 	int duration_idx = TPM_UNDEFINED;
- 	int duration = 0;
-@@ -363,7 +362,7 @@ unsigned long tpm_calc_ordinal_duration(
- EXPORT_SYMBOL_GPL(tpm_calc_ordinal_duration);
- 
- /*
-- * Internal kernel interface to transmit TPM commands
-+ * tpm_transmit - internal kernel interface to transmit TPM commands
-  */
- static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
- 			    size_t bufsiz)
-@@ -385,8 +384,7 @@ static ssize_t tpm_transmit(struct tpm_c
- 	mutex_lock(&chip->tpm_mutex);
- 
- 	if ((rc = chip->vendor.send(chip, (u8 *) buf, count)) < 0) {
--		dev_err(chip->dev,
--			"tpm_transmit: tpm_send: error %zd\n", rc);
-+		dev_err(chip->dev, "tpm_transmit: tpm_send: error %zd\n", rc);
- 		goto out;
- 	}
- 
-@@ -418,8 +416,7 @@ static ssize_t tpm_transmit(struct tpm_c
- out_recv:
- 	rc = chip->vendor.recv(chip, (u8 *) buf, bufsiz);
- 	if (rc < 0)
--		dev_err(chip->dev,
--			"tpm_transmit: tpm_recv: error %zd\n", rc);
-+		dev_err(chip->dev, "tpm_transmit: tpm_recv: error %zd\n", rc);
- out:
- 	mutex_unlock(&chip->tpm_mutex);
- 	return rc;
-@@ -477,7 +474,7 @@ static ssize_t transmit_cmd(struct tpm_c
- 	int err;
- 
- 	len = tpm_transmit(chip, data, len);
--	if (len <  0)
-+	if (len < 0)
- 		return len;
- 	if (len == TPM_ERROR_SIZE) {
- 		err = be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX)));
-@@ -497,7 +494,7 @@ void tpm_gen_interrupt(struct tpm_chip *
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_TIMEOUT;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the timeouts");
-+			  "attempting to determine the timeouts");
- }
- EXPORT_SYMBOL_GPL(tpm_gen_interrupt);
- 
-@@ -512,7 +509,7 @@ void tpm_get_timeouts(struct tpm_chip *c
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_TIMEOUT;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the timeouts");
-+			  "attempting to determine the timeouts");
- 	if (rc)
- 		goto duration;
- 
-@@ -544,7 +541,7 @@ duration:
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_DURATION;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the durations");
-+			  "attempting to determine the durations");
- 	if (rc)
- 		return;
- 
-@@ -570,17 +567,20 @@ EXPORT_SYMBOL_GPL(tpm_get_timeouts);
- void tpm_continue_selftest(struct tpm_chip *chip)
- {
- 	u8 data[] = {
--		0, 193,			/* TPM_TAG_RQU_COMMAND */
--		0, 0, 0, 10,		/* length */
--		0, 0, 0, 83,		/* TPM_ORD_GetCapability */
-+		0, 193,		/* TPM_TAG_RQU_COMMAND */
-+		0, 0, 0, 10,	/* length */
-+		0, 0, 0, 83,	/* TPM_ORD_GetCapability */
- 	};
- 
- 	tpm_transmit(chip, data, sizeof(data));
- }
- EXPORT_SYMBOL_GPL(tpm_continue_selftest);
- 
--ssize_t tpm_show_enabled(struct device * dev, struct device_attribute * attr,
--			char *buf)
+--- /dev/null
++++ linux-2.6.26-rc3-git2/include/linux/integrity.h
+@@ -0,0 +1,261 @@
 +/*
-+ * tpm_show_enabled - determine the permanent disabled state
++ * integrity.h
++ *
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ * Author: Mimi Zohar <zohar@us.ibm.com>
++ *
++ *      This program is free software; you can redistribute it and/or modify
++ *      it under the terms of the GNU General Public License as published by
++ *      the Free Software Foundation, version 2 of the License.
 + */
-+ssize_t tpm_show_enabled(struct device *dev, struct device_attribute *attr,
-+			 char *buf)
- {
- 	u8 data[max_t(int, ARRAY_SIZE(tpm_cap), 35)];
- 	ssize_t rc;
-@@ -594,14 +594,17 @@ ssize_t tpm_show_enabled(struct device *
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_PERM;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attemtping to determine the permanent state");
-+			  "attemtping to determine the permanent state");
- 	if (rc)
- 		return 0;
- 	return sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_DISABLE_IDX]);
++
++#ifndef _LINUX_INTEGRITY_H
++#define _LINUX_INTEGRITY_H
++
++#include <linux/fs.h>
++#include <linux/audit.h>
++
++#ifdef CONFIG_INTEGRITY
++void integrity_audit_msg(int audit_msgno, struct inode *inode,
++			const unsigned char *fname, char *op,
++			char *cause, int result);
++
++enum lim_hooks {INODE_PERMISSION = 1, FILE_MMAP, BPRM_CHECK };
++extern int integrity_measure_policy(struct inode *inode, enum lim_hooks func,
++					int mask);
++extern int integrity_measure_rule_add(char *, char *, char *, char *);
++extern void integrity_measure_policy_init(void);
++extern void integrity_measure_policy_complete(void);
++
++/*
++ * Integrity API calls:
++ *
++ * @collect_measurement:
++ *	Collect template specific measurement data.
++ *	@data contains template specific data used for collecting the
++ *	measurement.
++ * 	Return 0 if operation was successful.
++ *
++ * @appraise_measurement:
++ *	Appraise the integrity of the template specific measurement data.
++ *	@data contains template specific data used for appraising the
++ *	measurement.
++ * 	Return 0 if operation was successful.
++ *
++ * @store_measurement:
++ *	Store the template specific data.
++ *	@data contains template specific data used for storing the
++ *	measurement.
++ *
++ * @must_measure:
++ *	Measurement decision based on an integrity policy.
++ *	@data contains template specific data used for making policy
++ * 	decision.
++ * 	Return 0 if operation was successful.
++ *
++ * @display_template:
++ *	Display template specific data.
++ *
++ */
++
++enum integrity_show_type { INTEGRITY_SHOW_BINARY, INTEGRITY_SHOW_ASCII};
++
++struct template_operations {
++	int (*collect_measurement)(void *);
++	int (*appraise_measurement)(void *);
++	void (*store_measurement)(void *);
++	int (*must_measure)(void *);
++	void (*display_template)(struct seq_file *m, void *,
++				 enum integrity_show_type);
++};
++extern int register_template(char *template_name,
++				struct template_operations *ops);
++extern int unregister_template(char *template_name);
++extern int integrity_find_template(char *, struct template_operations **ops);
++
++/*
++ * Integrity hooks:
++ *
++ * @bprm_check_integrity:
++ * 	This hook mediates the point when a search for a binary handler	will
++ * 	begin.  At this point, the OS protects against an executable file,
++ * 	already open for write, from being executed; and an executable file
++ * 	already open for execute, from being modified. So we can be certain
++ *	that any measurements(collect, appraise, store) done here are of
++ * 	the file being executed.
++ * 	@bprm contains the linux_binprm structure.
++ *	Return 0 if the hook is successful and permission is granted.
++ *
++ * @inode_setxattr:
++ *	Check permission before permitting an integrity extended attribute
++ * 	to be set.
++ *	@value identified by @name for @dentry.
++ *
++ * @inode_post_setxattr:
++ *	Update inode integrity xattr after successful setxattr operation.
++ * 	identified by @name for @dentry.
++ *
++ * @inode_alloc_integrity:
++ *	Allocate and attach an integrity structure to @inode->i_integrity.  The
++ * 	i_integrity field is initialized to NULL when the inode structure is
++ * 	allocated.
++ * 	@inode contains the inode structure.
++ * 	Return 0 if operation was successful.
++ *
++ * @inode_free_integrity:
++ *	@inode contains the inode structure.
++ * 	Deallocate the inode integrity structure and set @inode->i_integrity to
++ * 	NULL.
++ *
++ * @inode_init_integrity:
++ *	Create inode integrity xattr for a new inode based on the new security
++ * 	xattr information.
++ *	@inode contains the inode structure of the newly created inode.
++ *	@dir contains the inode structure of the parent directory.
++ * 	@name contains the security xattr name suffix.
++ *	@value contains the security attribute value.
++ *	@len contains the length of the security attribute value.
++ *
++ * @inode_permission:
++ *	This hook is called by the existing Linux permission function, when
++ * 	a file is opened (as well as many other operations).  At this point,
++ *	measurements of files open for read(collect, appraise, store) can
++ * 	be made.
++ *	@inode contains the inode structure to check.
++ *	@mask contains the permission mask.
++ *      @nd contains the nameidata (may be NULL).
++ *
++ * @file_free_integrity:
++ *	Update the integrity xattr value as necessary.
++ * 	*file contains the file structure being closed.
++ *
++ * @file_mmap :
++ *	Measurement(collect, appraise, store) of files mmaped for EXEC,
++ *	could be measured at this point.
++ *	@file contains the file structure for file to map (may be NULL).
++ *	@reqprot contains the protection requested by the application.
++ *	@prot contains the protection that will be applied by the kernel.
++ *	@flags contains the operational flags.
++ *	Return 0 if permission is granted.
++ *
++ * @d_instantiate:
++ *	Initialize the integrity structure of an inode for a dentry.
++ *	@dentry to complete.
++ *	@inode to attach to this dentry.
++ *
++ */
++
++struct integrity_operations {
++	int (*bprm_check_integrity) (struct linux_binprm *bprm);
++	int (*inode_setxattr) (struct dentry *dentry, const char *name,
++				const void *value, size_t size, int flags);
++	void (*inode_post_setxattr) (struct dentry *dentry, const char *name);
++	int (*inode_alloc_integrity) (struct inode *inode);
++	void (*inode_free_integrity) (struct inode *inode);
++	void (*inode_init_integrity) (struct inode *inode, struct inode *dir,
++				    char **name, void **value, size_t *len);
++	int (*inode_permission) (struct inode *inode, int mask,
++				struct nameidata *nd);
++	void (*file_free_integrity) (struct file *file);
++	int (*file_mmap) (struct file *file,
++			  unsigned long reqprot, unsigned long prot,
++			  unsigned long flags, unsigned long addr,
++			  unsigned long addr_only);
++	void (*d_instantiate) (struct dentry *dentry, struct inode *inode);
++};
++extern int register_integrity(struct integrity_operations *ops);
++extern int unregister_integrity(struct integrity_operations *ops);
++
++/* global variables */
++extern struct integrity_operations *integrity_ops;
++
++
++int integrity_collect_measurement(char *template_name, void *data);
++int integrity_appraise_measurement(char *template_name, void *data);
++int integrity_must_measure(char *template_name, void *data);
++void integrity_store_measurement(char *template_name, void *data);
++
++int integrity_bprm_check(struct linux_binprm *bprm);
++int integrity_inode_setxattr(struct dentry *dentry, const char *name,
++				const void *value, size_t size, int flags);
++void integrity_inode_post_setxattr(struct dentry *dentry, const char *name);
++int integrity_inode_alloc(struct inode *inode);
++void integrity_inode_free(struct inode *inode);
++void integrity_inode_init_integrity(struct inode *inode, struct inode *dir,
++				char **name, void **value, size_t *len);
++int integrity_inode_permission(struct inode *inode, int mask,
++				struct nameidata *nd);
++void integrity_file_free(struct file *file);
++int integrity_file_mmap(struct file *file,
++			  unsigned long reqprot, unsigned long prot,
++			  unsigned long flags, unsigned long addr,
++			  unsigned long addr_only);
++void integrity_d_instantiate(struct dentry *dentry, struct inode *inode);
++
++#else
++
++static inline int integrity_bprm_check(struct linux_binprm *bprm)
++{
++	return 0;
++}
++
++static inline int integrity_inode_setxattr(struct dentry *dentry,
++				 	   const char *name, const void *value,
++					   size_t size, int flags)
++{
++	return 0;
++}
++
++static inline void integrity_inode_post_setxattr(struct dentry *dentry,
++						const char *name)
++{ }
++
++static inline int integrity_inode_alloc(struct inode *inode)
++{
++	return 0;
++}
++
++static inline void integrity_inode_free(struct inode *inode)
++{ }
++
++static inline int integrity_inode_init_integrity(struct inode *inode,
++						struct inode *dir,
++						char **name,
++						void **value,
++						size_t *len)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline int integrity_inode_permission(struct inode *inode, int mask,
++				struct nameidata *nd)
++{
++	return 0;
++}
++
++static inline int integrity_file_permission(struct file *file, int mask)
++{
++	return 0;
++}
++
++static inline void integrity_file_free(struct file *file)
++{
++	return;
++}
++
++static inline int integrity_file_mmap(struct file *file,
++			  unsigned long reqprot, unsigned long prot,
++			  unsigned long flags, unsigned long addr,
++			  unsigned long addr_only)
++{
++	return 0;
++}
++
++static inline void integrity_d_instantiate(struct dentry *dentry,
++						struct inode *inode)
++{
++	return;
++}
++
++#endif
++#endif
+Index: linux-2.6.26-rc3-git2/security/integrity/integrity.c
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3-git2/security/integrity/integrity.c
+@@ -0,0 +1,259 @@
++/*
++ * Copyright (C) 2006,2007,2008 IBM Corporation
++ * Author: Mimi Zohar <zohar@us.ibm.com>
++ *
++ *      This program is free software; you can redistribute it and/or modify
++ *      it under the terms of the GNU General Public License as published by
++ *      the Free Software Foundation, version 2 of the License.
++ *
++ * File: integrity.c
++ * 	register integrity subsystem
++ * 	register integrity template
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/integrity.h>
++#include "integrity_dummy.h"
++
++struct integrity_operations *integrity_ops = &dummy_integrity_ops;
++EXPORT_SYMBOL(integrity_ops);
++
++#define TEMPLATE_NAME_LEN_MAX 12
++struct template_list_entry {
++	struct list_head template;
++	char template_name[TEMPLATE_NAME_LEN_MAX + 1];
++	struct template_operations *template_ops;
++};
++static int template_initialized;
++static struct list_head integrity_templates;
++static DEFINE_MUTEX(integrity_templates_mutex);
++
++/**
++ * register_integrity - registers an integrity framework with the kernel
++ * @ops: a pointer to the struct security_options that is to be registered
++ *
++ * Perhaps in the future integrity module stacking will be necessary, but
++ * for the time being, this function permits only one integrity module to
++ * register itself with the kernel integrity subsystem.
++ */
++int register_integrity(struct integrity_operations *ops)
++{
++	if (integrity_ops != &dummy_integrity_ops)
++		return -EAGAIN;
++	integrity_ops = ops;
++	integrity_fixup_ops(integrity_ops);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(register_integrity);
++
++int unregister_integrity(struct integrity_operations *ops)
++{
++	if (ops != integrity_ops)
++		return -EINVAL;
++
++	integrity_ops = &dummy_integrity_ops;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(unregister_integrity);
++
++/**
++ * register_template
++ * @template_name: a pointer to a string containing the template name.
++ * @template_ops: a pointer to the template functions
++ *
++ * Register a set of functions to collect, appraise, store, and display
++ * a template measurement, and a means to decide whether to do them.
++ * Unlike integrity modules, any number of templates may be registered.
++ */
++int register_template(char *template_name,
++			struct template_operations *template_ops)
++{
++	int template_len;
++	struct template_list_entry *entry;
++
++	if (!template_initialized++) {
++		INIT_LIST_HEAD(&integrity_templates);
++		mutex_init(&integrity_templates_mutex);
++	}
++
++	entry = kmalloc(sizeof(*entry), GFP_ATOMIC);
++	INIT_LIST_HEAD(&entry->template);
++
++	template_len = strlen(template_name);
++	if (template_len > TEMPLATE_NAME_LEN_MAX)
++		template_len = TEMPLATE_NAME_LEN_MAX;
++	memcpy(entry->template_name, template_name, template_len);
++	entry->template_name[template_len] = '\0';
++	entry->template_ops = template_ops;
++
++	mutex_lock(&integrity_templates_mutex);
++	list_add_rcu(&entry->template, &integrity_templates);
++	mutex_unlock(&integrity_templates_mutex);
++	synchronize_rcu();
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(register_template);
++
++/**
++ * unregister_template
++ * @template_name: a pointer to a string containing the template name.
++ *
++ * Unregister the template functions
++ */
++int unregister_template(char *template_name)
++{
++	struct template_list_entry *entry;
++
++	mutex_lock(&integrity_templates_mutex);
++	list_for_each_entry(entry, &integrity_templates, template) {
++		if (strncmp(entry->template_name, template_name,
++			    strlen(entry->template_name)) == 0) {
++			list_del_rcu(&entry->template);
++			mutex_unlock(&integrity_templates_mutex);
++			synchronize_rcu();
++			kfree(entry);
++			return 0;
++		}
++	}
++	mutex_unlock(&integrity_templates_mutex);
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(unregister_template);
++
++/**
++ * integrity_find_template
++ * @template_name: a pointer to a string containing the template name.
++ * @template_ops: a pointer to the template functions
++ *
++ * Find the template functions based on the template name.
++ */
++int integrity_find_template(char *template_name,
++				struct template_operations **template_ops)
++{
++	struct template_list_entry *entry;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(entry, &integrity_templates, template) {
++		if (strncmp(entry->template_name, template_name,
++			    strlen(entry->template_name)) == 0) {
++			*template_ops = entry->template_ops;
++			rcu_read_unlock();
++			return 0;
++		}
++	}
++	rcu_read_unlock();
++	return 1;
++}
++EXPORT_SYMBOL_GPL(integrity_find_template);
++
++/* Integrity template API */
++int integrity_collect_measurement(char *template_name, void *data)
++{
++	struct template_operations *template_ops;
++
++	if (integrity_find_template(template_name, &template_ops) == 0)
++		template_ops->collect_measurement(data);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(integrity_collect_measurement);
++
++int integrity_appraise_measurement(char *template_name, void *data)
++{
++	struct template_operations *template_ops;
++
++	if (integrity_find_template(template_name, &template_ops) == 0)
++		return template_ops->appraise_measurement(data);
++	return 1;
++}
++EXPORT_SYMBOL_GPL(integrity_appraise_measurement);
++
++void integrity_store_measurement(char *template_name, void *data)
++{
++	struct template_operations *template_ops;
++
++	if (integrity_find_template(template_name, &template_ops) == 0)
++		template_ops->store_measurement(data);
++	return;
++}
++EXPORT_SYMBOL_GPL(integrity_store_measurement);
++
++int integrity_must_measure(char *template_name, void *data)
++{
++	struct template_operations *template_ops;
++
++	if (integrity_find_template(template_name, &template_ops) == 0)
++		return template_ops->must_measure(data);
++	return 1;
++}
++EXPORT_SYMBOL_GPL(integrity_must_measure);
++
++/* Integrity Hooks */
++int integrity_bprm_check(struct linux_binprm *bprm)
++{
++	return integrity_ops->bprm_check_integrity(bprm);
++}
++
++int integrity_inode_setxattr(struct dentry *dentry, const char *name,
++			     const void *value, size_t size, int flags)
++{
++	if (unlikely(IS_PRIVATE(dentry->d_inode)))
++		return 0;
++	return integrity_ops->inode_setxattr(dentry, name, value, size, flags);
++}
++
++void integrity_inode_post_setxattr(struct dentry *dentry, const char *name)
++{
++	if (unlikely(IS_PRIVATE(dentry->d_inode)))
++		return;
++	integrity_ops->inode_post_setxattr(dentry, name);
++}
++
++int integrity_inode_alloc(struct inode *inode)
++{
++	return integrity_ops->inode_alloc_integrity(inode);
++}
++
++void integrity_inode_free(struct inode *inode)
++{
++	integrity_ops->inode_free_integrity(inode);
++}
++
++int integrity_inode_permission(struct inode *inode, int mask,
++				struct nameidata *nd)
++{
++	return integrity_ops->inode_permission(inode, mask, nd);
++}
++
++void integrity_inode_init_integrity(struct inode *inode, struct inode *dir,
++					char **name, void **value, size_t *len)
++{
++	if (unlikely(IS_PRIVATE(inode)))
++		return;
++	integrity_ops->inode_init_integrity(inode, dir, name, value, len);
++	return;
++}
++EXPORT_SYMBOL(integrity_inode_init_integrity);
++
++void integrity_file_free(struct file *file)
++{
++	integrity_ops->file_free_integrity(file);
++}
++
++int integrity_file_mmap(struct file *file, unsigned long reqprot,
++			unsigned long prot, unsigned long flags,
++			unsigned long addr, unsigned long addr_only)
++{
++	return integrity_ops->file_mmap(file, reqprot, prot, flags, addr,
++					addr_only);
++}
++
++void integrity_d_instantiate(struct dentry *dentry, struct inode *inode)
++{
++	if (unlikely(inode && IS_PRIVATE(inode)))
++		return;
++	integrity_ops->d_instantiate(dentry, inode);
++}
+Index: linux-2.6.26-rc3-git2/security/integrity/integrity_dummy.c
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3-git2/security/integrity/integrity_dummy.c
+@@ -0,0 +1,112 @@
++/*
++ * Copyright (C) 2005,2006,2007,2008 IBM Corporation
++ * Author: Mimi Zohar <zohar@us.ibm.com>
++ *
++ *      This program is free software; you can redistribute it and/or modify
++ *      it under the terms of the GNU General Public License as published by
++ *      the Free Software Foundation, version 2 of the License.
++ *
++ * File: integrity_dummy.c
++ * 	Instantiate integrity subsystem
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/capability.h>
++#include <linux/integrity.h>
++#include <linux/xattr.h>
++#include "integrity_dummy.h"
++
++/* Integrity ops */
++static int dummy_bprm_check_integrity(struct linux_binprm *bprm)
++{
++	return 0;
++}
++
++static int dummy_inode_alloc_integrity(struct inode *inode)
++{
++	return 0;
++}
++
++static void dummy_inode_free_integrity(struct inode *inode)
++{
++	return;
++}
++
++static void dummy_inode_init_integrity(struct inode *inode, struct inode *dir,
++				       char **name, void **value, size_t *len)
++{
++	return;
++}
++
++static void dummy_file_free_integrity(struct file *file)
++{
++	return;
++}
++
++static int dummy_file_mmap(struct file *file,
++			  unsigned long reqprot, unsigned long prot,
++			  unsigned long flags, unsigned long addr,
++			  unsigned long addr_only)
++{
++	return 0;
++}
++
++static int dummy_inode_setxattr(struct dentry *dentry, const char *name,
++				const void *value, size_t size, int flags)
++{
++	return 0;
++}
++
++static void dummy_inode_post_setxattr(struct dentry *dentry, const char *name)
++{
++}
++
++static	int dummy_inode_permission(struct inode *inode, int mask,
++				struct nameidata *nd)
++{
++	return 0;
++}
++
++static void dummy_d_instantiate(struct dentry *dentry, struct inode *inode)
++{
++	return;
++}
++
++struct integrity_operations dummy_integrity_ops = {
++	.bprm_check_integrity = dummy_bprm_check_integrity,
++	.inode_setxattr = dummy_inode_setxattr,
++	.inode_post_setxattr = dummy_inode_post_setxattr,
++	.inode_alloc_integrity = dummy_inode_alloc_integrity,
++	.inode_init_integrity = dummy_inode_init_integrity,
++	.inode_free_integrity = dummy_inode_free_integrity,
++	.inode_permission = dummy_inode_permission,
++	.file_free_integrity = dummy_file_free_integrity,
++	.file_mmap = dummy_file_mmap,
++	.d_instantiate = dummy_d_instantiate
++};
++
++#define set_to_dummy_if_null(ops, function)				\
++	do {								\
++		if (!ops->function) {					\
++			ops->function = dummy_##function;		\
++			printk(KERN_INFO "Had to override the " #function \
++			" integrity operation with the dummy one.\n");\
++			}						\
++	} while (0)
++
++void integrity_fixup_ops(struct integrity_operations *ops)
++{
++	set_to_dummy_if_null(ops, inode_setxattr);
++	set_to_dummy_if_null(ops, inode_post_setxattr);
++	set_to_dummy_if_null(ops, inode_alloc_integrity);
++	set_to_dummy_if_null(ops, inode_init_integrity);
++	set_to_dummy_if_null(ops, inode_free_integrity);
++	set_to_dummy_if_null(ops, file_free_integrity);
++	set_to_dummy_if_null(ops, d_instantiate);
++
++	set_to_dummy_if_null(ops, bprm_check_integrity);
++	set_to_dummy_if_null(ops, file_mmap);
++	set_to_dummy_if_null(ops, inode_permission);
++}
+Index: linux-2.6.26-rc3-git2/security/integrity/integrity_dummy.h
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3-git2/security/integrity/integrity_dummy.h
+@@ -0,0 +1,13 @@
++/*
++ * integrity_dummy.h
++ *
++ * Copyright (C) 2005,2006,2007 IBM Corporation
++ * Author: Mimi Zohar <zohar@us.ibm.com>
++ *
++ *      This program is free software; you can redistribute it and/or modify
++ *      it under the terms of the GNU General Public License as published by
++ *      the Free Software Foundation, version 2 of the License.
++ */
++
++extern struct integrity_operations dummy_integrity_ops;
++extern void integrity_fixup_ops(struct integrity_operations *ops);
+Index: linux-2.6.26-rc3-git2/fs/dcache.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/fs/dcache.c
++++ linux-2.6.26-rc3-git2/fs/dcache.c
+@@ -28,6 +28,7 @@
+ #include <linux/file.h>
+ #include <asm/uaccess.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include <linux/seqlock.h>
+ #include <linux/swap.h>
+ #include <linux/bootmem.h>
+@@ -972,6 +973,7 @@ void d_instantiate(struct dentry *entry,
+ 	entry->d_inode = inode;
+ 	fsnotify_d_instantiate(entry, inode);
+ 	spin_unlock(&dcache_lock);
++	integrity_d_instantiate(entry, inode);
+ 	security_d_instantiate(entry, inode);
  }
- EXPORT_SYMBOL_GPL(tpm_show_enabled);
  
--ssize_t tpm_show_active(struct device * dev, struct device_attribute * attr,
-+/*
-+ * tpm_show_active - determine the permanent inactive state
-+ */
-+ssize_t tpm_show_active(struct device *dev, struct device_attribute *attr,
- 			char *buf)
- {
- 	u8 data[max_t(int, ARRAY_SIZE(tpm_cap), 35)];
-@@ -616,15 +619,18 @@ ssize_t tpm_show_active(struct device * 
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_PERM;
+@@ -1036,6 +1038,7 @@ struct dentry *d_instantiate_unique(stru
+ 	spin_unlock(&dcache_lock);
  
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attemtping to determine the permanent state");
-+			  "attemtping to determine the permanent state");
- 	if (rc)
- 		return 0;
- 	return sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_INACTIVE_IDX]);
- }
- EXPORT_SYMBOL_GPL(tpm_show_active);
- 
--ssize_t tpm_show_owned(struct device * dev, struct device_attribute * attr,
--			char *buf)
-+/*
-+ * tpm_show_owned - determine the owner state
-+ */
-+ssize_t tpm_show_owned(struct device *dev, struct device_attribute *attr,
-+		       char *buf)
- {
- 	u8 data[sizeof(tpm_cap)];
- 	ssize_t rc;
-@@ -638,15 +644,18 @@ ssize_t tpm_show_owned(struct device * d
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_OWNER;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the owner state");
-+			  "attempting to determine the owner state");
- 	if (rc)
- 		return 0;
- 	return sprintf(buf, "%d\n", data[TPM_GET_CAP_RET_BOOL_1_IDX]);
- }
- EXPORT_SYMBOL_GPL(tpm_show_owned);
- 
--ssize_t tpm_show_temp_deactivated(struct device * dev,
--				struct device_attribute * attr, char *buf)
-+/*
-+ * tpm_show_temp_deactivated - determine the temporary inactive state
-+ */
-+ssize_t tpm_show_temp_deactivated(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
- {
- 	u8 data[sizeof(tpm_cap)];
- 	ssize_t rc;
-@@ -660,13 +669,14 @@ ssize_t tpm_show_temp_deactivated(struct
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_VOL;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the temporary state");
-+			  "attempting to determine the temporary state");
- 	if (rc)
- 		return 0;
- 	return sprintf(buf, "%d\n", data[TPM_GET_CAP_TEMP_INACTIVE_IDX]);
- }
- EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
- 
-+#define READ_PCR_RESULT_SIZE 30
- static const u8 pcrread[] = {
- 	0, 193,			/* TPM_TAG_RQU_COMMAND */
- 	0, 0, 0, 14,		/* length */
-@@ -677,7 +687,8 @@ static const u8 pcrread[] = {
- ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
- 		      char *buf)
- {
--	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(pcrread)), 30)];
-+	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(pcrread)),
-+		READ_PCR_RESULT_SIZE)];
- 	ssize_t rc;
- 	int i, j, num_pcrs;
- 	__be32 index;
-@@ -692,7 +703,7 @@ ssize_t tpm_show_pcrs(struct device *dev
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_PCR;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the number of PCRS");
-+			  "attempting to determine the number of PCRS");
- 	if (rc)
- 		return 0;
- 
-@@ -702,7 +713,7 @@ ssize_t tpm_show_pcrs(struct device *dev
- 		index = cpu_to_be32(i);
- 		memcpy(data + 10, &index, 4);
- 		rc = transmit_cmd(chip, data, sizeof(data),
--				"attempting to read a PCR");
-+				  "attempting to read a PCR");
- 		if (rc)
- 			goto out;
- 		str += sprintf(str, "PCR-%02d: ", i);
-@@ -722,6 +733,9 @@ static const u8 readpubek[] = {
- 	0, 0, 0, 124,		/* TPM_ORD_ReadPubek */
- };
- 
-+/*
-+ * tpm_show_pubek - returns the tpm's public endorcement key
-+ */
- ssize_t tpm_show_pubek(struct device *dev, struct device_attribute *attr,
- 		       char *buf)
- {
-@@ -741,13 +755,13 @@ ssize_t tpm_show_pubek(struct device *de
- 	memcpy(data, readpubek, sizeof(readpubek));
- 
- 	err = transmit_cmd(chip, data, READ_PUBEK_RESULT_SIZE,
--			"attempting to read the PUBEK");
-+			   "attempting to read the PUBEK");
- 	if (err)
- 		goto out;
- 
- 	/* 
- 	   ignore header 10 bytes
--	   algorithm 32 bits (1 == RSA )
-+	   algorithm 32 bits (1 == RSA)
- 	   encscheme 16 bits
- 	   sigscheme 16 bits
- 	   parameters (RSA 12->bytes: keybit, #primes, expbit)  
-@@ -756,17 +770,16 @@ ssize_t tpm_show_pubek(struct device *de
- 	   ignore checksum 20 bytes
- 	 */
- 
--	str +=
--	    sprintf(str,
--		    "Algorithm: %02X %02X %02X %02X\nEncscheme: %02X %02X\n"
--		    "Sigscheme: %02X %02X\nParameters: %02X %02X %02X %02X"
--		    " %02X %02X %02X %02X %02X %02X %02X %02X\n"
--		    "Modulus length: %d\nModulus: \n",
--		    data[10], data[11], data[12], data[13], data[14],
--		    data[15], data[16], data[17], data[22], data[23],
--		    data[24], data[25], data[26], data[27], data[28],
--		    data[29], data[30], data[31], data[32], data[33],
--		    be32_to_cpu(*((__be32 *) (data + 34))));
-+	str += sprintf(str,
-+		       "Algorithm: %02X %02X %02X %02X\nEncscheme: %02X %02X\n"
-+		       "Sigscheme: %02X %02X\nParameters: %02X %02X %02X %02X"
-+		       " %02X %02X %02X %02X %02X %02X %02X %02X\n"
-+		       "Modulus length: %d\nModulus: \n",
-+		       data[10], data[11], data[12], data[13], data[14],
-+		       data[15], data[16], data[17], data[22], data[23],
-+		       data[24], data[25], data[26], data[27], data[28],
-+		       data[29], data[30], data[31], data[32], data[33],
-+		       be32_to_cpu(*((__be32 *) (data + 34))));
- 
- 	for (i = 0; i < 256; i++) {
- 		str += sprintf(str, "%02X ", data[i + 38]);
-@@ -791,10 +804,14 @@ static const u8 cap_version[] = {
- 	0, 0, 0, 0
- };
- 
-+/*
-+ * tpm_show_caps - returns the manufacturer and chip version
-+ */
- ssize_t tpm_show_caps(struct device *dev, struct device_attribute *attr,
- 		      char *buf)
- {
--	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
-+	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap),
-+			       ARRAY_SIZE(cap_version)), 30)];
- 	ssize_t rc;
- 	char *str = buf;
- 
-@@ -807,34 +824,39 @@ ssize_t tpm_show_caps(struct device *dev
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_MANUFACTURER;
- 
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the manufacturer");
-+			  "attempting to determine the manufacturer");
- 	if (rc)
- 		return 0;
- 
- 	str += sprintf(str, "Manufacturer: 0x%x\n",
--		       be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_1_IDX))));
-+		       be32_to_cpu(*((__be32 *) (data +
-+						 TPM_GET_CAP_RET_UINT32_1_IDX))));
- 
- 	memcpy(data, cap_version, sizeof(cap_version));
- 	data[CAP_VERSION_IDX] = CAP_VERSION_1_1;
- 	rc = transmit_cmd(chip, data, sizeof(data),
--			"attempting to determine the 1.1 version");
-+			  "attempting to determine the 1.1 version");
- 	if (rc)
- 		goto out;
- 
- 	str += sprintf(str,
- 		       "TCG version: %d.%d\nFirmware version: %d.%d\n",
--		       (int) data[14], (int) data[15], (int) data[16],
--		       (int) data[17]);
-+		       (int)data[14], (int)data[15], (int)data[16],
-+		       (int)data[17]);
- 
- out:
- 	return str - buf;
- }
- EXPORT_SYMBOL_GPL(tpm_show_caps);
- 
--ssize_t tpm_show_caps_1_2(struct device * dev,
--			  struct device_attribute * attr, char *buf)
-+/*
-+ * tpm_show_caps_1_2 - returns the manufacturer and chip 1.2 version
-+ */
-+ssize_t tpm_show_caps_1_2(struct device *dev,
-+			  struct device_attribute *attr, char *buf)
- {
--	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
-+	u8 data[max_t
-+		(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
- 	ssize_t len;
- 	char *str = buf;
- 
-@@ -846,8 +868,8 @@ ssize_t tpm_show_caps_1_2(struct device 
- 	data[TPM_CAP_IDX] = TPM_CAP_PROP;
- 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_MANUFACTURER;
- 
--	if ((len = tpm_transmit(chip, data, sizeof(data))) <=
--	    TPM_ERROR_SIZE) {
-+	len = tpm_transmit(chip, data, sizeof(data));
-+	if (len <= TPM_ERROR_SIZE) {
- 		dev_dbg(chip->dev, "A TPM error (%d) occurred "
- 			"attempting to determine the manufacturer\n",
- 			be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX))));
-@@ -855,30 +877,33 @@ ssize_t tpm_show_caps_1_2(struct device 
- 	}
- 
- 	str += sprintf(str, "Manufacturer: 0x%x\n",
--		       be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_1_IDX))));
-+		       be32_to_cpu(*((__be32 *) (data +
-+						 TPM_GET_CAP_RET_UINT32_1_IDX))));
- 
- 	memcpy(data, cap_version, sizeof(cap_version));
- 	data[CAP_VERSION_IDX] = CAP_VERSION_1_2;
- 
--	if ((len = tpm_transmit(chip, data, sizeof(data))) <=
--	    TPM_ERROR_SIZE) {
-+	len = tpm_transmit(chip, data, sizeof(data));
-+	if (len <= TPM_ERROR_SIZE) {
- 		dev_err(chip->dev, "A TPM error (%d) occurred "
- 			"attempting to determine the 1.2 version\n",
- 			be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX))));
- 		goto out;
- 	}
--	str += sprintf(str,
--		       "TCG version: %d.%d\nFirmware version: %d.%d\n",
--		       (int) data[16], (int) data[17], (int) data[18],
--		       (int) data[19]);
-+	str += sprintf(str, "TCG version: %d.%d\nFirmware version: %d.%d\n",
-+		       (int)data[16], (int)data[17], (int)data[18],
-+		       (int)data[19]);
- 
- out:
- 	return str - buf;
- }
- EXPORT_SYMBOL_GPL(tpm_show_caps_1_2);
- 
-+/*
-+ * tpm_store_cancel - cancel the current tpm operation
-+ */
- ssize_t tpm_store_cancel(struct device *dev, struct device_attribute *attr,
--			const char *buf, size_t count)
-+			 const char *buf, size_t count)
- {
- 	struct tpm_chip *chip = dev_get_drvdata(dev);
- 	if (chip == NULL)
-@@ -973,8 +998,7 @@ ssize_t tpm_write(struct file *file, con
- 	if (in_size > TPM_BUFSIZE)
- 		in_size = TPM_BUFSIZE;
- 
--	if (copy_from_user
--	    (chip->data_buffer, (void __user *) buf, in_size)) {
-+	if (copy_from_user(chip->data_buffer, (void __user *)buf, in_size)) {
- 		mutex_unlock(&chip->buffer_mutex);
- 		return -EFAULT;
- 	}
-@@ -1104,8 +1128,8 @@ static void tpm_dev_release(struct devic
-  * upon errant exit from this function specific probe function should call
-  * pci_disable_device
-  */
--struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vendor_specific
--				       *entry)
-+struct tpm_chip *tpm_register_hardware(struct device *dev,
-+				       const struct tpm_vendor_specific *entry)
- {
- #define DEVNAME_SIZE 7
- 
-@@ -1129,7 +1153,7 @@ struct tpm_chip *tpm_register_hardware(s
- 	INIT_WORK(&chip->work, timeout_work);
- 
- 	setup_timer(&chip->user_read_timer, user_reader_timeout,
--			(unsigned long)chip);
-+		    (unsigned long)chip);
- 
- 	memcpy(&chip->vendor, entry, sizeof(struct tpm_vendor_specific));
- 
-@@ -1158,8 +1182,7 @@ struct tpm_chip *tpm_register_hardware(s
- 	if (misc_register(&chip->vendor.miscdev)) {
- 		dev_err(chip->dev,
- 			"unable to misc_register %s, minor %d\n",
--			chip->vendor.miscdev.name,
--			chip->vendor.miscdev.minor);
-+			chip->vendor.miscdev.name, chip->vendor.miscdev.minor);
- 		put_device(chip->dev);
+ 	if (!result) {
++		integrity_d_instantiate(entry, inode);
+ 		security_d_instantiate(entry, inode);
  		return NULL;
  	}
+@@ -1173,6 +1176,7 @@ struct dentry *d_splice_alias(struct ino
+ 			BUG_ON(!(new->d_flags & DCACHE_DISCONNECTED));
+ 			fsnotify_d_instantiate(new, inode);
+ 			spin_unlock(&dcache_lock);
++			integrity_d_instantiate(new, inode);
+ 			security_d_instantiate(new, inode);
+ 			d_rehash(dentry);
+ 			d_move(new, dentry);
+@@ -1183,6 +1187,7 @@ struct dentry *d_splice_alias(struct ino
+ 			dentry->d_inode = inode;
+ 			fsnotify_d_instantiate(dentry, inode);
+ 			spin_unlock(&dcache_lock);
++			integrity_d_instantiate(dentry, inode);
+ 			security_d_instantiate(dentry, inode);
+ 			d_rehash(dentry);
+ 		}
+@@ -1733,6 +1738,7 @@ found:
+ 	spin_unlock(&dcache_lock);
+ out_nolock:
+ 	if (actual == dentry) {
++		integrity_d_instantiate(dentry, inode);
+ 		security_d_instantiate(dentry, inode);
+ 		return NULL;
+ 	}
+Index: linux-2.6.26-rc3-git2/fs/ext3/xattr_security.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/fs/ext3/xattr_security.c
++++ linux-2.6.26-rc3-git2/fs/ext3/xattr_security.c
+@@ -9,6 +9,7 @@
+ #include <linux/ext3_jbd.h>
+ #include <linux/ext3_fs.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include "xattr.h"
+ 
+ static size_t
+@@ -57,12 +58,19 @@ ext3_init_security(handle_t *handle, str
+ 
+ 	err = security_inode_init_security(inode, dir, &name, &value, &len);
+ 	if (err) {
++		/* Even if creation of the security xattr fails, must
++		 * indicate this is a new inode. */
++		integrity_inode_init_integrity(inode, dir, NULL, NULL, NULL);
+ 		if (err == -EOPNOTSUPP)
+ 			return 0;
+ 		return err;
+ 	}
+ 	err = ext3_xattr_set_handle(handle, inode, EXT3_XATTR_INDEX_SECURITY,
+ 				    name, value, len, 0);
++
++	integrity_inode_init_integrity(inode, dir, &name, &value, &len);
++	err = ext3_xattr_set_handle(handle, inode, EXT3_XATTR_INDEX_SECURITY,
++				    name, value, len, 0);
+ 	kfree(name);
+ 	kfree(value);
+ 	return err;
+Index: linux-2.6.26-rc3-git2/fs/file_table.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/fs/file_table.c
++++ linux-2.6.26-rc3-git2/fs/file_table.c
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/fs.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include <linux/eventpoll.h>
+ #include <linux/rcupdate.h>
+ #include <linux/mount.h>
+@@ -272,6 +273,7 @@ void __fput(struct file *file)
+ 	if (file->f_op && file->f_op->release)
+ 		file->f_op->release(inode, file);
+ 	security_file_free(file);
++	integrity_file_free(file);
+ 	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
+ 		cdev_put(inode->i_cdev);
+ 	fops_put(file->f_op);
+@@ -343,6 +345,7 @@ void put_filp(struct file *file)
+ {
+ 	if (atomic_dec_and_test(&file->f_count)) {
+ 		security_file_free(file);
++		integrity_file_free(file);
+ 		file_kill(file);
+ 		file_free(file);
+ 	}
+Index: linux-2.6.26-rc3-git2/fs/inode.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/fs/inode.c
++++ linux-2.6.26-rc3-git2/fs/inode.c
+@@ -17,6 +17,7 @@
+ #include <linux/hash.h>
+ #include <linux/swap.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include <linux/pagemap.h>
+ #include <linux/cdev.h>
+ #include <linux/bootmem.h>
+@@ -160,6 +161,14 @@ static struct inode *alloc_inode(struct 
+ 		init_rwsem(&inode->i_alloc_sem);
+ 		lockdep_set_class(&inode->i_alloc_sem, &sb->s_type->i_alloc_sem_key);
+ 
++		if (integrity_inode_alloc(inode)) {
++			if (inode->i_sb->s_op->destroy_inode)
++				inode->i_sb->s_op->destroy_inode(inode);
++			else
++				kmem_cache_free(inode_cachep, (inode));
++			return NULL;
++		}
++
+ 		mapping->a_ops = &empty_aops;
+  		mapping->host = inode;
+ 		mapping->flags = 0;
+@@ -190,6 +199,7 @@ void destroy_inode(struct inode *inode) 
+ {
+ 	BUG_ON(inode_has_buffers(inode));
+ 	security_inode_free(inode);
++	integrity_inode_free(inode);
+ 	if (inode->i_sb->s_op->destroy_inode)
+ 		inode->i_sb->s_op->destroy_inode(inode);
+ 	else
+Index: linux-2.6.26-rc3-git2/fs/xattr.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/fs/xattr.c
++++ linux-2.6.26-rc3-git2/fs/xattr.c
+@@ -14,6 +14,7 @@
+ #include <linux/mount.h>
+ #include <linux/namei.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include <linux/syscalls.h>
+ #include <linux/module.h>
+ #include <linux/fsnotify.h>
+@@ -81,11 +82,17 @@ vfs_setxattr(struct dentry *dentry, cons
+ 	error = security_inode_setxattr(dentry, name, value, size, flags);
+ 	if (error)
+ 		goto out;
++
++	error = integrity_inode_setxattr(dentry, name, value, size, flags);
++	if (error)
++		goto out;
++
+ 	error = -EOPNOTSUPP;
+ 	if (inode->i_op->setxattr) {
+ 		error = inode->i_op->setxattr(dentry, name, value, size, flags);
+ 		if (!error) {
+ 			fsnotify_xattr(dentry);
++			integrity_inode_post_setxattr(dentry, name);
+ 			security_inode_post_setxattr(dentry, name, value,
+ 						     size, flags);
+ 		}
+@@ -205,6 +212,8 @@ vfs_removexattr(struct dentry *dentry, c
+ 
+ 	mutex_lock(&inode->i_mutex);
+ 	error = inode->i_op->removexattr(dentry, name);
++	if (!error)
++		integrity_inode_post_setxattr(dentry, name);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+ 	if (!error)
+Index: linux-2.6.26-rc3-git2/include/linux/fs.h
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/include/linux/fs.h
++++ linux-2.6.26-rc3-git2/include/linux/fs.h
+@@ -653,6 +653,9 @@ struct inode {
+ #ifdef CONFIG_SECURITY
+ 	void			*i_security;
+ #endif
++#ifdef CONFIG_INTEGRITY
++	void			*i_integrity;
++#endif
+ 	void			*i_private; /* fs or device private pointer */
+ };
+ 
+Index: linux-2.6.26-rc3-git2/include/linux/audit.h
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/include/linux/audit.h
++++ linux-2.6.26-rc3-git2/include/linux/audit.h
+@@ -123,6 +123,11 @@
+ #define AUDIT_LAST_KERN_ANOM_MSG    1799
+ #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
+ #define AUDIT_ANOM_ABEND            1701 /* Process ended abnormally */
++#define AUDIT_INTEGRITY_DATA	    1800 /* Data integrity verification */
++#define AUDIT_INTEGRITY_METADATA    1801 /* Metadata integrity verification */
++#define AUDIT_INTEGRITY_STATUS	    1802 /* Integrity enable status */
++#define AUDIT_INTEGRITY_HASH	    1803 /* Integrity HASH type */
++#define AUDIT_INTEGRITY_PCR	    1804 /* PCR invalidation msgs */
+ 
+ #define AUDIT_KERNEL		2000	/* Asynchronous audit record. NOT A REQUEST. */
+ 
+@@ -441,6 +446,8 @@ extern int  audit_set_loginuid(struct ta
+ #define audit_get_loginuid(t) ((t)->loginuid)
+ #define audit_get_sessionid(t) ((t)->sessionid)
+ extern void audit_log_task_context(struct audit_buffer *ab);
++extern void audit_log_inode_context(struct audit_buffer *ab,
++					struct inode *inode);
+ extern int __audit_ipc_obj(struct kern_ipc_perm *ipcp);
+ extern int __audit_ipc_set_perm(unsigned long qbytes, uid_t uid, gid_t gid, mode_t mode);
+ extern int audit_bprm(struct linux_binprm *bprm);
+@@ -521,6 +528,7 @@ extern int audit_signals;
+ #define audit_get_loginuid(t) (-1)
+ #define audit_get_sessionid(t) (-1)
+ #define audit_log_task_context(b) do { ; } while (0)
++#define audit_log_inode_context(b, a) do { ; } while (0)
+ #define audit_ipc_obj(i) ({ 0; })
+ #define audit_ipc_set_perm(q,u,g,m) ({ 0; })
+ #define audit_bprm(p) ({ 0; })
+Index: linux-2.6.26-rc3-git2/security/integrity/integrity_audit.c
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3-git2/security/integrity/integrity_audit.c
+@@ -0,0 +1,73 @@
++/*
++ * Copyright (C) 2008 IBM Corporation
++ * Author: Mimi Zohar <zohar@us.ibm.com>
++ *
++ *      This program is free software; you can redistribute it and/or modify
++ *      it under the terms of the GNU General Public License as published by
++ *      the Free Software Foundation, version 2 of the License.
++ *
++ * File: integrity_audit.c
++ * 	Audit calls for the integrity subsystem
++ */
++
++#include <linux/audit.h>
++#include <linux/fs.h>
++#include <linux/integrity.h>
++
++#ifdef CONFIG_INTEGRITY_AUDIT
++static int integrity_audit = 1;
++
++static int __init integrity_audit_setup(char *str)
++{
++	char *op;
++
++	integrity_audit = simple_strtol(str, NULL, 0);
++	op = integrity_audit ? "integrity_audit_enabled" :
++	    "integrity_audit_not_enabled";
++	integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL, NULL, NULL, op, 0);
++	return 1;
++}
++
++__setup("integrity_audit=", integrity_audit_setup);
++#else
++static int integrity_audit = 1;
++#endif
++
++void integrity_audit_msg(int audit_msgno, struct inode *inode,
++			 const unsigned char *fname, char *op,
++			 char *cause, int result)
++{
++	struct audit_buffer *ab;
++	if (!integrity_audit && result == 1)
++		return;
++
++	ab = audit_log_start(current->audit_context, GFP_ATOMIC, audit_msgno);
++	audit_log_format(ab, "integrity: pid=%d uid=%u auid=%u",
++			 current->pid, current->uid,
++			 audit_get_loginuid(current));
++	audit_log_task_context(ab);
++	switch (audit_msgno) {
++	case AUDIT_INTEGRITY_DATA:
++	case AUDIT_INTEGRITY_METADATA:
++	case AUDIT_INTEGRITY_PCR:
++		audit_log_format(ab, " op=%s cause=%s", op, cause);
++		break;
++	case AUDIT_INTEGRITY_HASH:
++		audit_log_format(ab, " op=%s hash=%s", op, cause);
++		break;
++	case AUDIT_INTEGRITY_STATUS:
++	default:
++		audit_log_format(ab, " op=%s", op);
++	}
++	audit_log_format(ab, " comm=");
++	audit_log_untrustedstring(ab, current->comm);
++	if (fname) {
++		audit_log_format(ab, " name=");
++		audit_log_untrustedstring(ab, fname);
++	}
++	if (inode)
++		audit_log_format(ab, " dev=%s ino=%lu",
++				 inode->i_sb->s_id, inode->i_ino);
++	audit_log_format(ab, " res=%d", result);
++	audit_log_end(ab);
++}
+Index: linux-2.6.26-rc3-git2/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/Documentation/kernel-parameters.txt
++++ linux-2.6.26-rc3-git2/Documentation/kernel-parameters.txt
+@@ -821,6 +821,11 @@ and is between 256 and 4096 characters. 
+ 	inport.irq=	[HW] Inport (ATI XL and Microsoft) busmouse driver
+ 			Format: <irq>
+ 
++	integrity_audit= [INTEGRITY]
++                        Format: { "0" | "1" }
++                        0 -- disable integrity auditing messages.
++                        1 -- enable integrity auditing messages. (Default)
++
+ 	inttest=	[IA64]
+ 
+ 	iommu=		[x86]
+Index: linux-2.6.26-rc3-git2/security/integrity/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3-git2/security/integrity/Makefile
+@@ -0,0 +1,7 @@
++#
++# Makefile for the kernel integrity code
++#
++
++# Object file lists
++obj-$(CONFIG_INTEGRITY)			+= integrity.o integrity_dummy.o \
++					integrity_audit.o integrity_policy.o
+Index: linux-2.6.26-rc3-git2/security/integrity/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3-git2/security/integrity/Kconfig
+@@ -0,0 +1,24 @@
++#
++# Integrity configuration
++#
++
++menu "Integrity options"
++
++config INTEGRITY
++	bool "Enable different integrity models"
++	help
++	  This allows you to choose different integrity modules to be
++	  configured into your kernel.
++
++	  If you are unsure how to answer this question, answer N.
++
++config INTEGRITY_AUDIT
++	bool "Integrity audit boot parameter"
++	depends on INTEGRITY
++	default y
++	help
++	  This option adds a kernel parameter 'integrity_audit', which
++	  allows integrity auditing to be disabled at boot.  If this
++	  option is selected, integrity auditing can be disabled with
++	  'integrity_audit=0' on the kernel command line.
++endmenu
+Index: linux-2.6.26-rc3-git2/security/Kconfig
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/security/Kconfig
++++ linux-2.6.26-rc3-git2/security/Kconfig
+@@ -4,6 +4,8 @@
+ 
+ menu "Security options"
+ 
++source security/integrity/Kconfig
++
+ config KEYS
+ 	bool "Enable access key retention support"
+ 	help
+Index: linux-2.6.26-rc3-git2/fs/exec.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/fs/exec.c
++++ linux-2.6.26-rc3-git2/fs/exec.c
+@@ -47,6 +47,7 @@
+ #include <linux/ptrace.h>
+ #include <linux/mount.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include <linux/syscalls.h>
+ #include <linux/rmap.h>
+ #include <linux/tsacct_kern.h>
+@@ -1192,6 +1193,9 @@ int search_binary_handler(struct linux_b
+ 	retval = security_bprm_check(bprm);
+ 	if (retval)
+ 		return retval;
++	retval = integrity_bprm_check(bprm);
++	if (retval)
++		return retval;
+ 
+ 	/* kernel module loader fixup */
+ 	/* so we don't try to load run modprobe in kernel space. */
+Index: linux-2.6.26-rc3-git2/fs/namei.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/fs/namei.c
++++ linux-2.6.26-rc3-git2/fs/namei.c
+@@ -24,6 +24,7 @@
+ #include <linux/fsnotify.h>
+ #include <linux/personality.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include <linux/syscalls.h>
+ #include <linux/mount.h>
+ #include <linux/audit.h>
+@@ -286,7 +287,10 @@ int permission(struct inode *inode, int 
+ 	if (retval)
+ 		return retval;
+ 
+-	return security_inode_permission(inode, mask, nd);
++	retval =  security_inode_permission(inode, mask, nd);
++	if (retval)
++		return retval;
++	return integrity_inode_permission(inode, mask, nd);
+ }
+ 
+ /**
+@@ -462,6 +466,7 @@ static struct dentry * cached_lookup(str
+ static int exec_permission_lite(struct inode *inode,
+ 				       struct nameidata *nd)
+ {
++	int retval;
+ 	umode_t	mode = inode->i_mode;
+ 
+ 	if (inode->i_op && inode->i_op->permission)
+@@ -486,7 +491,10 @@ static int exec_permission_lite(struct i
+ 
+ 	return -EACCES;
+ ok:
+-	return security_inode_permission(inode, MAY_EXEC, nd);
++	retval =  security_inode_permission(inode, MAY_EXEC, nd);
++	if (retval)
++		return retval;
++	return integrity_inode_permission(inode, MAY_EXEC, nd);
+ }
+ 
+ /*
+Index: linux-2.6.26-rc3-git2/mm/mmap.c
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/mm/mmap.c
++++ linux-2.6.26-rc3-git2/mm/mmap.c
+@@ -20,6 +20,7 @@
+ #include <linux/fs.h>
+ #include <linux/personality.h>
+ #include <linux/security.h>
++#include <linux/integrity.h>
+ #include <linux/hugetlb.h>
+ #include <linux/profile.h>
+ #include <linux/module.h>
+@@ -1036,6 +1037,9 @@ unsigned long do_mmap_pgoff(struct file 
+ 	error = security_file_mmap(file, reqprot, prot, flags, addr, 0);
+ 	if (error)
+ 		return error;
++	error = integrity_file_mmap(file, reqprot, prot, flags, addr, 0);
++	if (error)
++		return error;
+ 
+ 	return mmap_region(file, addr, len, flags, vm_flags, pgoff,
+ 			   accountable);
+Index: linux-2.6.26-rc3-git2/security/integrity/integrity_policy.c
+===================================================================
+--- /dev/null
++++ linux-2.6.26-rc3-git2/security/integrity/integrity_policy.c
+@@ -0,0 +1,204 @@
++/*
++ * Copyright (C) 2008 IBM Corporation
++ * Author: Mimi Zohar <zohar@us.ibm.com>
++ *
++ *      This program is free software; you can redistribute it and/or modify
++ *      it under the terms of the GNU General Public License as published by
++ *      the Free Software Foundation, version 2 of the License.
++ *
++ * integrity_policy.c
++ * 	- initialize default measure policy rules
++	- load a policy ruleset
++ *
++ */
++#include <linux/module.h>
++#include <linux/list.h>
++#include <linux/audit.h>
++#include <linux/security.h>
++#include <linux/integrity.h>
++
++#define security_filter_rule_init security_audit_rule_init
++#define security_filter_rule_match security_audit_rule_match
++
++struct integrity_measure_rule_entry {
++	struct list_head list;
++	void *lsm_obj_rule;
++	void *lsm_subj_rule;
++	enum lim_hooks func;
++	int mask;
++};
++
++
++static struct integrity_measure_rule_entry default_rules[] = {
++	{{NULL, NULL}, NULL, NULL, FILE_MMAP, MAY_EXEC},
++	{{NULL, NULL}, NULL, NULL, BPRM_CHECK, MAY_EXEC},
++	{{NULL, NULL}, NULL, NULL, INODE_PERMISSION, MAY_READ},
++};
++static struct list_head measure_default_rules;
++static struct list_head measure_policy_rules;
++static struct list_head *integrity_measure;
++
++static DEFINE_MUTEX(integrity_measure_mutex);
++
++/**
++ * integrity_measure_rules - determine whether an inode matches the given rule.
++ * @rule - a pointer to a rule
++ * @inode - a pointer to an inode
++ * @func - LIM hook identifier
++ * @mask - requested action (MAY_READ | MAY_WRITE | MAY_APPEND | MAY_EXEC)
++ *
++ * Returns 1 on rule match, 0 on failure.
++ */
++static int integrity_measure_rules(struct integrity_measure_rule_entry *rule,
++				   struct inode *inode, enum lim_hooks func,
++				   int mask)
++{
++	int result = 1;
++
++	if (result && (rule->func != 0)) {
++		if (rule->func != func)
++			result = 0;
++	}
++	if (result && (rule->mask != 0)) {
++		if (rule->mask != mask)
++			result = 0;
++	}
++	if (result && rule->lsm_subj_rule) {
++		struct task_struct *tsk = current;
++		u32 sid;
++
++		security_task_getsecid(tsk, &sid);
++		result = security_filter_rule_match(sid, AUDIT_SUBJ_USER,
++						    AUDIT_EQUAL,
++						    rule->lsm_subj_rule, NULL);
++	}
++	if (result && rule->lsm_obj_rule) {
++		u32 osid;
++
++		security_inode_getsecid(inode, &osid);
++		result = security_filter_rule_match(osid, AUDIT_OBJ_USER,
++						    AUDIT_EQUAL,
++						    rule->lsm_obj_rule, NULL);
++	}
++	return result;
++}
++
++/**
++ * integrity_measure_policy - base measure decision on: subj, obj, LIM hook,
++ * 			      and mask
++ * @inode - pointer to an inode
++ * @func - LIM hook identifier
++ * @mask - requested action (MAY_READ | MAY_WRITE | MAY_APPEND | MAY_EXEC)
++ *
++ * Returns 1 on rule match, 0 on failure.
++ */
++int integrity_measure_policy(struct inode *inode, enum lim_hooks func, int mask)
++{
++	struct integrity_measure_rule_entry *entry;
++	int rc = 0;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(entry, integrity_measure, list) {
++		rc = integrity_measure_rules(entry, inode, func, mask);
++		if (rc) {
++			rcu_read_unlock();
++			return rc;
++		}
++	}
++	rcu_read_unlock();
++	return rc;
++}
++
++/**
++ * integrity_measure_policy_init - initialize the default and policy rules.
++ */
++void integrity_measure_policy_init(void)
++{
++	int i;
++
++	INIT_LIST_HEAD(&measure_default_rules);
++	for (i = 0; i < ARRAY_SIZE(default_rules); i++)
++		list_add(&default_rules[i].list, &measure_default_rules);
++	integrity_measure = &measure_default_rules;
++	mutex_init(&integrity_measure_mutex);
++
++	INIT_LIST_HEAD(&measure_policy_rules);
++}
++
++/**
++ * integrity_measure_policy_complete - wait to replace default_rules with
++ * 		a complete policy ruleset.
++ */
++void integrity_measure_policy_complete(void)
++{
++	char *op = "policy_update";
++	char *cause = "already exists";
++	int result = 1;
++
++	if (integrity_measure == &measure_default_rules) {
++		integrity_measure = &measure_policy_rules;
++		cause = "complete";
++		result = 0;
++	}
++	integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL,
++			    NULL, op, cause, result);
++}
++
++/**
++ * integrity_measure_rule_add - add integrity measure rules
++ * @subj - pointer to an LSM subject value
++ * @obj -  pointer to an LSM object value
++ * @func - LIM hook identifier
++ * @mask - requested action (MAY_READ | MAY_WRITE | MAY_APPEND | MAY_EXEC)
++ *
++ * Returns 0 on success, an error code on failure.
++ */
++int integrity_measure_rule_add(char *subj, char *obj, char *func, char *mask)
++{
++	struct integrity_measure_rule_entry *entry;
++	int result = 0;
++
++	/* Prevent installed policy from changing */
++	if (integrity_measure != &measure_default_rules) {
++		integrity_audit_msg(AUDIT_INTEGRITY_STATUS, NULL,
++				    NULL, "policy_update", "already exists", 1);
++		return -EACCES;
++	}
++
++	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
++	INIT_LIST_HEAD(&entry->list);
++	if (!result && subj)
++		result = security_filter_rule_init(AUDIT_SUBJ_USER, AUDIT_EQUAL,
++						   subj, &entry->lsm_subj_rule);
++	if (!result && obj)
++		result = security_filter_rule_init(AUDIT_OBJ_USER, AUDIT_EQUAL,
++						   obj, &entry->lsm_obj_rule);
++	if (!result && func) {
++		if (strcmp(func, "INODE_PERMISSION") == 0)
++			entry->func = INODE_PERMISSION;
++		else if (strcmp(func, "FILE_MMAP") == 0)
++			entry->func = FILE_MMAP;
++		else if (strcmp(func, "BPRM_CHECK") == 0)
++			entry->func = BPRM_CHECK;
++		else
++			result = -EINVAL;
++	}
++	if (!result && mask) {
++		if (strcmp(mask, "MAY_EXEC") == 0)
++			entry->mask = MAY_EXEC;
++		else if (strcmp(mask, "MAY_WRITE") == 0)
++			entry->mask = MAY_WRITE;
++		else if (strcmp(mask, "MAY_READ") == 0)
++			entry->mask = MAY_READ;
++		else if (strcmp(mask, "MAY_APPEND") == 0)
++			entry->mask = MAY_APPEND;
++		else
++			result = -EINVAL;
++	}
++	if (!result) {
++		mutex_lock(&integrity_measure_mutex);
++		list_add_tail(&entry->list, &measure_policy_rules);
++		mutex_unlock(&integrity_measure_mutex);
++	}
++	return result;
++}
+Index: linux-2.6.26-rc3-git2/security/Makefile
+===================================================================
+--- linux-2.6.26-rc3-git2.orig/security/Makefile
++++ linux-2.6.26-rc3-git2/security/Makefile
+@@ -19,3 +19,7 @@ obj-$(CONFIG_SECURITY_SMACK)		+= commonc
+ obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
+ obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
+ obj-$(CONFIG_CGROUP_DEVICE)		+= device_cgroup.o
++
++# Object integrity file lists
++subdir-$(CONFIG_INTEGRITY)		+= integrity
++obj-$(CONFIG_INTEGRITY)			+= integrity/built-in.o
 
 
