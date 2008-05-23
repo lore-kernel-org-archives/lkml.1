@@ -1,46 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbYEWTif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbYEWTjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758258AbYEWTif (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757279AbYEWTiE
+	id S1757689AbYEWTjn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbYEWTje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:38:04 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:36366 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755871AbYEWThs (ORCPT
+	Fri, 23 May 2008 15:39:34 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60397 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754837AbYEWTjd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 15:37:48 -0400
-Message-ID: <48371D09.1050102@ct.jp.nec.com>
-Date: Fri, 23 May 2008 12:37:45 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: [PATCH -rt] gitignore scripts/testlpp
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 May 2008 15:39:33 -0400
+Subject: Re: 2.6.26-rc2-mm1 (SCSI_DH build errors)
+From: Chandra Seetharaman <sekharan@us.ibm.com>
+Reply-To: sekharan@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       hare@suse.de, scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <20080522202543.d15e8c3b.akpm@linux-foundation.org>
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+	 <20080514141348.e71feed6.randy.dunlap@oracle.com>
+	 <1210862779.15852.4.camel@localhost.localdomain>
+	 <1210881374.21974.285.camel@chandra-ubuntu>
+	 <20080522202543.d15e8c3b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM
+Date: Fri, 23 May 2008 12:39:20 -0700
+Message-Id: <1211571560.10532.7.camel@chandra-ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Yikes.... Sorry again... Hopefully this attached patch work properly.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+chandra
+On Thu, 2008-05-22 at 20:25 -0700, Andrew Morton wrote:
+> On Thu, 15 May 2008 12:56:14 -0700 Chandra Seetharaman <sekharan@us.ibm.com> wrote:
+> 
+> > Hi James, Andrew,
+> > 
+> > Here is a patch to remove the automatic "select" of scsi_dh for
+> > dm-multipath.
+> > 
+> > Sorry about the mishap.
+> >
+> >
+> 
+> This is busted.
+> 
+-------------------------
+Do not automatically "select" SCSI_DH for dm-multipath. If SCSI_DH
+doesn't exist,just do not allow  hardware handlers to be used.
+
+Handle SCSI_DH being a module also.
+
+Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alasdair G Kergon <agk@redhat.com>
+Cc: Mike Christie <michaelc@cs.wisc.edu>
+Cc: Hannes Reinecke <hare@suse.de>
 ---
- scripts/.gitignore |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/scripts/.gitignore b/scripts/.gitignore
-index b939fbd..bb1dd86 100644
---- a/scripts/.gitignore
-+++ b/scripts/.gitignore
-@@ -7,3 +7,4 @@ pnmtologo
- bin2c
- unifdef
- binoffset
-+testlpp
--- 
-1.5.4.1
+Index: scsi-misc-2.6/drivers/md/Kconfig
+===================================================================
+--- scsi-misc-2.6.orig/drivers/md/Kconfig
++++ scsi-misc-2.6/drivers/md/Kconfig
+@@ -252,7 +252,6 @@ config DM_ZERO
+ config DM_MULTIPATH
+ 	tristate "Multipath target"
+ 	depends on BLK_DEV_DM
+-	select SCSI_DH
+ 	---help---
+ 	  Allow volume managers to support multipath hardware.
+ 
+Index: scsi-misc-2.6/drivers/md/dm-mpath.c
+===================================================================
+--- scsi-misc-2.6.orig/drivers/md/dm-mpath.c
++++ scsi-misc-2.6/drivers/md/dm-mpath.c
+@@ -664,6 +664,8 @@ static int parse_hw_handler(struct arg_s
+ 	request_module("scsi_dh_%s", m->hw_handler_name);
+ 	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
+ 		ti->error = "unknown hardware handler type";
++		kfree(m->hw_handler_name);
++		m->hw_handler_name = NULL;
+ 		return -EINVAL;
+ 	}
+ 	consume(as, hw_argc - 1);
+Index: scsi-misc-2.6/include/scsi/scsi_dh.h
+===================================================================
+--- scsi-misc-2.6.orig/include/scsi/scsi_dh.h
++++ scsi-misc-2.6/include/scsi/scsi_dh.h
+@@ -54,6 +54,16 @@ enum {
+ 	SCSI_DH_NOSYS,
+ 	SCSI_DH_DRIVER_MAX,
+ };
+-
++#if defined(CONFIG_SCSI_DH) || defined(CONFIG_SCSI_DH_MODULE)
+ extern int scsi_dh_activate(struct request_queue *);
+ extern int scsi_dh_handler_exist(const char *);
++#else
++static inline int scsi_dh_activate(struct request_queue *req)
++{
++	return 0;
++}
++static inline int scsi_dh_handler_exist(const char *name)
++{
++	return 0;
++}
++#endif
+
 
