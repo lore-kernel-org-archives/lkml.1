@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761916AbYEWFPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbYEWFXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761916AbYEWFPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 01:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYEWFPY
+	id S1760712AbYEWFXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 01:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYEWFXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 01:15:24 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:43857 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbYEWFPY (ORCPT
+	Fri, 23 May 2008 01:23:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45723 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751452AbYEWFXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 01:15:24 -0400
-Subject: Re: [PATCH 3/3] futex: fix miss ordered wakeups
-From: Daniel Walker <dwalker@mvista.com>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <a36005b50805222202v6ea7b50p988eab5524935e1a@mail.gmail.com>
-References: <20080523042923.594531457@mvista.com>
-	 <20080523042923.916202203@mvista.com>
-	 <a36005b50805222202v6ea7b50p988eab5524935e1a@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 22:15:19 -0700
-Message-Id: <1211519720.18130.98.camel@localhost.localdomain>
+	Fri, 23 May 2008 01:23:35 -0400
+Date: Thu, 22 May 2008 22:22:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 18/18] flag parameters: check magic constants
+Message-Id: <20080522222246.0526f8f8.akpm@linux-foundation.org>
+In-Reply-To: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
+References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 6 May 2008 17:18:07 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
 
-On Thu, 2008-05-22 at 22:02 -0700, Ulrich Drepper wrote:
-> On Thu, May 22, 2008 at 12:00 AM, Daniel Walker <dwalker@mvista.com> wrote:
-> > This patch corrects this issue, so the tasks are always woken in priority
-> > order.
-> 
-> This is completely unnecessary overhead for 99.999% of all cases.  It
-> was deliberately not done.  You slowing things down for everybody.  If
-> you want priorities, then use PI futexes.
+> --- a/net/socket.c
+> +++ b/net/socket.c
+> @@ -1219,6 +1219,13 @@ asmlinkage long sys_socket(int family, int type, int protocol)
+>  	struct socket *sock;
+>  	int flags;
+>  
+> +	/* Check the SOCK_* constants for consistency.  */
+> +	BUILD_BUG_ON(SOCK_CLOEXEC != O_CLOEXEC);
+> +	BUILD_BUG_ON(SOCK_NONBLOCK != O_NONBLOCK);
+> +	BUILD_BUG_ON((SOCK_MAX | SOCK_TYPE_MASK) != SOCK_TYPE_MASK);
+> +	BUILD_BUG_ON(SOCK_CLOEXEC & SOCK_TYPE_MASK);
+> +	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
 
-That's the problem we aren't just covering 99.99% we're trying to cover
-100% of cases.. If we don't do it in that one case we may as well not do
-it at all.
+On alpha the
 
-Daniel
+	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
+
+seems to have gone away, but now
+
+	BUILD_BUG_ON(SOCK_NONBLOCK != O_NONBLOCK);
+
+is triggering.
 
