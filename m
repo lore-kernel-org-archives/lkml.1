@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763803AbYEWCMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764228AbYEWCPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763803AbYEWCMl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 22:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760412AbYEWCMa
+	id S1764228AbYEWCPe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 22:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbYEWCPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 22:12:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54759 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760368AbYEWCM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 22:12:28 -0400
+	Thu, 22 May 2008 22:15:24 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37166 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758595AbYEWCPX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 22:15:23 -0400
+Message-ID: <483628B7.1080704@np.css.fujitsu.com>
+Date: Fri, 23 May 2008 11:15:19 +0900
+From: Kentaro Makita <k-makita@np.css.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: akpm@linux-foundation.org, dgc@sgi.com, viro@ZenIV.linux.org.uk,
+       harvey.harrison@gmail.com
+Subject: Re: [PATCH][RFC]fix soft lock up at NFS mount by per-SB LRU-list
+ of unused dentries
+References: <4834D8DA.30907@np.css.fujitsu.com> <20080522225608.GZ173056135@sgi.com>
+In-Reply-To: <20080522225608.GZ173056135@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Mikael Pettersson <mikpe@it.uu.se>,
-       Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       drepper@redhat.com, Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-In-Reply-To: Suresh Siddha's message of  Thursday, 22 May 2008 18:48:55 -0700 <20080523014855.GA18385@linux-os.sc.intel.com>
-References: <18482.53246.642835.894623@harpo.it.uu.se>
-	<4832E705.2010900@zytor.com>
-	<18482.60491.764019.292031@harpo.it.uu.se>
-	<20080520175325.GE30034@linux-os.sc.intel.com>
-	<4834BE39.2000904@zytor.com>
-	<18485.13663.51624.694435@harpo.it.uu.se>
-	<20080522205619.GB7998@linux-os.sc.intel.com>
-	<4835DF64.6080104@zytor.com>
-	<20080522212920.GC7998@linux-os.sc.intel.com>
-	<4835E6F5.5010801@zytor.com>
-	<20080523014855.GA18385@linux-os.sc.intel.com>
-Emacs: where editing text is like playing Paganini on a glass harmonica.
-Message-Id: <20080523021222.8E1A626FA24@magilla.localdomain>
-Date: Thu, 22 May 2008 19:12:22 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> hmm.. so the kernel needs to export all the cpuid info (that the kernel
-> enables and supports) to the user through some mechanism then?
+Hi, David
 
-For a cheap interface, we use AT_HWCAP for this.  Unfortunately that only
-covers the first 32 bits of CPUID info.  (For another cheap interface,
-giving all the CPUID bits in the vDSO would be easy.)
+Thank you for reviewing the patch.
+I'd fix coding style issues at next post. And,...
 
-For a clunky interface that already exists and is "simple" to use,
-there is /dev/cpu/0/cpuid now.  I wonder if having a device node and
-opening it too much for applications that consider the vDSO too complex.
+David Chinner wrote:
+> On Thu, May 22, 2008 at 11:22:18AM +0900, Kentaro Makita wrote:
+>> +			}
+>> +		}
+>> +	}
+> 
+> I'm wondering if this loop is an excessively long time to be holding the
+> dcache_lock. I guess the hol dtime is limited by the size of *count being
+> passed in. I think we could also do a:
+> 
+> 		cond_resched_lock(&dcache_lock);
+> 	
+> in the loop here to prevent this from occurring....
+Did you mean:
+ - scan sb->s_dentry_lru and move dentries to temporary list
+   with lock held
+ - cond_resched_lock(&dcache_lock);
+ - prune dentries on temporary list
+Is that right?
 
+....
+>> +	spin_lock(&sb_lock);
+>> +	list_for_each_entry(sb, &super_blocks, s_list) {
+> 
+> Question on lock ordering of sb_lock vs dcache_lock - which is the inner
+> lock? Are the two of them held together anywhere else? (/me doesn't
+> have time to searchthe code right now).
+> 
+The sb_lock is inner lock. And I searched the whole code and found only
+ prune_dcache() held both sb_lock and dcache_lock.
 
-Thanks,
-Roland
+Best Regards,
+Kentaro Makita
+> 
+> Otherwise it's looking good.
+> 
+> Cheers,
+> 
+> Dave.
