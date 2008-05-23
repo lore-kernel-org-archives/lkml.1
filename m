@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbYEWFXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbYEWFY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760712AbYEWFXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 01:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYEWFXg
+	id S1763260AbYEWFY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 01:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYEWFYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 01:23:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45723 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751452AbYEWFXf (ORCPT
+	Fri, 23 May 2008 01:24:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:64709 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752205AbYEWFYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 01:23:35 -0400
-Date: Thu, 22 May 2008 22:22:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davidel@xmailserver.org, mtk.manpages@gmail.com,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 18/18] flag parameters: check magic constants
-Message-Id: <20080522222246.0526f8f8.akpm@linux-foundation.org>
-In-Reply-To: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
-References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 May 2008 01:24:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=krSIWGvNOFG9tq+E5yNjsFDRPGfN8E2l5DJ5/tvBdGzq/WUMvuy90P/E4xlpq5qbDLGZPHWJdh2S4hG/CUxfVWsrhnPSkQhAJmCNkGSoS2shVuNvON2aoEqdW3zy2JH1WJ+lt9Rk2MDPlvOBtiFOPw7fKKFwg+tw7KWo/v1ci7Y=
+Message-ID: <3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
+Date: Fri, 23 May 2008 13:24:44 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20080523041940.39E8726FA24@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <1211446045.5610.33.camel@elijah.suse.cz>
+	 <3877989d0805220216o5add20ddye2a1fde98a0c1e69@mail.gmail.com>
+	 <20080522111826.BB90326FA24@magilla.localdomain>
+	 <3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
+	 <20080522203428.835D626FA24@magilla.localdomain>
+	 <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
+	 <20080523041940.39E8726FA24@magilla.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 17:18:07 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
+> This is the key thing that makes no sense to me.  What do you mean by
+> "deliver" here?  The normal meaning of to "deliver" a signal means that
+> get_signal_to_deliver() dequeues and processes it.  This can never happen
+> inside any other kernel code path.  It certainly can never happen inside
+> ptrace_stop or ptrace_notify.
 
-> --- a/net/socket.c
-> +++ b/net/socket.c
-> @@ -1219,6 +1219,13 @@ asmlinkage long sys_socket(int family, int type, int protocol)
->  	struct socket *sock;
->  	int flags;
->  
-> +	/* Check the SOCK_* constants for consistency.  */
-> +	BUILD_BUG_ON(SOCK_CLOEXEC != O_CLOEXEC);
-> +	BUILD_BUG_ON(SOCK_NONBLOCK != O_NONBLOCK);
-> +	BUILD_BUG_ON((SOCK_MAX | SOCK_TYPE_MASK) != SOCK_TYPE_MASK);
-> +	BUILD_BUG_ON(SOCK_CLOEXEC & SOCK_TYPE_MASK);
-> +	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
-
-On alpha the
-
-	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
-
-seems to have gone away, but now
-
-	BUILD_BUG_ON(SOCK_NONBLOCK != O_NONBLOCK);
-
-is triggering.
-
+"deliver" here I mean get_signal_to_deliver()...
+Please clarify, in ptrace_notify code path, is it allowed that ptraced
+thread can ignore signals (such as SIGTRAP) without telling debugger
+what happened? This is key problem I'm not quite sure... Because if
+the test doesn't block SIGTRAP, it works on IA64 too.. Hope I have
+made the problem clear...
