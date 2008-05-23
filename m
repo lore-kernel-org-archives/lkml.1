@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761108AbYEWCHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763803AbYEWCMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761108AbYEWCHR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 22:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbYEWCHA
+	id S1763803AbYEWCMl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 22:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760412AbYEWCMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 22:07:00 -0400
-Received: from sous-sol.org ([216.99.217.87]:55961 "EHLO sous-sol.org"
+	Thu, 22 May 2008 22:12:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54759 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758090AbYEWCG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 22:06:59 -0400
-Date: Thu, 22 May 2008 19:06:38 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Bojan Smojver <bojan@rexursive.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
-       Andrew Morgan <morgan@kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: capget() overflows buffers.
-Message-ID: <20080523020638.GF30402@sequoia.sous-sol.org>
-References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <1211505622.20341.6.camel@shrek.rexursive.com>
+	id S1760368AbYEWCM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 22:12:28 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211505622.20341.6.camel@shrek.rexursive.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       drepper@redhat.com, Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+In-Reply-To: Suresh Siddha's message of  Thursday, 22 May 2008 18:48:55 -0700 <20080523014855.GA18385@linux-os.sc.intel.com>
+References: <18482.53246.642835.894623@harpo.it.uu.se>
+	<4832E705.2010900@zytor.com>
+	<18482.60491.764019.292031@harpo.it.uu.se>
+	<20080520175325.GE30034@linux-os.sc.intel.com>
+	<4834BE39.2000904@zytor.com>
+	<18485.13663.51624.694435@harpo.it.uu.se>
+	<20080522205619.GB7998@linux-os.sc.intel.com>
+	<4835DF64.6080104@zytor.com>
+	<20080522212920.GC7998@linux-os.sc.intel.com>
+	<4835E6F5.5010801@zytor.com>
+	<20080523014855.GA18385@linux-os.sc.intel.com>
+Emacs: where editing text is like playing Paganini on a glass harmonica.
+Message-Id: <20080523021222.8E1A626FA24@magilla.localdomain>
+Date: Thu, 22 May 2008 19:12:22 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bojan Smojver (bojan@rexursive.com) wrote:
-> On Thu, 2008-05-22 at 13:53 -0700, Chris Wright wrote:
-> 
-> >     cap_user_header_t head = (cap_user_header_t) xcalloc(1, sizeof(cap_user_header_t));
-> >     cap_user_data_t cap = (cap_user_data_t) xcalloc(1, sizeof(cap_user_data_t));
-> 
-> BTW, both of the above allocations have been fixed in Squid 2 & 3, as
-> they were incorrect. Not sure how that worked before - probably by
-> accident.
+> hmm.. so the kernel needs to export all the cpuid info (that the kernel
+> enables and supports) to the user through some mechanism then?
 
-Heh, indeed ;-)
+For a cheap interface, we use AT_HWCAP for this.  Unfortunately that only
+covers the first 32 bits of CPUID info.  (For another cheap interface,
+giving all the CPUID bits in the vDSO would be easy.)
 
-If you want to fix the problem you're having in squid you've got a few
-choices:
+For a clunky interface that already exists and is "simple" to use,
+there is /dev/cpu/0/cpuid now.  I wonder if having a device node and
+opening it too much for applications that consider the vDSO too complex.
 
-1) switch to using the libcap interface, arguably the best sol'n since
-you know longer have to directly care about the kernel interface.
-only drawback is the additional library dependency.
 
-2) force head->version to the older version, something like:
-
-#ifdef  _LINUX_CAPABILITY_VERSION_1
-  head->version = _LINUX_CAPABILITY_VERSION_1;
-#else
-  head->version = _LINUX_CAPABILITY_VERSION;
-#endif
-
-this has the drawback of always using the older 32bit caps, probably
-fine here, since you're not using new caps.
-
-3) try to allow for current 64bit caps
-
-#define CAP_TO_INDEX(x)     ((x) >> 5)
-#define CAP_TO_MASK(x)      (1 << ((x) & 31))
-#define CAP_ADD(_data, _set, _cap)     _data[CAP_TO_INDEX(_cap)]._set |= CAP_TO_MASK(_cap)
-
-    cap_user_data_t cap = (cap_user_data_t) xcalloc(_LINUX_CAPABILITY_U32S, sizeof(*cap));
-    head->version = _LINUX_CAPABILITY_VERSION;
-
-    CAP_ADD(cap, effective, CAP_NET_BIND_SERVICE);
-    etc...
-
-this has the drawback of not being guaranteed to work in the future on
-newer kernels and needs ifdefs to work on older kernels, is complicated,
-and not worth it.
+Thanks,
+Roland
