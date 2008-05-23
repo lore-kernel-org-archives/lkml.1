@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYEWThx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbYEWTif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbYEWThx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYEWTho
+	id S1758258AbYEWTif (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757279AbYEWTiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:37:44 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:36347 "EHLO
+	Fri, 23 May 2008 15:38:04 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:36366 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbYEWThn (ORCPT
+	with ESMTP id S1755871AbYEWThs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 15:37:43 -0400
-Message-ID: <48371D04.9050906@ct.jp.nec.com>
-Date: Fri, 23 May 2008 12:37:40 -0700
+	Fri, 23 May 2008 15:37:48 -0400
+Message-ID: <48371D09.1050102@ct.jp.nec.com>
+Date: Fri, 23 May 2008 12:37:45 -0700
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
 To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>
 Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: [PATCH -rt] gitignore Module.markers
+Subject: [PATCH -rt] gitignore scripts/testlpp
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,21 +29,18 @@ From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- .gitignore |    1 +
+ scripts/.gitignore |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/.gitignore b/.gitignore
-index fdcce40..3d04ea7 100644
---- a/.gitignore
-+++ b/.gitignore
-@@ -28,6 +28,7 @@ vmlinux*
- !vmlinux.lds.S
- System.map
- Module.symvers
-+Module.markers
- !.gitignore
- 
- #
+diff --git a/scripts/.gitignore b/scripts/.gitignore
+index b939fbd..bb1dd86 100644
+--- a/scripts/.gitignore
++++ b/scripts/.gitignore
+@@ -7,3 +7,4 @@ pnmtologo
+ bin2c
+ unifdef
+ binoffset
++testlpp
 -- 
 1.5.4.1
 
