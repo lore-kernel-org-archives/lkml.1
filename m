@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760029AbYEWHjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbYEWHtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760029AbYEWHjv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 03:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYEWHjo
+	id S1759016AbYEWHtU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 03:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYEWHtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 03:39:44 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52140 "EHLO song.cn.fujitsu.com"
+	Fri, 23 May 2008 03:49:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49700 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751758AbYEWHjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 03:39:43 -0400
-Message-ID: <483674AA.4090504@cn.fujitsu.com>
-Date: Fri, 23 May 2008 15:39:22 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1750984AbYEWHtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 03:49:08 -0400
+Message-ID: <483676AD.9020303@cn.fujitsu.com>
+Date: Fri, 23 May 2008 15:47:57 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-CC: Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>
-Subject: [PATCH] cpusets: fix and update Documentation
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       menage@google.com, pj@sgi.com
+Subject: [PATCH] cpusets: fix bug of adding inexistent cpu or mem
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the doc consistent with current cpusets implementation.
+Adding inexistent cpu to a cpuset will be omitted quietly.
+It should return -EINVAL.
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
+Example: (real_nr_cpus <= 4 < NR_CPUS or cpu#4 was just offline)
 
+# cat cpus
+0-1
+# /bin/echo 4 > cpus
+# /bin/echo $?
+0
+# cat cpus
+
+# 
+
+The same as adding inexistent mem.
+This patch will fix this bug.
+And when *buf == "", the check is unneeded.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
- Documentation/cpusets.txt |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/cpusets.txt b/Documentation/cpusets.txt
-index fb7b361..d803c5c 100644
---- a/Documentation/cpusets.txt
-+++ b/Documentation/cpusets.txt
-@@ -199,7 +199,7 @@ using the sched_setaffinity, mbind and set_mempolicy system calls.
- The following rules apply to each cpuset:
- 
-  - Its CPUs and Memory Nodes must be a subset of its parents.
-- - It can only be marked exclusive if its parent is.
-+ - It can't be marked exclusive unless its parent is.
-  - If its cpu or memory is exclusive, they may not overlap any sibling.
- 
- These rules, and the natural hierarchy of cpusets, enable efficient
-@@ -345,7 +345,7 @@ is modified to perform an inline check for this PF_SPREAD_PAGE task
- flag, and if set, a call to a new routine cpuset_mem_spread_node()
- returns the node to prefer for the allocation.
- 
--Similarly, setting 'memory_spread_cache' turns on the flag
-+Similarly, setting 'memory_spread_slab' turns on the flag
- PF_SPREAD_SLAB, and appropriately marked slab caches will allocate
- pages from the node returned by cpuset_mem_spread_node().
- 
-@@ -709,7 +709,10 @@ Now you want to do something with this cpuset.
- 
- In this directory you can find several files:
- # ls
--cpus  cpu_exclusive  mems  mem_exclusive mem_hardwall  tasks
-+cpu_exclusive  memory_migrate      mems                      tasks
-+cpus           memory_pressure     notify_on_release
-+mem_exclusive  memory_spread_page  sched_load_balance
-+mem_hardwall   memory_spread_slab  sched_relax_domain_level
- 
- Reading them will give you information about the state of this cpuset:
- the CPUs and Memory Nodes it can use, the processes that are using
--- 
-1.5.4.rc3
-
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 86ea9e3..039baa4 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -797,8 +797,10 @@ static int update_cpumask(struct cpuset *cs, char *buf)
+ 		retval = cpulist_parse(buf, trialcs.cpus_allowed);
+ 		if (retval < 0)
+ 			return retval;
++
++		if (!cpus_subset(trialcs.cpus_allowed, cpu_online_map))
++			return -EINVAL;
+ 	}
+-	cpus_and(trialcs.cpus_allowed, trialcs.cpus_allowed, cpu_online_map);
+ 	retval = validate_change(cs, &trialcs);
+ 	if (retval < 0)
+ 		return retval;
+@@ -932,9 +934,11 @@ static int update_nodemask(struct cpuset *cs, char *buf)
+ 		retval = nodelist_parse(buf, trialcs.mems_allowed);
+ 		if (retval < 0)
+ 			goto done;
++
++		if (!nodes_subset(trialcs.mems_allowed,
++				node_states[N_HIGH_MEMORY]))
++			return -EINVAL;
+ 	}
+-	nodes_and(trialcs.mems_allowed, trialcs.mems_allowed,
+-						node_states[N_HIGH_MEMORY]);
+ 	oldmem = cs->mems_allowed;
+ 	if (nodes_equal(oldmem, trialcs.mems_allowed)) {
+ 		retval = 0;		/* Too easy - nothing to do */
 
 
