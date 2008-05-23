@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYEWPlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYEWPmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbYEWPlL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756221AbYEWPkt
+	id S1758753AbYEWPmS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYEWPmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:40:49 -0400
-Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:45422 "HELO
-	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756084AbYEWPks (ORCPT
+	Fri, 23 May 2008 11:42:10 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:2489 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752589AbYEWPmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:40:48 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@linux.ie>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] remove debug printk from DRM suspend path
-Date: Fri, 23 May 2008 08:40:45 -0700
-User-Agent: KMail/1.9.9
+	Fri, 23 May 2008 11:42:07 -0400
+Date: Fri, 23 May 2008 19:42:04 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card
+	detect line
+Message-ID: <20080523154204.GA19803@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080516165057.GC24196@polina.dev.rtsoft.ru> <20080517133633.5aa26938@mjolnir.drzeus.cx> <20080521184713.GA30284@polina.dev.rtsoft.ru> <20080521212831.523f344b@mjolnir.drzeus.cx> <20080522181713.GA26918@polina.dev.rtsoft.ru> <20080522213432.4a50629b@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Message-Id: <200805230840.46015.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+In-Reply-To: <20080522213432.4a50629b@mjolnir.drzeus.cx>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not sure how this snuck upstream, but it really doesn't belong there.  We
-don't need a KERN_ERR printk in the suspend path to know what's going on (at
-least not anymore).
+On Thu, May 22, 2008 at 09:34:32PM +0200, Pierre Ossman wrote:
+[...]
+> > Ok. How about this version?
+> > 
+> 
+> Perfect. Unless there is some way you can pass flags in platform data?
+> Using the lack of an init() to determine the need for polling is a bit
+> circumstantial.
 
-Signed-off-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
+Aha, that's an idea, thanks. Implemented in the updated patches.
 
-diff --git a/drivers/char/drm/drm_sysfs.c b/drivers/char/drm/drm_sysfs.c
-index 9a32169..af211a0 100644
---- a/drivers/char/drm/drm_sysfs.c
-+++ b/drivers/char/drm/drm_sysfs.c
-@@ -34,8 +34,6 @@ static int drm_sysfs_suspend(struct device *dev, pm_message_t state)
- 	struct drm_minor *drm_minor = to_drm_minor(dev);
- 	struct drm_device *drm_dev = drm_minor->dev;
- 
--	printk(KERN_ERR "%s\n", __func__);
--
- 	if (drm_dev->driver->suspend)
- 		return drm_dev->driver->suspend(drm_dev, state);
- 
+p.s.
+I think, in case of capabilities, it's users' responsibility to not
+issue bogus flags, so mmc_spi doesn't mask anything, it just passes
+platform's caps. This also avoids drivers update when (if) new caps
+will be implemented.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
