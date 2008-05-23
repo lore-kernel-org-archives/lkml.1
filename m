@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbYEWJ3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757800AbYEWJaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbYEWJ3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 05:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbYEWJ3q
+	id S1757800AbYEWJaW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 05:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYEWJaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 05:29:46 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:37202 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753862AbYEWJ3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 05:29:45 -0400
-Date: Fri, 23 May 2008 13:29:38 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steve French <smfrench@gmail.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: pagevecs of more than PAGEVEC_SIZE pages
-Message-ID: <20080523092938.GA16915@2ka.mipt.ru>
-References: <524f69650805221213i62488a4fk5a906b2726b9b96a@mail.gmail.com> <20080522225459.5a6f7acc.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 May 2008 05:30:06 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64087 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753990AbYEWJaF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 05:30:05 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Subject: Re: [PATCH 5/7] gcov: add gcov profiling infrastructure
+Date: Fri, 23 May 2008 11:29:53 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Peter Oberparleiter <oberparleiter@googlemail.com>
+References: <48313DE6.30802@de.ibm.com>
+In-Reply-To: <48313DE6.30802@de.ibm.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080522225459.5a6f7acc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200805231129.54027.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18B6ht2NZt602UHK7d7f7qhF3YPAnH5u04WD9B
+ rfiRq9Ggan1Rs7I9MiwHDa3jLmxFRzLmEyDq1bViMm3p3XNjsb
+ aP3GoJnDMgfp4f8RDp/gg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Thu, May 22, 2008 at 10:54:59PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > Now that various servers support processing larger than 64K file
-> > writes, it would be helpful to have pagevecs that are larger than 14
-> > pages (PAGEVEC_SIZE).so an array of more pages could be passed to
-> > kernel_sendmsg (thus allowing writes larger than 56K, depending on
-> > wsize - the server limit is currently 8MB)
+On Monday 19 May 2008, Peter Oberparleiter wrote:
+> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 > 
-> You can pass multiple pagevecs into kernel_sendmsg?
+> gcov profiling infrastructure:
+> 
+> * change kbuild to include profiling flags
+> * provide functions needed by profiling code
+> * present profiling data as files in debugfs
 
-kernel_sendmsg() requires iovecs, so each page will have to be mapped,
-which can end up having too many slots in kmap table. I can reproduce
-deadlock we talked about in POHMELFS thread with 100 highmem pages per
-transaction on 32bit x86, so increasing pagevec noticebly can deadlock
-CIFS too.
+Good stuff, thanks for finally pushing this upstream!
 
-It could be great if CIFS moved to kernel_sendpage() instead, Steve?
+Regarding the use of debugfs, have you considered making your
+own file system independent of that? Currently, you'd need
+a lot of boilerplate code (basically a copy of debugs/inode.c),
+but I think it'd be appropriate since you're adding more than
+just a few simple files in debugfs.
 
--- 
-	Evgeniy Polyakov
+Maybe we can talk next monday when I'm in the office, because
+some time ago, I have already started a patch set that would
+make it trivial to add a new debugfs-like file system.
+
+	Arnd <><
