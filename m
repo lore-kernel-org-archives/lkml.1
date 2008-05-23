@@ -1,119 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYEWQTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYEWQUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756155AbYEWQTs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYEWQTl
+	id S1757563AbYEWQUb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbYEWQUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:19:41 -0400
-Received: from mga12.intel.com ([143.182.124.36]:60932 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750846AbYEWQTk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:19:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,530,1204531200"; 
-   d="scan'208";a="251386490"
-Message-ID: <4836EE8C.1010200@linux.intel.com>
-Date: Fri, 23 May 2008 09:19:24 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Top 10 bugs/warnings for the week of March 23rd, 2008
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 23 May 2008 12:20:24 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43209 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750846AbYEWQUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 12:20:23 -0400
+Date: Fri, 23 May 2008 18:21:01 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
+       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
+       Haroldo Gamal <gamal@alternex.com.br>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into kernel image
+Message-ID: <20080523162101.GA31107@uranus.ravnborg.org>
+References: <1211550282.28967.8.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211550282.28967.8.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The http://www.kerneloops.org website collects kernel oops and
-warning reports from various mailing lists and bugzillas as well as
-with a client users can install to auto-submit oopses.
-Below is a top 10 list of the oopses collected in the last 7 days.
-(Reports prior to 2.6.23 have been omitted in collecting the top 10)
+Hi David.
 
-This week, a total of 3192 oopses and warnings have been reported,
-compared to 1503 reports in the previous week.
+> +extern struct builtin_fw __start_builtin_fw[];
+> +extern struct builtin_fw __end_builtin_fw[];
+
+Could have these in include/linux/sections.h where we
+collect other linker symbols?
+
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index f054778..8d71a40 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -86,6 +86,13 @@
+>  		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
+>  	}								\
+>  									\
+> +	/* Built-in firmware blobs */					\
+> +	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
+> +		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
+> +		*(.builtin_fw)						\
+> +		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
+> +	}								\
+> +									\
+Looks good.
+But do we need the firmware after init?
+In other owrds could it be inside a discard after init block?
 
 
-Per file statistics
-[I'd love to borrow Linus' gitstat stuff for this to get a nicer presentation of the per file/directory data]
-1267 kernel/sysctl.c
-283	fs/sysfs/dir.c
-266	fs/buffer.c
-111	lib/iomap.c
-81	kernel/spinlock.c
-51	mm/page_alloc.c
-49	net/mac80211/main.c
-38	kernel/irq/manage.c
-38	security/selinux/hooks.c
-34	net/core/sock.c
+> +
+> +#define DECLARE_BUILTIN_FIRMWARE_SIZE(name, blob, size)			     \
+> +	static const struct builtin_fw __fw_concat(__builtin_fw,__COUNTER__) \
+> +	__used __attribute__((__section__(".builtin_fw"))) =		     \
 
+Use __section():
 
-Rank 1: __register_sysctl_paths
-	Reported 1260 times (2491 total reports)
-	[tainted] Duplicate /proc registration. Bug in the madwifi driver
-	(Occasionally seen in the parport driver)
-	This oops was last seen in version 2.6.25.4, and first seen in 2.6.25-rc3.
-	More info: http://www.kerneloops.org/searchweek.php?search=__register_sysctl_paths
+> +	__used __section(.builtin_fw))) =		     \
+(See compiler.h IIRC).
 
-Rank 2: sysfs_add_one
-	Reported 264 times (528 total reports)
-	Duplicate sysfs registration... mostly a GregKH bug ...
-	This oops was last seen in version 2.6.26-rc3, and first seen in 2.6.24-rc6.
-	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
-
-Rank 3: mark_buffer_dirty
-	Reported 253 times (547 total reports)
-	EXT3 bug while hot-removing a USB device
-	This oops was last seen in version 2.6.25.3, and first seen in 2.6.24-rc6.
-	More info: http://www.kerneloops.org/searchweek.php?search=mark_buffer_dirty
-
-Rank 4: bad_io_access
-	Reported 111 times (153 total reports)
-	Bug with pata_isapnp causing another ata driver to go SPLAT
-	Patch available in http://bugzilla.kernel.org/show_bug.cgi?id=10752
-	This oops was last seen in version 2.6.25.3, and first seen in 2.6.24.
-	More info: http://www.kerneloops.org/searchweek.php?search=bad_io_access
-
-Rank 5: _spin_unlock_irqrestore
-	Reported 80 times (207 total reports)
-	Seems to happen mostly around the idle loop.. weak voltage regulators?
-	This oops was last seen in version 2.6.25.3, and first seen in 2.6.22-rc1.
-	More info: http://www.kerneloops.org/searchweek.php?search=_spin_unlock_irqrestore
-
-Rank 6: ieee80211_stop_tx_ba_session
-	Reported 49 times (104 total reports)
-	A bug in the iwl4965 driver
-	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25-rc7-git6.
-	More info: http://www.kerneloops.org/searchweek.php?search=ieee80211_stop_tx_ba_session
-
-Rank 7: __alloc_pages
-	Reported 49 times (79 total reports)
-	This oops was last seen in version 2.6.25.3, and first seen in 2.6.18-rc1.
-	Bugs in the sata_nv and velocity drivers.
-	sata_nv patch available at http://lkml.org/lkml/2008/5/20/604
-	More info: http://www.kerneloops.org/searchweek.php?search=__alloc_pages
-
-Rank 8: set_irq_wake
-	Reported 38 times (43 total reports)
-	[fixed] Bug in serial_core.c where disable_irq_wake/enable_irq_wake were unbalanced
-	Fix available at http://lkml.org/lkml/2008/5/20/218 (and in -mm)
-	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25-rc9-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=set_irq_wake
-
-Rank 9: task_has_capability
-	Reported 34 times
-	[tainted] Bug in the proprietary firegl driver
-	Oops only shows up in tainted kernels
-	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=task_has_capability
-
-Rank 10: sk_free
-	Reported 29 times (109 total reports)
-	[tainted] VMWare driver bug
-	Oops only shows up in tainted kernels
-	This oops was last seen in version 2.6.25.4, and first seen in 2.6.23.9.
-	More info: http://www.kerneloops.org/searchweek.php?search=sk_free
+	Sam
