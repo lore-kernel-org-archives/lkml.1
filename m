@@ -1,35 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbYEWUqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbYEWUrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759894AbYEWUqc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 16:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758476AbYEWUqY
+	id S1760016AbYEWUrS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 16:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759022AbYEWUrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 16:46:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60611 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757369AbYEWUqX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 16:46:23 -0400
-Date: Fri, 23 May 2008 21:31:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
-       aoliva@redhat.com, Abhay Salunke <Abhay_Salunke@dell.com>,
-       kay.sievers@vrfy.org
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into
- kernel	image
-Message-ID: <20080523213147.1b6be3d0@core>
-In-Reply-To: <1211571743.28967.83.camel@pmac.infradead.org>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	<s5hbq2xul4s.wl%tiwai@suse.de>
-	<1211554711.28967.25.camel@pmac.infradead.org>
-	<20080523163303.492c89e4@core>
-	<1211570047.28967.75.camel@pmac.infradead.org>
-	<1211571743.28967.83.camel@pmac.infradead.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 23 May 2008 16:47:07 -0400
+Received: from xenotime.net ([66.160.160.81]:47139 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758421AbYEWUrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 16:47:06 -0400
+Date: Fri, 23 May 2008 13:47:02 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, pj@sgi.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de
+Subject: Re: [PATCH] [genirq] Expose default irq affinity mask
+Message-Id: <20080523134702.e5fb9145.rdunlap@xenotime.net>
+In-Reply-To: <1211571995-17488-1-git-send-email-maxk@qualcomm.com>
+References: <1211571995-17488-1-git-send-email-maxk@qualcomm.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -37,14 +27,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's fairly much the kind of thing I was expecting we might see, I'm
-> not sure it's reasonable to suddenly declare that overwriting the
-> firmware is forbidden. I'd done the version which avoided the extra
-> vmalloc and copy, but I've just reverted it.
+On Fri, 23 May 2008 12:46:35 -0700 Max Krasnyansky wrote:
 
-It saves us a lot of memory in several cases where the drivers hang onto
-the firmware so I definitely think we should fix the folks assuming they
-can widdle on the firmware. That doesn't look hard to do and could save
-50K+ on many systems.
+> Current IRQ affinity interface does not provide a way to set affinity
+> for the IRQs that will be allocated/activated in the future.
+> This patch creates /proc/irq/default_smp_affinity that lets users set
+> default affinity mask for the newly allocated IRQs. Changing default
+> does not affect affinity masks for the currently active IRQs, they
+> have to be changed explicitly.
 
-Alan
+Documentation, perhaps an update to Documentation/filesystems/proc.txt ?
+
+> Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
+> ---
+>  arch/alpha/kernel/irq.c |    5 +--
+>  include/linux/irq.h     |   14 ++++-------
+>  kernel/irq/manage.c     |   28 +++++++++++++++++++++-
+>  kernel/irq/proc.c       |   57 ++++++++++++++++++++++++++++++++++++++++++++++-
+>  4 files changed, 89 insertions(+), 15 deletions(-)
+> 
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 438a014..90f9ccc 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -16,6 +16,8 @@
+>  
+>  #ifdef CONFIG_SMP
+>  
+> +cpumask_t irq_default_affinity = CPU_MASK_ALL;
+> +
+>  /**
+>   *	synchronize_irq - wait for pending IRQ handlers (on other CPUs)
+>   *	@irq: interrupt number to wait for
+> @@ -94,6 +96,27 @@ int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
+>  	return 0;
+>  }
+>  
+> +#ifndef CONFIG_AUTO_IRQ_AFFINITY
+> +/**
+> + * Generic version of the affinity autoselector.
+> + */
+
+Please don't use /** as the beginning of a comment block unless that
+comment block is in kernel-doc format (this one is not).
+
+> +int irq_select_affinity(unsigned int irq)
+> +{
+> +	cpumask_t mask;
+> +
+> +	if (!irq_can_set_affinity(irq))
+> +		return 0;
+> +
+> +	cpus_and(mask, cpu_online_map, irq_default_affinity);
+> +
+> +	irq_desc[irq].affinity = mask;
+> +	irq_desc[irq].chip->set_affinity(irq, mask);
+> +
+> +	set_balance_irq_affinity(irq, mask);
+> +	return 0;
+> +}
+> +#endif
+
+
+---
+~Randy
