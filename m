@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYEWPzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYEWP7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbYEWPzf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYEWPz2
+	id S1755625AbYEWP7d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYEWP7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:55:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52886 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751679AbYEWPz1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:55:27 -0400
-Date: Fri, 23 May 2008 16:39:56 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: corbet@lwn.net (Jonathan Corbet)
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       mchehab@infradead.org
-Subject: Re: [PATCH] video4linux: Push down the BKL
-Message-ID: <20080523163956.6e93746c@core>
-In-Reply-To: <9027.1211551014@vena.lwn.net>
-References: <20080522223700.2f103a14@core>
-	<9027.1211551014@vena.lwn.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 23 May 2008 11:59:25 -0400
+Received: from smtpgpe.resot.net ([217.175.160.71]:51069 "EHLO smtpgpe.ool.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751894AbYEWP7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 11:59:24 -0400
+From: "werner" <werner@sys-linux.yi.org>
+Subject: 2.6.26-rcX: Problem with mem config > 4GB ; fore2000 atm driver options  --  addition
+To: linux-kernel@vger.kernel.org
+X-Originating-IP: 217.175.173.180
+X-Mailer: Usermin 1.340
+Message-Id: <1211557898.4751@sys-linux.yi.org>
+Date: Fri, 23 May 2008 12:51:38 -0300 (GFT)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="bound1211557898"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On the other hand, the next level of BKL pushdown would be painful as
-> all hell, given the massive number of callbacks in the V4L2 API.  So I'm
-> thinking it might be justified to create a video_ioctl2_locked() for
-> V4L2 drivers which are not yet known to be safe in the absence of the
-> BKL.  The amount of extra code would be quite small, and it would let
-> safe drivers operate BKL-free.
+This is a multi-part message in MIME format.
 
-The problem is that currently they are almost all unsafe - I did a quick
-survey as part of the changes. Pushing it down to the video2_ioctl is a
-starting point, but the v4l layer is going to need a lot of love and its
-own gradual migration.
+--bound1211557898
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 
-Right now we've gone from BKL buried in fs to BKL at top of v4l layer
-which is indeed only a starting point. I'd assumed the same as you are
-think a new video_ioctl2 and switching drivers one by one (I was assuming
-adding video2_ioctl_unlocked())
+My original reclamation was, that, starting with a config file with memory > 4 GB what was working until now,  with 2.6.26-rcX-gitY i got segmentation faults, so that I had to configure memory < 4 GB.
 
-Alan
+I was informed that meanwhile the error with the segmentation faults for memory > 4 GB was corrected.
+
+
+
+Now I tried to compile 2.6.26-rc3-git5 , starting with my last config file what has memory < 4 GB because of the explained problem,   but I wanted to change that with menuconfig to memory > 4 GB as it was before, because my computer has 8 GB memory.
+
+Now happens a next problem.  menuconfig don't permit, when you start with a config of < 4 GB, to change that to > 4 GB.    In the menu comes only the option until 4 GB, and in the resulting config file is 'memory until 64 GB'  disabled ...
+
+
+Thus, even if the segmentation faults now are repaired, there remains, still, to repair the menuconfig program, so that, when one had < 4 GB configured, but want to change to > 4 GB, that this works.
+
+
+2.6.26-rc3-git5 from this morning, configured with < 4 GB , until now runs without other problems on my server,  http://www.copaya.yi.org/info.php  .   Actualized binary .tgz packages of kernels what I compiled are always on the mirrors of my SYS distro, p.ex.: ftp://ftp5.gwdg.de/pub/linux/install/sys/  (and .../old)
+
+
+Werner Landgraf
+
+
+SYS  Linux
+v. 0.23-rc1  20/5/08  with 2.6.26-rc3
+
+--bound1211557898--
+
