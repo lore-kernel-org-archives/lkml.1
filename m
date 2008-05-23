@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbYEWPU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYEWPVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758376AbYEWPU4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbYEWPUt
+	id S1758803AbYEWPVU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYEWPVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:20:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51618 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753505AbYEWPUs (ORCPT
+	Fri, 23 May 2008 11:21:00 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:55990 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758507AbYEWPU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:20:48 -0400
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into
-	kernel image
-From: David Woodhouse <dwmw2@infradead.org>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <4836DBF3.1030307@ladisch.de>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <4836DBF3.1030307@ladisch.de>
-Content-Type: text/plain
-Date: Fri, 23 May 2008 16:20:44 +0100
-Message-Id: <1211556044.28967.32.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 23 May 2008 11:20:58 -0400
+Message-ID: <4836E057.7020307@yandex.ru>
+Date: Fri, 23 May 2008 18:18:47 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [PATCH take 2] UBIFS - new flash file system
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <20080516104002.GA6962@infradead.org>
+In-Reply-To: <20080516104002.GA6962@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 23 May 2008 15:19:07.0008 (UTC) FILETIME=[57B6A000:01C8BCE8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-23 at 17:00 +0200, Clemens Ladisch wrote:
-> David Woodhouse wrote:
-> > --- a/include/asm-generic/vmlinux.lds.h
-> > +++ b/include/asm-generic/vmlinux.lds.h
-> > +	/* Built-in firmware blobs */					\
-> > +	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
-> > +		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
-> > +		*(.builtin_fw)						\
-> > +		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
-> > +	}								\
-> > +									\
+Christoph Hellwig wrote:
+>  - the mainoop of ubifs_bg_thread looks a bit odd either, when you
+>    first to an interruotible sleep and then possible one while you
+>    still have TASK_RUNNING set.  Also the need_bgt flag is not needed
+>    because the thrad is only woken up to perform it's action.
+>    In the end the main loop should look something like:
 > 
-> Most drivers, when built as a module, would want their firmware images
-> to be in the module and not in the kernel image.
+> 	while (1) {
+> 		if (kthread_should_stop())
+> 			break;
+> 		if (try_to_freeze())
+> 			continue;
 > 
-> This would require some (un)register_builtint_firmware() function.
+> 		run_bg_commit(c);
+> 
+> 		set_current_state(TASK_INTERRUPTIBLE);
+> 		schedule();
+> 		__set_current_state(TASK_RUNNING);
+> 	}
 
-If you're willing to build the driver as a module, surely you can use
-the proper firmware loader too? We have MODULE_FIRMWARE to make sure
-that the firmware ends up in the right place with it, after all.
+Err, how are we guaranteed that we do not miss wake-up events then,
+if we were woken up say, between run_bg_commit(c) and
+set_current_state(TASK_INTERRUPTIBLE) ? This was  the purpose
+of the 'need_bgt' flag.
 
 -- 
-dwmw2
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
