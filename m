@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYEWTOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758247AbYEWTRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758435AbYEWTOW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbYEWTOP
+	id S1758247AbYEWTRj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbYEWTRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:14:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48102 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754074AbYEWTOO (ORCPT
+	Fri, 23 May 2008 15:17:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39455 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754277AbYEWTRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 15:14:14 -0400
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into
-	kernel	image
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
-       aoliva@redhat.com, Abhay Salunke <Abhay_Salunke@dell.com>,
-       kay.sievers@vrfy.org, Haroldo Gamal <gamal@alternex.com.br>
-In-Reply-To: <20080523163303.492c89e4@core>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <s5hbq2xul4s.wl%tiwai@suse.de>
-	 <1211554711.28967.25.camel@pmac.infradead.org>
-	 <20080523163303.492c89e4@core>
-Content-Type: text/plain
-Date: Fri, 23 May 2008 20:14:07 +0100
-Message-Id: <1211570047.28967.75.camel@pmac.infradead.org>
+	Fri, 23 May 2008 15:17:31 -0400
+Date: Fri, 23 May 2008 20:04:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Aristeu Sergio Rozanski Filho <aris@ruivo.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vt: fix vcs* sysfs file creation race [v2]
+Message-ID: <20080523200440.1f3efa62@core>
+In-Reply-To: <20080523161434.GE5713@cathedrallabs.org>
+References: <20080501192131.GA4662@jake.ruivo.org>
+	<20080513204241.559b772f.akpm@linux-foundation.org>
+	<20080523161434.GE5713@cathedrallabs.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-23 at 16:33 +0100, Alan Cox wrote:
-> > Yeah, I thought about that. I was slightly concerned that drivers might
-> > actually try to _modify_ the firmware they loaded, though. As it is,
-> > there's no fundamental reason why they shouldn't do that.
-> 
-> I've not seen any that do and judicious use of "const" should catch
-> offenders.
+> But this isn't the only problem.  Currently release_dev() checks for
+> tty->count without holding any locks but BKL that is acquired on tty_release()
+> and several tty drivers also check tty->count and some of them without even
 
-Like this one...
+Yes - the old stable branches were fixed to used atomic_t but for some
+reason this never ended up in 2.5/2.6.
 
-static const int dvico_firmware_id_offsets[] = { 6638, 3204 };
-static int bluebird_patch_dvico_firmware_download(struct usb_device *udev,
-						  const struct firmware *fw)
-{
-	int pos;
+> 1) We get rid of tty->count usage on drivers by implementing internal
+>    counters.  This solution would allow us to fix each driver before
+>    converting tty->count into a kref and only be used by tty layer.  This
+>    proposed patch does eliminate tty->count usage on vt.
 
-	for (pos = 0; pos < ARRAY_SIZE(dvico_firmware_id_offsets); pos++) {
-		int idoff = dvico_firmware_id_offsets[pos];
+We need to do this anyway because of the race between an interrupt on one
+processor and a hangup/close on another. So tty needs a kref and if tty
+has a kref count it might as well be the tty->count replacement. It's on
+my todo list but feel free to beat me to it.
 
-		if (fw->size < idoff + 4)
-			continue;
+> 2) We kill the current one open/close for each tty_open, only calling
+>    driver's open and close on the first open and last close.  By looking on
+>    the tty drivers, none of them do anything important with multiple opens
+>    anyway (but I might be wrong on this).
 
-		if (fw->data[idoff] == (USB_VID_DVICO & 0xff) &&
-		    fw->data[idoff + 1] == USB_VID_DVICO >> 8) {
-			fw->data[idoff + 2] =
-				le16_to_cpu(udev->descriptor.idProduct) + 1;
-			fw->data[idoff + 3] =
-				le16_to_cpu(udev->descriptor.idProduct) >> 8;
+Several use it to track things like board use counters. I'd prefer to
+avoid that change, especially as it isn't needed long term. Also long
+term tty->open is moving towards standardised library code - thats where
+having tty_port leads.
 
-			return usb_cypress_load_firmware(udev, fw, CYPRESS_FX2);
-		}
-	}
+kref the tty not the vty would be my suggestion.
 
-	return -EINVAL;
-}
-
--- 
-dwmw2
-
+Alan
