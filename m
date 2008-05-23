@@ -1,103 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763693AbYEWD0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763524AbYEWDdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763693AbYEWD0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 23:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbYEWD0J
+	id S1763524AbYEWDdi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 23:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbYEWDd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 23:26:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49192 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751004AbYEWD0G (ORCPT
+	Thu, 22 May 2008 23:33:26 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:18993 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756155AbYEWDdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 23:26:06 -0400
-Date: Thu, 22 May 2008 20:25:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: sekharan@us.ibm.com
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       hare@suse.de, scsi <linux-scsi@vger.kernel.org>
-Subject: Re: 2.6.26-rc2-mm1 (SCSI_DH build errors)
-Message-Id: <20080522202543.d15e8c3b.akpm@linux-foundation.org>
-In-Reply-To: <1210881374.21974.285.camel@chandra-ubuntu>
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-	<20080514141348.e71feed6.randy.dunlap@oracle.com>
-	<1210862779.15852.4.camel@localhost.localdomain>
-	<1210881374.21974.285.camel@chandra-ubuntu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 22 May 2008 23:33:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=IH8xWq0wxRcGxfpK9S/7rFpS1WuG3pp5QQJhrJjQh0Tla3RzDSQPc04+2nw7qdOm3ZuaFfJIVQBaarC9r8oawjMasD4FMI9M+oiFr7uUegeCc+49dJ8WTjQRe8DWznzf6o+fYchUgTozqg7jM8isWQotSFnsvy4XWXKg8AdgLTU=
+Date: Fri, 23 May 2008 07:33:14 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jiri Slaby <jirislaby@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merging nmi 32/64 to nmi.c v2
+Message-ID: <20080523033314.GA6926@cvg>
+References: <20080521163051.GB6932@cvg> <483467E1.6090808@ct.jp.nec.com> <20080521192129.GE6932@cvg> <alpine.LFD.1.10.0805222320160.3295@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805222320160.3295@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 12:56:14 -0700 Chandra Seetharaman <sekharan@us.ibm.com> wrote:
+[Thomas Gleixner - Thu, May 22, 2008 at 11:37:34PM +0200]
+| On Wed, 21 May 2008, Cyrill Gorcunov wrote:
+| > 
+| > Here is updated version (thanks Hiroshi) - I've moved these funcs
+| > to traps_64.c and it's compiled just fine (so we are going closer
+| > to merge someday even traps-32/64 ;)
+| 
+| Cyrill,
+| 
+| I really like that patch, but I'm a bit wary about the doit in one go
+| approach. Its pretty hard to review that way and in case of breakage
+| bisecting will just point to one large diff which is hard to decode.
+| 
+| Can you please try to make this a more fine grained patch series ?
+| 
+| Gradually add/modify the two files so they are identical at the
+| end. There are a couple of obvious steps, e.g. the move of function to
+| traps_*.c and adding the inline functions like get_timer_irqs().
+| 
+| Thanks,
+| 	tglx
+| 
 
-> Hi James, Andrew,
-> 
-> Here is a patch to remove the automatic "select" of scsi_dh for
-> dm-multipath.
-> 
-> Sorry about the mishap.
->
->
+Hi Thomas,
 
-This is busted.
+i think it was silly from my side to send such a *huge* patch at once,
+but original idea was to get an overwiew of the change in general, that
+is why I put changelog on top. So this patch (well RFC) was not to inclusion
+but for review only ;) And even if you/Ingo have it applied to a tree it would
+be totally undisectable anyway (as you pointed). So I will make quilt series
+this weekend. Thanks a lot!
 
-> Do not automatically "select" SCSI_DH for dm-multipath. If SCSI_DH
-> doesn't exist,just do not allow  hardware handlers to be used.
-> 
-> Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
-> ---
-> 
-> Index: scsi-misc-2.6/drivers/md/Kconfig
-> ===================================================================
-> --- scsi-misc-2.6.orig/drivers/md/Kconfig
-> +++ scsi-misc-2.6/drivers/md/Kconfig
-> @@ -252,7 +252,6 @@ config DM_ZERO
->  config DM_MULTIPATH
->  	tristate "Multipath target"
->  	depends on BLK_DEV_DM
-> -	select SCSI_DH
->  	---help---
->  	  Allow volume managers to support multipath hardware.
->  
-> Index: scsi-misc-2.6/drivers/md/dm-mpath.c
-> ===================================================================
-> --- scsi-misc-2.6.orig/drivers/md/dm-mpath.c
-> +++ scsi-misc-2.6/drivers/md/dm-mpath.c
-> @@ -664,6 +664,8 @@ static int parse_hw_handler(struct arg_s
->  	request_module("scsi_dh_%s", m->hw_handler_name);
->  	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
->  		ti->error = "unknown hardware handler type";
-> +		kfree(m->hw_handler_name);
-> +		m->hw_handler_name = NULL;
->  		return -EINVAL;
->  	}
->  	consume(as, hw_argc - 1);
-> Index: scsi-misc-2.6/include/scsi/scsi_dh.h
-> ===================================================================
-> --- scsi-misc-2.6.orig/include/scsi/scsi_dh.h
-> +++ scsi-misc-2.6/include/scsi/scsi_dh.h
-> @@ -54,6 +54,16 @@ enum {
->  	SCSI_DH_NOSYS,
->  	SCSI_DH_DRIVER_MAX,
->  };
-> -
-> +#ifdef CONFIG_SCSI_DH
->  extern int scsi_dh_activate(struct request_queue *);
->  extern int scsi_dh_handler_exist(const char *);
-> +#else
-> +inline int scsi_dh_activate(struct request_queue *req)
-> +{
-> +	return 0;
-> +}
-> +inline int scsi_dh_handler_exist(const char *name)
-> +{
-> +	return 0;
-> +}
-> +#endif
-
-You obviously wanted `static inline' there, but it still fails i386
-allmodconfig compilation.
-
+		- Cyrill -
