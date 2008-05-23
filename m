@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbYEWFpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbYEWFzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762196AbYEWFpl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 01:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYEWFpa
+	id S1759679AbYEWFzU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 01:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYEWFzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 01:45:30 -0400
-Received: from mail51.messagelabs.com ([216.82.244.179]:38862 "EHLO
-	mail51.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752001AbYEWFp2 (ORCPT
+	Fri, 23 May 2008 01:55:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60944 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751807AbYEWFzC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 01:45:28 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-11.tower-51.messagelabs.com!1211521527!1339976!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Fri, 23 May 2008 07:41:15 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: Tom Spink <tspink@gmail.com>
-CC: "Hans J. Koch" <hjk@linutronix.de>, <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable interrupts
-Message-ID: <20080523054115.GB28807@digi.com>
-References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <7b9198260805221247t715660d1l4085fe8c310f89c@mail.gmail.com> <20080522200814.GD3226@local> <7b9198260805221326t6d23b757p2ffe646db70fceba@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <7b9198260805221326t6d23b757p2ffe646db70fceba@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 23 May 2008 05:41:16.0240 (UTC) FILETIME=[9E534500:01C8BC97]
+	Fri, 23 May 2008 01:55:02 -0400
+Date: Thu, 22 May 2008 22:54:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Steve French" <smfrench@gmail.com>
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: pagevecs of more than PAGEVEC_SIZE pages
+Message-Id: <20080522225459.5a6f7acc.akpm@linux-foundation.org>
+In-Reply-To: <524f69650805221213i62488a4fk5a906b2726b9b96a@mail.gmail.com>
+References: <524f69650805221213i62488a4fk5a906b2726b9b96a@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Tom,
+On Thu, 22 May 2008 14:13:07 -0500 "Steve French" <smfrench@gmail.com> wrote:
 
-Tom Spink wrote:
-> The added benefit is that the code becomes less complex, as you don't
-> have to check buffer sizes and copy the integer from userspace.
-AFAIK this is wrong.  You need to copy the integer from userspace in
-uio_ioctl.  Actually it's a value coming from user space, so you need to
-do it somewhere.
+> Now that various servers support processing larger than 64K file
+> writes, it would be helpful to have pagevecs that are larger than 14
+> pages (PAGEVEC_SIZE).so an array of more pages could be passed to
+> kernel_sendmsg (thus allowing writes larger than 56K, depending on
+> wsize - the server limit is currently 8MB)
 
-Best regards
-Uwe
+You can pass multiple pagevecs into kernel_sendmsg?
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+> pagevec_lookup_tag (and the inline function pagevec_space which I
+> don't use) is the main place that cifs needs a pagevec instead of
+> simply an array of pages and PAGEVEC_SIZE does not seem to matter
+> there (it works if I malloc a structure with more pages and request
+> more than 14 pages out of pagevec_lookup_tag).  Is there another
+> better alternative other than defining a larger pagevec (pagevec2 or
+> cifs_pagevec)?  Should I simply kmalloc something larger than a
+> pagevec and cast a (struct pagevec *) to it?
+
+We could make pagevecs variable-sized easily enough - add a `struct
+page **' to it.  But it's more overhead and this is the first time I've
+seen demand for it?
+
