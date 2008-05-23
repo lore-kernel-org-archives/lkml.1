@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbYEWO2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbYEWObi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758356AbYEWO2s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 10:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYEWO2i
+	id S1757563AbYEWObi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 10:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYEWOba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 10:28:38 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38713 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754863AbYEWO2h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 10:28:37 -0400
-Date: Fri, 23 May 2008 07:11:57 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>,
-       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-Message-ID: <20080523071157.3cfdc03a@infradead.org>
-In-Reply-To: <20080523090940.GG2727@cs181133002.pp.htv.fi>
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com>
-	<20080522144114.GC27301@cs181133002.pp.htv.fi>
-	<20080522075135.4933161c@infradead.org>
-	<20080522155425.GA2727@cs181133002.pp.htv.fi>
-	<32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com>
-	<20080522165008.GB2727@cs181133002.pp.htv.fi>
-	<20080522151834.03f2790f@infradead.org>
-	<20080523090940.GG2727@cs181133002.pp.htv.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 23 May 2008 10:31:30 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:39147 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbYEWOb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 10:31:29 -0400
+Date: Fri, 23 May 2008 17:29:04 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: initialization of static per-cpu variables
+Message-ID: <20080523142904.GB28257@cs181133002.pp.htv.fi>
+References: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com> <200805221820.07290.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200805221820.07290.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 12:09:40 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
-
+On Thu, May 22, 2008 at 06:20:06PM +1000, Rusty Russell wrote:
+> On Thursday 22 May 2008 04:28:02 Vegard Nossum wrote:
+> > Hi,
+> >
+> > I encountered this comment in kernel/softirq.c:
+> >
+> > /* Some compilers disobey section attribute on statics when not
+> >    initialized -- RR */
+> > static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
+> > static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
+> >
+> > So I assume it's the combination of static and whatever section
+> > DFINE_PER_CPU puts the variable in which is the problem.
+> >
+> > However, there's a LOT of these "static DEFINE_PER_CPU" without any
+> > initializer in the rest of the code, e.g.:
 > 
-> And in case anyone says "not forwarded distribution bugs aren't our 
-> problem":
-> That's a nice example, since in this case a distribuion suddenly 
-> starting to agressively forwarding their bugs might contribute to
-> making the kernel better, but might also totally ruin the numbers in
-> any statistics.
+> Yep, it was an old toolchain used by Sparc: DaveM found this one.  As you say, 
+> it's ancient: I'm happy to queue a cleanup patch now everyone is on a modern 
+> compiler.
 
-Fedora gets less than 1000 bugs per release (so 6 month window).
-That's... peanuts.
-(Also remember that distribution bugs have a real percentage of "please
-help me" support request bugs, so the actual nr of bugs is quite
-lower. The number is also before duplicates are marked).
+The commit says:
 
-We are tracking over 3000 bugs per WEEK via other channels.
+    [PATCH] softirq.c per_cpu fix
+    
+    GCC3.1 apparently gets confused about uninitialized sections
 
-So yes I will say that distribution bugs, while nice if we get
-visibility in the good ones, aren't the end-all thing.
+
+We do still support gcc 3.2 (which is the same as 3.1 except for a C++ 
+ABI change) as a compiler for the kernel.
+
+
+> Thanks,
+> Rusty.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
