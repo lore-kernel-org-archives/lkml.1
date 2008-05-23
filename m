@@ -1,71 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935273AbYEWHIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935595AbYEWHJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935273AbYEWHIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 03:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758009AbYEWHIH
+	id S935595AbYEWHJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 03:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760727AbYEWHJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 03:08:07 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61713 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754875AbYEWHIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 03:08:06 -0400
-Message-ID: <48366D25.30709@cn.fujitsu.com>
-Date: Fri, 23 May 2008 15:07:17 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 23 May 2008 03:09:18 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:37287 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760658AbYEWHJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 03:09:16 -0400
+Message-ID: <48366D9A.70806@kernel.org>
+Date: Fri, 23 May 2008 00:09:14 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-CC: Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>
-Subject: [PATCH] cpusets: fix and update Documentation
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>
+Subject: Re: capget() overflows buffers.
+References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org> <20080522233757.GD30402@sequoia.sous-sol.org>
+In-Reply-To: <20080522233757.GD30402@sequoia.sous-sol.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------010506080204030200060409"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the doc consistent with current cpusets implementation.
+This is a multi-part message in MIME format.
+--------------010506080204030200060409
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
----
- Documentation/cpusets.txt |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-diff --git a/Documentation/cpusets.txt b/Documentation/cpusets.txt
-index fb7b361..d803c5c 100644
---- a/Documentation/cpusets.txt
-+++ b/Documentation/cpusets.txt
-@@ -199,7 +199,7 @@ using the sched_setaffinity, mbind and set_mempolicy system calls.
- The following rules apply to each cpuset:
- 
-  - Its CPUs and Memory Nodes must be a subset of its parents.
-- - It can only be marked exclusive if its parent is.
-+ - It can't be marked exclusive unless its parent is.
-  - If its cpu or memory is exclusive, they may not overlap any sibling.
- 
- These rules, and the natural hierarchy of cpusets, enable efficient
-@@ -345,7 +345,7 @@ is modified to perform an inline check for this PF_SPREAD_PAGE task
- flag, and if set, a call to a new routine cpuset_mem_spread_node()
- returns the node to prefer for the allocation.
- 
--Similarly, setting 'memory_spread_cache' turns on the flag
-+Similarly, setting 'memory_spread_slab' turns on the flag
- PF_SPREAD_SLAB, and appropriately marked slab caches will allocate
- pages from the node returned by cpuset_mem_spread_node().
- 
-@@ -709,7 +709,10 @@ Now you want to do something with this cpuset.
- 
- In this directory you can find several files:
- # ls
--cpus  cpu_exclusive  mems  mem_exclusive mem_hardwall  tasks
-+cpu_exclusive  memory_migrate      mems                      tasks
-+cpus           memory_pressure     notify_on_release
-+mem_exclusive  memory_spread_page  sched_load_balance
-+mem_hardwall   memory_spread_slab  sched_relax_domain_level
- 
- Reading them will give you information about the state of this cpuset:
- the CPUs and Memory Nodes it can use, the processes that are using
--- 
-1.5.4.rc3
+Chris Wright wrote:
+|> The kernel is not crashing, the application is...
+|
+| It's not about crashing.  It's about app security.  Currently, there is
+| nothing guaranteeing named has actually dropped privileges.  That's why
+| I consider this serious.
 
+I have to say the details of this are not clear to me. Can you sketch an
+example?
 
+Otherwise, I find myself generally persuaded..
 
+| Yes, as they should.  I don't think we should ever expect an existing
+| userspace program change just by recompiling against a new kernel header
+| when using an already existing mechanism.  Their app has been working
+| fine since 2.2.
+|
+|   int fd = open("foo", O_FLAGS, mode);
+|
+| compile once...binary compatible going forward (as is cap{s,g}et).
+| update kernel, recompile...source API comaptible...still working
+| (this is broken in cap{s,g}et).
+
+[I guess that this was what libcap was all about, and why there are so
+many comments about using it littered through the kernel... Oh well.]
+
+| History bites us...libcap wasn't always there.  As we see, people roll
+[...]
+
+Not to pick holes in your argument, but libcap *has* always been there.
+It was co-developed with the original kernel patches.
+
+| No, the solution there would be to keep _LINUX_CAPABILITY_VERSION as
+| v1 (otherwise you just broke apps again).  And use another mechanism to
+| signal the availability of 64bit caps.
+
+Point taken. Patch attached.
+
+Cheers
+
+Andrew
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFINm2Z+bHCR3gb8jsRAmDJAJ9rm3W9wKqA9EBuUVCyccZJDy6XvACgkbqp
+noq663WjGQFVe94VsjkOZYY=
+=x9NL
+-----END PGP SIGNATURE-----
+
+--------------010506080204030200060409
+Content-Type: text/plain;
+ name="remain-source-compatible-with-32-bit-raw-legacy-capa.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename*0="remain-source-compatible-with-32-bit-raw-legacy-capa.patch"
+
+RnJvbSBlZjEwMGIwNjA2ZjBlMzVmNzhiZTUyNmIwODQwNTMzZWYxODhkYmJlIE1vbiBTZXAg
+MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBBbmRyZXcgRy4gTW9yZ2FuIDxtb3JnYW5Aa2VybmVs
+Lm9yZz4KRGF0ZTogVGh1LCAyMiBNYXkgMjAwOCAyMjo1Nzo1NCAtMDcwMApTdWJqZWN0OiBb
+UEFUQ0hdIFJlbWFpbiBzb3VyY2UgY29tcGF0aWJsZSB3aXRoIDMyLWJpdCByYXcgbGVnYWN5
+IGNhcGFiaWxpdHkgc3VwcG9ydC4KClNvdXJjZSBjb2RlIG91dCB0aGVyZSBoYXJkLWNvZGVz
+IGEgbm90aW9uIG9mIHdoYXQgdGhlCl9MSU5VWF9DQVBBQklMSVRZX1ZFUlNJT04gI2RlZmlu
+ZSBtZWFucyBpbiB0ZXJtcyBvZiB0aGUgc2VtYW50aWNzIG9mCnRoZSByYXcgY2FwYWJpbGl0
+eSBzeXN0ZW0gY2FsbHMgY2FwZ2V0KCkgYW5kIGNhcHNldCgpLiBJdHMgdW5mb3J0dW5hdGUs
+CmJ1dCB0cnVlLgoKQXMgc3VjaCwgZm9yY2UgdGhpcyBkZWZpbmUgdG8gYWx3YXlzIHJldGFp
+biBpdHMgbGVnYWN5IHZhbHVlLCBhbmQgYWRvcHQKYSBuZXcgI2RlZmluZSBzdHJhdGVneSBm
+b3IgdGhlIGtlcm5lbCdzIGludGVybmFsIGltcGxlbWVudGF0aW9uIG9mIHRoZQpwcmVmZXJy
+ZWQgbWFnaWMuCgpbVXNlciBzcGFjZSBjb2RlIGNvbnRpbnVlcyB0byBiZSBlbmNvdXJhZ2Vk
+IHRvIHVzZSB0aGUgbGliY2FwIEFQSSB3aGljaApwcm90ZWN0cyB0aGUgYXBwbGljYXRpb24g
+ZnJvbSBkZXRhaWxzIGxpa2UgdGhpcy5dCgpTaWduZWQtb2ZmLWJ5OiBBbmRyZXcgRy4gTW9y
+Z2FuIDxtb3JnYW5Aa2VybmVsLm9yZz4KQ2M6IEFuZHJldyBNb3J0b24gPGFrcG1AbGludXgt
+Zm91bmRhdGlvbi5vcmc+CkNjOiBDaHJpcyBXcmlnaHQgPGNocmlzd0Bzb3VzLXNvbC5vcmc+
+CkNjOiBTZXJnZSBFLiBIYWxseW4gPHNlcnVlQHVzLmlibS5jb20+Ci0tLQogZnMvcHJvYy9h
+cnJheS5jICAgICAgICAgICAgfCAgICAyICstCiBpbmNsdWRlL2xpbnV4L2NhcGFiaWxpdHku
+aCB8ICAgMjYgKysrKysrKysrKysrKysrKysrLS0tLS0tLS0KIGtlcm5lbC9jYXBhYmlsaXR5
+LmMgICAgICAgIHwgICAxMiArKysrKystLS0tLS0KIDMgZmlsZXMgY2hhbmdlZCwgMjUgaW5z
+ZXJ0aW9ucygrKSwgMTUgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZnMvcHJvYy9hcnJh
+eS5jIGIvZnMvcHJvYy9hcnJheS5jCmluZGV4IDllM2I4YzMuLjc5N2Q3NzUgMTAwNjQ0Ci0t
+LSBhL2ZzL3Byb2MvYXJyYXkuYworKysgYi9mcy9wcm9jL2FycmF5LmMKQEAgLTI4OCw3ICsy
+ODgsNyBAQCBzdGF0aWMgdm9pZCByZW5kZXJfY2FwX3Qoc3RydWN0IHNlcV9maWxlICptLCBj
+b25zdCBjaGFyICpoZWFkZXIsCiAJc2VxX3ByaW50ZihtLCAiJXMiLCBoZWFkZXIpOwogCUNB
+UF9GT1JfRUFDSF9VMzIoX19jYXBpKSB7CiAJCXNlcV9wcmludGYobSwgIiUwOHgiLAotCQkJ
+ICAgYS0+Y2FwWyhfTElOVVhfQ0FQQUJJTElUWV9VMzJTLTEpIC0gX19jYXBpXSk7CisJCQkg
+ICBhLT5jYXBbKF9LRVJORUxfQ0FQQUJJTElUWV9VMzJTLTEpIC0gX19jYXBpXSk7CiAJfQog
+CXNlcV9wcmludGYobSwgIlxuIik7CiB9CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2Nh
+cGFiaWxpdHkuaCBiL2luY2x1ZGUvbGludXgvY2FwYWJpbGl0eS5oCmluZGV4IGY0ZWEwZGQu
+LmY4OGI0ZGIgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvY2FwYWJpbGl0eS5oCisrKyBi
+L2luY2x1ZGUvbGludXgvY2FwYWJpbGl0eS5oCkBAIC0zNCw5ICszNCw2IEBAIHN0cnVjdCB0
+YXNrX3N0cnVjdDsKICNkZWZpbmUgX0xJTlVYX0NBUEFCSUxJVFlfVkVSU0lPTl8yICAweDIw
+MDcxMDI2CiAjZGVmaW5lIF9MSU5VWF9DQVBBQklMSVRZX1UzMlNfMiAgICAgMgogCi0jZGVm
+aW5lIF9MSU5VWF9DQVBBQklMSVRZX1ZFUlNJT04gICAgX0xJTlVYX0NBUEFCSUxJVFlfVkVS
+U0lPTl8yCi0jZGVmaW5lIF9MSU5VWF9DQVBBQklMSVRZX1UzMlMgICAgICAgX0xJTlVYX0NB
+UEFCSUxJVFlfVTMyU18yCi0KIHR5cGVkZWYgc3RydWN0IF9fdXNlcl9jYXBfaGVhZGVyX3N0
+cnVjdCB7CiAJX191MzIgdmVyc2lvbjsKIAlpbnQgcGlkOwpAQCAtNzcsMTAgKzc0LDIzIEBA
+IHN0cnVjdCB2ZnNfY2FwX2RhdGEgewogCX0gZGF0YVtWRlNfQ0FQX1UzMl07CiB9OwogCi0j
+aWZkZWYgX19LRVJORUxfXworI2lmbmRlZiBfX0tFUk5FTF9fCisKKy8qCisgKiBCYWNrd2Fy
+ZGx5IGNvbXBhdGlibGUgZGVmaW5pdGlvbiBmb3Igc291cmNlIGNvZGUgLSB0cmFwcGVkIGlu
+IGEKKyAqIDMyLWJpdCB3b3JsZC4gSWYgeW91IGZpbmQgeW91IG5lZWQgdGhpcywgcGxlYXNl
+IGNvbnNpZGVyIHVzaW5nCisgKiBsaWJjYXAgdG8gdW50cmFwIHlvdXJzZWxmLi4uCisgKi8K
+KyNkZWZpbmUgX0xJTlVYX0NBUEFCSUxJVFlfVkVSU0lPTiAgX0xJTlVYX0NBUEFCSUxJVFlf
+VkVSU0lPTl8xCisjZGVmaW5lIF9MSU5VWF9DQVBBQklMSVRZX1UzMlMgICAgIF9MSU5VWF9D
+QVBBQklMSVRZX1UzMlNfMQorCisjZWxzZQorCisjZGVmaW5lIF9LRVJORUxfQ0FQQUJJTElU
+WV9WRVJTSU9OIF9MSU5VWF9DQVBBQklMSVRZX1ZFUlNJT05fMgorI2RlZmluZSBfS0VSTkVM
+X0NBUEFCSUxJVFlfVTMyUyAgICBfTElOVVhfQ0FQQUJJTElUWV9VMzJTXzIKIAogdHlwZWRl
+ZiBzdHJ1Y3Qga2VybmVsX2NhcF9zdHJ1Y3QgewotCV9fdTMyIGNhcFtfTElOVVhfQ0FQQUJJ
+TElUWV9VMzJTXTsKKwlfX3UzMiBjYXBbX0tFUk5FTF9DQVBBQklMSVRZX1UzMlNdOwogfSBr
+ZXJuZWxfY2FwX3Q7CiAKICNkZWZpbmUgX1VTRVJfQ0FQX0hFQURFUl9TSVpFICAoc2l6ZW9m
+KHN0cnVjdCBfX3VzZXJfY2FwX2hlYWRlcl9zdHJ1Y3QpKQpAQCAtMzUxLDcgKzM2MSw3IEBA
+IHR5cGVkZWYgc3RydWN0IGtlcm5lbF9jYXBfc3RydWN0IHsKICAqLwogCiAjZGVmaW5lIENB
+UF9GT1JfRUFDSF9VMzIoX19jYXBpKSAgXAotCWZvciAoX19jYXBpID0gMDsgX19jYXBpIDwg
+X0xJTlVYX0NBUEFCSUxJVFlfVTMyUzsgKytfX2NhcGkpCisJZm9yIChfX2NhcGkgPSAwOyBf
+X2NhcGkgPCBfS0VSTkVMX0NBUEFCSUxJVFlfVTMyUzsgKytfX2NhcGkpCiAKICMgZGVmaW5l
+IENBUF9GU19NQVNLX0IwICAgICAoQ0FQX1RPX01BU0soQ0FQX0NIT1dOKQkJXAogCQkJICAg
+IHwgQ0FQX1RPX01BU0soQ0FQX0RBQ19PVkVSUklERSkJXApAQCAtMzYxLDcgKzM3MSw3IEBA
+IHR5cGVkZWYgc3RydWN0IGtlcm5lbF9jYXBfc3RydWN0IHsKIAogIyBkZWZpbmUgQ0FQX0ZT
+X01BU0tfQjEgICAgIChDQVBfVE9fTUFTSyhDQVBfTUFDX09WRVJSSURFKSkKIAotI2lmIF9M
+SU5VWF9DQVBBQklMSVRZX1UzMlMgIT0gMgorI2lmIF9LRVJORUxfQ0FQQUJJTElUWV9VMzJT
+ICE9IDIKICMgZXJyb3IgRml4IHVwIGhhbmQtY29kZWQgY2FwYWJpbGl0eSBtYWNybyBpbml0
+aWFsaXplcnMKICNlbHNlIC8qIEhBTkQtQ09ERUQgY2FwYWJpbGl0eSBpbml0aWFsaXplcnMg
+Ki8KIApAQCAtMzcyLDcgKzM4Miw3IEBAIHR5cGVkZWYgc3RydWN0IGtlcm5lbF9jYXBfc3Ry
+dWN0IHsKICMgZGVmaW5lIENBUF9ORlNEX1NFVCAgICAgKChrZXJuZWxfY2FwX3Qpe3sgQ0FQ
+X0ZTX01BU0tfQjB8Q0FQX1RPX01BU0soQ0FQX1NZU19SRVNPVVJDRSksIFwKIAkJCQkJQ0FQ
+X0ZTX01BU0tfQjEgfSB9KQogCi0jZW5kaWYgLyogX0xJTlVYX0NBUEFCSUxJVFlfVTMyUyAh
+PSAyICovCisjZW5kaWYgLyogX0tFUk5FTF9DQVBBQklMSVRZX1UzMlMgIT0gMiAqLwogCiAj
+ZGVmaW5lIENBUF9JTklUX0lOSF9TRVQgICAgQ0FQX0VNUFRZX1NFVAogCmRpZmYgLS1naXQg
+YS9rZXJuZWwvY2FwYWJpbGl0eS5jIGIva2VybmVsL2NhcGFiaWxpdHkuYwppbmRleCAzOWU4
+MTkzLi44ZTVjYzUxIDEwMDY0NAotLS0gYS9rZXJuZWwvY2FwYWJpbGl0eS5jCisrKyBiL2tl
+cm5lbC9jYXBhYmlsaXR5LmMKQEAgLTg4LDcgKzg4LDcgQEAgYXNtbGlua2FnZSBsb25nIHN5
+c19jYXBnZXQoY2FwX3VzZXJfaGVhZGVyX3QgaGVhZGVyLCBjYXBfdXNlcl9kYXRhX3QgZGF0
+YXB0cikKIAkJdG9jb3B5ID0gX0xJTlVYX0NBUEFCSUxJVFlfVTMyU18yOwogCQlicmVhazsK
+IAlkZWZhdWx0OgotCQlpZiAocHV0X3VzZXIoX0xJTlVYX0NBUEFCSUxJVFlfVkVSU0lPTiwg
+JmhlYWRlci0+dmVyc2lvbikpCisJCWlmIChwdXRfdXNlcihfS0VSTkVMX0NBUEFCSUxJVFlf
+VkVSU0lPTiwgJmhlYWRlci0+dmVyc2lvbikpCiAJCQlyZXR1cm4gLUVGQVVMVDsKIAkJcmV0
+dXJuIC1FSU5WQUw7CiAJfQpAQCAtMTE4LDcgKzExOCw3IEBAIG91dDoKIAlzcGluX3VubG9j
+aygmdGFza19jYXBhYmlsaXR5X2xvY2spOwogCiAJaWYgKCFyZXQpIHsKLQkJc3RydWN0IF9f
+dXNlcl9jYXBfZGF0YV9zdHJ1Y3Qga2RhdGFbX0xJTlVYX0NBUEFCSUxJVFlfVTMyU107CisJ
+CXN0cnVjdCBfX3VzZXJfY2FwX2RhdGFfc3RydWN0IGtkYXRhW19LRVJORUxfQ0FQQUJJTElU
+WV9VMzJTXTsKIAkJdW5zaWduZWQgaTsKIAogCQlmb3IgKGkgPSAwOyBpIDwgdG9jb3B5OyBp
+KyspIHsKQEAgLTEyOCw3ICsxMjgsNyBAQCBvdXQ6CiAJCX0KIAogCQkvKgotCQkgKiBOb3Rl
+LCBpbiB0aGUgY2FzZSwgdG9jb3B5IDwgX0xJTlVYX0NBUEFCSUxJVFlfVTMyUywKKwkJICog
+Tm90ZSwgaW4gdGhlIGNhc2UsIHRvY29weSA8IF9LRVJORUxfQ0FQQUJJTElUWV9VMzJTLAog
+CQkgKiB3ZSBzaWxlbnRseSBkcm9wIHRoZSB1cHBlciBjYXBhYmlsaXRpZXMgaGVyZS4gVGhp
+cwogCQkgKiBoYXMgdGhlIGVmZmVjdCBvZiBtYWtpbmcgb2xkZXIgbGliY2FwCiAJCSAqIGlt
+cGxlbWVudGF0aW9ucyBpbXBsaWNpdGx5IGRyb3AgdXBwZXIgY2FwYWJpbGl0eQpAQCAtMjQw
+LDcgKzI0MCw3IEBAIHN0YXRpYyBpbmxpbmUgaW50IGNhcF9zZXRfYWxsKGtlcm5lbF9jYXBf
+dCAqZWZmZWN0aXZlLAogICovCiBhc21saW5rYWdlIGxvbmcgc3lzX2NhcHNldChjYXBfdXNl
+cl9oZWFkZXJfdCBoZWFkZXIsIGNvbnN0IGNhcF91c2VyX2RhdGFfdCBkYXRhKQogewotCXN0
+cnVjdCBfX3VzZXJfY2FwX2RhdGFfc3RydWN0IGtkYXRhW19MSU5VWF9DQVBBQklMSVRZX1Uz
+MlNdOworCXN0cnVjdCBfX3VzZXJfY2FwX2RhdGFfc3RydWN0IGtkYXRhW19LRVJORUxfQ0FQ
+QUJJTElUWV9VMzJTXTsKIAl1bnNpZ25lZCBpLCB0b2NvcHk7CiAJa2VybmVsX2NhcF90IGlu
+aGVyaXRhYmxlLCBwZXJtaXR0ZWQsIGVmZmVjdGl2ZTsKIAlfX3UzMiB2ZXJzaW9uOwpAQCAt
+MjYwLDcgKzI2MCw3IEBAIGFzbWxpbmthZ2UgbG9uZyBzeXNfY2Fwc2V0KGNhcF91c2VyX2hl
+YWRlcl90IGhlYWRlciwgY29uc3QgY2FwX3VzZXJfZGF0YV90IGRhdGEpCiAJCXRvY29weSA9
+IF9MSU5VWF9DQVBBQklMSVRZX1UzMlNfMjsKIAkJYnJlYWs7CiAJZGVmYXVsdDoKLQkJaWYg
+KHB1dF91c2VyKF9MSU5VWF9DQVBBQklMSVRZX1ZFUlNJT04sICZoZWFkZXItPnZlcnNpb24p
+KQorCQlpZiAocHV0X3VzZXIoX0tFUk5FTF9DQVBBQklMSVRZX1ZFUlNJT04sICZoZWFkZXIt
+PnZlcnNpb24pKQogCQkJcmV0dXJuIC1FRkFVTFQ7CiAJCXJldHVybiAtRUlOVkFMOwogCX0K
+QEAgLTI4MSw3ICsyODEsNyBAQCBhc21saW5rYWdlIGxvbmcgc3lzX2NhcHNldChjYXBfdXNl
+cl9oZWFkZXJfdCBoZWFkZXIsIGNvbnN0IGNhcF91c2VyX2RhdGFfdCBkYXRhKQogCQlwZXJt
+aXR0ZWQuY2FwW2ldID0ga2RhdGFbaV0ucGVybWl0dGVkOwogCQlpbmhlcml0YWJsZS5jYXBb
+aV0gPSBrZGF0YVtpXS5pbmhlcml0YWJsZTsKIAl9Ci0Jd2hpbGUgKGkgPCBfTElOVVhfQ0FQ
+QUJJTElUWV9VMzJTKSB7CisJd2hpbGUgKGkgPCBfS0VSTkVMX0NBUEFCSUxJVFlfVTMyUykg
+ewogCQllZmZlY3RpdmUuY2FwW2ldID0gMDsKIAkJcGVybWl0dGVkLmNhcFtpXSA9IDA7CiAJ
+CWluaGVyaXRhYmxlLmNhcFtpXSA9IDA7Ci0tIAoxLjUuMy43Cgo=
+--------------010506080204030200060409--
