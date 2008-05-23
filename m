@@ -1,126 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbYEWEoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbYEWFCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761193AbYEWEoq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 00:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYEWEof
+	id S1758278AbYEWFCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 01:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbYEWFCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 00:44:35 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:31074 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbYEWEod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 00:44:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=El3lD+pVQip8/ONgdLrpqjxc4kxfQD5bS2XIxkLHebiJ46sq8HQp1zPAPkg89m7LlAL758Lph9w17nscB/z2IKvJ4AGE1N6gBpsmjR1nbIt5/OXp92oxFZOVv2DI5TWzgf/i6j6k6l10YvUxxIzh2ceP3j1fsTv3y6BgVxpGNaU=
-Date: Fri, 23 May 2008 00:44:30 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bruno Pr??mont <bonbons@linux-vserver.org>
-Cc: Linux Input <linux-input@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Subject: Re: Input+S3: extra keycodes forgotten after suspend
-Message-ID: <20080523044430.GA9809@anvil.corenet.prv>
-References: <200805162225.44284.bonbons@linux-vserver.org> <20080516163318.ZZRA012@mailhub.coreip.homeip.net> <200805162300.06027.bonbons@linux-vserver.org> <20080519114827.ZZRA012@mailhub.coreip.homeip.net> <20080519184501.38647a94@neptune.home> <20080521135345.ZZRA012@mailhub.coreip.homeip.net> <20080521220833.2e4345cb@neptune.home> <20080521163638.ZZRA012@mailhub.coreip.homeip.net>
+	Fri, 23 May 2008 01:02:13 -0400
+Received: from mail.aknet.ru ([78.158.192.26]:61798 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698AbYEWFCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 01:02:13 -0400
+Message-ID: <48364FCC.2060205@aknet.ru>
+Date: Fri, 23 May 2008 09:02:04 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080521163638.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: [patch] provide rtc_cmos platform device, take 2
+References: <200805212334.m4LNY42M006425@imap1.linux-foundation.org>
+In-Reply-To: <200805212334.m4LNY42M006425@imap1.linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: multipart/mixed;
+ boundary="------------050009000402040901010605"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 04:38:08PM -0400, Dmitry Torokhov wrote:
-> 
-> Ah, ok, great.. I think we simply need to move dritek out of the place
-> where you put it in so it does not interfere with our efforts to
-> resume keyboard and mouse ;) I will see what I can do there..
-> 
+This is a multi-part message in MIME format.
+--------------050009000402040901010605
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-So what about the patch below? Does it work for you?
+Hello.
 
-Thanks!
+[forgot to CC this to LKML, doing now]
 
--- 
-Dmitry
+akpm@linux-foundation.org wrote:
+> This patch was dropped because an updated version will be merged
+How is the attached one for an updated
+version? Please check the compilation
+on arm as I haven't done that.
 
-From: Bruno Prémont <bonbons@linux-vserver.org>
+----
+Recently (around 2.6.25) I've noticed that RTC no longer works for me.  It
+turned out this is because I use pnpacpi=off kernel option to work around
+the parport_pc bugs.  I always did so, but RTC used to work fine in the
+past, and now it have regressed.
 
-Input: i8042 - make sure Dritek quirk is invoked at resume
+The attached patch fixes the problem by creating the platform device for
+the RTC when PNP is disabled.  This may also help running the PNP-enabled
+kernel on an older PCs.
 
-Also do not fail i8042 entire initialization if enabling dritek extension
-fails.
+Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Adam Belay <ambx1@neo.rr.com>
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
- drivers/input/serio/i8042.c |   33 +++++++++++++++++++++++++--------
- 1 file changed, 25 insertions(+), 8 deletions(-)
 
-Index: work/drivers/input/serio/i8042.c
-===================================================================
---- work.orig/drivers/input/serio/i8042.c
-+++ work/drivers/input/serio/i8042.c
-@@ -885,6 +885,20 @@ static long i8042_panic_blink(long count
+--------------050009000402040901010605
+Content-Type: text/x-patch;
+ name="rtc_platf1.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="rtc_platf1.diff"
+
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index 9615eee..01459d2 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -4,9 +4,12 @@
+ #include <linux/acpi.h>
+ #include <linux/bcd.h>
+ #include <linux/mc146818rtc.h>
++#include <linux/platform_device.h>
++#include <linux/pnp.h>
  
- #undef DELAY
+ #include <asm/time.h>
+ #include <asm/vsyscall.h>
++#include <asm/mc146818rtc.h>
  
-+#ifdef CONFIG_X86
-+static void i8042_dritek_enable(void)
+ #ifdef CONFIG_X86_32
+ /*
+@@ -197,3 +200,35 @@ unsigned long long native_read_tsc(void)
+ }
+ EXPORT_SYMBOL(native_read_tsc);
+ 
++
++static struct resource rtc_resources[] = {
++	[0] = {
++		.start	= RTC_PORT(0),
++		.end	= RTC_PORT(1),
++		.flags	= IORESOURCE_IO,
++	},
++	[1] = {
++		.start	= RTC_IRQ,
++		.end	= RTC_IRQ,
++		.flags	= IORESOURCE_IRQ,
++	}
++};
++
++static struct platform_device rtc_device = {
++	.name		= "rtc_cmos",
++	.id		= -1,
++	.resource	= rtc_resources,
++	.num_resources	= ARRAY_SIZE(rtc_resources),
++};
++
++static __init int add_rtc_cmos(void)
 +{
-+	char param = 0x90;
-+	int error;
-+
-+	error = i8042_command(&param, 0x1059);
-+	if (error)
-+		printk(KERN_WARNING
-+			"Failed to enable DRITEK extension: %d\n",
-+			error);
++#ifdef CONFIG_PNP
++	if (!pnp_platform_devices)
++		platform_device_register(&rtc_device);
++#else
++	platform_device_register(&rtc_device);
++#endif /* CONFIG_PNP */
++	return 0;
 +}
-+#endif
-+
- #ifdef CONFIG_PM
- /*
-  * Here we try to restore the original BIOS settings. We only want to
-@@ -942,6 +956,12 @@ static int i8042_resume(struct platform_
- 		return -EIO;
- 	}
++device_initcall(add_rtc_cmos);
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index d060a06..d7bb9ba 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -905,19 +905,7 @@ static struct pnp_driver cmos_pnp_driver = {
+ 	.resume		= cmos_pnp_resume,
+ };
  
-+
-+#ifdef CONFIG_X86
-+	if (i8042_dritek)
-+		i8042_dritek_enable();
-+#endif
-+
- 	if (i8042_mux_present) {
- 		if (i8042_set_mux_mode(1, NULL) || i8042_enable_mux_ports())
- 			printk(KERN_WARNING
-@@ -1160,6 +1180,11 @@ static int __devinit i8042_probe(struct 
- 	if (error)
- 		return error;
+-static int __init cmos_init(void)
+-{
+-	return pnp_register_driver(&cmos_pnp_driver);
+-}
+-module_init(cmos_init);
+-
+-static void __exit cmos_exit(void)
+-{
+-	pnp_unregister_driver(&cmos_pnp_driver);
+-}
+-module_exit(cmos_exit);
+-
+-#else	/* no PNP */
++#endif	/* CONFIG_PNP */
  
-+#ifdef CONFIG_X86
-+	if (i8042_dritek)
-+		i8042_dritek_enable();
-+#endif
-+
- 	if (!i8042_noaux) {
- 		error = i8042_setup_aux();
- 		if (error && error != -ENODEV && error != -EBUSY)
-@@ -1171,14 +1196,6 @@ static int __devinit i8042_probe(struct 
- 		if (error)
- 			goto out_fail;
- 	}
--#ifdef CONFIG_X86
--	if (i8042_dritek) {
--		char param = 0x90;
--		error = i8042_command(&param, 0x1059);
--		if (error)
--			goto out_fail;
--	}
--#endif
- /*
-  * Ok, everything is ready, let's register all serio ports
-  *
+ /*----------------------------------------------------------------*/
+ 
+@@ -958,20 +946,33 @@ static struct platform_driver cmos_platform_driver = {
+ 
+ static int __init cmos_init(void)
+ {
++#ifdef	CONFIG_PNP
++	if (pnp_platform_devices)
++		return pnp_register_driver(&cmos_pnp_driver);
++	else
++		return platform_driver_probe(&cmos_platform_driver,
++			cmos_platform_probe);
++#else
+ 	return platform_driver_probe(&cmos_platform_driver,
+ 			cmos_platform_probe);
++#endif /* CONFIG_PNP */
+ }
+ module_init(cmos_init);
+ 
+ static void __exit cmos_exit(void)
+ {
++#ifdef	CONFIG_PNP
++	if (pnp_platform_devices)
++		pnp_unregister_driver(&cmos_pnp_driver);
++	else
++		platform_driver_unregister(&cmos_platform_driver);
++#else
+ 	platform_driver_unregister(&cmos_platform_driver);
++#endif /* CONFIG_PNP */
+ }
+ module_exit(cmos_exit);
+ 
+ 
+-#endif	/* !PNP */
+-
+ MODULE_AUTHOR("David Brownell");
+ MODULE_DESCRIPTION("Driver for PC-style 'CMOS' RTCs");
+ MODULE_LICENSE("GPL");
+
+
+--------------050009000402040901010605--
