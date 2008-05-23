@@ -1,206 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbYEWUeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbYEWUg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbYEWUeJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 16:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759362AbYEWUdr
+	id S1759552AbYEWUg4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 16:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbYEWUgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 16:33:47 -0400
-Received: from smtp3-g19.free.fr ([212.27.42.29]:50269 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759332AbYEWUdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 16:33:45 -0400
-From: Guillaume Chazarain <guichaz@gmail.com>
-Subject: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Date: Fri, 23 May 2008 22:34:29 +0200
-Message-ID: <20080523203429.11846.84137.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Fri, 23 May 2008 16:36:45 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37926 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758480AbYEWUgn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 16:36:43 -0400
+Message-ID: <48372900.6050600@oracle.com>
+Date: Fri, 23 May 2008 13:28:48 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: sekharan@us.ibm.com
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, hare@suse.de,
+       scsi <linux-scsi@vger.kernel.org>
+Subject: Re: 2.6.26-rc2-mm1 (SCSI_DH build errors)
+References: <20080514010129.4f672378.akpm@linux-foundation.org>	 <20080514141348.e71feed6.randy.dunlap@oracle.com>	 <1210862779.15852.4.camel@localhost.localdomain>	 <1210881374.21974.285.camel@chandra-ubuntu>	 <20080522202543.d15e8c3b.akpm@linux-foundation.org> <1211571560.10532.7.camel@chandra-ubuntu>
+In-Reply-To: <1211571560.10532.7.camel@chandra-ubuntu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently it is possible for some errors to be detected at write-back
-time but not reported to the program as shown by the following script
-using the included make_file.c. Undetected ENOSPC or EIO can obviously lead to
-data corruption.
+Chandra Seetharaman wrote:
+> Yikes.... Sorry again... Hopefully this attached patch work properly.
 
----------8<---------8<---------8<---------8<---------8<---------8<---------
-#!/bin/bash
+Did it build cleanly for you?
+Hint:
+Use SCSI_DH as module and MD_MULTIPATH=y.  Build errors for me.
 
-# We binary search the size of a file in a 40M filesystem that can cause
-# the missed error.
-MIN=5000000
-MAX=50000000
+> chandra
+> On Thu, 2008-05-22 at 20:25 -0700, Andrew Morton wrote:
+>> On Thu, 15 May 2008 12:56:14 -0700 Chandra Seetharaman <sekharan@us.ibm.com> wrote:
+>>
+>>> Hi James, Andrew,
+>>>
+>>> Here is a patch to remove the automatic "select" of scsi_dh for
+>>> dm-multipath.
+>>>
+>>> Sorry about the mishap.
+>>>
+>>>
+>> This is busted.
+>>
+> -------------------------
+> Do not automatically "select" SCSI_DH for dm-multipath. If SCSI_DH
+> doesn't exist,just do not allow  hardware handlers to be used.
+> 
+> Handle SCSI_DH being a module also.
+> 
+> Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Reported-by: Andrew Morton <akpm@linux-foundation.org>
+> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Cc: Alasdair G Kergon <agk@redhat.com>
+> Cc: Mike Christie <michaelc@cs.wisc.edu>
+> Cc: Hannes Reinecke <hare@suse.de>
+> ---
+> 
+> Index: scsi-misc-2.6/drivers/md/Kconfig
+> ===================================================================
+> --- scsi-misc-2.6.orig/drivers/md/Kconfig
+> +++ scsi-misc-2.6/drivers/md/Kconfig
+> @@ -252,7 +252,6 @@ config DM_ZERO
+>  config DM_MULTIPATH
+>  	tristate "Multipath target"
+>  	depends on BLK_DEV_DM
+> -	select SCSI_DH
+>  	---help---
+>  	  Allow volume managers to support multipath hardware.
+>  
+> Index: scsi-misc-2.6/drivers/md/dm-mpath.c
+> ===================================================================
+> --- scsi-misc-2.6.orig/drivers/md/dm-mpath.c
+> +++ scsi-misc-2.6/drivers/md/dm-mpath.c
+> @@ -664,6 +664,8 @@ static int parse_hw_handler(struct arg_s
+>  	request_module("scsi_dh_%s", m->hw_handler_name);
+>  	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
+>  		ti->error = "unknown hardware handler type";
+> +		kfree(m->hw_handler_name);
+> +		m->hw_handler_name = NULL;
+>  		return -EINVAL;
+>  	}
+>  	consume(as, hw_argc - 1);
+> Index: scsi-misc-2.6/include/scsi/scsi_dh.h
+> ===================================================================
+> --- scsi-misc-2.6.orig/include/scsi/scsi_dh.h
+> +++ scsi-misc-2.6/include/scsi/scsi_dh.h
+> @@ -54,6 +54,16 @@ enum {
+>  	SCSI_DH_NOSYS,
+>  	SCSI_DH_DRIVER_MAX,
+>  };
+> -
+> +#if defined(CONFIG_SCSI_DH) || defined(CONFIG_SCSI_DH_MODULE)
+>  extern int scsi_dh_activate(struct request_queue *);
+>  extern int scsi_dh_handler_exist(const char *);
+> +#else
+> +static inline int scsi_dh_activate(struct request_queue *req)
+> +{
+> +	return 0;
+> +}
+> +static inline int scsi_dh_handler_exist(const char *name)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> 
+> 
 
-rm fs.40M
-dd if=/dev/zero of=fs.40M bs=40M count=0 seek=1 status=noxfer
-#mkfs.ext2 -F fs.40M
-mkfs.ext3 -F fs.40M
-#mkfs.jfs -q fs.40M
-#mkfs.reiserfs -fq fs.40M
-#mkfs.xfs fs.40M # SIGBUS in memset() with patch
-# XFS => OK for ENOSPC, but not for EIO
 
-attempt()
-{
-	SIZE=$1
-	RES=0
-
-	mount fs.40M /mnt -o loop
-	if ! ./make_file /mnt/not_enough_space $SIZE; then
-		# We could not create the file as the requested size
-		# was clearly too big
-		echo "/mnt/not_enough_space: not enough space for $SIZE bytes"
-		RES=1
-	fi
-	umount /mnt
-
-	if [ $RES -eq 0 ]; then
-		# We think we could create the file, let's see if that's true
-		mount fs.40M /mnt -o loop
-		cmp <(tr '\000' '\377' < /dev/zero | head -c$SIZE) \
-		    /mnt/not_enough_space
-		RES=$?
-		umount /mnt
-
-		if [ $RES -eq 0 ]; then
-			# The file was small enough to fit in the filesystem
-			RES=-1
-		else
-			echo "Undetected ENOSPC with SIZE=$SIZE"
-			exit
-		fi
-	fi
-
-	return $RES
-}
-
-while [ $((MAX - MIN)) -gt 1 ]; do
-	SIZE=$(((MIN + MAX) / 2))
-	attempt $SIZE
-	RES=$?
-	if [ $RES -eq 1 ]; then
-		MAX=$SIZE
-	else
-		MIN=$SIZE
-	fi
-done
-
-echo "Could not reproduce the problem"
----------8<---------8<---------8<---------8<---------8<---------8<---------
-/* make_file.c */
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <sys/mman.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-int main(int argc, char **argv)
-{
-	int size, fd;
-	char *mapping;
-	if (argc != 3) {
-		fprintf(stderr, "Usage: %s FILE SIZE\n", argv[0]);
-		return 1;
-	}
-	size = atoi(argv[2]);
-
-	fd = open(argv[1], O_RDWR | O_CREAT, 0600);
-	if (fd < 0) {
-		perror(argv[1]);
-		return 1;
-	}
-	if (ftruncate(fd, size) < 0) {
-		perror("ftruncate");
-		return 1;
-	}
-	mapping = mmap(NULL, size, PROT_WRITE, MAP_SHARED, fd, 0);
-	if (mapping == MAP_FAILED) {
-		perror("mmap");
-		return 1;
-	}
-	memset(mapping, 0xFF, size);
-
-	/* Force a write-back */
-	sync();
-
-	if (msync(mapping, size, MS_SYNC) < 0) {
-		perror("msync");
-		return 1;
-	}
-	if (close(fd) < 0) {
-		perror("close");
-		return 1;
-	}
-	printf("%s: successfully written %d bytes\n", argv[1], size);
-	return 0;
-}
----------8<---------8<---------8<---------8<---------8<---------8<---------
-
-make_file.c mmaps a hole, performs some writeback (memset + sync) and
-then expects to find some error code in msync(). The script mounts a
-40M loopback filesystem and does a binary search to find the size of
-a file big enough to provoke a ENOSPC, but small enough to show the
-error not being detected at msync() time.
-
-The error window is large enough for such a size to be quickly found, but with
-this patch, no such file size can be found.
-
-All mmap capable filesystems I tested are affected (ext2, ext3,
-jfs, reiserfs, xfs). XFS is special in that it survives the test thanks
-to the page_mkwrite() work, i.e. it SIGBUS during memset. Anyway, this XFS
-behaviour solves ENOSPC but does nothing for EIO.
-
-The offending code is in fs/fs-writeback.c:
-
-sync_sb_inodes(...)
-{
-	...
-	__writeback_single_inode(inode, wbc);
-	...
-}
-
-__writeback_single_inode() gets the error from mapping->flags, clears it
-and returns it. But sync_sb_inodes() ignores this return value. sync_sb_inodes()
-should leave the error in each mapping instead of propagating it through the
-call stack for the following reasons:
-
-- the propagated error would combine the errors in all the synced inodes, so it
-would just tell that some inode in a specific fs got an error,
-- nobody in the call stack would be interested by this error: certainly not
-pdflush, or 'void sync(2)'.
-
-Signed-off-by: Guillaume Chazarain <guichaz@gmail.com>
----
-
- fs/fs-writeback.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 495214d..0e6881e 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -454,6 +454,7 @@ void generic_sync_sb_inodes(struct super_block *sb,
- 		struct address_space *mapping = inode->i_mapping;
- 		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		long pages_skipped;
-+		int err;
- 
- 		if (!bdi_cap_writeback_dirty(bdi)) {
- 			redirty_tail(inode);
-@@ -498,7 +499,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
- 		BUG_ON(inode->i_state & I_FREEING);
- 		__iget(inode);
- 		pages_skipped = wbc->pages_skipped;
--		__writeback_single_inode(inode, wbc);
-+		err = __writeback_single_inode(inode, wbc);
-+		mapping_set_error(mapping, err);
- 		if (wbc->sync_mode == WB_SYNC_HOLD) {
- 			inode->dirtied_when = jiffies;
- 			list_move(&inode->i_list, &sb->s_dirty);
-
+-- 
+~Randy
