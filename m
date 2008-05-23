@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbYEWMAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbYEWMDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755930AbYEWMAa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 08:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYEWMAT
+	id S1755959AbYEWMDm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 08:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYEWMDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 08:00:19 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:51252 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbYEWMAS convert rfc822-to-8bit (ORCPT
+	Fri, 23 May 2008 08:03:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60768 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752598AbYEWMDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 08:00:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lYh/lVNggo0CUkM/a9sUhDJs9tqBZLac1Xq7wxKALAu5zpDouttG1LZADmBTWJKL2WJ0dHOe1SL8yuS5ydugyf6fkTS9CRojjL1gIgy0FPNNXynpSxsV1T1QD4CcCqOy1pZrwESDqMIsK8D8VL2XbFutC/gTBEmHa8aS2qaiebw=
-Message-ID: <7b9198260805230500l6b21a397m6951a2b1115a6f5@mail.gmail.com>
-Date: Fri, 23 May 2008 13:00:17 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable interrupts
-Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
-       "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Jan Altenberg" <jan.altenberg@linutronix.de>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Magnus Damm" <magnus.damm@gmail.com>
-In-Reply-To: <20080523115815.GA6932@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 23 May 2008 08:03:33 -0400
+Date: Fri, 23 May 2008 14:11:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       roland@redhat.com, drepper@redhat.com, Hongjiu.lu@intel.com,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+Message-ID: <20080523121154.GH31727@one.firstfloor.org>
+References: <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <20080522212920.GC7998@linux-os.sc.intel.com> <4835E6F5.5010801@zytor.com> <20080523014855.GA18385@linux-os.sc.intel.com> <48362FD0.9030104@zytor.com> <18486.44689.203792.818972@harpo.it.uu.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080522192252.GB3226@local> <20080522192637.GC3226@local>
-	 <7b9198260805221247t715660d1l4085fe8c310f89c@mail.gmail.com>
-	 <20080522200814.GD3226@local>
-	 <7b9198260805221326t6d23b757p2ffe646db70fceba@mail.gmail.com>
-	 <20080523054115.GB28807@digi.com>
-	 <7b9198260805230448x56bf3bd1kade6083c141a75f2@mail.gmail.com>
-	 <20080523115815.GA6932@digi.com>
+In-Reply-To: <18486.44689.203792.818972@harpo.it.uu.se>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/23 Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
-> Hello Tom,
->
->> > Tom Spink wrote:
->> >> The added benefit is that the code becomes less complex, as you don't
->> >> have to check buffer sizes and copy the integer from userspace.
->> > AFAIK this is wrong.  You need to copy the integer from userspace in
->> > uio_ioctl.  Actually it's a value coming from user space, so you need to
->> > do it somewhere.
->>
->> Not really in this case.  It's not a *pointer* to a value in
->> userspace, so you don't need to copy anything.  If it was being used
->> to point to a memory location holding a value, then yes, it would need
->> to be copied across.  But in this case, it's just being used to pass
->> across 1 or 0.
-> ah, OK, you're right.  Thanks for correcting my correction :-)
+On Fri, May 23, 2008 at 01:46:25PM +0200, Mikael Pettersson wrote:
+> H. Peter Anvin writes:
+>  > Michael, you wrote:
+>  > 
+>  > > Hmm, right now it seems this field has a de-facto ABI of being
+>  > > either 0xffff (plain) or 0x0000 (fxsr). Using other values would
+>  > > confuse at least one application I know of. Sad.
+>  > 
+>  > ... could you share what application that is?  This otherwise would be 
+>  > ideal.
+> 
+> It's the virtual machine for the Erlang/OTP concurrent functional
+> language. It's open-source and used extensively for telecom and
+> internet server applications.
 
-Heh, no problem.  My initial idea was just a thought anyway, just to
-maintain a bit of extensibility if .write is ever needed for something
-else. :-)
+I had a few reports over the years of other applications ddoing very weird 
+specific things with the sigframe. So I agree it's fairly important
+to be as compatible here as possible.
 
-> Uwe
-
--- 
-Tom Spink
+-Andi
