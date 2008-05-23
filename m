@@ -1,255 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbYEWTqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbYEWTso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbYEWTqp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755953AbYEWTqi
+	id S1758913AbYEWTso (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbYEWTsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:46:38 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:11991 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755575AbYEWTqh (ORCPT
+	Fri, 23 May 2008 15:48:36 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:36990 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755167AbYEWTsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 15:46:37 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5302"; a="3206087"
-From: Max Krasnyansky <maxk@qualcomm.com>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, pj@sgi.com, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, Max Krasnyansky <maxk@qualcomm.com>
-Subject: [PATCH] [genirq] Expose default irq affinity mask
-Date: Fri, 23 May 2008 12:46:35 -0700
-Message-Id: <1211571995-17488-1-git-send-email-maxk@qualcomm.com>
-X-Mailer: git-send-email 1.5.4.5
+	Fri, 23 May 2008 15:48:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=G5l/vv/WI5RyBDfsbiOsUvUofZNm6jfyrlgRLp4FKNzyTfJ9Qk/JE0DdaJ8zaD9CSglR88YaC7/EP3LJ4HZmuApGjOAVct6ssuL5EDv8xLiD9RcGBHqsbSH+Xwi+ZySanGa+BnNfcf2VchQQhkd8GA2avlRUjMmNnXKYEhwxmSw=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Grant Grundler <grundler@parisc-linux.org>
+Subject: [PATCH] x86: early dump pci conf space v3
+Date: Fri, 23 May 2008 12:48:54 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200805210012.35939.yhlu.kernel@gmail.com> <200805221435.11734.yhlu.kernel@gmail.com>
+In-Reply-To: <200805221435.11734.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805231248.55345.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current IRQ affinity interface does not provide a way to set affinity
-for the IRQs that will be allocated/activated in the future.
-This patch creates /proc/irq/default_smp_affinity that lets users set
-default affinity mask for the newly allocated IRQs. Changing default
-does not affect affinity masks for the currently active IRQs, they
-have to be changed explicitly.
 
-Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
----
- arch/alpha/kernel/irq.c |    5 +--
- include/linux/irq.h     |   14 ++++-------
- kernel/irq/manage.c     |   28 +++++++++++++++++++++-
- kernel/irq/proc.c       |   57 ++++++++++++++++++++++++++++++++++++++++++++++-
- 4 files changed, 89 insertions(+), 15 deletions(-)
+so we can printout pci config before kernel touch it
+v3: change to pci=early_config_dump
 
-diff --git a/arch/alpha/kernel/irq.c b/arch/alpha/kernel/irq.c
-index facf82a..c626a82 100644
---- a/arch/alpha/kernel/irq.c
-+++ b/arch/alpha/kernel/irq.c
-@@ -42,8 +42,7 @@ void ack_bad_irq(unsigned int irq)
- #ifdef CONFIG_SMP 
- static char irq_user_affinity[NR_IRQS];
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+Index: linux-2.6/arch/x86/kernel/setup_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_64.c
++++ linux-2.6/arch/x86/kernel/setup_64.c
+@@ -350,6 +350,11 @@ void __init setup_arch(char **cmdline_p)
  
--int
--select_smp_affinity(unsigned int irq)
-+int irq_select_affinity(unsigned int irq)
- {
- 	static int last_cpu;
- 	int cpu = last_cpu + 1;
-@@ -51,7 +50,7 @@ select_smp_affinity(unsigned int irq)
- 	if (!irq_desc[irq].chip->set_affinity || irq_user_affinity[irq])
- 		return 1;
+ 	parse_early_param();
  
--	while (!cpu_possible(cpu))
-+	while (!cpu_possible(cpu) || !cpu_isset(cpu, irq_default_affinity))
- 		cpu = (cpu < (NR_CPUS-1) ? cpu + 1 : 0);
- 	last_cpu = cpu;
- 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 176e5e7..8faebf8 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -228,8 +228,11 @@ static inline void set_pending_irq(unsigned int irq, cpumask_t mask)
- 
- #endif /* CONFIG_GENERIC_PENDING_IRQ */
- 
-+extern cpumask_t irq_default_affinity;
-+
- extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
- extern int irq_can_set_affinity(unsigned int irq);
-+extern int irq_select_affinity(unsigned int irq);
- 
- #else /* CONFIG_SMP */
- 
-@@ -243,6 +246,8 @@ static inline int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
- 
- static inline int irq_can_set_affinity(unsigned int irq) { return 0; }
- 
-+static inline int irq_select_affinity(unsigned int irq)  { return 0; }
-+
- #endif /* CONFIG_SMP */
- 
- #ifdef CONFIG_IRQBALANCE
-@@ -253,15 +258,6 @@ static inline void set_balance_irq_affinity(unsigned int irq, cpumask_t mask)
- }
- #endif
- 
--#ifdef CONFIG_AUTO_IRQ_AFFINITY
--extern int select_smp_affinity(unsigned int irq);
--#else
--static inline int select_smp_affinity(unsigned int irq)
--{
--	return 1;
--}
--#endif
--
- extern int no_irq_affinity;
- 
- static inline int irq_balancing_disabled(unsigned int irq)
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 438a014..90f9ccc 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -16,6 +16,8 @@
- 
- #ifdef CONFIG_SMP
- 
-+cpumask_t irq_default_affinity = CPU_MASK_ALL;
-+
- /**
-  *	synchronize_irq - wait for pending IRQ handlers (on other CPUs)
-  *	@irq: interrupt number to wait for
-@@ -94,6 +96,27 @@ int irq_set_affinity(unsigned int irq, cpumask_t cpumask)
- 	return 0;
- }
- 
-+#ifndef CONFIG_AUTO_IRQ_AFFINITY
-+/**
-+ * Generic version of the affinity autoselector.
-+ */
-+int irq_select_affinity(unsigned int irq)
-+{
-+	cpumask_t mask;
-+
-+	if (!irq_can_set_affinity(irq))
-+		return 0;
-+
-+	cpus_and(mask, cpu_online_map, irq_default_affinity);
-+
-+	irq_desc[irq].affinity = mask;
-+	irq_desc[irq].chip->set_affinity(irq, mask);
-+
-+	set_balance_irq_affinity(irq, mask);
-+	return 0;
-+}
++#ifdef CONFIG_PCI
++	if (pci_early_config_dump)
++		early_dump_pci_devices();
 +#endif
 +
- #endif
+ #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+ 	if (init_ohci1394_dma_early)
+ 		init_ohci1394_dma_on_all_controllers();
+Index: linux-2.6/arch/x86/pci/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/common.c
++++ linux-2.6/arch/x86/pci/common.c
+@@ -20,6 +20,7 @@
+ unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
+ 				PCI_PROBE_MMCONF;
  
- /**
-@@ -376,6 +399,9 @@ int setup_irq(unsigned int irq, struct irqaction *new)
- 		} else
- 			/* Undo nested disables: */
- 			desc->depth = 1;
-+
-+		/* Set default affinity mask once everything is setup */
-+		irq_select_affinity(irq);
- 	}
- 	/* Reset broken irq detection when installing new handler */
- 	desc->irq_count = 0;
-@@ -555,8 +581,6 @@ int request_irq(unsigned int irq, irq_handler_t handler,
- 	action->next = NULL;
- 	action->dev_id = dev_id;
- 
--	select_smp_affinity(irq);
--
- #ifdef CONFIG_DEBUG_SHIRQ
- 	if (irqflags & IRQF_SHARED) {
- 		/*
-diff --git a/kernel/irq/proc.c b/kernel/irq/proc.c
-index c2f2ccb..c20eb52 100644
---- a/kernel/irq/proc.c
-+++ b/kernel/irq/proc.c
-@@ -66,13 +66,51 @@ static int irq_affinity_write_proc(struct file *file, const char __user *buffer,
- 	if (cpus_empty(tmp))
- 		/* Special case for empty set - allow the architecture
- 		   code to set default SMP affinity. */
--		return select_smp_affinity(irq) ? -EINVAL : full_count;
-+		return irq_select_affinity(irq) ? -EINVAL : full_count;
- 
- 	irq_set_affinity(irq, new_value);
- 
- 	return full_count;
++unsigned int pci_early_config_dump;
+ static int pci_bf_sort;
+ int pci_routeirq;
+ int pcibios_last_bus = -1;
+@@ -489,6 +490,9 @@ char * __devinit  pcibios_setup(char *st
+ 	} else if (!strcmp(str, "use_crs")) {
+ 		pci_probe |= PCI_USE__CRS;
+ 		return NULL;
++	} else if (!strcmp(str, "early_config_dump")) {
++		pci_early_config_dump = 1;
++		return NULL;
+ 	} else if (!strcmp(str, "routeirq")) {
+ 		pci_routeirq = 1;
+ 		return NULL;
+Index: linux-2.6/arch/x86/pci/early.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/early.c
++++ linux-2.6/arch/x86/pci/early.c
+@@ -57,3 +57,57 @@ int early_pci_allowed(void)
+ 	return (pci_probe & (PCI_PROBE_CONF1|PCI_PROBE_NOEARLY)) ==
+ 			PCI_PROBE_CONF1;
  }
- 
-+extern cpumask_t irq_default_affinity;
 +
-+static int default_affinity_read(char *page, char **start, off_t off,
-+				  int count, int *eof, void *data)
++void early_dump_pci_device(u8 bus, u8 slot, u8 func)
 +{
-+	int len = cpumask_scnprintf(page, count, irq_default_affinity);
-+	if (count - len < 2)
-+		return -EINVAL;
-+	len += sprintf(page + len, "\n");
-+	return len;
-+}
++	int i;
++	int j;
++	u32 val;
 +
-+static int default_affinity_write(struct file *file, const char __user *buffer,
-+				   unsigned long count, void *data)
-+{
-+	unsigned int full_count = count, err;
-+	cpumask_t new_value, tmp;
++	if (!early_pci_allowed())
++		return;
 +
-+	err = cpumask_parse_user(buffer, count, new_value);
-+	if (err)
-+		return err;
++	printk("PCI: %02x:%02x:%02x", bus, slot, func);
 +
-+	if (!is_affinity_mask_valid(new_value))
-+		return -EINVAL;
++	for (i = 0; i < 256; i += 4) {
++		if (!(i & 0x0f))
++			printk("\n%04x:",i);
 +
-+	/*
-+	 * Do not allow disabling IRQs completely - it's a too easy
-+	 * way to make the system unusable accidentally :-) At least
-+	 * one online CPU still has to be targeted.
-+	 */
-+	cpus_and(tmp, new_value, cpu_online_map);
-+	if (cpus_empty(tmp))
-+		return -EINVAL;
-+
-+	irq_default_affinity = new_value;
-+
-+	return full_count;
-+}
- #endif
- 
- static int irq_spurious_read(char *page, char **start, off_t off,
-@@ -171,6 +209,21 @@ void unregister_handler_proc(unsigned int irq, struct irqaction *action)
- 		remove_proc_entry(action->dir->name, irq_desc[irq].dir);
- }
- 
-+void register_default_affinity_proc(void)
-+{
-+#ifdef CONFIG_SMP
-+	struct proc_dir_entry *entry;
-+
-+	/* create /proc/irq/default_smp_affinity */
-+	entry = create_proc_entry("default_smp_affinity", 0600, root_irq_dir);
-+	if (entry) {
-+		entry->data = NULL;
-+		entry->read_proc  = default_affinity_read;
-+		entry->write_proc = default_affinity_write;
++		val = read_pci_config(bus, slot, func, i);
++		for (j = 0; j < 4; j++) {
++			printk(" %02x", val & 0xff);
++			val >>= 8;
++		}
 +	}
-+#endif
++	printk("\n");
 +}
 +
- void init_irq_proc(void)
- {
- 	int i;
-@@ -180,6 +233,8 @@ void init_irq_proc(void)
- 	if (!root_irq_dir)
- 		return;
- 
-+	register_default_affinity_proc();
++void early_dump_pci_devices(void)
++{
++	unsigned bus, slot, func;
 +
- 	/*
- 	 * Create entries for all existing IRQs.
- 	 */
--- 
-1.5.4.5
-
++	if (!early_pci_allowed())
++		return;
++
++	for (bus = 0; bus < 256; bus++) {
++		for (slot = 0; slot < 32; slot++) {
++			for (func = 0; func < 8; func++) {
++				u32 class;
++				u8 type;
++				class = read_pci_config(bus, slot, func,
++							PCI_CLASS_REVISION);
++				if (class == 0xffffffff)
++					break;
++
++				early_dump_pci_device(bus, slot, func);
++
++				/* No multi-function device? */
++				type = read_pci_config_byte(bus, slot, func,
++							       PCI_HEADER_TYPE);
++				if (!(type & 0x80))
++					break;
++			}
++		}
++	}
++}
++
+Index: linux-2.6/include/asm-x86/pci-direct.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/pci-direct.h
++++ linux-2.6/include/asm-x86/pci-direct.h
+@@ -14,4 +14,7 @@ extern void write_pci_config_byte(u8 bus
+ 
+ extern int early_pci_allowed(void);
+ 
++extern unsigned int pci_early_config_dump;
++extern void early_dump_pci_device(u8 bus, u8 slot, u8 func);
++extern void early_dump_pci_devices(void);
+ #endif
+Index: linux-2.6/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.orig/Documentation/kernel-parameters.txt
++++ linux-2.6/Documentation/kernel-parameters.txt
+@@ -1570,6 +1570,8 @@ and is between 256 and 4096 characters. 
+ 		cbmemsize=nn[KMG]	The fixed amount of bus space which is
+ 				reserved for the CardBus bridge's memory
+ 				window. The default value is 64 megabytes.
++		early_config_dump	[X86] print out pci config space
++				registers early before kernel touch any
+ 
+ 	pcmv=		[HW,PCMCIA] BadgePAD 4
+ 
+Index: linux-2.6/arch/x86/kernel/setup_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_32.c
++++ linux-2.6/arch/x86/kernel/setup_32.c
+@@ -46,6 +46,7 @@
+ #include <linux/dmi.h>
+ #include <linux/pfn.h>
+ #include <linux/pci.h>
++#include <asm/pci-direct.h>
+ #include <linux/init_ohci1394_dma.h>
+ #include <linux/kvm_para.h>
+ 
+@@ -692,6 +693,11 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	parse_early_param();
+ 
++#ifdef CONFIG_PCI
++	if (pci_early_config_dump)
++		early_dump_pci_devices();
++#endif
++
+ 	finish_e820_parsing();
+ 
+ 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
