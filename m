@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbYEWNpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbYEWNqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbYEWNpq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYEWNoV
+	id S1756559AbYEWNqB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbYEWNoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:44:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:53239 "EHLO mail.goop.org"
+	Fri, 23 May 2008 09:44:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:53234 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753628AbYEWNoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 09:44:18 -0400
+	id S1753607AbYEWNoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 09:44:19 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 06 of 12] xen: add rebind_evtchn_irq
-X-Mercurial-Node: 0fbdf6f43f1bb84b8856dd01ef62c8211f611a3b
-Message-Id: <0fbdf6f43f1bb84b8856.1211550073@localhost>
+Subject: [PATCH 03 of 12] xen: efficiently support a holey p2m table
+X-Mercurial-Node: 87258f679408de6918842b767490dfb300ed5552
+Message-Id: <87258f679408de691884.1211550070@localhost>
 In-Reply-To: <patchbomb.1211550067@localhost>
-Date: Fri, 23 May 2008 14:41:13 +0100
+Date: Fri, 23 May 2008 14:41:10 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -26,64 +26,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add rebind_evtchn_irq(), which will rebind an device driver's existing
-irq to a new event channel on restore.  Since the new event channel
-will be masked and bound to vcpu0, we update the state accordingly and
-unmask the irq once everything is set up.
+When using sparsemem and memory hotplug, the kernel's pseudo-physical
+address space can be discontigious.  Previously this was dealt with by
+having the upper parts of the radix tree stubbed off.  Unfortunately,
+this is incompatible with save/restore, which requires a complete p2m
+table.
+
+The solution is to have a special distinguished all-invalid p2m leaf
+page, which we can point all the hole areas at.  This allows the tools
+to see a complete p2m table, but it only costs a page for all memory
+holes.
+
+It also simplifies the code since it removes a few special cases.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/xen/events.c |   27 +++++++++++++++++++++++++++
- include/xen/events.h |    1 +
- 2 files changed, 28 insertions(+)
+ arch/x86/xen/mmu.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -557,6 +557,33 @@
- 	put_cpu();
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -57,8 +57,17 @@
+ #include "mmu.h"
+ 
+ #define P2M_ENTRIES_PER_PAGE	(PAGE_SIZE / sizeof(unsigned long))
++#define TOP_ENTRIES		(MAX_DOMAIN_PAGES / P2M_ENTRIES_PER_PAGE)
+ 
+-static unsigned long *p2m_top[MAX_DOMAIN_PAGES / P2M_ENTRIES_PER_PAGE];
++/* Placeholder for holes in the address space */
++static unsigned long p2m_missing[P2M_ENTRIES_PER_PAGE]
++	__attribute__((section(".data.page_aligned"))) =
++		{ [ 0 ... P2M_ENTRIES_PER_PAGE-1 ] = ~0UL };
++
++ /* Array of pointers to pages containing p2m entries */
++static unsigned long *p2m_top[TOP_ENTRIES]
++	__attribute__((section(".data.page_aligned"))) =
++		{ [ 0 ... TOP_ENTRIES - 1] = &p2m_missing[0] };
+ 
+ static inline unsigned p2m_top_index(unsigned long pfn)
+ {
+@@ -92,9 +101,6 @@
+ 		return INVALID_P2M_ENTRY;
+ 
+ 	topidx = p2m_top_index(pfn);
+-	if (p2m_top[topidx] == NULL)
+-		return INVALID_P2M_ENTRY;
+-
+ 	idx = p2m_index(pfn);
+ 	return p2m_top[topidx][idx];
+ }
+@@ -110,7 +116,7 @@
+ 	for(i = 0; i < P2M_ENTRIES_PER_PAGE; i++)
+ 		p[i] = INVALID_P2M_ENTRY;
+ 
+-	if (cmpxchg(pp, NULL, p) != NULL)
++	if (cmpxchg(pp, p2m_missing, p) != p2m_missing)
+ 		free_page((unsigned long)p);
  }
  
-+/* Rebind a new event channel to an existing irq. */
-+void rebind_evtchn_irq(int evtchn, int irq)
-+{
-+	/* Make sure the irq is masked, since the new event channel
-+	   will also be masked. */
-+	disable_irq(irq);
-+
-+	spin_lock(&irq_mapping_update_lock);
-+
-+	/* After resume the irq<->evtchn mappings are all cleared out */
-+	BUG_ON(evtchn_to_irq[evtchn] != -1);
-+	/* Expect irq to have been bound before,
-+	   so the bindcount should be non-0 */
-+	BUG_ON(irq_bindcount[irq] == 0);
-+
-+	evtchn_to_irq[evtchn] = irq;
-+	irq_info[irq] = mk_irq_info(IRQT_EVTCHN, 0, evtchn);
-+
-+	spin_unlock(&irq_mapping_update_lock);
-+
-+	/* new event channels are always bound to cpu 0 */
-+	irq_set_affinity(irq, cpumask_of_cpu(0));
-+
-+	/* Unmask the event channel. */
-+	enable_irq(irq);
-+}
-+
- /* Rebind an evtchn so that it gets delivered to a specific cpu */
- static void rebind_irq_to_cpu(unsigned irq, unsigned tcpu)
- {
-diff --git a/include/xen/events.h b/include/xen/events.h
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -32,6 +32,7 @@
+@@ -129,7 +135,7 @@
+ 	}
  
- void xen_send_IPI_one(unsigned int cpu, enum ipi_vector vector);
- int resend_irq_on_evtchn(unsigned int irq);
-+void rebind_evtchn_irq(int evtchn, int irq);
- 
- static inline void notify_remote_via_evtchn(int port)
- {
+ 	topidx = p2m_top_index(pfn);
+-	if (p2m_top[topidx] == NULL) {
++	if (p2m_top[topidx] == p2m_missing) {
+ 		/* no need to allocate a page to store an invalid entry */
+ 		if (mfn == INVALID_P2M_ENTRY)
+ 			return;
 
 
