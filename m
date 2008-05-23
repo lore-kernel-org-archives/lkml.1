@@ -1,250 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYEWL4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYEWL7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbYEWL4T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 07:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYEWL4K
+	id S1755336AbYEWL7H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 07:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbYEWL64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 07:56:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:44160 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751696AbYEWL4I convert rfc822-to-8bit (ORCPT
+	Fri, 23 May 2008 07:58:56 -0400
+Received: from mail37.messagelabs.com ([216.82.244.163]:16615 "EHLO
+	mail37.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbYEWL6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 07:56:08 -0400
-Date: Fri, 23 May 2008 13:55:57 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
-Cc: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+	Fri, 23 May 2008 07:58:55 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-6.tower-37.messagelabs.com!1211543934!1454113!2
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Fri, 23 May 2008 13:58:15 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Tom Spink <tspink@gmail.com>
+CC: "Hans J. Koch" <hjk@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
        Jan Altenberg <jan.altenberg@linutronix.de>,
        Thomas Gleixner <tglx@linutronix.de>,
        Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
- interrupts
-Message-ID: <20080523135557.27fe4855@bluebox.local>
-In-Reply-To: <20080523105604.GA23800@digi.com>
-References: <20080522192252.GB3226@local>
-	<20080522192637.GC3226@local>
-	<20080523055527.GA28963@digi.com>
-	<20080523104454.4e2af6ec@bluebox.local>
-	<20080523091009.GA22821@digi.com>
-	<20080523120308.7bec1e1c@bluebox.local>
-	<20080523105604.GA23800@digi.com>
-Organization: Linutronix GmbH
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable interrupts
+Message-ID: <20080523115815.GA6932@digi.com>
+References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <7b9198260805221247t715660d1l4085fe8c310f89c@mail.gmail.com> <20080522200814.GD3226@local> <7b9198260805221326t6d23b757p2ffe646db70fceba@mail.gmail.com> <20080523054115.GB28807@digi.com> <7b9198260805230448x56bf3bd1kade6083c141a75f2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7b9198260805230448x56bf3bd1kade6083c141a75f2@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 23 May 2008 11:58:16.0294 (UTC) FILETIME=[48ED9860:01C8BCCC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Fri, 23 May 2008 12:56:04 +0200
-schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
+Hello Tom,
 
-> Hello Hans,
+> > Tom Spink wrote:
+> >> The added benefit is that the code becomes less complex, as you don't
+> >> have to check buffer sizes and copy the integer from userspace.
+> > AFAIK this is wrong.  You need to copy the integer from userspace in
+> > uio_ioctl.  Actually it's a value coming from user space, so you need to
+> > do it somewhere.
 > 
-> Hans J. Koch wrote:
-> > Am Fri, 23 May 2008 11:10:09 +0200
-> > schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
-> > 
-> > > Hans J. Koch wrote:
-> > > > Am Fri, 23 May 2008 07:55:27 +0200
-> > > > schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
-> > > > 
-> > > > > Hello Hans,
-> > > > > 
-> > > > > > -      Copyright (c) 2006 by Hans-JÃŒrgen Koch.</para>
-> > > > > > +      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
-> > > > > This looks wrong.
-> > > > 
-> > > > DocBook XML is supposed to be UTF-8.
-> > > Correct.  But still the problem is real.  The headers of your mail
-> > > claim the content to be encoded in UTF-8, but actually it's
-> > > latin1. So I cannot apply the patch you sent with git am without
-> > > hand editing.
-> > 
-> > Try the version below.
-> This one is better---I can apply it.
+> Not really in this case.  It's not a *pointer* to a value in
+> userspace, so you don't need to copy anything.  If it was being used
+> to point to a memory location holding a value, then yes, it would need
+> to be copied across.  But in this case, it's just being used to pass
+> across 1 or 0.
+ah, OK, you're right.  Thanks for correcting my correction :-)
 
-OK. Was a problem with my mail client.
+Uwe
 
-> 
-> > +	if (copy_from_user(&irq_on, buf, count))
-> > +		return -EFAULT;
-> > +
-> > +	if (!idev->info->irqcontrol)
-> > +		return -ENOSYS;
-> I would swap these two.  copy_from_user is more expensive than testing
-> idev->info->irqcontrol.  (Is it really?)  Anyhow only fetching a value
-> from userspace if you really need it looks more clean to me.
-
-Agreed. See updated version below.
-
-> 
-> Otherwise the patch looks fine.
-
-Thanks for your review! Could you add your Signed-off-by?
-
-Hans
-
-From: Hans J. Koch <hjk@linutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-	Jan Altenberg <jan.altenberg@linutronix.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>,
-	Magnus Damm <magnus.damm@gmail.com>
-Subject: UIO: Add write function to allow irq masking
-Date: Thu, Fri, 23 May 2008 13:50:14 +0200
-
-Sometimes it is necessary to enable/disable the interrupt of a UIO device
-from the userspace part of the driver. With this patch, the UIO kernel driver
-can implement an "irqcontrol()" function that does this. Userspace can write
-an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
-UIO core will then call the driver's irqcontrol function.
-
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
----
- Documentation/DocBook/uio-howto.tmpl |   40 ++++++++++++++++++++++++++++++++++-
- drivers/uio/uio.c                    |   26 ++++++++++++++++++++++
- include/linux/uio_driver.h           |    2 +
- 3 files changed, 67 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.26-rc/include/linux/uio_driver.h
-===================================================================
---- linux-2.6.26-rc.orig/include/linux/uio_driver.h	2008-05-22 20:22:57.000000000 +0200
-+++ linux-2.6.26-rc/include/linux/uio_driver.h	2008-05-22 20:23:12.000000000 +0200
-@@ -53,6 +53,7 @@
-  * @mmap:		mmap operation for this uio device
-  * @open:		open operation for this uio device
-  * @release:		release operation for this uio device
-+ * @irqcontrol:		disable/enable irqs when 0/1 is written to /dev/uioX
-  */
- struct uio_info {
- 	struct uio_device	*uio_dev;
-@@ -66,6 +67,7 @@
- 	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
- 	int (*open)(struct uio_info *info, struct inode *inode);
- 	int (*release)(struct uio_info *info, struct inode *inode);
-+	int (*irqcontrol)(struct uio_info *info, s32 irq_on);
- };
- 
- extern int __must_check
-Index: linux-2.6.26-rc/drivers/uio/uio.c
-===================================================================
---- linux-2.6.26-rc.orig/drivers/uio/uio.c	2008-05-22 20:23:07.000000000 +0200
-+++ linux-2.6.26-rc/drivers/uio/uio.c	2008-05-23 13:49:40.000000000 +0200
-@@ -420,6 +420,31 @@
- 	return retval;
- }
- 
-+static ssize_t uio_write(struct file *filep, const char __user *buf,
-+			size_t count, loff_t *ppos)
-+{
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+	ssize_t retval;
-+	s32 irq_on;
-+
-+	if (idev->info->irq == UIO_IRQ_NONE)
-+		return -EIO;
-+
-+	if (count != sizeof(s32))
-+		return -EINVAL;
-+
-+	if (!idev->info->irqcontrol)
-+		return -ENOSYS;
-+
-+	if (copy_from_user(&irq_on, buf, count))
-+		return -EFAULT;
-+
-+	retval = idev->info->irqcontrol(idev->info, irq_on);
-+
-+	return retval ? retval : sizeof(s32);
-+}
-+
- static int uio_find_mem_index(struct vm_area_struct *vma)
- {
- 	int mi;
-@@ -539,6 +564,7 @@
- 	.open		= uio_open,
- 	.release	= uio_release,
- 	.read		= uio_read,
-+	.write		= uio_write,
- 	.mmap		= uio_mmap,
- 	.poll		= uio_poll,
- 	.fasync		= uio_fasync,
-Index: linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl
-===================================================================
---- linux-2.6.26-rc.orig/Documentation/DocBook/uio-howto.tmpl	2008-05-22 20:22:57.000000000 +0200
-+++ linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl	2008-05-23 11:57:23.000000000 +0200
-@@ -30,6 +30,12 @@
- 
- <revhistory>
- 	<revision>
-+	<revnumber>0.5</revnumber>
-+	<date>2008-05-22</date>
-+	<authorinitials>hjk</authorinitials>
-+	<revremark>Added description of write() function.</revremark>
-+	</revision>
-+	<revision>
- 	<revnumber>0.4</revnumber>
- 	<date>2007-11-26</date>
- 	<authorinitials>hjk</authorinitials>
-@@ -64,7 +70,7 @@
- <?dbhtml filename="copyright.html"?>
- <title>Copyright and License</title>
- <para>
--      Copyright (c) 2006 by Hans-Jürgen Koch.</para>
-+      Copyright (c) 2006-2008 by Hans-Jürgen Koch.</para>
- <para>
- This documentation is Free Software licensed under the terms of the
- GPL version 2.
-@@ -189,6 +195,30 @@
- 	represents the total interrupt count. You can use this number
- 	to figure out if you missed some interrupts.
- 	</para>
-+	<para>
-+	For some hardware that has more than one interrupt source internally,
-+	but not seperate IRQ mask and status registers, there might be
-+	situations where userspace cannot determine what the interrupt source
-+	was if the kernel handler disables them by writing to the chip's IRQ
-+	register. In such a case, the kernel has to disable the IRQ completely
-+	to leave the chip's register untouched. Now the userspace part can
-+	determine the cause of the interrupt, but it cannot re-enable
-+	interrupts. Another cornercase are chips where re-enabling interrupts
-+	is a read-modify-write operation to a combined IRQ status/acknowledge
-+	register. This would be racy if a new interrupt occured
-+	simultaneously.
-+	</para>
-+	<para>
-+	To address these problems, UIO also implements a write() function. It
-+	is normally not used and can be ignored for hardware that has only a
-+	single interrupt source or has seperate IRQ mask and status registers.
-+	If you need it, however, a write to <filename>/dev/uioX</filename>
-+	will call the <function>irqcontrol()</function> function implemented
-+	by the driver. You have to write a 32-bit value that is usually either
-+	0 or 1 do disable or enable interrupts. If a driver does not implement
-+	<function>irqcontrol()</function>, <function>write()</function> will
-+	return with <varname>-ENOSYS</varname>.
-+	</para>
- 
- 	<para>
- 	To handle interrupts properly, your custom kernel module can
-@@ -362,6 +392,14 @@
- <function>open()</function>, you will probably also want a custom
- <function>release()</function> function.
- </para></listitem>
-+
-+<listitem><para>
-+<varname>int (*irqcontrol)(struct uio_info *info, s32 irq_on)
-+</varname>: Optional. If you need to be able to enable or disable
-+interrupts from userspace by writing to <filename>/dev/uioX</filename>,
-+you can implement this function. The parameter <varname>irq_on</varname>
-+will be 0 to disable interrupts and 1 to enable them.
-+</para></listitem>
- </itemizedlist>
- 
- <para>
-
-
-
+-- 
+Uwe Kleine-K�nig, Software Engineer
+Digi International GmbH Branch Breisach, K�ferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
