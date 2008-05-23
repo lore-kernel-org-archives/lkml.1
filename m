@@ -1,92 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYEWQCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYEWQFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661AbYEWQCz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbYEWQCs
+	id S1756837AbYEWQFP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYEWQFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:02:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:56439 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbYEWQCr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:02:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer;
-        b=BAvnrFSe193Hb90SKX4Fq1hn26zmYl+vAtmL+0vs6BBBM7yroWqt/0eaT1eEBA66AtzV6ALW5UXDz4G2lneMdFc1Q4E4Y06TnNqj+kitUGeCwWsOOznI7TrUAcZBbb5tfCCpT3KycibPEmk7Y1wTuqVcD20PrqT6nzRfXYrPhfI=
-Subject: Re: linux/a.out.h is not exported to userspace
-From: Khem Raj <raj.khem@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: k.shutemov@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080523003256.3ff82660.akpm@linux-foundation.org>
-References: <1210983237.8550.28.camel@isis>
-	 <20080523003256.3ff82660.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-HccnTWIXZ0vQAsyLv1wc"
-Date: Fri, 23 May 2008 09:02:42 -0700
-Message-Id: <1211558562.10806.22.camel@isis>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Fri, 23 May 2008 12:05:01 -0400
+Received: from sous-sol.org ([216.99.217.87]:34021 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752383AbYEWQFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 12:05:00 -0400
+Date: Fri, 23 May 2008 08:57:18 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>
+Subject: Re: capget() overflows buffers.
+Message-ID: <20080523155718.GI30402@sequoia.sous-sol.org>
+References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org> <20080522233757.GD30402@sequoia.sous-sol.org> <48366D9A.70806@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48366D9A.70806@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Andrew G. Morgan (morgan@kernel.org) wrote:
+> Chris Wright wrote:
+> |> The kernel is not crashing, the application is...
+> |
+> | It's not about crashing.  It's about app security.  Currently, there is
+> | nothing guaranteeing named has actually dropped privileges.  That's why
+> | I consider this serious.
+>
+> I have to say the details of this are not clear to me. Can you sketch an
+> example?
 
---=-HccnTWIXZ0vQAsyLv1wc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Sure.  named is doing this:
 
-On Fri, 2008-05-23 at 00:32 -0700, Andrew Morton wrote:
+caps is essentially
+CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SETGID|CAP_DAC_READ_SEARCH|CAP_SYS_RESOURCE
 
->=20
-> This breaks `make headerscheck' on s390:
->=20
-> /usr/src/devel/usr/include/linux/a.out.h requires asm/a.out.h, which does=
- not exist in exported headers
->=20
-> which might be an s390 problem.
+linux_setcaps(cap_t caps) {
+	struct __user_cap_header_struct caphead;
+	struct __user_cap_data_struct cap;	<-- 12 bytes on stack
+	memset(&caphead, 0, sizeof(caphead));
+	caphead.version = _LINUX_CAPABILITY_VERSION;  <-- v2 now
+	caphead.pid = 0;
+	memset(&cap, 0, sizeof(cap));		<-- start initializing 12 bytes
+	cap.effective = caps;
+	cap.permitted = caps;
+	cap.inheritable = 0;			<-- finish initializing 12 bytes
+	if (syscall(SYS_capset, &caphead, &cap) < 0) <-- kernel copies in 24 bytes
 
-There was also this patch that David proposed here
+So it's blindly setting v2.  The kernel is sucking in 24 bytes.  The
+second set of u32s (the extra 12 bytes) is just garbage from the stack.
+This could include setting CAP_MAC_OVERRIDE or CAP_MAC_ADMIN, percisely
+the kinds of things you _wouldn't_ want set when the goal of the above
+code is to drop privs.
 
-http://lkml.org/lkml/2008/5/18/46
+> Otherwise, I find myself generally persuaded..
+>
+> | Yes, as they should.  I don't think we should ever expect an existing
+> | userspace program change just by recompiling against a new kernel header
+> | when using an already existing mechanism.  Their app has been working
+> | fine since 2.2.
+> |
+> |   int fd = open("foo", O_FLAGS, mode);
+> |
+> | compile once...binary compatible going forward (as is cap{s,g}et).
+> | update kernel, recompile...source API comaptible...still working
+> | (this is broken in cap{s,g}et).
+>
+> [I guess that this was what libcap was all about, and why there are so
+> many comments about using it littered through the kernel... Oh well.]
+>
+> | History bites us...libcap wasn't always there.  As we see, people roll
+> [...]
+>
+> Not to pick holes in your argument, but libcap *has* always been there.
+> It was co-developed with the original kernel patches.
 
-this patch also takes care of the architectures that do not have
-asm/a.out.h. I tried this patch on s390 and arm one with and one without
-asm/a.out.h
+Yeah, that was confusing.  I didn't mean it hadn't been developed.
+But all too often it wasn't picked up by distros.  And this is why apps
+went the 'roll your own' direction.
 
-Thanks
+> | No, the solution there would be to keep _LINUX_CAPABILITY_VERSION as
+> | v1 (otherwise you just broke apps again).  And use another mechanism to
+> | signal the availability of 64bit caps.
+>
+> Point taken. Patch attached.
 
--Khem
-
-
-
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 93b9885..b6fbb25 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -166,6 +166,9 @@ unifdef-y +=3D acct.h
- unifdef-y +=3D adb.h
- unifdef-y +=3D adfs_fs.h
- unifdef-y +=3D agpgart.h
-+ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.=
-out.h)
-+unifdef-y +=3D a.out.h
-+endif
- unifdef-y +=3D apm_bios.h
- unifdef-y +=3D atalk.h
- unifdef-y +=3D atmdev.h
-
-
---=-HccnTWIXZ0vQAsyLv1wc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBINuqiHnJKy6V6em4RAqGEAJ4k3eYsdbdrdTKZFhPsSIJ2hDsptACglvGo
-HWFvPVIMe1z9fjkBREDRRA8=
-=HbeB
------END PGP SIGNATURE-----
-
---=-HccnTWIXZ0vQAsyLv1wc--
-
+Thanks, I'll comment on that in a different mail.
+-chris
