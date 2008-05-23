@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbYEWTvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYEWTwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756965AbYEWTvx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbYEWTvo
+	id S1759416AbYEWTwM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYEWTvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:51:44 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:38040 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755041AbYEWTvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 15:51:45 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56498 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755271AbYEWTvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 23 May 2008 15:51:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Vrtb5S48YOGtMKpwbWVrUw/nu7IVuz3DPLqx5Dq9Dd7tInhReQhyHFaO+t5j/LSDG4ncyZ9WeOadRreFY8lSFmKVq9KLERkQMiYjBbMAvi0U0+06AXbWfhpwlVOBrB3ADXLUrPZ6FjEa7Xcfs0nN93SfUiyzotDhEddz5C9n6G4=
-Date: Sat, 24 May 2008 00:47:39 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Cliff Wickman <cpw@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] use of /sys versus /proc
-Message-ID: <20080523204739.GA15760@martell.zuzino.mipt.ru>
-References: <20080523131255.C19831F0380@attica.americas.sgi.com>
-MIME-Version: 1.0
+Date: Fri, 23 May 2008 21:52:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
+       peter.oberparleiter@de.ibm.com, linux-kernel@vger.kernel.org,
+       ltp-coverage@lists.sourceforge.net, oberparleiter@googlemail.com
+Subject: Re: [PATCH 6/7] kbuild: make source and include paths absolute
+Message-ID: <20080523195222.GA366@uranus.ravnborg.org>
+References: <48313E08.8070904@de.ibm.com> <20080522201724.cf4bd471.akpm@linux-foundation.org> <20080523171840.GD28257@cs181133002.pp.htv.fi> <20080523111707.89df9f67.akpm@linux-foundation.org> <20080523190950.GA32541@uranus.ravnborg.org> <19f34abd0805231242r32892322n6c0a25e06d93ff96@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080523131255.C19831F0380@attica.americas.sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <19f34abd0805231242r32892322n6c0a25e06d93ff96@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 08:12:55AM -0500, Cliff Wickman wrote:
-> I have a need to display TLB shootdown statistics.  (I'm working
-> on a patch to implement this on a new machine at SGI.)
+> >>
+> >> Well I guess that's understandable with O=.
+> >>
+> >> But I find it rather nasty.  (I guess it'd be less nasty if I were to
+> >> get off my butt and work out how to teach rxvt that "/" is a word
+> >> separator).
+> >>
+> >> What do others think?
+> >
+> > That the gcov tool has a bug if it insist on using absolute paths.
+> > And thus we should fix gcov and not workaround it in the kernel.
 > 
-> I had planned to display these statistics through /proc
-> as in arch/ia64/sn/kernel/sn2/sn2_smp.c (/proc/sgi_sn/ptc_statistics).
+> IIRC, there was also the slight problem that all uses of __FILE__
+> (there are quite a few in the kernel) will also now be absolute and
+> increase the size of the vmlinux image by quite a bit.
 > 
-> However, considering the general move to reserve /proc for
-> process-related things, I thought the community might prefer the
-> interface to be in /sys.
-> 
-> But sysfs has an output buffer restriction of one page, which
-> is too restrictive for statistics from very large cpu counts.
-> We intend to display about 10 numbers per cpu.
-> 
-> Besides, the spirit of /sys according to the sysfs.txt documentation:
->     "Attributes should be ... preferably with only one value
->      per file. ... acceptable to express an array of values of the same type."
->   [it also  warns:
->     "... expressing multiple lines of data, ... is heavily frowned upon.
->      Doing these things may get you publically humiliated and your code
->      rewritten without notice."]
-> 
-> If I break up the statistics files per-cpu, or maybe ranges of
-> cpu's, it would create a potentially large number of files in /sys.
-> 
-> Or, I could stick with a single file in /proc.
-> 
-> What would you recommend?
+> Yeah... http://lkml.org/lkml/2006/4/25/40
+This is specific to O=.. build kernels.
+I recall this is not an issue for the gcov patchset (if O=... is not used).
+But I have not checked it.
 
-TLB shootdowns are in /proc/interrupts at least on x86_64.
-
+	Sam
