@@ -1,82 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759394AbYEWUdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbYEWUeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759394AbYEWUdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 16:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbYEWUdk
+	id S1759022AbYEWUeJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 16:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759362AbYEWUdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 16:33:40 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:49656 "EHLO smtp5.pp.htv.fi"
+	Fri, 23 May 2008 16:33:47 -0400
+Received: from smtp3-g19.free.fr ([212.27.42.29]:50269 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756801AbYEWUdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 16:33:39 -0400
-Date: Fri, 23 May 2008 23:31:12 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>,
-       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-Message-ID: <20080523203112.GA4886@cs181133002.pp.htv.fi>
-References: <20080522144114.GC27301@cs181133002.pp.htv.fi> <20080522075135.4933161c@infradead.org> <20080522155425.GA2727@cs181133002.pp.htv.fi> <32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com> <20080522165008.GB2727@cs181133002.pp.htv.fi> <20080522151834.03f2790f@infradead.org> <20080523090940.GG2727@cs181133002.pp.htv.fi> <20080523071157.3cfdc03a@infradead.org> <20080523165055.GC28257@cs181133002.pp.htv.fi> <20080523112908.19f9413d@infradead.org>
+	id S1759332AbYEWUdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 16:33:45 -0400
+From: Guillaume Chazarain <guichaz@gmail.com>
+Subject: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Date: Fri, 23 May 2008 22:34:29 +0200
+Message-ID: <20080523203429.11846.84137.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080523112908.19f9413d@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 11:29:08AM -0700, Arjan van de Ven wrote:
-> On Fri, 23 May 2008 19:50:55 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Fri, May 23, 2008 at 07:11:57AM -0700, Arjan van de Ven wrote:
-> > > On Fri, 23 May 2008 12:09:40 +0300
-> > > Adrian Bunk <bunk@kernel.org> wrote:
-> > > 
-> > > > 
-> > > > And in case anyone says "not forwarded distribution bugs aren't
-> > > > our problem":
-> > > > That's a nice example, since in this case a distribuion suddenly 
-> > > > starting to agressively forwarding their bugs might contribute to
-> > > > making the kernel better, but might also totally ruin the numbers
-> > > > in any statistics.
-> > > 
-> > > Fedora gets less than 1000 bugs per release (so 6 month window).
-> > > That's... peanuts.
-> > 
-> > 2000 kernel bugs per year?
-> 
-> it's going down; 750-ish for the last few releases
-> 
-> (see http://kernelslacker.livejournal.com/116718.html )
+Currently it is possible for some errors to be detected at write-back
+time but not reported to the program as shown by the following script
+using the included make_file.c. Undetected ENOSPC or EIO can obviously lead to
+data corruption.
 
-It's a bit suspicious that the "Total number of bugs filed across all 
-packages" also went down by quite some amount.
+---------8<---------8<---------8<---------8<---------8<---------8<---------
+#!/bin/bash
 
-Are recent Fedora kernels less buggy or do less people file bugs since 
-everyone now uses Ubuntu?
+# We binary search the size of a file in a 40M filesystem that can cause
+# the missed error.
+MIN=5000000
+MAX=50000000
 
->...
-> > > We are tracking over 3000 bugs per WEEK via other channels.
-> > >...
-> > 
-> > What exactly are you measuring with this "3000 bugs" number?
-> 
-> Oopses and places where the kernel goes WARN_ON().
-> (the oops:warning ratio is roughly 1:2 to 1:3)
+rm fs.40M
+dd if=/dev/zero of=fs.40M bs=40M count=0 seek=1 status=noxfer
+#mkfs.ext2 -F fs.40M
+mkfs.ext3 -F fs.40M
+#mkfs.jfs -q fs.40M
+#mkfs.reiserfs -fq fs.40M
+#mkfs.xfs fs.40M # SIGBUS in memset() with patch
+# XFS => OK for ENOSPC, but not for EIO
 
-Counting 2248 times the same WARN_ON triggered as 2248 distinct bugs is 
-complete bullshit.
+attempt()
+{
+	SIZE=$1
+	RES=0
 
-cu
-Adrian
+	mount fs.40M /mnt -o loop
+	if ! ./make_file /mnt/not_enough_space $SIZE; then
+		# We could not create the file as the requested size
+		# was clearly too big
+		echo "/mnt/not_enough_space: not enough space for $SIZE bytes"
+		RES=1
+	fi
+	umount /mnt
 
--- 
+	if [ $RES -eq 0 ]; then
+		# We think we could create the file, let's see if that's true
+		mount fs.40M /mnt -o loop
+		cmp <(tr '\000' '\377' < /dev/zero | head -c$SIZE) \
+		    /mnt/not_enough_space
+		RES=$?
+		umount /mnt
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+		if [ $RES -eq 0 ]; then
+			# The file was small enough to fit in the filesystem
+			RES=-1
+		else
+			echo "Undetected ENOSPC with SIZE=$SIZE"
+			exit
+		fi
+	fi
+
+	return $RES
+}
+
+while [ $((MAX - MIN)) -gt 1 ]; do
+	SIZE=$(((MIN + MAX) / 2))
+	attempt $SIZE
+	RES=$?
+	if [ $RES -eq 1 ]; then
+		MAX=$SIZE
+	else
+		MIN=$SIZE
+	fi
+done
+
+echo "Could not reproduce the problem"
+---------8<---------8<---------8<---------8<---------8<---------8<---------
+/* make_file.c */
+#include <unistd.h>
+#include <sys/fcntl.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+	int size, fd;
+	char *mapping;
+	if (argc != 3) {
+		fprintf(stderr, "Usage: %s FILE SIZE\n", argv[0]);
+		return 1;
+	}
+	size = atoi(argv[2]);
+
+	fd = open(argv[1], O_RDWR | O_CREAT, 0600);
+	if (fd < 0) {
+		perror(argv[1]);
+		return 1;
+	}
+	if (ftruncate(fd, size) < 0) {
+		perror("ftruncate");
+		return 1;
+	}
+	mapping = mmap(NULL, size, PROT_WRITE, MAP_SHARED, fd, 0);
+	if (mapping == MAP_FAILED) {
+		perror("mmap");
+		return 1;
+	}
+	memset(mapping, 0xFF, size);
+
+	/* Force a write-back */
+	sync();
+
+	if (msync(mapping, size, MS_SYNC) < 0) {
+		perror("msync");
+		return 1;
+	}
+	if (close(fd) < 0) {
+		perror("close");
+		return 1;
+	}
+	printf("%s: successfully written %d bytes\n", argv[1], size);
+	return 0;
+}
+---------8<---------8<---------8<---------8<---------8<---------8<---------
+
+make_file.c mmaps a hole, performs some writeback (memset + sync) and
+then expects to find some error code in msync(). The script mounts a
+40M loopback filesystem and does a binary search to find the size of
+a file big enough to provoke a ENOSPC, but small enough to show the
+error not being detected at msync() time.
+
+The error window is large enough for such a size to be quickly found, but with
+this patch, no such file size can be found.
+
+All mmap capable filesystems I tested are affected (ext2, ext3,
+jfs, reiserfs, xfs). XFS is special in that it survives the test thanks
+to the page_mkwrite() work, i.e. it SIGBUS during memset. Anyway, this XFS
+behaviour solves ENOSPC but does nothing for EIO.
+
+The offending code is in fs/fs-writeback.c:
+
+sync_sb_inodes(...)
+{
+	...
+	__writeback_single_inode(inode, wbc);
+	...
+}
+
+__writeback_single_inode() gets the error from mapping->flags, clears it
+and returns it. But sync_sb_inodes() ignores this return value. sync_sb_inodes()
+should leave the error in each mapping instead of propagating it through the
+call stack for the following reasons:
+
+- the propagated error would combine the errors in all the synced inodes, so it
+would just tell that some inode in a specific fs got an error,
+- nobody in the call stack would be interested by this error: certainly not
+pdflush, or 'void sync(2)'.
+
+Signed-off-by: Guillaume Chazarain <guichaz@gmail.com>
+---
+
+ fs/fs-writeback.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 495214d..0e6881e 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -454,6 +454,7 @@ void generic_sync_sb_inodes(struct super_block *sb,
+ 		struct address_space *mapping = inode->i_mapping;
+ 		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		long pages_skipped;
++		int err;
+ 
+ 		if (!bdi_cap_writeback_dirty(bdi)) {
+ 			redirty_tail(inode);
+@@ -498,7 +499,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
+ 		BUG_ON(inode->i_state & I_FREEING);
+ 		__iget(inode);
+ 		pages_skipped = wbc->pages_skipped;
+-		__writeback_single_inode(inode, wbc);
++		err = __writeback_single_inode(inode, wbc);
++		mapping_set_error(mapping, err);
+ 		if (wbc->sync_mode == WB_SYNC_HOLD) {
+ 			inode->dirtied_when = jiffies;
+ 			list_move(&inode->i_list, &sb->s_dirty);
 
