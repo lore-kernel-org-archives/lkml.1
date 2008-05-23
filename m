@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbYEWJ0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbYEWJ3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825AbYEWJ0i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 05:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYEWJ01
+	id S1756659AbYEWJ3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 05:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbYEWJ3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 05:26:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57457 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754004AbYEWJ01 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 05:26:27 -0400
-Date: Fri, 23 May 2008 05:26:26 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 11/14] vfs: move executable checking into ->permission()
-Message-ID: <20080523092626.GE27119@infradead.org>
-References: <20080521171458.077908538@szeredi.hu> <20080521171557.399850407@szeredi.hu>
-MIME-Version: 1.0
+	Fri, 23 May 2008 05:29:46 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:37202 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753862AbYEWJ3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 05:29:45 -0400
+Date: Fri, 23 May 2008 13:29:38 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steve French <smfrench@gmail.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: pagevecs of more than PAGEVEC_SIZE pages
+Message-ID: <20080523092938.GA16915@2ka.mipt.ru>
+References: <524f69650805221213i62488a4fk5a906b2726b9b96a@mail.gmail.com> <20080522225459.5a6f7acc.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080521171557.399850407@szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20080522225459.5a6f7acc.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 07:15:09PM +0200, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> For execute permission on a regular files we need to check if file has
-> any execute bits at all, regardless of capabilites.
-> 
-> This check is normally performed by generic_permission() but was also
-> added to the case when the filesystem defines its own ->permission()
-> method.  In the latter case the filesystem should be responsible for
-> performing this check.
-> 
-> So create a helper function exec_permission() that checks returns
-> -EACCESS if MAY_EXEC is present, the inode is a regular file and no
-> execute bits are present in inode->i_mode.
-> 
-> Call this function from filesystems which don't call
-> generic_permission() from their ->permission() methods and which
-> aren't already performing this check.  Also remove the check from
-> dentry_permission().
-> 
-> The new code should be equivalent to the old.
+Hi.
 
-There's no point moving this into the filesystem.
+On Thu, May 22, 2008 at 10:54:59PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > Now that various servers support processing larger than 64K file
+> > writes, it would be helpful to have pagevecs that are larger than 14
+> > pages (PAGEVEC_SIZE).so an array of more pages could be passed to
+> > kernel_sendmsg (thus allowing writes larger than 56K, depending on
+> > wsize - the server limit is currently 8MB)
+> 
+> You can pass multiple pagevecs into kernel_sendmsg?
 
+kernel_sendmsg() requires iovecs, so each page will have to be mapped,
+which can end up having too many slots in kmap table. I can reproduce
+deadlock we talked about in POHMELFS thread with 100 highmem pages per
+transaction on 32bit x86, so increasing pagevec noticebly can deadlock
+CIFS too.
+
+It could be great if CIFS moved to kernel_sendpage() instead, Steve?
+
+-- 
+	Evgeniy Polyakov
