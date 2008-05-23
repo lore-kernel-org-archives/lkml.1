@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbYEWPvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYEWPzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758901AbYEWPvy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbYEWPvp
+	id S1756784AbYEWPzf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYEWPz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:51:45 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:45238 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750931AbYEWPvo (ORCPT
+	Fri, 23 May 2008 11:55:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52886 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751679AbYEWPz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:51:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jtnxYJDH2ql+0PypxDs7iWkjA/zjlrB2JHDpCvNcyW8S5O0GpLWcKylV1JyJk7foKpcobjWw09X9n6qpkZ3rfcR4aFT4mtOUNe4dtrWGUnv6JVpIm7TLQ9il6LsFrC8q+fR5Sym25QhVSpD5elDTYnZSafIo+F1M964FaP9XoSM=
-Message-ID: <19f34abd0805230851w59a5972dk593900cf3ea8c14a@mail.gmail.com>
-Date: Fri, 23 May 2008 17:51:44 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [PATCH] kmemcheck: SMP support
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4836E55C.5000304@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 23 May 2008 11:55:27 -0400
+Date: Fri, 23 May 2008 16:39:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: corbet@lwn.net (Jonathan Corbet)
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       mchehab@infradead.org
+Subject: Re: [PATCH] video4linux: Push down the BKL
+Message-ID: <20080523163956.6e93746c@core>
+In-Reply-To: <9027.1211551014@vena.lwn.net>
+References: <20080522223700.2f103a14@core>
+	<9027.1211551014@vena.lwn.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080523141759.GA1833@damson.getinternet.no>
-	 <4836E55C.5000304@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 5:40 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Vegard Nossum wrote:
->>
->> This works on real hw, but not on qemu. It seems to get stuck waiting for
->> one
->> of the atomic values to change. Don't know why yet, it might just be yet
->> another bug in qemu... (we've hit at least two of them so far. And they
->> were
->> real bugs too.)
->>
->
-> I've noticed that qemu mis-reports the eip of cmpxchg if it faults (it
-> reports the eip of the start of the basic block, I think).  Does that match
-> what you're seeing?
+> On the other hand, the next level of BKL pushdown would be painful as
+> all hell, given the massive number of callbacks in the V4L2 API.  So I'm
+> thinking it might be justified to create a video_ioctl2_locked() for
+> V4L2 drivers which are not yet known to be safe in the absence of the
+> BKL.  The amount of extra code would be quite small, and it would let
+> safe drivers operate BKL-free.
 
-You mean the EIP that gets pushed on the stack for the page fault?
-(That would be bad news for kmemcheck. I suppose the rest of the
-kernel never page faults on cmpxchg addresses?)
+The problem is that currently they are almost all unsafe - I did a quick
+survey as part of the changes. Pushing it down to the video2_ioctl is a
+starting point, but the v4l layer is going to need a lot of love and its
+own gradual migration.
 
-Or do you mean the EIP that shows up in gdb?
+Right now we've gone from BKL buried in fs to BKL at top of v4l layer
+which is indeed only a starting point. I'd assumed the same as you are
+think a new video_ioctl2 and switching drivers one by one (I was assuming
+adding video2_ioctl_unlocked())
 
-But no, it seems to be unrelated. What I hit so far were (in 0.9.0):
-
-1. qemu doesn't set the single-stepping flag of DR6 on single-step
-debug exceptions.
-2. qemu triggers int 0 (divide error) instead of int 2 on NMI IPIs.
-
-But both of these were fixed in the latest 0.9.1.
-
-I don't yet know if what I'm hitting now is really an error with qemu.
-But I usually trust the real hardware more :-)
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Alan
