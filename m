@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbYEWDik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765122AbYEWDmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932703AbYEWDik (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 23:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761654AbYEWDh0
+	id S1765122AbYEWDmr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 23:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758916AbYEWDmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 23:37:26 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:23888 "HELO
-	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761377AbYEWDhZ (ORCPT
+	Thu, 22 May 2008 23:42:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:52424 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757386AbYEWDmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 23:37:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=l/x5y+SGY8HNSoE/pJ4lmbaeyqVQ5N4DU2yEOXbeSHwVRXEX6vMxxvZmwZsFVeYCbFN7FptbCs6hrT4Uw7pVBerdZZJ5xlGRlPVXBOTAOQoyJ2aZwLNO7PvxdGlJXH25CnHgFau18Gj23L7RSJomj6XEsiQnJvTAN4sIIN9SXQM=  ;
-X-YMail-OSG: e3v0JnoVM1kGDbQpyzsNKq2dxCbhCiSkqPtyP.wUHuiFxnt14wEJ6hKBh7y.FTwIxG.kbFC1.FeIM1La5tW5R7ky3hK.4GdKDPoICM4EHlwZiyqWPSkcJsn87RsJfZJb5P8-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH 6/6] RTC: Trivially probe for an M41T80 (#2)
-Date: Thu, 22 May 2008 20:07:06 -0700
-User-Agent: KMail/1.9.9
-Cc: Jean Delvare <khali@linux-fr.org>, Alessandro Zummo <a.zummo@towertech.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.55.0805130303430.535@cliff.in.clinika.pl> <20080513142829.2d737424@hyperion.delvare> <Pine.LNX.4.55.0805131759580.7267@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0805131759580.7267@cliff.in.clinika.pl>
+	Thu, 22 May 2008 23:42:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eEqlkPdABhzFigOR8GpinpD/yUEvtZEV8rOaIaLMcWrV8wH22Wn6kHGx/Jw4pwNs1VpUK0d7YY0ww4IR06QfGLep+ATEu8vkgHpQOVhygS/YhS75fFBVnnzTIHH3o0N1byMnyJeNUZSZcIyWzXd2a22PoUA+CV+T+ERbwMJmE3w=
+Message-ID: <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
+Date: Fri, 23 May 2008 11:42:35 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20080522203428.835D626FA24@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805222007.07146.david-b@pacbell.net>
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <1211446045.5610.33.camel@elijah.suse.cz>
+	 <3877989d0805220216o5add20ddye2a1fde98a0c1e69@mail.gmail.com>
+	 <20080522111826.BB90326FA24@magilla.localdomain>
+	 <3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
+	 <20080522203428.835D626FA24@magilla.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 May 2008, Maciej W. Rozycki wrote:
-> Then I am not sure how i2c_new_probed_device() could be used for a
-> baseboard device.  With an option card bearing an I2C adapter it can be
-> done at the time the card, including the adapter, is initialized.  With a
-> baseboard adapter it really begs to be in board initialization.  
+On Fri, May 23, 2008 at 4:34 AM, Roland McGrath <roland@redhat.com> wrote:
+>> Sorry for confusion, Let me try to explain it more:
+>
+> I understand these code paths (I wrote them).
+>
+>> If TASK_TRACED is not set earlier before arch_ptrace_stop on ia64
+>> ptrace_notify code path, some signals would be delivered without
+>> letting debugger run.. (i.e. PTRACED logica in get_signal_to_deliver
+>> would be ignored totally!). These should cause the test case hang on
+>> ia64. And x86 just works..
+>
+> I do not understand this at all, and it has given no information you did
+> not give before.  Please describe the scenario you see in fine-grained
+> terms.
+>
+In the code path mentioned above, I see only ia64 has chance to let
+ptraced thread deliver those pending signals before TASK_TRACED is
+set. Then debugger thread would lose chance to interfere the
+delivering of those signals if I correctly understand PT_PTRACED logic
+in get_signal_to_deliver, and the relationship between the two flag :
+TASK_TRACED and PT_TRACED.
 
-One idiom to consider is callbacks (or notifications) when the
-relevant i2c_adapter is registered.
+Since you write those code, Please clarify, in ptrace_notify code
+path, is it allowed that ptraced thread can run signal handler without
+telling debugger what happened?
 
-Some of the GPIO drivers do that, so that they can hook up the
-relevant devices or options.  Example, when an pcf8574 expander
-is used to drive LEDs, the "this chip got registered" callback
-can register the relevant "leds-gpio" platform device.  Or when
-it's used to switch power to other devices, sometimes they must
-defer registration till then too (power them up first, *then* it
-makes sense to register them).
+I noticed the only difference between x86 and IA64 ,  and it does make
+the test case work on
+x86, and fail on IA64... So I made the patch trying to eliminate the
+difference. It indeed seems to solve my problem although it is still
+hack, and I don't know what kind of signals strace handled has such
+magic..
 
-This could handle that "board has this I2C RTC -or- that one"
-case pretty cleanly; but then, so would having a "probe first"
-flag that's specific to the i2c_board_info.  (So long as the
-probe logic could distinguish the devices... which will not in
-the most general case work from i2c-core code.)
-
-- Dave
+As for how the door is only open for ia64, I can explain further if
+you want to know.
