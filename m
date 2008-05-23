@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758576AbYEWPHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYEWPJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758576AbYEWPHV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbYEWPGs
+	id S1757725AbYEWPJk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbYEWPJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:06:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49190 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757280AbYEWPGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:06:44 -0400
-Date: Fri, 23 May 2008 17:06:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemcheck: SMP support
-Message-ID: <20080523150622.GA9782@elte.hu>
-References: <20080523141759.GA1833@damson.getinternet.no>
+	Fri, 23 May 2008 11:09:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45234 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751439AbYEWPJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 11:09:31 -0400
+Date: Fri, 23 May 2008 08:08:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/5] isdn: fix integer as NULL pointer warning
+In-Reply-To: <1211496307.6888.10.camel@brick>
+Message-ID: <alpine.LFD.1.10.0805230803290.3081@woody.linux-foundation.org>
+References: <1211496307.6888.10.camel@brick>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080523141759.GA1833@damson.getinternet.no>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-> This works on real hw, but not on qemu. It seems to get stuck waiting 
-> for one of the atomic values to change. Don't know why yet, it might 
-> just be yet another bug in qemu... (we've hit at least two of them so 
-> far. And they were real bugs too.)
-> 
-> But do you think this approach is feasible? It will kill 
-> interactivity, that's for sure, though only when kmemcheck is run-time 
-> enabled and number of CPUs > 1 (the more the worse).
+On Thu, 22 May 2008, Harvey Harrison wrote:
+>  	len += sprintf(page+len, "%-16s %s\n", "type", s);
+> -	if ((s = cinfo->version[VER_DRIVER]) != 0)
+> +	if ((s = cinfo->version[VER_DRIVER]) != NULL)
+>  		len += sprintf(page+len, "%-16s %s\n", "ver_driver", s);
 
-i think we definitely want it - if for no other purpose but for people 
-to become disgusted at the overhead and fixing it ;-)
+For thigns like this (ie testing an assignment), I personally much prefer
 
-Vegard, wanna have a look at introducing per CPU kernel pagetables? I 
-tried that once in the past and it wasnt too horrible. (the patches are 
-gone though) We could do it before bringing other CPUs online, i.e. much 
-of the really yucky boot time pagetable juggling phase would be over 
-already. Hm?
+	s = cinfo->version[VER_DRIVER];
+	if (s)
+		len += sprintf(page+len, "%-16s %s\n", "ver_driver", s);
 
-	Ingo
+over the uglier and unreadable version.
+
+IOW, testing assignments is good only when:
+
+ - you have to do it because of syntax (ie notably in a "while()" loop)
+
+ - there's some reason you want it to be a single statement (eg doing a 
+   macro or other thing)
+
+ - of the assignment is really simple, and the test is not against NULL or 
+   zero.
+
+The reason for that "the test is not against NULL or zero" is that testing 
+for NULL and 0 is better done with just a "if (x)", and in an assignment 
+that just means either (a) a incomprehensible extra parenthesis just to 
+shut the compiler up or (b) changing the simple test into a stupid test 
+(ie doing "if (x != NULL)").
+
+(b) is much preferable to (a), but just doing it as two statements is 
+much preferable to either!
+
+		Linus
