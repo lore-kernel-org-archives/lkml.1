@@ -1,65 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbYEWQx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbYEWQ6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758499AbYEWQx3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYEWQxW
+	id S1754638AbYEWQ6U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYEWQ6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:53:22 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37482 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbYEWQxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:53:21 -0400
-Date: Fri, 23 May 2008 19:50:55 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>,
-       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-Message-ID: <20080523165055.GC28257@cs181133002.pp.htv.fi>
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com> <20080522144114.GC27301@cs181133002.pp.htv.fi> <20080522075135.4933161c@infradead.org> <20080522155425.GA2727@cs181133002.pp.htv.fi> <32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com> <20080522165008.GB2727@cs181133002.pp.htv.fi> <20080522151834.03f2790f@infradead.org> <20080523090940.GG2727@cs181133002.pp.htv.fi> <20080523071157.3cfdc03a@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080523071157.3cfdc03a@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 23 May 2008 12:58:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41426 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751102AbYEWQ6L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 12:58:11 -0400
+Date: Fri, 23 May 2008 09:56:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org,
+       Peter Oberparleiter <oberparleiter@googlemail.com>,
+       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ltp-coverage@lists.sourceforge.net
+Subject: Re: [PATCH 0/7] gcov kernel support
+Message-Id: <20080523095623.5678a34f.akpm@linux-foundation.org>
+In-Reply-To: <ab1f935148982762bae55734ffb8acc7@kernel.crashing.org>
+References: <48313D8E.7020109@de.ibm.com>
+	<20080523011213.690363c7.akpm@linux-foundation.org>
+	<ab1f935148982762bae55734ffb8acc7@kernel.crashing.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 07:11:57AM -0700, Arjan van de Ven wrote:
-> On Fri, 23 May 2008 12:09:40 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+On Fri, 23 May 2008 13:06:00 +0200 Segher Boessenkool <segher@kernel.crashing.org> wrote:
+
+> >> This is version #2 of the gcov kernel support patch set
+> >
+> > powerpc blew up:
+> >
+> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/ 
+> > gcc/powerpc64-unknown-linux-gnu/4.1.0/../../../../powerpc64-unknown- 
+> > linux-gnu/bin/ld: skipping incompatible  
+> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/ 
+> > gcc/powerpc64-unknown-linux-gnu/4.1.0/./libgcov.a when searching for  
+> > -lgcov
+> > /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/ 
+> > gcc/powerpc64-unknown-linux-gnu/4.1.0/../../../../powerpc64-unknown- 
+> > linux-gnu/bin/ld: cannot find -lgcov
+> > collect2: ld returned 1 exit status
+> > make[2]: *** [arch/powerpc/kernel/vdso32/vdso32.so.dbg] Error 1
+> > make[1]: *** [arch/powerpc/kernel/vdso32] Error 2
 > 
-> > 
-> > And in case anyone says "not forwarded distribution bugs aren't our 
-> > problem":
-> > That's a nice example, since in this case a distribuion suddenly 
-> > starting to agressively forwarding their bugs might contribute to
-> > making the kernel better, but might also totally ruin the numbers in
-> > any statistics.
+> Sounds like your toolchain was built without biarch support, but you're
+> using it for the 32-bit parts of the kernel anyway.  Which works as long
+> as you're not using any libraries, but now you need libgcov.a .
+
+ok..
+
+> What does
 > 
-> Fedora gets less than 1000 bugs per release (so 6 month window).
-> That's... peanuts.
+> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/ 
+> powerpc64-unknown-linux-gnu-gcc -v
+> 
+> say?
 
-2000 kernel bugs per year?
+y:/home/akpm> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/powerpc64-unknown-linux-gnu-gcc -v
+Using built-in specs.
+Target: powerpc64-unknown-linux-gnu
+Configured with: /home/axboe/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc-4.1.0-glibc-2.3.6/gcc-4.1.0/configure --target=powerpc64-unknown-linux-gnu --host=x86_64-host_unknown-linux-gnu --prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu --disable-multilib --with-sysroot=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --with-local-prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/powerpc64-unknown-linux-gnu/sys-root --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c --enable-shared --enable-c99 --enable-long-long
+Thread model: posix
+gcc version 4.1.0
 
-Then Fedora alone gets roughly as many kernel bugs as the kernel 
-Bugzilla.
+>  (Or whatever the correct path to that compiler is, the directory
+> structure is a bit unusual here it seems).  There shouldn't be a
+> --disable-biarch there.
+> 
+> Or, what does
+> 
+> find  
+> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/4.1.0/  
+> -name libgcov.a
+> 
+> say?  (It should usually find three versions: 64-bit, 32-bit, 32-bit no  
+> float).
 
->...
-> We are tracking over 3000 bugs per WEEK via other channels.
->...
+Only a single hit:
 
-What exactly are you measuring with this "3000 bugs" number?
+/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/lib/gcc/powerpc64-unknown-linux-gnu/4.1.0/libgcov.a
 
-cu
-Adrian
+and it contains
 
--- 
+y:/home/akpm/ppc> ar x libgcov.a 
+y:/home/akpm/ppc> l
+total 316
+-rw-r--r-- 1 akpm akpm  44192 May 23 09:53 _gcov.o
+-rw-r--r-- 1 akpm akpm   8448 May 23 09:53 _gcov_execl.o
+-rw-r--r-- 1 akpm akpm   8584 May 23 09:53 _gcov_execle.o
+-rw-r--r-- 1 akpm akpm   8456 May 23 09:53 _gcov_execlp.o
+-rw-r--r-- 1 akpm akpm   7384 May 23 09:53 _gcov_execv.o
+-rw-r--r-- 1 akpm akpm   7544 May 23 09:53 _gcov_execve.o
+-rw-r--r-- 1 akpm akpm   7392 May 23 09:53 _gcov_execvp.o
+-rw-r--r-- 1 akpm akpm   7264 May 23 09:53 _gcov_fork.o
+-rw-r--r-- 1 akpm akpm   7240 May 23 09:53 _gcov_interval_profiler.o
+-rw-r--r-- 1 akpm akpm   7464 May 23 09:53 _gcov_merge_add.o
+-rw-r--r-- 1 akpm akpm   8544 May 23 09:53 _gcov_merge_delta.o
+-rw-r--r-- 1 akpm akpm   8488 May 23 09:53 _gcov_merge_single.o
+-rw-r--r-- 1 akpm akpm   6976 May 23 09:53 _gcov_one_value_profiler.o
+-rw-r--r-- 1 akpm akpm   6856 May 23 09:53 _gcov_pow2_profiler.o
+-rw-r--r-- 1 akpm akpm 146492 May 23 09:52 libgcov.a
+y:/home/akpm/ppc> file _gcov_merge_delta.o
+_gcov_merge_delta.o: ELF 64-bit MSB relocatable, 64-bit PowerPC or cisco 7500, version 1 (SYSV), not stripped
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> 
+> You *can* build with a non-biarch compiler, but then you need to point
+> the kernel build system at a 32-bit toolchain to use for the 32-bit
+> parts (via CROSS32_COMPILE).
 
+Jens built this one, using crosstool.  It is
+http://userweb.kernel.org/~akpm/cross-compilers/power64-cross.tar.bz2
+
+It was all working happily until gcov came along :(
