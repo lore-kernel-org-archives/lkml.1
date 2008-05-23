@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYEWNnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYEWNoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbYEWNnq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYEWNnf
+	id S1755662AbYEWNoa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbYEWNoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:43:35 -0400
-Received: from krynn.se.axis.com ([193.13.178.10]:34778 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbYEWNne (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 09:43:34 -0400
-Date: Fri, 23 May 2008 15:43:13 +0200
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: Fernando Luis Vazquez Cao <fernando@intellilink.co.jp>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       dev-etrax <dev-etrax@axis.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cris: remove unused global_flush_tlb
-Message-ID: <20080523134313.GG8890@axis.com>
-References: <1211524591.2719.11.camel@nausicaa.intellilink.co.jp>
+	Fri, 23 May 2008 09:44:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:53223 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753011AbYEWNoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 09:44:16 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211524591.2719.11.camel@nausicaa.intellilink.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH 00 of 12] xen: add save/restore/migrate for Xen domains
+Message-Id: <patchbomb.1211550067@localhost>
+Date: Fri, 23 May 2008 14:41:07 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 08:36:31AM +0200, Fernando Luis Vazquez Cao wrote:
-> global_flush_tlb is declared but never used.
-> 
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Hi Ingo,
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+This series adds save/restore/migrate for Xen domains.  This is almost
+entirely contained within the Xen-specific code.
 
-> ---
-> 
-> diff -urNp linux-2.6.26-rc3-git4-orig/include/asm-cris/cacheflush.h linux-2.6.26-rc3-git4/include/asm-cris/cacheflush.h
-> --- linux-2.6.26-rc3-git4-orig/include/asm-cris/cacheflush.h    2008-04-17 11:49:44.000000000 +0900
-> +++ linux-2.6.26-rc3-git4/include/asm-cris/cacheflush.h 2008-05-23 15:19:26.000000000 +0900
-> @@ -26,7 +26,6 @@
->  #define copy_from_user_page(vma, page, vaddr, dst, src, len) \
->         memcpy(dst, src, len)
-> 
-> -void global_flush_tlb(void);
->  int change_page_attr(struct page *page, int numpages, pgprot_t prot);
-> 
->  #endif /* _CRIS_CACHEFLUSH_H */
+The only exception is the WARN_ON I remove in hres_timers_resume,
+which is spurious in the case of a Xen suspend/resume, since we don't
+offline all the CPUs.
 
+This also adds another user of the freezer, since it turns out to
+solve a somewhat tricky problem.  The problem is that Xen pagetables
+are expressed in terms of machine frame numbers - ie, the page numbers
+of the underlying host machine.  When the domain is saved, all the
+mfns everywhere are canonicalized into guest-relative pfns in the save
+image.  The tricky part is that when preemption is enabled, it's
+possible the suspend will preempt a pagetable manipulation, which will
+leave a machine frame number sitting in a register or on the stack
+which will not be canonicalized.
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+The freezer solves this because it makes sure that every thread is
+quiesced at a well known point, which is not during a pagetable
+update.  So by freezing everything and then stopping all the
+processors in stop_machine, we can make sure the system is in a
+saveable state.
+
+The freezer is only required when preemption is enabled, since
+stop_machine will quiesce all processors (and therefore threads) at
+suitable points anyway.
+
+     J
+
