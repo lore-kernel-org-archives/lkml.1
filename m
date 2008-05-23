@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbYEWQbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYEWQdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327AbYEWQbk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbYEWQb3
+	id S1753823AbYEWQdR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYEWQdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:31:29 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:3525 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751211AbYEWQbZ (ORCPT
+	Fri, 23 May 2008 12:33:04 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3207 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbYEWQdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:31:25 -0400
-Date: Fri, 23 May 2008 18:30:57 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: hch@infradead.org, linux-fsdevel@vger.kernel.org, viro@ZenIV.linux.org.uk,
+	Fri, 23 May 2008 12:33:03 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: linux-mm@kvack.org
+Cc: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/14] hfsplus: remove hfsplus_permission()
-In-Reply-To: <E1JzZWC-0002M8-UP@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0805231824370.18302@localhost.localdomain>
-References: <20080521171458.077908538@szeredi.hu> <20080521171549.964767446@szeredi.hu>
- <Pine.LNX.4.64.0805212232500.18302@localhost.localdomain>
- <E1Jz5gq-0007F4-AQ@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221358080.18302@localhost.localdomain>
- <E1Jz9jk-0007rg-5W@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221427300.18302@localhost.localdomain>
- <E1JzA2r-0007uK-8L@pomaz-ex.szeredi.hu> <20080523092114.GD27119@infradead.org>
- <Pine.LNX.4.64.0805231712120.18302@localhost.localdomain>
- <E1JzZF5-0002Hz-5e@pomaz-ex.szeredi.hu> <E1JzZWC-0002M8-UP@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Subject: [PATCH 0/3] explicitly document overloaded page flags V2
+Message-ID: <exportbomb.1211560342@pinky>
+Date: Fri, 23 May 2008 17:33:01 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+With the recent page flag reorganisation we have a single enum which
+defines the valid page flags and their values, nice and clear.  However
+there are a number of bits which are overloaded by different subsystems.
+Firstly there is PG_owner_priv_1 which is used by filesystems and by XEN.
+Secondly both SLOB and SLUB use a couple of extra page bits to manage
+internal state for pages they own; both overlay other bits.  All of these
+"aliases" are scattered about the source making it very hard for a reader
+to know if the bits are safe to rely on in all contexts; confusion here
+is bad.
 
-On Fri, 23 May 2008, Miklos Szeredi wrote:
+As we now have a single place where the bits are clearly assigned it makes
+sense to clarify the reuse of bits by making the aliases explicit and
+visible with the original bit assignments.  This patch creates explicit
+aliases within the enum itself for the overloaded bits, creates standard
+bit accessors PageFoo etc. and uses those throughout.
 
-> And so I strongly suggest this patch as well.  Apparently this feature
-> is not even used by anybody, otherwise somebody would have noticed
-> when Trond's fix broke execute permission checking on regular files...
+This version pulls the bit manipulation out to standard named page bit
+accessors as suggested by Christoph, it retains the explicit mapping to
+the overlayed bits.  A fusion of both ideas.  This has been SLUB and
+SLOB have been compile tested on x86_64 only, and SLUB boot tested.
+If people feel this is worth doing then I can run a fuller set of testing.
 
-And I'm very strongly against this.
-If you wanted to rip out the resource inode logic, it would be more than 
-this.
-At worst this code does nothing right now, so why this sudden rush to 
-remove this without even an attempt of fixing it?
-
-bye, Roman
+-apw
