@@ -1,55 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbYEWFgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763486AbYEWFiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761435AbYEWFgk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 01:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYEWFg3
+	id S1763486AbYEWFiq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 01:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYEWFig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 01:36:29 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:46637 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753263AbYEWFg3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 01:36:29 -0400
-Subject: Re: [PATCH 3/3] futex: fix miss ordered wakeups
-From: Daniel Walker <dwalker@mvista.com>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <a36005b50805222224g79477cb2md5298bbf4e35bcfb@mail.gmail.com>
-References: <20080523042923.594531457@mvista.com>
-	 <20080523042923.916202203@mvista.com>
-	 <a36005b50805222202v6ea7b50p988eab5524935e1a@mail.gmail.com>
-	 <1211519720.18130.98.camel@localhost.localdomain>
-	 <a36005b50805222224g79477cb2md5298bbf4e35bcfb@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 22 May 2008 22:36:27 -0700
-Message-Id: <1211520987.18130.110.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 May 2008 01:38:36 -0400
+Received: from colo.lackof.org ([198.49.126.79]:43962 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751825AbYEWFif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 01:38:35 -0400
+Date: Thu, 22 May 2008 23:38:22 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: early dump pci conf space v2
+Message-ID: <20080523053822.GA28835@colo.lackof.org>
+References: <200805210012.35939.yhlu.kernel@gmail.com> <200805221435.11734.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805221435.11734.yhlu.kernel@gmail.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-05-22 at 22:24 -0700, Ulrich Drepper wrote:
-> On Thu, May 22, 2008 at 10:15 PM, Daniel Walker <dwalker@mvista.com> wrote:
-> > That's the problem we aren't just covering 99.99% we're trying to cover
-> > 100% of cases.. If we don't do it in that one case we may as well not do
-> > it at all.
+On Thu, May 22, 2008 at 02:35:11PM -0700, Yinghai Lu wrote:
 > 
-> I have no problem with removing the other ordering.  It was added
-> because it limited overhead.  It is completely wrong to have everybody
-> pay for the needs for a very small minority.
+> so we can printout pci config before kernel touch it
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-I think that ordering is something companies have been wanting for a
-long time.. I had a lot of people asking about it, I was glad when it
-was added.. However, it all falls down in the one case which we don't
-handle. 
+Yinghai,
+No offense, but my first thought was this is debug code that should be
+maintained outside the kernel.org tree. It will rarely get used.
+Just want people to think about this before saying "great, add it!"
 
-I don't think the overhead for this is all that bad.. Consider that the
-worst performance case is the contended case, and this patch adds a very
-small amount of code. The vast majority of cases are un-contended , and
-it's already know to be slow in the cases which are contended.
+(And this isn't a stab at Jesse since I think he's doing a better
+job than I could. I saw his previous reply to this mail.)
 
-Daniel
+Having debugged lots of PCI resource and config issues, I understand
+why this is useful and do NOT object to it being included in the tree.
 
+The boot option also needs to be added to Documentation/ .
+At least if you want people to use it. :)
+Perhaps Jesse can suggest a preferred location.
+
+
+> Index: linux-2.6/arch/x86/kernel/setup_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/setup_64.c
+> +++ linux-2.6/arch/x86/kernel/setup_64.c
+> @@ -350,6 +350,11 @@ void __init setup_arch(char **cmdline_p)
+>  
+>  	parse_early_param();
+>  
+> +#ifdef CONFIG_PCI
+> +	if (pci_early_dump_regs)
+> +		early_dump_pci_devices();
+> +#endif
+> +
+>  #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+>  	if (init_ohci1394_dma_early)
+>  		init_ohci1394_dma_on_all_controllers();
+> Index: linux-2.6/arch/x86/pci/common.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/common.c
+> +++ linux-2.6/arch/x86/pci/common.c
+> @@ -20,6 +20,7 @@
+>  unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
+>  				PCI_PROBE_MMCONF;
+>  
+> +unsigned int pci_early_dump_regs;
+>  static int pci_bf_sort;
+>  int pci_routeirq;
+>  int pcibios_last_bus = -1;
+> @@ -489,6 +490,9 @@ char * __devinit  pcibios_setup(char *st
+>  	} else if (!strcmp(str, "use_crs")) {
+>  		pci_probe |= PCI_USE__CRS;
+>  		return NULL;
+> +	} else if (!strcmp(str, "earlydump")) {
+
+Please call this "pci_early_dump" (I prefer with underscores but don't care).
+Don't want it confused with kernel dumps (LKCD) or any other
+general debugging tools.
+
+thanks,
+grant
+
+> +		pci_early_dump_regs = 1;
+> +		return NULL;
+>  	} else if (!strcmp(str, "routeirq")) {
+>  		pci_routeirq = 1;
+>  		return NULL;
+> Index: linux-2.6/arch/x86/pci/early.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/early.c
+> +++ linux-2.6/arch/x86/pci/early.c
+> @@ -57,3 +57,54 @@ int early_pci_allowed(void)
+>  	return (pci_probe & (PCI_PROBE_CONF1|PCI_PROBE_NOEARLY)) ==
+>  			PCI_PROBE_CONF1;
+>  }
+> +
+> +void early_dump_pci_device(u8 bus, u8 slot, u8 func)
+> +{
+> +	int i;
+> +	int j;
+> +	u32 val;
+> +
+> +	printk("PCI: %02x:%02x:%02x", bus, slot, func);
+> +
+> +	for (i = 0; i < 256; i += 4) {
+> +		if (!(i & 0x0f))
+> +			printk("\n%04x:",i);
+> +
+> +		val = read_pci_config(bus, slot, func, i);
+> +		for (j = 0; j < 4; j++) {
+> +			printk(" %02x", val & 0xff);
+> +			val >>= 8;
+> +		}
+> +	}
+> +	printk("\n");
+> +}
+> +
+> +void early_dump_pci_devices(void)
+> +{
+> +	unsigned bus, slot, func;
+> +
+> +	if (!early_pci_allowed())
+> +		return;
+> +
+> +	for (bus = 0; bus < 256; bus++) {
+> +		for (slot = 0; slot < 32; slot++) {
+> +			for (func = 0; func < 8; func++) {
+> +				u32 class;
+> +				u8 type;
+> +				class = read_pci_config(bus, slot, func,
+> +							PCI_CLASS_REVISION);
+> +				if (class == 0xffffffff)
+> +					break;
+> +
+> +				early_dump_pci_device(bus, slot, func);
+> +
+> +				/* No multi-function device? */
+> +				type = read_pci_config_byte(bus, slot, func,
+> +							       PCI_HEADER_TYPE);
+> +				if (!(type & 0x80))
+> +					break;
+> +			}
+> +		}
+> +	}
+> +}
+> +
+> Index: linux-2.6/include/asm-x86/pci-direct.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-x86/pci-direct.h
+> +++ linux-2.6/include/asm-x86/pci-direct.h
+> @@ -14,4 +14,7 @@ extern void write_pci_config_byte(u8 bus
+>  
+>  extern int early_pci_allowed(void);
+>  
+> +extern unsigned int pci_early_dump_regs;
+> +extern void early_dump_pci_device(u8 bus, u8 slot, u8 func);
+> +extern void early_dump_pci_devices(void);
+>  #endif
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
