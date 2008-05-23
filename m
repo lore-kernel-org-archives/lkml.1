@@ -1,102 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbYEWVyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759942AbYEWWAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbYEWVyd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 17:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYEWVyP
+	id S1759942AbYEWWAf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 18:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758555AbYEWWA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 17:54:15 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49234 "EHLO gate.crashing.org"
+	Fri, 23 May 2008 18:00:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35900 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758812AbYEWVyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 17:54:14 -0400
-In-Reply-To: <20080523095623.5678a34f.akpm@linux-foundation.org>
-References: <48313D8E.7020109@de.ibm.com> <20080523011213.690363c7.akpm@linux-foundation.org> <ab1f935148982762bae55734ffb8acc7@kernel.crashing.org> <20080523095623.5678a34f.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7b1023f2a9cf769f8bc047c0116be9dd@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: linux-kernel@vger.kernel.org,
-       Peter Oberparleiter <oberparleiter@googlemail.com>,
-       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-       Sam Ravnborg <sam@ravnborg.org>, ltp-coverage@lists.sourceforge.net
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 0/7] gcov kernel support
-Date: Fri, 23 May 2008 23:52:43 +0200
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.623)
+	id S1757712AbYEWWA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 18:00:26 -0400
+From: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
+Subject: [PATCH 1/2] Use structs instead of hardcoded offsets in x86 boot decompressor.
+Date: Fri, 23 May 2008 17:59:27 -0400
+Message-Id: <1211579968-15227-1-git-send-email-krh@redhat.com>
+X-Mailer: git-send-email 1.5.5.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Sounds like your toolchain was built without biarch support, but  
->> you're
->> using it for the 32-bit parts of the kernel anyway.  Which works as  
->> long
->> as you're not using any libraries, but now you need libgcov.a .
->
-> ok..
->
->> What does
->>
->> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/
->> powerpc64-unknown-linux-gnu-gcc -v
->>
->> say?
->
-> y:/home/akpm>  
-> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/ 
-> powerpc64-unknown-linux-gnu-gcc -v
-> Using built-in specs.
-> Target: powerpc64-unknown-linux-gnu
-> Configured with:  
-> /home/axboe/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc 
-> -4.1.0-glibc-2.3.6/gcc-4.1.0/configure  
-> --target=powerpc64-unknown-linux-gnu  
-> --host=x86_64-host_unknown-linux-gnu  
-> --prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux- 
-> gnu
+Signed-off-by: Kristian Høgsberg <krh@redhat.com>
+---
+ arch/x86/boot/compressed/misc.c |   26 +++++++++++---------------
+ 1 files changed, 11 insertions(+), 15 deletions(-)
 
-> --disable-multilib
-
-That's the culprit.  I believe 4.1.0 enables multilib by default on  
-PowerPC
-compilers that target 64-bit by default (the patch for that is dated  
-almost
-a full year before the 4.1.0 release).  I have no idea why crosstool
-disables this support; perhaps there were some problems with some older
-GCC version (or this one, even; it's ancient as well).
-
->> Or, what does
->>
->> find
->> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/ 
->> 4.1.0/
->> -name libgcov.a
->>
->> say?  (It should usually find three versions: 64-bit, 32-bit, 32-bit  
->> no
->> float).
->
-> Only a single hit:
-
-Right, as expected.
-
->> You *can* build with a non-biarch compiler, but then you need to point
->> the kernel build system at a 32-bit toolchain to use for the 32-bit
->> parts (via CROSS32_COMPILE).
->
-> Jens built this one, using crosstool.  It is
-> http://userweb.kernel.org/~akpm/cross-compilers/power64-cross.tar.bz2
->
-> It was all working happily until gcov came along :(
-
-You were lucky, yes.  If your compiler would have been just a little
-bit older it wouldn't have been able to build 32-bit at all.
-
-Do you have a separate 32-bit PowerPC compiler?  If so, just set
-CROSS32_COMPILE to it; if not, you'll need a new toolchain.  In
-that case, it's probably worthwhile to upgrade to 4.1.2 at least...
-
-
-Segher
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index 90456ce..0d03579 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -30,6 +30,7 @@
+ #include <asm/io.h>
+ #include <asm/page.h>
+ #include <asm/boot.h>
++#include <asm/bootparam.h>
+ 
+ /* WARNING!!
+  * This code is compiled with -fPIC and it is relocated dynamically
+@@ -187,13 +188,8 @@ static void gzip_release(void **);
+ /*
+  * This is set up by the setup-routine at boot-time
+  */
+-static unsigned char *real_mode; /* Pointer to real-mode data */
+-
+-#define RM_EXT_MEM_K   (*(unsigned short *)(real_mode + 0x2))
+-#ifndef STANDARD_MEMORY_BIOS_CALL
+-#define RM_ALT_MEM_K   (*(unsigned long *)(real_mode + 0x1e0))
+-#endif
+-#define RM_SCREEN_INFO (*(struct screen_info *)(real_mode+0))
++static struct boot_params *real_mode;		/* Pointer to real-mode data */
++static struct screen_info *rm_screen_info;	/* Pointer to real-mode data */
+ 
+ extern unsigned char input_data[];
+ extern int input_len;
+@@ -276,12 +272,12 @@ static void putstr(const char *s)
+ 	char c;
+ 
+ #ifdef CONFIG_X86_32
+-	if (RM_SCREEN_INFO.orig_video_mode == 0 && lines == 0 && cols == 0)
++	if (rm_screen_info->orig_video_mode == 0 && lines == 0 && cols == 0)
+ 		return;
+ #endif
+ 
+-	x = RM_SCREEN_INFO.orig_x;
+-	y = RM_SCREEN_INFO.orig_y;
++	x = rm_screen_info->orig_x;
++	y = rm_screen_info->orig_y;
+ 
+ 	while ((c = *s++) != '\0') {
+ 		if (c == '\n') {
+@@ -302,8 +298,8 @@ static void putstr(const char *s)
+ 		}
+ 	}
+ 
+-	RM_SCREEN_INFO.orig_x = x;
+-	RM_SCREEN_INFO.orig_y = y;
++	rm_screen_info->orig_x = x;
++	rm_screen_info->orig_y = y;
+ 
+ 	pos = (x + cols * y) * 2;	/* Update cursor position */
+ 	outb(14, vidport);
+@@ -430,7 +426,7 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
+ {
+ 	real_mode = rmode;
+ 
+-	if (RM_SCREEN_INFO.orig_video_mode == 7) {
++	if (rm_screen_info->orig_video_mode == 7) {
+ 		vidmem = (char *) 0xb0000;
+ 		vidport = 0x3b4;
+ 	} else {
+@@ -438,8 +434,8 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
+ 		vidport = 0x3d4;
+ 	}
+ 
+-	lines = RM_SCREEN_INFO.orig_video_lines;
+-	cols = RM_SCREEN_INFO.orig_video_cols;
++	lines = rm_screen_info->orig_video_lines;
++	cols = rm_screen_info->orig_video_cols;
+ 
+ 	window = output;		/* Output buffer (Normally at 1M) */
+ 	free_mem_ptr     = heap;	/* Heap */
+-- 
+1.5.5.1
 
