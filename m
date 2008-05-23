@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756936AbYEWLBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbYEWLCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756936AbYEWLBm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 07:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYEWLBd
+	id S1758218AbYEWLCG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 07:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbYEWLBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 07:01:33 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:53345 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752850AbYEWLBc (ORCPT
+	Fri, 23 May 2008 07:01:53 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45703 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752959AbYEWLBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 07:01:32 -0400
-To: swhiteho@redhat.com
-CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-In-reply-to: <1211537930.3635.569.camel@quoit> (message from Steven Whitehouse
-	on Fri, 23 May 2008 11:18:50 +0100)
-Subject: Re: [patch 04/14] gfs2: dont call permission()
-References: <20080521171458.077908538@szeredi.hu>
-	 <20080521171546.697638614@szeredi.hu>
-	 <20080523091805.GB27119@infradead.org>
-	 <E1JzTsy-0001b8-Cr@pomaz-ex.szeredi.hu> <1211537930.3635.569.camel@quoit>
-Message-Id: <E1JzV1K-0001m8-SN@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 23 May 2008 13:01:10 +0200
+	Fri, 23 May 2008 07:01:52 -0400
+Date: Fri, 23 May 2008 11:46:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i2c: Push ioctl BKL down into the i2c code
+Message-ID: <20080523114639.1705de71@core>
+In-Reply-To: <20080523093545.175c769c@hyperion.delvare>
+References: <20080522222327.1af72794@core>
+	<20080523093545.175c769c@hyperion.delvare>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Given the fact that (a) its only a very minor change and (b) as soon as
-> we have a solution to what we really want to do:
+On Fri, 23 May 2008 09:35:45 +0200
+Jean Delvare <khali@linux-fr.org> wrote:
+
+> Hi Alan,
 > 
->  - inode/file operation:
->    - Do lookup via VFS
->    - Get GFS2 glock
->      - Do perm check via VFS
->      - Do actual operation
->    - Drop GFS2 glock
+> On Thu, 22 May 2008 22:23:27 +0100, Alan Cox wrote:
+> > Signed-off-by: Alan Cox <alan@redhat.com>
+> > 
+> 
+> Description of what the patch does and why it is needed, please. I
+> can't apply it without that. My first impression is a patch making the
+> code bigger and more complex with no obvious benefit ;)
 
-Well, fuse/nfs already do something similar, except they have their
-actual permission checking in the server, as opposed to the vfs.  They
-basically do:
+It pushes the BKL down into the i2c driver. The intention is to remove
+the big kernel lock ioctl method from the file_operations structure so
+that we can work on getting rid of the big kernel lock for good. It's one
+of a series of patches that give me an x86-32 tree with no ->ioctl method
+at all.
 
- ->permission() does nothing
+Similar activity is going on for the other calls made under the BKL the
+goal being to push it down into drivers and then eliminate it.
 
- ->foo_operation() does everything, including permission checking
-
-The reality is a bit more complicated, and both nfs and fuse do
-sometimes check permissions in ->permission() but most of the cases,
-when they know that the permission will be checked later anyway they
-just omit it.
-
-Of course this would mean, that for example the LSM security checks
-are not done within the gfs locked region.  Does that matter?
-
-Miklos
