@@ -1,52 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759868AbYEWVyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbYEWVyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759868AbYEWVyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 17:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbYEWVyH
+	id S1758830AbYEWVyd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 17:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYEWVyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 17:54:07 -0400
-Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:4241 "EHLO
-	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757908AbYEWVyF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 17:54:05 -0400
-Date: Fri, 23 May 2008 23:52:20 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: hch@infradead.org, linux-fsdevel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/14] hfsplus: remove hfsplus_permission()
-In-Reply-To: <E1JzcZj-0002mJ-28@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0805232347500.18302@localhost.localdomain>
-References: <20080521171458.077908538@szeredi.hu> <20080521171549.964767446@szeredi.hu>
- <Pine.LNX.4.64.0805212232500.18302@localhost.localdomain>
- <E1Jz5gq-0007F4-AQ@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221358080.18302@localhost.localdomain>
- <E1Jz9jk-0007rg-5W@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221427300.18302@localhost.localdomain>
- <E1JzA2r-0007uK-8L@pomaz-ex.szeredi.hu> <20080523092114.GD27119@infradead.org>
- <Pine.LNX.4.64.0805231712120.18302@localhost.localdomain>
- <E1JzZF5-0002Hz-5e@pomaz-ex.szeredi.hu> <E1JzZWC-0002M8-UP@pomaz-ex.szeredi.hu>
- <Pine.LNX.4.64.0805231824370.18302@localhost.localdomain>
- <E1Jzbai-0002d1-VC@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805232027220.18302@localhost.localdomain>
- <E1JzcZj-0002mJ-28@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 23 May 2008 17:54:15 -0400
+Received: from gate.crashing.org ([63.228.1.57]:49234 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758812AbYEWVyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 17:54:14 -0400
+In-Reply-To: <20080523095623.5678a34f.akpm@linux-foundation.org>
+References: <48313D8E.7020109@de.ibm.com> <20080523011213.690363c7.akpm@linux-foundation.org> <ab1f935148982762bae55734ffb8acc7@kernel.crashing.org> <20080523095623.5678a34f.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7b1023f2a9cf769f8bc047c0116be9dd@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org,
+       Peter Oberparleiter <oberparleiter@googlemail.com>,
+       Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ltp-coverage@lists.sourceforge.net
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 0/7] gcov kernel support
+Date: Fri, 23 May 2008 23:52:43 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>> Sounds like your toolchain was built without biarch support, but  
+>> you're
+>> using it for the 32-bit parts of the kernel anyway.  Which works as  
+>> long
+>> as you're not using any libraries, but now you need libgcov.a .
+>
+> ok..
+>
+>> What does
+>>
+>> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/
+>> powerpc64-unknown-linux-gnu-gcc -v
+>>
+>> say?
+>
+> y:/home/akpm>  
+> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/bin/ 
+> powerpc64-unknown-linux-gnu-gcc -v
+> Using built-in specs.
+> Target: powerpc64-unknown-linux-gnu
+> Configured with:  
+> /home/axboe/crosstool-0.43/build/powerpc64-unknown-linux-gnu/gcc 
+> -4.1.0-glibc-2.3.6/gcc-4.1.0/configure  
+> --target=powerpc64-unknown-linux-gnu  
+> --host=x86_64-host_unknown-linux-gnu  
+> --prefix=/opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux- 
+> gnu
 
-On Fri, 23 May 2008, Miklos Szeredi wrote:
+> --disable-multilib
 
-> Semi-concrete: link(2) locks the target's parent and the source.
-> Cross-directory rename(2) locks both parents.  If link's target is a
-> file which has children, this can result in an ABBA deadlock.  That's
-> _before_ the filesystem's ->link() or ->rename() function is called.
+That's the culprit.  I believe 4.1.0 enables multilib by default on  
+PowerPC
+compilers that target 64-bit by default (the patch for that is dated  
+almost
+a full year before the 4.1.0 release).  I have no idea why crosstool
+disables this support; perhaps there were some problems with some older
+GCC version (or this one, even; it's ancient as well).
 
-I'm afraid you have to be more concrete than this. 
-hfsplus_file_inode_operations doesn't have a link or rename operation, so 
-if one your source parents above involves a file, it shouldn't get this 
-far or you have to describe your scenario in more detail.
+>> Or, what does
+>>
+>> find
+>> /opt/crosstool/gcc-4.1.0-glibc-2.3.6/powerpc64-unknown-linux-gnu/ 
+>> 4.1.0/
+>> -name libgcov.a
+>>
+>> say?  (It should usually find three versions: 64-bit, 32-bit, 32-bit  
+>> no
+>> float).
+>
+> Only a single hit:
 
-bye, Roman
+Right, as expected.
+
+>> You *can* build with a non-biarch compiler, but then you need to point
+>> the kernel build system at a 32-bit toolchain to use for the 32-bit
+>> parts (via CROSS32_COMPILE).
+>
+> Jens built this one, using crosstool.  It is
+> http://userweb.kernel.org/~akpm/cross-compilers/power64-cross.tar.bz2
+>
+> It was all working happily until gcov came along :(
+
+You were lucky, yes.  If your compiler would have been just a little
+bit older it wouldn't have been able to build 32-bit at all.
+
+Do you have a separate 32-bit PowerPC compiler?  If so, just set
+CROSS32_COMPILE to it; if not, you'll need a new toolchain.  In
+that case, it's probably worthwhile to upgrade to 4.1.2 at least...
+
+
+Segher
+
