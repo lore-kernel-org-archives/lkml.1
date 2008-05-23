@@ -1,111 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758367AbYEWQd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbYEWQit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758367AbYEWQd7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbYEWQdf
+	id S1753449AbYEWQit (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbYEWQim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:33:35 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3230 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756045AbYEWQde (ORCPT
+	Fri, 23 May 2008 12:38:42 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:53819 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750696AbYEWQim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:33:34 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: linux-mm@kvack.org
-Cc: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] slob: record page flag overlays explicitly
-References: <exportbomb.1211560342@pinky>
-InReply-To: <exportbomb.1211560342@pinky>
-Date: Fri, 23 May 2008 17:33:32 +0100
-Message-Id: <1211560412.0@pinky>
+	Fri, 23 May 2008 12:38:42 -0400
+Date: Fri, 23 May 2008 12:38:41 -0400
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
+       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
+       Haroldo Gamal <gamal@alternex.com.br>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into kernel image
+Message-ID: <20080523163841.GC27128@csclub.uwaterloo.ca>
+References: <1211550282.28967.8.camel@pmac.infradead.org> <20080523162101.GA31107@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080523162101.GA31107@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 23, 2008 at 06:21:01PM +0200, Sam Ravnborg wrote:
+> Looks good.
+> But do we need the firmware after init?
+> In other owrds could it be inside a discard after init block?
 
-SLOB reuses two page bits for internal purposes, it overlays PG_active
-and PG_private.  This is hidden away in slob.c.  Document these overlays
-explicitly in the main page-flags enum along with all the others.
+What is you can hotplug the device and hence need to initialize the same
+device type multiple times?  Wouldn't keeping the firmware around be
+useful then?  How about on suspend/resume, do you need to reload
+firmware in those cases?
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- include/linux/page-flags.h |    7 +++++++
- mm/slob.c                  |   12 ++++++------
- 2 files changed, 13 insertions(+), 6 deletions(-)
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index dfd0a26..43b3598 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -104,6 +104,10 @@ enum pageflags {
- 	/* XEN */
- 	PG_pinned = PG_owner_priv_1,
- 
-+	/* SLOB */
-+	PG_slob_page = PG_active,
-+	PG_slob_free = PG_private,
-+
- 	/* SLUB */
- 	PG_slub_frozen = PG_active,
- 	PG_slub_debug = PG_error,
-@@ -171,6 +175,9 @@ PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
- PAGEFLAG(Private, private) __CLEARPAGEFLAG(Private, private)
- 	__SETPAGEFLAG(Private, private)
- 
-+__PAGEFLAG(SlobPage, slob_page)
-+__PAGEFLAG(SlobFree, slob_free)
-+
- __PAGEFLAG(SlubFrozen, slub_frozen)
- __PAGEFLAG(SlubDebug, slub_debug)
- 
-diff --git a/mm/slob.c b/mm/slob.c
-index 6038cba..2d18d89 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -130,17 +130,17 @@ static LIST_HEAD(free_slob_large);
-  */
- static inline int slob_page(struct slob_page *sp)
- {
--	return test_bit(PG_active, &sp->flags);
-+	return PageSlobPage((struct page *)sp);
- }
- 
- static inline void set_slob_page(struct slob_page *sp)
- {
--	__set_bit(PG_active, &sp->flags);
-+	__SetPageSlobPage((struct page *)sp);
- }
- 
- static inline void clear_slob_page(struct slob_page *sp)
- {
--	__clear_bit(PG_active, &sp->flags);
-+	__ClearPageSlobPage((struct page *)sp);
- }
- 
- /*
-@@ -148,19 +148,19 @@ static inline void clear_slob_page(struct slob_page *sp)
-  */
- static inline int slob_page_free(struct slob_page *sp)
- {
--	return test_bit(PG_private, &sp->flags);
-+	return PageSlobFree((struct page *)sp);
- }
- 
- static void set_slob_page_free(struct slob_page *sp, struct list_head *list)
- {
- 	list_add(&sp->list, list);
--	__set_bit(PG_private, &sp->flags);
-+	__SetPageSlobFree((struct page *)sp);
- }
- 
- static inline void clear_slob_page_free(struct slob_page *sp)
- {
- 	list_del(&sp->list);
--	__clear_bit(PG_private, &sp->flags);
-+	__ClearPageSlobFree((struct page *)sp);
- }
- 
- #define SLOB_UNIT sizeof(slob_t)
+-- 
+Len Sorensen
