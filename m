@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757232AbYEWPA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYEWPCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757232AbYEWPA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbYEWPAL
+	id S1756816AbYEWPCw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbYEWPCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:00:11 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40082 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753477AbYEWPAK (ORCPT
+	Fri, 23 May 2008 11:02:45 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:55140 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753356AbYEWPCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:00:10 -0400
-X-Sasl-enc: gsPn3RCja40fRscqDD1zLLsJOdCFrvXnMbYxbkdLcbAJ 1211554807
-Message-ID: <4836DBF3.1030307@ladisch.de>
-Date: Fri, 23 May 2008 17:00:03 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 23 May 2008 11:02:44 -0400
+Message-ID: <4836DC57.1020101@yandex.ru>
+Date: Fri, 23 May 2008 18:01:43 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Haroldo Gamal <gamal@alternex.com.br>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into kernel
- image
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-In-Reply-To: <1211550282.28967.8.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+To: David Miller <davem@davemloft.net>
+CC: Lennert Buytenhek <buytenh@wantstofly.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: bad example in Documentation/atomic_ops.txt ?
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 23 May 2008 15:02:02.0584 (UTC) FILETIME=[F51BED80:01C8BCE5]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> +	/* Built-in firmware blobs */					\
-> +	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
-> +		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
-> +		*(.builtin_fw)						\
-> +		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
-> +	}								\
-> +									\
+Hi,
 
-Most drivers, when built as a module, would want their firmware images
-to be in the module and not in the kernel image.
+I it looks like the example in the Documentation/atomic_ops.txt
+file at line 232 is not quite right. The obj->active = 0 will
+be delayed, but not further than spin_unlock() in obj_timeout().
+Becaus spin_unlock() has a memory barrier.
 
-This would require some (un)register_builtint_firmware() function.
+I guess you would need to move spin_lock(&global_list_lock) to
+obj_list_del() to make the example valid.
 
+This confused me when I read the file.
 
-Regards,
-Clemens
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
