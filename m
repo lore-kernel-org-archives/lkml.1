@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbYEWXNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbYEWXVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760229AbYEWXNg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 19:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbYEWXN2
+	id S1760030AbYEWXVH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 19:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbYEWXUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 19:13:28 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56015 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYEWXN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 19:13:27 -0400
-Message-ID: <48374D3F.1080502@zytor.com>
-Date: Fri, 23 May 2008 16:03:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 23 May 2008 19:20:54 -0400
+Received: from westnet.com ([216.187.52.2]:58775 "EHLO westnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752268AbYEWXUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 19:20:53 -0400
+Date: Fri, 23 May 2008 19:18:40 -0400 (EDT)
+From: Greg Smith <gsmith@gregsmith.com>
+X-X-Sender: gsmith@westnet.com
+To: Mike Galbraith <efault@gmx.de>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: PostgreSQL pgbench performance regression in 2.6.23+
+In-Reply-To: <1211537717.5851.22.camel@marge.simson.net>
+Message-ID: <Pine.GSO.4.64.0805231907150.25273@westnet.com>
+References: <1211440207.5733.8.camel@marge.simson.net> 
+ <20080522082814.GA4499@linux.vnet.ibm.com>  <1211447105.4823.7.camel@marge.simson.net>
+  <1211452465.7606.8.camel@marge.simson.net>  <1211455553.4381.9.camel@marge.simson.net>
+  <1211456659.29104.20.camel@twins>  <1211458176.5693.6.camel@marge.simson.net>
+  <1211459081.29104.40.camel@twins>  <Pine.GSO.4.64.0805230232190.28654@westnet.com>
+  <1211536814.5851.18.camel@marge.simson.net>  <20080523101000.GA13964@elte.hu>
+ <1211537717.5851.22.camel@marge.simson.net>
 MIME-Version: 1.0
-To: Steve French <smfrench@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: kernel coding style for if ... else which cross #ifdef
-References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com>
-In-Reply-To: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve French wrote:
-> A question splitting "else" and "if" on distinct lines vs. using an
-> extra line and extra #else came up as I was reviewing a proposed cifs
-> patch.   Which is the preferred style?
-> 
-> #ifdef CONFIG_SOMETHING
->    if (foo)
->       something ...
->    else
-> #endif
->    if ((mode & S_IWUGO) == 0)
-> 
-> or alternatively
-> 
-> #ifdef CONFIG_SOMETHING
->    if (foo)
->       something ...
->    else if ((mode & S_IWUGO) == 0)
-> #else
->    if ((mode & S_IWUGO) == 0)
-> #endif
-> 
+On Fri, 23 May 2008, Mike Galbraith wrote:
 
-The former.  Why?  Because the latter case has unbalanced indentation: 
-to an editor, and to the human eye, it looks like the if in the #else 
-clause is a child to the "else if".
+> It was running SCHED_BATCH, features=0...it needed features=0 as well to 
+> achieve O(1) batch performance.
 
-*However*, the best would really be if we changed Kconfig to emit 
-configuration constants what were 0/1 instead of undefined/defined. 
-That way we could do:
+I figured out how to run pgbench with chrt in order to get SCHED_BATCH 
+behavior, but I don't understand what you mean by features=0 here.  Since 
+I didn't see the same magnitude of different just using batch that seems 
+important, where does that get set at?
 
-	if (CONFIG_SOMETHING && foo) {
-		/* ... something ... */
-	} else if ((mode & S_IWUGO) == 0) {
-		/* ... */
+I'm also curious what hardware your results are coming from, to fit them 
+into my larger pgbench results context space.
 
-... in many cases.
+Got my 4-core system back on-line again today (found some bad RAM) and 
+wanted to try another round of tests on that.  Looks like you've defined 5 
+test sets I should replicate:
 
-	-hpa
+2.6.22
+2.6.22, batch
+2.6.26.git
+2.6.26.git, batch
+2.6.26.git, batch + se.load.weight patch
+
+Should I still be trying Peter's se.waker patch as well in this mix 
+somewhere?
+
+--
+* Greg Smith gsmith@gregsmith.com http://www.gregsmith.com Baltimore, MD
