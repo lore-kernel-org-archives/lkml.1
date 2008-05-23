@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbYEWNJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbYEWNJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917AbYEWNJo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbYEWNJW
+	id S1754349AbYEWNJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYEWNJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:09:22 -0400
-Received: from gw.goop.org ([64.81.55.164]:33885 "EHLO mail.goop.org"
+	Fri, 23 May 2008 09:09:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:33889 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752241AbYEWNJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753151AbYEWNJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 23 May 2008 09:09:20 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 1 of 5] xen: Enable console tty by default in domU if it's not
-	a dummy
-X-Mercurial-Node: e9931939438dda0e1d235e26fea57f63923ad609
-Message-Id: <e9931939438dda0e1d23.1211547981@localhost>
+Subject: [PATCH 2 of 5] xen pvfb: Pointer z-axis (mouse wheel) support
+X-Mercurial-Node: 37b91e2977db6e5c6fc5b846fae078edce06d8c8
+Message-Id: <37b91e2977db6e5c6fc5.1211547982@localhost>
 In-Reply-To: <patchbomb.1211547980@localhost>
-Date: Fri, 23 May 2008 14:06:21 +0100
+Date: Fri, 23 May 2008 14:06:22 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Markus Armbruster <armbru@redhat.com>
@@ -27,141 +26,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Markus Armbruster <armbru@redhat.com>
 
-Without console= arguments on the kernel command line, the first
-console to register becomes enabled and the preferred console (the one
-behind /dev/console).  This is normally tty (assuming
-CONFIG_VT_CONSOLE is enabled, which it commonly is).
+Add z-axis motion to pointer events.  Backward compatible, because
+there's space for the z-axis in union xenkbd_in_event, and old
+backends zero it.
 
-This is okay as long tty is a useful console.  But unless we have the
-PV framebuffer, and it is enabled for this domain, tty0 in domU is
-merely a dummy.  In that case, we want the preferred console to be the
-Xen console hvc0, and we want it without having to fiddle with the
-kernel command line.  Commit b8c2d3dfbc117dff26058fbac316b8acfc2cb5f7
-did that for us.
+Derived from
+http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/57dfe0098000
+http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/1edfea26a2a9
+http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/c3ff0b26f664
 
-Since we now have the PV framebuffer, we want to enable and prefer tty
-again, but only when PVFB is enabled.  But even then we still want to
-enable the Xen console as well.
-
-Problem: when tty registers, we can't yet know whether the PVFB is
-enabled.  By the time we can know (xenstore is up), the console setup
-game is over.
-
-Solution: enable console tty by default, but keep hvc as the preferred
-console.  Change the preferred console to tty when PVFB probes
-successfully, unless we've been given console kernel parameters.
-
+Signed-off-by: Pat Campbell <plc@novell.com>
 Signed-off-by: Markus Armbruster <armbru@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/enlighten.c    |    4 +++-
- drivers/video/xen-fbfront.c |   25 +++++++++++++++++++++++++
- include/linux/console.h     |    2 ++
- kernel/printk.c             |    4 +++-
- 4 files changed, 33 insertions(+), 2 deletions(-)
+ drivers/input/xen-kbdfront.c     |    8 +++++++-
+ include/xen/interface/io/kbdif.h |    3 ++-
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1257,8 +1257,10 @@
- 		? __pa(xen_start_info->mod_start) : 0;
- 	boot_params.hdr.ramdisk_size = xen_start_info->mod_len;
+diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+--- a/drivers/input/xen-kbdfront.c
++++ b/drivers/input/xen-kbdfront.c
+@@ -66,6 +66,9 @@
+ 		case XENKBD_TYPE_MOTION:
+ 			input_report_rel(dev, REL_X, event->motion.rel_x);
+ 			input_report_rel(dev, REL_Y, event->motion.rel_y);
++			if (event->motion.rel_z)
++				input_report_rel(dev, REL_WHEEL,
++						 -event->motion.rel_z);
+ 			break;
+ 		case XENKBD_TYPE_KEY:
+ 			dev = NULL;
+@@ -84,6 +87,9 @@
+ 		case XENKBD_TYPE_POS:
+ 			input_report_abs(dev, ABS_X, event->pos.abs_x);
+ 			input_report_abs(dev, ABS_Y, event->pos.abs_y);
++			if (event->pos.rel_z)
++				input_report_rel(dev, REL_WHEEL,
++						 -event->pos.rel_z);
+ 			break;
+ 		}
+ 		if (dev)
+@@ -152,7 +158,7 @@
+ 	ptr->evbit[0] = BIT(EV_KEY) | BIT(EV_REL) | BIT(EV_ABS);
+ 	for (i = BTN_LEFT; i <= BTN_TASK; i++)
+ 		set_bit(i, ptr->keybit);
+-	ptr->relbit[0] = BIT(REL_X) | BIT(REL_Y);
++	ptr->relbit[0] = BIT(REL_X) | BIT(REL_Y) | BIT(REL_WHEEL);
+ 	input_set_abs_params(ptr, ABS_X, 0, XENFB_WIDTH, 0, 0);
+ 	input_set_abs_params(ptr, ABS_Y, 0, XENFB_HEIGHT, 0, 0);
  
--	if (!is_initial_xendomain())
-+	if (!is_initial_xendomain()) {
-+		add_preferred_console("tty", 0, NULL);
- 		add_preferred_console("hvc", 0, NULL);
-+	}
- 
- 	/* Start the world */
- 	start_kernel();
-diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
---- a/drivers/video/xen-fbfront.c
-+++ b/drivers/video/xen-fbfront.c
-@@ -18,6 +18,7 @@
-  * frame buffer.
-  */
- 
-+#include <linux/console.h>
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/fb.h>
-@@ -48,6 +49,7 @@
- 
- static u32 xenfb_mem_len = XENFB_WIDTH * XENFB_HEIGHT * XENFB_DEPTH / 8;
- 
-+static void xenfb_make_preferred_console(void);
- static int xenfb_remove(struct xenbus_device *);
- static void xenfb_init_shared_page(struct xenfb_info *);
- static int xenfb_connect_backend(struct xenbus_device *, struct xenfb_info *);
-@@ -348,6 +350,7 @@
- 	if (ret < 0)
- 		goto error;
- 
-+	xenfb_make_preferred_console();
- 	return 0;
- 
-  error_nomem:
-@@ -356,6 +359,28 @@
-  error:
- 	xenfb_remove(dev);
- 	return ret;
-+}
-+
-+static __devinit void
-+xenfb_make_preferred_console(void)
-+{
-+	struct console *c;
-+
-+	if (console_set_on_cmdline)
-+		return;
-+
-+	acquire_console_sem();
-+	for (c = console_drivers; c; c = c->next) {
-+		if (!strcmp(c->name, "tty") && c->index == 0)
-+			break;
-+	}
-+	release_console_sem();
-+	if (c) {
-+		unregister_console(c);
-+		c->flags |= CON_CONSDEV;
-+		c->flags &= ~CON_PRINTBUFFER; /* don't print again */
-+		register_console(c);
-+	}
- }
- 
- static int xenfb_resume(struct xenbus_device *dev)
-diff --git a/include/linux/console.h b/include/linux/console.h
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -108,6 +108,8 @@
- 	struct	 console *next;
+diff --git a/include/xen/interface/io/kbdif.h b/include/xen/interface/io/kbdif.h
+--- a/include/xen/interface/io/kbdif.h
++++ b/include/xen/interface/io/kbdif.h
+@@ -49,6 +49,7 @@
+ 	uint8_t type;		/* XENKBD_TYPE_MOTION */
+ 	int32_t rel_x;		/* relative X motion */
+ 	int32_t rel_y;		/* relative Y motion */
++	int32_t rel_z;		/* relative Z motion (wheel) */
  };
  
-+extern int console_set_on_cmdline;
-+
- extern int add_preferred_console(char *name, int idx, char *options);
- extern int update_console_cmdline(char *name, int idx, char *name_new, int idx_new, char *options);
- extern void register_console(struct console *);
-diff --git a/kernel/printk.c b/kernel/printk.c
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -122,6 +122,8 @@
- static struct console_cmdline console_cmdline[MAX_CMDLINECONSOLES];
- static int selected_console = -1;
- static int preferred_console = -1;
-+int console_set_on_cmdline;
-+EXPORT_SYMBOL(console_set_on_cmdline);
+ struct xenkbd_key {
+@@ -61,6 +62,7 @@
+ 	uint8_t type;		/* XENKBD_TYPE_POS */
+ 	int32_t abs_x;		/* absolute X position (in FB pixels) */
+ 	int32_t abs_y;		/* absolute Y position (in FB pixels) */
++	int32_t rel_z;		/* relative Z motion (wheel) */
+ };
  
- /* Flag: console code may call schedule() */
- static int console_may_schedule;
-@@ -895,6 +897,7 @@
- 	*s = 0;
- 
- 	__add_preferred_console(buf, idx, options, brl_options);
-+	console_set_on_cmdline = 1;
- 	return 1;
- }
- __setup("console=", console_setup);
+ #define XENKBD_IN_EVENT_SIZE 40
 
 
