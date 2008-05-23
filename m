@@ -1,107 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbYEWOPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYEWOST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754994AbYEWOPO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 10:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYEWOOb
+	id S1756512AbYEWOST (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 10:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYEWOSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 10:14:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:45412 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751281AbYEWOO3 (ORCPT
+	Fri, 23 May 2008 10:18:10 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:42821 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbYEWOSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 10:14:29 -0400
+	Fri, 23 May 2008 10:18:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=f2HIaYBqt6O3X7shzJg27XHOSEAoo+p3FVpXJxwygJeUPZnQOAyL5PRqAmRQAchMSC13m/IVN3D/1qUVH9Js3bOw18woJbnG0aTYWArTMFiFjlyryijFE81/6lRRUgE3wppAq+rKgMp7gF5e9hcMjPgJfWLFejwc7epaReIdElA=
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL RADIOS OFF
-Date: Fri, 23 May 2008 16:15:33 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Dmitry Torokhov <dtor@mail.ru>
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <200805201209.06902.IvDoorn@gmail.com> <20080522205153.GA18483@khazad-dum.debian.net>
-In-Reply-To: <20080522205153.GA18483@khazad-dum.debian.net>
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=xYHrECdlC9Ub/sF9ifjW8KCIv+zhhHDGaQFfuDaIQmtqg9nx4ULn3DgkuvgJnNmnVnEgNYtL1SiZAPaX+xXsBw5cf6h2yqeEVDBDyNAimKIP47fYadx9lV9Z45URw9Llrc27/shW2IbLPaA799GxaNBFuC1Y2ZJsdr6rCTFFF2M=
+Date: Fri, 23 May 2008 16:17:59 +0200
+To: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kmemcheck: SMP support
+Message-ID: <20080523141759.GA1833@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805231615.33414.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 May 2008, Henrique de Moraes Holschuh wrote:
-> On Tue, 20 May 2008, Ivo van Doorn wrote:
-> > On Sunday 18 May 2008, Henrique de Moraes Holschuh wrote:
-> > > SW_RFKILL_ALL is the "emergency power-off all radios" input event.  It must
-> > > be handled, and must always do the same thing as far as the rfkill system
-> > > is concerned: all transmitters are to go *immediately* offline.
-> > 
-> > I don't quite agree here. The SW_RFKILL_ALL key is the one send by thinkpad-acpi,
-> > what makes that key so special that is has to be handled differently then a key
-> > that only controls a single radio type?
-> 
-> Well, first there is no KEY involved, it is a SWITCH :-)  But that's not
-> the reason it is special.
-> 
-> What makes SW_RFKILL_ALL special, is that it is the kernel view of *The*
-> RFKill Switch.  SW_RFKILL_ALL is the event you get when the user
-> manipulates the very *thing* that created the "rfkill switch" term.
+Hi,
 
-So do keys that are pressed that only send the KEY_WLAN, KEY_BLUETOOTH or
-KEY_UWB signals. They all indicate the key has been pressed and the radios
-should be turned on/off.
+This works on real hw, but not on qemu. It seems to get stuck waiting for one
+of the atomic values to change. Don't know why yet, it might just be yet
+another bug in qemu... (we've hit at least two of them so far. And they were
+real bugs too.)
 
-> You get that event when someone moves that slider switch in the side/top
-> of a laptop which has to kill all RF output in hardware as far as safety
-> regulations go.  Therefore, it refers to the only rfkill switch that has
-> guidelines that say that it must always work, and that it must not be
-> possible to override it in software.
+But do you think this approach is feasible? It will kill interactivity,
+that's for sure, though only when kmemcheck is run-time enabled and number
+of CPUs > 1 (the more the worse).
 
-That is a valid point, and rfkill is supposed to do that, but making
-a difference between RFKILL_ALL and the individual types is wrong
-because that won't result in a clearly defined expected behavior for all
-rfkill keys.
 
-> Too bad that doesn't apply to "removable" radio transmitters, like
-> PCMCIA and ExpressCard WLAN cards, USB RF transmitters, and so on...
-> probably, the user is expected to yank them off when he moves the switch
-> to the "no radios working here!" position.  Well, we can do better.  We
-> can make it apply to these other radio transmitters, too.
+Vegard
 
-Through the write-only rfkill class right? ;)
 
-> So yes, it *is* special when it is doing its "power DOWN the
-> transmitters" function.  It is not special at all when it is in the
-> "allow radios to function if they want to" position, which is why I
-> special-cased only the "OFF" state.
-> 
-> IMHO, that makes it special enough to implement it in a different way
-> that is not subject to, e.g., brain damage in userspace.
-> 
-> As for thinkpad-acpi being the only in-tree code issuing that event so
-> far, well... I have seen laptops from many vendors with that switch, and
-> it is likely that the firmware of at least some of these laptops let you
-> know the state of the switch (like the thinkpad firmware does), so I'd
-> expect more users of SW_RFKILL_ALL to show up soon.  I am just paving
-> the way.
-> 
-> That, and as an user, I'd really like to be able to implement a
-> KEY_RFKILL_ALL keycode to use when I don't have a proper SW_RFKILL_ALL
-> in my laptop.  But one thing at a time.  Small steps.
-> 
-> > All keys should have the same rules when it is pressed, so either all keys should
-> > force the change, or none of them should.
-> 
-> IMO, "kill ALL radios" events are is the only kind of rfkill input event
-> that have to *always work*, even if something in userspace tried to
-> configure it not to.
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Fri, 23 May 2008 15:53:03 +0200
+Subject: [PATCH] kmemcheck: SMP support
 
-Well the definition of "ALL radios" is the part that is the question, when the KEY_WLAN is
-pressed it would be "ALL WLAN radios" and should still have the same rules for allowing
-or disallowing userspace to overwrite the status.
+This patch adds SMP support to kmemcheck, that is, the ability to boot
+more than one processor even when kmemcheck is enabled. (Previously,
+only one CPU would be booted even if more were present in the system.)
 
-Ivo
+On page fault, kmemcheck needs to pause all the other CPUs in the system
+in order to guarantee that no other CPU will modify the same memory
+location (which will otherwise be unprotected after we set the present
+bit of the PTE).
+
+Since the page fault can be taken with any irq state (i.e. enabled or
+disabled), we can't send a normal IPI broadcast since this can deadlock.
+
+Instead, we send an NMI. This is guaranteed to be received _except_ if
+the processor is already inside the NMI handler.
+
+This is of course not very efficient, and booting with maxcpus=1 is
+recommended, however, this allows the kernel to be configured with
+CONFIG_KMEMCHECK=y with close to zero overhead when kmemcheck is
+disabled. (It can still be runtime-enabled at any time, though.)
+
+The patch has been tested on real hardware.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/kernel/kmemcheck.c |  108 +++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 98 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
+index c0045e8..fdf8acb 100644
+--- a/arch/x86/kernel/kmemcheck.c
++++ b/arch/x86/kernel/kmemcheck.c
+@@ -16,6 +16,7 @@
+ #include <linux/kmemcheck.h>
+ #include <linux/mm.h>
+ #include <linux/module.h>
++#include <linux/notifier.h>
+ #include <linux/page-flags.h>
+ #include <linux/percpu.h>
+ #include <linux/stacktrace.h>
+@@ -23,9 +24,12 @@
+ #include <asm/cacheflush.h>
+ #include <asm/kmemcheck.h>
+ #include <asm/pgtable.h>
++#include <asm/smp.h>
+ #include <asm/string.h>
+ #include <asm/tlbflush.h>
+ 
++#include <mach_ipi.h>
++
+ enum shadow {
+ 	SHADOW_UNALLOCATED,
+ 	SHADOW_UNINITIALIZED,
+@@ -240,18 +244,91 @@ static void do_wakeup(unsigned long data)
+ 	}
+ }
+ 
++static atomic_t nmi_wait;
++static atomic_t nmi_resume;
++static atomic_t started;
++static atomic_t finished;
++
++static int nmi_notifier(struct notifier_block *self,
++	unsigned long val, void *data)
++{
++	struct die_args *args = (struct die_args *) data;
++
++	if (val != DIE_NMI_IPI || !atomic_read(&nmi_wait))
++		return NOTIFY_DONE;
++
++	atomic_inc(&started);
++
++	/* Pause until the fault has been handled */
++	while (!atomic_read(&nmi_resume))
++		cpu_relax();
++
++	atomic_inc(&finished);
++
++	return NOTIFY_STOP;
++}
++
++static void
++pause_allbutself(void)
++{
++#ifdef CONFIG_SMP
++	static spinlock_t nmi_spinlock;
++
++	int cpus;
++	cpumask_t mask = cpu_online_map;
++
++	spin_lock(&nmi_spinlock);
++
++	cpus = num_online_cpus() - 1;
++
++	atomic_set(&started, 0);
++	atomic_set(&finished, 0);
++	atomic_set(&nmi_wait, 1);
++	atomic_set(&nmi_resume, 0);
++
++	cpu_clear(safe_smp_processor_id(), mask);
++	if (!cpus_empty(mask))
++		send_IPI_mask(mask, NMI_VECTOR);
++
++	while (atomic_read(&started) != cpus)
++		cpu_relax();
++
++	atomic_set(&nmi_wait, 0);
++
++	spin_unlock(&nmi_spinlock);
++#endif
++}
++
++static void
++resume(void)
++{
++#ifdef CONFIG_SMP
++	int cpus;
++
++	cpus = num_online_cpus() - 1;
++
++	atomic_set(&nmi_resume, 1);
++
++	while (atomic_read(&finished) != cpus)
++		cpu_relax();
++#endif
++}
++
++#ifdef CONFIG_SMP
++static struct notifier_block nmi_nb = {
++	.notifier_call = &nmi_notifier,
++};
++#endif
++
+ void __init kmemcheck_init(void)
+ {
++	int err;
++
+ 	printk(KERN_INFO "kmemcheck: \"Bugs, beware!\"\n");
+ 
+ #ifdef CONFIG_SMP
+-	/* Limit SMP to use a single CPU. We rely on the fact that this code
+-	 * runs before SMP is set up. */
+-	if (setup_max_cpus > 1) {
+-		printk(KERN_INFO
+-			"kmemcheck: Limiting number of CPUs to 1.\n");
+-		setup_max_cpus = 1;
+-	}
++	err = register_die_notifier(&nmi_nb);
++	BUG_ON(err);
+ #endif
+ }
+ 
+@@ -376,11 +453,14 @@ void kmemcheck_show(struct pt_regs *regs)
+ 
+ 	BUG_ON(!irqs_disabled());
+ 
++	pause_allbutself();
++
+ 	if (unlikely(data->balance != 0)) {
+ 		show_addr(data->addr1);
+ 		show_addr(data->addr2);
+ 		error_save_bug(regs);
+ 		data->balance = 0;
++		resume();
+ 		return;
+ 	}
+ 
+@@ -390,8 +470,10 @@ void kmemcheck_show(struct pt_regs *regs)
+ 
+ 	/* None of the addresses actually belonged to kmemcheck. Note that
+ 	 * this is not an error. */
+-	if (n == 0)
++	if (n == 0) {
++		resume();
+ 		return;
++	}
+ 
+ 	++data->balance;
+ 
+@@ -421,8 +503,10 @@ void kmemcheck_hide(struct pt_regs *regs)
+ 
+ 	BUG_ON(!irqs_disabled());
+ 
+-	if (data->balance == 0)
++	if (data->balance == 0) {
++		resume();
+ 		return;
++	}
+ 
+ 	if (unlikely(data->balance != 1)) {
+ 		show_addr(data->addr1);
+@@ -436,6 +520,7 @@ void kmemcheck_hide(struct pt_regs *regs)
+ 			regs->flags &= ~X86_EFLAGS_TF;
+ 		if (data->flags & X86_EFLAGS_IF)
+ 			regs->flags |= X86_EFLAGS_IF;
++		resume();
+ 		return;
+ 	}
+ 
+@@ -448,8 +533,10 @@ void kmemcheck_hide(struct pt_regs *regs)
+ 		n += show_addr(data->addr2);
+ 	}
+ 
+-	if (n == 0)
++	if (n == 0) {
++		resume();
+ 		return;
++	}
+ 
+ 	--data->balance;
+ 
+@@ -460,6 +547,7 @@ void kmemcheck_hide(struct pt_regs *regs)
+ 		regs->flags &= ~X86_EFLAGS_TF;
+ 	if (data->flags & X86_EFLAGS_IF)
+ 		regs->flags |= X86_EFLAGS_IF;
++	resume();
+ }
+ 
+ void kmemcheck_show_pages(struct page *p, unsigned int n)
+-- 
+1.5.4.1
+
