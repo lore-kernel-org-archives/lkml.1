@@ -1,89 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbYEWOcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbYEWOng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758449AbYEWOcq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 10:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbYEWOcj
+	id S1756045AbYEWOng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 10:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYEWOn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 10:32:39 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:37263 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbYEWOci convert rfc822-to-8bit (ORCPT
+	Fri, 23 May 2008 10:43:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:51357 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbYEWOn0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 10:32:38 -0400
-Date: Fri, 23 May 2008 16:30:16 +0200
-Message-Id: <289344083@web.de>
+	Fri, 23 May 2008 10:43:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GkMA8CTSQ521YaTi3wAyXJrgn3kGD7rs9ltCs90+cICmEKZzo7g+kRnMksbnl4YfFIdwhIh0eLeUr3MNjDuzrGac3TM6rwRBObLKMpWhBOJHbtB8rWc+ikdRrSWMO+9oMkD29kbA1CRZW0tpg+NyZIqiiSHk2POawChQ/ZycBDQ=
+Message-ID: <19f34abd0805230743m36c400afy7f4e3e05252383c3@mail.gmail.com>
+Date: Fri, 23 May 2008 16:43:23 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: initialization of static per-cpu variables
+Cc: "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>
+In-Reply-To: <20080523142904.GB28257@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-From: devzero@web.de
-To: sangshuduo@gmail.com
-Cc: bosko.radivojevic@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Inserting code from userspace to kernel space
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX18hVVGZpQhT/BH1KduIt4vLpBNvNime5ZsLznc/dUc3jFCw+
- kmV0CAWKvGBmP/cBkLvQqA61uIQXD4W7NQnO8tR3sOINz9so/s=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com>
+	 <200805221820.07290.rusty@rustcorp.com.au>
+	 <20080523142904.GB28257@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I know this sounds quite weird, but maybe there is a project that can help us ;)
+On Fri, May 23, 2008 at 4:29 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Thu, May 22, 2008 at 06:20:06PM +1000, Rusty Russell wrote:
+>> On Thursday 22 May 2008 04:28:02 Vegard Nossum wrote:
+>> > Hi,
+>> >
+>> > I encountered this comment in kernel/softirq.c:
+>> >
+>> > /* Some compilers disobey section attribute on statics when not
+>> >    initialized -- RR */
+>> > static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec) = { NULL };
+>> > static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec) = { NULL };
+>> >
+>> > So I assume it's the combination of static and whatever section
+>> > DFINE_PER_CPU puts the variable in which is the problem.
+>> >
+>> > However, there's a LOT of these "static DEFINE_PER_CPU" without any
+>> > initializer in the rest of the code, e.g.:
 >>
+>> Yep, it was an old toolchain used by Sparc: DaveM found this one.  As you say,
+>> it's ancient: I'm happy to queue a cleanup patch now everyone is on a modern
+>> compiler.
 >
->actually you can implement a parser/interpretor, whatever you name it,
->in kernel space. And you can send the
->function code from user space to kernel space by device driver
->interface. the parser can parse that and do something
->practical function in kernel.
+> The commit says:
 >
->I have worked on a similar task in a product powered by linux. It works great.
-
-any pointer to the sourcecode so bosko (and others) can profit from that ?
-
-
-
-
-List:       linux-kernel
-Subject:    Re: Inserting code from userspace to kernel space
-From:       "Shuduo Sang" <sangshuduo () gmail ! com>
-Date:       2008-05-22 16:04:35
-Message-ID: ee101c360805220904h1c69db12q3048d0347d27c461 () mail ! gmail ! com
-[Download message RAW]
-
-On Thu, May 22, 2008 at 8:41 PM, Bosko Radivojevic
-<bosko.radivojevic@gmail.com> wrote:
-> Hi!
+>    [PATCH] softirq.c per_cpu fix
 >
-> I'm looking for a way to insert code from user space to the kernel
-> space, but without using kernel module. Actually, we are working on a
-> system that has to allow end user to change part of code (one or two
-> functions) that is executed from the kernel space.
+>    GCC3.1 apparently gets confused about uninitialized sections
 >
-> For now we have two different kernel modules, one exporting a function
-> which another module uses. Process of compiling kernel module is quite
-> ineligible for standard end user (along with the requirement to
-> support multi platform cross compiling) compared to just cross
-> compiling a simple code that doesn't use any libraries than libc.
 >
-> I know this sounds quite weird, but maybe there is a project that can help us ;)
->
+> We do still support gcc 3.2 (which is the same as 3.1 except for a C++
+> ABI change) as a compiler for the kernel.
 
-actually you can implement a parser/interpretor, whatever you name it,
-in kernel space. And you can send the
-function code from user space to kernel space by device driver
-interface. the parser can parse that and do something
-practical function in kernel.
+Ah, thanks for looking that up!
 
-I have worked on a similar task in a product powered by linux. It works great.
+The question is then whether 3.1/3.2 will _ever_ do the right thing,
+when you consider the number of places in the kernel that *don't*
+initialize static per-cpu variables. (Or maybe: What makes this
+variable so special that it breaks the kernel?)
 
-> Sincerely,
-> Bosko
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-______________________________________________________________
-Jeden Monat 1 hochkarätiger maxdome-Blockbuster GRATIS!
-Exklusiv für alle WEB.DE Nutzer. http://www.blockbuster.web.de
+Maybe it was fixed by accident in the kernel at some point later (e.g.
+by change of the linker script) or maybe the commit message/original
+reason was wrong and it was really something else?
 
+Or maybe it is time to deprecate gcc 3.1/3.2 support?
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
