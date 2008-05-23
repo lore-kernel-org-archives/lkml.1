@@ -1,173 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934663AbYEWHFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935045AbYEWHG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934663AbYEWHFW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 03:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbYEWHFH
+	id S935045AbYEWHG6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 03:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbYEWHGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 03:05:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3191 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757814AbYEWHFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 03:05:05 -0400
-Date: Fri, 23 May 2008 09:04:52 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Anas Nashif <nashif@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Intel Management Engine Interface
-Message-ID: <20080523070452.GA8193@ucw.cz>
-References: <4832174A.20905@linux.intel.com>
+	Fri, 23 May 2008 03:06:47 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51994
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753711AbYEWHGr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 03:06:47 -0400
+Date: Fri, 23 May 2008 00:06:42 -0700 (PDT)
+Message-Id: <20080523.000642.16832482.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patch] net driver fixes for .26
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080522191026.GA29741@havoc.gtf.org>
+References: <20080522191026.GA29741@havoc.gtf.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4832174A.20905@linux.intel.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Jeff Garzik <jeff@garzik.org>
+Date: Thu, 22 May 2008 15:10:26 -0400
 
-> The Intel Management Engine Interface (aka HECI: Host Embedded
-> Controller Interface ) enables communication between the host OS and
-> the Management Engine firmware. MEI is bi-directional, and either the
-> host or Intel AMT firmware can initiate transactions.
+> Note there is more coming...  several "patches" in my mbox are stuff I
+> need to dig up from archives in the next day or so.
+> 
+> Please pull from 'upstream-davem' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-davem
+> 
+> to receive the following updates:
 
-* uses homebrewn DBG(), could it use dprintk() or something.
-
-* should probably come with Documentation/ file
-
-* defines like H_IE are a bit too terse.
-
-> +extern const struct guid heci_pthi_guid;
-> +extern const struct guid heci_wd_guid;
-> +extern const __u8 start_wd_params[];
-> +extern const __u8 stop_wd_params[];
-> +extern const __u8 heci_wd_state_independence_msg[2][4];
-
-Externs should go to header file.
-
-No need to use __u8 in kernel.
-
-Variables need good names. pthi_guid is not one of them.
-
-> +/**
-> + * memory IO BAR definition
-> + */
-> +#define     BAR_0                        0
-> +#define     BAR_1                        1
-> +#define     BAR_5                        5
-
-Heh. And comments should tell us what it is.
-
-Hmm, is this kerneldoc? Does not seem like one. So don't use /**. Fix
-this all over the patch.
-
-> +/**
-> + * heci_fe_same_id - tell if file extensions have same id
-> + * @fe1 -file extension
-> + * @fe2 -file extension
-> + *
-> + * @return :
-> + *  1 - if ids are the same,
-> + *  0 - if differ.
-> + */
-
-File extensions?!
-
-> +static inline int heci_fe_same_id(struct heci_file_private *fe1,
-> +				  struct heci_file_private *fe2)
-> +{
-> +	if ((fe1->host_client_id == fe2->host_client_id)
-> +	    && (fe1->me_client_id == fe2->me_client_id)) {
-> +		return 1;
-> +	} else {
-> +		return 0;
-> +	}
-> +}
-
-This can be written without the if.
-
-
-> +#endif /* _HECI_H_ */
-> diff --git a/drivers/char/heci/heci_data_structures.h
-> b/drivers/char/heci/heci_data_structures.h
-> new file mode 100644
-> index 0000000..ac0f488
-> --- /dev/null
-> +++ b/drivers/char/heci/heci_data_structures.h
-> @@ -0,0 +1,507 @@
-> +/*
-> + * Part of Intel(R) Manageability Engine Interface Linux driver
-> + *
-> + * Copyright (c) 2003 - 2008 Intel Corp.
-> + * All rights reserved.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions
-> + * are met:
-> + * 1. Redistributions of source code must retain the above copyright
-> + *    notice, this list of conditions, and the following disclaimer,
-> + *    without modification.
-> + * 2. Redistributions in binary form must reproduce at minimum a disclaimer
-> + *    substantially similar to the "NO WARRANTY" disclaimer below
-> + *    ("Disclaimer") and any redistribution must be conditioned upon
-> + *    including a substantially similar Disclaimer requirement for further
-> + *    binary redistribution.
-> + * 3. Neither the names of the above-listed copyright holders nor the names
-> + *    of any contributors may be used to endorse or promote products derived
-> + *    from this software without specific prior written permission.
-
-What kind of ninja mutant license is this?
-
-> +/**
-> + * Number of queue lists used by this driver
-> + */
-> +#define NUMBER_OF_LISTS        7
-
-Yes, how very useful name. Plus, it is too generic and likely to
-conflict with someone else.
-
-> +#define IAMTHIF_MTU 4160
-
-And this one seems encrypted.
-
-> +
-> +/**
-> + * HECI HW Section
-> + */
-> +
-> +/* HECI addresses and defines */
-> +#define H_CB_WW    0
-> +#define H_CSR      4
-> +#define ME_CB_RW   8
-> +#define ME_CSR_HA  0xC
-
-As do this and registers below.
-
-> +/**
-> + * time to wait event
-> + */
-> +#define HECI_INTEROP_TIMEOUT    (HZ * 7)
-
-Could we get _useful_ comments?
-
-> +/* File state */
-> +enum file_state {
-> +	HECI_FILE_INITIALIZING = 0,
-> +	HECI_FILE_CONNECTING,
-> +	HECI_FILE_CONNECTED,
-> +	HECI_FILE_DISCONNECTING,
-> +	HECI_FILE_DISCONNECTED
-> +};
-
-What kind of files is this handling? Surely this is not a filesystem?
-
-
-> +/* HECI states */
-> +enum heci_states{
-
-Missing space, and evil comment.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Pulled and I'll push back out to net-2.6 after some sanity builds.
