@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYEWSq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbYEWSyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbYEWSq0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 14:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbYEWSqQ
+	id S1755265AbYEWSyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 14:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbYEWSyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 14:46:16 -0400
-Received: from westnet.com ([216.187.52.2]:53313 "EHLO westnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196AbYEWSqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 14:46:15 -0400
-Date: Fri, 23 May 2008 14:46:13 -0400 (EDT)
-From: Greg Smith <gsmith@gregsmith.com>
-X-X-Sender: gsmith@westnet.com
-To: Anton Petrusevich <casus@casus.us>
-cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: PostgreSQL pgbench performance regression in 2.6.23+
-In-Reply-To: <200805231326.44247.casus@casus.us>
-Message-ID: <Pine.GSO.4.64.0805231418140.3708@westnet.com>
-References: <200805231326.44247.casus@casus.us>
+	Fri, 23 May 2008 14:54:12 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:40953 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbYEWSyL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 14:54:11 -0400
+Date: Fri, 23 May 2008 11:54:03 -0700
+From: Tim Pepper <lnxninja@linux.vnet.ibm.com>
+To: kristen.c.accardi@intel.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] dock.c remove trailing printk whitespace
+Message-ID: <20080523185400.GA4334@tpepper-t42p.dolavim.us>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008, Anton Petrusevich wrote:
+dock.c remove trailing printk whitespace
 
-> Excuse me for interrupting you, but am I getting this right: to run
-> effectively PostgreSQL with an active web app on the server a "system
-> administrator Joe" has to know about batch scheduling?
+Signed-off-by: Tim Pepper <lnxninja@linux.vnet.ibm.com>
 
-That's not true.  The problem here is specifically with the pgbench 
-program, which is a simple benchmarking tool included with PostgreSQL. 
-pgbench already had known scalability problems due to its inefficient 
-design and the new scheduler really doesn't play well with it by default. 
-It's the pgbench program that needs the batch scheduling, not the database 
-processes.
+---
 
-pgbench is certainly not representative of web application performance, 
-and it wouldn't be the first time there was some OS tweaking required to 
-get good results from such an artificial benchmark.
+I was looking at how docking events are handled these days as I was hoping
+to have an event handler automatically run an xrandr script for me to
+set up and remove my docking station attached monitor on dock/undock
+(which I still haven't figured out how to do or if it's even supported
+with my hardware :) and noticed the printk from the dock driver left
+trailing whitespace in syslog.  Given the \n this doesn't look like it's
+meant to be a field separator...maybe in the past?
 
---
-* Greg Smith gsmith@gregsmith.com http://www.gregsmith.com Baltimore, MD
+
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index fa44fb9..96c542f 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -834,7 +834,7 @@ static int dock_add(acpi_handle handle)
+ 		goto dock_add_err;
+ 	}
+ 
+-	printk(KERN_INFO PREFIX "%s \n", ACPI_DOCK_DRIVER_DESCRIPTION);
++	printk(KERN_INFO PREFIX "%s\n", ACPI_DOCK_DRIVER_DESCRIPTION);
+ 
+ 	return 0;
+ 
