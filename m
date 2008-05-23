@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbYEWNVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYEWNWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbYEWNVu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbYEWNUy
+	id S1757068AbYEWNWM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYEWNUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:20:54 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4572 "EHLO spitz.ucw.cz"
+	Fri, 23 May 2008 09:20:55 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4552 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756919AbYEWNUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754510AbYEWNUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 23 May 2008 09:20:53 -0400
-Date: Fri, 23 May 2008 15:16:36 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, hpa@zytor.com
-Subject: Re: [X86] Move the AMD64 specific parts out of setup_64.c
-Message-ID: <20080523131636.GH9245@ucw.cz>
-References: <200805221944.m4MJiAC6029820@gelk.kernelslacker.org>
+Date: Fri, 23 May 2008 15:13:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/21] lib: add byteorder helpers for the aligned case
+Message-ID: <20080523131310.GC9245@ucw.cz>
+References: <1211306721.5915.167.camel@brick>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805221944.m4MJiAC6029820@gelk.kernelslacker.org>
+In-Reply-To: <1211306721.5915.167.camel@brick>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> Create a separate amd_64.c file in the cpu/ dir for
-> the useful parts to live in.
+On Tue 2008-05-20 11:05:21, Harvey Harrison wrote:
+> Some users know the pointer they are writeing to are aligned,
+> rather than doing *(__le16 *)ptr = cpu_to_le16(val) add helpers
+> wrapping this up that have the same convention as put_unaligned_le/be.
 > 
-
-> +#define ENABLE_C1E_MASK		0x18000000
-> +#define CPUID_PROCESSOR_SIGNATURE	1
-> +#define CPUID_XFAM		0x0ff00000
-> +#define CPUID_XFAM_K8		0x00000000
-> +#define CPUID_XFAM_10H		0x00100000
-> +#define CPUID_XFAM_11H		0x00200000
-> +#define CPUID_XMOD		0x000f0000
-> +#define CPUID_XMOD_REV_F	0x00040000
-> +
-> +/* AMD systems with C1E don't have a working lAPIC timer. Check for that. */
-> +static __cpuinit int amd_apic_timer_broken(void)
+> Although the get_be/le versions duplicate the le16_to_cpup functionality
+> add them anyway as it makes this a complete api and start work to
+> eliminate {le|be}{16|32|64}_to_cpup uses (not many).
+> 
+> This makes the api look like:
+> 
+> get_unaligned_le16
+> put_unaligned_le16
+> 
+> get_le16
+> put_le16
+> 
+> With explicit alignment constraints.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  include/linux/byteorder/generic.h |   60 +++++++++++++++++++++++++++++++++++++
+>  1 files changed, 60 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+> index 0846e6b..1f0c07e 100644
+> --- a/include/linux/byteorder/generic.h
+> +++ b/include/linux/byteorder/generic.h
+> @@ -119,6 +119,66 @@
+>  #define cpu_to_be16s __cpu_to_be16s
+>  #define be16_to_cpus __be16_to_cpus
+>  
+> +static inline u16 get_le16(void *ptr)
 > +{
-> +	u32 lo, hi, eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
-> +
-> +	switch (eax & CPUID_XFAM) {
-> +	case CPUID_XFAM_K8:
-> +		if ((eax & CPUID_XMOD) < CPUID_XMOD_REV_F)
-> +			break;
-> +	case CPUID_XFAM_10H:
-> +	case CPUID_XFAM_11H:
-> +		rdmsr(MSR_K8_ENABLE_C1E, lo, hi);
-> +		if (lo & ENABLE_C1E_MASK)
-> +			return 1;
-> +		break;
-> +	default:
-> +		/* err on the side of caution */
-> +		return 1;
-> +	}
-> +	return 0;
+> +	return le16_to_cpu(*(__le16 *)ptr);
 > +}
+> +
 
-This needs to be done in 32-bit kernel, too, right?
+Document the fact that void * passed in needs to be 16-bit aligned?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
