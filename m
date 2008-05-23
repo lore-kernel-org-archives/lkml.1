@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764228AbYEWCPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762391AbYEWCcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764228AbYEWCPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 22:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbYEWCPY
+	id S1762391AbYEWCcM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 22:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758109AbYEWCb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 22:15:24 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37166 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758595AbYEWCPX (ORCPT
+	Thu, 22 May 2008 22:31:59 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60154 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757028AbYEWCb7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 22:15:23 -0400
-Message-ID: <483628B7.1080704@np.css.fujitsu.com>
-Date: Fri, 23 May 2008 11:15:19 +0900
-From: Kentaro Makita <k-makita@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Thu, 22 May 2008 22:31:59 -0400
+Message-ID: <48362B87.6010806@zytor.com>
+Date: Thu, 22 May 2008 19:27:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: akpm@linux-foundation.org, dgc@sgi.com, viro@ZenIV.linux.org.uk,
-       harvey.harrison@gmail.com
-Subject: Re: [PATCH][RFC]fix soft lock up at NFS mount by per-SB LRU-list
- of unused dentries
-References: <4834D8DA.30907@np.css.fujitsu.com> <20080522225608.GZ173056135@sgi.com>
-In-Reply-To: <20080522225608.GZ173056135@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <18485.62848.335125.152538@harpo.it.uu.se> <483610DA.7010606@zytor.com> <20080523004206.GD7998@linux-os.sc.intel.com>
+In-Reply-To: <20080523004206.GD7998@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, David
+Suresh Siddha wrote:
+>>>
+>>> The kernel needs to accept one(*) of the formats it can produce, which
+>>> is not necessarily what it last produced. It's not inconceivable that
+>>> user-space will construct sigframes on the fly (to emulate setcontext),
+>>> or that it will mangle sigframes (e.g. to map non-rt to rt before 
+>>> sigreturn).
+>>>
+>>> (*) The format is determined by which version of sys_sigreturn the
+>>> user invokes.
+>>>
+>> No.  You CANNOT restore from a frame that doesn't have the full state - 
+>> you don't have enough information to do so!
+> 
+> What I was doing in the RFC is: restore the state what ever that was present and
+> init the state that was not present in the stack frame.
 
-Thank you for reviewing the patch.
-I'd fix coding style issues at next post. And,...
+Either way, I find it somewhat surprising that the user would invoke a 
+different sys_sigreturn especially if using a restorer function (which 
+gcc always does.)
 
-David Chinner wrote:
-> On Thu, May 22, 2008 at 11:22:18AM +0900, Kentaro Makita wrote:
->> +			}
->> +		}
->> +	}
-> 
-> I'm wondering if this loop is an excessively long time to be holding the
-> dcache_lock. I guess the hol dtime is limited by the size of *count being
-> passed in. I think we could also do a:
-> 
-> 		cond_resched_lock(&dcache_lock);
-> 	
-> in the loop here to prevent this from occurring....
-Did you mean:
- - scan sb->s_dentry_lru and move dentries to temporary list
-   with lock held
- - cond_resched_lock(&dcache_lock);
- - prune dentries on temporary list
-Is that right?
+I really think I need to understand your application better, 
+*especially* in the light of the fact you wouldn't at the moment know 
+how even get the size of the frame.
 
-....
->> +	spin_lock(&sb_lock);
->> +	list_for_each_entry(sb, &super_blocks, s_list) {
-> 
-> Question on lock ordering of sb_lock vs dcache_lock - which is the inner
-> lock? Are the two of them held together anywhere else? (/me doesn't
-> have time to searchthe code right now).
-> 
-The sb_lock is inner lock. And I searched the whole code and found only
- prune_dcache() held both sb_lock and dcache_lock.
-
-Best Regards,
-Kentaro Makita
-> 
-> Otherwise it's looking good.
-> 
-> Cheers,
-> 
-> Dave.
+	-hpa
