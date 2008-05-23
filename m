@@ -1,86 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755031AbYEWLv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYEWL4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755031AbYEWLv0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 07:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbYEWLvT
+	id S1754837AbYEWL4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 07:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbYEWL4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 07:51:19 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:57989 "EHLO aun.it.uu.se"
+	Fri, 23 May 2008 07:56:10 -0400
+Received: from www.tglx.de ([62.245.132.106]:44160 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751211AbYEWLvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 07:51:18 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18486.44689.203792.818972@harpo.it.uu.se>
-Date: Fri, 23 May 2008 13:46:25 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-In-Reply-To: <48362FD0.9030104@zytor.com>
-References: <18482.53246.642835.894623@harpo.it.uu.se>
-	<4832E705.2010900@zytor.com>
-	<18482.60491.764019.292031@harpo.it.uu.se>
-	<20080520175325.GE30034@linux-os.sc.intel.com>
-	<4834BE39.2000904@zytor.com>
-	<18485.13663.51624.694435@harpo.it.uu.se>
-	<20080522205619.GB7998@linux-os.sc.intel.com>
-	<4835DF64.6080104@zytor.com>
-	<20080522212920.GC7998@linux-os.sc.intel.com>
-	<4835E6F5.5010801@zytor.com>
-	<20080523014855.GA18385@linux-os.sc.intel.com>
-	<48362FD0.9030104@zytor.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+	id S1751696AbYEWL4I convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 07:56:08 -0400
+Date: Fri, 23 May 2008 13:55:57 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
+Cc: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
+ interrupts
+Message-ID: <20080523135557.27fe4855@bluebox.local>
+In-Reply-To: <20080523105604.GA23800@digi.com>
+References: <20080522192252.GB3226@local>
+	<20080522192637.GC3226@local>
+	<20080523055527.GA28963@digi.com>
+	<20080523104454.4e2af6ec@bluebox.local>
+	<20080523091009.GA22821@digi.com>
+	<20080523120308.7bec1e1c@bluebox.local>
+	<20080523105604.GA23800@digi.com>
+Organization: Linutronix GmbH
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin writes:
- > Michael, you wrote:
- > 
- > > Hmm, right now it seems this field has a de-facto ABI of being
- > > either 0xffff (plain) or 0x0000 (fxsr). Using other values would
- > > confuse at least one application I know of. Sad.
- > 
- > ... could you share what application that is?  This otherwise would be 
- > ideal.
+Am Fri, 23 May 2008 12:56:04 +0200
+schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
 
-It's the virtual machine for the Erlang/OTP concurrent functional
-language. It's open-source and used extensively for telecom and
-internet server applications.
+> Hello Hans,
+> 
+> Hans J. Koch wrote:
+> > Am Fri, 23 May 2008 11:10:09 +0200
+> > schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
+> > 
+> > > Hans J. Koch wrote:
+> > > > Am Fri, 23 May 2008 07:55:27 +0200
+> > > > schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
+> > > > 
+> > > > > Hello Hans,
+> > > > > 
+> > > > > > -      Copyright (c) 2006 by Hans-JÃŒrgen Koch.</para>
+> > > > > > +      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
+> > > > > This looks wrong.
+> > > > 
+> > > > DocBook XML is supposed to be UTF-8.
+> > > Correct.  But still the problem is real.  The headers of your mail
+> > > claim the content to be encoded in UTF-8, but actually it's
+> > > latin1. So I cannot apply the patch you sent with git am without
+> > > hand editing.
+> > 
+> > Try the version below.
+> This one is better---I can apply it.
 
-The language doesn't allow non-finite FP values, so FP ops must
-be checked. As an optimisation, the virtual machine groups FP ops
-into blocks, enables FP exceptions, and has a SIGFPE handler that
-just records that an FP exception has occurred in a per-thread flag.
-After each FP block there's a single check for this flag, which if
-set triggers a language-level "badarith" exception.
+OK. Was a problem with my mail client.
 
-In order to resume from an SSE2 exception the SIGFPE handler must
-update some parts of the sigcontext. But first the handler must detect
-if the exception came from x87 or SSE2, which requires looking at the
-mxcsr field, which requires looking at the magic field to detect the
-fpstate's layout.
+> 
+> > +	if (copy_from_user(&irq_on, buf, count))
+> > +		return -EFAULT;
+> > +
+> > +	if (!idev->info->irqcontrol)
+> > +		return -ENOSYS;
+> I would swap these two.  copy_from_user is more expensive than testing
+> idev->info->irqcontrol.  (Is it really?)  Anyhow only fetching a value
+> from userspace if you really need it looks more clean to me.
 
-The magic field is described as follows in sigcontext.h:
+Agreed. See updated version below.
 
->struct _fpstate {
->	...
->        unsigned short  magic;          /* 0xffff = regular FPU data only */
->	...
->};
->
->#define X86_FXSR_MAGIC          0x0000
+> 
+> Otherwise the patch looks fine.
 
-While this in theory allows for other values than -1 and 0 in magic,
-any such value would be != FXSR_MAGIC and therefore would not trigger
-the application's "inspect the fxsr layout" logic.
+Thanks for your review! Could you add your Signed-off-by?
 
-/Mikael
+Hans
+
+From: Hans J. Koch <hjk@linutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+	Jan Altenberg <jan.altenberg@linutronix.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>,
+	Magnus Damm <magnus.damm@gmail.com>
+Subject: UIO: Add write function to allow irq masking
+Date: Thu, Fri, 23 May 2008 13:50:14 +0200
+
+Sometimes it is necessary to enable/disable the interrupt of a UIO device
+from the userspace part of the driver. With this patch, the UIO kernel driver
+can implement an "irqcontrol()" function that does this. Userspace can write
+an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
+UIO core will then call the driver's irqcontrol function.
+
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+---
+ Documentation/DocBook/uio-howto.tmpl |   40 ++++++++++++++++++++++++++++++++++-
+ drivers/uio/uio.c                    |   26 ++++++++++++++++++++++
+ include/linux/uio_driver.h           |    2 +
+ 3 files changed, 67 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.26-rc/include/linux/uio_driver.h
+===================================================================
+--- linux-2.6.26-rc.orig/include/linux/uio_driver.h	2008-05-22 20:22:57.000000000 +0200
++++ linux-2.6.26-rc/include/linux/uio_driver.h	2008-05-22 20:23:12.000000000 +0200
+@@ -53,6 +53,7 @@
+  * @mmap:		mmap operation for this uio device
+  * @open:		open operation for this uio device
+  * @release:		release operation for this uio device
++ * @irqcontrol:		disable/enable irqs when 0/1 is written to /dev/uioX
+  */
+ struct uio_info {
+ 	struct uio_device	*uio_dev;
+@@ -66,6 +67,7 @@
+ 	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
+ 	int (*open)(struct uio_info *info, struct inode *inode);
+ 	int (*release)(struct uio_info *info, struct inode *inode);
++	int (*irqcontrol)(struct uio_info *info, s32 irq_on);
+ };
+ 
+ extern int __must_check
+Index: linux-2.6.26-rc/drivers/uio/uio.c
+===================================================================
+--- linux-2.6.26-rc.orig/drivers/uio/uio.c	2008-05-22 20:23:07.000000000 +0200
++++ linux-2.6.26-rc/drivers/uio/uio.c	2008-05-23 13:49:40.000000000 +0200
+@@ -420,6 +420,31 @@
+ 	return retval;
+ }
+ 
++static ssize_t uio_write(struct file *filep, const char __user *buf,
++			size_t count, loff_t *ppos)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++	ssize_t retval;
++	s32 irq_on;
++
++	if (idev->info->irq == UIO_IRQ_NONE)
++		return -EIO;
++
++	if (count != sizeof(s32))
++		return -EINVAL;
++
++	if (!idev->info->irqcontrol)
++		return -ENOSYS;
++
++	if (copy_from_user(&irq_on, buf, count))
++		return -EFAULT;
++
++	retval = idev->info->irqcontrol(idev->info, irq_on);
++
++	return retval ? retval : sizeof(s32);
++}
++
+ static int uio_find_mem_index(struct vm_area_struct *vma)
+ {
+ 	int mi;
+@@ -539,6 +564,7 @@
+ 	.open		= uio_open,
+ 	.release	= uio_release,
+ 	.read		= uio_read,
++	.write		= uio_write,
+ 	.mmap		= uio_mmap,
+ 	.poll		= uio_poll,
+ 	.fasync		= uio_fasync,
+Index: linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl
+===================================================================
+--- linux-2.6.26-rc.orig/Documentation/DocBook/uio-howto.tmpl	2008-05-22 20:22:57.000000000 +0200
++++ linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl	2008-05-23 11:57:23.000000000 +0200
+@@ -30,6 +30,12 @@
+ 
+ <revhistory>
+ 	<revision>
++	<revnumber>0.5</revnumber>
++	<date>2008-05-22</date>
++	<authorinitials>hjk</authorinitials>
++	<revremark>Added description of write() function.</revremark>
++	</revision>
++	<revision>
+ 	<revnumber>0.4</revnumber>
+ 	<date>2007-11-26</date>
+ 	<authorinitials>hjk</authorinitials>
+@@ -64,7 +70,7 @@
+ <?dbhtml filename="copyright.html"?>
+ <title>Copyright and License</title>
+ <para>
+-      Copyright (c) 2006 by Hans-Jürgen Koch.</para>
++      Copyright (c) 2006-2008 by Hans-Jürgen Koch.</para>
+ <para>
+ This documentation is Free Software licensed under the terms of the
+ GPL version 2.
+@@ -189,6 +195,30 @@
+ 	represents the total interrupt count. You can use this number
+ 	to figure out if you missed some interrupts.
+ 	</para>
++	<para>
++	For some hardware that has more than one interrupt source internally,
++	but not seperate IRQ mask and status registers, there might be
++	situations where userspace cannot determine what the interrupt source
++	was if the kernel handler disables them by writing to the chip's IRQ
++	register. In such a case, the kernel has to disable the IRQ completely
++	to leave the chip's register untouched. Now the userspace part can
++	determine the cause of the interrupt, but it cannot re-enable
++	interrupts. Another cornercase are chips where re-enabling interrupts
++	is a read-modify-write operation to a combined IRQ status/acknowledge
++	register. This would be racy if a new interrupt occured
++	simultaneously.
++	</para>
++	<para>
++	To address these problems, UIO also implements a write() function. It
++	is normally not used and can be ignored for hardware that has only a
++	single interrupt source or has seperate IRQ mask and status registers.
++	If you need it, however, a write to <filename>/dev/uioX</filename>
++	will call the <function>irqcontrol()</function> function implemented
++	by the driver. You have to write a 32-bit value that is usually either
++	0 or 1 do disable or enable interrupts. If a driver does not implement
++	<function>irqcontrol()</function>, <function>write()</function> will
++	return with <varname>-ENOSYS</varname>.
++	</para>
+ 
+ 	<para>
+ 	To handle interrupts properly, your custom kernel module can
+@@ -362,6 +392,14 @@
+ <function>open()</function>, you will probably also want a custom
+ <function>release()</function> function.
+ </para></listitem>
++
++<listitem><para>
++<varname>int (*irqcontrol)(struct uio_info *info, s32 irq_on)
++</varname>: Optional. If you need to be able to enable or disable
++interrupts from userspace by writing to <filename>/dev/uioX</filename>,
++you can implement this function. The parameter <varname>irq_on</varname>
++will be 0 to disable interrupts and 1 to enable them.
++</para></listitem>
+ </itemizedlist>
+ 
+ <para>
+
+
+
