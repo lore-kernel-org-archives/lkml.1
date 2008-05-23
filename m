@@ -1,194 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbYEWTso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYEWTvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbYEWTso (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbYEWTsg
+	id S1758196AbYEWTvV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYEWTvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:48:36 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:36990 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755167AbYEWTsg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 15:48:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=G5l/vv/WI5RyBDfsbiOsUvUofZNm6jfyrlgRLp4FKNzyTfJ9Qk/JE0DdaJ8zaD9CSglR88YaC7/EP3LJ4HZmuApGjOAVct6ssuL5EDv8xLiD9RcGBHqsbSH+Xwi+ZySanGa+BnNfcf2VchQQhkd8GA2avlRUjMmNnXKYEhwxmSw=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Grant Grundler <grundler@parisc-linux.org>
-Subject: [PATCH] x86: early dump pci conf space v3
-Date: Fri, 23 May 2008 12:48:54 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200805210012.35939.yhlu.kernel@gmail.com> <200805221435.11734.yhlu.kernel@gmail.com>
-In-Reply-To: <200805221435.11734.yhlu.kernel@gmail.com>
+	Fri, 23 May 2008 15:51:08 -0400
+Received: from gozo.interway.ch ([194.246.118.4]:50254 "EHLO gozo.interway.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752603AbYEWTvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 15:51:05 -0400
+Message-ID: <48372017.7080008@interway.ch>
+Date: Fri, 23 May 2008 21:50:47 +0200
+From: Matthias Cramer <matthias.cramer@interway.ch>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805231248.55345.yhlu.kernel@gmail.com>
+To: James Chapman <jchapman@katalix.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: Wired behaviour with IPv6 over PPP
+References: <48341C0B.7010003@interway.ch> <20080522014959.0f6191aa.akpm@linux-foundation.org> <48354318.60202@katalix.com> <4835C40B.60603@interway.ch> <4836A06C.2050301@katalix.com>
+In-Reply-To: <4836A06C.2050301@katalix.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6BC7DFA6F9C291BA4401EA25"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6BC7DFA6F9C291BA4401EA25
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-so we can printout pci config before kernel touch it
-v3: change to pci=early_config_dump
+Hi James
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+James Chapman wrote:
+> Matthias Cramer wrote:
+>> James Chapman wrote:
+>>> Did this work with previous kernel versions?
+>>
+>> No, in my opinion it never worked. But I thought that pppd does it wro=
+ng
+>> because id never got an IPv6 address. But I had always forwarding
+>> enabled. Now in this case i started pppd without forwarding enabled an=
+d
+>> got an address.
+>>
+>>> Does pppd log any errors?
+>>
+>> No, no errors
+>=20
+> Could you post a pppd debug log showing the ppp protocol exchange with
+> the peer in the failing case? It might give some clues.
 
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c
-+++ linux-2.6/arch/x86/kernel/setup_64.c
-@@ -350,6 +350,11 @@ void __init setup_arch(char **cmdline_p)
- 
- 	parse_early_param();
- 
-+#ifdef CONFIG_PCI
-+	if (pci_early_config_dump)
-+		early_dump_pci_devices();
-+#endif
-+
- #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
- 	if (init_ohci1394_dma_early)
- 		init_ohci1394_dma_on_all_controllers();
-Index: linux-2.6/arch/x86/pci/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/common.c
-+++ linux-2.6/arch/x86/pci/common.c
-@@ -20,6 +20,7 @@
- unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
- 				PCI_PROBE_MMCONF;
- 
-+unsigned int pci_early_config_dump;
- static int pci_bf_sort;
- int pci_routeirq;
- int pcibios_last_bus = -1;
-@@ -489,6 +490,9 @@ char * __devinit  pcibios_setup(char *st
- 	} else if (!strcmp(str, "use_crs")) {
- 		pci_probe |= PCI_USE__CRS;
- 		return NULL;
-+	} else if (!strcmp(str, "early_config_dump")) {
-+		pci_early_config_dump = 1;
-+		return NULL;
- 	} else if (!strcmp(str, "routeirq")) {
- 		pci_routeirq = 1;
- 		return NULL;
-Index: linux-2.6/arch/x86/pci/early.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/early.c
-+++ linux-2.6/arch/x86/pci/early.c
-@@ -57,3 +57,57 @@ int early_pci_allowed(void)
- 	return (pci_probe & (PCI_PROBE_CONF1|PCI_PROBE_NOEARLY)) ==
- 			PCI_PROBE_CONF1;
- }
-+
-+void early_dump_pci_device(u8 bus, u8 slot, u8 func)
-+{
-+	int i;
-+	int j;
-+	u32 val;
-+
-+	if (!early_pci_allowed())
-+		return;
-+
-+	printk("PCI: %02x:%02x:%02x", bus, slot, func);
-+
-+	for (i = 0; i < 256; i += 4) {
-+		if (!(i & 0x0f))
-+			printk("\n%04x:",i);
-+
-+		val = read_pci_config(bus, slot, func, i);
-+		for (j = 0; j < 4; j++) {
-+			printk(" %02x", val & 0xff);
-+			val >>= 8;
-+		}
-+	}
-+	printk("\n");
-+}
-+
-+void early_dump_pci_devices(void)
-+{
-+	unsigned bus, slot, func;
-+
-+	if (!early_pci_allowed())
-+		return;
-+
-+	for (bus = 0; bus < 256; bus++) {
-+		for (slot = 0; slot < 32; slot++) {
-+			for (func = 0; func < 8; func++) {
-+				u32 class;
-+				u8 type;
-+				class = read_pci_config(bus, slot, func,
-+							PCI_CLASS_REVISION);
-+				if (class == 0xffffffff)
-+					break;
-+
-+				early_dump_pci_device(bus, slot, func);
-+
-+				/* No multi-function device? */
-+				type = read_pci_config_byte(bus, slot, func,
-+							       PCI_HEADER_TYPE);
-+				if (!(type & 0x80))
-+					break;
-+			}
-+		}
-+	}
-+}
-+
-Index: linux-2.6/include/asm-x86/pci-direct.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/pci-direct.h
-+++ linux-2.6/include/asm-x86/pci-direct.h
-@@ -14,4 +14,7 @@ extern void write_pci_config_byte(u8 bus
- 
- extern int early_pci_allowed(void);
- 
-+extern unsigned int pci_early_config_dump;
-+extern void early_dump_pci_device(u8 bus, u8 slot, u8 func);
-+extern void early_dump_pci_devices(void);
- #endif
-Index: linux-2.6/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6/Documentation/kernel-parameters.txt
-@@ -1570,6 +1570,8 @@ and is between 256 and 4096 characters. 
- 		cbmemsize=nn[KMG]	The fixed amount of bus space which is
- 				reserved for the CardBus bridge's memory
- 				window. The default value is 64 megabytes.
-+		early_config_dump	[X86] print out pci config space
-+				registers early before kernel touch any
- 
- 	pcmv=		[HW,PCMCIA] BadgePAD 4
- 
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c
-+++ linux-2.6/arch/x86/kernel/setup_32.c
-@@ -46,6 +46,7 @@
- #include <linux/dmi.h>
- #include <linux/pfn.h>
- #include <linux/pci.h>
-+#include <asm/pci-direct.h>
- #include <linux/init_ohci1394_dma.h>
- #include <linux/kvm_para.h>
- 
-@@ -692,6 +693,11 @@ void __init setup_arch(char **cmdline_p)
- 
- 	parse_early_param();
- 
-+#ifdef CONFIG_PCI
-+	if (pci_early_config_dump)
-+		early_dump_pci_devices();
-+#endif
-+
- 	finish_e820_parsing();
- 
- 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+Here the logs ... First with forwarding enabled and second with disabled =
+=2E..
+
+net.ipv6.conf.all.forwarding=3D1
+
+May 23 21:38:49 alix-tst pppd[29490]: Plugin rp-pppoe.so loaded.
+May 23 21:38:49 alix-tst pppd[29491]: pppd 2.4.4 started by root, uid 0
+May 23 21:38:49 alix-tst pppd[29491]: PADS: Service-Name: ''
+May 23 21:38:49 alix-tst pppd[29491]: PPP session is 675
+May 23 21:38:49 alix-tst pppd[29491]: using channel 10
+May 23 21:38:49 alix-tst pppd[29491]: Using interface ppp0
+May 23 21:38:49 alix-tst pppd[29491]: Connect: ppp0 <--> eth0
+May 23 21:38:49 alix-tst pppd[29491]: sent [LCP ConfReq id=3D0x1 <mru 149=
+2> <magic 0xadacf61b>]
+May 23 21:38:49 alix-tst pppd[29491]: rcvd [LCP ConfReq id=3D0xc8 <mru 14=
+92> <auth chap MD5> <magic 0x6887033f>]
+May 23 21:38:49 alix-tst pppd[29491]: sent [LCP ConfAck id=3D0xc8 <mru 14=
+92> <auth chap MD5> <magic 0x6887033f>]
+May 23 21:38:49 alix-tst pppd[29491]: rcvd [LCP ConfAck id=3D0x1 <mru 149=
+2> <magic 0xadacf61b>]
+May 23 21:38:49 alix-tst pppd[29491]: sent [LCP EchoReq id=3D0x0 magic=3D=
+0xadacf61b]
+May 23 21:38:49 alix-tst pppd[29491]: rcvd [CHAP Challenge id=3D0xa7 <c3c=
+a04555d0b05c824913a485207145a>, name =3D "ipc-zhh790-r-br-03"]
+May 23 21:38:49 alix-tst pppd[29491]: sent [CHAP Response id=3D0xa7 <4e5f=
+2e265676afd4426f96a4f3d69d98>, name =3D "dol/test@bestadsl.ch"]
+May 23 21:38:49 alix-tst pppd[29491]: rcvd [LCP EchoRep id=3D0x0 magic=3D=
+0x6887033f]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [LCP ConfReq id=3D0x1 <auth pa=
+p> <magic 0x81e3711d>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [LCP ConfReq id=3D0x2 <mru 149=
+2> <magic 0xe78877a6>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [LCP ConfAck id=3D0x1 <auth pa=
+p> <magic 0x81e3711d>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [LCP ConfAck id=3D0x2 <mru 149=
+2> <magic 0xe78877a6>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [LCP EchoReq id=3D0x0 magic=3D=
+0xe78877a6]
+May 23 21:38:50 alix-tst pppd[29491]: sent [PAP AuthReq id=3D0x1 user=3D"=
+dol/test@bestadsl.ch" password=3D<hidden>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [LCP ConfReq id=3D0x1 <mru 149=
+2> <auth chap MD5> <magic 0x708ab66f>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [LCP ConfReq id=3D0x3 <mru 149=
+2> <magic 0xade5da06>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [LCP ConfAck id=3D0x1 <mru 149=
+2> <auth chap MD5> <magic 0x708ab66f>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [LCP ConfAck id=3D0x3 <mru 149=
+2> <magic 0xade5da06>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [LCP EchoReq id=3D0x0 magic=3D=
+0xade5da06]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [CHAP Challenge id=3D0x1 <5de7=
+704ca9b8440a185c21438e465653>, name =3D "brain.glb"]
+May 23 21:38:50 alix-tst pppd[29491]: sent [CHAP Response id=3D0x1 <7cca5=
+80881d4ca01c3f191382ec97df2>, name =3D "dol/test@bestadsl.ch"]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [LCP EchoRep id=3D0x0 magic=3D=
+0x708ab66f]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [CHAP Success id=3D0x1 ""]
+May 23 21:38:50 alix-tst pppd[29491]: CHAP authentication succeeded
+May 23 21:38:50 alix-tst pppd[29491]: CHAP authentication succeeded
+May 23 21:38:50 alix-tst pppd[29491]: peer from calling number 00:90:1A:A=
+0:3D:B9 authorized
+May 23 21:38:50 alix-tst pppd[29491]: sent [IPCP ConfReq id=3D0x1 <addr 0=
+=2E0.0.0> <ms-dns1 0.0.0.0> <ms-dns3 0.0.0.0>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [IPV6CP ConfReq id=3D0x1 <addr=
+ fe80::e0d4:2d3f:e674:e204>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [IPCP ConfReq id=3D0x1 <compre=
+ss VJ 0f 01> <addr 212.25.27.37>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [IPCP ConfRej id=3D0x1 <compre=
+ss VJ 0f 01>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [IPV6CP ConfReq id=3D0x1 <addr=
+ fe80::0219:56ff:fe99:49e0>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [IPV6CP ConfAck id=3D0x1 <addr=
+ fe80::0219:56ff:fe99:49e0>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [IPCP ConfNak id=3D0x1 <addr 2=
+12.25.16.1> <ms-dns1 212.25.28.55> <ms-dns3 194.246.118.118>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [IPCP ConfReq id=3D0x2 <addr 2=
+12.25.16.1> <ms-dns1 212.25.28.55> <ms-dns3 194.246.118.118>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [IPV6CP ConfAck id=3D0x1 <addr=
+ fe80::e0d4:2d3f:e674:e204>]
+May 23 21:38:50 alix-tst pppd[29491]: local  LL address fe80::e0d4:2d3f:e=
+674:e204
+May 23 21:38:50 alix-tst pppd[29491]: remote LL address fe80::0219:56ff:f=
+e99:49e0
+May 23 21:38:50 alix-tst pppd[29491]: Script /etc/ppp/ipv6-up started (pi=
+d 29513)
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [IPCP ConfReq id=3D0x2 <addr 2=
+12.25.27.37>]
+May 23 21:38:50 alix-tst pppd[29491]: sent [IPCP ConfAck id=3D0x2 <addr 2=
+12.25.27.37>]
+May 23 21:38:50 alix-tst pppd[29491]: rcvd [IPCP ConfAck id=3D0x2 <addr 2=
+12.25.16.1> <ms-dns1 212.25.28.55> <ms-dns3 194.246.118.118>]
+May 23 21:38:50 alix-tst pppd[29491]: Cannot determine ethernet address f=
+or proxy ARP
+May 23 21:38:50 alix-tst pppd[29491]: local  IP address 212.25.16.1
+May 23 21:38:50 alix-tst pppd[29491]: remote IP address 212.25.27.37
+May 23 21:38:50 alix-tst pppd[29491]: primary   DNS address 212.25.28.55
+May 23 21:38:50 alix-tst pppd[29491]: secondary DNS address 194.246.118.1=
+18
+May 23 21:38:50 alix-tst pppd[29491]: Script /etc/ppp/ip-up started (pid =
+29516)
+May 23 21:38:50 alix-tst pppd[29491]: Script /etc/ppp/ipv6-up finished (p=
+id 29513), status =3D 0x0
+May 23 21:38:50 alix-tst postfix/master[4248]: reload configuration /etc/=
+postfix
+May 23 21:38:50 alix-tst pppd[29491]: Script /etc/ppp/ip-up finished (pid=
+ 29516), status =3D 0x0
+
+ppp0      Link encap:Point-to-Point Protocol
+          inet addr:212.25.16.1  P-t-P:212.25.27.37  Mask:255.255.255.255=
+
+          inet6 addr: fe80::e0d4:2d3f:e674:e204/10 Scope:Link
+          UP POINTOPOINT RUNNING NOARP MULTICAST  MTU:1492  Metric:1
+          RX packets:12 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:3
+          RX bytes:562 (562.0 B)  TX bytes:92 (92.0 B)
+
+
+
+net.ipv6.conf.all.forwarding=3D0
+
+May 23 21:43:35 alix-tst pppd[32142]: Plugin rp-pppoe.so loaded.
+May 23 21:43:35 alix-tst pppd[32143]: pppd 2.4.4 started by root, uid 0
+May 23 21:43:36 alix-tst pppd[32143]: PADS: Service-Name: ''
+May 23 21:43:36 alix-tst pppd[32143]: PPP session is 757
+May 23 21:43:36 alix-tst pppd[32143]: using channel 11
+May 23 21:43:36 alix-tst pppd[32143]: Using interface ppp0
+May 23 21:43:36 alix-tst pppd[32143]: Connect: ppp0 <--> eth0
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP ConfReq id=3D0x1 <mru 149=
+2> <magic 0x7e7c4da8>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP ConfReq id=3D0xad <mru 14=
+92> <auth chap MD5> <magic 0x7598a7>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP ConfAck id=3D0xad <mru 14=
+92> <auth chap MD5> <magic 0x7598a7>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP ConfAck id=3D0x1 <mru 149=
+2> <magic 0x7e7c4da8>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP EchoReq id=3D0x0 magic=3D=
+0x7e7c4da8]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [CHAP Challenge id=3D0x31 <ae5=
+04fb324a1da70f0f2d580402ab1ac>, name =3D "ipc-zhh790-r-br-03"]
+May 23 21:43:36 alix-tst pppd[32143]: sent [CHAP Response id=3D0x31 <4162=
+9cee25511522e5d4b55e7f58c15a>, name =3D "dol/test@bestadsl.ch"]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP EchoRep id=3D0x0 magic=3D=
+0x7598a7]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP ConfReq id=3D0x1 <auth pa=
+p> <magic 0x59441d38>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP ConfReq id=3D0x2 <mru 149=
+2> <magic 0x14756caf>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP ConfAck id=3D0x1 <auth pa=
+p> <magic 0x59441d38>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP ConfAck id=3D0x2 <mru 149=
+2> <magic 0x14756caf>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP EchoReq id=3D0x0 magic=3D=
+0x14756caf]
+May 23 21:43:36 alix-tst pppd[32143]: sent [PAP AuthReq id=3D0x1 user=3D"=
+dol/test@bestadsl.ch" password=3D<hidden>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP ConfReq id=3D0x1 <mru 149=
+2> <auth chap MD5> <magic 0x708f14c5>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP ConfReq id=3D0x3 <mru 149=
+2> <magic 0x653c44db>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP ConfAck id=3D0x1 <mru 149=
+2> <auth chap MD5> <magic 0x708f14c5>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP ConfAck id=3D0x3 <mru 149=
+2> <magic 0x653c44db>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [LCP EchoReq id=3D0x0 magic=3D=
+0x653c44db]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [CHAP Challenge id=3D0x1 <4df4=
+d05ddfc7b9e3185c2143e82a0bab>, name =3D "brain.glb"]
+May 23 21:43:36 alix-tst pppd[32143]: sent [CHAP Response id=3D0x1 <7833c=
+4a255c53c29b4256e6c129b8718>, name =3D "dol/test@bestadsl.ch"]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [LCP EchoRep id=3D0x0 magic=3D=
+0x708f14c5]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [CHAP Success id=3D0x1 ""]
+May 23 21:43:36 alix-tst pppd[32143]: CHAP authentication succeeded
+May 23 21:43:36 alix-tst pppd[32143]: CHAP authentication succeeded
+May 23 21:43:36 alix-tst pppd[32143]: peer from calling number 00:90:1A:A=
+0:3D:B9 authorized
+May 23 21:43:36 alix-tst pppd[32143]: sent [IPCP ConfReq id=3D0x1 <addr 0=
+=2E0.0.0> <ms-dns1 0.0.0.0> <ms-dns3 0.0.0.0>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [IPV6CP ConfReq id=3D0x1 <addr=
+ fe80::91af:5025:4398:606b>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [IPCP ConfReq id=3D0x1 <compre=
+ss VJ 0f 01> <addr 212.25.27.37>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [IPCP ConfRej id=3D0x1 <compre=
+ss VJ 0f 01>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [IPV6CP ConfReq id=3D0x1 <addr=
+ fe80::0219:56ff:fe99:49e0>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [IPV6CP ConfAck id=3D0x1 <addr=
+ fe80::0219:56ff:fe99:49e0>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [IPCP ConfNak id=3D0x1 <addr 2=
+12.25.16.1> <ms-dns1 212.25.28.55> <ms-dns3 194.246.118.118>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [IPCP ConfReq id=3D0x2 <addr 2=
+12.25.16.1> <ms-dns1 212.25.28.55> <ms-dns3 194.246.118.118>]
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [IPV6CP ConfAck id=3D0x1 <addr=
+ fe80::91af:5025:4398:606b>]
+May 23 21:43:36 alix-tst pppd[32143]: local  LL address fe80::91af:5025:4=
+398:606b
+May 23 21:43:36 alix-tst pppd[32143]: remote LL address fe80::0219:56ff:f=
+e99:49e0
+May 23 21:43:36 alix-tst pppd[32143]: Script /etc/ppp/ipv6-up started (pi=
+d 32150)
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [IPCP ConfReq id=3D0x2 <addr 2=
+12.25.27.37>]
+May 23 21:43:36 alix-tst pppd[32143]: sent [IPCP ConfAck id=3D0x2 <addr 2=
+12.25.27.37>]
+May 23 21:43:36 alix-tst pppd[32143]: Script /etc/ppp/ipv6-up finished (p=
+id 32150), status =3D 0x0
+May 23 21:43:36 alix-tst pppd[32143]: rcvd [IPCP ConfAck id=3D0x2 <addr 2=
+12.25.16.1> <ms-dns1 212.25.28.55> <ms-dns3 194.246.118.118>]
+May 23 21:43:36 alix-tst pppd[32143]: Cannot determine ethernet address f=
+or proxy ARP
+May 23 21:43:36 alix-tst pppd[32143]: local  IP address 212.25.16.1
+May 23 21:43:36 alix-tst pppd[32143]: remote IP address 212.25.27.37
+May 23 21:43:36 alix-tst pppd[32143]: primary   DNS address 212.25.28.55
+May 23 21:43:36 alix-tst pppd[32143]: secondary DNS address 194.246.118.1=
+18
+May 23 21:43:36 alix-tst pppd[32143]: Script /etc/ppp/ip-up started (pid =
+32153)
+May 23 21:43:37 alix-tst pppd[32143]: Script /etc/ppp/ip-up finished (pid=
+ 32153), status =3D 0x0
+
+
+ppp0      Link encap:Point-to-Point Protocol
+          inet addr:212.25.16.1  P-t-P:212.25.27.37  Mask:255.255.255.255=
+
+          inet6 addr: 2001:8e0:1000:b:91af:5025:4398:606b/64 Scope:Global=
+
+          inet6 addr: fe80::91af:5025:4398:606b/10 Scope:Link
+          UP POINTOPOINT RUNNING NOARP MULTICAST  MTU:1492  Metric:1
+          RX packets:20 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:18 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:3
+          RX bytes:1290 (1.2 KiB)  TX bytes:1276 (1.2 KiB)
+
+
+--=20
+Matthias Cramer                System & Network Manager
+Interway Communication GmbH    Phone +41 43 500 1111
+Josefstrasse 225               Fax   +41 44 271 3535
+CH-8005 Zuerich                http://www.interway.ch/
+
+
+--------------enig6BC7DFA6F9C291BA4401EA25
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Public key at: http://www.freestone.net/~cramer/cramer.pgp.php
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFINyAgti/fHC0gglARAlUnAJ47heqluJz19skFERyaeGoJdlBuKACghiBf
+YWN+qp0Tv0u2unMjFwO8fbU=
+=JjuD
+-----END PGP SIGNATURE-----
+
+--------------enig6BC7DFA6F9C291BA4401EA25--
