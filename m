@@ -1,87 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYEWNBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYEWNFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbYEWNBx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYEWNBq
+	id S1755157AbYEWNFf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYEWNF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:01:46 -0400
-Received: from www.tglx.de ([62.245.132.106]:37012 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752476AbYEWNBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 09:01:45 -0400
-Date: Fri, 23 May 2008 15:01:29 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: "Tom Spink" <tspink@gmail.com>
-Cc: "Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?=" <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org, "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Jan Altenberg" <jan.altenberg@linutronix.de>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Magnus Damm" <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
- interrupts
-Message-ID: <20080523150129.2d6972dd@bluebox.local>
-In-Reply-To: <7b9198260805230520t46d79d9bqceabf4691388e89d@mail.gmail.com>
-References: <20080522192252.GB3226@local>
-	<20080522192637.GC3226@local>
-	<7b9198260805221247t715660d1l4085fe8c310f89c@mail.gmail.com>
-	<20080522200814.GD3226@local>
-	<7b9198260805221326t6d23b757p2ffe646db70fceba@mail.gmail.com>
-	<20080523054115.GB28807@digi.com>
-	<7b9198260805230448x56bf3bd1kade6083c141a75f2@mail.gmail.com>
-	<20080523115815.GA6932@digi.com>
-	<7b9198260805230500l6b21a397m6951a2b1115a6f5@mail.gmail.com>
-	<20080523141432.13dc9212@bluebox.local>
-	<7b9198260805230520t46d79d9bqceabf4691388e89d@mail.gmail.com>
-Organization: Linutronix GmbH
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Fri, 23 May 2008 09:05:28 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58687 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752476AbYEWNF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 09:05:27 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/HBi8WuBfHsp/EqGWYgyISUKTkfeL6dtjpNaIDLj
+	4wiRpvLeSqj/rm
+Subject: Re: PostgreSQL pgbench performance regression in 2.6.23+
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg Smith <gsmith@gregsmith.com>, Peter Zijlstra <peterz@infradead.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+In-Reply-To: <20080523101000.GA13964@elte.hu>
+References: <1211440207.5733.8.camel@marge.simson.net>
+	 <20080522082814.GA4499@linux.vnet.ibm.com>
+	 <1211447105.4823.7.camel@marge.simson.net>
+	 <1211452465.7606.8.camel@marge.simson.net>
+	 <1211455553.4381.9.camel@marge.simson.net>
+	 <1211456659.29104.20.camel@twins>
+	 <1211458176.5693.6.camel@marge.simson.net>
+	 <1211459081.29104.40.camel@twins>
+	 <Pine.GSO.4.64.0805230232190.28654@westnet.com>
+	 <1211536814.5851.18.camel@marge.simson.net>
+	 <20080523101000.GA13964@elte.hu>
+Content-Type: text/plain
+Date: Fri, 23 May 2008 15:05:23 +0200
+Message-Id: <1211547923.5521.4.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Fri, 23 May 2008 13:20:50 +0100
-schrieb "Tom Spink" <tspink@gmail.com>:
 
-> 2008/5/23 Hans J. Koch <hjk@linutronix.de>:
-> > Am Fri, 23 May 2008 13:00:17 +0100
-> > schrieb "Tom Spink" <tspink@gmail.com>:
-> >
-> >> My initial idea was just a thought anyway, just to
-> >> maintain a bit of extensibility if .write is ever needed for
-> >> something else. :-)
-> >
-> > Hi Tom,
-> > thanks for your contribution, but for me it's just the other way
-> > round: I'm glad write() gets a defined purpose before people do
-> > something stupid with it. It's good to remember that all data
-> > exchange with the device has to be done through the mapped memory.
-> > If this is not possible, the hardware is no candidate for a UIO
-> > driver.
-> >
-> > BTW, I wait for the first UIO driver which abuses this write()
-> > function to write many different values to trigger different
-> > actions. I wonder if I should restrict write() to the value 0 and
-> > 1...
-> >
-> > Thanks,
-> > Hans
-> 
-> Hi Hans,
-> 
-> Thanks for your explanation.  Another thing, I noticed then, is that
-> in your return statement, you blindly return the the value of
-> irqcontrol if it's non-zero, and if it's zero, then the length of the
-> data written.  However, if irqcontrol returns a value that's > 0, it
-> could potentially confuse writers.  I guess it's up to the implementer
-> of irqcontrol to ensure they stick to -EXXX and 0
+On Fri, 2008-05-23 at 12:10 +0200, Ingo Molnar wrote:
 
-True. And it's not even worth fixing this by checking retval<0, because
-if irqcontrol returns values>0, it's broken anyway. It is supposed to
-return zero if successful, and negative errors otherwise. This is
-common practice in the kernel, and people frequently use if (ret)... to
-detect errors without checking if ret is a legal negative error number.
+> if it's other tweaks as well then could you perhaps try to make 
+> SCHED_BATCH batch more agressively?
 
-Thanks,
-Hans
+Running SCHED_BATCH with only the below put a large dent in the problem.
+
+You can have tl <= current->se.load.weight.  Nothing good happens in
+either case, at least with this load.
+
+--- kernel/sched_fair.c.org	2008-05-23 14:59:39.000000000 +0200
++++ kernel/sched_fair.c	2008-05-23 14:49:05.000000000 +0200
+@@ -1081,7 +1081,7 @@ wake_affine(struct rq *rq, struct sched_
+ 	 * effect of the currently running task from the load
+ 	 * of the current CPU:
+ 	 */
+-	if (sync)
++	if (sync && tl > current->se.load.weight)
+ 		tl -= current->se.load.weight;
+ 
+ 	if ((tl <= load && tl + target_load(prev_cpu, idx) <= tl_per_task) ||
+ 
+
+
+2.6.26-smp x86_64
+1 9209.503213
+2 15792.406916
+3 23369.199181
+4 23140.108032
+5 24556.515470
+6 24926.457776
+8 26896.607558
+10 27350.988396
+15 29005.426298
+20 28558.267290
+30 27002.328374
+40 25809.202374
+50 24589.478654
+
