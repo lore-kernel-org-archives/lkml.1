@@ -1,100 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbYEWQFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYEWQJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756837AbYEWQFP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYEWQFB
+	id S1757279AbYEWQJg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbYEWQJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:05:01 -0400
-Received: from sous-sol.org ([216.99.217.87]:34021 "EHLO sous-sol.org"
+	Fri, 23 May 2008 12:09:29 -0400
+Received: from vena.lwn.net ([206.168.112.25]:36844 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752383AbYEWQFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:05:00 -0400
-Date: Fri, 23 May 2008 08:57:18 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>
-Subject: Re: capget() overflows buffers.
-Message-ID: <20080523155718.GI30402@sequoia.sous-sol.org>
-References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org> <20080522233757.GD30402@sequoia.sous-sol.org> <48366D9A.70806@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48366D9A.70806@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1753570AbYEWQJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 12:09:28 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       mchehab@infradead.org
+Subject: Re: [PATCH] video4linux: Push down the BKL 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Fri, 23 May 2008 16:39:56 BST."
+             <20080523163956.6e93746c@core> 
+Date: Fri, 23 May 2008 10:09:28 -0600
+Message-ID: <15168.1211558968@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew G. Morgan (morgan@kernel.org) wrote:
-> Chris Wright wrote:
-> |> The kernel is not crashing, the application is...
-> |
-> | It's not about crashing.  It's about app security.  Currently, there is
-> | nothing guaranteeing named has actually dropped privileges.  That's why
-> | I consider this serious.
->
-> I have to say the details of this are not clear to me. Can you sketch an
-> example?
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Sure.  named is doing this:
+> The problem is that currently they are almost all unsafe - I did a quick
+> survey as part of the changes. Pushing it down to the video2_ioctl is a
+> starting point, but the v4l layer is going to need a lot of love and its
+> own gradual migration.
 
-caps is essentially
-CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SETGID|CAP_DAC_READ_SEARCH|CAP_SYS_RESOURCE
+Agreed.
+ 
+> Right now we've gone from BKL buried in fs to BKL at top of v4l layer
+> which is indeed only a starting point. I'd assumed the same as you are
+> think a new video_ioctl2 and switching drivers one by one (I was assuming
+> adding video2_ioctl_unlocked())
 
-linux_setcaps(cap_t caps) {
-	struct __user_cap_header_struct caphead;
-	struct __user_cap_data_struct cap;	<-- 12 bytes on stack
-	memset(&caphead, 0, sizeof(caphead));
-	caphead.version = _LINUX_CAPABILITY_VERSION;  <-- v2 now
-	caphead.pid = 0;
-	memset(&cap, 0, sizeof(cap));		<-- start initializing 12 bytes
-	cap.effective = caps;
-	cap.permitted = caps;
-	cap.inheritable = 0;			<-- finish initializing 12 bytes
-	if (syscall(SYS_capset, &caphead, &cap) < 0) <-- kernel copies in 24 bytes
+It sound like we're thinking the same way, yes.  Except I'd pick the
+long name for the one we want to get rid of :)
 
-So it's blindly setting v2.  The kernel is sucking in 24 bytes.  The
-second set of u32s (the extra 12 bytes) is just garbage from the stack.
-This could include setting CAP_MAC_OVERRIDE or CAP_MAC_ADMIN, percisely
-the kinds of things you _wouldn't_ want set when the goal of the above
-code is to drop privs.
+BTW, drop me a pointer if you'd like this series pulled into the
+ever-growing bkl-removal tree.
 
-> Otherwise, I find myself generally persuaded..
->
-> | Yes, as they should.  I don't think we should ever expect an existing
-> | userspace program change just by recompiling against a new kernel header
-> | when using an already existing mechanism.  Their app has been working
-> | fine since 2.2.
-> |
-> |   int fd = open("foo", O_FLAGS, mode);
-> |
-> | compile once...binary compatible going forward (as is cap{s,g}et).
-> | update kernel, recompile...source API comaptible...still working
-> | (this is broken in cap{s,g}et).
->
-> [I guess that this was what libcap was all about, and why there are so
-> many comments about using it littered through the kernel... Oh well.]
->
-> | History bites us...libcap wasn't always there.  As we see, people roll
-> [...]
->
-> Not to pick holes in your argument, but libcap *has* always been there.
-> It was co-developed with the original kernel patches.
-
-Yeah, that was confusing.  I didn't mean it hadn't been developed.
-But all too often it wasn't picked up by distros.  And this is why apps
-went the 'roll your own' direction.
-
-> | No, the solution there would be to keep _LINUX_CAPABILITY_VERSION as
-> | v1 (otherwise you just broke apps again).  And use another mechanism to
-> | signal the availability of 64bit caps.
->
-> Point taken. Patch attached.
-
-Thanks, I'll comment on that in a different mail.
--chris
+jon
