@@ -1,159 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbYEWNsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYEWNsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758365AbYEWNsf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbYEWNov
+	id S1758880AbYEWNsw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbYEWNqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:44:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49124 "EHLO
+	Fri, 23 May 2008 09:46:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49166 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756433AbYEWNot (ORCPT
+	with ESMTP id S1756977AbYEWNqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 09:44:49 -0400
-Subject: [PATCH 1/3] firmware: allow firmware files to be built into kernel
-	image
+	Fri, 23 May 2008 09:46:18 -0400
+Subject: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
        Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
        Haroldo Gamal <gamal@alternex.com.br>, Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <1211550282.28967.8.camel@pmac.infradead.org>
+References: <1211550282.28967.8.camel@pmac.infradead.org>
 Content-Type: text/plain
-Date: Fri, 23 May 2008 14:44:42 +0100
-Message-Id: <1211550282.28967.8.camel@pmac.infradead.org>
+Date: Fri, 23 May 2008 14:46:14 +0100
+Message-Id: <1211550374.28967.10.camel@pmac.infradead.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some drivers have their own hacks to bypass the kernel's firmware loader
-and build their firmware into the kernel; this renders those unnecessary.
-
-Other drivers don't use the firmware loader at all, because they always
-want the firmware to be available. This allows them to start using the
-firmware loader.
-
-A third set of drivers already use the firmware loader, but can't be
-used without help from userspace, which sometimes requires an initrd.
-This allows them to work in a static kernel.
+This allows arbitrary firmware files to be included in the static kernel
+where the firmware loader can find them without requiring userspace to
+be alive.
 
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/base/firmware_class.c     |   22 ++++++++++++++++++++--
- include/asm-generic/vmlinux.lds.h |    7 +++++++
- include/linux/firmware.h          |   20 ++++++++++++++++++++
- 3 files changed, 47 insertions(+), 2 deletions(-)
+ Makefile             |    2 +-
+ drivers/base/Kconfig |   12 ++++++++++++
+ firmware/Makefile    |   23 +++++++++++++++++++++++
+ 3 files changed, 36 insertions(+), 1 deletions(-)
+ create mode 100644 firmware/Makefile
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 9fd4a85..55b9c80 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -49,6 +49,9 @@ struct firmware_priv {
- 	struct timer_list timeout;
- };
+diff --git a/Makefile b/Makefile
+index 20b3235..ac2ab7e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -450,7 +450,7 @@ scripts: scripts_basic include/config/auto.conf
  
-+extern struct builtin_fw __start_builtin_fw[];
-+extern struct builtin_fw __end_builtin_fw[];
-+
- static void
- fw_load_abort(struct firmware_priv *fw_priv)
- {
-@@ -391,13 +394,12 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
- 	struct device *f_dev;
- 	struct firmware_priv *fw_priv;
- 	struct firmware *firmware;
-+	struct builtin_fw *builtin;
- 	int retval;
+ # Objects we will link into vmlinux / subdirs we need to visit
+ init-y		:= init/
+-drivers-y	:= drivers/ sound/
++drivers-y	:= drivers/ sound/ firmware/
+ net-y		:= net/
+ libs-y		:= lib/
+ core-y		:= usr/
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index d7da109..687f097 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -34,6 +34,18 @@ config FW_LOADER
+ 	  require userspace firmware loading support, but a module built outside
+ 	  the kernel tree does.
  
- 	if (!firmware_p)
- 		return -EINVAL;
- 
--	printk(KERN_INFO "firmware: requesting %s\n", name);
--
- 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
- 	if (!firmware) {
- 		printk(KERN_ERR "%s: kmalloc(struct firmware) failed\n",
-@@ -406,6 +408,22 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
- 		goto out;
- 	}
- 
-+	for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
-+	     builtin++) {
-+		if (strcmp(name, builtin->name))
-+			continue;
-+		printk(KERN_INFO "firmware: using built-in firmware %s\n",
-+		       name);
-+		firmware->data = vmalloc(builtin->size);
-+		if (!firmware->data)
-+			return -ENOMEM;
-+		firmware->size = builtin->size;
-+		memcpy(firmware->data, builtin->data, builtin->size);
-+		return 0;
-+	}
-+	if (uevent)
-+		printk(KERN_INFO "firmware: requesting %s\n", name);
++config BUILTIN_FIRMWARE
++       string "Firmware blobs to build into the kernel binary"
++       depends on FW_LOADER
++       help
++         This option allows firmware to be built into the kernel, for the cases
++	 where the user either cannot or doesn't want to provide it from
++	 userspace at runtime (for example, when the firmware in question is
++	 required for accessing the boot device, and the user doesn't want to
++	 use an initrd). Multiple files should be separated with spaces, and
++	 the required files should exist under the firmware/ directory in
++	 the source tree.
 +
- 	retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
- 	if (retval)
- 		goto error_kfree_fw;
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f054778..8d71a40 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -86,6 +86,13 @@
- 		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
- 	}								\
- 									\
-+	/* Built-in firmware blobs */					\
-+	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
-+		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
-+		*(.builtin_fw)						\
-+		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
-+	}								\
-+									\
- 	/* RapidIO route ops */						\
- 	.rio_route        : AT(ADDR(.rio_route) - LOAD_OFFSET) {	\
- 		VMLINUX_SYMBOL(__start_rio_route_ops) = .;		\
-diff --git a/include/linux/firmware.h b/include/linux/firmware.h
-index 4d10c73..d014589 100644
---- a/include/linux/firmware.h
-+++ b/include/linux/firmware.h
-@@ -13,6 +13,26 @@ struct firmware {
- 
- struct device;
- 
-+struct builtin_fw {
-+	char *name;
-+	void *data;
-+	unsigned long size;
-+};
+ config DEBUG_DRIVER
+ 	bool "Driver Core verbose debug messages"
+ 	depends on DEBUG_KERNEL
+diff --git a/firmware/Makefile b/firmware/Makefile
+new file mode 100644
+index 0000000..184b8ef
+--- /dev/null
++++ b/firmware/Makefile
+@@ -0,0 +1,23 @@
++#
++# kbuild file for firmware/
++#
 +
-+/* We have to play tricks here much like stringify() to get the
-+   __COUNTER__ macro to be expanded as we want it */
-+#define __fw_concat1(x,y) x##y
-+#define __fw_concat(x,y) __fw_concat1(x,y)
-+
-+#define DECLARE_BUILTIN_FIRMWARE(name, blob)				\
-+	DECLARE_BUILTIN_FIRMWARE_SIZE(name, &(blob), sizeof(blob))
++FIRMWARE_BINS := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
++FIRMWARE_OBJS := $(patsubst %,%.o, $(FIRMWARE_BINS))
++FIRMWARE_SRCS := $(patsubst %,$(obj)/%.c, $(FIRMWARE_BINS))
 +
 +
-+#define DECLARE_BUILTIN_FIRMWARE_SIZE(name, blob, size)			     \
-+	static const struct builtin_fw __fw_concat(__builtin_fw,__COUNTER__) \
-+	__used __attribute__((__section__(".builtin_fw"))) =		     \
-+	{ name, blob, size }
++quiet_cmd_fwbin = MK_FW   $@
++      cmd_fwbin = echo '/* File automatically generated */' > $@ ;	 \
++		  echo '\#include <linux/firmware.h>' >> $@ ;		 \
++		  echo 'static const unsigned char fw[] = {' >> $@ ;	 \
++		  od -t x1 -A none -v $(srctree)/$(patsubst %.c,%,$@) | \
++		   sed -e 's/ /, 0x/g' -e 's/^,//' -e 's/$$/,/' >> $@ ; \
++		  echo '};' >> $@ ;					 \
++		  echo 'DECLARE_BUILTIN_FIRMWARE("$(patsubst firmware/%.c,%,$@)",fw);' >> $@
 +
- #if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
- int request_firmware(const struct firmware **fw, const char *name,
- 		     struct device *device);
++$(FIRMWARE_SRCS): $(obj)/%.c: $(srctree)/$(obj)/%
++	$(call cmd,fwbin)
++
++obj-y := $(FIRMWARE_OBJS)
++
 -- 
 1.5.4.5
 
 
--- 
-dwmw2
 -- 
 dwmw2
 
