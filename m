@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbYEWFzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762780AbYEWF6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbYEWFzU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 01:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbYEWFzE
+	id S1762780AbYEWF6j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 01:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbYEWF6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 01:55:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60944 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751807AbYEWFzC (ORCPT
+	Fri, 23 May 2008 01:58:30 -0400
+Received: from mail37.messagelabs.com ([216.82.244.163]:16982 "EHLO
+	mail37.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751773AbYEWF63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 01:55:02 -0400
-Date: Thu, 22 May 2008 22:54:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Steve French" <smfrench@gmail.com>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: pagevecs of more than PAGEVEC_SIZE pages
-Message-Id: <20080522225459.5a6f7acc.akpm@linux-foundation.org>
-In-Reply-To: <524f69650805221213i62488a4fk5a906b2726b9b96a@mail.gmail.com>
-References: <524f69650805221213i62488a4fk5a906b2726b9b96a@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 23 May 2008 01:58:29 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-10.tower-37.messagelabs.com!1211522308!1441147!2
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Fri, 23 May 2008 07:55:27 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: "Hans J. Koch" <hjk@linutronix.de>
+CC: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable interrupts
+Message-ID: <20080523055527.GA28963@digi.com>
+References: <20080522192252.GB3226@local> <20080522192637.GC3226@local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080522192637.GC3226@local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 23 May 2008 05:55:27.0537 (UTC) FILETIME=[99BCE210:01C8BC99]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008 14:13:07 -0500 "Steve French" <smfrench@gmail.com> wrote:
+Hello Hans,
 
-> Now that various servers support processing larger than 64K file
-> writes, it would be helpful to have pagevecs that are larger than 14
-> pages (PAGEVEC_SIZE).so an array of more pages could be passed to
-> kernel_sendmsg (thus allowing writes larger than 56K, depending on
-> wsize - the server limit is currently 8MB)
+> -      Copyright (c) 2006 by Hans-JÃŒrgen Koch.</para>
+> +      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
+This looks wrong.
 
-You can pass multiple pagevecs into kernel_sendmsg?
+	ukleinek@zentaur:~$ echo Hans-JÃŒrgen | iconv -t ISO8859-15
+	Hans-Jürgen
 
-> pagevec_lookup_tag (and the inline function pagevec_space which I
-> don't use) is the main place that cifs needs a pagevec instead of
-> simply an array of pages and PAGEVEC_SIZE does not seem to matter
-> there (it works if I malloc a structure with more pages and request
-> more than 14 pages out of pagevec_lookup_tag).  Is there another
-> better alternative other than defining a larger pagevec (pagevec2 or
-> cifs_pagevec)?  Should I simply kmalloc something larger than a
-> pagevec and cast a (struct pagevec *) to it?
+Best regards
+Uwe
 
-We could make pagevecs variable-sized easily enough - add a `struct
-page **' to it.  But it's more overhead and this is the first time I've
-seen demand for it?
-
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
