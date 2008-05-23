@@ -1,51 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbYEWTwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbYEWT5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbYEWTwM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYEWTvp
+	id S1759090AbYEWT5d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYEWT5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:51:45 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56498 "EHLO pasmtpA.tele.dk"
+	Fri, 23 May 2008 15:57:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38084 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755271AbYEWTvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 15:51:43 -0400
-Date: Fri, 23 May 2008 21:52:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
-       peter.oberparleiter@de.ibm.com, linux-kernel@vger.kernel.org,
-       ltp-coverage@lists.sourceforge.net, oberparleiter@googlemail.com
-Subject: Re: [PATCH 6/7] kbuild: make source and include paths absolute
-Message-ID: <20080523195222.GA366@uranus.ravnborg.org>
-References: <48313E08.8070904@de.ibm.com> <20080522201724.cf4bd471.akpm@linux-foundation.org> <20080523171840.GD28257@cs181133002.pp.htv.fi> <20080523111707.89df9f67.akpm@linux-foundation.org> <20080523190950.GA32541@uranus.ravnborg.org> <19f34abd0805231242r32892322n6c0a25e06d93ff96@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0805231242r32892322n6c0a25e06d93ff96@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1755625AbYEWT5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 15:57:19 -0400
+Message-Id: <20080523195506.084894989@redhat.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 23 May 2008 15:55:06 -0400
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH -mm 00/16] VM pageout scalability improvements (V8)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>
-> >> Well I guess that's understandable with O=.
-> >>
-> >> But I find it rather nasty.  (I guess it'd be less nasty if I were to
-> >> get off my butt and work out how to teach rxvt that "/" is a word
-> >> separator).
-> >>
-> >> What do others think?
-> >
-> > That the gcov tool has a bug if it insist on using absolute paths.
-> > And thus we should fix gcov and not workaround it in the kernel.
-> 
-> IIRC, there was also the slight problem that all uses of __FILE__
-> (there are quite a few in the kernel) will also now be absolute and
-> increase the size of the vmlinux image by quite a bit.
-> 
-> Yeah... http://lkml.org/lkml/2006/4/25/40
-This is specific to O=.. build kernels.
-I recall this is not an issue for the gcov patchset (if O=... is not used).
-But I have not checked it.
+On large memory systems, the VM can spend way too much time scanning
+through pages that it cannot (or should not) evict from memory. Not
+only does it use up CPU time, but it also provokes lock contention
+and can leave large systems under memory presure in a catatonic state.
 
-	Sam
+Against 2.6.26-rc2-mm1
+
+This patch series improves VM scalability by:
+
+1) putting filesystem backed, swap backed and non-reclaimable pages
+   onto their own LRUs, so the system only scans the pages that it
+   can/should evict from memory
+
+2) switching to SEQ replacement for the anonymous LRUs, so the
+   number of pages that need to be scanned when the system
+   starts swapping is bound to a reasonable number
+
+3) keeping non-reclaimable pages off the LRU completely, so the
+   VM does not waste CPU time scanning them.  Currently only
+   ramfs and SHM_LOCKED pages are kept on the noreclaim list,
+   mlock()ed VMAs will be added later
+
+More info on the overall design can be found at:
+
+	http://linux-mm.org/PageReplacementDesign
+
+An all-in-one patch can be found at:
+
+	http://people.redhat.com/riel/splitvm/
+
+Changelog:
+- make sure previously active pagecache pages get reactivated
+  on the first access (Rik van Riel)
+- compile fix when !CONFIG_SWAP (MinChan Kim)
+- clean up page-flags.h defines when !CONFIG_NORECLAIM_LRU
+  (Lee Schermerhorn)
+- fix some race conditions around moving pages to and from
+  the noreclaim list (Lee Schermerhorn, KOSAKI Motohiro)
+- use putback_lru_page() for page migration (Lee Schermerhorn)
+- fix potential SHM_UNLOCK race in scan_mapping_noreclaim_pages()
+  (Lee Schermerhorn, KOSAKI Motohiro)
+
+- improve swap space freeing to deal with COW shared space
+  (Lee Schermerhorn, Daisuke Nishimura & Minchan Kim)
+- clean up PG_swapbacked setting in swapin path (Minchan Kim)
+- properly invoke shrink_active_list for background aging (Minchan Kim)
+- add authorship info to all patches (Rik van Riel)
+- clean up (or move below ---) the comments for the commit logs (Rik van Riel)
+- after some tests, reduce default swappiness to 20 for now (Rik van Riel)
+
+- several code cleanups (minchan Kim)
+- noreclaim patch refactoring and improvements (Lee Schermerhorn)
+- several PROT_NONE and vma merging fixes (KOSAKI Motohiro)
+- SMP bugfixes and efficiency improvements (Rik van Riel, Lee Schermerhorn)
+- fix NUMA node stats printing (Lee Schermerhorn)
+- remove the mlocked-VMA-noreclaim code for now, it still has
+  bugs on IA64 and is holding up the merge (Rik van Riel)
+
+- make page_alloc.c compile without CONFIG_NORECLAIM_MLOCK (minchan Kim)
+- BUG() does not take an argument (minchan Kim) 
+- clean up is_active_lru and is_file_lru (Andy Whitcroft)
+- clean up shrink_active_list temp list names (KOSAKI Motohiro)
+- add total active & inactive memory totals for vmstat -a (KOSAKI Motohiro)
+- only try global anon page aging on global lru scans (KOSAKI Motohiro)
+- make function descriptions follow the kernel-doc format (Rik van Riel)
+- simplify mlock_vma_pages_range and munlock_vma_pages_range (Lee Schermerhorn)
+- remove some more arguments, rename to mlock_vma_pages_all (Lee Schermerhorn)
+- many code cleanups (Lee Schermerhorn)
+- pass correct vma arg to mlock_vma_pages_range from do_brk (Rik van Riel)
+- port to 2.6.25-rc3-mm1
+
+- pull the memcontrol lru arrayification earlier into the patch series
+- use a pagevec array similar to the lru array
+- clean up the code in various places
+- improved pageout balancing and reduced pageout cpu use
+
+- fix compilation on PPC and without memcontrol
+- make page_is_pagecache more readable
+- replace get_scan_ratio with correct version
+
+- merge memcontroller split LRU code into the main split LRU patch,
+  since it is not functionally different (it was split up only to help
+  people who had seen the last version of the patch series review it)
+- drop the page_file_cache debugging patch, since it never triggered
+- reintroduce code to not scan anon list if swap is full
+- add code to scan anon list if page cache is very small already
+- use lumpy reclaim more aggressively for smaller order > 1 allocations
+
+-- 
+All Rights Reversed
+
