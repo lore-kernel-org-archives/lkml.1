@@ -1,83 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbYEWUL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbYEWURQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758779AbYEWUL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 16:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbYEWULW
+	id S1757114AbYEWURQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 16:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYEWURA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 16:11:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34149 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYEWULV (ORCPT
+	Fri, 23 May 2008 16:17:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:22259 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752871AbYEWUQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 16:11:21 -0400
-Date: Fri, 23 May 2008 11:29:08 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Natalie Protasevich <protasnb@gmail.com>,
-       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Number of bugs - statistics
-Message-ID: <20080523112908.19f9413d@infradead.org>
-In-Reply-To: <20080523165055.GC28257@cs181133002.pp.htv.fi>
-References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com>
-	<20080522144114.GC27301@cs181133002.pp.htv.fi>
-	<20080522075135.4933161c@infradead.org>
-	<20080522155425.GA2727@cs181133002.pp.htv.fi>
-	<32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com>
-	<20080522165008.GB2727@cs181133002.pp.htv.fi>
-	<20080522151834.03f2790f@infradead.org>
-	<20080523090940.GG2727@cs181133002.pp.htv.fi>
-	<20080523071157.3cfdc03a@infradead.org>
-	<20080523165055.GC28257@cs181133002.pp.htv.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 May 2008 16:16:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ljKmXdcDbYpZDQ0HdyyZOEGSDmvi8Gr80mNDu2HMYr1BIe5jGu0c7wobMTduuslE0ceGfKoBW9famcRiWUTmf7oLWb0xs9qanlm3P6JI6yP1T5JXN6bGIotQO+Ze1nQr6z5HoQ1w8+gXudjyJ5CmUCuAAB8qS2+cHZuIfXeKqtQ=
+Message-ID: <19f34abd0805231316m6432b373s594c794bfdd48183@mail.gmail.com>
+Date: Fri, 23 May 2008 22:16:58 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] kmemcheck: use tasklets instead of timers
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080521213758.GB11061@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080521213758.GB11061@damson.getinternet.no>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 19:50:55 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+Oops. Big mistake on my part. This patch was simply wrong :-(
 
-> On Fri, May 23, 2008 at 07:11:57AM -0700, Arjan van de Ven wrote:
-> > On Fri, 23 May 2008 12:09:40 +0300
-> > Adrian Bunk <bunk@kernel.org> wrote:
-> > 
-> > > 
-> > > And in case anyone says "not forwarded distribution bugs aren't
-> > > our problem":
-> > > That's a nice example, since in this case a distribuion suddenly 
-> > > starting to agressively forwarding their bugs might contribute to
-> > > making the kernel better, but might also totally ruin the numbers
-> > > in any statistics.
-> > 
-> > Fedora gets less than 1000 bugs per release (so 6 month window).
-> > That's... peanuts.
-> 
-> 2000 kernel bugs per year?
+On Wed, May 21, 2008 at 11:37 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Wed, 21 May 2008 22:58:37 +0200
+> Subject: [PATCH] kmemcheck: use tasklets instead of timers
+>
+> Instead of triggering a timer every HZ, we use the new tasklet function
+> which guarantuees not to touch any other tasklets on the tasklet list,
+> and is thus safe to use from the page fault handler.
+>
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  arch/x86/kernel/kmemcheck.c |   16 ++++++++--------
+>  1 files changed, 8 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
+> index def1a08..c0045e8 100644
+> --- a/arch/x86/kernel/kmemcheck.c
+> +++ b/arch/x86/kernel/kmemcheck.c
+> @@ -9,6 +9,7 @@
+>  */
+>
+>  #include <linux/init.h>
+> +#include <linux/interrupt.h>
+>  #include <linux/kallsyms.h>
+>  #include <linux/kdebug.h>
+>  #include <linux/kernel.h>
+> @@ -18,7 +19,6 @@
+>  #include <linux/page-flags.h>
+>  #include <linux/percpu.h>
+>  #include <linux/stacktrace.h>
+> -#include <linux/timer.h>
+>
+>  #include <asm/cacheflush.h>
+>  #include <asm/kmemcheck.h>
+> @@ -73,8 +73,6 @@ static unsigned int error_rd;
+>  static unsigned int error_wr;
+>  static unsigned int error_missed_count;
+>
+> -static struct timer_list kmemcheck_timer;
+> -
+>  static struct kmemcheck_error *error_next_wr(void)
+>  {
+>        struct kmemcheck_error *e;
+> @@ -105,6 +103,9 @@ static struct kmemcheck_error *error_next_rd(void)
+>        return e;
+>  }
+>
+> +static void do_wakeup(unsigned long);
+> +static DECLARE_TASKLET(kmemcheck_tasklet, &do_wakeup, 0);
+> +
+>  static void *address_get_shadow(unsigned long address);
+>
+>  /*
+> @@ -148,6 +149,8 @@ static void error_save(enum shadow state,
+>        BUG_ON(!shadow_copy);
+>
+>        memcpy(e->shadow_copy, shadow_copy, SHADOW_COPY_SIZE);
+> +
+> +       tasklet_hi_schedule(&kmemcheck_tasklet);
 
-it's going down; 750-ish for the last few releases
+This should of course say tasklet_hi_schedule_first(), which was the
+new function I introduced in the previous patch. Duh.
 
-(see http://kernelslacker.livejournal.com/116718.html )
-> 
-> Then Fedora alone gets roughly as many kernel bugs as the kernel 
-> Bugzilla.
+>  }
+>
+>  /*
+> @@ -170,6 +173,8 @@ static void error_save_bug(struct pt_regs *regs)
+>        e->trace.max_entries = ARRAY_SIZE(e->trace_entries);
+>        e->trace.skip = 1;
+>        save_stack_trace(&e->trace);
+> +
+> +       tasklet_hi_schedule(&kmemcheck_tasklet);
 
-but kernel bugzilla is "only" a last resort, while fedora bugzilla is a
-first point of contact. I'd rate a kernel.org bugzilla bug to be 3x a
-fedora bz bug in terms of value (eg less dupes, it's not support
-requests but actual bugs etc etc).
+The same here...
 
-> 
-> >...
-> > We are tracking over 3000 bugs per WEEK via other channels.
-> >...
-> 
-> What exactly are you measuring with this "3000 bugs" number?
+>  }
+>
+>  static void error_recall(void)
+> @@ -233,8 +238,6 @@ static void do_wakeup(unsigned long data)
+>                        "the queue was too small\n", error_missed_count);
+>                error_missed_count = 0;
+>        }
+> -
+> -       mod_timer(&kmemcheck_timer, kmemcheck_timer.expires + HZ);
+>  }
+>
+>  void __init kmemcheck_init(void)
+> @@ -250,9 +253,6 @@ void __init kmemcheck_init(void)
+>                setup_max_cpus = 1;
+>        }
+>  #endif
+> -
+> -       setup_timer(&kmemcheck_timer, &do_wakeup, 0);
+> -       mod_timer(&kmemcheck_timer, jiffies + HZ);
+>  }
+>
+>  #ifdef CONFIG_KMEMCHECK_DISABLED_BY_DEFAULT
+> --
+> 1.5.4.1
+>
+>
 
-Oopses and places where the kernel goes WARN_ON().
-(the oops:warning ratio is roughly 1:2 to 1:3)
+But even so, tasklet_hi_schedule_first() will call
+raise_softirq_irqoff() which will call wakeup_softirqd() which will
+call wake_up_process() which will do all sorts of badness like
+accessing runqueues, etc., etc.
+
+So forget all about the tasklet patches :-(
+
+But thanks for the reviews... ;-)
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
