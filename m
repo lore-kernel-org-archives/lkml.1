@@ -1,83 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760412AbYEWXrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760800AbYEWXuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760412AbYEWXrG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 19:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbYEWXqy
+	id S1760800AbYEWXuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 19:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYEWXua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 19:46:54 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38966 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750787AbYEWXqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 19:46:53 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+bWI4GHBGbiKZqu694ZYsbqYBgzUkYTXehQDjd3T
-	+Ck1jQ0VQABWMI
-Subject: Re: PostgreSQL pgbench performance regression in 2.6.23+
-From: Mike Galbraith <efault@gmx.de>
-To: Greg Smith <gsmith@gregsmith.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-In-Reply-To: <Pine.GSO.4.64.0805231907150.25273@westnet.com>
-References: <1211440207.5733.8.camel@marge.simson.net>
-	 <20080522082814.GA4499@linux.vnet.ibm.com>
-	 <1211447105.4823.7.camel@marge.simson.net>
-	 <1211452465.7606.8.camel@marge.simson.net>
-	 <1211455553.4381.9.camel@marge.simson.net>
-	 <1211456659.29104.20.camel@twins>
-	 <1211458176.5693.6.camel@marge.simson.net>
-	 <1211459081.29104.40.camel@twins>
-	 <Pine.GSO.4.64.0805230232190.28654@westnet.com>
-	 <1211536814.5851.18.camel@marge.simson.net>
-	 <20080523101000.GA13964@elte.hu>
-	 <1211537717.5851.22.camel@marge.simson.net>
-	 <Pine.GSO.4.64.0805231907150.25273@westnet.com>
-Content-Type: text/plain
-Date: Sat, 24 May 2008 01:46:47 +0200
-Message-Id: <1211586407.4786.5.camel@marge.simson.net>
+	Fri, 23 May 2008 19:50:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:51550 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbYEWXu3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 19:50:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type;
+        b=uLiOV6solSSfm9UwduZiSITQ7y9oYvErBZvVtqxiLsvJ1XlTXe6FMdVjqSx+DR6qJFcQECuQTzMSijLYfvEl542Jy2OHdZtCXSN4LEYtsUTWV88KWHBS+I7cfZ+RED0CGXTJBI+xjrW636WnxW1GYyi9mO61C9vkQX342Jy5+tI=
+Date: Sat, 24 May 2008 00:50:21 +0100
+From: Ciaran McCreesh <ciaran.mccreesh@googlemail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr
+ after e820_reserve_resources
+Message-ID: <20080524005021.67b98674@snowcone>
+In-Reply-To: <86802c440805192022n29e191dfped3ee5afa7894288@mail.gmail.com>
+References: <20080518014111.4f32298b@googlemail.com>
+	<20080518164127.2236d82a@googlemail.com>
+	<86802c440805181400m5a3b4e28oeab6245e9a2ffd00@mail.gmail.com>
+	<20080518232347.7964835c@snowcone>
+	<86802c440805182043n2a4855bcw6924f6df2fbdc9f4@mail.gmail.com>
+	<20080520014405.5eb150cd@googlemail.com>
+	<86802c440805191822v5b572d03t1568b27eb2defa4a@mail.gmail.com>
+	<20080520022446.3b9c335a@googlemail.com>
+	<86802c440805191948h29769798qecc93b7aa5c9cd91@mail.gmail.com>
+	<20080520041655.0552236d@googlemail.com>
+	<86802c440805192022n29e191dfped3ee5afa7894288@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: multipart/signed; boundary="Sig_/ed0WtOidv=EaYByTy5VMJeS";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Sig_/ed0WtOidv=EaYByTy5VMJeS
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2008-05-23 at 19:18 -0400, Greg Smith wrote:
-> On Fri, 23 May 2008, Mike Galbraith wrote:
-> 
-> > It was running SCHED_BATCH, features=0...it needed features=0 as well to 
-> > achieve O(1) batch performance.
-> 
-> I figured out how to run pgbench with chrt in order to get SCHED_BATCH 
-> behavior, but I don't understand what you mean by features=0 here.  Since 
-> I didn't see the same magnitude of different just using batch that seems 
-> important, where does that get set at?
+(Apologies for the delay. I've not had physical access to the box for a
+few days.)
 
-/proc/sys/kernel/sched_features.  You need CONFIG_SCHED_DEBUG to have
-accsess to the scheduler tweakables.
+On Mon, 19 May 2008 20:22:45 -0700
+"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+> >> seems acpi pnp resource cause some problem....
+> >>
+> >> please try attached patch and send out /proc/mtrr
+> >
+> > The patch doesn't help I'm afraid.
+>=20
+> sorry, please send /proc/iomem
 
-> I'm also curious what hardware your results are coming from, to fit them 
-> into my larger pgbench results context space.
+Sorry, I'm getting confused here. I can't send /proc/iomem with the
+ram_reserve patch applied since the system won't boot (and it appears
+to collide with the original commit, so I can't revert that and apply
+the patch to get a booting system). Without the ram_reserve
+patch, /proc/iomem is as it was earlier in the discussion.
 
-A grocery store Q6600 box.
+> can you boot with pnpacpi=3Doff ?
 
-> Got my 4-core system back on-line again today (found some bad RAM) and 
-> wanted to try another round of tests on that.  Looks like you've defined 5 
-> test sets I should replicate:
-> 
-> 2.6.22
-> 2.6.22, batch
-> 2.6.26.git
-> 2.6.26.git, batch
-> 2.6.26.git, batch + se.load.weight patch
-> 
-> Should I still be trying Peter's se.waker patch as well in this mix 
-> somewhere?
+No, that doesn't help either.
 
-Yeah.
+Thanks,
+--=20
+Ciaran McCreesh
 
-	-Mike
+--Sig_/ed0WtOidv=EaYByTy5VMJeS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkg3WEAACgkQ96zL6DUtXhEhJQCfRJwXGVmCNedvySW0k2Tw3BOw
+6sgAoN8mhJx8l21SJxbh7/fq7EXKWvdF
+=c76T
+-----END PGP SIGNATURE-----
+
+--Sig_/ed0WtOidv=EaYByTy5VMJeS--
