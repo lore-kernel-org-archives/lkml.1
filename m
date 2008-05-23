@@ -1,150 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYEWSe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYEWSfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbYEWSe5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 14:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYEWSeo
+	id S1756275AbYEWSfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 14:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbYEWSeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 14:34:44 -0400
-Received: from sous-sol.org ([216.99.217.87]:41834 "EHLO sous-sol.org"
+	Fri, 23 May 2008 14:34:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43473 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbYEWSen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 14:34:43 -0400
-Date: Fri, 23 May 2008 11:26:02 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>
-Subject: Re: capget() overflows buffers.
-Message-ID: <20080523182602.GO30402@sequoia.sous-sol.org>
-References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org> <20080522233757.GD30402@sequoia.sous-sol.org> <48366D9A.70806@kernel.org>
+	id S1754421AbYEWSes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 14:34:48 -0400
+Message-ID: <48370E14.2070309@gmail.com>
+Date: Fri, 23 May 2008 14:33:56 -0400
+From: Ric Wheeler <ricwheeler@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48366D9A.70806@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       jamie@shareable.org, Ric Wheeler <rwheeler@redhat.com>,
+       jbacik@redhat.com
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <87ej7zcrqv.fsf@basil.nowhere.org> <200805190926.41970.chris.mason@oracle.com> <20080519144654.GC15035@mit.edu>
+In-Reply-To: <20080519144654.GC15035@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew G. Morgan (morgan@kernel.org) wrote:
-> diff --git a/include/linux/capability.h b/include/linux/capability.h
-> index f4ea0dd..f88b4db 100644
-> --- a/include/linux/capability.h
-> +++ b/include/linux/capability.h
-> @@ -34,9 +34,6 @@ struct task_struct;
->  #define _LINUX_CAPABILITY_VERSION_2  0x20071026
->  #define _LINUX_CAPABILITY_U32S_2     2
->  
-> -#define _LINUX_CAPABILITY_VERSION    _LINUX_CAPABILITY_VERSION_2
-> -#define _LINUX_CAPABILITY_U32S       _LINUX_CAPABILITY_U32S_2
-> -
->  typedef struct __user_cap_header_struct {
->  	__u32 version;
->  	int pid;
-> @@ -77,10 +74,23 @@ struct vfs_cap_data {
->  	} data[VFS_CAP_U32];
->  };
->  
-> -#ifdef __KERNEL__
-> +#ifndef __KERNEL__
-> +
-> +/*
-> + * Backwardly compatible definition for source code - trapped in a
-> + * 32-bit world. If you find you need this, please consider using
-> + * libcap to untrap yourself...
-> + */
-> +#define _LINUX_CAPABILITY_VERSION  _LINUX_CAPABILITY_VERSION_1
-> +#define _LINUX_CAPABILITY_U32S     _LINUX_CAPABILITY_U32S_1
 
-I'm sure you're painfully aware, but this will need some change
-to libcap as well (to let it handle 64bit caps again).
+Just a couple of comments about barriers that might be worth throwing in 
+the mix.
 
-That's what I meant earlier by "And use another mechanism to                                             
-signal the availability of 64bit caps."
+ From what I have seen, running with barriers is almost always a win 
+over running with write cache disabled for medium to large files (large 
+files with a S-ATA drive go about twice as fast in my testing).
 
-All looks good.  I think we need to issue some warnings, because
-at least Fedora 9 and openSUSE 11 are/will be 2.6.25 based.
+For very small files, running with the barrier or disabling the write 
+cache are a lot closer in performance.
 
-Something like this:
+When we are looking for ways to batch, it is also critical to keep in 
+mind the latency of the storage. The current ext3 transaction batching 
+code makes running multi-threaded workloads on high speed media (like 
+non-volatile disk arrays) run much slower.   (Josef had some patches 
+which helped fix this in a similar way that XFS deals with this.)
 
+One other note is that moving to a FLASH based device will not make the 
+issue of barriers go away since (most? all?) FLASH parts you are likely 
+to see have their own write cache which is used to buffer up writes in 
+order to make the erase cycle less painful. That means that we have a 
+fairly large *volatile* write cache which needs to be flushed/controlled 
+just like we do with S-ATA/SCSI/etc ;-)
 
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -31,9 +31,13 @@ struct task_struct;
- #define _LINUX_CAPABILITY_VERSION_1  0x19980330
- #define _LINUX_CAPABILITY_U32S_1     1
- 
-+/* v2 should be considered broken */
- #define _LINUX_CAPABILITY_VERSION_2  0x20071026
- #define _LINUX_CAPABILITY_U32S_2     2
- 
-+#define _LINUX_CAPABILITY_VERSION_3  0x20080522
-+#define _LINUX_CAPABILITY_U32S_3     2
-+
- typedef struct __user_cap_header_struct {
- 	__u32 version;
- 	int pid;
-@@ -86,8 +90,8 @@ struct vfs_cap_data {
- 
- #else
- 
--#define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_2
--#define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_2
-+#define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
-+#define _KERNEL_CAPABILITY_U32S    _LINUX_CAPABILITY_U32S_3
- 
- typedef struct kernel_cap_struct {
- 	__u32 cap[_KERNEL_CAPABILITY_U32S];
---- a/kernel/capability.c
-+++ b/kernel/capability.c
-@@ -39,6 +39,19 @@ EXPORT_SYMBOL(__cap_init_eff_set);
-  *   http://www.kernel.org/pub/linux/libs/security/linux-privs/
-  */
- 
-+static void warn_broken_capability_use(void)
-+{
-+	static int warned;
-+	if (!warned) {
-+		char name[sizeof(current->comm)];
-+
-+		printk(KERN_INFO "warning: `%s' uses a capabilities version"
-+		       " which could be broken if it is not using libcap.\n",
-+		       get_task_comm(name, current));
-+		warned = 1;
-+	}
-+}
-+
- static void warn_legacy_capability_use(void)
- {
- 	static int warned;
-@@ -85,8 +98,12 @@ asmlinkage long sys_capget(cap_user_head
- 		tocopy = _LINUX_CAPABILITY_U32S_1;
- 		break;
- 	case _LINUX_CAPABILITY_VERSION_2:
-+		warn_broken_capability_use();
- 		tocopy = _LINUX_CAPABILITY_U32S_2;
- 		break;
-+	case _LINUX_CAPABILITY_VERSION_3:
-+		tocopy = _LINUX_CAPABILITY_U32S_3;
-+		break;
- 	default:
- 		if (put_user(_KERNEL_CAPABILITY_VERSION, &header->version))
- 			return -EFAULT;
-@@ -257,8 +274,12 @@ asmlinkage long sys_capset(cap_user_head
- 		tocopy = _LINUX_CAPABILITY_U32S_1;
- 		break;
- 	case _LINUX_CAPABILITY_VERSION_2:
-+		warn_broken_capability_use();
- 		tocopy = _LINUX_CAPABILITY_U32S_2;
- 		break;
-+	case _LINUX_CAPABILITY_VERSION_3:
-+		tocopy = _LINUX_CAPABILITY_U32S_3;
-+		break;
- 	default:
- 		if (put_user(_KERNEL_CAPABILITY_VERSION, &header->version))
- 			return -EFAULT;
+ric
 
