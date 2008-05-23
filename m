@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbYEWNon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbYEWNo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265AbYEWNon (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbYEWNoT
+	id S1756787AbYEWNo6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbYEWNoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:44:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:53224 "EHLO mail.goop.org"
+	Fri, 23 May 2008 09:44:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:53231 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753151AbYEWNoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753571AbYEWNoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 23 May 2008 09:44:17 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 01 of 12] xen: make phys_to_machine structure dynamic
-X-Mercurial-Node: ae3daa70eeb5bcc33db236799ec228f8a1482882
-Message-Id: <ae3daa70eeb5bcc33db2.1211550068@localhost>
+Subject: [PATCH 02 of 12] xen: add configurable max domain size
+X-Mercurial-Node: 7ba28dacb6419ebd6cbe4e894dca2ff1ce1b0a2e
+Message-Id: <7ba28dacb6419ebd6cbe.1211550069@localhost>
 In-Reply-To: <patchbomb.1211550067@localhost>
-Date: Fri, 23 May 2008 14:41:08 +0100
+Date: Fri, 23 May 2008 14:41:09 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -26,203 +26,136 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We now support the use of memory hotplug, so the physical to machine
-page mapping structure must be dynamic.  This is implemented as a
-two-level radix tree structure, which allows us to efficiently
-incrementally allocate memory for the p2m table as new pages are
-added.
+Add a config option to set the max size of a Xen domain.  This is used
+to scale the size of the physical-to-machine array; it ends up using
+around 1 page/GByte, so there's no reason to be very restrictive.
+
+For a 32-bit guest, the default value of 8GB is probably sufficient;
+there's not much point in giving a 32-bit machine much more memory
+than that.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/enlighten.c   |    2 -
- arch/x86/xen/mmu.c         |   85 ++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/setup.c       |    2 -
- arch/x86/xen/xen-ops.h     |    2 +
- include/asm-x86/xen/page.h |   20 +++-------
- 5 files changed, 94 insertions(+), 17 deletions(-)
+ arch/x86/xen/Kconfig       |   10 ++++++++++
+ arch/x86/xen/mmu.c         |   25 ++++++++++++-------------
+ arch/x86/xen/setup.c       |    3 +++
+ include/asm-x86/xen/page.h |    5 +++++
+ 4 files changed, 30 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1222,7 +1222,7 @@
- 
- 	/* Get mfn list */
- 	if (!xen_feature(XENFEAT_auto_translated_physmap))
--		phys_to_machine_mapping = (unsigned long *)xen_start_info->mfn_list;
-+		xen_build_dynamic_phys_to_machine();
- 
- 	pgd = (pgd_t *)xen_start_info->pt_base;
- 
+diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
+--- a/arch/x86/xen/Kconfig
++++ b/arch/x86/xen/Kconfig
+@@ -11,3 +11,13 @@
+ 	  This is the Linux Xen port.  Enabling this will allow the
+ 	  kernel to boot in a paravirtualized environment under the
+ 	  Xen hypervisor.
++
++config XEN_MAX_DOMAIN_MEMORY
++       int "Maximum allowed size of a domain in gigabytes"
++       default 8
++       depends on XEN
++       help
++         The pseudo-physical to machine address array is sized
++         according to the maximum possible memory size of a Xen
++         domain.  This array uses 1 page per gigabyte, so there's no
++         need to be too stingy here.
+\ No newline at end of file
 diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
 --- a/arch/x86/xen/mmu.c
 +++ b/arch/x86/xen/mmu.c
-@@ -55,6 +55,91 @@
- 
+@@ -56,19 +56,13 @@
  #include "multicalls.h"
  #include "mmu.h"
+ 
+-/*
+- * This should probably be a config option.  On 32-bit, it costs 1
+- * page/gig of memory; on 64-bit its 2 pages/gig.  If we want it to be
+- * completely unbounded we can add another level to the p2m structure.
+- */
+-#define MAX_GUEST_PAGES		(16ull * 1024*1024*1024 / PAGE_SIZE)
+ #define P2M_ENTRIES_PER_PAGE	(PAGE_SIZE / sizeof(unsigned long))
+ 
+-static unsigned long *p2m_top[MAX_GUEST_PAGES / P2M_ENTRIES_PER_PAGE];
++static unsigned long *p2m_top[MAX_DOMAIN_PAGES / P2M_ENTRIES_PER_PAGE];
+ 
+ static inline unsigned p2m_top_index(unsigned long pfn)
+ {
+-	BUG_ON(pfn >= MAX_GUEST_PAGES);
++	BUG_ON(pfn >= MAX_DOMAIN_PAGES);
+ 	return pfn / P2M_ENTRIES_PER_PAGE;
+ }
+ 
+@@ -81,12 +75,9 @@
+ {
+ 	unsigned pfn;
+ 	unsigned long *mfn_list = (unsigned long *)xen_start_info->mfn_list;
++	unsigned long max_pfn = min(MAX_DOMAIN_PAGES, xen_start_info->nr_pages);
+ 
+-	BUG_ON(xen_start_info->nr_pages >= MAX_GUEST_PAGES);
+-
+-	for(pfn = 0;
+-	    pfn < xen_start_info->nr_pages;
+-	    pfn += P2M_ENTRIES_PER_PAGE) {
++	for(pfn = 0; pfn < max_pfn; pfn += P2M_ENTRIES_PER_PAGE) {
+ 		unsigned topidx = p2m_top_index(pfn);
+ 
+ 		p2m_top[topidx] = &mfn_list[pfn];
+@@ -96,6 +87,9 @@
+ unsigned long get_phys_to_machine(unsigned long pfn)
+ {
+ 	unsigned topidx, idx;
 +
-+/*
-+ * This should probably be a config option.  On 32-bit, it costs 1
-+ * page/gig of memory; on 64-bit its 2 pages/gig.  If we want it to be
-+ * completely unbounded we can add another level to the p2m structure.
-+ */
-+#define MAX_GUEST_PAGES		(16ull * 1024*1024*1024 / PAGE_SIZE)
-+#define P2M_ENTRIES_PER_PAGE	(PAGE_SIZE / sizeof(unsigned long))
-+
-+static unsigned long *p2m_top[MAX_GUEST_PAGES / P2M_ENTRIES_PER_PAGE];
-+
-+static inline unsigned p2m_top_index(unsigned long pfn)
-+{
-+	BUG_ON(pfn >= MAX_GUEST_PAGES);
-+	return pfn / P2M_ENTRIES_PER_PAGE;
-+}
-+
-+static inline unsigned p2m_index(unsigned long pfn)
-+{
-+	return pfn % P2M_ENTRIES_PER_PAGE;
-+}
-+
-+void __init xen_build_dynamic_phys_to_machine(void)
-+{
-+	unsigned pfn;
-+	unsigned long *mfn_list = (unsigned long *)xen_start_info->mfn_list;
-+
-+	BUG_ON(xen_start_info->nr_pages >= MAX_GUEST_PAGES);
-+
-+	for(pfn = 0;
-+	    pfn < xen_start_info->nr_pages;
-+	    pfn += P2M_ENTRIES_PER_PAGE) {
-+		unsigned topidx = p2m_top_index(pfn);
-+
-+		p2m_top[topidx] = &mfn_list[pfn];
-+	}
-+}
-+
-+unsigned long get_phys_to_machine(unsigned long pfn)
-+{
-+	unsigned topidx, idx;
-+
-+	topidx = p2m_top_index(pfn);
-+	if (p2m_top[topidx] == NULL)
++	if (unlikely(pfn >= MAX_DOMAIN_PAGES))
 +		return INVALID_P2M_ENTRY;
-+
-+	idx = p2m_index(pfn);
-+	return p2m_top[topidx][idx];
-+}
-+
-+static void alloc_p2m(unsigned long **pp)
-+{
-+	unsigned long *p;
-+	unsigned i;
-+
-+	p = (void *)__get_free_page(GFP_KERNEL | __GFP_NOFAIL);
-+	BUG_ON(p == NULL);
-+
-+	for(i = 0; i < P2M_ENTRIES_PER_PAGE; i++)
-+		p[i] = INVALID_P2M_ENTRY;
-+
-+	if (cmpxchg(pp, NULL, p) != NULL)
-+		free_page((unsigned long)p);
-+}
-+
-+void set_phys_to_machine(unsigned long pfn, unsigned long mfn)
-+{
-+	unsigned topidx, idx;
-+
-+	if (unlikely(xen_feature(XENFEAT_auto_translated_physmap))) {
-+		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
+ 
+ 	topidx = p2m_top_index(pfn);
+ 	if (p2m_top[topidx] == NULL)
+@@ -126,6 +120,11 @@
+ 
+ 	if (unlikely(xen_feature(XENFEAT_auto_translated_physmap))) {
+ 		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
 +		return;
 +	}
 +
-+	topidx = p2m_top_index(pfn);
-+	if (p2m_top[topidx] == NULL) {
-+		/* no need to allocate a page to store an invalid entry */
-+		if (mfn == INVALID_P2M_ENTRY)
-+			return;
-+		alloc_p2m(&p2m_top[topidx]);
-+	}
-+
-+	idx = p2m_index(pfn);
-+	p2m_top[topidx][idx] = mfn;
-+}
++	if (unlikely(pfn >= MAX_DOMAIN_PAGES)) {
++		BUG_ON(mfn != INVALID_P2M_ENTRY);
+ 		return;
+ 	}
  
- xmaddr_t arbitrary_virt_to_machine(unsigned long address)
- {
 diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
 --- a/arch/x86/xen/setup.c
 +++ b/arch/x86/xen/setup.c
-@@ -27,8 +27,6 @@
- extern const char xen_hypervisor_callback[];
- extern const char xen_failsafe_callback[];
+@@ -16,6 +16,7 @@
+ #include <asm/xen/hypervisor.h>
+ #include <asm/xen/hypercall.h>
  
--unsigned long *phys_to_machine_mapping;
--EXPORT_SYMBOL(phys_to_machine_mapping);
- 
- /**
-  * machine_specific_memory_setup - Hook for machine specific memory setup.
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -21,6 +21,8 @@
- void __init xen_arch_setup(void);
- void __init xen_init_IRQ(void);
- void xen_enable_sysenter(void);
++#include <xen/page.h>
+ #include <xen/interface/callback.h>
+ #include <xen/interface/physdev.h>
+ #include <xen/features.h>
+@@ -35,6 +36,8 @@
+ char * __init xen_memory_setup(void)
+ {
+ 	unsigned long max_pfn = xen_start_info->nr_pages;
 +
-+void __init xen_build_dynamic_phys_to_machine(void);
++	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
  
- void xen_setup_timer(int cpu);
- void xen_setup_cpu_clockevents(void);
+ 	e820.nr_map = 0;
+ 	add_memory_region(0, LOWMEMSIZE(), E820_RAM);
 diff --git a/include/asm-x86/xen/page.h b/include/asm-x86/xen/page.h
 --- a/include/asm-x86/xen/page.h
 +++ b/include/asm-x86/xen/page.h
-@@ -26,15 +26,15 @@
+@@ -25,6 +25,11 @@
+ #define INVALID_P2M_ENTRY	(~0UL)
  #define FOREIGN_FRAME_BIT	(1UL<<31)
  #define FOREIGN_FRAME(m)	((m) | FOREIGN_FRAME_BIT)
++
++/* Maximum amount of memory we can handle in a domain in pages */
++#define MAX_DOMAIN_PAGES						\
++    ((unsigned long)((u64)CONFIG_XEN_MAX_DOMAIN_MEMORY * 1024 * 1024 * 1024 / PAGE_SIZE))
++
  
--extern unsigned long *phys_to_machine_mapping;
-+extern unsigned long get_phys_to_machine(unsigned long pfn);
-+extern void set_phys_to_machine(unsigned long pfn, unsigned long mfn);
- 
- static inline unsigned long pfn_to_mfn(unsigned long pfn)
- {
- 	if (xen_feature(XENFEAT_auto_translated_physmap))
- 		return pfn;
- 
--	return phys_to_machine_mapping[(unsigned int)(pfn)] &
--		~FOREIGN_FRAME_BIT;
-+	return get_phys_to_machine(pfn) & ~FOREIGN_FRAME_BIT;
- }
- 
- static inline int phys_to_machine_mapping_valid(unsigned long pfn)
-@@ -42,7 +42,7 @@
- 	if (xen_feature(XENFEAT_auto_translated_physmap))
- 		return 1;
- 
--	return (phys_to_machine_mapping[pfn] != INVALID_P2M_ENTRY);
-+	return get_phys_to_machine(pfn) != INVALID_P2M_ENTRY;
- }
- 
- static inline unsigned long mfn_to_pfn(unsigned long mfn)
-@@ -106,18 +106,10 @@
- 	unsigned long pfn = mfn_to_pfn(mfn);
- 	if ((pfn < max_mapnr)
- 	    && !xen_feature(XENFEAT_auto_translated_physmap)
--	    && (phys_to_machine_mapping[pfn] != mfn))
-+	    && (get_phys_to_machine(pfn) != mfn))
- 		return max_mapnr; /* force !pfn_valid() */
-+	/* XXX fixme; not true with sparsemem */
- 	return pfn;
--}
--
--static inline void set_phys_to_machine(unsigned long pfn, unsigned long mfn)
--{
--	if (xen_feature(XENFEAT_auto_translated_physmap)) {
--		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
--		return;
--	}
--	phys_to_machine_mapping[pfn] = mfn;
- }
- 
- /* VIRT <-> MACHINE conversion */
+ extern unsigned long get_phys_to_machine(unsigned long pfn);
+ extern void set_phys_to_machine(unsigned long pfn, unsigned long mfn);
 
 
