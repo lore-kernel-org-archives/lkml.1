@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYEWPZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbYEWPbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708AbYEWPZc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYEWPZY
+	id S1756384AbYEWPbB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbYEWPav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:25:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42087 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbYEWPZX (ORCPT
+	Fri, 23 May 2008 11:30:51 -0400
+Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:33975 "HELO
+	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752231AbYEWPau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:25:23 -0400
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built
-	into	kernel	image
-From: David Woodhouse <dwmw2@infradead.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Haroldo Gamal <gamal@alternex.com.br>
-In-Reply-To: <s5h4p8pujy3.wl%tiwai@suse.de>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <s5hbq2xul4s.wl%tiwai@suse.de>
-	 <1211554711.28967.25.camel@pmac.infradead.org>
-	 <s5h4p8pujy3.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Fri, 23 May 2008 16:25:20 +0100
-Message-Id: <1211556320.28967.35.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Fri, 23 May 2008 11:30:50 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [PATCH] x86: early dump pci conf space v2
+Date: Fri, 23 May 2008 08:30:28 -0700
+User-Agent: KMail/1.9.9
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200805210012.35939.yhlu.kernel@gmail.com> <200805221435.11734.yhlu.kernel@gmail.com> <20080523053822.GA28835@colo.lackof.org>
+In-Reply-To: <20080523053822.GA28835@colo.lackof.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200805230830.28699.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-23 at 17:19 +0200, Takashi Iwai wrote:
-> Hm, but request_firmware() returns the const pointer.  It implies that
-> the caller shouldn't change the content, doesn't it?
-> 
-> I cannot guarantee that there must be no misbehaving drivers,
-> though...
+On Thursday, May 22, 2008 10:38 pm Grant Grundler wrote:
+> On Thu, May 22, 2008 at 02:35:11PM -0700, Yinghai Lu wrote:
+> > so we can printout pci config before kernel touch it
+> >
+> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>
+> Yinghai,
+> No offense, but my first thought was this is debug code that should be
+> maintained outside the kernel.org tree. It will rarely get used.
+> Just want people to think about this before saying "great, add it!"
+>
+> (And this isn't a stab at Jesse since I think he's doing a better
+> job than I could. I saw his previous reply to this mail.)
+>
+> Having debugged lots of PCI resource and config issues, I understand
+> why this is useful and do NOT object to it being included in the tree.
 
-The 'struct firmware' is const. It contains a pointer to data.
-That data is not const.
+Yeah I thought about this too, but:
+  1) it's definitely useful for debugging PCI issues, and much easier for 
+everyone if it's in-tree
+  2) it only bloats x86 kernels ;)
 
- fw->data = some_other_data; 	// bad.
- fw->data[0] = 0;		// ok.
+Documentation is definitely needed though, thanks for catching that.
 
-Of course, we could _make_ it const (if we can remember whether it's
-'const u8 *' or 'u8 const *'...)
-
--- 
-dwmw2
-
+Thanks,
+Jesse
