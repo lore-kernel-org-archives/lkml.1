@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756975AbYEWK4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756936AbYEWLBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756975AbYEWK4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 06:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753074AbYEWK40
+	id S1756936AbYEWLBm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 07:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYEWLBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 06:56:26 -0400
-Received: from mail37.messagelabs.com ([216.82.244.163]:49689 "EHLO
-	mail37.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752902AbYEWK40 (ORCPT
+	Fri, 23 May 2008 07:01:33 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53345 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752850AbYEWLBc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 06:56:26 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-10.tower-37.messagelabs.com!1211540184!1459109!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Fri, 23 May 2008 12:56:04 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-CC: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable interrupts
-Message-ID: <20080523105604.GA23800@digi.com>
-References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <20080523055527.GA28963@digi.com> <20080523104454.4e2af6ec@bluebox.local> <20080523091009.GA22821@digi.com> <20080523120308.7bec1e1c@bluebox.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080523120308.7bec1e1c@bluebox.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 23 May 2008 10:56:05.0216 (UTC) FILETIME=[99084600:01C8BCC3]
+	Fri, 23 May 2008 07:01:32 -0400
+To: swhiteho@redhat.com
+CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+In-reply-to: <1211537930.3635.569.camel@quoit> (message from Steven Whitehouse
+	on Fri, 23 May 2008 11:18:50 +0100)
+Subject: Re: [patch 04/14] gfs2: dont call permission()
+References: <20080521171458.077908538@szeredi.hu>
+	 <20080521171546.697638614@szeredi.hu>
+	 <20080523091805.GB27119@infradead.org>
+	 <E1JzTsy-0001b8-Cr@pomaz-ex.szeredi.hu> <1211537930.3635.569.camel@quoit>
+Message-Id: <E1JzV1K-0001m8-SN@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 23 May 2008 13:01:10 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Hans,
-
-Hans J. Koch wrote:
-> Am Fri, 23 May 2008 11:10:09 +0200
-> schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
+> Given the fact that (a) its only a very minor change and (b) as soon as
+> we have a solution to what we really want to do:
 > 
-> > Hans J. Koch wrote:
-> > > Am Fri, 23 May 2008 07:55:27 +0200
-> > > schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
-> > > 
-> > > > Hello Hans,
-> > > > 
-> > > > > -      Copyright (c) 2006 by Hans-JÃŒrgen Koch.</para>
-> > > > > +      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
-> > > > This looks wrong.
-> > > 
-> > > DocBook XML is supposed to be UTF-8.
-> > Correct.  But still the problem is real.  The headers of your mail
-> > claim the content to be encoded in UTF-8, but actually it's latin1.
-> > So I cannot apply the patch you sent with git am without hand editing.
-> 
-> Try the version below.
-This one is better---I can apply it.
+>  - inode/file operation:
+>    - Do lookup via VFS
+>    - Get GFS2 glock
+>      - Do perm check via VFS
+>      - Do actual operation
+>    - Drop GFS2 glock
 
-> +	if (copy_from_user(&irq_on, buf, count))
-> +		return -EFAULT;
-> +
-> +	if (!idev->info->irqcontrol)
-> +		return -ENOSYS;
-I would swap these two.  copy_from_user is more expensive than testing
-idev->info->irqcontrol.  (Is it really?)  Anyhow only fetching a value
-from userspace if you really need it looks more clean to me.
+Well, fuse/nfs already do something similar, except they have their
+actual permission checking in the server, as opposed to the vfs.  They
+basically do:
 
-Otherwise the patch looks fine.
+ ->permission() does nothing
 
-Uwe
+ ->foo_operation() does everything, including permission checking
 
+The reality is a bit more complicated, and both nfs and fuse do
+sometimes check permissions in ->permission() but most of the cases,
+when they know that the permission will be checked later anyway they
+just omit it.
 
--- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Of course this would mean, that for example the LSM security checks
+are not done within the gfs locked region.  Does that matter?
+
+Miklos
