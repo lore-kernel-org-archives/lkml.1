@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYEWVMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbYEWVNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275AbYEWVMU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 17:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbYEWVMK
+	id S1759584AbYEWVNh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 17:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbYEWVNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 17:12:10 -0400
-Received: from 1wt.eu ([62.212.114.60]:4970 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755611AbYEWVMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 17:12:09 -0400
-Date: Fri, 23 May 2008 23:05:18 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Steve French <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: kernel coding style for if ... else which cross #ifdef
-Message-ID: <20080523210518.GD6749@1wt.eu>
-References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <20080523204228.GC6749@1wt.eu> <20080523204912.GB4886@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080523204912.GB4886@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.11
+	Fri, 23 May 2008 17:13:31 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:39222 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755754AbYEWVNa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 17:13:30 -0400
+Message-ID: <4837339F.9060407@freescale.com>
+Date: Fri, 23 May 2008 16:14:07 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+CC: Trent Piepho <tpiepho@freescale.com>, David Miller <davem@davemloft.net>,
+       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: MMIO and gcc re-ordering (Was: [PATCH] [POWERPC] Improve	(in|out)_beXX()
+ asm code)
+References: <4833524C.3040207@freescale.com>	 <20080520.153947.84346222.davem@davemloft.net>	 <4833542E.3040608@freescale.com>	 <20080520.155326.195407196.davem@davemloft.net>	 <1211516683.8297.271.camel@pasglop>	 <Pine.LNX.4.64.0805221553400.8205@t2.domain.actdsltmp>	 <1211546197.8297.308.camel@pasglop> <1211547016.8297.310.camel@pasglop>
+In-Reply-To: <1211547016.8297.310.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 11:49:12PM +0300, Adrian Bunk wrote:
-> On Fri, May 23, 2008 at 10:42:28PM +0200, Willy Tarreau wrote:
-> > On Fri, May 23, 2008 at 02:11:43PM -0500, Steve French wrote:
-> > > A question splitting "else" and "if" on distinct lines vs. using an
-> > > extra line and extra #else came up as I was reviewing a proposed cifs
-> > > patch.   Which is the preferred style?
-> > >
-> > > #ifdef CONFIG_SOMETHING
-> > >    if (foo)
-> > >       something ...
-> > >    else
-> > > #endif
-> > >    if ((mode & S_IWUGO) == 0)
-> > > 
-> > > or alternatively
-> > > 
-> > > #ifdef CONFIG_SOMETHING
-> > >    if (foo)
-> > >       something ...
-> > >    else if ((mode & S_IWUGO) == 0)
-> > > #else
-> > >    if ((mode & S_IWUGO) == 0)
-> > > #endif
-> > 
-> > The second one is dangerous because if code evolves, chances are that
-> > only one of the two identical lines will be updated.
-> > 
-> > At least the first one is clearly readable.
+Benjamin Herrenschmidt wrote:
+> On Fri, 2008-05-23 at 08:36 -0400, Benjamin Herrenschmidt wrote:
+>>         - mandate some kind of dma_sync_for_device/cpu on consistent memory.
+>> Almost no driver do that currently tho. They only do that for non
+>> consistent memory mapped with dma_map_*.
+>>
+>>         - mandate the use of wmb,rmb,mb barriers for use between memory
+>> accesses and MMIOs for ordering them. (ie. fix drivers that don't do
+>> it). Advantage for powerpc is that I can remove (after some auditing of
+>> course) the added heavy barriers in the MMIO accessors themselves.
 > 
-> I would consider the first one much harder to read since you can _very_ 
-> easily miss that the "if" is in an "else" clause and completely misread 
-> the code.
+> Note that the above is my preferred approach, and a lot of drivers
+> happen to already do this.
 
-speaking about readability, yes I agree (the second "if" ought to be
-indented for the eye to catch it). I'm worrying about the risk of
-code being asymetrically added between the two ifs in the second form.
+As Trent pointed out, if you change to eieio in the accessors, that'd 
+require drivers to also use mmiowb() before spin_unlock(), which fewer 
+drivers currently do.
 
-> > But if you have tons of
-> > places with the same construct, it's better to create a macro which
-> > will inhibit the if branch, which gcc will happily optimize away.
-> > For instance :
-> > 
-> > #ifdef CONFIG_FOO
-> > #define FOO_ENABLED 1
-> > #else
-> > #define FOO_ENABLED 0
-> > #endif
-> > 
-> > if (FOO_ENABLED && foo)
-> >     something
-> > else if ((mode & S_IWUGO) == 0)
-> >    ...
-> >...
-> 
-> I'd also say that's the best solution.
+>>         - stick a full memory clobber in all MMIO (and PIO) accessors on all
+>> archs.
 
-When we both agree on something, it must be a really good solution :-)
+I like this, combined with introducing raw variants of the non-PCI 
+accessors (in_be32 and such).  It's slower and safe by default (i.e. no 
+auditing drivers), but performance-critical paths can be optimized to 
+use raw accessors combined with explicit barriers.
 
-> cu
-> Adrian
-
-Cheers,
-Willy
-
+-Scott
