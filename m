@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbYEWSCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbYEWSFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758983AbYEWSCb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 14:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYEWSCW
+	id S1758839AbYEWSFS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 14:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYEWSFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 14:02:22 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:37703 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753074AbYEWSCV (ORCPT
+	Fri, 23 May 2008 14:05:04 -0400
+Received: from xenotime.net ([66.160.160.81]:51122 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752785AbYEWSFC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 14:02:21 -0400
-To: zippel@linux-m68k.org
-CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-In-reply-to: <Pine.LNX.4.64.0805231824370.18302@localhost.localdomain>
-	(message from Roman Zippel on Fri, 23 May 2008 18:30:57 +0200 (CEST))
-Subject: Re: [patch 06/14] hfsplus: remove hfsplus_permission()
-References: <20080521171458.077908538@szeredi.hu> <20080521171549.964767446@szeredi.hu>
- <Pine.LNX.4.64.0805212232500.18302@localhost.localdomain>
- <E1Jz5gq-0007F4-AQ@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221358080.18302@localhost.localdomain>
- <E1Jz9jk-0007rg-5W@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221427300.18302@localhost.localdomain>
- <E1JzA2r-0007uK-8L@pomaz-ex.szeredi.hu> <20080523092114.GD27119@infradead.org>
- <Pine.LNX.4.64.0805231712120.18302@localhost.localdomain>
- <E1JzZF5-0002Hz-5e@pomaz-ex.szeredi.hu> <E1JzZWC-0002M8-UP@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805231824370.18302@localhost.localdomain>
-Message-Id: <E1Jzbai-0002d1-VC@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 23 May 2008 20:02:08 +0200
+	Fri, 23 May 2008 14:05:02 -0400
+Date: Fri, 23 May 2008 11:04:57 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: build issue #503 for v2.6.26-rc2-433-gf26a398 :  undefined
+ reference to `request_firmware'
+Message-Id: <20080523110457.de353625.rdunlap@xenotime.net>
+In-Reply-To: <1211565551.11477.26.camel@localhost.localdomain>
+References: <200805161906.19321.toralf.foerster@gmx.de>
+	<1211018673.3603.7.camel@localhost.localdomain>
+	<20080517141749.GD3284@cs181133002.pp.htv.fi>
+	<1211453544.3956.33.camel@localhost.localdomain>
+	<20080523105412.cc13647d.rdunlap@xenotime.net>
+	<1211565551.11477.26.camel@localhost.localdomain>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > And so I strongly suggest this patch as well.  Apparently this feature
-> > is not even used by anybody, otherwise somebody would have noticed
-> > when Trond's fix broke execute permission checking on regular files...
+On Fri, 23 May 2008 12:59:11 -0500 James Bottomley wrote:
+
+> On Fri, 2008-05-23 at 10:54 -0700, Randy Dunlap wrote:
+> > On Thu, 22 May 2008 11:52:24 +0100 James Bottomley wrote:
+> > 
+> > > On Sat, 2008-05-17 at 17:17 +0300, Adrian Bunk wrote:
+> > > > On Sat, May 17, 2008 at 11:04:31AM +0100, James Bottomley wrote:
+> > > > > On Fri, 2008-05-16 at 19:06 +0200, Toralf Förster wrote:
+> > > > > > Hello,
+> > > > > > 
+> > > > > > the build (.config attached) failed, make ends with :
+> > > > > > ...
+> > > > > >   UPD     include/linux/compile.h
+> > > > > >   CC      init/version.o
+> > > > > >   LD      init/built-in.o
+> > > > > >   LD      vmlinux
+> > > > > > drivers/built-in.o: In function `sas_request_addr':
+> > > > > > (.text+0x33bab): undefined reference to `request_firmware'
+> > > > > > drivers/built-in.o: In function `sas_request_addr':
+> > > > > > (.text+0x33c3f): undefined reference to `release_firmware'
+> > > > > > make: *** [vmlinux] Error 1
+> > > > > 
+> > > > > There's a slight fault in the stub logic.  It fails for FW_LOADER=m and
+> > > > > the user =y.
+> > > > > 
+> > > > > This should fix it.
+> > > > 
+> > > > An interesting question is whether we actually want to have the stub at 
+> > > > all - the compile errors catched cases where someone forgot to select 
+> > > > FW_LOADER at compile time instead of turning them into possible runtime 
+> > > > problems as will happen after your patch.
+> > > 
+> > > Well, the original intent of the stubs was to have the loader nop if it
+> > > wasn't available.  There was simply one case forgotten (the fact that a
+> > > modular loader isn't usable from built in components).
+> > > 
+> > > > Are there any serious use cases where SCSI_SAS_LIBSAS is used in very 
+> > > > space limited environments and without any other drivers that select 
+> > > > FW_LOADER in the kernel?
+> > > 
+> > > Probably in the future, certainly on embedded OSs used for storage
+> > > devices.  Given the convergence of SAS/SATA chips, it's possible for
+> > > other handhelds, but I'm not convinced of that.
+> > 
+> > Has there been any resolution to this build issue?
+> > 
+> > Do we know what we want?  then maybe a patch can be done...
 > 
-> And I'm very strongly against this.
-> If you wanted to rip out the resource inode logic, it would be more than 
-> this.
-> At worst this code does nothing right now, so why this sudden rush to 
-> remove this without even an attempt of fixing it?
+> As long as the patch works, that's what I propose.
 
-Because
+Sorry, I am not understanding what you are saying.
+Please explain.
 
- a) it's nontrivial to fix (even understanding the problem is
- nontrivial, see Documentation/filesystems/directory-locking)
-
- b) the feature is obviously unused, so the easiest fix is simply to
- remove it for the time being.
-
-We generally don't leave code around which is known to be deadlockable
-by unprivileged users.  Of course if you have a better fix, then
-that's fine.
-
-Miklos
+---
+~Randy
