@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbYEWTjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYEWTkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757689AbYEWTjn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 15:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbYEWTje
+	id S1758729AbYEWTkT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 15:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbYEWTkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 15:39:34 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60397 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754837AbYEWTjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 15:39:33 -0400
-Subject: Re: 2.6.26-rc2-mm1 (SCSI_DH build errors)
-From: Chandra Seetharaman <sekharan@us.ibm.com>
-Reply-To: sekharan@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       hare@suse.de, scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080522202543.d15e8c3b.akpm@linux-foundation.org>
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-	 <20080514141348.e71feed6.randy.dunlap@oracle.com>
-	 <1210862779.15852.4.camel@localhost.localdomain>
-	 <1210881374.21974.285.camel@chandra-ubuntu>
-	 <20080522202543.d15e8c3b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM
-Date: Fri, 23 May 2008 12:39:20 -0700
-Message-Id: <1211571560.10532.7.camel@chandra-ubuntu>
+	Fri, 23 May 2008 15:40:05 -0400
+Received: from main.gmane.org ([80.91.229.2]:42969 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755069AbYEWTkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 15:40:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [BUG] unable to handle kernel paging request in next-20080516
+Followup-To: gmane.linux.scsi
+Date: Fri, 23 May 2008 20:34:25 +0100
+Message-ID: <g176e5$6fb$1@ger.gmane.org>
+References: <g0mkaf$i1r$1@ger.gmane.org> <20080518021423.3dcf0ddd.akpm@linux-foundation.org> <1211456081.3956.39.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: KNode/0.10.4
+Cc: linux-scsi@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yikes.... Sorry again... Hopefully this attached patch work properly.
+<posted & mailed>
 
-chandra
-On Thu, 2008-05-22 at 20:25 -0700, Andrew Morton wrote:
-> On Thu, 15 May 2008 12:56:14 -0700 Chandra Seetharaman <sekharan@us.ibm.com> wrote:
+James Bottomley wrote:
+
+> Actually, I think this is a very subtle bug; what I think is happening
+> is that after Hannes sysfs changes, we now add scsi_bus_type to the
+> target device.  However, scsi_bus_uevent() unconditionally casts from
+> dev to a struct scsi_device and then looks at the type entry.  My theory
+> is that in this particular config going from struct scsi_target to
+> struct device and back to struct scsi_device actually tips us over into
+> unmapped space for the -> type deref.
 > 
-> > Hi James, Andrew,
-> > 
-> > Here is a patch to remove the automatic "select" of scsi_dh for
-> > dm-multipath.
-> > 
-> > Sorry about the mishap.
-> >
-> >
-> 
-> This is busted.
-> 
--------------------------
-Do not automatically "select" SCSI_DH for dm-multipath. If SCSI_DH
-doesn't exist,just do not allow  hardware handlers to be used.
+> Hopefully this should fix it by checking the device type before doing
+> the deref.
 
-Handle SCSI_DH being a module also.
+This fixed the problem for me (it was horribly intermittant but I've done
+10+ consecutive reboots without seeing an oopos). I changed the patch to
+printk everytime the condition was hit and it seems to happen twice per
+PATA device - once after each scsi?: pata_via message and then again after
+each scsi 0:0:0:0: Direct-Accesss ATA DISKID etc : 0 ANSI: 5 .
 
-Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
-Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Alasdair G Kergon <agk@redhat.com>
-Cc: Mike Christie <michaelc@cs.wisc.edu>
-Cc: Hannes Reinecke <hare@suse.de>
----
+The thing I don't understand about your explanation is that it sounds like
+the device struct is being round-tripped (but is just being cast to
+different things along the way). If this is the case why would this problem
+ever arise? Surely if it is really a struct scsi_device underneath there
+should be no problem?
 
-Index: scsi-misc-2.6/drivers/md/Kconfig
-===================================================================
---- scsi-misc-2.6.orig/drivers/md/Kconfig
-+++ scsi-misc-2.6/drivers/md/Kconfig
-@@ -252,7 +252,6 @@ config DM_ZERO
- config DM_MULTIPATH
- 	tristate "Multipath target"
- 	depends on BLK_DEV_DM
--	select SCSI_DH
- 	---help---
- 	  Allow volume managers to support multipath hardware.
- 
-Index: scsi-misc-2.6/drivers/md/dm-mpath.c
-===================================================================
---- scsi-misc-2.6.orig/drivers/md/dm-mpath.c
-+++ scsi-misc-2.6/drivers/md/dm-mpath.c
-@@ -664,6 +664,8 @@ static int parse_hw_handler(struct arg_s
- 	request_module("scsi_dh_%s", m->hw_handler_name);
- 	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
- 		ti->error = "unknown hardware handler type";
-+		kfree(m->hw_handler_name);
-+		m->hw_handler_name = NULL;
- 		return -EINVAL;
- 	}
- 	consume(as, hw_argc - 1);
-Index: scsi-misc-2.6/include/scsi/scsi_dh.h
-===================================================================
---- scsi-misc-2.6.orig/include/scsi/scsi_dh.h
-+++ scsi-misc-2.6/include/scsi/scsi_dh.h
-@@ -54,6 +54,16 @@ enum {
- 	SCSI_DH_NOSYS,
- 	SCSI_DH_DRIVER_MAX,
- };
--
-+#if defined(CONFIG_SCSI_DH) || defined(CONFIG_SCSI_DH_MODULE)
- extern int scsi_dh_activate(struct request_queue *);
- extern int scsi_dh_handler_exist(const char *);
-+#else
-+static inline int scsi_dh_activate(struct request_queue *req)
-+{
-+	return 0;
-+}
-+static inline int scsi_dh_handler_exist(const char *name)
-+{
-+	return 0;
-+}
-+#endif
-
+-- 
+Sitsofe | http://sucs.org/~sits/
 
