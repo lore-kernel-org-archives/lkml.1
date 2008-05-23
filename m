@@ -1,146 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765828AbYEWGZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764951AbYEWGaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765828AbYEWGZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 02:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbYEWGZP
+	id S1764951AbYEWGaJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 02:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbYEWG3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 02:25:15 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43667 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752471AbYEWGZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 02:25:14 -0400
-Date: Fri, 23 May 2008 08:25:11 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: kniht@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Nishanth Aravamudan <nacc@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Adam Litke <agl@us.ibm.com>
-Subject: Re: [PATCH 1/6 v2] allow arch specific function for allocating gigantic pages
-Message-ID: <20080523062511.GA10687@wotan.suse.de>
-References: <4829CAC3.30900@us.ibm.com> <4829CDA8.9070106@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 May 2008 02:29:55 -0400
+Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:3198 "EHLO
+	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754287AbYEWG3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 02:29:55 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: video4linux-list@redhat.com
+Subject: Re: [PATCH] video4linux: Push down the BKL
+Date: Fri, 23 May 2008 08:28:49 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20080522223700.2f103a14@core> <1211508484.3273.86.camel@palomino.walls.org> <200805230816.05229.hverkuil@xs4all.nl>
+In-Reply-To: <200805230816.05229.hverkuil@xs4all.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4829CDA8.9070106@us.ibm.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200805230828.49525.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 12:19:36PM -0500, Jon Tollefson wrote:
-> Allow alloc_bm_huge_page() to be overridden by architectures that can't
-> always use bootmem. This requires huge_boot_pages to be available for
-> use by this function. The 16G pages on ppc64 have to be reserved prior
-> to boot-time. The location of these pages are indicated in the device
-> tree.
+On Friday 23 May 2008 08:16:05 Hans Verkuil wrote:
+> On Friday 23 May 2008 04:08:04 Andy Walls wrote:
+> > On Thu, 2008-05-22 at 22:37 +0100, Alan Cox wrote:
+> > > For most drivers the generic ioctl handler does the work and we
+> > > update it and it becomes the unlocked_ioctl method. Older drivers
+> > > use the usercopy method so we make it do the work. Finally there
+> > > are a few special cases.
+> > >
+> > > Signed-off-by: Alan Cox <alan@redhat.com>
+> >
+> > I'd like to start planning out the changes to eliminate the BKL
+> > from cx18.
+> >
+> > Could someone give me a brief education as to what elements of
+> > cx18/ivtv_v4l2_do_ioctl() would be forcing the use of the BKL for
+> > these drivers' ioctls?   I'm assuming it's not the
+> > mutex_un/lock(&....->serialize_lock) and that the answer's not in
+> > the diff.
+>
+> To the best of my knowledge there is no need for a BKL in ivtv or
+> cx18. It was just laziness on my part that I hadn't switched to
+> unlocked_ioctl yet. If you know of a reason why it should be kept for
+> now, then I'd like to know, otherwise the BKL can be removed
+> altogether for ivtv/cx18. I suspect you just pushed the lock down
+> into the driver and in that case you can just remove it for
+> ivtv/cx18.
 
-That looks fine. I wonder if we should call it something else now?
-Anyway, nevermind naming for the moment.
+Hmm, of course you just pushed down the lock, the subject said so. 
+Sorry, it's early morning here and I'm apparently not yet fully 
+awake :-)
 
+Regards,
 
-> A BUG_ON in huge_add_hstate is commented out in order to allow 64K huge
-> pages to continue to work on power.
-
-Fine. I'll remove the BUG_ON completely from where it was
-introduced.
-
-
-> Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
-> ---
-> 
-> include/linux/hugetlb.h |   10 ++++++++++
-> mm/hugetlb.c            |   15 ++++++---------
-> 2 files changed, 16 insertions(+), 9 deletions(-)
-> 
-> 
-> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> index 8c47ca7..b550ec7 100644
-> --- a/include/linux/hugetlb.h
-> +++ b/include/linux/hugetlb.h
-> @@ -35,6 +35,7 @@ void hugetlb_unreserve_pages(struct inode *inode, long 
-> offset, long freed);
-> extern unsigned long hugepages_treat_as_movable;
-> extern const unsigned long hugetlb_zero, hugetlb_infinity;
-> extern int sysctl_hugetlb_shm_group;
-> +extern struct list_head huge_boot_pages;
-> 
-> /* arch callbacks */
-> 
-> @@ -205,6 +206,14 @@ struct hstate {
-> 	unsigned int surplus_huge_pages_node[MAX_NUMNODES];
-> };
-> 
-> +struct huge_bm_page {
-> +	struct list_head list;
-> +	struct hstate *hstate;
-> +};
-> +
-> +/* arch callback */
-> +int alloc_bm_huge_page(struct hstate *h);
-> +
-> void __init huge_add_hstate(unsigned order);
-> struct hstate *size_to_hstate(unsigned long size);
-> 
-> @@ -256,6 +265,7 @@ extern unsigned long 
-> sysctl_overcommit_huge_pages[HUGE_MAX_HSTATE];
-> 
-> #else
-> struct hstate {};
-> +#define alloc_bm_huge_page(h) NULL
-> #define hstate_file(f) NULL
-> #define hstate_vma(v) NULL
-> #define hstate_inode(i) NULL
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 5273f6c..efb5805 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -27,6 +27,7 @@ unsigned long max_huge_pages[HUGE_MAX_HSTATE];
-> unsigned long sysctl_overcommit_huge_pages[HUGE_MAX_HSTATE];
-> static gfp_t htlb_alloc_mask = GFP_HIGHUSER;
-> unsigned long hugepages_treat_as_movable;
-> +struct list_head huge_boot_pages;
-> 
-> static int max_hstate = 0;
-> 
-> @@ -533,14 +534,8 @@ static struct page *alloc_huge_page(struct 
-> vm_area_struct *vma,
-> 	return page;
-> }
-> 
-> -static __initdata LIST_HEAD(huge_boot_pages);
-> -
-> -struct huge_bm_page {
-> -	struct list_head list;
-> -	struct hstate *hstate;
-> -};
-> -
-> -static int __init alloc_bm_huge_page(struct hstate *h)
-> +/* Can be overriden by architectures */
-> +__attribute__((weak)) int alloc_bm_huge_page(struct hstate *h)
-> {
-> 	struct huge_bm_page *m;
-> 	int nr_nodes = nodes_weight(node_online_map);
-> @@ -583,6 +578,8 @@ static void __init hugetlb_init_hstate(struct hstate *h)
-> 	unsigned long i;
-> 
-> 	/* Don't reinitialize lists if they have been already init'ed */
-> +	if (!huge_boot_pages.next)
-> +		INIT_LIST_HEAD(&huge_boot_pages);
-> 	if (!h->hugepage_freelists[0].next) {
-> 		for (i = 0; i < MAX_NUMNODES; ++i)
-> 			INIT_LIST_HEAD(&h->hugepage_freelists[i]);
-> @@ -664,7 +661,7 @@ void __init huge_add_hstate(unsigned order)
-> 		return;
-> 	}
-> 	BUG_ON(max_hstate >= HUGE_MAX_HSTATE);
-> -	BUG_ON(order < HPAGE_SHIFT - PAGE_SHIFT);
-> +/*	BUG_ON(order < HPAGE_SHIFT - PAGE_SHIFT);*/
-> 	h = &hstates[max_hstate++];
-> 	h->order = order;
-> 	h->mask = ~((1ULL << (order + PAGE_SHIFT)) - 1);
-> 
-> 
-> 
+	Hans
