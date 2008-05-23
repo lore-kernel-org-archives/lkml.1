@@ -1,98 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbYEWJky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbYEWJld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488AbYEWJky (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 05:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYEWJkm
+	id S1758680AbYEWJld (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 05:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYEWJlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 05:40:42 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:38373 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754217AbYEWJkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 05:40:42 -0400
-Date: Fri, 23 May 2008 04:40:39 -0500
-From: Robin Holt <holt@sgi.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Robin Holt <holt@sgi.com>, astarikovskiy@suse.de,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Sony laptop battery has odd behavior with 2.6.26-rc3ish build.
-Message-ID: <20080523094039.GH4287@sgi.com>
-References: <20080521115723.GF4287@sgi.com> <20080523072156.GA8964@ucw.cz> <20080523084346.GG4287@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080523084346.GG4287@sgi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 23 May 2008 05:41:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56048 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757886AbYEWJlO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 05:41:14 -0400
+Subject: Re: fair group scheduler not so fair?
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: vatsa@linux.vnet.ibm.com
+Cc: "Li, Tong N" <tong.n.li@intel.com>, Chris Friesen <cfriesen@nortel.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, pj@sgi.com
+In-Reply-To: <20080523094216.GK3780@linux.vnet.ibm.com>
+References: <4834B75A.40900@nortel.com> <1211439417.29104.7.camel@twins>
+	 <4835D14B.20904@nortel.com>
+	 <1211486868.6463.134.camel@lappy.programming.kicks-ass.net>
+	 <5FD5754DDBA0B1499B5A0B4BB54194850357ED61@fmsmsx411.amr.corp.intel.com>
+	 <20080523094216.GK3780@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 23 May 2008 11:39:21 +0200
+Message-Id: <1211535561.6463.184.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Definitely the battery.  I just rebooted to XP and did a similar
-experiment with their battery monitor and it behaved equivalently
-(although they present only percentages).  So, I would say this is
-something unrelated and was just finally noticed because I was paying
-more attention.
+On Fri, 2008-05-23 at 15:12 +0530, Srivatsa Vaddagiri wrote:
+> On Thu, May 22, 2008 at 01:18:33PM -0700, Li, Tong N wrote:
+> > Peter,
+> > 
+> > I didn't look at your patches, but I thought you were flattening group
+> > weights down to task-level so that the scheduler only looks at per-task
+> > weights.
+> 
+> Wouldnt that require task weight readjustment upon every fork/exit?
 
-Thanks,
-Robin
+If you were to do that - yes that would get you into some very serious
+trouble.
 
-On Fri, May 23, 2008 at 03:43:46AM -0500, Robin Holt wrote:
-> I think this is my battery/laptop ACPI.  I just booted back to  2.6.22-14
-> and the behavior remained the same.  Interestingly, it started chaged
-> to 4096mAh and I unplugged it.  The battery began discharging.  When it
-> reached 3800mAh, I plugged it back in.  The battery indicated it was
-> charging, but remaining capacity slowly declined to 3072mAh where it
-> stablized.  Removing/Instaling the battery gave no change in behavior,
-> upon reinsertion, the reading remained at 3072mAh.  I then unplugged the
-> charger.  It was approx 35 seconds before the reading began to trickle
-> back down.  Again, it trickled down slowly (which it is doing currently).
-> 
-> Either it has always behaved this way and I just didn't notice it or
-> something has changed inside my battery.  I have not done any BIOS update
-> in years (last one that was available).
-> 
-> Thanks,
-> Robin
-> 
-> On Fri, May 23, 2008 at 09:21:56AM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > A couple days ago, I updated my test build to commit
-> > > 8033c6e9736c29cce5f0d0abbca9a44dffb20c39 and noticed an odd behavior
-> > > with the battery.  If I unplug the power, the battery discharges and
-> > > that is reflected in /proc/acpi/battery/BAT0/state.  I am not certain
-> > > the discharge is continuous and uniform or if it goes in steps.  When I
-> > > plug the power back in, the level stays at a constant value (+-1mAh)
-> > > for a considerable period of time.  It then does a single step back to
-> > > the fully charged value.
-> > > 
-> > > I have not done any searching to see when this began.  I had been running
-> > > the ubuntu 2.6.22-14 kernel before this and the behavior was normal.
-> > > 
-> > > I am not certain what information you will need.  Commit is above.
-> > 
-> > git bisect would certainly help...
-> > 
-> > > $ cat /proc/acpi/battery/BAT0/alarm
-> > > alarm:                   unsupported
-> > > $ cat /proc/acpi/battery/BAT0/info
-> > > present:                 yes
-> > > design capacity:         4800 mAh
-> > > last full capacity:      4096 mAh
-> > > battery technology:      non-rechargeable
-> > 
-> > Because something is clearly wrong here.
-> > 
-> > 						Pavel
-> > -- 
-> > (english) http://www.livejournal.com/~pavelmachek
-> > (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+The route I've chosen is to basically recompute it every time I need the
+weight. So every time I use a weight, I do:
+
+  \Prod_{l=1} w_l/rw_{l-1}
+
+Not doing that will get you O(n) recomputes on all sorts of situations.
+
+
