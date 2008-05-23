@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762391AbYEWCcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761889AbYEWCsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762391AbYEWCcM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 22:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758109AbYEWCb7
+	id S1761889AbYEWCsU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 22:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbYEWCsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 22:31:59 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60154 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757028AbYEWCb7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 22:31:59 -0400
-Message-ID: <48362B87.6010806@zytor.com>
-Date: Thu, 22 May 2008 19:27:19 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 22 May 2008 22:48:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:59344 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757527AbYEWCsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 22:48:04 -0400
+To: linux-kernel@vger.kernel.org
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Thu, 22 May 2008 21:47:50 -0500
+Subject: [PATCH 1/3] virtio: bus_id for devices should contain 'virtio'
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Carsten Otte <cotte@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Chris Lalancette <clalance@redhat.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       virtualization@lists.linux-foundation.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Carsten Otte <cotte@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Chris Lalancette <clalance@redhat.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <18485.62848.335125.152538@harpo.it.uu.se> <483610DA.7010606@zytor.com> <20080523004206.GD7998@linux-os.sc.intel.com>
-In-Reply-To: <20080523004206.GD7998@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805231247.50751.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
->>>
->>> The kernel needs to accept one(*) of the formats it can produce, which
->>> is not necessarily what it last produced. It's not inconceivable that
->>> user-space will construct sigframes on the fly (to emulate setcontext),
->>> or that it will mangle sigframes (e.g. to map non-rt to rt before 
->>> sigreturn).
->>>
->>> (*) The format is determined by which version of sys_sigreturn the
->>> user invokes.
->>>
->> No.  You CANNOT restore from a frame that doesn't have the full state - 
->> you don't have enough information to do so!
-> 
-> What I was doing in the RFC is: restore the state what ever that was present and
-> init the state that was not present in the stack frame.
+Chris Lalancette <clalance@redhat.com> points out that virtio.c sets all device
+names to '0', '1', etc, which looks silly in /proc/interrupts.  We change this
+from '%d' to 'virtio%d'.
 
-Either way, I find it somewhat surprising that the user would invoke a 
-different sys_sigreturn especially if using a restorer function (which 
-gcc always does.)
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Carsten Otte <cotte@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Chris Lalancette <clalance@redhat.com>
+Cc: Anthony Liguori <anthony@codemonkey.ws>
+---
+ drivers/virtio/virtio.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I really think I need to understand your application better, 
-*especially* in the light of the fact you wouldn't at the moment know 
-how even get the size of the frame.
+diff -r 2f0d0ce2adbf drivers/virtio/virtio.c
+--- a/drivers/virtio/virtio.c	Fri May 23 11:55:02 2008 +1000
++++ b/drivers/virtio/virtio.c	Fri May 23 12:23:39 2008 +1000
+@@ -166,7 +169,7 @@ int register_virtio_device(struct virtio
+ 	int err;
+ 
+ 	dev->dev.bus = &virtio_bus;
+-	sprintf(dev->dev.bus_id, "%u", dev->index);
++	sprintf(dev->dev.bus_id, "virtio%u", dev->index);
+ 
+ 	/* We always start by resetting the device, in case a previous
+ 	 * driver messed it up.  This also tests that code path a little. */
 
-	-hpa
