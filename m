@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbYEWMDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbYEWMER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755959AbYEWMDm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 08:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYEWMDe
+	id S1756840AbYEWMER (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 08:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYEWMD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 08:03:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60768 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbYEWMDd (ORCPT
+	Fri, 23 May 2008 08:03:59 -0400
+Received: from mail161.messagelabs.com ([216.82.253.115]:10805 "EHLO
+	mail161.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752645AbYEWMD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 08:03:33 -0400
-Date: Fri, 23 May 2008 14:11:54 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       roland@redhat.com, drepper@redhat.com, Hongjiu.lu@intel.com,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
-       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-Message-ID: <20080523121154.GH31727@one.firstfloor.org>
-References: <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <20080522212920.GC7998@linux-os.sc.intel.com> <4835E6F5.5010801@zytor.com> <20080523014855.GA18385@linux-os.sc.intel.com> <48362FD0.9030104@zytor.com> <18486.44689.203792.818972@harpo.it.uu.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 May 2008 08:03:58 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-5.tower-161.messagelabs.com!1211544237!4179459!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Fri, 23 May 2008 14:03:22 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: "Hans J. Koch" <hjk@linutronix.de>
+CC: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable interrupts
+Message-ID: <20080523120322.GB6932@digi.com>
+References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <20080523055527.GA28963@digi.com> <20080523104454.4e2af6ec@bluebox.local> <20080523091009.GA22821@digi.com> <20080523120308.7bec1e1c@bluebox.local> <20080523105604.GA23800@digi.com> <20080523135557.27fe4855@bluebox.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <18486.44689.203792.818972@harpo.it.uu.se>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080523135557.27fe4855@bluebox.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 23 May 2008 12:03:22.0575 (UTC) FILETIME=[FF7C5DF0:01C8BCCC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 01:46:25PM +0200, Mikael Pettersson wrote:
-> H. Peter Anvin writes:
->  > Michael, you wrote:
->  > 
->  > > Hmm, right now it seems this field has a de-facto ABI of being
->  > > either 0xffff (plain) or 0x0000 (fxsr). Using other values would
->  > > confuse at least one application I know of. Sad.
->  > 
->  > ... could you share what application that is?  This otherwise would be 
->  > ideal.
+Hello Hans,
+
+> > Otherwise the patch looks fine.
 > 
-> It's the virtual machine for the Erlang/OTP concurrent functional
-> language. It's open-source and used extensively for telecom and
-> internet server applications.
+> Thanks for your review! Could you add your Signed-off-by?
+I don't consider my feed back valueable enough for a Signed-off-by, but
+you can get an ...
 
-I had a few reports over the years of other applications ddoing very weird 
-specific things with the sigframe. So I agree it's fairly important
-to be as compatible here as possible.
+> From: Hans J. Koch <hjk@linutronix.de>
+> To: linux-kernel@vger.kernel.org
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+> 	Jan Altenberg <jan.altenberg@linutronix.de>,
+> 	Thomas Gleixner <tglx@linutronix.de>,
+> 	Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>,
+> 	Magnus Damm <magnus.damm@gmail.com>
+> Subject: UIO: Add write function to allow irq masking
+> Date: Thu, Fri, 23 May 2008 13:50:14 +0200
+> 
+> Sometimes it is necessary to enable/disable the interrupt of a UIO device
+> from the userspace part of the driver. With this patch, the UIO kernel driver
+> can implement an "irqcontrol()" function that does this. Userspace can write
+> an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
+> UIO core will then call the driver's irqcontrol function.
+> 
+> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+Acked-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>,
 
--Andi
+Best regards
+Uwe
