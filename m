@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYEWNWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYEWNX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbYEWNWM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 09:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757274AbYEWNUz
+	id S1757390AbYEWNX4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 09:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYEWNXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 09:20:55 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4552 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754510AbYEWNUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 09:20:53 -0400
-Date: Fri, 23 May 2008 15:13:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/21] lib: add byteorder helpers for the aligned case
-Message-ID: <20080523131310.GC9245@ucw.cz>
-References: <1211306721.5915.167.camel@brick>
+	Fri, 23 May 2008 09:23:47 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52577 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751594AbYEWNXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 09:23:47 -0400
+Date: Fri, 23 May 2008 23:23:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: Switch apm to unlocked_kernel
+Message-Id: <20080523232339.27a28b5b.sfr@canb.auug.org.au>
+In-Reply-To: <20080523120617.6a4c115c@core>
+References: <20080522212204.177410b8@core>
+	<20080523110353.7a1360b5.sfr@canb.auug.org.au>
+	<20080523120617.6a4c115c@core>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211306721.5915.167.camel@brick>
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__23_May_2008_23_23_39_+1000_8vx.3moP3eguKEPb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-05-20 11:05:21, Harvey Harrison wrote:
-> Some users know the pointer they are writeing to are aligned,
-> rather than doing *(__le16 *)ptr = cpu_to_le16(val) add helpers
-> wrapping this up that have the same convention as put_unaligned_le/be.
-> 
-> Although the get_be/le versions duplicate the le16_to_cpup functionality
-> add them anyway as it makes this a complete api and start work to
-> eliminate {le|be}{16|32|64}_to_cpup uses (not many).
-> 
-> This makes the api look like:
-> 
-> get_unaligned_le16
-> put_unaligned_le16
-> 
-> get_le16
-> put_le16
-> 
-> With explicit alignment constraints.
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  include/linux/byteorder/generic.h |   60 +++++++++++++++++++++++++++++++++++++
->  1 files changed, 60 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
-> index 0846e6b..1f0c07e 100644
-> --- a/include/linux/byteorder/generic.h
-> +++ b/include/linux/byteorder/generic.h
-> @@ -119,6 +119,66 @@
->  #define cpu_to_be16s __cpu_to_be16s
->  #define be16_to_cpus __be16_to_cpus
->  
-> +static inline u16 get_le16(void *ptr)
-> +{
-> +	return le16_to_cpu(*(__le16 *)ptr);
-> +}
-> +
+--Signature=_Fri__23_May_2008_23_23_39_+1000_8vx.3moP3eguKEPb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Document the fact that void * passed in needs to be 16-bit aligned?
+Hi Alan,
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Fri, 23 May 2008 12:06:17 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
+e:
+>
+> Andrew shouts at me if I send him patches that don't fix the style of
+> the lines around so you get some style changes even when I cut bits out
+> of diffs. I think that approach is *stupid* too and style should be done
+> after for the entire file.
+
+Then let the maintainer (nominally me) shout at Andrew.  I don't agree
+with those style changes and we usually leave such purely stylistic
+things to the maintainer of the file in question.  If Andrew requires
+these changes, then Andrew is wrong about this.  It just confuses the
+real changes and adds to the overheads of those trying to do reviews (of
+which we have too few).  And in this case "fix" is in the eye of the
+beholder.
+
+If you (or Andrew) thinks that those style changes are necessary, then
+send them separately and I will NAK them :-)  In this case it is pure
+churn for absolutely no gain whatsoever.  Two of the hunks weren't even
+anywhere near the real changes.
+
+/me is letting the linux-next work go to his head :-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__23_May_2008_23_23_39_+1000_8vx.3moP3eguKEPb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFINsVfTgG2atn1QN8RAjWiAJ9sUaJGEfYA6/wuPhCtcrHVdq00ywCdHM9F
+wa+yDvc6VLCQQjl4JxwlWF0=
+=xVat
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__23_May_2008_23_23_39_+1000_8vx.3moP3eguKEPb--
