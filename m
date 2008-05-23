@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYEWIpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYEWIsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbYEWIpS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 04:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYEWIpF
+	id S1755665AbYEWIsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 04:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYEWIsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 04:45:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:56058 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142AbYEWIpE convert rfc822-to-8bit (ORCPT
+	Fri, 23 May 2008 04:48:07 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:41459 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbYEWIsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 04:45:04 -0400
-Date: Fri, 23 May 2008 10:44:54 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
-Cc: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
- interrupts
-Message-ID: <20080523104454.4e2af6ec@bluebox.local>
-In-Reply-To: <20080523055527.GA28963@digi.com>
-References: <20080522192252.GB3226@local>
-	<20080522192637.GC3226@local>
-	<20080523055527.GA28963@digi.com>
-Organization: Linutronix GmbH
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 23 May 2008 04:48:06 -0400
+Message-ID: <48368466.5040600@s5r6.in-berlin.de>
+Date: Fri, 23 May 2008 10:46:30 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Jean Delvare <khali@linux-fr.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i2c: Push ioctl BKL down into the i2c code
+References: <20080522222327.1af72794@core> <20080523093545.175c769c@hyperion.delvare>
+In-Reply-To: <20080523093545.175c769c@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Fri, 23 May 2008 07:55:27 +0200
-schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
-
-> Hello Hans,
+Jean Delvare wrote:
+> On Thu, 22 May 2008 22:23:27 +0100, Alan Cox wrote:
+>> Signed-off-by: Alan Cox <alan@redhat.com>
+>> 
 > 
-> > -      Copyright (c) 2006 by Hans-JÃŒrgen Koch.</para>
-> > +      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
-> This looks wrong.
+> Description of what the patch does and why it is needed, please. I
+> can't apply it without that. My first impression is a patch making the
+> code bigger and more complex with no obvious benefit ;)
 
-DocBook XML is supposed to be UTF-8.
+I wasn't asked, but:
 
-Thanks,
-Hans
+The patch description was factored out.  ;-)
+http://lkml.org/lkml/2008/5/22/333
 
-> 
-> 	ukleinek@zentaur:~$ echo Hans-JÃŒrgen | iconv -t ISO8859-15
-> 	Hans-Jürgen
-> 
-> Best regards
-> Uwe
-> 
+AFAIU it's a preparation for
+
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ ?? @@ struct file_operations {
+ 	unsigned int (*poll) (struct file *, struct poll_table_struct *);
+-	int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
+ 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
+
+Obvious benefits:
+  - No new .ioctl()s.
+  - Heads up for subsystem people:  "Did you know you are taking the BKL?
+    You probably don't need to, and you definitely don't want to."
+-- 
+Stefan Richter
+-=====-==--- -=-= =-===
+http://arcgraph.de/sr/
