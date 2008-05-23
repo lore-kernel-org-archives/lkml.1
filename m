@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbYEWLRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbYEWLT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756977AbYEWLRz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 07:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbYEWLRp
+	id S1758119AbYEWLT3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 07:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbYEWLTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 07:17:45 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50560 "EHLO
+	Fri, 23 May 2008 07:19:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34489 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752248AbYEWLRo (ORCPT
+	with ESMTP id S1753164AbYEWLTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 07:17:44 -0400
-Date: Fri, 23 May 2008 12:04:52 +0100
+	Fri, 23 May 2008 07:19:22 -0400
+Date: Fri, 23 May 2008 12:06:17 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] snapshot: Push BKL down into ioctl handlers
-Message-ID: <20080523120452.6feefed0@core>
-In-Reply-To: <200805230309.53136.rjw@sisk.pl>
-References: <20080522222500.0f5873ff@core>
-	<200805230309.53136.rjw@sisk.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Switch apm to unlocked_kernel
+Message-ID: <20080523120617.6a4c115c@core>
+In-Reply-To: <20080523110353.7a1360b5.sfr@canb.auug.org.au>
+References: <20080522212204.177410b8@core>
+	<20080523110353.7a1360b5.sfr@canb.auug.org.au>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -30,15 +30,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  
-> > +	lock_kernel();
-> > +
-> 
-> Hm, well, I admit I'm a bit ignorant as far as the chardev locking is
-> concerned, but can you please tell me why would that be wrong if we didn't call
-> lock_kernel() here at all?
+On Fri, 23 May 2008 11:03:53 +1000
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-I've just been pushing the lock down. If the code already has enough
-internal locking for things like multiple ioctls in parallel then you can
-probably kill it entirely - but that needs someone who knows that driver
-well to decide and evaluate.
+> Hi Alan,
+> 
+> On Thu, 22 May 2008 21:22:04 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> >
+> > This pushes the lock a fair way down and the final kill looks like it
+> > should be an easy project for someone who wants to have a shot at it.
+> 
+> and makes some gratuitous stylistic changes as well.  Please don't do
+> that!
+
+Andrew shouts at me if I send him patches that don't fix the style of
+the lines around so you get some style changes even when I cut bits out
+of diffs. I think that approach is *stupid* too and style should be done
+after for the entire file.
+
+Alan
