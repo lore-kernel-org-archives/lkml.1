@@ -1,92 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbYEWSFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759074AbYEWSHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758839AbYEWSFS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 14:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbYEWSFE
+	id S1759074AbYEWSHn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 14:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYEWSHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 14:05:04 -0400
-Received: from xenotime.net ([66.160.160.81]:51122 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752785AbYEWSFC convert rfc822-to-8bit (ORCPT
+	Fri, 23 May 2008 14:07:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58834 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbYEWSHf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 14:05:02 -0400
-Date: Fri, 23 May 2008 11:04:57 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Adrian Bunk <bunk@kernel.org>,
-       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: build issue #503 for v2.6.26-rc2-433-gf26a398 :  undefined
- reference to `request_firmware'
-Message-Id: <20080523110457.de353625.rdunlap@xenotime.net>
-In-Reply-To: <1211565551.11477.26.camel@localhost.localdomain>
-References: <200805161906.19321.toralf.foerster@gmx.de>
-	<1211018673.3603.7.camel@localhost.localdomain>
-	<20080517141749.GD3284@cs181133002.pp.htv.fi>
-	<1211453544.3956.33.camel@localhost.localdomain>
-	<20080523105412.cc13647d.rdunlap@xenotime.net>
-	<1211565551.11477.26.camel@localhost.localdomain>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 23 May 2008 14:07:35 -0400
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080523164108.GA31545@uranus.ravnborg.org>
+References: <1211550282.28967.8.camel@pmac.infradead.org>
+	 <1211550374.28967.10.camel@pmac.infradead.org>
+	 <20080523164108.GA31545@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Fri, 23 May 2008 19:07:30 +0100
+Message-Id: <1211566051.28967.73.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 12:59:11 -0500 James Bottomley wrote:
+Er, is this my fault or was it like this already...
 
-> On Fri, 2008-05-23 at 10:54 -0700, Randy Dunlap wrote:
-> > On Thu, 22 May 2008 11:52:24 +0100 James Bottomley wrote:
-> > 
-> > > On Sat, 2008-05-17 at 17:17 +0300, Adrian Bunk wrote:
-> > > > On Sat, May 17, 2008 at 11:04:31AM +0100, James Bottomley wrote:
-> > > > > On Fri, 2008-05-16 at 19:06 +0200, Toralf Förster wrote:
-> > > > > > Hello,
-> > > > > > 
-> > > > > > the build (.config attached) failed, make ends with :
-> > > > > > ...
-> > > > > >   UPD     include/linux/compile.h
-> > > > > >   CC      init/version.o
-> > > > > >   LD      init/built-in.o
-> > > > > >   LD      vmlinux
-> > > > > > drivers/built-in.o: In function `sas_request_addr':
-> > > > > > (.text+0x33bab): undefined reference to `request_firmware'
-> > > > > > drivers/built-in.o: In function `sas_request_addr':
-> > > > > > (.text+0x33c3f): undefined reference to `release_firmware'
-> > > > > > make: *** [vmlinux] Error 1
-> > > > > 
-> > > > > There's a slight fault in the stub logic.  It fails for FW_LOADER=m and
-> > > > > the user =y.
-> > > > > 
-> > > > > This should fix it.
-> > > > 
-> > > > An interesting question is whether we actually want to have the stub at 
-> > > > all - the compile errors catched cases where someone forgot to select 
-> > > > FW_LOADER at compile time instead of turning them into possible runtime 
-> > > > problems as will happen after your patch.
-> > > 
-> > > Well, the original intent of the stubs was to have the loader nop if it
-> > > wasn't available.  There was simply one case forgotten (the fact that a
-> > > modular loader isn't usable from built in components).
-> > > 
-> > > > Are there any serious use cases where SCSI_SAS_LIBSAS is used in very 
-> > > > space limited environments and without any other drivers that select 
-> > > > FW_LOADER in the kernel?
-> > > 
-> > > Probably in the future, certainly on embedded OSs used for storage
-> > > devices.  Given the convergence of SAS/SATA chips, it's possible for
-> > > other handhelds, but I'm not convinced of that.
-> > 
-> > Has there been any resolution to this build issue?
-> > 
-> > Do we know what we want?  then maybe a patch can be done...
-> 
-> As long as the patch works, that's what I propose.
+pmac /pmac/git/linux-2.6 $ make O=/pmac/git/foo 
+  GEN     /pmac/git/foo/Makefile
+  HOSTCC  scripts/kconfig/zconf.tab.o
+gcc: /pmac/git/linux-2.6/scripts/kconfig/zconf.tab.c: No such file or directory
+gcc: no input files
 
-Sorry, I am not understanding what you are saying.
-Please explain.
+-- 
+dwmw2
 
----
-~Randy
