@@ -1,223 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbYEWKDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYEWKLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbYEWKDa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 06:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbYEWKDY
+	id S1756794AbYEWKLn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 06:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYEWKLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 06:03:24 -0400
-Received: from www.tglx.de ([62.245.132.106]:33934 "EHLO www.tglx.de"
+	Fri, 23 May 2008 06:11:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48663 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753185AbYEWKDW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 06:03:22 -0400
-Date: Fri, 23 May 2008 12:03:08 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <Uwe.Kleine-Koenig@digi.com>
-Cc: <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
- interrupts
-Message-ID: <20080523120308.7bec1e1c@bluebox.local>
-In-Reply-To: <20080523091009.GA22821@digi.com>
-References: <20080522192252.GB3226@local>
-	<20080522192637.GC3226@local>
-	<20080523055527.GA28963@digi.com>
-	<20080523104454.4e2af6ec@bluebox.local>
-	<20080523091009.GA22821@digi.com>
-Organization: Linutronix GmbH
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1751186AbYEWKLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 06:11:35 -0400
+Date: Fri, 23 May 2008 12:10:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Greg Smith <gsmith@gregsmith.com>, Peter Zijlstra <peterz@infradead.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: PostgreSQL pgbench performance regression in 2.6.23+
+Message-ID: <20080523101000.GA13964@elte.hu>
+References: <1211440207.5733.8.camel@marge.simson.net> <20080522082814.GA4499@linux.vnet.ibm.com> <1211447105.4823.7.camel@marge.simson.net> <1211452465.7606.8.camel@marge.simson.net> <1211455553.4381.9.camel@marge.simson.net> <1211456659.29104.20.camel@twins> <1211458176.5693.6.camel@marge.simson.net> <1211459081.29104.40.camel@twins> <Pine.GSO.4.64.0805230232190.28654@westnet.com> <1211536814.5851.18.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211536814.5851.18.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Fri, 23 May 2008 11:10:09 +0200
-schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
 
-> Hans J. Koch wrote:
-> > Am Fri, 23 May 2008 07:55:27 +0200
-> > schrieb Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>:
-> > 
-> > > Hello Hans,
-> > > 
-> > > > -      Copyright (c) 2006 by Hans-JÃŒrgen Koch.</para>
-> > > > +      Copyright (c) 2006-2008 by Hans-JÃŒrgen Koch.</para>
-> > > This looks wrong.
-> > 
-> > DocBook XML is supposed to be UTF-8.
-> Correct.  But still the problem is real.  The headers of your mail
-> claim the content to be encoded in UTF-8, but actually it's latin1.
-> So I cannot apply the patch you sent with git am without hand editing.
+* Mike Galbraith <efault@gmx.de> wrote:
 
-Try the version below.
-
-Thanks,
-Hans
-
+> My take on the numbers is that both kernels preempt too frequently for 
+> _this_ load.. but what to do, many many loads desperately need 
+> preemption to perform.
 > 
-> Best regards
-> Uwe
-> 
-From: Hans J. Koch <hjk@linutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-	Jan Altenberg <jan.altenberg@linutronix.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>,
-	Magnus Damm <magnus.damm@gmail.com>
-Subject: UIO: Add write function to allow irq masking
-Date: Thu, 22 May 2008 20:43:09 +0200
+>       2.6.22.18     2.6.22.18-batch          2.6.26.git    2.6.26.git.batch
+> 1   7487.115236         7643.563512         9999.400036         9915.823582
+> 2  17074.869889        15360.150210        14042.644140        14958.375329
+> 3  25073.139078        24802.446538        15621.206938        25047.032536
+> 4  24236.413612        26126.482482        16436.055117        25007.183313
+> 5  26367.198572        28298.293443        19926.550734        27853.081679
+> 6  24695.827843        30786.651975        22375.916107        28119.474302
+> 8  21020.949689        31973.674156        25825.292413        31070.664011
+> 10 22792.204610        31775.164023        26754.471274        31596.415197
+> 15 21202.173186        30388.559630        28711.761083        30963.050265
+> 20 21204.041830        29317.044783        28512.269685        30127.614550
+> 30 18519.965964        27252.739106        26682.613791        28185.244056
+> 40 17936.447579        25670.803773        24964.936746        26282.369366
+> 50 16247.605712        25089.154310        21078.604858        25356.750461
 
-Sometimes it is necessary to enable/disable the interrupt of a UIO device
-from the userspace part of the driver. With this patch, the UIO kernel driver
-can implement an "irqcontrol()" function that does this. Userspace can write
-an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
-UIO core will then call the driver's irqcontrol function.
+was 2.6.26.git.batch running the load with SCHED_BATCH, or did you do 
+other tweaks as well?
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
----
- Documentation/DocBook/uio-howto.tmpl |   40 ++++++++++++++++++++++++++++++++++-
- drivers/uio/uio.c                    |   26 ++++++++++++++++++++++
- include/linux/uio_driver.h           |    2 +
- 3 files changed, 67 insertions(+), 1 deletion(-)
+if it's other tweaks as well then could you perhaps try to make 
+SCHED_BATCH batch more agressively?
 
-Index: linux-2.6.26-rc/include/linux/uio_driver.h
-===================================================================
---- linux-2.6.26-rc.orig/include/linux/uio_driver.h	2008-05-22 20:22:57.000000000 +0200
-+++ linux-2.6.26-rc/include/linux/uio_driver.h	2008-05-22 20:23:12.000000000 +0200
-@@ -53,6 +53,7 @@
-  * @mmap:		mmap operation for this uio device
-  * @open:		open operation for this uio device
-  * @release:		release operation for this uio device
-+ * @irqcontrol:		disable/enable irqs when 0/1 is written to /dev/uioX
-  */
- struct uio_info {
- 	struct uio_device	*uio_dev;
-@@ -66,6 +67,7 @@
- 	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
- 	int (*open)(struct uio_info *info, struct inode *inode);
- 	int (*release)(struct uio_info *info, struct inode *inode);
-+	int (*irqcontrol)(struct uio_info *info, s32 irq_on);
- };
- 
- extern int __must_check
-Index: linux-2.6.26-rc/drivers/uio/uio.c
-===================================================================
---- linux-2.6.26-rc.orig/drivers/uio/uio.c	2008-05-22 20:23:07.000000000 +0200
-+++ linux-2.6.26-rc/drivers/uio/uio.c	2008-05-22 20:23:12.000000000 +0200
-@@ -420,6 +420,31 @@
- 	return retval;
- }
- 
-+static ssize_t uio_write(struct file *filep, const char __user *buf,
-+			size_t count, loff_t *ppos)
-+{
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+	ssize_t retval;
-+	s32 irq_on;
-+
-+	if (idev->info->irq == UIO_IRQ_NONE)
-+		return -EIO;
-+
-+	if (count != sizeof(s32))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&irq_on, buf, count))
-+		return -EFAULT;
-+
-+	if (!idev->info->irqcontrol)
-+		return -ENOSYS;
-+
-+	retval = idev->info->irqcontrol(idev->info, irq_on);
-+
-+	return retval ? retval : sizeof(s32);
-+}
-+
- static int uio_find_mem_index(struct vm_area_struct *vma)
- {
- 	int mi;
-@@ -539,6 +564,7 @@
- 	.open		= uio_open,
- 	.release	= uio_release,
- 	.read		= uio_read,
-+	.write		= uio_write,
- 	.mmap		= uio_mmap,
- 	.poll		= uio_poll,
- 	.fasync		= uio_fasync,
-Index: linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl
-===================================================================
---- linux-2.6.26-rc.orig/Documentation/DocBook/uio-howto.tmpl	2008-05-22 20:22:57.000000000 +0200
-+++ linux-2.6.26-rc/Documentation/DocBook/uio-howto.tmpl	2008-05-23 11:57:23.000000000 +0200
-@@ -30,6 +30,12 @@
- 
- <revhistory>
- 	<revision>
-+	<revnumber>0.5</revnumber>
-+	<date>2008-05-22</date>
-+	<authorinitials>hjk</authorinitials>
-+	<revremark>Added description of write() function.</revremark>
-+	</revision>
-+	<revision>
- 	<revnumber>0.4</revnumber>
- 	<date>2007-11-26</date>
- 	<authorinitials>hjk</authorinitials>
-@@ -64,7 +70,7 @@
- <?dbhtml filename="copyright.html"?>
- <title>Copyright and License</title>
- <para>
--      Copyright (c) 2006 by Hans-Jürgen Koch.</para>
-+      Copyright (c) 2006-2008 by Hans-Jürgen Koch.</para>
- <para>
- This documentation is Free Software licensed under the terms of the
- GPL version 2.
-@@ -189,6 +195,30 @@
- 	represents the total interrupt count. You can use this number
- 	to figure out if you missed some interrupts.
- 	</para>
-+	<para>
-+	For some hardware that has more than one interrupt source internally,
-+	but not seperate IRQ mask and status registers, there might be
-+	situations where userspace cannot determine what the interrupt source
-+	was if the kernel handler disables them by writing to the chip's IRQ
-+	register. In such a case, the kernel has to disable the IRQ completely
-+	to leave the chip's register untouched. Now the userspace part can
-+	determine the cause of the interrupt, but it cannot re-enable
-+	interrupts. Another cornercase are chips where re-enabling interrupts
-+	is a read-modify-write operation to a combined IRQ status/acknowledge
-+	register. This would be racy if a new interrupt occured
-+	simultaneously.
-+	</para>
-+	<para>
-+	To address these problems, UIO also implements a write() function. It
-+	is normally not used and can be ignored for hardware that has only a
-+	single interrupt source or has seperate IRQ mask and status registers.
-+	If you need it, however, a write to <filename>/dev/uioX</filename>
-+	will call the <function>irqcontrol()</function> function implemented
-+	by the driver. You have to write a 32-bit value that is usually either
-+	0 or 1 do disable or enable interrupts. If a driver does not implement
-+	<function>irqcontrol()</function>, <function>write()</function> will
-+	return with <varname>-ENOSYS</varname>.
-+	</para>
- 
- 	<para>
- 	To handle interrupts properly, your custom kernel module can
-@@ -362,6 +392,14 @@
- <function>open()</function>, you will probably also want a custom
- <function>release()</function> function.
- </para></listitem>
-+
-+<listitem><para>
-+<varname>int (*irqcontrol)(struct uio_info *info, s32 irq_on)
-+</varname>: Optional. If you need to be able to enable or disable
-+interrupts from userspace by writing to <filename>/dev/uioX</filename>,
-+you can implement this function. The parameter <varname>irq_on</varname>
-+will be 0 to disable interrupts and 1 to enable them.
-+</para></listitem>
- </itemizedlist>
- 
- <para>
+I.e. i think it's a perfectly fine answer to say "if your workload needs 
+batch scheduling, run it under SCHED_BATCH".
+
+	Ingo
