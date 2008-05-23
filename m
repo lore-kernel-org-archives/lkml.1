@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765465AbYEWDiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbYEWDik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765465AbYEWDiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 23:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761029AbYEWDhX
+	id S932703AbYEWDik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 23:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761654AbYEWDh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 23:37:23 -0400
-Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:23872 "HELO
+	Thu, 22 May 2008 23:37:26 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:23888 "HELO
 	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760610AbYEWDhW (ORCPT
+	by vger.kernel.org with SMTP id S1761377AbYEWDhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 23:37:22 -0400
+	Thu, 22 May 2008 23:37:25 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KPOE9il2yWIS7a+3IEMqfJ8d2F/FiuaiJ2ICZbDLq0TYpPaHWmRPduU6bYvwnN3bze+4VgGcOUMJ8AWZh8SaTzE49URwF0lqC1ho5p+7aqp4/m5mpm+WDS3SVVmtwW66Kpp4JE/5u/1FALaYE0dbJtbTCcRvzzA3muj8soxrc9c=  ;
-X-YMail-OSG: iYwHLo0VM1mGgi7stQ7MWhUnXpS_lsl2vHNVa2K0xtfEMrROW5xrcJKafPlv8sUYSXTEszcZNn3mL_J78TAfdOJQh5tAeJWOnbF.ic6Y2GyCKuzbV9qWDGp_sDOLbjf4M9Y-
+  b=l/x5y+SGY8HNSoE/pJ4lmbaeyqVQ5N4DU2yEOXbeSHwVRXEX6vMxxvZmwZsFVeYCbFN7FptbCs6hrT4Uw7pVBerdZZJ5xlGRlPVXBOTAOQoyJ2aZwLNO7PvxdGlJXH25CnHgFau18Gj23L7RSJomj6XEsiQnJvTAN4sIIN9SXQM=  ;
+X-YMail-OSG: e3v0JnoVM1kGDbQpyzsNKq2dxCbhCiSkqPtyP.wUHuiFxnt14wEJ6hKBh7y.FTwIxG.kbFC1.FeIM1La5tW5R7ky3hK.4GdKDPoICM4EHlwZiyqWPSkcJsn87RsJfZJb5P8-
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [PATCH 3/4] spi: Add OF binding support for SPI busses
-Date: Thu, 22 May 2008 19:26:23 -0700
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH 6/6] RTC: Trivially probe for an M41T80 (#2)
+Date: Thu, 22 May 2008 20:07:06 -0700
 User-Agent: KMail/1.9.9
-Cc: "Grant Likely" <grant.likely@secretlab.ca>,
-       "Segher Boessenkool" <segher@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       fabrizio.garetto@gmail.com,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca> <716a0f1b6c9a544b480c06a329072483@kernel.crashing.org> <fa686aa40805211233h72a258bpf8c945b9f662d6ee@mail.gmail.com>
-In-Reply-To: <fa686aa40805211233h72a258bpf8c945b9f662d6ee@mail.gmail.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Alessandro Zummo <a.zummo@towertech.it>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>, rtc-linux@googlegroups.com,
+       i2c@lm-sensors.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.55.0805130303430.535@cliff.in.clinika.pl> <20080513142829.2d737424@hyperion.delvare> <Pine.LNX.4.55.0805131759580.7267@cliff.in.clinika.pl>
+In-Reply-To: <Pine.LNX.4.55.0805131759580.7267@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200805221926.24112.david-b@pacbell.net>
+Message-Id: <200805222007.07146.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 May 2008, Grant Likely wrote:
-> > spi-controller {
-> >        #address-cells = 2;
-> >        #size-cells = 0;
-> >        some-device@0,f000 { reg = < 0 f000 >; } // CS 0, SPI address f000
-> >        some-device@1,f000 { reg = < 1 f000 >; } // CS 1, SPI address f000
-> >        some-device@1,ff00 { reg = < 1 ff00 >; } // CS 1, SPI address ff00
-> > }
-> 
-> For SPI the CS # *is* the address.  :-)
-> 
-> Unlike I2C, SPI doesn't impose any protocol on the data.  It is all
-> anonymous data out, anonymous data in, a clock and a chip select.
+On Tuesday 13 May 2008, Maciej W. Rozycki wrote:
+> Then I am not sure how i2c_new_probed_device() could be used for a
+> baseboard device.  With an option card bearing an I2C adapter it can be
+> done at the time the card, including the adapter, is initialized.  With a
+> baseboard adapter it really begs to be in board initialization.  
 
-Very true ... but then there are SPI chips which embed addressing.
+One idiom to consider is callbacks (or notifications) when the
+relevant i2c_adapter is registered.
 
-I have in mind the mcp23s08 (and mcp23s17) GPIO expanders, which
-support up to four chips wired in parallel on a given chipselect.
-The devices are distinguished by how two address pins are wired;
-and two bits in the command byte must match them.  (I think they
-just recycled an I2C design into the SPI world.)
+Some of the GPIO drivers do that, so that they can hook up the
+relevant devices or options.  Example, when an pcf8574 expander
+is used to drive LEDs, the "this chip got registered" callback
+can register the relevant "leds-gpio" platform device.  Or when
+it's used to switch power to other devices, sometimes they must
+defer registration till then too (power them up first, *then* it
+makes sense to register them).
+
+This could handle that "board has this I2C RTC -or- that one"
+case pretty cleanly; but then, so would having a "probe first"
+flag that's specific to the i2c_board_info.  (So long as the
+probe logic could distinguish the devices... which will not in
+the most general case work from i2c-core code.)
 
 - Dave
