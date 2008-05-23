@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbYEWB13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbYEWBeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760696AbYEWB13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 21:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbYEWB1U
+	id S1760291AbYEWBeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 21:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYEWBeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 21:27:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60057 "EHLO ogre.sisk.pl"
+	Thu, 22 May 2008 21:34:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39308 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbYEWB1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 21:27:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: Tree for May 22
-Date: Fri, 23 May 2008 03:27:49 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Borislav Petkov <petkovbb@gmail.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080522165209.ef2cb160.sfr@canb.auug.org.au>
-In-Reply-To: <20080522165209.ef2cb160.sfr@canb.auug.org.au>
+	id S1751988AbYEWBeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 21:34:01 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805230327.51067.rjw@sisk.pl>
+From: Roland McGrath <roland@redhat.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, tglx@linutronix.de,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       drepper@redhat.com, Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+In-Reply-To: Suresh Siddha's message of  Thursday, 22 May 2008 17:42:06 -0700 <20080523004206.GD7998@linux-os.sc.intel.com>
+References: <18482.53246.642835.894623@harpo.it.uu.se>
+	<4832E705.2010900@zytor.com>
+	<18482.60491.764019.292031@harpo.it.uu.se>
+	<20080520175325.GE30034@linux-os.sc.intel.com>
+	<4834BE39.2000904@zytor.com>
+	<18485.13663.51624.694435@harpo.it.uu.se>
+	<20080522205619.GB7998@linux-os.sc.intel.com>
+	<4835DF64.6080104@zytor.com>
+	<18485.62848.335125.152538@harpo.it.uu.se>
+	<483610DA.7010606@zytor.com>
+	<20080523004206.GD7998@linux-os.sc.intel.com>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20080523013353.7FBB026FA24@magilla.localdomain>
+Date: Thu, 22 May 2008 18:33:53 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 22 of May 2008, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since next-20080522:
-> 
-> The three patches reverted from the driver-core tree yesterday have been
-> removed from there.
-> 
-> The net tree (actually the wireless tree) had a trivial conflict with the
-> wireless-current tree.
-> 
-> One of the sound tree build patches has been merged.
-> 
-> The semaphore-removal tree still needed three patches reverted because similar
-> patches were merged into upstream and the scsi-rc-fixes trees.
-> 
-> The bkl-removal tree had a conflict with the arm tree because the arm
-> tree removed a file that was changed.
-> 
-> I have applied the following temporary patch for known build problems:
-> 
-> 	"Fix various 8390 builds" - the net tree broke builds on various
-> architectures - hopefully this patch will go into the net tree shortly.
-> 	"build failure with netfilter on __nf_ct_helper_find()" - breakage
-> due to the moving of stuff from list.h to rculist.h
+> What I was doing in the RFC is: restore the state what ever that was
+> present and init the state that was not present in the stack frame.
 
-This one and the previous linux-next can't resume from suspend to RAM on my
-HP nx6325.  The problem is reliably reproducible 100% of the time.
+That is consistent in spirit with the existing treatment of FPU data.
+That is, if the sigcontext.fpstate pointer is NULL, the thread's FPU
+state is reset to default.  (And despite what hpa said about being
+"supported", the facts in the code are that sigreturn just follows the
+sigcontext.fpstate pointer, whatever it is.  On 32-bit, the pointer is
+NULL in the context saved when the thread had not used the FPU, so
+modifying the sigcontext to include FP state when it didn't before
+requires putting in some user-chosen pointer.  There in fact may well be
+existing code that does user-level coroutine switching using sigreturn
+and relies on this, for all we know.)
 
-The patch that causes it to happen, as identified by bisection, is:
-
-commit 3dcefa9419f3b8a49921d2218c93a3ddba8e0855
-Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date:   Thu May 22 10:40:19 2008 +1000
-
-    ide: use __generic_unplug_device() in ide_do_drive_cmd()
-
-    Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-    Cc: Borislav Petkov <petkovbb@gmail.com>
-    Cc: Jens Axboe <jens.axboe@oracle.com>
-    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Reverting it along with the next IDE patches (up to and including
-commit fd42e6df0fd163411f5c655b4bde4fb6a8910edc
-"ide: remove action argument in ide_do_drive_cmd") makes the problem go away.
 
 Thanks,
-Rafael
+Roland
