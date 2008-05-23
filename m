@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbYEWOyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbYEWO46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbYEWOyO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 10:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYEWOx5
+	id S1755949AbYEWO46 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 10:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYEWO4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 10:53:57 -0400
-Received: from ns.suse.de ([195.135.220.2]:37480 "EHLO mx1.suse.de"
+	Fri, 23 May 2008 10:56:51 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60307 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751116AbYEWOx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 10:53:56 -0400
-Date: Fri, 23 May 2008 16:53:55 +0200
-Message-ID: <s5hbq2xul4s.wl%tiwai@suse.de>
+	id S1750772AbYEWO4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 10:56:51 -0400
+Date: Fri, 23 May 2008 16:56:49 +0200
+Message-ID: <s5habihukzy.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
        Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
        Haroldo Gamal <gamal@alternex.com.br>
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into kernel	image
-In-Reply-To: <1211550282.28967.8.camel@pmac.infradead.org>
+Subject: Re: [PATCH 2/3] firmware: convert korg1212 driver to use firmware	loader exclusively
+In-Reply-To: <1211550654.28967.16.camel@pmac.infradead.org>
 References: <1211550282.28967.8.camel@pmac.infradead.org>
+	<1211550374.28967.10.camel@pmac.infradead.org>
+	<1211550654.28967.16.camel@pmac.infradead.org>
 User-Agent: Wanderlust/2.14.0 (Africa) SEMI/1.14.6 (Maruoka) FLIM/1.14.7
  (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28) (fuki)
  (+CVS-20070806) (i386-suse-linux)
@@ -28,21 +30,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 23 May 2008 14:44:42 +0100,
+At Fri, 23 May 2008 14:50:54 +0100,
 David Woodhouse wrote:
 > 
-> Some drivers have their own hacks to bypass the kernel's firmware loader
-> and build their firmware into the kernel; this renders those unnecessary.
+> Now that we can build firmware into the kernel and have the firmware
+> loader find it, we don't need this kind of special case in drivers...
 > 
-> Other drivers don't use the firmware loader at all, because they always
-> want the firmware to be available. This allows them to start using the
-> firmware loader.
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-This looks like a nice cleanup.  It'd be nicer if we can skip vmalloc
-and duplication of the image for static binaries.
+There are a few more sound drivers doing similar things:
+isa/snd-sb16-csp, isa/snd-wavefront, pci/snd-maestro3, and
+pci/snd-ymfpci.
 
-BTW, is the dependency considered?  FW_LOADER depends on HOTPLUG, and
-the static loader shouldn't depend on HOTPLUG.
+I guess you already know but just to be sure...
 
 
 thanks,
