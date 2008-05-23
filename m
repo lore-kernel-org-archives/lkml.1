@@ -1,153 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbYEWURQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbYEWUUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbYEWURQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 16:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYEWURA
+	id S1757791AbYEWUUs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 16:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYEWUUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 16:17:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:22259 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752871AbYEWUQ7 (ORCPT
+	Fri, 23 May 2008 16:20:40 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:53946 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751280AbYEWUUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 16:16:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ljKmXdcDbYpZDQ0HdyyZOEGSDmvi8Gr80mNDu2HMYr1BIe5jGu0c7wobMTduuslE0ceGfKoBW9famcRiWUTmf7oLWb0xs9qanlm3P6JI6yP1T5JXN6bGIotQO+Ze1nQr6z5HoQ1w8+gXudjyJ5CmUCuAAB8qS2+cHZuIfXeKqtQ=
-Message-ID: <19f34abd0805231316m6432b373s594c794bfdd48183@mail.gmail.com>
-Date: Fri, 23 May 2008 22:16:58 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] kmemcheck: use tasklets instead of timers
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080521213758.GB11061@damson.getinternet.no>
+	Fri, 23 May 2008 16:20:39 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Sharyathi Nagesh <sharyath@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, fastboot@lists.osdl.org, akpm@osdl.org,
+       maneesh@in.ltcfwd.linux.ibm.com, mohan@in.ibm.com, sachinp@in.ibm.com,
+       mohd.omar@in.ibm.com, IndhuDurai@in.ibm.com,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <4836AC3C.3090005@in.ibm.com>
+Date: Fri, 23 May 2008 13:14:42 -0700
+In-Reply-To: <4836AC3C.3090005@in.ibm.com> (Sharyathi Nagesh's message of
+	"Fri, 23 May 2008 17:06:28 +0530")
+Message-ID: <m1ve144w25.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080521213758.GB11061@damson.getinternet.no>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Sharyathi Nagesh <sharyath@in.ibm.com>
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0039]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: correction to compat_sys_kexec_load
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops. Big mistake on my part. This patch was simply wrong :-(
+Sharyathi Nagesh <sharyath@in.ibm.com> writes:
 
-On Wed, May 21, 2008 at 11:37 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Wed, 21 May 2008 22:58:37 +0200
-> Subject: [PATCH] kmemcheck: use tasklets instead of timers
+> Hi
+>   While testing with kexec tool, I observed some problems. When application
+> (kexec) is 32 bit and kernel is 64 bit I observed that loading crash kernel
+> works without any issues but unloading crash kernel fails.
+> --------------------------------------------------------
+> running strace over 'kexec -u -p'
+> show the problem to be with sys_kexec_load() call
 >
-> Instead of triggering a timer every HZ, we use the new tasklet function
-> which guarantuees not to touch any other tasklets on the tasklet list,
-> and is thus safe to use from the page fault handler.
->
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> ---
->  arch/x86/kernel/kmemcheck.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
-> index def1a08..c0045e8 100644
-> --- a/arch/x86/kernel/kmemcheck.c
-> +++ b/arch/x86/kernel/kmemcheck.c
-> @@ -9,6 +9,7 @@
->  */
->
->  #include <linux/init.h>
-> +#include <linux/interrupt.h>
->  #include <linux/kallsyms.h>
->  #include <linux/kdebug.h>
->  #include <linux/kernel.h>
-> @@ -18,7 +19,6 @@
->  #include <linux/page-flags.h>
->  #include <linux/percpu.h>
->  #include <linux/stacktrace.h>
-> -#include <linux/timer.h>
->
->  #include <asm/cacheflush.h>
->  #include <asm/kmemcheck.h>
-> @@ -73,8 +73,6 @@ static unsigned int error_rd;
->  static unsigned int error_wr;
->  static unsigned int error_missed_count;
->
-> -static struct timer_list kmemcheck_timer;
-> -
->  static struct kmemcheck_error *error_next_wr(void)
->  {
->        struct kmemcheck_error *e;
-> @@ -105,6 +103,9 @@ static struct kmemcheck_error *error_next_rd(void)
->        return e;
->  }
->
-> +static void do_wakeup(unsigned long);
-> +static DECLARE_TASKLET(kmemcheck_tasklet, &do_wakeup, 0);
-> +
->  static void *address_get_shadow(unsigned long address);
->
->  /*
-> @@ -148,6 +149,8 @@ static void error_save(enum shadow state,
->        BUG_ON(!shadow_copy);
->
->        memcpy(e->shadow_copy, shadow_copy, SHADOW_COPY_SIZE);
-> +
-> +       tasklet_hi_schedule(&kmemcheck_tasklet);
+> sys_kexec_load(0, 0, 0, 0x1, 0)         = -1 EINVAL (Invalid argument)
+> write(2, "kexec_load (0 segments) failed: "..., 49
+> kexec_load (0 segments) failed: Invalid argument
+> ) = 4
 
-This should of course say tasklet_hi_schedule_first(), which was the
-new function I introduced in the previous patch. Duh.
+Yes.  This is a bug.  Although not in the kernel implementation.
 
->  }
+> --------------------------------------------------------
 >
->  /*
-> @@ -170,6 +173,8 @@ static void error_save_bug(struct pt_regs *regs)
->        e->trace.max_entries = ARRAY_SIZE(e->trace_entries);
->        e->trace.skip = 1;
->        save_stack_trace(&e->trace);
-> +
-> +       tasklet_hi_schedule(&kmemcheck_tasklet);
+> This is patch to fix the problem, I think kernel code had a typo where in:
+> if((flags & KEXEC_ARCH_MASK) == KEXEC_ARCH) was used instead of
+> if((flags & KEXEC_ARCH_MASK) != KEXEC_ARCH)
 
-The same here...
-
->  }
->
->  static void error_recall(void)
-> @@ -233,8 +238,6 @@ static void do_wakeup(unsigned long data)
->                        "the queue was too small\n", error_missed_count);
->                error_missed_count = 0;
->        }
-> -
-> -       mod_timer(&kmemcheck_timer, kmemcheck_timer.expires + HZ);
->  }
->
->  void __init kmemcheck_init(void)
-> @@ -250,9 +253,6 @@ void __init kmemcheck_init(void)
->                setup_max_cpus = 1;
->        }
->  #endif
-> -
-> -       setup_timer(&kmemcheck_timer, &do_wakeup, 0);
-> -       mod_timer(&kmemcheck_timer, jiffies + HZ);
->  }
->
->  #ifdef CONFIG_KMEMCHECK_DISABLED_BY_DEFAULT
-> --
-> 1.5.4.1
->
->
-
-But even so, tasklet_hi_schedule_first() will call
-raise_softirq_irqoff() which will call wakeup_softirqd() which will
-call wake_up_process() which will do all sorts of badness like
-accessing runqueues, etc., etc.
-
-So forget all about the tasklet patches :-(
-
-But thanks for the reviews... ;-)
+Nope.  We do the latter check after we have fixed up the arguments
+and call sys_kexec_load.  The check really is meant to filter out
+KEXEC_ARCH_DEFAULT.
 
 
-Vegard
+> This patch takes care of that, I have tested the patch it worked fine for
+> me. Please review the patch and let me know of your views. This patch is based
+> on linux-2.6.26-rc3.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+That patch as it exists is actively bad.  It removes the check for a really
+nasty gotcha if someone passes in KEXEC_ARCH_DEFAULT in 32bit mode.  Code
+expecting a 32bit handoff and getting a 64bit handoff will explode in fun
+ways.  You happened to test the one corner case where this does not matter.
+
+What we need to do is fix /sbin/kexec to pass in the correct
+architecture of the kernel for unload as it does for load.
+
+Eric
