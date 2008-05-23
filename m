@@ -1,118 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbYEWBmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764911AbYEWBmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761334AbYEWBmN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 21:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbYEWBmA
+	id S1764911AbYEWBmp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 21:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762891AbYEWBmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 21:42:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37815 "EHLO smtps.tip.net.au"
+	Thu, 22 May 2008 21:42:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49388 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750AbYEWBl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 21:41:59 -0400
-Date: Fri, 23 May 2008 11:41:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, axboe@kernel.dk,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [POWERPC] iSeries: remove unused mail address
-Message-Id: <20080523114146.7f96ca09.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr"
+	id S1760719AbYEWBmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 21:42:12 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it is queued
+In-Reply-To: Oleg Nesterov's message of  Friday, 23 May 2008 01:18:09 +0400 <20080522211809.GA451@tv-sign.ru>
+References: <20080517151420.GA9496@tv-sign.ru>
+	<20080521022046.1501F26FA1C@magilla.localdomain>
+	<20080521115414.GA147@tv-sign.ru>
+	<20080521184245.5BABF26FA24@magilla.localdomain>
+	<alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
+	<20080521193348.64E8C26FA24@magilla.localdomain>
+	<alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org>
+	<20080521230135.BF65A26FA24@magilla.localdomain>
+	<20080522111211.GA117@tv-sign.ru>
+	<20080522215057.DCDF326FA24@magilla.localdomain>
+	<20080522211809.GA451@tv-sign.ru>
+X-Zippy-Says: Do you guys know we just passed thru a BLACK HOLE in space?
+Message-Id: <20080523014135.BDD2526FA24@magilla.localdomain>
+Date: Thu, 22 May 2008 18:41:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> So. Let's suppose that (say) SIGHUP is pending, and the posix timer
+> sends SIGHUP too. In that case the new SIGHUP is added, and if the
+> previous one was infoless the new one "hides" it: collect_signal()
+> won't see 2 distinct signals, it will find only 1 signal and clear
+> the bit in sigpending->signal.
 
-I don't use my IBM email address normally and people can find me in
-CREDITS.
+That is correct behavior.  Signals < SIGRTMIN do not queue.  (POSIX says
+it's implementation-defined whether they do, and in Linux they don't.)
+When a signal does not queue, it's unspecified whether the the one that
+is ever actually seen is the first one or the last one (or any in between),
+so the siginfo_t details showing the second one in your example is fine.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/block/viodasd.c |    2 +-
- drivers/cdrom/viocd.c   |    2 +-
- drivers/char/viocons.c  |    2 +-
- drivers/char/viotape.c  |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
 
-Jens, I assume that this is trivial enough that it can be sent via the
-powerpc tree.
-
-diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
-index ebfe038..f1c8feb 100644
---- a/drivers/block/viodasd.c
-+++ b/drivers/block/viodasd.c
-@@ -3,7 +3,7 @@
-  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
-  *           Ryan Arnold <ryanarn@us.ibm.com>
-  *           Colin Devilbiss <devilbis@us.ibm.com>
-- *           Stephen Rothwell <sfr@au1.ibm.com>
-+ *           Stephen Rothwell
-  *
-  * (C) Copyright 2000-2004 IBM Corporation
-  *
-diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
-index 5245a4a..9d0dfe6 100644
---- a/drivers/cdrom/viocd.c
-+++ b/drivers/cdrom/viocd.c
-@@ -6,7 +6,7 @@
-  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
-  *           Ryan Arnold <ryanarn@us.ibm.com>
-  *           Colin Devilbiss <devilbis@us.ibm.com>
-- *           Stephen Rothwell <sfr@au1.ibm.com>
-+ *           Stephen Rothwell
-  *
-  * (C) Copyright 2000-2004 IBM Corporation
-  *
-diff --git a/drivers/char/viocons.c b/drivers/char/viocons.c
-index 3d3e1c2..65fb848 100644
---- a/drivers/char/viocons.c
-+++ b/drivers/char/viocons.c
-@@ -7,7 +7,7 @@
-  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
-  *           Ryan Arnold <ryanarn@us.ibm.com>
-  *           Colin Devilbiss <devilbis@us.ibm.com>
-- *           Stephen Rothwell <sfr@au1.ibm.com>
-+ *           Stephen Rothwell
-  *
-  * (C) Copyright 2000, 2001, 2002, 2003, 2004 IBM Corporation
-  *
-diff --git a/drivers/char/viotape.c b/drivers/char/viotape.c
-index 58aad63..c39ddaf 100644
---- a/drivers/char/viotape.c
-+++ b/drivers/char/viotape.c
-@@ -6,7 +6,7 @@
-  *  Authors: Dave Boutcher <boutcher@us.ibm.com>
-  *           Ryan Arnold <ryanarn@us.ibm.com>
-  *           Colin Devilbiss <devilbis@us.ibm.com>
-- *           Stephen Rothwell <sfr@au1.ibm.com>
-+ *           Stephen Rothwell
-  *
-  * (C) Copyright 2000-2004 IBM Corporation
-  *
---=20
-1.5.5.1
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFINiDeTgG2atn1QN8RAi/yAKCPvAIV6N8hB4Qa84dRfyTkQUmmBQCcC2QL
-9GSe2Yvt1jL5F5qxRSuLWtk=
-=CHux
------END PGP SIGNATURE-----
-
---Signature=_Fri__23_May_2008_11_41_46_+1000_gGIs4G2SIQALW4Gr--
+Thanks,
+Roland
