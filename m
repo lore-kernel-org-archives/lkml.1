@@ -1,87 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932949AbYEWGCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763892AbYEWGRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932949AbYEWGCd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 02:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYEWGCU
+	id S1763892AbYEWGRD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 02:17:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbYEWGQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 02:02:20 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59118 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765655AbYEWGCT (ORCPT
+	Fri, 23 May 2008 02:16:52 -0400
+Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:4343 "EHLO
+	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbYEWGQv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 02:02:19 -0400
-Message-ID: <48362FD0.9030104@zytor.com>
-Date: Thu, 22 May 2008 19:45:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 23 May 2008 02:16:51 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: video4linux-list@redhat.com
+Subject: Re: [PATCH] video4linux: Push down the BKL
+Date: Fri, 23 May 2008 08:16:05 +0200
+User-Agent: KMail/1.9.7
+Cc: Andy Walls <awalls@radix.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org
+References: <20080522223700.2f103a14@core> <1211508484.3273.86.camel@palomino.walls.org>
+In-Reply-To: <1211508484.3273.86.camel@palomino.walls.org>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com> <4834BE39.2000904@zytor.com> <18485.13663.51624.694435@harpo.it.uu.se> <20080522205619.GB7998@linux-os.sc.intel.com> <4835DF64.6080104@zytor.com> <20080522212920.GC7998@linux-os.sc.intel.com> <4835E6F5.5010801@zytor.com> <20080523014855.GA18385@linux-os.sc.intel.com>
-In-Reply-To: <20080523014855.GA18385@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805230816.05229.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> On Thu, May 22, 2008 at 02:34:45PM -0700, H. Peter Anvin wrote:
->> Suresh Siddha wrote:
->>> can you please elaborate? even in presence of virtualization, appropriate
->>> cpuid bits need to be set/visible for application, for xsave/xrstor to work
->>> properly.
->>>
->> For many paravirtualization solutions, CPUID "leak" from the hypervisor. 
->>  The fact that CPUID cannot be disabled (made ring 0 only) is a major 
->> flaw in the architecture.
->>
->> Therefore, relying on CPUID is too dangerous.
-> 
-> hmm.. so the kernel needs to export all the cpuid info (that the kernel enables
-> and supports) to the user through some mechanism then?
+On Friday 23 May 2008 04:08:04 Andy Walls wrote:
+> On Thu, 2008-05-22 at 22:37 +0100, Alan Cox wrote:
+> > For most drivers the generic ioctl handler does the work and we
+> > update it and it becomes the unlocked_ioctl method. Older drivers
+> > use the usercopy method so we make it do the work. Finally there
+> > are a few special cases.
+> >
+> > Signed-off-by: Alan Cox <alan@redhat.com>
+>
+> I'd like to start planning out the changes to eliminate the BKL from
+> cx18.
+>
+> Could someone give me a brief education as to what elements of
+> cx18/ivtv_v4l2_do_ioctl() would be forcing the use of the BKL for
+> these drivers' ioctls?   I'm assuming it's not the
+> mutex_un/lock(&....->serialize_lock) and that the answer's not in the
+> diff.
 
-Not really.  Most of the CPUID information doesn't have a OS-dependent 
-portion, but the parts that do cause problems (there are other issues, 
-like the hypervisor wanting to limit the feature set available to the 
-client, but there is no real solution to that, and certainly it would be 
-out of scope for this discussion.)
+To the best of my knowledge there is no need for a BKL in ivtv or cx18. 
+It was just laziness on my part that I hadn't switched to 
+unlocked_ioctl yet. If you know of a reason why it should be kept for 
+now, then I'd like to know, otherwise the BKL can be removed altogether 
+for ivtv/cx18. I suspect you just pushed the lock down into the driver 
+and in that case you can just remove it for ivtv/cx18.
 
-> atleast in the xsave case, hypervisor can completely control the
-> OSXSAVE flag. I am still not convinced whether I need to add prctl()
-> to indicate the layout. If I have to add, then it should not just
-> be about whether xsave information is included in _fpstate or not, it should also
-> be about the whole cpuid information provided by the xsave architecture. Because
-> the user potentially needs all that information, to make sense out of
-> the data layout included in the extended state area.
+Regards,
 
-Agreed that this information is needed, although it probably would be 
-better to leave it in the frame itself; that way at least the rt frames 
-would stand on their own.  I'm worried about using the reserved fields 
-since they could be messed up by ptrace, but you could also argue that 
-if you have the ability to trace the process you can do anything else to 
-it; that way we could use a reserved field to signal the presence of the 
-XSAVE information in the frame; I would hope that that XSAVE information 
-would be self-describing (perhaps a linked list of blocks or a separate 
-chain of descriptors.)
+	Hans
 
-In other words, we know of a place to stash the presence flag for rt 
-signal frames, the uc_flags field; we effectively need to find a place 
-to stash the uc_flags field for the non-rt frame.
+>
+> Thanks.
+> Andy
+>
+> > diff --git a/drivers/media/video/cx18/cx18-ioctl.c
+> > b/drivers/media/video/cx18/cx18-ioctl.c index dbdcb86..faf3a31
+> > 100644
+> > --- a/drivers/media/video/cx18/cx18-ioctl.c
+> > +++ b/drivers/media/video/cx18/cx18-ioctl.c
+> > @@ -837,15 +837,16 @@ static int cx18_v4l2_do_ioctl(struct inode
+> > *inode, struct file *filp, return 0;
+> >  }
+> >
+> > -int cx18_v4l2_ioctl(struct inode *inode, struct file *filp,
+> > unsigned int cmd, -		    unsigned long arg)
+> > +long cx18_v4l2_ioctl(struct file *filp, unsigned int cmd, unsigned
+> > long arg) {
+> >  	struct cx18_open_id *id = (struct cx18_open_id
+> > *)filp->private_data; struct cx18 *cx = id->cx;
+> >  	int res;
+> >
+> > +	lock_kernel();
+> >  	mutex_lock(&cx->serialize_lock);
+> > -	res = video_usercopy(inode, filp, cmd, arg, cx18_v4l2_do_ioctl);
+> > +	res = video_usercopy(filp, cmd, arg, cx18_v4l2_do_ioctl);
+> >  	mutex_unlock(&cx->serialize_lock);
+> > +	unlock_kernel();
+> >  	return res;
+> >  }
+> > diff --git a/drivers/media/video/cx18/cx18-ioctl.h
+> > b/drivers/media/video/cx18/cx18-ioctl.h index 9f4c7eb..32bede3
+> > 100644
+> > --- a/drivers/media/video/cx18/cx18-ioctl.h
+> > +++ b/drivers/media/video/cx18/cx18-ioctl.h
+> > @@ -1,4 +1,4 @@
+> > -/*
+> > + /*
+> >   *  cx18 ioctl system call
+> >   *
+> >   *  Derived from ivtv-ioctl.h
+> > @@ -24,7 +24,6 @@
+> >  u16 cx18_service2vbi(int type);
+> >  void cx18_expand_service_set(struct v4l2_sliced_vbi_format *fmt,
+> > int is_pal); u16 cx18_get_service_set(struct v4l2_sliced_vbi_format
+> > *fmt); -int cx18_v4l2_ioctl(struct inode *inode, struct file *filp,
+> > unsigned int cmd, -		    unsigned long arg);
+> > +long cx18_v4l2_ioctl(struct file *filp, unsigned int cmd, unsigned
+> > long arg); int cx18_v4l2_ioctls(struct cx18 *cx, struct file *filp,
+> > unsigned cmd, void *arg);
+> > diff --git a/drivers/media/video/cx18/cx18-streams.c
+> > b/drivers/media/video/cx18/cx18-streams.c index afb141b..7348b82
+> > 100644
+> > --- a/drivers/media/video/cx18/cx18-streams.c
+> > +++ b/drivers/media/video/cx18/cx18-streams.c
+> > @@ -39,7 +39,7 @@ static struct file_operations cx18_v4l2_enc_fops
+> > = { .owner = THIS_MODULE,
+> >        .read = cx18_v4l2_read,
+> >        .open = cx18_v4l2_open,
+> > -      .ioctl = cx18_v4l2_ioctl,
+> > +      .unlocked_ioctl = cx18_v4l2_ioctl,
+> >        .release = cx18_v4l2_close,
+> >        .poll = cx18_v4l2_enc_poll,
+> >  };
+> >
+> > diff --git a/drivers/media/video/ivtv/ivtv-ioctl.c
+> > b/drivers/media/video/ivtv/ivtv-ioctl.c index d508b5d..a481b2d
+> > 100644
+> > --- a/drivers/media/video/ivtv/ivtv-ioctl.c
+> > +++ b/drivers/media/video/ivtv/ivtv-ioctl.c
+> > @@ -1726,7 +1726,7 @@ static int ivtv_v4l2_do_ioctl(struct inode
+> > *inode, struct file *filp, return 0;
+> >  }
+> >
+> > -static int ivtv_serialized_ioctl(struct ivtv *itv, struct inode
+> > *inode, struct file *filp, +static int ivtv_serialized_ioctl(struct
+> > ivtv *itv, struct file *filp, unsigned int cmd, unsigned long arg)
+> >  {
+> >  	/* Filter dvb ioctls that cannot be handled by video_usercopy */
+> > @@ -1761,18 +1761,19 @@ static int ivtv_serialized_ioctl(struct
+> > ivtv *itv, struct inode *inode, struct f default:
+> >  		break;
+> >  	}
+> > -	return video_usercopy(inode, filp, cmd, arg, ivtv_v4l2_do_ioctl);
+> > +	return video_usercopy(filp, cmd, arg, ivtv_v4l2_do_ioctl);
+> >  }
+> >
+> > -int ivtv_v4l2_ioctl(struct inode *inode, struct file *filp,
+> > unsigned int cmd, -		    unsigned long arg)
+> > +long ivtv_v4l2_ioctl(struct file *filp, unsigned int cmd, unsigned
+> > long arg) {
+> >  	struct ivtv_open_id *id = (struct ivtv_open_id
+> > *)filp->private_data; struct ivtv *itv = id->itv;
+> >  	int res;
+> >
+> > +	lock_kernel();
+> >  	mutex_lock(&itv->serialize_lock);
+> > -	res = ivtv_serialized_ioctl(itv, inode, filp, cmd, arg);
+> > +	res = ivtv_serialized_ioctl(itv, filp, cmd, arg);
+> >  	mutex_unlock(&itv->serialize_lock);
+> > +	unlock_kernel();
+> >  	return res;
+> >  }
+> > diff --git a/drivers/media/video/ivtv/ivtv-ioctl.h
+> > b/drivers/media/video/ivtv/ivtv-ioctl.h index a03351b..6708ea0
+> > 100644
+> > --- a/drivers/media/video/ivtv/ivtv-ioctl.h
+> > +++ b/drivers/media/video/ivtv/ivtv-ioctl.h
+> > @@ -24,8 +24,7 @@
+> >  u16 service2vbi(int type);
+> >  void expand_service_set(struct v4l2_sliced_vbi_format *fmt, int
+> > is_pal); u16 get_service_set(struct v4l2_sliced_vbi_format *fmt);
+> > -int ivtv_v4l2_ioctl(struct inode *inode, struct file *filp,
+> > unsigned int cmd, -		    unsigned long arg);
+> > +long ivtv_v4l2_ioctl(struct file *filp, unsigned int cmd, unsigned
+> > long arg); int ivtv_v4l2_ioctls(struct ivtv *itv, struct file
+> > *filp, unsigned int cmd, void *arg); void ivtv_set_osd_alpha(struct
+> > ivtv *itv);
+> >  int ivtv_set_speed(struct ivtv *itv, int speed);
+> > diff --git a/drivers/media/video/ivtv/ivtv-streams.c
+> > b/drivers/media/video/ivtv/ivtv-streams.c index 4ab8d36..3131f68
+> > 100644
+> > --- a/drivers/media/video/ivtv/ivtv-streams.c
+> > +++ b/drivers/media/video/ivtv/ivtv-streams.c
+> > @@ -48,7 +48,7 @@ static const struct file_operations
+> > ivtv_v4l2_enc_fops = { .read = ivtv_v4l2_read,
+> >        .write = ivtv_v4l2_write,
+> >        .open = ivtv_v4l2_open,
+> > -      .ioctl = ivtv_v4l2_ioctl,
+> > +      .unlocked_ioctl = ivtv_v4l2_ioctl,
+> >        .release = ivtv_v4l2_close,
+> >        .poll = ivtv_v4l2_enc_poll,
+> >  };
+> > @@ -58,7 +58,7 @@ static const struct file_operations
+> > ivtv_v4l2_dec_fops = { .read = ivtv_v4l2_read,
+> >        .write = ivtv_v4l2_write,
+> >        .open = ivtv_v4l2_open,
+> > -      .ioctl = ivtv_v4l2_ioctl,
+> > +      .unlocked_ioctl = ivtv_v4l2_ioctl,
+> >        .release = ivtv_v4l2_close,
+> >        .poll = ivtv_v4l2_dec_poll,
+> >  };
+>
+> --
+> video4linux-list mailing list
+> Unsubscribe
+> mailto:video4linux-list-request@redhat.com?subject=unsubscribe
+> https://www.redhat.com/mailman/listinfo/video4linux-list
 
-Michael, you wrote:
 
-> Hmm, right now it seems this field has a de-facto ABI of being
-> either 0xffff (plain) or 0x0000 (fxsr). Using other values would
-> confuse at least one application I know of. Sad.
-
-... could you share what application that is?  This otherwise would be 
-ideal.
-
-	-hpa
