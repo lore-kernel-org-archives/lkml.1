@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbYEWPFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYEWPF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbYEWPFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYEWPFd
+	id S1757950AbYEWPF7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbYEWPFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:05:33 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:43248 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbYEWPFc (ORCPT
+	Fri, 23 May 2008 11:05:38 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:43162 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755238AbYEWPFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:05:32 -0400
-Subject: [RFC][Patch 3/5] integrity: special fs magic
+	Fri, 23 May 2008 11:05:36 -0400
+Subject: [RFC][Patch 1/5]integrity: TPM cleanup
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
        zohar@us.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
        CaseySchaufler <casey@schaufler-ca.com>
 Content-Type: text/plain
-Date: Fri, 23 May 2008 11:05:29 -0400
-Message-Id: <1211555129.16195.16.camel@new-host>
+Date: Fri, 23 May 2008 11:05:24 -0400
+Message-Id: <1211555125.16195.15.camel@new-host>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
@@ -26,73 +26,451 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Move special fs magic number definitions to magic.h
-- Add magic.h include
-
+This is a request for comments for a redesign of the integrity patches.
+This patchset contains 5 patches.
+	Patch 1/5 integrity: TPM cleanup (scripts/Lindent and other)
+	Patch 2/5 integrity: TPM internal kernel interface
+	Patch 3/5 integrity: special fs magic
+	Patch 4/5 integrity: Linux Integrity Module(LIM)
+	Patch 5/5 integrity: IMA as an integrity service provider
+ 
 Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 ---
-Index: linux-2.6.26-rc3-git2/mm/shmem.c
+Index: linux-2.6.26-rc3-git2/drivers/char/tpm/tpm.c
 ===================================================================
---- linux-2.6.26-rc3-git2.orig/mm/shmem.c
-+++ linux-2.6.26-rc3-git2/mm/shmem.c
-@@ -50,14 +50,12 @@
- #include <linux/migrate.h>
- #include <linux/highmem.h>
- #include <linux/seq_file.h>
-+#include <linux/magic.h>
+--- linux-2.6.26-rc3-git2.orig/drivers/char/tpm/tpm.c
++++ linux-2.6.26-rc3-git2/drivers/char/tpm/tpm.c
+@@ -321,7 +321,7 @@ static const u8 tpm_ordinal_duration[TPM
  
- #include <asm/uaccess.h>
- #include <asm/div64.h>
- #include <asm/pgtable.h>
+ static void user_reader_timeout(unsigned long ptr)
+ {
+-	struct tpm_chip *chip = (struct tpm_chip *) ptr;
++	struct tpm_chip *chip = (struct tpm_chip *)ptr;
  
--/* This magic number is used in glibc for posix shared memory */
--#define TMPFS_MAGIC	0x01021994
--
- #define ENTRIES_PER_PAGE (PAGE_CACHE_SIZE/sizeof(unsigned long))
- #define ENTRIES_PER_PAGEPAGE (ENTRIES_PER_PAGE*ENTRIES_PER_PAGE)
- #define BLOCKS_PER_PAGE  (PAGE_CACHE_SIZE/512)
-Index: linux-2.6.26-rc3-git2/security/inode.c
-===================================================================
---- linux-2.6.26-rc3-git2.orig/security/inode.c
-+++ linux-2.6.26-rc3-git2/security/inode.c
-@@ -20,8 +20,7 @@
- #include <linux/init.h>
- #include <linux/namei.h>
- #include <linux/security.h>
--
--#define SECURITYFS_MAGIC	0x73636673
-+#include <linux/magic.h>
+ 	schedule_work(&chip->work);
+ }
+@@ -337,10 +337,9 @@ static void timeout_work(struct work_str
+ }
  
- static struct vfsmount *mount;
- static int mount_count;
-Index: linux-2.6.26-rc3-git2/include/linux/magic.h
-===================================================================
---- linux-2.6.26-rc3-git2.orig/include/linux/magic.h
-+++ linux-2.6.26-rc3-git2/include/linux/magic.h
-@@ -6,6 +6,10 @@
- #define AFS_SUPER_MAGIC                0x5346414F
- #define AUTOFS_SUPER_MAGIC	0x0187
- #define CODA_SUPER_MAGIC	0x73757245
-+#define DEBUGFS_MAGIC          0x64626720
-+#define SYSFS_MAGIC		0x62656572
-+#define SECURITYFS_MAGIC	0x73636673
-+#define TMPFS_MAGIC		0x01021994
- #define EFS_SUPER_MAGIC		0x414A53
- #define EXT2_SUPER_MAGIC	0xEF53
- #define EXT3_SUPER_MAGIC	0xEF53
-Index: linux-2.6.26-rc3-git2/fs/debugfs/inode.c
-===================================================================
---- linux-2.6.26-rc3-git2.orig/fs/debugfs/inode.c
-+++ linux-2.6.26-rc3-git2/fs/debugfs/inode.c
-@@ -26,8 +26,7 @@
- #include <linux/debugfs.h>
- #include <linux/fsnotify.h>
- #include <linux/string.h>
--
--#define DEBUGFS_MAGIC	0x64626720
-+#include <linux/magic.h>
+ /*
+- * Returns max number of jiffies to wait
++ * tpm_calc_ordinal_duration - returns max number of jiffies to wait
+  */
+-unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip,
+-					   u32 ordinal)
++unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip, u32 ordinal)
+ {
+ 	int duration_idx = TPM_UNDEFINED;
+ 	int duration = 0;
+@@ -363,7 +362,7 @@ unsigned long tpm_calc_ordinal_duration(
+ EXPORT_SYMBOL_GPL(tpm_calc_ordinal_duration);
  
- static struct vfsmount *debugfs_mount;
- static int debugfs_mount_count;
+ /*
+- * Internal kernel interface to transmit TPM commands
++ * tpm_transmit - internal kernel interface to transmit TPM commands
+  */
+ static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
+ 			    size_t bufsiz)
+@@ -385,8 +384,7 @@ static ssize_t tpm_transmit(struct tpm_c
+ 	mutex_lock(&chip->tpm_mutex);
+ 
+ 	if ((rc = chip->vendor.send(chip, (u8 *) buf, count)) < 0) {
+-		dev_err(chip->dev,
+-			"tpm_transmit: tpm_send: error %zd\n", rc);
++		dev_err(chip->dev, "tpm_transmit: tpm_send: error %zd\n", rc);
+ 		goto out;
+ 	}
+ 
+@@ -418,8 +416,7 @@ static ssize_t tpm_transmit(struct tpm_c
+ out_recv:
+ 	rc = chip->vendor.recv(chip, (u8 *) buf, bufsiz);
+ 	if (rc < 0)
+-		dev_err(chip->dev,
+-			"tpm_transmit: tpm_recv: error %zd\n", rc);
++		dev_err(chip->dev, "tpm_transmit: tpm_recv: error %zd\n", rc);
+ out:
+ 	mutex_unlock(&chip->tpm_mutex);
+ 	return rc;
+@@ -477,7 +474,7 @@ static ssize_t transmit_cmd(struct tpm_c
+ 	int err;
+ 
+ 	len = tpm_transmit(chip, data, len);
+-	if (len <  0)
++	if (len < 0)
+ 		return len;
+ 	if (len == TPM_ERROR_SIZE) {
+ 		err = be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX)));
+@@ -497,7 +494,7 @@ void tpm_gen_interrupt(struct tpm_chip *
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_TIMEOUT;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the timeouts");
++			  "attempting to determine the timeouts");
+ }
+ EXPORT_SYMBOL_GPL(tpm_gen_interrupt);
+ 
+@@ -512,7 +509,7 @@ void tpm_get_timeouts(struct tpm_chip *c
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_TIMEOUT;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the timeouts");
++			  "attempting to determine the timeouts");
+ 	if (rc)
+ 		goto duration;
+ 
+@@ -544,7 +541,7 @@ duration:
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_TIS_DURATION;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the durations");
++			  "attempting to determine the durations");
+ 	if (rc)
+ 		return;
+ 
+@@ -570,17 +567,20 @@ EXPORT_SYMBOL_GPL(tpm_get_timeouts);
+ void tpm_continue_selftest(struct tpm_chip *chip)
+ {
+ 	u8 data[] = {
+-		0, 193,			/* TPM_TAG_RQU_COMMAND */
+-		0, 0, 0, 10,		/* length */
+-		0, 0, 0, 83,		/* TPM_ORD_GetCapability */
++		0, 193,		/* TPM_TAG_RQU_COMMAND */
++		0, 0, 0, 10,	/* length */
++		0, 0, 0, 83,	/* TPM_ORD_GetCapability */
+ 	};
+ 
+ 	tpm_transmit(chip, data, sizeof(data));
+ }
+ EXPORT_SYMBOL_GPL(tpm_continue_selftest);
+ 
+-ssize_t tpm_show_enabled(struct device * dev, struct device_attribute * attr,
+-			char *buf)
++/*
++ * tpm_show_enabled - determine the permanent disabled state
++ */
++ssize_t tpm_show_enabled(struct device *dev, struct device_attribute *attr,
++			 char *buf)
+ {
+ 	u8 data[max_t(int, ARRAY_SIZE(tpm_cap), 35)];
+ 	ssize_t rc;
+@@ -594,14 +594,17 @@ ssize_t tpm_show_enabled(struct device *
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_PERM;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attemtping to determine the permanent state");
++			  "attemtping to determine the permanent state");
+ 	if (rc)
+ 		return 0;
+ 	return sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_DISABLE_IDX]);
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_enabled);
+ 
+-ssize_t tpm_show_active(struct device * dev, struct device_attribute * attr,
++/*
++ * tpm_show_active - determine the permanent inactive state
++ */
++ssize_t tpm_show_active(struct device *dev, struct device_attribute *attr,
+ 			char *buf)
+ {
+ 	u8 data[max_t(int, ARRAY_SIZE(tpm_cap), 35)];
+@@ -616,15 +619,18 @@ ssize_t tpm_show_active(struct device * 
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_PERM;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attemtping to determine the permanent state");
++			  "attemtping to determine the permanent state");
+ 	if (rc)
+ 		return 0;
+ 	return sprintf(buf, "%d\n", !data[TPM_GET_CAP_PERM_INACTIVE_IDX]);
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_active);
+ 
+-ssize_t tpm_show_owned(struct device * dev, struct device_attribute * attr,
+-			char *buf)
++/*
++ * tpm_show_owned - determine the owner state
++ */
++ssize_t tpm_show_owned(struct device *dev, struct device_attribute *attr,
++		       char *buf)
+ {
+ 	u8 data[sizeof(tpm_cap)];
+ 	ssize_t rc;
+@@ -638,15 +644,18 @@ ssize_t tpm_show_owned(struct device * d
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_OWNER;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the owner state");
++			  "attempting to determine the owner state");
+ 	if (rc)
+ 		return 0;
+ 	return sprintf(buf, "%d\n", data[TPM_GET_CAP_RET_BOOL_1_IDX]);
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_owned);
+ 
+-ssize_t tpm_show_temp_deactivated(struct device * dev,
+-				struct device_attribute * attr, char *buf)
++/*
++ * tpm_show_temp_deactivated - determine the temporary inactive state
++ */
++ssize_t tpm_show_temp_deactivated(struct device *dev,
++				  struct device_attribute *attr, char *buf)
+ {
+ 	u8 data[sizeof(tpm_cap)];
+ 	ssize_t rc;
+@@ -660,13 +669,14 @@ ssize_t tpm_show_temp_deactivated(struct
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_FLAG_VOL;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the temporary state");
++			  "attempting to determine the temporary state");
+ 	if (rc)
+ 		return 0;
+ 	return sprintf(buf, "%d\n", data[TPM_GET_CAP_TEMP_INACTIVE_IDX]);
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
+ 
++#define READ_PCR_RESULT_SIZE 30
+ static const u8 pcrread[] = {
+ 	0, 193,			/* TPM_TAG_RQU_COMMAND */
+ 	0, 0, 0, 14,		/* length */
+@@ -677,7 +687,8 @@ static const u8 pcrread[] = {
+ ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
+ 		      char *buf)
+ {
+-	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(pcrread)), 30)];
++	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(pcrread)),
++		READ_PCR_RESULT_SIZE)];
+ 	ssize_t rc;
+ 	int i, j, num_pcrs;
+ 	__be32 index;
+@@ -692,7 +703,7 @@ ssize_t tpm_show_pcrs(struct device *dev
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_PCR;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the number of PCRS");
++			  "attempting to determine the number of PCRS");
+ 	if (rc)
+ 		return 0;
+ 
+@@ -702,7 +713,7 @@ ssize_t tpm_show_pcrs(struct device *dev
+ 		index = cpu_to_be32(i);
+ 		memcpy(data + 10, &index, 4);
+ 		rc = transmit_cmd(chip, data, sizeof(data),
+-				"attempting to read a PCR");
++				  "attempting to read a PCR");
+ 		if (rc)
+ 			goto out;
+ 		str += sprintf(str, "PCR-%02d: ", i);
+@@ -722,6 +733,9 @@ static const u8 readpubek[] = {
+ 	0, 0, 0, 124,		/* TPM_ORD_ReadPubek */
+ };
+ 
++/*
++ * tpm_show_pubek - returns the tpm's public endorcement key
++ */
+ ssize_t tpm_show_pubek(struct device *dev, struct device_attribute *attr,
+ 		       char *buf)
+ {
+@@ -741,13 +755,13 @@ ssize_t tpm_show_pubek(struct device *de
+ 	memcpy(data, readpubek, sizeof(readpubek));
+ 
+ 	err = transmit_cmd(chip, data, READ_PUBEK_RESULT_SIZE,
+-			"attempting to read the PUBEK");
++			   "attempting to read the PUBEK");
+ 	if (err)
+ 		goto out;
+ 
+ 	/* 
+ 	   ignore header 10 bytes
+-	   algorithm 32 bits (1 == RSA )
++	   algorithm 32 bits (1 == RSA)
+ 	   encscheme 16 bits
+ 	   sigscheme 16 bits
+ 	   parameters (RSA 12->bytes: keybit, #primes, expbit)  
+@@ -756,17 +770,16 @@ ssize_t tpm_show_pubek(struct device *de
+ 	   ignore checksum 20 bytes
+ 	 */
+ 
+-	str +=
+-	    sprintf(str,
+-		    "Algorithm: %02X %02X %02X %02X\nEncscheme: %02X %02X\n"
+-		    "Sigscheme: %02X %02X\nParameters: %02X %02X %02X %02X"
+-		    " %02X %02X %02X %02X %02X %02X %02X %02X\n"
+-		    "Modulus length: %d\nModulus: \n",
+-		    data[10], data[11], data[12], data[13], data[14],
+-		    data[15], data[16], data[17], data[22], data[23],
+-		    data[24], data[25], data[26], data[27], data[28],
+-		    data[29], data[30], data[31], data[32], data[33],
+-		    be32_to_cpu(*((__be32 *) (data + 34))));
++	str += sprintf(str,
++		       "Algorithm: %02X %02X %02X %02X\nEncscheme: %02X %02X\n"
++		       "Sigscheme: %02X %02X\nParameters: %02X %02X %02X %02X"
++		       " %02X %02X %02X %02X %02X %02X %02X %02X\n"
++		       "Modulus length: %d\nModulus: \n",
++		       data[10], data[11], data[12], data[13], data[14],
++		       data[15], data[16], data[17], data[22], data[23],
++		       data[24], data[25], data[26], data[27], data[28],
++		       data[29], data[30], data[31], data[32], data[33],
++		       be32_to_cpu(*((__be32 *) (data + 34))));
+ 
+ 	for (i = 0; i < 256; i++) {
+ 		str += sprintf(str, "%02X ", data[i + 38]);
+@@ -791,10 +804,14 @@ static const u8 cap_version[] = {
+ 	0, 0, 0, 0
+ };
+ 
++/*
++ * tpm_show_caps - returns the manufacturer and chip version
++ */
+ ssize_t tpm_show_caps(struct device *dev, struct device_attribute *attr,
+ 		      char *buf)
+ {
+-	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
++	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap),
++			       ARRAY_SIZE(cap_version)), 30)];
+ 	ssize_t rc;
+ 	char *str = buf;
+ 
+@@ -807,34 +824,39 @@ ssize_t tpm_show_caps(struct device *dev
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_MANUFACTURER;
+ 
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the manufacturer");
++			  "attempting to determine the manufacturer");
+ 	if (rc)
+ 		return 0;
+ 
+ 	str += sprintf(str, "Manufacturer: 0x%x\n",
+-		       be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_1_IDX))));
++		       be32_to_cpu(*((__be32 *) (data +
++						 TPM_GET_CAP_RET_UINT32_1_IDX))));
+ 
+ 	memcpy(data, cap_version, sizeof(cap_version));
+ 	data[CAP_VERSION_IDX] = CAP_VERSION_1_1;
+ 	rc = transmit_cmd(chip, data, sizeof(data),
+-			"attempting to determine the 1.1 version");
++			  "attempting to determine the 1.1 version");
+ 	if (rc)
+ 		goto out;
+ 
+ 	str += sprintf(str,
+ 		       "TCG version: %d.%d\nFirmware version: %d.%d\n",
+-		       (int) data[14], (int) data[15], (int) data[16],
+-		       (int) data[17]);
++		       (int)data[14], (int)data[15], (int)data[16],
++		       (int)data[17]);
+ 
+ out:
+ 	return str - buf;
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_caps);
+ 
+-ssize_t tpm_show_caps_1_2(struct device * dev,
+-			  struct device_attribute * attr, char *buf)
++/*
++ * tpm_show_caps_1_2 - returns the manufacturer and chip 1.2 version
++ */
++ssize_t tpm_show_caps_1_2(struct device *dev,
++			  struct device_attribute *attr, char *buf)
+ {
+-	u8 data[max_t(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
++	u8 data[max_t
++		(int, max(ARRAY_SIZE(tpm_cap), ARRAY_SIZE(cap_version)), 30)];
+ 	ssize_t len;
+ 	char *str = buf;
+ 
+@@ -846,8 +868,8 @@ ssize_t tpm_show_caps_1_2(struct device 
+ 	data[TPM_CAP_IDX] = TPM_CAP_PROP;
+ 	data[TPM_CAP_SUBCAP_IDX] = TPM_CAP_PROP_MANUFACTURER;
+ 
+-	if ((len = tpm_transmit(chip, data, sizeof(data))) <=
+-	    TPM_ERROR_SIZE) {
++	len = tpm_transmit(chip, data, sizeof(data));
++	if (len <= TPM_ERROR_SIZE) {
+ 		dev_dbg(chip->dev, "A TPM error (%d) occurred "
+ 			"attempting to determine the manufacturer\n",
+ 			be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX))));
+@@ -855,30 +877,33 @@ ssize_t tpm_show_caps_1_2(struct device 
+ 	}
+ 
+ 	str += sprintf(str, "Manufacturer: 0x%x\n",
+-		       be32_to_cpu(*((__be32 *) (data + TPM_GET_CAP_RET_UINT32_1_IDX))));
++		       be32_to_cpu(*((__be32 *) (data +
++						 TPM_GET_CAP_RET_UINT32_1_IDX))));
+ 
+ 	memcpy(data, cap_version, sizeof(cap_version));
+ 	data[CAP_VERSION_IDX] = CAP_VERSION_1_2;
+ 
+-	if ((len = tpm_transmit(chip, data, sizeof(data))) <=
+-	    TPM_ERROR_SIZE) {
++	len = tpm_transmit(chip, data, sizeof(data));
++	if (len <= TPM_ERROR_SIZE) {
+ 		dev_err(chip->dev, "A TPM error (%d) occurred "
+ 			"attempting to determine the 1.2 version\n",
+ 			be32_to_cpu(*((__be32 *) (data + TPM_RET_CODE_IDX))));
+ 		goto out;
+ 	}
+-	str += sprintf(str,
+-		       "TCG version: %d.%d\nFirmware version: %d.%d\n",
+-		       (int) data[16], (int) data[17], (int) data[18],
+-		       (int) data[19]);
++	str += sprintf(str, "TCG version: %d.%d\nFirmware version: %d.%d\n",
++		       (int)data[16], (int)data[17], (int)data[18],
++		       (int)data[19]);
+ 
+ out:
+ 	return str - buf;
+ }
+ EXPORT_SYMBOL_GPL(tpm_show_caps_1_2);
+ 
++/*
++ * tpm_store_cancel - cancel the current tpm operation
++ */
+ ssize_t tpm_store_cancel(struct device *dev, struct device_attribute *attr,
+-			const char *buf, size_t count)
++			 const char *buf, size_t count)
+ {
+ 	struct tpm_chip *chip = dev_get_drvdata(dev);
+ 	if (chip == NULL)
+@@ -973,8 +998,7 @@ ssize_t tpm_write(struct file *file, con
+ 	if (in_size > TPM_BUFSIZE)
+ 		in_size = TPM_BUFSIZE;
+ 
+-	if (copy_from_user
+-	    (chip->data_buffer, (void __user *) buf, in_size)) {
++	if (copy_from_user(chip->data_buffer, (void __user *)buf, in_size)) {
+ 		mutex_unlock(&chip->buffer_mutex);
+ 		return -EFAULT;
+ 	}
+@@ -1104,8 +1128,8 @@ static void tpm_dev_release(struct devic
+  * upon errant exit from this function specific probe function should call
+  * pci_disable_device
+  */
+-struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vendor_specific
+-				       *entry)
++struct tpm_chip *tpm_register_hardware(struct device *dev,
++				       const struct tpm_vendor_specific *entry)
+ {
+ #define DEVNAME_SIZE 7
+ 
+@@ -1129,7 +1153,7 @@ struct tpm_chip *tpm_register_hardware(s
+ 	INIT_WORK(&chip->work, timeout_work);
+ 
+ 	setup_timer(&chip->user_read_timer, user_reader_timeout,
+-			(unsigned long)chip);
++		    (unsigned long)chip);
+ 
+ 	memcpy(&chip->vendor, entry, sizeof(struct tpm_vendor_specific));
+ 
+@@ -1158,8 +1182,7 @@ struct tpm_chip *tpm_register_hardware(s
+ 	if (misc_register(&chip->vendor.miscdev)) {
+ 		dev_err(chip->dev,
+ 			"unable to misc_register %s, minor %d\n",
+-			chip->vendor.miscdev.name,
+-			chip->vendor.miscdev.minor);
++			chip->vendor.miscdev.name, chip->vendor.miscdev.minor);
+ 		put_device(chip->dev);
+ 		return NULL;
+ 	}
 
 
