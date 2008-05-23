@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYEWPVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYEWPZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758803AbYEWPVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 11:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYEWPVA
+	id S1756708AbYEWPZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 11:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYEWPZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 11:21:00 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:55990 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758507AbYEWPU6 (ORCPT
+	Fri, 23 May 2008 11:25:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42087 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbYEWPZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 11:20:58 -0400
-Message-ID: <4836E057.7020307@yandex.ru>
-Date: Fri, 23 May 2008 18:18:47 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH take 2] UBIFS - new flash file system
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <20080516104002.GA6962@infradead.org>
-In-Reply-To: <20080516104002.GA6962@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 23 May 2008 15:19:07.0008 (UTC) FILETIME=[57B6A000:01C8BCE8]
-X-Nokia-AV: Clean
+	Fri, 23 May 2008 11:25:23 -0400
+Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built
+	into	kernel	image
+From: David Woodhouse <dwmw2@infradead.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
+       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
+       Haroldo Gamal <gamal@alternex.com.br>
+In-Reply-To: <s5h4p8pujy3.wl%tiwai@suse.de>
+References: <1211550282.28967.8.camel@pmac.infradead.org>
+	 <s5hbq2xul4s.wl%tiwai@suse.de>
+	 <1211554711.28967.25.camel@pmac.infradead.org>
+	 <s5h4p8pujy3.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Fri, 23 May 2008 16:25:20 +0100
+Message-Id: <1211556320.28967.35.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
->  - the mainoop of ubifs_bg_thread looks a bit odd either, when you
->    first to an interruotible sleep and then possible one while you
->    still have TASK_RUNNING set.  Also the need_bgt flag is not needed
->    because the thrad is only woken up to perform it's action.
->    In the end the main loop should look something like:
+On Fri, 2008-05-23 at 17:19 +0200, Takashi Iwai wrote:
+> Hm, but request_firmware() returns the const pointer.  It implies that
+> the caller shouldn't change the content, doesn't it?
 > 
-> 	while (1) {
-> 		if (kthread_should_stop())
-> 			break;
-> 		if (try_to_freeze())
-> 			continue;
-> 
-> 		run_bg_commit(c);
-> 
-> 		set_current_state(TASK_INTERRUPTIBLE);
-> 		schedule();
-> 		__set_current_state(TASK_RUNNING);
-> 	}
+> I cannot guarantee that there must be no misbehaving drivers,
+> though...
 
-Err, how are we guaranteed that we do not miss wake-up events then,
-if we were woken up say, between run_bg_commit(c) and
-set_current_state(TASK_INTERRUPTIBLE) ? This was  the purpose
-of the 'need_bgt' flag.
+The 'struct firmware' is const. It contains a pointer to data.
+That data is not const.
+
+ fw->data = some_other_data; 	// bad.
+ fw->data[0] = 0;		// ok.
+
+Of course, we could _make_ it const (if we can remember whether it's
+'const u8 *' or 'u8 const *'...)
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+dwmw2
+
