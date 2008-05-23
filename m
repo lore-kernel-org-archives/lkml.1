@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbYEWQvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbYEWQx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbYEWQvR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 12:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbYEWQvF
+	id S1758499AbYEWQx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 12:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbYEWQxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 12:51:05 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:34875 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbYEWQvE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 12:51:04 -0400
-Message-ID: <4836F68D.4090603@keyaccess.nl>
-Date: Fri, 23 May 2008 18:53:33 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 23 May 2008 12:53:22 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:37482 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750875AbYEWQxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 12:53:21 -0400
+Date: Fri, 23 May 2008 19:50:55 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Natalie Protasevich <protasnb@gmail.com>,
+       Bosko Radivojevic <bosko.radivojevic@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Number of bugs - statistics
+Message-ID: <20080523165055.GC28257@cs181133002.pp.htv.fi>
+References: <d6c8ef150805220528w6c4911bfq2be92eaa487a0f3@mail.gmail.com> <20080522144114.GC27301@cs181133002.pp.htv.fi> <20080522075135.4933161c@infradead.org> <20080522155425.GA2727@cs181133002.pp.htv.fi> <32209efe0805220920h1a2a0089t82b0173bbe239137@mail.gmail.com> <20080522165008.GB2727@cs181133002.pp.htv.fi> <20080522151834.03f2790f@infradead.org> <20080523090940.GG2727@cs181133002.pp.htv.fi> <20080523071157.3cfdc03a@infradead.org>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Haroldo Gamal <gamal@alternex.com.br>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH 1/3] firmware: allow firmware files to be built into kernel
- image
-References: <1211550282.28967.8.camel@pmac.infradead.org> <20080523162101.GA31107@uranus.ravnborg.org> <20080523163841.GC27128@csclub.uwaterloo.ca> <20080523164447.GB31545@uranus.ravnborg.org>
-In-Reply-To: <20080523164447.GB31545@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080523071157.3cfdc03a@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23-05-08 18:44, Sam Ravnborg wrote:
-
-> On Fri, May 23, 2008 at 12:38:41PM -0400, Lennart Sorensen wrote:
->> On Fri, May 23, 2008 at 06:21:01PM +0200, Sam Ravnborg wrote:
->>> Looks good.
->>> But do we need the firmware after init?
->>> In other owrds could it be inside a discard after init block?
->> What is you can hotplug the device and hence need to initialize the same
->> device type multiple times?  Wouldn't keeping the firmware around be
->> useful then?  How about on suspend/resume, do you need to reload
->> firmware in those cases?
+On Fri, May 23, 2008 at 07:11:57AM -0700, Arjan van de Ven wrote:
+> On Fri, 23 May 2008 12:09:40 +0300
+> Adrian Bunk <bunk@kernel.org> wrote:
 > 
-> There are cases where we need it after init.
-> But if there are cases where we do not need it after init maybe
-> we should be able to save some memory there?
+> > 
+> > And in case anyone says "not forwarded distribution bugs aren't our 
+> > problem":
+> > That's a nice example, since in this case a distribuion suddenly 
+> > starting to agressively forwarding their bugs might contribute to
+> > making the kernel better, but might also totally ruin the numbers in
+> > any statistics.
 > 
-> Let us get it working as is - then we can add such features later.
+> Fedora gets less than 1000 bugs per release (so 6 month window).
+> That's... peanuts.
 
-If embedded is the main consumer I would consider this a fairly vital 
-feature though.
+2000 kernel bugs per year?
 
-Rene.
+Then Fedora alone gets roughly as many kernel bugs as the kernel 
+Bugzilla.
+
+>...
+> We are tracking over 3000 bugs per WEEK via other channels.
+>...
+
+What exactly are you measuring with this "3000 bugs" number?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
