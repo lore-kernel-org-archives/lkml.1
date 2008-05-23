@@ -1,89 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761453AbYEWBY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbYEWB13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761453AbYEWBY7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 21:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYEWBYv
+	id S1760696AbYEWB13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 May 2008 21:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbYEWB1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 21:24:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:22058 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYEWBYt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 21:24:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GIqqob9k/gQOvsdZsn3Vxycfhd3XjlIo71vRYVI7LaZfqRvSuuGZXYZFzMlQNWUVWRvcGGrYvF0oCGSRphurauKFrUekMYXgHbq6AV+GOhFgGodIe9MJhqDmN2pU1psWoS1YwJlwqQofomXCvoy3Vp56neUHzJ03m6w/PDBjuKk=
-Message-ID: <aec7e5c30805221824l5ecf0b53i1e1cce7c1c815912@mail.gmail.com>
-Date: Fri, 23 May 2008 10:24:42 +0900
-From: "Magnus Damm" <magnus.damm@gmail.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH 01/03] uio: Add enable_irq() callback
-Cc: linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
-       lethal@linux-sh.org, gregkh@suse.de,
-       "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>
-In-Reply-To: <20080522201829.GE3226@local>
+	Thu, 22 May 2008 21:27:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60057 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbYEWB1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 May 2008 21:27:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: Tree for May 22
+Date: Fri, 23 May 2008 03:27:49 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Borislav Petkov <petkovbb@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20080522165209.ef2cb160.sfr@canb.auug.org.au>
+In-Reply-To: <20080522165209.ef2cb160.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080520105132.1474.73941.sendpatchset@rx1.opensource.se>
-	 <20080520105140.1474.59715.sendpatchset@rx1.opensource.se>
-	 <aec7e5c30805210458m3d15b89am563e4a94b8eb6f2c@mail.gmail.com>
-	 <20080522201829.GE3226@local>
+Message-Id: <200805230327.51067.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hans,
+On Thursday, 22 of May 2008, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since next-20080522:
+> 
+> The three patches reverted from the driver-core tree yesterday have been
+> removed from there.
+> 
+> The net tree (actually the wireless tree) had a trivial conflict with the
+> wireless-current tree.
+> 
+> One of the sound tree build patches has been merged.
+> 
+> The semaphore-removal tree still needed three patches reverted because similar
+> patches were merged into upstream and the scsi-rc-fixes trees.
+> 
+> The bkl-removal tree had a conflict with the arm tree because the arm
+> tree removed a file that was changed.
+> 
+> I have applied the following temporary patch for known build problems:
+> 
+> 	"Fix various 8390 builds" - the net tree broke builds on various
+> architectures - hopefully this patch will go into the net tree shortly.
+> 	"build failure with netfilter on __nf_ct_helper_find()" - breakage
+> due to the moving of stuff from list.h to rculist.h
 
-On Fri, May 23, 2008 at 5:18 AM, Hans J. Koch <hjk@linutronix.de> wrote:
-> On Wed, May 21, 2008 at 08:58:24PM +0900, Magnus Damm wrote:
->> On Tue, May 20, 2008 at 7:51 PM, Magnus Damm <magnus.damm@gmail.com> wrote:
->> > Add enable_irq() callback to struct uio_info. This callback is needed by
->> > the uio_platform driver so interrupts can be enabled before blocking.
->>
->> We can most likely use a single uio platform driver if this patch is
->> acceptable. Any NAKs?
->
-> Yes. Your approach only allows enabling interrupts, but not disabling
-> them. And I don't like that it is not possible for generic userspace
-> tools to find out if a UIO device has this auto-irq-enabling capability
-> or not.
+This one and the previous linux-next can't resume from suspend to RAM on my
+HP nx6325.  The problem is reliably reproducible 100% of the time.
 
-Thanks for your effort. I understand that you need to enable and
-disable interrupts from user space, but that's a bit different from
-what I want to do. I just want interrupts to be enabled before I do
-read() or poll().
+The patch that causes it to happen, as identified by bisection, is:
 
-Also, adding the capability of disabling and enabling interrupts from
-user space seems a bit error prone to me. Mainly since user space then
-needs to know that the interrupt handler in kernel space can cope with
-such changes. Not such a clean interface IMO. OTOH you may need that
-to cope with some broken hardware.
+commit 3dcefa9419f3b8a49921d2218c93a3ddba8e0855
+Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date:   Thu May 22 10:40:19 2008 +1000
 
-But why does user space need to know if the auto-irq-enabling function
-is there or not? If the user is interfacing to the wrong kernel UIO
-driver with wrong behavior then he has obviously done something wrong.
-Knowing if auto-irq-enabling is there from user space isn't going to
-save users from themselves. They can and will mix and match things in
-all sorts of wrong ways anyway.
+    ide: use __generic_unplug_device() in ide_do_drive_cmd()
 
-> I just posted a patch that allows enabling _and_ disabling of irqs from
-> userspace by writing 0 or 1 to /dev/uioX. I've CCed you, could you
-> please test? If this doesn't do what you need, please let me know.
+    Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Cc: Borislav Petkov <petkovbb@gmail.com>
+    Cc: Jens Axboe <jens.axboe@oracle.com>
+    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-I'm sure your patch or the ioctl suggestion both allow re-enabling
-interrupts from user space. That's great, but both of them add extra
-syscall overhead compared to my suggestion. They also make the user
-space interface in user space part of the driver a bit more
-complicated.
+Reverting it along with the next IDE patches (up to and including
+commit fd42e6df0fd163411f5c655b4bde4fb6a8910edc
+"ide: remove action argument in ide_do_drive_cmd") makes the problem go away.
 
-I do understand that you don't want to mess up your UIO kernel
-callbacks by introducing just merging new ones all the time. OTOH, my
-patch is just a few lines. Is introducing one extra syscall good
-enough performance wise?
-
-Thanks for your help!
-
-/ magnus
+Thanks,
+Rafael
