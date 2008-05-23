@@ -1,185 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbYEWEh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbYEWEiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbYEWEh6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 00:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYEWEhY
+	id S1760785AbYEWEiW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 00:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760477AbYEWEiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 00:37:24 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:38055 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751045AbYEWEgn (ORCPT
+	Fri, 23 May 2008 00:38:03 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:35062 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762757AbYEWEh7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 00:36:43 -0400
-Message-Id: <20080523042923.792403846@mvista.com>
-References: <20080523042923.594531457@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 22 May 2008 00:00:02 -0700
-Subject: [PATCH 2/3] rtmutex: add generic blocked_on usage
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Content-Disposition: inline; filename=blocked_on-rtmutex.patch
+	Fri, 23 May 2008 00:37:59 -0400
+To: "Andrew Morton" <akpm@linux-foundation.org>, zanussi@comcast.net
+Subject: Re: [RFC Patch 1/1] trace_printk and trace_dump interface - v2
+Reply-To: prasad@linux.vnet.ibm.com
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Organization: IBM
+Cc: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       dwilder@us.ibm.com, hch@infradead.org
+Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+MIME-Version: 1.0
+In-Reply-To: <20080520131225.46175b3b.akpm@linux-foundation.org>
+References: <op.ua9axd2a03j166@prasadkr_t60p.in.ibm.com> <op.ua9a1r0y03j166@prasadkr_t60p.in.ibm.com> <op.ua90vfwv03j166@prasadkr_t60p.in.ibm.com> <20080519162149.50f58b80.akpm@linux-foundation.org> <op.ubgxivbq03j166@prasadkr_t60p.in.ibm.com> <20080520131225.46175b3b.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 7bit
+Date: Fri, 23 May 2008 10:07:50 +0530
+Message-ID: <op.ubla5cik03j166@prasadkr_t60p.in.ibm.com>
+User-Agent: Opera Mail/9.26 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modify the rtmutex to use the generic blocked_on field.
+On Tue, May 20, 2008 at 01:12:25PM -0700, Andrew Morton wrote:
+> On Wed, 21 May 2008 01:23:09 +0530
+> "K.Prasad" <prasad@linux.vnet.ibm.com> wrote:
+>>> The name 'trace' (previously GTSC), I gather that it was the chosen
+> after
+> > much deliberation (http://tinyurl.com/6odoh4), however I'm open to the
+> > idea of changing the name (say dbg_printk/dbg_dump?).
+> >> Kindly let me know of your suggestions for this, and I will change  
+> them
+> > during the next version.
+> Well I was just putting it out there for consideration.  Yes, I think
+> the whole idea of consuming the "trace_*" namespace in this patchset
+> was ill-advised.
+Since "trace_*" uses relay infrastructure underneath, I am thinking, if it
+would be acceptable to rename them to "relay_*", say relay_printk() and
+relay_dump(). I would be glad to hear from the 'relay' folks about this
+thought.
 
-Signed-off-by: Daniel Walker <dwalker@mvista.com>
+> Also, I don't know how to move forward with the whole feature - I
+> haven't seen a lot of interest from others and I haven't seen much
+> discussion of how this feature differs from all the other tracing
+> things which have been floating about.
+More than a tracing mechanism, this is a tool that aids in tracing, by
+providing a powerful function that directs its output onto the debugfs
+mount path which could be later harnessed by user-space applications
+too. A potential in-kernel user could be the 'marker' handlers which
+more often would be interested in logging data.
 
----
- include/linux/sched.h |    2 --
- kernel/fork.c         |    1 -
- kernel/rtmutex.c      |   35 ++++++++++++++++++++++++-----------
- 3 files changed, 24 insertions(+), 14 deletions(-)
+> And even if the proposed patches presently offer unique and useful
+> features, will one of the other tracing implementations (eg: ltt) later
+> grow to close that gap?
+> I'm also a bit dubious about the whole thing based on past experience
+> with kernel-developer-only in-kernel tools.  People just don't use them
+> much.  One example: fault injection.
 
-Index: linux-2.6.25/include/linux/sched.h
-===================================================================
---- linux-2.6.25.orig/include/linux/sched.h
-+++ linux-2.6.25/include/linux/sched.h
-@@ -1222,8 +1222,6 @@ struct task_struct {
- #ifdef CONFIG_RT_MUTEXES
- 	/* PI waiters blocked on a rt_mutex held by this task */
- 	struct plist_head pi_waiters;
--	/* Deadlock detection and priority inheritance handling */
--	struct rt_mutex_waiter *pi_blocked_on;
- #endif
- 
- 	/*
-Index: linux-2.6.25/kernel/fork.c
-===================================================================
---- linux-2.6.25.orig/kernel/fork.c
-+++ linux-2.6.25/kernel/fork.c
-@@ -980,7 +980,6 @@ static void rt_mutex_init_task(struct ta
- 	spin_lock_init(&p->pi_lock);
- #ifdef CONFIG_RT_MUTEXES
- 	plist_head_init(&p->pi_waiters, &p->pi_lock);
--	p->pi_blocked_on = NULL;
- #endif
- }
- 
-Index: linux-2.6.25/kernel/rtmutex.c
-===================================================================
---- linux-2.6.25.orig/kernel/rtmutex.c
-+++ linux-2.6.25/kernel/rtmutex.c
-@@ -74,6 +74,14 @@ static void fixup_rt_mutex_waiters(struc
- 		clear_rt_mutex_waiters(lock);
- }
- 
-+static
-+struct rt_mutex_waiter *rt_mutex_get_waiter(struct task_struct *task)
-+{
-+	if (task->blocked_on && task->blocked_on->lock_type == RT_MUTEX_WAITER)
-+		return task->blocked_on->rt_blocked_on;
-+	return NULL;
-+}
-+
- /*
-  * We can speed up the acquire/release, if the architecture
-  * supports cmpxchg and if there's no debugging state to be set up
-@@ -197,7 +205,7 @@ static int rt_mutex_adjust_prio_chain(st
- 	 */
- 	spin_lock_irqsave(&task->pi_lock, flags);
- 
--	waiter = task->pi_blocked_on;
-+	waiter = rt_mutex_get_waiter(task);
- 	/*
- 	 * Check whether the end of the boosting chain has been
- 	 * reached or the state of the chain has changed while we
-@@ -411,6 +419,7 @@ static int try_to_take_rt_mutex(struct r
-  */
- static int task_blocks_on_rt_mutex(struct rt_mutex *lock,
- 				   struct rt_mutex_waiter *waiter,
-+				   struct lock_waiter_state *lock_waiter,
- 				   int detect_deadlock)
- {
- 	struct task_struct *owner = rt_mutex_owner(lock);
-@@ -430,7 +439,7 @@ static int task_blocks_on_rt_mutex(struc
- 		top_waiter = rt_mutex_top_waiter(lock);
- 	plist_add(&waiter->list_entry, &lock->wait_list);
- 
--	current->pi_blocked_on = waiter;
-+	current->blocked_on = lock_waiter;
- 
- 	spin_unlock_irqrestore(&current->pi_lock, flags);
- 
-@@ -440,7 +449,7 @@ static int task_blocks_on_rt_mutex(struc
- 		plist_add(&waiter->pi_list_entry, &owner->pi_waiters);
- 
- 		__rt_mutex_adjust_prio(owner);
--		if (owner->pi_blocked_on)
-+		if (rt_mutex_get_waiter(owner))
- 			chain_walk = 1;
- 		spin_unlock_irqrestore(&owner->pi_lock, flags);
- 	}
-@@ -501,7 +510,7 @@ static void wakeup_next_waiter(struct rt
- 	spin_unlock_irqrestore(&current->pi_lock, flags);
- 
- 	/*
--	 * Clear the pi_blocked_on variable and enqueue a possible
-+	 * Clear the blocked_on variable and enqueue a possible
- 	 * waiter into the pi_waiters list of the pending owner. This
- 	 * prevents that in case the pending owner gets unboosted a
- 	 * waiter with higher priority than pending-owner->normal_prio
-@@ -509,11 +518,12 @@ static void wakeup_next_waiter(struct rt
- 	 */
- 	spin_lock_irqsave(&pendowner->pi_lock, flags);
- 
--	WARN_ON(!pendowner->pi_blocked_on);
--	WARN_ON(pendowner->pi_blocked_on != waiter);
--	WARN_ON(pendowner->pi_blocked_on->lock != lock);
-+	WARN_ON(!pendowner->blocked_on);
-+	WARN_ON(pendowner->blocked_on->lock_type != RT_MUTEX_WAITER);
-+	WARN_ON(pendowner->blocked_on->rt_blocked_on != waiter);
-+	WARN_ON(pendowner->blocked_on->rt_blocked_on->lock != lock);
- 
--	pendowner->pi_blocked_on = NULL;
-+	pendowner->blocked_on = NULL;
- 
- 	if (rt_mutex_has_waiters(lock)) {
- 		struct rt_mutex_waiter *next;
-@@ -542,7 +552,7 @@ static void remove_waiter(struct rt_mute
- 	spin_lock_irqsave(&current->pi_lock, flags);
- 	plist_del(&waiter->list_entry, &lock->wait_list);
- 	waiter->task = NULL;
--	current->pi_blocked_on = NULL;
-+	current->blocked_on = NULL;
- 	spin_unlock_irqrestore(&current->pi_lock, flags);
- 
- 	if (first && owner != current) {
-@@ -559,7 +569,7 @@ static void remove_waiter(struct rt_mute
- 		}
- 		__rt_mutex_adjust_prio(owner);
- 
--		if (owner->pi_blocked_on)
-+		if (rt_mutex_get_waiter(owner))
- 			chain_walk = 1;
- 
- 		spin_unlock_irqrestore(&owner->pi_lock, flags);
-@@ -592,7 +602,7 @@ void rt_mutex_adjust_pi(struct task_stru
- 
- 	spin_lock_irqsave(&task->pi_lock, flags);
- 
--	waiter = task->pi_blocked_on;
-+	waiter = rt_mutex_get_waiter(task);
- 	if (!waiter || waiter->list_entry.prio == task->prio) {
- 		spin_unlock_irqrestore(&task->pi_lock, flags);
- 		return;
-@@ -614,6 +624,8 @@ rt_mutex_slowlock(struct rt_mutex *lock,
- 		  int detect_deadlock)
- {
- 	struct rt_mutex_waiter waiter;
-+	struct lock_waiter_state lock_waiter =
-+		{ .lock_type = RT_MUTEX_WAITER, { .rt_blocked_on = &waiter} };
- 	int ret = 0;
- 
- 	debug_rt_mutex_init_waiter(&waiter);
-@@ -663,6 +675,7 @@ rt_mutex_slowlock(struct rt_mutex *lock,
- 		 */
- 		if (!waiter.task) {
- 			ret = task_blocks_on_rt_mutex(lock, &waiter,
-+						      &lock_waiter,
- 						      detect_deadlock);
- 			/*
- 			 * If we got woken up by the owner then start loop
+Among the other enhancements that we were contemplating for this
+mechanism, to make it more powerful and unique, is the ability to
+a)Define callback functions typically invoked everytime before accessing/
+   printing each variable (which may say, acquire a lock or prefix a
+   timestamp) by adding fields to the trace_printk_data structure.
+b)Provide sequencing information for the output, along with ability to
+   prefix the output with essential data such as PID, Timestamp, CPUID,
+   etc.
 
--- 
+Thanks for letting us know your thoughts on this.
+
+--K.Prasad
