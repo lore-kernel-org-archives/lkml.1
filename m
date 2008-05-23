@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765122AbYEWDmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbYEWEBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765122AbYEWDmr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 May 2008 23:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758916AbYEWDmh
+	id S1752663AbYEWEBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 00:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbYEWEBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 May 2008 23:42:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:52424 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757386AbYEWDmg (ORCPT
+	Fri, 23 May 2008 00:01:07 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:57312 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYEWEBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 May 2008 23:42:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eEqlkPdABhzFigOR8GpinpD/yUEvtZEV8rOaIaLMcWrV8wH22Wn6kHGx/Jw4pwNs1VpUK0d7YY0ww4IR06QfGLep+ATEu8vkgHpQOVhygS/YhS75fFBVnnzTIHH3o0N1byMnyJeNUZSZcIyWzXd2a22PoUA+CV+T+ERbwMJmE3w=
-Message-ID: <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
-Date: Fri, 23 May 2008 11:42:35 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Roland McGrath" <roland@redhat.com>
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20080522203428.835D626FA24@magilla.localdomain>
+	Fri, 23 May 2008 00:01:06 -0400
+Message-Id: <200805230400.m4N40f6W010852@www262.sakura.ne.jp>
+Subject: Re: [git patch] vfs: permission API cleanup (v2)
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, trond.myklebust@fys.uio.no,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	 <1211446045.5610.33.camel@elijah.suse.cz>
-	 <3877989d0805220216o5add20ddye2a1fde98a0c1e69@mail.gmail.com>
-	 <20080522111826.BB90326FA24@magilla.localdomain>
-	 <3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
-	 <20080522203428.835D626FA24@magilla.localdomain>
+Date: Fri, 23 May 2008 13:00:41 +0900
+References: <E1JzDzC-0008MT-Hb@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1JzDzC-0008MT-Hb@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 4:34 AM, Roland McGrath <roland@redhat.com> wrote:
->> Sorry for confusion, Let me try to explain it more:
->
-> I understand these code paths (I wrote them).
->
->> If TASK_TRACED is not set earlier before arch_ptrace_stop on ia64
->> ptrace_notify code path, some signals would be delivered without
->> letting debugger run.. (i.e. PTRACED logica in get_signal_to_deliver
->> would be ignored totally!). These should cause the test case hang on
->> ia64. And x86 just works..
->
-> I do not understand this at all, and it has given no information you did
-> not give before.  Please describe the scenario you see in fine-grained
-> terms.
->
-In the code path mentioned above, I see only ia64 has chance to let
-ptraced thread deliver those pending signals before TASK_TRACED is
-set. Then debugger thread would lose chance to interfere the
-delivering of those signals if I correctly understand PT_PTRACED logic
-in get_signal_to_deliver, and the relationship between the two flag :
-TASK_TRACED and PT_TRACED.
+Subject: Add EXPORT_SYMBOL(check_execute).
 
-Since you write those code, Please clarify, in ptrace_notify code
-path, is it allowed that ptraced thread can run signal handler without
-telling debugger what happened?
+NFS needs check_execute().
 
-I noticed the only difference between x86 and IA64 ,  and it does make
-the test case work on
-x86, and fail on IA64... So I made the patch trying to eliminate the
-difference. It indeed seems to solve my problem although it is still
-hack, and I don't know what kind of signals strace handled has such
-magic..
+  Kernel: arch/x86/boot/bzImage is ready  (#1)
+    Building modules, stage 2.
+  ERROR: "check_execute" [fs/nfs/nfs.ko] undefined!
+  make[1]: *** [__modpost] Error 1
+  make: *** [modules] Error 2
 
-As for how the door is only open for ia64, I can explain further if
-you want to know.
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ fs/namei.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- vfs.orig/fs/namei.c
++++ vfs/fs/namei.c
+@@ -246,6 +246,7 @@ int check_execute(struct inode *inode, i
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(check_execute);
+ 
+ static int dentry_permission(struct dentry *dentry, int mask)
+ {
