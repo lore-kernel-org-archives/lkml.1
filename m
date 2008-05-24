@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbYEXVFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762414AbYEXVGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762235AbYEXVFn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 17:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbYEXVFg
+	id S1762414AbYEXVGb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 17:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758220AbYEXVGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 17:05:36 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:42023 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751647AbYEXVFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 17:05:35 -0400
-Date: Sun, 25 May 2008 00:03:04 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Tom Spink <tspink@gmail.com>
-Subject: Re: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
-Message-ID: <20080524210304.GD2308@cs181133002.pp.htv.fi>
-References: <20080524192540.GA28067@uranus.ravnborg.org> <48387F0B.3020506@goop.org> <48388187.2070503@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48388187.2070503@goop.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 24 May 2008 17:06:24 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:24424 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758060AbYEXVGY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 17:06:24 -0400
+Subject: Re: your mail
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0805242149170.3295@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.10.0805242149170.3295@apollo.tec.linutronix.de>
+Content-Type: text/plain
+Date: Sat, 24 May 2008 14:06:21 -0700
+Message-Id: <1211663181.18130.203.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 09:58:47PM +0100, Jeremy Fitzhardinge wrote:
+
+On Sat, 2008-05-24 at 22:05 +0200, Thomas Gleixner wrote:
+
+> > If that's the requirement then code that cleans up the corner case that
+> > I've identified, which is also minimal should be acceptable .. Since
+> > it's meeting the same requirement you layed out above for the original
+> > plist changes.
 > 
-> Would
->
->    #define KCONFIG(x)   (CONFIG_##x - 0)
->
->    if (KCONFIG(PREEMPT)) {
->        ...
->    }
->
-> work?
+> Your code solves the least to worry about corner case and hurts
+> performance for nothing. You take extra locks in the hot path for no
+> benefit.
+> 
+> Aside of that it introduces lock order problems and we can really do
+> without extra useless complexity in the futex code.
+> 
+> You can argue in circles. This is not going anywhere near mainline.
 
-$ cat test.c
-#define KCONFIG(x)   (CONFIG_##x - 0)
+Above I'm not speaking about my code, I'm only speaking in terms of a
+solution to this case, even if it isn't mine..
 
-int main()
-{
-  if (KCONFIG(PREEMPT))
-    ;
+Daniel
 
-  return 0;
-}
-$ gcc -O2 -Wall test.c
-test.c: In function ‘main’:
-test.c:5: error: ‘CONFIG_PREEMPT’ undeclared (first use in this function)
-test.c:5: error: (Each undeclared identifier is reported only once
-test.c:5: error: for each function it appears in.)
-$ gcc --version
-gcc (Debian 4.3.0-5) 4.3.1 20080523 (prerelease)
 
->    J
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
