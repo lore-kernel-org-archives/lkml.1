@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764823AbYEXVqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765147AbYEXVrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764823AbYEXVqo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 17:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762002AbYEXVd3
+	id S1765147AbYEXVrA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 17:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762742AbYEXVda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 17:33:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40146 "EHLO ogre.sisk.pl"
+	Sat, 24 May 2008 17:33:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40149 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762647AbYEXVdL convert rfc822-to-8bit (ORCPT
+	id S1762678AbYEXVdM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 17:33:11 -0400
-Cc: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>, "Zhu Yi" <yi.zhu@intel.com>
+	Sat, 24 May 2008 17:33:12 -0400
+Cc: "tosn00j02@sneakemail.com <"@ogre.sisk.pl
 References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik>
 In-Reply-To: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,8 +18,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <TW_YzGo9TFP.A.JVC.ldIOIB@albercik>
-Subject: [Bug #10765] iwl3945/mac80211: association times out since 2.6.26-rc1
+Message-ID: <TW_YzGo9TFP.A.VIG.HhIOIB@albercik>
+Subject: [Bug #9791] Clock is running too fast^Wslow using acpi_pm clocksource
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 24 May 2008 22:31:40 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,10 +33,9 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10765
-Subject		: iwl3945/mac80211: association times out since 2.6.26-rc1
-Submitter	: Michael S. Tsirkin <m.s.tsirkin@gmail.com>
-Date		: 2008-05-20 22:46 (5 days old)
-Handled-By	: Zhu Yi <yi.zhu@intel.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9791
+Subject		: Clock is running too fast^Wslow using acpi_pm clocksource
+Submitter	: tosn00j02@sneakemail.com
+Date		: 2008-05-03 05:09 (22 days old)
 
 
