@@ -1,110 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbYEXPeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbYEXPfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757467AbYEXPeK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 11:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYEXPd5
+	id S1757611AbYEXPfk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 11:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYEXPfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 11:33:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50177 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbYEXPd4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 11:33:56 -0400
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <1211642706.31212.85.camel@shinybook.infradead.org>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <1211550374.28967.10.camel@pmac.infradead.org>
-	 <20080523164108.GA31545@uranus.ravnborg.org>
-	 <1211640377.540.14.camel@pmac.infradead.org>
-	 <20080524152214.GA12582@uranus.ravnborg.org>
-	 <1211642706.31212.85.camel@shinybook.infradead.org>
-Content-Type: text/plain
-Date: Sat, 24 May 2008 16:34:05 +0100
-Message-Id: <1211643245.31212.88.camel@shinybook.infradead.org>
+	Sat, 24 May 2008 11:35:33 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38526 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751968AbYEXPfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 11:35:32 -0400
+Date: Sat, 24 May 2008 17:36:11 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Steve French <smfrench@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel coding style for if ... else which cross #ifdef
+Message-ID: <20080524153611.GA13890@uranus.ravnborg.org>
+References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <48374D3F.1080502@zytor.com> <20080524054301.GA3773@uranus.ravnborg.org> <4837AAE2.9090102@zytor.com> <20080524064201.GA4133@uranus.ravnborg.org> <4837E89D.9040008@goop.org> <20080524112704.GA7292@uranus.ravnborg.org> <483827CE.9080200@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483827CE.9080200@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-05-24 at 16:25 +0100, David Woodhouse wrote:
-> Playing with it now. I fixed the mkdir thing by including $(objtree)
-> in the target.
+On Sat, May 24, 2008 at 03:35:58PM +0100, Jeremy Fitzhardinge wrote:
+> Sam Ravnborg wrote:
+> >I assume you wanted to say:
+> >  
+> >>   #undef  CONFIG_FOO
+> >>   #define CFG_FOO   1
+> >>   #define CONFIG_FOO_MODULE
+> >>   #define CFG_FOO_MODULE 1
+> >>    
+> >Because then the CONFIG_* is not changed
+> >and we do not want to change that.
+> >  
+> 
+> Yeah, I didn't intend to change the meaning of CONFIG_FOO.
+> 
+> >I'm not fully convinced about:
+> >  
+> >>   #define CFG_FOO   1
+> >>    
+> >But on the other hand it is only in odd
+> >cases we distingush between built-in and module.
+> >So it makes most sense.
+> >  
+> 
+> I think CONFIG_ and CFG_ should be exact parallels, so if CONFIG_FOO is 
+> undefined, CFG_FOO should be 0.
 
-Here's what I have (on top of the git tree) now. I just need to sort out
-the clean/mrproper behaviour -- and possibly should rename the korg
-firmware to firmware/korg/k1212.c_shipped?
+We should actually do as you intially suggested and alwyas
+define CONFIG_FOO no matter if FOO is built-in or module.
+Because we do only want to distingush between the two in rare cases.
 
-commit 728aa4212690701823ce3dcf22816f3953923530
-Author: David Woodhouse <dwmw2@infradead.org>
-Date:   Sat May 24 11:56:32 2008 +0100
+But that is a separate patch and lets not do the same
+mistage with CFG_*
+I cooked up following patch - but I have not test-build a kernel yet.
+We may use CFG_* here and there and clash is not good.
 
-    firmware: move firmware files into firmware/
-    
-    Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+	Sam
 
-diff --git a/firmware/Makefile b/firmware/Makefile
-index f6b0c3c..62c2825 100644
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -2,10 +2,15 @@
- # kbuild file for firmware/
- #
- 
-+firmware-$(CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL) += korg/k1212
-+
- firmware_bins := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
--firmware_objs := $(patsubst %,%.o, $(firmware_bins))
--firmware_srcs := $(patsubst %,$(obj)/%.c, $(firmware_bins))
-+firmware_srcs_generated := $(patsubst %,$(obj)/%.c, $(firmware_bins))
-+firmware_objs := $(patsubst %,%.o, $(firmware_bins) $(firmware-y)) 
-+firmware_dirs := $(patsubst %,$(objtree)/$(obj)/%,$(dir $(firmware_objs)))
- 
-+quiet_cmd_mkdir = MKDIR   $@
-+      cmd_mkdir = mkdir -p $@
- 
- quiet_cmd_fwbin = MK_FW   $@
-       cmd_fwbin = echo '/* File automatically generated */' > $@ ;	\
-@@ -16,9 +21,14 @@ quiet_cmd_fwbin = MK_FW   $@
- 		  echo '};' >> $@ ;					\
- 		  echo 'DECLARE_BUILTIN_FIRMWARE("$(patsubst firmware/%.c,%,$@)",fw);' >> $@
- 
--$(firmware_srcs): $(obj)/%.c: $(srctree)/$(obj)/%
-+$(firmware_srcs_generated): $(obj)/%.c: $(srctree)/$(obj)/%
- 	$(call cmd,fwbin)
- 
-+$(firmware_dirs):
-+	$(call cmd,mkdir)
-+
-+$(patsubst %,$(obj)/%,$(firmware_objs)): $(firmware_dirs)
-+
- obj-y := $(firmware_objs)
- 
--targets := $(firmware_objs)
-+targets := $(firmware_objs) $(patsubst $(obj)/%,%, $(firmware_srcs_generated))
-diff --git a/sound/pci/korg1212/korg1212-firmware.c b/firmware/korg/k1212.c
-similarity index 100%
-rename from sound/pci/korg1212/korg1212-firmware.c
-rename to firmware/korg/k1212.c
-diff --git a/sound/pci/korg1212/Makefile b/sound/pci/korg1212/Makefile
-index 7a5ebdf..f11ce1b 100644
---- a/sound/pci/korg1212/Makefile
-+++ b/sound/pci/korg1212/Makefile
-@@ -7,4 +7,3 @@ snd-korg1212-objs := korg1212.o
- 
- # Toplevel Module Dependency
- obj-$(CONFIG_SND_KORG1212) += snd-korg1212.o
--obj-$(CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL) += korg1212-firmware.o
-
-
--- 
-dwmw2
-
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index ee5fe94..98a2c39 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -717,15 +717,21 @@ int conf_write_autoconf(void)
+ 		case S_BOOLEAN:
+ 		case S_TRISTATE:
+ 			switch (sym_get_tristate_value(sym)) {
+-			case no:
+-				break;
+ 			case mod:
+ 				fprintf(out, "CONFIG_%s=m\n", sym->name);
+ 				fprintf(out_h, "#define CONFIG_%s_MODULE 1\n", sym->name);
++				fprintf(out_h, "#define CFG_%s 1\n", sym->name);
++				fprintf(out_h, "#define CFG_%s_MODULE 1\n", sym->name);
+ 				break;
+ 			case yes:
+ 				fprintf(out, "CONFIG_%s=y\n", sym->name);
+ 				fprintf(out_h, "#define CONFIG_%s 1\n", sym->name);
++				fprintf(out_h, "#define CFG_%s 1\n", sym->name);
++				fprintf(out_h, "#define CFG_%s_MODULE 0\n", sym->name);
++				break;
++			case no:
++				fprintf(out_h, "#define CFG_%s 0\n", sym->name);
++				fprintf(out_h, "#define CFG_%s_MODULE 0\n", sym->name);
+ 				break;
+ 			}
+ 			break;
