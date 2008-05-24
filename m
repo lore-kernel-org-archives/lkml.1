@@ -1,46 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYEXEqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbYEXFIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYEXEqU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 00:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYEXEqM
+	id S1755450AbYEXFIE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 01:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYEXFHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 00:46:12 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50781 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbYEXEqL (ORCPT
+	Sat, 24 May 2008 01:07:52 -0400
+Received: from mga10.intel.com ([192.55.52.92]:5292 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750979AbYEXFHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 00:46:11 -0400
-Date: Sat, 24 May 2008 06:46:10 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Adrian Bunk <bunk@kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>
-Subject: Re: crossbuild fails in modpost
-In-Reply-To: <1211587126.31212.50.camel@shinybook.infradead.org>
-Message-ID: <alpine.LNX.1.10.0805240644350.19084@fbirervta.pbzchgretzou.qr>
-References: <482C3E3E.9090204@gmail.com> <482C6F02.1000205@gmail.com>  <20080515173539.GA23959@uranus.ravnborg.org>  <20080515174015.GA24024@uranus.ravnborg.org> <482C8CBE.2060101@gmail.com>  <20080515204632.GG1936@cs181133002.pp.htv.fi> 
- <alpine.LNX.1.10.0805182155011.15590@fbirervta.pbzchgretzou.qr>  <20080518204258.GL8140@cs181133002.pp.htv.fi>  <alpine.LNX.1.10.0805182314450.15590@fbirervta.pbzchgretzou.qr> <1211587126.31212.50.camel@shinybook.infradead.org>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sat, 24 May 2008 01:07:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,533,1204531200"; 
+   d="scan'208";a="331899115"
+Message-ID: <4837A2A3.2030204@linux.intel.com>
+Date: Fri, 23 May 2008 22:07:47 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
+References: <4836EE8C.1010200@linux.intel.com> <20080524001509.GG4018@sequoia.sous-sol.org>
+In-Reply-To: <20080524001509.GG4018@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Wright wrote:
+> * Arjan van de Ven (arjan@linux.intel.com) wrote:
+>> Rank 9: task_has_capability
+>> 	Reported 34 times
+>> 	[tainted] Bug in the proprietary firegl driver
+         ^^^^^^^^^
+>> 	Oops only shows up in tainted kernels
+                               ^^^^^^^^
+>> 	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25.
+>> 	More info: http://www.kerneloops.org/searchweek.php?search=task_has_capability
+> 
+> looking at first one: http://www.kerneloops.org/raw.php?rawid=13598&msgid=
+> 
+> OK, aside of the obvious (their problem):
+> 
+>   Tainted: P
+>   EIP is at task_has_capability+0x48/0x76
+>   Code: ... <0f> 0b 
+>   	    ^^^^^^^
+> 	    BUG()
+> 
+> This should be listed under the BUG/BUG_ON category as opposed to oops, no?
 
-On Saturday 2008-05-24 01:58, David Woodhouse wrote:
+yeah it should; Linus pointed that out and I've since fixed my report generator script
 
->On Sun, 2008-05-18 at 23:15 +0200, Jan Engelhardt wrote:
->> Of course not. Ever since the arch unification, building for the
->> other bitness in bi- or multiarch systems has become harder.
->
->It works fine for the unified powerpc tree.
+> Also, I think the raw data is missing some bit.  Where is the:
+> 
+>   kernel BUG at...
+> 
+hmm it ought to be there.
 
-That is good for ppc. But for x86, things seem to have changed.
+> At any rate, they have a bug in their proprietary module (news at 11).
+> 
+> So, I don't think this should make the top ten.  Do you have a way to
+> sort tainted vs non-tainted, and only produce the top ten for untainted?
 
-Previously, one could just do `make ARCH=x86_64` on an i586
-installation, now the required magic is a little bit tougher,
-unless I am missing something (new).
+yes absolutely; this is a question I'll have for the customers of the data...
+do people want to see "only-tainted" in these top 10s? Right now I mark them as such
+but leave them in. It's trivial for me to just leave them out instead (the info is there,
+just a matter of not counting)
+
+> 
+> And one last question re: the stats.  Is there a way to tell if the 41
+> times this was reported are from 41 distinct users.  Is there any unique
+> cookie you receive with the raw oops report that can help filter out
+> duplicates (by duplicate I mean a user w/ this proprietary driver and
+> rebooting is likely to reproduce the same info on each boot).  You don't
+> want to drop dups, but at least let that info the stats or something.
+
+There is no unique per-system ID yet; I'm working with the SMOLT guys to get this added potentially.
+
+> 
+> For the record, that bug triggers:
+> 
+>   printk(KERN_ERR "SELinux:  out of range capability %d\n", cap);
+>   BUG();
+> 
+> meaning they are passing in a capability that's > 63 (2.6.25 introduced
+> 64 bit caps).
+> 
+> BTW, EAX: 00000030 (48)...that suggests their capability they passed in
+> was quite large, likely an address or smth.
+
+yeah iirc the AMD graphics driver gives the user process full root caps for some time...
+Annoying things these non-root linux users ;)
+
