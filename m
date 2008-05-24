@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbYEXGlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbYEXGoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760117AbYEXGlc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 02:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbYEXGlW
+	id S1760623AbYEXGoP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 02:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbYEXGn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 02:41:22 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56915 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755784AbYEXGlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 02:41:22 -0400
-Date: Sat, 24 May 2008 08:42:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Steve French <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: kernel coding style for if ... else which cross #ifdef
-Message-ID: <20080524064201.GA4133@uranus.ravnborg.org>
-References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <48374D3F.1080502@zytor.com> <20080524054301.GA3773@uranus.ravnborg.org> <4837AAE2.9090102@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 24 May 2008 02:43:59 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:45448 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755615AbYEXGn7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 02:43:59 -0400
+Message-ID: <fa686aa40805232343x20031560j5659d203e25f494@mail.gmail.com>
+Date: Sat, 24 May 2008 00:43:58 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 2/4] spi: split up spi_new_device() to allow two stage registration.
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, fabrizio.garetto@gmail.com,
+       jonsmirl@gmail.com
+In-Reply-To: <200805211717.13206.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4837AAE2.9090102@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	 <20080516193608.28030.34968.stgit@trillian.secretlab.ca>
+	 <200805211717.13206.david-b@pacbell.net>
+X-Google-Sender-Auth: d7131d7dedb8551f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 10:42:58PM -0700, H. Peter Anvin wrote:
-> Sam Ravnborg wrote:
-> >>*However*, the best would really be if we changed Kconfig to emit 
-> >>configuration constants what were 0/1 instead of undefined/defined. 
-> >>That way we could do:
-> >>
-> >>	if (CONFIG_SOMETHING && foo) {
-> >>		/* ... something ... */
-> >>	} else if ((mode & S_IWUGO) == 0) {
-> >>		/* ... */
-> >
-> >We could do that - but then it would need another
-> >name not to clash with all the places where we rely
-> >on CONFIG_FOO='n' => CONFIG_FOO is not defined.
-> >
-> >We could teach kconfig to emit something like:
-> >#define KFOO 0   (for the 'n' value)
-> >And 1 or 2 for the y and m values.
-> >
-> 
-> I don't think we want to use "1 or 2"... I suspect we want to use the 
-> same booleans we currently have.
-I'm a bit dense (or I need more coffe - it's morning here).
-What "same booleans"?
+On Wed, May 21, 2008 at 6:17 PM, David Brownell <david-b@pacbell.net> wrote:
+> On Friday 16 May 2008, Grant Likely wrote:
+>>
+>> This patch splits the allocation and registration portions of code out
+>> of spi_new_device() and creates three new functions; spi_alloc_device(),
+>> spi_register_device(), and spi_device_release().
+>
+> I have no problem with the first two, but why the last?
+>
+> If the devices are always allocated by spi_alloc_device() as
+> they should be -- probably through an intermediary -- the
+> only public function necessary for that cleanup should be
+> the existing spi_dev_put().
 
-> I would suggest CFG_* instead of CONFIG_* for the new set.
-Agreed.
+Ah, okay.  I'm still a bit fuzzy on the device model conventions.
+I'll remove that then.
 
-	Sam
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
