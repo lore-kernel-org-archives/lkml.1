@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbYEXE3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbYEXEkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbYEXE3y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 00:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYEXE3m
+	id S1753699AbYEXEkz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 00:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYEXEkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 00:29:42 -0400
-Received: from 1wt.eu ([62.212.114.60]:4981 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbYEXE3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 00:29:41 -0400
-Date: Sat, 24 May 2008 06:29:11 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Matthias Cramer <matthias.cramer@interway.ch>
-Cc: James Chapman <jchapman@katalix.com>,
+	Sat, 24 May 2008 00:40:46 -0400
+Received: from twinlark.arctic.org ([208.69.40.136]:38713 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750979AbYEXEkp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 00:40:45 -0400
+Message-ID: <48379C48.5020802@kernel.org>
+Date: Fri, 23 May 2008 21:40:40 -0700
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: Wired behaviour with IPv6 over PPP
-Message-ID: <20080524042911.GE6749@1wt.eu>
-References: <48341C0B.7010003@interway.ch> <20080522014959.0f6191aa.akpm@linux-foundation.org> <48354318.60202@katalix.com> <4835C40B.60603@interway.ch>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4835C40B.60603@interway.ch>
-User-Agent: Mutt/1.5.11
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>
+Subject: Re: capget() overflows buffers.
+References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org> <20080522233757.GD30402@sequoia.sous-sol.org> <48366D9A.70806@kernel.org> <20080523182602.GO30402@sequoia.sous-sol.org> <48375B10.10003@kernel.org> <20080524010923.GT30402@sequoia.sous-sol.org>
+In-Reply-To: <20080524010923.GT30402@sequoia.sous-sol.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 09:05:47PM +0200, Matthias Cramer wrote:
-> James Chapman wrote:
-> > Andrew Morton wrote:
-> >> On Wed, 21 May 2008 14:56:43 +0200 Matthias Cramer
-> >> <matthias.cramer@interway.ch> wrote:
-> >>> I have a very wired behaviour when doing IPv6 over PPPoE.
-> >>>
-> >>> The situation:
-> >>>
-> >>> A linux box connected to a DSL Modem, on the other side is a Cisco
-> >>> LNS which terminates the PPP session (actually L2TP).
-> >>> I have control over both ends.
-> >>>
-> >>> When I have net.ipv6.conf.all.forwarding set to 0 then the ppp
-> >>> Interface gets a IPv6 address from the Cisco via IP6CP.
-> >>> When I have net.ipv6.conf.all.forwarding set to 1 them the ppp
-> >>> Interface does not get an address, it has only a normal link local
-> >>> address.
-> > 
-> > What do you mean by normal link local address?
-> 
-> a fe80:: address, which every IPv6 enabled Interface has...
-> 
-> > 
-> >>> When I start the ppp session with forwarding set to 0 I can ping out
-> >>> and there exists a default route to ppp0 , then I switch forwarding to 1
-> >>> the default route disappears and therefore routing does not work any
-> >>> longer.
-> > 
-> > Did this work with previous kernel versions?
-> 
-> No, in my opinion it never worked. But I thought that pppd does it wrong
-> because id never got an IPv6 address. But I had always forwarding
-> enabled. Now in this case i started pppd without forwarding enabled and
-> got an address.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Well, at least it has been working for years in kernel 2.4 for me with
-pppd 2.4.2b3 to 2.4.4 (I've not upgraded my firewall to 2.6 yet). So
-it has definitely been working at some point.
+Chris Wright wrote:
+| Hmm, it would be kind of nice to have a formalized way get the size,
+| perhaps it would help with KaiGai's request for caps printed out.
+| Something that tells us either the number of u32s, or the max bit
+| supported?
 
-Willy
+Serge has already provided one  with the call,
 
+~   sys_prctl(PR_CAPBSET_READ, x);
+
+returns -EINVAL if (x > max-supported-capability).
+
+(Ref: 3b7391de67da515c91f48aa371de77cb6cc5c07e)
+
+|> | All looks good.  I think we need to issue some warnings, because
+|> | at least Fedora 9 and openSUSE 11 are/will be 2.6.25 based.
+|>
+|> Do any of the above answers help? (FWIW I attached the patch to the
+|> redhat bug.)
+|
+| Yes, thanks.  But I still think we need to print a warning (unfortunately
+| we can't distinguish libcap from non-libcap app), because apps that
+| aren't using libcap should really be updated (either pull new update
+| from vendor or recompiled by end user).
+
+Just to be clear, you are not referring to a warning that the
+application is stuck in a 32-bit capability world, because we already
+have one of those: warn_legacy_capability_use(). You are referring to a
+warning that might indicate a problem with code like that given in your
+example - in which case I'll respond to that part of the thread...
+
+Cheers
+
+Andrew
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFIN5xI+bHCR3gb8jsRAsz6AKDHOeOO8953r2bRJ3RXZaRdBnlGUwCdG3oX
+CvWy/iQVmfVdpeRIWLa7N/w=
+=R7Bq
+-----END PGP SIGNATURE-----
