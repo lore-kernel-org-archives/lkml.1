@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761444AbYEXSY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbYEXS3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761444AbYEXSY4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 14:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759783AbYEXSYq
+	id S1761488AbYEXS3l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 14:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760317AbYEXS3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 14:24:46 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:53589 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759449AbYEXSYp (ORCPT
+	Sat, 24 May 2008 14:29:33 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:48460 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759627AbYEXS3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 14:24:45 -0400
-Message-ID: <48385CFA.7010201@linux.vnet.ibm.com>
-Date: Sat, 24 May 2008 23:52:50 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: menage@google.com, matt@bluehost.com, roberto@unbit.it,
-       linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 0/3] cgroup: block device i/o bandwidth controller
-References: <> <1211648217-13361-1-git-send-email-righi.andrea@gmail.com>
-In-Reply-To: <1211648217-13361-1-git-send-email-righi.andrea@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 24 May 2008 14:29:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=g8CFWqcTpM9vOd0FFLosj4F1+fI1tAv1CqL5zFnPIrIRnoBHnb9zHDc5jUC6hZA41FOz6SgfStPDCQlwWPR77RkQqog0WBgOEVLZ8nexlBHt8YTBzlAfx0daqqsY+VBslrlTxLGxfmZQM5roYGMSMxoF9iBiEOJ89k/ZCRZe6Yo=
+Date: Sat, 24 May 2008 21:29:27 +0300
+From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, yi.zhu@intel.com,
+       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, johannes@sipsolutions.net,
+       flamingice@sourmilk.net
+Subject: Re: regression iwl3945/mac80211: association times out since
+	2.6.26-rc1
+Message-ID: <20080524182852.GA9722@robinhood.home>
+References: <20080520184859.GA8168@robinhood.home>
+	<20080521054743.GA9910@robinhood.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521054743.GA9910@robinhood.home>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> I'm resending an updated version of the cgroup I/O bandwidth controller
-> that I wrote some months ago (http://lwn.net/Articles/265944), since
-> someone asked me recently.
-> 
-> The goal of this patchset is to implement a block device I/O bandwidth
-> controller using cgroups.
-> 
-> Detailed informations about design, its goal and usage are described in
-> the documentation.
-> 
-> Review, comments and feedbacks are welcome.
-> 
+On Wed, May 21, 2008 at 08:47:44AM +0300, Michael S. Tsirkin wrote:
+> FYI, I created an item in bugzilla to track this
+> http://bugzilla.kernel.org/show_bug.cgi?id=10765
 
-Hi, Andrea,
+As requested, more configuration and log files have been attached
+to this item.
 
-There are several parallel efforts for the IO controller? Could you
-describe/compare them with yours? Is any consensus building taking place?
-
-CC'ing containers mailing list.
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
