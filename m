@@ -1,174 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761248AbYEXRWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbYEXRYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761248AbYEXRWl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 13:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbYEXRWO
+	id S1760984AbYEXRYa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 13:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbYEXRYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 13:22:14 -0400
-Received: from host135-133-dynamic.55-82-r.retail.telecomitalia.it ([82.55.133.135]:29456
-	"EHLO linux.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755626AbYEXRWN (ORCPT
+	Sat, 24 May 2008 13:24:23 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:8311 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755626AbYEXRYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 13:22:13 -0400
-From: Andrea Righi <righi.andrea@gmail.com>
-To: balbir@linux.vnet.ibm.com, menage@google.com
-Cc: matt@bluehost.com, roberto@unbit.it, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] io-throttle accounting and control
-Date: Sat, 24 May 2008 18:56:57 +0200
-Message-Id: <1211648217-13361-4-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Sat, 24 May 2008 13:24:22 -0400
+Subject: Re: [PATCH 3/3] futex: fix miss ordered wakeups
+From: Daniel Walker <dwalker@mvista.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.10.0805241852490.3295@apollo.tec.linutronix.de>
+References: <20080523042923.594531457@mvista.com>
+	 <20080523042923.916202203@mvista.com>
+	 <alpine.LFD.1.10.0805241039220.3295@apollo.tec.linutronix.de>
+	 <1211643165.18130.166.camel@localhost.localdomain>
+	 <alpine.LFD.1.10.0805241852490.3295@apollo.tec.linutronix.de>
+Content-Type: text/plain
+Date: Sat, 24 May 2008 10:24:20 -0700
+Message-Id: <1211649860.18130.182.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apply the io-throttle controller to the opportune kernel functions. Both
-accounting and throttling functionalities are performed by cgroup_io_account().
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- block/blk-core.c    |    2 ++
- fs/buffer.c         |    6 ++++++
- fs/direct-io.c      |    2 ++
- mm/page-writeback.c |    5 +++++
- mm/readahead.c      |    2 ++
- 5 files changed, 17 insertions(+), 0 deletions(-)
+On Sat, 2008-05-24 at 19:03 +0200, Thomas Gleixner wrote:
+> On Sat, 24 May 2008, Daniel Walker wrote:
+> > On Sat, 2008-05-24 at 10:55 +0200, Thomas Gleixner wrote:
+> > 
+> > > Normal futexes have no ordering guarantees at all. There is no
+> > > mechanism to prevent lock stealing from lower priority tasks. So why
+> > > should we care about the once a year case, where a sleepers priority
+> > > is modified ?
+> > 
+> > Lock stealing?
+> 
+> Do you have the faintest idea how the futex code works at all ? There
+> is no guarantee that the task which is woken up first gets the futex.
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 6a9cc0d..d6b3353 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -26,6 +26,7 @@
- #include <linux/swap.h>
- #include <linux/writeback.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/interrupt.h>
- #include <linux/cpu.h>
- #include <linux/blktrace_api.h>
-@@ -1485,6 +1486,7 @@ void submit_bio(int rw, struct bio *bio)
- 			count_vm_events(PGPGOUT, count);
- 		} else {
- 			task_io_account_read(bio->bi_size);
-+			cgroup_io_account(bio->bi_size);
- 			count_vm_events(PGPGIN, count);
- 		}
- 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index a073f3f..eb4893c 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -35,6 +35,7 @@
- #include <linux/suspend.h>
- #include <linux/buffer_head.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/bio.h>
- #include <linux/notifier.h>
- #include <linux/cpu.h>
-@@ -700,6 +701,8 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
- static int __set_page_dirty(struct page *page,
- 		struct address_space *mapping, int warn)
- {
-+	size_t cgroup_io_acct = 0;
-+
- 	if (unlikely(!mapping))
- 		return !TestSetPageDirty(page);
- 
-@@ -715,12 +718,15 @@ static int __set_page_dirty(struct page *page,
- 			__inc_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
- 			task_io_account_write(PAGE_CACHE_SIZE);
-+			cgroup_io_acct = PAGE_CACHE_SIZE;
- 		}
- 		radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
- 	}
- 	write_unlock_irq(&mapping->tree_lock);
- 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-+	if (cgroup_io_acct)
-+		cgroup_io_account(cgroup_io_acct);
- 
- 	return 1;
- }
-diff --git a/fs/direct-io.c b/fs/direct-io.c
-index 9e81add..1b82224 100644
---- a/fs/direct-io.c
-+++ b/fs/direct-io.c
-@@ -35,6 +35,7 @@
- #include <linux/buffer_head.h>
- #include <linux/rwsem.h>
- #include <linux/uio.h>
-+#include <linux/blk-io-throttle.h>
- #include <asm/atomic.h>
- 
- /*
-@@ -667,6 +668,7 @@ submit_page_section(struct dio *dio, struct page *page,
- 		 * Read accounting is performed in submit_bio()
- 		 */
- 		task_io_account_write(len);
-+		cgroup_io_account(len);
- 	}
- 
- 	/*
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 789b6ad..97a0c74 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -23,6 +23,7 @@
- #include <linux/init.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/blkdev.h>
- #include <linux/mpage.h>
- #include <linux/rmap.h>
-@@ -1077,6 +1078,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 	if (!TestSetPageDirty(page)) {
- 		struct address_space *mapping = page_mapping(page);
- 		struct address_space *mapping2;
-+		size_t cgroup_io_acct = 0;
- 
- 		if (!mapping)
- 			return 1;
-@@ -1091,6 +1093,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 				__inc_bdi_stat(mapping->backing_dev_info,
- 						BDI_RECLAIMABLE);
- 				task_io_account_write(PAGE_CACHE_SIZE);
-+				cgroup_io_acct = PAGE_CACHE_SIZE;
- 			}
- 			radix_tree_tag_set(&mapping->page_tree,
- 				page_index(page), PAGECACHE_TAG_DIRTY);
-@@ -1100,6 +1103,8 @@ int __set_page_dirty_nobuffers(struct page *page)
- 			/* !PageAnon && !swapper_space */
- 			__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
- 		}
-+		if (cgroup_io_acct)
-+			cgroup_io_account(cgroup_io_acct);
- 		return 1;
- 	}
- 	return 0;
-diff --git a/mm/readahead.c b/mm/readahead.c
-index d8723a5..fe2f865 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -14,6 +14,7 @@
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-@@ -76,6 +77,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
- 			break;
- 		}
- 		task_io_account_read(PAGE_CACHE_SIZE);
-+		cgroup_io_account(PAGE_CACHE_SIZE);
- 	}
- 	return ret;
- }
--- 
-1.5.4.3
+Thomas if you want to be abusive, talk to someone else.
+
+> A) A task on another CPU can get it independent of its priority
+> B) In case of multiple waiters wakeup there is no guarantee either
+
+This is how I would imagine the pre-plist code would work.
+
+> > > If you need ordering guarantees then use PI futexes.
+> > 
+> > There are degree's of overhead with each step.. Someone may not need or
+> > want priority inheritance.
+> 
+> Then there is no need to add this artifical "correctness" at all.
+
+huh?
+
+> > > There are more issues vs. pi futexes as well. The simple case of
+> > > futex_wait() vs. futex_adjust_waiters will just upset lockdep, but
+> > > there are real dealocks vs. unqueue_me_pi waiting.
+> > 
+> > You mean the lock ordering would cause the deadlock vs. unqueue_me_pi ,
+> > or are you talking about something else?
+> 
+> Do I write Chinese or what ?
+
+I guess so .. 
+
+Daniel
 
