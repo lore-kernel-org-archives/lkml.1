@@ -1,100 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbYEXUhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761837AbYEXUjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761777AbYEXUhX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 16:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759289AbYEXUhL
+	id S1761837AbYEXUjR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 16:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759352AbYEXUjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 16:37:11 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55263 "EHLO pasmtpB.tele.dk"
+	Sat, 24 May 2008 16:39:06 -0400
+Received: from gw.goop.org ([64.81.55.164]:48041 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758436AbYEXUhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 16:37:09 -0400
-Date: Sat, 24 May 2008 22:37:48 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH] x86: use defconfig as last resort
-Message-ID: <20080524203748.GA2343@uranus.ravnborg.org>
-References: <20080524192540.GA28067@uranus.ravnborg.org> <alpine.LFD.1.10.0805241320200.3081@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805241320200.3081@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1754146AbYEXUjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 16:39:04 -0400
+Message-ID: <48387CCB.1030801@goop.org>
+Date: Sat, 24 May 2008 21:38:35 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Tom Spink <tspink@gmail.com>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Steve French <smfrench@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel coding style for if ... else which cross #ifdef
+References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com>	 <4837AAE2.9090102@zytor.com>	 <20080524064201.GA4133@uranus.ravnborg.org>	 <4837E89D.9040008@goop.org>	 <20080524112704.GA7292@uranus.ravnborg.org>	 <483827CE.9080200@goop.org>	 <20080524153611.GA13890@uranus.ravnborg.org>	 <48383830.6060504@goop.org>	 <19f34abd0805240857l57e667fdicb240baf898f6296@mail.gmail.com>	 <48383C26.5040106@goop.org> <7b9198260805240940v46db928ak9bcacf9363c46d41@mail.gmail.com>
+In-Reply-To: <7b9198260805240940v46db928ak9bcacf9363c46d41@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH] x86: use defconfig as last resort
+Tom Spink wrote:
+> A thought occurred to me that we may be able to used some preprocessor
+> magic and do this:
+>
+> #define config_defined(x) CFGVAL_## x
+>
+> Which means that, if we get Kconfig to produce:
+>
+> #define CFGVAL_CONFIG_FOO 0
+> #define CFGVAL_CONFIG_VALUE_BAR 1
+> #define CFGVAL_CONFIG_VALUE_BAZ_MODULE 1
+>
+> We can use this:
+>
+> if (config_defined(CONFIG_FOO) && some_expr) {
+>    panic("Oh no.");
+> }
 
-When using "make oldconfig" with no .config
-present try the list from init/Kconfig DEFCONFIG_LIST
-before resorting to use one of the defconfigs.
+Well, in that case you could use Willy's magic hack:
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
+#define config_defined(x)      (x - 0)
 
-I had the patch in my local tree but never got it posted.
-And then I forgot.
+Which isn't a bad alternative to defining a whole pile of new symbols...
 
-I plan to redo this stuff soonish so we have a more
-clean and predictive approach.
-But the KCONFIG_ stuff was just more fun ;^)
-
-	Sam
-
- arch/x86/Kconfig |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index fe361ae..393a169 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -26,18 +26,6 @@ config X86
- 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
- 	select HAVE_ARCH_KGDB if !X86_VOYAGER
- 
--config DEFCONFIG_LIST
--	string
--	depends on X86_32
--	option defconfig_list
--	default "arch/x86/configs/i386_defconfig"
--
--config DEFCONFIG_LIST
--	string
--	depends on X86_64
--	option defconfig_list
--	default "arch/x86/configs/x86_64_defconfig"
--
- 
- config GENERIC_LOCKBREAK
- 	def_bool n
-@@ -205,6 +193,18 @@ config KTIME_SCALAR
- 	def_bool X86_32
- source "init/Kconfig"
- 
-+config DEFCONFIG_LIST
-+	string
-+	depends on X86_32
-+	option defconfig_list
-+	default "arch/x86/configs/i386_defconfig"
-+
-+config DEFCONFIG_LIST
-+	string
-+	depends on X86_64
-+	option defconfig_list
-+	default "arch/x86/configs/x86_64_defconfig"
-+
- menu "Processor type and features"
- 
- source "kernel/time/Kconfig"
--- 
-1.5.4.1.143.ge7e51
-
+    J
