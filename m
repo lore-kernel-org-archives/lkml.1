@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761444AbYEXShC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761544AbYEXSk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761444AbYEXShC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 14:37:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760468AbYEXSgv
+	id S1761544AbYEXSk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 14:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760468AbYEXSkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 14:36:51 -0400
-Received: from www.tglx.de ([62.245.132.106]:55852 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760323AbYEXSgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 14:36:51 -0400
-Date: Sat, 24 May 2008 20:35:40 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Daniel Walker <dwalker@mvista.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] futex: fix miss ordered wakeups
-In-Reply-To: <1211649860.18130.182.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.10.0805242031560.3295@apollo.tec.linutronix.de>
-References: <20080523042923.594531457@mvista.com>  <20080523042923.916202203@mvista.com>  <alpine.LFD.1.10.0805241039220.3295@apollo.tec.linutronix.de>  <1211643165.18130.166.camel@localhost.localdomain>  <alpine.LFD.1.10.0805241852490.3295@apollo.tec.linutronix.de>
- <1211649860.18130.182.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 24 May 2008 14:40:19 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:30334 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760323AbYEXSkS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 14:40:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=a1hNpt0jSEsf/QZ6LIMLzqtAQs4rTEzoiCkaL+aJLouceCuj0zFUSqlC/sQAha17osw9sckc0HTfVT1y1OERR/mnYadqv55hRPxwtNpt9WVCrXt2Jv39UPr8gW/uhJqV/WTI76qVgfINFIQ5szWRteTLx+5Myw56cdA+zxwKG0s=
+Message-ID: <48386104.6020109@gmail.com>
+Date: Sun, 25 May 2008 00:10:04 +0530
+From: Abhishek Sagar <sagar.abhishek@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ftrace: fix updating of ftrace_update_cnt
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 May 2008, Daniel Walker wrote:
-> On Sat, 2008-05-24 at 19:03 +0200, Thomas Gleixner wrote:
-> > On Sat, 24 May 2008, Daniel Walker wrote:
-> > > On Sat, 2008-05-24 at 10:55 +0200, Thomas Gleixner wrote:
-> > > 
-> > > > Normal futexes have no ordering guarantees at all. There is no
-> > > > mechanism to prevent lock stealing from lower priority tasks. So why
-> > > > should we care about the once a year case, where a sleepers priority
-> > > > is modified ?
-> > > 
-> > > Lock stealing?
-> > 
-> > Do you have the faintest idea how the futex code works at all ? There
-> > is no guarantee that the task which is woken up first gets the futex.
-> 
-> Thomas if you want to be abusive, talk to someone else.
+Hi Ingo/Steven,
 
-See below.
+Ftrace currently maintains an update count which includes false updates, i.e, updates which failed. If anything, such failures should be tracked by some separate variable, but this patch provides a minimal fix.
+
+Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+---
+fix updating of ftrace_update_cnt
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index bfba25c..14e086f 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -443,7 +443,7 @@ static void ftrace_shutdown_replenish(void)
+ 	ftrace_pages->next = (void *)get_zeroed_page(GFP_KERNEL);
+ }
  
-> > A) A task on another CPU can get it independent of its priority
-> > B) In case of multiple waiters wakeup there is no guarantee either
-> 
-> This is how I would imagine the pre-plist code would work.
-
-And it works this way even after the plist code.
-
-May I politely suggest, that you carefully read futex_wake() and the
-corresponding libc implementation and figure out why there is no
-guarantee and why there can't be one?
-
-Sorry, I'm not abusive. You make claims about correctness and you seem
-to believe that the plist code gives guarantees except for the
-setscheduler corner case, but your hypothesis is simply wrong:
-
-There is no kernel side controlled handover of a normal futex. The
-woken up waiters race for it and a low prio thread on another CPU can
-steal it even if there is a high prio waiter woken up.
-
-So you try to tell me about the correctness of code where you just
-imagine how it works. 
-
-The plist add on works correct in most of the cases, nothing else. To
-achieve full correctness there is much more necessary than this
-setscheduler issue. The plist changes were accepted because the
-overhead is really minimal, but achieving full correctness would hurt
-performance badly.
-
-> > > > There are more issues vs. pi futexes as well. The simple case of
-> > > > futex_wait() vs. futex_adjust_waiters will just upset lockdep, but
-> > > > there are real dealocks vs. unqueue_me_pi waiting.
-> > > 
-> > > You mean the lock ordering would cause the deadlock vs. unqueue_me_pi ,
-> > > or are you talking about something else?
-> > 
-> > Do I write Chinese or what ?
-> 
-> I guess so .. 
-
-So maybe you should take some private lessons in Chinese. Then we
-could easier communicate.
-
-Thanks,
-	tglx
+-static void
++static int
+ ftrace_code_disable(struct dyn_ftrace *rec)
+ {
+ 	unsigned long ip;
+@@ -459,7 +459,9 @@ ftrace_code_disable(struct dyn_ftrace *rec)
+ 	if (failed) {
+ 		rec->flags |= FTRACE_FL_FAILED;
+ 		ftrace_free_rec(rec);
++		return 0;
+ 	}
++	return 1;
+ }
+ 
+ static int __ftrace_modify_code(void *data)
+@@ -607,8 +609,8 @@ static int __ftrace_update_code(void *ignore)
+ 
+ 		/* all CPUS are stopped, we are safe to modify code */
+ 		hlist_for_each_entry(p, t, &head, node) {
+-			ftrace_code_disable(p);
+-			ftrace_update_cnt++;
++			if (ftrace_code_disable(p))
++				ftrace_update_cnt++;
+ 		}
+ 
+ 	}
