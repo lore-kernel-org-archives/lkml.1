@@ -1,310 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbYEXFTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759056AbYEXFWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbYEXFTk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 01:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYEXFTb
+	id S1759056AbYEXFWd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 01:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYEXFWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 01:19:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:33500 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbYEXFT3 (ORCPT
+	Sat, 24 May 2008 01:22:24 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:17658 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752525AbYEXFWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 01:19:29 -0400
-Message-ID: <fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
-Date: Fri, 23 May 2008 23:19:28 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>
-Subject: Re: [RFC PATCH 2/2] mmc: add OpenFirmware bindings for the mmc_spi driver
-Cc: "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Gary Jennejohn" <garyj@denx.de>,
-       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080523182842.GB469@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 24 May 2008 01:22:23 -0400
+DomainKey-Signature: s=smtpout; d=dell.com; c=nofws; q=dns;
+  h=Date:From:To:Cc:Subject:Message-ID:References:
+   Mime-Version:Content-Type:Content-Disposition:In-Reply-To:
+   User-Agent;
+  b=cXHyDflUzKeTUJtZFjDMGOTrw/T/CGtfiJYsInjXK25FiXvS67FtCm6P
+   p7UO+MzcylPD64xEMd3UpoFsLuV7SRe1zf0oTu1B0dDxvncIJkEfPaNPV
+   GxHW1M3tAsHV/eb;
+Date: Sat, 24 May 2008 00:22:05 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] edd: fix error paths in module_init
+Message-ID: <20080524052205.GE20890@auslistsprd01.us.dell.com>
+References: <20080524020321.GA3470@APFDCB5C>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080523182754.GA26891@polina.dev.rtsoft.ru>
-	 <20080523182842.GB469@polina.dev.rtsoft.ru>
-X-Google-Sender-Auth: 89b876630ab8eba6
+In-Reply-To: <20080524020321.GA3470@APFDCB5C>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yup, I like this approach better.  I had been thinking about putting
-this all in the same file (drivers/mmc/host/mmc_spi.c) instead of
-exporting the probe/remove symbols and by using clear comment blocks
-to divide the sections, but I've got no issues with this approach.
+On Sat, May 24, 2008 at 11:03:23AM +0900, Akinobu Mita wrote:
+> This patch fixes error handlings when kzalloc() or edd_device_register()
+> failed in module_init. It needs to clean registered edd_devices before
+> return error.
+> 
+> Also this patch fixes return value of module_init. module_init should not
+> return positive value.
 
-This is good work.  Some comments below.  (I won't repeat Stephen's comments)
+Thanks for these.  You caught me on holiday; I'll take a more thorough
+look when I'm back next week.
 
-On Fri, May 23, 2008 at 12:28 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> This patch depends on the Grant Likely's SPI patches, so this is
-> for RFC only.
->
-> Also, later we'll able to remove OF_GPIO dependency.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+ 
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Matt Domsch <Matt_Domsch@Dell.com>
 > ---
->  Documentation/powerpc/booting-without-of.txt |   24 ++++
->  drivers/mmc/host/Kconfig                     |    7 ++
->  drivers/mmc/host/Makefile                    |    2 +-
->  drivers/mmc/host/of_mmc_spi.c                |  151 ++++++++++++++++++++++++++
->  4 files changed, 183 insertions(+), 1 deletions(-)
->  create mode 100644 drivers/mmc/host/of_mmc_spi.c
->
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> index 423cb2b..7d0ef80 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -3151,7 +3151,31 @@ platforms are moved over to use the flattened-device-tree model.
->                        };
->                };
->
-> +    ...) MMC-over-SPI
->
-> +      Required properties:
-> +      - #address-cells : should be 0.
-> +      - #size-cells : should be 0.
+>  drivers/firmware/edd.c |   30 ++++++++++++++++++------------
+>  1 file changed, 18 insertions(+), 12 deletions(-)
+> 
+> Index: 2.6-git/drivers/firmware/edd.c
+> ===================================================================
+> --- 2.6-git.orig/drivers/firmware/edd.c
+> +++ 2.6-git/drivers/firmware/edd.c
+> @@ -718,8 +718,7 @@ edd_device_register(struct edd_device *e
+>  {
+>  	int error;
+>  
+> -	if (!edev)
+> -		return 1;
+> +	BUG_ON(!edev);
 
-Are these properties required at all?  Will this node have any children.
+Wouldn't WARN_ON() and return failure be sufficient?  I hate crashing
+the system when loading a driver if I can avoid it.
 
-> +      - compatible : should be "linux,mmc-spi".
-> +      - linux,modalias  - should be "of_mmc_spi".
 
-I'm not even sure if the whole linux,modalias is even a good idea.  I
-had kind of thrown it in there as a convenient way to override
-compatible when needed, but I haven't really thought it out very well
-and I think it is rather a hack.
+>  	edd_dev_set_info(edev, i);
+>  	edev->kobj.kset = edd_kset;
+>  	error = kobject_init_and_add(&edev->kobj, &edd_ktype, NULL,
+> @@ -744,8 +743,8 @@ static inline int edd_num_devices(void)
+>  static int __init
+>  edd_init(void)
+>  {
+> -	unsigned int i;
+> -	int rc=0;
+> +	int i;
+> +	int rc;
+>  	struct edd_device *edev;
+>  
+>  	printk(KERN_INFO "BIOS EDD facility v%s %s, %d devices found\n",
+> @@ -753,29 +752,36 @@ edd_init(void)
+>  
+>  	if (!edd_num_devices()) {
+>  		printk(KERN_INFO "EDD information not available.\n");
+> -		return 1;
+> +		return -ENODEV;
+>  	}
+>  
+>  	edd_kset = kset_create_and_add("edd", NULL, firmware_kobj);
+>  	if (!edd_kset)
+>  		return -ENOMEM;
+>  
+> -	for (i = 0; i < edd_num_devices() && !rc; i++) {
+> +	for (i = 0; i < edd_num_devices(); i++) {
+>  		edev = kzalloc(sizeof (*edev), GFP_KERNEL);
+> -		if (!edev)
+> -			return -ENOMEM;
+> +		if (!edev) {
+> +			rc = -ENOMEM;
+> +			goto out;
+> +		}
+>  
+>  		rc = edd_device_register(edev, i);
+>  		if (rc) {
+>  			kfree(edev);
+> -			break;
+> +			goto out;
+>  		}
+>  		edd_devices[i] = edev;
+>  	}
+>  
+> -	if (rc)
+> -		kset_unregister(edd_kset);
+> -	return rc;
+> +	return 0;
+> +out:
+> +	while (--i >= 0)
+> +		edd_device_unregister(edd_devices[i]);
+> +
+> +	kset_unregister(edd_kset);
+> +
+> +  	return rc;
 
-The real problem is we don't yet have good method (or place) to apply
-a translation table from compatible values to modaliases.  Ideally,
-the translations should be part of the drivers themselves, but that
-causes a chicken and egg problem of needing to load the driver to get
-access to the table to know if it is the correct driver... Of course,
-I'm really not very familiar with the whole module autoloading
-mechanism.  Regardless; binding should be based on compatible, not on
-a hacky and bogus linux,modalias property.
-
-> +      - reg : should specify SPI address (chip-select number).
-> +      - max-speed : (optional) maximum frequency for this device (Hz).
-> +      - linux,mmc-ocr-mask : (optional) Linux-specific MMC OCR mask
-> +        (slot voltage).
-
-Should this property be better defined?
-
-> +      - gpios : (optional) may specify GPIOs in this order: Write-Protect GPIO,
-> +        Card-Detect GPIO.
-> +
-> +      Example:
-> +
-> +       mmc-slot@0 {
-> +               compatible = "linux,mmc-spi";
-> +               linux,modalias = "of_mmc_spi";
-> +               reg = <0>;
-> +               max-speed = <50000000>;
-> +               linux,mmc-ocr-mask = <0x00200000>;
-> +               gpios = <&sdcsr_pio 6 0   /*  WP */
-> +                        &sdcsr_pio 7 1>; /* nCD */
-> +       };
->
->  VII - Marvell Discovery mv64[345]6x System Controller chips
->  ===========================================================
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index dead617..f468544 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -130,3 +130,10 @@ config MMC_SPI
->
->          If unsure, or if your system has no SPI master driver, say N.
->
-> +config OF_MMC_SPI
-> +       tristate "MMC/SD over SPI OpenFirmware bindings"
-> +       depends on MMC_SPI && SPI_MASTER_OF && OF_GPIO
-> +       default y
-> +       help
-> +         Say Y here to enable OpenFirmware bindings for the MMC/SD over SPI
-> +         driver.
-> diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-> index 3877c87..d77f880 100644
-> --- a/drivers/mmc/host/Makefile
-> +++ b/drivers/mmc/host/Makefile
-> @@ -17,4 +17,4 @@ obj-$(CONFIG_MMC_OMAP)                += omap.o
->  obj-$(CONFIG_MMC_AT91)         += at91_mci.o
->  obj-$(CONFIG_MMC_TIFM_SD)      += tifm_sd.o
->  obj-$(CONFIG_MMC_SPI)          += mmc_spi.o
-> -
-> +obj-$(CONFIG_OF_MMC_SPI)       += of_mmc_spi.o
-> diff --git a/drivers/mmc/host/of_mmc_spi.c b/drivers/mmc/host/of_mmc_spi.c
-> new file mode 100644
-> index 0000000..b8211ce
-> --- /dev/null
-> +++ b/drivers/mmc/host/of_mmc_spi.c
-> @@ -0,0 +1,151 @@
-> +/*
-> + * OpenFirmware bindings for the MMC-over-SPI driver
-> + *
-> + * Copyright (c) MontaVista Software, Inc. 2008.
-> + *
-> + * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/spi/spi.h>
-> +#include <linux/spi/spi_of.h>
-> +#include <linux/spi/mmc_spi.h>
-> +#include <linux/mmc/host.h>
-> +#include <linux/gpio.h>
-> +#include <linux/of_gpio.h>
-> +#include "mmc_spi.h"
-> +
-> +struct of_mmc_spi {
-> +       int wp_gpio;
-> +       int cd_gpio;
-> +       struct mmc_spi_platform_data mmc_pdata;
-> +};
-> +
-> +static int mmc_get_ro(struct device *dev)
-> +{
-> +       struct of_mmc_spi *oms = dev->archdata.of_node->data;
-> +
-> +       return gpio_get_value(oms->wp_gpio);
-> +}
-> +
-> +static int mmc_get_cd(struct device *dev)
-> +{
-> +       struct of_mmc_spi *oms = dev->archdata.of_node->data;
-> +
-> +       return gpio_get_value(oms->cd_gpio);
-> +}
-> +
-> +static int of_mmc_spi_probe(struct spi_device *spi)
-> +{
-> +       int ret = -EINVAL;
-> +       struct device_node *np = spi->dev.archdata.of_node;
-> +       struct device *dev = &spi->dev;
-> +       struct of_mmc_spi *oms = kzalloc(sizeof(*oms), GFP_KERNEL);
-> +       const u32 *ocr_mask;
-> +       int size;
-> +
-> +       if (!oms)
-> +               return -ENOMEM;
-> +
-> +       /* Somebody occupied node's data? */
-> +       WARN_ON(spi->dev.archdata.of_node->data);
-
-Perhaps bail at this point to avoid corruption?  Would it be better to
-use container_of() instead for getting a pointer back to the private
-structure from the pdata pointer?
-
-> +
-> +       /*
-> +        * mmc_spi_probe will use drvdata, so we can't use it. Use node's
-> +        * data instead.
-> +        */
-> +       spi->dev.archdata.of_node->data = oms;
-> +
-> +       /* We don't support interrupts yet, let's poll. */
-> +       oms->mmc_pdata.caps |= MMC_CAP_NEEDS_POLL;
-> +
-> +       ocr_mask = of_get_property(np, "linux,mmc-ocr-mask", &size);
-> +       if (ocr_mask && size >= sizeof(ocr_mask))
-> +               oms->mmc_pdata.ocr_mask = *ocr_mask;
-> +
-> +       oms->wp_gpio = of_get_gpio(np, 0);
-> +       if (gpio_is_valid(oms->wp_gpio)) {
-> +               ret = gpio_request(oms->wp_gpio, dev->bus_id);
-> +               if (ret < 0)
-> +                       goto err_wp_gpio;
-> +               oms->mmc_pdata.get_ro = &mmc_get_ro;
-> +       }
-> +
-> +       oms->cd_gpio = of_get_gpio(np, 1);
-> +       if (gpio_is_valid(oms->cd_gpio)) {
-> +               ret = gpio_request(oms->cd_gpio, dev->bus_id);
-> +               if (ret < 0)
-> +                       goto err_cd_gpio;
-> +               oms->mmc_pdata.get_cd = &mmc_get_cd;
-> +       }
-> +
-> +       spi->dev.platform_data = &oms->mmc_pdata;
-> +
-> +       ret = mmc_spi_probe(spi);
-> +       if (ret)
-> +               goto err_mmc_spi;
-> +
-> +       return 0;
-> +err_mmc_spi:
-> +       if (gpio_is_valid(oms->cd_gpio))
-> +               gpio_free(oms->cd_gpio);
-> +err_cd_gpio:
-> +       if (gpio_is_valid(oms->wp_gpio))
-> +               gpio_free(oms->wp_gpio);
-> +err_wp_gpio:
-> +       spi->dev.archdata.of_node->data = NULL;
-> +       kfree(oms);
-> +       return ret;
-> +}
-> +
-> +int __devexit of_mmc_spi_remove(struct spi_device *spi)
-> +{
-> +       struct of_mmc_spi *oms = spi->dev.archdata.of_node->data;
-> +       int ret;
-> +
-> +       ret = mmc_spi_remove(spi);
-> +       if (ret)
-> +               return ret;
-> +
-> +       if (gpio_is_valid(oms->cd_gpio))
-> +               gpio_free(oms->cd_gpio);
-> +       if (gpio_is_valid(oms->wp_gpio))
-> +               gpio_free(oms->wp_gpio);
-> +
-> +       spi->dev.archdata.of_node->data = NULL;
-> +       kfree(oms);
-> +       return 0;
-> +}
-> +
-> +static struct spi_driver of_mmc_spi_driver = {
-> +       .driver = {
-> +               .name = "of_mmc_spi",
-> +               .bus = &spi_bus_type,
-> +               .owner = THIS_MODULE,
-> +       },
-> +       .probe = of_mmc_spi_probe,
-> +       .remove = __devexit_p(of_mmc_spi_remove),
-> +};
-> +
-> +static int __init of_mmc_spi_init(void)
-> +{
-> +       return spi_register_driver(&of_mmc_spi_driver);
-> +}
-> +module_init(of_mmc_spi_init);
-> +
-> +static void __exit of_mmc_spi_exit(void)
-> +{
-> +       spi_unregister_driver(&of_mmc_spi_driver);
-> +}
-> +module_exit(of_mmc_spi_exit);
-> +
-> +MODULE_DESCRIPTION("OpenFirmware bindings for the MMC-over-SPI driver");
-> +MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
-> +MODULE_LICENSE("GPL");
-> --
-> 1.5.5.1
->
-
+I didn't really like my initial approach, but the question was: when
+you hit a failure, do you try to back completely out (unregister
+everything that had successfully registered until now), or do you
+leave the things that have succeeded, and only fail the current and
+future devices?  For my purposes, having even the first device be
+reported, even if the others couldn't be, is useful.  Hence why I
+didn't undo all the registrations on failure.
 
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
