@@ -1,97 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbYEXBOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbYEXBQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759634AbYEXBOm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 21:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbYEXBOd
+	id S1760239AbYEXBQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 21:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbYEXBQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 21:14:33 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:14594 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753870AbYEXBOc (ORCPT
+	Fri, 23 May 2008 21:16:47 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:48486 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbYEXBQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 21:14:32 -0400
-Date: Fri, 23 May 2008 21:14:20 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: floppy question of the hour
-To: linux-kernel@vger.kernel.org
-Message-id: <200805232114.20937.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.9
+	Fri, 23 May 2008 21:16:45 -0400
+Subject: Re: 2.6.26-rc2-mm1 (SCSI_DH build errors)
+From: Chandra Seetharaman <sekharan@us.ibm.com>
+Reply-To: sekharan@us.ibm.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, hare@suse.de,
+       scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <48372900.6050600@oracle.com>
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+	 <20080514141348.e71feed6.randy.dunlap@oracle.com>
+	 <1210862779.15852.4.camel@localhost.localdomain>
+	 <1210881374.21974.285.camel@chandra-ubuntu>
+	 <20080522202543.d15e8c3b.akpm@linux-foundation.org>
+	 <1211571560.10532.7.camel@chandra-ubuntu>  <48372900.6050600@oracle.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Fri, 23 May 2008 18:16:40 -0700
+Message-Id: <1211591800.10532.31.camel@chandra-ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all;
 
-Who is the maintainer of drivers/block/floppy.c and associated files?
+On Fri, 2008-05-23 at 13:28 -0700, Randy Dunlap wrote:
+> Chandra Seetharaman wrote:
+> > Yikes.... Sorry again... Hopefully this attached patch work properly.
+> 
+> Did it build cleanly for you?
+> Hint:
+> Use SCSI_DH as module and MD_MULTIPATH=y.  Build errors for me.
 
-I ask because there are a few of us still using it, in particular with what some 
-may call oddball disk formats & I'm up to here with doing such as this:
+Oh, my... it is getting very tricky.
 
-[root@coyote coco3]# setfdprm /dev/fd0 COCO7203.5
-[root@coyote coco3]# getfdprm /dev/fd0
-get geometry parameters: No such device
+Here is a patch that compiles clean in different combinations. But, I
+agree that the "depends" (under DM_MULTIPATH) sure looks weird.
 
-Or: Assuming the above took,
-[root@coyote coco3]# dd if=/dev/fd0 of=test.dsk
-dd: reading `/dev/fd0': Input/output error
-0+0 records in
-0+0 records out
-0 bytes (0 B) copied, 25.5495 s, 0.0 kB/s
+-----------
+Do not automatically "select" SCSI_DH for dm-multipath. If SCSI_DH
+doesn't exist,just do not allow  hardware handlers to be used.
 
-/var/log/messages is full of these now:
-May 23 21:02:07 coyote kernel: [20603.055178] floppy0: probe failed...
-May 23 21:02:07 coyote kernel: [20603.455755] floppy0: unexpected interrupt
-May 23 21:02:07 coyote kernel: [20603.455827] floppy0: sensei repl[0]=80
-May 23 21:02:07 coyote kernel: [20603.456135] floppy0: -- FDC reply 
-errorfloppy0: probe failed...
-May 23 21:02:08 coyote kernel: [20604.257007] floppy0: probe failed...
-May 23 21:02:08 coyote kernel: [20604.658234] floppy0: probe failed...
-May 23 21:02:08 coyote kernel: [20604.658546] end_request: I/O error, dev fd0, 
-sector 0
-May 23 21:02:08 coyote kernel: [20604.658552] Buffer I/O error on device fd0, 
-logical block 0
-May 23 21:02:15 coyote kernel: [20611.468471] floppy0: probe failed...
-May 23 21:02:16 coyote kernel: [20612.269749] floppy0: probe failed...
-May 23 21:02:16 coyote kernel: [20612.670448] floppy0: probe failed...
-May 23 21:02:17 coyote kernel: [20613.071326] floppy0: probe failed...
-May 23 21:02:17 coyote kernel: [20613.471699] floppy0: probe failed...
-May 23 21:02:17 coyote kernel: [20613.872260] floppy0: probe failed...
-May 23 21:02:18 coyote kernel: [20614.272896] floppy0: probe failed...
-May 23 21:02:18 coyote kernel: [20614.673525] floppy0: probe failed...
-May 23 21:02:19 coyote kernel: [20615.474809] floppy0: probe failed...
-May 23 21:02:19 coyote kernel: [20615.879286] floppy0: probe failed...
-May 23 21:02:20 coyote kernel: [20616.276125] floppy0: probe failed...
-May 23 21:02:20 coyote kernel: [20616.676819] floppy0: probe failed...
-May 23 21:02:21 coyote kernel: [20617.077384] floppy0: probe failed...
-May 23 21:02:21 coyote kernel: [20617.478006] floppy0: probe failed...
-May 23 21:02:21 coyote kernel: [20617.478326] end_request: I/O error, dev fd0, 
-sector 0
-May 23 21:02:21 coyote kernel: [20617.478333] Buffer I/O error on device fd0, 
-logical block 0
+Handle SCSI_DH being a module also. Make sure it doesn't allow DM_MULTIPATH
+to be compiled in when SCSI_DH is a module.
 
-The drive led is on and the disk is turning during that 25 seconds.
-This is booted to 2.6.26-rc2, with the floppy driver built in.
+Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alasdair G Kergon <agk@redhat.com>
+Cc: Mike Christie <michaelc@cs.wisc.edu>
+Cc: Mike Anderson <andmike@us.ibm.com>
+Cc: Hannes Reinecke <hare@suse.de>
+---
 
-2.6.26-rc1 worked flawlessly yesterday, for both writing, then reading back for 
-a cmp session, twice each way, until it(2.6.26-rc1) went away after about 3 
-hours uptime, the 5th time -rc1 had done this to me without a single footprint 
-in the logs.  -rc2 is doing better, uptime is 5:45 so far.
+Index: scsi-misc-2.6/drivers/md/Kconfig
+===================================================================
+--- scsi-misc-2.6.orig/drivers/md/Kconfig
++++ scsi-misc-2.6/drivers/md/Kconfig
+@@ -252,7 +252,7 @@ config DM_ZERO
+ config DM_MULTIPATH
+ 	tristate "Multipath target"
+ 	depends on BLK_DEV_DM
+-	select SCSI_DH
++	depends on SCSI_DH || !SCSI_DH
+ 	---help---
+ 	  Allow volume managers to support multipath hardware.
+ 
+Index: scsi-misc-2.6/drivers/md/dm-mpath.c
+===================================================================
+--- scsi-misc-2.6.orig/drivers/md/dm-mpath.c
++++ scsi-misc-2.6/drivers/md/dm-mpath.c
+@@ -664,6 +664,8 @@ static int parse_hw_handler(struct arg_s
+ 	request_module("scsi_dh_%s", m->hw_handler_name);
+ 	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
+ 		ti->error = "unknown hardware handler type";
++		kfree(m->hw_handler_name);
++		m->hw_handler_name = NULL;
+ 		return -EINVAL;
+ 	}
+ 	consume(as, hw_argc - 1);
+Index: scsi-misc-2.6/include/scsi/scsi_dh.h
+===================================================================
+--- scsi-misc-2.6.orig/include/scsi/scsi_dh.h
++++ scsi-misc-2.6/include/scsi/scsi_dh.h
+@@ -54,6 +54,16 @@ enum {
+ 	SCSI_DH_NOSYS,
+ 	SCSI_DH_DRIVER_MAX,
+ };
+-
++#if defined(CONFIG_SCSI_DH) || defined(CONFIG_SCSI_DH_MODULE)
+ extern int scsi_dh_activate(struct request_queue *);
+ extern int scsi_dh_handler_exist(const char *);
++#else
++static inline int scsi_dh_activate(struct request_queue *req)
++{
++	return 0;
++}
++static inline int scsi_dh_handler_exist(const char *name)
++{
++	return 0;
++}
++#endif
 
-It may be old technology, but really guys, we need a _working_ floppy driver. 
-100% of the time.
 
-I did not build it in when I built 2.6.26-rc1, so I'm going to reboot to it for 
-long enough to see if it works when built as a module.
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-"They that can give up essential liberty to obtain a little temporary
-safety deserve neither liberty nor safety."
-		-- Benjamin Franklin, 1759
