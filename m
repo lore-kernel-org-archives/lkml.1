@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760725AbYEWX65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYEXABs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760725AbYEWX65 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 19:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbYEWX6t
+	id S1760233AbYEXABs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 20:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYEXABj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 19:58:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53901 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbYEWX6s (ORCPT
+	Fri, 23 May 2008 20:01:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:57250 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbYEXABi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 19:58:48 -0400
-Subject: Re: crossbuild fails in modpost
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>
-In-Reply-To: <alpine.LNX.1.10.0805182314450.15590@fbirervta.pbzchgretzou.qr>
-References: <482C3E3E.9090204@gmail.com> <482C6F02.1000205@gmail.com>
-	 <20080515173539.GA23959@uranus.ravnborg.org>
-	 <20080515174015.GA24024@uranus.ravnborg.org> <482C8CBE.2060101@gmail.com>
-	 <20080515204632.GG1936@cs181133002.pp.htv.fi>
-	 <alpine.LNX.1.10.0805182155011.15590@fbirervta.pbzchgretzou.qr>
-	 <20080518204258.GL8140@cs181133002.pp.htv.fi>
-	 <alpine.LNX.1.10.0805182314450.15590@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Sat, 24 May 2008 00:58:46 +0100
-Message-Id: <1211587126.31212.50.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Fri, 23 May 2008 20:01:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Wj0ui2CHoo1aV1hLEB4X8iYgJugPZziN4TVVRwC//e7qEOMCM4nvUSRwRu+YFtv5xS+el6euPgx6NXPryXoO1ZcjiwKbOWVt/EiU4lj3kqTi4qfHKLrLA962zStcq23LT93fOSWi5r/nBD1VnFDGPfpzEE3AfxzIYhD6AmQEk0k=
+Message-ID: <86802c440805231701p4dbcef68m19173bb53ed7904e@mail.gmail.com>
+Date: Fri, 23 May 2008 17:01:36 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4837558E.40705@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <200805110030.15510.yhlu.kernel@gmail.com>
+	 <200805180118.57863.yhlu.kernel@gmail.com>
+	 <200805211840.18619.yhlu.kernel@gmail.com>
+	 <200805221520.19259.yhlu.kernel@gmail.com>
+	 <86802c440805231608g314690fu3125034804ac51fd@mail.gmail.com>
+	 <4837558E.40705@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-05-18 at 23:15 +0200, Jan Engelhardt wrote:
-> Of course not. Ever since the arch unification, building for the
-> other bitness in bi- or multiarch systems has become harder.
+On Fri, May 23, 2008 at 4:38 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Yinghai Lu wrote:
+>>
+>> Jeremy,
+>>
+>> your config works on XEN of 5.2 as domU
+>> ( I added ext2 support...)
+>>
+>
+> The boot log you attached is for a kernel booting either natively or in an
+> hvm domain ("Booting paravirtualized kernel on bare hardware").  Were you
+> booting it as an hvm guest rather than a pv one?
 
-It works fine for the unified powerpc tree.
+run it as FV guest.
 
--- 
-dwmw2
-
+YH
