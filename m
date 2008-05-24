@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbYEXKHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYEXKbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbYEXKHB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 06:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbYEXKGw
+	id S1755873AbYEXKbB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 06:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbYEXKav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 06:06:52 -0400
-Received: from gw.goop.org ([64.81.55.164]:38006 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754158AbYEXKGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 06:06:51 -0400
-Message-ID: <4837E89D.9040008@goop.org>
-Date: Sat, 24 May 2008 11:06:21 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Steve French <smfrench@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: kernel coding style for if ... else which cross #ifdef
-References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <48374D3F.1080502@zytor.com> <20080524054301.GA3773@uranus.ravnborg.org> <4837AAE2.9090102@zytor.com> <20080524064201.GA4133@uranus.ravnborg.org>
-In-Reply-To: <20080524064201.GA4133@uranus.ravnborg.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 24 May 2008 06:30:51 -0400
+Received: from s15216962.onlinehome-server.info ([217.160.22.205]:43615 "EHLO
+	s15216962.onlinehome-server.info" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754325AbYEXKau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 06:30:50 -0400
+Date: Sat, 24 May 2008 05:11:06 +0200
+From: Enrico Weigelt <weigelt@metux.de>
+To: linux kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Suggestion About Kernel Releases
+Message-ID: <20080524031106.GC12128@nibiru.local>
+Reply-To: weigelt@metux.de
+References: <48341ED5.7060508@netone.net.tr> <20080521063855.0bdb441c@infradead.org> <84144f020805210648y43efb024w8e2f28e62894b1d@mail.gmail.com> <48342B19.9040407@netone.net.tr> <170fa0d20805210732s24f2c188i75ab2ab2dab5aeb5@mail.gmail.com> <48343C92.4090403@netone.net.tr> <84144f020805210826p27c1892bxd84098371e209c1e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020805210826p27c1892bxd84098371e209c1e@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
+X-Terror: bin laden, kill bush, Briefbombe, Massenvernichtung, KZ, 
+X-Nazi: Weisse Rasse, Hitlers Wiederauferstehung, 42, 
+X-Antichrist: weg mit schaeuble, ausrotten, heiliger krieg, al quaida, 
+X-Killer: 23, endloesung, Weltuntergang, 
+X-Doof: wer das liest ist doof
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Fri, May 23, 2008 at 10:42:58PM -0700, H. Peter Anvin wrote:
->   
->> Sam Ravnborg wrote:
->>     
->>>> *However*, the best would really be if we changed Kconfig to emit 
->>>> configuration constants what were 0/1 instead of undefined/defined. 
->>>> That way we could do:
->>>>
->>>> 	if (CONFIG_SOMETHING && foo) {
->>>> 		/* ... something ... */
->>>> 	} else if ((mode & S_IWUGO) == 0) {
->>>> 		/* ... */
->>>>         
->>> We could do that - but then it would need another
->>> name not to clash with all the places where we rely
->>> on CONFIG_FOO='n' => CONFIG_FOO is not defined.
->>>
->>> We could teach kconfig to emit something like:
->>> #define KFOO 0   (for the 'n' value)
->>> And 1 or 2 for the y and m values.
->>>
->>>       
->> I don't think we want to use "1 or 2"... I suspect we want to use the 
->> same booleans we currently have.
->>     
-> I'm a bit dense (or I need more coffe - it's morning here).
-> What "same booleans"?
->   
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-They should be plain 0/1 booleans.  For a bool/tristate option FOO, it 
-would define:
+> You keep saying that but it simply is not true. The more people we
+> have _waiting_ for a "stable" kernel to graduate from the "testing"
+> series, the less people we have actually _testing_ the kernel.
 
-Enabled y:
+ACK.
 
-    #define CONFIG_FOO
-    #define CFG_FOO   1
-    #undef CONFIG_FOO_MODULE
-    #define CFG_FOO_MODULE 0
+I, personally use the newest releases on mostly unimportant 
+systems, where a kernel bug is ugly but not that bad.
+For production systems I use the stableized/well-tested distro
+kernels, eg. unmasked on Gentoo). If you're using such an distro,
+you already have an more tested kernel, less chance of bugs
+(than with vanilla).
+
+My suggestion istead is bringing these individual efforts from 
+distros to some central point, let's call this "mature kernel".
+This (IMHO) wouldn't affect the current development/release 
+process, mission-critical systems can simply use that mature 
+tree, and perhaps some pressure is taken from vanilla.
 
 
-Enabled m:
-
-    #define CONFIG_FOO
-    #define CFG_FOO   1
-    #define CONFIG_FOO_MODULE
-    #define CFG_FOO_MODULE 1
-
-
-Disabled n:
-
-    #undef CONFIG_FOO
-    #define CFG_FOO   0
-    #undef CONFIG_FOO_MODULE
-    #define CFG_FOO_MODULE 0
-
-Not sure what CFG_* should be for string/numeric options.  Probably "1" 
-if the value is defined, "0" if not, with CONFIG_* being the actual 
-value (so a CONFIG_ value of 0 is distinguishable from not defined).
-
-    J
+cu
+-- 
+---------------------------------------------------------------------
+ Enrico Weigelt    ==   metux IT service - http://www.metux.de/
+---------------------------------------------------------------------
+ Please visit the OpenSource QM Taskforce:
+ 	http://wiki.metux.de/public/OpenSource_QM_Taskforce
+ Patches / Fixes for a lot dozens of packages in dozens of versions:
+	http://patches.metux.de/
+---------------------------------------------------------------------
