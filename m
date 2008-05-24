@@ -1,82 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbYEXKja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYEXKwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbYEXKja (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 06:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbYEXKjU
+	id S1756179AbYEXKwg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 06:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYEXKw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 06:39:20 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53713 "EHLO 2ka.mipt.ru"
+	Sat, 24 May 2008 06:52:27 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:46481 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754469AbYEXKjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 06:39:19 -0400
-Date: Sat, 24 May 2008 14:38:28 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Steve French <smfrench@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: pagevecs of more than PAGEVEC_SIZE pages
-Message-ID: <20080524103828.GC10796@2ka.mipt.ru>
-References: <524f69650805221213i62488a4fk5a906b2726b9b96a@mail.gmail.com> <20080522225459.5a6f7acc.akpm@linux-foundation.org> <20080523092938.GA16915@2ka.mipt.ru> <524f69650805231013u6d3e26f5lee7d475022623ee3@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750846AbYEXKw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 06:52:26 -0400
+Date: Sat, 24 May 2008 13:49:56 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steve French <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel coding style for if ... else which cross #ifdef
+Message-ID: <20080524104956.GD4886@cs181133002.pp.htv.fi>
+References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <48374D3F.1080502@zytor.com> <20080524054301.GA3773@uranus.ravnborg.org> <4837AAE2.9090102@zytor.com> <20080524064201.GA4133@uranus.ravnborg.org> <4837E89D.9040008@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <524f69650805231013u6d3e26f5lee7d475022623ee3@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <4837E89D.9040008@goop.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 12:13:58PM -0500, Steve French (smfrench@gmail.com) wrote:
-> Sounds interesting - looks like the only user at the moment is NFS's
-> SunRPC right (so no other examples to look at)?
-> 
-> How much better is this than send_msg?
+On Sat, May 24, 2008 at 11:06:21AM +0100, Jeremy Fitzhardinge wrote:
+> Sam Ravnborg wrote:
+>> On Fri, May 23, 2008 at 10:42:58PM -0700, H. Peter Anvin wrote:
+>>   
+>>> Sam Ravnborg wrote:
+>>>     
+>>>>> *However*, the best would really be if we changed Kconfig to emit 
+>>>>> configuration constants what were 0/1 instead of 
+>>>>> undefined/defined. That way we could do:
+>>>>>
+>>>>> 	if (CONFIG_SOMETHING && foo) {
+>>>>> 		/* ... something ... */
+>>>>> 	} else if ((mode & S_IWUGO) == 0) {
+>>>>> 		/* ... */
+>>>>>         
+>>>> We could do that - but then it would need another
+>>>> name not to clash with all the places where we rely
+>>>> on CONFIG_FOO='n' => CONFIG_FOO is not defined.
+>>>>
+>>>> We could teach kconfig to emit something like:
+>>>> #define KFOO 0   (for the 'n' value)
+>>>> And 1 or 2 for the y and m values.
+>>>>
+>>>>       
+>>> I don't think we want to use "1 or 2"... I suspect we want to use the 
+>>> same booleans we currently have.
+>>>     
+>> I'm a bit dense (or I need more coffe - it's morning here).
+>> What "same booleans"?
+>>   
+>
+> They should be plain 0/1 booleans.  For a bool/tristate option FOO, it  
+> would define:
+>
+> Enabled y:
+>
+>    #define CONFIG_FOO
+>    #define CFG_FOO   1
+>    #undef CONFIG_FOO_MODULE
+>    #define CFG_FOO_MODULE 0
+>
+>
+> Enabled m:
+>
+>    #define CONFIG_FOO
+>    #define CFG_FOO   1
+>    #define CONFIG_FOO_MODULE
+>    #define CFG_FOO_MODULE 1
+>...
 
-It depends. In usual life with not that big requests and 64bit arch (or
-low mem pages on 32 bit x86) difference is marginal, but with high-pages
-and huge requests it was additional 10 MB/s for bulk writing in POHMELFS.
+A quite common pattern in the kernel is:
+#if defined(CONFIG_FOO) || (defined(CONFIG_FOO_MODULE) && defined(MODULE))
 
-> For the write path (coming from writepage and writepages) - we have a
-> small header followed by a list of sequential pages (the servers
-> either support 4 pages (old windows), 15 pages (some windows and
-> NetApp etc. filers), or 31 pages (older Samba and other Windows) or
-> 2048 pages (current Samba supports up to 8MB writes, and this may be
-> very useful now that Samba can call splice/receivefile and not have to
-> do the extra copy)
+Your suggestion would require them to be changed to:
+#if (defined(CONFIG_FOO) && !defined(CONFIG_FOO_MODULE)) || (defined(CONFIG_FOO_MODULE) && defined(MODULE))
 
-kernel_sendpage() has only single page argument, but that should not be
-a problem, since stack will combine multiple pages into single skb if
-needed (if it can, especially for stuff like TSO/GSO), so just loop for
-whatever you fetched pages via find_get_pages_tag() and send them
-one-by-one, network stack will coalesce them by itself.
+(We could push these cases to kconfig, but there might also be other 
+ cases where changing the existing semantics of CONFIG_FOO could cause
+ breakages.)
 
-But note that return of kernel_sendpage() does not guarantee that page
-has been sent, one can free it (drop refcnt, page will not be freed,
-since network stack increases counter), but can not write there until
-reply from the server is returned, so just lock page and mark it is
-being under writeback and then unlock and end_page_writeback() after
-CIFSSMBWrite2() just like it is doen right now.
+We see daily in kconfig that mixing tristates with bools is tricky 
+(especially since bools are used with different intended semantics),
+and I don't think doing the same in the source files would be an 
+improvement.
 
-Btw, should'n end_page_writeback() be called with locked page in CIFS?
-Iirc in POHMELFS under huge load I was able to lose writeback clearing
-probably because of that, but its subtle and can be not the issue is
-CIFS.
+We might be able to do (without any CFG_FOO_MODULE at all):
 
-diff --git a/fs/cifs/file.c b/fs/cifs/file.c
-index 8636cec..ba23c65 100644
---- a/fs/cifs/file.c
-+++ b/fs/cifs/file.c
-@@ -1391,8 +1391,8 @@ retry:
- 				if (rc)
- 					SetPageError(page);
- 				kunmap(page);
--				unlock_page(page);
- 				end_page_writeback(page);
-+				unlock_page(page);
- 				page_cache_release(page);
- 			}
- 			if ((wbc->nr_to_write -= n_iov) <= 0)
+Enabled m:
+
+    #undef CONFIG_FOO
+    #define CFG_FOO   0
+    #define CONFIG_FOO_MODULE
+
+And let everyone who want's "either y or m" semantics to convert the 
+tristate to a bool with this semantics in kconfig himself:
+
+config FOO
+	tristate
+
+config BAR
+	def_bool FOO
+
+Especially since this is actually a relatively unusual (and not nice) 
+case since usually adding a module does not (and should) not change the 
+kernel image.
+
+>    J
+
+cu
+Adrian
 
 -- 
-	Evgeniy Polyakov
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
