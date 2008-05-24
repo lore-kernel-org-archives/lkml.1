@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760951AbYEXRp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbYEXSHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760951AbYEXRp7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 13:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757809AbYEXRpw
+	id S1761256AbYEXSHQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 14:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759627AbYEXSHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 13:45:52 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:34025 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751617AbYEXRpw (ORCPT
+	Sat, 24 May 2008 14:07:05 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:6953 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759604AbYEXSHD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 13:45:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ivOCZyU3Vkza3J/ZY0oVekQdK2KC/p0iX0H6xqS5HcO3Vi0fqOnMv7pTzZconjHhszeVzUOY+i8z7lDtBo0vWAa/EMSsqH4BqnToUlAa5Xx36165GgQd9Va8iaYqniD7bTVxOjYqqA8d6QtpMrezuNIXdn3A4HEEMRq+/dd8/C8=  ;
-X-YMail-OSG: 2YuUyBkVM1kSiKMPKxRC.hbg7GjEaJznz3XD4Z15bGqUvj878AfDUBgc4dlxS8YOSxlXoKwenRcWbMEtcAjyppYC0VtWpfYIdI5i6gbVoDJHw0haWMmq6Fl3vYEMk6.ViAc-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Date: Sat, 24 May 2008 10:45:47 -0700
-User-Agent: KMail/1.9.9
-Cc: "Jochen Friedrich" <jochen@scram.de>, fabrizio.garetto@gmail.com,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca> <48384D13.6010608@scram.de> <fa686aa40805241033x128c30b0v826717cc879a712e@mail.gmail.com>
-In-Reply-To: <fa686aa40805241033x128c30b0v826717cc879a712e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805241045.47448.david-b@pacbell.net>
+	Sat, 24 May 2008 14:07:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=G9P8Gfz96LdOYsTxkEPdtGXWrpPNuE/Lch8Qmc0GBde1els2uUGyZF8aftVhNu9//uE9/IwyniGYQatmayrfJecI0LV+vazhI/NLf1qoAkNz+4F+E5czsSllP3gKLxQ5RtxSNkGY9ndliHxrtQBihqR6bPpVgJoRqEeQdxcWk1U=
+Date: Sat, 24 May 2008 20:07:10 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Only print "Decompressing Linux" etc when 'noisy'
+ is passed.
+Message-Id: <20080524200710.a2400cf4.diegocg@gmail.com>
+In-Reply-To: <18487.57106.644612.157155@harpo.it.uu.se>
+References: <1211579968-15227-1-git-send-email-krh@redhat.com>
+	<1211579968-15227-2-git-send-email-krh@redhat.com>
+	<18487.57106.644612.157155@harpo.it.uu.se>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 24 May 2008, Grant Likely wrote:
-> > Isn't the same true for drivers/of/gpio.c or drivers/of/of_i2c.c, as well?
-> 
-> I would argue 'yes!'
+El Sat, 24 May 2008 11:25:38 +0200, Mikael Pettersson <mikpe@it.uu.se> escribió:
 
-... all the more reason to have the SPI glue go there too,
-matching the ACPI/PCI precedent as well as those others!
+> All this accomplishes is to make early boot failures harder
+> to debug.
 
+And there's already a parameter to switch the verbosity of printk - 'quiet'
