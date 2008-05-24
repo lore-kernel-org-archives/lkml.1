@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbYEXUsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762178AbYEXUsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762058AbYEXUsl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 16:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758831AbYEXUsa
+	id S1762178AbYEXUsz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 16:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762068AbYEXUsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 16:48:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52833 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756689AbYEXUs3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 16:48:29 -0400
-Date: Sat, 24 May 2008 13:48:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Sat, 24 May 2008 16:48:43 -0400
+Received: from gw.goop.org ([64.81.55.164]:44670 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762056AbYEXUsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 16:48:41 -0400
+Message-ID: <48387F0B.3020506@goop.org>
+Date: Sat, 24 May 2008 21:48:11 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
 To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+CC: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Tom Spink <tspink@gmail.com>
 Subject: Re: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
-Message-Id: <20080524134815.116feb9d.akpm@linux-foundation.org>
-In-Reply-To: <20080524202427.GA879@uranus.ravnborg.org>
 References: <20080524192540.GA28067@uranus.ravnborg.org>
-	<20080524125316.4b969936.akpm@linux-foundation.org>
-	<20080524202427.GA879@uranus.ravnborg.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20080524192540.GA28067@uranus.ravnborg.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 May 2008 22:24:27 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+Sam Ravnborg wrote:
+> We have many places in the kernel that looks like
+> the following:
+>
+> #ifdef CONFIG_FOO
+> 	...
+> #endif
+>
+> Which has the disadvantage that the code denoted '...'
+> are not even built if CONFIG_FOO is not selected in
+> the current configuration.
+>
+> We know that gcc do simple code-elimination for
+> conditionals which is always true/false and
+> thus the above code could be turned into:
+>
+> 	if (CONFIG_FOO)
+> 		...
+>
+> One line smaller and we follow the normal flow in the program.
+> The code is always build but we do not waste space as gcc will
+> do proper code-elimination for us.
+>
+> Today this is not possible because kconfig will only
+> define CONFIG_FOO if selected and FOO is not a module.
+>
+> The following patch implement a new set of defines in
+> the KCONFIG_* namespace.
+>
+> For a tristate symbol the following are defined:
+>
+> FOO not selected: 
+> #define KCONFIG_FOO        0
+> #define KCONFIG_FOO_MODULE 0
+>
+> FOO is built-in ('y')
+> #define KCONFIG_FOO        1
+> #define KCONFIG_FOO_MODULE 0
+>
+> FOO is a module ('m'):
+> #define KCONFIG_FOO        1
+> #define KCONFIG_FOO_MODULE 1
+>
+> In other words KCONFIG_FOO will say if the
+> symbol is selected and KCONFIG_FOO_MODULE
+> will say if it is a module.
+>
+> With the above included we can now do:
+>
+> 	if (KCONFIG_FOO)
+> 		...
+>
+> This is not a replacement for the CONFIG_*
+> defines but a pleasant supplement.
+> Using KCONFIG_FOO will also give us a nice
+> error message the day that FOO is no longer part
+> of the configuration.
+>   
 
-> > It could help to get us out of the occasional sticky situation, but it
-> > does seem a bit risky.  What happens with Kconfig variables which are
-> > just not known about at all with some .configs?
-> > 
-> > Silly example, one could add
-> > 
-> > 	if (KCONFIG_DVB_VES1820)
-> > 
-> > to kernel/sched.c and that would work happily until someone sets DVB=n,
-> > in which case I assume KCONFIG_DVB_VES1820 doesn't get defined
-> > anywhere?
-> It would have helped if I had applied the correct patch...
-> All boolean and tristate symbols in the konfiguration have
-> their symbols defined as KCONFIG_* no matter their values.
-> So KCONFIG_DVB_VES1820 would get defined.
+How about rather than defining a pile of new constants, we just define:
 
-But there are still holes - KCONFIG_ARCH_FOOTBRIDGE wouldn't be defined
-on x86, for example.  Anything which is inside an `if' or inside an
-if/source/endif will not be known about?  I assume?
+#define KCONFIG(x)   (x - 0)      /* XXX choose better macro name */
 
-It's all probably not a big problem in practice - we'd need to be
-more-than-usually-silly to trip over things like this.
+That would allow CONFIG_X variables to be used in C expressions, while 
+still coping with non-existent/unknown CONFIG vars.  Also saves on a lot 
+of #defines...
 
+    J
