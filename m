@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYEXOqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbYEXOqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757195AbYEXOqc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 10:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYEXOqZ
+	id S1757856AbYEXOqr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 10:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYEXOqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 10:46:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39135 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754273AbYEXOqY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 10:46:24 -0400
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-From: David Woodhouse <dwmw2@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <20080523164108.GA31545@uranus.ravnborg.org>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <1211550374.28967.10.camel@pmac.infradead.org>
-	 <20080523164108.GA31545@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 24 May 2008 15:46:17 +0100
-Message-Id: <1211640377.540.14.camel@pmac.infradead.org>
+	Sat, 24 May 2008 10:46:36 -0400
+Received: from 1wt.eu ([62.212.114.60]:1046 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757204AbYEXOqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 10:46:33 -0400
+Date: Sat, 24 May 2008 16:46:27 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steve French <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel coding style for if ... else which cross #ifdef
+Message-ID: <20080524144627.GB4166@1wt.eu>
+References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <48374D3F.1080502@zytor.com> <20080524054301.GA3773@uranus.ravnborg.org> <4837AAE2.9090102@zytor.com> <20080524064201.GA4133@uranus.ravnborg.org> <4837E89D.9040008@goop.org> <20080524112704.GA7292@uranus.ravnborg.org> <483827CE.9080200@goop.org> <20080524143950.GG6749@1wt.eu> <48382911.8090807@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48382911.8090807@goop.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-23 at 18:41 +0200, Sam Ravnborg wrote:
+On Sat, May 24, 2008 at 03:41:21PM +0100, Jeremy Fitzhardinge wrote:
+> Willy Tarreau wrote:
+> >You still have the possibility to use the "-0" trick :
+> >
+> > 	if (CFG_THINGY_LIMIT && x > (CONFIG_THINGY_LIMIT-0)) {...}
+> >  
 > 
-> Assignment to targets i smiisng so generated files are not cleaned
-> by "make clean".
-> 
-> targets := $(FIRMWARE_OBJS)
+> Oh, that's cute in a vile way.  I hadn't seen it before.
 
-It doesn't seem to have that effect. Whatever I do, on 'make clean'
-the .o files are removed and the auto-generated .c files remain. Which
-is probably OK.
+I use it in some of my code (but moderately). It's particularly useful
+for limit checking such as above. It's useful too when you want to use
+the config value as an offset or a bit shift. Eg:
 
--- 
-dwmw2
+    p = malloc(buf_size << (CONFIG_SHIFT-0));
+
+Willy
 
