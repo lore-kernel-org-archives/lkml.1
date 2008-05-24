@@ -1,117 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYEXIzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273AbYEXI4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990AbYEXIzg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 04:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYEXIz0
+	id S1754273AbYEXI4X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 04:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbYEXI4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 04:55:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:50749 "EHLO mail.goop.org"
+	Sat, 24 May 2008 04:56:09 -0400
+Received: from www.tglx.de ([62.245.132.106]:56176 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752495AbYEXIzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 04:55:24 -0400
-Message-ID: <4837D7DD.7000204@goop.org>
-Date: Sat, 24 May 2008 09:54:53 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752591AbYEXI4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 04:56:07 -0400
+Date: Sat, 24 May 2008 10:55:15 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@mvista.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] futex: fix miss ordered wakeups
+In-Reply-To: <20080523042923.916202203@mvista.com>
+Message-ID: <alpine.LFD.1.10.0805241039220.3295@apollo.tec.linutronix.de>
+References: <20080523042923.594531457@mvista.com> <20080523042923.916202203@mvista.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix v2
-References: <200805110030.15510.yhlu.kernel@gmail.com> <200805180118.57863.yhlu.kernel@gmail.com> <200805211840.18619.yhlu.kernel@gmail.com> <200805221520.19259.yhlu.kernel@gmail.com>
-In-Reply-To: <200805221520.19259.yhlu.kernel@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> [PATCH] x86: extend e820 ealy_res support 32bit - fix v2
->
-> use find_e820_area to find addess for new RAMDISK, instead of using ram blindly
->
-> also print out low ram and bootmap info
->
-> v2: remove extra -1 in reaseve_early calling
->     panic if can not find space for new RAMDISK
->   
+On Thu, 22 May 2008, Daniel Walker wrote:
 
-OK, I've fixed earlyprintk=xen, so I can finally get some useful 
-debugging information.
+> When the plist was added to futexes it added overhead to sort based
+> on priority for the futex waiters. If there is a miss order the value of
+> this, from my perspective, is lost. Since we don't re-order tasks
+> when their priority is changed after they sleep then we get a miss ordered
+> scenerio, and tasks aren't woken in priority order.
 
-With this patch it still crashes, but outputs:
+This is a solution looking for a problem. 
 
-(early) Reserving virtual address space above 0xf57fe000
-(early) Linux version 2.6.26-rc3-sched-devel.git (jeremy@victim.goop.org) (gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)) #466 SMP PREEMPT Sat May 24 01:05:41 PDT 2008
-(early) ACPI in unprivileged domain disabled
-(early) BIOS-provided physical RAM map:
-(early)  Xen: 0000000000000000 - 000000000009f000 (usable)
-(early)  Xen: 0000000000100000 - 0000000010000000 (usable)
-(early) console [xenboot0] enabled
-(early) debug: ignoring loglevel setting.
-(early)  limit_regions start: 0000000000000000 - 000000000009f000 (early) (usable)
-(early)  limit_regions start: 0000000000100000 - 0000000010000000 (early) (usable)
-(early)  limit_regions endfunc: 0000000000000000 - 000000000009f000 (early) (usable)
-(early)  limit_regions endfunc: 0000000000100000 - 0000000010000000 (early) (usable)
-(early) user-defined physical RAM map:
-(early)  user: 0000000000000000 - 000000000009f000 (early) (usable)
-(early)  user: 0000000000100000 - 0000000010000000 (early) (usable)
-(early) 0MB HIGHMEM available.
-(early) 256MB LOWMEM available.
-(early)   low ram: 0102c000 - 10000000
-(early)   bootmap 0102c000 - 0102e000
-(early)   early res: 0 [0-fff] BIOS data page
-(early)   early res: 1 [1000-1fff] EX TRAMPOLINE
-(early)   early res: 2 [6000-6fff] TRAMPOLINE
-(early)   early res: 3 [102c000-102dfff] BOOTMAP
-(early) Scan SMP from c0000000 for 1024 bytes.
-(early) Scan SMP from c009fc00 for 1024 bytes.
-(early) Scan SMP from c00f0000 for 65536 bytes.
-(early) Scan SMP from c00c2c20 for 1024 bytes.
-(early) NX (Execute Disable) protection: active
-[crash]
+Normal futexes have no ordering guarantees at all. There is no
+mechanism to prevent lock stealing from lower priority tasks. So why
+should we care about the once a year case, where a sleepers priority
+is modified ?
 
+If you need ordering guarantees then use PI futexes.
 
-Hm, I think this is the problem:
+> This patch corrects this issue, so the tasks are always woken in priority
+> order.
 
-		/*
-		 * don't need to reserve again, already reserved early
-		 * in i386_start_kernel
-		 */
+The patch corrects a non issue and introduces lock order issues:
 
-A Xen pv boot doesn't presently go via i386_start_kernel; it goes 
-directly from xen_start_kernel to start_kernel (you can see that the 
-"early res" lines are missing important things like the kernel code and 
-pagetables).
+> +void futex_adjust_waiters(struct task_struct *p)
+> +{
+> +	spin_lock(&p->pi_lock);
+> +		spin_lock(&hb->lock);
+> ...
+> +		spin_unlock(&hb->lock);
+> +	}
+> +	spin_unlock(&p->pi_lock);
+> +}
 
-I tried making xen_start_kernel directly call i386_start_kernel, and it 
-nearly works.  The problem is that the initial address space layout for 
-a Xen domain is:
+vs.
 
-    kernel
-    ramdisk
-    init pagetable
+> @@ -1155,6 +1191,8 @@ static int futex_wait(u32 __user *uaddr,
+{
+....
+        hb = queue_lock(&q);
 
-which means that in
+> +	spin_lock(&current->pi_lock);
+> +	current->blocked_on = &blocked_on;
+> +	spin_unlock(&current->pi_lock);
 
-	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA BSS");
+There are more issues vs. pi futexes as well. The simple case of
+futex_wait() vs. futex_adjust_waiters will just upset lockdep, but
+there are real dealocks vs. unqueue_me_pi waiting.
 
-#ifdef CONFIG_BLK_DEV_INITRD
-	/* Reserve INITRD */
-	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
-		u64 ramdisk_image = boot_params.hdr.ramdisk_image;
-		u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
-		u64 ramdisk_end   = ramdisk_image + ramdisk_size;
-		reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
-	}
-#endif
-	reserve_early(__pa_symbol(&_end), init_pg_tables_end, "INIT_PG_TABLE");
+Thanks,
+	tglx
 
-the INIT_PG_TABLE reserve_early() will panic because it partially 
-overlaps with the RAMDISK reservation.
-
-    J
