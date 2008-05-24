@@ -1,229 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbYEXCQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbYEXCaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760254AbYEXCQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 22:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbYEXCQu
+	id S1760190AbYEXCaG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 22:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbYEXC3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 22:16:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:25133 "EHLO
+	Fri, 23 May 2008 22:29:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:34057 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754262AbYEXCQt (ORCPT
+	with ESMTP id S1756955AbYEXC3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 22:16:49 -0400
+	Fri, 23 May 2008 22:29:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=XSvvJpD5ggpM0ret+Vd8IdlpQmK38+WhpfbKcTzt14SrdN8NNZeqLM4kfgYh8PUAha8cmYIR2hdwresUQ9pnTRzFqG1Z0mKeLmxVKp6KdMJYlwW1SyDU8VU3Tuxx5S/WiNrGY/2gPM/FqsWTnInv1Az6+MLex1tmrVvlwe4ES5g=
-Date: Sat, 24 May 2008 11:05:05 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Matt Domsch <Matt_Domsch@Dell.com>
-Subject: [PATCH] edd: consolidate error checks
-Message-ID: <20080524020503.GB3470@APFDCB5C>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=p40C57+aYR8nzGd6exKbhXMQHV2E4eWfAkKfuRkIcmbzTd/yBpQnQ5IYdoim6bHeacPEcKcIFvB8csZTwwCqPY3uzW9JvKoz+0HsblUpbMI1ev0kFFIefWaFe2FyQCtcOcjlCehyUFT3LSRa/wKFMIgycy3HkK4nkwDi0N7zybY=
+Message-ID: <86802c440805231929p71c28320w272f4f19cfc45e34@mail.gmail.com>
+Date: Fri, 23 May 2008 19:29:50 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ciaran McCreesh" <ciaran.mccreesh@googlemail.com>
+Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr after e820_reserve_resources
+Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440805231851t12a83e54w78d2c120ed3d6b20@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_14326_10578434.1211596190096"
+References: <20080518014111.4f32298b@googlemail.com>
+	 <86802c440805191822v5b572d03t1568b27eb2defa4a@mail.gmail.com>
+	 <20080520022446.3b9c335a@googlemail.com>
+	 <86802c440805191948h29769798qecc93b7aa5c9cd91@mail.gmail.com>
+	 <20080520041655.0552236d@googlemail.com>
+	 <86802c440805192022n29e191dfped3ee5afa7894288@mail.gmail.com>
+	 <20080524005021.67b98674@snowcone>
+	 <86802c440805231705g534e9245oc359dc316ae5b1cd@mail.gmail.com>
+	 <20080524020950.1538624a@snowcone>
+	 <86802c440805231851t12a83e54w78d2c120ed3d6b20@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Many show operations in edd_attribute have same error checks at the head.
-This patch consolidates these error checks to callee function.
+------=_Part_14326_10578434.1211596190096
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Matt Domsch <Matt_Domsch@Dell.com>
----
- drivers/firmware/edd.c |   74 ++++++++++++++++++++-----------------------------
- 1 file changed, 31 insertions(+), 43 deletions(-)
+On Fri, May 23, 2008 at 6:51 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Fri, May 23, 2008 at 6:09 PM, Ciaran McCreesh
+> <ciaran.mccreesh@googlemail.com> wrote:
+>> On Fri, 23 May 2008 17:05:34 -0700
+>> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>>> > Without the ram_reserve
+>>> > patch, /proc/iomem is as it was earlier in the discussion.
+>>> >
+>>> >> can you boot with pnpacpi=off ?
+>>> >
+>>> > No, that doesn't help either.
+>>>
+>>> how about /proc/iomem with pnpacpi=off?
+>>
+>> I've attached /proc/iomem from current head minus the original patch,
+>> with and without pnpacpi=off.
+>
+> it's weird,
+>
+> you should have
+>
+> 00000 - 9f400: System RAM  ===> is not showing up
+> 100000 - d7ff0000: System RAM ===> is not showing up
+> 100000000-11fffffff : System RAM
 
-Index: 2.6-git/drivers/firmware/edd.c
-===================================================================
---- 2.6-git.orig/drivers/firmware/edd.c
-+++ 2.6-git/drivers/firmware/edd.c
-@@ -115,11 +115,14 @@ edd_attr_show(struct kobject * kobj, str
- {
- 	struct edd_device *dev = to_edd_device(kobj);
- 	struct edd_attribute *edd_attr = to_edd_attr(attr);
--	ssize_t ret = -EIO;
- 
--	if (edd_attr->show)
--		ret = edd_attr->show(dev, buf);
--	return ret;
-+	if (!edd_attr->show)
-+		return -EIO;
-+
-+	if (!dev || !buf)
-+		return -EINVAL;
-+
-+	return edd_attr->show(dev, buf);
- }
- 
- static struct sysfs_ops edd_attr_ops = {
-@@ -133,10 +136,8 @@ edd_show_host_bus(struct edd_device *ede
- 	char *p = buf;
- 	int i;
- 
--	if (!edev)
--		return -EINVAL;
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	for (i = 0; i < 4; i++) {
-@@ -179,10 +180,8 @@ edd_show_interface(struct edd_device *ed
- 	char *p = buf;
- 	int i;
- 
--	if (!edev)
--		return -EINVAL;
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	for (i = 0; i < 8; i++) {
-@@ -243,10 +242,9 @@ edd_show_raw_data(struct edd_device *ede
- {
- 	struct edd_info *info;
- 	ssize_t len = sizeof (info->params);
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	if (!(info->params.key == 0xBEDD || info->params.key == 0xDDBE))
-@@ -265,10 +263,9 @@ edd_show_version(struct edd_device *edev
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += scnprintf(p, left, "0x%02x\n", info->version);
-@@ -288,10 +285,9 @@ edd_show_extensions(struct edd_device *e
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	if (info->interface_support & EDD_EXT_FIXED_DISK_ACCESS) {
-@@ -314,10 +310,9 @@ edd_show_info_flags(struct edd_device *e
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	if (info->params.info_flags & EDD_INFO_DMA_BOUNDARY_ERROR_TRANSPARENT)
-@@ -344,10 +339,9 @@ edd_show_legacy_max_cylinder(struct edd_
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += snprintf(p, left, "%u\n", info->legacy_max_cylinder);
-@@ -359,10 +353,9 @@ edd_show_legacy_max_head(struct edd_devi
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += snprintf(p, left, "%u\n", info->legacy_max_head);
-@@ -374,10 +367,9 @@ edd_show_legacy_sectors_per_track(struct
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += snprintf(p, left, "%u\n", info->legacy_sectors_per_track);
-@@ -389,10 +381,9 @@ edd_show_default_cylinders(struct edd_de
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += scnprintf(p, left, "%u\n", info->params.num_default_cylinders);
-@@ -404,10 +395,9 @@ edd_show_default_heads(struct edd_device
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += scnprintf(p, left, "%u\n", info->params.num_default_heads);
-@@ -419,10 +409,9 @@ edd_show_default_sectors_per_track(struc
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += scnprintf(p, left, "%u\n", info->params.sectors_per_track);
-@@ -434,10 +423,9 @@ edd_show_sectors(struct edd_device *edev
- {
- 	struct edd_info *info;
- 	char *p = buf;
--	if (!edev)
--		return -EINVAL;
-+
- 	info = edd_dev_get_info(edev);
--	if (!info || !buf)
-+	if (!info)
- 		return -EINVAL;
- 
- 	p += scnprintf(p, left, "%llu\n", info->params.number_of_sectors);
+please try to revert attached commit...
+
+it seems that your compiler is not happy...
+
+YH
+
+------=_Part_14326_10578434.1211596190096
+Content-Type: application/octet-stream; name=commit-0156126
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fgll2o0y0
+Content-Disposition: attachment; filename=commit-0156126
+
+Y29tbWl0IDAxNTYxMjY0YmQxZWExZDY1NGQwOWJhYmUwMmQ3ODRhNWIxNTAxMjQKQXV0aG9yOiBZ
+aW5naGFpIEx1IDx5aGx1Lmtlcm5lbC5zZW5kQGdtYWlsLmNvbT4KRGF0ZTogICBUaHUgTWFyIDIw
+IDIzOjU3OjIxIDIwMDggLTA3MDAKCiAgICB4ODY6IGFsbG9jYXRlIGU4MjAgcmVzb3VyY2Ugc3Ry
+dWN0IGFsbCB0b2dldGhlcgogICAgCiAgICBkb24ndCBuZWVkIHRvIGFsbG9jYXRlIHRoYXQgb25l
+IGJ5IG9uZQogICAgCiAgICBTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aGx1Lmtlcm5lbEBn
+bWFpbC5jb20+CiAgICBTaWduZWQtb2ZmLWJ5OiBJbmdvIE1vbG5hciA8bWluZ29AZWx0ZS5odT4K
+CmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwvZTgyMF82NC5jIGIvYXJjaC94ODYva2VybmVs
+L2U4MjBfNjQuYwppbmRleCA0NTA5NzU3Li45MTg0ZTY0IDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9r
+ZXJuZWwvZTgyMF82NC5jCisrKyBiL2FyY2gveDg2L2tlcm5lbC9lODIwXzY0LmMKQEAgLTMwMCw5
+ICszMDAsMTAgQEAgdW5zaWduZWQgbG9uZyBfX2luaXQgZTgyMF9lbmRfb2ZfcmFtKHZvaWQpCiB2
+b2lkIF9faW5pdCBlODIwX3Jlc2VydmVfcmVzb3VyY2VzKHZvaWQpCiB7CiAJaW50IGk7CisJc3Ry
+dWN0IHJlc291cmNlICpyZXM7CisKKwlyZXMgPSBhbGxvY19ib290bWVtX2xvdyhzaXplb2Yoc3Ry
+dWN0IHJlc291cmNlKSAqIGU4MjAubnJfbWFwKTsKIAlmb3IgKGkgPSAwOyBpIDwgZTgyMC5ucl9t
+YXA7IGkrKykgewotCQlzdHJ1Y3QgcmVzb3VyY2UgKnJlczsKLQkJcmVzID0gYWxsb2NfYm9vdG1l
+bV9sb3coc2l6ZW9mKHN0cnVjdCByZXNvdXJjZSkpOwogCQlzd2l0Y2ggKGU4MjAubWFwW2ldLnR5
+cGUpIHsKIAkJY2FzZSBFODIwX1JBTToJcmVzLT5uYW1lID0gIlN5c3RlbSBSQU0iOyBicmVhazsK
+IAkJY2FzZSBFODIwX0FDUEk6CXJlcy0+bmFtZSA9ICJBQ1BJIFRhYmxlcyI7IGJyZWFrOwpAQCAt
+MzEzLDYgKzMxNCw3IEBAIHZvaWQgX19pbml0IGU4MjBfcmVzZXJ2ZV9yZXNvdXJjZXModm9pZCkK
+IAkJcmVzLT5lbmQgPSByZXMtPnN0YXJ0ICsgZTgyMC5tYXBbaV0uc2l6ZSAtIDE7CiAJCXJlcy0+
+ZmxhZ3MgPSBJT1JFU09VUkNFX01FTSB8IElPUkVTT1VSQ0VfQlVTWTsKIAkJaW5zZXJ0X3Jlc291
+cmNlKCZpb21lbV9yZXNvdXJjZSwgcmVzKTsKKwkJcmVzKys7CiAJfQogfQogCg==
+------=_Part_14326_10578434.1211596190096--
