@@ -1,98 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbYEXWo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbYEXWqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760812AbYEXWo7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 18:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYEXWot
+	id S1762534AbYEXWqa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 18:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbYEXWqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 18:44:49 -0400
-Received: from [195.113.26.193] ([195.113.26.193]:46177 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750802AbYEXWos (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 18:44:48 -0400
-Date: Sun, 25 May 2008 00:44:47 +0200
-From: Jan Kara <jack@suse.cz>
-To: Mingming <cmm@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, pbadari@us.ibm.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH-v2] JBD: Fix race between free buffer and commit trasanction
-Message-ID: <20080524224447.GE20563@atrey.karlin.mff.cuni.cz>
-References: <1210947250.3608.18.camel@localhost.localdomain> <1210957976.4231.31.camel@badari-desktop> <1210971693.3608.46.camel@localhost.localdomain> <20080518223739.GB11006@atrey.karlin.mff.cuni.cz> <1211227158.3663.25.camel@localhost.localdomain> <20080519132553.de9b78b0.akpm@linux-foundation.org> <1211234829.3663.39.camel@localhost.localdomain> <1211306575.3664.19.camel@localhost.localdomain> <20080520235303.GB23521@atrey.karlin.mff.cuni.cz> <1211390093.5571.16.camel@BVR-FS.beaverton.ibm.com>
+	Sat, 24 May 2008 18:46:23 -0400
+Received: from www.tglx.de ([62.245.132.106]:59281 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbYEXWqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 18:46:22 -0400
+Date: Sun, 25 May 2008 00:46:13 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Tom Spink <tspink@gmail.com>
+cc: Greg KH <gregkh@suse.de>, "Hans J. Koch" <hjk@linutronix.de>,
+       Uwe Kleine-K??nig <Uwe.Kleine-Koenig@digi.com>,
+       linux-kernel@vger.kernel.org,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
+ interrupts
+In-Reply-To: <7b9198260805241534s1a548e16i583742db92be3789@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0805250036481.3295@apollo.tec.linutronix.de>
+References: <20080522192252.GB3226@local> <20080522192637.GC3226@local>  <20080523055527.GA28963@digi.com>  <20080523104454.4e2af6ec@bluebox.local>  <20080523091009.GA22821@digi.com>  <20080523120308.7bec1e1c@bluebox.local>  <20080523105604.GA23800@digi.com>
+  <20080523135557.27fe4855@bluebox.local>  <20080524044354.GA8129@suse.de>  <alpine.LFD.1.10.0805250013450.3295@apollo.tec.linutronix.de> <7b9198260805241534s1a548e16i583742db92be3789@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211390093.5571.16.camel@BVR-FS.beaverton.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2008-05-21 at 01:53 +0200, Jan Kara wrote:
-> > >  fs/jbd/transaction.c |   55 +++++++++++++++++++++++++++++++++++++++++++++++++--
-> > >  mm/filemap.c         |    3 --
-> > >  2 files changed, 54 insertions(+), 4 deletions(-)
-> > > 
-> > > Index: linux-2.6.26-rc2/fs/jbd/transaction.c
-> > > ===================================================================
-> > > --- linux-2.6.26-rc2.orig/fs/jbd/transaction.c	2008-05-11 17:09:41.000000000 -0700
-> > > +++ linux-2.6.26-rc2/fs/jbd/transaction.c	2008-05-19 16:16:41.000000000 -0700
-> > > @@ -1648,12 +1648,39 @@ out:
-> > >  	return;
-> > >  }
-> > >  
-> > > +/*
-> > > + * journal_try_to_free_buffers() could race with journal_commit_transaction()
-> > > + * The later might still hold the reference count to the buffers when inspecting
-> > > + * them on t_syncdata_list or t_locked_list.
-> > > + *
-> > > + * Journal_try_to_free_buffers() will call this function to
-> > > + * wait for the current transaction to finish syncing data buffers, before
-> > > + * try to free that buffer.
-> > > + *
-> > > + * Called with journal->j_state_lock hold.
-> > > + */
-> > > +static void journal_wait_for_transaction_sync_data(journal_t *journal)
-> > > +{
-> > > +	transaction_t *transaction = NULL;
-> > > +	tid_t tid;
-> > > +
-> > > +	transaction = journal->j_committing_transaction;
-> > > +
-> > > +	if (!transaction)
-> > > +		return;
-> > > +
-> > > +	tid = transaction->t_tid;
-> > > +	spin_unlock(&journal->j_state_lock);
-> > > +	log_wait_commit(journal, tid);
-> > > +	spin_lock(&journal->j_state_lock);
-> > > +}
-> >   What is actually the point of entering the function with j_state_lock
-> > held and also keeping it after return? It should be enough to take it
-> > and release it just inside this function, shouldn't it?
-> > 
+On Sat, 24 May 2008, Tom Spink wrote:
+> 2008/5/24 Thomas Gleixner <tglx@linutronix.de>:
+> > It makes a certain amount of sense to use write. You hold the device
+> > file descriptor anyway for the read (wait for interrupt) operation,
+> > so using the same file descriptor is not a too bad idea:
 > 
-> I was worried about the case when we call try_to_free_buffers() again,
-> it races with the current transaction commit again. Is it possible? I
-> guess the question is whether it is possible to have buffers on the same
-> page attached to different transaction.  If so, I think we need to keep
-> the journal state lock while retry try_to_free_buffers(), so that the
-> retry won't race with the commit transaction again...
-  Well, but by the time log_wait_commit() finishes, it may well
-happen that a new transaction is already started so your lock doesn't
-help you much. And the page you are called on is actually locked, so
-noone can really mess with it until you unlock it... So I think you can
-just use the lock for obtaining tid and then drop it.
+> What do you think about my ioctl idea, earlier in the thread?
 
-								Honza
+I think it's a pretty bad idea.
+ 
+> >    while (!stop) {
+> >
+> >        /* wait for interrupt */
+> >        read(fd);
+> >
+> >        do_stuff();
+> >
+> >        /*reenable interrupt */
+> >        write(fd);
+> >    }
+> 
+> So, instead of write, you'd use ioctl(fd, ...).
 
-PS: For JBD2 you'd need to be a bit more careful because you cannot call
-log_wait_commit() while holding page lock (we have reversed locking
-order for ext4) - but ordered-mode rewrite patch actually fixes this
-problem and I'm going to submit the splitted patches on Monday or
-Tuesday (I only need to test them that I didn't do something stupid
-while porting them to ext4)...
+And what's the actual gain ?
 
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+> > I thought about using a sysfs entry for a while, but looking at the
+> > actual use case made the write() solution a more natural choice.
+> 
+> I thought ioctl would be more natural, as [en,dis]abling interrupts is
+> a "controlling" operation :-)
+
+Oh no. We are not going to open the bottomless pit of ioctls in
+UIO. Once we have an ioctl channel in place we have the same mess
+which we want to avoid in the first place.
+
+Also when a driver needs more than the obvious interrupt wait /
+control functions (which are pretty symetric btw.) aside of the
+mmapped access to the device then it does not belong into the category
+of an UIO driver.
+
+Thanks,
+
+	tglx
