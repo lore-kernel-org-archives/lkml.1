@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYEXPgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757771AbYEXPjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbYEXPgR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 11:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYEXPgA
+	id S1757771AbYEXPjq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 11:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbYEXPjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 11:36:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58941 "EHLO mail.dvmed.net"
+	Sat, 24 May 2008 11:39:37 -0400
+Received: from sandeen.net ([209.173.210.139]:11130 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbYEXPgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 11:36:00 -0400
-Message-ID: <483835DD.3060304@garzik.org>
-Date: Sat, 24 May 2008 11:35:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1754467AbYEXPjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 11:39:36 -0400
+Message-ID: <483836B6.8030406@sandeen.net>
+Date: Sat, 24 May 2008 10:39:34 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-To: Andras Mantia <amantia@kde.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: libata (pata_via) timeouts causing unusable device: the famous
- DRDY issue?
-References: <200805232201.51701.amantia@kde.org> <48372989.3000700@garzik.org> <200805241612.29985.amantia@kde.org>
-In-Reply-To: <200805241612.29985.amantia@kde.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Willy Tarreau <w@1wt.eu>
+CC: David Greaves <david@dgreaves.com>, Greg KH <greg@kroah.com>,
+       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>, stable@kernel.org
+Subject: Re: RFI for 2.6.25.5 : Re: Regression- XFS won't mount on partitioned
+ md array
+References: <482DC043.5000307@dgreaves.com> <482DD981.5070004@sandeen.net> <482EEFDA.50101@dgreaves.com> <482EF6A7.2020909@sandeen.net> <482F67D9.70400@sandeen.net> <482FBD4C.20608@sandeen.net> <482FED60.7060405@dgreaves.com> <4838192F.3050004@dgreaves.com> <20080524135258.GF6749@1wt.eu>
+In-Reply-To: <20080524135258.GF6749@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andras Mantia wrote:
-> On Friday 23 May 2008, Jeff Garzik wrote:
->> Have you tried all of: pci=nomsi, acpi=off, or noapic?
+Willy Tarreau wrote:
+
+> It would have helped to CC stable (fixed) and to give the mainline commit
+> ID since the stable branch only holds already merged patches. Greg, the
+> commit is 6ab455ee...
 > 
-> 
-> So far:
-> pci=nomsi does not help
-> pci=nomsi acpi=off noapic works
-> pci=nomsi noapic also works
-> 
-> I will try noapic only as well and report.
+> Willy
 
-Generally you only want to use one of those...
+Yup I'll agree that this should probably go to -stable unless hch or
+dchinner disagree.
 
-	Jeff
+FWIW I've already put it in the Fedora kernels.
 
-
-
+-Eric
