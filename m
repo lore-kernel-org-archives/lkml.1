@@ -1,99 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbYEXCft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760471AbYEXDCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760494AbYEXCft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 22:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbYEXCfk
+	id S1760471AbYEXDCg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 23:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbYEXDC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 22:35:40 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50665 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757288AbYEXCfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 22:35:39 -0400
-Date: Sat, 24 May 2008 12:35:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-       Gary Jennejohn <garyj@denx.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/2] mmc: add OpenFirmware bindings for the mmc_spi
- driver
-Message-Id: <20080524123527.04794974.sfr@canb.auug.org.au>
-In-Reply-To: <20080523182842.GB469@polina.dev.rtsoft.ru>
-References: <20080523182754.GA26891@polina.dev.rtsoft.ru>
-	<20080523182842.GB469@polina.dev.rtsoft.ru>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__24_May_2008_12_35_27_+1000__xk2Yif9FDYTnlQy"
+	Fri, 23 May 2008 23:02:27 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37600 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757667AbYEXDC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 23:02:26 -0400
+Date: Fri, 23 May 2008 23:02:24 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: mingo@elte.hu, tglx@linutronix.de, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sdietrich@novell.com,
+       pmorreale@novell.com, mkohari@novell.com
+Subject: Re: [PATCH 5/5] remove the extra call to try_to_take_lock
+In-Reply-To: <20080520144936.15992.48894.stgit@novell1.haskins.net>
+Message-ID: <Pine.LNX.4.58.0805232301080.12686@gandalf.stny.rr.com>
+References: <20080520143954.15992.85900.stgit@novell1.haskins.net>
+ <20080520144936.15992.48894.stgit@novell1.haskins.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__24_May_2008_12_35_27_+1000__xk2Yif9FDYTnlQy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Anton,
+On Tue, 20 May 2008, Gregory Haskins wrote:
 
-On Fri, 23 May 2008 22:28:42 +0400 Anton Vorontsov <avorontsov@ru.mvista.co=
-m> wrote:
+> From: Peter W. Morreale <pmorreale@novell.com>
 >
-> +++ b/drivers/mmc/host/of_mmc_spi.c
+> Remove the redundant attempt to get the lock.  While it is true that the
+> exit path with this patch adds an un-necessary xchg (in the event the
+> lock is granted without further traversal in the loop) experimentation
+> shows that we almost never encounter this situation.
+>
+> Signed-off-by: Peter W. Morreale <pmorreale@novell.com>
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+>
+>  kernel/rtmutex.c |    6 ------
+>  1 files changed, 0 insertions(+), 6 deletions(-)
+>
+> diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+> index ec1f7d4..1da7813 100644
+> --- a/kernel/rtmutex.c
+> +++ b/kernel/rtmutex.c
+> @@ -785,12 +785,6 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+>  	spin_lock_irqsave(&lock->wait_lock, flags);
+>  	init_lists(lock);
+>
+> -	/* Try to acquire the lock again: */
+> -	if (do_try_to_take_rt_mutex(lock, STEAL_LATERAL)) {
+> -		spin_unlock_irqrestore(&lock->wait_lock, flags);
+> -		return;
+> -	}
+> -
 
-> +static int of_mmc_spi_probe(struct spi_device *spi)
+This would suggested that lock stealing doesn't happen. On lock stealing,
+this is the condition that is triggered and we have a nice quick exit.
 
-> +	/*
-> +	 * mmc_spi_probe will use drvdata, so we can't use it. Use node's
-> +	 * data instead.
-> +	 */
-> +	spi->dev.archdata.of_node->data =3D oms;
+-- Steve
 
-If you delay this assignment, you may not have to clean it up in the
-error path.
 
-> +	ocr_mask =3D of_get_property(np, "linux,mmc-ocr-mask", &size);
 
-You should really explicitly include linux/of.h to use of_get_property etc
-
-> +int __devexit of_mmc_spi_remove(struct spi_device *spi)
-> +{
-> +	struct of_mmc_spi *oms =3D spi->dev.archdata.of_node->data;
-> +	int ret;
-> +
-> +	ret =3D mmc_spi_remove(spi);
-> +	if (ret)
-> +		return ret;
-
-Maybe you should do this last so that you don't leak more than necessary
-if mmc_spi_remove fails.  (I don't know what state mmc_spi_remove leaves
-stuff in if it fails ...)
-
-> +static struct spi_driver of_mmc_spi_driver =3D {
-> +	.driver =3D {
-> +		.name =3D "of_mmc_spi",
-> +		.bus =3D &spi_bus_type,
-
-This is initialised by spi_register_driver().
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__24_May_2008_12_35_27_+1000__xk2Yif9FDYTnlQy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIN370TgG2atn1QN8RAsnyAJ4+U5d39q5m5og1in7YRTCjl4SelwCglWgp
-BkupoItpG1foUF/ec/46xYE=
-=q6d8
------END PGP SIGNATURE-----
-
---Signature=_Sat__24_May_2008_12_35_27_+1000__xk2Yif9FDYTnlQy--
+>  	BUG_ON(rt_mutex_owner(lock) == current);
+>
+>  	/*
+>
