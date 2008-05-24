@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbYEXUpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761975AbYEXUrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbYEXUpj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 16:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760042AbYEXUpb
+	id S1761975AbYEXUrA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 16:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbYEXUqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 16:45:31 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43273 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756456AbYEXUpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 16:45:30 -0400
-Date: Sat, 24 May 2008 22:46:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+	Sat, 24 May 2008 16:46:53 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33247 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754837AbYEXUqw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 16:46:52 -0400
+Message-ID: <48387DF0.7000600@zytor.com>
+Date: Sat, 24 May 2008 13:43:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
-Message-ID: <20080524204610.GB3136@uranus.ravnborg.org>
-References: <20080524192540.GA28067@uranus.ravnborg.org> <20080524125316.4b969936.akpm@linux-foundation.org> <48387736.9050004@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48387736.9050004@goop.org>
-User-Agent: Mutt/1.4.2.1i
+CC: Tom Spink <tspink@gmail.com>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Steve French <smfrench@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel coding style for if ... else which cross #ifdef
+References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com>	 <4837AAE2.9090102@zytor.com>	 <20080524064201.GA4133@uranus.ravnborg.org>	 <4837E89D.9040008@goop.org>	 <20080524112704.GA7292@uranus.ravnborg.org>	 <483827CE.9080200@goop.org>	 <20080524153611.GA13890@uranus.ravnborg.org>	 <48383830.6060504@goop.org>	 <19f34abd0805240857l57e667fdicb240baf898f6296@mail.gmail.com>	 <48383C26.5040106@goop.org> <7b9198260805240940v46db928ak9bcacf9363c46d41@mail.gmail.com> <48387CCB.1030801@goop.org>
+In-Reply-To: <48387CCB.1030801@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 09:14:46PM +0100, Jeremy Fitzhardinge wrote:
-> Andrew Morton wrote:
-> >It could help to get us out of the occasional sticky situation, but it
-> >  
+Jeremy Fitzhardinge wrote:
+> Tom Spink wrote:
+>> A thought occurred to me that we may be able to used some preprocessor
+>> magic and do this:
+>>
+>> #define config_defined(x) CFGVAL_## x
+>>
+>> Which means that, if we get Kconfig to produce:
+>>
+>> #define CFGVAL_CONFIG_FOO 0
+>> #define CFGVAL_CONFIG_VALUE_BAR 1
+>> #define CFGVAL_CONFIG_VALUE_BAZ_MODULE 1
+>>
+>> We can use this:
+>>
+>> if (config_defined(CONFIG_FOO) && some_expr) {
+>>    panic("Oh no.");
+>> }
 > 
-> I think if you know you can use the if(KCONFIG_) technique, then one 
-> would tend to structure things so that you do it as much as possible.  
-> Ideally you'd use CONFIG vars in Makefiles to make code go away 
-> entirely, and if (KCONFIG_) in .c files to do conditional compilation.
+> Well, in that case you could use Willy's magic hack:
 > 
-> >does seem a bit risky.  What happens with Kconfig variables which are
-> >just not known about at all with some .configs?
-> >
-> >Silly example, one could add
-> >
-> >	if (KCONFIG_DVB_VES1820)
-> >
-> >to kernel/sched.c and that would work happily until someone sets DVB=n,
-> >in which case I assume KCONFIG_DVB_VES1820 doesn't get defined
-> >anywhere?
-> >
-> >A more realistic example might be using an x86-only KCONFIG_* in non-x86
-> >code.
-> >  
+> #define config_defined(x)      (x - 0)
 > 
-> Well, logically that means that all config vars are always "known", even 
-> if they can never be defined.  I don't know what the practicalities of 
-> that are: can all Kconfig files everywhere reasonably be scanned to 
-> produce the symbol list?
+> Which isn't a bad alternative to defining a whole pile of new symbols...
+> 
 
-When we have one configuration for the kernel and not as today
-where we have one configuration for each architecture (with a lot
-of shared files) then it is already taken care of by my (updated) patch.
+That can *strongly* be argued with.
 
-	Sam
+In particular, the use of #ifdef is crap to begin with.  Using #if even 
+for the preprocessor makes it possible to trap misspellings.
+
+	-hpa
