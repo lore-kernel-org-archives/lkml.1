@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760532AbYEXGyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbYEXHA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760532AbYEXGyk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 02:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbYEXGya
+	id S1760117AbYEXHA1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 03:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbYEXHAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 02:54:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:54629 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYEXGya (ORCPT
+	Sat, 24 May 2008 03:00:12 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48336 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbYEXHAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 02:54:30 -0400
-Message-ID: <fa686aa40805232354g147acfcdx4753fce1a448ceb7@mail.gmail.com>
-Date: Sat, 24 May 2008 00:54:29 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH 2/4] spi: split up spi_new_device() to allow two stage registration.
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, fabrizio.garetto@gmail.com,
-       jonsmirl@gmail.com
-In-Reply-To: <fa686aa40805232343x20031560j5659d203e25f494@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	 <20080516193608.28030.34968.stgit@trillian.secretlab.ca>
-	 <200805211717.13206.david-b@pacbell.net>
-	 <fa686aa40805232343x20031560j5659d203e25f494@mail.gmail.com>
-X-Google-Sender-Auth: 492f82f3b705bcc2
+	Sat, 24 May 2008 03:00:11 -0400
+To: zippel@linux-m68k.org
+CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+In-reply-to: <Pine.LNX.4.64.0805232347500.18302@localhost.localdomain>
+	(message from Roman Zippel on Fri, 23 May 2008 23:52:20 +0200 (CEST))
+Subject: Re: [patch 06/14] hfsplus: remove hfsplus_permission()
+References: <20080521171458.077908538@szeredi.hu> <20080521171549.964767446@szeredi.hu>
+ <Pine.LNX.4.64.0805212232500.18302@localhost.localdomain>
+ <E1Jz5gq-0007F4-AQ@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221358080.18302@localhost.localdomain>
+ <E1Jz9jk-0007rg-5W@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805221427300.18302@localhost.localdomain>
+ <E1JzA2r-0007uK-8L@pomaz-ex.szeredi.hu> <20080523092114.GD27119@infradead.org>
+ <Pine.LNX.4.64.0805231712120.18302@localhost.localdomain>
+ <E1JzZF5-0002Hz-5e@pomaz-ex.szeredi.hu> <E1JzZWC-0002M8-UP@pomaz-ex.szeredi.hu>
+ <Pine.LNX.4.64.0805231824370.18302@localhost.localdomain>
+ <E1Jzbai-0002d1-VC@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805232027220.18302@localhost.localdomain>
+ <E1JzcZj-0002mJ-28@pomaz-ex.szeredi.hu> <Pine.LNX.4.64.0805232347500.18302@localhost.localdomain>
+Message-Id: <E1JznjI-0003fD-9i@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 24 May 2008 08:59:48 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 12:43 AM, Grant Likely
-<grant.likely@secretlab.ca> wrote:
-> On Wed, May 21, 2008 at 6:17 PM, David Brownell <david-b@pacbell.net> wrote:
->> On Friday 16 May 2008, Grant Likely wrote:
->>>
->>> This patch splits the allocation and registration portions of code out
->>> of spi_new_device() and creates three new functions; spi_alloc_device(),
->>> spi_register_device(), and spi_device_release().
->>
->> I have no problem with the first two, but why the last?
->>
->> If the devices are always allocated by spi_alloc_device() as
->> they should be -- probably through an intermediary -- the
->> only public function necessary for that cleanup should be
->> the existing spi_dev_put().
->
-> Ah, okay.  I'm still a bit fuzzy on the device model conventions.
-> I'll remove that then.
+> > Semi-concrete: link(2) locks the target's parent and the source.
+> > Cross-directory rename(2) locks both parents.  If link's target is a
+> > file which has children, this can result in an ABBA deadlock.  That's
+> > _before_ the filesystem's ->link() or ->rename() function is called.
+> 
+> I'm afraid you have to be more concrete than this. 
+> hfsplus_file_inode_operations doesn't have a link or rename operation, so 
+> if one your source parents above involves a file, it shouldn't get this 
+> far or you have to describe your scenario in more detail.
 
-Question:  spi_alloc_device() (and the original code) does a
-spi_master_get() on the spi_master device.  Doesn't spi_master_put()
-need to be called when the device is discarded?  spi_dev_put() doesn't
-do that explicitly; is it an implicit operation after a device has
-been deregistered from the spi_master?
+Heh, you just want me to do all the hard work :)
 
-Thanks,
-g.
+OK, I'll go along:
 
->
-> g.
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
->
+  /mnt/a/x is a regular file
 
+  ln /mnt/a/x /mnt/b/x
+  rename /mnt/a/x /mnt/b/x/p & ln /mnt/b/x /mnt/a/q
 
+Neither ->rename nor ->link is required to be defined on x.  The
+rename will first lock x, then a.  The link will first lock a then x,
+AFAICS.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+This is probably just one of several ways to make it deadlock.
+
+Hmm?
+
+Miklos
