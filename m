@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761256AbYEXSHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbYEXSJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761256AbYEXSHQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 14:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759627AbYEXSHF
+	id S1761313AbYEXSJf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 14:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759886AbYEXSJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 14:07:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:6953 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759604AbYEXSHD convert rfc822-to-8bit (ORCPT
+	Sat, 24 May 2008 14:09:27 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49641 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759627AbYEXSJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 14:07:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=G9P8Gfz96LdOYsTxkEPdtGXWrpPNuE/Lch8Qmc0GBde1els2uUGyZF8aftVhNu9//uE9/IwyniGYQatmayrfJecI0LV+vazhI/NLf1qoAkNz+4F+E5czsSllP3gKLxQ5RtxSNkGY9ndliHxrtQBihqR6bPpVgJoRqEeQdxcWk1U=
-Date: Sat, 24 May 2008 20:07:10 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Only print "Decompressing Linux" etc when 'noisy'
- is passed.
-Message-Id: <20080524200710.a2400cf4.diegocg@gmail.com>
-In-Reply-To: <18487.57106.644612.157155@harpo.it.uu.se>
-References: <1211579968-15227-1-git-send-email-krh@redhat.com>
-	<1211579968-15227-2-git-send-email-krh@redhat.com>
-	<18487.57106.644612.157155@harpo.it.uu.se>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 24 May 2008 14:09:27 -0400
+Message-ID: <483859BB.9030809@zytor.com>
+Date: Sat, 24 May 2008 11:08:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Steve French <smfrench@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel coding style for if ... else which cross #ifdef
+References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com> <48374D3F.1080502@zytor.com> <20080524054301.GA3773@uranus.ravnborg.org> <4837AAE2.9090102@zytor.com> <20080524064201.GA4133@uranus.ravnborg.org>
+In-Reply-To: <20080524064201.GA4133@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Sat, 24 May 2008 11:25:38 +0200, Mikael Pettersson <mikpe@it.uu.se> escribió:
+Sam Ravnborg wrote:
+>> I don't think we want to use "1 or 2"... I suspect we want to use the 
+>> same booleans we currently have.
+> I'm a bit dense (or I need more coffe - it's morning here).
+> What "same booleans"?
 
-> All this accomplishes is to make early boot failures harder
-> to debug.
+Sorry, we already have CONFIG_FOO (meaning =y) and CONFIG_FOO_MODULE 
+(meaning =m).  This seems to work well and will generally do the right 
+thing.
 
-And there's already a parameter to switch the verbosity of printk - 'quiet'
+If we had CFG_FOO=2 for the case of FOO=n then the clean use of:
+
+	if (CFG_FOO && blah)...
+
+... wouldn't work as nicely.
+
+>> I would suggest CFG_* instead of CONFIG_* for the new set.
+> Agreed.
+
+	-hpa
+
