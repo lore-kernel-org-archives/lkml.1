@@ -1,58 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763464AbYEXWXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762860AbYEXW2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763464AbYEXWXR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 18:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761667AbYEXWXG
+	id S1762860AbYEXW2S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 18:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbYEXW2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 18:23:06 -0400
-Received: from [195.113.26.193] ([195.113.26.193]:57767 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755895AbYEXWXF (ORCPT
+	Sat, 24 May 2008 18:28:11 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:49043 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755881AbYEXW2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 18:23:05 -0400
-Date: Sun, 25 May 2008 00:23:04 +0200
-From: Jan Kara <jack@suse.cz>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
-Message-ID: <20080524222304.GD20563@atrey.karlin.mff.cuni.cz>
-References: <4836EE8C.1010200@linux.intel.com>
+	Sat, 24 May 2008 18:28:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
+        b=hm7MrNLfL7G8hWxdA64pEdhfaNDH5nsNhDjeSotmxS+t8A4sDbYTPHyyzOPbD6zxLVc6Eyau16BR5JMBDyMDt5KRkXrq8YJDqBJZJhR3s1TRDori4h5ok0rlh9icEklwSDt9jcJxbKKwqcRTg0gxBPADQ8BNkrqAYgEqQeRDzrI=
+Message-ID: <48389676.5020405@users.sourceforge.net>
+Date: Sun, 25 May 2008 00:28:06 +0200
+From: Andrea Righi <righiandr@users.sourceforge.net>
+Reply-To: righiandr@users.sourceforge.net
+User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4836EE8C.1010200@linux.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: balbir@linux.vnet.ibm.com
+CC: Andrea Righi <righi.andrea@gmail.com>, menage@google.com,
+       matt@bluehost.com, roberto@unbit.it, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 0/3] cgroup: block device i/o bandwidth controller
+References: <> <1211648217-13361-1-git-send-email-righi.andrea@gmail.com> <48385CFA.7010201@linux.vnet.ibm.com>
+In-Reply-To: <48385CFA.7010201@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+Balbir Singh wrote:
+> Andrea Righi wrote:
+>> I'm resending an updated version of the cgroup I/O bandwidth controller
+>> that I wrote some months ago (http://lwn.net/Articles/265944), since
+>> someone asked me recently.
+>>
+>> The goal of this patchset is to implement a block device I/O bandwidth
+>> controller using cgroups.
+>>
+>> Detailed informations about design, its goal and usage are described in
+>> the documentation.
+>>
+>> Review, comments and feedbacks are welcome.
+>>
+> 
+> Hi, Andrea,
+> 
+> There are several parallel efforts for the IO controller? Could you
+> describe/compare them with yours? Is any consensus building taking place?
+> 
+> CC'ing containers mailing list.
+> 
 
-> Rank 3: mark_buffer_dirty
-> 	Reported 253 times (547 total reports)
-> 	EXT3 bug while hot-removing a USB device
-> 	This oops was last seen in version 2.6.25.3, and first seen in 
-> 	2.6.24-rc6.
-> 	More info: 
-> 	http://www.kerneloops.org/searchweek.php?search=mark_buffer_dirty
-  Is someone looking into this? It could be somehow connected with commit
-1be62dc190ebaca331038962c873e7967de6cc4b where we add smp_mb() to
-mark_buffer_dirty() under some circumstances. But I don't really see
-how. The WARN_ON() being triggered is !buffer_uptodate(bh) but that
-seems ridiculous for call paths like ext2_sync_super() ->
-mark_buffer_dirty() or journal_destroy() -> journal_update_superblock() ->
-mark_buffer_dirty() which are in oopses. Also this warning started
-appearing only recently while ext2 and JBD didn't change those areas
-recently. Also interesting may be that both ext2_sync_super() and
-journal_update_superblock() call sync_dirty_buffer() just after calling
-mark_buffer_dirty()...
-  Arjan, do we have some more info for these oopses (like hw config,
-what was the machine doing while the WARN_ON has been triggered etc.)?
-Thanks.
+Hi Balbir,
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+I've seen the Ryo Tsuruta's dm-band (http://lwn.net/Articles/266257),
+the CFQ cgroup solution proposed by Vasily Tarasov
+(http://lwn.net/Articles/274652) and a similar approach by Satoshi
+Uchida (http://lwn.net/Articles/275944).
+
+First one is implemented at the device mapper layer and AFAIK at the
+moment it allows only to define per-task, per-user and per-group rules
+(cgroup support is in the TODO list anyway).
+
+Second and third solutions are implemented at the i/o scheduler
+layer, CFQ in particular.
+
+They work as expected with direct i/o operations (or synchronous reads).
+The problem is: how to limit the i/o activity of an applicaton that
+already wrote all the data in memory? The i/o scheduler is not the right
+place to throttle application writes, because it's "too late". At the
+very least we can map back the i/o path to find which process originally
+dirtied memory and depending on this information delay the dispatching
+of the requests. However, this needs bigger buffers, more page cache
+usage, that can lead to potential OOM conditions in massively shared
+environments.
+
+So, my approach has the disadvantage or the advantage (depending on the
+context and the requirements) to explicitly choke applications'
+requests. Other solutions that operates in the subsystem used to
+dispatch i/o requests are probably better to maximize overall
+performance, but do not offer the same control over a real QoS as
+request limiting can do.
+
+Another difference is that all of them are priority/weighted based. The
+io-throttle controller, instead, allows to define direct bandwidth
+limiting rules. The difference here is that priority based approach
+propagates bursts and does no smoothing. Bandwidth limiting approach
+controls bursts by smoothing the i/o rate. This means better performance
+predictability at the cost of poor throughput optimization.
+
+I'll run some benchmarks and post the results ASAP. It would be also
+interesting to run the same benchmarks using the other i/o controllers
+and compare the results in terms of fairness, performance
+predictability, responsiveness, throughput, etc. I'll see what I can do.
+
+-Andrea
