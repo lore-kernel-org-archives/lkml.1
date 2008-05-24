@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbYEXAQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbYEXATW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbYEXAQA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 20:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbYEXAPu
+	id S1760120AbYEXATW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 20:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbYEXATP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 20:15:50 -0400
-Received: from sous-sol.org ([216.99.217.87]:55351 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbYEXAPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 20:15:49 -0400
-Date: Fri, 23 May 2008 17:15:13 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
-Message-ID: <20080524001509.GG4018@sequoia.sous-sol.org>
-References: <4836EE8C.1010200@linux.intel.com>
+	Fri, 23 May 2008 20:19:15 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:3172 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbYEXATO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 May 2008 20:19:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PdChcavu9xAaIOokJTRYqW+wRhldl7JG0DGV5th17gP3j8haD0VZ8w0OZNbD6hkftj4quuH5nUY+s/gg/plqmE74T4C2ygBt9WloQ47kHSrVOY+bwXWcf7PxOWrTcTktG+pmqr37vZ5Hb9L/mxjPk76/VsJUTa1b92ZdJjKFLL8=
+Message-ID: <d8d698ae0805231719g4202edf2k947bba4128385ab6@mail.gmail.com>
+Date: Fri, 23 May 2008 21:19:13 -0300
+From: "Fausto Richetti Blanco" <fausto.blanco@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Pipe buffers' limit of 16 * 4K
+In-Reply-To: <d8d698ae0805231255i4d0da724p68cb2b9376134797@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4836EE8C.1010200@linux.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <d8d698ae0805231255i4d0da724p68cb2b9376134797@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven (arjan@linux.intel.com) wrote:
-> Rank 9: task_has_capability
-> 	Reported 34 times
-> 	[tainted] Bug in the proprietary firegl driver
-> 	Oops only shows up in tainted kernels
-> 	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=task_has_capability
+Hello guys,
 
-looking at first one: http://www.kerneloops.org/raw.php?rawid=13598&msgid=
+       I'm working with a 2.6.9 kernel (ok, I know it's quite old) and
+faced a problem with the 4K (one page) buffer limit for the pipes.
+I've found that in the 2.6.11 the pipes' buffers were changed to a
+circular list of pages which increased this limit to 16 * 4K. This
+limit is hardcoded here /usr/src/linux/include/linux/pipe_fs_i.h:6
+#define PIPE_BUFFERS (16)
 
-OK, aside of the obvious (their problem):
+       Is there a reason for this not to be an adjustable parameter
+(eg.: by an ulimit in the userspace) ?
 
-  Tainted: P
-  EIP is at task_has_capability+0x48/0x76
-  Code: ... <0f> 0b 
-  	    ^^^^^^^
-	    BUG()
+       Can you please CC me on the answer ?
 
-This should be listed under the BUG/BUG_ON category as opposed to oops, no?
-Also, I think the raw data is missing some bit.  Where is the:
+       Thanks in advance,
 
-  kernel BUG at...
-
-At any rate, they have a bug in their proprietary module (news at 11).
-
-So, I don't think this should make the top ten.  Do you have a way to
-sort tainted vs non-tainted, and only produce the top ten for untainted?
-
-And one last question re: the stats.  Is there a way to tell if the 41
-times this was reported are from 41 distinct users.  Is there any unique
-cookie you receive with the raw oops report that can help filter out
-duplicates (by duplicate I mean a user w/ this proprietary driver and
-rebooting is likely to reproduce the same info on each boot).  You don't
-want to drop dups, but at least let that info the stats or something.
-
-For the record, that bug triggers:
-
-  printk(KERN_ERR "SELinux:  out of range capability %d\n", cap);
-  BUG();
-
-meaning they are passing in a capability that's > 63 (2.6.25 introduced
-64 bit caps).
-
-BTW, EAX: 00000030 (48)...that suggests their capability they passed in
-was quite large, likely an address or smth.
-
-"<3>SELinux:  out of range capability \n" <-- 38 chars
-that leaves 10 for %d, which is > 999,999,999 ;-)
-
-thanks,
--chris
+            Fausto Richetti Blanco
