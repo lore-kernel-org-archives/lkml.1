@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbYEXRPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbYEXRWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbYEXRPR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 13:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYEXRPF
+	id S1760756AbYEXRWX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 13:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbYEXRWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 13:15:05 -0400
-Received: from mail0.scram.de ([78.47.204.202]:37272 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751617AbYEXRPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 13:15:04 -0400
-X-Spam-Score: -4.111
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <48384D13.6010608@scram.de>
-Date: Sat, 24 May 2008 19:14:59 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-CC: David Brownell <david-b@pacbell.net>, fabrizio.garetto@gmail.com,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>	<20080521151928.GA28857@polina.dev.rtsoft.ru>	<200805221905.32288.david-b@pacbell.net>	<fa686aa40805232326w35f455d1s274899160d47eccb@mail.gmail.com> <fa686aa40805240950ocd16b97y308a54c68efa28ef@mail.gmail.com>
-In-Reply-To: <fa686aa40805240950ocd16b97y308a54c68efa28ef@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 24 May 2008 13:22:13 -0400
+Received: from host135-133-dynamic.55-82-r.retail.telecomitalia.it ([82.55.133.135]:29457
+	"EHLO linux.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757347AbYEXRWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 13:22:12 -0400
+From: Andrea Righi <righi.andrea@gmail.com>
+To: balbir@linux.vnet.ibm.com, menage@google.com
+Cc: matt@bluehost.com, roberto@unbit.it, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] cgroup: block device i/o bandwidth controller
+Date: Sat, 24 May 2008 18:56:54 +0200
+Message-Id: <1211648217-13361-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Likely schrieb:
-> On Sat, May 24, 2008 at 12:26 AM, Grant Likely
-> <grant.likely@secretlab.ca> wrote:
->> On Thu, May 22, 2008 at 8:05 PM, David Brownell <david-b@pacbell.net> wrote:
->>> On Wednesday 21 May 2008, Anton Vorontsov wrote:
->>>>> +++ b/drivers/spi/spi_of.c
->>>> I think better placement for this is drivers/of, no?
->>> Yes please.
->> Okay, I wasn't sure.  Will do.
-> 
-> I'm having second thoughts about this.  I think this code is more SPI
-> centric than it is OF centric.  ie. it is usable by all spi masters in
-> an OF enabled system, but it is not usable by all OF devices in an SPI
-> enabled system.  Or, in other words; it adds OF support to SPI, not
-> the other way around.  I think drivers/spi is the right place for this
-> to live.
+I'm resending an updated version of the cgroup I/O bandwidth controller
+that I wrote some months ago (http://lwn.net/Articles/265944), since
+someone asked me recently.
 
-Isn't the same true for drivers/of/gpio.c or drivers/of/of_i2c.c, as well?
+The goal of this patchset is to implement a block device I/O bandwidth
+controller using cgroups.
 
-Thanks,
-Jochen
+Detailed informations about design, its goal and usage are described in
+the documentation.
+
+Review, comments and feedbacks are welcome.
+
+-Andrea
