@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760069AbYEXBXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbYEXBZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760069AbYEXBXT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 May 2008 21:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYEXBXJ
+	id S1760583AbYEXBZk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 May 2008 21:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbYEXBZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 May 2008 21:23:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34611 "EHLO
+	Fri, 23 May 2008 21:25:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54409 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753870AbYEXBXI (ORCPT
+	by vger.kernel.org with ESMTP id S1753870AbYEXBZd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 May 2008 21:23:08 -0400
-Date: Fri, 23 May 2008 18:23:00 -0700
+	Fri, 23 May 2008 21:25:33 -0400
+Date: Fri, 23 May 2008 18:25:07 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-input@vger.kernel.org, linu-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add switch for dock events
-Message-Id: <20080523182300.bd05ec54.akpm@linux-foundation.org>
-In-Reply-To: <20080523160955.GA19674@srcf.ucam.org>
-References: <20080523160955.GA19674@srcf.ucam.org>
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
+Subject: Re: cpufreq limits avilable frequencies to 800MHz on git kernel
+Message-Id: <20080523182507.29a2b10c.akpm@linux-foundation.org>
+In-Reply-To: <200805231944.57320.arekm@maven.pl>
+References: <200805231944.57320.arekm@maven.pl>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,44 +26,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 17:09:55 +0100 Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+On Fri, 23 May 2008 19:44:57 +0200 Arkadiusz Miskiewicz <arekm@maven.pl> wrote:
 
-> Add a switch to signal dock events to userspace.
+> thinkpad z60m, Intel(R) Pentium(R) M processor 2.00GHz. kernel from git from 
+> 1-2 days ago. 
 > 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> Unfortunately it seems that suspend to ram/resume causes frequency
+> to be limited to 800MHz only. I can't set it to 2GHz again :-/
 > 
-> ---
+> scaling_max_freq is then 800000 and cannot be changed.
 > 
-> I've done this as an input event rather than anything else since there 
-> isn't necessarily a terribly coherent concept of a dock device. HPs (for 
-> example) don't use ACPI for docking - the dock is simply an extension of 
-> devices that are already on the system. We can't sensibly create a dock 
-> platform device and then generate uevents on it. Doing it this way lets 
-> us standardise on a way to send docking events to userspace, which lets 
-> desktops do things like automatically expand onto external monitors when 
-> the system is docked.
+> reboot and the problem disappears until new suspend/resume cycle.
 > 
-> diff --git a/include/linux/input.h b/include/linux/input.h
-> index 28a094f..0bc55ee 100644
-> --- a/include/linux/input.h
-> +++ b/include/linux/input.h
-> @@ -638,6 +638,7 @@ struct input_absinfo {
->  #define SW_TABLET_MODE		0x01  /* set = tablet mode */
->  #define SW_HEADPHONE_INSERT	0x02  /* set = inserted */
->  #define SW_RADIO		0x03  /* set = radio enabled */
-> +#define SW_DOCK			0x04  /* set = plugged into dock */
->  #define SW_MAX			0x0f
->  #define SW_CNT			(SW_MAX+1)
+> cpufreq stuff is driven by acpi-cpufreq
 > 
+> $ cpufreq-info
+> cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
+> Report errors and bugs to linux@brodo.de, please.
+> analyzing CPU 0:
+>   driver: acpi-cpufreq
+>   CPUs which need to switch frequency at the same time: 0
+>   hardware limits: 800 MHz - 2.00 GHz
+>   available frequency steps: 2.00 GHz, 1.60 GHz, 1.33 GHz, 1.07 GHz, 800 MHz
+>   available cpufreq governors: powersave, userspace, ondemand, performance
+>   current policy: frequency should be within 800 MHz and 800 MHz.
+>                   The governor "performance" may decide which speed to use
+>                   within this range.
+>   current CPU frequency is 800 MHz.
 > 
+> /sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0
+> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:800000
+> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:2000000
+> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:800000
+> /sys/devices/system/cpu/cpu0/cpufreq/related_cpus:0
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies:2000000 
+> 1600000 1333000 1066000 800000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:powersave 
+> userspace ondemand performance
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:800000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:acpi-cpufreq
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:performance
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:800000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:800000
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:<unsupported>
 
-Confused.  This patch doesn't do anything.
+Thanks.  Is this a newly-occurring bug or did earlier kernels do this also?
 
-Also, please sort out the changelogging?
-
-- The one-line changelog you have there would make a decent _title_. 
-  Better than the one which was actually chosen.
-
-- The not-to-be-included discussion which you have below the "---"
-  cutoff line would make a reasonable changelog.
+If it was newly added, do you know in which kernel version we might
+have added it?
 
