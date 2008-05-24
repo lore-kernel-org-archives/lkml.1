@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759043AbYEXTTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760363AbYEXTXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759043AbYEXTTq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 15:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYEXTTh
+	id S1760363AbYEXTXk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 15:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYEXTXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 15:19:37 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:17199 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbYEXTTh (ORCPT
+	Sat, 24 May 2008 15:23:33 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34082 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbYEXTXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 15:19:37 -0400
-Subject: Re: [PATCH 3/3] futex: fix miss ordered wakeups
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0805242031560.3295@apollo.tec.linutronix.de>
-References: <20080523042923.594531457@mvista.com>
-	 <20080523042923.916202203@mvista.com>
-	 <alpine.LFD.1.10.0805241039220.3295@apollo.tec.linutronix.de>
-	 <1211643165.18130.166.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805241852490.3295@apollo.tec.linutronix.de>
-	 <1211649860.18130.182.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805242031560.3295@apollo.tec.linutronix.de>
+	Sat, 24 May 2008 15:23:32 -0400
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+From: David Woodhouse <dwmw2@infradead.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
+       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
+       Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org>
+References: <1211550282.28967.8.camel@pmac.infradead.org>
+	 <1211550374.28967.10.camel@pmac.infradead.org>
+	 <20080523164108.GA31545@uranus.ravnborg.org>
+	 <1211640377.540.14.camel@pmac.infradead.org>
+	 <20080524152214.GA12582@uranus.ravnborg.org>
+	 <1211642706.31212.85.camel@shinybook.infradead.org>
+	 <1211643245.31212.88.camel@shinybook.infradead.org>
+	 <D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org>
 Content-Type: text/plain
-Date: Sat, 24 May 2008 12:19:34 -0700
-Message-Id: <1211656774.18130.198.camel@localhost.localdomain>
+Date: Sat, 24 May 2008 20:23:19 +0100
+Message-Id: <1211656999.540.16.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-05-24 at 20:35 +0200, Thomas Gleixner wrote: 
-> > > A) A task on another CPU can get it independent of its priority
-> > > B) In case of multiple waiters wakeup there is no guarantee either
-> > 
-> > This is how I would imagine the pre-plist code would work.
+On Sat, 2008-05-24 at 20:18 +0200, Marcel Holtmann wrote:
+> Hi David,
 > 
-> And it works this way even after the plist code.
+> >> Playing with it now. I fixed the mkdir thing by including $(objtree)
+> >> in the target.
+> >
+> > Here's what I have (on top of the git tree) now. I just need to sort  
+> > out
+> > the clean/mrproper behaviour -- and possibly should rename the korg
+> > firmware to firmware/korg/k1212.c_shipped?
 > 
-> May I politely suggest, that you carefully read futex_wake() and the
-> corresponding libc implementation and figure out why there is no
-> guarantee and why there can't be one?
-
-Sure ..
-
-> Sorry, I'm not abusive. You make claims about correctness and you seem
-> to believe that the plist code gives guarantees except for the
-> setscheduler corner case, but your hypothesis is simply wrong:
+> so using "/" within the name parameter for request_firmware() is  
+> actually forbidden. I know that some driver authers think it is a good  
+> idea, but it is not.
 > 
-> There is no kernel side controlled handover of a normal futex. The
-> woken up waiters race for it and a low prio thread on another CPU can
-> steal it even if there is a high prio waiter woken up.
+> I am actually working on a patch to make request_firmware() fail/warn  
+> when the name has a "/" in it.
+> 
+> You don't need to consider any deep nesting of firmware file names. It  
+> was never meant to be used like this.
 
-After reading futex_wake, Doesn't it depend how many waiters are woken?
-Given that comes from userspace, glibc could wake a single waiter and
-obtain a priority ordering, couldn't it?
+Hm. Is there any fundamental reason why we should forbid this? It does
+seem to make sense to let people use the namespace for it.
 
-> The plist add on works correct in most of the cases, nothing else. To
-> achieve full correctness there is much more necessary than this
-> setscheduler issue. The plist changes were accepted because the
-> overhead is really minimal, but achieving full correctness would hurt
-> performance badly.
-
-If that's the requirement then code that cleans up the corner case that
-I've identified, which is also minimal should be acceptable .. Since
-it's meeting the same requirement you layed out above for the original
-plist changes.
-
-Daniel
+-- 
+dwmw2
 
