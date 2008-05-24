@@ -1,67 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760363AbYEXTXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761057AbYEXTZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760363AbYEXTXk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 15:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYEXTXd
+	id S1761057AbYEXTZQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 15:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYEXTZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 15:23:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34082 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbYEXTXc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 15:23:32 -0400
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-From: David Woodhouse <dwmw2@infradead.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <1211550374.28967.10.camel@pmac.infradead.org>
-	 <20080523164108.GA31545@uranus.ravnborg.org>
-	 <1211640377.540.14.camel@pmac.infradead.org>
-	 <20080524152214.GA12582@uranus.ravnborg.org>
-	 <1211642706.31212.85.camel@shinybook.infradead.org>
-	 <1211643245.31212.88.camel@shinybook.infradead.org>
-	 <D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org>
-Content-Type: text/plain
-Date: Sat, 24 May 2008 20:23:19 +0100
-Message-Id: <1211656999.540.16.camel@pmac.infradead.org>
+	Sat, 24 May 2008 15:25:04 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:56990 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751543AbYEXTZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 15:25:01 -0400
+Date: Sat, 24 May 2008 21:25:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
+Message-ID: <20080524192540.GA28067@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-05-24 at 20:18 +0200, Marcel Holtmann wrote:
-> Hi David,
-> 
-> >> Playing with it now. I fixed the mkdir thing by including $(objtree)
-> >> in the target.
-> >
-> > Here's what I have (on top of the git tree) now. I just need to sort  
-> > out
-> > the clean/mrproper behaviour -- and possibly should rename the korg
-> > firmware to firmware/korg/k1212.c_shipped?
-> 
-> so using "/" within the name parameter for request_firmware() is  
-> actually forbidden. I know that some driver authers think it is a good  
-> idea, but it is not.
-> 
-> I am actually working on a patch to make request_firmware() fail/warn  
-> when the name has a "/" in it.
-> 
-> You don't need to consider any deep nesting of firmware file names. It  
-> was never meant to be used like this.
+We have many places in the kernel that looks like
+the following:
 
-Hm. Is there any fundamental reason why we should forbid this? It does
-seem to make sense to let people use the namespace for it.
+#ifdef CONFIG_FOO
+	...
+#endif
 
--- 
-dwmw2
+Which has the disadvantage that the code denoted '...'
+are not even built if CONFIG_FOO is not selected in
+the current configuration.
 
+We know that gcc do simple code-elimination for
+conditionals which is always true/false and
+thus the above code could be turned into:
+
+	if (CONFIG_FOO)
+		...
+
+One line smaller and we follow the normal flow in the program.
+The code is always build but we do not waste space as gcc will
+do proper code-elimination for us.
+
+Today this is not possible because kconfig will only
+define CONFIG_FOO if selected and FOO is not a module.
+
+The following patch implement a new set of defines in
+the KCONFIG_* namespace.
+
+For a tristate symbol the following are defined:
+
+FOO not selected: 
+#define KCONFIG_FOO        0
+#define KCONFIG_FOO_MODULE 0
+
+FOO is built-in ('y')
+#define KCONFIG_FOO        1
+#define KCONFIG_FOO_MODULE 0
+
+FOO is a module ('m'):
+#define KCONFIG_FOO        1
+#define KCONFIG_FOO_MODULE 1
+
+In other words KCONFIG_FOO will say if the
+symbol is selected and KCONFIG_FOO_MODULE
+will say if it is a module.
+
+With the above included we can now do:
+
+	if (KCONFIG_FOO)
+		...
+
+This is not a replacement for the CONFIG_*
+defines but a pleasant supplement.
+Using KCONFIG_FOO will also give us a nice
+error message the day that FOO is no longer part
+of the configuration.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index ee5fe94..011a5ec 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -666,6 +666,31 @@ out:
+ 	return res;
+ }
+ 
++static void write_tristate(FILE *m, FILE *h, struct symbol *sym)
++{
++	switch (sym_get_tristate_value(sym)) {
++	case mod:
++		fprintf(m, "CONFIG_%s=m\n", sym->name);
++		fprintf(h, "#define CONFIG_%s_MODULE 1\n", sym->name);
++		fprintf(h, "#define KCONFIG_%s 1\n", sym->name);
++		if (sym->type == S_TRISTATE)
++			fprintf(h, "#define KCONFIG_%s_MODULE 1\n", sym->name);
++		break;
++	case yes:
++		fprintf(m, "CONFIG_%s=y\n", sym->name);
++		fprintf(h, "#define CONFIG_%s 1\n", sym->name);
++		fprintf(h, "#define KCONFIG_%s 1\n", sym->name);
++		if (sym->type == S_TRISTATE)
++			fprintf(h, "#define KCONFIG_%s_MODULE 0\n", sym->name);
++		break;
++	case no:
++		fprintf(h, "#define KCONFIG_%s 0\n", sym->name);
++		if (sym->type == S_TRISTATE)
++			fprintf(h, "#define KCONFIG_%s_MODULE 0\n", sym->name);
++		break;
++	}
++}
++
+ int conf_write_autoconf(void)
+ {
+ 	struct symbol *sym;
+@@ -716,18 +741,7 @@ int conf_write_autoconf(void)
+ 		switch (sym->type) {
+ 		case S_BOOLEAN:
+ 		case S_TRISTATE:
+-			switch (sym_get_tristate_value(sym)) {
+-			case no:
+-				break;
+-			case mod:
+-				fprintf(out, "CONFIG_%s=m\n", sym->name);
+-				fprintf(out_h, "#define CONFIG_%s_MODULE 1\n", sym->name);
+-				break;
+-			case yes:
+-				fprintf(out, "CONFIG_%s=y\n", sym->name);
+-				fprintf(out_h, "#define CONFIG_%s 1\n", sym->name);
+-				break;
+-			}
++			write_tristate(out, out_h, sym);
+ 			break;
+ 		case S_STRING:
+ 			str = sym_get_string_value(sym);
