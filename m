@@ -1,112 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbYEXQmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbYEXQu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbYEXQmW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 12:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbYEXQmP
+	id S1758847AbYEXQu7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 12:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbYEXQut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 12:42:15 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:46340 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752993AbYEXQmO (ORCPT
+	Sat, 24 May 2008 12:50:49 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:48725 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756290AbYEXQus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 12:42:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CWNugdOFCOZHZbyqnHiXmi+Ppato5smaRGoudPgzicAA8LJ2EBSVJOqh1McNYlNuW7SPfJcK8ptPt9LKlN21H6N24SUzqi6fDW23yc3JlZaPdX78T+YMn9STmBiHLDmm3WHUcDIxGUleOnPTCEUWxyAq17zkYdbe5TqUBjuS174=
-Message-ID: <7b9198260805240942x795450e6w3686f7455af077b6@mail.gmail.com>
-Date: Sat, 24 May 2008 17:42:13 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: kernel coding style for if ... else which cross #ifdef
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Sam Ravnborg" <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Steve French" <smfrench@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <7b9198260805240940v46db928ak9bcacf9363c46d41@mail.gmail.com>
+	Sat, 24 May 2008 12:50:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=h7Z96L5tkJyvJReJlmceA0QPinBt0XhU3M6fFtjEarRCJq6O0ImXS6vOnVZbQaY101hnGO+/F/r510FYYn+WhXgbZwLfjpnSICeUDSEi2qIuGjMcHy+BF9wRKBGKmXc0s0enznUmTnFo6prz+3uGZa+XMQZuGQGncKJ+1k4AlE8=  ;
+X-YMail-OSG: gLdcTQ4VM1nZq1kMer4ilTN2UkQ6PG__tDlX1dyxOOFnkQWxryrJYFkz3zyVqaPtnkthMuVWGVx__5lRgpzW8MtF_YzsFTjND6kc5iNCD15CofhXPXEoqwLY6gBZ5Zd1ZMs-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [spi-devel-general] [PATCH 3/4] spi: Add OF binding support for SPI busses
+Date: Sat, 24 May 2008 00:13:27 -0700
+User-Agent: KMail/1.9.9
+Cc: spi-devel-general@lists.sourceforge.net,
+       "Segher Boessenkool" <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       fabrizio.garetto@gmail.com,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca> <200805221926.24112.david-b@pacbell.net> <fa686aa40805232325w65d4f706i50798121a8cce263@mail.gmail.com>
+In-Reply-To: <fa686aa40805232325w65d4f706i50798121a8cce263@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-References: <524f69650805231211r315be4e4u5890aa0f914bcb4f@mail.gmail.com>
-	 <20080524064201.GA4133@uranus.ravnborg.org>
-	 <4837E89D.9040008@goop.org>
-	 <20080524112704.GA7292@uranus.ravnborg.org>
-	 <483827CE.9080200@goop.org>
-	 <20080524153611.GA13890@uranus.ravnborg.org>
-	 <48383830.6060504@goop.org>
-	 <19f34abd0805240857l57e667fdicb240baf898f6296@mail.gmail.com>
-	 <48383C26.5040106@goop.org>
-	 <7b9198260805240940v46db928ak9bcacf9363c46d41@mail.gmail.com>
+Message-Id: <200805240013.28044.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/24 Tom Spink <tspink@gmail.com>:
-> 2008/5/24 Jeremy Fitzhardinge <jeremy@goop.org>:
->> Vegard Nossum wrote:
->>>
->>> Why not use all-lowercase config_* names? It seems elegant, and fits
->>> in with the notion that these are to be used not as macros, but as
->>> ordinary constants.
->>>
->>
->> We tend to use all caps for symbolic constants, even if they're enums.
->>
->>> (The only disadvantage I can see is that they will stand out less. But
->>> I don't know how great the disadvantage is.)
->>>
->>> You could even go further and make them real constants, something
->>> along the lines of:
->>>
->>> enum config_value { no, yes, mod };
->>>
->>> static const enum config_value config_lockdep_support = yes;
->>>
->>
->> Well, you could use "enum { config_foo = 0/1 }"  to define a proper C
->> constant.
->>
->> But it means you could only use them in C, not in CPP or asm expressions.
->>
->>   J
->
-> Hi,
->
-> A thought occurred to me that we may be able to used some preprocessor
-> magic and do this:
->
-> #define config_defined(x) CFGVAL_## x
->
-> Which means that, if we get Kconfig to produce:
->
-> #define CFGVAL_CONFIG_FOO 0
-> #define CFGVAL_CONFIG_VALUE_BAR 1
-> #define CFGVAL_CONFIG_VALUE_BAZ_MODULE 1
->
-> We can use this:
->
-> if (config_defined(CONFIG_FOO) && some_expr) {
->   panic("Oh no.");
-> }
->
-> Thoughts?
->
-> --
-> Tom Spink
->
+On Friday 23 May 2008, Grant Likely wrote:
+> Very good point.  Okay, so we cannot assume any correlation between
+> the number of CS lines and the number of child nodes to the SPI bus.
 
-There's a wee typo on the #define lines there:
+That wasn't what I was implying ... all the devices hooked
+up to a given chipselect should be viewed as a single (albeit
+composite) child node.
 
-> #define CFGVAL_CONFIG_FOO 0
-> #define CFGVAL_CONFIG_VALUE_BAR 1
-> #define CFGVAL_CONFIG_VALUE_BAZ_MODULE 1
+Now, the driver for that child node may want to expose lots
+of substructure.  But that's no different from any other
+complex device, whose protocol happens to embed some notion
+of component addressing.
 
-I, of course, meant:
+It's just that in the case I mentioned, that addressing is
+a bit more externally visible than it is in some other cases.
 
-#define CFGVAL_CONFIG_FOO 0
-#define CFGVAL_CONFIG_BAR 1
-#define CFGVAL_CONFIG_BAZ_MODULE 1
+- Dave
 
--- 
-Tom Spink
