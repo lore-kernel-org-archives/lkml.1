@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761957AbYEXVLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbYEXVO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761957AbYEXVLj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 17:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYEXVLc
+	id S1762133AbYEXVO3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 17:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760825AbYEXVOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 17:11:32 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:25820 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751647AbYEXVLb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 17:11:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=3rSl2K2Xoen70B4rkrgFM0vwgw3Fs3a0uyBptbJcPNhagenpCb2Sj4WZhTBjZqhVWVzCIFCb2X0tUl1ybVoRXKKekbDR3j97iP7aXX1L89H3awqM23qusafV7UCHwJl1Vp1spVmnK9+tpodJ5cWTzr5hl5qgnjdDoOAUaly38Ew=  ;
-X-YMail-OSG: E9TLu5AVM1nEbTuQawHW31q6o8PKJw7klIbKxng2jWA4uejOKpKRPy.9BI.3ZxRjqWxrYm4zwyrFNQqxu4DAcCLY9mDjX3xohk21lZP9sWr_OcwRXkEqQKT_yoFMqOWx6Y4-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [RFC] OpenFirmware bindings for the MMC-over-SPI driver
-Date: Sat, 24 May 2008 12:56:32 -0700
-User-Agent: KMail/1.9.9
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Gary Jennejohn <garyj@denx.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-References: <20080523182754.GA26891@polina.dev.rtsoft.ru>
-In-Reply-To: <20080523182754.GA26891@polina.dev.rtsoft.ru>
+	Sat, 24 May 2008 17:14:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:53747 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753047AbYEXVOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 17:14:21 -0400
+Message-ID: <4838850E.20101@goop.org>
+Date: Sat, 24 May 2008 22:13:50 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805241256.32639.david-b@pacbell.net>
+To: Adrian Bunk <bunk@kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Tom Spink <tspink@gmail.com>
+Subject: Re: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
+References: <20080524192540.GA28067@uranus.ravnborg.org> <48387F0B.3020506@goop.org> <48388187.2070503@goop.org> <20080524210304.GD2308@cs181133002.pp.htv.fi>
+In-Reply-To: <20080524210304.GD2308@cs181133002.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 May 2008, Anton Vorontsov wrote:
-> 
-> This is second attempt to write the OpenFirmware bindings for the
-> MMC-over-SPI (and SPI bindings in general).
+Adrian Bunk wrote:
+> On Sat, May 24, 2008 at 09:58:47PM +0100, Jeremy Fitzhardinge wrote:
+>   
+>> Would
+>>
+>>    #define KCONFIG(x)   (CONFIG_##x - 0)
+>>
+>>    if (KCONFIG(PREEMPT)) {
+>>        ...
+>>    }
+>>
+>> work?
+>>     
+>
+> $ cat test.c
+> #define KCONFIG(x)   (CONFIG_##x - 0)
+>
+> int main()
+> {
+>   if (KCONFIG(PREEMPT))
+>     ;
+>
+>   return 0;
+> }
+> $ gcc -O2 -Wall test.c
+> test.c: In function ‘main’:
+> test.c:5: error: ‘CONFIG_PREEMPT’ undeclared (first use in this function)
+> test.c:5: error: (Each undeclared identifier is reported only once
+> test.c:5: error: for each function it appears in.)
+>   
 
-Summary:  an OF-specific wrapper around the mmc_spi platform code.
+You and your scientific method.
 
-I think a wrapper to encapsulate all the OF-specific knowledge makes
-much sense here.
+Yeah, this is one of those cases where you need cpp to rescan its input 
+after pasting, and I don't think it will ever do that.
 
-The only thing that looks odd to me about this is that the wrapper
-is a spi_device rather than an of_device.  To me it makes more sense
-to just have an of_device setting up the right spi_device.  (Though
-maybe I missed some discussion about why that can't work.)
-
-Example:  drivers/usb/host/sl811_cs.c does that for PCMCIA card
-that just wraps an sl811 chip that's more often used standalone.
-The PCMCIA descriptors being analagous to OF device table entries.
-
-- Dave
-
-
+    J
