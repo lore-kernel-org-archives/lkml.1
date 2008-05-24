@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762406AbYEXVCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbYEXVFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762406AbYEXVCq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 17:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759391AbYEXVCj
+	id S1762235AbYEXVFn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 17:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbYEXVFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 17:02:39 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:49574 "EHLO pasmtpA.tele.dk"
+	Sat, 24 May 2008 17:05:36 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:42023 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753047AbYEXVCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 17:02:39 -0400
-Date: Sat, 24 May 2008 23:03:18 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+	id S1751647AbYEXVFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 17:05:35 -0400
+Date: Sun, 25 May 2008 00:03:04 +0300
+From: Adrian Bunk <bunk@kernel.org>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+Cc: Sam Ravnborg <sam@ravnborg.org>,
        linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Tom Spink <tspink@gmail.com>
 Subject: Re: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
-Message-ID: <20080524210318.GB3264@uranus.ravnborg.org>
-References: <20080524192540.GA28067@uranus.ravnborg.org> <20080524125316.4b969936.akpm@linux-foundation.org> <48387736.9050004@goop.org> <20080524204610.GB3136@uranus.ravnborg.org> <48388112.6030003@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <20080524210304.GD2308@cs181133002.pp.htv.fi>
+References: <20080524192540.GA28067@uranus.ravnborg.org> <48387F0B.3020506@goop.org> <48388187.2070503@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <48388112.6030003@goop.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <48388187.2070503@goop.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 09:56:50PM +0100, Jeremy Fitzhardinge wrote:
-> Sam Ravnborg wrote:
-> >When we have one configuration for the kernel and not as today
-> >where we have one configuration for each architecture (with a lot
-> >of shared files) then it is already taken care of by my (updated) patch.
+On Sat, May 24, 2008 at 09:58:47PM +0100, Jeremy Fitzhardinge wrote:
 > 
-> Yep.  But is a unified config something that someone is actively working 
-> on, or a distant pipe dream?
+> Would
+>
+>    #define KCONFIG(x)   (CONFIG_##x - 0)
+>
+>    if (KCONFIG(PREEMPT)) {
+>        ...
+>    }
+>
+> work?
 
-Midway...
-Roman implmented named choices and I have yet to try it out.
+$ cat test.c
+#define KCONFIG(x)   (CONFIG_##x - 0)
 
-But I have a bit on my TODO list before I get there and
-limited time (My day-time job is not Linux related).
+int main()
+{
+  if (KCONFIG(PREEMPT))
+    ;
 
-	Sam
+  return 0;
+}
+$ gcc -O2 -Wall test.c
+test.c: In function ‘main’:
+test.c:5: error: ‘CONFIG_PREEMPT’ undeclared (first use in this function)
+test.c:5: error: (Each undeclared identifier is reported only once
+test.c:5: error: for each function it appears in.)
+$ gcc --version
+gcc (Debian 4.3.0-5) 4.3.1 20080523 (prerelease)
+
+>    J
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
