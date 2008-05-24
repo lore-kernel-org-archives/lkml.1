@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761310AbYEXSwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbYEXSw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761310AbYEXSwa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 14:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbYEXSwT
+	id S1759977AbYEXSw5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 14:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbYEXSwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 14:52:19 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49579 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755824AbYEXSwS (ORCPT
+	Sat, 24 May 2008 14:52:47 -0400
+Received: from mailout04.t-online.de ([194.25.134.18]:58251 "EHLO
+	mailout04.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756628AbYEXSwr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 14:52:18 -0400
-Date: Sat, 24 May 2008 12:52:01 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: some numbers on macros
-Message-ID: <20080524185201.GZ2638@parisc-linux.org>
-References: <200805241748.19607.m.kozlowski@tuxland.pl> <20080524093350.60e6dc8d@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 24 May 2008 14:52:47 -0400
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
+Cc: linux-kernel@vger.kernel.org
 Content-Disposition: inline
-In-Reply-To: <20080524093350.60e6dc8d@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+From: j.mell@t-online.de
+Reply-To: j.mell@t-online.de
+Date: Sat, 24 May 2008 20:52:30 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200805242052.30303.j.mell@t-online.de>
+X-ID: GMOxQsZvQhYXZSBhkEBbzynDCwFe9wREhlfTevwGfig7iM1tmRQpSqmtU2BoS5YZRW
+X-TOI-MSGID: c4fa1a40-00e2-4d17-b86c-fee17ed224e8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 09:33:50AM -0700, Arjan van de Ven wrote:
-> unused macros in common header files are an indication of stale APIs
-> otoh.. and might be of some interest. (Same for static inline in
-> headers)
+On Sonday, 18. May 2008, you wrote:
+> > On Sat, May 17, 2008 at 06:31:08PM +0200, J?rgen Mell wrote:
+> > > I tracked this down to a single kernel configuration option. If
+> > > CONFIG_PREEMPT is set to 'y' the application will start crashing. If
+> > > CONFIG_PREEMPT is replaced by CONFIG_PREEMPT_VOLUNTARY, the
+> > > application will run without errors.
 
-Possibly.  There's likely to be a lot of macros unused like these ones:
+> > If you see it in the kernel.org kernel, can you please do a git-bisect
+> > to see which commit caused the problem?
 
-#define  PCI_X_CMD_MAX_READ     0x000c  /* Max Memory Read Byte Count */
-                                /* Max # of outstanding split transactions */
-#define  PCI_X_CMD_SPLIT_1      0x0000  /* Max 1 */
-#define  PCI_X_CMD_SPLIT_2      0x0010  /* Max 2 */
-#define  PCI_X_CMD_SPLIT_3      0x0020  /* Max 3 */
-...
+> This is a bit of a problem. I do not know whether there was *ever* a
+> kernel  version with CONFIG_PREEMPT and without this problem as I have
+> not tried  any older kernel version yet. I will go back to SUSE 10.2 and
+> try the  2.6.18 kernel that comes with it.
 
-where the macros embody the PCI specification in code -- possibly we
-don't use them yet, but if we ever did, we'd have the macros to use.
+I found now that the problem was introduced somewhere between the 
+kernel.org kernels 2.6.19.7 and 2.6.20. I will start bisecting now.
 
-Another category of false positive is macros that ought to be used,
-but the code that ought to be using them has decided to go its own way.
-That still indicates a bug, but not the one you might initially think.
+Bye,
 
-In summary, this is probably an interesting exercise, but the results
-would need to be interpreted with care.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+          Jürgen
