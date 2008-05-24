@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbYEXRYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760945AbYEXR1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760984AbYEXRYa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 13:24:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbYEXRYX
+	id S1760945AbYEXR1R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 13:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbYEXR1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 13:24:23 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:8311 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755626AbYEXRYW (ORCPT
+	Sat, 24 May 2008 13:27:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757347AbYEXR1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 13:24:22 -0400
-Subject: Re: [PATCH 3/3] futex: fix miss ordered wakeups
-From: Daniel Walker <dwalker@mvista.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0805241852490.3295@apollo.tec.linutronix.de>
-References: <20080523042923.594531457@mvista.com>
-	 <20080523042923.916202203@mvista.com>
-	 <alpine.LFD.1.10.0805241039220.3295@apollo.tec.linutronix.de>
-	 <1211643165.18130.166.camel@localhost.localdomain>
-	 <alpine.LFD.1.10.0805241852490.3295@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Sat, 24 May 2008 10:24:20 -0700
-Message-Id: <1211649860.18130.182.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sat, 24 May 2008 13:27:06 -0400
+Date: Sat, 24 May 2008 10:25:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
+       Zachary Amsden <zach@vmware.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 0 of 4] mm+paravirt+xen: add pte read-modify-write
+ abstraction
+In-Reply-To: <48372C2F.1090704@goop.org>
+Message-ID: <alpine.LFD.1.10.0805241022210.3081@woody.linux-foundation.org>
+References: <patchbomb.1211552448@localhost> <alpine.LFD.1.10.0805231133130.3081@woody.linux-foundation.org> <48372C2F.1090704@goop.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 2008-05-24 at 19:03 +0200, Thomas Gleixner wrote:
-> On Sat, 24 May 2008, Daniel Walker wrote:
-> > On Sat, 2008-05-24 at 10:55 +0200, Thomas Gleixner wrote:
-> > 
-> > > Normal futexes have no ordering guarantees at all. There is no
-> > > mechanism to prevent lock stealing from lower priority tasks. So why
-> > > should we care about the once a year case, where a sleepers priority
-> > > is modified ?
-> > 
-> > Lock stealing?
+
+On Fri, 23 May 2008, Jeremy Fitzhardinge wrote:
 > 
-> Do you have the faintest idea how the futex code works at all ? There
-> is no guarantee that the task which is woken up first gets the futex.
+> Well, you could use it to update the page and protection bits while preserving
+> the AD bits, but I don't think that's very useful.
 
-Thomas if you want to be abusive, talk to someone else.
+It's not that it's not "very useful" - it's that it would be TOTALLY 
+WRONG.
 
-> A) A task on another CPU can get it independent of its priority
-> B) In case of multiple waiters wakeup there is no guarantee either
+If you change the page and the AD bits can change randomly while you do 
+so, that means that the AD bits are now _undefined_. Which of the two 
+pages did it happen to? The old one? The new one? Nobody can know. So 
+you'd effectively have dirty bits that could be associated with the wrong 
+physical page, which means that some page may be dirty, but the kernel 
+would have it marked clean.
 
-This is how I would imagine the pre-plist code would work.
+That would be beyond bad. That would be a *serious* VM bug, with very 
+subtle data corruption issues.
 
-> > > If you need ordering guarantees then use PI futexes.
-> > 
-> > There are degree's of overhead with each step.. Someone may not need or
-> > want priority inheritance.
-> 
-> Then there is no need to add this artifical "correctness" at all.
+So no, you cannot, and absolutely must not use this to update the actual 
+page mapping. Ever. It is only valid for the protection bits.
 
-huh?
-
-> > > There are more issues vs. pi futexes as well. The simple case of
-> > > futex_wait() vs. futex_adjust_waiters will just upset lockdep, but
-> > > there are real dealocks vs. unqueue_me_pi waiting.
-> > 
-> > You mean the lock ordering would cause the deadlock vs. unqueue_me_pi ,
-> > or are you talking about something else?
-> 
-> Do I write Chinese or what ?
-
-I guess so .. 
-
-Daniel
-
+		Linus
