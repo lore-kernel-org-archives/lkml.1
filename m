@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbYEXQLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbYEXQeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759130AbYEXQLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 12:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbYEXQLM
+	id S1758082AbYEXQeY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 12:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbYEXQeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 12:11:12 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:56932 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755789AbYEXQLL (ORCPT
+	Sat, 24 May 2008 12:34:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59515 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbYEXQeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 12:11:11 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: spontaneous reboots and hangs on x86_64
-Date: Sat, 24 May 2008 18:11:06 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Adrian Bunk <bunk@kernel.org>,
-       kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       Gregory Haskins <ghaskins@novell.com>
-References: <200805152201.49154.m.kozlowski@tuxland.pl> <200805162053.36390.m.kozlowski@tuxland.pl> <20080517132317.3265d52c.sfr@canb.auug.org.au>
-In-Reply-To: <20080517132317.3265d52c.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Sat, 24 May 2008 12:34:14 -0400
+Date: Sat, 24 May 2008 09:33:50 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: some numbers on macros
+Message-ID: <20080524093350.60e6dc8d@infradead.org>
+In-Reply-To: <200805241748.19607.m.kozlowski@tuxland.pl>
+References: <200805241748.19607.m.kozlowski@tuxland.pl>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805241811.06230.m.kozlowski@tuxland.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 24 May 2008 17:48:19 +0200
+Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-> Hi Ingo,
+> Hello,
 > 
-> On Fri, 16 May 2008 20:53:36 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> >
-> > Ok I got bisection working finally, now I'm at d5be23e2 I have something like 80 revisions left and
-> > I'm stuck with this:
-> > 
-> > In file included from kernel/sched.c:1861:
-> > kernel/sched_rt.c: In function 'check_preempt_curr_rt':
-> > kernel/sched_rt.c:653: error: implicit declaration of function 'cpupri_find'
-> > kernel/sched_rt.c:653: error: 'struct root_domain' has no member named 'cpupri'
-> > make[1]: *** [kernel/sched.o] Error 1
-> > make: *** [kernel] Error 2
+> 	I wrote a rather dumb script to see some numbers on macros I
+> was interested in. The script basically parses *.c file, finds macro
+> definitions and counts how many times each macro was used in this
+> source file. The script doesn't see any context so it can produce
+> false positives - that is one of the reasons it doesn't look into
+> header files - it's simply too dumb.
 > 
-> This error is caused by commit 677ceea32cf1d8ba9a4870bc58079cd7e7f77558
-> ("sched: prioritize non-migratable tasks over migratable ones") in the
-> sched tree (sched/for-akpm).  This commit is either just wrong, is was
-> misrebased, or is just badly out of order.  It introduces a use of
-> cpupri_find, but the function is not defined until commit
-> ea9b3c95b7c666d4658a139b88587269e5baa647 ("sched: use a 2-d bitmap for
-> searching lowest-pri CPU") about 146 commits later ...
+> The macros I was interested in were these which are:
+> - defined and unused
+> - defined and used only once
+> - defined more than once
+> 
+> I dont want to start another cleanup-patches-storm so first I'd like
+> to know if this excersise is worth it as unused macros do not do much
+> harm.
+> 
+> Would such patches be accepted?
 
-Whatever it was its gone in recent linux-next releases, box boots without
-problems.
+An unused define/macro that was declared in a .c file isn't very
+interesting to be honest; that tends to be helper macros for the
+developer and removing those is just counter productive.
 
-	Mariusz
+unused macros in common header files are an indication of stale APIs
+otoh.. and might be of some interest. (Same for static inline in
+headers)
