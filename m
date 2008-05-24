@@ -1,143 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761279AbYEXT2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761316AbYEXTb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761279AbYEXT2d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 15:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYEXT20
+	id S1761316AbYEXTb7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 15:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYEXTbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 15:28:26 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:56178 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752013AbYEXT2Z convert rfc822-to-8bit (ORCPT
+	Sat, 24 May 2008 15:31:51 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:60299 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbYEXTbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 15:28:25 -0400
-Date: Sat, 24 May 2008 21:28:21 +0200
-Message-Id: <290568367@web.de>
-MIME-Version: 1.0
-From: devzero@web.de
-To: krh@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: =?iso-8859-15?Q?Re:_[PATCH_2/2]_Only_print_"Decompressing_Linux"_etc_w?=
- =?iso-8859-15?Q?hen_'noisy'_is_passed.?=
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+ASQeMm8tL/dzMPSigrAmePTRimk5JeSVo4+YZ2Ldue5b0o
- gQxZCGzrAwOJOx/1VxpSxT6BYLor3s2tGoXk/w7eYM3uxNg7Os=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+	Sat, 24 May 2008 15:31:51 -0400
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       aoliva@redhat.com, alan@lxorguk.ukuu.org.uk,
+       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
+       Takashi Iwai <tiwai@suse.de>
+Message-Id: <79373BC9-13F5-45BE-8D51-527F70D00094@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1211656999.540.16.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sat, 24 May 2008 21:31:45 +0200
+References: <1211550282.28967.8.camel@pmac.infradead.org> <1211550374.28967.10.camel@pmac.infradead.org> <20080523164108.GA31545@uranus.ravnborg.org> <1211640377.540.14.camel@pmac.infradead.org> <20080524152214.GA12582@uranus.ravnborg.org> <1211642706.31212.85.camel@shinybook.infradead.org> <1211643245.31212.88.camel@shinybook.infradead.org> <D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org> <1211656999.540.16.camel@pmac.infradead.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-what about using "quiet" here instead ?
+Hi David,
 
-quiet is already the parameter to suppress boot messages, so introducing another one doesn`t make sense, imho.
+>>>> Playing with it now. I fixed the mkdir thing by including $ 
+>>>> (objtree)
+>>>> in the target.
+>>>
+>>> Here's what I have (on top of the git tree) now. I just need to sort
+>>> out
+>>> the clean/mrproper behaviour -- and possibly should rename the korg
+>>> firmware to firmware/korg/k1212.c_shipped?
+>>
+>> so using "/" within the name parameter for request_firmware() is
+>> actually forbidden. I know that some driver authers think it is a  
+>> good
+>> idea, but it is not.
+>>
+>> I am actually working on a patch to make request_firmware() fail/warn
+>> when the name has a "/" in it.
+>>
+>> You don't need to consider any deep nesting of firmware file names.  
+>> It
+>> was never meant to be used like this.
+>
+> Hm. Is there any fundamental reason why we should forbid this? It does
+> seem to make sense to let people use the namespace for it.
 
-the early boot commandline parser was extended some time ago to support boolean options, see:
+I explained this a couple of times. The request_firmware() is an  
+abstract mechanism that can request a firmware file. The location of  
+the firmware file is up to the userspace. The kernel requests a  
+particular file and that is it. All namespacing has to be done by the  
+firmware helper script (nowadays udev). That the current  
+implementation of the firmware helper maps the filename 1:1 to a file  
+under /lib/firmware/ just works, but doesn't have to work all the  
+time. It is not the agreed contract between kernel and userspace.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=32d0b9898029b7b3c7f161d31f57c4831d9049eb
+If you wanna do namespacing then you have to do it within the firmware  
+helper script. For example the helper script could look for /lib/ 
+firmware/<driver>/<filename> instead of /lib/firmware/<filename>.
 
-this may shrink your patch , see example in arch/x86/boot/edd.c 
+Regards
 
-
-be_quiet = cmdline_find_option_bool("quiet");
-....
-if (!be_quiet)
-    printf("Probing EDD (edd=off to disable)... ");
-
-
-roland
-
-
-
-List:       linux-kernel
-Subject:    [PATCH 2/2] Only print "Decompressing Linux" etc when 'noisy' is passed.
-From:       Kristian HÃ&#382;gsberg <krh () redhat ! com>
-Date:       2008-05-23 21:59:28
-Message-ID: 1211579968-15227-2-git-send-email-krh () redhat ! com
-[Download message RAW]
-
-Signed-off-by: Kristian HÃ&#382;gsberg <krh@redhat.com>
----
- arch/x86/boot/compressed/misc.c |   30 +++++++++++++++++++++++++++---
- 1 files changed, 27 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index 0d03579..b7b5c1f 100644
---- a/arch/x86/boot/compressed/misc.c
-+++ b/arch/x86/boot/compressed/misc.c
-@@ -190,6 +190,7 @@ static void gzip_release(void **);
-  */
- static struct boot_params *real_mode;          /* Pointer to real-mode data */
- static struct screen_info *rm_screen_info;     /* Pointer to real-mode data */
-+static int noisy;
- 
- extern unsigned char input_data[];
- extern int input_len;
-@@ -391,7 +392,8 @@ static void parse_elf(void *output)
-                return;
-        }
- 
--       putstr("Parsing ELF... ");
-+       if (noisy)
-+               putstr("Parsing ELF... ");
- 
-        phdrs = malloc(sizeof(*phdrs) * ehdr.e_phnum);
-        if (!phdrs)
-@@ -419,11 +421,27 @@ static void parse_elf(void *output)
-        }
- }
- 
-+static const char *strnstr(const char *string, int len, const char *s)
-+{
-+       int i, j;
-+
-+       for (i = 0; i < len; i++) {
-+               for (j = 0; i + j < len && s[j]; j++)
-+                       if (string[i + j] != s[j])
-+                               break;
-+               if (s[j] == '\0')
-+                       return string + i;
-+       }
-+
-+       return NULL;
-+}
- asmlinkage void decompress_kernel(void *rmode, memptr heap,
-                                  unsigned char *input_data,
-                                  unsigned long input_len,
-                                  unsigned char *output)
- {
-+       char *cmdline;
-+
-        real_mode = rmode;
- 
-        if (rm_screen_info->orig_video_mode == 7) {
-@@ -437,6 +455,10 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
-        lines = rm_screen_info->orig_video_lines;
-        cols = rm_screen_info->orig_video_cols;
- 
-+       cmdline = (char *) real_mode->hdr.cmd_line_ptr;
-+       if (strnstr(cmdline, real_mode->hdr.cmdline_size, "noisy"))
-+               noisy = 1;
-+
-        window = output;                /* Output buffer (Normally at 1M) */
-        free_mem_ptr     = heap;        /* Heap */
-        free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
-@@ -461,9 +483,11 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
- #endif
- 
-        makecrc();
--       putstr("\nDecompressing Linux... ");
-+       if (noisy)
-+               putstr("\nDecompressing Linux... ");
-        gunzip();
-        parse_elf(output);
--       putstr("done.\nBooting the kernel.\n");
-+       if (noisy)
-+               putstr("done.\nBooting the kernel.\n");
-        return;
- }
--- 
-1.5.5.1
-_______________________________________________________________________
-EINE FÜR ALLE: die kostenlose WEB.DE-Plattform für Freunde und Deine
-Homepage mit eigenem Namen. Jetzt starten! http://unddu.de/?kid=kid@mf2
+Marcel
 
