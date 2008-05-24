@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761780AbYEXUoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbYEXUpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761780AbYEXUoP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 16:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYEXUn7
+	id S1761939AbYEXUpH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 16:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbYEXUo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 16:43:59 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42804 "EHLO pasmtpA.tele.dk"
+	Sat, 24 May 2008 16:44:57 -0400
+Received: from gw.goop.org ([64.81.55.164]:48321 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752608AbYEXUn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 16:43:58 -0400
-Date: Sat, 24 May 2008 22:44:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
-Message-ID: <20080524204438.GA3136@uranus.ravnborg.org>
-References: <20080524192540.GA28067@uranus.ravnborg.org> <20080524200523.GB2308@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080524200523.GB2308@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	id S1753222AbYEXUo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 16:44:56 -0400
+Message-ID: <48387E29.50103@goop.org>
+Date: Sat, 24 May 2008 21:44:25 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
+       Zachary Amsden <zach@vmware.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 0 of 4] mm+paravirt+xen: add pte read-modify-write abstraction
+References: <patchbomb.1211552448@localhost> <alpine.LFD.1.10.0805231133130.3081@woody.linux-foundation.org> <48372C2F.1090704@goop.org> <alpine.LFD.1.10.0805241022210.3081@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805241022210.3081@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> If you really want to be able to transform all #if's in .c files to 
-> if()'s you also have to offer a variant of our MODULE #define.
-1) I have no pland to replace the current CONFIG_ use.
-2) I do not follow whay you try to say about our "MODULE #define"
+Linus Torvalds wrote:
+> On Fri, 23 May 2008, Jeremy Fitzhardinge wrote:
+>   
+>> Well, you could use it to update the page and protection bits while preserving
+>> the AD bits, but I don't think that's very useful.
+>>     
+>
+> It's not that it's not "very useful" - it's that it would be TOTALLY 
+> WRONG.
+>   
 
-> >...
-> 
-> Also an error message if if the varible is not currently available on 
-> this architecture (e.g. KCONFIG_ISA on ia64).
-> 
-> Not an unsolvable problem, but something that has to be taken care of.
+Sorry, I was using ironic understatement.  I meant "...while preserving 
+the AD bits, but I think that would be totally fucking stupid".
 
-My master plan is to have a single configuration for the kernel
-and not as today where we have one configuration for each architecture.
-
-How far away we are from that I dunno. It is a while I visited this.
-And I will not have time to do so anytime soon I'm afraid.
-
-	Sam
+    J
