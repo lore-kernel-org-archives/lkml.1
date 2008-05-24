@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbYEXWqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbYEXWqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762534AbYEXWqa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 18:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbYEXWqX
+	id S1757224AbYEXWqo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 18:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762635AbYEXWqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 18:46:23 -0400
-Received: from www.tglx.de ([62.245.132.106]:59281 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbYEXWqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 18:46:22 -0400
-Date: Sun, 25 May 2008 00:46:13 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Tom Spink <tspink@gmail.com>
-cc: Greg KH <gregkh@suse.de>, "Hans J. Koch" <hjk@linutronix.de>,
-       Uwe Kleine-K??nig <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
- interrupts
-In-Reply-To: <7b9198260805241534s1a548e16i583742db92be3789@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0805250036481.3295@apollo.tec.linutronix.de>
-References: <20080522192252.GB3226@local> <20080522192637.GC3226@local>  <20080523055527.GA28963@digi.com>  <20080523104454.4e2af6ec@bluebox.local>  <20080523091009.GA22821@digi.com>  <20080523120308.7bec1e1c@bluebox.local>  <20080523105604.GA23800@digi.com>
-  <20080523135557.27fe4855@bluebox.local>  <20080524044354.GA8129@suse.de>  <alpine.LFD.1.10.0805250013450.3295@apollo.tec.linutronix.de> <7b9198260805241534s1a548e16i583742db92be3789@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 24 May 2008 18:46:32 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54123 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762592AbYEXWqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 18:46:31 -0400
+Date: Sat, 24 May 2008 18:45:54 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Jan Kara <jack@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
+Message-ID: <20080524224554.GA5970@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Arjan van de Ven <arjan@linux.intel.com>, Jan Kara <jack@suse.cz>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+References: <4836EE8C.1010200@linux.intel.com> <20080524222304.GD20563@atrey.karlin.mff.cuni.cz> <20080524153020.1df96cf2@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080524153020.1df96cf2@linux.intel.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 May 2008, Tom Spink wrote:
-> 2008/5/24 Thomas Gleixner <tglx@linutronix.de>:
-> > It makes a certain amount of sense to use write. You hold the device
-> > file descriptor anyway for the read (wait for interrupt) operation,
-> > so using the same file descriptor is not a too bad idea:
+On Sat, May 24, 2008 at 03:30:20PM -0700, Arjan van de Ven wrote:
 > 
-> What do you think about my ioctl idea, earlier in the thread?
-
-I think it's a pretty bad idea.
- 
-> >    while (!stop) {
-> >
-> >        /* wait for interrupt */
-> >        read(fd);
-> >
-> >        do_stuff();
-> >
-> >        /*reenable interrupt */
-> >        write(fd);
-> >    }
+> Ted looked at these during the LF summit, and his conclusion was that
+> they're all media errors (eg USB unplug) that ext3 then did not handle
+> well at all. Maybe Ted has an update on this?
 > 
-> So, instead of write, you'd use ioctl(fd, ...).
 
-And what's the actual gain ?
+Not really.  It's on my todo list but fixing a bug caused by users
+doing something stupid (pulling a mounted USB stick) has been lower
+than a number of other fires burning on my plate.  I'll try to get to
+it but a lot of other things I need to worry about have deadlines
+associated with them....
 
-> > I thought about using a sysfs entry for a while, but looking at the
-> > actual use case made the write() solution a more natural choice.
-> 
-> I thought ioctl would be more natural, as [en,dis]abling interrupts is
-> a "controlling" operation :-)
-
-Oh no. We are not going to open the bottomless pit of ioctls in
-UIO. Once we have an ioctl channel in place we have the same mess
-which we want to avoid in the first place.
-
-Also when a driver needs more than the obvious interrupt wait /
-control functions (which are pretty symetric btw.) aside of the
-mmapped access to the device then it does not belong into the category
-of an UIO driver.
-
-Thanks,
-
-	tglx
+						- Ted
