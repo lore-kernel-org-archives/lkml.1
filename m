@@ -1,78 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYEXN7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbYEXOLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbYEXN7z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 09:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYEXN7p
+	id S1756006AbYEXOLv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 10:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYEXOLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 09:59:45 -0400
-Received: from 1wt.eu ([62.212.114.60]:4993 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752887AbYEXN7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 09:59:44 -0400
-Date: Sat, 24 May 2008 15:52:58 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: David Greaves <david@dgreaves.com>
-Cc: Greg KH <greg@kroah.com>, Eric Sandeen <sandeen@sandeen.net>,
-       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>, stable@kernel.org
-Subject: Re: RFI for 2.6.25.5 : Re: Regression- XFS won't mount on partitioned md array
-Message-ID: <20080524135258.GF6749@1wt.eu>
-References: <482DC043.5000307@dgreaves.com> <482DD981.5070004@sandeen.net> <482EEFDA.50101@dgreaves.com> <482EF6A7.2020909@sandeen.net> <482F67D9.70400@sandeen.net> <482FBD4C.20608@sandeen.net> <482FED60.7060405@dgreaves.com> <4838192F.3050004@dgreaves.com>
+	Sat, 24 May 2008 10:11:40 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:33052 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753225AbYEXOLj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 10:11:39 -0400
+Subject: Re: [PATCH 5/5] remove the extra call to try_to_take_lock
+From: "Peter W. Morreale" <pmorreale@novell.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, mingo@elte.hu, tglx@linutronix.de,
+       Moiz Kohari <MKohari@novell.com>, Sven Dietrich <SDietrich@novell.com>,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <4837539F.BA47.005A.0@novell.com>
+References: <20080520143954.15992.85900.stgit@novell1.haskins.net>
+	 <20080520144936.15992.48894.stgit@novell1.haskins.net>
+	 <Pine.LNX.4.58.0805232301080.12686@gandalf.stny.rr.com>
+	 <4837539F.BA47.005A.0@novell.com>
+Content-Type: text/plain
+Organization: Linux Solutions Group
+Date: Sat, 24 May 2008 08:11:28 -0600
+Message-Id: <1211638288.9707.12.camel@hermosa.morrealenet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4838192F.3050004@dgreaves.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-On Sat, May 24, 2008 at 02:33:35PM +0100, David Greaves wrote:
-> Hi Greg
-> Perusing:
->   http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git
-> doesn't show the patch referenced below as in the queue for 2.6.25.5
-
-First, please avoid top-posting.
-
-> David Greaves wrote:
-> > Eric Sandeen wrote:
-> >> Eric Sandeen wrote:
-> >>> Eric Sandeen wrote:
-> >>>
-> >>>> I'll see if I have a little time today to track down the problem.
-> >>> Does this patch fix it for you?  Does for me though I can't yet explain
-> >>> why ;)
-> >>>
-> >>> http://www.linux.sgi.com/archives/xfs/2008-05/msg00190.html
-> >>>
-> >>> -Eric
-> > Yes, this fixes it for me - thanks :)
+On Fri, 2008-05-23 at 23:30 -0400, Gregory Haskins wrote:
+> >>> On Fri, May 23, 2008 at 11:02 PM, in message
+> <Pine.LNX.4.58.0805232301080.12686@gandalf.stny.rr.com>, Steven Rostedt
+> <rostedt@goodmis.org> wrote: 
+> 
+> > On Tue, 20 May 2008, Gregory Haskins wrote:
 > > 
-> >> So what's happening is that xfs is trying to read a page-sized IO from
-> >> the last sector of the log... which goes off the end of the device.
-> >> This looks like another regression introduced by
-> >> a9759f2de38a3443d5107bddde03b4f3f550060e, but fixed by Christoph's patch
-> >> in the URL above, which should be headed towards -stable.
-> > Damn, I guess I misread my bisect readings when things crashed then.
-> > Still, I said 'around' :)
-> > 
-> >> (aside: it seems that this breaks any external log setup where the log
-> >> consists of the entire device... but I'd have expected the xfsqa suite
-> >> to catch this...?)
+> >> From: Peter W. Morreale <pmorreale@novell.com>
 > >>
-> >> The patch avoids the problem by looking for some extra locking but it
-> >> seems to me that the root cause is that the buffer being read at this
-> >> point doesn't have it's b_offset, the offset in it's page, set.  Might
-> >> be another little buglet but harmless it seems.
+> >> Remove the redundant attempt to get the lock.  While it is true that the
+> >> exit path with this patch adds an un-necessary xchg (in the event the
+> >> lock is granted without further traversal in the loop) experimentation
+> >> shows that we almost never encounter this situation.
+> >>
 
-It would have helped to CC stable (fixed) and to give the mainline commit
-ID since the stable branch only holds already merged patches. Greg, the
-commit is 6ab455ee...
+I should have made this more descriptive to eliminate the confusion. 
 
-Willy
+Lock stealing, upon entry to *slowlock(), almost never happens.  By
+almost I mean out of ~2+M locks, only 10s of locks were granted from the
+original redundant attempt. (From manual instrumentation)  I do not have
+exact numbers.
+
+Best,
+-PWM
+   
+> >> Signed-off-by: Peter W. Morreale <pmorreale@novell.com>
+> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> >> ---
+> >>
+> >>  kernel/rtmutex.c |    6 ------
+> >>  1 files changed, 0 insertions(+), 6 deletions(-)
+> >>
+> >> diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+> >> index ec1f7d4..1da7813 100644
+> >> --- a/kernel/rtmutex.c
+> >> +++ b/kernel/rtmutex.c
+> >> @@ -785,12 +785,6 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+> >>  	spin_lock_irqsave(&lock->wait_lock, flags);
+> >>  	init_lists(lock);
+> >>
+> >> -	/* Try to acquire the lock again: */
+> >> -	if (do_try_to_take_rt_mutex(lock, STEAL_LATERAL)) {
+> >> -		spin_unlock_irqrestore(&lock->wait_lock, flags);
+> >> -		return;
+> >> -	}
+> >> -
+> > 
+> > This would suggested that lock stealing doesn't happen. On lock stealing,
+> > this is the condition that is triggered and we have a nice quick exit.
+> 
+> Its not that we are saying it doesn't happen.  Rather, we are saying the overhead of exiting from the second call (and only remaining call after this patch) is not as significant as it would seem on paper (based on empirical data).  In essence, it adds an xchg to the steal-case which is not "great", but....
+> 
+> ..conversely, if the first test fails, the second test will *always* fail (since the lock->wait_lock is held across both).  This extra overhead actually *does* result in a measurable degradation of performance in our testing.
+> 
+> Another way to write the patch is to do more of a "do/while" style with the try_to_take is done later in the loop.  You could then retain the fast-path exit in that case.  I actually wrote a patch like that at one point, but I think Peter's here was faster.  I don't recall the reason why that was off the top of my head, but I remember I dropped my patch in favor of his because of the difference.
+> 
+> Regards,
+> -Greg
+> 
+> > 
+> > -- Steve
+> > 
+> > 
+> > 
+> >>  	BUG_ON(rt_mutex_owner(lock) == current);
+> >>
+> >>  	/*
+> >>
+> 
+> 
 
