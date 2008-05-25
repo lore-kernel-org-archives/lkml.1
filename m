@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbYEYI4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbYEYJAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759037AbYEYI4t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 04:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYEYI4j
+	id S1759767AbYEYJAF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 05:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYEYI7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 04:56:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:18583 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbYEYI4i (ORCPT
+	Sun, 25 May 2008 04:59:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:4022 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYEYI7z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 04:56:38 -0400
+	Sun, 25 May 2008 04:59:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T8EFWqPTCa1tYGQBWKz4Q00dXQootkAw72ns7iSBUGacves0zi6lsqdQa2bdPiT0gHOwUW3l92qxm/VfeZDvJszpmRYKKKfYg0gWm82affryrYfrQ1RvzqfF9lawxskWrG8eqsMao4LgE31AN3G6nxfuVesfB0EO7UxUUKlHG9o=
-Message-ID: <c4e36d110805250156q37d0ed86xf33071cf70fb2b45@mail.gmail.com>
-Date: Sun, 25 May 2008 10:56:37 +0200
+        b=fP2ih76/zoPet2ydr81IgbqNhMzt4/nB1QGBSAPa56C9HYz3niUkl7wrDUA/8YV9R/yNCqFarSGZkJX39DKdDrNimFLeeT2nFzuKbj/O0GwvWwNzDz4Bb+WtNqqamEcf3yhFf8IcgANNypfX9PZ3rqf0fdRxPADoOddTH47dnjo=
+Message-ID: <c4e36d110805250159x34e667f2kcfbc01a7b87dda29@mail.gmail.com>
+Date: Sun, 25 May 2008 10:59:52 +0200
 From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: Suspend to memory is freezing my machine
