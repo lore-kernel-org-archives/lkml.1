@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbYEYPLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbYEYPMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbYEYPLZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 11:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbYEYPLO
+	id S1756655AbYEYPMS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 11:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbYEYPMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 11:11:14 -0400
-Received: from eth6445.sa.adsl.internode.on.net ([150.101.30.44]:33774 "EHLO
-	aix.gdt.id.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753772AbYEYPLN (ORCPT
+	Sun, 25 May 2008 11:12:08 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:19278 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753702AbYEYPMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 11:11:13 -0400
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-From: Glen Turner <gdt@gdt.id.au>
-To: Chris Peterson <cpeterso@cpeterso.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <a24804730805162155m72e6b40aweb8822515c880c50@mail.gmail.com>
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
-	 <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com>
-	 <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com>
-	 <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca>
-	 <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca>
-	 <20080516191125.46f59ad6@core>
-	 <a24804730805162155m72e6b40aweb8822515c880c50@mail.gmail.com>
-Content-Type: text/plain
-Organization: <http://www.gdt.id.au/~gdt/>
-Date: Mon, 26 May 2008 00:39:49 +0930
-Message-Id: <1211728189.5913.71.camel@andromache>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Sun, 25 May 2008 11:12:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=WLdaYDZgTOzJpy6F8CMIXtp1bRCmHxwJQ9HpjhRX6Z5jLyvmziVCCR5xbeNYWnPisOdx6dJGFccRgWQvgu6gAsssp9mZoFVDUPb9LRsd9o5pYLLvb/jtNQjgKP+05svdD10u9Ob5GXLIHjqpMpHZJokzxAp3OPPWtZHeM8+UN+4=
+Message-ID: <38b2ab8a0805250812l2ecd424bh74a1694ed56460de@mail.gmail.com>
+Date: Sun, 25 May 2008 17:12:06 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: question about splice performance
+Cc: jens.axboe@oracle.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-16 at 21:55 -0700, Chris Peterson wrote:
-> * network drivers could use IRQF_SAMPLE_URANDOM
+Hi,
 
-Is it permissable for /dev/urandom to degrade to be externally
-influenced
-by a hostile party?
+I did a really basic benchmark and was suprise about the results.
 
-For example, /dev/random has run out. So the output of /dev/urandom is
-now
-determined by previous values of /dev/random.  I then send in a stack of
-network packets at regular intervals. So the output of /dev/urandom is
-now greatly determined by those packets.  My search space for the
-resulting
-key is small since /dev/urandom appears to be random, but in fact is
-periodic.
+$ echo 3 > /proc/sys/vm/drop_caches
+$ time  splice-cp  vmlinux /tmp/vmlinux
 
-I'll also note that there is a huge number of periodic packets seen by
-hosts on quiet networks -- such as a preparation VLAN where a system
-administrator might choose to run up a new machine.
+real    0m10.158s
+user    0m0.002s
+sys     0m0.401s
 
+$ echo 3 > /proc/sys/vm/drop_caches
+$ time  cp  vmlinux /tmp/vmlinux
+
+real    0m10.590s
+user    0m0.017s
+sys     0m0.459s
+
+
+I was expecting splice-cp case to be faster.
+
+Could someone enlight me ?
+
+Thanks
+-- 
+Francis
