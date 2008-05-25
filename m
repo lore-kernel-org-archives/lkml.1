@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbYEYKXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762206AbYEYKXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761959AbYEYKXS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985AbYEYKWg
+	id S1762206AbYEYKXv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbYEYKXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:22:36 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53748 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753936AbYEYKWa (ORCPT
+	Sun, 25 May 2008 06:23:39 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41958 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753437AbYEYKXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:22:30 -0400
-Date: Sun, 25 May 2008 11:08:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Wim Van Sebroeck <wim@iguana.be>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Samuel Tardieu <sam@rfc1149.net>,
-       Mike Frysinger <vapier.adi@gmail.com>, Mingarelli@infomag.iguana.be,
-       Thomas <Thomas.Mingarelli@hp.com>,
-       Jordan Crouse <jordan.crouse@amd.com>, Chen Gong <g.chen@freescale.com>,
-       Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: [WATCHDOG] v2.6.26-rc3 patches
-Message-ID: <20080525110812.3a05e9fa@core>
-In-Reply-To: <20080525100944.GA4084@infomag.infomag.iguana.be>
-References: <20080525100944.GA4084@infomag.infomag.iguana.be>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 25 May 2008 06:23:38 -0400
+In-Reply-To: <1211708969@pmac.infradead.org>
+References: <1211708969@pmac.infradead.org>
+From: David Woodhouse <dwmw2@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
+Subject: [PATCHv2 06/28] vx222: treat firmware data as const
+Message-Id: <E1K0DO3-0007DA-7S@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:35 +0100
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +
-> +static void geodewdt_ping(void)
-> +{
-> +	/* Stop the counter */
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-> +
-> +	/* Reset the counter */
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-> +
-> +	/* Enable the counter */
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
-> +}
-> +
-> +static void geodewdt_disable(void)
-> +{
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-> +}
-> +
-> +static int geodewdt_set_heartbeat(int val)
-> +{
-> +	if (val < 1 || val > GEODEWDT_MAX_SECONDS)
-> +		return -EINVAL;
-> +
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, 0);
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_CMP2, val * GEODEWDT_HZ);
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_COUNTER, 0);
-> +	geode_mfgpt_write(wdt_timer, MFGPT_REG_SETUP, MFGPT_SETUP_CNTEN);
-> +
-> +	timeout = val;
-> +	return 0;
-> +}
-> +
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+---
+ sound/pci/vx222/vx222_ops.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-There is no locking in geodewdt - so all those routines can end up being
-run together. Not sure it is a problem just noting it while reviewing.
+diff --git a/sound/pci/vx222/vx222_ops.c b/sound/pci/vx222/vx222_ops.c
+index b4bfc1a..631f3a6 100644
+--- a/sound/pci/vx222/vx222_ops.c
++++ b/sound/pci/vx222/vx222_ops.c
+@@ -359,7 +359,7 @@ static int vx2_load_xilinx_binary(struct vx_core *chip, const struct firmware *x
+ {
+ 	unsigned int i;
+ 	unsigned int port;
+-	unsigned char *image;
++	const unsigned char *image;
+ 
+ 	/* XILINX reset (wait at least 1 milisecond between reset on and off). */
+ 	vx_outl(chip, CNTRL, VX_CNTRL_REGISTER_VALUE | VX_XILINX_RESET_MASK);
+-- 
+1.5.4.5
 
