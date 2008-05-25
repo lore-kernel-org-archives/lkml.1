@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763126AbYEYKZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762993AbYEYKZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763126AbYEYKZA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760041AbYEYKXm
+	id S1762993AbYEYKZg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758173AbYEYKXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:23:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41968 "EHLO
+	Sun, 25 May 2008 06:23:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41974 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756455AbYEYKXl (ORCPT
+	with ESMTP id S1757929AbYEYKXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:23:41 -0400
+	Sun, 25 May 2008 06:23:42 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
 References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       Brice Goglin <brice@myri.com>, Andrew Gallatin <gallatin@myri.com>
-Subject: [PATCHv2 05/28] myri10ge: treat firmware data as const
-Message-Id: <E1K0DO2-0007D6-5V@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:34 +0100
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
+Subject: [PATCHv2 08/28] pcxhr: treat firmware data as const
+Message-Id: <E1K0DO5-0007DI-AK@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:37 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -26,43 +25,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... which means allocating our own buffer for reading it back.
-
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/net/myri10ge/myri10ge.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+ sound/pci/pcxhr/pcxhr_core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
-index c91b12e..ab7a80b 100644
---- a/drivers/net/myri10ge/myri10ge.c
-+++ b/drivers/net/myri10ge/myri10ge.c
-@@ -529,6 +529,7 @@ static int myri10ge_load_hotplug_firmware(struct myri10ge_priv *mgp, u32 * size)
- 	unsigned crc, reread_crc;
- 	const struct firmware *fw;
- 	struct device *dev = &mgp->pdev->dev;
-+	unsigned char *fw_readback;
- 	struct mcp_gen_header *hdr;
- 	size_t hdr_offset;
- 	int status;
-@@ -571,9 +572,15 @@ static int myri10ge_load_hotplug_firmware(struct myri10ge_priv *mgp, u32 * size)
- 		mb();
- 		readb(mgp->sram);
- 	}
-+	fw_readback = vmalloc(fw->size);
-+	if (!fw_readback) {
-+		status = -ENOMEM;
-+		goto abort_with_fw;
-+	}
- 	/* corruption checking is good for parity recovery and buggy chipset */
--	memcpy_fromio(fw->data, mgp->sram + MYRI10GE_FW_OFFSET, fw->size);
--	reread_crc = crc32(~0, fw->data, fw->size);
-+	memcpy_fromio(fw_readback, mgp->sram + MYRI10GE_FW_OFFSET, fw->size);
-+	reread_crc = crc32(~0, fw_readback, fw->size);
-+	vfree(fw_readback);
- 	if (crc != reread_crc) {
- 		dev_err(dev, "CRC failed(fw-len=%u), got 0x%x (expect 0x%x)\n",
- 			(unsigned)fw->size, reread_crc, crc);
+diff --git a/sound/pci/pcxhr/pcxhr_core.c b/sound/pci/pcxhr/pcxhr_core.c
+index 78aa81f..957e6af 100644
+--- a/sound/pci/pcxhr/pcxhr_core.c
++++ b/sound/pci/pcxhr/pcxhr_core.c
+@@ -269,7 +269,7 @@ int pcxhr_load_xilinx_binary(struct pcxhr_mgr *mgr, const struct firmware *xilin
+ 	unsigned int chipsc;
+ 	unsigned char data;
+ 	unsigned char mask;
+-	unsigned char *image;
++	const unsigned char *image;
+ 
+ 	/* test first xilinx */
+ 	chipsc = PCXHR_INPL(mgr, PCXHR_PLX_CHIPSC);
+@@ -316,7 +316,7 @@ static int pcxhr_download_dsp(struct pcxhr_mgr *mgr, const struct firmware *dsp)
+ 	int err;
+ 	unsigned int i;
+ 	unsigned int len;
+-	unsigned char *data;
++	const unsigned char *data;
+ 	unsigned char dummy;
+ 	/* check the length of boot image */
+ 	snd_assert(dsp->size > 0, return -EINVAL);
 -- 
 1.5.4.5
 
