@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYEYUIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759560AbYEYUJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbYEYUIi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 16:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573AbYEYUI3
+	id S1759560AbYEYUJU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 16:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757636AbYEYUJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 16:08:29 -0400
-Received: from smtp-02.datacomm.ch ([212.40.2.27]:49175 "EHLO
-	smtp-02.datacomm.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757338AbYEYUI2 (ORCPT
+	Sun, 25 May 2008 16:09:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42984 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757573AbYEYUJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 16:08:28 -0400
-Subject: Re: SB600 AHCI: Hard Disk Corruption
-From: Patrick <ragamuffin@datacomm.ch>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080525173825.GA4132@ucw.cz>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	 <20080525173825.GA4132@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 25 May 2008 22:08:26 +0200
-Message-Id: <1211746106.6188.57.camel@localhost.localdomain>
+	Sun, 25 May 2008 16:09:05 -0400
+Date: Sun, 25 May 2008 20:55:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Miquel van Smoorenburg <miquels@cistron.nl>,
+       Andi Kleen <andi@firstfloor.org>, Glauber Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       andi-suse@firstfloor.org
+Subject: Re: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
+Message-ID: <20080525205532.3ed5e478@core>
+In-Reply-To: <20080525163539.GA8405@one.firstfloor.org>
+References: <20080521113028.GA24632@xs4all.net>
+	<48341A57.1030505@redhat.com>
+	<20080522084736.GC31727@one.firstfloor.org>
+	<1211484343.30678.15.camel@localhost.localdomain>
+	<1211657898.25661.2.camel@localhost.localdomain>
+	<20080525163539.GA8405@one.firstfloor.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> iommu problem? Try it with mem=3G.
+On Sun, 25 May 2008 18:35:39 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-YES! :-) How did you know?
+> > So how about linux-2.6.26-gfp-no-oom.patch (see previous mail) for
+> > 2.6.26 
+> 
+> Changing the gfp once globally like you did is not right, because
+> the different fallback cases have to be handled differently
+> (see the different cases I discussed in my earlier mail)
+> 
+> Especially the 16MB zone allocation should never trigger the OOM killer.
 
-Even mem=4G did the trick. I should have tried that out long time back
-(!), since it also used to make the fglrx driver problems I was dealing
-with go away. These are solved now though, by a recent bios update
-(Version 1705 2008/04/21). ﻿The fglrx driver used to work once but
-stopped to work after an upgrade one day. Now with the new bios, the
-current 
-(ubuntu 8.04) version is working.
+That depends how much memory you have.
 
-So now, using mem=4G, ﻿after successfully suspending once, my
-ahci-scsi-libata-[sda] disk is still working. The error messages I
-mentioned dissapeared from the kernel messages. Some other, usb driver
-error messages, that used show up after resume have disappeared as well.
-
-Anyway: using mem=4G is definitely no option! I get only 3G of usable
-memory!!! *
-
-So how are we going to get this fixed???
-
-Should the IOMMU be reinitialized after resume? Or should the bios do it
-but doesn't? ** On the m2a-vm, the "GART" seems to be used as iommu,
-so... :-) ???
-
-I put some kernel message logs here:
-http://zefir.freesitespace.net/dmesg/
-One log without mem=4G will also be there shortly, where you will see
-the messages concerning the iommu (which seems to be unused right now).
-
-Greets
-﻿
-*
-> ﻿I suspect all you need is to burn one dimm.. or send it to me so that
-> I can reproduce it ;-).
-﻿;-) ...looking back - all the trouble the 4G caused me till now, I
-would have saved lots of time mounting only one 2G dimm in the first
-place, even if the system was a little slower, but be it...
-
-> ﻿﻿Boot it from cd ;-).
-I'm impatient...
-﻿
-﻿** Seems, the SB600 is not to blame - alas sorry for the subject.
-
+Alan
