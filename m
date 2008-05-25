@@ -1,93 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYEYSjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbYEYSpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbYEYSjw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 14:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYEYSjo
+	id S1757663AbYEYSpw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 14:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbYEYSpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 14:39:44 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:34226 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753866AbYEYSjo (ORCPT
+	Sun, 25 May 2008 14:45:43 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:4079 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755455AbYEYSpn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 14:39:44 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-Date: Sun, 25 May 2008 20:39:17 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, aoliva@redhat.com,
-       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
-       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
-References: <1211550282.28967.8.camel@pmac.infradead.org> <1211724803.17151.36.camel@johannes.berg> <41FE0259-522B-4B9B-A75D-7B97A9FD723F@holtmann.org>
-In-Reply-To: <41FE0259-522B-4B9B-A75D-7B97A9FD723F@holtmann.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 25 May 2008 14:45:43 -0400
+Subject: Re: [PATCH] SERIAL:  Simplify code using ARRAY_SIZE() macro.
+From: Joe Perches <joe@perches.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <alpine.LFD.1.10.0805251308420.25842@localhost.localdomain>
+References: <alpine.LFD.1.10.0805250735560.23325@localhost.localdomain>
+	 <483998EC.5080805@gmail.com>
+	 <alpine.LFD.1.10.0805251308420.25842@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 25 May 2008 11:41:56 -0700
+Message-Id: <1211740916.8496.27.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805252039.17673.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 May 2008 20:23:46 Marcel Holtmann wrote:
-> > The fact that userspace uses the key as a filename is maybe  
-> > unfortunate,
-> > maybe fortunate, but shouldn't have anything to do with what sort of
-> > keys the kernel allows.
-> 
-> I disagree with you. The kernel should be free of these kind of  
-> subdirectory stuff. We saw devfs failing and we have a flat device  
-> node names in the kernel. Why do we have to duplicate information in  
-> the firmware filenames where we have all the information already  
-> present in the driver model. The reason that people are lazy doesn't  
-> work for me.
+On Sun, 2008-05-25 at 13:09 -0400, Robert P. J. Day wrote:
+> > > diff --git a/drivers/serial/68328serial.c b/drivers/serial/68328serial.c
+> > > index bbf5bc5..71c56c1 100644
+> > > --- a/drivers/serial/68328serial.c
+> > > +++ b/drivers/serial/68328serial.c
+> > > @@ -1413,10 +1413,10 @@ static void m68328_set_baud(void)
+> > >  	USTCNT = ustcnt & ~USTCNT_TXEN;
+> > >
+> > >  again:
+> > > -	for (i = 0; i < sizeof(baud_table) / sizeof(baud_table[0]); i++)
+> > > +	for (i = 0; i < BAUD_TABLE_SIZE); i++)
+> > typo? does this compile?
+> will resubmit.
 
-I think you don't really understand what we are trying to explain.
-So I'll try it once again.
+There are only two uses of BAUD_TABLE_SIZE
+and MCFRS_BAUD_TABLE_SIZE.
 
-We are _not_ saying that having hierarchy policy decisions in the kernel
-is a good thing. It's just the case that we _currently_ have this kind
-of firmware filename, that happens to _map_ to a hierarchy policy
-currently made by udev.
+I think it better to avoid
+	#define SOME_SIZE ARRAY_SIZE(some_array)
+and use ARRAY_SIZE(some_array) where possible.
 
-That's either unfortunate (to you) or fortunate (to me).
-In either case we have to live with it and we can _not_ break it.
-By introducing a policy that forbids the use of the slash, we do break
-this.
+NR_PORTS seems to be an exception.
 
-> > Also, you said above (quoting again):
-> >
-> >> You are fully
-> >> exploiting the request_firmware() interface and making any kind of
-> >> userspace policy impossible.
-> >
-> > That's not true at all. If you decide that the userspace policy should
-> > be to load $modulename/$firmwarekey then you'd maybe have something
-> > like /lib/firmware/b43/b43-test/ucode5.fw
-> > and /lib/firmware/b43/b43-osfw/ucode5.fw
-> > and /lib/firmware/b43/b43/ucode5.fw, this doesn't preclude the use.
-> >
-> > Now, if it had been like that from the beginning, Michael probably
-> > wouldn't have used the string "b43" (or "b43-*") but rather requested
-> > "broadcom/ucode5.fw" by default and "osfw/ucode5.fw" for the open  
-> > source
-> > firmware, but since it's just a key that doesn't matter.
-> 
-> That something works at the moment is not a reason for me not to fix  
-> it and improve the current framework around firmware loading. I have  
-> been a lot of times saying that the request_firmware() should not  
-> include "/" in the filename and driver authors followed it. Some of  
-> them did it anyway and so these need fixing now.
 
-But to forbid usage of "/" is the _wrong_ way to go, as it breaks
-existing setups.
-
-b43 users are not going to accept re-installing or moving the firmware
-files to another place. We had that in the past. It will result in a _lot_
-of angry complaints like "How dare can you break my setup!".
-
--- 
-Greetings Michael.
