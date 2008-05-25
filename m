@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYEYNor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYEYNqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbYEYNor (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 09:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYEYNoi
+	id S1756106AbYEYNqA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 09:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYEYNpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 09:44:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:39272 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbYEYNoh (ORCPT
+	Sun, 25 May 2008 09:45:52 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:57921 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753176AbYEYNpv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 09:44:37 -0400
-Date: Sun, 25 May 2008 09:44:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-Subject: Re: [PATCH -v2] x86: enable preemption in delay
-In-Reply-To: <Pine.LNX.4.58.0805250931160.20625@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0805250943010.22651@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
- <Pine.LNX.4.58.0805250931160.20625@gandalf.stny.rr.com>
+	Sun, 25 May 2008 09:45:51 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sun, 25 May 2008 15:45:24 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, aoliva@redhat.com,
+       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
+       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
+References: <1211550282.28967.8.camel@pmac.infradead.org> <200805251405.05684.mb@bu3sch.de> <09817CD9-2158-4EC3-8AB4-17BBAF34A8DA@holtmann.org>
+In-Reply-To: <09817CD9-2158-4EC3-8AB4-17BBAF34A8DA@holtmann.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805251545.25516.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 25 May 2008 15:19:37 Marcel Holtmann wrote:
+> this should all be done in userspace and not inside the kernel. Export  
+> the special device versions via struct device and stop being lazy.
 
-On Sun, 25 May 2008, Steven Rostedt wrote:
+No. Wait. It's not exactly going to work this way.
+You're not going to break my ABI and then tell me I'm going to work around
+that, right? Answer: No.
 
-> +
-> +		/*
-> +		 * It is possible that we moved to another CPU, and
-> +		 * since TSC's are per-cpu we need to calculate
-> +		 * that. The delay must guarantee that we wait "at
-> +		 * least" the amount of time. Being moved to another
-> +		 * CPU could make the wait longer but we just need to
-> +		 * make sure we waited long enough. Rebalance the
-> +		 * counter for this CPU.
-> +		 */
-> +		if (unlikely(cpu != smp_processor_id())) {
-> +			cpu = smp_processor_id();
-> +			rdtscl(bclock);
-> +		}
->  	}
->  	while ((now-bclock) < loops);
+b43 will use the slash in request_firmware. That is not going to change.
 
-BAH! expect version 3. :-p
+This is _exactly_ what users are so tired about. Every now and then people
+decide to change some ABI.
 
-This was compiled tested.
-
--- Steve
-
->  	preempt_enable();
->
+-- 
+Greetings Michael.
