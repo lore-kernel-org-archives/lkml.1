@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbYEYRiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYEYRr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbYEYRiw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 13:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbYEYRip
+	id S1757006AbYEYRr4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 13:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbYEYRrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 13:38:45 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1724 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753761AbYEYRin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 13:38:43 -0400
-Date: Sun, 25 May 2008 19:38:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Patrick <ragamuffin@datacomm.ch>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SB600 AHCI: Hard Disk Corruption
-Message-ID: <20080525173825.GA4132@ucw.cz>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211717435.6038.53.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	Sun, 25 May 2008 13:47:45 -0400
+Received: from rtr.ca ([76.10.145.34]:2054 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754999AbYEYRro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 13:47:44 -0400
+Message-ID: <4839A63E.4050409@rtr.ca>
+Date: Sun, 25 May 2008 13:47:42 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: Marvell 88SX7042 [4 Port SATA PCI-Express x4] Support/Questions
+References: <alpine.DEB.1.10.0805250757550.18572@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0805250757550.18572@p34.internal.lan>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Justin Piszcz wrote:
+> Jeff has been working on this chipset/patching/etc:
+..
 
-> I've got an annoying problem with my athlon 64bit, 4gb ram, ???asus m2a-vm
-> (->SB600 AHCI controller), SAMSUNG HD501LJ SATA Disk. I'm using kernel
-> 2.6.26-rc3. Everything works fine, expect for standby/suspend/hibernate.
-> Standby freezes, hibernate, I acually ???haven't tested lately cause I
-> want suspend to ram to work first.
-> 
-> "echo mem > /sys/power/state; vbetool post;" (on text console)
-> successfully suspends the system and it resumes as well, BUT: After
-> resuming, things quickly turn bad: "file not fonund", kernel reports
+Actually, I'm the one working on that chipset etc..  :)
 
-iommu problem? Try it with mem=3G.
+> Looks like there are a couple cards sporting this new chip at the moment
+..
 
-> * I read many threads in which Tejun provided patches for the SB600 AHCI
-> Controller which seems to be seriously broken - if only i knew that in
-> advance... Maybe he can fix this issue as well - last ressort. Otherwise
-> I'll burn that mobo!
+There are lots of them out there, including Sonnet, Highpoint, and others.
 
-I suspect all you need is to burn one dimm.. or send it to me so that
-I can reproduce it ;-).
+> If one bought enough of these, one could possibly achieve speeds in 
+> excess(!) of 1 gigabyte/second with enough drives and SW RAID in Linux.
+> Does anyone have such a card? I would be interested if it could sustain 
+> the maximum rate from each disk without any contention.
+..
 
-> ???** After my firs install and configuring the system for a day, trying
-> out suspend to ram smashed it with no backups, since then i didn't learn
-> my lesson and smashed it again 2-3 times, this time with backups at hand
-> though, ...
+Sure, if the bus and memory are fast enough.  You'll hit the Linux/libata
+transactions/sec limit at some point, but I don't know what that is.
 
-Boot it from cd ;-).
+Eg. Here's a 4X (I think) card in my PCIe video slot:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+beefy:~# mdadm --create /dev/md0 --chunk=256 -l 0 --raid-devices=4 /dev/sd[bcde]
+mdadm: array /dev/md0 started.
+
+beefy:~# hdparm -t --direct /dev/sd[bcde] /dev/md0
+
+/dev/sdb:
+ Timing O_DIRECT disk reads:  218 MB in  3.01 seconds =  72.46 MB/sec
+
+/dev/sdc:
+ Timing O_DIRECT disk reads:  256 MB in  3.01 seconds =  85.00 MB/sec
+
+/dev/sdd:
+ Timing O_DIRECT disk reads:  192 MB in  3.01 seconds =  63.79 MB/sec
+
+/dev/sde:
+ Timing O_DIRECT disk reads:  256 MB in  3.01 seconds =  85.07 MB/sec
+
+/dev/md0:
+ Timing O_DIRECT disk reads:  768 MB in  3.00 seconds = 255.69 MB/sec
+
+Similar results happen without the "--direct" flag as well.
+
+> 2. How 'experimental' is it? 
+
+The 7042 chipset is working rather well right now.
+Older Marvell chips should still be considered "experimental"
+for the time being.
+
+Cheers
