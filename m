@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764479AbYEYKbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbYEYKbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764479AbYEYKbY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761951AbYEYKYX
+	id S1759010AbYEYKbi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762648AbYEYKYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 25 May 2008 06:24:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43332 "EHLO
+Received: from pentafluge.infradead.org ([213.146.154.40]:43348 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762240AbYEYKYO (ORCPT
+	with ESMTP id S1762592AbYEYKYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 25 May 2008 06:24:14 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
 References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: [PATCHv2 01/28] libertas: treat firmware data as const
-Message-Id: <E1K0DNx-0007Cq-Uy@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:29 +0100
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       Tyler Trafford <ttrafford@gmail.com>, Hans Verkuil <hverkuil@xs4all.nl>
+Subject: [PATCHv2 04/28] cx25840: treat firmware data as const
+Message-Id: <E1K0DO1-0007D2-3d@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:33 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -27,68 +28,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/net/wireless/libertas/if_cs.c   |    2 +-
- drivers/net/wireless/libertas/if_sdio.c |    4 ++--
- drivers/net/wireless/libertas/if_usb.c  |    4 ++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/media/video/cx25840/cx25840-firmware.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/wireless/libertas/if_cs.c b/drivers/net/wireless/libertas/if_cs.c
-index 54280e2..d075b44 100644
---- a/drivers/net/wireless/libertas/if_cs.c
-+++ b/drivers/net/wireless/libertas/if_cs.c
-@@ -122,7 +122,7 @@ static inline void if_cs_write16(struct if_cs_card *card, uint reg, u16 val)
- static inline void if_cs_write16_rep(
- 	struct if_cs_card *card,
- 	uint reg,
--	void *buf,
-+	const void *buf,
- 	unsigned long count)
- {
- 	if (debug_output)
-diff --git a/drivers/net/wireless/libertas/if_sdio.c b/drivers/net/wireless/libertas/if_sdio.c
-index 51f664b..3dd537b 100644
---- a/drivers/net/wireless/libertas/if_sdio.c
-+++ b/drivers/net/wireless/libertas/if_sdio.c
-@@ -392,7 +392,7 @@ static int if_sdio_prog_helper(struct if_sdio_card *card)
- 	unsigned long timeout;
- 	u8 *chunk_buffer;
- 	u32 chunk_size;
--	u8 *firmware;
-+	const u8 *firmware;
- 	size_t size;
+diff --git a/drivers/media/video/cx25840/cx25840-firmware.c b/drivers/media/video/cx25840/cx25840-firmware.c
+index 620d295..5c08ede 100644
+--- a/drivers/media/video/cx25840/cx25840-firmware.c
++++ b/drivers/media/video/cx25840/cx25840-firmware.c
+@@ -79,7 +79,7 @@ static int check_fw_load(struct i2c_client *client, int size)
+ 	return 0;
+ }
  
- 	lbs_deb_enter(LBS_DEB_SDIO);
-@@ -508,7 +508,7 @@ static int if_sdio_prog_real(struct if_sdio_card *card)
- 	unsigned long timeout;
- 	u8 *chunk_buffer;
- 	u32 chunk_size;
--	u8 *firmware;
-+	const u8 *firmware;
- 	size_t size, req_size;
- 
- 	lbs_deb_enter(LBS_DEB_SDIO);
-diff --git a/drivers/net/wireless/libertas/if_usb.c b/drivers/net/wireless/libertas/if_usb.c
-index 8032df7..a25b670 100644
---- a/drivers/net/wireless/libertas/if_usb.c
-+++ b/drivers/net/wireless/libertas/if_usb.c
-@@ -293,7 +293,7 @@ static void if_usb_disconnect(struct usb_interface *intf)
- static int if_usb_send_fw_pkt(struct if_usb_card *cardp)
+-static int fw_write(struct i2c_client *client, u8 *data, int size)
++static int fw_write(struct i2c_client *client, const u8 *data, int size)
  {
- 	struct fwdata *fwdata = cardp->ep_out_buf;
--	uint8_t *firmware = cardp->fw->data;
-+	const uint8_t *firmware = cardp->fw->data;
- 
- 	/* If we got a CRC failure on the last block, back
- 	   up and retry it */
-@@ -746,7 +746,7 @@ static int if_usb_issue_boot_command(struct if_usb_card *cardp, int ivalue)
-  *         len               image length
-  *  @return     0 or -1
-  */
--static int check_fwfile_format(uint8_t *data, uint32_t totlen)
-+static int check_fwfile_format(const uint8_t *data, uint32_t totlen)
+ 	if (i2c_master_send(client, data, size) < size) {
+ 		v4l_err(client, "firmware load i2c failure\n");
+@@ -93,7 +93,8 @@ int cx25840_loadfw(struct i2c_client *client)
  {
- 	uint32_t bincmd, exit;
- 	uint32_t blksize, offset, len;
+ 	struct cx25840_state *state = i2c_get_clientdata(client);
+ 	const struct firmware *fw = NULL;
+-	u8 buffer[4], *ptr;
++	u8 buffer[FWSEND];
++	const u8 *ptr;
+ 	int size, retval;
+ 
+ 	if (state->is_cx23885)
+@@ -108,6 +109,8 @@ int cx25840_loadfw(struct i2c_client *client)
+ 
+ 	buffer[0] = 0x08;
+ 	buffer[1] = 0x02;
++
++	/* Do we really need to do the first two bytes first? */
+ 	buffer[2] = fw->data[0];
+ 	buffer[3] = fw->data[1];
+ 	retval = fw_write(client, buffer, 4);
+@@ -118,19 +121,21 @@ int cx25840_loadfw(struct i2c_client *client)
+ 	}
+ 
+ 	size = fw->size - 2;
+-	ptr = fw->data;
++	ptr = fw->data + 2;
+ 	while (size > 0) {
+-		ptr[0] = 0x08;
+-		ptr[1] = 0x02;
+-		retval = fw_write(client, ptr, min(FWSEND, size + 2));
++		int len = min(FWSEND - 2, size);
++
++		memcpy(buffer + 2, ptr, len);
++
++		retval = fw_write(client, ptr, len + 2);
+ 
+ 		if (retval < 0) {
+ 			release_firmware(fw);
+ 			return retval;
+ 		}
+ 
+-		size -= FWSEND - 2;
+-		ptr += FWSEND - 2;
++		size -= len;
++		ptr += len;
+ 	}
+ 
+ 	end_fw_load(client);
 -- 
 1.5.4.5
 
