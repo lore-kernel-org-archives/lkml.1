@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYEYBbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYEYCkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbYEYBbr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 21:31:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbYEYBbh
+	id S1756290AbYEYCkP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 22:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYEYCkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 21:31:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42692 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751526AbYEYBbg (ORCPT
+	Sat, 24 May 2008 22:40:04 -0400
+Received: from defg500.nifty.com ([202.248.238.127]:25045 "EHLO
+	defg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751357AbYEYCkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 21:31:36 -0400
-Date: Sat, 24 May 2008 18:30:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] x86: use defconfig as last resort
-In-Reply-To: <20080524203748.GA2343@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.1.10.0805241825460.3081@woody.linux-foundation.org>
-References: <20080524192540.GA28067@uranus.ravnborg.org> <alpine.LFD.1.10.0805241320200.3081@woody.linux-foundation.org> <20080524203748.GA2343@uranus.ravnborg.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 24 May 2008 22:40:03 -0400
+X-Greylist: delayed 750 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 May 2008 22:40:02 EDT
+DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:x-mailer:mime-version:
+	content-type:content-transfer-encoding;
+	b=XNQn2Iq2j/VgY5x/BsxsdBLu64EVoKVnUGQzYuyvYemjWmebRuaDz/VznjlNK6Od+
+	vXUbnGojpGjM6TCYoIzKA==
+X-Nifty-SrcIP: [220.145.30.125]
+Date: Sun, 25 May 2008 11:23:08 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Subject: [PLEASE REVERT]  "Add a WARN_ON_ONCE" at  net/sched/sch_generic.c:
+Message-Id: <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+Please revert the patch "Add a WARN_ON_ONCE() to
+ the transmit timeout function".
+
+The transmit timeout sometimes happens on normal operation.
+This message annoys me.
 
 
-On Sat, 24 May 2008, Sam Ravnborg wrote:
-> 
-> When using "make oldconfig" with no .config
-> present try the list from init/Kconfig DEFCONFIG_LIST
-> before resorting to use one of the defconfigs.
+>net: Add a WARN_ON_ONCE() to the transmit timeout function
+>
+>WARN_ON_ONCE() gives a stack trace including the full module list.
+>Having this in the kernel dump for the timeout case in the
+>generic netdev watchdog will help us see quicker which driver
+>is involved. It also allows us to collect statistics
+>and patterns in terms of which drivers have this event occuring.
+>
+>Suggested by Andrew Morton
+>
+>Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+>Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Hmm. Why does placement matter here?
+Best Regards
+Komuro
 
-Also:
-
-> +config DEFCONFIG_LIST
-> +	string
-> +	depends on X86_32
-> +	option defconfig_list
-> +	default "arch/x86/configs/i386_defconfig"
-> +
-> +config DEFCONFIG_LIST
-> +	string
-> +	depends on X86_64
-> +	option defconfig_list
-> +	default "arch/x86/configs/x86_64_defconfig"
-> +
-
-Wouldn't this be cleaner as just *one* entry, and then just have 
-different default statements, ie something like
-
-    config DEFCONFIG_LIST
-	string
-	option defconfig_list
-	default "arch/x86/configs/i386_defconfig" if X86_32
-	default "arch/x86/configs/x86_64_defconfig" if X86_64
-
-instead?
-
-		Linus
