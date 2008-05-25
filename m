@@ -1,103 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYEYX2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYEYXf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbYEYX2e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 19:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYEYX21
+	id S1753298AbYEYXf2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 19:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbYEYXfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 19:28:27 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64258 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750849AbYEYX20 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 19:28:26 -0400
-Date: Sun, 25 May 2008 19:27:12 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Glen Turner <gdt@gdt.id.au>
-Cc: Chris Peterson <cpeterso@cpeterso.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-Message-ID: <20080525232712.GF5970@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Glen Turner <gdt@gdt.id.au>,
-	Chris Peterson <cpeterso@cpeterso.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-	Jeff Garzik <jeff@garzik.org>,
-	"Kok, Auke" <auke-jan.h.kok@intel.com>,
-	Rick Jones <rick.jones2@hp.com>,
-	"Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core> <a24804730805162155m72e6b40aweb8822515c880c50@mail.gmail.com> <1211728189.5913.71.camel@andromache>
+	Sun, 25 May 2008 19:35:15 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47174 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751344AbYEYXfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 19:35:14 -0400
+From: Neil Brown <neilb@suse.de>
+To: Adrian Bunk <bunk@kernel.org>
+Date: Mon, 26 May 2008 09:35:04 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211728189.5913.71.camel@andromache>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Transfer-Encoding: 7bit
+Message-ID: <18489.63400.560248.222094@notabene.brown>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, kernel-testers@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: x86_64 panic on latest linux-2.6
+In-Reply-To: message from Adrian Bunk on Sunday May 25
+References: <200805251051.33781.m.kozlowski@tuxland.pl>
+	<20080525204229.GL1791@cs181133002.pp.htv.fi>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 26, 2008 at 12:39:49AM +0930, Glen Turner wrote:
+On Sunday May 25, bunk@kernel.org wrote:
+> On Sun, May 25, 2008 at 10:51:33AM +0200, Mariusz Kozlowski wrote:
+> > Hello,
 > 
-> For example, /dev/random has run out. So the output of /dev/urandom
-> is now determined by previous values of /dev/random.  I then send in
-> a stack of network packets at regular intervals. So the output of
-> /dev/urandom is now greatly determined by those packets.  My search
-> space for the resulting key is small since /dev/urandom appears to
-> be random, but in fact is periodic.
+> Hi Mariusz,
+> 
+> > 	My x86_64 box is not willing to boot.
+> > 
+> > http://tuxland.pl/tmp/s7300372.jpg (275kB)
+> > 
+> > (gdb) p blk_lookup_devt
+> > $1 = {dev_t (const char *, int)} 0xffffffff8032a430 <blk_lookup_devt>
+> > (gdb) l *(0xffffffff8032a430+0x7f)
+> > 0xffffffff8032a4af is in blk_lookup_devt (block/genhd.c:664).
+> > 659             dev_t devt = MKDEV(0, 0);
+> > 660     
+> > 661             mutex_lock(&block_class_lock);
+> > 662             list_for_each_entry(dev, &block_class.devices, node) {
+> > 663                     if (strcmp(dev->bus_id, name) == 0) {
+> > 664                             struct gendisk *disk = dev_to_disk(dev);
+> > 665     
+> > 666                             if (part < disk->minors)
+> > 667                                     devt = MKDEV(MAJOR(dev->devt),
+> > 668                                                  MINOR(dev->devt) + part);
 
-That's not how it works.  Basically, as long as there is *some*
-entropy in the system, even from the /var/lib/random-seed, or from
-keyboard interrupts, or from mouse interrupts, which is unknown to the
-attacker, in the worse case /dev/urandom will be no worse than a
-cryptographic random number generator.
+Having decoded the "Code:", what is happening here is that 'dev' is
+clearly not embedded inside a 'disk'.
+The address of 'dev' is in RBX and is ffff81007f270010.
+disk->minors is at and offset of -0x60 from 'dev' (as 'dev' is assumed
+to be a structure embeded in a 'struct gendisk' - dev_to_disk uses
+container_of to find the gendisk that holds the device).  But 0x60 from RBX
+is in a different page, and presumably that memory doesn't exist.
 
-Even if you feed it huge amounts of known data, it won't allow you to
-"influence" the cryptographic random number generator --- unless of
-course SHA-1 is totally and thoroughly broken as a cryptographic hash
-algorithm (invalidating all public key certificates and digital
-signatures made using SHA-1 algorithm).
+So the question is: how can a 'struct device' which is not part of
+a 'struct gendisk' be on 'block_class.devices'.
 
-There is a reason why /dev/random is world-writeable; it's perfectly
-safe to write arbitary amounts of data into /dev/random.  If the
-attacker doesn't know what has been fixed into the entropy pool, his
-life just got a lot harder.  If it is the attacker mixing known data
-into the pool, it's no worse.
+Unfortunately, I have no idea.
 
-The problems with /dev/urandom only appear if there *all* of the data
-is known by the attacker --- so all of the keyboard interrupts, all of
-the network interrupts, all of the mouse interrupts, the initial
-random seed file --- everything.  In practice the time when this has
-come up is very early in the initial install process, where there is
-no random seed file, and before any interrupt entropy has had a chance
-to be mixed into the pool, particularly if it is a headless (i.e., no
-keyboard, no mouse, no monitor) install process.
-
-And here there is no magic bullet.  If you are doing a headless
-install, and there is no entropy, and you don't have a way of
-accessing a real hardware random number generator, THIS IS NOT THE
-RIGHT TIME TO BE GENERATING SSH HOST KEYS.  
-
-> I'll also note that there is a huge number of periodic packets seen by
-> hosts on quiet networks -- such as a preparation VLAN where a system
-> administrator might choose to run up a new machine.
-
-If the attacker has the power to monitor your preparation/installation
-network exactly when the machine is being installed, you probably have
-worse problems on your hands --- for example, most distribution
-installs off of CD include the RPM, and then get on the network to
-grab the security updates.  If you have an attacker on your
-preparation/install VLAN, they might be able to attack your machine
-and install rootkit before you have a chance to install the security
-errata RPM's.  That would be much simpler than trying to record all of
-the network packet arrival times so you can try to guess the random
-number generator!
-
-		      	     	     	- Ted
+NeilBrown
