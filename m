@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755727AbYEYR7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYEYSDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755727AbYEYR7g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 13:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYEYR70
+	id S1756117AbYEYSDu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 14:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYEYSDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 13:59:26 -0400
-Received: from atflat.net ([80.229.16.180]:35778 "EHLO holly.atflat.local"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750727AbYEYR70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 13:59:26 -0400
-X-Greylist: delayed 664 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 13:59:25 EDT
-From: Tom Spink <tspink@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 0/2] On-demand Filesystem Initialisation
-Date: Sun, 25 May 2008 18:48:17 +0100
-Message-Id: <1211737699-25615-1-git-send-email-tspink@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Sun, 25 May 2008 14:03:42 -0400
+Received: from mail.scaimas.com ([195.82.67.50]:19420 "EHLO mail.scaimas.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750817AbYEYSDm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 14:03:42 -0400
+Subject: RE: Limit SATA link speed to 1.5 Gbps-
+Date: Sun, 25 May 2008 20:03:40 +0200
+Message-ID: <F7D77F204D5F7641AB3864C88E39498F18615B@taube3.scailokal.intern>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Limit SATA link speed to 1.5 Gbps-
+Thread-Index: Aci8AOthirlgG+LLTb2/xStWyNZ5DwCkT4CA
+References: <F7D77F204D5F7641AB3864C88E39498F18614E@taube3.scailokal.intern> <20080522122905.49cca18d@core>
+From: "Andre Pietsch" <andre.pietsch@scai.de>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+content-class: urn:content-classes:message
+Cc: <linux-kernel@vger.kernel.org>
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan & others,
 
-This (short) patch series is another RFC for the patch that introduces on-demand
-filesystem initialisation.  In addition to the original infrastructure
-implementation (with clean-ups), it changes XFS to use this new infrastructure.
+> > Is it possible to set the SATA link speed somewhere?
+> 
+> Not sure. I've not looked whether that is in the new "force" 
+> code. I don't think you can in 2.6.24 however, and 2.6.25 
+> will fall back nicely.
+> 
+> Other than being annoying during the install it should not 
+> cause any other problems beyond all the retries.
+> 
+SOLVED
+On Seagate drives it is possible to limit the link speed by setting a
+jumper on the drive! It now starts at 1.5 Gbps and runs stable from the
+start.
 
-I wrote a toy filesystem (testfs) to simulate scheduling/allocation delays and
-to torture the mount/unmount cycles.  I didn't manage to deadlock the system
-in my tests.  XFS also works as expected aswell, in that the global threads
-are not created until an XFS filesystem is mounted for the first time.  When the
-last XFS filesystem is unmounted, the threads go away.
+Thanks everybody for your support!
 
-Please let me know what you think!
+Regards,
+Andre Pietsch
 
--- Tom
-
-fs/filesystems.c             |    2 +
-fs/super.c                   |   47 +++++++++++++++++++++++++++++++++++-
-fs/xfs/linux-2.6/xfs_super.c |   55 +++++++++++++++++++++++-------------------
-include/linux/fs.h           |    3 ++
-4 files changed, 81 insertions(+), 26 deletions(-)
-    
