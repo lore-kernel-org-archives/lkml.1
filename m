@@ -1,127 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbYEXV6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbYEXV6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762169AbYEXV6j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 17:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762292AbYEXV6O
+	id S932154AbYEXV6z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 17:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762317AbYEXV6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 17:58:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:3328 "EHLO
+	Sat, 24 May 2008 17:58:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:4451 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761645AbYEXV6J (ORCPT
+	with ESMTP id S1761667AbYEXV6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 24 May 2008 17:58:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=irZrT1SFcYg6FG2kypuy0c/KXylJclBH2VYKBvRdnkv0TiA6RXi/noEsKxMRuZkZYJDGBONudyotFfAi8gnmv/mUJxB+u6NTVyyw4S3hLaTmmbY09tRb+on2VQiR40aGyeD3gYp1XCETR0wb1RNbxNkP3RUSxMvKafJ2I2TDT34=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=c52kkI3dyDbU825aBXK5oSgDa26uGnjlxITs4IODT4WUYBc38fIhT3HCRbD/xhaU3C5tgt8EE9NMIAyx2Lx6icrECxHQzZFaDLkO3IWuOdJLRDzE3rGLNmkXTr5ObM/gHYkAqziGplBjBiymco8OtDul9M6RzGBSs5XiomxznRQ=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: linux-next: Tree for May 22
-Date: Sun, 25 May 2008 23:55:47 +0200
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 00/40] ide: generic ATAPI support
+Date: Sun, 25 May 2008 15:23:25 +0200
 User-Agent: KMail/1.9.9
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Borislav Petkov <petkovbb@gmail.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080522165209.ef2cb160.sfr@canb.auug.org.au> <200805230327.51067.rjw@sisk.pl>
-In-Reply-To: <200805230327.51067.rjw@sisk.pl>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain> <20080522074354.GB2414@gollum.tnic>
+In-Reply-To: <20080522074354.GB2414@gollum.tnic>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200805252355.47860.bzolnier@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805251523.26523.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Friday 23 May 2008, Rafael J. Wysocki wrote:
-> On Thursday, 22 of May 2008, Stephen Rothwell wrote:
-> > Hi all,
+On Thursday 22 May 2008, Borislav Petkov wrote:
+> On Sun, May 18, 2008 at 08:54:28PM +0200, Bartlomiej Zolnierkiewicz wrote:
 > > 
-> > Changes since next-20080522:
+> > Hi,
 > > 
-> > The three patches reverted from the driver-core tree yesterday have been
-> > removed from there.
+> > This patch series unifies ATAPI support present in ide-{floppy,tape,scsi}
+> > device drivers and moves it out to the core IDE code (new ide-atapi.c file).
 > > 
-> > The net tree (actually the wireless tree) had a trivial conflict with the
-> > wireless-current tree.
+> > In the process many bugs were shaken out and ~300 LOC were removed.
 > > 
-> > One of the sound tree build patches has been merged.
+> > diffstat:
 > > 
-> > The semaphore-removal tree still needed three patches reverted because similar
-> > patches were merged into upstream and the scsi-rc-fixes trees.
+> >  drivers/ide/Kconfig      |    6 
+> >  drivers/ide/Makefile     |    1 
+> >  drivers/ide/ide-atapi.c  |  296 ++++++++++++++++++++++
+> >  drivers/ide/ide-cd.c     |    5 
+> >  drivers/ide/ide-floppy.c |  431 +++++++-------------------------
+> >  drivers/ide/ide-tape.c   |  630 ++++++++++++++---------------------------------
+> >  drivers/scsi/ide-scsi.c  |  455 +++++++++++----------------------
+> >  include/linux/ide.h      |   28 +-
+> >  8 files changed, 777 insertions(+), 1075 deletions(-)
 > > 
-> > The bkl-removal tree had a conflict with the arm tree because the arm
-> > tree removed a file that was changed.
+> > Now, while this is a big step in the right direction there are still some
+> > things left on TODO for generic ATAPI support to be complete:
 > > 
-> > I have applied the following temporary patch for known build problems:
+> > - convert ide-cd to use generic ATAPI code
 > > 
-> > 	"Fix various 8390 builds" - the net tree broke builds on various
-> > architectures - hopefully this patch will go into the net tree shortly.
-> > 	"build failure with netfilter on __nf_ct_helper_find()" - breakage
-> > due to the moving of stuff from list.h to rculist.h
+> > - kill pc and rq stacks in ide-{floppy,tape}
+> > 
+> > - generic handling of REQUEST SENSE command
+> > 
+> > - generic handling of MODE SENSE command for ide-{floppy,tape}
+> > 
+> > - convert ide-{cd,floppy,tape} to use scatterlists for PIO transers
+> >   (ala ide-scsi)
+> > 
+> > I know that Borislav is working on the first two items but other ones
+> > are free at the moment so if you feel brave you may give it a try :-).
+> > 
+> > PS I'll be travelling during this weekend and be rather busy with day job
+> >    so replies from me may be delayed a bit.
 > 
-> This one and the previous linux-next can't resume from suspend to RAM on my
-> HP nx6325.  The problem is reliably reproducible 100% of the time.
+> Hi Bart,
 > 
-> The patch that causes it to happen, as identified by bisection, is:
+> yep, these all look real good, makes all drivers really lightweight. Looks like
+> ide-cd will follow not too far behind. By the way, here's another one you count apply ontop:
 > 
-> commit 3dcefa9419f3b8a49921d2218c93a3ddba8e0855
-> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date:   Thu May 22 10:40:19 2008 +1000
+> From: Borislav Petkov <petkovbb@gmail.com>
+> Date: Thu, 22 May 2008 09:36:53 +0200
+> Subject: [PATCH] ide-tape: unify idetape_create_read/write_cmd
 > 
->     ide: use __generic_unplug_device() in ide_do_drive_cmd()
+> A straightforward one. There should be no functional change resulting from this
+> change.
 > 
->     Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
->     Cc: Borislav Petkov <petkovbb@gmail.com>
->     Cc: Jens Axboe <jens.axboe@oracle.com>
->     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
-Thanks for narrowing it down.
+applied with minor fixups (mainly to silence checkpatch.pl, interdiff below)
 
-> Reverting it along with the next IDE patches (up to and including
-> commit fd42e6df0fd163411f5c655b4bde4fb6a8910edc
-> "ide: remove action argument in ide_do_drive_cmd") makes the problem go away.
+thanks!
 
-Please check if the patch below (against IDE tree but should also apply
-to the current linux-next) fixes the issue (for blk_pm_resume_request()
-the queue is stopped so we need to call ->request_fn explicitly).
-
----
- block/blk-exec.c     |    3 +++
- drivers/ide/ide-io.c |    3 +++
- 2 files changed, 6 insertions(+)
-
-Index: b/block/blk-exec.c
-===================================================================
---- a/block/blk-exec.c
-+++ b/block/blk-exec.c
-@@ -57,6 +57,9 @@ void blk_execute_rq_nowait(struct reques
- 	spin_lock_irq(q->queue_lock);
- 	__elv_add_request(q, rq, where, 1);
- 	__generic_unplug_device(q);
-+	/* the queue is stopped so it won't be plugged+unplugged */
-+	if (blk_pm_resume_request(rq))
-+		q->request_fn(q);
- 	spin_unlock_irq(q->queue_lock);
- }
- EXPORT_SYMBOL_GPL(blk_execute_rq_nowait);
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -1540,6 +1540,9 @@ void ide_do_drive_cmd(ide_drive_t *drive
- 	hwgroup->rq = NULL;
- 	__elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 1);
- 	__generic_unplug_device(drive->queue);
-+	/* the queue is stopped so it won't be plugged+unplugged */
-+	if (blk_pm_resume_request(rq))
-+		do_ide_request(drive->queue);
- 	spin_unlock_irqrestore(&ide_lock, flags);
+diff -u b/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+--- b/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -954,7 +954,7 @@
+ 
+ static void ide_tape_create_rw_cmd(idetape_tape_t *tape,
+ 		struct ide_atapi_pc *pc, unsigned int length,
+-		struct idetape_bh *bh, int opcode)
++		struct idetape_bh *bh, u8 opcode)
+ {
+ 	idetape_init_pc(pc);
+ 	put_unaligned(cpu_to_be32(length), (unsigned int *) &pc->c[1]);
+@@ -969,14 +969,12 @@
+ 	if (opcode == READ_6) {
+ 		pc->c[0] = READ_6;
+ 		atomic_set(&bh->b_count, 0);
+-	}
+-	else if (opcode == WRITE_6) {
++	} else if (opcode == WRITE_6) {
+ 		pc->c[0] = WRITE_6;
+ 		pc->flags |= PC_FLAG_WRITING;
+ 		pc->b_data = bh->b_data;
+ 		pc->b_count = atomic_read(&bh->b_count);
+-	} else
+-		printk(KERN_ERR "%s: Invalid opcode: 0x%x\n", __func__, opcode);
++	}
  }
  
+ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
