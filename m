@@ -1,91 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760333AbYEYLth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYEYLuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760333AbYEYLth (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 07:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbYEYLt2
+	id S1757532AbYEYLuU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 07:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760862AbYEYLuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 07:49:28 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:43983 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755668AbYEYLt1 convert rfc822-to-8bit (ORCPT
+	Sun, 25 May 2008 07:50:03 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:56088 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760810AbYEYLtx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 07:49:27 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Aurelien Jarno <aurelien@aurel32.net>
-Subject: Re: mips BCM47XX compile error
-Date: Sun, 25 May 2008 13:48:51 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Adrian Bunk <bunk@kernel.org>, "John W. Linville" <linville@tuxdriver.com>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-References: <20080420100347.GH1595@cs181133002.pp.htv.fi> <200805251153.47325.mb@bu3sch.de> <20080525113634.GB20502@hall.aurel32.net>
-In-Reply-To: <20080525113634.GB20502@hall.aurel32.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200805251348.52010.mb@bu3sch.de>
+	Sun, 25 May 2008 07:49:53 -0400
+Cc: David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, aoliva@redhat.com,
+       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
+       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>,
+       Michael Buesch <mb@bu3sch.de>
+Message-Id: <95BCF0F0-755A-4501-9B44-B421AD3E8F42@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1211707837.17151.14.camel@johannes.berg>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sun, 25 May 2008 13:49:48 +0200
+References: <1211550282.28967.8.camel@pmac.infradead.org> <1211550374.28967.10.camel@pmac.infradead.org> <20080523164108.GA31545@uranus.ravnborg.org> <1211640377.540.14.camel@pmac.infradead.org> <20080524152214.GA12582@uranus.ravnborg.org> <1211642706.31212.85.camel@shinybook.infradead.org> <1211643245.31212.88.camel@shinybook.infradead.org> <D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org> <1211707837.17151.14.camel@johannes.berg>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 May 2008 13:36:34 Aurelien Jarno wrote:
-> On Sun, May 25, 2008 at 11:53:46AM +0200, Michael Buesch wrote:
-> > On Monday 21 April 2008 09:28:51 Aurelien Jarno wrote:
-> > > On Mon, Apr 21, 2008 at 12:49:42AM +0200, Aurelien Jarno wrote:
-> > > > Michael Buesch a écrit :
-> > > > > On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
-> > > > >> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
-> > > > >> (ssb: Add Gigabit Ethernet driver) causes the following
-> > > > >> build error with bcm47xx_defconfig:
-> > > > >>
-> > > > >> <--  snip  -->
-> > > > >>
-> > > > >> ...
-> > > > >>   LD      .tmp_vmlinux1
-> > > > >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
-> > > > >> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
-> > > > >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
-> > > > >> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
-> > > > >> arch/mips/pci/built-in.o: In function `pcibios_init':
-> > > > >> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
-> > > > >> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
-> > > > >> make[1]: *** [.tmp_vmlinux1] Error 1
-> > > > > 
-> > > > > Some parts of the new 47xx arch code are not ported, yet.
-> > > > 
-> > > > It would have been nice at least to warn before breaking a platform.
-> > > > 
-> > > > > Somebody should port all the new code from openwrt SVN over to mainline.
-> > > > > I don't really have time for that, at the moment, though.
-> > > > 
-> > > > I gave a quick look at openwrt SVN, and only find 2.6.23 patches. I
-> > > > can't find a possible fix among them. Do you have a better pointer?
-> > > > 
-> > > 
-> > > I have finally found it, the code was not in a form of a patch, but in
-> > > form of a C code file.
-> > > 
-> > > I am working on a fix.
-> > > 
-> > 
-> > What is the status of the fix?
-> > We have a bugzilla entry
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10493
-> > So if it's not ready, yet, I will have to fix it by myself.
-> > 
-> 
-> A patch [1] has been sent 1 month ago, it waits with the other BCM47xx
-> patches.
-> 
-> Aurelien
-> 
-> [1] http://marc.info/?l=linux-kernel&m=120876451216558&w=2
-> 
+Hi Johannes,
 
-Thanks a lot, Aurelien :)
+>> so using "/" within the name parameter for request_firmware() is
+>> actually forbidden. I know that some driver authers think it is a  
+>> good
+>> idea, but it is not.
+>
+> Can you explain why it is allowed now? And maybe why the API was
+> designed in a way that easily allows it?
 
+in the early days we had something like three drivers using the  
+request_firmware() and it was understood between the authors what the  
+filename was meant for. And to be quite honest it was an oversight on  
+our side to not explicitly fail when the filename contains a "/". So  
+it happened that driver authors exploited the fact that they can group  
+firmware files under a subdirectory from within the kernel. Nobody  
+made the effort and proposed changes to udev.
 
--- 
-Greetings Michael.
+Personally I think it is fine to have _ALL_ firmware files in one  
+directory and not namespace them at all, but it seems that this is  
+important for some driver authors.
+
+>> I explained this a couple of times. The request_firmware() is an
+>> abstract mechanism that can request a firmware file. The location of
+>> the firmware file is up to the userspace. The kernel requests a
+>> particular file and that is it. All namespacing has to be done by the
+>> firmware helper script (nowadays udev). That the current
+>> implementation of the firmware helper maps the filename 1:1 to a file
+>> under /lib/firmware/ just works, but doesn't have to work all the
+>> time. It is not the agreed contract between kernel and userspace.
+>
+> I don't buy this argument. I could agree if you said that the "agreed
+> contract" between the kernel and userspace is for the kernel to  
+> request
+> a firmware file /keyed by an arbitrary, null-terminated string/.
+>
+> The fact that it is usually stored on a filesystem where / means a
+> directory (and thus grouping) can be seen as a nice convenience of the
+> filesystem storage, but if firmware was stored elsewhere then you  
+> could
+> degrade to the simple key-based lookup that happens to allow "/" as a
+> character in the keys.
+
+The kernel should not in any case have knowledge about directories or  
+subdirectories where the firmware files are stored. That is fully  
+irrelevant for the kernel.
+
+Especially with the case of built-in firmwares now, it because more  
+important to do it right. The one reason why we have to handover the  
+struct device to request_firmware() is that we can give the helper  
+script full access to the device and driver information of the caller.  
+Hence adding for example b43/ as prefix simply duplicates everything  
+since the struct device has a link to the driver that is requesting a  
+firmware file.
+
+> b43 comes with 22 firmware files for a single driver, and groups them
+> using "b43/<name>". What you're proposing will make firmware fail
+> *again* for all users, and we got a *LOT* of flak from all kinds of
+> stakeholders (not just the users) when firmware upgrades were  
+> required,
+> doing it again for such a petty reason is ridiculous.
+
+That is not what I am proposing. What I am proposing is that we do  
+this the right way. Meaning that we fix udev to do the namespacing. I  
+am working on a way to have this change in a backward compatible way.
+
+Regards
+
+Marcel
+
