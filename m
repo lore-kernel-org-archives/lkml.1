@@ -1,114 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYEYEas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbYEYElR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYEYEas (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 00:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYEYEak
+	id S1754562AbYEYElR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 00:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYEYElG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 00:30:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36443 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751305AbYEYEak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 00:30:40 -0400
-From: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
-Subject: [PATCH 1/2 v2] Use structs instead of hardcoded offsets in x86 boot decompressor.
-Date: Sun, 25 May 2008 00:29:01 -0400
-Message-Id: <1211689741-23044-1-git-send-email-krh@redhat.com>
-X-Mailer: git-send-email 1.5.5.1
+	Sun, 25 May 2008 00:41:06 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:28234 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751545AbYEYElE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 00:41:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P/DxVvtBiBQ1Tqz8RKUZ4wnPsLQHdIPwULBzebXPTJ1/Lac5fM/WcnAp5DBK9K3oOXMgcfjzQRHlIMehi4hGw+Ok4a7ZbWE67W4H51Kcnm3cbCshIYVqrTbadwuXNDg/t6khkFPH/bsCphrU7fL3fHKvZy9BfROj9qpPzHjBs8U=
+Message-ID: <438397970805242141l3f07e6e1he5805b09d9dbf989@mail.gmail.com>
+Date: Sat, 24 May 2008 21:41:00 -0700
+From: "Kallol Biswas" <nucleodyne@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: HDMI Audio Support in ALSA
+Cc: "Clemens Ladisch" <clemens@ladisch.de>,
+       "Lee Revell" <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org,
+       "Xiaogeng Jin" <xiaogeng.jin@yahoo.com>
+In-Reply-To: <s5hod6xuvq3.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <438397970805190904i2656337dh26a3257fe52aa29d@mail.gmail.com>
+	 <75b66ecd0805190916r7ce21667laf19783dfa47cdd7@mail.gmail.com>
+	 <438397970805190938t195d9a8ejfd5b0ca1409714ab@mail.gmail.com>
+	 <48328771.4030804@ladisch.de>
+	 <438397970805211252u1d228ad8wcb1a6ef9b1251478@mail.gmail.com>
+	 <483568BD.4040701@ladisch.de> <s5hod6xuvq3.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Kristian Høgsberg <krh@redhat.com>
----
+Hello Takashi,
+                   I have been reading the pci/hda code, and now not
+sure if I have the answer to my original question.
 
-Fixed the missing assignment spotted by Rik.  That'll teach me
-to do drive-by cleanups...
+The routine snd_hda_calc_stream_format() calls snd_pcm_format_width()
+to find if the format is supported and the width.
 
- arch/x86/boot/compressed/misc.c |   27 ++++++++++++---------------
- 1 files changed, 12 insertions(+), 15 deletions(-)
+The array holds pcm_format[] holds all the supported formats. However,
+in this array
+there is no entry for IEC 60958 or IEC 61937. How does it work? How
+does the hda code
+handles the above frames?
 
-diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index 90456ce..102c5c4 100644
---- a/arch/x86/boot/compressed/misc.c
-+++ b/arch/x86/boot/compressed/misc.c
-@@ -30,6 +30,7 @@
- #include <asm/io.h>
- #include <asm/page.h>
- #include <asm/boot.h>
-+#include <asm/bootparam.h>
- 
- /* WARNING!!
-  * This code is compiled with -fPIC and it is relocated dynamically
-@@ -187,13 +188,8 @@ static void gzip_release(void **);
- /*
-  * This is set up by the setup-routine at boot-time
-  */
--static unsigned char *real_mode; /* Pointer to real-mode data */
--
--#define RM_EXT_MEM_K   (*(unsigned short *)(real_mode + 0x2))
--#ifndef STANDARD_MEMORY_BIOS_CALL
--#define RM_ALT_MEM_K   (*(unsigned long *)(real_mode + 0x1e0))
--#endif
--#define RM_SCREEN_INFO (*(struct screen_info *)(real_mode+0))
-+static struct boot_params *real_mode;		/* Pointer to real-mode data */
-+static struct screen_info *rm_screen_info;	/* Pointer to real-mode data */
- 
- extern unsigned char input_data[];
- extern int input_len;
-@@ -276,12 +272,12 @@ static void putstr(const char *s)
- 	char c;
- 
- #ifdef CONFIG_X86_32
--	if (RM_SCREEN_INFO.orig_video_mode == 0 && lines == 0 && cols == 0)
-+	if (rm_screen_info->orig_video_mode == 0 && lines == 0 && cols == 0)
- 		return;
- #endif
- 
--	x = RM_SCREEN_INFO.orig_x;
--	y = RM_SCREEN_INFO.orig_y;
-+	x = rm_screen_info->orig_x;
-+	y = rm_screen_info->orig_y;
- 
- 	while ((c = *s++) != '\0') {
- 		if (c == '\n') {
-@@ -302,8 +298,8 @@ static void putstr(const char *s)
- 		}
- 	}
- 
--	RM_SCREEN_INFO.orig_x = x;
--	RM_SCREEN_INFO.orig_y = y;
-+	rm_screen_info->orig_x = x;
-+	rm_screen_info->orig_y = y;
- 
- 	pos = (x + cols * y) * 2;	/* Update cursor position */
- 	outb(14, vidport);
-@@ -429,8 +425,9 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
- 				  unsigned char *output)
- {
- 	real_mode = rmode;
-+	rm_screen_info = &real_mode->screen_info;
- 
--	if (RM_SCREEN_INFO.orig_video_mode == 7) {
-+	if (rm_screen_info->orig_video_mode == 7) {
- 		vidmem = (char *) 0xb0000;
- 		vidport = 0x3b4;
- 	} else {
-@@ -438,8 +435,8 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
- 		vidport = 0x3d4;
- 	}
- 
--	lines = RM_SCREEN_INFO.orig_video_lines;
--	cols = RM_SCREEN_INFO.orig_video_cols;
-+	lines = rm_screen_info->orig_video_lines;
-+	cols = rm_screen_info->orig_video_cols;
- 
- 	window = output;		/* Output buffer (Normally at 1M) */
- 	free_mem_ptr     = heap;	/* Heap */
--- 
-1.5.5.1
+It seems that snd_hda_calc_stream_format() is going to print "invalid
+format width < val>" for HDMI audio frames.
 
+Kallol
+
+On 5/23/08, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 22 May 2008 14:36:13 +0200,
+>
+> Clemens Ladisch wrote:
+>  >
+>  > > However, SNDRV_PCM_FMTBIT_IEC958_SUBFRAME is supported.
+>  >
+>  > This is only for some early revisions of the CMI8738 chip which require
+>  > software to generate the preamble/channel status/subcode/parity bits
+>  > for each subframe.
+>
+>
+> Some ATIIXP boards need it, too.  HD-audio controllers can do also
+>  this kind of things, but not needed.
+>
+>
+>
+>  Takashi
+>
