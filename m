@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbYEYK3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbYEYK34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763260AbYEYK3j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbYEYKYS
+	id S1764145AbYEYK34 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761504AbYEYKYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:24:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43327 "EHLO
+	Sun, 25 May 2008 06:24:19 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43336 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762571AbYEYKYO (ORCPT
+	with ESMTP id S1762566AbYEYKYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 25 May 2008 06:24:14 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
@@ -15,9 +15,9 @@ References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: [PATCHv2 15/28] p54: treat firmware data as const
-Message-Id: <E1K0DOC-0007Dk-Px@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:44 +0100
+Subject: [PATCHv2 17/28] irda-usb: treat firmware data as const
+Message-Id: <E1K0DOE-0007Ds-Ti@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:46 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -27,32 +27,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/net/wireless/p54/p54usb.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/irda/irda-usb.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/wireless/p54/p54usb.c b/drivers/net/wireless/p54/p54usb.c
-index 98ddbb3..6728254 100644
---- a/drivers/net/wireless/p54/p54usb.c
-+++ b/drivers/net/wireless/p54/p54usb.c
-@@ -375,7 +375,8 @@ static int p54u_upload_firmware_3887(struct ieee80211_hw *dev)
- 	const struct firmware *fw_entry = NULL;
- 	int err, alen;
- 	u8 carry = 0;
--	u8 *buf, *tmp, *data;
-+	u8 *buf, *tmp;
-+	const u8 *data;
- 	unsigned int left, remains, block_size;
- 	struct x2_header *hdr;
- 	unsigned long timeout;
-@@ -522,7 +523,7 @@ static int p54u_upload_firmware_net2280(struct ieee80211_hw *dev)
- 	void *buf;
- 	__le32 reg;
- 	unsigned int remains, offset;
--	u8 *data;
-+	const u8 *data;
+diff --git a/drivers/net/irda/irda-usb.c b/drivers/net/irda/irda-usb.c
+index 6f50ed7..18b471c 100644
+--- a/drivers/net/irda/irda-usb.c
++++ b/drivers/net/irda/irda-usb.c
+@@ -1024,7 +1024,7 @@ static int irda_usb_is_receiving(struct irda_usb_cb *self)
+  *   Upload firmware code to SigmaTel 421X IRDA-USB dongle
+  */
+ static int stir421x_fw_upload(struct irda_usb_cb *self,
+-			     unsigned char *patch,
++			     const unsigned char *patch,
+ 			     const unsigned int patch_len)
+ {
+         int ret = -ENOMEM;
+@@ -1073,11 +1073,11 @@ static int stir421x_fw_upload(struct irda_usb_cb *self,
+   */
+ static int stir421x_patch_device(struct irda_usb_cb *self)
+ {
+-        unsigned int i;
+-        int ret;
+-        char stir421x_fw_name[11];
+-        const struct firmware *fw;
+-        unsigned char *fw_version_ptr; /* pointer to version string */
++	unsigned int i;
++	int ret;
++	char stir421x_fw_name[11];
++	const struct firmware *fw;
++	const unsigned char *fw_version_ptr; /* pointer to version string */
+ 	unsigned long fw_version = 0;
  
- 	buf = kmalloc(512, GFP_KERNEL);
- 	if (!buf) {
+         /*
 -- 
 1.5.4.5
 
