@@ -1,64 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbYEYE1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYEYEas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753695AbYEYE1T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 00:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYEYE1G
+	id S1754121AbYEYEas (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 00:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYEYEak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 00:27:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57109 "EHLO mx1.redhat.com"
+	Sun, 25 May 2008 00:30:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36443 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171AbYEYE1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 00:27:05 -0400
-Date: Sun, 25 May 2008 00:25:27 -0400
-From: Kristian =?utf-8?B?SMO4Z3NiZXJn?= <krh@bitplanet.net>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Rik van Riel <riel@redhat.com>,
-       Kristian =?utf-8?B?SMO4Z3NiZXJn?= <krh@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Use structs instead of hardcoded offsets in x86
-	boot decompressor.
-Message-ID: <20080525042527.GA12989@bitplanet.net>
-References: <1211579968-15227-1-git-send-email-krh@redhat.com> <20080523210744.52fe7fde@bree.surriel.com> <4837B2DD.908@zytor.com> <20080525000330.3eedd788@riellaptop.surriel.com> <4838E5D4.4050708@zytor.com>
+	id S1751305AbYEYEak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 00:30:40 -0400
+From: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
+Subject: [PATCH 1/2 v2] Use structs instead of hardcoded offsets in x86 boot decompressor.
+Date: Sun, 25 May 2008 00:29:01 -0400
+Message-Id: <1211689741-23044-1-git-send-email-krh@redhat.com>
+X-Mailer: git-send-email 1.5.5.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4838E5D4.4050708@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 09:06:44PM -0700, H. Peter Anvin wrote:
-> Rik van Riel wrote:
->> On Fri, 23 May 2008 23:17:01 -0700
->> "H. Peter Anvin" <hpa@zytor.com> wrote:
->>
->>> Uhm... except it doesn't live at address zero, at all.
->>>
->>> It's called "zeropage" because we used to recycle it into 
->>> empty_zero_page, a long long time ago.
->>>
->>> The bootparms structure is pointed to by %esi being passed from the setup 
->>> code to the decompressor to the kernel.
->>
->> Then why does dereferencing the uninitialized
->> pointer work, both in the code before and after
->> the patch?
->>
->> What am I misssing?
->
-> Heck if I know.  It definitely *shouldn't* work...
+Signed-off-by: Kristian Høgsberg <krh@redhat.com>
+---
 
-Damn, I lost a chunk of the patch.  There's supposed to be a
+Fixed the missing assignment spotted by Rik.  That'll teach me
+to do drive-by cleanups...
 
-        rm_screen_info = &real_mode->screen_info;
+ arch/x86/boot/compressed/misc.c |   27 ++++++++++++---------------
+ 1 files changed, 12 insertions(+), 15 deletions(-)
 
-after the real_mode = rmode assignment.  In the code before,
-RM_SCREEN_INFO was a macro that just referenced the real_mode pointer:
-
-	#define RM_SCREEN_INFO (*(struct screen_info *)(real_mode+0))
-
-Thanks, wil resend.
-Kristian
-
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index 90456ce..102c5c4 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -30,6 +30,7 @@
+ #include <asm/io.h>
+ #include <asm/page.h>
+ #include <asm/boot.h>
++#include <asm/bootparam.h>
+ 
+ /* WARNING!!
+  * This code is compiled with -fPIC and it is relocated dynamically
+@@ -187,13 +188,8 @@ static void gzip_release(void **);
+ /*
+  * This is set up by the setup-routine at boot-time
+  */
+-static unsigned char *real_mode; /* Pointer to real-mode data */
+-
+-#define RM_EXT_MEM_K   (*(unsigned short *)(real_mode + 0x2))
+-#ifndef STANDARD_MEMORY_BIOS_CALL
+-#define RM_ALT_MEM_K   (*(unsigned long *)(real_mode + 0x1e0))
+-#endif
+-#define RM_SCREEN_INFO (*(struct screen_info *)(real_mode+0))
++static struct boot_params *real_mode;		/* Pointer to real-mode data */
++static struct screen_info *rm_screen_info;	/* Pointer to real-mode data */
+ 
+ extern unsigned char input_data[];
+ extern int input_len;
+@@ -276,12 +272,12 @@ static void putstr(const char *s)
+ 	char c;
+ 
+ #ifdef CONFIG_X86_32
+-	if (RM_SCREEN_INFO.orig_video_mode == 0 && lines == 0 && cols == 0)
++	if (rm_screen_info->orig_video_mode == 0 && lines == 0 && cols == 0)
+ 		return;
+ #endif
+ 
+-	x = RM_SCREEN_INFO.orig_x;
+-	y = RM_SCREEN_INFO.orig_y;
++	x = rm_screen_info->orig_x;
++	y = rm_screen_info->orig_y;
+ 
+ 	while ((c = *s++) != '\0') {
+ 		if (c == '\n') {
+@@ -302,8 +298,8 @@ static void putstr(const char *s)
+ 		}
+ 	}
+ 
+-	RM_SCREEN_INFO.orig_x = x;
+-	RM_SCREEN_INFO.orig_y = y;
++	rm_screen_info->orig_x = x;
++	rm_screen_info->orig_y = y;
+ 
+ 	pos = (x + cols * y) * 2;	/* Update cursor position */
+ 	outb(14, vidport);
+@@ -429,8 +425,9 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
+ 				  unsigned char *output)
+ {
+ 	real_mode = rmode;
++	rm_screen_info = &real_mode->screen_info;
+ 
+-	if (RM_SCREEN_INFO.orig_video_mode == 7) {
++	if (rm_screen_info->orig_video_mode == 7) {
+ 		vidmem = (char *) 0xb0000;
+ 		vidport = 0x3b4;
+ 	} else {
+@@ -438,8 +435,8 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
+ 		vidport = 0x3d4;
+ 	}
+ 
+-	lines = RM_SCREEN_INFO.orig_video_lines;
+-	cols = RM_SCREEN_INFO.orig_video_cols;
++	lines = rm_screen_info->orig_video_lines;
++	cols = rm_screen_info->orig_video_cols;
+ 
+ 	window = output;		/* Output buffer (Normally at 1M) */
+ 	free_mem_ptr     = heap;	/* Heap */
+-- 
+1.5.5.1
 
