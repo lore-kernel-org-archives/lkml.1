@@ -1,49 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYEYPCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbYEYPDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbYEYPCt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 11:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYEYPCi
+	id S1756211AbYEYPDb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 11:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbYEYPDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 11:02:38 -0400
-Received: from eth6445.sa.adsl.internode.on.net ([150.101.30.44]:35142 "EHLO
-	aix.gdt.id.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753418AbYEYPCh (ORCPT
+	Sun, 25 May 2008 11:03:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48799 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754401AbYEYPCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 11:02:37 -0400
-X-Greylist: delayed 346 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 11:02:36 EDT
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-From: Glen Turner <gdt@gdt.id.au>
-To: Benny Amorsen <benny+usenet@amorsen.dk>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <m31w42gf97.fsf@ursa.amorsen.dk>
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
-	 <20080515142154.0595e475@core>
-	 <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
-	 <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com>
-	 <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com>
-	 <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca>
-	 <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca>
-	 <20080516191125.46f59ad6@core>   <m31w42gf97.fsf@ursa.amorsen.dk>
+	Sun, 25 May 2008 11:02:46 -0400
+Subject: Re: [PATCHv2 22/28] cxusb: treat firmware data as const
+From: David Woodhouse <dwmw2@infradead.org>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org,
+       Patrick Boettcher <patrick.boettcher@desy.de>,
+       Chris Pascoe <c.pascoe@itee.uq.edu.au>
+In-Reply-To: <48397436.8040102@linuxtv.org>
+References: <1211708969@pmac.infradead.org>
+	 <E1K0DOK-0007EC-6q@shinybook.infradead.org>  <48397436.8040102@linuxtv.org>
 Content-Type: text/plain
-Organization: <http://www.gdt.id.au/~gdt/>
-Date: Mon, 26 May 2008 00:32:02 +0930
-Message-Id: <1211727722.5913.63.camel@andromache>
+Date: Sun, 25 May 2008 16:02:41 +0100
+Message-Id: <1211727761.31212.120.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-16 at 22:34 +0200, Benny Amorsen wrote:
+On Sun, 2008-05-25 at 10:14 -0400, Michael Krufky wrote:
+> It's broken...  Please see fix, below:
 
-> Perhaps it would be possible to make most types of interrupts add
-> entropy, but not credit any entropy?
+commit e6983a70abb3e6d7a0d711176c89113c81f2ead6
+Author: David Woodhouse <dwmw2@infradead.org>
+Date:   Sat May 24 00:12:42 2008 +0100
 
-You need to be certain that those sources are not able
-to be influenced by a hostile party, otherwise the entropy
-pool can be degraded to be less random over successive samples
-than its entropy score suggests.  Interrupts do not meet that
-test.
+    cxusb: treat firmware data as const
+    
+    ...which means allocating our own copy when we want to modify it.
+    
+    (stupid thinko fixed by mkrufky)
+    
+    Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+    Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+
+diff --git a/drivers/media/dvb/dvb-usb/cxusb.c b/drivers/media/dvb/dvb-usb/cxusb.c
+index 720fcd1..0286156 100644
+--- a/drivers/media/dvb/dvb-usb/cxusb.c
++++ b/drivers/media/dvb/dvb-usb/cxusb.c
+@@ -24,6 +24,7 @@
+  * see Documentation/dvb/README.dvb-usb for more information
+  */
+ #include <media/tuner.h>
++#include <linux/vmalloc.h>
+ 
+ #include "cxusb.h"
+ 
+@@ -700,12 +701,26 @@ static int bluebird_patch_dvico_firmware_download(struct usb_device *udev,
+ 
+ 		if (fw->data[idoff] == (USB_VID_DVICO & 0xff) &&
+ 		    fw->data[idoff + 1] == USB_VID_DVICO >> 8) {
+-			fw->data[idoff + 2] =
++			struct firmware new_fw;
++			u8 *new_fw_data = vmalloc(fw->size);
++			int ret;
++
++			if (!new_fw_data)
++				return -ENOMEM;
++
++			memcpy(new_fw_data, fw->data, fw->size);
++			new_fw.size = fw->size;
++			new_fw.data = new_fw_data;
++
++			new_fw_data[idoff + 2] =
+ 				le16_to_cpu(udev->descriptor.idProduct) + 1;
+-			fw->data[idoff + 3] =
++			new_fw_data[idoff + 3] =
+ 				le16_to_cpu(udev->descriptor.idProduct) >> 8;
+ 
+-			return usb_cypress_load_firmware(udev, fw, CYPRESS_FX2);
++			ret = usb_cypress_load_firmware(udev, &new_fw,
++							CYPRESS_FX2);
++			vfree(new_fw_data);
++			return ret;
+ 		}
+ 	}
+ 
+
+-- 
+dwmw2
 
