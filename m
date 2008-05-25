@@ -1,174 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYEYRA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYEYRAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbYEYRA2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 13:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbYEYRAL
+	id S1757330AbYEYRAl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 13:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757095AbYEYRAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 13:00:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50313 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754967AbYEYRAJ (ORCPT
+	Sun, 25 May 2008 13:00:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:38782 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755962AbYEYRAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 13:00:09 -0400
-Subject: [PATCHv3 27/28] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-From: David Woodhouse <dwmw2@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       johannes@sipsolutions.net
-In-Reply-To: <E1K0DOP-0007EW-F0@shinybook.infradead.org>
-References: <1211708969@pmac.infradead.org>
-	 <E1K0DOP-0007EW-F0@shinybook.infradead.org>
-Content-Type: text/plain
-Date: Sun, 25 May 2008 18:00:02 +0100
-Message-Id: <1211734802.31212.129.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 25 May 2008 13:00:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Bm0H2lWeLhBRYztePMrnzJaRrLbhueVLPqwSBdp0gwdWBG+gAvHUAyEBuvZyDuK4BO+f3ePZwWN4bjAifkvgfBx3aydE2vuMk1P1PwVyouwyDEOGZ26oWDMse9Xb1nBAD3hGM3o7xS3PhbJjViTGgI1xQwy+bCHsnOHvFbc3UYw=
+Date: Sun, 25 May 2008 21:00:04 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: hpa@zytor.com, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/11] tip/x86/nmi nmi-32/64.c merge v3
+Message-ID: <20080525170004.GA6911@cvg>
+References: <4838373b.0637560a.7ce5.3f01@mx.google.com> <alpine.LFD.1.10.0805251842360.3295@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805251842360.3295@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Feedback/patches from Johannes Berg -- sort $(firmware_dirs) to prevent
-make from complaining about duplicates, and don't unconditionally depend
-on include/config/64bit.h. Also fix O= compilation again by including
-$(srctree) in the filename passed to .incbin in the .S files.
+[Thomas Gleixner - Sun, May 25, 2008 at 06:44:28PM +0200]
+| On Sat, 24 May 2008, Cyrill Gorcunov wrote:
+| 
+| > This series tries to merge down nmi_32/64.c to nmi.c. It is done by small
+| > steps in hope it would help to bisect problems (which will appear anyway ;)
+| > Please review *carefully* since it is NMI what I've touched (and I'm not
+| > nmi specialist). So I really apreciate _ANY_ comments on this. The series
+| > is produced over today 'tip' tree branch 'x86/nmi'.
+| 
+| Cyrill,
+| 
+| very good job. I did a short review and found no obvious problems
+| yet. Will have a closer look when I apply it.
+| 
+| Thanks,
+| 	tglx
+| 
+| 
+| 
 
-I also fixed up the dependencies for the object files built from
-binaries -- the .S file doesn't need to depend on the binary, but the .o
-does.
+thanks Thomas, unfortunelly I think the problems will arise soon,
+I've just noticed the commit 
 
-Still don't have the behaviour we want from clean/mrproper, but I think
-we need Sam's help with that.
+commit 57b2b8947a5f68e59d5f50ab749efdc79d9ba040
+Author: Mike Travis <travis@sgi.com>
+Date:   Mon May 12 21:21:12 2008 +0200
 
-commit bb71d4c53b14456ec591eb579923566f9c3302ed
-Author: David Woodhouse <dwmw2@infradead.org>
-Date:   Fri May 23 13:58:12 2008 +0100
+    x86: fix remove cpu_pda table patch
 
-    firmware: Add CONFIG_BUILTIN_FIRMWARE option
-    
-    This allows arbitrary firmware files to be included in the static kernel
-    where the firmware loader can find them without requiring userspace to
-    be alive.
-    
-    Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+in tip/testing tree
 
-diff --git a/Makefile b/Makefile
-index 20b3235..ac2ab7e 100644
---- a/Makefile
-+++ b/Makefile
-@@ -450,7 +450,7 @@ scripts: scripts_basic include/config/auto.conf
- 
- # Objects we will link into vmlinux / subdirs we need to visit
- init-y		:= init/
--drivers-y	:= drivers/ sound/
-+drivers-y	:= drivers/ sound/ firmware/
- net-y		:= net/
- libs-y		:= lib/
- core-y		:= usr/
-diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
-index d7da109..b856fe8 100644
---- a/drivers/base/Kconfig
-+++ b/drivers/base/Kconfig
-@@ -34,6 +34,18 @@ config FW_LOADER
- 	  require userspace firmware loading support, but a module built outside
- 	  the kernel tree does.
- 
-+config BUILTIN_FIRMWARE
-+	string "Firmware blobs to build into the kernel binary"
-+	depends on FW_LOADER
-+	help
-+	  This option allows firmware to be built into the kernel, for the
-+	  cases where the user either cannot or doesn't want to provide it from
-+	  userspace at runtime (for example, when the firmware in question is
-+	  required for accessing the boot device, and the user doesn't want to
-+	  use an initrd). Multiple files should be separated with spaces, and
-+	  the required files should exist under the firmware/ directory in
-+	  the source tree.
-+
- config DEBUG_DRIVER
- 	bool "Driver Core verbose debug messages"
- 	depends on DEBUG_KERNEL
-diff --git a/firmware/Makefile b/firmware/Makefile
-new file mode 100644
-index 0000000..02e0a05
---- /dev/null
-+++ b/firmware/Makefile
-@@ -0,0 +1,70 @@
-+#
-+# kbuild file for firmware/
-+#
-+
-+firmware-y :=
-+
-+firmware_bins := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
-+firmware_srcs := $(patsubst %,$(obj)/%.S, $(firmware_bins))
-+firmware_objs := $(patsubst %,%.o, $(firmware_bins) $(firmware-y))
-+firmware_dirs := $(sort $(patsubst %,$(objtree)/$(obj)/%,$(dir $(firmware_objs))))
-+
-+quiet_cmd_mkdir = MKDIR   $@
-+      cmd_mkdir = mkdir -p $@
-+
-+ifdef CONFIG_64BIT
-+ASM_WORD := .quad
-+ASM_ALIGN := 3
-+else
-+ASM_WORD := .long
-+ASM_ALIGN := 2
-+endif
-+
-+quiet_cmd_fwbin = MK_FW   $@
-+      cmd_fwbin = FWNAME="$(patsubst firmware/%.S,%,$@)";		     \
-+		  INCFILE="$(srctree)/$(patsubst %.S,%,$@)";		     \
-+		  FWSTR="$(subst /,_,$(subst .,_,$(patsubst 		     \
-+				firmware/%.S,%,$@)))";			     \
-+		  echo "/* Generated by firmware/Makefile */"		> $@;\
-+		  echo "    .section .rodata"				>>$@;\
-+		  echo "    .align $(ASM_ALIGN)"			>>$@;\
-+		  echo "_fw_$${FWSTR}_bin:"				>>$@;\
-+		  echo "    .incbin \"$$INCFILE\""			>>$@;\
-+		  echo "_fw_end:"					>>$@;\
-+		  echo "   .section .rodata.str,\"aMS\",@progbits,1"	>>$@;\
-+		  echo "    .align $(ASM_ALIGN)"			>>$@;\
-+		  echo "_fw_$${FWSTR}_name:"				>>$@;\
-+		  echo "    .string \"$$FWNAME\""			>>$@;\
-+		  echo "    .section .builtin_fw,\"a\",@progbits"	>>$@;\
-+		  echo "    .align $(ASM_ALIGN)"			>>$@;\
-+		  echo "    $(ASM_WORD) _fw_$${FWSTR}_name" 		>>$@;\
-+		  echo "    $(ASM_WORD) _fw_$${FWSTR}_bin" 		>>$@;\
-+		  echo "    $(ASM_WORD) _fw_end - _fw_$${FWSTR}_bin"	>>$@;
-+
-+# One of these files will change, or come into existence, whenever
-+# the configuration changes between 32-bit and 64-bit...
-+DEPS_64BIT := $(wildcard include/config/64bit.h include/config/32bit.h \
-+		include/config/ppc32.h include/config/ppc64.h \
-+		include/config/superh32.h include/config/superh64.h \
-+		include/config/x86_32.h include/config/x86_64.h)
-+
-+# ... and the .S files must change when that happens.
-+$(firmware_srcs): $(DEPS_64BIT)
-+	$(call cmd,fwbin)
-+
-+# The .o files depend directly on the binary because it's included in
-+# the .S file with .incbin -- so the .S file doesn't need to change.
-+$(patsubst %.S,%.o,$(firmware_srcs)): %.o: %
-+
-+$(firmware_dirs):
-+	$(call cmd,mkdir)
-+
-+$(patsubst %,$(obj)/%,$(firmware_objs)): $(firmware_dirs)
-+
-+obj-y := $(firmware_objs)
-+
-+targets := $(firmware_objs) $(patsubst $(obj)/%,%, $(firmware_srcs))
-+
-+# Without this, built-in.o won't be created when it's empty, and the
-+# final vmlinux link will fail.
-+obj-n := dummy
+so we will need some workaround for check_nmi_watchdog() 'cause of  changing
 
+...
+-	prev_nmi_count = kmalloc(NR_CPUS * sizeof(int), GFP_KERNEL);
++	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
+...
+-	for (cpu = 0; cpu < NR_CPUS; cpu++)
++	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
+...
 
--- 
-dwmw2
+didn't take a precise look on this, but will take as only be able to ;)
 
+		- Cyrill -
