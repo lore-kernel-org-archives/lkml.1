@@ -1,155 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbYEYDLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757476AbYEYD3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756870AbYEYDLd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 23:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYEYDLX
+	id S1757476AbYEYD3Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 23:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYEYD3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 23:11:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:38623 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYEYDLW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 23:11:22 -0400
-Date: Sat, 24 May 2008 23:11:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-cc: akpm@osdl.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] x86: enable preemption in delay
-Message-ID: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
+	Sat, 24 May 2008 23:29:16 -0400
+Received: from pc125.solomon-systech.com ([202.76.106.125]:46632 "HELO
+	virus-gateway.solomon-systech.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752230AbYEYD3Q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 23:29:16 -0400
+X-Greylist: delayed 3639 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 May 2008 23:29:15 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
+content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: kobject_cleanup should set kobject.k_name to NULL?
+Date: Sun, 25 May 2008 10:28:06 +0800
+Message-ID: <6334E09627481B4AA5C8DE1E69E19D3B0875E648@SSLEXCHANGE.solomonsystech.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: kobject_cleanup should set kobject.k_name to NULL?
+Thread-Index: Aci7BANFacNtITEJRiS82NIo+U3SuQACp90pAL+k/oA=
+From: <sasin@solomon-systech.com>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linux 2.6.24
 
-The RT team has been searching for a nasty latency. This latency shows
-up out of the blue and has been seen to be as big as 5ms!
+platform_device_unregister -> device_unregister -> put_device ->
+kobject_release -> kobject_cleanup frees kobject.k_name but does not set
+it to NULL.  
 
-Using ftrace I found the cause of the latency.
+platform_device_register -> device_register -> device_add ->
+kobject_set_name which calls kfree on this element.  Calling kfree with
+a NULL pointer is harmless, but in this case it is a NON-NULL freed
+pointer, causing misbehaviour.
 
-   pcscd-2995  3dNh1 52360300us : irq_exit (smp_apic_timer_interrupt)
-   pcscd-2995  3dN.2 52360301us : idle_cpu (irq_exit)
-   pcscd-2995  3dN.2 52360301us : rcu_irq_exit (irq_exit)
-   pcscd-2995  3dN.1 52360771us : smp_apic_timer_interrupt (apic_timer_interrupt
-)
-   pcscd-2995  3dN.1 52360771us : exit_idle (smp_apic_timer_interrupt)
+Currently I call device_(un)register combinations multiple times on a
+statically allocated platform device structure to simulate hardware
+device arrival/removal, and this results in crashes owing to the
+behaviour above.  Should this be considered a bug or am I using it
+wrong?
 
-Here's an example of a 400 us latency. pcscd took a timer interrupt and
-returned with "need resched" enabled, but did not reschedule until after
-the next interrupt came in at 52360771us 400us later!
-
-At first I thought we somehow missed a preemption check in entry.S. But
-I also noticed that this always seemed to happen during a __delay call.
-
-   pcscd-2995  3dN.2 52360836us : rcu_irq_exit (irq_exit)
-   pcscd-2995  3.N.. 52361265us : preempt_schedule (__delay)
-
-Looking at the x86 delay, I found my problem.
-
-In git commit 35d5d08a085c56f153458c3f5d8ce24123617faf, Andrew Morton
-placed preempt_disable around the entire delay due to TSC's not working
-nicely on SMP.  Unfortunately for those that care about latencies this
-is devastating! Especially when we have callers to mdelay(8).
-
-Here I enable preemption during the loop and account for anytime the task
-migrates to a new CPU. The delay asked for may be extended a bit by
-the migration, but delay only guarantees that it will delay for that minimum
-time. Delaying longer should not be an issue.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/x86/lib/delay_32.c |   23 ++++++++++++++++++++++-
- arch/x86/lib/delay_64.c |   26 +++++++++++++++++++++++---
- 2 files changed, 45 insertions(+), 4 deletions(-)
-
-Index: linux-compile.git/arch/x86/lib/delay_32.c
-===================================================================
---- linux-compile.git.orig/arch/x86/lib/delay_32.c	2008-05-24 22:30:49.000000000 -0400
-+++ linux-compile.git/arch/x86/lib/delay_32.c	2008-05-24 22:31:43.000000000 -0400
-@@ -44,12 +44,33 @@ static void delay_loop(unsigned long loo
- static void delay_tsc(unsigned long loops)
- {
- 	unsigned long bclock, now;
-+	int cpu;
-
--	preempt_disable();		/* TSC's are per-cpu */
-+	preempt_disable();
-+	cpu = smp_processor_id();
- 	rdtscl(bclock);
- 	do {
- 		rep_nop();
- 		rdtscl(now);
-+		/* Allow RT tasks to run */
-+		preempt_enable();
-+		preempt_disable();
-+		/*
-+		 * It is possible that we moved to another CPU,
-+		 * and since TSC's are per-cpu we need to
-+		 * calculate that. The delay must guarantee that
-+		 * we wait "at least" the amount of time. Being
-+		 * moved to another CPU could make the wait longer
-+		 * but we just need to make sure we waited long
-+		 * enough. Rebalance the counter for this CPU.
-+		 */
-+		if (unlikely(cpu != smp_processor_id())) {
-+			if ((now-bclock) >= loops)
-+				break;
-+			loops -= (now - bclock);
-+			rdtscl(bclock);
-+			rdtscl(now);
-+		}
- 	} while ((now-bclock) < loops);
- 	preempt_enable();
- }
-Index: linux-compile.git/arch/x86/lib/delay_64.c
-===================================================================
---- linux-compile.git.orig/arch/x86/lib/delay_64.c	2008-05-24 22:30:49.000000000 -0400
-+++ linux-compile.git/arch/x86/lib/delay_64.c	2008-05-24 22:31:43.000000000 -0400
-@@ -31,14 +31,34 @@ int __devinit read_current_timer(unsigne
- void __delay(unsigned long loops)
- {
- 	unsigned bclock, now;
-+	int cpu;
-
--	preempt_disable();		/* TSC's are pre-cpu */
-+	preempt_disable();
-+	cpu = smp_processor_id();
- 	rdtscl(bclock);
- 	do {
- 		rep_nop();
- 		rdtscl(now);
--	}
--	while ((now-bclock) < loops);
-+		/* Allow RT tasks to run */
-+		preempt_enable();
-+		preempt_disable();
-+		/*
-+		 * It is possible that we moved to another CPU,
-+		 * and since TSC's are per-cpu we need to
-+		 * calculate that. The delay must guarantee that
-+		 * we wait "at least" the amount of time. Being
-+		 * moved to another CPU could make the wait longer
-+		 * but we just need to make sure we waited long
-+		 * enough. Rebalance the counter for this CPU.
-+		 */
-+		if (unlikely(cpu != smp_processor_id())) {
-+			if ((now-bclock) >= loops)
-+				break;
-+			loops -= (now - bclock);
-+			rdtscl(bclock);
-+			rdtscl(now);
-+		}
-+	} while ((now-bclock) < loops);
- 	preempt_enable();
- }
- EXPORT_SYMBOL(__delay);
-
+Best regards,
+Sasi
