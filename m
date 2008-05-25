@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYEYLd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbYEYLgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610AbYEYLd4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 07:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYEYLdr
+	id S1759339AbYEYLgu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 07:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbYEYLgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 07:33:47 -0400
-Received: from mail.scaimas.com ([195.82.67.50]:19014 "EHLO mail.scaimas.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753788AbYEYLdq convert rfc822-to-8bit (ORCPT
+	Sun, 25 May 2008 07:36:43 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63485 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbYEYLgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 07:33:46 -0400
-content-class: urn:content-classes:message
-Subject: Re: Limit SATA link speed to 1.5 Gbps
+	Sun, 25 May 2008 07:36:42 -0400
+Date: Sun, 25 May 2008 07:36:39 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: trem <tremyfr@yahoo.fr>
+cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24.7-rt10
+In-Reply-To: <g1adb2$217$1@ger.gmane.org>
+Message-ID: <Pine.LNX.4.58.0805250735410.3977@gandalf.stny.rr.com>
+References: <1211608265.14697.105.camel@localhost.localdomain>
+ <g1adb2$217$1@ger.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Date: Sun, 25 May 2008 13:33:44 +0200
-Message-ID: <F7D77F204D5F7641AB3864C88E39498F186159@taube3.scailokal.intern>
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: Limit SATA link speed to 1.5 Gbps
-Thread-Index: Aci8AOthirlgG+LLTb2/xStWyNZ5DwCWZeOw
-References: <F7D77F204D5F7641AB3864C88E39498F18614E@taube3.scailokal.intern> <20080522122905.49cca18d@core>
-From: "Andre Pietsch" <andre.pietsch@scai.de>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I tested 2.6.25 and the error still occurrs once but then it gave me
-a "limiting SATA link speed to 1.5 Gbps" in the log.
-> 
-> The later kernels will drop the SATA speed on repeated errors if they
-see what appears to be a consistent problem that might be cabling/noise.
-> 
-> > Is it possible to set the SATA link speed somewhere?
-> 
-> Not sure. I've not looked whether that is in the new "force" code. I
-don't think you can in 2.6.24 however, and 2.6.25 will fall back nicely.
-> 
-> Other than being annoying during the install it should not cause any
-other problems beyond all the retries. 
 
-Hi Alan,
 
-thanks for your input. I can report that Ubuntu 8.0.4 64 does behave the
-same way as the 32 Bit version and limits the link speed successfully,
-after the link fails several times.
+On Sun, 25 May 2008, trem wrote:
+>
+> I've got a problem with the compilation when compiling kernel/rcupreempt_trace.o :
+>
+> kernel/rcupreempt_trace.c: In function ?rcupreempt_trace_init?:
+> kernel/rcupreempt_trace.c:539: erreur: implicit declaration of function ?marker_arm?
+> kernel/rcupreempt_trace.c: In function ?rcupreempt_trace_cleanup?:
+> kernel/rcupreempt_trace.c:577: erreur: too few arguments to function ?marker_probe_unregister?
+> kernel/rcupreempt_trace.c:583: erreur: too few arguments to function ?marker_probe_unregister?
+> make[1]: *** [kernel/rcupreempt_trace.o] Erreur 1
+>
+>
+> I think that markers-upstream.patch can't be used with rcu-preempt-trace-markers-1.patch and
+> rcu-preempt-trace-markers-2.patch.
+>
 
-After this the errors do not occurr any more.
+Or more correctly, the rcu-preempt-markers patches can't be used with
+markers-upstream.patch ;-)
 
-This works for me now. I'll update the bug report on launchpad.
+I'll port that over, since it will need to be ported anyway.
 
-Regards,
-Andre Pietsch
+-- Steve
+
