@@ -1,80 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbYEYRr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755727AbYEYR7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757006AbYEYRr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 13:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbYEYRrp
+	id S1755727AbYEYR7g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 13:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750817AbYEYR70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 13:47:45 -0400
-Received: from rtr.ca ([76.10.145.34]:2054 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754999AbYEYRro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 13:47:44 -0400
-Message-ID: <4839A63E.4050409@rtr.ca>
-Date: Sun, 25 May 2008 13:47:42 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Marvell 88SX7042 [4 Port SATA PCI-Express x4] Support/Questions
-References: <alpine.DEB.1.10.0805250757550.18572@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0805250757550.18572@p34.internal.lan>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 25 May 2008 13:59:26 -0400
+Received: from atflat.net ([80.229.16.180]:35778 "EHLO holly.atflat.local"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750727AbYEYR70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 13:59:26 -0400
+X-Greylist: delayed 664 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 13:59:25 EDT
+From: Tom Spink <tspink@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 0/2] On-demand Filesystem Initialisation
+Date: Sun, 25 May 2008 18:48:17 +0100
+Message-Id: <1211737699-25615-1-git-send-email-tspink@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> Jeff has been working on this chipset/patching/etc:
-..
 
-Actually, I'm the one working on that chipset etc..  :)
+This (short) patch series is another RFC for the patch that introduces on-demand
+filesystem initialisation.  In addition to the original infrastructure
+implementation (with clean-ups), it changes XFS to use this new infrastructure.
 
-> Looks like there are a couple cards sporting this new chip at the moment
-..
+I wrote a toy filesystem (testfs) to simulate scheduling/allocation delays and
+to torture the mount/unmount cycles.  I didn't manage to deadlock the system
+in my tests.  XFS also works as expected aswell, in that the global threads
+are not created until an XFS filesystem is mounted for the first time.  When the
+last XFS filesystem is unmounted, the threads go away.
 
-There are lots of them out there, including Sonnet, Highpoint, and others.
+Please let me know what you think!
 
-> If one bought enough of these, one could possibly achieve speeds in 
-> excess(!) of 1 gigabyte/second with enough drives and SW RAID in Linux.
-> Does anyone have such a card? I would be interested if it could sustain 
-> the maximum rate from each disk without any contention.
-..
+-- Tom
 
-Sure, if the bus and memory are fast enough.  You'll hit the Linux/libata
-transactions/sec limit at some point, but I don't know what that is.
-
-Eg. Here's a 4X (I think) card in my PCIe video slot:
-
-beefy:~# mdadm --create /dev/md0 --chunk=256 -l 0 --raid-devices=4 /dev/sd[bcde]
-mdadm: array /dev/md0 started.
-
-beefy:~# hdparm -t --direct /dev/sd[bcde] /dev/md0
-
-/dev/sdb:
- Timing O_DIRECT disk reads:  218 MB in  3.01 seconds =  72.46 MB/sec
-
-/dev/sdc:
- Timing O_DIRECT disk reads:  256 MB in  3.01 seconds =  85.00 MB/sec
-
-/dev/sdd:
- Timing O_DIRECT disk reads:  192 MB in  3.01 seconds =  63.79 MB/sec
-
-/dev/sde:
- Timing O_DIRECT disk reads:  256 MB in  3.01 seconds =  85.07 MB/sec
-
-/dev/md0:
- Timing O_DIRECT disk reads:  768 MB in  3.00 seconds = 255.69 MB/sec
-
-Similar results happen without the "--direct" flag as well.
-
-> 2. How 'experimental' is it? 
-
-The 7042 chipset is working rather well right now.
-Older Marvell chips should still be considered "experimental"
-for the time being.
-
-Cheers
+fs/filesystems.c             |    2 +
+fs/super.c                   |   47 +++++++++++++++++++++++++++++++++++-
+fs/xfs/linux-2.6/xfs_super.c |   55 +++++++++++++++++++++++-------------------
+include/linux/fs.h           |    3 ++
+4 files changed, 81 insertions(+), 26 deletions(-)
+    
