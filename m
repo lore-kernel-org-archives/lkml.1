@@ -1,89 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbYEYSe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbYEYSg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758168AbYEYSe5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 14:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbYEYSet
+	id S1758454AbYEYSg3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 14:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYEYSgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 14:34:49 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:39390 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753866AbYEYSet (ORCPT
+	Sun, 25 May 2008 14:36:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:21847 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753371AbYEYSgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 14:34:49 -0400
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, aoliva@redhat.com,
-       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
-       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
-Message-Id: <6BA85885-37F3-4D18-8B28-72687F5279FD@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Michael Buesch <mb@bu3sch.de>
-In-Reply-To: <200805252027.51377.mb@bu3sch.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Sun, 25 May 2008 14:36:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rk8m7bjTEW4UmP47SH8pa3vVc9apRT0xFljMe5f3W1MSLCH1XxszOXf0n8OcbhtqptdkFn+qdCyALOIkEzaLr9dBDB29dpdaB4161/u3FuE6PQVdPEz815V7Wi2muA8NuRvjeLFaVV14h0YSQUUgkeYSr7tPZzKNkEsw8XHlnLU=
+Message-ID: <dd18b0c30805251136n532f86d7ldaf57234c2df2e79@mail.gmail.com>
+Date: Sun, 25 May 2008 18:36:19 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Fabio Comolli" <fabio.comolli@gmail.com>
+Subject: Re: [Bug #10724] ACPI : EC: GPE
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <b637ec0b0805250021k5883fcb6w71ded44f3adf4173@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-Date: Sun, 25 May 2008 20:34:43 +0200
-References: <1211550282.28967.8.camel@pmac.infradead.org> <200805251545.25516.mb@bu3sch.de> <7BD202F0-0E0E-495D-93CA-45F2E5AA8065@holtmann.org> <200805252027.51377.mb@bu3sch.de>
-X-Mailer: Apple Mail (2.919.2)
+Content-Disposition: inline
+References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik>
+	 <TW_YzGo9TFP.A.erD.jeIOIB@albercik>
+	 <dd18b0c30805241608o35915aa9l3759b5a50785279@mail.gmail.com>
+	 <b637ec0b0805250021k5883fcb6w71ded44f3adf4173@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
-
->> don't give me that crap. Nobody plans to break everything just right
->> now and leave people hanging in between. We will do a smooth
->> transition. Your users won't even notice it.
+On Sun, May 25, 2008 at 7:21 AM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> Hi.
+> I just pulled Linus' GIT tree and the message seems to have
+> disappeared. Before today it showed reliably on every boot.
 >
-> Right. I will forward any complain mail to you then.
-> This is not the first time we (need to) change the firmware ABI, so I
-> pretty much know what I'm talking about.
+> Regards,
+> Fabio
 >
-> I still didn't see a single valid reason in the whole thread that  
-> explains
-> why we suddenly have to forbid the use of the "/" character. (and  
-> that's
-> really what my problem only is about)
-
-the reason is pretty simple; the a kernel driver should not do any  
-kind of policy, namespace or whatever you wanna call it. This should  
-be done in userspace.
-
->> And we change the API/ABI all the time. Get used to it.
 >
-> Right. And endusers are really scared by it.
-> Other operating systems out there can live without ABI breakage for  
-> 10 years.
+>
+>
+> On Sun, May 25, 2008 at 1:08 AM, Justin Mattock <justinmattock@gmail.com> wrote:
+>> On Sat, May 24, 2008 at 8:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>> This message has been generated automatically as a part of a report
+>>> of recent regressions.
+>>>
+>>> The following bug entry is on the current list of known regressions
+>>> from 2.6.25.  Please verify if it still should be listed.
+>>>
+>>>
+>>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
+>>> Subject         : ACPI : EC: GPE
+>>> Submitter       : Justin Mattock <justinmattock@gmail.com>
+>>> Date            : 2008-05-16 6:17 (9 days old)
+>>> References      : http://marc.info/?l=linux-kernel&amp;m=121091875711824&amp;w=4
+>>>                  http://lkml.org/lkml/2008/5/18/168
+>>>
+>>>
+>>>
+>>
+>> Hello; This message seems to be appearing on a random, (every x amount
+>> of boots). At first I thought this was resolved with adjusting the
+>> .config
+>> but didn't seem to be the answer. Also I have third party modules
+>> installed i.g.(isight driver, and dri driver) which also might be
+>> causing this.
+>> I guess the best answer is if somebody else can verify this happens to
+>> them, with all in kernel modules. I on the other hand will unload
+>> the third party modules and see if this appears.
+>> regards;
+>>
+>>
+>> --
+>> Justin P. Mattock
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
 
-And some operating system really suffer from this ABI guarantee. I am  
-not getting into this since it has been discussed so many times and  
-the kernel source contains full documentation why we are not doing it.
+Hello;
+Well I just pulled the latest git to see if acpi gpe storm was
+resolved. so after recompiling and rebooting, I noticed this was still
+prevalent, then during the boot process my system is hanging after
+freeing unused memory.
+So after undoing that mess, I think what I will do is just stay were
+I'm at. It's a holiday were I'm located and don't feel like thinking
+that much.
+regards;
 
-> Breakage example? I have a server running Ubuntu Dapper. I'm running  
-> a 2.6.23 kernel on
-> it and it complains that several features used by the dapper udev  
-> will go away in
-> a future kernel release. So if I want to update the kernel (security  
-> update or
-> for whatever reason) I need to upgrade the whole distribution,  
-> basically.
-> That is OK and I will do this. But this just shows that we really  
-> must try hard
-> to avoid breaking the udev ABI.
-> And I don't see this happening here.
-
-We actually do and we the future remove document and the requirements  
-document within the kernel source this is fully documented all of the  
-time.
-
-However you have to understand that at some point we have to make sure  
-that kernel and userspace are recent. But again, this will be all  
-documented and if a distro than decides to bluntly ignore it, then go  
-ahead an blame the distro. The kernel depends on the "plumbing" and  
-vise versa.
-
-Regards
-
-Marcel
-
+-- 
+Justin P. Mattock
