@@ -1,54 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755426AbYEYNOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYEYNRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755426AbYEYNOV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 09:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYEYNOM
+	id S1754255AbYEYNRS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 09:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYEYNRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 09:14:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:61967 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbYEYNOL (ORCPT
+	Sun, 25 May 2008 09:17:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49033 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751074AbYEYNRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 09:14:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rzDdwF2dYSpNyQK3FOTWOOfuUEzSwtZyLbLUTC8FDN6QTwqKkfR4eFUogGSP+Qa3R4pSjQ1LnRKeOPftGxDrWzB1bKa/866JAMEPjO6NrNcd5ydcJdpgEJ+RTxkdn3AlPPkPS06nX3nUxQEPew8C56YsXIqAXWziZazDKUG2OEs=
-Message-ID: <7b9198260805250614k1a79b0d4p4322c89219be438a@mail.gmail.com>
-Date: Sun, 25 May 2008 14:14:08 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "David Newall" <davidn@davidnewall.com>
-Subject: Re: Inserting code from userspace to kernel space
-Cc: devzero@web.de, "Shuduo Sang" <sangshuduo@gmail.com>,
-       bosko.radivojevic@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <483959DD.8020505@davidnewall.com>
+	Sun, 25 May 2008 09:17:07 -0400
+Date: Sun, 25 May 2008 09:17:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] x86: enable preemption in delay
+In-Reply-To: <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
+Message-ID: <Pine.LNX.4.58.0805250915410.20625@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
+ <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <290982711@web.de> <483959DD.8020505@davidnewall.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
 
-2008/5/25 David Newall <davidn@davidnewall.com>:
-> devzero@web.de wrote:
->> this can be illegal, too.
->>
->> http://www.gnu.org/licenses/gpl-faq.html#ModifiedJustBinary
->>
+On Sun, 25 May 2008, Thomas Gleixner wrote:
 >
-> I think what he's trying to achieve is an unmodified or modified but
-> fully GPL kernel plus a separate, proprietary binary to be loaded at
-> runtime.
+> +/*
+> + * 5 usec on a 1GHZ machine. Not necessarily correct, but not too long
+> + * either.
 
-I think so to, but I think Shuduo misunderstood what question DevZero
-was asking.  DevZero was asking for the source-code to the
-infrastructure Shuduo used to implement this mechanism, i.e. the
-loader and parser/interpreter that lives in the kernel - not the
-application code.
+And what happens when we have 10GHz boxes that can do migration in 1us,
+and the delay that is asked for is 2us. We can return early.  I don't like
+to place assumptions of this kind that can hurt with future hardware
+enhancements.
 
--- 
-Tom Spink
+-- Steve
+
+
+> + */
+> +#define TSC_MIGRATE_COUNT 5000
+> +
+>  /* TSC based delay: */
+>  static void delay_tsc(unsigned long loops)
+>  {
+>  	unsigned long bclock, now;
+> +	int cpu;
+>
+> -	preempt_disable();		/* TSC's are per-cpu */
+> +	preempt_disable();
+> +	cpu = smp_processor_id();
+>  	rdtscl(bclock);
+>  	do {
+>  		rep_nop();
+> -		rdtscl(now);
+> -	} while ((now-bclock) < loops);
+> +
+> +		/* Allow RT tasks to run */
+> +		preempt_enable();
+> +		preempt_disable();
+> +
+> +		/*
+> +		 * It is possible that we moved to another CPU, and
+> +		 * since TSC's are per-cpu we need to calculate
+> +		 * that. The delay must guarantee that we wait "at
+> +		 * least" the amount of time. Being moved to another
+> +		 * CPU could make the wait longer but we just need to
+> +		 * make sure we waited long enough. Rebalance the
+> +		 * counter for this CPU.
+> +		 */
+> +		if (unlikely(cpu != smp_processor_id())) {
+> +			if (loops <= TSC_MIGRATE_COUNT)
+> +				break;
+> +			cpu = smp_processor_id();
+> +			rdtscl(bclock);
+> +			loops -= TSC_MIGRATE_COUNT;
+> +		} else {
+> +			rdtscl(now);
+> +			if ((now - bclock) >= loops)
+> +				break;
+> +			loops -= (now - bclock);
+> +			bclock = now;
+> +		}
+> +	} while (loops > 0);
+>  	preempt_enable();
+>  }
+>
