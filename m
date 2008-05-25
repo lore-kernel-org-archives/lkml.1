@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbYEYS2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbYEYSbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbYEYS2k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 14:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbYEYS2T
+	id S1758244AbYEYSbL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 14:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbYEYSa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 14:28:19 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:36772 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756799AbYEYS2S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 14:28:18 -0400
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, aoliva@redhat.com,
-       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
-       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
-Message-Id: <5020127D-136C-4CFD-83D3-A6C832A97552@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Michael Buesch <mb@bu3sch.de>
-In-Reply-To: <200805252018.58627.mb@bu3sch.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-Date: Sun, 25 May 2008 20:28:13 +0200
-References: <1211550282.28967.8.camel@pmac.infradead.org> <1211722835.17151.24.camel@johannes.berg> <3B90BEFD-148C-47DF-9437-500109907976@holtmann.org> <200805252018.58627.mb@bu3sch.de>
-X-Mailer: Apple Mail (2.919.2)
+	Sun, 25 May 2008 14:30:57 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41432 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752414AbYEYSa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 14:30:57 -0400
+Date: Sun, 25 May 2008 20:31:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jike Song <albcamus@gmail.com>,
+       Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: [GIT PULL] kbuild fixes
+Message-ID: <20080525183136.GA12806@uranus.ravnborg.org>
+References: <20080525071228.GA32120@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080525071228.GA32120@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+On Sun, May 25, 2008 at 09:12:28AM +0200, Sam Ravnborg wrote:
+> Hi Linus.
+> 
+> Please pull from:
+> 
+>   ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
+> 
+> This fixes the 'make oldconfig' regression you reported.
+> And in addition a small .gitignore and ver_linux update.
+> 
+> 	Sam
+> 
+> The pull includes the following patches:
+> 
+> Gabriel C (1):
+>       scripts/ver_linux use 'gcc -dumpversion'
+> 
+> Jike Song (1):
+>       .gitignore: match ncscope.out
+> 
+> Sam Ravnborg (1):
+>       Kconfig: add KBUILD_DEFCONFIG to DEFCONFIG_LIST
 
->> So you actually do know how request_firmware() actually works right
->> now? You need to change the firmware_class implementation and API to
->> give it an extra parameter to allow any kind if simultaneous loading
->> within one driver. Having the FIRMWARE as environment variable is
->> actually suboptimal. You want to have the FIRMWARE environment
->> variable as bus_id for the firmware struct device object.
->
-> Can you explain _why_ we want to have this as bus_id?
-> I don't really understand that.
+And this commit caused my make to enter an
+infinite looke calling scripts/kconfig/conf -s arch/x86/Kconfig
+Reproduceable by:
+make defconfig
+make
 
-we want to avoid duplicate sysfs entries. And with multi-function  
-devices like in SDIO this can happen that the actual sysfs device  
-entry becomes the same and then the struct device creation for the  
-second firmware loading fails (if the first one hasn't finished).  
-Putting the actually firmware filename as bus_id allows us to  
-distinguish between the different firmware loading tasks.
+[on my 32 bit x86]
 
-With the remove of class devices and the more complex multi-function  
-devices we have to make the firmware loading fully race free. If not  
-we end up with sleep(1) hacks around everything and we don't want that.
+May try to dig into this later tonight.
 
-Regards
+For now I have dropped all commits from kbuild-fixes.git so
+the bad commit does not end up in -linus, -next or -mm.
 
-Marcel
-
+	Sam
