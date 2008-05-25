@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbYEYElR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYEYErW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbYEYElR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 00:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYEYElG
+	id S1753855AbYEYErW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 00:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYEYErK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 00:41:06 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:28234 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbYEYElE (ORCPT
+	Sun, 25 May 2008 00:47:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:33505 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbYEYErJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 00:41:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=P/DxVvtBiBQ1Tqz8RKUZ4wnPsLQHdIPwULBzebXPTJ1/Lac5fM/WcnAp5DBK9K3oOXMgcfjzQRHlIMehi4hGw+Ok4a7ZbWE67W4H51Kcnm3cbCshIYVqrTbadwuXNDg/t6khkFPH/bsCphrU7fL3fHKvZy9BfROj9qpPzHjBs8U=
-Message-ID: <438397970805242141l3f07e6e1he5805b09d9dbf989@mail.gmail.com>
-Date: Sat, 24 May 2008 21:41:00 -0700
-From: "Kallol Biswas" <nucleodyne@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: HDMI Audio Support in ALSA
-Cc: "Clemens Ladisch" <clemens@ladisch.de>,
-       "Lee Revell" <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org,
-       "Xiaogeng Jin" <xiaogeng.jin@yahoo.com>
-In-Reply-To: <s5hod6xuvq3.wl%tiwai@suse.de>
+	Sun, 25 May 2008 00:47:09 -0400
+Message-ID: <fa686aa40805242147w400e2ff5jf532f8843ec3f85f@mail.gmail.com>
+Date: Sat, 24 May 2008 22:47:08 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [RFC] OpenFirmware bindings for the MMC-over-SPI driver
+Cc: avorontsov@ru.mvista.com, "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Gary Jennejohn" <garyj@denx.de>,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200805241256.32639.david-b@pacbell.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <438397970805190904i2656337dh26a3257fe52aa29d@mail.gmail.com>
-	 <75b66ecd0805190916r7ce21667laf19783dfa47cdd7@mail.gmail.com>
-	 <438397970805190938t195d9a8ejfd5b0ca1409714ab@mail.gmail.com>
-	 <48328771.4030804@ladisch.de>
-	 <438397970805211252u1d228ad8wcb1a6ef9b1251478@mail.gmail.com>
-	 <483568BD.4040701@ladisch.de> <s5hod6xuvq3.wl%tiwai@suse.de>
+References: <20080523182754.GA26891@polina.dev.rtsoft.ru>
+	 <200805241256.32639.david-b@pacbell.net>
+X-Google-Sender-Auth: fabd9c235702e903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Takashi,
-                   I have been reading the pci/hda code, and now not
-sure if I have the answer to my original question.
+On Sat, May 24, 2008 at 1:56 PM, David Brownell <david-b@pacbell.net> wrote:
+> On Friday 23 May 2008, Anton Vorontsov wrote:
+>>
+>> This is second attempt to write the OpenFirmware bindings for the
+>> MMC-over-SPI (and SPI bindings in general).
+>
+> Summary:  an OF-specific wrapper around the mmc_spi platform code.
+>
+> I think a wrapper to encapsulate all the OF-specific knowledge makes
+> much sense here.
+>
+> The only thing that looks odd to me about this is that the wrapper
+> is a spi_device rather than an of_device.  To me it makes more sense
+> to just have an of_device setting up the right spi_device.  (Though
+> maybe I missed some discussion about why that can't work.)
 
-The routine snd_hda_calc_stream_format() calls snd_pcm_format_width()
-to find if the format is supported and the width.
+It's not so much that I can't work; more like it's not necessary.
+of_platform bus is by no means the prescribed way to work with the
+device tree.  In fact, there is talk about moving away from
+of_platform bus entirely and using
+platform_device/spi_device/i2c_device/etc directly instead since the
+of_platform bus is mostly a clone of the platform bus with different
+device binding semantics.
 
-The array holds pcm_format[] holds all the supported formats. However,
-in this array
-there is no entry for IEC 60958 or IEC 61937. How does it work? How
-does the hda code
-handles the above frames?
+As Anton's patch shows, it is straight forward to add a binding that
+can extract the platform data out of the device tree without the
+overhead of adding an additional of_platform bus device & driver pair.
 
-It seems that snd_hda_calc_stream_format() is going to print "invalid
-format width < val>" for HDMI audio frames.
+Cheers,
+g.
 
-Kallol
-
-On 5/23/08, Takashi Iwai <tiwai@suse.de> wrote:
-> At Thu, 22 May 2008 14:36:13 +0200,
->
-> Clemens Ladisch wrote:
->  >
->  > > However, SNDRV_PCM_FMTBIT_IEC958_SUBFRAME is supported.
->  >
->  > This is only for some early revisions of the CMI8738 chip which require
->  > software to generate the preamble/channel status/subcode/parity bits
->  > for each subframe.
->
->
-> Some ATIIXP boards need it, too.  HD-audio controllers can do also
->  this kind of things, but not needed.
->
->
->
->  Takashi
->
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
