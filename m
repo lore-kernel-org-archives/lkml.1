@@ -1,100 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbYEYSg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYEYSjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758454AbYEYSg3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 14:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYEYSgV
+	id S1758126AbYEYSjw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 14:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYEYSjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 14:36:21 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:21847 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371AbYEYSgV (ORCPT
+	Sun, 25 May 2008 14:39:44 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:34226 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753866AbYEYSjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 14:36:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rk8m7bjTEW4UmP47SH8pa3vVc9apRT0xFljMe5f3W1MSLCH1XxszOXf0n8OcbhtqptdkFn+qdCyALOIkEzaLr9dBDB29dpdaB4161/u3FuE6PQVdPEz815V7Wi2muA8NuRvjeLFaVV14h0YSQUUgkeYSr7tPZzKNkEsw8XHlnLU=
-Message-ID: <dd18b0c30805251136n532f86d7ldaf57234c2df2e79@mail.gmail.com>
-Date: Sun, 25 May 2008 18:36:19 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Fabio Comolli" <fabio.comolli@gmail.com>
-Subject: Re: [Bug #10724] ACPI : EC: GPE
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <b637ec0b0805250021k5883fcb6w71ded44f3adf4173@mail.gmail.com>
+	Sun, 25 May 2008 14:39:44 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sun, 25 May 2008 20:39:17 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, aoliva@redhat.com,
+       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
+       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
+References: <1211550282.28967.8.camel@pmac.infradead.org> <1211724803.17151.36.camel@johannes.berg> <41FE0259-522B-4B9B-A75D-7B97A9FD723F@holtmann.org>
+In-Reply-To: <41FE0259-522B-4B9B-A75D-7B97A9FD723F@holtmann.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik>
-	 <TW_YzGo9TFP.A.erD.jeIOIB@albercik>
-	 <dd18b0c30805241608o35915aa9l3759b5a50785279@mail.gmail.com>
-	 <b637ec0b0805250021k5883fcb6w71ded44f3adf4173@mail.gmail.com>
+Message-Id: <200805252039.17673.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 25, 2008 at 7:21 AM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
-> Hi.
-> I just pulled Linus' GIT tree and the message seems to have
-> disappeared. Before today it showed reliably on every boot.
->
-> Regards,
-> Fabio
->
->
->
->
-> On Sun, May 25, 2008 at 1:08 AM, Justin Mattock <justinmattock@gmail.com> wrote:
->> On Sat, May 24, 2008 at 8:31 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>> This message has been generated automatically as a part of a report
->>> of recent regressions.
->>>
->>> The following bug entry is on the current list of known regressions
->>> from 2.6.25.  Please verify if it still should be listed.
->>>
->>>
->>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
->>> Subject         : ACPI : EC: GPE
->>> Submitter       : Justin Mattock <justinmattock@gmail.com>
->>> Date            : 2008-05-16 6:17 (9 days old)
->>> References      : http://marc.info/?l=linux-kernel&amp;m=121091875711824&amp;w=4
->>>                  http://lkml.org/lkml/2008/5/18/168
->>>
->>>
->>>
->>
->> Hello; This message seems to be appearing on a random, (every x amount
->> of boots). At first I thought this was resolved with adjusting the
->> .config
->> but didn't seem to be the answer. Also I have third party modules
->> installed i.g.(isight driver, and dri driver) which also might be
->> causing this.
->> I guess the best answer is if somebody else can verify this happens to
->> them, with all in kernel modules. I on the other hand will unload
->> the third party modules and see if this appears.
->> regards;
->>
->>
->> --
->> Justin P. Mattock
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
+On Sunday 25 May 2008 20:23:46 Marcel Holtmann wrote:
+> > The fact that userspace uses the key as a filename is maybe  
+> > unfortunate,
+> > maybe fortunate, but shouldn't have anything to do with what sort of
+> > keys the kernel allows.
+> 
+> I disagree with you. The kernel should be free of these kind of  
+> subdirectory stuff. We saw devfs failing and we have a flat device  
+> node names in the kernel. Why do we have to duplicate information in  
+> the firmware filenames where we have all the information already  
+> present in the driver model. The reason that people are lazy doesn't  
+> work for me.
 
-Hello;
-Well I just pulled the latest git to see if acpi gpe storm was
-resolved. so after recompiling and rebooting, I noticed this was still
-prevalent, then during the boot process my system is hanging after
-freeing unused memory.
-So after undoing that mess, I think what I will do is just stay were
-I'm at. It's a holiday were I'm located and don't feel like thinking
-that much.
-regards;
+I think you don't really understand what we are trying to explain.
+So I'll try it once again.
+
+We are _not_ saying that having hierarchy policy decisions in the kernel
+is a good thing. It's just the case that we _currently_ have this kind
+of firmware filename, that happens to _map_ to a hierarchy policy
+currently made by udev.
+
+That's either unfortunate (to you) or fortunate (to me).
+In either case we have to live with it and we can _not_ break it.
+By introducing a policy that forbids the use of the slash, we do break
+this.
+
+> > Also, you said above (quoting again):
+> >
+> >> You are fully
+> >> exploiting the request_firmware() interface and making any kind of
+> >> userspace policy impossible.
+> >
+> > That's not true at all. If you decide that the userspace policy should
+> > be to load $modulename/$firmwarekey then you'd maybe have something
+> > like /lib/firmware/b43/b43-test/ucode5.fw
+> > and /lib/firmware/b43/b43-osfw/ucode5.fw
+> > and /lib/firmware/b43/b43/ucode5.fw, this doesn't preclude the use.
+> >
+> > Now, if it had been like that from the beginning, Michael probably
+> > wouldn't have used the string "b43" (or "b43-*") but rather requested
+> > "broadcom/ucode5.fw" by default and "osfw/ucode5.fw" for the open  
+> > source
+> > firmware, but since it's just a key that doesn't matter.
+> 
+> That something works at the moment is not a reason for me not to fix  
+> it and improve the current framework around firmware loading. I have  
+> been a lot of times saying that the request_firmware() should not  
+> include "/" in the filename and driver authors followed it. Some of  
+> them did it anyway and so these need fixing now.
+
+But to forbid usage of "/" is the _wrong_ way to go, as it breaks
+existing setups.
+
+b43 users are not going to accept re-installing or moving the firmware
+files to another place. We had that in the past. It will result in a _lot_
+of angry complaints like "How dare can you break my setup!".
 
 -- 
-Justin P. Mattock
+Greetings Michael.
