@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbYEYTBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbYEYTCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758816AbYEYTBO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 15:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbYEYTA7
+	id S1758913AbYEYTCB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 15:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbYEYTBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 15:00:59 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:56320 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756761AbYEYTA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 15:00:58 -0400
-Date: Sun, 25 May 2008 21:58:21 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: davem@davemloft.net
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: CONFIG_SPARC64_PAGE_SIZE_4MB build error
-Message-ID: <20080525185821.GJ1791@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 25 May 2008 15:01:52 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:35496 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757387AbYEYTBw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 15:01:52 -0400
+Cc: Alexandre Oliva <aoliva@redhat.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
+       Takashi Iwai <tiwai@suse.de>
+Message-Id: <B31CC172-D655-477E-A7B0-8BF951849E57@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Michael Buesch <mb@bu3sch.de>
+In-Reply-To: <200805252049.39731.mb@bu3sch.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sun, 25 May 2008 21:01:44 +0200
+References: <1211550282.28967.8.camel@pmac.infradead.org> <95BCF0F0-755A-4501-9B44-B421AD3E8F42@holtmann.org> <orej7q1ewq.fsf@oliva.athome.lsd.ic.unicamp.br> <200805252049.39731.mb@bu3sch.de>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During a compile test I ran into the following build error caused with 
-CONFIG_SPARC64_PAGE_SIZE_4MB:
+Hi Michael,
 
-<--  snip  -->
+>>> in the early days we had something like three drivers using the
+>>> request_firmware() and it was understood between the authors what  
+>>> the
+>>> filename was meant for.
+>>
+>> You're contradicting yourself.  Is it a filename, or is it not?
+>> Earlier, you said it wasn't, it was just a name that userspace was
+>> supposed to map to a filename.  Now, you're saying it is a filename.
+>>
+>> Clearly (to me) your wish to prohibit '/'s in the firmware name has  
+>> to
+>> do with an attempt to force a distiction, to make the firmware a
+>> filename rather than a pathname.  But, as you said yourself, the
+>> mapping from firmware name is supposed to be entirely handled in
+>> userland, therefore it doesn't even begin to make sense to  
+>> distinguish
+>> between filenames and pathnames.  You'd have to make assumptions that
+>> (i) the firmware name names files (with built-in firmware, it
+>> doesn't), and, if it is about filenames, (ii) what the pathname
+>> separator character is.  Should '\\' be ruled out as well, because
+>> someone might want /lib/firmware to be in a FAT filesystem?
+>>
+>> nWouldn't it be better to leave the resolution of firmware names to
+>> content *entirely* up to userland?  Say, if userland wants to
+>> implement something very similar to the key-to-data map in-kernel
+>> built-in firmware, this would work just fine, without any artificial
+>> constraints?
+>
+> One additional thing is to make sure the usability of the whole stuff
+> is not reduded. Currently I can do:
+>
+> modprobe b43 fwpostfix=-open
+> # work with opensource firmware in b43-open/
+> rmmod b43
+> modprobe b43
+> # work with standard firmware in b43/
+>
+> So it is really simple to switch between different flavours of  
+> firmware.
+> It is _not_ acceptable to change an udev configuration file all the  
+> time,
+> if you want to use another firmware. One needs to frequently switch
+> between firmware versions when developing firmware code.
 
-...
-  CC      init/main.o
-In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h:4,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/slab.h:12,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/percpu.h:5,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/rcupdate.h:39,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/pid.h:4,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/sched.h:74,
-                 from include2/asm/uaccess.h:10,
-                 from include2/asm/elf.h:10,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/elf.h:7,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/module.h:14,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:13:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mmzone.h:853:2: 
-error: #error Allocator MAX_ORDER exceeds SECTION_SIZE
-make[2]: *** [init/main.o] Error 1
+we might should write down what everybody expects from a firmware  
+loading mechanism.
 
-<--  snip  -->
+I would like to see generic support for these kind of things. Not  
+duplicated functionality in every driver.
 
-cu
-Adrian
+Regards
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Marcel
 
