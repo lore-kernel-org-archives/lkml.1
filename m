@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765015AbYEXVvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762796AbYEXV6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765015AbYEXVvU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 17:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762237AbYEXVvG
+	id S1762796AbYEXV6X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 17:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761670AbYEXV6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 17:51:06 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:40562 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762077AbYEXVvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 17:51:05 -0400
-Date: Sun, 25 May 2008 00:48:31 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
-Subject: Re: [Bug #10716] VIDEO_DEV=y, DVB_CORE=m build error
-Message-ID: <20080524214829.GG2308@cs181133002.pp.htv.fi>
-References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <TW_YzGo9TFP.A.Y6D.reIOIB@albercik>
+	Sat, 24 May 2008 17:58:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:3328 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756641AbYEXV6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 17:58:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=jzaIQvIahOMJDZi3/OUH5XqKKnpCcX5ADS+8qY2k3xgFddmOzTPMG/rMUK09+3CIIfA2HQh7HdjdaCIwxR43jW0I1rwPWI3FK02/gbZ14mABg6J/YC3igSM3N3UuTrYBinKYFJdmC3FjQffy7RxwSBEscNvz/BUnkfSE4R1gX9E=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [RFC: 2.6 patch] MAINTAINERS: remove SIS 5513 IDE entry
+Date: Sun, 25 May 2008 15:11:01 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080519220942.GX17716@cs181133002.pp.htv.fi> <20080519223556.GC17716@cs181133002.pp.htv.fi>
+In-Reply-To: <20080519223556.GC17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <TW_YzGo9TFP.A.Y6D.reIOIB@albercik>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805251511.01827.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 10:31:39PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Tuesday 20 May 2008, Adrian Bunk wrote:
+> On Tue, May 20, 2008 at 01:09:42AM +0300, Adrian Bunk wrote:
+> > - maintainer has not been active for years
+> > - URLs no longer exist
+> > - covered by the IDE SUBSYSTEM entry
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+> - maintainer email bounces
 
-yes
+Lionel did some great work on this driver in the past and it is
+a shame that he is no longer active.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10716
-> Subject		: VIDEO_DEV=y, DVB_CORE=m build error
-> Submitter	: Toralf Förster <toralf.foerster@gmx.de>
-> Date		: 2008-05-15 13:15 (10 days old)
-> References	: http://marc.info/?l=linux-kernel&amp;m=121085736708543&amp;w=4
-> 		  http://lkml.org/lkml/2008/5/18/128
-> Handled-By	: Adrian Bunk <bunk@kernel.org>
-> Patch		: http://lkml.org/lkml/2008/5/16/47
+If somebody would like to take over maintainership over this driver
+(or some other IDE host driver) please just send me a patch adding
+yourself to MAINTAINERS file.
 
-cu
-Adrian
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+applied
