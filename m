@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbYEYDiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbYEYDnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758295AbYEYDiK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 23:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbYEYDh5
+	id S1756451AbYEYDnY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 23:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYEYDnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 23:37:57 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:27304 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751646AbYEYDh5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 23:37:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UcSzA1Y4dHuAFR0yWYJSkUo1OLL28uC+hNvX7oBn7zz0ehSBqUjM6AlnTEwKPJQz3qkz2TtKt+QHsiYVQPEg49qW2vtEmfcPl8cXnIBZ/prVEk4BDVkKpk3kHhbAubXCrSdn2wA7LciiiQD4nyESE61FLDbd97Zh0x5vE25isU0=
-Message-ID: <ee101c360805242037y333b3e17n705ef9b1572125c9@mail.gmail.com>
-Date: Sun, 25 May 2008 11:37:54 +0800
-From: "Shuduo Sang" <sangshuduo@gmail.com>
+	Sat, 24 May 2008 23:43:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39034 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003AbYEYDnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 23:43:16 -0400
+Date: Sat, 24 May 2008 23:41:34 -0400
+From: Kristian =?utf-8?B?SMO4Z3NiZXJn?= <krh@bitplanet.net>
 To: devzero@web.de
-Subject: Re: Inserting code from userspace to kernel space
-Cc: bosko.radivojevic@gmail.com, linux-kernel@vger.kernel.org
-In-Reply-To: <289344083@web.de>
+Cc: krh@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Only print "Decompressing Linux" etc when 'noisy'
+	is passed.
+Message-ID: <20080525034134.GA2392@bitplanet.net>
+References: <290568367@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <289344083@web.de>
+In-Reply-To: <290568367@web.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4P3cnHl019992
 
-On Fri, May 23, 2008 at 10:30 PM,  <devzero@web.de> wrote:>>> I know this sounds quite weird, but maybe there is a project that can help us ;)>>>>>>>actually you can implement a parser/interpretor, whatever you name it,>>in kernel space. And you can send the>>function code from user space to kernel space by device driver>>interface. the parser can parse that and do something>>practical function in kernel.>>>>I have worked on a similar task in a product powered by linux. It works great.>> any pointer to the sourcecode so bosko (and others) can profit from that ?>
-someone does not want to leak propertied algorithm out with GPL. Thiscan be a way to protect.
->>>> List:       linux-kernel> Subject:    Re: Inserting code from userspace to kernel space> From:       "Shuduo Sang" <sangshuduo () gmail ! com>> Date:       2008-05-22 16:04:35> Message-ID: ee101c360805220904h1c69db12q3048d0347d27c461 () mail ! gmail ! com> [Download message RAW]>> On Thu, May 22, 2008 at 8:41 PM, Bosko Radivojevic> <bosko.radivojevic@gmail.com> wrote:>> Hi!>>>> I'm looking for a way to insert code from user space to the kernel>> space, but without using kernel module. Actually, we are working on a>> system that has to allow end user to change part of code (one or two>> functions) that is executed from the kernel space.>>>> For now we have two different kernel modules, one exporting a function>> which another module uses. Process of compiling kernel module is quite>> ineligible for standard end user (along with the requirement to>> support multi platform cross compiling) compared to just cross>> compiling a simple code that doesn't use any libraries than libc.>>>> I know this sounds quite weird, but maybe there is a project that can help us ;)>>>> actually you can implement a parser/interpretor, whatever you name it,> in kernel space. And you can send the> function code from user space to kernel space by device driver> interface. the parser can parse that and do something> practical function in kernel.>> I have worked on a similar task in a product powered by linux. It works great.>>> Sincerely,>> Bosko>> -->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in>> the body of a message to majordomo@vger.kernel.org>> More majordomo info at  http://vger.kernel.org/majordomo-info.html>> Please read the FAQ at  http://www.tux.org/lkml/>>> ______________________________________________________________> Jeden Monat 1 hochkarÃ¤tiger maxdome-Blockbuster GRATIS!> Exklusiv fÃ¼r alle WEB.DE Nutzer. http://www.blockbuster.web.de>>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Sat, May 24, 2008 at 09:28:21PM +0200, devzero@web.de wrote:
+> what about using "quiet" here instead ?
+> 
+> quiet is already the parameter to suppress boot messages, so introducing another one doesn`t make sense, imho.
+
+I agree, and I wasn't looking to introduce a new parameter, I meant to
+reuse 'debug'.  That is already used for increasing the log level
+(see init/main.c).  Also, as it is, the decompressor already prints
+error messages if something goes wrong, so there's not much point in
+printing the debug spew.  I think it makes sense to default to not
+print it.
+
+> the early boot commandline parser was extended some time ago to support boolean options, see:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=32d0b9898029b7b3c7f161d31f57c4831d9049eb
+> 
+> this may shrink your patch , see example in arch/x86/boot/edd.c 
+
+Unfortunately, that doesn't help me.  This code is run before the kernel
+is decompressed and the only functions available are the ones in misc.c.
+And I know the strnstr approach isn't quite smart enough the handle quoted
+parameters and similar, but I think it strikes a good balance.
+
+I'll send an updated patch that looks for 'debug' instead of 'noisy'.
+
+thanks,
+Kristian
+
