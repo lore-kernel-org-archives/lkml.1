@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbYEYK1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763618AbYEYK2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932213AbYEYK1o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762303AbYEYKX6
+	id S1763618AbYEYK2F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbYEYKYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:23:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42026 "EHLO
+	Sun, 25 May 2008 06:24:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42055 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762298AbYEYKX5 (ORCPT
+	with ESMTP id S1762487AbYEYKYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:23:57 -0400
+	Sun, 25 May 2008 06:24:07 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
 References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       Patrick Boettcher <patrick.boettcher@desy.de>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Chris Pascoe <c.pascoe@itee.uq.edu.au>
-Subject: [PATCHv2 22/28] cxusb: treat firmware data as const
-Message-Id: <E1K0DOK-0007EC-6q@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:52 +0100
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
+Subject: [PATCHv2 27/28] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Message-Id: <E1K0DOP-0007EW-F0@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:57 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -28,55 +25,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...which means allocating our own copy when we want to modify it.
+This allows arbitrary firmware files to be included in the static kernel
+where the firmware loader can find them without requiring userspace to
+be alive.
 
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/media/dvb/dvb-usb/cxusb.c |   21 ++++++++++++++++++---
- 1 files changed, 18 insertions(+), 3 deletions(-)
+ Makefile             |    2 +-
+ drivers/base/Kconfig |   12 ++++++++++
+ firmware/Makefile    |   58 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 71 insertions(+), 1 deletions(-)
+ create mode 100644 firmware/Makefile
 
-diff --git a/drivers/media/dvb/dvb-usb/cxusb.c b/drivers/media/dvb/dvb-usb/cxusb.c
-index 720fcd1..94bb482 100644
---- a/drivers/media/dvb/dvb-usb/cxusb.c
-+++ b/drivers/media/dvb/dvb-usb/cxusb.c
-@@ -24,6 +24,7 @@
-  * see Documentation/dvb/README.dvb-usb for more information
-  */
- #include <media/tuner.h>
-+#include <linux/vmalloc.h>
+diff --git a/Makefile b/Makefile
+index 20b3235..ac2ab7e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -450,7 +450,7 @@ scripts: scripts_basic include/config/auto.conf
  
- #include "cxusb.h"
+ # Objects we will link into vmlinux / subdirs we need to visit
+ init-y		:= init/
+-drivers-y	:= drivers/ sound/
++drivers-y	:= drivers/ sound/ firmware/
+ net-y		:= net/
+ libs-y		:= lib/
+ core-y		:= usr/
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index d7da109..b856fe8 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -34,6 +34,18 @@ config FW_LOADER
+ 	  require userspace firmware loading support, but a module built outside
+ 	  the kernel tree does.
  
-@@ -700,12 +701,26 @@ static int bluebird_patch_dvico_firmware_download(struct usb_device *udev,
- 
- 		if (fw->data[idoff] == (USB_VID_DVICO & 0xff) &&
- 		    fw->data[idoff + 1] == USB_VID_DVICO >> 8) {
--			fw->data[idoff + 2] =
-+			struct firmware new_fw;
-+			u8 *new_fw_data = vmalloc(fw->size);
-+			int ret;
++config BUILTIN_FIRMWARE
++	string "Firmware blobs to build into the kernel binary"
++	depends on FW_LOADER
++	help
++	  This option allows firmware to be built into the kernel, for the
++	  cases where the user either cannot or doesn't want to provide it from
++	  userspace at runtime (for example, when the firmware in question is
++	  required for accessing the boot device, and the user doesn't want to
++	  use an initrd). Multiple files should be separated with spaces, and
++	  the required files should exist under the firmware/ directory in
++	  the source tree.
 +
-+			if (!new_fw_data)
-+				return -ENOMEM;
+ config DEBUG_DRIVER
+ 	bool "Driver Core verbose debug messages"
+ 	depends on DEBUG_KERNEL
+diff --git a/firmware/Makefile b/firmware/Makefile
+new file mode 100644
+index 0000000..4243c5a
+--- /dev/null
++++ b/firmware/Makefile
+@@ -0,0 +1,58 @@
++#
++# kbuild file for firmware/
++#
 +
-+			memcpy(new_fw_data, fw->data, fw->size);
-+			new_fw.size = fw->size;
-+			new_fw.data = fw->data;
++firmware-y :=
 +
-+			new_fw_data[idoff + 2] =
- 				le16_to_cpu(udev->descriptor.idProduct) + 1;
--			fw->data[idoff + 3] =
-+			new_fw_data[idoff + 3] =
- 				le16_to_cpu(udev->descriptor.idProduct) >> 8;
- 
--			return usb_cypress_load_firmware(udev, fw, CYPRESS_FX2);
-+			ret = usb_cypress_load_firmware(udev, &new_fw,
-+							CYPRESS_FX2);
-+			vfree(new_fw_data);
-+			return ret;
- 		}
- 	}
- 
++firmware_bins := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
++firmware_srcs := $(patsubst %,$(obj)/%.S, $(firmware_bins))
++firmware_objs := $(patsubst %,%.o, $(firmware_bins) $(firmware-y)) 
++firmware_dirs := $(patsubst %,$(objtree)/$(obj)/%,$(dir $(firmware_objs)))
++
++quiet_cmd_mkdir = MKDIR   $@
++      cmd_mkdir = mkdir -p $@
++
++ifdef CONFIG_64BIT
++SM_WORD := .quad
++SM_ALIGN := 3
++else
++ASM_WORD := .long
++ASM_ALIGN := 2
++endif
++
++quiet_cmd_fwbin = MK_FW   $@
++      cmd_fwbin = FWNAME="$(patsubst firmware/%.S,%,$@)";		     \
++		  INCFILE="$(patsubst %.S,%,$@)";			     \
++		  FWSTR="$(subst /,_,$(subst .,_,$(patsubst 		     \
++				firmware/%.S,%,$@)))";			     \
++		  echo "/* Generated by firmware/Makefile */"		> $@;\
++		  echo "    .section .rodata"				>>$@;\
++		  echo "    .align $(ASM_ALIGN)"			>>$@;\
++		  echo "_fw_$${FWSTR}_bin:"				>>$@;\
++		  echo "    .incbin \"$$INCFILE\""			>>$@;\
++		  echo "_fw_end:"					>>$@;\
++		  echo "   .section .rodata.str,\"aMS\",@progbits,1"	>>$@;\
++		  echo "    .align $(ASM_ALIGN)"			>>$@;\
++		  echo "_fw_$${FWSTR}_name:"				>>$@;\
++		  echo "    .string \"$$FWNAME\""			>>$@;\
++		  echo "    .section .builtin_fw,\"a\",@progbits"	>>$@;\
++		  echo "    .align $(ASM_ALIGN)"			>>$@;\
++		  echo "    $(ASM_WORD) _fw_$${FWSTR}_name" 		>>$@;\
++		  echo "    $(ASM_WORD) _fw_$${FWSTR}_bin" 		>>$@;\
++		  echo "    $(ASM_WORD) _fw_end - _fw_$${FWSTR}_bin"	>>$@;
++
++$(firmware_srcs): $(obj)/%.S: $(srctree)/$(obj)/% include/config/64bit.h
++	$(call cmd,fwbin)
++
++$(firmware_dirs):
++	$(call cmd,mkdir)
++
++$(patsubst %,$(obj)/%,$(firmware_objs)): $(firmware_dirs)
++
++obj-y := $(firmware_objs) 
++
++targets := $(firmware_objs) $(patsubst $(obj)/%,%, $(firmware_srcs))
++
++# Without this, built-in.o won't be created when it's empty, and the
++# final vmlinux link will fail.
++obj-n := dummy
 -- 
 1.5.4.5
 
