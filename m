@@ -1,110 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYEYO4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbYEYPCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbYEYO4X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 10:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbYEYO4N
+	id S1755170AbYEYPCt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 11:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYEYPCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 10:56:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59582 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753131AbYEYO4M (ORCPT
+	Sun, 25 May 2008 11:02:38 -0400
+Received: from eth6445.sa.adsl.internode.on.net ([150.101.30.44]:35142 "EHLO
+	aix.gdt.id.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753418AbYEYPCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 10:56:12 -0400
-Subject: Re: [PATCHv2 04/28] cx25840: treat firmware data as const
-From: David Woodhouse <dwmw2@infradead.org>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, Tyler Trafford <ttrafford@gmail.com>,
-       Mike Isely <isely@isely.net>
-In-Reply-To: <200805251251.32373.hverkuil@xs4all.nl>
-References: <1211708969@pmac.infradead.org>
-	 <E1K0DO1-0007D2-3d@shinybook.infradead.org>
-	 <200805251251.32373.hverkuil@xs4all.nl>
+	Sun, 25 May 2008 11:02:37 -0400
+X-Greylist: delayed 346 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 11:02:36 EDT
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+	IRQF_SAMPLE_RANDOM
+From: Glen Turner <gdt@gdt.id.au>
+To: Benny Amorsen <benny+usenet@amorsen.dk>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <m31w42gf97.fsf@ursa.amorsen.dk>
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
+	 <20080515142154.0595e475@core>
+	 <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+	 <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com>
+	 <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com>
+	 <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca>
+	 <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca>
+	 <20080516191125.46f59ad6@core>   <m31w42gf97.fsf@ursa.amorsen.dk>
 Content-Type: text/plain
-Date: Sun, 25 May 2008 15:56:06 +0100
-Message-Id: <1211727367.31212.119.camel@shinybook.infradead.org>
+Organization: <http://www.gdt.id.au/~gdt/>
+Date: Mon, 26 May 2008 00:32:02 +0930
+Message-Id: <1211727722.5913.63.camel@andromache>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hm, looks like I was also passing the wrong pointer to fw_write().
-Here's the new version...
+On Fri, 2008-05-16 at 22:34 +0200, Benny Amorsen wrote:
 
-commit 57dc4762554119ffb5c711b2716f47997bc5c181
-Author: David Woodhouse <dwmw2@infradead.org>
-Date:   Fri May 23 23:58:24 2008 +0100
+> Perhaps it would be possible to make most types of interrupts add
+> entropy, but not credit any entropy?
 
-    cx25840: treat firmware data as const
-    
-    Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-
-diff --git a/drivers/media/video/cx25840/cx25840-firmware.c b/drivers/media/video/cx25840/cx25840-firmware.c
-index 620d295..8d489a4 100644
---- a/drivers/media/video/cx25840/cx25840-firmware.c
-+++ b/drivers/media/video/cx25840/cx25840-firmware.c
-@@ -79,7 +79,7 @@ static int check_fw_load(struct i2c_client *client, int size)
- 	return 0;
- }
- 
--static int fw_write(struct i2c_client *client, u8 *data, int size)
-+static int fw_write(struct i2c_client *client, const u8 *data, int size)
- {
- 	if (i2c_master_send(client, data, size) < size) {
- 		v4l_err(client, "firmware load i2c failure\n");
-@@ -93,7 +93,8 @@ int cx25840_loadfw(struct i2c_client *client)
- {
- 	struct cx25840_state *state = i2c_get_clientdata(client);
- 	const struct firmware *fw = NULL;
--	u8 buffer[4], *ptr;
-+	u8 buffer[FWSEND];
-+	const u8 *ptr;
- 	int size, retval;
- 
- 	if (state->is_cx23885)
-@@ -108,29 +109,23 @@ int cx25840_loadfw(struct i2c_client *client)
- 
- 	buffer[0] = 0x08;
- 	buffer[1] = 0x02;
--	buffer[2] = fw->data[0];
--	buffer[3] = fw->data[1];
--	retval = fw_write(client, buffer, 4);
- 
--	if (retval < 0) {
--		release_firmware(fw);
--		return retval;
--	}
--
--	size = fw->size - 2;
-+	size = fw->size;
- 	ptr = fw->data;
- 	while (size > 0) {
--		ptr[0] = 0x08;
--		ptr[1] = 0x02;
--		retval = fw_write(client, ptr, min(FWSEND, size + 2));
-+		int len = min(FWSEND - 2, size);
-+
-+		memcpy(buffer + 2, ptr, len);
-+
-+		retval = fw_write(client, buffer, len + 2);
- 
- 		if (retval < 0) {
- 			release_firmware(fw);
- 			return retval;
- 		}
- 
--		size -= FWSEND - 2;
--		ptr += FWSEND - 2;
-+		size -= len;
-+		ptr += len;
- 	}
- 
- 	end_fw_load(client);
-
--- 
-dwmw2
+You need to be certain that those sources are not able
+to be influenced by a hostile party, otherwise the entropy
+pool can be degraded to be less random over successive samples
+than its entropy score suggests.  Interrupts do not meet that
+test.
 
