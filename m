@@ -1,111 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbYEYDtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbYEYEAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759487AbYEYDtd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 23:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYEYDt0
+	id S1752615AbYEYEAX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 00:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbYEYEAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 23:49:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44570 "EHLO mx1.redhat.com"
+	Sun, 25 May 2008 00:00:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60923 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751238AbYEYDtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 23:49:25 -0400
-From: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
-Subject: [PATCH 2/2 v2] Only print "Decompressing Linux" etc when 'debug' is passed.
-Date: Sat, 24 May 2008 23:47:47 -0400
-Message-Id: <1211687267-12962-1-git-send-email-krh@redhat.com>
-X-Mailer: git-send-email 1.5.5.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	id S1750724AbYEYEAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 00:00:08 -0400
+Date: Sun, 25 May 2008 00:03:30 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Kristian =?UTF-8?B?SMO4Z3NiZXJn?= <krh@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Use structs instead of hardcoded offsets in x86
+ boot decompressor.
+Message-ID: <20080525000330.3eedd788@riellaptop.surriel.com>
+In-Reply-To: <4837B2DD.908@zytor.com>
+References: <1211579968-15227-1-git-send-email-krh@redhat.com>
+	<20080523210744.52fe7fde@bree.surriel.com>
+	<4837B2DD.908@zytor.com>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Kristian Høgsberg <krh@redhat.com>
----
+On Fri, 23 May 2008 23:17:01 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-Updated to use the standard 'debug' parameter instead of 'noisy'.
+> Uhm... except it doesn't live at address zero, at all.
+> 
+> It's called "zeropage" because we used to recycle it into 
+> empty_zero_page, a long long time ago.
+> 
+> The bootparms structure is pointed to by %esi being passed from the 
+> setup code to the decompressor to the kernel.
 
- arch/x86/boot/compressed/misc.c |   30 +++++++++++++++++++++++++++---
- 1 files changed, 27 insertions(+), 3 deletions(-)
+Then why does dereferencing the uninitialized
+pointer work, both in the code before and after
+the patch?
 
-diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index 0d03579..017df26 100644
---- a/arch/x86/boot/compressed/misc.c
-+++ b/arch/x86/boot/compressed/misc.c
-@@ -190,6 +190,7 @@ static void gzip_release(void **);
-  */
- static struct boot_params *real_mode;		/* Pointer to real-mode data */
- static struct screen_info *rm_screen_info;	/* Pointer to real-mode data */
-+static int debug;
- 
- extern unsigned char input_data[];
- extern int input_len;
-@@ -391,7 +392,8 @@ static void parse_elf(void *output)
- 		return;
- 	}
- 
--	putstr("Parsing ELF... ");
-+	if (debug)
-+		putstr("Parsing ELF... ");
- 
- 	phdrs = malloc(sizeof(*phdrs) * ehdr.e_phnum);
- 	if (!phdrs)
-@@ -419,11 +421,27 @@ static void parse_elf(void *output)
- 	}
- }
- 
-+static const char *strnstr(const char *string, int len, const char *s)
-+{
-+	int i, j;
-+
-+	for (i = 0; i < len; i++) {
-+		for (j = 0; i + j < len && s[j]; j++)
-+			if (string[i + j] != s[j])
-+				break;
-+		if (s[j] == '\0')
-+			return string + i;
-+	}
-+
-+	return NULL;
-+}
- asmlinkage void decompress_kernel(void *rmode, memptr heap,
- 				  unsigned char *input_data,
- 				  unsigned long input_len,
- 				  unsigned char *output)
- {
-+	char *cmdline;
-+
- 	real_mode = rmode;
- 
- 	if (rm_screen_info->orig_video_mode == 7) {
-@@ -437,6 +455,10 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
- 	lines = rm_screen_info->orig_video_lines;
- 	cols = rm_screen_info->orig_video_cols;
- 
-+	cmdline = (char *) real_mode->hdr.cmd_line_ptr;
-+	if (strnstr(cmdline, real_mode->hdr.cmdline_size, "debug"))
-+		debug = 1;
-+
- 	window = output;		/* Output buffer (Normally at 1M) */
- 	free_mem_ptr     = heap;	/* Heap */
- 	free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
-@@ -461,9 +483,11 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
- #endif
- 
- 	makecrc();
--	putstr("\nDecompressing Linux... ");
-+	if (debug)
-+		putstr("\nDecompressing Linux... ");
- 	gunzip();
- 	parse_elf(output);
--	putstr("done.\nBooting the kernel.\n");
-+	if (debug)
-+		putstr("done.\nBooting the kernel.\n");
- 	return;
- }
--- 
-1.5.5.1
-
+What am I misssing?
