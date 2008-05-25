@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbYEYKdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYEYKfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761485AbYEYKdZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757275AbYEYKY2
+	id S1758646AbYEYKfm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYEYKfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:24:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43333 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762565AbYEYKYO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:24:14 -0400
-In-Reply-To: <1211708969@pmac.infradead.org>
-References: <1211708969@pmac.infradead.org>
-From: David Woodhouse <dwmw2@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: [PATCHv2 11/28] cxacru: treat firmware data as const
-Message-Id: <E1K0DO8-0007DU-GH@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:40 +0100
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 25 May 2008 06:35:33 -0400
+Received: from ozlabs.org ([203.10.76.45]:50287 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752723AbYEYKfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 06:35:32 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: initialization of static per-cpu variables
+Date: Sun, 25 May 2008 20:35:24 +1000
+User-Agent: KMail/1.9.9
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+References: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com> <200805221820.07290.rusty@rustcorp.com.au> <20080523142904.GB28257@cs181133002.pp.htv.fi>
+In-Reply-To: <20080523142904.GB28257@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805252035.24535.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
----
- drivers/usb/atm/cxacru.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Saturday 24 May 2008 00:29:04 Adrian Bunk wrote:
+> On Thu, May 22, 2008 at 06:20:06PM +1000, Rusty Russell wrote:
+> > Yep, it was an old toolchain used by Sparc: DaveM found this one.  As you
+> > say, it's ancient: I'm happy to queue a cleanup patch now everyone is on
+> > a modern compiler.
+>
+> The commit says:
+>
+>     GCC3.1 apparently gets confused about uninitialized sections
+>
+> We do still support gcc 3.2 (which is the same as 3.1 except for a C++
+> ABI change) as a compiler for the kernel.
 
-diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index 5ea3093..90583d6 100644
---- a/drivers/usb/atm/cxacru.c
-+++ b/drivers/usb/atm/cxacru.c
-@@ -820,7 +820,7 @@ reschedule:
- }
- 
- static int cxacru_fw(struct usb_device *usb_dev, enum cxacru_fw_request fw,
--		     u8 code1, u8 code2, u32 addr, u8 *data, int size)
-+		     u8 code1, u8 code2, u32 addr, const u8 *data, int size)
- {
- 	int ret;
- 	u8 *buf;
--- 
-1.5.4.5
+Adrian, that's a little silly.  There are obviously bug fixes in 3.2 over 
+3.1.0.  Noone has complained about the introduction of multiple other cases 
+which would screw things up if they experienced this bug.
 
+Finally, it's a sparc64 problem and DaveM acked already.  That's half the 
+userbase!
+
+Cheers,
+Rusty.
