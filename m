@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932264AbYEYK2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763719AbYEYK3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932264AbYEYK2y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762612AbYEYKYQ
+	id S1763719AbYEYK3U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762598AbYEYKYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:24:16 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42071 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757728AbYEYKYO (ORCPT
+	Sun, 25 May 2008 06:24:17 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43329 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758737AbYEYKYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 25 May 2008 06:24:14 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
@@ -15,164 +15,49 @@ References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: [PATCHv2 26/28] firmware: allow firmware files to be built into kernel image
-Message-Id: <E1K0DOO-0007ES-DU@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:56 +0100
+Subject: [PATCHv2 03/28] cyclades: treat firmware data as const
+Message-Id: <E1K0DO0-0007Cy-26@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:32 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some drivers have their own hacks to bypass the kernel's firmware loader
-and build their firmware into the kernel; this renders those unnecessary.
-
-Other drivers don't use the firmware loader at all, because they always
-want the firmware to be available. This allows them to start using the
-firmware loader.
-
-A third set of drivers already use the firmware loader, but can't be
-used without help from userspace, which sometimes requires an initrd.
-This allows them to work in a static kernel.
-
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/base/firmware_class.c     |   33 +++++++++++++++++++++++++++++++--
- include/asm-generic/vmlinux.lds.h |    7 +++++++
- include/linux/firmware.h          |   21 +++++++++++++++++++++
- 3 files changed, 59 insertions(+), 2 deletions(-)
+ drivers/char/cyclades.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 264b3a2..c09f060 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -49,6 +49,14 @@ struct firmware_priv {
- 	struct timer_list timeout;
- };
- 
-+#ifdef CONFIG_FW_LOADER
-+extern struct builtin_fw __start_builtin_fw[];
-+extern struct builtin_fw __end_builtin_fw[];
-+#else /* Module case. Avoid ifdefs later; it'll all optimise out */
-+static struct builtin_fw *__start_builtin_fw = NULL;
-+static struct builtin_fw *__end_builtin_fw = NULL;
-+#endif
-+
- static void
- fw_load_abort(struct firmware_priv *fw_priv)
- {
-@@ -391,13 +399,12 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
- 	struct device *f_dev;
- 	struct firmware_priv *fw_priv;
- 	struct firmware *firmware;
-+	struct builtin_fw *builtin;
- 	int retval;
- 
- 	if (!firmware_p)
- 		return -EINVAL;
- 
--	printk(KERN_INFO "firmware: requesting %s\n", name);
--
- 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
- 	if (!firmware) {
- 		printk(KERN_ERR "%s: kmalloc(struct firmware) failed\n",
-@@ -406,6 +413,20 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
- 		goto out;
- 	}
- 
-+	for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
-+	     builtin++) {
-+		if (strcmp(name, builtin->name))
-+			continue;
-+		printk(KERN_INFO "firmware: using built-in firmware %s\n",
-+		       name);
-+		firmware->size = builtin->size;
-+		firmware->data = builtin->data;
-+		return 0;
-+	}
-+
-+	if (uevent)
-+		printk(KERN_INFO "firmware: requesting %s\n", name);
-+
- 	retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
- 	if (retval)
- 		goto error_kfree_fw;
-@@ -473,8 +494,16 @@ request_firmware(const struct firmware **firmware_p, const char *name,
- void
- release_firmware(const struct firmware *fw)
- {
-+	struct builtin_fw *builtin;
-+
- 	if (fw) {
-+		for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
-+		     builtin++) {
-+			if (fw->data == builtin->data)
-+				goto free_fw;
-+		}
- 		vfree(fw->data);
-+	free_fw:
- 		kfree(fw);
- 	}
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index ef73e72..6bff9d8 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -4668,7 +4668,7 @@ static inline int __devinit cyc_isfwstr(const char *str, unsigned int size)
+ 	return 0;
  }
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f054778..8d71a40 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -86,6 +86,13 @@
- 		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
- 	}								\
- 									\
-+	/* Built-in firmware blobs */					\
-+	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
-+		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
-+		*(.builtin_fw)						\
-+		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
-+	}								\
-+									\
- 	/* RapidIO route ops */						\
- 	.rio_route        : AT(ADDR(.rio_route) - LOAD_OFFSET) {	\
- 		VMLINUX_SYMBOL(__start_rio_route_ops) = .;		\
-diff --git a/include/linux/firmware.h b/include/linux/firmware.h
-index 5e73f3f..279eaad 100644
---- a/include/linux/firmware.h
-+++ b/include/linux/firmware.h
-@@ -1,7 +1,10 @@
- #ifndef _LINUX_FIRMWARE_H
- #define _LINUX_FIRMWARE_H
-+
- #include <linux/module.h>
- #include <linux/types.h>
-+#include <linux/compiler.h>
-+
- #define FIRMWARE_NAME_MAX 30 
- #define FW_ACTION_NOHOTPLUG 0
- #define FW_ACTION_HOTPLUG 1
-@@ -13,6 +16,24 @@ struct firmware {
  
- struct device;
- 
-+struct builtin_fw {
-+	char *name;
-+	void *data;
-+	unsigned long size;
-+};
-+
-+/* We have to play tricks here much like stringify() to get the
-+   __COUNTER__ macro to be expanded as we want it */
-+#define __fw_concat1(x,y) x##y
-+#define __fw_concat(x,y) __fw_concat1(x,y)
-+
-+#define DECLARE_BUILTIN_FIRMWARE(name, blob)				     \
-+	DECLARE_BUILTIN_FIRMWARE_SIZE(name, &(blob), sizeof(blob))
-+
-+#define DECLARE_BUILTIN_FIRMWARE_SIZE(name, blob, size)			     \
-+	static const struct builtin_fw __fw_concat(__builtin_fw,__COUNTER__) \
-+	__used __section(.builtin_fw) = { name, blob, size }
-+
- #if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
- int request_firmware(const struct firmware **fw, const char *name,
- 		     struct device *device);
+-static inline void __devinit cyz_fpga_copy(void __iomem *fpga, u8 *data,
++static inline void __devinit cyz_fpga_copy(void __iomem *fpga, const u8 *data,
+ 		unsigned int size)
+ {
+ 	for (; size > 0; size--) {
+@@ -4701,10 +4701,10 @@ static int __devinit __cyz_load_fw(const struct firmware *fw,
+ 		const char *name, const u32 mailbox, void __iomem *base,
+ 		void __iomem *fpga)
+ {
+-	void *ptr = fw->data;
+-	struct zfile_header *h = ptr;
+-	struct zfile_config *c, *cs;
+-	struct zfile_block *b, *bs;
++	const void *ptr = fw->data;
++	const struct zfile_header *h = ptr;
++	const struct zfile_config *c, *cs;
++	const struct zfile_block *b, *bs;
+ 	unsigned int a, tmp, len = fw->size;
+ #define BAD_FW KERN_ERR "Bad firmware: "
+ 	if (len < sizeof(*h)) {
 -- 
 1.5.4.5
 
