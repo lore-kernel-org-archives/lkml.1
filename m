@@ -1,51 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYEYNrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYEYNve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYEYNrY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 09:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYEYNrQ
+	id S1755547AbYEYNve (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 09:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYEYNvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 09:47:16 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57270 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbYEYNrQ (ORCPT
+	Sun, 25 May 2008 09:51:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40991 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452AbYEYNvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 09:47:16 -0400
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-From: David Woodhouse <dwmw2@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Michael Buesch <mb@bu3sch.de>, Marcel Holtmann <marcel@holtmann.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       aoliva@redhat.com, Abhay Salunke <Abhay_Salunke@dell.com>,
-       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <20080525141638.65111d64@core>
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	 <200805251149.41059.mb@bu3sch.de>
-	 <9995307A-E602-4A30-8900-6AEDDF7D1D8F@holtmann.org>
-	 <200805251414.04509.mb@bu3sch.de>  <20080525141638.65111d64@core>
-Content-Type: text/plain
-Date: Sun, 25 May 2008 14:46:58 +0100
-Message-Id: <1211723218.31212.104.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 25 May 2008 09:51:25 -0400
+Date: Sun, 25 May 2008 09:51:23 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: [PATCH -v3] x86: enable preemption in delay
+In-Reply-To: <Pine.LNX.4.58.0805250943010.22651@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0805250948000.22651@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
+ <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
+ <Pine.LNX.4.58.0805250931160.20625@gandalf.stny.rr.com>
+ <Pine.LNX.4.58.0805250943010.22651@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-05-25 at 14:16 +0100, Alan Cox wrote:
-> > What if I want 2 or 3 different firmware versions installed at once?
-> > I'll have to play dirty tricks with the filenames then and put several
-> > unrelated firmware versions into one directory. That's going to be a mess.
-> 
-> You add the desired feature to udev, or use symlinks. Hardly a "mess".
 
-It's a bit of a pain for the in-kernel firmware loading that I'm working
-on now, if we can no longer count on the requested string to be the
-single match criterion.
+The RT team has been searching for a nasty latency. This latency shows
+up out of the blue and has been seen to be as big as 5ms!
 
--- 
-dwmw2
+Using ftrace I found the cause of the latency.
+
+   pcscd-2995  3dNh1 52360300us : irq_exit (smp_apic_timer_interrupt)
+   pcscd-2995  3dN.2 52360301us : idle_cpu (irq_exit)
+   pcscd-2995  3dN.2 52360301us : rcu_irq_exit (irq_exit)
+   pcscd-2995  3dN.1 52360771us : smp_apic_timer_interrupt (apic_timer_interrupt
+)
+   pcscd-2995  3dN.1 52360771us : exit_idle (smp_apic_timer_interrupt)
+
+Here's an example of a 400 us latency. pcscd took a timer interrupt and
+returned with "need resched" enabled, but did not reschedule until after
+the next interrupt came in at 52360771us 400us later!
+
+At first I thought we somehow missed a preemption check in entry.S. But
+I also noticed that this always seemed to happen during a __delay call.
+
+   pcscd-2995  3dN.2 52360836us : rcu_irq_exit (irq_exit)
+   pcscd-2995  3.N.. 52361265us : preempt_schedule (__delay)
+
+Looking at the x86 delay, I found my problem.
+
+In git commit 35d5d08a085c56f153458c3f5d8ce24123617faf, Andrew Morton
+placed preempt_disable around the entire delay due to TSC's not working
+nicely on SMP.  Unfortunately for those that care about latencies this
+is devastating! Especially when we have callers to mdelay(8).
+
+Here I enable preemption during the loop and account for anytime the task
+migrates to a new CPU. The delay asked for may be extended a bit by
+the migration, but delay only guarantees that it will delay for that minimum
+time. Delaying longer should not be an issue.
+
+[
+  Thanks to Thomas Gleixner for spotting that cpu wasn't updated,
+    suggesting the loop count down, and to place the rep_nop between
+    preempt_enabled/disable.
+]
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+---
+ arch/x86/lib/delay_32.c |   32 ++++++++++++++++++++++++++++----
+ arch/x86/lib/delay_64.c |   31 +++++++++++++++++++++++++++----
+ 2 files changed, 55 insertions(+), 8 deletions(-)
+
+Index: linux-tip.git/arch/x86/lib/delay_32.c
+===================================================================
+--- linux-tip.git.orig/arch/x86/lib/delay_32.c	2008-05-22 14:51:02.000000000 -0400
++++ linux-tip.git/arch/x86/lib/delay_32.c	2008-05-25 09:45:24.000000000 -0400
+@@ -44,13 +44,37 @@ static void delay_loop(unsigned long loo
+ static void delay_tsc(unsigned long loops)
+ {
+ 	unsigned long bclock, now;
++	int cpu;
+
+-	preempt_disable();		/* TSC's are per-cpu */
++	preempt_disable();
++	cpu = smp_processor_id();
+ 	rdtscl(bclock);
+-	do {
+-		rep_nop();
++	for (;;) {
+ 		rdtscl(now);
+-	} while ((now-bclock) < loops);
++		if ((now - bclock) >= loops)
++			break;
++
++		loops -= (now - bclock);
++
++		/* Allow RT tasks to run */
++		preempt_enable();
++		rep_nop();
++		preempt_disable();
++
++		/*
++		 * It is possible that we moved to another CPU, and
++		 * since TSC's are per-cpu we need to calculate
++		 * that. The delay must guarantee that we wait "at
++		 * least" the amount of time. Being moved to another
++		 * CPU could make the wait longer but we just need to
++		 * make sure we waited long enough. Rebalance the
++		 * counter for this CPU.
++		 */
++		if (unlikely(cpu != smp_processor_id())) {
++			cpu = smp_processor_id();
++			rdtscl(bclock);
++		}
++	}
+ 	preempt_enable();
+ }
+
+Index: linux-tip.git/arch/x86/lib/delay_64.c
+===================================================================
+--- linux-tip.git.orig/arch/x86/lib/delay_64.c	2008-05-25 09:25:22.000000000 -0400
++++ linux-tip.git/arch/x86/lib/delay_64.c	2008-05-25 09:45:14.000000000 -0400
+@@ -31,14 +31,37 @@ int __devinit read_current_timer(unsigne
+ void __delay(unsigned long loops)
+ {
+ 	unsigned bclock, now;
++	int cpu;
+
+-	preempt_disable();		/* TSC's are pre-cpu */
++	preempt_disable();
++	cpu = smp_processor_id();
+ 	rdtscl(bclock);
+-	do {
+-		rep_nop();
++	for (;;) {
+ 		rdtscl(now);
++		if ((now - bclock) >= loops)
++			break;
++
++		loops -= (now - bclock);
++
++		/* Allow RT tasks to run */
++		preempt_enable();
++		rep_nop();
++		preempt_disable();
++
++		/*
++		 * It is possible that we moved to another CPU, and
++		 * since TSC's are per-cpu we need to calculate
++		 * that. The delay must guarantee that we wait "at
++		 * least" the amount of time. Being moved to another
++		 * CPU could make the wait longer but we just need to
++		 * make sure we waited long enough. Rebalance the
++		 * counter for this CPU.
++		 */
++		if (unlikely(cpu != smp_processor_id())) {
++			cpu = smp_processor_id();
++			rdtscl(bclock);
++		}
+ 	}
+-	while ((now-bclock) < loops);
+ 	preempt_enable();
+ }
+ EXPORT_SYMBOL(__delay);
+
 
