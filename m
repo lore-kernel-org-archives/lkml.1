@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760812AbYEYJLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbYEYJ2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760812AbYEYJLs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 05:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYEYJLk
+	id S1760145AbYEYJ2d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 05:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYEYJ2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 05:11:40 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:54079 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbYEYJLj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 05:11:39 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: some numbers on macros
-Date: Sun, 25 May 2008 11:11:36 +0200
-User-Agent: KMail/1.9.9
-Cc: Matthew Wilcox <matthew@wil.cx>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200805241748.19607.m.kozlowski@tuxland.pl> <200805250141.09195.m.kozlowski@tuxland.pl> <20080524164615.0ed80f85@infradead.org>
-In-Reply-To: <20080524164615.0ed80f85@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 25 May 2008 05:28:24 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:49557 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752969AbYEYJ2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 05:28:23 -0400
+Date: Sun, 25 May 2008 11:27:28 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: LKML <linux-kernel@vger.kernel.org>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com
+Subject: gcc "internal error" with 32-bit userspace, 64-bit kernel
+Message-ID: <20080525112728.6341c113@mjolnir.drzeus.cx>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805251111.36932.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+I'm having a bit of a problem with the x86 32-bit compatibility and I
+don't really know how to debug it.
 
-> On Sun, 25 May 2008 01:41:09 +0200
-> Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> > 
-> > Interesting part would be to write a 'parser' that actually sees the
-> > context and understands cpp directives, that could 'walk' the tree.
-> 
-> you could approach it from the opposite angle... I mean, lxr.linux.no
-> already has all this data in some database.. maybe you can turn it into
-> a set of database queries ;)
+The problem is that gcc fails some builds with "internal error" when
+I'm running a 32-bit userspace on a 64-bit kernel. The same test
+scenario with a 32-bit kernel works fine.
 
-Good point :) Will look into this.
+More specifically, I'm using Red Hat's mock tool on Fedora 9 to build
+packages. It sets up a chroot:ed environment where (as far as I can
+tell) everything is from the target system. Building for 32-bit Fedora
+8 succeeds, but not Fedora 9 or RHEL 5.
 
-	Mariusz
+Ideas on how to proceed? From what I've read, the 32-bit compatibility
+of the kernel should be 100%.
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
