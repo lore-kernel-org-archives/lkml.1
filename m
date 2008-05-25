@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762700AbYEXWU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763374AbYEXWVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762700AbYEXWU5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 18:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbYEXWUr
+	id S1763374AbYEXWVj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 18:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762849AbYEXWV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 18:20:47 -0400
-Received: from www.tglx.de ([62.245.132.106]:58421 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754309AbYEXWUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 18:20:46 -0400
-Date: Sun, 25 May 2008 00:20:33 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Greg KH <gregkh@suse.de>
-Cc: "Hans J. Koch" <hjk@linutronix.de>,
-       Uwe Kleine-K??nig <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
-	interrupts
-Message-ID: <20080524222033.GB3198@local>
-References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <20080523055527.GA28963@digi.com> <20080523104454.4e2af6ec@bluebox.local> <20080523091009.GA22821@digi.com> <20080523120308.7bec1e1c@bluebox.local> <20080523105604.GA23800@digi.com> <20080523135557.27fe4855@bluebox.local> <20080524044354.GA8129@suse.de>
+	Sat, 24 May 2008 18:21:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:39711 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762787AbYEXWVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 May 2008 18:21:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=VxJmP8JYo7mIypjXBU9P8Ltd6QJTnQSZehq9AiLbygqddTikCtWN029mbque5a8Vtk035aSakiegUmgiqVK3F6ZZVraJP6bDNvCNdkvZcvzU8fUve6SfiWi/lW9kt0RyOn3O++U3j42I2sPtYhC+nShZ48vdMglLk6ApaDWBv6c=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10749] the system doesn't shutdown
+Date: Mon, 26 May 2008 00:19:09 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Riccardo" <goric@trivenet.it>
+References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <TW_YzGo9TFP.A.w4C.BeIOIB@albercik>
+In-Reply-To: <TW_YzGo9TFP.A.w4C.BeIOIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080524044354.GA8129@suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805260019.09846.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 23, 2008 at 09:43:54PM -0700, Greg KH wrote:
-> On Fri, May 23, 2008 at 01:55:57PM +0200, Hans J. Koch wrote:
-> > Sometimes it is necessary to enable/disable the interrupt of a UIO device
-> > from the userspace part of the driver. With this patch, the UIO kernel driver
-> > can implement an "irqcontrol()" function that does this. Userspace can write
-> > an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
-> > UIO core will then call the driver's irqcontrol function.
+
+Hi,
+
+On Saturday 24 May 2008, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Why not just a new sysfs file for the uio device, irq_enabled, or
-> something like that?  That way our main read/write path is left alone.
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10749
+> Subject		: the system doesn't shutdown
+> Submitter	: Riccardo <goric@trivenet.it>
+> Date		: 2008-05-19 09:00 (6 days old)
 
-Hi Greg,
-this is in a fast path, so I'm not sure if a sysfs file is not too much
-overhead. Special devices in embedded boards sometimes generate a
-considerable irq load, and I think it might be problem to do a sysfs
-write operation a few thousand times per second.
+Riccardo, thanks for bisecting the problem.  Could you also attach dmesgs
+for "good" and "bad" kernels at bugzilla entry (so we can see if there are
+any clues for solving the regression in messages printed by the driver)?
 
-Thanks,
-Hans
+Also does the following patch help (we should always setup PCI device
+with pci_enable_device() before using it, my patch changed it)?
+
+---
+ drivers/ide/pci/sis5513.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+Index: b/drivers/ide/pci/sis5513.c
+===================================================================
+--- a/drivers/ide/pci/sis5513.c
++++ b/drivers/ide/pci/sis5513.c
+@@ -569,6 +569,11 @@ static int __devinit sis5513_init_one(st
+ {
+ 	struct ide_port_info d = sis5513_chipset;
+ 	u8 udma_rates[] = { 0x00, 0x00, 0x07, 0x1f, 0x3f, 0x3f, 0x7f, 0x7f };
++	int rc;
++
++	rc = pci_enable_device(dev);
++	if (rc)
++		return rc;
+ 
+ 	if (sis_find_family(dev) == 0)
+ 		return -ENOTSUPP;
+
