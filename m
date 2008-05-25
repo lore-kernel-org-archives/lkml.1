@@ -1,178 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYEYSE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbYEYSGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbYEYSE0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 14:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbYEYSDz
+	id S1757227AbYEYSGB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 14:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYEYSFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 14:03:55 -0400
-Received: from atflat.net ([80.229.16.180]:43721 "EHLO holly.atflat.local"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756578AbYEYSDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 14:03:53 -0400
-From: Tom Spink <tspink@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tom Spink <tspink@gmail.com>
-Subject: [RFC PATCH 1/2] vfs: Introduce on-demand filesystem initialisation
-Date: Sun, 25 May 2008 18:48:18 +0100
-Message-Id: <1211737699-25615-2-git-send-email-tspink@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1211737699-25615-1-git-send-email-tspink@gmail.com>
-References: <>
- <1211737699-25615-1-git-send-email-tspink@gmail.com>
+	Sun, 25 May 2008 14:05:53 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52649 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751109AbYEYSFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 14:05:53 -0400
+Date: Sun, 25 May 2008 21:03:16 +0300
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: Chris Dearman <chris@mips.com>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] MIPS SEAD compile fix
+Message-ID: <20080525180316.GF1791@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds on-demand filesystem initialisation capabilities to the VFS,
-whereby an init routine will be executed on first use of a particular
-filesystem type.  Also, an exit routine will be executed when the last
-superblock of a filesystem type is deactivated.
+This patch fixes the following compile error caused by
+commit 39b8d5254246ac56342b72f812255c8f7a74dca9
+([MIPS] Add support for MIPS CMP platform.):
 
-This is useful for filesystems that share global resources between all
-instances of the filesystem, but only need those resources when there are
-any users of the filesystem.  This lets the filesystem initialise those
-resources (kernel threads or caches, say) when the first superblock is
-created.  It also lets the filesystem clean up those resources when the
-last superblock is deactivated.
+<--  snip  -->
 
-Signed-off-by: Tom Spink <tspink@gmail.com>
+...
+  CC      arch/mips/mips-boards/generic/time.o
+cc1: warnings being treated as errors
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/mips-boards/generic/time.c:63: error: 'ledbitmask' defined but not used
+make[2]: *** [arch/mips/mips-boards/generic/time.o] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
+
 ---
- fs/filesystems.c   |    2 ++
- fs/super.c         |   47 ++++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/fs.h |    3 +++
- 3 files changed, 51 insertions(+), 1 deletions(-)
-
-diff --git a/fs/filesystems.c b/fs/filesystems.c
-index f37f872..59b2eaa 100644
---- a/fs/filesystems.c
-+++ b/fs/filesystems.c
-@@ -79,6 +79,7 @@ int register_filesystem(struct file_system_type * fs)
- 		res = -EBUSY;
- 	else
- 		*p = fs;
-+	mutex_init(&fs->fs_supers_lock);
- 	write_unlock(&file_systems_lock);
- 	return res;
- }
-@@ -105,6 +106,7 @@ int unregister_filesystem(struct file_system_type * fs)
- 	tmp = &file_systems;
- 	while (*tmp) {
- 		if (fs == *tmp) {
-+			mutex_destroy(&fs->fs_supers_lock);
- 			*tmp = fs->next;
- 			fs->next = NULL;
- 			write_unlock(&file_systems_lock);
-diff --git a/fs/super.c b/fs/super.c
-index 453877c..af20175 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -181,7 +181,21 @@ void deactivate_super(struct super_block *s)
- 		spin_unlock(&sb_lock);
- 		DQUOT_OFF(s, 0);
- 		down_write(&s->s_umount);
-+
-+		/* Take the mutex before calling kill_sb, because it may
-+		 * modify the fs_supers list.
-+		 */
-+		mutex_lock(&fs->fs_supers_lock);
- 		fs->kill_sb(s);
-+
-+		/* Check to see if this is the last superblock of the
-+		 * filesystem going down, and if it is, then run the exit
-+		 * routine.
-+		 */
-+		if (list_empty(&fs->fs_supers) && fs->exit)
-+			fs->exit();
-+		mutex_unlock(&fs->fs_supers_lock);
-+
- 		put_filesystem(fs);
- 		put_super(s);
- 	}
-@@ -338,6 +352,7 @@ struct super_block *sget(struct file_system_type *type,
- 	struct super_block *old;
- 	int err;
+a6622e47dd128da338d6dbae457ec1b043604814 diff --git a/arch/mips/mips-boards/generic/time.c b/arch/mips/mips-boards/generic/time.c
+index 008fd82..df23558 100644
+--- a/arch/mips/mips-boards/generic/time.c
++++ b/arch/mips/mips-boards/generic/time.c
+@@ -58,10 +58,14 @@ static int mips_cpu_timer_irq;
+ static int mips_cpu_perf_irq;
+ extern int cp0_perfcount_irq;
  
-+	mutex_lock(&type->fs_supers_lock);
- retry:
- 	spin_lock(&sb_lock);
- 	if (test) {
-@@ -348,14 +363,17 @@ retry:
- 				goto retry;
- 			if (s)
- 				destroy_super(s);
-+			mutex_unlock(&type->fs_supers_lock);
- 			return old;
- 		}
- 	}
- 	if (!s) {
- 		spin_unlock(&sb_lock);
- 		s = alloc_super(type);
--		if (!s)
-+		if (!s) {
-+			mutex_unlock(&type->fs_supers_lock);
- 			return ERR_PTR(-ENOMEM);
-+		}
- 		goto retry;
- 	}
- 		
-@@ -363,14 +381,41 @@ retry:
- 	if (err) {
- 		spin_unlock(&sb_lock);
- 		destroy_super(s);
-+		mutex_unlock(&type->fs_supers_lock);
- 		return ERR_PTR(err);
- 	}
++#if defined(CONFIG_MIPS_MALTA) || defined(CONFIG_MIPS_ATLAS)
 +
-+	/* If this is the first superblock of this particular filesystem,
-+	 * run the init routine, if any.  If we're going to do this, then we
-+	 * also need to drop the sb_lock spinlock.
-+	 */
-+	if (list_empty(&type->fs_supers) && type->init) {
-+		spin_unlock(&sb_lock);
-+
-+		/* We can do this, because we're holding the fs_supers_lock
-+		 * mutex.
-+		 */
-+		err = type->init();
-+		if (err < 0) {
-+			/* If the filesystem failed to initialise, then back
-+			 * out, destroy the superblock and return the error.
-+			 */
-+			destroy_super(s);
-+			mutex_unlock(&type->fs_supers_lock);
-+			return ERR_PTR(err);
-+		}
-+
-+		spin_lock(&sb_lock);
-+	}
-+
- 	s->s_type = type;
- 	strlcpy(s->s_id, type->name, sizeof(s->s_id));
- 	list_add_tail(&s->s_list, &super_blocks);
- 	list_add(&s->s_instances, &type->fs_supers);
- 	spin_unlock(&sb_lock);
- 	get_filesystem(type);
-+
-+	mutex_unlock(&type->fs_supers_lock);
- 	return s;
- }
+ DEFINE_PER_CPU(unsigned int, tickcount);
+ #define tickcount_this_cpu __get_cpu_var(tickcount)
+ static unsigned long ledbitmask;
  
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index f413085..92d446f 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1477,8 +1477,11 @@ struct file_system_type {
- 	int (*get_sb) (struct file_system_type *, int,
- 		       const char *, void *, struct vfsmount *);
- 	void (*kill_sb) (struct super_block *);
-+	int (*init) (void);
-+	void (*exit) (void);
- 	struct module *owner;
- 	struct file_system_type * next;
-+	struct mutex fs_supers_lock;
- 	struct list_head fs_supers;
- 
- 	struct lock_class_key s_lock_key;
--- 
-1.5.4.3
++#endif
++
+ static void mips_timer_dispatch(void)
+ {
+ #if defined(CONFIG_MIPS_MALTA) || defined(CONFIG_MIPS_ATLAS)
 
