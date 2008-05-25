@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbYEYSb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbYEYSe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbYEYSb0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 14:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757523AbYEYSbD
+	id S1758168AbYEYSe5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 14:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbYEYSet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 14:31:03 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:54312 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757465AbYEYSbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 14:31:01 -0400
-Date: Sun, 25 May 2008 21:28:24 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: 2.6.26-rc3-git7: Reported regressions from 2.6.25
-Message-ID: <20080525182824.GI1791@cs181133002.pp.htv.fi>
-References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <b6a2187b0805241730x4a9d31b6k8f439088f63bcc9b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <b6a2187b0805241730x4a9d31b6k8f439088f63bcc9b@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 25 May 2008 14:34:49 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:39390 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753866AbYEYSet (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 14:34:49 -0400
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, aoliva@redhat.com,
+       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
+       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
+Message-Id: <6BA85885-37F3-4D18-8B28-72687F5279FD@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Michael Buesch <mb@bu3sch.de>
+In-Reply-To: <200805252027.51377.mb@bu3sch.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sun, 25 May 2008 20:34:43 +0200
+References: <1211550282.28967.8.camel@pmac.infradead.org> <200805251545.25516.mb@bu3sch.de> <7BD202F0-0E0E-495D-93CA-45F2E5AA8065@holtmann.org> <200805252027.51377.mb@bu3sch.de>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 25, 2008 at 08:30:09AM +0800, Jeff Chua wrote:
-> On Sun, May 25, 2008 at 4:28 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10759
-> > Subject         : recent 2.6.26 kernel hangs at suspend
-> > Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-> > Date            : 2008-05-19 15:07 (6 days old)
-> > References      : http://marc.info/?l=linux-kernel&amp;m=121121007814338&amp;w=2
-> > Handled-By      : Len Brown <lenb@kernel.org>
-> >                  Pavel Machek <pavel@suse.cz>
-> 
-> 
-> This has been fixed by this commit.
-> 
-> commit 860da5e578c25d1ab4528c0d1ad13f9969e3490f
-> Merge: 1bf9947... e948e99...
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Mon May 19 13:30:40 2008 -0700
-> 
->     Merge branch 'drm-patches' of git://git.kernel.org/pub/scm/linux/kernel/git/
-> airlied/drm-2.6
-> 
->     * 'drm-patches' of git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm
-> -2.6:
->       drm/i915: save and restore dsparb and d_state registers.
->       drm/i915: fix off by one in VGA save/restore of AR & CR regs.
->       drm: disable tasklets not IRQs when taking the drm lock spinlock
->       Revert "drm/vbl rework: rework how the drm deals with vblank."
+Hi Michael,
 
-Thanks, closed.
+>> don't give me that crap. Nobody plans to break everything just right
+>> now and leave people hanging in between. We will do a smooth
+>> transition. Your users won't even notice it.
+>
+> Right. I will forward any complain mail to you then.
+> This is not the first time we (need to) change the firmware ABI, so I
+> pretty much know what I'm talking about.
+>
+> I still didn't see a single valid reason in the whole thread that  
+> explains
+> why we suddenly have to forbid the use of the "/" character. (and  
+> that's
+> really what my problem only is about)
 
-> Thanks,
-> Jeff.
+the reason is pretty simple; the a kernel driver should not do any  
+kind of policy, namespace or whatever you wanna call it. This should  
+be done in userspace.
 
-cu
-Adrian
+>> And we change the API/ABI all the time. Get used to it.
+>
+> Right. And endusers are really scared by it.
+> Other operating systems out there can live without ABI breakage for  
+> 10 years.
 
--- 
+And some operating system really suffer from this ABI guarantee. I am  
+not getting into this since it has been discussed so many times and  
+the kernel source contains full documentation why we are not doing it.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> Breakage example? I have a server running Ubuntu Dapper. I'm running  
+> a 2.6.23 kernel on
+> it and it complains that several features used by the dapper udev  
+> will go away in
+> a future kernel release. So if I want to update the kernel (security  
+> update or
+> for whatever reason) I need to upgrade the whole distribution,  
+> basically.
+> That is OK and I will do this. But this just shows that we really  
+> must try hard
+> to avoid breaking the udev ABI.
+> And I don't see this happening here.
+
+We actually do and we the future remove document and the requirements  
+document within the kernel source this is fully documented all of the  
+time.
+
+However you have to understand that at some point we have to make sure  
+that kernel and userspace are recent. But again, this will be all  
+documented and if a distro than decides to bluntly ignore it, then go  
+ahead an blame the distro. The kernel depends on the "plumbing" and  
+vise versa.
+
+Regards
+
+Marcel
 
