@@ -1,31 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762701AbYEYMRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbYEYMWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762701AbYEYMRE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 08:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbYEYMQz
+	id S1762662AbYEYMWK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 08:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbYEYMV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 08:16:55 -0400
-Received: from smtp-01.datacomm.ch ([212.40.2.26]:51557 "EHLO
-	smtp-01.datacomm.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756587AbYEYMQy (ORCPT
+	Sun, 25 May 2008 08:21:57 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:39808 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755905AbYEYMV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 08:16:54 -0400
-X-Greylist: delayed 371 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 08:16:54 EDT
-Subject: Re: SB600 AHCI: Hard Disk Corruption
-From: Patrick <ragamuffin@datacomm.ch>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <1211717435.6038.53.camel@localhost.localdomain>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 25 May 2008 14:16:53 +0200
-Message-Id: <1211717813.6038.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Sun, 25 May 2008 08:21:57 -0400
+Message-ID: <483959DD.8020505@davidnewall.com>
+Date: Sun, 25 May 2008 21:51:49 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: devzero@web.de
+CC: Shuduo Sang <sangshuduo@gmail.com>, bosko.radivojevic@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Inserting code from userspace to kernel space
+References: <290982711@web.de>
+In-Reply-To: <290982711@web.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uh, dough, forgot: Could you please CC me on replies, since i'm not
-subscribed - thanks
+devzero@web.de wrote:
+> this can be illegal, too.
+>
+> http://www.gnu.org/licenses/gpl-faq.html#ModifiedJustBinary
+>   
 
+I think what he's trying to achieve is an unmodified or modified but
+fully GPL kernel plus a separate, proprietary binary to be loaded at
+runtime.
