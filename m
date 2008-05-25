@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbYEYEVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbYEYE1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbYEYEVw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 00:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYEYEVn
+	id S1753695AbYEYE1T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 00:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYEYE1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 00:21:43 -0400
-Received: from tesla.comm.utoronto.ca ([128.100.11.1]:57370 "EHLO
-	tesla.comm.toronto.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYEYEVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 00:21:42 -0400
-X-Greylist: delayed 1345 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 00:21:42 EDT
-Message-Id: <3CF690CE-DD01-4EE4-8B40-E2641D5C06AB@comm.utoronto.ca>
-From: Alexander Karpenko <alexander@comm.utoronto.ca>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: [PATCH] Fix fn key on Macbook Pro 4,1 and Macbook Air   (CC me on replies)
-Date: Sat, 24 May 2008 23:59:01 -0400
-X-Mailer: Apple Mail (2.919.2)
+	Sun, 25 May 2008 00:27:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57109 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751171AbYEYE1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 00:27:05 -0400
+Date: Sun, 25 May 2008 00:25:27 -0400
+From: Kristian =?utf-8?B?SMO4Z3NiZXJn?= <krh@bitplanet.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       Kristian =?utf-8?B?SMO4Z3NiZXJn?= <krh@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Use structs instead of hardcoded offsets in x86
+	boot decompressor.
+Message-ID: <20080525042527.GA12989@bitplanet.net>
+References: <1211579968-15227-1-git-send-email-krh@redhat.com> <20080523210744.52fe7fde@bree.surriel.com> <4837B2DD.908@zytor.com> <20080525000330.3eedd788@riellaptop.surriel.com> <4838E5D4.4050708@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4838E5D4.4050708@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Summary: The fn key does not work on Macbook Pro 4,1 and Air,  
-preventing the user from using the keyboard's media keys, volume keys,  
-PgUp, PgDn, Home, End, Delete, and adjusting screen brightness.
+On Sat, May 24, 2008 at 09:06:44PM -0700, H. Peter Anvin wrote:
+> Rik van Riel wrote:
+>> On Fri, 23 May 2008 23:17:01 -0700
+>> "H. Peter Anvin" <hpa@zytor.com> wrote:
+>>
+>>> Uhm... except it doesn't live at address zero, at all.
+>>>
+>>> It's called "zeropage" because we used to recycle it into 
+>>> empty_zero_page, a long long time ago.
+>>>
+>>> The bootparms structure is pointed to by %esi being passed from the setup 
+>>> code to the decompressor to the kernel.
+>>
+>> Then why does dereferencing the uninitialized
+>> pointer work, both in the code before and after
+>> the patch?
+>>
+>> What am I misssing?
+>
+> Heck if I know.  It definitely *shouldn't* work...
 
-Keywords: macbook, fn key, keyboard, hid, quirks
+Damn, I lost a chunk of the patch.  There's supposed to be a
 
-Kernel version: 2.6.24-16-generic
+        rm_screen_info = &real_mode->screen_info;
 
-I've posted the patch to this bug report, which outlines the problem,  
-debugging, and fix in more detail: https://bugs.launchpad.net/mactel-support/+bug/207127
+after the real_mode = rmode assignment.  In the code before,
+RM_SCREEN_INFO was a macro that just referenced the real_mode pointer:
 
-The direct link to the patch is: http://launchpadlibrarian.net/14613817/fix_fn_key_on_macbookpro_4_1_and_mb_air.patch
+	#define RM_SCREEN_INFO (*(struct screen_info *)(real_mode+0))
 
-Patch description:
-The patch adds the device IDs of the keyboards (ANSI, ISO, JIS for MB  
-Pro/Air) to drivers/hid/usbhid/hid-quirks.c.
+Thanks, wil resend.
+Kristian
 
-Please CC me on replies, as I'm not subscribed to this mailing list.
 
-Regards,
-
-Alex
