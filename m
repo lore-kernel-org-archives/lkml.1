@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYEYRAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYEYRBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbYEYRAl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 13:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757095AbYEYRAW
+	id S1757482AbYEYRBE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 13:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbYEYRAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 13:00:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:38782 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755962AbYEYRAV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 13:00:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Bm0H2lWeLhBRYztePMrnzJaRrLbhueVLPqwSBdp0gwdWBG+gAvHUAyEBuvZyDuK4BO+f3ePZwWN4bjAifkvgfBx3aydE2vuMk1P1PwVyouwyDEOGZ26oWDMse9Xb1nBAD3hGM3o7xS3PhbJjViTGgI1xQwy+bCHsnOHvFbc3UYw=
-Date: Sun, 25 May 2008 21:00:04 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: hpa@zytor.com, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/11] tip/x86/nmi nmi-32/64.c merge v3
-Message-ID: <20080525170004.GA6911@cvg>
-References: <4838373b.0637560a.7ce5.3f01@mx.google.com> <alpine.LFD.1.10.0805251842360.3295@apollo.tec.linutronix.de>
+	Sun, 25 May 2008 13:00:51 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:55868 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755449AbYEYRAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 13:00:50 -0400
+Date: Sun, 25 May 2008 19:58:13 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] sparc64: global_reg_snapshot is not for userspace
+Message-ID: <20080525165813.GC1791@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805251842360.3295@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Thomas Gleixner - Sun, May 25, 2008 at 06:44:28PM +0200]
-| On Sat, 24 May 2008, Cyrill Gorcunov wrote:
-| 
-| > This series tries to merge down nmi_32/64.c to nmi.c. It is done by small
-| > steps in hope it would help to bisect problems (which will appear anyway ;)
-| > Please review *carefully* since it is NMI what I've touched (and I'm not
-| > nmi specialist). So I really apreciate _ANY_ comments on this. The series
-| > is produced over today 'tip' tree branch 'x86/nmi'.
-| 
-| Cyrill,
-| 
-| very good job. I did a short review and found no obvious problems
-| yet. Will have a closer look when I apply it.
-| 
-| Thanks,
-| 	tglx
-| 
-| 
-| 
+global_reg_snapshot shouldn't be visible in our userspace headers.
 
-thanks Thomas, unfortunelly I think the problems will arise soon,
-I've just noticed the commit 
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-commit 57b2b8947a5f68e59d5f50ab749efdc79d9ba040
-Author: Mike Travis <travis@sgi.com>
-Date:   Mon May 12 21:21:12 2008 +0200
+---
 
-    x86: fix remove cpu_pda table patch
+ include/asm-sparc64/ptrace.h |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-in tip/testing tree
+bcd3ca7553a2f3e416db385fd976ef5b862b1370 diff --git a/include/asm-sparc64/ptrace.h b/include/asm-sparc64/ptrace.h
+index d8a56cd..b163da7 100644
+--- a/include/asm-sparc64/ptrace.h
++++ b/include/asm-sparc64/ptrace.h
+@@ -126,6 +126,8 @@ struct sparc_trapf {
+ #define TRACEREG32_SZ	sizeof(struct pt_regs32)
+ #define STACKFRAME32_SZ	sizeof(struct sparc_stackf32)
+ 
++#ifdef __KERNEL__
++
+ struct global_reg_snapshot {
+ 	unsigned long		tstate;
+ 	unsigned long		tpc;
+@@ -137,8 +139,6 @@ struct global_reg_snapshot {
+ 	unsigned long		pad2;
+ };
+ 
+-#ifdef __KERNEL__
+-
+ #define __ARCH_WANT_COMPAT_SYS_PTRACE
+ 
+ #define force_successful_syscall_return()	    \
+@@ -306,6 +306,8 @@ extern void __show_regs(struct pt_regs *);
+ #define SF_XARG5  0x58
+ #define SF_XXARG  0x5c
+ 
++#ifdef __KERNEL__
++
+ /* global_reg_snapshot offsets */
+ #define GR_SNAP_TSTATE	0x00
+ #define GR_SNAP_TPC	0x08
+@@ -316,6 +318,8 @@ extern void __show_regs(struct pt_regs *);
+ #define GR_SNAP_PAD1	0x30
+ #define GR_SNAP_PAD2	0x38
+ 
++#endif  /*  __KERNEL__  */
++
+ /* Stuff for the ptrace system call */
+ #define PTRACE_SPARC_DETACH       11
+ #define PTRACE_GETREGS            12
 
-so we will need some workaround for check_nmi_watchdog() 'cause of  changing
-
-...
--	prev_nmi_count = kmalloc(NR_CPUS * sizeof(int), GFP_KERNEL);
-+	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
-...
--	for (cpu = 0; cpu < NR_CPUS; cpu++)
-+	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
-...
-
-didn't take a precise look on this, but will take as only be able to ;)
-
-		- Cyrill -
