@@ -1,53 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbYEYLgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYEYLhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759339AbYEYLgu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 07:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbYEYLgn
+	id S1755583AbYEYLhH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 07:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbYEYLgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 07:36:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63485 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754863AbYEYLgm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 07:36:42 -0400
-Date: Sun, 25 May 2008 07:36:39 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: trem <tremyfr@yahoo.fr>
-cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24.7-rt10
-In-Reply-To: <g1adb2$217$1@ger.gmane.org>
-Message-ID: <Pine.LNX.4.58.0805250735410.3977@gandalf.stny.rr.com>
-References: <1211608265.14697.105.camel@localhost.localdomain>
- <g1adb2$217$1@ger.gmane.org>
+	Sun, 25 May 2008 07:36:54 -0400
+Received: from hall.aurel32.net ([91.121.138.14]:34833 "EHLO hall.aurel32.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759468AbYEYLgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 07:36:52 -0400
+Date: Sun, 25 May 2008 13:36:34 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Adrian Bunk <bunk@kernel.org>, "John W. Linville" <linville@tuxdriver.com>,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mips BCM47XX compile error
+Message-ID: <20080525113634.GB20502@hall.aurel32.net>
+Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
+	Michael Buesch <mb@bu3sch.de>, Adrian Bunk <bunk@kernel.org>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+	linux-kernel@vger.kernel.org
+References: <20080420100347.GH1595@cs181133002.pp.htv.fi> <20080420224942.GA21009@volta.aurel32.net> <20080421072851.GA3381@hall2.aurel32.net> <200805251153.47325.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805251153.47325.mb@bu3sch.de>
+X-Mailer: Mutt 1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, May 25, 2008 at 11:53:46AM +0200, Michael Buesch wrote:
+> On Monday 21 April 2008 09:28:51 Aurelien Jarno wrote:
+> > On Mon, Apr 21, 2008 at 12:49:42AM +0200, Aurelien Jarno wrote:
+> > > Michael Buesch a écrit :
+> > > > On Sunday 20 April 2008 12:03:47 Adrian Bunk wrote:
+> > > >> Commit aab547ce0d1493d400b6468c521a0137cd8c1edf
+> > > >> (ssb: Add Gigabit Ethernet driver) causes the following
+> > > >> build error with bcm47xx_defconfig:
+> > > >>
+> > > >> <--  snip  -->
+> > > >>
+> > > >> ...
+> > > >>   LD      .tmp_vmlinux1
+> > > >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+> > > >> (.text+0x1f8): undefined reference to `pcibios_plat_dev_init'
+> > > >> arch/mips/pci/built-in.o: In function `pcibios_enable_device':
+> > > >> (.text+0x1f8): relocation truncated to fit: R_MIPS_26 against `pcibios_plat_dev_init'
+> > > >> arch/mips/pci/built-in.o: In function `pcibios_init':
+> > > >> pci.c:(.init.text+0x14c): undefined reference to `pcibios_map_irq'
+> > > >> pci.c:(.init.text+0x158): undefined reference to `pcibios_map_irq'
+> > > >> make[1]: *** [.tmp_vmlinux1] Error 1
+> > > > 
+> > > > Some parts of the new 47xx arch code are not ported, yet.
+> > > 
+> > > It would have been nice at least to warn before breaking a platform.
+> > > 
+> > > > Somebody should port all the new code from openwrt SVN over to mainline.
+> > > > I don't really have time for that, at the moment, though.
+> > > 
+> > > I gave a quick look at openwrt SVN, and only find 2.6.23 patches. I
+> > > can't find a possible fix among them. Do you have a better pointer?
+> > > 
+> > 
+> > I have finally found it, the code was not in a form of a patch, but in
+> > form of a C code file.
+> > 
+> > I am working on a fix.
+> > 
+> 
+> What is the status of the fix?
+> We have a bugzilla entry
+> http://bugzilla.kernel.org/show_bug.cgi?id=10493
+> So if it's not ready, yet, I will have to fix it by myself.
+> 
 
+A patch [1] has been sent 1 month ago, it waits with the other BCM47xx
+patches.
 
-On Sun, 25 May 2008, trem wrote:
->
-> I've got a problem with the compilation when compiling kernel/rcupreempt_trace.o :
->
-> kernel/rcupreempt_trace.c: In function ?rcupreempt_trace_init?:
-> kernel/rcupreempt_trace.c:539: erreur: implicit declaration of function ?marker_arm?
-> kernel/rcupreempt_trace.c: In function ?rcupreempt_trace_cleanup?:
-> kernel/rcupreempt_trace.c:577: erreur: too few arguments to function ?marker_probe_unregister?
-> kernel/rcupreempt_trace.c:583: erreur: too few arguments to function ?marker_probe_unregister?
-> make[1]: *** [kernel/rcupreempt_trace.o] Erreur 1
->
->
-> I think that markers-upstream.patch can't be used with rcu-preempt-trace-markers-1.patch and
-> rcu-preempt-trace-markers-2.patch.
->
+Aurelien
 
-Or more correctly, the rcu-preempt-markers patches can't be used with
-markers-upstream.patch ;-)
+[1] http://marc.info/?l=linux-kernel&m=120876451216558&w=2
 
-I'll port that over, since it will need to be ported anyway.
-
--- Steve
-
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
