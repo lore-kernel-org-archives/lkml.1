@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYEYAVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbYEYAaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbYEYAVF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 20:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbYEYAUy
+	id S1759371AbYEYAaZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 20:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYEYAaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 20:20:54 -0400
-Received: from nospam3.slac.stanford.edu ([134.79.18.120]:60599 "EHLO
-	nospam3.slac.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752933AbYEYAUx (ORCPT
+	Sat, 24 May 2008 20:30:13 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:16629 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649AbYEYAaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 20:20:53 -0400
-From: Steven Fuerst <sfuerst@stanford.edu>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] kconfig: introduce KCONFIG_* symbols for .c files
-Date: Sat, 24 May 2008 17:20:51 -0700
-User-Agent: KMail/1.5.3
-Cc: "Tom Spink" <tspink@gmail.com>
-References: <200805241636.22242.sfuerst@stanford.edu> <7b9198260805241700o2bc38848m60d5853b63e6ff26@mail.gmail.com>
-In-Reply-To: <7b9198260805241700o2bc38848m60d5853b63e6ff26@mail.gmail.com>
+	Sat, 24 May 2008 20:30:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QOmH6ZRnWA1NO6fCTPX1LEOmoPGOM5WkuxTnWGw2yCvBSJhtmVAONzv8clbZr/KglKHRM5zvU1ThZmxD9kwi7YqvTcINUjTG2zcBisjta6CbMcdOWHpEwsIPY9c46Yz9nZuCgLWI9n/aqfawlTTp416UJnS0wakwW2hClNSwcgo=
+Message-ID: <b6a2187b0805241730x4a9d31b6k8f439088f63bcc9b@mail.gmail.com>
+Date: Sun, 25 May 2008 08:30:09 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.26-rc3-git7: Reported regressions from 2.6.25
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Natalie Protasevich" <protasnb@gmail.com>
+In-Reply-To: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805241720.51669.sfuerst@stanford.edu>
+References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<snip>
-> >
-> > #include <stdio.h>
-> >
-> > #define CONFIG_FOO      1
-> > /* #define CONFIG_BAR   1 */
-> >
-> > #define STR2(x) #x
-> > #define STR(x) STR2(x)
-> >
-> > #define PASTE2(x, y) x##y
-> > #define PASTE(x, y) PASTE2(x, y)
-> >
-> > #define KCONFIG2(x, y) STR(PASTE(CONFIG_, x))[y]
-> > #define KCONFIG(x) (!((KCONFIG2(x, 0) == 'C') && \
-> >                                        (KCONFIG2(x, 1) == 'O') && \
-> >                                        (KCONFIG2(x, 2) == 'N') && \
-> >                                        (KCONFIG2(x, 3) == 'F') && \
-> >                                        (KCONFIG2(x, 4) == 'I') && \
-> >                                        (KCONFIG2(x, 5) == 'G') && \
-> >                                        (KCONFIG2(x, 6) == '_')))
-> >
-> > int main()
-> > {
-> >        if (KCONFIG(FOO)) printf("FOO\n");
-> >        if (KCONFIG(BAR)) printf("BAR\n");
-> >        return 0;
-> > }
-> >
-> >
-> > It of course assumes that the result of all defined macros you want to
-> > test for do not start with "CONFIG_", so this doesn't work generally. 
-> > However, nearly all of the time the arguement to KCONFIG() will be
-> > defined to be "1" an integer, or some other known string that doesn't
-> > begin with "CONFIG_", so this trick is fairly robust.
->
-> I've seen worse abuse of the preprocessor[1]. ;-)
+On Sun, May 25, 2008 at 4:28 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-True...  Here's a "nicer" version, that even gets empty defines right.  I've 
-checked that gcc is smart enough to compile away the constant string 
-comparison.  The only thing wrong with this now is that it'll fail to get
-#define CONFIG_BLAH	CONFIG_BLAH
-correct, but that's a rather silly corner case.
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10759
+> Subject         : recent 2.6.26 kernel hangs at suspend
+> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+> Date            : 2008-05-19 15:07 (6 days old)
+> References      : http://marc.info/?l=linux-kernel&amp;m=121121007814338&amp;w=2
+> Handled-By      : Len Brown <lenb@kernel.org>
+>                  Pavel Machek <pavel@suse.cz>
 
-#include <stdio.h>
 
-#define CONFIG_FOO	1
-/* #define CONFIG_BAR	1 */
-#define CONFIG_BAZ
+This has been fixed by this commit.
 
-#define STR2(x) #x
-#define STR(x) STR2(x)
+commit 860da5e578c25d1ab4528c0d1ad13f9969e3490f
+Merge: 1bf9947... e948e99...
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Mon May 19 13:30:40 2008 -0700
 
-#define PASTE(x, y) x##y
+    Merge branch 'drm-patches' of git://git.kernel.org/pub/scm/linux/kernel/git/
+airlied/drm-2.6
 
-#define KCONFIG(x) \
-	(__builtin_strcmp("Z" STR(PASTE(CONFIG_, x)), "ZCONFIG_" #x))
+    * 'drm-patches' of git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm
+-2.6:
+      drm/i915: save and restore dsparb and d_state registers.
+      drm/i915: fix off by one in VGA save/restore of AR & CR regs.
+      drm: disable tasklets not IRQs when taking the drm lock spinlock
+      Revert "drm/vbl rework: rework how the drm deals with vblank."
 
-int main()
-{
-	if (KCONFIG(FOO)) printf("FOO\n");
-	if (KCONFIG(BAR)) printf("BAR\n");
-	if (KCONFIG(BAZ)) printf("BAZ\n");
-	
-	return 0;
-}
 
-Steven
 
+Thanks,
+Jeff.
