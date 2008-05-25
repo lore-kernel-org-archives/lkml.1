@@ -1,104 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762501AbYEYMLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762416AbYEYMOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762501AbYEYMLv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 08:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759251AbYEYMLn
+	id S1762416AbYEYMOg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 08:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759382AbYEYMO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 08:11:43 -0400
-Received: from india601.server4you.de ([85.25.151.105]:50534 "EHLO
-	india601.server4you.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758618AbYEYMLm (ORCPT
+	Sun, 25 May 2008 08:14:28 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:46967 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759083AbYEYMO2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 08:11:42 -0400
-X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 08:11:42 EDT
-Subject: [PATCH] msdos fs: remove unsettable atari option
-From: =?ISO-8859-1?Q?Ren=E9?= Scharfe <rene.scharfe@lsrfire.ath.cx>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 25 May 2008 14:04:22 +0200
-Message-Id: <1211717062.5782.16.camel@ubuntu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Sun, 25 May 2008 08:14:28 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sun, 25 May 2008 14:14:03 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, aoliva@redhat.com,
+       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
+       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
+References: <1211550282.28967.8.camel@pmac.infradead.org> <200805251149.41059.mb@bu3sch.de> <9995307A-E602-4A30-8900-6AEDDF7D1D8F@holtmann.org>
+In-Reply-To: <9995307A-E602-4A30-8900-6AEDDF7D1D8F@holtmann.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805251414.04509.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It has been impossible to set the option 'atari' of the MSDOS filesystem
-for several years.  Since nobody seems to have missed it, let's remove
-its remains.
+On Sunday 25 May 2008 13:54:32 Marcel Holtmann wrote:
+> I am okay with userspace supporting namespacing with subdirectories  
+> and see the point why it helps, but the important here is that  
+> userspace must support this. It should not be done inside the kernel.
 
-Signed-off-by: Rene Scharfe <rene.scharfe@lsrfire.ath.cx>
----
+The decision is currently not made in the kernel. It's a udev
+decision to use / as directory separator. We exploit that udev
+feature to use a convenient dir structure. But that is unrelated
+to how any new database will handle it. The in-kernel database should
+treat / like any other char.
 
- fs/msdos/namei.c         |   18 ++++++------------
- include/linux/msdos_fs.h |    1 -
- 2 files changed, 6 insertions(+), 13 deletions(-)
+> So we have to change udev to look for /lib/firmware/<driver>/ 
+> <filename> which perfectly fine, but the <driver> part needs to be  
+> derived from struct device and not from the <filename> part.
 
-diff --git a/fs/msdos/namei.c b/fs/msdos/namei.c
-index 05ff4f1..8240d22 100644
---- a/fs/msdos/namei.c
-+++ b/fs/msdos/namei.c
-@@ -14,12 +14,7 @@
- 
- /* Characters that are undesirable in an MS-DOS file name */
- static unsigned char bad_chars[] = "*?<>|\"";
--static unsigned char bad_if_strict_pc[] = "+=,; ";
--/* GEMDOS is less restrictive */
--static unsigned char bad_if_strict_atari[] = " ";
--
--#define bad_if_strict(opts) \
--	((opts)->atari ? bad_if_strict_atari : bad_if_strict_pc)
-+static unsigned char bad_if_strict[] = "+=,; ";
- 
- /***** Formats an MS-DOS file name. Rejects invalid names. */
- static int msdos_format_name(const unsigned char *name, int len,
-@@ -40,21 +35,20 @@ static int msdos_format_name(const unsigned char *name, int len,
- 			/* Get rid of dot - test for it elsewhere */
- 			name++;
- 			len--;
--		} else if (!opts->atari)
-+		} else
- 			return -EINVAL;
- 	}
- 	/*
--	 * disallow names that _really_ start with a dot for MS-DOS,
--	 * GEMDOS does not care
-+	 * disallow names that _really_ start with a dot
- 	 */
--	space = !opts->atari;
-+	space = 1;
- 	c = 0;
- 	for (walk = res; len && walk - res < 8; walk++) {
- 		c = *name++;
- 		len--;
- 		if (opts->name_check != 'r' && strchr(bad_chars, c))
- 			return -EINVAL;
--		if (opts->name_check == 's' && strchr(bad_if_strict(opts), c))
-+		if (opts->name_check == 's' && strchr(bad_if_strict, c))
- 			return -EINVAL;
- 		if (c >= 'A' && c <= 'Z' && opts->name_check == 's')
- 			return -EINVAL;
-@@ -94,7 +88,7 @@ static int msdos_format_name(const unsigned char *name, int len,
- 			if (opts->name_check != 'r' && strchr(bad_chars, c))
- 				return -EINVAL;
- 			if (opts->name_check == 's' &&
--			    strchr(bad_if_strict(opts), c))
-+			    strchr(bad_if_strict, c))
- 				return -EINVAL;
- 			if (c < ' ' || c == ':' || c == '\\')
- 				return -EINVAL;
-diff --git a/include/linux/msdos_fs.h b/include/linux/msdos_fs.h
-index b03b274..ceb5d16 100644
---- a/include/linux/msdos_fs.h
-+++ b/include/linux/msdos_fs.h
-@@ -208,7 +208,6 @@ struct fat_mount_options {
- 		 utf8:1,	  /* Use of UTF-8 character set (Default) */
- 		 unicode_xlate:1, /* create escape sequences for unhandled Unicode */
- 		 numtail:1,       /* Does first alias have a numeric '~1' type tail? */
--		 atari:1,         /* Use Atari GEMDOS variation of MS-DOS fs */
- 		 flush:1,	  /* write things quickly */
- 		 nocase:1,	  /* Does this need case conversion? 0=need case conversion*/
- 		 usefree:1;	  /* Use free_clusters for FAT32 */
+What if I want 2 or 3 different firmware versions installed at once?
+I'll have to play dirty tricks with the filenames then and put several
+unrelated firmware versions into one directory. That's going to be a mess.
 
+-- 
+Greetings Michael.
