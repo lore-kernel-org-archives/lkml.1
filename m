@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbYEYQpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYEYQp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbYEYQpJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 12:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYEYQos
+	id S1756882AbYEYQp4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 12:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYEYQps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 12:44:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:43121 "EHLO www.tglx.de"
+	Sun, 25 May 2008 12:45:48 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48215 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754967AbYEYQos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 12:44:48 -0400
-Date: Sun, 25 May 2008 18:44:28 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: hpa@zytor.com, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/11] tip/x86/nmi nmi-32/64.c merge v3
-In-Reply-To: <4838373b.0637560a.7ce5.3f01@mx.google.com>
-Message-ID: <alpine.LFD.1.10.0805251842360.3295@apollo.tec.linutronix.de>
-References: <4838373b.0637560a.7ce5.3f01@mx.google.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1754746AbYEYQpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 12:45:47 -0400
+Date: Sun, 25 May 2008 19:43:11 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Chris Dearman <chris@mips.com>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: mips/kernel/traps.c build error
+Message-ID: <20080525164311.GB1791@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 May 2008, Cyrill Gorcunov wrote:
+Commit 39b8d5254246ac56342b72f812255c8f7a74dca9
+([MIPS] Add support for MIPS CMP platform.)
+causes the following build error:
 
-> This series tries to merge down nmi_32/64.c to nmi.c. It is done by small
-> steps in hope it would help to bisect problems (which will appear anyway ;)
-> Please review *carefully* since it is NMI what I've touched (and I'm not
-> nmi specialist). So I really apreciate _ANY_ comments on this. The series
-> is produced over today 'tip' tree branch 'x86/nmi'.
+<--  snip  -->
 
-Cyrill,
+...
+  CC      arch/mips/kernel/traps.o
+cc1: warnings being treated as errors
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/kernel/traps.c: In function 'show_raw_backtrace':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/kernel/traps.c:92: error: cast from pointer to integer of different size
+make[2]: *** [arch/mips/kernel/traps.o] Error 1
 
-very good job. I did a short review and found no obvious problems
-yet. Will have a closer look when I apply it.
+<--  snip  -->
 
-Thanks,
-	tglx
+"[MIPS] Fix check for valid stack pointer during backtrace" in the mips 
+tree fixes it, and should therefore also go into 2.6.26.
 
+cu
+Adrian
 
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
