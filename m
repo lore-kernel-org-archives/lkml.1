@@ -1,102 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762978AbYEYMYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762763AbYEYM1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762978AbYEYMYS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 08:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760194AbYEYMYK
+	id S1762763AbYEYM1i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 08:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760330AbYEYM1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 08:24:10 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42601 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760075AbYEYMYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 08:24:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-Subject: Re: Suspend to memory is freezing my machine
-Date: Sun, 25 May 2008 14:24:48 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-References: <c4e36d110805040037u1b98c027x46dc17bf6be5da5b@mail.gmail.com> <200805242301.25695.rjw@sisk.pl> <c4e36d110805250159x34e667f2kcfbc01a7b87dda29@mail.gmail.com>
-In-Reply-To: <c4e36d110805250159x34e667f2kcfbc01a7b87dda29@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805251424.49186.rjw@sisk.pl>
+	Sun, 25 May 2008 08:27:30 -0400
+Received: from smtp-01.datacomm.ch ([212.40.2.26]:60798 "EHLO
+	smtp-01.datacomm.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760100AbYEYM13 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 08:27:29 -0400
+Subject: SB600 AHCI: Hard Disk Corruption
+From: Patrick <ragamuffin@datacomm.ch>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 25 May 2008 14:10:35 +0200
+Message-Id: <1211717435.6038.53.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 25 of May 2008, Zdenek Kabelac wrote:
-> 2008/5/24 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Thursday, 22 of May 2008, Zdenek Kabelac wrote:
-> >> Hello Rafael
-> >>
-> >> 2008/5/4 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> > On Sunday, 4 of May 2008, Zdenek Kabelac wrote:
-> >> >> Hello
-> >> >
-> >> > Hi,
-> >> >
-> >> >> With recent 2.6.25 & 2.6.26-rc1 git (around 1 week) I get occasionally
-> >> >> complete freeze of my T61 during suspend. (dual core, 2GB).
-> >> >
-> >> > How reproducible is this?
-> >> >
-> >>
-> >> The problem happens still even with -rc3. Now I've an update:
-> >>
-> >> Usually I've to run the machine for couple hours to actually be able
-> >> to hit this lock.
-> >> (Usually after a day work when I want to leave)
-> >>
-> >> I've also noticed that when I run the suspend after the reboot I
-> >> usually cannot see the suspend freeze - mostly because either the
-> >> mashine crashes from other ooops or I do another reboot.
-> >>
-> >>
-> >> >> I'm running kernel with no_console_suspend - but all I can see is
-> >> >> blinking cursor on an empty screen - thus even when I run kernel with
-> >> >> most debug options turned on, I can't pass more details so far.  I run
-> >>
-> >> I've figured out, it was caused by some weird Fedora setting, so
-> >> adding  kernel.printk = 8  to sysctl.conf  fixed the issue for me.
-> >>
-> >> >> suspend with with SD card in - so maybe some update in the MMC driver
-> >> >> might be responsible for this ?
-> >> > (1) The problem occurs without no_console_suspend.
-> >> > (2) The problem occurs without the SD card.
-> >>
-> >> SD card or no_console_suspend option doesn't matter
-> >>
-> >> This is what I've seen as the last thing on the screen when deadlock
-> >> appeared this time:
-> >> (no SD card inserted)
-> >>
-> >> ====
-> >> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> >> PM: Entering mem sleep
-> >> drm card0: class suspend
-> >> drm_sysfs_suspend
-> >
-> > Hm, what kind of graphics adapter is there in your box?
-> >
-> 
-> 
-> After some more checking - I guess this information actually is not
-> useful at all :(.
-> It looks like even when the suspend is succesful - the line:
-> ACPI: PCI interrupt for device 0000:00:02.0 disabled
-> is alway the last one visible.
-> 
->  I'll try to get figure out a better way how to invoke the lock.
-> 
-> And my graphics adapter is:
-> 00:02.0 VGA compatible controller: Intel Corporation Mobile
-> GM965/GL960 Integrated Graphics Controller (rev 0c) (prog-if 00 [VGA
-> controller])
+Hello (Tejun Heo *)
 
-If you use s2ram, please check if "echo mem > /sys/power/state" works instead.
+I've got an annoying problem with my athlon 64bit, 4gb ram, ﻿asus m2a-vm
+(->SB600 AHCI controller), SAMSUNG HD501LJ SATA Disk. I'm using kernel
+2.6.26-rc3. Everything works fine, expect for standby/suspend/hibernate.
+Standby freezes, hibernate, I acually ﻿haven't tested lately cause I
+want suspend to ram to work first.
 
-Thanks,
-Rafael
+"echo mem > /sys/power/state; vbetool post;" (on text console)
+successfully suspends the system and it resumes as well, BUT: After
+resuming, things quickly turn bad: "file not fonund", kernel reports
+ext2 errors on root (lvm) partition. After a (hard) reboot the root
+fileystem won't even be recognized again by mount and e2fschk can harldy
+recover it (thousands of inodes go to lost+found, have to restore
+backups to make the system work again). This happend even when the
+partition was mounted _readonly_ and it happens to ALL partitions
+mounted during suspend. ** I'm testing now by appending break=init to
+the kernel command line, getting to a busybox on the initramfs, and then
+unmounting "root" before suspending. From there i can dmesg to see
+what's happening (though the dmesg buffer is quiet small...can i
+increase that in proc somewhere?). I'd be willing to test and send
+whatever logs you need to get this fixed.
+
+Some additional infos: Upgrading from 2.6.24, I hoped the
+AHCI_HFLAG_NO_MSI in drivers/ata/ahci.c might solve the issue - no luck.
+All the other sb600 workarounds: obviousley no luck as well.
+irqpoll: slightly different behaviour when unloading sd_mod and ahci
+modules before suspending:
+without irqpoll, the disk ([sda]) doesn't show up again after "modprobe
+ahci; modprobe sd_mod" and I get ﻿"ata5.00: failed to IDENTIFY [...]
+err_mask=0x80" "failed to restore some devices [...]" errors
+with irqpoll, disk shows up again and no errors, but "there is different
+data" on each read (head -c10000) from /dev/sda. Though the disk is not
+changed, after rebooting it contains the original data. I just wonder
+how the data is "created" - it seems to be disk content from different
+locations (not beginning) on the disk - if i "dd if=/dev/sda
+of=/dev/null", i hear the disk reading data....
+
+Well - I hope you might be able to make some sense of that and tell me
+what logs and dumps exactly you need to fix it...
+
+Greets - Patrick
+
+
+
+* I read many threads in which Tejun provided patches for the SB600 AHCI
+Controller which seems to be seriously broken - if only i knew that in
+advance... Maybe he can fix this issue as well - last ressort. Otherwise
+I'll burn that mobo!
+
+﻿** After my firs install and configuring the system for a day, trying
+out suspend to ram smashed it with no backups, since then i didn't learn
+my lesson and smashed it again 2-3 times, this time with backups at hand
+though, ...
+
+
+
