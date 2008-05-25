@@ -1,117 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbYEYPFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbYEYPFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbYEYPFg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 11:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYEYPFS
+	id S1755706AbYEYPFt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 11:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYEYPFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 25 May 2008 11:05:20 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:59754 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753853AbYEYPFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 25 May 2008 11:05:18 -0400
-Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:3945 "EHLO
-	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbYEYPFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 11:05:17 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCHv2 04/28] cx25840: treat firmware data as const
-Date: Sun, 25 May 2008 17:04:50 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, Tyler Trafford <ttrafford@gmail.com>,
-       Mike Isely <isely@isely.net>
-References: <1211708969@pmac.infradead.org> <200805251251.32373.hverkuil@xs4all.nl> <1211727367.31212.119.camel@shinybook.infradead.org>
-In-Reply-To: <1211727367.31212.119.camel@shinybook.infradead.org>
+Date: Sun, 25 May 2008 17:04:44 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan problems
+Message-ID: <20080525150444.GA29739@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ayaz Abdulla <aabdulla@nvidia.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Hemminger <shemminger@linux-foundation.org>
+References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080518150908.GA4606@yamamaya.is-a-geek.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805251704.50163.hverkuil@xs4all.nl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080518150908.GA4606@yamamaya.is-a-geek.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 May 2008 16:56:06 David Woodhouse wrote:
-> Hm, looks like I was also passing the wrong pointer to fw_write().
-> Here's the new version...
->
-> commit 57dc4762554119ffb5c711b2716f47997bc5c181
-> Author: David Woodhouse <dwmw2@infradead.org>
-> Date:   Fri May 23 23:58:24 2008 +0100
->
->     cx25840: treat firmware data as const
->
->     Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Tobias Diedrich wrote:
 
-Looks good. I tested it quickly and it works.
+> First Windoze:
+> Windoze, Standby (equiv. to Linux 'mem' state):  WOL borked, resumes fine
+> Windoze, Hibernate: WOL borked, resumes fine
 
-Acked-by: Hans Verkuil <hverkuil@xs4all.nl>
+I have to correct myself on this:
+I ran the above test an a japanese version of Windows (where I have
+some difficulty reading all the technical texts)
+I've retested this on an english version of Windows and
+found that I accidentally enabled one checkbox, which said:
+"Only allow management stations to bring the computer out of standby"
 
-Regards,
+If I disable that one, I can wakeup the machine without problems.
 
-	Hans
+So my BIOS is not as borked as I thought and it should be possible
+to wake up the machine even with platform.  Further debugging will
+have to wait until at least next weekend though (maybe longer)...
 
->
-> diff --git a/drivers/media/video/cx25840/cx25840-firmware.c
-> b/drivers/media/video/cx25840/cx25840-firmware.c index
-> 620d295..8d489a4 100644
-> --- a/drivers/media/video/cx25840/cx25840-firmware.c
-> +++ b/drivers/media/video/cx25840/cx25840-firmware.c
-> @@ -79,7 +79,7 @@ static int check_fw_load(struct i2c_client *client,
-> int size) return 0;
->  }
->
-> -static int fw_write(struct i2c_client *client, u8 *data, int size)
-> +static int fw_write(struct i2c_client *client, const u8 *data, int
-> size) {
->  	if (i2c_master_send(client, data, size) < size) {
->  		v4l_err(client, "firmware load i2c failure\n");
-> @@ -93,7 +93,8 @@ int cx25840_loadfw(struct i2c_client *client)
->  {
->  	struct cx25840_state *state = i2c_get_clientdata(client);
->  	const struct firmware *fw = NULL;
-> -	u8 buffer[4], *ptr;
-> +	u8 buffer[FWSEND];
-> +	const u8 *ptr;
->  	int size, retval;
->
->  	if (state->is_cx23885)
-> @@ -108,29 +109,23 @@ int cx25840_loadfw(struct i2c_client *client)
->
->  	buffer[0] = 0x08;
->  	buffer[1] = 0x02;
-> -	buffer[2] = fw->data[0];
-> -	buffer[3] = fw->data[1];
-> -	retval = fw_write(client, buffer, 4);
->
-> -	if (retval < 0) {
-> -		release_firmware(fw);
-> -		return retval;
-> -	}
-> -
-> -	size = fw->size - 2;
-> +	size = fw->size;
->  	ptr = fw->data;
->  	while (size > 0) {
-> -		ptr[0] = 0x08;
-> -		ptr[1] = 0x02;
-> -		retval = fw_write(client, ptr, min(FWSEND, size + 2));
-> +		int len = min(FWSEND - 2, size);
-> +
-> +		memcpy(buffer + 2, ptr, len);
-> +
-> +		retval = fw_write(client, buffer, len + 2);
->
->  		if (retval < 0) {
->  			release_firmware(fw);
->  			return retval;
->  		}
->
-> -		size -= FWSEND - 2;
-> -		ptr += FWSEND - 2;
-> +		size -= len;
-> +		ptr += len;
->  	}
->
->  	end_fw_load(client);
-
-
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
