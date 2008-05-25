@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYEYWQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYEYWXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbYEYWQP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 18:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYEYWQE
+	id S1753392AbYEYWXH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 18:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbYEYWW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 18:16:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52554 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751737AbYEYWQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 18:16:03 -0400
-Date: Sun, 25 May 2008 23:02:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Miquel van Smoorenburg <miquels@cistron.nl>,
-       Glauber Costa <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, andi-suse@firstfloor.org
-Subject: Re: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
-Message-ID: <20080525230216.1fe1b216@core>
-In-Reply-To: <20080525212350.GB8405@one.firstfloor.org>
-References: <20080521113028.GA24632@xs4all.net>
-	<48341A57.1030505@redhat.com>
-	<20080522084736.GC31727@one.firstfloor.org>
-	<1211484343.30678.15.camel@localhost.localdomain>
-	<1211657898.25661.2.camel@localhost.localdomain>
-	<20080525163539.GA8405@one.firstfloor.org>
-	<20080525205532.3ed5e478@core>
-	<20080525212350.GB8405@one.firstfloor.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 25 May 2008 18:22:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:45343 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbYEYWW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 18:22:56 -0400
+Date: Mon, 26 May 2008 00:21:04 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Marin Mitov <mitov@issp.bas.bg>
+cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re:[PATCH -v4] x86: enable preemption in delay
+In-Reply-To: <200805252108.25011.mitov@issp.bas.bg>
+Message-ID: <alpine.LFD.1.10.0805260006110.3295@apollo.tec.linutronix.de>
+References: <200805252108.25011.mitov@issp.bas.bg>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> No it doesn't because the lower zone protection basically never puts
-> anything that is not GFP_DMA into the 16MB zone.
-> 
-> Just check yourself on your machine using sysrq.
-> 
-> That was one of the motivations behind the mask allocator design.
+On Sun, 25 May 2008, Marin Mitov wrote:
+> Hi Steven,
 
-Try a 16MB embedded PC 
+Please do not trim CC lists without a good reason. [Restored it]
 
-Alan
+> look at this patch, proposed by me and Ingo few month ago.
+> I think it solves the problem you had fond, but unfortunately
+> it had been lost (not included in the mainline).
+
+Yep, and it might be simply because the mail thread ended with:
+
+http://lkml.org/lkml/2007/11/20/426
+
+> hi Marin,
+>
+> here's the patch we are carrying in x86.git at the moment - could you 
+> please update it with v3 of your code, and send us the patch (with the 
+> patch metadata kept intact, like you see it below)? Thanks,
+>
+>      Ingo
+
+And there was no response. I just checked my x86 quilt archives and it
+simply went into the "wait for update" category and got dropped
+unfortunately.
+
+Thanks,
+
+	tglx
