@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763618AbYEYK2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763761AbYEYK2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763618AbYEYK2F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbYEYKYJ
+	id S1763761AbYEYK2g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762524AbYEYKYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:24:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42055 "EHLO
+	Sun, 25 May 2008 06:24:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42058 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762487AbYEYKYH (ORCPT
+	with ESMTP id S1755507AbYEYKYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:24:07 -0400
+	Sun, 25 May 2008 06:24:08 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
 References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: [PATCHv2 27/28] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-Message-Id: <E1K0DOP-0007EW-F0@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:57 +0100
+Subject: [PATCHv2 28/28] firmware: convert korg1212 driver to use firmware loader exclusively
+Message-Id: <E1K0DOQ-0007Ea-GW@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:58 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -25,118 +25,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows arbitrary firmware files to be included in the static kernel
-where the firmware loader can find them without requiring userspace to
-be alive.
-
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- Makefile             |    2 +-
- drivers/base/Kconfig |   12 ++++++++++
- firmware/Makefile    |   58 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 71 insertions(+), 1 deletions(-)
- create mode 100644 firmware/Makefile
+ firmware/Makefile                                  |    2 +-
+ .../korg1212-firmware.h => firmware/korg/k1212.c   |    5 ++++-
+ sound/pci/korg1212/korg1212.c                      |   18 ------------------
+ 3 files changed, 5 insertions(+), 20 deletions(-)
+ rename sound/pci/korg1212/korg1212-firmware.h => firmware/korg/k1212.c (99%)
 
-diff --git a/Makefile b/Makefile
-index 20b3235..ac2ab7e 100644
---- a/Makefile
-+++ b/Makefile
-@@ -450,7 +450,7 @@ scripts: scripts_basic include/config/auto.conf
- 
- # Objects we will link into vmlinux / subdirs we need to visit
- init-y		:= init/
--drivers-y	:= drivers/ sound/
-+drivers-y	:= drivers/ sound/ firmware/
- net-y		:= net/
- libs-y		:= lib/
- core-y		:= usr/
-diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
-index d7da109..b856fe8 100644
---- a/drivers/base/Kconfig
-+++ b/drivers/base/Kconfig
-@@ -34,6 +34,18 @@ config FW_LOADER
- 	  require userspace firmware loading support, but a module built outside
- 	  the kernel tree does.
- 
-+config BUILTIN_FIRMWARE
-+	string "Firmware blobs to build into the kernel binary"
-+	depends on FW_LOADER
-+	help
-+	  This option allows firmware to be built into the kernel, for the
-+	  cases where the user either cannot or doesn't want to provide it from
-+	  userspace at runtime (for example, when the firmware in question is
-+	  required for accessing the boot device, and the user doesn't want to
-+	  use an initrd). Multiple files should be separated with spaces, and
-+	  the required files should exist under the firmware/ directory in
-+	  the source tree.
-+
- config DEBUG_DRIVER
- 	bool "Driver Core verbose debug messages"
- 	depends on DEBUG_KERNEL
 diff --git a/firmware/Makefile b/firmware/Makefile
-new file mode 100644
-index 0000000..4243c5a
---- /dev/null
+index 4243c5a..bcae927 100644
+--- a/firmware/Makefile
 +++ b/firmware/Makefile
-@@ -0,0 +1,58 @@
-+#
-+# kbuild file for firmware/
-+#
+@@ -2,7 +2,7 @@
+ # kbuild file for firmware/
+ #
+ 
+-firmware-y :=
++firmware-$(CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL) += korg/k1212
+ 
+ firmware_bins := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
+ firmware_srcs := $(patsubst %,$(obj)/%.S, $(firmware_bins))
+diff --git a/sound/pci/korg1212/korg1212-firmware.h b/firmware/korg/k1212.c
+similarity index 99%
+rename from sound/pci/korg1212/korg1212-firmware.h
+rename to firmware/korg/k1212.c
+index f6f5b91..1ed3ebb 100644
+--- a/sound/pci/korg1212/korg1212-firmware.h
++++ b/firmware/korg/k1212.c
+@@ -1,4 +1,5 @@
+-static char dspCode [] = {
++#include <linux/firmware.h>
++static const char dspCode [] = {
+ 0x01,0xff,0x18,0xff,0xf5,0xff,0xcf,0xff,0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,
+ 0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,
+ 0x26,0xff,0x18,0xff,0xff,0xff,0x0f,0xff,0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,
+@@ -985,3 +986,5 @@ static char dspCode [] = {
+ 0x00,0xff,0x40,0xff,0xff,0xff,0xc4,0xff,0x00,0xff,0x0a,0xff,0xff,0xff,0x0f,0xff,
+ 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+ 0xff,0xff,0xff,0xff };
 +
-+firmware-y :=
-+
-+firmware_bins := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
-+firmware_srcs := $(patsubst %,$(obj)/%.S, $(firmware_bins))
-+firmware_objs := $(patsubst %,%.o, $(firmware_bins) $(firmware-y)) 
-+firmware_dirs := $(patsubst %,$(objtree)/$(obj)/%,$(dir $(firmware_objs)))
-+
-+quiet_cmd_mkdir = MKDIR   $@
-+      cmd_mkdir = mkdir -p $@
-+
-+ifdef CONFIG_64BIT
-+SM_WORD := .quad
-+SM_ALIGN := 3
-+else
-+ASM_WORD := .long
-+ASM_ALIGN := 2
-+endif
-+
-+quiet_cmd_fwbin = MK_FW   $@
-+      cmd_fwbin = FWNAME="$(patsubst firmware/%.S,%,$@)";		     \
-+		  INCFILE="$(patsubst %.S,%,$@)";			     \
-+		  FWSTR="$(subst /,_,$(subst .,_,$(patsubst 		     \
-+				firmware/%.S,%,$@)))";			     \
-+		  echo "/* Generated by firmware/Makefile */"		> $@;\
-+		  echo "    .section .rodata"				>>$@;\
-+		  echo "    .align $(ASM_ALIGN)"			>>$@;\
-+		  echo "_fw_$${FWSTR}_bin:"				>>$@;\
-+		  echo "    .incbin \"$$INCFILE\""			>>$@;\
-+		  echo "_fw_end:"					>>$@;\
-+		  echo "   .section .rodata.str,\"aMS\",@progbits,1"	>>$@;\
-+		  echo "    .align $(ASM_ALIGN)"			>>$@;\
-+		  echo "_fw_$${FWSTR}_name:"				>>$@;\
-+		  echo "    .string \"$$FWNAME\""			>>$@;\
-+		  echo "    .section .builtin_fw,\"a\",@progbits"	>>$@;\
-+		  echo "    .align $(ASM_ALIGN)"			>>$@;\
-+		  echo "    $(ASM_WORD) _fw_$${FWSTR}_name" 		>>$@;\
-+		  echo "    $(ASM_WORD) _fw_$${FWSTR}_bin" 		>>$@;\
-+		  echo "    $(ASM_WORD) _fw_end - _fw_$${FWSTR}_bin"	>>$@;
-+
-+$(firmware_srcs): $(obj)/%.S: $(srctree)/$(obj)/% include/config/64bit.h
-+	$(call cmd,fwbin)
-+
-+$(firmware_dirs):
-+	$(call cmd,mkdir)
-+
-+$(patsubst %,$(obj)/%,$(firmware_objs)): $(firmware_dirs)
-+
-+obj-y := $(firmware_objs) 
-+
-+targets := $(firmware_objs) $(patsubst $(obj)/%,%, $(firmware_srcs))
-+
-+# Without this, built-in.o won't be created when it's empty, and the
-+# final vmlinux link will fail.
-+obj-n := dummy
++DECLARE_BUILTIN_FIRMWARE("korg/k1212.dsp", dspCode);
+diff --git a/sound/pci/korg1212/korg1212.c b/sound/pci/korg1212/korg1212.c
+index f4c85b5..4a44c0f 100644
+--- a/sound/pci/korg1212/korg1212.c
++++ b/sound/pci/korg1212/korg1212.c
+@@ -260,14 +260,6 @@ enum MonitorModeSelector {
+ #define COMMAND_ACK_DELAY   13         // number of RTC ticks to wait for an acknowledgement
+                                        //    from the card after sending a command.
+ 
+-#ifdef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
+-#include "korg1212-firmware.h"
+-static const struct firmware static_dsp_code = {
+-	.data = (u8 *)dspCode,
+-	.size = sizeof dspCode
+-};
+-#endif
+-
+ enum ClockSourceIndex {
+    K1212_CLKIDX_AdatAt44_1K = 0,    // selects source as ADAT at 44.1 kHz
+    K1212_CLKIDX_AdatAt48K,          // selects source as ADAT at 48 kHz
+@@ -412,9 +404,7 @@ struct snd_korg1212 {
+ MODULE_DESCRIPTION("korg1212");
+ MODULE_LICENSE("GPL");
+ MODULE_SUPPORTED_DEVICE("{{KORG,korg1212}}");
+-#ifndef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
+ MODULE_FIRMWARE("korg/k1212.dsp");
+-#endif
+ 
+ static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;     /* Index 0-MAX */
+ static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	   /* ID for this card */
+@@ -2348,9 +2338,6 @@ static int __devinit snd_korg1212_create(struct snd_card *card, struct pci_dev *
+         korg1212->AdatTimeCodePhy = korg1212->sharedBufferPhy +
+ 		offsetof(struct KorgSharedBuffer, AdatTimeCode);
+ 
+-#ifdef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
+-	dsp_code = &static_dsp_code;
+-#else
+ 	err = request_firmware(&dsp_code, "korg/k1212.dsp", &pci->dev);
+ 	if (err < 0) {
+ 		release_firmware(dsp_code);
+@@ -2358,15 +2345,12 @@ static int __devinit snd_korg1212_create(struct snd_card *card, struct pci_dev *
+ 		snd_korg1212_free(korg1212);
+ 		return err;
+ 	}
+-#endif
+ 
+ 	if (snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, snd_dma_pci_data(pci),
+ 				dsp_code->size, &korg1212->dma_dsp) < 0) {
+ 		snd_printk(KERN_ERR "korg1212: cannot allocate dsp code memory (%zd bytes)\n", dsp_code->size);
+                 snd_korg1212_free(korg1212);
+-#ifndef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
+ 		release_firmware(dsp_code);
+-#endif
+                 return -ENOMEM;
+         }
+ 
+@@ -2376,9 +2360,7 @@ static int __devinit snd_korg1212_create(struct snd_card *card, struct pci_dev *
+ 
+ 	memcpy(korg1212->dma_dsp.area, dsp_code->data, dsp_code->size);
+ 
+-#ifndef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
+ 	release_firmware(dsp_code);
+-#endif
+ 
+ 	rc = snd_korg1212_Send1212Command(korg1212, K1212_DB_RebootCard, 0, 0, 0, 0);
+ 
 -- 
 1.5.4.5
 
