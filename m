@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759984AbYEYUPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759054AbYEYUUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759984AbYEYUPh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 16:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbYEYUP1
+	id S1759054AbYEYUUy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 16:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbYEYUUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 16:15:27 -0400
-Received: from mail1.ugh.no ([80.239.42.168]:48356 "EHLO mail1.ugh.no"
+	Sun, 25 May 2008 16:20:44 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:38929 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757509AbYEYUP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 16:15:26 -0400
-X-Greylist: delayed 1921 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 16:15:25 EDT
-Message-ID: <4839C160.6010409@tomt.net>
-Date: Sun, 25 May 2008 21:43:28 +0200
-From: Andre Tomt <andre@tomt.net>
-User-Agent: Thunderbird 2.0.0.12 (Windows/20080213)
+	id S1752803AbYEYUUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 16:20:44 -0400
+Date: Sun, 25 May 2008 23:18:07 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Mirco Tischler <mt-ml@gmx.de>
+Cc: lkml <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [BUG: 2.6.26-rc3] ERROR: "____ilog2_NaN" undefined
+Message-ID: <20080525201807.GK1791@cs181133002.pp.htv.fi>
+References: <1211735607.14556.14.camel@mtlp.tischlernetz> <20080525181118.GG1791@cs181133002.pp.htv.fi> <1211742202.14556.25.camel@mtlp.tischlernetz>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: Mark Lord <liml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: Marvell 88SX7042 [4 Port SATA PCI-Express x4] Support/Questions
-References: <alpine.DEB.1.10.0805250757550.18572@p34.internal.lan> <4839A63E.4050409@rtr.ca>
-In-Reply-To: <4839A63E.4050409@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1211742202.14556.25.camel@mtlp.tischlernetz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Justin Piszcz wrote:
->> If one bought enough of these, one could possibly achieve speeds in 
->> excess(!) of 1 gigabyte/second with enough drives and SW RAID in Linux.
->> Does anyone have such a card? I would be interested if it could 
->> sustain the maximum rate from each disk without any contention.
-> ..
+On Sun, May 25, 2008 at 09:03:22PM +0200, Mirco Tischler wrote:
+> On So, 2008-05-25 at 21:11 +0300, Adrian Bunk wrote:
+> > Works for me with your .config.
+> > 
+> > You are using an unmodified 2.6.26-rc3 kernel?
+> Yes. I just pulled today.
+> > 
+> > If yes, please:
+> > - send the output of "bash ./scripts/ver_linux" and
+> ﻿$ ./scripts/ver_linux
+> ﻿If some fields are empty or look unusual you may have an old version.
+> Compare to the current minimal requirements in Documentation/Changes.
 > 
-> Sure, if the bus and memory are fast enough.  You'll hit the Linux/libata
-> transactions/sec limit at some point, but I don't know what that is.
+> Linux mtlp 2.6.26-rc3-experimental #18 SMP PREEMPT Thu May 22 21:17:47
+> CEST 2008 x86_64 GNU/Linux
+> 
+> Gnu C                  4.3.0-4ubuntu1)
+>...
 
-I'm seeing 800MB/s on ICH8/9R class chipsets on concurrent non-raid I/O, 
-however that's the limit of the PCIe bus used between the ICH (south, 
-IO) and the MCH (north, memory/cpu/video-pcie hub). ICH10 is supposed to 
-double that by moving up to PCI-e 2.0 on that link AFAIK.
+I'd have said your gcc has a bug regarding __builtin_constant_p(),
+but I can't reproduce it on i386 with the compiler you are using.
 
-> Eg. Here's a 4X (I think) card in my PCIe video slot:
+You are using exactly this compiler for compiling your kernel?
 
-Ah, of course making use of the video PCIe slot by putting as many ports 
-as you can on it will improve the situation somewhat as its generally 
-connected to the MCH directly. (mm, any plain/non-raid 88SX7xxx PCIe 
-cards with 8 ports available?)
+If yes I'm unfortunately out of ideas...  :-(
+
+> Thanks
+> Mirco
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
