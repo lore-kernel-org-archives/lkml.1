@@ -1,52 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbYEYGSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbYEYGWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbYEYGSY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 02:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYEYGSR
+	id S1754843AbYEYGWS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 02:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYEYGWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 02:18:17 -0400
-Received: from es1036.belits.com ([64.58.22.200]:59014 "EHLO es1036.belits.com"
+	Sun, 25 May 2008 02:22:07 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39674 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbYEYGSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 02:18:16 -0400
-X-Greylist: delayed 2084 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 02:18:16 EDT
-Date: Sat, 24 May 2008 22:44:37 -0700 (PDT)
-From: Alex Belits <abelits@phobos.illtel.denver.co.us>
-To: Bosko Radivojevic <bosko.radivojevic@gmail.com>
-cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Inserting code from userspace to kernel space
-In-Reply-To: <d6c8ef150805220541v711c5acahc60541e3fd9f44fc@mail.gmail.com>
-Message-ID: <alpine.DEB.1.00.0805242244290.2200@OLPC>
-References: <d6c8ef150805220541v711c5acahc60541e3fd9f44fc@mail.gmail.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1751065AbYEYGWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 02:22:06 -0400
+Date: Sun, 25 May 2008 08:22:10 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] x86: use defconfig as last resort
+Message-ID: <20080525062210.GA31195@uranus.ravnborg.org>
+References: <20080524192540.GA28067@uranus.ravnborg.org> <alpine.LFD.1.10.0805241320200.3081@woody.linux-foundation.org> <20080524203748.GA2343@uranus.ravnborg.org> <alpine.LFD.1.10.0805241825460.3081@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805241825460.3081@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008, Bosko Radivojevic wrote:
+> 
+> Wouldn't this be cleaner as just *one* entry, and then just have 
+> different default statements, ie something like
+> 
+>     config DEFCONFIG_LIST
+> 	string
+> 	option defconfig_list
+> 	default "arch/x86/configs/i386_defconfig" if X86_32
+> 	default "arch/x86/configs/x86_64_defconfig" if X86_64
+> 
+> instead?
 
-> I'm looking for a way to insert code from user space to the kernel
-> space, but without using kernel module. Actually, we are working on a
-> system that has to allow end user to change part of code (one or two
-> functions) that is executed from the kernel space.
->
-> For now we have two different kernel modules, one exporting a function
-> which another module uses. Process of compiling kernel module is quite
-> ineligible for standard end user (along with the requirement to
-> support multi platform cross compiling) compared to just cross
-> compiling a simple code that doesn't use any libraries than libc.
+Following patch moves the stuff away from the arch
+specific Kconfig file and works at least for
+x86 and alpha.
+It uses the already defined environment variables to locate
+the defconfig and try known locations.
 
-Why? You don't have to recompile everything, just link a module before 
-loaing it -- a part containing the function can be one object file, the 
-rest of the module (a wrapper) is compiled once for a particular kernel 
-version, and both are linked together, producing a module valid for a 
-particular kenel version.
+	Sam
 
-This is how most of proprietary drivers are distributed, and Ubuntu has a 
-whole infrastructure around that mechanism that simplifies transition 
-between versions.
-
--- 
-Alex
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index fe361ae..6a4b98e 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -26,19 +26,6 @@ config X86
+ 	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
+ 	select HAVE_ARCH_KGDB if !X86_VOYAGER
+ 
+-config DEFCONFIG_LIST
+-	string
+-	depends on X86_32
+-	option defconfig_list
+-	default "arch/x86/configs/i386_defconfig"
+-
+-config DEFCONFIG_LIST
+-	string
+-	depends on X86_64
+-	option defconfig_list
+-	default "arch/x86/configs/x86_64_defconfig"
+-
+-
+ config GENERIC_LOCKBREAK
+ 	def_bool n
+ 
+diff --git a/init/Kconfig b/init/Kconfig
+index 6135d07..2aa7180 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -6,6 +6,14 @@ config KERNELVERSION
+ 	string
+ 	option env="KERNELVERSION"
+ 
++config KBUILD_DEFCONFIG
++	string
++	option env="KBUILD_DEFCONFIG"
++
++config SRCARCH
++	string
++	option env="SRCARCH"
++
+ config DEFCONFIG_LIST
+ 	string
+ 	depends on !UML
+@@ -13,7 +21,8 @@ config DEFCONFIG_LIST
+ 	default "/lib/modules/$UNAME_RELEASE/.config"
+ 	default "/etc/kernel-config"
+ 	default "/boot/config-$UNAME_RELEASE"
+-	default "arch/$ARCH/defconfig"
++	default "arch/$SRCARCH/configs/$KBUILD_DEFCONFIG"
++	default "arch/$SRCARCH/defconfig"
+ 
+ menu "General setup"
+ 
