@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932114AbYEYK1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbYEYK1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932114AbYEYK1a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762292AbYEYKX5
+	id S932213AbYEYK1o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762303AbYEYKX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:23:57 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42022 "EHLO
+	Sun, 25 May 2008 06:23:58 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42026 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761822AbYEYKX4 (ORCPT
+	with ESMTP id S1762298AbYEYKX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:23:56 -0400
+	Sun, 25 May 2008 06:23:57 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
 References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: [PATCHv2 24/28] tuners: treat firmware data as const
-Message-Id: <E1K0DOM-0007EK-A7@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:54 +0100
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       Patrick Boettcher <patrick.boettcher@desy.de>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       Chris Pascoe <c.pascoe@itee.uq.edu.au>
+Subject: [PATCHv2 22/28] cxusb: treat firmware data as const
+Message-Id: <E1K0DOK-0007EC-6q@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:52 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -25,37 +28,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+...which means allocating our own copy when we want to modify it.
+
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- drivers/media/common/tuners/tuner-xc2028.c |    2 +-
- drivers/media/common/tuners/xc5000.c       |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/dvb/dvb-usb/cxusb.c |   21 ++++++++++++++++++---
+ 1 files changed, 18 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/media/common/tuners/tuner-xc2028.c b/drivers/media/common/tuners/tuner-xc2028.c
-index 9e9003c..0a6e26a 100644
---- a/drivers/media/common/tuners/tuner-xc2028.c
-+++ b/drivers/media/common/tuners/tuner-xc2028.c
-@@ -255,7 +255,7 @@ static int load_all_firmwares(struct dvb_frontend *fe)
- {
- 	struct xc2028_data    *priv = fe->tuner_priv;
- 	const struct firmware *fw   = NULL;
--	unsigned char         *p, *endp;
-+	const unsigned char   *p, *endp;
- 	int                   rc = 0;
- 	int		      n, n_array;
- 	char		      name[33];
-diff --git a/drivers/media/common/tuners/xc5000.c b/drivers/media/common/tuners/xc5000.c
-index ceae6db..d21a5a7 100644
---- a/drivers/media/common/tuners/xc5000.c
-+++ b/drivers/media/common/tuners/xc5000.c
-@@ -277,7 +277,7 @@ static int xc_read_reg(struct xc5000_priv *priv, u16 regAddr, u16 *i2cData)
- 	return result;
- }
+diff --git a/drivers/media/dvb/dvb-usb/cxusb.c b/drivers/media/dvb/dvb-usb/cxusb.c
+index 720fcd1..94bb482 100644
+--- a/drivers/media/dvb/dvb-usb/cxusb.c
++++ b/drivers/media/dvb/dvb-usb/cxusb.c
+@@ -24,6 +24,7 @@
+  * see Documentation/dvb/README.dvb-usb for more information
+  */
+ #include <media/tuner.h>
++#include <linux/vmalloc.h>
  
--static int xc_load_i2c_sequence(struct dvb_frontend *fe, u8 i2c_sequence[])
-+static int xc_load_i2c_sequence(struct dvb_frontend *fe, const u8 *i2c_sequence)
- {
- 	struct xc5000_priv *priv = fe->tuner_priv;
+ #include "cxusb.h"
+ 
+@@ -700,12 +701,26 @@ static int bluebird_patch_dvico_firmware_download(struct usb_device *udev,
+ 
+ 		if (fw->data[idoff] == (USB_VID_DVICO & 0xff) &&
+ 		    fw->data[idoff + 1] == USB_VID_DVICO >> 8) {
+-			fw->data[idoff + 2] =
++			struct firmware new_fw;
++			u8 *new_fw_data = vmalloc(fw->size);
++			int ret;
++
++			if (!new_fw_data)
++				return -ENOMEM;
++
++			memcpy(new_fw_data, fw->data, fw->size);
++			new_fw.size = fw->size;
++			new_fw.data = fw->data;
++
++			new_fw_data[idoff + 2] =
+ 				le16_to_cpu(udev->descriptor.idProduct) + 1;
+-			fw->data[idoff + 3] =
++			new_fw_data[idoff + 3] =
+ 				le16_to_cpu(udev->descriptor.idProduct) >> 8;
+ 
+-			return usb_cypress_load_firmware(udev, fw, CYPRESS_FX2);
++			ret = usb_cypress_load_firmware(udev, &new_fw,
++							CYPRESS_FX2);
++			vfree(new_fw_data);
++			return ret;
+ 		}
+ 	}
  
 -- 
 1.5.4.5
