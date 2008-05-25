@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbYEYTdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759608AbYEYTfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbYEYTdR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 15:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758462AbYEYTdA
+	id S1759608AbYEYTfV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 15:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbYEYTfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 15:33:00 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59012 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756722AbYEYTc7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 15:32:59 -0400
-Date: Sun, 25 May 2008 15:32:58 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] x86: enable preemption in delay
-In-Reply-To: <20080525115305.79c12c8c@infradead.org>
-Message-ID: <Pine.LNX.4.58.0805251530520.25580@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
- <20080525115305.79c12c8c@infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 25 May 2008 15:35:08 -0400
+Received: from main.gmane.org ([80.91.229.2]:38176 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754180AbYEYTfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 15:35:07 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
+Date: Sun, 25 May 2008 21:33:45 +0200
+Message-ID: <m33ao689gm.fsf@ursa.amorsen.dk>
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core> <m31w42gf97.fsf@ursa.amorsen.dk> <1211727722.5913.63.camel@andromache>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: hd5b9080a.c45-01-12.sta.perspektivbredband.net
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+Cancel-Lock: sha1:K4vVtu+avRRV1buS+7/z9unDtpQ=
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Glen Turner <gdt@gdt.id.au> writes:
 
-On Sun, 25 May 2008, Arjan van de Ven wrote:
-
-> On Sat, 24 May 2008 23:11:20 -0400 (EDT)
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> > In git commit 35d5d08a085c56f153458c3f5d8ce24123617faf, Andrew Morton
-> > placed preempt_disable around the entire delay due to TSC's not
-> > working nicely on SMP.  Unfortunately for those that care about
-> > latencies this is devastating! Especially when we have callers to
-> > mdelay(8).
+> On Fri, 2008-05-16 at 22:34 +0200, Benny Amorsen wrote:
 >
-> we used to have a WARN_ON if mdelay was called while preemptable..
-> maybe we should put that back in?
+>> Perhaps it would be possible to make most types of interrupts add
+>> entropy, but not credit any entropy?
 >
+> You need to be certain that those sources are not able
+> to be influenced by a hostile party, otherwise the entropy
+> pool can be degraded to be less random over successive samples
+> than its entropy score suggests.
 
-That would be a good idea, but that wouldn't solve this issue. The issue
-here is that the mdelay itself disables preemption. The caller had
-preemption enabled.
+Not if we don't credit any entropy. /dev/random is engineered to be
+safe against getting non-random input, as long as that input isn't
+credited with entropy. /dev/random is even world writable by default.
 
-The problem was caused by a quick fix by Andrew to handle out of sync
-TSC's for a delay that used TSC's as a counter.
 
--- Steve
+/Benny
+
 
