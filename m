@@ -1,97 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbYEYTa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbYEYTbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbYEYTa4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 15:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759399AbYEYTab
+	id S1759538AbYEYTbu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 15:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbYEYTbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 15:30:31 -0400
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:3806 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759369AbYEYTa3 (ORCPT
+	Sun, 25 May 2008 15:31:41 -0400
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:4195 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752948AbYEYTbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 15:30:29 -0400
+	Sun, 25 May 2008 15:31:40 -0400
+Date: Sun, 25 May 2008 21:30:51 +0200 (CEST)
 From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
 To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] default to n for GROUP_SCHED and FAIR_GROUP_SCHED
-Date: Sun, 25 May 2008 21:30:01 +0200
-User-Agent: KMail/1.9.9
-Cc: Parag Warudkar <parag.warudkar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "akpm@osdl.org" <akpm@osdl.org>, Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-References: <82e4877d0805031742o464dd581wd93173d79705ce0d@mail.gmail.com> <82e4877d0805050814j721ae522k84384df48c9f4336@mail.gmail.com> <20080505171501.GA22332@elte.hu>
-In-Reply-To: <20080505171501.GA22332@elte.hu>
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, Michael Krufky <mkrufky@linuxtv.org>,
+       Patrick Boettcher <pb@linuxtv.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch] video/dvb: fix MEDIA_TUNER && FW_LOADER build error
+In-Reply-To: <20080520193409.GA14869@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805252117550.20021@localhost.localdomain>
+References: <20080520193409.GA14869@elte.hu>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805252130.05995.zippel@linux-m68k.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-On Monday 5. May 2008, Ingo Molnar wrote:
+On Tue, 20 May 2008, Ingo Molnar wrote:
 
-> This is a many years old kconfig bug that is frequently hacked around in
-> distro kernel packages but which has been ignored upstream - i've
-> attached Fedora's nonint_oldconfig patch from Dave Jones below. (maybe
-> Arjan wrote it originally?)
+> the workaround i found was to move the select of FW_LOADER one level up, 
+> so that the buggy kconfig tool can notice it and can act appropriately. 
+> This problem can probably be worked around in other ways as well, i went 
+> for the minimal fix.
+> 
+> Obviously, the kconfig tool should be fixed, it is not reasonable to 
+> expect driver authors to do manual dependency resolution (that kconfig 
+> itself already does) and uglify the Kconfig files. The kconfig tool did 
+> nothing to warn about this situation and did not prevent this faulty 
+> .config from being constructed.
 
-Ingo, I would really appreciate if you stopped your kconfig bashing.
-I haven't ignored this patch, if you only did a little bit of research you 
-might have found http://lkml.org/lkml/2004/6/1/170, where I commented on this 
-patch.
-It seems for you it's more important to reclassify a feature request as "bug" 
-and adding your own little half truth, just so you can harass me. If you 
-think there is a bug somewhere, you are free to submit them as such and I'm 
-happy to explain, if and how that bug can be fixed.
-
-I considered to let this (and others) slide, but this latest example 
-http://lkml.org/lkml/2008/5/20/473 doesn't suggest that you'll going to stop.
-It looks innocent enough to the casual reader, so let's look at it a little 
-closer.
-First you don't even bother to Cc me, although I doubt you don't know that I 
-wrote it and thus is responsible for it. Due to the lkml volume I don't read 
-everything, often even with a few days delay and I would have missed this one 
-if Sam hadn't pointed me to it.
-Secondly, it's amazing how you get to your conclusion. You create your own 
-reality by omitting anything that doesn't fit into it, only a few days 
-earlier I said in 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/2454.html that select 
-isn't really the main problem (you were even in the Cc). You are of course 
-free to disagree with this, but you nowhere seem to acknowledge, that this 
-has somehow arrived in your own little reality.
-You don't even show the smallest amount of doubt, for you it's clear that 
-kconfig is buggy, no questions are needed. If you want to make such 
-pronouncement, you should also do the necessary research, which includes a 
-look at other possible solutions. If you don't want to or can't do this 
-research (which isn't a problem itself), I would expect questions, but you 
-don't need this, you are apparently the new kconfig expert, who can proclaim 
-what is and isn't a bug and how it has to be fixed.
-
-I would have ignored this if it only happened once or twice, but this pattern 
-of yours is too persistent to be ignored. What makes this so perfid, is that 
-the casual reader doesn't immediately see this as a problem, since you only 
-show half the picture, omitting anything that doesn't fit your conclusion. 
-Everyone can make such mistake, but if it happens repeatedly despite having 
-different information it's becoming bullying (independent of whether it's 
-done intentionally or not). This is a rather sneaky strategy, where you don't 
-make your hands dirty directly, but still every little stab leaves behind an 
-impression, which adds up. It does nothing but destroying my reputation, I'm 
-now the one who is complaining, which others soon probably like to describe 
-as "whining", which more often lately just means that he doesn't like what 
-someone has to say. I can only loose either way, either you continue your 
-little backstabbing or I have to complain about these (where not everyone 
-sees the complete picture from a single mail). If I should fix this properly 
-then you can claim it had been done due to your "persistence", but let me 
-assure you that this is doing nothing to encourage me to do anything about 
-this. It rather encourages me to spent my time on other things, which are 
-more fun and as I'm not paid to do this, I'm not forced to take this level of 
-masochism, so if it's your goal to get rid of me, then please say so clearly.
+If you had bothered to ask me, I could have told you that the answer is 
+rather simple: if you have problems with select, don't use it.
+drivers/media/ is abusing select quite heavily, so it's no surprise it's 
+getting out of control, the patch below gets rid of select in the tuners 
+directory, others should be done in a similiar way.
+One could now argue that this sort of thing could be done simpler, then 
+I'll agree, but select isn't the answer.
 
 bye, Roman
+
+---
+ drivers/media/common/tuners/Kconfig |   91 ++++++++++++++----------------------
+ 1 file changed, 37 insertions(+), 54 deletions(-)
+
+Index: linux-2.6/drivers/media/common/tuners/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/media/common/tuners/Kconfig
++++ linux-2.6/drivers/media/common/tuners/Kconfig
+@@ -17,22 +17,9 @@ config MEDIA_ATTACH
+ 
+ 	  If unsure say Y.
+ 
+-config MEDIA_TUNER
+-	tristate
+-	default VIDEO_MEDIA && I2C
+-	depends on VIDEO_MEDIA && I2C
+-	select MEDIA_TUNER_XC2028 if !MEDIA_TUNER_CUSTOMIZE && HOTPLUG
+-	select MEDIA_TUNER_XC5000 if !MEDIA_TUNER_CUSTOMIZE && HOTPLUG
+-	select MEDIA_TUNER_MT20XX if !MEDIA_TUNER_CUSTOMIZE
+-	select MEDIA_TUNER_TDA8290 if !MEDIA_TUNER_CUSTOMIZE
+-	select MEDIA_TUNER_TEA5761 if !MEDIA_TUNER_CUSTOMIZE
+-	select MEDIA_TUNER_TEA5767 if !MEDIA_TUNER_CUSTOMIZE
+-	select MEDIA_TUNER_SIMPLE if !MEDIA_TUNER_CUSTOMIZE
+-	select MEDIA_TUNER_TDA9887 if !MEDIA_TUNER_CUSTOMIZE
+-
+ menuconfig MEDIA_TUNER_CUSTOMIZE
+ 	bool "Customize analog and hybrid tuner modules to build"
+-	depends on MEDIA_TUNER
++	depends on VIDEO_MEDIA
+ 	help
+ 	  This allows the user to deselect tuner drivers unnecessary
+ 	  for their hardware from the build. Use this option with care
+@@ -42,122 +29,118 @@ menuconfig MEDIA_TUNER_CUSTOMIZE
+ 
+ 	  If unsure say N.
+ 
+-if MEDIA_TUNER_CUSTOMIZE
+-
+ config MEDIA_TUNER_SIMPLE
+-	tristate "Simple tuner support"
++	tristate "Simple tuner support" if MEDIA_TUNER_CUSTOMIZE
+ 	depends on VIDEO_MEDIA && I2C
+ 	select MEDIA_TUNER_TDA9887
+-	default m if MEDIA_TUNER_CUSTOMIZE
++	default y
+ 	help
+ 	  Say Y here to include support for various simple tuners.
+ 
+-config MEDIA_TUNER_TDA8290
+-	tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo"
+-	depends on VIDEO_MEDIA && I2C
+-	select MEDIA_TUNER_TDA827X
+-	select MEDIA_TUNER_TDA18271
+-	default m if MEDIA_TUNER_CUSTOMIZE
+-	help
+-	  Say Y here to include support for Philips TDA8290+8275(a) tuner.
+-
+ config MEDIA_TUNER_TDA827X
+-	tristate "Philips TDA827X silicon tuner"
++	tristate "Philips TDA827X silicon tuner" if MEDIA_TUNER_CUSTOMIZE && DVB_FE_CUSTOMISE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if DVB_FE_CUSTOMISE
++	default DVB_CAPTURE_DRIVERS
+ 	help
+ 	  A DVB-T silicon tuner module. Say Y when you want to support this tuner.
+ 
+ config MEDIA_TUNER_TDA18271
+-	tristate "NXP TDA18271 silicon tuner"
++	tristate "NXP TDA18271 silicon tuner" if MEDIA_TUNER_CUSTOMIZE && DVB_FE_CUSTOMISE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if DVB_FE_CUSTOMISE
++	default DVB_CAPTURE_DRIVERS
+ 	help
+ 	  A silicon tuner module. Say Y when you want to support this tuner.
+ 
++config MEDIA_TUNER_TDA8290
++	tristate "TDA 8290/8295 + 8275(a)/18271 tuner combo" if MEDIA_TUNER_CUSTOMIZE
++	depends on VIDEO_MEDIA && I2C
++	depends on MEDIA_TUNER_TDA827X && MEDIA_TUNER_TDA18271
++	default y
++	help
++	  Say Y here to include support for Philips TDA8290+8275(a) tuner.
++
+ config MEDIA_TUNER_TDA9887
+-	tristate "TDA 9885/6/7 analog IF demodulator"
++	tristate "TDA 9885/6/7 analog IF demodulator" if MEDIA_TUNER_CUSTOMIZE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if MEDIA_TUNER_CUSTOMIZE
++	default y
+ 	help
+ 	  Say Y here to include support for Philips TDA9885/6/7
+ 	  analog IF demodulator.
+ 
+ config MEDIA_TUNER_TEA5761
+-	tristate "TEA 5761 radio tuner (EXPERIMENTAL)"
++	tristate "TEA 5761 radio tuner (EXPERIMENTAL)" if MEDIA_TUNER_CUSTOMIZE
+ 	depends on VIDEO_MEDIA && I2C
+ 	depends on EXPERIMENTAL
+-	default m if MEDIA_TUNER_CUSTOMIZE
++	default y
+ 	help
+ 	  Say Y here to include support for the Philips TEA5761 radio tuner.
+ 
+ config MEDIA_TUNER_TEA5767
+-	tristate "TEA 5767 radio tuner"
++	tristate "TEA 5767 radio tuner" if MEDIA_TUNER_CUSTOMIZE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if MEDIA_TUNER_CUSTOMIZE
++	default y
+ 	help
+ 	  Say Y here to include support for the Philips TEA5767 radio tuner.
+ 
+ config MEDIA_TUNER_MT20XX
+-	tristate "Microtune 2032 / 2050 tuners"
++	tristate "Microtune 2032 / 2050 tuners" if MEDIA_TUNER_CUSTOMIZE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if MEDIA_TUNER_CUSTOMIZE
++	default y
+ 	help
+ 	  Say Y here to include support for the MT2032 / MT2050 tuner.
+ 
+ config MEDIA_TUNER_MT2060
+-	tristate "Microtune MT2060 silicon IF tuner"
++	tristate "Microtune MT2060 silicon IF tuner" if MEDIA_TUNER_CUSTOMIZE && DVB_FE_CUSTOMISE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if DVB_FE_CUSTOMISE
++	default DVB_CAPTURE_DRIVERS
+ 	help
+ 	  A driver for the silicon IF tuner MT2060 from Microtune.
+ 
+ config MEDIA_TUNER_MT2266
+-	tristate "Microtune MT2266 silicon tuner"
++	tristate "Microtune MT2266 silicon tuner" if MEDIA_TUNER_CUSTOMIZE && DVB_FE_CUSTOMISE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if DVB_FE_CUSTOMISE
++	default DVB_CAPTURE_DRIVERS
+ 	help
+ 	  A driver for the silicon baseband tuner MT2266 from Microtune.
+ 
+ config MEDIA_TUNER_MT2131
+-	tristate "Microtune MT2131 silicon tuner"
++	tristate "Microtune MT2131 silicon tuner" if MEDIA_TUNER_CUSTOMIZE && DVB_FE_CUSTOMISE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if DVB_FE_CUSTOMISE
++	default DVB_CAPTURE_DRIVERS
+ 	help
+ 	  A driver for the silicon baseband tuner MT2131 from Microtune.
+ 
+ config MEDIA_TUNER_QT1010
+-	tristate "Quantek QT1010 silicon tuner"
++	tristate "Quantek QT1010 silicon tuner" if MEDIA_TUNER_CUSTOMIZE && DVB_FE_CUSTOMISE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if DVB_FE_CUSTOMISE
++	default DVB_CAPTURE_DRIVERS
+ 	help
+ 	  A driver for the silicon tuner QT1010 from Quantek.
+ 
+ config MEDIA_TUNER_XC2028
+-	tristate "XCeive xc2028/xc3028 tuners"
++	tristate "XCeive xc2028/xc3028 tuners" if MEDIA_TUNER_CUSTOMIZE
+ 	depends on VIDEO_MEDIA && I2C
+ 	depends on HOTPLUG
+ 	select FW_LOADER
+-	default m if MEDIA_TUNER_CUSTOMIZE
++	default y
+ 	help
+ 	  Say Y here to include support for the xc2028/xc3028 tuners.
+ 
+ config MEDIA_TUNER_XC5000
+-	tristate "Xceive XC5000 silicon tuner"
++	tristate "Xceive XC5000 silicon tuner" if MEDIA_TUNER_CUSTOMIZE
+ 	depends on VIDEO_MEDIA && I2C
+ 	depends on HOTPLUG
+ 	select FW_LOADER
+-	default m if DVB_FE_CUSTOMISE
++	default y
+ 	help
+ 	  A driver for the silicon tuner XC5000 from Xceive.
+ 	  This device is only used inside a SiP called togther with a
+ 	  demodulator for now.
+ 
+ config MEDIA_TUNER_MXL5005S
+-	tristate "MaxLinear MSL5005S silicon tuner"
++	tristate "MaxLinear MSL5005S silicon tuner" if MEDIA_TUNER_CUSTOMIZE && DVB_FE_CUSTOMISE
+ 	depends on VIDEO_MEDIA && I2C
+-	default m if DVB_FE_CUSTOMISE
++	default DVB_CAPTURE_DRIVERS
+ 	help
+ 	  A driver for the silicon tuner MXL5005S from MaxLinear.
+ 
+-endif # MEDIA_TUNER_CUSTOMIZE
