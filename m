@@ -1,121 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbYEYKz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYEYLUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbYEYKz6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbYEYKzU
+	id S1756883AbYEYLUy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 07:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbYEYLUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:55:20 -0400
-Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:1143 "EHLO
-	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbYEYKzR (ORCPT
+	Sun, 25 May 2008 07:20:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55269 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYEYLUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:55:17 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCHv2 04/28] cx25840: treat firmware data as const
-Date: Sun, 25 May 2008 12:51:32 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, Tyler Trafford <ttrafford@gmail.com>,
-       Mike Isely <isely@isely.net>
-References: <1211708969@pmac.infradead.org> <E1K0DO1-0007D2-3d@shinybook.infradead.org>
-In-Reply-To: <E1K0DO1-0007D2-3d@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Sun, 25 May 2008 07:20:43 -0400
+Subject: Re: trace_mark ugliness
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080522171602.GB22806@Krystal>
+References: <Pine.LNX.4.58.0805220949560.14724@gandalf.stny.rr.com>
+	 <20080522171602.GB22806@Krystal>
+Content-Type: text/plain
+Date: Sun, 25 May 2008 13:20:02 +0200
+Message-Id: <1211714403.6463.294.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805251251.32373.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Thu, 2008-05-22 at 13:16 -0400, Mathieu Desnoyers wrote:
 
-There is no need to do the first two bytes first. As far as I can tell 
-it was done to avoid having to allocate a local buffer. The initial 
-version of this code was writing much larger blocks at a time to the 
-i2c bus, so having to setup a large buffer on the stack was 
-undesirable. The pvrusb driver requires a much smaller buffer (FWSEND), 
-but the code was never changed. Now, however, the initial four-byte 
-write is just in the way and can be removed in favor of always writing 
-FWSEND-sized blocks of data.
+> > The thing that bothers us the most is the force use of the "pretty print"
+> > interface. There's got to be a better way. I'd much rather see a
+> > file_marker.h file that has the interfaces defined, like what we have for
+> > sched.c.
+> > 
+> > Where we have a sched_trace.h that has the defined prototypes. That is
+> > what the tracers should use too.
+> > 
+> > The trace_mark should just have the string to find the tracer, but get rid
+> > of the "pretty print" aspect of it. Sorry, but the more I think about it,
+> > the nastier it seems. It forces all the users to do a va_start.
+> > 
+> > I know you developed trace_mark for LTT, and that's great. But where I'm
+> > disagreeing is that you should not force all other users of trace_mark to
+> > conform to the LTT way when it can be easier to have LTT conform to a more
+> > generic way.
+> > 
+> > Hence, this is what I propose.
+> > 
+> > Remove the format part altogether, the format should be checked via the
+> > prototype. I know that you are afraid of changes to markers and that
+> > breaking code, but honestly, that is up to the developers of the tracers
+> > to fix. This should not be placed in the code itself. The markers
+> > shouldn't change anyway. If there is to be a check, it should be a compile
+> > time check (i.e. prototype compare) not a runtime check (as it is now).
+> > 
+> 
+> Hrm, hrm, ok, let's brainstorm along these lines. So we would like to
+> have :
+> - Multiple tracers
+> - Each tracer can connect either to one or more different markers
+> - Each marker should support many tracers connected to it
+> - Checking for marker/tracer probe compatibility should be done via
+>   function prototypes.
+> 
+> The main issue here seems to be to support multiple probes connected at
+> once on a given marker. With the current markers, I deal with this by
+> taking a pointer on the va_list and go through as many va_start/va_end
+> as required (one pair for each connected probe). By the way, the probes
+> does not have to issue va_start/end; marker.c deals with this.
+> 
+> Also, given that I want to support SystemTAP, it adds the following
+> constraint : we cannot expect the probes to be there at compile-time,
+> since they can be provided by modules built much later. Therefore, we
+> have to provide support for dynamic connection of an arbitrary number of
+> probes on any given marker.
+> 
+> So while I *could* remove the format string easily, it's the variable
+> argument list which I don't see clearly how to drop while still
+> providing flexible argument types -and- compile-time type verification.
+> 
+> What currently looks like (this is a simplified pseudo-code) :
+> 
+> void marker_probe_cb(const struct marker *mdata, void *call_private, ...)
+> {
+>   va_list args;
+>   int i;
+> 
+>   preempt_disable();
+>   for (i = 0; multi[i].func; i++)  {
+>     va_start(args, call_private);
+>     multi[i].func(multi[i].probe_private, call_private,
+>       mdata->format, &args);
+>     va_end(args);
+>   }
+>   preempt_enable();
+> }
+> 
+> Would have to be changed into specialized functions for each marker,
+> involving quite a lot of code to be generated, e.g. :
+> 
+> void marker_XXnameXX_probe_cb(const struct marker *mdata,
+>     int arg1, void *arg2, struct mystruct *arg3)
+> {
+>   int i;
+> 
+>   preempt_disable();
+>   for (i = 0; multi[i].func; i++)
+>     multi[i].func(multi[i].probe_private, arg1, arg2, arg3);
+>   preempt_enable();
+> }
+> 
+> That would imply that the struct marker_probe_closure, currently defined
+> as :
+> 
+> typedef void marker_probe_func(void *probe_private, void *call_private,
+>                 const char *fmt, va_list *args);
+> 
+> struct marker_probe_closure {
+>         marker_probe_func *func;        /* Callback */
+>         void *probe_private;            /* Private probe data */
+> };
+> 
+> Would have to be duplicated for each marker prototype so we can provide
+> compile-time check of these prototypes. The registration functions would
+> also have to be duplicated to take parameters which include all those
+> various prototypes. They are required so that kernel modules can provide
+> probes (e.g. systemtap and LTTng).
+> 
+> I don't really see how your proposal deals with these constraints
+> without duplicating much of the marker code on a per marker basis.
+> However, if we can find a clever way to do it without the code
+> duplication, I'm all in.
+> 
+> Ideas/insights are welcome,
 
-I've CC-ed Mike Isely, the pvrusb2 maintainer, just in case there is an 
-outlandish restriction I'm not aware of on that USB device requiring 
-the firmware load to be done this way.
+How about something like:
 
-Regards,
+marker.c:
 
-	Hans
+void __trace_mark(const struct marker *mdata, va_list *args)
+{
+	int i;
 
-On Sunday 25 May 2008 12:23:33 David Woodhouse wrote:
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> ---
->  drivers/media/video/cx25840/cx25840-firmware.c |   21
-> +++++++++++++-------- 1 files changed, 13 insertions(+), 8
-> deletions(-)
->
-> diff --git a/drivers/media/video/cx25840/cx25840-firmware.c
-> b/drivers/media/video/cx25840/cx25840-firmware.c index
-> 620d295..5c08ede 100644
-> --- a/drivers/media/video/cx25840/cx25840-firmware.c
-> +++ b/drivers/media/video/cx25840/cx25840-firmware.c
-> @@ -79,7 +79,7 @@ static int check_fw_load(struct i2c_client *client,
-> int size) return 0;
->  }
->
-> -static int fw_write(struct i2c_client *client, u8 *data, int size)
-> +static int fw_write(struct i2c_client *client, const u8 *data, int
-> size) {
->  	if (i2c_master_send(client, data, size) < size) {
->  		v4l_err(client, "firmware load i2c failure\n");
-> @@ -93,7 +93,8 @@ int cx25840_loadfw(struct i2c_client *client)
->  {
->  	struct cx25840_state *state = i2c_get_clientdata(client);
->  	const struct firmware *fw = NULL;
-> -	u8 buffer[4], *ptr;
-> +	u8 buffer[FWSEND];
-> +	const u8 *ptr;
->  	int size, retval;
->
->  	if (state->is_cx23885)
-> @@ -108,6 +109,8 @@ int cx25840_loadfw(struct i2c_client *client)
->
->  	buffer[0] = 0x08;
->  	buffer[1] = 0x02;
-> +
-> +	/* Do we really need to do the first two bytes first? */
->  	buffer[2] = fw->data[0];
->  	buffer[3] = fw->data[1];
->  	retval = fw_write(client, buffer, 4);
-> @@ -118,19 +121,21 @@ int cx25840_loadfw(struct i2c_client *client)
->  	}
->
->  	size = fw->size - 2;
-> -	ptr = fw->data;
-> +	ptr = fw->data + 2;
->  	while (size > 0) {
-> -		ptr[0] = 0x08;
-> -		ptr[1] = 0x02;
-> -		retval = fw_write(client, ptr, min(FWSEND, size + 2));
-> +		int len = min(FWSEND - 2, size);
-> +
-> +		memcpy(buffer + 2, ptr, len);
-> +
-> +		retval = fw_write(client, ptr, len + 2);
->
->  		if (retval < 0) {
->  			release_firmware(fw);
->  			return retval;
->  		}
->
-> -		size -= FWSEND - 2;
-> -		ptr += FWSEND - 2;
-> +		size -= len;
-> +		ptr += len;
->  	}
->
->  	end_fw_load(client);
+	preempt_disable();
+	for (i = 0; multi[i].func; i++) {
+		va_list l;
 
+		va_copy(l, *args);
+		multi[i].func(multi[i].probe_private, &l);
+		va_end(l);
+	}
+	preempt_enable();
+}
+
+
+marker.h:
+
+#define TRACE_FUNC(name, args...)				\
+static inline void trace_##name(const struct marker *mdata, ## args) \
+{								\
+	va_list l;						\
+	va_start(l, mdata);					\
+	__trace_mark(mdata, &l);				\
+	va_end(l);						\
+}
+
+#define TRACE_MARK(name, args...)				\
+	trace_##name(trace_##name##_data, ## args)
+
+TRACE_FUNC(sched_switch, const struct task_struct *prev, const struct task_struct *next)
+
+
+sched.c:
+
+	TRACE_MARK(sched_switch, prev, next);
 
