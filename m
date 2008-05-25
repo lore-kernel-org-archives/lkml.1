@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbYEYRhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbYEYRiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbYEYRhl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 13:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbYEYRhb
+	id S1757102AbYEYRiw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 13:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbYEYRip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 13:37:31 -0400
-Received: from main.gmane.org ([80.91.229.2]:60522 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754773AbYEYRha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 13:37:30 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: question about splice performance
-Date: Sun, 25 May 2008 18:22:50 +0100
-Message-ID: <g1c84b$96v$1@ger.gmane.org>
-References: <38b2ab8a0805250812l2ecd424bh74a1694ed56460de@mail.gmail.com>
+	Sun, 25 May 2008 13:38:45 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1724 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753761AbYEYRin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 13:38:43 -0400
+Date: Sun, 25 May 2008 19:38:25 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Patrick <ragamuffin@datacomm.ch>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: SB600 AHCI: Hard Disk Corruption
+Message-ID: <20080525173825.GA4132@ucw.cz>
+References: <1211717435.6038.53.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 87.113.14.160.plusnet.pte-ag1.dyn.plus.net
-User-Agent: KNode/0.10.4
+Content-Disposition: inline
+In-Reply-To: <1211717435.6038.53.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<posted & mailed>
+Hi!
 
-Francis Moreau wrote:
-
-> Hi,
+> I've got an annoying problem with my athlon 64bit, 4gb ram, ???asus m2a-vm
+> (->SB600 AHCI controller), SAMSUNG HD501LJ SATA Disk. I'm using kernel
+> 2.6.26-rc3. Everything works fine, expect for standby/suspend/hibernate.
+> Standby freezes, hibernate, I acually ???haven't tested lately cause I
+> want suspend to ram to work first.
 > 
-> I did a really basic benchmark and was suprise about the results.
-> 
-> $ echo 3 > /proc/sys/vm/drop_caches
-> $ time  splice-cp  vmlinux /tmp/vmlinux
+> "echo mem > /sys/power/state; vbetool post;" (on text console)
+> successfully suspends the system and it resumes as well, BUT: After
+> resuming, things quickly turn bad: "file not fonund", kernel reports
 
-Are vmlinux and /tmp both RAM filesystems? If not you may want to try
-using /dev/shm to rule out disk speed...
+iommu problem? Try it with mem=3G.
+
+> * I read many threads in which Tejun provided patches for the SB600 AHCI
+> Controller which seems to be seriously broken - if only i knew that in
+> advance... Maybe he can fix this issue as well - last ressort. Otherwise
+> I'll burn that mobo!
+
+I suspect all you need is to burn one dimm.. or send it to me so that
+I can reproduce it ;-).
+
+> ???** After my firs install and configuring the system for a day, trying
+> out suspend to ram smashed it with no backups, since then i didn't learn
+> my lesson and smashed it again 2-3 times, this time with backups at hand
+> though, ...
+
+Boot it from cd ;-).
 
 -- 
-Sitsofe | http://sucs.org/~sits/
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
