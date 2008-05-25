@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbYEYUqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbYEYUrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbYEYUqH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 16:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbYEYUpv
+	id S1754928AbYEYUrf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 16:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbYEYUr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 16:45:51 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40087 "EHLO smtp6.pp.htv.fi"
+	Sun, 25 May 2008 16:47:27 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49399 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754720AbYEYUpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 16:45:06 -0400
-Date: Sun, 25 May 2008 23:42:29 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Neil Brown <neilb@suse.de>
-Subject: Re: x86_64 panic on latest linux-2.6
-Message-ID: <20080525204229.GL1791@cs181133002.pp.htv.fi>
-References: <200805251051.33781.m.kozlowski@tuxland.pl>
+	id S1750760AbYEYUr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 16:47:27 -0400
+Message-ID: <4839D05C.4040309@garzik.org>
+Date: Sun, 25 May 2008 16:47:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200805251051.33781.m.kozlowski@tuxland.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Francis Moreau <francis.moro@gmail.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: question about splice performance
+References: <38b2ab8a0805250812l2ecd424bh74a1694ed56460de@mail.gmail.com>
+In-Reply-To: <38b2ab8a0805250812l2ecd424bh74a1694ed56460de@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 25, 2008 at 10:51:33AM +0200, Mariusz Kozlowski wrote:
-> Hello,
-
-Hi Mariusz,
-
-> 	My x86_64 box is not willing to boot.
+Francis Moreau wrote:
+> Hi,
 > 
-> http://tuxland.pl/tmp/s7300372.jpg (275kB)
+> I did a really basic benchmark and was suprise about the results.
 > 
-> (gdb) p blk_lookup_devt
-> $1 = {dev_t (const char *, int)} 0xffffffff8032a430 <blk_lookup_devt>
-> (gdb) l *(0xffffffff8032a430+0x7f)
-> 0xffffffff8032a4af is in blk_lookup_devt (block/genhd.c:664).
-> 659             dev_t devt = MKDEV(0, 0);
-> 660     
-> 661             mutex_lock(&block_class_lock);
-> 662             list_for_each_entry(dev, &block_class.devices, node) {
-> 663                     if (strcmp(dev->bus_id, name) == 0) {
-> 664                             struct gendisk *disk = dev_to_disk(dev);
-> 665     
-> 666                             if (part < disk->minors)
-> 667                                     devt = MKDEV(MAJOR(dev->devt),
-> 668                                                  MINOR(dev->devt) + part);
-> (gdb) 
+> $ echo 3 > /proc/sys/vm/drop_caches
+> $ time  splice-cp  vmlinux /tmp/vmlinux
+> 
+> real    0m10.158s
+> user    0m0.002s
+> sys     0m0.401s
+> 
+> $ echo 3 > /proc/sys/vm/drop_caches
+> $ time  cp  vmlinux /tmp/vmlinux
+> 
+> real    0m10.590s
+> user    0m0.017s
+> sys     0m0.459s
+> 
+> 
+> I was expecting splice-cp case to be faster.
+> 
+> Could someone enlight me ?
 
-thanks for your report.
+If you drop caches you are not measuring splice speed.
 
-Does reverting of commit 30f2f0eb4bd2c43d10a8b0d872c6e5ad8f31c9a0
-(block: do_mounts - accept root=<non-existant partition>) fix it?
+Use ramfs for your tests (guarantees data is in cache) instead.
 
-> 	Mariusz
->...
+	Jeff
 
-cu
-Adrian
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
