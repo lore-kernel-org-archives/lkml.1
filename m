@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYEYNRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYEYNSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754255AbYEYNRS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 09:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYEYNRI
+	id S1754908AbYEYNSu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 09:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbYEYNSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 09:17:08 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49033 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbYEYNRH (ORCPT
+	Sun, 25 May 2008 09:18:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:64809 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752428AbYEYNSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 09:17:07 -0400
-Date: Sun, 25 May 2008 09:17:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] x86: enable preemption in delay
-In-Reply-To: <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
-Message-ID: <Pine.LNX.4.58.0805250915410.20625@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
+	Sun, 25 May 2008 09:18:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=JeNrroQMZxRBqP55gkU6dQ30wRImnEy5KiArraSbxXk462giI05tkKDfZJkO/9nhDXPqA1+0BkLCWPnrnVjCthpFx/Cgl8Kd+uL1DbHVd+CiqvisepnRXZdZFvU0DDDJPtK+K6Voypu+yc4nyFfDN+eUQC1KR/W25VU1z7Y5LaU=
+From: Qinghuang Feng <s3c24xx@gmail.com>
+Reply-To: s3c24xx@gmail.com
+To: rmk@arm.linux.org.uk
+Subject: [PATCH]scsi: check the return value of device_create_file() in powertec.c
+Date: Sun, 25 May 2008 21:18:25 +0800
+User-Agent: KMail/1.9.1
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805252118.25798.s3c24xx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds code to check the return value of device_create_file() called from powertecscsi_probe() in powertec.c 
+ 
+Signed-off-by: Qinghuang Feng <s3c24xx@gmail.com>
+---
+diff --git a/drivers/scsi/arm/powertec.c b/drivers/scsi/arm/powertec.c
+index d9a546d..d695a6d 100644
+--- a/drivers/scsi/arm/powertec.c
++++ b/drivers/scsi/arm/powertec.c
+@@ -361,7 +361,9 @@ powertecscsi_probe(struct expansion_card
+ 
+ 	ecard_setirq(ec, &powertecscsi_ops, info);
+ 
+-	device_create_file(&ec->dev, &dev_attr_bus_term);
++	ret = device_create_file(&ec->dev, &dev_attr_bus_term);
++	if (ret)
++		goto out_put;
+ 
+ 	ret = fas216_init(host);
+ 	if (ret)
+@@ -399,6 +401,8 @@ powertecscsi_probe(struct expansion_card
+ 
+  out_free:
+ 	device_remove_file(&ec->dev, &dev_attr_bus_term);
++
++ out_put:
+ 	scsi_host_put(host);
+ 
+  out_region:
 
-On Sun, 25 May 2008, Thomas Gleixner wrote:
->
-> +/*
-> + * 5 usec on a 1GHZ machine. Not necessarily correct, but not too long
-> + * either.
-
-And what happens when we have 10GHz boxes that can do migration in 1us,
-and the delay that is asked for is 2us. We can return early.  I don't like
-to place assumptions of this kind that can hurt with future hardware
-enhancements.
-
--- Steve
-
-
-> + */
-> +#define TSC_MIGRATE_COUNT 5000
-> +
->  /* TSC based delay: */
->  static void delay_tsc(unsigned long loops)
->  {
->  	unsigned long bclock, now;
-> +	int cpu;
->
-> -	preempt_disable();		/* TSC's are per-cpu */
-> +	preempt_disable();
-> +	cpu = smp_processor_id();
->  	rdtscl(bclock);
->  	do {
->  		rep_nop();
-> -		rdtscl(now);
-> -	} while ((now-bclock) < loops);
-> +
-> +		/* Allow RT tasks to run */
-> +		preempt_enable();
-> +		preempt_disable();
-> +
-> +		/*
-> +		 * It is possible that we moved to another CPU, and
-> +		 * since TSC's are per-cpu we need to calculate
-> +		 * that. The delay must guarantee that we wait "at
-> +		 * least" the amount of time. Being moved to another
-> +		 * CPU could make the wait longer but we just need to
-> +		 * make sure we waited long enough. Rebalance the
-> +		 * counter for this CPU.
-> +		 */
-> +		if (unlikely(cpu != smp_processor_id())) {
-> +			if (loops <= TSC_MIGRATE_COUNT)
-> +				break;
-> +			cpu = smp_processor_id();
-> +			rdtscl(bclock);
-> +			loops -= TSC_MIGRATE_COUNT;
-> +		} else {
-> +			rdtscl(now);
-> +			if ((now - bclock) >= loops)
-> +				break;
-> +			loops -= (now - bclock);
-> +			bclock = now;
-> +		}
-> +	} while (loops > 0);
->  	preempt_enable();
->  }
->
