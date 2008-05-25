@@ -1,58 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbYEYCkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbYEYDLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756290AbYEYCkP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 May 2008 22:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYEYCkE
+	id S1756870AbYEYDLd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 May 2008 23:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYEYDLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 May 2008 22:40:04 -0400
-Received: from defg500.nifty.com ([202.248.238.127]:25045 "EHLO
-	defg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751357AbYEYCkD (ORCPT
+	Sat, 24 May 2008 23:11:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:38623 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbYEYDLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 May 2008 22:40:03 -0400
-X-Greylist: delayed 750 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 May 2008 22:40:02 EDT
-DomainKey-Signature: a=rsa-sha1; s=userg501; d=nifty.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:x-mailer:mime-version:
-	content-type:content-transfer-encoding;
-	b=XNQn2Iq2j/VgY5x/BsxsdBLu64EVoKVnUGQzYuyvYemjWmebRuaDz/VznjlNK6Od+
-	vXUbnGojpGjM6TCYoIzKA==
-X-Nifty-SrcIP: [220.145.30.125]
-Date: Sun, 25 May 2008 11:23:08 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Subject: [PLEASE REVERT]  "Add a WARN_ON_ONCE" at  net/sched/sch_generic.c:
-Message-Id: <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 24 May 2008 23:11:22 -0400
+Date: Sat, 24 May 2008 23:11:20 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+cc: akpm@osdl.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Clark Williams <clark.williams@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] x86: enable preemption in delay
+Message-ID: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Please revert the patch "Add a WARN_ON_ONCE() to
- the transmit timeout function".
+The RT team has been searching for a nasty latency. This latency shows
+up out of the blue and has been seen to be as big as 5ms!
 
-The transmit timeout sometimes happens on normal operation.
-This message annoys me.
+Using ftrace I found the cause of the latency.
 
+   pcscd-2995  3dNh1 52360300us : irq_exit (smp_apic_timer_interrupt)
+   pcscd-2995  3dN.2 52360301us : idle_cpu (irq_exit)
+   pcscd-2995  3dN.2 52360301us : rcu_irq_exit (irq_exit)
+   pcscd-2995  3dN.1 52360771us : smp_apic_timer_interrupt (apic_timer_interrupt
+)
+   pcscd-2995  3dN.1 52360771us : exit_idle (smp_apic_timer_interrupt)
 
->net: Add a WARN_ON_ONCE() to the transmit timeout function
->
->WARN_ON_ONCE() gives a stack trace including the full module list.
->Having this in the kernel dump for the timeout case in the
->generic netdev watchdog will help us see quicker which driver
->is involved. It also allows us to collect statistics
->and patterns in terms of which drivers have this event occuring.
->
->Suggested by Andrew Morton
->
->Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
->Signed-off-by: David S. Miller <davem@davemloft.net>
+Here's an example of a 400 us latency. pcscd took a timer interrupt and
+returned with "need resched" enabled, but did not reschedule until after
+the next interrupt came in at 52360771us 400us later!
 
-Best Regards
-Komuro
+At first I thought we somehow missed a preemption check in entry.S. But
+I also noticed that this always seemed to happen during a __delay call.
+
+   pcscd-2995  3dN.2 52360836us : rcu_irq_exit (irq_exit)
+   pcscd-2995  3.N.. 52361265us : preempt_schedule (__delay)
+
+Looking at the x86 delay, I found my problem.
+
+In git commit 35d5d08a085c56f153458c3f5d8ce24123617faf, Andrew Morton
+placed preempt_disable around the entire delay due to TSC's not working
+nicely on SMP.  Unfortunately for those that care about latencies this
+is devastating! Especially when we have callers to mdelay(8).
+
+Here I enable preemption during the loop and account for anytime the task
+migrates to a new CPU. The delay asked for may be extended a bit by
+the migration, but delay only guarantees that it will delay for that minimum
+time. Delaying longer should not be an issue.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/x86/lib/delay_32.c |   23 ++++++++++++++++++++++-
+ arch/x86/lib/delay_64.c |   26 +++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 4 deletions(-)
+
+Index: linux-compile.git/arch/x86/lib/delay_32.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/lib/delay_32.c	2008-05-24 22:30:49.000000000 -0400
++++ linux-compile.git/arch/x86/lib/delay_32.c	2008-05-24 22:31:43.000000000 -0400
+@@ -44,12 +44,33 @@ static void delay_loop(unsigned long loo
+ static void delay_tsc(unsigned long loops)
+ {
+ 	unsigned long bclock, now;
++	int cpu;
+
+-	preempt_disable();		/* TSC's are per-cpu */
++	preempt_disable();
++	cpu = smp_processor_id();
+ 	rdtscl(bclock);
+ 	do {
+ 		rep_nop();
+ 		rdtscl(now);
++		/* Allow RT tasks to run */
++		preempt_enable();
++		preempt_disable();
++		/*
++		 * It is possible that we moved to another CPU,
++		 * and since TSC's are per-cpu we need to
++		 * calculate that. The delay must guarantee that
++		 * we wait "at least" the amount of time. Being
++		 * moved to another CPU could make the wait longer
++		 * but we just need to make sure we waited long
++		 * enough. Rebalance the counter for this CPU.
++		 */
++		if (unlikely(cpu != smp_processor_id())) {
++			if ((now-bclock) >= loops)
++				break;
++			loops -= (now - bclock);
++			rdtscl(bclock);
++			rdtscl(now);
++		}
+ 	} while ((now-bclock) < loops);
+ 	preempt_enable();
+ }
+Index: linux-compile.git/arch/x86/lib/delay_64.c
+===================================================================
+--- linux-compile.git.orig/arch/x86/lib/delay_64.c	2008-05-24 22:30:49.000000000 -0400
++++ linux-compile.git/arch/x86/lib/delay_64.c	2008-05-24 22:31:43.000000000 -0400
+@@ -31,14 +31,34 @@ int __devinit read_current_timer(unsigne
+ void __delay(unsigned long loops)
+ {
+ 	unsigned bclock, now;
++	int cpu;
+
+-	preempt_disable();		/* TSC's are pre-cpu */
++	preempt_disable();
++	cpu = smp_processor_id();
+ 	rdtscl(bclock);
+ 	do {
+ 		rep_nop();
+ 		rdtscl(now);
+-	}
+-	while ((now-bclock) < loops);
++		/* Allow RT tasks to run */
++		preempt_enable();
++		preempt_disable();
++		/*
++		 * It is possible that we moved to another CPU,
++		 * and since TSC's are per-cpu we need to
++		 * calculate that. The delay must guarantee that
++		 * we wait "at least" the amount of time. Being
++		 * moved to another CPU could make the wait longer
++		 * but we just need to make sure we waited long
++		 * enough. Rebalance the counter for this CPU.
++		 */
++		if (unlikely(cpu != smp_processor_id())) {
++			if ((now-bclock) >= loops)
++				break;
++			loops -= (now - bclock);
++			rdtscl(bclock);
++			rdtscl(now);
++		}
++	} while ((now-bclock) < loops);
+ 	preempt_enable();
+ }
+ EXPORT_SYMBOL(__delay);
 
