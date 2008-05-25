@@ -1,176 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYEYPNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYEYPUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbYEYPNn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 11:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYEYPNf
+	id S1755637AbYEYPUo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 11:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYEYPUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 11:13:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62240 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbYEYPNe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 11:13:34 -0400
-Date: Sun, 25 May 2008 11:13:32 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-Subject: [PATCH -v4] x86: enable preemption in delay
-In-Reply-To: <Pine.LNX.4.58.0805250948000.22651@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0805251112010.23300@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
- <Pine.LNX.4.58.0805250931160.20625@gandalf.stny.rr.com>
- <Pine.LNX.4.58.0805250943010.22651@gandalf.stny.rr.com>
- <Pine.LNX.4.58.0805250948000.22651@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 25 May 2008 11:20:31 -0400
+Received: from cnc.isely.net ([64.81.146.143]:56818 "EHLO cnc.isely.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752358AbYEYPUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 11:20:08 -0400
+Date: Sun, 25 May 2008 10:20:04 -0500 (CDT)
+From: Mike Isely <isely@isely.net>
+Reply-To: Mike Isely <isely@pobox.com>
+To: Hans Verkuil <hverkuil@xs4all.nl>
+cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       akpm@linux-foundation.org, Tyler Trafford <ttrafford@gmail.com>,
+       Mike Isely at pobox <isely@pobox.com>
+Subject: Re: [PATCHv2 04/28] cx25840: treat firmware data as const
+In-Reply-To: <200805251251.32373.hverkuil@xs4all.nl>
+Message-ID: <Pine.LNX.4.64.0805251011540.25571@cnc.isely.net>
+References: <1211708969@pmac.infradead.org> <E1K0DO1-0007D2-3d@shinybook.infradead.org>
+ <200805251251.32373.hverkuil@xs4all.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 25 May 2008, Hans Verkuil wrote:
 
-The RT team has been searching for a nasty latency. This latency shows
-up out of the blue and has been seen to be as big as 5ms!
+> Hi David,
+> 
+> There is no need to do the first two bytes first. As far as I can tell 
+> it was done to avoid having to allocate a local buffer. The initial 
+> version of this code was writing much larger blocks at a time to the 
+> i2c bus, so having to setup a large buffer on the stack was 
+> undesirable. The pvrusb driver requires a much smaller buffer (FWSEND), 
+> but the code was never changed. Now, however, the initial four-byte 
+> write is just in the way and can be removed in favor of always writing 
+> FWSEND-sized blocks of data.
+> 
+> I've CC-ed Mike Isely, the pvrusb2 maintainer, just in case there is an 
+> outlandish restriction I'm not aware of on that USB device requiring 
+> the firmware load to be done this way.
+> 
 
-Using ftrace I found the cause of the latency.
+The pvrusb2 driver's FWSEND limit is an artifact of the hardware and 
+cannot be changed.  HOWEVER, in the standalone driver (not in the 
+kernel) I have a hack implemented that can monitor and intercept such 
+I2C operations and break them into smaller I2C transactions.  I 
+implemented this to allow the standalone driver to function correctly on 
+some older kernels where FWSEND is too large.  I can enable that hack 
+for the kernel driver and thus lift the limit.  But without it, FWSEND 
+absolutely has to be small enough that the entire transaction (including 
+a few bytes of transport overhead) can fit within a 64 byte URB.
 
-   pcscd-2995  3dNh1 52360300us : irq_exit (smp_apic_timer_interrupt)
-   pcscd-2995  3dN.2 52360301us : idle_cpu (irq_exit)
-   pcscd-2995  3dN.2 52360301us : rcu_irq_exit (irq_exit)
-   pcscd-2995  3dN.1 52360771us : smp_apic_timer_interrupt (apic_timer_interrupt
-)
-   pcscd-2995  3dN.1 52360771us : exit_idle (smp_apic_timer_interrupt)
+I see that this change allocates a local buffer on the stack (sized by 
+FWSEND).  Though the buffer is small (48 bytes, see above paragraph), it 
+is controlled by a macro and thus leaves open the possibility that it 
+could be accidentally increased to a point where the stack gets 
+overflowed.  Seems like not a good idea, but either way it should not 
+affect the pvrusb2 driver.
 
-Here's an example of a 400 us latency. pcscd took a timer interrupt and
-returned with "need resched" enabled, but did not reschedule until after
-the next interrupt came in at 52360771us 400us later!
+Acked-By: Mike Isely <isely@pobox.com>
 
-At first I thought we somehow missed a preemption check in entry.S. But
-I also noticed that this always seemed to happen during a __delay call.
-
-   pcscd-2995  3dN.2 52360836us : rcu_irq_exit (irq_exit)
-   pcscd-2995  3.N.. 52361265us : preempt_schedule (__delay)
-
-Looking at the x86 delay, I found my problem.
-
-In git commit 35d5d08a085c56f153458c3f5d8ce24123617faf, Andrew Morton
-placed preempt_disable around the entire delay due to TSC's not working
-nicely on SMP.  Unfortunately for those that care about latencies this
-is devastating! Especially when we have callers to mdelay(8).
-
-Here I enable preemption during the loop and account for anytime the task
-migrates to a new CPU. The delay asked for may be extended a bit by
-the migration, but delay only guarantees that it will delay for that minimum
-time. Delaying longer should not be an issue.
-
-[
-  Thanks to Thomas Gleixner for spotting that cpu wasn't updated,
-    and to place the rep_nop between preempt_enabled/disable.
-]
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/x86/lib/delay_32.c |   31 +++++++++++++++++++++++++++----
- arch/x86/lib/delay_64.c |   30 ++++++++++++++++++++++++++----
- 2 files changed, 53 insertions(+), 8 deletions(-)
-
-Index: linux-tip.git/arch/x86/lib/delay_32.c
-===================================================================
---- linux-tip.git.orig/arch/x86/lib/delay_32.c	2008-05-22 14:51:02.000000000 -0400
-+++ linux-tip.git/arch/x86/lib/delay_32.c	2008-05-25 11:09:57.000000000 -0400
-@@ -44,13 +44,36 @@ static void delay_loop(unsigned long loo
- static void delay_tsc(unsigned long loops)
- {
- 	unsigned long bclock, now;
-+	int cpu;
-
--	preempt_disable();		/* TSC's are per-cpu */
-+	preempt_disable();
-+	cpu = smp_processor_id();
- 	rdtscl(bclock);
--	do {
--		rep_nop();
-+	for (;;) {
- 		rdtscl(now);
--	} while ((now-bclock) < loops);
-+		if ((now - bclock) >= loops)
-+			break;
-+
-+		/* Allow RT tasks to run */
-+		preempt_enable();
-+		rep_nop();
-+		preempt_disable();
-+
-+		/*
-+		 * It is possible that we moved to another CPU, and
-+		 * since TSC's are per-cpu we need to calculate
-+		 * that. The delay must guarantee that we wait "at
-+		 * least" the amount of time. Being moved to another
-+		 * CPU could make the wait longer but we just need to
-+		 * make sure we waited long enough. Rebalance the
-+		 * counter for this CPU.
-+		 */
-+		if (unlikely(cpu != smp_processor_id())) {
-+			loops -= (now - bclock);
-+			cpu = smp_processor_id();
-+			rdtscl(bclock);
-+		}
-+	}
- 	preempt_enable();
- }
-
-Index: linux-tip.git/arch/x86/lib/delay_64.c
-===================================================================
---- linux-tip.git.orig/arch/x86/lib/delay_64.c	2008-05-25 09:25:22.000000000 -0400
-+++ linux-tip.git/arch/x86/lib/delay_64.c	2008-05-25 11:05:23.000000000 -0400
-@@ -31,14 +31,36 @@ int __devinit read_current_timer(unsigne
- void __delay(unsigned long loops)
- {
- 	unsigned bclock, now;
-+	int cpu;
-
--	preempt_disable();		/* TSC's are pre-cpu */
-+	preempt_disable();
-+	cpu = smp_processor_id();
- 	rdtscl(bclock);
--	do {
--		rep_nop();
-+	for (;;) {
- 		rdtscl(now);
-+		if ((now - bclock) >= loops)
-+			break;
-+
-+		/* Allow RT tasks to run */
-+		preempt_enable();
-+		rep_nop();
-+		preempt_disable();
-+
-+		/*
-+		 * It is possible that we moved to another CPU, and
-+		 * since TSC's are per-cpu we need to calculate
-+		 * that. The delay must guarantee that we wait "at
-+		 * least" the amount of time. Being moved to another
-+		 * CPU could make the wait longer but we just need to
-+		 * make sure we waited long enough. Rebalance the
-+		 * counter for this CPU.
-+		 */
-+		if (unlikely(cpu != smp_processor_id())) {
-+			loops -= (now - bclock);
-+			cpu = smp_processor_id();
-+			rdtscl(bclock);
-+		}
- 	}
--	while ((now-bclock) < loops);
- 	preempt_enable();
- }
- EXPORT_SYMBOL(__delay);
+  -Mike
 
 
+> Regards,
+> 
+> 	Hans
+> 
+> On Sunday 25 May 2008 12:23:33 David Woodhouse wrote:
+> > Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> > ---
+> >  drivers/media/video/cx25840/cx25840-firmware.c |   21
+> > +++++++++++++-------- 1 files changed, 13 insertions(+), 8
+> > deletions(-)
+> >
+> > diff --git a/drivers/media/video/cx25840/cx25840-firmware.c
+> > b/drivers/media/video/cx25840/cx25840-firmware.c index
+> > 620d295..5c08ede 100644
+> > --- a/drivers/media/video/cx25840/cx25840-firmware.c
+> > +++ b/drivers/media/video/cx25840/cx25840-firmware.c
+> > @@ -79,7 +79,7 @@ static int check_fw_load(struct i2c_client *client,
+> > int size) return 0;
+> >  }
+> >
+> > -static int fw_write(struct i2c_client *client, u8 *data, int size)
+> > +static int fw_write(struct i2c_client *client, const u8 *data, int
+> > size) {
+> >  	if (i2c_master_send(client, data, size) < size) {
+> >  		v4l_err(client, "firmware load i2c failure\n");
+> > @@ -93,7 +93,8 @@ int cx25840_loadfw(struct i2c_client *client)
+> >  {
+> >  	struct cx25840_state *state = i2c_get_clientdata(client);
+> >  	const struct firmware *fw = NULL;
+> > -	u8 buffer[4], *ptr;
+> > +	u8 buffer[FWSEND];
+> > +	const u8 *ptr;
+> >  	int size, retval;
+> >
+> >  	if (state->is_cx23885)
+> > @@ -108,6 +109,8 @@ int cx25840_loadfw(struct i2c_client *client)
+> >
+> >  	buffer[0] = 0x08;
+> >  	buffer[1] = 0x02;
+> > +
+> > +	/* Do we really need to do the first two bytes first? */
+> >  	buffer[2] = fw->data[0];
+> >  	buffer[3] = fw->data[1];
+> >  	retval = fw_write(client, buffer, 4);
+> > @@ -118,19 +121,21 @@ int cx25840_loadfw(struct i2c_client *client)
+> >  	}
+> >
+> >  	size = fw->size - 2;
+> > -	ptr = fw->data;
+> > +	ptr = fw->data + 2;
+> >  	while (size > 0) {
+> > -		ptr[0] = 0x08;
+> > -		ptr[1] = 0x02;
+> > -		retval = fw_write(client, ptr, min(FWSEND, size + 2));
+> > +		int len = min(FWSEND - 2, size);
+> > +
+> > +		memcpy(buffer + 2, ptr, len);
+> > +
+> > +		retval = fw_write(client, ptr, len + 2);
+> >
+> >  		if (retval < 0) {
+> >  			release_firmware(fw);
+> >  			return retval;
+> >  		}
+> >
+> > -		size -= FWSEND - 2;
+> > -		ptr += FWSEND - 2;
+> > +		size -= len;
+> > +		ptr += len;
+> >  	}
+> >
+> >  	end_fw_load(client);
+> 
+> 
+> 
+
+-- 
+
+Mike Isely
+isely @ pobox (dot) com
+PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
