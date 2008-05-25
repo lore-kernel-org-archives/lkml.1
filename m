@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYEYRIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbYEYRJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbYEYRIi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 13:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYEYRIa
+	id S1757111AbYEYRJe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 13:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYEYRJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 13:08:30 -0400
-Received: from www.tglx.de ([62.245.132.106]:48517 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751452AbYEYRI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 13:08:29 -0400
-Date: Sun, 25 May 2008 19:07:49 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: hpa@zytor.com, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/11] tip/x86/nmi nmi-32/64.c merge v3
-In-Reply-To: <20080525170004.GA6911@cvg>
-Message-ID: <alpine.LFD.1.10.0805251905320.3295@apollo.tec.linutronix.de>
-References: <4838373b.0637560a.7ce5.3f01@mx.google.com> <alpine.LFD.1.10.0805251842360.3295@apollo.tec.linutronix.de> <20080525170004.GA6911@cvg>
+	Sun, 25 May 2008 13:09:26 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39623 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbYEYRJ0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 13:09:26 -0400
+Date: Sun, 25 May 2008 13:09:21 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] SERIAL:  Simplify code using ARRAY_SIZE() macro.
+In-Reply-To: <483998EC.5080805@gmail.com>
+Message-ID: <alpine.LFD.1.10.0805251308420.25842@localhost.localdomain>
+References: <alpine.LFD.1.10.0805250735560.23325@localhost.localdomain> <483998EC.5080805@gmail.com>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 May 2008, Cyrill Gorcunov wrote:
+On Sun, 25 May 2008, Jiri Slaby wrote:
 
-> [Thomas Gleixner - Sun, May 25, 2008 at 06:44:28PM +0200]
-> | On Sat, 24 May 2008, Cyrill Gorcunov wrote:
-> | 
-> | > This series tries to merge down nmi_32/64.c to nmi.c. It is done by small
-> | > steps in hope it would help to bisect problems (which will appear anyway ;)
-> | > Please review *carefully* since it is NMI what I've touched (and I'm not
-> | > nmi specialist). So I really apreciate _ANY_ comments on this. The series
-> | > is produced over today 'tip' tree branch 'x86/nmi'.
-> | 
-> | Cyrill,
-> | 
-> | very good job. I did a short review and found no obvious problems
-> | yet. Will have a closer look when I apply it.
-> | 
-> | Thanks,
-> | 	tglx
-> | 
-> | 
-> | 
-> 
-> thanks Thomas, unfortunelly I think the problems will arise soon,
-> I've just noticed the commit 
-> 
-> commit 57b2b8947a5f68e59d5f50ab749efdc79d9ba040
-> Author: Mike Travis <travis@sgi.com>
-> Date:   Mon May 12 21:21:12 2008 +0200
-> 
->     x86: fix remove cpu_pda table patch
-> 
-> in tip/testing tree
-> 
-> so we will need some workaround for check_nmi_watchdog() 'cause of  changing
-> 
-> ...
-> -	prev_nmi_count = kmalloc(NR_CPUS * sizeof(int), GFP_KERNEL);
-> +	prev_nmi_count = kmalloc(nr_cpu_ids * sizeof(int), GFP_KERNEL);
+> On 05/25/2008 01:37 PM, Robert P. J. Day wrote:
+> > Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> >
+> > ---
+> >
+> >  drivers/serial/68328serial.c |    6 +++---
+> >  drivers/serial/mcfserial.c   |    5 ++---
+> >  2 files changed, 5 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/serial/68328serial.c b/drivers/serial/68328serial.c
+> > index bbf5bc5..71c56c1 100644
+> > --- a/drivers/serial/68328serial.c
+> > +++ b/drivers/serial/68328serial.c
+> [...]
+> > @@ -1413,10 +1413,10 @@ static void m68328_set_baud(void)
+> >  	USTCNT = ustcnt & ~USTCNT_TXEN;
+> >
+> >  again:
+> > -	for (i = 0; i < sizeof(baud_table) / sizeof(baud_table[0]); i++)
+> > +	for (i = 0; i < BAUD_TABLE_SIZE); i++)
+>
+> typo? does this compile?
 
-Nothing to worry for you. Your patch applies fine on the x86/nmi
-branch and the merge conflict is easy to resolve.
+oh, gack, my bad.  it compiled, then i figured i'd innocently fix up
+some white space and pooched it.  sorry.  will resubmit.
 
-Thanks for noticing.
+rday
+--
 
-       tglx
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
