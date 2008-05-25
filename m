@@ -1,233 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbYE1LHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbYE1LSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbYE1LHR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 07:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYE1LHF
+	id S1754511AbYE1LSA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 07:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYE1LRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 07:07:05 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53420 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbYE1LHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 07:07:03 -0400
-Date: Wed, 28 May 2008 20:04:38 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [RFC PATCH] No Reclaim LRU Infrastructure enhancement for memcgroup
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik van Riel <riel@redhat.com>, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080528101229.f14e0f09.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1211903642.7283.16.camel@lts-notebook> <20080528101229.f14e0f09.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20080528155809.9CD0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------_483D0281000000009D80_MULTIPART_MIXED_"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+	Wed, 28 May 2008 07:17:49 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3107 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752564AbYE1LRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 07:17:48 -0400
+Date: Sun, 25 May 2008 20:01:23 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] x86: enable preemption in delay
+Message-ID: <20080525180122.GA4247@ucw.cz>
+References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com> <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------_483D0281000000009D80_MULTIPART_MIXED_
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Hi!
 
-Hi
-
-> In my understanding, 2 checks we have to do.
+> > +		if (unlikely(cpu != smp_processor_id())) {
 > 
-> 1. When memcg finds PG_noreclaim page in its LRU, move it to noreclaim list of
->    memcg.
-> 2. When PG_noreclaim page is moved back to generic LRU, memcg should move
->    it on its list. (we have to add a hook somewhere.)
+> Eeek, once you migrated you do this all the time. you need to update
+> cpu here.
 > 
-> But this may break current 'loose' synchronization between global LRU and
-> memcg's LRU. When PG_noreclaim page is put back into active/inactive LRU ?
+> > +			if ((now-bclock) >= loops)
+> > +				break;
 > 
-> concerns are
-> A. how to implement '2'
+> Also this is really dangerous with unsynchronized TSCs. You might get
+> migrated and return immediately because the TSC on the other CPU is
+> far ahead.
+> 
+> What you really want is something like the patch below, but we should
+> reuse the sched_clock_cpu() thingy to make that simpler. Looking into
+> that right now.
 
-I tried to implement it today.
-this patch is made against "[PATCH -mm 13/16] No Reclaim LRU Infrastructure"
+> @@ -40,17 +40,51 @@ static void delay_loop(unsigned long loops)
+>  		:"0" (loops));
+>  }
+>  
+> +/*
+> + * 5 usec on a 1GHZ machine. Not necessarily correct, but not too long
+> + * either.
+> + */
+> +#define TSC_MIGRATE_COUNT 5000
+> +
+>  /* TSC based delay: */
+>  static void delay_tsc(unsigned long loops)
+>  {
+>  	unsigned long bclock, now;
+> +	int cpu;
+>  
+> -	preempt_disable();		/* TSC's are per-cpu */
+> +	preempt_disable();
+> +	cpu = smp_processor_id();
+>  	rdtscl(bclock);
+>  	do {
+>  		rep_nop();
+> -		rdtscl(now);
+> -	} while ((now-bclock) < loops);
+> +
+> +		/* Allow RT tasks to run */
+> +		preempt_enable();
+> +		preempt_disable();
+> +
+> +		/*
+> +		 * It is possible that we moved to another CPU, and
+> +		 * since TSC's are per-cpu we need to calculate
+> +		 * that. The delay must guarantee that we wait "at
+> +		 * least" the amount of time. Being moved to another
+> +		 * CPU could make the wait longer but we just need to
+> +		 * make sure we waited long enough. Rebalance the
+> +		 * counter for this CPU.
+> +		 */
+> +		if (unlikely(cpu != smp_processor_id())) {
+> +			if (loops <= TSC_MIGRATE_COUNT)
+> +				break;
+> +			cpu = smp_processor_id();
+> +			rdtscl(bclock);
+> +			loops -= TSC_MIGRATE_COUNT;
+> +		} else {
+> +			rdtscl(now);
+> +			if ((now - bclock) >= loops)
+> +				break;
+> +			loops -= (now - bclock);
+> +			bclock = now;
 
-
-> B. race condtions.
-
-don't worry :)
-it isn't big problem.
-
-global lru is reclaimbale and memcg lru is noreclaimable
-	-> we can repair at move lru of shrink_[in]active_page().
-
-global lru is noreclaimbale and memcg lru is reclaimable
-	-> we can repair mem_cgroup_isolate_pages()
-
-
-
---------_483D0281000000009D80_MULTIPART_MIXED_
-Content-Type: application/octet-stream;
- name="rvr-13.2-kosaki-memcg-noreclaim.patch"
-Content-Disposition: attachment;
- filename="rvr-13.2-kosaki-memcg-noreclaim.patch"
-Content-Transfer-Encoding: base64
-
-V2hlbiBtZW1jbyBscnUgbW92ZWQsIG1lbV9jZ3JvdXBfbW92ZV9saXN0cygpIGlzIGNhbGxlZC4K
-dGh1cywgSSBhZGQgbm9yZWNsYWltIGxydSBsb2dpYyBhdCB0aGF0IHBvaW50LgoKClNpZ25lZC1v
-ZmYtYnk6IEtPU0FLSSBNb3RvaGlybyA8a29zYWtpLm1vdG9oaXJvQGpwLmZ1aml0c3UuY29tPgoK
-LS0tCiBpbmNsdWRlL2xpbnV4L21lbWNvbnRyb2wuaCB8ICAgIDIgLQogbW0vbWVtY29udHJvbC5j
-ICAgICAgICAgICAgfCAgIDczICsrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0t
-LS0tLS0tLQogbW0vc3dhcC5jICAgICAgICAgICAgICAgICAgfCAgICAyIC0KIG1tL3Ztc2Nhbi5j
-ICAgICAgICAgICAgICAgIHwgICAxMCArKysrLS0KIDQgZmlsZXMgY2hhbmdlZCwgNTQgaW5zZXJ0
-aW9ucygrKSwgMzMgZGVsZXRpb25zKC0pCgpJbmRleDogYi9tbS9tZW1jb250cm9sLmMKPT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PQotLS0gYS9tbS9tZW1jb250cm9sLmMKKysrIGIvbW0vbWVtY29udHJvbC5jCkBAIC0xNjEs
-OSArMTYxLDEwIEBAIHN0cnVjdCBwYWdlX2Nncm91cCB7CiAJaW50IHJlZl9jbnQ7CQkJLyogY2Fj
-aGVkLCBtYXBwZWQsIG1pZ3JhdGluZyAqLwogCWludCBmbGFnczsKIH07Ci0jZGVmaW5lIFBBR0Vf
-Q0dST1VQX0ZMQUdfQ0FDSEUJKDB4MSkJLyogY2hhcmdlZCBhcyBjYWNoZSAqLwotI2RlZmluZSBQ
-QUdFX0NHUk9VUF9GTEFHX0FDVElWRSAoMHgyKQkvKiBwYWdlIGlzIGFjdGl2ZSBpbiB0aGlzIGNn
-cm91cCAqLwotI2RlZmluZSBQQUdFX0NHUk9VUF9GTEFHX0ZJTEUJKDB4NCkJLyogcGFnZSBpcyBm
-aWxlIHN5c3RlbSBiYWNrZWQgKi8KKyNkZWZpbmUgUEFHRV9DR1JPVVBfRkxBR19DQUNIRQkgICAo
-MHgxKQkvKiBjaGFyZ2VkIGFzIGNhY2hlICovCisjZGVmaW5lIFBBR0VfQ0dST1VQX0ZMQUdfQUNU
-SVZFICAgICgweDIpCS8qIHBhZ2UgaXMgYWN0aXZlIGluIHRoaXMgY2dyb3VwICovCisjZGVmaW5l
-IFBBR0VfQ0dST1VQX0ZMQUdfRklMRQkgICAoMHg0KQkvKiBwYWdlIGlzIGZpbGUgc3lzdGVtIGJh
-Y2tlZCAqLworI2RlZmluZSBQQUdFX0NHUk9VUF9GTEFHX05PUkVDTEFJTSAoMHg4KQkvKiBwYWdl
-IGlzIG5vcmVjbGFpbWFibGUgcGFnZSAqLwogCiBzdGF0aWMgaW50IHBhZ2VfY2dyb3VwX25pZChz
-dHJ1Y3QgcGFnZV9jZ3JvdXAgKnBjKQogewpAQCAtMjgzLDEwICsyODQsMTQgQEAgc3RhdGljIHZv
-aWQgX19tZW1fY2dyb3VwX3JlbW92ZV9saXN0KHN0cgogewogCWludCBscnUgPSBMUlVfQkFTRTsK
-IAotCWlmIChwYy0+ZmxhZ3MgJiBQQUdFX0NHUk9VUF9GTEFHX0FDVElWRSkKLQkJbHJ1ICs9IExS
-VV9BQ1RJVkU7Ci0JaWYgKHBjLT5mbGFncyAmIFBBR0VfQ0dST1VQX0ZMQUdfRklMRSkKLQkJbHJ1
-ICs9IExSVV9GSUxFOworCWlmIChwYy0+ZmxhZ3MgJiBQQUdFX0NHUk9VUF9GTEFHX05PUkVDTEFJ
-TSkKKwkJbHJ1ID0gTFJVX05PUkVDTEFJTTsKKwllbHNlIHsKKwkJaWYgKHBjLT5mbGFncyAmIFBB
-R0VfQ0dST1VQX0ZMQUdfQUNUSVZFKQorCQkJbHJ1ICs9IExSVV9BQ1RJVkU7CisJCWlmIChwYy0+
-ZmxhZ3MgJiBQQUdFX0NHUk9VUF9GTEFHX0ZJTEUpCisJCQlscnUgKz0gTFJVX0ZJTEU7CisJfQog
-CiAJTUVNX0NHUk9VUF9aU1RBVChteiwgbHJ1KSAtPSAxOwogCkBAIC0yOTksMTAgKzMwNCwxNCBA
-QCBzdGF0aWMgdm9pZCBfX21lbV9jZ3JvdXBfYWRkX2xpc3Qoc3RydWN0CiB7CiAJaW50IGxydSA9
-IExSVV9CQVNFOwogCi0JaWYgKHBjLT5mbGFncyAmIFBBR0VfQ0dST1VQX0ZMQUdfQUNUSVZFKQot
-CQlscnUgKz0gTFJVX0FDVElWRTsKLQlpZiAocGMtPmZsYWdzICYgUEFHRV9DR1JPVVBfRkxBR19G
-SUxFKQotCQlscnUgKz0gTFJVX0ZJTEU7CisJaWYgKHBjLT5mbGFncyAmIFBBR0VfQ0dST1VQX0ZM
-QUdfTk9SRUNMQUlNKQorCQlscnUgPSBMUlVfTk9SRUNMQUlNOworCWVsc2UgeworCQlpZiAocGMt
-PmZsYWdzICYgUEFHRV9DR1JPVVBfRkxBR19BQ1RJVkUpCisJCQlscnUgKz0gTFJVX0FDVElWRTsK
-KwkJaWYgKHBjLT5mbGFncyAmIFBBR0VfQ0dST1VQX0ZMQUdfRklMRSkKKwkJCWxydSArPSBMUlVf
-RklMRTsKKwl9CiAKIAlNRU1fQ0dST1VQX1pTVEFUKG16LCBscnUpICs9IDE7CiAJbGlzdF9hZGQo
-JnBjLT5scnUsICZtei0+bGlzdHNbbHJ1XSk7CkBAIC0zMTAsMjEgKzMxOSwzMSBAQCBzdGF0aWMg
-dm9pZCBfX21lbV9jZ3JvdXBfYWRkX2xpc3Qoc3RydWN0CiAJbWVtX2Nncm91cF9jaGFyZ2Vfc3Rh
-dGlzdGljcyhwYy0+bWVtX2Nncm91cCwgcGMtPmZsYWdzLCB0cnVlKTsKIH0KIAotc3RhdGljIHZv
-aWQgX19tZW1fY2dyb3VwX21vdmVfbGlzdHMoc3RydWN0IHBhZ2VfY2dyb3VwICpwYywgYm9vbCBh
-Y3RpdmUpCitzdGF0aWMgdm9pZCBfX21lbV9jZ3JvdXBfbW92ZV9saXN0cyhzdHJ1Y3QgcGFnZV9j
-Z3JvdXAgKnBjLCBlbnVtIGxydV9saXN0IGxydSkKIHsKIAlzdHJ1Y3QgbWVtX2Nncm91cF9wZXJf
-em9uZSAqbXogPSBwYWdlX2Nncm91cF96b25laW5mbyhwYyk7Ci0JaW50IGZyb20gPSBwYy0+Zmxh
-Z3MgJiBQQUdFX0NHUk9VUF9GTEFHX0FDVElWRTsKLQlpbnQgZmlsZSA9IHBjLT5mbGFncyAmIFBB
-R0VfQ0dST1VQX0ZMQUdfRklMRTsKLQlpbnQgbHJ1ID0gTFJVX0ZJTEUgKiAhIWZpbGUgKyAhIWZy
-b207CisJaW50IGFjdGl2ZSAgICA9IHBjLT5mbGFncyAmIFBBR0VfQ0dST1VQX0ZMQUdfQUNUSVZF
-OworCWludCBmaWxlICAgICAgPSBwYy0+ZmxhZ3MgJiBQQUdFX0NHUk9VUF9GTEFHX0ZJTEU7CisJ
-aW50IG5vcmVjbGFpbSA9IHBjLT5mbGFncyAmIFBBR0VfQ0dST1VQX0ZMQUdfTk9SRUNMQUlNOwor
-CWVudW0gbHJ1X2xpc3QgZnJvbSA9IG5vcmVjbGFpbSA/IExSVV9OT1JFQ0xBSU0gOgorCQkJCShM
-UlVfRklMRSAqICEhZmlsZSArICEhYWN0aXZlKTsKIAotCU1FTV9DR1JPVVBfWlNUQVQobXosIGxy
-dSkgLT0gMTsKKwlpZiAobHJ1ID09IGZyb20pCisJCXJldHVybjsKIAotCWlmIChhY3RpdmUpCi0J
-CXBjLT5mbGFncyB8PSBQQUdFX0NHUk9VUF9GTEFHX0FDVElWRTsKLQllbHNlCisJTUVNX0NHUk9V
-UF9aU1RBVChteiwgZnJvbSkgLT0gMTsKKworCWlmIChpc19ub3JlY2xhaW1fbHJ1KGxydSkpIHsK
-IAkJcGMtPmZsYWdzICY9IH5QQUdFX0NHUk9VUF9GTEFHX0FDVElWRTsKKwkJcGMtPmZsYWdzIHw9
-IFBBR0VfQ0dST1VQX0ZMQUdfTk9SRUNMQUlNOworCX0gZWxzZSB7CisJCWlmIChpc19hY3RpdmVf
-bHJ1KGxydSkpCisJCQlwYy0+ZmxhZ3MgfD0gUEFHRV9DR1JPVVBfRkxBR19BQ1RJVkU7CisJCWVs
-c2UKKwkJCXBjLT5mbGFncyAmPSB+UEFHRV9DR1JPVVBfRkxBR19BQ1RJVkU7CisJCXBjLT5mbGFn
-cyAmPSB+UEFHRV9DR1JPVVBfRkxBR19OT1JFQ0xBSU07CisJfQogCi0JbHJ1ID0gTFJVX0ZJTEUg
-KiAhIWZpbGUgKyAhIWFjdGl2ZTsKIAlNRU1fQ0dST1VQX1pTVEFUKG16LCBscnUpICs9IDE7CiAJ
-bGlzdF9tb3ZlKCZwYy0+bHJ1LCAmbXotPmxpc3RzW2xydV0pOwogfQpAQCAtMzQyLDcgKzM2MSw3
-IEBAIGludCB0YXNrX2luX21lbV9jZ3JvdXAoc3RydWN0IHRhc2tfc3RydWMKIC8qCiAgKiBUaGlz
-IHJvdXRpbmUgYXNzdW1lcyB0aGF0IHRoZSBhcHByb3ByaWF0ZSB6b25lJ3MgbHJ1IGxvY2sgaXMg
-YWxyZWFkeSBoZWxkCiAgKi8KLXZvaWQgbWVtX2Nncm91cF9tb3ZlX2xpc3RzKHN0cnVjdCBwYWdl
-ICpwYWdlLCBib29sIGFjdGl2ZSkKK3ZvaWQgbWVtX2Nncm91cF9tb3ZlX2xpc3RzKHN0cnVjdCBw
-YWdlICpwYWdlLCBlbnVtIGxydV9saXN0IGxydSkKIHsKIAlzdHJ1Y3QgcGFnZV9jZ3JvdXAgKnBj
-OwogCXN0cnVjdCBtZW1fY2dyb3VwX3Blcl96b25lICptejsKQEAgLTM2Miw3ICszODEsNyBAQCB2
-b2lkIG1lbV9jZ3JvdXBfbW92ZV9saXN0cyhzdHJ1Y3QgcGFnZSAqCiAJaWYgKHBjKSB7CiAJCW16
-ID0gcGFnZV9jZ3JvdXBfem9uZWluZm8ocGMpOwogCQlzcGluX2xvY2tfaXJxc2F2ZSgmbXotPmxy
-dV9sb2NrLCBmbGFncyk7Ci0JCV9fbWVtX2Nncm91cF9tb3ZlX2xpc3RzKHBjLCBhY3RpdmUpOwor
-CQlfX21lbV9jZ3JvdXBfbW92ZV9saXN0cyhwYywgbHJ1KTsKIAkJc3Bpbl91bmxvY2tfaXJxcmVz
-dG9yZSgmbXotPmxydV9sb2NrLCBmbGFncyk7CiAJfQogCXVubG9ja19wYWdlX2Nncm91cChwYWdl
-KTsKQEAgLTQ2MCwxMiArNDc5LDEwIEBAIHVuc2lnbmVkIGxvbmcgbWVtX2Nncm91cF9pc29sYXRl
-X3BhZ2VzKHUKIAkJLyoKIAkJICogVE9ETzogcGxheSBiZXR0ZXIgd2l0aCBsdW1weSByZWNsYWlt
-LCBncmFiYmluZyBhbnl0aGluZy4KIAkJICovCi0JCWlmIChQYWdlQWN0aXZlKHBhZ2UpICYmICFh
-Y3RpdmUpIHsKLQkJCV9fbWVtX2Nncm91cF9tb3ZlX2xpc3RzKHBjLCB0cnVlKTsKLQkJCWNvbnRp
-bnVlOwotCQl9Ci0JCWlmICghUGFnZUFjdGl2ZShwYWdlKSAmJiBhY3RpdmUpIHsKLQkJCV9fbWVt
-X2Nncm91cF9tb3ZlX2xpc3RzKHBjLCBmYWxzZSk7CisJCWlmIChQYWdlTm9yZWNsYWltKHBhZ2Up
-IHx8CisJCSAgICAoUGFnZUFjdGl2ZShwYWdlKSAmJiAhYWN0aXZlKSB8fAorCQkgICAgKCFQYWdl
-QWN0aXZlKHBhZ2UpICYmIGFjdGl2ZSkpIHsKKwkJCV9fbWVtX2Nncm91cF9tb3ZlX2xpc3RzKHBj
-LCBwYWdlX2xydShwYWdlKSk7CiAJCQljb250aW51ZTsKIAkJfQogCkluZGV4OiBiL21tL3N3YXAu
-Ywo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09Ci0tLSBhL21tL3N3YXAuYworKysgYi9tbS9zd2FwLmMKQEAgLTE4OSw3ICsx
-ODksNyBAQCB2b2lkIGFjdGl2YXRlX3BhZ2Uoc3RydWN0IHBhZ2UgKnBhZ2UpCiAJCWxydSArPSBM
-UlVfQUNUSVZFOwogCQlhZGRfcGFnZV90b19scnVfbGlzdCh6b25lLCBwYWdlLCBscnUpOwogCQlf
-X2NvdW50X3ZtX2V2ZW50KFBHQUNUSVZBVEUpOwotCQltZW1fY2dyb3VwX21vdmVfbGlzdHMocGFn
-ZSwgdHJ1ZSk7CisJCW1lbV9jZ3JvdXBfbW92ZV9saXN0cyhwYWdlLCBscnUpOwogCiAJCWlmIChm
-aWxlKSB7CiAJCQl6b25lLT5yZWNlbnRfc2Nhbm5lZF9maWxlKys7CkluZGV4OiBiL21tL3Ztc2Nh
-bi5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT0KLS0tIGEvbW0vdm1zY2FuLmMKKysrIGIvbW0vdm1zY2FuLmMKQEAgLTQ3
-NSwxMyArNDc1LDE2IEBAIGludCBwdXRiYWNrX2xydV9wYWdlKHN0cnVjdCBwYWdlICpwYWdlKQog
-CQkgKiBub24tcmVjbGFpbWFibGUgcGFnZSBvbiBbaW5dYWN0aXZlIGxpc3QuCiAJCSAqIFdlIGtu
-b3cgaG93IHRvIGhhbmRsZSB0aGF0LgogCQkgKi8KLQkJbHJ1X2NhY2hlX2FkZF9scnUocGFnZSwg
-bHJ1ICsgcGFnZV9maWxlX2NhY2hlKHBhZ2UpKTsKKwkJbHJ1ICs9IHBhZ2VfZmlsZV9jYWNoZShw
-YWdlKTsKKwkJbHJ1X2NhY2hlX2FkZF9scnUocGFnZSwgbHJ1KTsKKwkJbWVtX2Nncm91cF9tb3Zl
-X2xpc3RzKHBhZ2UsIGxydSk7CiAJfSBlbHNlIHsKIAkJLyoKIAkJICogUHV0IG5vbi1yZWNsYWlt
-YWJsZSBwYWdlcyBkaXJlY3RseSBvbiB6b25lJ3Mgbm9yZWNsYWltCiAJCSAqIGxpc3QuCiAJCSAq
-LwogCQlhZGRfcGFnZV90b19ub3JlY2xhaW1fbGlzdChwYWdlKTsKKwkJbWVtX2Nncm91cF9tb3Zl
-X2xpc3RzKHBhZ2UsIExSVV9OT1JFQ0xBSU0pOwogCX0KIAogCXB1dF9wYWdlKHBhZ2UpOwkJLyog
-ZHJvcCByZWYgZnJvbSBpc29sYXRlICovCkBAIC0xMDY1LDYgKzEwNjgsNyBAQCBzdGF0aWMgdW5z
-aWduZWQgbG9uZyBzaHJpbmtfaW5hY3RpdmVfbGlzCiAJCQl9CiAJCQlTZXRQYWdlTFJVKHBhZ2Up
-OwogCQkJYWRkX3BhZ2VfdG9fbHJ1X2xpc3Qoem9uZSwgcGFnZSwgbHJ1KTsKKwkJCW1lbV9jZ3Jv
-dXBfbW92ZV9saXN0cyhwYWdlLCBscnUpOwogCQkJaWYgKCFwYWdldmVjX2FkZCgmcHZlYywgcGFn
-ZSkpIHsKIAkJCQlzcGluX3VubG9ja19pcnEoJnpvbmUtPmxydV9sb2NrKTsKIAkJCQlfX3BhZ2V2
-ZWNfcmVsZWFzZSgmcHZlYyk7CkBAIC0xMjAyLDcgKzEyMDYsNyBAQCBzdGF0aWMgdm9pZCBzaHJp
-bmtfYWN0aXZlX2xpc3QodW5zaWduZWQgCiAJCUNsZWFyUGFnZUFjdGl2ZShwYWdlKTsKIAogCQls
-aXN0X21vdmUoJnBhZ2UtPmxydSwgJnpvbmUtPmxpc3RbbHJ1XSk7Ci0JCW1lbV9jZ3JvdXBfbW92
-ZV9saXN0cyhwYWdlLCBmYWxzZSk7CisJCW1lbV9jZ3JvdXBfbW92ZV9saXN0cyhwYWdlLCBscnUp
-OwogCQlwZ21vdmVkKys7CiAJCWlmICghcGFnZXZlY19hZGQoJnB2ZWMsIHBhZ2UpKSB7CiAJCQlf
-X21vZF96b25lX3BhZ2Vfc3RhdGUoem9uZSwgTlJfSU5BQ1RJVkVfQU5PTiArIGxydSwKQEAgLTEy
-MzQsNyArMTIzOCw3IEBAIHN0YXRpYyB2b2lkIHNocmlua19hY3RpdmVfbGlzdCh1bnNpZ25lZCAK
-IAkJVk1fQlVHX09OKCFQYWdlQWN0aXZlKHBhZ2UpKTsKIAogCQlsaXN0X21vdmUoJnBhZ2UtPmxy
-dSwgJnpvbmUtPmxpc3RbbHJ1XSk7Ci0JCW1lbV9jZ3JvdXBfbW92ZV9saXN0cyhwYWdlLCB0cnVl
-KTsKKwkJbWVtX2Nncm91cF9tb3ZlX2xpc3RzKHBhZ2UsIGxydSk7CiAJCXBnbW92ZWQrKzsKIAkJ
-aWYgKCFwYWdldmVjX2FkZCgmcHZlYywgcGFnZSkpIHsKIAkJCV9fbW9kX3pvbmVfcGFnZV9zdGF0
-ZSh6b25lLCBOUl9JTkFDVElWRV9BTk9OICsgbHJ1LApJbmRleDogYi9pbmNsdWRlL2xpbnV4L21l
-bWNvbnRyb2wuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09Ci0tLSBhL2luY2x1ZGUvbGludXgvbWVtY29udHJvbC5oCisr
-KyBiL2luY2x1ZGUvbGludXgvbWVtY29udHJvbC5oCkBAIC0zNSw3ICszNSw3IEBAIGV4dGVybiBp
-bnQgbWVtX2Nncm91cF9jaGFyZ2Uoc3RydWN0IHBhZ2UKIGV4dGVybiBpbnQgbWVtX2Nncm91cF9j
-YWNoZV9jaGFyZ2Uoc3RydWN0IHBhZ2UgKnBhZ2UsIHN0cnVjdCBtbV9zdHJ1Y3QgKm1tLAogCQkJ
-CQlnZnBfdCBnZnBfbWFzayk7CiBleHRlcm4gdm9pZCBtZW1fY2dyb3VwX3VuY2hhcmdlX3BhZ2Uo
-c3RydWN0IHBhZ2UgKnBhZ2UpOwotZXh0ZXJuIHZvaWQgbWVtX2Nncm91cF9tb3ZlX2xpc3RzKHN0
-cnVjdCBwYWdlICpwYWdlLCBib29sIGFjdGl2ZSk7CitleHRlcm4gdm9pZCBtZW1fY2dyb3VwX21v
-dmVfbGlzdHMoc3RydWN0IHBhZ2UgKnBhZ2UsIGVudW0gbHJ1X2xpc3QgbHJ1KTsKIGV4dGVybiB1
-bnNpZ25lZCBsb25nIG1lbV9jZ3JvdXBfaXNvbGF0ZV9wYWdlcyh1bnNpZ25lZCBsb25nIG5yX3Rv
-X3NjYW4sCiAJCQkJCXN0cnVjdCBsaXN0X2hlYWQgKmRzdCwKIAkJCQkJdW5zaWduZWQgbG9uZyAq
-c2Nhbm5lZCwgaW50IG9yZGVyLAo=
---------_483D0281000000009D80_MULTIPART_MIXED_
-Content-Type: application/octet-stream;
- name="rvr-13.3-kosaki-memcg-stat.patch"
-Content-Disposition: attachment;
- filename="rvr-13.3-kosaki-memcg-stat.patch"
-Content-Transfer-Encoding: base64
-
-YWRkIG5vcmVjbGFpbSBmaWVsZCB0byAvZGV2L2Nncm91cC9bZ3JvdXBdL21lbW9yeS5zdGF0LgoK
-ClNpZ25lZC1vZmYtYnk6IEtPU0FLSSBNb3RvaGlybyA8a29zYWtpLm1vdG9oaXJvQGpwLmZ1aml0
-c3UuY29tPgoKLS0tCiBtbS9tZW1jb250cm9sLmMgfCAgICA2ICsrKysrKwogMSBmaWxlIGNoYW5n
-ZWQsIDYgaW5zZXJ0aW9ucygrKQoKSW5kZXg6IGIvbW0vbWVtY29udHJvbC5jCj09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0K
-LS0tIGEvbW0vbWVtY29udHJvbC5jCisrKyBiL21tL21lbWNvbnRyb2wuYwpAQCAtOTAzLDYgKzkw
-Myw3IEBAIHN0YXRpYyBpbnQgbWVtX2NvbnRyb2xfc3RhdF9zaG93KHN0cnVjdCAKIAl7CiAJCXVu
-c2lnbmVkIGxvbmcgYWN0aXZlX2Fub24sIGluYWN0aXZlX2Fub247CiAJCXVuc2lnbmVkIGxvbmcg
-YWN0aXZlX2ZpbGUsIGluYWN0aXZlX2ZpbGU7CisJCXVuc2lnbmVkIGxvbmcgbm9yZWNsYWltOwog
-CiAJCWluYWN0aXZlX2Fub24gPSBtZW1fY2dyb3VwX2dldF9hbGxfem9uZXN0YXQobWVtX2NvbnQs
-CiAJCQkJCQlMUlVfSU5BQ1RJVkVfQU5PTik7CkBAIC05MTIsMTAgKzkxMywxNSBAQCBzdGF0aWMg
-aW50IG1lbV9jb250cm9sX3N0YXRfc2hvdyhzdHJ1Y3QgCiAJCQkJCQlMUlVfSU5BQ1RJVkVfRklM
-RSk7CiAJCWFjdGl2ZV9maWxlID0gbWVtX2Nncm91cF9nZXRfYWxsX3pvbmVzdGF0KG1lbV9jb250
-LAogCQkJCQkJTFJVX0FDVElWRV9GSUxFKTsKKwkJbm9yZWNsYWltID0gbWVtX2Nncm91cF9nZXRf
-YWxsX3pvbmVzdGF0KG1lbV9jb250LAorCQkJCQkJCUxSVV9OT1JFQ0xBSU0pOworCiAJCWNiLT5m
-aWxsKGNiLCAiYWN0aXZlX2Fub24iLCAoYWN0aXZlX2Fub24pICogUEFHRV9TSVpFKTsKIAkJY2It
-PmZpbGwoY2IsICJpbmFjdGl2ZV9hbm9uIiwgKGluYWN0aXZlX2Fub24pICogUEFHRV9TSVpFKTsK
-IAkJY2ItPmZpbGwoY2IsICJhY3RpdmVfZmlsZSIsIChhY3RpdmVfZmlsZSkgKiBQQUdFX1NJWkUp
-OwogCQljYi0+ZmlsbChjYiwgImluYWN0aXZlX2ZpbGUiLCAoaW5hY3RpdmVfZmlsZSkgKiBQQUdF
-X1NJWkUpOworCQljYi0+ZmlsbChjYiwgIm5vcmVjbGFpbSIsIG5vcmVjbGFpbSAqIFBBR0VfU0la
-RSk7CisKIAl9CiAJcmV0dXJuIDA7CiB9Cg==
---------_483D0281000000009D80_MULTIPART_MIXED_--
-
-
+What happens with different cpus running on different frequencies...?
+Cpufreq?
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
