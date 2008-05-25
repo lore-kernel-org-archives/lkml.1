@@ -1,92 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbYEYQ7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYEYRA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbYEYQ7a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 12:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbYEYQ7U
+	id S1757176AbYEYRA2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 13:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbYEYRAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 12:59:20 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:46901 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951AbYEYQ7T (ORCPT
+	Sun, 25 May 2008 13:00:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50313 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754967AbYEYRAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 12:59:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=sxbf8xNxJzb+gNKOzo8DnaZjpfDQtZcm7D9M7NaPmyFfUxvIhYvt8ueWUvVuPKj6gp5lYL9j6TUpopO9v6ZPfzsQl52NTtHEea9rb7RqOYl2zrKYCrsM8gZ3gG5lNPsURqC1WXyUwMowo2Mw3A+qdqs7gPBDki4gH2xudocceFA=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
-Date: Sun, 25 May 2008 10:00:09 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200805110030.15510.yhlu.kernel@gmail.com> <200805180118.57863.yhlu.kernel@gmail.com> <200805211840.18619.yhlu.kernel@gmail.com>
-In-Reply-To: <200805211840.18619.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 25 May 2008 13:00:09 -0400
+Subject: [PATCHv3 27/28] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+From: David Woodhouse <dwmw2@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       johannes@sipsolutions.net
+In-Reply-To: <E1K0DOP-0007EW-F0@shinybook.infradead.org>
+References: <1211708969@pmac.infradead.org>
+	 <E1K0DOP-0007EW-F0@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Sun, 25 May 2008 18:00:02 +0100
+Message-Id: <1211734802.31212.129.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805251000.10205.yhlu.kernel@gmail.com>
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Feedback/patches from Johannes Berg -- sort $(firmware_dirs) to prevent
+make from complaining about duplicates, and don't unconditionally depend
+on include/config/64bit.h. Also fix O= compilation again by including
+$(srctree) in the filename passed to .incbin in the .S files.
 
-remove extra -1 in reseve_early calling
-    panic if can not find space for new RAMDISK
+I also fixed up the dependencies for the object files built from
+binaries -- the .S file doesn't need to depend on the binary, but the .o
+does.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Still don't have the behaviour we want from clean/mrproper, but I think
+we need Sam's help with that.
 
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 361e5c9..eed7121 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -479,7 +479,7 @@ static void __init reserve_initrd(void)
- 	initrd_start = 0;
+commit bb71d4c53b14456ec591eb579923566f9c3302ed
+Author: David Woodhouse <dwmw2@infradead.org>
+Date:   Fri May 23 13:58:12 2008 +0100
+
+    firmware: Add CONFIG_BUILTIN_FIRMWARE option
+    
+    This allows arbitrary firmware files to be included in the static kernel
+    where the firmware loader can find them without requiring userspace to
+    be alive.
+    
+    Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+
+diff --git a/Makefile b/Makefile
+index 20b3235..ac2ab7e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -450,7 +450,7 @@ scripts: scripts_basic include/config/auto.conf
  
- 	if (ramdisk_size >= end_of_lowmem/2) {
--		free_early(ramdisk_image, ramdisk_image + ramdisk_size - 1);
-+		free_early(ramdisk_image, ramdisk_end);
- 		printk(KERN_ERR "initrd too large to handle, "
- 		       "disabling initrd\n");
- 		return;
-@@ -501,9 +501,13 @@ static void __init reserve_initrd(void)
- 				 end_of_lowmem, ramdisk_size,
- 				 PAGE_SIZE);
+ # Objects we will link into vmlinux / subdirs we need to visit
+ init-y		:= init/
+-drivers-y	:= drivers/ sound/
++drivers-y	:= drivers/ sound/ firmware/
+ net-y		:= net/
+ libs-y		:= lib/
+ core-y		:= usr/
+diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index d7da109..b856fe8 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -34,6 +34,18 @@ config FW_LOADER
+ 	  require userspace firmware loading support, but a module built outside
+ 	  the kernel tree does.
  
-+	if (ramdisk_here == -1ULL)
-+		panic("Cannot find place for new RAMDISK of size %lld\n",
-+			 ramdisk_size);
++config BUILTIN_FIRMWARE
++	string "Firmware blobs to build into the kernel binary"
++	depends on FW_LOADER
++	help
++	  This option allows firmware to be built into the kernel, for the
++	  cases where the user either cannot or doesn't want to provide it from
++	  userspace at runtime (for example, when the firmware in question is
++	  required for accessing the boot device, and the user doesn't want to
++	  use an initrd). Multiple files should be separated with spaces, and
++	  the required files should exist under the firmware/ directory in
++	  the source tree.
 +
- 	/* Note: this includes all the lowmem currently occupied by
- 	   the initrd, we rely on that fact to keep the data intact. */
--	reserve_early(ramdisk_here, ramdisk_here + ramdisk_size - 1,
-+	reserve_early(ramdisk_here, ramdisk_here + ramdisk_size,
- 			 "NEW RAMDISK");
- 	initrd_start = ramdisk_here + PAGE_OFFSET;
- 	initrd_end   = initrd_start + ramdisk_size;
-@@ -579,15 +583,15 @@ void __init setup_bootmem_allocator(void)
- 				 PAGE_SIZE);
- 	if (bootmap == -1L)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
--	reserve_early(bootmap, bootmap + bootmap_size - 1, "BOOTMAP");
-+	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
- #ifdef CONFIG_BLK_DEV_INITRD
- 	reserve_initrd();
- #endif
- 	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, max_low_pfn);
- 	printk(KERN_INFO "  low ram: %08lx - %08lx\n",
- 		 min_low_pfn<<PAGE_SHIFT, max_low_pfn<<PAGE_SHIFT);
--	printk(KERN_INFO "  bootmap [%08lx -  %08lx]\n",
--		 bootmap, bootmap + bootmap_size - 1);
-+	printk(KERN_INFO "  bootmap %08lx - %08lx\n",
-+		 bootmap, bootmap + bootmap_size);
- 	register_bootmem_low_pages(max_low_pfn);
- 	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
- 
+ config DEBUG_DRIVER
+ 	bool "Driver Core verbose debug messages"
+ 	depends on DEBUG_KERNEL
+diff --git a/firmware/Makefile b/firmware/Makefile
+new file mode 100644
+index 0000000..02e0a05
+--- /dev/null
++++ b/firmware/Makefile
+@@ -0,0 +1,70 @@
++#
++# kbuild file for firmware/
++#
++
++firmware-y :=
++
++firmware_bins := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
++firmware_srcs := $(patsubst %,$(obj)/%.S, $(firmware_bins))
++firmware_objs := $(patsubst %,%.o, $(firmware_bins) $(firmware-y))
++firmware_dirs := $(sort $(patsubst %,$(objtree)/$(obj)/%,$(dir $(firmware_objs))))
++
++quiet_cmd_mkdir = MKDIR   $@
++      cmd_mkdir = mkdir -p $@
++
++ifdef CONFIG_64BIT
++ASM_WORD := .quad
++ASM_ALIGN := 3
++else
++ASM_WORD := .long
++ASM_ALIGN := 2
++endif
++
++quiet_cmd_fwbin = MK_FW   $@
++      cmd_fwbin = FWNAME="$(patsubst firmware/%.S,%,$@)";		     \
++		  INCFILE="$(srctree)/$(patsubst %.S,%,$@)";		     \
++		  FWSTR="$(subst /,_,$(subst .,_,$(patsubst 		     \
++				firmware/%.S,%,$@)))";			     \
++		  echo "/* Generated by firmware/Makefile */"		> $@;\
++		  echo "    .section .rodata"				>>$@;\
++		  echo "    .align $(ASM_ALIGN)"			>>$@;\
++		  echo "_fw_$${FWSTR}_bin:"				>>$@;\
++		  echo "    .incbin \"$$INCFILE\""			>>$@;\
++		  echo "_fw_end:"					>>$@;\
++		  echo "   .section .rodata.str,\"aMS\",@progbits,1"	>>$@;\
++		  echo "    .align $(ASM_ALIGN)"			>>$@;\
++		  echo "_fw_$${FWSTR}_name:"				>>$@;\
++		  echo "    .string \"$$FWNAME\""			>>$@;\
++		  echo "    .section .builtin_fw,\"a\",@progbits"	>>$@;\
++		  echo "    .align $(ASM_ALIGN)"			>>$@;\
++		  echo "    $(ASM_WORD) _fw_$${FWSTR}_name" 		>>$@;\
++		  echo "    $(ASM_WORD) _fw_$${FWSTR}_bin" 		>>$@;\
++		  echo "    $(ASM_WORD) _fw_end - _fw_$${FWSTR}_bin"	>>$@;
++
++# One of these files will change, or come into existence, whenever
++# the configuration changes between 32-bit and 64-bit...
++DEPS_64BIT := $(wildcard include/config/64bit.h include/config/32bit.h \
++		include/config/ppc32.h include/config/ppc64.h \
++		include/config/superh32.h include/config/superh64.h \
++		include/config/x86_32.h include/config/x86_64.h)
++
++# ... and the .S files must change when that happens.
++$(firmware_srcs): $(DEPS_64BIT)
++	$(call cmd,fwbin)
++
++# The .o files depend directly on the binary because it's included in
++# the .S file with .incbin -- so the .S file doesn't need to change.
++$(patsubst %.S,%.o,$(firmware_srcs)): %.o: %
++
++$(firmware_dirs):
++	$(call cmd,mkdir)
++
++$(patsubst %,$(obj)/%,$(firmware_objs)): $(firmware_dirs)
++
++obj-y := $(firmware_objs)
++
++targets := $(firmware_objs) $(patsubst $(obj)/%,%, $(firmware_srcs))
++
++# Without this, built-in.o won't be created when it's empty, and the
++# final vmlinux link will fail.
++obj-n := dummy
+
+
+-- 
+dwmw2
+
