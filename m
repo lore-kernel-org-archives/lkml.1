@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763761AbYEYK2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932264AbYEYK2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763761AbYEYK2g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 06:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762524AbYEYKYK
+	id S932264AbYEYK2y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 06:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762612AbYEYKYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 06:24:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42058 "EHLO
+	Sun, 25 May 2008 06:24:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42071 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755507AbYEYKYI (ORCPT
+	with ESMTP id S1757728AbYEYKYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 06:24:08 -0400
+	Sun, 25 May 2008 06:24:14 -0400
 In-Reply-To: <1211708969@pmac.infradead.org>
 References: <1211708969@pmac.infradead.org>
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
-Subject: [PATCHv2 28/28] firmware: convert korg1212 driver to use firmware loader exclusively
-Message-Id: <E1K0DOQ-0007Ea-GW@shinybook.infradead.org>
-Date: Sun, 25 May 2008 11:23:58 +0100
+Subject: [PATCHv2 26/28] firmware: allow firmware files to be built into kernel image
+Message-Id: <E1K0DOO-0007ES-DU@shinybook.infradead.org>
+Date: Sun, 25 May 2008 11:23:56 +0100
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -25,112 +25,154 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Some drivers have their own hacks to bypass the kernel's firmware loader
+and build their firmware into the kernel; this renders those unnecessary.
+
+Other drivers don't use the firmware loader at all, because they always
+want the firmware to be available. This allows them to start using the
+firmware loader.
+
+A third set of drivers already use the firmware loader, but can't be
+used without help from userspace, which sometimes requires an initrd.
+This allows them to work in a static kernel.
+
 Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 ---
- firmware/Makefile                                  |    2 +-
- .../korg1212-firmware.h => firmware/korg/k1212.c   |    5 ++++-
- sound/pci/korg1212/korg1212.c                      |   18 ------------------
- 3 files changed, 5 insertions(+), 20 deletions(-)
- rename sound/pci/korg1212/korg1212-firmware.h => firmware/korg/k1212.c (99%)
+ drivers/base/firmware_class.c     |   33 +++++++++++++++++++++++++++++++--
+ include/asm-generic/vmlinux.lds.h |    7 +++++++
+ include/linux/firmware.h          |   21 +++++++++++++++++++++
+ 3 files changed, 59 insertions(+), 2 deletions(-)
 
-diff --git a/firmware/Makefile b/firmware/Makefile
-index 4243c5a..bcae927 100644
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -2,7 +2,7 @@
- # kbuild file for firmware/
- #
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index 264b3a2..c09f060 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -49,6 +49,14 @@ struct firmware_priv {
+ 	struct timer_list timeout;
+ };
  
--firmware-y :=
-+firmware-$(CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL) += korg/k1212
- 
- firmware_bins := $(subst ",,$(CONFIG_BUILTIN_FIRMWARE))
- firmware_srcs := $(patsubst %,$(obj)/%.S, $(firmware_bins))
-diff --git a/sound/pci/korg1212/korg1212-firmware.h b/firmware/korg/k1212.c
-similarity index 99%
-rename from sound/pci/korg1212/korg1212-firmware.h
-rename to firmware/korg/k1212.c
-index f6f5b91..1ed3ebb 100644
---- a/sound/pci/korg1212/korg1212-firmware.h
-+++ b/firmware/korg/k1212.c
-@@ -1,4 +1,5 @@
--static char dspCode [] = {
-+#include <linux/firmware.h>
-+static const char dspCode [] = {
- 0x01,0xff,0x18,0xff,0xf5,0xff,0xcf,0xff,0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,
- 0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,
- 0x26,0xff,0x18,0xff,0xff,0xff,0x0f,0xff,0x00,0xff,0x00,0xff,0xff,0xff,0x00,0xff,
-@@ -985,3 +986,5 @@ static char dspCode [] = {
- 0x00,0xff,0x40,0xff,0xff,0xff,0xc4,0xff,0x00,0xff,0x0a,0xff,0xff,0xff,0x0f,0xff,
- 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
- 0xff,0xff,0xff,0xff };
++#ifdef CONFIG_FW_LOADER
++extern struct builtin_fw __start_builtin_fw[];
++extern struct builtin_fw __end_builtin_fw[];
++#else /* Module case. Avoid ifdefs later; it'll all optimise out */
++static struct builtin_fw *__start_builtin_fw = NULL;
++static struct builtin_fw *__end_builtin_fw = NULL;
++#endif
 +
-+DECLARE_BUILTIN_FIRMWARE("korg/k1212.dsp", dspCode);
-diff --git a/sound/pci/korg1212/korg1212.c b/sound/pci/korg1212/korg1212.c
-index f4c85b5..4a44c0f 100644
---- a/sound/pci/korg1212/korg1212.c
-+++ b/sound/pci/korg1212/korg1212.c
-@@ -260,14 +260,6 @@ enum MonitorModeSelector {
- #define COMMAND_ACK_DELAY   13         // number of RTC ticks to wait for an acknowledgement
-                                        //    from the card after sending a command.
+ static void
+ fw_load_abort(struct firmware_priv *fw_priv)
+ {
+@@ -391,13 +399,12 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
+ 	struct device *f_dev;
+ 	struct firmware_priv *fw_priv;
+ 	struct firmware *firmware;
++	struct builtin_fw *builtin;
+ 	int retval;
  
--#ifdef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
--#include "korg1212-firmware.h"
--static const struct firmware static_dsp_code = {
--	.data = (u8 *)dspCode,
--	.size = sizeof dspCode
--};
--#endif
+ 	if (!firmware_p)
+ 		return -EINVAL;
+ 
+-	printk(KERN_INFO "firmware: requesting %s\n", name);
 -
- enum ClockSourceIndex {
-    K1212_CLKIDX_AdatAt44_1K = 0,    // selects source as ADAT at 44.1 kHz
-    K1212_CLKIDX_AdatAt48K,          // selects source as ADAT at 48 kHz
-@@ -412,9 +404,7 @@ struct snd_korg1212 {
- MODULE_DESCRIPTION("korg1212");
- MODULE_LICENSE("GPL");
- MODULE_SUPPORTED_DEVICE("{{KORG,korg1212}}");
--#ifndef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
- MODULE_FIRMWARE("korg/k1212.dsp");
--#endif
- 
- static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;     /* Index 0-MAX */
- static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	   /* ID for this card */
-@@ -2348,9 +2338,6 @@ static int __devinit snd_korg1212_create(struct snd_card *card, struct pci_dev *
-         korg1212->AdatTimeCodePhy = korg1212->sharedBufferPhy +
- 		offsetof(struct KorgSharedBuffer, AdatTimeCode);
- 
--#ifdef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
--	dsp_code = &static_dsp_code;
--#else
- 	err = request_firmware(&dsp_code, "korg/k1212.dsp", &pci->dev);
- 	if (err < 0) {
- 		release_firmware(dsp_code);
-@@ -2358,15 +2345,12 @@ static int __devinit snd_korg1212_create(struct snd_card *card, struct pci_dev *
- 		snd_korg1212_free(korg1212);
- 		return err;
+ 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
+ 	if (!firmware) {
+ 		printk(KERN_ERR "%s: kmalloc(struct firmware) failed\n",
+@@ -406,6 +413,20 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
+ 		goto out;
  	}
--#endif
  
- 	if (snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV, snd_dma_pci_data(pci),
- 				dsp_code->size, &korg1212->dma_dsp) < 0) {
- 		snd_printk(KERN_ERR "korg1212: cannot allocate dsp code memory (%zd bytes)\n", dsp_code->size);
-                 snd_korg1212_free(korg1212);
--#ifndef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
- 		release_firmware(dsp_code);
--#endif
-                 return -ENOMEM;
-         }
++	for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
++	     builtin++) {
++		if (strcmp(name, builtin->name))
++			continue;
++		printk(KERN_INFO "firmware: using built-in firmware %s\n",
++		       name);
++		firmware->size = builtin->size;
++		firmware->data = builtin->data;
++		return 0;
++	}
++
++	if (uevent)
++		printk(KERN_INFO "firmware: requesting %s\n", name);
++
+ 	retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
+ 	if (retval)
+ 		goto error_kfree_fw;
+@@ -473,8 +494,16 @@ request_firmware(const struct firmware **firmware_p, const char *name,
+ void
+ release_firmware(const struct firmware *fw)
+ {
++	struct builtin_fw *builtin;
++
+ 	if (fw) {
++		for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
++		     builtin++) {
++			if (fw->data == builtin->data)
++				goto free_fw;
++		}
+ 		vfree(fw->data);
++	free_fw:
+ 		kfree(fw);
+ 	}
+ }
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f054778..8d71a40 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -86,6 +86,13 @@
+ 		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
+ 	}								\
+ 									\
++	/* Built-in firmware blobs */					\
++	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
++		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
++		*(.builtin_fw)						\
++		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
++	}								\
++									\
+ 	/* RapidIO route ops */						\
+ 	.rio_route        : AT(ADDR(.rio_route) - LOAD_OFFSET) {	\
+ 		VMLINUX_SYMBOL(__start_rio_route_ops) = .;		\
+diff --git a/include/linux/firmware.h b/include/linux/firmware.h
+index 5e73f3f..279eaad 100644
+--- a/include/linux/firmware.h
++++ b/include/linux/firmware.h
+@@ -1,7 +1,10 @@
+ #ifndef _LINUX_FIRMWARE_H
+ #define _LINUX_FIRMWARE_H
++
+ #include <linux/module.h>
+ #include <linux/types.h>
++#include <linux/compiler.h>
++
+ #define FIRMWARE_NAME_MAX 30 
+ #define FW_ACTION_NOHOTPLUG 0
+ #define FW_ACTION_HOTPLUG 1
+@@ -13,6 +16,24 @@ struct firmware {
  
-@@ -2376,9 +2360,7 @@ static int __devinit snd_korg1212_create(struct snd_card *card, struct pci_dev *
+ struct device;
  
- 	memcpy(korg1212->dma_dsp.area, dsp_code->data, dsp_code->size);
- 
--#ifndef CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL
- 	release_firmware(dsp_code);
--#endif
- 
- 	rc = snd_korg1212_Send1212Command(korg1212, K1212_DB_RebootCard, 0, 0, 0, 0);
- 
++struct builtin_fw {
++	char *name;
++	void *data;
++	unsigned long size;
++};
++
++/* We have to play tricks here much like stringify() to get the
++   __COUNTER__ macro to be expanded as we want it */
++#define __fw_concat1(x,y) x##y
++#define __fw_concat(x,y) __fw_concat1(x,y)
++
++#define DECLARE_BUILTIN_FIRMWARE(name, blob)				     \
++	DECLARE_BUILTIN_FIRMWARE_SIZE(name, &(blob), sizeof(blob))
++
++#define DECLARE_BUILTIN_FIRMWARE_SIZE(name, blob, size)			     \
++	static const struct builtin_fw __fw_concat(__builtin_fw,__COUNTER__) \
++	__used __section(.builtin_fw) = { name, blob, size }
++
+ #if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
+ int request_firmware(const struct firmware **fw, const char *name,
+ 		     struct device *device);
 -- 
 1.5.4.5
 
