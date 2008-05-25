@@ -1,97 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761571AbYEYJie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbYEYJu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761571AbYEYJie (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 05:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbYEYJi1
+	id S1761010AbYEYJu3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 05:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbYEYJuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 05:38:27 -0400
-Received: from mail.sousedi.net ([78.110.213.200]:38601 "EHLO mail.sousedi.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755452AbYEYJi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 05:38:26 -0400
-X-Greylist: delayed 1974 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 May 2008 05:38:26 EDT
-Message-ID: <48392BD0.2090206@prepere.com>
-Date: Sun, 25 May 2008 11:05:20 +0200
-From: Miloslav Semler <majkls@prepere.com>
-User-Agent: IceDove 1.5.0.14eol (X11/20080509)
+	Sun, 25 May 2008 05:50:19 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:59163 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087AbYEYJuS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 05:50:18 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+Date: Sun, 25 May 2008 11:49:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, aoliva@redhat.com,
+       alan@lxorguk.ukuu.org.uk, Abhay Salunke <Abhay_Salunke@dell.com>,
+       kay.sievers@vrfy.org, Takashi Iwai <tiwai@suse.de>
+References: <1211550282.28967.8.camel@pmac.infradead.org> <D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org> <1211707837.17151.14.camel@johannes.berg>
+In-Reply-To: <1211707837.17151.14.camel@johannes.berg>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix SMP ordering hole in fcntl_setlk() (CVE-2008-1669)
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805251149.41059.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-backport of:
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=commitdiff;h=c493a1dd8b3a93b57208319a77a8238f76dabca2
-fcntl_setlk()/close() race prevention has a subtle hole - we need to
- make sure that if we *do* have an fcntl/close race on SMP box, the
- access to descriptor table and inode->i_flock won't get reordered.
- 
- As it is, we get STORE inode->i_flock, LOAD descriptor table entry vs.
- STORE descriptor table entry, LOAD inode->i_flock with not a single
- lock in common on both sides.  We do have BKL around the first STORE,
- but check in locks_remove_posix() is outside of BKL and for a good
- reason - we don't want BKL on common path of close(2).
- 
- Solution is to hold ->file_lock around fcheck() in there; that orders
- us wrt removal from descriptor table that preceded locks_remove_posix()
- on close path and we either come first (in which case eviction will be
- handled by the close side) or we'll see the effect of close and do
- eviction ourselves.  Note that even though it's read-only access,
- we do need ->file_lock here - rcu_read_lock() won't be enough to
- order the things.
+On Sunday 25 May 2008 11:30:37 Johannes Berg wrote:
+> > I explained this a couple of times. The request_firmware() is an  
+> > abstract mechanism that can request a firmware file. The location of  
+> > the firmware file is up to the userspace. The kernel requests a  
+> > particular file and that is it. All namespacing has to be done by the  
+> > firmware helper script (nowadays udev). That the current  
+> > implementation of the firmware helper maps the filename 1:1 to a file  
+> > under /lib/firmware/ just works, but doesn't have to work all the  
+> > time. It is not the agreed contract between kernel and userspace.
+> 
+> I don't buy this argument. I could agree if you said that the "agreed
+> contract" between the kernel and userspace is for the kernel to request
+> a firmware file /keyed by an arbitrary, null-terminated string/.
 
+I fully agree with johannes, that using / as a grouping-separator is a
+_nice_ idea and userspace must support it, regardless of the actual
+storage system it is using.
 
-Signed-off-by: Miloslav Semler
----
-diff -uprN linux-2.6.16.60/fs/locks.c linux-2.6.16.60-new/fs/locks.c
---- linux-2.6.16.60/fs/locks.c  2008-01-27 17:58:41.000000000 +0100
-+++ linux-2.6.16.60-new/fs/locks.c      2008-05-10 17:41:19.000000000 +0200
-@@ -1615,6 +1615,7 @@ int fcntl_setlk(unsigned int fd, struct
-        struct file_lock *file_lock = locks_alloc_lock();
-        struct flock flock;
-        struct inode *inode;
-+       struct file *f;
-        int error;
+Currently using a single directory for one driver really enhances the way
+firmware can be handled. For example, we can have several different versions
+cleanly installed in /lib/firmware. For example, on my development machine
+I have
+/lib/firmware/b43
+/lib/firmware/b43-old
+/lib/firmware/b43-open
+/lib/firmware/b43legacy
+Putting all these files into plain /lib/firmware would require changing the
+actual filenames and that would be a real pain. (This can be up to about 100 files).
 
-        if (file_lock == NULL)
-@@ -1689,7 +1690,15 @@ again:
-         * Attempt to detect a close/fcntl race and recover by
-         * releasing the lock that was just acquired.
-         */
--       if (!error && fcheck(fd) != filp && flock.l_type != F_UNLCK) {
-+       /*
-+        * we need that spin_lock here - it prevents reordering between
-+        * update of inode->i_flock and check for it done in close().
-+        * rcu_read_lock() wouldn't do.
-+        */
-+       spin_lock(&current->files->file_lock);
-+       f = fcheck(fd);
-+       spin_unlock(&current->files->file_lock);
-+       if (!error && f != filp && flock.l_type != F_UNLCK) {
-                flock.l_type = F_UNLCK;
-                goto again;
-        }
-@@ -1758,6 +1767,7 @@ int fcntl_setlk64(unsigned int fd, struc
-        struct file_lock *file_lock = locks_alloc_lock();
-        struct flock64 flock;
-        struct inode *inode;
-+       struct file *f;
-        int error;
+> The fact that it is usually stored on a filesystem where / means a
+> directory (and thus grouping) can be seen as a nice convenience of the
+> filesystem storage, but if firmware was stored elsewhere then you could
+> degrade to the simple key-based lookup that happens to allow "/" as a
+> character in the keys.
+> 
+> And because the kernel is nice, it allows userspace to use a filesystem
+> storage by not using paths like "../../lib/firmware/asdf". But
+> fundamentally, I don't even see anything wrong with that.
 
-        if (file_lock == NULL)
-@@ -1832,7 +1842,10 @@ again:
-         * Attempt to detect a close/fcntl race and recover by
-         * releasing the lock that was just acquired.
-         */
--       if (!error && fcheck(fd) != filp && flock.l_type != F_UNLCK) {
-+       spin_lock(&current->files->file_lock);
-+       f = fcheck(fd);
-+       spin_unlock(&current->files->file_lock);
-+       if (!error && f != filp && flock.l_type != F_UNLCK) {
-                flock.l_type = F_UNLCK;
-                goto again;
-        }
+I agree that .. and . should probably be avoided.
+And I also don't see a good reason to use them.
 
+> Put another way, you can have pretty arbitrary firmware firmware names
+> (though since humans need to handle them you want printable characters),
+> and I don't see why now all the sudden you would treat "/" specially by
+> *explicitly* disallowing it.
+> 
+> b43 comes with 22 firmware files for a single driver, and groups them
+
+Depending on the firmware version you have, there are over 30 files
+for b43 and b43legacy each.
+
+> using "b43/<name>". What you're proposing will make firmware fail
+> *again* for all users, and we got a *LOT* of flak from all kinds of
+> stakeholders (not just the users) when firmware upgrades were required,
+> doing it again for such a petty reason is ridiculous.
+
+Yeah. I'm not going to change that. The users are going to kill us.
+Besides that, there were very good reasons to start grouping the files
+in b43 (bcm43xx didn't do it), as it simply was unmaintainable in bcm43xx.
+
+-- 
+Greetings Michael.
