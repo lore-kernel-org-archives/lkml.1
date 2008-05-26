@@ -1,140 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYEZHHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYEZHMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYEZHHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 03:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYEZHH3
+	id S1754494AbYEZHMV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 03:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYEZHMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 03:07:29 -0400
-Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:2123 "EHLO
-	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbYEZHHZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 03:07:25 -0400
-From: Arkadiusz Miskiewicz <arekm@maven.pl>
-To: linux-kernel@vger.kernel.org, trenn@suse.de
-Subject: Re: cpufreq limits avilable frequencies to 800MHz on git kernel
-Date: Mon, 26 May 2008 09:07:05 +0200
-User-Agent: PLD Linux KMail/1.9.9
-Cc: cpufreq@lists.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>,
-       gnorton@novell.com, miguel@novell.com
-References: <200805231944.57320.arekm@maven.pl> <200805251136.24313.arekm@maven.pl> <1211727835.3422.36.camel@linux-2bdv.site>
-In-Reply-To: <1211727835.3422.36.camel@linux-2bdv.site>
+	Mon, 26 May 2008 03:12:06 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:35213 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752861AbYEZHMF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 03:12:05 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200805260907.05561.arekm@maven.pl>
-X-Authenticated-Id: arekm
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18490.25242.790320.257467@harpo.it.uu.se>
+Date: Mon, 26 May 2008 09:11:22 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: sky2 oops in 2.6.26-rc3
+In-Reply-To: <20080525115644.21076a48@extreme>
+References: <200805251727.m4PHRTIi024468@harpo.it.uu.se>
+	<20080525115644.21076a48@extreme>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 May 2008, Thomas Renninger wrote:
-> On Sun, 2008-05-25 at 11:36 +0200, Arkadiusz Miskiewicz wrote:
-> > On Saturday 24 May 2008, Andrew Morton wrote:
-> > > On Fri, 23 May 2008 19:44:57 +0200 Arkadiusz Miskiewicz
-> > > <arekm@maven.pl>
-> >
-> > wrote:
-> > > > thinkpad z60m, Intel(R) Pentium(R) M processor 2.00GHz. kernel from
-> > > > git from 1-2 days ago.
-> > > >
-> > > > Unfortunately it seems that suspend to ram/resume causes frequency
-> > > > to be limited to 800MHz only. I can't set it to 2GHz again :-/
-> > > >
-> > > > scaling_max_freq is then 800000 and cannot be changed.
-> > > >
-> > > > reboot and the problem disappears until new suspend/resume cycle.
-> > > >
-> > > > cpufreq stuff is driven by acpi-cpufreq
-> > > >
-> > > > $ cpufreq-info
-> > > > cpufrequtils 002: cpufreq-info (C) Dominik Brodowski 2004-2006
-> > > > Report errors and bugs to linux@brodo.de, please.
-> > > > analyzing CPU 0:
-> > > >   driver: acpi-cpufreq
-> > > >   CPUs which need to switch frequency at the same time: 0
-> > > >   hardware limits: 800 MHz - 2.00 GHz
-> > > >   available frequency steps: 2.00 GHz, 1.60 GHz, 1.33 GHz, 1.07 GHz,
-> > > > 800 MHz available cpufreq governors: powersave, userspace, ondemand,
-> > > > performance current policy: frequency should be within 800 MHz and
-> > > > 800 MHz. The governor "performance" may decide which speed to use
-> > > > within this range.
-> > > >   current CPU frequency is 800 MHz.
-> > > >
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:800000
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:2000000
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:800000
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/related_cpus:0
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies:20
-> > > >0000 0 1600000 1333000 1066000 800000
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:powe
-> > > >rsav e userspace ondemand performance
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:800000
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:acpi-cpufreq
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:performance
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:800000
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:800000
-> > > > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:<unsupported>
-> > >
-> > > Thanks.  Is this a newly-occurring bug or did earlier kernels do this
-> > > also?
-> > >
-> > > If it was newly added, do you know in which kernel version we might
-> > > have added it?
-> >
-> > I wasn't able to reproduce the problem on final 2.6.24 but was able to
-> > reproduce on final 2.6.25. Problem introduced somewhere between it seems.
-> >
-> > Note that 2-3 suspend to ram/resume cycles is needed to get into the
-> > problem.
->
-> Sounds related to:
-> ﻿[Bug 374099] T61p speedstep problems (ondemand scheduler)
-> ﻿https://bugzilla.novell.com/show_bug.cgi?id=374099
+Stephen Hemminger writes:
+ > On Sun, 25 May 2008 19:27:29 +0200 (MEST)
+ > Mikael Pettersson <mikpe@it.uu.se> wrote:
+ > 
+ > > Shortly after booting 2.6.26-rc3 on my ASUS P5B-E Plus
+ > > today, the kernel oopsed in sky2_mac_intr, leaving the
+ > > system totally dead. I had to copy the oops manually:
+ > > 
+ > > Call trace:
+ > >   sky2_hw_error
+ > >   sky2_poll
+ > >   run_rebalance_domains
+ > >   net_rx_action
+ > >   __do_softirq
+ > >   smp_apic_timer_interrupt
+ > >   mwait_idle
+ > >   apic_timer_interrupt
+ > >   mwait_idle
+ > >   mwait_idle
+ > >   cpu_idle
+ > > EIP: sky2_mac_intr+0x32
+ > > 
+ > > lspci -vvxxx on the sky2 chip shows:
+ > > 
+ > > 02:00.0 Ethernet controller: Marvell Technology Group Ltd. Unknown device 4364 (rev 12)
+ > > 	Subsystem: ASUSTeK Computer Inc. Unknown device 81f8
+ > > 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+ > > 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+ > > 	Latency: 0, Cache Line Size: 32 bytes
+ > > 	Interrupt: pin A routed to IRQ 17
+ > > 	Region 0: Memory at ff9fc000 (64-bit, non-prefetchable) [size=16K]
+ > > 	Region 2: I/O ports at c800 [size=256]
+ > > 	Expansion ROM at ff9c0000 [disabled] [size=128K]
+ > > 	Capabilities: [48] Power Management version 3
+ > > 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+ > > 		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+ > > 	Capabilities: [50] Vital Product Data
+ > > 	Capabilities: [5c] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+ > > 		Address: 0000000000000000  Data: 0000
+ > > 	Capabilities: [e0] Express Legacy Endpoint IRQ 0
+ > > 		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+ > > 		Device: Latency L0s unlimited, L1 unlimited
+ > > 		Device: AtnBtn- AtnInd- PwrInd-
+ > > 		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+ > > 		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+ > > 		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+ > > 		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 0
+ > > 		Link: Latency L0s <256ns, L1 unlimited
+ > > 		Link: ASPM Disabled RCB 128 bytes CommClk+ ExtSynch-
+ > > 		Link: Speed 2.5Gb/s, Width x1
+ > > 	Capabilities: [100] Advanced Error Reporting
+ > > 00: ab 11 64 43 07 00 10 00 12 00 00 02 08 00 00 00
+ > > 10: 04 c0 9f ff 00 00 00 00 01 c8 00 00 00 00 00 00
+ > > 20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 f8 81
+ > > 30: 00 00 9c ff 48 00 00 00 00 00 00 00 0a 01 00 00
+ > > 40: 00 00 f0 01 00 80 a0 01 01 50 03 fe 00 20 00 13
+ > > 50: 03 5c 00 80 00 00 00 01 00 00 00 01 05 e0 80 00
+ > > 60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ > > 70: 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ > > 80: 00 00 00 00 00 70 00 00 00 00 00 00 82 a8 e8 00
+ > > 90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ > > a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ > > b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ > > c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ > > d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ > > e0: 10 00 11 00 c0 8f 00 00 00 20 19 00 11 ac 07 00
+ > > f0: 48 00 11 10 00 00 00 00 00 00 00 00 00 00 00 00
+ > > 
+ > > This is the first time I've seen this problem.
+ > > 
+ > > I do have a recurring problem where the sky2 chip sometimes
+ > > isn't detected on a cold boot. A reboot typically solves that.
+ > > 
+ > > /Mikael
+ > 
+ > sky2_hw_error prints information in log so dmesg output would be helpful.
 
-login/pass protected
+Like I wrote, the box died when this happened, which is why I had
+to copy the oops text manually. I did check /var/log/messages after
+the reboot, but nothing got logged there.
 
->
-> Miguel speaks from "good boots" and "bad boots".
+ > But it means the hardware is sick (like bad DMA), so there isn't much
+ > you can do.  If possible, see if either the vendor sk98lin driver or windows
+ > works on this hardware.
 
-Actually I also got "bad boot" (so no suspend/resume was needed).
+Well, W2KPROSP4 works, but that's not the issue. The Linux sky2 driver
+works like 99% of the time, it's just occasional cold boot detection
+failures and now this one indicent.
 
->
-> Could you check whether the OS thinks it is too hot.
-> ﻿I described some basics how to monitor temperature and cpufreq (if
-> passive cooling kicks in) here:
-> https://bugzilla.novell.com/show_bug.cgi?id=387702#c13
-
-Doesn't seem to be overheated
-
-[arekm@tarm ~]$ cat /proc/acpi/thermal_zone/*/{temperature,trip_points,state}; cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_{cur_freq,max_freq}
-temperature:             45 C
-critical (S5):           99 C
-passive:                 95 C: tc1=5 tc2=4 tsp=600 devices= CPU
-state:                   ok
-800000
-800000
-
-but still limited to 800MHz.
-
->
-> Hmm, it may just have been fixed by this one:
-> ﻿commit e56a727b023d40d1adf660168883f30f2e6abe0a
-> Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Date:   Mon Apr 28 15:13:43 2008 -0400
->
-> Miguel, Geoff: This is already in 11.0 for some time and in 10.3 for
-> some days.
-
-Unfortunately it doesn't fix the problem. The patch is in Linus tree for long
-time (so I guess I had it when initially reporting the problem) + I upgraded
-today to current git - the problem is still there.
-
->        Thomas
-
--- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+I'll try to debug it a little more next time it fails on a cold boot.
