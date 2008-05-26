@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYEZTEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYEZTHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbYEZTEA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 15:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbYEZTDs
+	id S1755952AbYEZTHh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 15:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYEZTH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 15:03:48 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:53520 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754684AbYEZTDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 15:03:47 -0400
-Message-ID: <483B0986.70606@krogh.cc>
-Date: Mon, 26 May 2008 21:03:34 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<48258074.7060306@krogh.cc> <20080510.213431.193696750.davem@davemloft.net> <4827E930.3000008@krogh.cc>
-In-Reply-To: <4827E930.3000008@krogh.cc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 26 May 2008 15:07:29 -0400
+Received: from animx.eu.org ([216.98.75.249]:44223 "EHLO animx.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754700AbYEZTH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 15:07:29 -0400
+Date: Mon, 26 May 2008 15:07:37 -0400
+From: Wakko Warner <wakko@animx.eu.org>
+To: linux-kernel@vger.kernel.org
+Subject: Compile error with make bootpfile (2.6.25.4)
+Message-ID: <20080526190737.GA14703@animx.eu.org>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.6+20040907i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> David Miller wrote:
->> From: Jesper Krogh <jesper@krogh.cc>
->> Date: Sat, 10 May 2008 13:01:08 +0200
->>
->>> Any good suggestions about the "Transmit timed out" messages. It
->>> currently leads to a system that "doesnt die" but doesnt respond within
->>> 15 minutes of load of the network adapter.
->>
->> It's likely some bug in the driver that hangs the card for whatever
->> reason, which we'll need to work out.
-> 
-> Ok. I have been testing a bit more. It generally works fine, It seems
-> the "transmit timed out" thing was provoked by dd in the tests, because
-> it was creating a lot of small requests. (default bs=512).(over NFS).
-> When the  blocksize went up, the problem dissapered. (and the numer of
-> context-switches went down).
+I'm cross compiling a kernel for my alpha on x86.  I'm seeing this:
+  gcc -Wp,-MD,arch/alpha/boot/tools/.objstrip.d -Iarch/alpha/boot -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o arch/alpha/boot/tools/objstrip /usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c: In function 'main':
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:189: warning: format '%#016lx' expects type 'long unsigned int', but argument 5 has type 'Elf32_Addr'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:196: error: 'struct exec' has no member named 'fh'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:202: error: 'struct exec' has no member named 'fh'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:202: error: 'struct exec' has no member named 'ah'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:214: error: 'struct exec' has no member named 'ah'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:214: error: 'struct exec' has no member named 'ah'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:215: error: 'struct exec' has no member named 'ah'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:219: error: 'struct exec' has no member named 'ah'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:220: error: 'struct exec' has no member named 'ah'
+/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:263: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'size_t'
+make[2]: *** [arch/alpha/boot/tools/objstrip] Error 1
+make[1]: *** [bootpfile] Error 2
+make: *** [sub-make] Error 2
+make: Leaving directory `/usr/src/linux/dist/2.6.25.4'
 
-Ok. Now I also hit it in production with the NFS-server, so this
-is definately a real bug somewhere in the driver. Should I register it
-at bugzilla?
+I called make like this:
+make -C /usr/src/linux/dist/2.6.25.4 O=$PWD ARCH=alpha V=1 CROSS_COMPILE=alpha-linux-gnu- bootpfile
 
-$ sudo grep -ci "Transmit timed out" /var/log/messages
-1007
+My host gcc is:
+gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
 
-And only a hard reboot brought it back online.
-2.6.25.2
+My target gcc is:
+alpha-linux-gnu-gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+
+I decided to just copy over the sources so that I wouldn't need the -C and
+O= on the make line.  I also modified the Make file so that I didn't need to
+specify ARCH and CROSS_COMPILE.  I removed support for a.out in objstrip.  I
+was finally able to get it to compile, but it still didn't work.  Not sure
+if it was due to the fact it's using x86 headers instead of alpha headers or
+what.
+
+I tried asking on linux-alpha, but that list seems to be fairly dead.
 
 -- 
-Jesper
+ Lab tests show that use of micro$oft causes cancer in lab animals
+ Got Gas???
