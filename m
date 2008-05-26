@@ -1,97 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYEZL6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYEZMFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbYEZL6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 07:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbYEZL62
+	id S1755507AbYEZMFe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYEZMFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 07:58:28 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:11895 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754625AbYEZL62 (ORCPT
+	Mon, 26 May 2008 08:05:23 -0400
+Received: from terman.e-hosting.lu ([80.92.79.12]:36184 "EHLO
+	terman.e-hosting.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753865AbYEZMFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 07:58:28 -0400
-Date: Mon, 26 May 2008 15:58:26 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-       Gary Jennejohn <garyj@denx.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/2] mmc: add OpenFirmware bindings for the mmc_spi
-	driver
-Message-ID: <20080526115826.GB26288@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080523182754.GA26891@polina.dev.rtsoft.ru> <20080523182842.GB469@polina.dev.rtsoft.ru> <20080524123527.04794974.sfr@canb.auug.org.au>
+	Mon, 26 May 2008 08:05:23 -0400
+Authentication-Results: terman.e-hosting.lu; dkim=pass (1024-bit key) header.i=@trypill.org
+Authentication-Results: terman.e-hosting.lu from=georges@trypill.org; domainkeys=pass (testing)
+DomainKey-Signature: a=rsa-sha1; s=2008; d=trypill.org; c=nofws; q=dns;
+	b=LexXnL+DK2wrwzE21hHNDmxQlhtvCsJ7/1jEDJoqMV5U/MkRVMIxBCw0QTuHLsSvG
+	AgDZ3IE4hg/CnDBGEBJDY/aN+qJOMLuptwbNEFZx68zoG/wxkdMxP6Vpw58lpbRQ/DG
+	YB1px6Q4X0EKXYuwVoLJNOSvaSDHomnPxhiBm+I=
+Message-ID: <483AA746.3000501@trypill.org>
+Date: Mon, 26 May 2008 14:04:22 +0200
+From: Georges Toth <georges@trypill.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080524123527.04794974.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: BUG: unable to handle kernel paging request at ffff81013a612000
+References: <483A8D59.2070302@trypill.org> <19f34abd0805260421o363f61c3r9682d3c6a38056f8@mail.gmail.com>
+In-Reply-To: <19f34abd0805260421o363f61c3r9682d3c6a38056f8@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 24, 2008 at 12:35:27PM +1000, Stephen Rothwell wrote:
-> Hi Anton,
-> 
-> On Fri, 23 May 2008 22:28:42 +0400 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> >
-> > +++ b/drivers/mmc/host/of_mmc_spi.c
-> 
-> > +static int of_mmc_spi_probe(struct spi_device *spi)
-> 
-> > +	/*
-> > +	 * mmc_spi_probe will use drvdata, so we can't use it. Use node's
-> > +	 * data instead.
-> > +	 */
-> > +	spi->dev.archdata.of_node->data = oms;
-> 
-> If you delay this assignment, you may not have to clean it up in the
-> error path.
+Hi,
 
-No, if I delay it I'll have to clean it up anyway, just a bit later
-(after mmc_spi_probe() fail).
+Vegard Nossum wrote:
+> It seems that you have three proprietary modules loaded: vmnet, vmmon,
+> and nvidia (identified by the (P) suffix in module list above).
+> Especially the vmnet and vmmon modules which have been loaded forcibly
+> (the F suffix).
+>
+> This means that it will be very hard for the mainline developers to
+> debug your problem. Most likely your report will be ignored.
+>
+> I suggest starting your system without loading these kernel modules in
+> the first place. Note: It is important that the modules are not loaded
+> in the first place. Simply unloading them won't work, as the damage
+> may have been done already. If you can reproduce the problem when
+> these modules have not been loaded, then I am sure it will be
+> inspected properly.
+>
+> If you cannot reproduce the problem, however, I would try to narrow
+> down the problem by loading only one or the other of the modules, then
+> contact the vendor(s) of the offending modules.
+>
+> The easiest way to prevent a module from loading at boot is to remove
+> the corresponding .ko file from /lib/modules/<kernel-version>/. (But
+> keep the original file if you want to move it back later.)
+>   
+As suggested I've removed all proprietary modules and am using the nv 
+xorg module for now.
+Should that bug occur again, I'll let you know :-).
 
-> > +	ocr_mask = of_get_property(np, "linux,mmc-ocr-mask", &size);
-> 
-> You should really explicitly include linux/of.h to use of_get_property etc
-
-Thanks, will do.
-
-> > +int __devexit of_mmc_spi_remove(struct spi_device *spi)
-> > +{
-> > +	struct of_mmc_spi *oms = spi->dev.archdata.of_node->data;
-> > +	int ret;
-> > +
-> > +	ret = mmc_spi_remove(spi);
-> > +	if (ret)
-> > +		return ret;
-> 
-> Maybe you should do this last so that you don't leak more than necessary
-> if mmc_spi_remove fails. (I don't know what state mmc_spi_remove leaves
-> stuff in if it fails ...)
-
-If I do this last, then of_mmc_spi_remove() would be not safe to call
-multiple times on non-fatal errors (e.g. when mmc_spi_remove() returns
--EBUSY (despite that currently mmc_spi_remove can't fail)).
-
-Also, if I do this last, then there will be a potential use-after-free
-in the mmc_spi driver.
-
-> > +static struct spi_driver of_mmc_spi_driver = {
-> > +	.driver = {
-> > +		.name = "of_mmc_spi",
-> > +		.bus = &spi_bus_type,
-> 
-> This is initialised by spi_register_driver().
-
-This was straight copy from the mmc_spi.c. Will fix.
-
-Thanks,
+Thanks
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+regards,
+
+Georges Toth
+
