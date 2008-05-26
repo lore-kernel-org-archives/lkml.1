@@ -1,105 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbYEZDby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYEZDjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753251AbYEZDby (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 23:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbYEZDbo
+	id S1753371AbYEZDjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 23:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbYEZDjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 23:31:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50915 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751597AbYEZDbo convert rfc822-to-8bit (ORCPT
+	Sun, 25 May 2008 23:39:12 -0400
+Received: from hs-out-0708.google.com ([64.233.178.244]:58938 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752057AbYEZDjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 23:31:44 -0400
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Takashi Iwai <tiwai@suse.de>, Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-References: <1211550282.28967.8.camel@pmac.infradead.org>
-	<1211550374.28967.10.camel@pmac.infradead.org>
-	<20080523164108.GA31545@uranus.ravnborg.org>
-	<1211640377.540.14.camel@pmac.infradead.org>
-	<20080524152214.GA12582@uranus.ravnborg.org>
-	<1211642706.31212.85.camel@shinybook.infradead.org>
-	<1211643245.31212.88.camel@shinybook.infradead.org>
-	<D56F641E-9FDB-48E5-AF0B-B8E84B08504A@holtmann.org>
-	<1211707837.17151.14.camel@johannes.berg>
-	<95BCF0F0-755A-4501-9B44-B421AD3E8F42@holtmann.org>
-	<orej7q1ewq.fsf@oliva.athome.lsd.ic.unicamp.br>
-	<4A84E98F-1C0D-4194-AC63-5455CCD5DD35@holtmann.org>
-From: Alexandre Oliva <aoliva@redhat.com>
-Organization: Red Hat OS Tools Group
-Date: Mon, 26 May 2008 00:30:04 -0300
-In-Reply-To: <4A84E98F-1C0D-4194-AC63-5455CCD5DD35@holtmann.org> (Marcel Holtmann's message of "Sun\, 25 May 2008 20\:49\:38 +0200")
-Message-ID: <orzlqdyc77.fsf@oliva.athome.lsd.ic.unicamp.br>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 25 May 2008 23:39:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=YFBcA/d1D/xRed+mVXkxyp91d3zQROfvtqKjUSH+/QBSlnLRhxi6GZyTaRWryd8+tZF7PgFlS1+MBeaFwESXIsY5rZ5wvLMgvtFq/7wTDHh5HolUETXszvdNIvEShPhL55tj/CeYklCCLMkreNLrEFG5eu/5NVIrrAwuV8aVk9w=
+Message-ID: <514e099a0805252039r68f88ac1wbdd1b4de77a9af94@mail.gmail.com>
+Date: Sun, 25 May 2008 20:39:10 -0700
+From: "S K" <nospamnoham@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Problem activating multiple cores ONLY if I press any key before kernel is loaded
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 25, 2008, Marcel Holtmann <marcel@holtmann.org> wrote:
+Hi,
 
-> Hi Alexandra,
->>> in the early days we had something like three drivers using the
->>> request_firmware() and it was understood between the authors what the
->>> filename was meant for.
->> 
->> You're contradicting yourself.  Is it a filename, or is it not?
->> Earlier, you said it wasn't, it was just a name that userspace was
->> supposed to map to a filename.  Now, you're saying it is a filename.
+This is 100% reproducible. I'm using a Shuttle SG33G5, Q9300 (45nm)
+and Fedora 9 with kernel 2.6.25.3-18.fc9.i686.
 
-> it is a filename with any directory components.
+When the PC boots up, if I don't press any key till I see "Redhat nash
+version..." everything works fine (well, good enough).
 
-You can't have it both ways.  Either it is a firmware name in a flat
-namespace that userland is supposed to map however it wants to data,
-or it is a filename that userland can map in more limited ways
-*because* you declared it to be a filename.
+But if I press a key during the boot and end up inside GRUB boot menu
+and choose Linux (Linux is the default), the boot hangs after the line
+"Booting the kernel." and before "Redhat nash..." is displayed.
 
-Unless...
+So I went into GRUB and removed the "quiet" kernel option to see
+what's happening. I saw some errors (posted at end of email) and I
+waited for a while (1-2 mins?) and the boot continued. But only one
+core was activated. I saw several such thread on many websites and
+most suggested "noapic" and "nolapic" and some also suggested
+"acpi=off".
 
-Are we talking of different things?
+If I added "noapic nolapic acpi=off" using the GRUB menu, the boots
+succeeds 1 out of may be 5 times with all cores active.
 
-I thought you were talking about the string presented to userland to
-request firmware to be loaded, but if you're talking about say
-pathnames within /sys, I can see how supporting directories et al
-could make things more complex and undesirable.
+Just using "acpi=off" or just "noapic nolapic" didn't help -- it could
+have been intermittent, but I didn't try these many times.
 
-AFAICT by perusing the code for a few seconds, the name within /sys
-that is created to receive the firmware code and the string that
-userland is requested to resolve to the firmware code are currently
-the same, but I don't quite see that there's a reason that requires it
-to be so.
+I'm mailing LKML because the "fix" given in other websites is
+intermittent and not always working.
 
->> Should '\\' be ruled out as well, because someone might want
->> /lib/firmware to be in a FAT filesystem?
+This is a new PC and I have my old one which is my primary PC till I
+get the new one working fine. So I'm willing to do any kind of tests
+on my new PC. This might be a good test oppurtunity for kernel
+programmers.
 
-> Actually the request_firmware() is Linux specific :)
+Please let me know if there is a known fix that work all the time or
+if you are interested having your fix/patch tested on my PC.
 
-Last I looked Linux supported FAT filesystems.  If someone wanted
-/lib/firmware to be FAT, why should this not be permitted?  What's
-your point?
+Thanks,
+SK
+P.S: Relevant output of dmesg follows.
 
-> And again the grouping into subdirectories should have been fixed in
-> userspace by reading the driver name.
+I see this in dmesg:
+CPU 1 irqstacks, hard=c07ba000 soft=c079a000
+Not responding.
+Inquiring remote APIC #1...
+... APIC #1 ID: failed
+... APIC #1 VERSION: failed
+... APIC #1 SPIV: failed
+CPU #1 not responding - cannot use it.
+Booting processor 1/2 ip 4000
+Not responding.
+Inquiring remote APIC #2...
+... APIC #2 ID: failed
+... APIC #2 VERSION: failed
+... APIC #2 SPIV: failed
+CPU #2 not responding - cannot use it.
+Booting processor 1/3 ip 4000
+Not responding.
+Inquiring remote APIC #3...
+... APIC #3 ID: failed
+... APIC #3 VERSION: failed
+... APIC #3 SPIV: failed
+CPU #3 not responding - cannot use it.
+Total of 1 processors activated (5015.39 BogoMIPS).
+ENABLING IO-APIC IRQs
+..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+Brought up 1 CPUs
 
-You appear to be assuming that driver name is the only reason and
-criterium for grouping firmware files.  Any particular reason to force
-this one-level grouping model, rather than permitting hierarchical
-grouping, that might make more sense?
-
-> The kernel should not do this at all.
-
-And AFAICT ATM it doesn't, and that's how it should be.  Let's not
-conflate userland implementation with in-kernel naming of firmwares.
-These are orthogonal issues.
-
--- 
-Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
-Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
-FSFLA Board Member       ¡Sé Libre! => http://www.fsfla.org/
-Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
+Thanks,
+SK
