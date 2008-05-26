@@ -1,87 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208AbYEZJMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbYEZJOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208AbYEZJMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 05:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYEZJMJ
+	id S1754723AbYEZJOI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 05:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYEZJN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 05:12:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40698 "EHLO mx3.mail.elte.hu"
+	Mon, 26 May 2008 05:13:58 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:47137 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751298AbYEZJMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 05:12:08 -0400
-Date: Mon, 26 May 2008 11:11:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Pekka Paalanen <pq@iki.fi>
-Subject: Re: [PATCH] kmemcheck: SMP support
-Message-ID: <20080526091155.GE13529@elte.hu>
-References: <20080523141759.GA1833@damson.getinternet.no> <20080523150622.GA9782@elte.hu> <19f34abd0805230830o3af93956h8152de3f6e350a09@mail.gmail.com>
-MIME-Version: 1.0
+	id S1752460AbYEZJN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 05:13:57 -0400
+Date: Mon, 26 May 2008 13:13:50 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Cache coherency, transactions, parallels.
+Message-ID: <20080526091350.GA22703@2ka.mipt.ru>
+References: <20080525134055.GA30630@2ka.mipt.ru> <483A0F3B.9060709@garzik.org> <20080526062204.GA16366@2ka.mipt.ru> <483A59D7.7020306@garzik.org> <20080526070708.GB16366@2ka.mipt.ru> <483A667F.7070707@garzik.org> <20080526074424.GA555@2ka.mipt.ru> <483A6BFB.1080209@garzik.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19f34abd0805230830o3af93956h8152de3f6e350a09@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <483A6BFB.1080209@garzik.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> On Fri, May 23, 2008 at 5:06 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > Vegard, wanna have a look at introducing per CPU kernel pagetables? I
-> > tried that once in the past and it wasnt too horrible. (the patches are
-> > gone though) We could do it before bringing other CPUs online, i.e. much
-> > of the really yucky boot time pagetable juggling phase would be over
-> > already. Hm?
+On Mon, May 26, 2008 at 03:51:23AM -0400, Jeff Garzik (jeff@garzik.org) wrote:
+> 	cd /home/s0mbre/archive/pohmelfs
+> 	GIT_DIR=pohmelfs.git git-update-server-info
 > 
-> Ingo.
+> or
 > 
-> It really doesn't matter how easy it was for you.
-> 
-> You're one of the x86 maintainers.
-> 
-> And I think you're forgetting how hard these things are for a newbie. 
-> I don't even know which one comes first of pmds and puds.
+> 	cd /home/s0mbre/archive/pohmelfs/pohmelfs.git
+> 	GIT_DIR=. git-update-server-info
 
-hey i kept mixing that up myself, until i had to fix a bug in it once.
+Excellent, I've updated server info.
+Thanks!
 
-> Per-cpu page tables sounds about on the same scale of as, say, 
-> rewriting the VM or some other major subsystem. Epic!
-
-just to make sure: this is an optional "would be really cool" thing. It 
-does not impact the mergability of kmemcheck in any way. [ It impacts 
-the _usability_ of it :-) ]
-
-> I'm glad to hear from you, though.
-> 
-> Pekka suggested that per-cpu page tables might help NUMA systems too. 
-> Does that sound right to you? Would anybody else benefit from having 
-> per-CPU page tables? If not, I have a hard time believing it will ever 
-> get merged.
-
-i tried to implement it once for 4G:4G split kernel. My early results 
-indicated that especially on PAE there was a significant SMP speedup 
-from it. I have not gone down that path so i dont know it for sure, but 
-perhaps it was because the CPU sets the accessed bit in kernel PTEs and 
-dirties those cachelines which creates overhead on SMP. That happened 
-even if there was no kernel pagetable remapping activities. (That was 
-many years ago and newer CPUs might be better at it though.)
-
-> (Oh. mmio-trace might. But that's also a hacking tool and doesn't 
-> really count.)
-
-even if mmiotrace were just a hacking too (but mmiotrace is a system 
-diagnostics tool as well), that could still be a strong reason to do it.
-
-	Ingo
+-- 
+	Evgeniy Polyakov
