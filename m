@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYEZMcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757740AbYEZMc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbYEZMcJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbYEZMYj
+	id S1757740AbYEZMc2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbYEZMYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:24:39 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:49666 "EHLO
+	Mon, 26 May 2008 08:24:41 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49678 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755236AbYEZMYR (ORCPT
+	with ESMTP id S1755328AbYEZMYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 08:24:17 -0400
+	Mon, 26 May 2008 08:24:22 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 3 26/29] UBIFS: add orphans handling sub-system
-Date: Mon, 26 May 2008 17:05:40 +0300
-Message-Id: <1211810743-18936-27-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 3 24/29] UBIFS: add budgeting
+Date: Mon, 26 May 2008 17:05:38 +0300
+Message-Id: <1211810743-18936-25-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
-X-OriginalArrivalTime: 26 May 2008 12:23:58.0197 (UTC) FILETIME=[5F369250:01C8BF2B]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=unknown-8bit
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 26 May 2008 12:23:59.0260 (UTC) FILETIME=[5FD8C5C0:01C8BF2B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This sub-system keeps track of orphans - the files which were deleted
-but are still kept open. These files should be deleted only when the
-last reference goes. But if an unclean reboot happens, UBIFS has to
-also delete the orphans. This is why the orphans sub-system exists -
-it records information about all orphans to the on-flash orphan area.
+Because of compression and space wastage (due to paddings) it is not
+always possible to know whether the cached data fits the flash space
+or not. Sometimes this problem is called "ENOSPC" problem. UBIFS
+implements the budgeting sub-system to solve the issue. All the FS
+operations have to acquire the budget. The budgeting subsystem does
+pessimistic space calculations (e.g., assumes the data is not
+compressible) and forces write-back or garbage-collection if needed.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/orphan.c |  955 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 955 insertions(+), 0 deletions(-)
+ fs/ubifs/budget.c |  859 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 859 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/orphan.c b/fs/ubifs/orphan.c
+diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
 new file mode 100644
-index 0000000..7fd43a4
+index 0000000..e340af8
 --- /dev/null
-+++ b/fs/ubifs/orphan.c
-@@ -0,0 +1,955 @@
++++ b/fs/ubifs/budget.c
+@@ -0,0 +1,859 @@
 +/*
 + * This file is part of UBIFS.
 + *
@@ -62,943 +67,847 @@ index 0000000..7fd43a4
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Author: Adrian Hunter
++ * Authors: Adrian Hunter
++ *          Artem Bityutskiy (Битюцкий Артём)
++ */
++
++/*
++ * This file implements the budgeting unit which is responsible for UBIFS space
++ * management.
++ *
++ * Factors such as compression, wasted space at the ends of LEBs, space in other
++ * journal heads, the effect of updates on the index, and so on, make it
++ * impossible to accurately predict the amount of space needed. Consequently
++ * approximations are used.
 + */
 +
 +#include "ubifs.h"
++#include <linux/writeback.h>
++#include <asm/div64.h>
 +
 +/*
-+ * An orphan is an inode number whose inode node has been committed to the index
-+ * with a link count of zero. That happens when an open file is deleted
-+ * (unlinked) and then a commit is run. In the normal course of events the inode
-+ * would be deleted when the file is closed. However in the case of an unclean
-+ * unmount, orphans need to be accounted for. After an unclean unmount, the
-+ * orphans' inodes must be deleted which means either scanning the entire index
-+ * looking for them, or keeping a list on flash somewhere. This unit implements
-+ * the latter approach.
-+ *
-+ * The orphan area is a fixed number of LEBs situated between the LPT area and
-+ * the main area. The number of orphan area LEBs is specified when the file
-+ * system is created. The minimum number is 1. The size of the orphan area
-+ * should be so that it can hold the maximum number of orphans that are expected
-+ * to ever exist at one time.
-+ *
-+ * The number of orphans that can fit in a LEB is:
-+ *
-+ *         (c->leb_size - UBIFS_ORPH_NODE_SZ) / sizeof(__le64)
-+ *
-+ * For example: a 15872 byte LEB can fit 1980 orphans so 1 LEB may be enough.
-+ *
-+ * Orphans are accumulated in a rb-tree. When an inode's link count drops to
-+ * zero, the inode number is added to the rb-tree. It is removed from the tree
-+ * when the inode is deleted.  Any new orphans that are in the orphan tree when
-+ * the commit is run, are written to the orphan area in 1 or more orph nodes.
-+ * If the orphan area is full, it is consolidated to make space.  There is
-+ * always enough space because validation prevents the user from creating more
-+ * than the maximum number of orphans allowed.
++ * When pessimistic budget calculations say that there is no enough space,
++ * UBIFS starts writing back dirty inodes and pages, doing garbage collection,
++ * or committing. The below constants define maximum number of times UBIFS
++ * repeats the operations.
 + */
++#define MAX_SHRINK_RETRIES 8
++#define MAX_GC_RETRIES     4
++#define MAX_CMT_RETRIES    2
++#define MAX_NOSPC_RETRIES  1
 +
-+#ifdef CONFIG_UBIFS_FS_DEBUG
-+static int dbg_check_orphans(struct ubifs_info *c);
-+#else
-+#define dbg_check_orphans(c) 0
-+#endif
++/*
++ * The below constant defines amount of dirty pages which should be written
++ * back at when trying to shrink the liability.
++ */
++#define NR_TO_WRITE 16
 +
 +/**
-+ * ubifs_add_orphan - add an orphan.
-+ * @c: UBIFS file-system description object
-+ * @inum: orphan inode number
++ * struct retries_info - information about re-tries while making free space.
++ * @prev_liability: previous liability
++ * @shrink_cnt: how many times the liability was shrinked
++ * @shrink_retries: count of liability shrink re-tries (increased when
++ *                  liability does not shrink)
++ * @try_gc: GC should be tried first
++ * @gc_retries: how many times GC was run
++ * @cmt_retries: how many times commit has been done
++ * @nospc_retries: how many times GC returned %-ENOSPC
 + *
-+ * Add an orphan. This function is called when an inodes link count drops to
-+ * zero.
++ * Since we consider budgeting to be the fast-path, and this structure has to
++ * be allocated on stack and zeroed out, we make it smaller using bit-fields.
 + */
-+int ubifs_add_orphan(struct ubifs_info *c, ino_t inum)
-+{
-+	struct ubifs_orphan *orphan, *o;
-+	struct rb_node **p, *parent = NULL;
-+
-+	orphan = kzalloc(sizeof(struct ubifs_orphan), GFP_NOFS);
-+	if (!orphan)
-+		return -ENOMEM;
-+	orphan->inum = inum;
-+	orphan->new = 1;
-+
-+	spin_lock(&c->orphan_lock);
-+	if (c->tot_orphans >= c->max_orphans) {
-+		spin_unlock(&c->orphan_lock);
-+		kfree(orphan);
-+		return -ENFILE;
-+	}
-+	p = &c->orph_tree.rb_node;
-+	while (*p) {
-+		parent = *p;
-+		o = rb_entry(parent, struct ubifs_orphan, rb);
-+		if (inum < o->inum)
-+			p = &(*p)->rb_left;
-+		else if (inum > o->inum)
-+			p = &(*p)->rb_right;
-+		else {
-+			dbg_err("orphaned twice");
-+			spin_unlock(&c->orphan_lock);
-+			kfree(orphan);
-+			return 0;
-+		}
-+	}
-+	c->tot_orphans += 1;
-+	c->new_orphans += 1;
-+	rb_link_node(&orphan->rb, parent, p);
-+	rb_insert_color(&orphan->rb, &c->orph_tree);
-+	list_add_tail(&orphan->list, &c->orph_list);
-+	list_add_tail(&orphan->new_list, &c->orph_new);
-+	spin_unlock(&c->orphan_lock);
-+	dbg_gen("ino %lu", inum);
-+	return 0;
-+}
-+
-+/**
-+ * ubifs_delete_orphan - delete an orphan.
-+ * @c: UBIFS file-system description object
-+ * @inum: orphan inode number
-+ *
-+ * Delete an orphan. This function is called when an inode is deleted.
-+ */
-+void ubifs_delete_orphan(struct ubifs_info *c, ino_t inum)
-+{
-+	struct ubifs_orphan *o;
-+	struct rb_node *p;
-+
-+	spin_lock(&c->orphan_lock);
-+	p = c->orph_tree.rb_node;
-+	while (p) {
-+		o = rb_entry(p, struct ubifs_orphan, rb);
-+		if (inum < o->inum)
-+			p = p->rb_left;
-+		else if (inum > o->inum)
-+			p = p->rb_right;
-+		else {
-+			if (o->dnext) {
-+				spin_unlock(&c->orphan_lock);
-+				dbg_gen("deleted twice ino %lu", inum);
-+				return;
-+			}
-+			if (o->cnext) {
-+				o->dnext = c->orph_dnext;
-+				c->orph_dnext = o;
-+				spin_unlock(&c->orphan_lock);
-+				dbg_gen("delete later ino %lu", inum);
-+				return;
-+			}
-+			rb_erase(p, &c->orph_tree);
-+			list_del(&o->list);
-+			c->tot_orphans -= 1;
-+			if (o->new) {
-+				list_del(&o->new_list);
-+				c->new_orphans -= 1;
-+			}
-+			spin_unlock(&c->orphan_lock);
-+			kfree(o);
-+			dbg_gen("inum %lu", inum);
-+			return;
-+		}
-+	}
-+	spin_unlock(&c->orphan_lock);
-+	dbg_err("missing orphan ino %lu", inum);
-+	dbg_dump_stack();
-+}
-+
-+/**
-+ * ubifs_orphan_start_commit - start commit of orphans.
-+ * @c: UBIFS file-system description object
-+ *
-+ * Start commit of orphans.
-+ */
-+int ubifs_orphan_start_commit(struct ubifs_info *c)
-+{
-+	struct ubifs_orphan *orphan, **last;
-+
-+	spin_lock(&c->orphan_lock);
-+	last = &c->orph_cnext;
-+	list_for_each_entry(orphan, &c->orph_new, new_list) {
-+		ubifs_assert(orphan->new);
-+		orphan->new = 0;
-+		*last = orphan;
-+		last = &orphan->cnext;
-+	}
-+	*last = orphan->cnext;
-+	c->cmt_orphans = c->new_orphans;
-+	c->new_orphans = 0;
-+	dbg_cmt("%d orphans to commit", c->cmt_orphans);
-+	INIT_LIST_HEAD(&c->orph_new);
-+	if (c->tot_orphans == 0)
-+		c->no_orphs = 1;
-+	else
-+		c->no_orphs = 0;
-+	spin_unlock(&c->orphan_lock);
-+	return 0;
-+}
-+
-+/**
-+ * avail_orphs - calculate available space.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function returns the number of orphans that can be written in the
-+ * available space.
-+ */
-+static int avail_orphs(struct ubifs_info *c)
-+{
-+	int avail_lebs, avail, gap;
-+
-+	avail_lebs = c->orph_lebs - (c->ohead_lnum - c->orph_first) - 1;
-+	avail = avail_lebs *
-+	       ((c->leb_size - UBIFS_ORPH_NODE_SZ) / sizeof(__le64));
-+	gap = c->leb_size - c->ohead_offs;
-+	if (gap >= UBIFS_ORPH_NODE_SZ + sizeof(__le64))
-+		avail += (gap - UBIFS_ORPH_NODE_SZ) / sizeof(__le64);
-+	return avail;
-+}
-+
-+/**
-+ * tot_avail_orphs - calculate total space.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function returns the number of orphans that can be written in half
-+ * the total space. That leaves half the space for adding new orphans.
-+ */
-+static int tot_avail_orphs(struct ubifs_info *c)
-+{
-+	int avail_lebs, avail;
-+
-+	avail_lebs = c->orph_lebs;
-+	avail = avail_lebs *
-+	       ((c->leb_size - UBIFS_ORPH_NODE_SZ) / sizeof(__le64));
-+	return avail / 2;
-+}
-+
-+/**
-+ * do_write_orph_node - write a node
-+ * @c: UBIFS file-system description object
-+ * @len: length of node
-+ * @atomic: write atomically
-+ *
-+ * This function writes a node to the orphan head from the orphan buffer. If
-+ * %atomic is not zero, then the write is done atomically. On success, %0 is
-+ * returned, otherwise a negative error code is returned.
-+ */
-+static int do_write_orph_node(struct ubifs_info *c, int len, int atomic)
-+{
-+	int err = 0;
-+
-+	if (atomic) {
-+		ubifs_assert(c->ohead_offs == 0);
-+		ubifs_prepare_node(c, c->orph_buf, len, 1);
-+		len = ALIGN(len, c->min_io_size);
-+		err = ubi_leb_change(c->ubi, c->ohead_lnum, c->orph_buf, len,
-+				     UBI_SHORTTERM);
-+	} else {
-+		if (c->ohead_offs == 0) {
-+			/* Ensure LEB has been unmapped */
-+			err = ubifs_leb_unmap(c, c->ohead_lnum);
-+			if (err)
-+				return err;
-+		}
-+		err = ubifs_write_node(c, c->orph_buf, len, c->ohead_lnum,
-+				       c->ohead_offs, UBI_SHORTTERM);
-+	}
-+	return err;
-+}
-+
-+/**
-+ * write_orph_node - write an orph node
-+ * @c: UBIFS file-system description object
-+ * @atomic: write atomically
-+ *
-+ * This function builds an orph node from the cnext list and writes it to the
-+ * orphan head. On success, %0 is returned, otherwise a negative error code
-+ * is returned.
-+ */
-+static int write_orph_node(struct ubifs_info *c, int atomic)
-+{
-+	struct ubifs_orphan *orphan, *cnext;
-+	struct ubifs_orph_node *orph;
-+	int gap, err, len, cnt, i;
-+
-+	ubifs_assert(c->cmt_orphans > 0);
-+	gap = c->leb_size - c->ohead_offs;
-+	if (gap < UBIFS_ORPH_NODE_SZ + sizeof(__le64)) {
-+		c->ohead_lnum += 1;
-+		c->ohead_offs = 0;
-+		gap = c->leb_size;
-+		if (c->ohead_lnum > c->orph_last) {
-+			/*
-+			 * We limit the number of orphans so that this should
-+			 * never happen.
-+			 */
-+			ubifs_err("out of space in orphan area");
-+			return -EINVAL;
-+		}
-+	}
-+	cnt = (gap - UBIFS_ORPH_NODE_SZ) / sizeof(__le64);
-+	if (cnt > c->cmt_orphans)
-+		cnt = c->cmt_orphans;
-+	len = UBIFS_ORPH_NODE_SZ + cnt * sizeof(__le64);
-+	ubifs_assert(c->orph_buf);
-+	orph = c->orph_buf;
-+	orph->ch.node_type = UBIFS_ORPH_NODE;
-+	spin_lock(&c->orphan_lock);
-+	cnext = c->orph_cnext;
-+	for (i = 0; i < cnt; i++) {
-+		orphan = cnext;
-+		orph->inos[i] = cpu_to_le64(orphan->inum);
-+		cnext = orphan->cnext;
-+		orphan->cnext = NULL;
-+	}
-+	c->orph_cnext = cnext;
-+	c->cmt_orphans -= cnt;
-+	spin_unlock(&c->orphan_lock);
-+	if (c->cmt_orphans)
-+		orph->cmt_no = cpu_to_le64(c->cmt_no + 1);
-+	else
-+		/* Mark the last node of the commit */
-+		orph->cmt_no = cpu_to_le64((c->cmt_no + 1) | (1ULL << 63));
-+	ubifs_assert(c->ohead_offs + len <= c->leb_size);
-+	ubifs_assert(c->ohead_lnum >= c->orph_first);
-+	ubifs_assert(c->ohead_lnum <= c->orph_last);
-+	err = do_write_orph_node(c, len, atomic);
-+	c->ohead_offs += ALIGN(len, c->min_io_size);
-+	c->ohead_offs = ALIGN(c->ohead_offs, 8);
-+	return err;
-+}
-+
-+/**
-+ * write_orph_nodes - write orph nodes until there are no more to commit
-+ * @c: UBIFS file-system description object
-+ * @atomic: write atomically
-+ *
-+ * This function writes orph nodes for all the orphans to commit. On success,
-+ * %0 is returned, otherwise a negative error code is returned.
-+ */
-+static int write_orph_nodes(struct ubifs_info *c, int atomic)
-+{
-+	int err;
-+
-+	while (c->cmt_orphans > 0) {
-+		err = write_orph_node(c, atomic);
-+		if (err)
-+			return err;
-+	}
-+	if (atomic) {
-+		int lnum;
-+
-+		/* Unmap any unused LEBs after consolidation */
-+		lnum = c->ohead_lnum + 1;
-+		for (lnum = c->ohead_lnum + 1; lnum <= c->orph_last; lnum++) {
-+			err = ubifs_leb_unmap(c, lnum);
-+			if (err)
-+				return err;
-+		}
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * consolidate - consolidate the orphan area.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function enables consolidation by putting all the orphans into the list
-+ * to commit. The list is in the order that the orphans were added, and the
-+ * LEBs are written atomically in order, so at no time can orphans be lost by
-+ * an unclean unmount.
-+ *
-+ * This function returns %0 on success and a negative error code on failure.
-+ */
-+static int consolidate(struct ubifs_info *c)
-+{
-+	int tot_avail = tot_avail_orphs(c), err = 0;
-+
-+	spin_lock(&c->orphan_lock);
-+	dbg_cmt("there is space for %d orphans and there are %d",
-+		tot_avail, c->tot_orphans);
-+	if (c->tot_orphans - c->new_orphans <= tot_avail) {
-+		struct ubifs_orphan *orphan, **last;
-+		int cnt = 0;
-+
-+		/* Change the cnext list to include all non-new orphans */
-+		last = &c->orph_cnext;
-+		list_for_each_entry(orphan, &c->orph_list, list) {
-+			if (orphan->new)
-+				continue;
-+			*last = orphan;
-+			last = &orphan->cnext;
-+			cnt += 1;
-+		}
-+		*last = orphan->cnext;
-+		ubifs_assert(cnt == c->tot_orphans - c->new_orphans);
-+		c->cmt_orphans = cnt;
-+		c->ohead_lnum = c->orph_first;
-+		c->ohead_offs = 0;
-+	} else {
-+		/*
-+		 * We limit the number of orphans so that this should
-+		 * never happen.
-+		 */
-+		ubifs_err("out of space in orphan area");
-+		err = -EINVAL;
-+	}
-+	spin_unlock(&c->orphan_lock);
-+	return err;
-+}
-+
-+/**
-+ * commit_orphans - commit orphans.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function commits orphans to flash. On success, %0 is returned,
-+ * otherwise a negative error code is returned.
-+ */
-+static int commit_orphans(struct ubifs_info *c)
-+{
-+	int avail, atomic = 0, err;
-+
-+	ubifs_assert(c->cmt_orphans > 0);
-+	avail = avail_orphs(c);
-+	if (avail < c->cmt_orphans) {
-+		/* Not enough space to write new orphans, so consolidate */
-+		err = consolidate(c);
-+		if (err)
-+			return err;
-+		atomic = 1;
-+	}
-+	err = write_orph_nodes(c, atomic);
-+	return err;
-+}
-+
-+/**
-+ * erase_deleted - erase the orphans marked for deletion.
-+ * @c: UBIFS file-system description object
-+ *
-+ * During commit, the orphans being committed cannot be deleted, so they are
-+ * marked for deletion and deleted by this function. Also, the recovery
-+ * adds killed orphans to the deletion list, and therefore they are deleted
-+ * here too.
-+ */
-+static void erase_deleted(struct ubifs_info *c)
-+{
-+	struct ubifs_orphan *orphan, *dnext;
-+
-+	spin_lock(&c->orphan_lock);
-+	dnext = c->orph_dnext;
-+	while (dnext) {
-+		orphan = dnext;
-+		dnext = orphan->dnext;
-+		ubifs_assert(!orphan->new);
-+		rb_erase(&orphan->rb, &c->orph_tree);
-+		list_del(&orphan->list);
-+		c->tot_orphans -= 1;
-+		dbg_gen("deleting orphan ino %lu", orphan->inum);
-+		kfree(orphan);
-+	}
-+	c->orph_dnext = NULL;
-+	spin_unlock(&c->orphan_lock);
-+}
-+
-+/**
-+ * ubifs_orphan_end_commit - end commit of orphans.
-+ * @c: UBIFS file-system description object
-+ *
-+ * End commit of orphans.
-+ */
-+int ubifs_orphan_end_commit(struct ubifs_info *c)
-+{
-+	int err;
-+
-+	if (c->cmt_orphans != 0) {
-+		err = commit_orphans(c);
-+		if (err)
-+			return err;
-+	}
-+	erase_deleted(c);
-+	err = dbg_check_orphans(c);
-+	return err;
-+}
-+
-+/**
-+ * clear_orphans - erase all LEBs used for orphans.
-+ * @c: UBIFS file-system description object
-+ *
-+ * If recovery is not required, then the orphans from the previous session
-+ * are not needed. This function locates the LEBs used to record
-+ * orphans, and un-maps them.
-+ */
-+static int clear_orphans(struct ubifs_info *c)
-+{
-+	int lnum, err;
-+
-+	for (lnum = c->orph_first; lnum <= c->orph_last; lnum++) {
-+		err = ubifs_leb_unmap(c, lnum);
-+		if (err)
-+			return err;
-+	}
-+	c->ohead_lnum = c->orph_first;
-+	c->ohead_offs = 0;
-+	return 0;
-+}
-+
-+/**
-+ * insert_dead_orphan - insert an orphan.
-+ * @c: UBIFS file-system description object
-+ * @inum: orphan inode number
-+ *
-+ * This function is a helper to the 'do_kill_orphans()' function. The orphan
-+ * must be kept until the next commit, so it is added to the rb-tree and the
-+ * deletion list.
-+ */
-+static int insert_dead_orphan(struct ubifs_info *c, ino_t inum)
-+{
-+	struct ubifs_orphan *orphan, *o;
-+	struct rb_node **p, *parent = NULL;
-+
-+	orphan = kzalloc(sizeof(struct ubifs_orphan), GFP_KERNEL);
-+	if (!orphan)
-+		return -ENOMEM;
-+	orphan->inum = inum;
-+
-+	p = &c->orph_tree.rb_node;
-+	while (*p) {
-+		parent = *p;
-+		o = rb_entry(parent, struct ubifs_orphan, rb);
-+		if (inum < o->inum)
-+			p = &(*p)->rb_left;
-+		else if (inum > o->inum)
-+			p = &(*p)->rb_right;
-+		else {
-+			/* Already added - no problem */
-+			kfree(orphan);
-+			return 0;
-+		}
-+	}
-+	c->tot_orphans += 1;
-+	rb_link_node(&orphan->rb, parent, p);
-+	rb_insert_color(&orphan->rb, &c->orph_tree);
-+	list_add_tail(&orphan->list, &c->orph_list);
-+	orphan->dnext = c->orph_dnext;
-+	c->orph_dnext = orphan;
-+	dbg_mnt("ino %lu, new %d, tot %d",
-+		inum, c->new_orphans, c->tot_orphans);
-+	return 0;
-+}
-+
-+/**
-+ * do_kill_orphans - remove orphan inodes from the index.
-+ * @c: UBIFS file-system description object
-+ * @sleb: scanned LEB
-+ * @last_cmt_no: cmt_no of last orph node read is passed and returned here
-+ * @outofdate: whether the LEB is out of date is returned here
-+ * @last_flagged: whether the end orph node is encountered
-+ *
-+ * This function is a helper to the 'kill_orphans()' function. It goes through
-+ * every orphan node in a LEB and for every inode number recorded, removes
-+ * all keys for that inode from the TNC.
-+ */
-+static int do_kill_orphans(struct ubifs_info *c, struct ubifs_scan_leb *sleb,
-+			   unsigned long long *last_cmt_no, int *outofdate,
-+			   int *last_flagged)
-+{
-+	struct ubifs_scan_node *snod;
-+	struct ubifs_orph_node *orph;
-+	unsigned long long cmt_no;
-+	ino_t inum;
-+	int i, n, err, first = 1;
-+
-+	list_for_each_entry(snod, &sleb->nodes, list) {
-+		if (snod->type != UBIFS_ORPH_NODE) {
-+			ubifs_err("invalid node type %d in orphan area at "
-+				  "%d:%d", snod->type, sleb->lnum, snod->offs);
-+			dbg_dump_node(c, snod->node);
-+			return -EINVAL;
-+		}
-+
-+		orph = snod->node;
-+
-+		/* Check commit number */
-+		cmt_no = le64_to_cpu(orph->cmt_no) & LLONG_MAX;
-+		/*
-+		 * The commit number on the master node may be less, because
-+		 * of a failed commit. If there are several failed commits in a
-+		 * row, the commit number written on orph nodes will continue to
-+		 * increase (because the commit number is adjusted here) even
-+		 * though the commit number on the master node stays the same
-+		 * because the master node has not been re-written.
-+		 */
-+		if (cmt_no > c->cmt_no)
-+			c->cmt_no = cmt_no;
-+		if (cmt_no < *last_cmt_no && *last_flagged) {
-+			/*
-+			 * The last orph node had a higher commit number and was
-+			 * flagged as the last written for that commit number.
-+			 * That makes this orph node, out of date.
-+			 */
-+			if (!first) {
-+				ubifs_err("out of order commit number %llu in "
-+					  "orphan node at %d:%d",
-+					  cmt_no, sleb->lnum, snod->offs);
-+				dbg_dump_node(c, snod->node);
-+				return -EINVAL;
-+			}
-+			dbg_rcvry("out of date LEB %d", sleb->lnum);
-+			*outofdate = 1;
-+			return 0;
-+		}
-+
-+		if (first)
-+			first = 0;
-+
-+		n = (le32_to_cpu(orph->ch.len) - UBIFS_ORPH_NODE_SZ) >> 3;
-+		for (i = 0; i < n; i++) {
-+			inum = le64_to_cpu(orph->inos[i]);
-+			dbg_rcvry("deleting orphaned inode %lu", inum);
-+			err = ubifs_tnc_remove_ino(c, inum);
-+			if (err)
-+				return err;
-+			err = insert_dead_orphan(c, inum);
-+			if (err)
-+				return err;
-+		}
-+
-+		*last_cmt_no = cmt_no;
-+		if (le64_to_cpu(orph->cmt_no) & (1ULL << 63)) {
-+			dbg_rcvry("last orph node for commit %llu at %d:%d",
-+				  cmt_no, sleb->lnum, snod->offs);
-+			*last_flagged = 1;
-+		} else
-+			*last_flagged = 0;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * kill_orphans - remove all orphan inodes from the index.
-+ * @c: UBIFS file-system description object
-+ *
-+ * If recovery is required, then orphan inodes recorded during the previous
-+ * session (which ended with an unclean unmount) must be deleted from the index.
-+ * This is done by updating the TNC, but since the index is not updated until
-+ * the next commit, the LEBs where the orphan information is recorded are not
-+ * erased until the next commit.
-+ */
-+static int kill_orphans(struct ubifs_info *c)
-+{
-+	unsigned long long last_cmt_no = 0;
-+	int lnum, err = 0, outofdate = 0, last_flagged = 0;
-+
-+	c->ohead_lnum = c->orph_first;
-+	c->ohead_offs = 0;
-+	/* Check no-orphans flag and skip this if no orphans */
-+	if (c->no_orphs) {
-+		dbg_rcvry("no orphans");
-+		return 0;
-+	}
-+	/*
-+	 * Orph nodes always start at c->orph_first and are written to each
-+	 * successive LEB in turn. Generally unused LEBs will have been unmapped
-+	 * but may contain out of date orph nodes if the unmap didn't go
-+	 * through. In addition, the last orph node written for each commit is
-+	 * marked (top bit of orph->cmt_no is set to 1). It is possible that
-+	 * there are orph nodes from the next commit (i.e. the commit did not
-+	 * complete successfully). In that case, no orphans will have been lost
-+	 * due to the way that orphans are written, and any orphans added will
-+	 * be valid orphans anyway and so can be deleted.
-+	 */
-+	for (lnum = c->orph_first; lnum <= c->orph_last; lnum++) {
-+		struct ubifs_scan_leb *sleb;
-+
-+		dbg_rcvry("LEB %d", lnum);
-+		sleb = ubifs_scan(c, lnum, 0, c->sbuf);
-+		if (IS_ERR(sleb)) {
-+			sleb = ubifs_recover_leb(c, lnum, 0, c->sbuf, 0);
-+			if (IS_ERR(sleb)) {
-+				err = PTR_ERR(sleb);
-+				break;
-+			}
-+		}
-+		err = do_kill_orphans(c, sleb, &last_cmt_no, &outofdate,
-+				      &last_flagged);
-+		if (err || outofdate) {
-+			ubifs_scan_destroy(sleb);
-+			break;
-+		}
-+		if (sleb->endpt) {
-+			c->ohead_lnum = lnum;
-+			c->ohead_offs = sleb->endpt;
-+		}
-+		ubifs_scan_destroy(sleb);
-+	}
-+	return err;
-+}
-+
-+/**
-+ * ubifs_mount_orphans - delete orphan inodes and erase LEBs that recorded them.
-+ * @c: UBIFS file-system description object
-+ * @unclean: %1 => recover from unclean unmount
-+ *
-+ * This function is called when mounting to erase orphans from the previous
-+ * session. If UBIFS was not unmounted cleanly, then the inodes recorded as
-+ * orphans are deleted.
-+ */
-+int ubifs_mount_orphans(struct ubifs_info *c, int unclean)
-+{
-+	int err = 0;
-+
-+	c->max_orphans = tot_avail_orphs(c);
-+
-+	c->orph_buf = vmalloc(c->leb_size);
-+	if (!c->orph_buf)
-+		return -ENOMEM;
-+
-+	if (unclean)
-+		err = kill_orphans(c);
-+	else
-+		err = clear_orphans(c);
-+
-+	return err;
-+}
-+
-+#ifdef CONFIG_UBIFS_FS_DEBUG
-+
-+struct check_orphan {
-+	struct rb_node rb;
-+	ino_t inum;
++struct retries_info {
++	long long prev_liability;
++	unsigned int shrink_cnt;
++	unsigned int shrink_retries:5;
++	unsigned int try_gc:1;
++	unsigned int gc_retries:4;
++	unsigned int cmt_retries:3;
++	unsigned int nospc_retries:1;
 +};
 +
-+struct check_info {
-+	unsigned long last_ino;
-+	unsigned long tot_inos;
-+	unsigned long missing;
-+	unsigned long long leaf_cnt;
-+	struct ubifs_ino_node *node;
-+	struct rb_root root;
-+};
-+
-+static int dbg_find_orphan(struct ubifs_info *c, ino_t inum)
++/**
++ * shrink_liability - write-back some dirty pages/inodes.
++ * @c: UBIFS file-system description object
++ * @nr_to_write: how many dirty pages to write-back
++ *
++ * This function shrinks UBIFS liability by means of writing back some amount
++ * of dirty inodes and their pages. Returns the amount of pages which were
++ * written back. The returned value does not include dirty inodes which were
++ * synchronized.
++ *
++ * Note, this function synchronizes even VFS inodes which are locked
++ * (@i_mutex) by the caller of the budgeting function, because write-back does
++ * not touch @i_mutex.
++ */
++static int shrink_liability(struct ubifs_info *c, int nr_to_write)
 +{
-+	struct ubifs_orphan *o;
-+	struct rb_node *p;
++	struct writeback_control wbc = {
++		.sync_mode   = WB_SYNC_NONE,
++		.range_end   = LLONG_MAX,
++		.nr_to_write = nr_to_write,
++	};
 +
-+	spin_lock(&c->orphan_lock);
-+	p = c->orph_tree.rb_node;
-+	while (p) {
-+		o = rb_entry(p, struct ubifs_orphan, rb);
-+		if (inum < o->inum)
-+			p = p->rb_left;
-+		else if (inum > o->inum)
-+			p = p->rb_right;
-+		else {
-+			spin_unlock(&c->orphan_lock);
-+			return 1;
-+		}
-+	}
-+	spin_unlock(&c->orphan_lock);
-+	return 0;
++	generic_sync_sb_inodes(c->vfs_sb, &wbc);
++	dbg_budg("%ld pages were written back", nr_to_write - wbc.nr_to_write);
++	return nr_to_write - wbc.nr_to_write;
 +}
 +
-+static int dbg_ins_check_orphan(struct rb_root *root, ino_t inum)
++
++/**
++ * run_gc - run garbage collector.
++ * @c: UBIFS file-system description object
++ *
++ * This function runs garbage collector to make some more free space. Returns
++ * zero if a free LEB has been produced, %-EAGAIN if commit is required, and a
++ * negative error code in case of failure.
++ */
++static int run_gc(struct ubifs_info *c)
 +{
-+	struct check_orphan *orphan, *o;
-+	struct rb_node **p, *parent = NULL;
++	int err, lnum;
 +
-+	orphan = kzalloc(sizeof(struct check_orphan), GFP_NOFS);
-+	if (!orphan)
-+		return -ENOMEM;
-+	orphan->inum = inum;
++	/* Make some free space by garbage-collecting dirty space */
++	down_read(&c->commit_sem);
++	lnum = ubifs_garbage_collect(c, 1);
++	up_read(&c->commit_sem);
++	if (lnum < 0)
++		return lnum;
 +
-+	p = &root->rb_node;
-+	while (*p) {
-+		parent = *p;
-+		o = rb_entry(parent, struct check_orphan, rb);
-+		if (inum < o->inum)
-+			p = &(*p)->rb_left;
-+		else if (inum > o->inum)
-+			p = &(*p)->rb_right;
-+		else {
-+			kfree(orphan);
-+			return 0;
-+		}
-+	}
-+	rb_link_node(&orphan->rb, parent, p);
-+	rb_insert_color(&orphan->rb, root);
-+	return 0;
-+}
-+
-+static int dbg_find_check_orphan(struct rb_root *root, ino_t inum)
-+{
-+	struct check_orphan *o;
-+	struct rb_node *p;
-+
-+	p = root->rb_node;
-+	while (p) {
-+		o = rb_entry(p, struct check_orphan, rb);
-+		if (inum < o->inum)
-+			p = p->rb_left;
-+		else if (inum > o->inum)
-+			p = p->rb_right;
-+		else
-+			return 1;
-+	}
-+	return 0;
-+}
-+
-+static void dbg_free_check_tree(struct rb_root *root)
-+{
-+	struct rb_node *this = root->rb_node;
-+	struct check_orphan *o;
-+
-+	while (this) {
-+		if (this->rb_left) {
-+			this = this->rb_left;
-+			continue;
-+		} else if (this->rb_right) {
-+			this = this->rb_right;
-+			continue;
-+		}
-+		o = rb_entry(this, struct check_orphan, rb);
-+		this = rb_parent(this);
-+		if (this) {
-+			if (this->rb_left == &o->rb)
-+				this->rb_left = NULL;
-+			else
-+				this->rb_right = NULL;
-+		}
-+		kfree(o);
-+	}
-+}
-+
-+static int dbg_orphan_check(struct ubifs_info *c, struct ubifs_zbranch *zbr,
-+			    void *priv)
-+{
-+	struct check_info *ci = priv;
-+	ino_t inum;
-+	int err;
-+
-+	inum = key_ino(c, &zbr->key);
-+	if (inum != ci->last_ino) {
-+		/* Lowest node type is the inode node, so it comes first */
-+		if (key_type(c, &zbr->key) != UBIFS_INO_KEY)
-+			ubifs_err("found orphan node ino %lu, type %d", inum,
-+				  key_type(c, &zbr->key));
-+		ci->last_ino = inum;
-+		ci->tot_inos += 1;
-+		err = dbg_read_leaf_nolock(c, zbr, ci->node);
-+		if (err) {
-+			ubifs_err("node read failed, error %d", err);
-+			return err;
-+		}
-+		if (ci->node->nlink == 0)
-+			/* Must be recorded as an orphan */
-+			if (!dbg_find_check_orphan(&ci->root, inum) &&
-+			    !dbg_find_orphan(c, inum)) {
-+				ubifs_err("missing orphan, ino %lu", inum);
-+				ci->missing += 1;
-+			}
-+	}
-+	ci->leaf_cnt += 1;
-+	return 0;
-+}
-+
-+static int dbg_read_orphans(struct check_info *ci, struct ubifs_scan_leb *sleb)
-+{
-+	struct ubifs_scan_node *snod;
-+	struct ubifs_orph_node *orph;
-+	ino_t inum;
-+	int i, n, err;
-+
-+	list_for_each_entry(snod, &sleb->nodes, list) {
-+		cond_resched();
-+		if (snod->type != UBIFS_ORPH_NODE)
-+			continue;
-+		orph = snod->node;
-+		n = (le32_to_cpu(orph->ch.len) - UBIFS_ORPH_NODE_SZ) >> 3;
-+		for (i = 0; i < n; i++) {
-+			inum = le64_to_cpu(orph->inos[i]);
-+			err = dbg_ins_check_orphan(&ci->root, inum);
-+			if (err)
-+				return err;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int dbg_scan_orphans(struct ubifs_info *c, struct check_info *ci)
-+{
-+	int lnum, err = 0;
-+
-+	/* Check no-orphans flag and skip this if no orphans */
-+	if (c->no_orphs)
-+		return 0;
-+
-+	for (lnum = c->orph_first; lnum <= c->orph_last; lnum++) {
-+		struct ubifs_scan_leb *sleb;
-+
-+		sleb = ubifs_scan(c, lnum, 0, c->dbg_buf);
-+		if (IS_ERR(sleb)) {
-+			err = PTR_ERR(sleb);
-+			break;
-+		}
-+
-+		err = dbg_read_orphans(ci, sleb);
-+		ubifs_scan_destroy(sleb);
-+		if (err)
-+			break;
-+	}
-+
-+	return err;
-+}
-+
-+static int dbg_check_orphans(struct ubifs_info *c)
-+{
-+	struct check_info ci;
-+	int err;
-+
-+	if (!(ubifs_chk_flags & UBIFS_CHK_ORPH))
-+		return 0;
-+
-+	ci.last_ino = 0;
-+	ci.tot_inos = 0;
-+	ci.missing  = 0;
-+	ci.leaf_cnt = 0;
-+	ci.root = RB_ROOT;
-+	ci.node = kmalloc(UBIFS_MAX_INO_NODE_SZ, GFP_NOFS);
-+	if (!ci.node) {
-+		ubifs_err("out of memory");
-+		return -ENOMEM;
-+	}
-+
-+	err = dbg_scan_orphans(c, &ci);
++	/* GC freed one LEB, return it to lprops */
++	dbg_budg("GC freed LEB %d", lnum);
++	err = ubifs_return_leb(c, lnum);
 +	if (err)
-+		goto out;
++		return err;
 +
-+	err = dbg_walk_index(c, &dbg_orphan_check, NULL, &ci);
-+	if (err) {
-+		ubifs_err("cannot scan TNC, error %d", err);
-+		goto out;
++	return 0;
++}
++
++/**
++ * make_free_space - make more free space on the file-system.
++ * @c: UBIFS file-system description object
++ * @ri: information about previous invocations of this function
++ *
++ * This function is called when an operation cannot be budgeted because there
++ * is supposedly no free space. But in most cases there is some free space:
++ *   o budgeting is pessimistic, so it always budgets more then it is actually
++ *     needed, so shrinking the liability is one way to make free space - the
++ *     cached data will take less space then it was budgeted for;
++ *   o GC may turn some dark space into free space (budgeting treats dark space
++ *     as not available);
++ *   o commit may free some LEB, i.e., turn freeable LEBs into free LEBs.
++ *
++ * So this function tries to do the above. Returns %-EAGAIN if some free space
++ * was presumably made and the caller has to re-try budgeting the operation.
++ * Returns %-ENOSPC if it couldn't do more free space, and other negative error
++ * codes on failures.
++ */
++static int make_free_space(struct ubifs_info *c, struct retries_info *ri)
++{
++	int err;
++
++	/*
++	 * If we have some dirty pages and inodes (liability), try to write
++	 * them back unless this was tried too many times without effect
++	 * already.
++	 */
++	if (ri->shrink_retries < MAX_SHRINK_RETRIES && !ri->try_gc) {
++		long long liability;
++
++		spin_lock(&c->space_lock);
++		liability = c->budg_idx_growth + c->budg_data_growth +
++			    c->budg_dd_growth;
++		spin_unlock(&c->space_lock);
++
++		if (ri->prev_liability >= liability) {
++			/* Liability does not shrink, next time try GC then */
++			ri->shrink_retries += 1;
++			if (ri->gc_retries < MAX_GC_RETRIES)
++				ri->try_gc = 1;
++			dbg_budg("liability did not shrink: retries %d of %d",
++				 ri->shrink_retries, MAX_SHRINK_RETRIES);
++		}
++
++		dbg_budg("force write-back (count %d)", ri->shrink_cnt);
++		shrink_liability(c, NR_TO_WRITE + ri->shrink_cnt);
++
++		ri->prev_liability = liability;
++		ri->shrink_cnt += 1;
++		return -EAGAIN;
 +	}
 +
-+	if (ci.missing) {
-+		ubifs_err("%lu missing orphan(s)", ci.missing);
-+		err = -EINVAL;
-+		goto out;
++	/*
++	 * Try to run garbage collector unless it was already tried too many
++	 * times.
++	 */
++	if (ri->gc_retries < MAX_GC_RETRIES) {
++		ri->gc_retries += 1;
++		dbg_budg("run GC, retries %d of %d",
++			 ri->gc_retries, MAX_GC_RETRIES);
++
++		ri->try_gc = 0;
++		err = run_gc(c);
++		if (!err)
++			return -EAGAIN;
++
++		if (err == -EAGAIN) {
++			dbg_budg("GC asked to commit");
++			err = ubifs_run_commit(c);
++			if (err)
++				return err;
++			return -EAGAIN;
++		}
++
++		if (err != -ENOSPC)
++			return err;
++
++		/*
++		 * GC could not make any progress. If this is the first time,
++		 * then it makes sense to try to commit, because it might make
++		 * some dirty space.
++		 */
++		dbg_budg("GC returned -ENOSPC, retries %d",
++			 ri->nospc_retries);
++		if (ri->nospc_retries >= MAX_NOSPC_RETRIES)
++			return err;
++		ri->nospc_retries += 1;
 +	}
 +
-+	dbg_cmt("last inode number is %lu", ci.last_ino);
-+	dbg_cmt("total number of inodes is %lu", ci.tot_inos);
-+	dbg_cmt("total number of leaf nodes is %llu", ci.leaf_cnt);
++	/* Neither GC nor write-back helped, try to commit */
++	if (ri->cmt_retries < MAX_CMT_RETRIES) {
++		ri->cmt_retries += 1;
++		dbg_budg("run commit, retries %d of %d",
++			 ri->cmt_retries, MAX_CMT_RETRIES);
++		err = ubifs_run_commit(c);
++		if (err)
++			return err;
++		return -EAGAIN;
++	}
 +
-+out:
-+	dbg_free_check_tree(&ci.root);
-+	kfree(ci.node);
++	return -ENOSPC;
++}
++
++/**
++ * ubifs_calc_min_idx_lebs - calculate amount of eraseblocks for the index.
++ * @c: UBIFS file-system description object
++ *
++ * This function calculates and returns the number of eraseblocks which should
++ * be kept for index usage.
++ */
++int ubifs_calc_min_idx_lebs(struct ubifs_info *c)
++{
++	int ret;
++	uint64_t idx_size;
++
++	idx_size = c->old_idx_sz + c->budg_idx_growth + c->budg_uncommitted_idx;
++
++	/* And make sure we have twice the index size of space reserved */
++	idx_size <<= 1;
++
++	/*
++	 * We do not maintain 'old_idx_size' as 'old_idx_lebs'/'old_idx_bytes'
++	 * pair, nor similarly the two variables for the new index size, so we
++	 * have to do this costly 64-bit division on fast-path.
++	 */
++	if (do_div(idx_size, c->leb_size - c->max_idx_node_sz))
++		ret = idx_size + 1;
++	else
++		ret = idx_size;
++	/*
++	 * The index head is not available for the in-the-gaps method, so add an
++	 * extra LEB to compensate.
++	 */
++	ret += 1;
++	/*
++	 * At present the index needs at least 2 LEBs: one for the index head
++	 * and one for in-the-gaps method (which currently does not cater for
++	 * the index head and so excludes it from consideration).
++	 */
++	if (ret < 2)
++		ret = 2;
++	return ret;
++}
++
++/**
++ * ubifs_calc_available - calculate available FS space.
++ * @c: UBIFS file-system description object
++ *
++ * This function calculates and returns amount of FS space available for use.
++ */
++long long ubifs_calc_available(const struct ubifs_info *c)
++{
++	long long available, subtract_lebs;
++
++	/*
++	 * Force the amount available to the total size reported if the used
++	 * space is zero.
++	 */
++	if (c->lst.total_used <= UBIFS_INO_NODE_SZ &&
++	    c->budg_data_growth + c->budg_dd_growth == 0) {
++		/* Do the same calculation as for c->block_cnt */
++		available = c->main_lebs - 2;
++		available *= c->leb_size - c->dark_wm;
++		return available;
++	}
++
++	available = c->main_bytes - c->lst.total_used;
++
++	/*
++	 * Now 'available' contains theoretically available flash space
++	 * assuming there is no index, so we have to subtract the space which
++	 * is reserved for the index.
++	 */
++	subtract_lebs = c->min_idx_lebs;
++
++	/* Take into account that GC reserves one LEB for its own needs */
++	subtract_lebs += 1;
++
++	/*
++	 * The GC journal head LEB is not really accessible. And since
++	 * different write types go to different heads, we may count only on
++	 * one head's space.
++	 */
++	subtract_lebs += c->jhead_cnt - 1;
++
++	/* We also reserve one LEB for deletions, which bypass budgeting */
++	subtract_lebs += 1;
++
++	available -= subtract_lebs * c->leb_size;
++
++	/* Subtract the dead space which is not available for use */
++	available -= c->lst.total_dead;
++
++	/*
++	 * Subtract dark space, which might or might not be usable - it depends
++	 * on the data which we have on the media and which will be written. If
++	 * this is a lot of uncompressed or not-compressible data, the dark
++	 * space cannot be used.
++	 */
++	available -= c->lst.total_dark;
++
++	/*
++	 * However, there is more dark space. The index may be bigger than
++	 * min_idx_lebs. Those extra LEBs are assumed to be available, but
++	 * their dark space is not included in total_dark, so it is subtracted
++	 * here.
++	 */
++	if (c->lst.idx_lebs > c->min_idx_lebs) {
++		subtract_lebs = c->lst.idx_lebs - c->min_idx_lebs;
++		available -= subtract_lebs * c->dark_wm;
++	}
++
++	return available;
++}
++
++/**
++ * rp_can_write - check whether the user is allowed to write.
++ * @c: UBIFS file-system description object
++ * @avail: available space on FS
++ *
++ * UBIFS has so-called "reserved pool" which is flash space reserved
++ * for the superuser and for uses whose UID/GID is recorded in UBIFS superblock.
++ * This function checks whether current user is allowed to write
++ * to the file-system - it returns %1 if there is plenty of space or the user
++ * is eligible to use the reserved pool and %0 otherwise.
++ */
++static int rp_can_write(struct ubifs_info *c, long long avail)
++{
++	if (avail > c->rp_size || current->fsuid == c->rp_uid ||
++	    capable(CAP_SYS_RESOURCE) ||
++	    (c->rp_gid != 0 && in_group_p(c->rp_gid)))
++		return 1;
++
++	return 0;
++}
++
++/**
++ * do_budget_space - reserve flash space for index and data growth.
++ * @c: UBIFS file-system description object
++ *
++ * This function makes sure UBIFS has enough free eraseblocks for index growth
++ * and data.
++ *
++ * When budgeting index space, UBIFS reserves twice as more LEBs as the index
++ * would take if it was consolidated and written to the flash. This guarantees
++ * that the "in-the-gaps" commit method always succeeds and UBIFS will always
++ * be able to commit dirty index. So this function basically adds amount of
++ * budgeted index space to the size of the current index, multiplies this by 2,
++ * and makes sure this does not exceed the amount of free eraseblocks.
++ *
++ * Notes about @c->min_idx_lebs and @c->lst.idx_lebs variables:
++ * o @c->lst.idx_lebs is the number of LEBs the index currently uses. It might
++ *    be large, because UBIFS does not do any index consolidation as long as
++ *    there is free space. IOW, the index may take a lot of LEBs, but the LEBs
++ *    will contain a lot of dirt.
++ * o @c->min_idx_lebs is the the index presumably takes. IOW, the index may be
++ *   consolidated to take up to @c->min_idx_lebs LEBs.
++ *
++ * This function returns zero in case of success, and %-ENOSPC in case of
++ * failure.
++ */
++static int do_budget_space(struct ubifs_info *c)
++{
++	long long outstanding, available;
++	int lebs, rsvd_idx_lebs, min_idx_lebs;
++
++	/* First budget index space */
++	min_idx_lebs = ubifs_calc_min_idx_lebs(c);
++
++	/* Now 'min_idx_lebs' contains number of LEBs to reserve */
++	if (min_idx_lebs > c->lst.idx_lebs)
++		rsvd_idx_lebs = min_idx_lebs - c->lst.idx_lebs;
++	else
++		rsvd_idx_lebs = 0;
++
++	/*
++	 * The number of LEBs that are available to be used by the index is:
++	 *
++	 *     c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
++	 *     c->lst.taken_empty_lebs
++	 *
++	 * empty_lebs are available because they are empty. freeable_cnt are
++	 * available because they contain only free and dirty space and the
++	 * index allocation always occurs after wbufs are synch'ed.
++	 * idx_gc_cnt are available because they are index LEBs that have been
++	 * garbage collected (including trivial GC) and are awaiting the commit
++	 * before they can be unmapped - note that the in-the-gaps method will
++	 * grab these if it needs them. taken_empty_lebs are empty_lebs that
++	 * have already been allocated for some purpose (also includes those
++	 * LEBs on the idx_gc list).
++	 */
++	lebs = c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
++	       c->lst.taken_empty_lebs;
++	ubifs_assert(lebs + c->lst.idx_lebs >= c->min_idx_lebs);
++	if (unlikely(rsvd_idx_lebs > lebs)) {
++		dbg_budg("out of indexing space: min_idx_lebs %d (old %d), "
++			 "rsvd_idx_lebs %d", min_idx_lebs, c->min_idx_lebs,
++			 rsvd_idx_lebs);
++		return -ENOSPC;
++	}
++
++	available = ubifs_calc_available(c);
++	outstanding = c->budg_data_growth + c->budg_dd_growth;
++
++	if (unlikely(available < outstanding)) {
++		dbg_budg("out of data space: available %lld, outstanding %lld",
++			 available, outstanding);
++		return -ENOSPC;
++	}
++
++	if (!rp_can_write(c, available - outstanding))
++		return -ENOSPC;
++
++	c->min_idx_lebs = min_idx_lebs;
++	return 0;
++}
++
++/**
++ * calc_idx_growth - calculate approximate index growth from budgeting request.
++ * @c: UBIFS file-system description object
++ * @req: budgeting request
++ *
++ * For now we assume each new node adds one znode. But this is rather poor
++ * approximation, though.
++ */
++static int calc_idx_growth(const struct ubifs_info *c,
++			   const struct ubifs_budget_req *req)
++{
++	int znodes;
++
++	znodes = req->new_ino + (req->new_page << UBIFS_BLOCKS_PER_PAGE_SHIFT) +
++		 req->new_dent;
++	return znodes * c->max_idx_node_sz;
++}
++
++/**
++ * calc_data_growth - calculate approximate amount of new data from budgeting
++ * request.
++ * @c: UBIFS file-system description object
++ * @req: budgeting request
++ */
++static int calc_data_growth(const struct ubifs_info *c,
++			    const struct ubifs_budget_req *req)
++{
++	int data_growth;
++
++	data_growth = req->new_ino  ? c->inode_budget : 0;
++	if (req->new_page)
++		data_growth += c->page_budget;
++	if (req->new_dent)
++		data_growth += c->dent_budget;
++	data_growth += req->new_ino_d;
++
++	return data_growth;
++}
++
++/**
++ * calc_dd_growth - calculate approximate amount of data which makes other data
++ * dirty from budgeting request.
++ * @c: UBIFS file-system description object
++ * @req: budgeting request
++ */
++static int calc_dd_growth(const struct ubifs_info *c,
++			  const struct ubifs_budget_req *req)
++{
++	int dd_growth;
++
++	dd_growth = req->dirtied_page ? c->page_budget : 0;
++
++	if (req->dirtied_ino)
++		dd_growth += c->inode_budget << (req->dirtied_ino - 1);
++	if (req->mod_dent)
++		dd_growth += c->dent_budget;
++	dd_growth += req->dirtied_ino_d;
++
++	return dd_growth;
++}
++
++/**
++ * ubifs_budget_space - ensure there is enough space to complete an operation.
++ * @c: UBIFS file-system description object
++ * @req: budget request
++ *
++ * This function allocates budget for an operation. It uses pessimistic
++ * approximation of how much flash space the operation needs. The goal of this
++ * function is to make sure UBIFS always has flash space to flush all dirty
++ * pages, dirty inodes, and dirty znodes (liability). This function may force
++ * commit, garbage-collection or write-back. Returns zero in case of success,
++ * %-ENOSPC if there is no free space and other negative error codes in case of
++ * failures.
++ */
++int ubifs_budget_space(struct ubifs_info *c, struct ubifs_budget_req *req)
++{
++	int uninitialized_var(cmt_retries), uninitialized_var(wb_retries);
++	int err, idx_growth, data_growth, dd_growth;
++	struct retries_info ri;
++
++	data_growth = calc_data_growth(c, req);
++	dd_growth = calc_dd_growth(c, req);
++	if (!data_growth && !dd_growth)
++		return 0;
++	idx_growth = calc_idx_growth(c, req);
++	memset(&ri, 0, sizeof(struct retries_info));
++
++again:
++	spin_lock(&c->space_lock);
++	ubifs_assert(c->budg_idx_growth >= 0);
++	ubifs_assert(c->budg_data_growth >= 0);
++	ubifs_assert(c->budg_dd_growth >= 0);
++
++	c->budg_idx_growth += idx_growth;
++	c->budg_data_growth += data_growth;
++	c->budg_dd_growth += dd_growth;
++
++	err = do_budget_space(c);
++	if (unlikely(err)) {
++		/* Restore the old values */
++		c->budg_idx_growth -= idx_growth;
++		c->budg_data_growth -= data_growth;
++		c->budg_dd_growth -= dd_growth;
++		spin_unlock(&c->space_lock);
++
++		goto make_space;
++	}
++
++	req->idx_growth = idx_growth;
++	req->data_growth = data_growth;
++	req->dd_growth = dd_growth;
++	spin_unlock(&c->space_lock);
++
++	return 0;
++
++make_space:
++	err = make_free_space(c, &ri);
++	if (err == -EAGAIN) {
++		dbg_budg("try again");
++		cond_resched();
++		goto again;
++	} else if (err == -ENOSPC)
++		dbg_budg("FS is full, -ENOSPC");
++	else
++		ubifs_err("cannot budget space, error %d", err);
++
 +	return err;
 +}
 +
-+#endif /* CONFIG_UBIFS_FS_DEBUG */
++/**
++ * ubifs_release_budget - release budgeted free space.
++ * @c: UBIFS file-system description object
++ * @req: budget request
++ *
++ * This function releases the space budgeted by 'ubifs_budget_space()'. Note,
++ * since the index changes (which were budgeted for in @req->idx_growth) will
++ * only be written to the media on commit, this function moves the index budget
++ * from @c->budg_idx_growth to @c->budg_uncommitted_idx. The latter will be
++ * zeroed by the commit operation.
++ */
++void ubifs_release_budget(struct ubifs_info *c, struct ubifs_budget_req *req)
++{
++	if (!req->data_growth && !req->dd_growth)
++		return;
++
++	if (req->idx_growth == -1)
++		req->idx_growth = calc_idx_growth(c, req);
++
++	spin_lock(&c->space_lock);
++	c->budg_idx_growth -= req->idx_growth;
++	c->budg_uncommitted_idx += req->idx_growth;
++	c->budg_data_growth -= req->data_growth;
++	c->budg_dd_growth -= req->dd_growth;
++	c->min_idx_lebs = ubifs_calc_min_idx_lebs(c);
++
++	ubifs_assert(c->budg_idx_growth >= 0);
++	ubifs_assert(c->budg_data_growth >= 0);
++	ubifs_assert(c->min_idx_lebs < c->main_lebs);
++	spin_unlock(&c->space_lock);
++}
++
++/**
++ * ubifs_convert_page_budget - convert budget of a new page.
++ * @c: UBIFS file-system description object
++ *
++ * This function converts budget which was allocated for a new page of data to
++ * the budget of changing an existing page of data. The latter is not larger
++ * then the former, so this function only does simple re-calculation and does
++ * not involve any write-back.
++ */
++void ubifs_convert_page_budget(struct ubifs_info *c)
++{
++	spin_lock(&c->space_lock);
++	/* Release the index growth reservation */
++	c->budg_idx_growth -= c->max_idx_node_sz << UBIFS_BLOCKS_PER_PAGE_SHIFT;
++	/* Release the data growth reservation */
++	c->budg_data_growth -= c->page_budget;
++	/* Increase the dirty data growth reservation instead */
++	c->budg_dd_growth += c->page_budget;
++	/* And re-calculate the indexing space reservation */
++	c->min_idx_lebs = ubifs_calc_min_idx_lebs(c);
++	spin_unlock(&c->space_lock);
++}
++
++/**
++ * ubifs_budget_inode_op - budget an operation on inode.
++ * @c: UBIFS file-system description object
++ * @inode: VFS inode which will be made dirty by the operation
++ * @req: budget request of the operation
++ *
++ * This function is called to get budget for an operation which changes an
++ * inode. The inode may be in dirty or clean state. The former means there is
++ * no need to allocate the budget as it has already been allocated before. The
++ * latter means that the inode change budget has to be allocated.
++ *
++ * The caller has to pass the inode which is going to be changed. This function
++ * acquires budget the for as described in @req plus the budget for changing
++ * the inode dirty, if needed. Returns zero in case of success, %-ENOSPC if
++ * there is no more flash space, and other negative error codes in case of
++ * failure.
++ *
++ * Note, upon exit, this function leaves the inode locked, and the
++ * 'ubifs_release_ino_dirty()' or 'ubifs_release_ino_clean()' function has to
++ * be called to unlock it.
++ */
++int ubifs_budget_inode_op(struct ubifs_info *c, struct inode *inode,
++			      struct ubifs_budget_req *req)
++{
++	struct ubifs_inode *ui = ubifs_inode(inode);
++	int err, old = req->dirtied_ino;
++
++	ubifs_assert(req->dirtied_ino <= 3);
++	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 3);
++
++again:
++	/*
++	 * If the inode is clean, it will be dirtied by this operation and we
++	 * have to budget for this.
++	 */
++	req->dirtied_ino += !ui->dirty;
++	if (req->dirtied_ino > old)
++		req->dirtied_ino_d += ui->data_len;
++
++	/*
++	 * Note, if the budget request does not actually request anything
++	 * (i.e., @req contains only zeroes), 'ubifs_budget_space()' will
++	 * return almost straight away.
++	 */
++	err = ubifs_budget_space(c, req);
++	if (unlikely(err))
++		return err;
++
++	mutex_lock(&ui->budg_mutex);
++
++	if (req->dirtied_ino != old + !ui->dirty) {
++		/* The inode has probably been written back meanwhile */
++		ubifs_release_budget(c, req);
++		mutex_unlock(&ui->budg_mutex);
++		req->dirtied_ino = old;
++		req->dirtied_ino_d -= ui->data_len;
++		goto again;
++	}
++
++	UBIFS_DBG(ui->budgeted = 1);
++	return 0;
++}
++
++/**
++ * ubifs_release_ino_dirty - release budget of a "dirtying" operation.
++ * @c: UBIFS file-system description object
++ * @inode: VFS inode the operation worked on
++ * @req: budget to release
++ *
++ * This function has to be called at the end of VFS operations which acquired
++ * budget via 'ubifs_budget_inode_op()'. It assumes that the inode has been
++ * marked as dirty and will be synchronized later by write-back, so it does not
++ * release the budget of the inode.
++ *
++ * Note, this function also avoids releasing page budgets which are released
++ * separately.
++ */
++void ubifs_release_ino_dirty(struct ubifs_info *c, struct inode *inode,
++				struct ubifs_budget_req *req)
++{
++	ubifs_assert(req->dirtied_ino <= 4);
++	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
++	ubifs_assert(req->idx_growth >= 0);
++	ubifs_assert(req->data_growth >= 0);
++	ubifs_assert(req->dd_growth >= 0);
++
++	if (req->dirtied_ino) {
++		req->dd_growth -= c->inode_budget;
++		req->dd_growth -= req->dirtied_ino_d;
++	}
++
++	if (req->dirtied_page) {
++		req->dd_growth -= c->page_budget;
++		ubifs_assert(req->new_page == 0);
++	} else if (req->new_page) {
++		req->idx_growth -=
++			c->max_idx_node_sz << UBIFS_BLOCKS_PER_PAGE_SHIFT;
++		req->data_growth -= c->page_budget;
++		ubifs_assert(req->dirtied_page == 0);
++	}
++
++	ubifs_assert(req->dd_growth >= 0);
++	ubifs_release_budget(c, req);
++	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
++}
++
++/**
++ * ubifs_cancel_ino_op - cancel budget of an operation on inode.
++ * @c: UBIFS file-system description object
++ * @inode: VFS inode the operation worked on
++ * @req: budget to release
++ *
++ * This function has to be called if the operation failed and whole budget has
++ * to be released, including the budget for inode which would had been
++ * dirtied. It is important not to mark the inode dirty before calling this
++ * function.
++ */
++void ubifs_cancel_ino_op(struct ubifs_info *c, struct inode *inode,
++			 struct ubifs_budget_req *req)
++{
++	ubifs_assert(req->dirtied_ino <= 4);
++	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
++	ubifs_assert(req->idx_growth >= 0);
++	ubifs_assert(req->data_growth >= 0);
++	ubifs_assert(req->dd_growth >= 0);
++
++	ubifs_release_budget(c, req);
++	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
++}
++
++/**
++ * ubifs_release_ino_clean - release budget of a "cleaning" operation.
++ * @c: UBIFS file-system description object
++ * @inode: VFS inode the operation worked on
++ * @req: budget to release
++ *
++ * This function has to be called at the end of VFS operations which acquired
++ * budget via 'ubifs_budget_inode_op()'. It assumed the operation synchronized
++ * the inode, so it marks the inode clean, unlocks it and releases whole budget.
++ *
++ * Note, this function also avoids releasing page budgets which are released
++ * separately.
++ */
++void ubifs_release_ino_clean(struct ubifs_info *c, struct inode *inode,
++			     struct ubifs_budget_req *req)
++{
++	struct ubifs_inode *ui = ubifs_inode(inode);
++
++	ubifs_assert(req->dirtied_ino <= 4);
++	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
++	ubifs_assert(req->idx_growth >= 0);
++	ubifs_assert(req->data_growth >= 0);
++	ubifs_assert(req->dd_growth >= 0);
++	ubifs_assert(!req->dirtied_page);
++	ubifs_assert(!req->new_page);
++	UBIFS_DBG(ui->budgeted = 0);
++
++	ubifs_release_budget(c, req);
++	if (ui->dirty) {
++		ui->dirty = 0;
++		/*
++		 * Note, VFS still treats the inode as dirty and
++		 * 'ubifs_write_inode()' will be called, but it'll do nothing
++		 * because @ui->dirty is %0.
++		 */
++		atomic_long_dec(&c->dirty_ino_cnt);
++	}
++	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
++}
++
++/**
++ * ubifs_release_new_page_budget - release budget of a new page.
++ * @c: UBIFS file-system description object
++ *
++ * This is a helper function which releases budget corresponding to the budget
++ * of one new page of data.
++ */
++void ubifs_release_new_page_budget(struct ubifs_info *c)
++{
++	struct ubifs_budget_req req = { .new_page = 1,
++					.idx_growth = -1,
++					.data_growth = c->page_budget };
++
++	ubifs_release_budget(c, &req);
++}
++
++/**
++ * ubifs_budg_get_free_space - return amount of free space.
++ * @c: UBIFS file-system description object
++ *
++ * This function returns amount of free space on the file-system.
++ */
++long long ubifs_budg_get_free_space(struct ubifs_info *c)
++{
++	int min_idx_lebs, rsvd_idx_lebs;
++	long long available, outstanding, free;
++
++	/* Do exactly the same calculations as in 'do_budget_space()' */
++	spin_lock(&c->space_lock);
++	min_idx_lebs = ubifs_calc_min_idx_lebs(c);
++
++	if (min_idx_lebs > c->lst.idx_lebs)
++		rsvd_idx_lebs = min_idx_lebs - c->lst.idx_lebs;
++	else
++		rsvd_idx_lebs = 0;
++
++	if (rsvd_idx_lebs > c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt
++				- c->lst.taken_empty_lebs) {
++		spin_unlock(&c->space_lock);
++		return 0;
++	}
++
++	c->min_idx_lebs = min_idx_lebs;
++	available = ubifs_calc_available(c);
++	outstanding = c->budg_data_growth + c->budg_dd_growth;
++	spin_unlock(&c->space_lock);
++
++	if (available > outstanding)
++		free = ubifs_reported_space(c, available - outstanding);
++	else
++		free = 0;
++
++	return free;
++}
 -- 
 1.5.4.1
 
