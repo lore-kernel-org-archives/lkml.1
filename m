@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYEZN2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYEZNmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbYEZN2g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 09:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYEZN2Z
+	id S1755507AbYEZNmU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 09:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYEZNmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 09:28:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45683 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbYEZN2Z (ORCPT
+	Mon, 26 May 2008 09:42:08 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:54452 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750984AbYEZNmH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 09:28:25 -0400
-Date: Mon, 26 May 2008 16:28:18 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <20080526115628.GA31316@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 26 May 2008 09:42:07 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Rodolfo Giometti <giometti@enneenne.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2/4] wm97xx-core: Fix driver name
+Date: Mon, 26 May 2008 14:42:01 +0100
+Message-Id: <1211809323-4742-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1211809323-4742-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1211809323-4742-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 May 2008, Ingo Molnar wrote:
+Fix driver name - thanks to Guennadi Liakhovetski <g.liakhovetski@gmx.de> for
+reporting this.
 
-> in an overnight -tip testruns that is based on recent -git i got two 
-> stuck TCP connections:
-> 
-> Active Internet connections (w/o servers)
-> Proto Recv-Q Send-Q Local Address               Foreign Address             State      
-> tcp        0 174592 10.0.1.14:58015             10.0.1.14:3632              ESTABLISHED 
-> tcp    72134      0 10.0.1.14:3632              10.0.1.14:58015             ESTABLISHED 
-> 
-> on a previously reliable machine. That connection has been stuck for 9 
-> hours so it does not time out, etc. - and the distcc run that goes over 
-> that connection is stuck as well.
-> 
-> kernel config is attached.
-> 
-> in terms of debugging there's not much i can do i'm afraid. It's not 
-> possible to get a tcpdump of this incident, given the extreme amount of 
-> load these testboxes handle.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/input/touchscreen/wm97xx-core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-...but you can still tcpdump that particular flow once the situation is 
-discovered to see if TCP still tries to do something, no? One needs to 
-tcpdump couple of minutes at minimum. Also please get /proc/net/tcp for 
-that flow around the same time.
-
-> This problem started sometime around rc3 
-> and it occured on two boxes (on a laptop and on a desktop), both are SMP 
-> Core2Duo based systems. I never saw this problem before on thousands of 
-> similar bootups, so i'm 99.9% sure the bug is either new or became 
-> easier to trigger.
->
-> It's not possible to bisect it as it needs up to 12 hours of heavy 
-> workload to trigger. The incident happened about 5 times since the first 
-> incident a couple of days ago - 4 times on one box and once on another 
-> box. The first failing head i became aware of was 78b58e549a3098. (-tip 
-> has other changes beyond -git but changes nothing in networking.)
-> 
-> One clue (which might or might not matter) is that distcc is one of the 
-> very few applications that makes use of sendfile().
-
-Can you please try with /proc/sys/net/ipv4/tcp_frto set to zero though 
-recv-q symptom seems weird would it be related to that (but there were 
-some recent fixes to FRTO and retrans_stamp change could have some 
-significance here)?
-
-Other than that, nothing since -rc1 seems suspicious to me (though
-I hardly understand every part of networking).
-
-
+diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
+index ba6fb28..8a00918 100644
+--- a/drivers/input/touchscreen/wm97xx-core.c
++++ b/drivers/input/touchscreen/wm97xx-core.c
+@@ -802,7 +802,7 @@ void wm97xx_unregister_mach_ops(struct wm97xx *wm)
+ EXPORT_SYMBOL_GPL(wm97xx_unregister_mach_ops);
+ 
+ static struct device_driver wm97xx_driver = {
+-	.name =		"ac97",
++	.name =		"wm97xx-ts",
+ 	.bus =		&ac97_bus_type,
+ 	.owner =	THIS_MODULE,
+ 	.probe =	wm97xx_probe,
 -- 
- i.
+1.5.5.1
+
