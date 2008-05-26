@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbYEZI6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbYEZI6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbYEZI6E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 04:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYEZI5z
+	id S1755190AbYEZI6d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 04:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYEZI60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 04:57:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:49853 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751759AbYEZI5z (ORCPT
+	Mon, 26 May 2008 04:58:26 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60220 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752135AbYEZI6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 04:57:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a9hToBjKc2Pkrn5djwL1DkHYJOj4/7W7agrwQZPkD85vGABTHVvz2HcU5cvS/BQ1CcQQKmtCyM9Asth83nSmw1zZA4MTRGQhJvfCmCCDwzGbZtiUHPU0lSbqIv6yCJXt36GKjqBhEUUPEoMHPiOuh8C1/fPL2eZHYQWCWB6ACGs=
-Message-ID: <38b2ab8a0805260157k14d9a64dkeef48d230b978cf4@mail.gmail.com>
-Date: Mon, 26 May 2008 10:57:54 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: question about splice performance
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
-In-Reply-To: <4839D05C.4040309@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 26 May 2008 04:58:25 -0400
+Subject: Re: [PATCHv3 27/28] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+From: David Woodhouse <dwmw2@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       johannes@sipsolutions.net
+In-Reply-To: <1211734802.31212.129.camel@shinybook.infradead.org>
+References: <1211708969@pmac.infradead.org>
+	 <E1K0DOP-0007EW-F0@shinybook.infradead.org>
+	 <1211734802.31212.129.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Mon, 26 May 2008 09:58:20 +0100
+Message-Id: <1211792300.23085.1.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0805250812l2ecd424bh74a1694ed56460de@mail.gmail.com>
-	 <4839D05C.4040309@garzik.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sun, 2008-05-25 at 18:00 +0100, David Woodhouse wrote:
+> Still don't have the behaviour we want from clean/mrproper, but I think
+> we need Sam's help with that.
 
-On Sun, May 25, 2008 at 10:47 PM, Jeff Garzik <jeff@garzik.org> wrote:
->
-> If you drop caches you are not measuring splice speed.
->
-> Use ramfs for your tests (guarantees data is in cache) instead.
->
+I worked it out -- we don't include .config when we make clean, although
+it was trying to remove the .S files corresponding to all the configured
+firmwares, there were effectively none of those. Fixed thus:
 
-So it seems that the gain when using splice to copy a file into another file
-is very limited. Maybe that's the reason why cp is still using read/write...
+-targets := $(firmware_objs) $(patsubst $(obj)/%,%, $(firmware_srcs))
++targets := $(patsubst $(obj)/%,%, $(wildcard $(shell find $(obj) -name \*.S)))
 
-Also splice-cp uses 2 calls to splice syscall in a loop. So it end up doing a
-lot of syscalls. Maybe using sendfile instead of is better.
-
-Also2, since splice is a generalized pipe, it might be better to create to
-processes, one writing to the pipe and the other one reading to have better
-workflow.
-
-That said I also see some use cases where splice could be more useful,
-specially when one of the file descriptor is actually a device: one the write
-side of the pipes a device could write some data while on the other side of
-the pipe a process can empty the pipe by writing the data to a file.
-
-Are there any plans to improve splice interface to be used by drivers ?
-
-Thanks.
 -- 
-Francis
+dwmw2
+
