@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYEZSgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbYEZShX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbYEZSgF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 14:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbYEZSfy
+	id S1755883AbYEZShX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 14:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbYEZShL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 14:35:54 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47719 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753807AbYEZSfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 14:35:53 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX19hQWEn0m9hCVwQ+lreZ9M7yy50um0pfI6kCqHpPY
-	lSNUvrfe/YmM0h
-From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: dwmw2@infradead.org
-Subject: [PATCH] MTD: fix 2 "unused variable" warnings in cafe_nand.c
-Date: Mon, 26 May 2008 20:35:46 +0200
-User-Agent: KMail/1.9.9
+	Mon, 26 May 2008 14:37:11 -0400
+Received: from mx.treblig.org ([80.68.94.177]:59209 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753852AbYEZShK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 14:37:10 -0400
+X-Greylist: delayed 2457 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 May 2008 14:37:09 EDT
+Date: Mon, 26 May 2008 18:56:10 +0100
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: "Renato S. Yamane" <yamane@diamondcut.com.br>
 Cc: linux-kernel@vger.kernel.org
+Subject: Re: [CRM114spam]: [Bug 10797] Something is consuming power after shutdown
+Message-ID: <20080526175610.GA28974@gallifrey>
+References: <483AB443.6020807@diamondcut.com.br>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2184249.aAV14RtehQ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805262035.49139.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483AB443.6020807@diamondcut.com.br>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.23.1-bytemark-uml (i686)
+X-Uptime: 18:51:26 up 10 days, 17:44,  1 user,  load average: 0.21, 0.07, 0.02
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2184249.aAV14RtehQ
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+* Renato S. Yamane (yamane@diamondcut.com.br) wrote:
+> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
+> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
 
-Hello,
+Also add a Ubuntu equivalent which is:
+https://bugs.launchpad.net/ubuntu/+bug/110784
 
-pointed out by Sebastian Siewior the original patch produces the compiler
-warning "ISO C90 forbids mixed declarations and code" therefore here the 2nd
-attempt to fix 2 compiler warnings about unused variables if
-CONFIG_MTD_PARTITIONS is undefined.
+(In my case a Tosh Equium A100-306 )
 
-BTW I'm wondering whether the devs prefer to live w/ the warning rather than
-having the 2 additional #ifdef pragmas or not.
+> After poweroff, something still working and consuming power. So I loss 
+> ~4% of my battery charge in each 12h.
+> 
+> If I shutdown my laptop using Kernel 2.6.24/25 when battery is 100%, 
+> after 12h my battery charge go to 96% (this information is checked with 
+> kpowersave and with LED available in my laptop that change color from 
+> blue to yellow when battery is not FULL).
 
+I haven't got the actual numbers, but I'd say mine is a little more -
+may be 10% from memory overnight.  Certainly between a Sunday evening
+and a Saturday afternoon there is nothing left for it to turn back on.
 
-Signed-off-by: Toralf F=F6rster <toralf.foerster@gmx.de>
-=2D--
- drivers/mtd/nand/cafe_nand.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+Following the thread I did notice I had w-o-l enabled; I've
+disabled it - see if it makes any difference tonight.
 
-diff --git a/drivers/mtd/nand/cafe_nand.c b/drivers/mtd/nand/cafe_nand.c
-index da6ceaa..5c29d36 100644
-=2D-- a/drivers/mtd/nand/cafe_nand.c
-+++ b/drivers/mtd/nand/cafe_nand.c
-@@ -626,10 +626,12 @@ static int __devinit cafe_nand_probe(struct pci_dev *=
-pdev,
- {
-        struct mtd_info *mtd;
-        struct cafe_priv *cafe;
-=2D       struct mtd_partition *parts;
-        uint32_t ctrl;
-=2D       int nr_parts;
-        int err =3D 0;
-+#ifdef CONFIG_MTD_PARTITIONS
-+       struct mtd_partition *parts;
-+       int nr_parts;
-+#endif
-
-        /* Very old versions shared the same PCI ident for all three
-           functions on the chip. Verify the class too... */
-=2D-=20
-MfG/Sincerely
-
-Toralf F=F6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-
---nextPart2184249.aAV14RtehQ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkg7AwUACgkQhyrlCH22naPG6ACeJ6VuHLnNx2TBdsBMFX1lrQjP
-7boAnjbTYHjX8j/txkqBXI9tXI/fUT0l
-=BKAO
------END PGP SIGNATURE-----
-
---nextPart2184249.aAV14RtehQ--
+Dave
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
