@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYEZGSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYEZGW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYEZGSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 02:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYEZGSc
+	id S1753972AbYEZGW2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 02:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYEZGWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 02:18:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59774
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751953AbYEZGSb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 02:18:31 -0400
-Date: Sun, 25 May 2008 23:18:27 -0700 (PDT)
-Message-Id: <20080525.231827.50332094.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 26 May 2008 02:22:17 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:36729 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750917AbYEZGWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 02:22:17 -0400
+Date: Mon, 26 May 2008 10:22:10 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Cache coherency, transactions, parallels.
+Message-ID: <20080526062204.GA16366@2ka.mipt.ru>
+References: <20080525134055.GA30630@2ka.mipt.ru> <483A0F3B.9060709@garzik.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483A0F3B.9060709@garzik.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, May 25, 2008 at 09:15:39PM -0400, Jeff Garzik (jeff@garzik.org) wrote:
+> Evgeniy Polyakov wrote:
+> >Git tree.
+> >http://tservice.net.ru/~s0mbre/archive/pohmelfs/pohmelfs.git/
+> 
+> Is this really the latest commit?
+> 
+> commit 21549d0a101c1c9dcdb1fe8d59685415cc0a5e9a
+> Author: Evgeniy Polyakov johnpol@2ka.mipt.ru <zbr@gavana.yandex.ru>
+> Date:   Tue May 13 20:54:49 2008 +0400
+> 
+> I would have guessed modifications occurred more recently than May 13.
 
-Please pull to get this fix from Adrian Bunk.
+No it should be cc4d281eb8d9a4d3a5610acf1558c327358f5725
+Author: Evgeniy Polyakov johnpol@2ka.mipt.ru <zbr@gavana.yandex.ru>
+Date:   Sun May 25 17:24:56 2008 +0400
 
-Thanks!
+    Kconfig entries for cc group and debugging.
+    
+I used 'git push remote_repo' to push data after repository was create, probably I
+should use 'git push --all remote_repo', please try again.
 
-The following changes since commit ada44a0430fdd00b3f38aad0aa518e97cb760bd0:
-  David S. Miller (1):
-        sparc64: Prevent stack backtrace false positives on trap frames.
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-Adrian Bunk (1):
-      sparc64: global_reg_snapshot is not for userspace
-
- include/asm-sparc64/ptrace.h |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+-- 
+	Evgeniy Polyakov
