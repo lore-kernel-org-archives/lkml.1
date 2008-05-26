@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbYEZWMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbYEZWP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbYEZWMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 18:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbYEZWMn
+	id S1756207AbYEZWP4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 18:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbYEZWPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 18:12:43 -0400
-Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:50990 "EHLO
-	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755159AbYEZWMm (ORCPT
+	Mon, 26 May 2008 18:15:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54841
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755413AbYEZWPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 18:12:42 -0400
-Date: Mon, 26 May 2008 23:11:21 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Bill Fink <billfink@mindspring.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       Theodore Tso <tytso@MIT.EDU>, Glen Turner <gdt@gdt.id.au>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080526221119.GF28241@solarflare.com>
-References: <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core> <a24804730805162155m72e6b40aweb8822515c880c50@mail.gmail.com> <1211728189.5913.71.camel@andromache> <20080525232712.GF5970@mit.edu> <20080526154326.1fe44214@Varda> <20080526111458.fff6c311.billfink@mindspring.com> <m38wxwepvt.fsf@maximus.localdomain> <20080526175227.4b7ae764.billfink@mindspring.com>
+	Mon, 26 May 2008 18:15:44 -0400
+Date: Mon, 26 May 2008 15:15:40 -0700 (PDT)
+Message-Id: <20080526.151540.191673092.davem@davemloft.net>
+To: jesper@krogh.cc
+Cc: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, matheos.worku@sun.com
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <483B239D.4090402@krogh.cc>
+References: <20080526.123338.161271834.davem@davemloft.net>
+	<20080526.123951.260448303.davem@davemloft.net>
+	<483B239D.4090402@krogh.cc>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080526175227.4b7ae764.billfink@mindspring.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Fink wrote:
-> On Mon, 26 May 2008, Krzysztof Halasa wrote:
+From: Jesper Krogh <jesper@krogh.cc>
+Date: Mon, 26 May 2008 22:54:53 +0200
+
+> Applied and running.. I've now pushed 400GB of data through it trying to
+> get it to hit the bug but it is still running.
 > 
-> > Bill Fink <billfink@mindspring.com> writes:
-> > 
-> > > Another idea that occured to me:  How about using the low order bits
-> > > of the instruction memory address being executed that was interrupted
-> > > by the HZ timer interrupt.
-> > 
-> > Think of constant-instructions-length processors :-)
-> 
-> I'm not sure what you're driving at, but if it's that you shouldn't
-> use the very last 2 or 3 bits, then sure those should be excluded.
-> But that still leaves 9 or 10 bits at least in the page offset, and
-> that's being conservative in the number of address bits to sample.
+> So without saying that it solved the problem, it definately seems so.
+> 2.6.26-rc4 + above patch.
 
-We would still need to exclude any tight loops which an attacker could
-predict or influence a process to enter - the idle loop obviously, plus
-udelay(), memcpy() and probably many other functions.  Some such loops may
-be in userland and therefore unknown to us.  So there might not be nearly
-as many bits of entropy in the program counter as could be naively
-expected.  What's more, once userland is blocked on /dev/random, there is
-no more entropy available from the program counter!
-
-Ben.
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+Thanks for testing.
