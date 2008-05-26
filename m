@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757107AbYEZOrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbYEZOyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757107AbYEZOrD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 10:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbYEZOqx
+	id S1756549AbYEZOyr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 10:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbYEZOyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 10:46:53 -0400
-Received: from edna.telenet-ops.be ([195.130.132.58]:46778 "EHLO
-	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755569AbYEZOqw (ORCPT
+	Mon, 26 May 2008 10:54:38 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49919 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753875AbYEZOyh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 10:46:52 -0400
-Date: Mon, 26 May 2008 16:46:45 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: drivers/char/dsp56k.c breakage [was: Re: linux-next: Tree for May
- 26]
-In-Reply-To: <20080526172222.b6979523.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0805261644230.4417@anakin>
-References: <20080526172222.b6979523.sfr@canb.auug.org.au>
+	Mon, 26 May 2008 10:54:37 -0400
+Message-ID: <483ACECA.8000905@s5r6.in-berlin.de>
+Date: Mon, 26 May 2008 16:52:58 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Theodore Tso <tytso@mit.edu>
+CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Jan Kara <jack@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
+References: <4836EE8C.1010200@linux.intel.com> <20080524222304.GD20563@atrey.karlin.mff.cuni.cz> <20080524153020.1df96cf2@linux.intel.com> <20080524224554.GA5970@mit.edu> <20080526093913.GG13529@elte.hu> <20080526101646.GD24507@mit.edu>
+In-Reply-To: <20080526101646.GD24507@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 May 2008, Stephen Rothwell wrote:
-> Status of my local build tests will be at
-> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-> advice about cross compilers/configs that work, we are always open to add
-> more builds.
+Theodore Tso wrote:
+> It is on my todo list, but I've been doing a lot of travelling, and
+> when you have only one laptop, and pulling USB sticks isn't the sort
+> of thing you can do using UML or KVM, it tends to fall to the bottom
+> of your list.
 
-commit	6fe28df6c14e7e02bfea6b2bebf42716176e6dff
-
-    dsp56k: BKL pushdown
-
-    Put explicit lock_kernel calls into dsp56k_open().
-
-Broke the build of drivers/char/dsp56k.c by introducing a jump to a
-non-existent label
-
-http://kisskb.ellerman.id.au/kisskb/buildresult/29211/
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Maybe add fault injection code which simply lets a SCSI LLD's
+queuecommand fail everything when a sysfs switch was flipped.  There may
+be more convenient points to fail IO higher up, I don't know.
+-- 
+Stefan Richter
+-=====-==--- -=-= ==-=-
+http://arcgraph.de/sr/
