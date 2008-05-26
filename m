@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYEZVOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYEZVQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbYEZVOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 17:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYEZVOh
+	id S1756297AbYEZVQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 17:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYEZVQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 17:14:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53884 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753922AbYEZVOg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 17:14:36 -0400
-Date: Mon, 26 May 2008 18:14:06 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: Andy Walls <awalls@radix.net>, Douglas Landgraf <dougsland@gmail.com>,
-       Alan Cox <alan@redhat.com>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] video4linux: Push down the BKL
-Message-ID: <20080526181406.40f9e082@gaivota>
-In-Reply-To: <200805261846.35758.hverkuil@xs4all.nl>
-References: <20080522223700.2f103a14@core>
-	<20080523090919.GA31575@devserv.devel.redhat.com>
-	<20080526133457.6f892af9@gaivota>
-	<200805261846.35758.hverkuil@xs4all.nl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Mon, 26 May 2008 17:16:50 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36571 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753867AbYEZVQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 17:16:49 -0400
+X-Authenticated: #44953887
+X-Provags-ID: V01U2FsdGVkX18HAEYl6joHkIq59jmEABk6FhLF69t/hWlCKSajn0
+	dGBcxXgFxK2HdY
+Subject: Re: [BUG: 2.6.26-rc3] ERROR: "____ilog2_NaN" undefined
+From: Mirco Tischler <mt-ml@gmx.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <1211752151.16921.25.camel@mtlp.tischlernetz>
+References: <1211735607.14556.14.camel@mtlp.tischlernetz>
+	 <20080525181118.GG1791@cs181133002.pp.htv.fi>
+	 <1211742202.14556.25.camel@mtlp.tischlernetz>
+	 <20080525201807.GK1791@cs181133002.pp.htv.fi>
+	 <1211749036.16921.16.camel@mtlp.tischlernetz>
+	 <20080525210329.GN1791@cs181133002.pp.htv.fi>
+	 <1211752151.16921.25.camel@mtlp.tischlernetz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-JrYWYyjHeVO6DF7H2V4E"
+Date: Mon, 26 May 2008 23:16:46 +0200
+Message-Id: <1211836606.10718.18.camel@mtlp.tischlernetz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.22.1.1 
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > Could you send this patch to the ML for people to review and for Andy
-> > to port it to cx18?
-> 
-> Unless there is an objection, I would prefer to take Douglas' patch and 
-> merge it into the v4l-dvb ivtv driver myself. There were several things 
-> in the patch I didn't like, but I need to 'work' with it a bit to see 
-> how/if it can be done better.
+--=-JrYWYyjHeVO6DF7H2V4E
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I didn't analyze his patch in detail. However, it is a starting point
-for you to work with. I'm sure you can improve it if needed.
+Ok. Situation has changed. I discovered I'm still more dumb than I
+thought I am;). There was that link /usr/local/bin/gcc to the gcc-4.4pre
+executable that I didn't thought of. the ver_linux script didn't check
+that too. So the error only occurs with gcc-4.4. But my version is some
+weeks old so I'm currently compiling a fresh svn version to check if the
+error still exists.
 
-> I can work on it tonight and tomorrow. Hopefully it is finished by then. 
-> I can move the BKL down at the same time for ivtv. It is unlikely that 
-> I will have time to do cx18 as well as I'm abroad from Wednesday until 
-> Monday, but I think Andy can do that easily based on the ivtv changes.
+I also found the config option that causes the error: enabling
+OPTIMIZE_FOR_SIZE and thus setting -Os instead of -O2 makes the error go
+away, so this is pretty much a compiler problem.
+I will check now if the error is still existent in the current developer
+version of gcc and then maybe contact the gcc team.
 
-This strategy seems OK to me.
+Meanwhile I'm really sorry for the noise and annoyance.
 
+Thanks
+Mirco
 
-Cheers,
-Mauro
+--=-JrYWYyjHeVO6DF7H2V4E
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIOyi+z+diZ7c2xfgRAlnWAJ40BDhmwQGQ3kaQ5VSgGdZ/mOup+wCeIwX2
+V8NjnKx2XKgqY3Am6CIVZr0=
+=hyNg
+-----END PGP SIGNATURE-----
+
+--=-JrYWYyjHeVO6DF7H2V4E--
+
