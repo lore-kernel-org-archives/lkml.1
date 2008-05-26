@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYEZHij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbYEZHok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYEZHij (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 03:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYEZHia
+	id S1754415AbYEZHok (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 03:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYEZHo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 03:38:30 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:55664 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbYEZHi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 03:38:29 -0400
-Date: Mon, 26 May 2008 03:38:21 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Joe Perches <joe@perches.com>
-cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] SERIAL:  Simplify code using ARRAY_SIZE() macro.
-In-Reply-To: <1211740916.8496.27.camel@localhost>
-Message-ID: <alpine.LFD.1.10.0805260337410.29823@localhost.localdomain>
-References: <alpine.LFD.1.10.0805250735560.23325@localhost.localdomain>  <483998EC.5080805@gmail.com>  <alpine.LFD.1.10.0805251308420.25842@localhost.localdomain> <1211740916.8496.27.camel@localhost>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 26 May 2008 03:44:28 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:39820 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751851AbYEZHo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 03:44:27 -0400
+Date: Mon, 26 May 2008 11:44:24 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Cache coherency, transactions, parallels.
+Message-ID: <20080526074424.GA555@2ka.mipt.ru>
+References: <20080525134055.GA30630@2ka.mipt.ru> <483A0F3B.9060709@garzik.org> <20080526062204.GA16366@2ka.mipt.ru> <483A59D7.7020306@garzik.org> <20080526070708.GB16366@2ka.mipt.ru> <483A667F.7070707@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483A667F.7070707@garzik.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 May 2008, Joe Perches wrote:
+On Mon, May 26, 2008 at 03:27:59AM -0400, Jeff Garzik (jeff@garzik.org) wrote:
+> git-update-server-info needs to be run on the server, not the client.
+> 
+> You can automate this by running this on the server:
+> 
+> 	chmod +x .git/hooks/post-update
+> 
+> so that git-update-server-info always runs on the server, after each push.
+> 
+> See git-update-server-info(1) for more info.
 
-> On Sun, 2008-05-25 at 13:09 -0400, Robert P. J. Day wrote:
-> > > > diff --git a/drivers/serial/68328serial.c b/drivers/serial/68328serial.c
-> > > > index bbf5bc5..71c56c1 100644
-> > > > --- a/drivers/serial/68328serial.c
-> > > > +++ b/drivers/serial/68328serial.c
-> > > > @@ -1413,10 +1413,10 @@ static void m68328_set_baud(void)
-> > > >  	USTCNT = ustcnt & ~USTCNT_TXEN;
-> > > >
-> > > >  again:
-> > > > -	for (i = 0; i < sizeof(baud_table) / sizeof(baud_table[0]); i++)
-> > > > +	for (i = 0; i < BAUD_TABLE_SIZE); i++)
-> > > typo? does this compile?
-> > will resubmit.
->
-> There are only two uses of BAUD_TABLE_SIZE
-> and MCFRS_BAUD_TABLE_SIZE.
->
-> I think it better to avoid
-> 	#define SOME_SIZE ARRAY_SIZE(some_array)
-> and use ARRAY_SIZE(some_array) where possible.
->
-> NR_PORTS seems to be an exception.
+Hmm... Nothing can be run on server, since git does not believe it is in
+git repo:
+$ strace git-update-server-info
+execve("/usr/bin/git-update-server-info", ["git-update-server-info"], [/* 20 vars */]) = 0
 
-yes, that cleanup could probably be simplified even further.
+... ommitting mapping and shared lib loading ...
 
-rday
---
+getcwd("/home/s0mbre/public_html/archive/pohmelfs/pohmelfs.git", 4097) = 55
+access(".git/refs/", X_OK)              = -1 ENOENT (No such file or directory)
+chdir("..")                             = 0
+access(".git/refs/", X_OK)              = -1 ENOENT (No such file or directory)
+chdir("..")                             = 0
+access(".git/refs/", X_OK)              = -1 ENOENT (No such file or directory)
+chdir("..")                             = 0
+access(".git/refs/", X_OK)              = -1 ENOENT (No such file or directory)
+chdir("..")                             = 0
+access(".git/refs/", X_OK)              = -1 ENOENT (No such file or directory)
+chdir("..")                             = 0
+access(".git/refs/", X_OK)              = -1 ENOENT (No such file or directory)
+chdir("..")                             = 0
+access(".git/refs/", X_OK)              = -1 ENOENT (No such file or directory)
+chdir("..")                             = 0
+write(2, "fatal: ", 7fatal: )                  = 7
+write(2, "Not a git repository", 20Not a git repository)    = 20
+write(2, "\n", 1
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
+Obviously there is no .git dir, since we are in it:
 
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+pohmelfs.git$ ls -l
+total 14
+-rw-r--r--  1 s0mbre s0mbre   23 May 13 21:33 HEAD
+drwxr-xr-x  2 s0mbre s0mbre   48 May 13 21:33 branches
+-rw-r--r--  1 s0mbre s0mbre   66 May 13 21:31 config
+-rw-r--r--  1 s0mbre s0mbre   58 May 13 21:33 description
+drwxr-xr-x  2 s0mbre s0mbre  328 May 13 21:33 hooks
+drwxr-xr-x  2 s0mbre s0mbre   96 May 13 21:33 info
+drwxr-xr-x 67 s0mbre s0mbre 1608 May 26 10:20 objects
+drwxr-xr-x  5 s0mbre s0mbre  120 May 26 10:20 refs
+
+And it can not be accessed from higher layer, since its name is not
+'.git', but 'pohmelfs.git'.
+
+pohmelfs.git$ ls -l ../
+total 440
+-rw-r--r-- 1 s0mbre s0mbre  90994 Apr 25 18:37 pohmelfs.1
+-rw-r--r-- 1 s0mbre s0mbre  90998 May 12 13:28 pohmelfs.1.fixed
+-rw-r--r-- 1 s0mbre s0mbre 119384 May 13 21:35 pohmelfs.2
+-rw-r--r-- 1 s0mbre s0mbre 136685 May 25 17:20 pohmelfs.3
+drwxr-xr-x 7 s0mbre s0mbre    248 May 13 21:33 pohmelfs.git
+drwxr-xr-x 3 s0mbre s0mbre    256 May 26 00:19 server
+
+I've updated by hand info/refs, which pointed to the previous revision,
+but really thought it was mande somewhat automatically? It was created
+when I made a exportable git tree, when I did git-update-server-info.
+Git is a magic yet to resolve :)
+
+-- 
+	Evgeniy Polyakov
