@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYEZOA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbYEZOFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbYEZOA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 10:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbYEZOAP
+	id S1756050AbYEZOFo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 10:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYEZOFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 10:00:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44438 "EHLO mx3.mail.elte.hu"
+	Mon, 26 May 2008 10:05:37 -0400
+Received: from main.gmane.org ([80.91.229.2]:38366 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbYEZOAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 10:00:13 -0400
-Date: Mon, 26 May 2008 15:59:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Message-ID: <20080526135940.GB24870@elte.hu>
-References: <20080526115628.GA31316@elte.hu> <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752879AbYEZOFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 10:05:36 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
+Date: Mon, 26 May 2008 15:04:54 +0100
+Message-ID: <g1eg2q$81q$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: KNode/0.10.4
+Cc: kernel-testers@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+<posted & mailed>
 
-* Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+When using a 32 bit linux-next-20080526 the bootup process will hang at a
+random point (not even sysrq helps) with no additional output on the screen
+(whereas linux-next-20080523 did boot). Mysteriously, booting with
+nmi_watchdog=2 allows the boot to finish (booting with nmi_watchdog=1 still
+stalls). I have bisected it down to commit
+[d1b946b97d71423f365fa797d1428e1847c0bec1]:
 
-> > in terms of debugging there's not much i can do i'm afraid. It's not 
-> > possible to get a tcpdump of this incident, given the extreme amount 
-> > of load these testboxes handle.
-> 
-> ...but you can still tcpdump that particular flow once the situation 
-> is discovered to see if TCP still tries to do something, no? One needs 
-> to tcpdump couple of minutes at minimum. Also please get /proc/net/tcp 
-> for that flow around the same time.
+commit d1b946b97d71423f365fa797d1428e1847c0bec1
+Author: Cyrill Gorcunov <gorcunov@gmail.com>
+Date:   Sat May 24 19:36:34 2008 +0400
 
-ok, will try those.
+    x86: nmi_32.c - add "panic" option
 
-> > One clue (which might or might not matter) is that distcc is one of 
-> > the very few applications that makes use of sendfile().
-> 
-> Can you please try with /proc/sys/net/ipv4/tcp_frto set to zero though 
-> recv-q symptom seems weird would it be related to that (but there were 
-> some recent fixes to FRTO and retrans_stamp change could have some 
-> significance here)?
-> 
-> Other than that, nothing since -rc1 seems suspicious to me (though I 
-> hardly understand every part of networking).
+    Allow to pass "panic" option in 32bit mode
 
-ok, i will first wait for it to trigger on a box and will do the tcpdump 
-session (and /proc/net/tcp output), then i'll continue the tests with 
-this done in the rc.local:
+    Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+    Cc: hpa@zytor.com
+    Cc: mingo@redhat.com
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-  echo 0 > /proc/sys/net/ipv4/tcp_frto
+Reverting this seemed to allow the boot to proceed without issue. Here is
+the bisection log:
 
-and will see whether the hung connections still occur. The cycle of 
-testing will be very slow i suspect.
+# bad: [5ffeee1785c30303007b3d2dce85402b0bbf9b00] Add linux-next specific
+files
+# good: [7b6c98f0853b86c101948f1bf4e0a21d3065944f] Add linux-next specific
+files
+git-bisect start 'next-20080526' 'next-20080523'
+# bad: [cab464e32db5aef80c51831c20009ae7c3354396] Merge
+commit 'x86/auto-x86-next'
+git-bisect bad cab464e32db5aef80c51831c20009ae7c3354396
+# good: [497d7294d4fb1a0d2ce14bb891a1d812b2af3745] Merge
+branch 'x86/mpparse' into auto-x86-next
+git-bisect good 497d7294d4fb1a0d2ce14bb891a1d812b2af3745
+# good: [8315d6949d94b7513f8829b62d59d7d5699872dd] USB: driver for gotemp
+device
+git-bisect good 8315d6949d94b7513f8829b62d59d7d5699872dd
+# good: [289c79a4bd350e8a25065102563ad1a183d1b402] vlan: Use bitmask of
+feature flags instead of seperate feature bits
+git-bisect good 289c79a4bd350e8a25065102563ad1a183d1b402
+# bad: [c791e51837f26cba073d3c37cf04803bb3a5c6c0] Merge branch 'x86/timers'
+into auto-x86-next
+git-bisect bad c791e51837f26cba073d3c37cf04803bb3a5c6c0
+# bad: [4039cbaacf7874ab1effd0e9fb6c60bf9217f373] Merge branch 'x86/nmi'
+into auto-x86-next
+git-bisect bad 4039cbaacf7874ab1effd0e9fb6c60bf9217f373
+# bad: [4b82b277707a39b97271439c475f186f63ec4692] x86: nmi_32.c - add
+nmi_watchdog_default helper
+git-bisect bad 4b82b277707a39b97271439c475f186f63ec4692
+# good: [e56b3a12c45e439169f2d1f7194be397667320a6] x86: nmi - die_nmi()
+output message unification
+git-bisect good e56b3a12c45e439169f2d1f7194be397667320a6
+# bad: [d1b946b97d71423f365fa797d1428e1847c0bec1] x86: nmi_32.c -
+add "panic" option
+git-bisect bad d1b946b97d71423f365fa797d1428e1847c0bec1
+# good: [c6425b9f143a75bbcd0a7684b4df40e20d0b2f32] x86: move do_nmi(),
+stop_nmi() and restart_nmi() to traps_64.c
+git-bisect good c6425b9f143a75bbcd0a7684b4df40e20d0b2f32
 
-	Ingo
+-- 
+Sitsofe | http://sucs.org/~sits/
+
