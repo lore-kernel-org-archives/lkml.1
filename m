@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYEZVnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYEZVxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbYEZVnL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 17:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbYEZVm5
+	id S1755711AbYEZVxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 17:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYEZVxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 17:42:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43136 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754330AbYEZVm4 (ORCPT
+	Mon, 26 May 2008 17:53:09 -0400
+Received: from elasmtp-mealy.atl.sa.earthlink.net ([209.86.89.69]:37760 "EHLO
+	elasmtp-mealy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754591AbYEZVxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 17:42:56 -0400
-Date: Mon, 26 May 2008 14:42:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesper Krogh <jesper@krogh.cc>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: Linux 2.6.26-rc4
-In-Reply-To: <483B2A9B.4050007@krogh.cc>
-Message-ID: <alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <483B2A9B.4050007@krogh.cc>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 May 2008 17:53:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=msguZg9Gwqa94ulLX9MytDv8f0WRs/narpsIBL/9W7EP+D1igPIKeygn1QMtnOcd;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Mon, 26 May 2008 17:52:27 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       Theodore Tso <tytso@MIT.EDU>, Glen Turner <gdt@gdt.id.au>,
+       Chris Peterson <cpeterso@cpeterso.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Jeff Garzik <jeff@garzik.org>, "Kok\, Auke" <auke-jan.h.kok@intel.com>,
+       Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg\, Jesse" <jesse.brandeburg@intel.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+Message-Id: <20080526175227.4b7ae764.billfink@mindspring.com>
+In-Reply-To: <m38wxwepvt.fsf@maximus.localdomain>
+References: <482C7E53.3050300@hp.com>
+	<482C8184.2030906@garzik.org>
+	<482C8550.5000909@intel.com>
+	<482C8D4D.3040702@garzik.org>
+	<20080516132107.GA11304@csclub.uwaterloo.ca>
+	<20080516161029.44ded734@core>
+	<20080516173610.GA27126@csclub.uwaterloo.ca>
+	<20080516191125.46f59ad6@core>
+	<a24804730805162155m72e6b40aweb8822515c880c50@mail.gmail.com>
+	<1211728189.5913.71.camel@andromache>
+	<20080525232712.GF5970@mit.edu>
+	<20080526154326.1fe44214@Varda>
+	<20080526111458.fff6c311.billfink@mindspring.com>
+	<m38wxwepvt.fsf@maximus.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4de6254de8c47e34468389a8f3aae996f2350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.248
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 May 2008, Krzysztof Halasa wrote:
 
-
-On Mon, 26 May 2008, Jesper Krogh wrote:
+> Bill Fink <billfink@mindspring.com> writes:
 > 
-> I did get this one (which I didn't on 2.6.25.2)
+> > Another idea that occured to me:  How about using the low order bits
+> > of the instruction memory address being executed that was interrupted
+> > by the HZ timer interrupt.
 > 
-> [42949399.810959] ck804xrom ck804xrom_init_one(): Unable to register resource
-> 0x0000000000000000-0x00000000ffffffff - kernel bug?
+> Think of constant-instructions-length processors :-)
 
-Something is trying to register a 4GB resource. That sounds unlikely 
-(possible on a 64-bit PCI setup, but I think it's more likely to be some 
-overflow of 0 in "unsigned int").
+I'm not sure what you're driving at, but if it's that you shouldn't
+use the very last 2 or 3 bits, then sure those should be excluded.
+But that still leaves 9 or 10 bits at least in the page offset, and
+that's being conservative in the number of address bits to sample.
 
-In fact, this seems to be due to some driver bug. It looks like we have
-
-	window->size = 0xffffffffUL - window->phys + 1UL;
-
-and in order for window->size to be 0x100000000, that means that 
-window->phys has to be 0. Which looks impossible, or at least like 
-ent->driver_data is neither DEV_CK804 nor DEV_MCP55. Very odd.
-
-The warning:
-
-> [42949399.979924] WARNING: at arch/x86/mm/ioremap.c:159 __ioremap_caller+0x299/0x330()
-
-is then just a result of the driver blindly continuing and trying to 
-"ioremap()" the resource even though it's bogus and the resource 
-allocation failed.
-
-In other words, that driver init routine is really bad about error 
-handling. Carl-Daniel? David?
-
-		Linus
+						-Bill
