@@ -1,73 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbYEZBSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYEZB1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbYEZBSb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 21:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYEZBSX
+	id S1753499AbYEZB1O (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 21:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYEZB1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 21:18:23 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49771 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbYEZBSW (ORCPT
+	Sun, 25 May 2008 21:27:01 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:62049 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbYEZB1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 21:18:22 -0400
-Date: Mon, 26 May 2008 10:23:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@osdl.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] explicitly document overloaded page flags V2
-Message-Id: <20080526102309.01b9bc9a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <exportbomb.1211560342@pinky>
-References: <exportbomb.1211560342@pinky>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 25 May 2008 21:27:00 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.5.2
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 25 May 2008 18:26:46 -0700
+Message-ID: <7viqx1g8ix.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: D5618324-2AC2-11DD-B40C-80001473D85F-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 17:33:01 +0100
-Andy Whitcroft <apw@shadowen.org> wrote:
+The latest maintenance release GIT 1.5.5.2 is available at the
+usual places:
 
-> With the recent page flag reorganisation we have a single enum which
-> defines the valid page flags and their values, nice and clear.  However
-> there are a number of bits which are overloaded by different subsystems.
-> Firstly there is PG_owner_priv_1 which is used by filesystems and by XEN.
-> Secondly both SLOB and SLUB use a couple of extra page bits to manage
-> internal state for pages they own; both overlay other bits.  All of these
-> "aliases" are scattered about the source making it very hard for a reader
-> to know if the bits are safe to rely on in all contexts; confusion here
-> is bad.
-> 
-> As we now have a single place where the bits are clearly assigned it makes
-> sense to clarify the reuse of bits by making the aliases explicit and
-> visible with the original bit assignments.  This patch creates explicit
-> aliases within the enum itself for the overloaded bits, creates standard
-> bit accessors PageFoo etc. and uses those throughout.
-> 
-> This version pulls the bit manipulation out to standard named page bit
-> accessors as suggested by Christoph, it retains the explicit mapping to
-> the overlayed bits.  A fusion of both ideas.  This has been SLUB and
-> SLOB have been compile tested on x86_64 only, and SLUB boot tested.
-> If people feel this is worth doing then I can run a fuller set of testing.
-> 
-Thanks, I like this style of page-flags definition.
+  http://www.kernel.org/pub/software/scm/git/
 
-BTW, I have a quiestion as crash-dump user. With this 'enum' style, position of
-each flags in page->flags depends on configs. Can we know what a bit means from
-dump or bad_page()'s message ? (not a big problem now but..)
+  git-1.5.5.2.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.5.2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.5.2.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.5.2-1.$arch.rpm	(RPM)
 
-Thanks,
--Kame
+One side effect of declaring to make the cycle toward 1.5.6 shorter is
+that we would not have that many 1.5.5.X maintenance releases.
+Nevertheless, there are quite a few fixes accumulated since 1.5.5.1 hence
+this one.
 
+----------------------------------------------------------------
 
+Changes since v1.5.5.1 are as follows:
 
+A Large Angry SCM (1):
+      git-repack: re-enable parsing of -n command line option
 
+Alex Riesen (2):
+      Use "=" instead of "==" in condition as it is more portable
+      Fix use after free() in builtin-fetch
 
+Andy Parkins (1):
+      post-receive-email: fix accidental removal of a trailing space in signature line
 
+Ariel Badichi (2):
+      copy.c: copy_fd - correctly report write errors
+      archive.c: format_subst - fixed bogus argument to memchr
+
+Brandon Casey (1):
+      git-clone.txt: Adjust note to --shared for new pruning behavior of git-gc
+
+Dan McGee (1):
+      Remove 'header' from --signoff option description
+
+Dmitry Potapov (1):
+      git-gc --prune is deprecated
+
+Dustin Sallings (1):
+      Documentation/config.txt: Mention branch.<name>.rebase applies to "git pull"
+
+Florian Ragwitz (1):
+      filter-branch: Documentation fix.
+
+Gerrit Pape (1):
+      diff-options.txt: document the new "--dirstat" option
+
+Heikki Orsila (1):
+      Add missing "short" alternative to --date in rev-list-options.txt
+
+Ian Hilt (1):
+      Documentation/git-describe.txt: make description more readable
+
+Jeff King (11):
+      Don't force imap.host to be set when imap.tunnel is set
+      t5516: remove ambiguity test (1)
+      doc/git-gc: add a note about what is collected
+      push: allow unqualified dest refspecs to DWIM
+      remote: create fetch config lines with '+'
+      fix reflog approxidate parsing bug
+      cvsimport: always pass user data to "system" as a list
+      checkout: don't rfc2047-encode oneline on detached HEAD
+      doc: clarify definition of "update" for git-add -u
+      doc/git-daemon: s/uploadarchive/uploadarch/
+      git-am: fix typo in usage message
+
+Johannes Sixt (2):
+      wt-status.h: declare global variables as extern
+      rev-parse --symbolic-full-name: don't print '^' if SHA1 is not a ref
+
+Jon Loeliger (2):
+      git-filter-branch: Clarify file removal example.
+      git-show.txt: Not very stubby these days.
+
+Junio C Hamano (3):
+      write-tree: properly detect failure to write tree objects
+      clone: detect and fail on excess parameters
+      fetch-pack: brown paper bag fix
+
+Linus Torvalds (1):
+      fetch-pack: do not stop traversing an already parsed commit
+
+Matt Graham (1):
+      Linked glossary from cvs-migration page
+
+Matthew Ogilvie (1):
+      gitattributes: Fix subdirectory attributes specified from root directory
+
+Michael Weber (1):
+      svn-git: Use binmode for reading/writing binary rev maps
+
+Miklos Vajna (1):
+      diff options documentation: refer to --diff-filter in --name-status
+
+Sam Vilain (1):
+      Amend git-push refspec documentation
+
+Shawn O. Pearce (1):
+      Clarify repack -n documentation
+
+Sitaram Chamarty (1):
+      builtin-commit.c: add -u as short name for --untracked-files
+
+Teemu Likonen (1):
+      bash: Add completion for git diff --base --ours --theirs
+
+Thomas Guyot-Sionnest (1):
+      git-svn bug with blank commits and author file
+
+martin f. krafft (2):
+      Escape project name in regexp
+      Escape project names before creating pathinfo URLs
 
