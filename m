@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYEZTHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYEZTM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYEZTHh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 15:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYEZTH3
+	id S1756056AbYEZTM5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 15:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbYEZTMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 15:07:29 -0400
-Received: from animx.eu.org ([216.98.75.249]:44223 "EHLO animx.eu.org"
+	Mon, 26 May 2008 15:12:48 -0400
+Received: from main.gmane.org ([80.91.229.2]:41264 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754700AbYEZTH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 15:07:29 -0400
-Date: Mon, 26 May 2008 15:07:37 -0400
-From: Wakko Warner <wakko@animx.eu.org>
+	id S1754856AbYEZTMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 15:12:47 -0400
+X-Injected-Via-Gmane: http://gmane.org/
 To: linux-kernel@vger.kernel.org
-Subject: Compile error with make bootpfile (2.6.25.4)
-Message-ID: <20080526190737.GA14703@animx.eu.org>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
+Date: Mon, 26 May 2008 20:11:53 +0100
+Message-ID: <g1f230$7bl$1@ger.gmane.org>
+References: <g1eg2q$81q$1@ger.gmane.org> <20080526161623.GC7305@cvg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.6+20040907i
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: KNode/0.10.4
+Cc: kernel-testers@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm cross compiling a kernel for my alpha on x86.  I'm seeing this:
-  gcc -Wp,-MD,arch/alpha/boot/tools/.objstrip.d -Iarch/alpha/boot -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer -o arch/alpha/boot/tools/objstrip /usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c: In function 'main':
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:189: warning: format '%#016lx' expects type 'long unsigned int', but argument 5 has type 'Elf32_Addr'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:196: error: 'struct exec' has no member named 'fh'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:202: error: 'struct exec' has no member named 'fh'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:202: error: 'struct exec' has no member named 'ah'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:214: error: 'struct exec' has no member named 'ah'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:214: error: 'struct exec' has no member named 'ah'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:215: error: 'struct exec' has no member named 'ah'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:219: error: 'struct exec' has no member named 'ah'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:220: error: 'struct exec' has no member named 'ah'
-/usr/src/linux/dist/2.6.25.4/arch/alpha/boot/tools/objstrip.c:263: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'size_t'
-make[2]: *** [arch/alpha/boot/tools/objstrip] Error 1
-make[1]: *** [bootpfile] Error 2
-make: *** [sub-make] Error 2
-make: Leaving directory `/usr/src/linux/dist/2.6.25.4'
+<posted & mailed>
 
-I called make like this:
-make -C /usr/src/linux/dist/2.6.25.4 O=$PWD ARCH=alpha V=1 CROSS_COMPILE=alpha-linux-gnu- bootpfile
+Cyrill Gorcunov wrote:
 
-My host gcc is:
-gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+> [Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
+> | When using a 32 bit linux-next-20080526 the bootup process will hang at
+> | a random point (not even sysrq helps) with no additional output on the
+> | screen (whereas linux-next-20080523 did boot). Mysteriously, booting
+> | with nmi_watchdog=2 allows the boot to finish (booting with
+> | nmi_watchdog=1 still stalls). I have bisected it down to commit
+> | [d1b946b97d71423f365fa797d1428e1847c0bec1]:
+>
+> Hi, so it helps by reverting only that commit? I mean all further commits
+> are still appiled?
 
-My target gcc is:
-alpha-linux-gnu-gcc (GCC) 4.1.3 20070514 (prerelease) (Debian 4.1.2-7)
+Ah that I hadn't tested. I believe I might need to revert
+4b82b277707a39b97271439c475f186f63ec4692 too if later commits are applied
+(but I'm still testing)
 
-I decided to just copy over the sources so that I wouldn't need the -C and
-O= on the make line.  I also modified the Make file so that I didn't need to
-specify ARCH and CROSS_COMPILE.  I removed support for a.out in objstrip.  I
-was finally able to get it to compile, but it still didn't work.  Not sure
-if it was due to the fact it's using x86 headers instead of alpha headers or
-what.
+> and, btw, could you post your config, please?
 
-I tried asking on linux-alpha, but that list seems to be fairly dead.
+http://sucs.org/~sits/test/config-20080526.txt
 
 -- 
- Lab tests show that use of micro$oft causes cancer in lab animals
- Got Gas???
+Sitsofe | http://sucs.org/~sits/
+
