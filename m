@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbYEZHQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbYEZHVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbYEZHQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 03:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYEZHQV
+	id S1754368AbYEZHVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 03:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYEZHVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 03:16:21 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37332 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752930AbYEZHQV (ORCPT
+	Mon, 26 May 2008 03:21:31 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:60249 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbYEZHVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 03:16:21 -0400
-X-Sasl-enc: +SF58EiqMtvXExs/Rv+TjHfws1Jtb91rfbpO/ojZ25aR 1211786179
-Message-ID: <483A63BF.1050805@ladisch.de>
-Date: Mon, 26 May 2008 09:16:15 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Kallol Biswas <nucleodyne@gmail.com>
-CC: Takashi Iwai <tiwai@suse.de>, Lee Revell <rlrevell@joe-job.com>,
-       linux-kernel@vger.kernel.org, Xiaogeng Jin <xiaogeng.jin@yahoo.com>
-Subject: Re: HDMI Audio Support in ALSA
-References: <438397970805190904i2656337dh26a3257fe52aa29d@mail.gmail.com>	 <75b66ecd0805190916r7ce21667laf19783dfa47cdd7@mail.gmail.com>	 <438397970805190938t195d9a8ejfd5b0ca1409714ab@mail.gmail.com>	 <48328771.4030804@ladisch.de>	 <438397970805211252u1d228ad8wcb1a6ef9b1251478@mail.gmail.com>	 <483568BD.4040701@ladisch.de> <s5hod6xuvq3.wl%tiwai@suse.de> <438397970805242141l3f07e6e1he5805b09d9dbf989@mail.gmail.com>
-In-Reply-To: <438397970805242141l3f07e6e1he5805b09d9dbf989@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
+	Mon, 26 May 2008 03:21:30 -0400
+Message-Id: <6.0.0.20.2.20080526155336.058ed7b0@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Mon, 26 May 2008 16:20:10 +0900
+To: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] VFS: Pagecache usage optimization on pagesize
+  !=blocksize environment
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080523225133.GB30591@atrey.karlin.mff.cuni.cz>
+References: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
+ <20080521001930.202446eb.akpm@linux-foundation.org>
+ <6.0.0.20.2.20080522160939.051ca938@172.19.0.2>
+ <20080522010355.32590474.akpm@linux-foundation.org>
+ <20080523225133.GB30591@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kallol Biswas wrote:
-> The routine snd_hda_calc_stream_format() calls snd_pcm_format_width()
-> to find if the format is supported and the width.
+
+>  But I'm slightly confused that the patch helps because I've always
+>thought that mpage_readpage() (which is what we end up calling from
+>do_generic_mapping_read()) always reads the whole page. Thus either all
+>buffers in the page or none of them are uptodate... So what do I miss
+>here?
 >
-> The array holds pcm_format[] holds all the supported formats. However,
-> in this array
-> there is no entry for IEC 60958 or IEC 61937.
+>								Honza
 
-There is.  I already told you that these formats use
-SNDRV_PCM_FORMAT_S16_LE.
+On ext3/4, a file is written through buffer/block. So if a page has multiple 
+buffers, buffers can be uptodate partially especially under random write workloads.
+See __block_prepare_write and __block_commit_write.
 
-
-Regards,
-Clemens
