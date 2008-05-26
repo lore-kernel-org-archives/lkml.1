@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYEZMeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758129AbYEZMec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757848AbYEZMeG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbYEZM0o
+	id S1758129AbYEZMec (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbYEZM2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:26:44 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:57676 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756926AbYEZM0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 08:26:43 -0400
-Message-ID: <483AAC04.8080504@yandex.ru>
-Date: Mon, 26 May 2008 15:24:36 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH take 2] UBIFS - new flash file system
-References: <1211810614-18636-1-git-send-email-Artem.Bityutskiy@nokia.com>
-In-Reply-To: <1211810614-18636-1-git-send-email-Artem.Bityutskiy@nokia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 26 May 2008 08:28:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49745 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757425AbYEZM2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 08:28:40 -0400
+Subject: Re: cpufreq limits avilable frequencies to 800MHz on git kernel
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Arkadiusz Miskiewicz <arekm@maven.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>, gnorton@novell.com,
+       miguel@novell.com
+In-Reply-To: <200805260907.05561.arekm@maven.pl>
+References: <200805231944.57320.arekm@maven.pl>
+	 <200805251136.24313.arekm@maven.pl>
+	 <1211727835.3422.36.camel@linux-2bdv.site>
+	 <200805260907.05561.arekm@maven.pl>
+Content-Type: text/plain; charset=utf-8
+Organization: Novell/SUSE
+Date: Mon, 26 May 2008 14:28:38 +0200
+Message-Id: <1211804918.29901.187.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 26 May 2008 12:25:37.0087 (UTC) FILETIME=[9A27FCF0:01C8BF2B]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> Hello,
+...
+> > Sounds related to:
+> > ﻿[Bug 374099] T61p speedstep problems (ondemand scheduler)
+> > ﻿https://bugzilla.novell.com/show_bug.cgi?id=374099
 > 
-> here is the third round of UBIFS submission. If you are not aware what
-> UBIFS is about, please refer Jonathan Corbet's article:
-> http://lwn.net/Articles/276025/
+> login/pass protected
+Sorry, OpenSUSE bugs should by default be public, no idea why this one
+was not.
+Should be public now.
+Readable for the public, you can post if you get an bugzilla.novell.com
+account.
 
-Sorry, ignore this mail. Just sent the patches with correct
-subject.
+Thanks,
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+    Thomas
+
