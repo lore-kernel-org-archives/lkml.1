@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbYEZPj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbYEZPvC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbYEZPj2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 11:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYEZPjV
+	id S1754398AbYEZPvC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 11:51:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYEZPuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 11:39:21 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58775 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbYEZPjU (ORCPT
+	Mon, 26 May 2008 11:50:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51172 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbYEZPuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 11:39:20 -0400
-Date: Mon, 26 May 2008 18:39:18 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
-       Matt Mackall <mpm@selenic.com>, MinChan Kim <minchan.kim@gmail.com>,
-       akpm@linux-foundation.org
-Subject: [GIT PULL] SLUB/SLOB updates for 2.6.26
-Message-ID: <Pine.LNX.4.64.0805261838340.24399@sbz-30.cs.Helsinki.FI>
+	Mon, 26 May 2008 11:50:50 -0400
+Date: Mon, 26 May 2008 08:50:00 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, venkatesh.pallipadi@intel.com,
+       suresh.b.siddha@intel.com, Michael Neuling <mikey@neuling.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
+Message-ID: <20080526085000.33787eac@infradead.org>
+In-Reply-To: <20080526142513.24680.97164.stgit@drishya.in.ibm.com>
+References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, 26 May 2008 20:01:33 +0530
+Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-Please pull the latest SLAB git tree from:
+> The following RFC patch tries to implement scaled CPU utilisation
+> statistics using APERF and MPERF MSR registers in an x86 platform.
+> 
+> The CPU capacity is significantly changed when the CPU's frequency is
+> reduced for the purpose of power savings.  The applications that run
+> at such lower CPU frequencies are also accounted for real CPU time by
+> default.  If the applications have been run at full CPU frequency,
+> they would have finished the work faster and not get charged for
+> excessive CPU time.
+> 
+> One of the solution to this problem it so scale the utime and stime
+> entitlement for the process as per the current CPU frequency.  This
+> technique is used in powerpc architecture with the help of hardware
+> registers that accurately capture the entitlement.
+> 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git for-linus
-
-It has a fix for out-of-memory condition in SLOB and a new WARN_ON for SLUB to
-detect ksize() abuse.
-
-                Pekka
-
-MinChan Kim (1):
-      slob: Fix to return wrong pointer
-
-Pekka Enberg (1):
-      slub: ksize() abuse checks
-
- mm/slob.c |    5 +++--
- mm/slub.c |    5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/mm/slob.c b/mm/slob.c
-index 6038cba..a3ad667 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -469,8 +469,9 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
- 			return ZERO_SIZE_PTR;
- 
- 		m = slob_alloc(size + align, gfp, align, node);
--		if (m)
--			*m = size;
-+		if (!m)
-+			return NULL;
-+		*m = size;
- 		return (void *)m + align;
- 	} else {
- 		void *ret;
-diff --git a/mm/slub.c b/mm/slub.c
-index a505a82..0987d1c 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2726,9 +2726,10 @@ size_t ksize(const void *object)
- 
- 	page = virt_to_head_page(object);
- 
--	if (unlikely(!PageSlab(page)))
-+	if (unlikely(!PageSlab(page))) {
-+		WARN_ON(!PageCompound(page));
- 		return PAGE_SIZE << compound_order(page);
--
-+	}
- 	s = page->slab;
- 
- #ifdef CONFIG_SLUB_DEBUG
+there are some issues with this unfortunately, and these make it
+a very complex thing to do. 
+Just to mention a few:
+1) What if the BIOS no longer allows us to go to the max frequency for
+a period (for example as a result of overheating); with the approach
+above, the admin would THINK he can go faster, but he cannot in reality,
+so there's misleading information (the system looks half busy, while in
+reality it's actually the opposite, it's overloaded). Management tools
+will take the wrong decisions (such as moving MORE work to the box, not
+less)
+2) On systems with Intel Dynamic Acceleration technology, you can get
+over 100% of cycles this way. (For those who don't know what IDA is;
+IDA is basically a case where if your Penryn based dual core laptop is
+only using 1 core, the other core can go faster than 100% as long as
+thermals etc allow it). How do you want to deal with this?
