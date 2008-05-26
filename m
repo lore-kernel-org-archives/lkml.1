@@ -1,160 +1,633 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbYEZMbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbYEZMaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbYEZMbs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756482AbYEZMYg
+	id S1756817AbYEZMaX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbYEZMYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:24:36 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:49661 "EHLO
+	Mon, 26 May 2008 08:24:22 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49633 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756089AbYEZMYP (ORCPT
+	with ESMTP id S1756234AbYEZMYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 08:24:15 -0400
+	Mon, 26 May 2008 08:24:08 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 3 29/29] UBIFS: include FS to compilation
-Date: Mon, 26 May 2008 17:05:43 +0300
-Message-Id: <1211810743-18936-30-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 3 25/29] UBIFS: add extended attribute support
+Date: Mon, 26 May 2008 17:05:39 +0300
+Message-Id: <1211810743-18936-26-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
-X-OriginalArrivalTime: 26 May 2008 12:24:02.0744 (UTC) FILETIME=[61EC6380:01C8BF2B]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=unknown-8bit
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 26 May 2008 12:23:59.0260 (UTC) FILETIME=[5FD8C5C0:01C8BF2B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add UBIFS to Makefile and Kbuild.
+Extended attributes are implemented as separate inodes. This makes
+it very easy to implement them and to re-use nearly all the existing
+code. This might be not the fastest implementation, though. ACL support
+is not implemented.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/Kconfig        |    3 ++
- fs/Makefile       |    1 +
- fs/ubifs/Kconfig  |   71 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ubifs/Makefile |    9 ++++++
- 4 files changed, 84 insertions(+), 0 deletions(-)
+ fs/ubifs/xattr.c |  582 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 582 insertions(+), 0 deletions(-)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index cf12c40..4e4ce94 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1375,6 +1375,9 @@ config JFFS2_CMODE_FAVOURLZO
- 
- endchoice
- 
-+# UBIFS File system configuration
-+source "fs/ubifs/Kconfig"
-+
- config CRAMFS
- 	tristate "Compressed ROM file system support (cramfs)"
- 	depends on BLOCK
-diff --git a/fs/Makefile b/fs/Makefile
-index 1e7a11b..fcae06a 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -100,6 +100,7 @@ obj-$(CONFIG_NTFS_FS)		+= ntfs/
- obj-$(CONFIG_UFS_FS)		+= ufs/
- obj-$(CONFIG_EFS_FS)		+= efs/
- obj-$(CONFIG_JFFS2_FS)		+= jffs2/
-+obj-$(CONFIG_UBIFS_FS)		+= ubifs/
- obj-$(CONFIG_AFFS_FS)		+= affs/
- obj-$(CONFIG_ROMFS_FS)		+= romfs/
- obj-$(CONFIG_QNX4FS_FS)		+= qnx4/
-diff --git a/fs/ubifs/Kconfig b/fs/ubifs/Kconfig
+diff --git a/fs/ubifs/xattr.c b/fs/ubifs/xattr.c
 new file mode 100644
-index 0000000..2300e7d
+index 0000000..5d1b03d
 --- /dev/null
-+++ b/fs/ubifs/Kconfig
-@@ -0,0 +1,71 @@
-+config UBIFS_FS
-+	tristate "UBIFS file system support"
-+	select CRC16
-+	select CRC32
-+	depends on MTD_UBI
-+	help
-+	  UBIFS is a file system for flash devices which works on top of UBI.
++++ b/fs/ubifs/xattr.c
+@@ -0,0 +1,582 @@
++/*
++ * This file is part of UBIFS.
++ *
++ * Copyright (C) 2006-2008 Nokia Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
++ *
++ * Authors: Artem Bityutskiy (Битюцкий Артём)
++ *          Adrian Hunter
++ */
 +
-+config UBIFS_FS_XATTR
-+	bool "Extended attributes support"
-+	depends on UBIFS_FS
-+	help
-+	  This option enables support of extended attributes.
++/*
++ * This file implements UBIFS extended attributes support.
++ *
++ * Extended attributes are implemented as regular inodes with attached data,
++ * which limits extended attribute size to UBIFS block size (4KiB). Names of
++ * extended attributes are described by extended attribute entries (xentries),
++ * which are almost identical to directory entries, but have different key type.
++ *
++ * In other words, the situation with extended attributes is very similar to
++ * directories. Indeed, any inode (but of course not xattr inodes) may have a
++ * number of associated xentries, just like directory inodes have associated
++ * directory entries. Extended attribute entries store the name of the extended
++ * attribute, the host inode number, and the extended attribute inode number.
++ * Similarly, direntries store the name, the parent and the target inode
++ * numbers. Thus, most of the common UBIFS mechanisms may be re-used for
++ * extended attributes.
++ *
++ * The number of extended attributes is not limited, but there is Linux
++ * limitation on the maximum possible size of the list of all extended
++ * attributes associated with an inode (%XATTR_LIST_MAX), so UBIFS makes sure
++ * the sum of all extended attribute names of the inode does not exceed that
++ * limit.
++ *
++ * Extended attributes are synchronous, which means they are written to the
++ * flash media synchronously and there is no write-back for extended attribute
++ * inodes. The extended attribute values are not stored in compressed form on
++ * the media.
++ *
++ * Since extended attributes are represented by regular inodes, they are cached
++ * in the VFS inode cache. The xentries are cached in the LNC cache (see
++ * tnc.c).
++ *
++ * ACL support is not implemented.
++ */
 +
-+config UBIFS_FS_ADVANCED_COMPR
-+	bool "Advanced compression options"
-+	depends on UBIFS_FS
-+	help
-+	  This option allows to explicitly choose which compressions, if any,
-+	  are enabled in UBIFS. Removing compressors means inbility to read
-+	  existing file systems.
++#include <linux/xattr.h>
++#include <linux/posix_acl_xattr.h>
++#include "ubifs.h"
 +
-+	  If unsure, say 'N'.
++/* How many bytes an extended attribute adds to the host inode */
++#define CALC_XATTR_BYTES(data_len) ALIGN(UBIFS_INO_NODE_SZ + (data_len) + 1, 8)
 +
-+config UBIFS_FS_LZO
-+	bool "LZO compression support" if UBIFS_FS_ADVANCED_COMPR
-+	select CRYPTO
-+	select CRYPTO_LZO
-+	depends on UBIFS_FS
-+	default y
-+	help
-+	   LZO compressor is generally faster then zlib but compresses worse.
-+	   Say 'Y' if unsure.
++/*
++ * Extended attribute type constants.
++ *
++ * USER_XATTR: user extended attribute ("user.*")
++ * TRUSTED_XATTR: trusted extended attribute ("trusted.*)
++ * SECURITY_XATTR: security extended attribute ("security.*")
++ */
++enum {
++	USER_XATTR,
++	TRUSTED_XATTR,
++	SECURITY_XATTR,
++};
 +
-+config UBIFS_FS_ZLIB
-+	bool "ZLIB compression support" if UBIFS_FS_ADVANCED_COMPR
-+	select CRYPTO
-+	select CRYPTO_DEFLATE
-+	depends on UBIFS_FS
-+	default y
-+	help
-+	  Zlib copresses better then LZO but it is slower. Say 'Y' if unsure.
++static struct inode_operations none_inode_operations;
++static struct address_space_operations none_address_operations;
++static struct file_operations none_file_operations;
 +
-+# Debugging-related stuff
-+config UBIFS_FS_DEBUG
-+	bool "Enable debugging"
-+	depends on UBIFS_FS
-+	select DEBUG_FS
-+	select KALLSYMS_ALL
-+	help
-+	  This option enables UBIFS debugging.
++/**
++ * create_xattr - create an extended attribute.
++ * @c: UBIFS file-system description object
++ * @host: host inode
++ * @nm: extended attribute name
++ * @value: extended attribute value
++ * @size: size of extended attribute value
++ *
++ * This is a helper function which creates an extended attribute of name @nm
++ * and value @value for inode @host. The host inode is also updated on flash
++ * because the ctime and extended attribute accounting data changes. This
++ * function returns zero in case of success and a negative error code in case
++ * of failure.
++ */
++static int create_xattr(struct ubifs_info *c, struct inode *host,
++			const struct qstr *nm, const void *value, int size)
++{
++	struct ubifs_inode *ui, *host_ui = ubifs_inode(host);
++	struct ubifs_budget_req req = { .new_ino = 1, .new_dent = 1,
++					.new_ino_d = size };
++	struct inode *inode;
++	int err;
 +
-+config UBIFS_FS_DEBUG_MSG_LVL
-+	int "Default message level (0 = no extra messages, 3 = lots)"
-+	depends on UBIFS_FS_DEBUG
-+	default "0"
-+	help
-+	  This controls the amount of debugging messages produced by UBIFS.
-+	  If reporting bugs, please try to have available a full dump of the
-+	  messages at level 1 while the misbehaviour was occurring. Level 2
-+	  may become necessary if level 1 messages were not enough to find the
-+	  bug. Generally Level 3 should be avoided.
++	/*
++	 * Linux limits the maximum size of the extended attribute names list
++	 * to %XATTR_LIST_MAX. This means we should not allow creating more*
++	 * extended attributes if the name list becomes larger. This limitation
++	 * is artificial for UBIFS, though.
++	 */
++	if (host_ui->xattr_names + host_ui->xattr_cnt +
++					nm->len + 1 > XATTR_LIST_MAX)
++		return -ENOSPC;
 +
-+config UBIFS_FS_DEBUG_CHKS
-+	bool "Enable extra checks"
-+	depends on UBIFS_FS_DEBUG
-+	help
-+	  If extra checks are enabled UBIFS will check the consistency of its
-+	  internal data structures during operation. However, UBIFS performance
-+	  is dramatically slower when this option is selected especially if the
-+	  file system is large.
-diff --git a/fs/ubifs/Makefile b/fs/ubifs/Makefile
-new file mode 100644
-index 0000000..80e93c3
---- /dev/null
-+++ b/fs/ubifs/Makefile
-@@ -0,0 +1,9 @@
-+obj-$(CONFIG_UBIFS_FS) += ubifs.o
++	err = ubifs_budget_inode_op(c, host, &req);
++	if (err)
++		return err;
 +
-+ubifs-y += shrinker.o journal.o file.o dir.o super.o sb.o io.o
-+ubifs-y += tnc.o master.o scan.o replay.o log.o commit.o gc.o orphan.o
-+ubifs-y += budget.o find.o tnc_commit.o compress.o lpt.o lprops.o
-+ubifs-y += recovery.o ioctl.o lpt_commit.o tnc_misc.o
++	inode = ubifs_new_inode(c, host, S_IFREG | S_IRWXUGO);
++	if (IS_ERR(inode)) {
++		err = PTR_ERR(inode);
++		goto out_budg;
++	}
 +
-+ubifs-$(CONFIG_UBIFS_FS_DEBUG) += debug.o
-+ubifs-$(CONFIG_UBIFS_FS_XATTR) += xattr.o
++	/* Re-define all operations to be "nothing" */
++	inode->i_mapping->a_ops = &none_address_operations;
++	inode->i_op = &none_inode_operations;
++	inode->i_fop = &none_file_operations;
++
++	inode->i_flags |= S_SYNC | S_NOATIME | S_NOCMTIME | S_NOQUOTA;
++	ui = ubifs_inode(inode);
++	ui->xattr = 1;
++	ui->data = kmalloc(size, GFP_NOFS);
++	if (!ui->data) {
++		err = -ENOMEM;
++		goto out_inode;
++	}
++
++	memcpy(ui->data, value, size);
++	host->i_ctime = ubifs_current_time(host);
++	host_ui->xattr_cnt += 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size += CALC_DENT_SIZE(nm->len);
++	host_ui->xattr_size += CALC_XATTR_BYTES(size);
++	spin_unlock(&host->i_lock);
++	host_ui->xattr_names += nm->len;
++
++	/*
++	 * We do not use i_size_write() because nobody can race with us as we
++	 * are holding host @host->i_mutex - every xattr operation for this
++	 * inode is serialized by it.
++	 */
++	inode->i_size = size;
++	ui->data_len = size;
++
++	/*
++	 * Note, it is important that 'ubifs_jnl_update()' writes the @host
++	 * inode last, so when it gets synchronized and the write-buffer is
++	 * flushed, the extended attribute is flushed as well.
++	 */
++	err = ubifs_jnl_update(c, host, nm, inode, 0, IS_DIRSYNC(host), 1);
++	if (err)
++		goto out_cancel;
++
++	ubifs_release_ino_clean(c, host, &req);
++	insert_inode_hash(inode);
++	iput(inode);
++	return 0;
++
++out_cancel:
++	host_ui->xattr_cnt -= 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_DENT_SIZE(nm->len);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(size);
++	spin_unlock(&host->i_lock);
++out_inode:
++	make_bad_inode(inode);
++	iput(inode);
++out_budg:
++	ubifs_cancel_ino_op(c, host, &req);
++	return err;
++}
++
++/**
++ * change_xattr - change an extended attribute.
++ * @c: UBIFS file-system description object
++ * @host: host inode
++ * @inode: extended attribute inode
++ * @value: extended attribute value
++ * @size: size of extended attribute value
++ *
++ * This helper function changes the value of extended attribute @inode with new
++ * data from @value. Returns zero in case of success and a negative error code
++ * in case of failure.
++ */
++static int change_xattr(struct ubifs_info *c, struct inode *host,
++			struct inode *inode, const void *value, int size)
++{
++	struct ubifs_inode *host_ui = ubifs_inode(host);
++	struct ubifs_inode *ui = ubifs_inode(inode);
++	struct ubifs_budget_req req = { .dirtied_ino = 1,
++					.dirtied_ino_d = ui->data_len };
++	int err;
++
++	ubifs_assert(ui->data_len == inode->i_size);
++
++	err = ubifs_budget_inode_op(c, host, &req);
++	if (err)
++		return err;
++
++	host->i_ctime = ubifs_current_time(host);
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(ui->data_len);
++	host_ui->xattr_size += CALC_XATTR_BYTES(size);
++	spin_unlock(&host->i_lock);
++
++	kfree(ui->data);
++	ui->data = kmalloc(size, GFP_NOFS);
++	if (!ui->data) {
++		err = -ENOMEM;
++		goto out_budg;
++	}
++
++	memcpy(ui->data, value, size);
++	inode->i_size = size;
++	ui->data_len = size;
++
++	/*
++	 * It is important to write the host inode after the xattr inode
++	 * because if the host inode gets synchronized, then the extended
++	 * attribute inode gets synchronized, because it goes before the host
++	 * inode in the write-buffer.
++	 */
++	err = ubifs_jnl_write_2_inodes(c, inode, host, IS_DIRSYNC(host));
++	if (err)
++		goto out_cancel;
++
++	ubifs_release_ino_clean(c, host, &req);
++	return 0;
++
++out_cancel:
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(size);
++	host_ui->xattr_size += CALC_XATTR_BYTES(ui->data_len);
++	spin_unlock(&host->i_lock);
++	make_bad_inode(inode);
++out_budg:
++	ubifs_cancel_ino_op(c, host, &req);
++	return err;
++}
++
++/**
++ * check_namespace - check extended attribute name-space.
++ * @nm: extended attribute name
++ *
++ * This function makes sure the extended attribute name belongs to one of the
++ * supported extended attribute name-spaces. Returns name-space index in case
++ * of success and a negative error code in case of failure.
++ */
++static int check_namespace(const struct qstr *nm)
++{
++	int type;
++
++	if (nm->len > UBIFS_MAX_NLEN)
++		return -ENAMETOOLONG;
++
++	if (!strncmp(nm->name, XATTR_TRUSTED_PREFIX,
++		     XATTR_TRUSTED_PREFIX_LEN)) {
++		if (nm->name[sizeof(XATTR_TRUSTED_PREFIX) - 1] == '\0')
++			return -EINVAL;
++		type = TRUSTED_XATTR;
++	} else if (!strncmp(nm->name, XATTR_USER_PREFIX,
++				      XATTR_USER_PREFIX_LEN)) {
++		if (nm->name[XATTR_USER_PREFIX_LEN] == '\0')
++			return -EINVAL;
++		type = USER_XATTR;
++	} else if (!strncmp(nm->name, XATTR_SECURITY_PREFIX,
++				     XATTR_SECURITY_PREFIX_LEN)) {
++		if (nm->name[sizeof(XATTR_SECURITY_PREFIX) - 1] == '\0')
++			return -EINVAL;
++		type = SECURITY_XATTR;
++	} else
++		return -EOPNOTSUPP;
++
++	return type;
++}
++
++int ubifs_setxattr(struct dentry *dentry, const char *name,
++		   const void *value, size_t size, int flags)
++{
++	struct inode *inode, *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct qstr nm = { .name = name, .len = strlen(name) };
++	struct ubifs_dent_node *xent;
++	union ubifs_key key;
++	int err, type;
++
++	dbg_gen("xattr '%s', host ino %lu ('%.*s'), size %zd", name,
++		host->i_ino, dentry->d_name.len, dentry->d_name.name, size);
++	ubifs_assert(ubifs_inode(host)->xattr_cnt >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_size >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_names >= 0);
++
++	if (size > UBIFS_MAX_INO_DATA)
++		return -ERANGE;
++
++	type = check_namespace(&nm);
++	if (type < 0)
++		return type;
++
++	xent = kmalloc(UBIFS_MAX_XENT_NODE_SZ, GFP_NOFS);
++	if (!xent)
++		return -ENOMEM;
++
++	/*
++	 * The extended attribute entries are stored in LNC, so multiple
++	 * look-ups do not involve reading the flash.
++	 */
++	xent_key_init(c, &key, host->i_ino, &nm);
++	err = ubifs_tnc_lookup_nm(c, &key, xent, &nm);
++	if (err) {
++		if (err != -ENOENT)
++			goto out_free;
++
++		if (flags & XATTR_REPLACE)
++			/* We are asked not to create the xattr */
++			err = -ENODATA;
++		else
++			err = create_xattr(c, host, &nm, value, size);
++		goto out_free;
++	}
++
++	if (flags & XATTR_CREATE) {
++		/* We are asked not to replace the xattr */
++		err = -EEXIST;
++		goto out_free;
++	}
++
++	inode = ubifs_iget(c->vfs_sb, le64_to_cpu(xent->inum));
++	if (IS_ERR(inode)) {
++		ubifs_err("dead extended attribute entry, error %d", err);
++		ubifs_ro_mode(c, err);
++		err = PTR_ERR(inode);
++		goto out_free;
++	}
++
++	err = change_xattr(c, host, inode, value, size);
++	iput(inode);
++
++out_free:
++	kfree(xent);
++	return err;
++}
++
++ssize_t ubifs_getxattr(struct dentry *dentry, const char *name, void *buf,
++		       size_t size)
++{
++	struct inode *inode, *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct qstr nm = { .name = name, .len = strlen(name) };
++	struct ubifs_inode *ui;
++	struct ubifs_dent_node *xent;
++	union ubifs_key key;
++	int err;
++
++	dbg_gen("xattr '%s', ino %lu ('%.*s'), buf size %zd", name,
++		host->i_ino, dentry->d_name.len, dentry->d_name.name, size);
++	ubifs_assert(ubifs_inode(host)->xattr_cnt >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_size >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_names >= 0);
++
++	err = check_namespace(&nm);
++	if (err < 0)
++		return err;
++
++	xent = kmalloc(UBIFS_MAX_XENT_NODE_SZ, GFP_NOFS);
++	if (!xent)
++		return -ENOMEM;
++
++	mutex_lock(&host->i_mutex);
++	xent_key_init(c, &key, host->i_ino, &nm);
++	err = ubifs_tnc_lookup_nm(c, &key, xent, &nm);
++	if (err) {
++		if (err == -ENOENT)
++			err = -ENODATA;
++		goto out_unlock;
++	}
++
++	inode = ubifs_iget(c->vfs_sb, le64_to_cpu(xent->inum));
++	if (IS_ERR(inode)) {
++		ubifs_err("dead extended attribute entry, error %d", err);
++		ubifs_ro_mode(c, err);
++		err = PTR_ERR(inode);
++		goto out_unlock;
++	}
++
++	ui = ubifs_inode(inode);
++	ubifs_assert(inode->i_size == ui->data_len);
++	ubifs_assert(ubifs_inode(host)->xattr_size > ui->data_len);
++
++	if (buf) {
++		/* If @buf is %NULL we are supposed to return the length */
++		if (ui->data_len > size) {
++			dbg_err("buffer size %zd, xattr len %d",
++				size, ui->data_len);
++			err = -ERANGE;
++			goto out_iput;
++		}
++
++		memcpy(buf, ui->data, ui->data_len);
++	}
++	err = ui->data_len;
++
++out_iput:
++	iput(inode);
++out_unlock:
++	mutex_unlock(&host->i_mutex);
++	kfree(xent);
++	return err;
++}
++
++ssize_t ubifs_listxattr(struct dentry *dentry, char *buffer, size_t size)
++{
++	struct inode *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct ubifs_inode *host_ui = ubifs_inode(host);
++	union ubifs_key key;
++	struct ubifs_dent_node *xent, *pxent = NULL;
++	int err, len, written = 0;
++	struct qstr nm = { .name = NULL };
++
++	dbg_gen("ino %lu ('%.*s'), buffer size %zd", host->i_ino,
++		dentry->d_name.len, dentry->d_name.name, size);
++	ubifs_assert(host_ui->xattr_cnt >= 0);
++	ubifs_assert(host_ui->xattr_size >= 0);
++	ubifs_assert(host_ui->xattr_names >= 0);
++
++	len = host_ui->xattr_names + host_ui->xattr_cnt;
++	if (!buffer)
++		/*
++		 * We should return the minimum buffer size which will fit a
++		 * null-terminated list of all the extended attribute names.
++		 */
++		return len;
++
++	if (len > size)
++		return -ERANGE;
++
++	lowest_xent_key(c, &key, host->i_ino);
++
++	mutex_lock(&host->i_mutex);
++	while (1) {
++		int type;
++
++		xent = ubifs_tnc_next_ent(c, &key, &nm);
++		if (unlikely(IS_ERR(xent))) {
++			err = PTR_ERR(xent);
++			break;
++		}
++
++		nm.name = xent->name;
++		nm.len = le16_to_cpu(xent->nlen);
++
++		type = check_namespace(&nm);
++		if (unlikely(type < 0)) {
++			err = type;
++			break;
++		}
++
++		/* Show trusted namespace only for "power" users */
++		if (type != TRUSTED_XATTR || capable(CAP_SYS_ADMIN)) {
++			memcpy(buffer + written, nm.name, nm.len + 1);
++			written += nm.len + 1;
++		}
++
++		kfree(pxent);
++		pxent = xent;
++		key_read(c, &xent->key, &key);
++	}
++	mutex_unlock(&host->i_mutex);
++
++	kfree(pxent);
++	if (err != -ENOENT) {
++		ubifs_err("cannot find next direntry, error %d", err);
++		return err;
++	}
++
++	ubifs_assert(written <= size);
++	return written;
++}
++
++static int remove_xattr(struct ubifs_info *c, struct inode *host,
++			struct inode *inode, const struct qstr *nm)
++{
++	struct ubifs_inode *host_ui = ubifs_inode(host);
++	struct ubifs_inode *ui = ubifs_inode(inode);
++	struct ubifs_budget_req req = { .dirtied_ino = 1, .mod_dent = 1 };
++	int err;
++
++	ubifs_assert(ui->data_len == inode->i_size);
++
++	err = ubifs_budget_inode_op(c, host, &req);
++	if (err)
++		return err;
++
++	host->i_ctime = ubifs_current_time(host);
++	host_ui->xattr_cnt -= 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size -= CALC_XATTR_BYTES(ui->data_len);
++	spin_unlock(&host->i_lock);
++	host_ui->xattr_names -= nm->len;
++
++	err = ubifs_jnl_delete_xattr(c, host, inode, nm, IS_DIRSYNC(host));
++	if (err)
++		goto out_cancel;
++
++	ubifs_release_ino_clean(c, host, &req);
++	return 0;
++
++out_cancel:
++	ubifs_cancel_ino_op(c, host, &req);
++	host_ui->xattr_cnt += 1;
++	spin_lock(&host->i_lock);
++	host_ui->xattr_size += CALC_XATTR_BYTES(ui->data_len);
++	spin_unlock(&host->i_lock);
++	make_bad_inode(inode);
++	return err;
++}
++
++int ubifs_removexattr(struct dentry *dentry, const char *name)
++{
++	struct inode *inode, *host = dentry->d_inode;
++	struct ubifs_info *c = host->i_sb->s_fs_info;
++	struct qstr nm = { .name = name, .len = strlen(name) };
++	struct ubifs_dent_node *xent;
++	union ubifs_key key;
++	int err;
++
++	dbg_gen("xattr '%s', ino %lu ('%.*s')", name,
++		host->i_ino, dentry->d_name.len, dentry->d_name.name);
++	ubifs_assert(mutex_is_locked(&host->i_mutex));
++	ubifs_assert(ubifs_inode(host)->xattr_cnt >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_size >= 0);
++	ubifs_assert(ubifs_inode(host)->xattr_names >= 0);
++
++	err = check_namespace(&nm);
++	if (err < 0)
++		return err;
++
++	xent = kmalloc(UBIFS_MAX_XENT_NODE_SZ, GFP_NOFS);
++	if (!xent)
++		return -ENOMEM;
++
++	xent_key_init(c, &key, host->i_ino, &nm);
++	err = ubifs_tnc_lookup_nm(c, &key, xent, &nm);
++	if (err) {
++		if (err == -ENOENT)
++			err = -ENODATA;
++		goto out_free;
++	}
++
++	inode = ubifs_iget(c->vfs_sb, le64_to_cpu(xent->inum));
++	if (IS_ERR(inode)) {
++		ubifs_err("dead extended attribute node entry");
++		ubifs_ro_mode(c, err);
++		err = PTR_ERR(inode);
++		goto out_free;
++	}
++
++	ubifs_assert(inode->i_nlink == 1);
++	inode->i_nlink = 0;
++	err = remove_xattr(c, host, inode, &nm);
++	if (err)
++		inode->i_nlink = 1;
++
++	/* If @i_nlink is 0, 'iput()' will delete the inode */
++	iput(inode);
++
++out_free:
++	kfree(xent);
++	return err;
++}
 -- 
 1.5.4.1
 
