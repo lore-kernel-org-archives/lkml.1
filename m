@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbYEZQYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYEZQae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbYEZQYK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 12:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbYEZQXx
+	id S1755198AbYEZQae (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 12:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYEZQa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 12:23:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51366 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753712AbYEZQXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 12:23:52 -0400
-Date: Mon, 26 May 2008 18:23:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Message-ID: <20080526162328.GA9089@elte.hu>
-References: <20080526115628.GA31316@elte.hu> <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi> <20080526135940.GB24870@elte.hu> <20080526141252.GA31352@elte.hu> <Pine.LNX.4.64.0805261745010.16829@wrl-59.cs.helsinki.fi>
+	Mon, 26 May 2008 12:30:26 -0400
+Received: from smtp-02.mandic.com.br ([200.225.81.133]:47412 "EHLO
+	smtp-02.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753050AbYEZQaZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 12:30:25 -0400
+Message-ID: <483AE59A.9080700@diamondcut.com.br>
+Date: Mon, 26 May 2008 13:30:18 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0805261745010.16829@wrl-59.cs.helsinki.fi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, 481493@bugs.debian.org
+Subject: Re: [Bug 10797] Something is consuming power after shutdown
+References: <483AB443.6020807@diamondcut.com.br> <20080526084458.6acce426@infradead.org>
+In-Reply-To: <20080526084458.6acce426@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-
-> On Mon, 26 May 2008, Ingo Molnar wrote:
+Arjan van de Ven wrote:
+> "Renato S. Yamane" wrote:
+>> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
+>> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
+>>
+>> After poweroff, something still working and consuming power. So I
+>> loss ~4% of my battery charge in each 12h.
 > 
-> > there's a hung distcc task on the system, waiting for socket action 
-> > forever:
-> > 
-> >   [root@europe ~]# strace -fp 19578
-> >   Process 19578 attached - interrupt to quit
-> >   select(5, NULL, [4], [4], {82, 90000} <unfinished ...>
-> 
-> Hmm, readfds is NULL isn't it?!? Are you sure you straced the right 
-> process?
+> the most obvious cause could be Wake-on-Lan, that leaves a part of the
+> system active (specifically, the network card). With the "ethtool"
+> program you can queary and set the state of this.
 
-yes, i'm stracing the task that is hung unexpectedly.
+My network card have option WOL "disabled"
 
-> > disturbing that task via strace did not change the state of the 
-> > socket - and that's not unexpected as it's a select(). [TCP state 
-> > might be affected if strace impacted a recvmsg or a sendmsg wait 
-> > directly.]
-> 
-> I fail to understand this paragraph due to excessive negation... :-)
+# ethtool eth0 | grep Wake
+         Supports Wake-on: pg
+         Wake-on: d
 
-i mean, sometimes a TCP connection can get 'unstuck' if you strace a 
-task - that is because the TCP related syscall the task sits in gets 
-interrupted. But in this case it's select() which doesnt explicitly take 
-the socket, doesnt do any tcp_push_pending_frames() processing, etc. - 
-it just its on the socket waitqueue AFAICS. And that's expected.
+> Similarly, but less likely, there is wake-on-serial and wake-on-usb, in
+> theory those are possible too but I've yet to see one of those on any
+> of my machines.
 
-	Ingo
+My laptop don't have serial port and wake-on-usb is disabled too:
+
+# cat /proc/acpi/wakeup
+Device  S-state   Status   Sysfs node
+LID0      S4    *enabled
+RP01      S4     disabled  pci:0000:00:1c.0
+RP02      S4     disabled  pci:0000:00:1c.1
+RP03      S4     disabled
+RP04      S4     disabled
+USB1      S0     disabled  pci:0000:00:1d.0
+USB2      S0     disabled  pci:0000:00:1d.1
+USB3      S0     disabled  pci:0000:00:1d.2
+USB4      S0     disabled  pci:0000:00:1d.3
+USB7      S0     disabled  pci:0000:00:1d.7
+MODM      S4     disabled  pci:0000:00:1e.3
+PS2K      S4     disabled  pnp:00:07
+
+Best regards,
+Renato S. Yamane
