@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYEZTM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYEZTQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYEZTM5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 15:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbYEZTMs
+	id S1756029AbYEZTQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 15:16:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYEZTQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 15:12:48 -0400
-Received: from main.gmane.org ([80.91.229.2]:41264 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754856AbYEZTMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 15:12:47 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
-Date: Mon, 26 May 2008 20:11:53 +0100
-Message-ID: <g1f230$7bl$1@ger.gmane.org>
-References: <g1eg2q$81q$1@ger.gmane.org> <20080526161623.GC7305@cvg>
-Mime-Version: 1.0
+	Mon, 26 May 2008 15:16:48 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37697 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754228AbYEZTQs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 15:16:48 -0400
+Date: Mon, 26 May 2008 21:17:30 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>
+Subject: aperture_64.c: corner case wrong
+Message-ID: <20080526191730.GA18425@elf.ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
-User-Agent: KNode/0.10.4
-Cc: kernel-testers@vger.kernel.org
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<posted & mailed>
 
-Cyrill Gorcunov wrote:
+If 
 
-> [Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
-> | When using a 32 bit linux-next-20080526 the bootup process will hang at
-> | a random point (not even sysrq helps) with no additional output on the
-> | screen (whereas linux-next-20080523 did boot). Mysteriously, booting
-> | with nmi_watchdog=2 allows the boot to finish (booting with
-> | nmi_watchdog=1 still stalls). I have bisected it down to commit
-> | [d1b946b97d71423f365fa797d1428e1847c0bec1]:
->
-> Hi, so it helps by reverting only that commit? I mean all further commits
-> are still appiled?
+fix == 0, aper_enabled == 1, gart_fix_e820 == 0
 
-Ah that I hadn't tested. I believe I might need to revert
-4b82b277707a39b97271439c475f186f63ec4692 too if later commits are applied
-(but I'm still testing)
+	if (!fix && !aper_enabled)
+		return;
 
-> and, btw, could you post your config, please?
+	if (gart_fix_e820 && !fix && aper_enabled) {
+		if (e820_any_mapped(aper_base, aper_base + aper_size,
+				    E820_RAM)) {
+			/* reserve it, so we can reuse it in second
+kernel */
+			printk(KERN_INFO "update e820 for GART\n");
+			add_memory_region(aper_base, aper_size,
+E820_RESERVED);
+			update_e820();
+		}
+		return;
+	}
 
-http://sucs.org/~sits/test/config-20080526.txt
+	/* different nodes have different setting, disable them all atfirst*/
+
+we'll fall back here and disable all the settings, even when they were
+all consistent.
+
+What about this? (I hope it compiles...)
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index 02f4dba..aa4876a 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -344,14 +323,16 @@ out:
+ 	if (gart_fix_e820 && !fix && aper_enabled) {
+ 		if (!e820_all_mapped(aper_base, aper_base + aper_size,
+ 				    E820_RESERVED)) {
+ 			/* reserve it, so we can reuse it in second kernel */
+ 			printk(KERN_INFO "update e820 for GART\n");
+ 			add_memory_region(aper_base, aper_size, E820_RESERVED);
+ 			update_e820();
+ 		}
+-		return;
+ 	}
+ 
++	if (!fix)
++		return;
++
+ 	/* different nodes have different setting, disable them all at first*/
+ 	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
+ 		int bus;
 
 -- 
-Sitsofe | http://sucs.org/~sits/
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
