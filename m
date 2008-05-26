@@ -1,50 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYEZRIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbYEZRI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbYEZRIk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 13:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYEZRId
+	id S1754386AbYEZRI5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 13:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbYEZRIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 13:08:33 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:17556 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752456AbYEZRIc (ORCPT
+	Mon, 26 May 2008 13:08:42 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48730 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756461AbYEZRIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 13:08:32 -0400
-Date: Mon, 26 May 2008 19:08:47 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] i2c fixes for 2.6.26
-Message-ID: <20080526190847.0574f747@hyperion.delvare>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 May 2008 13:08:40 -0400
+Date: Mon, 26 May 2008 20:08:37 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <20080526165407.GB24098@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805261956090.24924@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
+ <20080526135940.GB24870@elte.hu> <20080526141252.GA31352@elte.hu>
+ <Pine.LNX.4.64.0805261745010.16829@wrl-59.cs.helsinki.fi> <20080526162328.GA9089@elte.hu>
+ <Pine.LNX.4.64.0805261926260.24924@wrl-59.cs.helsinki.fi> <20080526165407.GB24098@elte.hu>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; boundary="-696208474-1590138542-1211821374=:24924"
+Content-ID: <Pine.LNX.4.64.0805262002580.24924@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Please pull the i2c subsystem fixes for Linux 2.6.26 from:
+---696208474-1590138542-1211821374=:24924
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0805262002581.24924@wrl-59.cs.helsinki.fi>
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+On Mon, 26 May 2008, Ingo Molnar wrote:
 
-(Note to other readers: please do NOT pull the whole kernel tree from
-this location, my line wouldn't like it.)
+> 
+> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> 
+> > > > Hmm, readfds is NULL isn't it?!? Are you sure you straced the 
+> > > > right process?
+> > > 
+> > > yes, i'm stracing the task that is hung unexpectedly.
+> > 
+> > But that wasn't the receiving process? (I didn't quickly find into 
+> > which direction distcc ports go, so I couldn't confirm this). If you 
+> > still have that situation at hand, could you check which is the 
+> > receiving process (e.g., using netstat -p, the end which has Recv-Q is 
+> > the right one) and where it's stuck?
+> 
+> it wasnt the receiving process. There's no receiving process - which is 
+> weird:
+> 
+> Active Internet connections (w/o servers)
+> Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   
+> tcp        0 207232 europe:37198                europe:distcc               ESTABLISHED 19578/distcc        
+> tcp        0      0 europe:ssh                  dione:36284                 ESTABLISHED -                   
+> tcp        0      0 europe:ssh                  e2:45910                    ESTABLISHED -                   
+> tcp    72283      0 europe:distcc               europe:37198                ESTABLISHED -                   
 
- drivers/media/video/tuner-core.c |   20 +++++++-------------
- include/linux/mod_devicetable.h  |    3 ++-
- 2 files changed, 9 insertions(+), 14 deletions(-)
+Just to be sure (please forgive me if you find this nearly an insult :-)), 
+did you have enough rights to find out the pid (ie., if that process not 
+owned by you then you need superuser privs for that)?
 
----------------
+> i just gave it as a general example of why sometimes stracing a task can 
+> 'disturb' the observed system and can kick the TCP state machine out of 
+> a stall. I did not say it's occuring here.
 
-Jiri Slaby (1):
-      i2c: Align i2c_device_id
+Yeah, I understood that earlier. Similarly, I just wanted to point out
+the end where the problem lies :-).
 
-Michael Krufky (1):
-      tuner: Do not alter i2c_client.name
+> > ...It may still be that the receiving process is stuck due to the 
+> > non-net related changes you have there.
+> 
+> the socket does not seem to be owned. It should have closed down? 
+> Refcounting issue?
 
-Thanks,
+It's well possible that e.g., net namespaces have some bug in handling
+of orphaned tcp.
+
+> find below the sysrq-t dump.
+
+...I'll have a look into that as well (though with such I'm on a more 
+unfamiliar territory, so it will take a moment).
+
+
 -- 
-Jean Delvare
+ i.
+---696208474-1590138542-1211821374=:24924--
