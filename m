@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYEZRXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYEZR2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbYEZRXx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 13:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbYEZRXm
+	id S1755131AbYEZR2g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 13:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYEZR21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 13:23:42 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:12692 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753916AbYEZRXl (ORCPT
+	Mon, 26 May 2008 13:28:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:10247 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbYEZR20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 13:23:41 -0400
-Date: Mon, 26 May 2008 21:23:40 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Timur Tabi <timur@freescale.com>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [SERIAL] fix driver_name conflicts
-Message-ID: <20080526172340.GA17703@polina.dev.rtsoft.ru>
+	Mon, 26 May 2008 13:28:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sgXlDSH6XQ/W1jEpUs+msu5AvCCn33ohfht/ySbfxzDQdodAH3lKJ6XYG12kgjq5rVvwYljcFCI7XqF5TK4GEU/b3jrQ8P4N2L6QKIwwzH5UgIHvmtXock1i9inPFq6P6Zu0IkiZYIz3i+jAFghQ9kjABeVAIgXZ/ZNzLqSPxyE=
+Message-ID: <e2e108260805261028o204d4fc7l3f20ad3919cf778b@mail.gmail.com>
+Date: Mon, 26 May 2008 19:28:23 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
+Cc: "Theodore Tso" <tytso@mit.edu>, "Ingo Molnar" <mingo@elte.hu>,
+       "Jan Kara" <jack@suse.cz>, "Arjan van de Ven" <arjan@linux.intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Greg KH" <greg@kroah.com>, "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <200805261909.59032.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <4836EE8C.1010200@linux.intel.com> <20080526164858.GA24098@elte.hu>
+	 <20080526170147.GB9893@mit.edu> <200805261909.59032.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some drivers are using too generic "serial" name for driver_name, this
-might cause issues, like this:
+On Mon, May 26, 2008 at 7:09 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> Am Montag 26 Mai 2008 19:01:48 schrieb Theodore Tso:
+>> If the USB stack folks would like to work on how to recognize that
+>> it's the same USB stick that had been previously pulled, so that it
+>> gets the same block device, and we can decide for how long we should
+>> keep dirty buffers around associated with a pulled USB stick, we can
+>> certainly have that conversation.  :-)
+>
+> Even if we could tell whether the device has remained the same, how
+> would we know the medium wasn't exchanged?
 
-Freescale QUICC Engine UART device driver
-proc_dir_entry 'serial' already registered
-Call Trace:
-[cf82de50] [c0007f7c] show_stack+0x4c/0x1ac (unreliable)
-[cf82de90] [c00b03fc] proc_register+0xfc/0x1ac
-[cf82dec0] [c00b05c8] create_proc_entry+0x60/0xac
-[cf82dee0] [c00b23dc] proc_tty_register_driver+0x60/0x98
-[cf82def0] [c016dbd8] tty_register_driver+0x1b4/0x228
-[cf82df20] [c0184d70] uart_register_driver+0x144/0x194
-[cf82df40] [c030a378] ucc_uart_init+0x2c/0x94
-[cf82df50] [c02f21a0] kernel_init+0x98/0x27c
-[cf82dff0] [c000fa74] kernel_thread+0x44/0x60
+Looking at the filesystem UUID could help -- this is an ID that is
+present as data on the disk, and that is even independent of the bus
+type. See also /dev/disk/by-uuid.
 
-^^ The board is using ucc_uart.c and 8250.c, both registered as
-   "serial".
+For the journaling filesystems I am familiar with the default value
+for the commit parameter is 5 seconds. Would it be a good idea to
+leave the default to 5s for non-removable devices, and to change this
+default to 1s for removable devices ?
 
-This patch fixes two drivers that are using "serial" for driver_name and
-not "ttyS" for dev_name. Drivers that are using "ttyS" for dev_name, will
-conflict anyway, so we don't bother with these.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/serial/sb1250-duart.c |    2 +-
- drivers/serial/ucc_uart.c     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/serial/sb1250-duart.c b/drivers/serial/sb1250-duart.c
-index 2d6c08b..f8e1447 100644
---- a/drivers/serial/sb1250-duart.c
-+++ b/drivers/serial/sb1250-duart.c
-@@ -924,7 +924,7 @@ console_initcall(sbd_serial_console_init);
- 
- static struct uart_driver sbd_reg = {
- 	.owner		= THIS_MODULE,
--	.driver_name	= "serial",
-+	.driver_name	= "sb1250_duart",
- 	.dev_name	= "duart",
- 	.major		= TTY_MAJOR,
- 	.minor		= SB1250_DUART_MINOR_BASE,
-diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
-index 01917c4..566a8b4 100644
---- a/drivers/serial/ucc_uart.c
-+++ b/drivers/serial/ucc_uart.c
-@@ -195,7 +195,7 @@ struct uart_qe_port {
- 
- static struct uart_driver ucc_uart_driver = {
- 	.owner  	= THIS_MODULE,
--	.driver_name    = "serial",
-+	.driver_name    = "ucc_uart",
- 	.dev_name       = "ttyQE",
- 	.major  	= SERIAL_QE_MAJOR,
- 	.minor  	= SERIAL_QE_MINOR,
--- 
-1.5.5.1
+Bart.
