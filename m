@@ -1,54 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbYEZMX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbYEZMYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208AbYEZMX4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYEZMX3
+	id S1756361AbYEZMYW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbYEZMXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:23:29 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:49524 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755064AbYEZMX2 (ORCPT
+	Mon, 26 May 2008 08:23:37 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:49201 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756004AbYEZMXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 08:23:28 -0400
+	Mon, 26 May 2008 08:23:36 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       "Artem Bityutskiy" <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 3 03/29] do_mounts: allow UBI root device name
-Date: Mon, 26 May 2008 17:05:17 +0300
-Message-Id: <1211810743-18936-4-git-send-email-Artem.Bityutskiy@nokia.com>
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 3 04/29] UBIFS: add brief documentation
+Date: Mon, 26 May 2008 17:05:18 +0300
+Message-Id: <1211810743-18936-5-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
-X-OriginalArrivalTime: 26 May 2008 12:23:24.0214 (UTC) FILETIME=[4AF52D60:01C8BF2B]
+X-OriginalArrivalTime: 26 May 2008 12:23:25.0557 (UTC) FILETIME=[4BC21A50:01C8BF2B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-
-Similarly to MTD devices, allow UBI devices.
-
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- init/do_mounts.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ Documentation/filesystems/ubifs.txt |  163 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 163 insertions(+), 0 deletions(-)
 
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 660c1e5..a1de1bf 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -372,7 +372,8 @@ void __init prepare_namespace(void)
- 
- 	if (saved_root_name[0]) {
- 		root_device_name = saved_root_name;
--		if (!strncmp(root_device_name, "mtd", 3)) {
-+		if (!strncmp(root_device_name, "mtd", 3) ||
-+		    !strncmp(root_device_name, "ubi", 3)) {
- 			mount_block_root(root_device_name, root_mountflags);
- 			goto out;
- 		}
+diff --git a/Documentation/filesystems/ubifs.txt b/Documentation/filesystems/ubifs.txt
+new file mode 100644
+index 0000000..ab653b4
+--- /dev/null
++++ b/Documentation/filesystems/ubifs.txt
+@@ -0,0 +1,163 @@
++Introduction
++=============
++
++UBIFS file-system stands for UBI File System. UBI stands for "Unsorted
++Block Images". UBIFS is a flash file system, which means it is designed
++to work with flash devices. It is important to understand, that UBIFS
++is completely different to any traditional file-system in Linux, like
++Ext2, XFS, JFS, etc. UBIFS represents a separate class of file-systems
++which work with MTD devices, not block devices. The other Linux
++file-system of this class is JFFS2.
++
++To make it more clear, here is a small comparison of MTD devices and
++block devices.
++
++1 MTD devices represent flash devices and they consist of eraseblocks of
++  rather large size, typically about 128KiB. Block devices consist of
++  small blocks, typically 512 bytes.
++2 MTD devices support 3 main operations - read from some offset within an
++  eraseblock, write to some offset within an eraseblock, and erase a whole
++  eraseblock. Block  devices support 2 main operations - read a whole
++  block and write a whole block.
++3 The whole eraseblock has to be erased before it becomes possible to
++  re-write its contents. Blocks may be just re-written.
++4 Eraseblocks become worn out after some number of erase cycles -
++  typically 100K-1G for SLC NAND and NOR flashes, and 1K-10K for MLC
++  NAND flashes. Blocks do not have the wear-out property.
++5 Eraseblocks may become bad (only on NAND flashes) and software should
++  deal with this. Blocks on hard drives typically do not become bad,
++  because hardware has mechanisms to substitute bad blocks, at least in
++  modern LBA disks.
++
++It should be quite obvious why UBIFS is very different to traditional
++file-systems.
++
++UBIFS works on top of UBI. UBI is a separate software layer which may be
++found in drivers/mtd/ubi. UBI is basically a volume management and
++wear-leveling layer. It provides so called UBI volumes which is a higher
++level abstraction than a MTD device. The programming model of UBI devices
++is very similar to MTD devices - they still consist of large eraseblocks,
++they have read/write/erase operations, but UBI devices are devoid of
++limitations like wear and bad blocks (items 4 and 5 in the above list).
++
++In a sense, UBIFS is a next generation of JFFS2 file-system, but it is
++very different and incompatible to JFFS2. The following are the main
++differences.
++
++* JFFS2 works on top of MTD devices, UBIFS depends on UBI and works on
++  top of UBI volumes.
++* JFFS2 does not have on-media index and has to build it while mounting,
++  which requires full media scan. UBIFS maintains the FS indexing
++  information on the flash media and does not require full media scan,
++  so it mounts many times faster than JFFS2.
++* JFFS2 is a write-through file-system, while UBIFS supports write-back,
++  which makes UBIFS much faster on writes.
++
++Similarly to JFFS2, UBIFS supports on-the-flight compression which makes
++it possible to fit quite a lot of data to the flash.
++
++Similarly to JFFS2, UBIFS is tolerant of unclean reboots and power-cuts.
++It does not need stuff like ckfs.ext2. UBIFS automatically replays its
++journal and recovers from crashes, ensuring that the on-flash data
++structures are consistent.
++
++UBIFS scales logarithmically (most of the data structures it uses are
++trees), so the mount time and memory consumption do not linearly depend
++on the flash size, like in case of JFFS2. This is because UBIFS
++maintains the FS index on the flash media. However, UBIFS depends on
++UBI, which scales linearly. So overall UBI/UBIFS stack scales linearly.
++Nevertheless, UBI/UBIFS scales considerably better than JFFS2.
++
++The authors of UBIFS believe, that it is possible to develop UBI2 which
++would scale logarithmically as well. UBI2 would support the same API as UBI,
++but it would be binary incompatible to UBI. So UBIFS would not need to be
++changed to use UBI2
++
++
++Mount options
++=============
++
++(*) == default.
++
++norm_unmount (*)	commit on unmount; the journal is committed
++			when the file-system is unmounted so that the
++			next mount does not have to replay the journal
++			and it becomes very fast;
++fast_unmount		do not commit on unmount; this option makes
++			unmount faster, but the next mount slower
++			because of the need to replay the journal.
++
++
++Quick usage instructions
++========================
++
++The UBI volume to mount is specified using "ubiX_Y" or "ubiX:NAME" syntax,
++where "X" is UBI device number, "Y" is UBI volume number, and "NAME" is
++UBI volume name.
++
++Mount volume 0 on UBI device 0 to /mnt/ubifs:
++$ mount -t ubifs ubi0_0 /mnt/ubifs
++
++Mount "rootfs" volume of UBI device 0 to /mnt/ubifs ("rootfs" is volume
++name):
++$ mount -t ubifs ubi0:rootfs /mnt/ubifs
++
++The following is an example of the kernel boot arguments to attach mtd0
++to UBI and mount volume "rootfs":
++ubi.mtd=0 root=ubi0:rootfs rootfstype=ubifs
++
++
++Module Parameters for Debugging
++===============================
++
++When UBIFS has been compiled with debugging enabled, there are 3 module
++parameters that are available to control aspects of testing and debugging.
++The parameters are unsigned integers where each bit controls an option.
++The parameters are:
++
++debug_msgs	Selects which debug messages to display, as follows:
++
++		Message Type				Flag value
++
++		General messages			1
++		Journal messages			2
++		Mount messages				4
++		Commit messages				8
++		LEB search messages			16
++		Budgeting messages			32
++		Garbage collection messages		64
++		Tree Node Cache (TNC) messages		128
++		LEB properties (lprops) messages	256
++		Input/output messages			512
++		Log messages				1024
++		Scan messages				2048
++		Recovery messages			4096
++
++debug_chks	Selects extra checks that UBIFS can do while running:
++
++		Check					Flag value
++
++		General checks				1
++		Check Tree Node Cache (TNC)		2
++		Check indexing tree size		4
++		Check orphan area			8
++		Check old indexing tree			16
++		Check LEB properties (lprops)		32
++
++debug_tsts	Selects a mode of testing, as follows:
++
++		Test mode				Flag value
++
++		Force in-the-gaps method		2
++		Failure mode for recovery testing	4
++
++For example, set debug_msgs to 5 to display General messages and Mount
++messages.
++
++
++References
++==========
++
++UBIFS documentation and FAQ/HOWTO at the MTD web site:
++http://www.linux-mtd.infradead.org/doc/ubifs.html
++http://www.linux-mtd.infradead.org/faq/ubifs.html
 -- 
 1.5.4.1
 
