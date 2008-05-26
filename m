@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbYEZOFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYEZOJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbYEZOFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 10:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYEZOFh
+	id S1756141AbYEZOJF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 10:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYEZOIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 10:05:37 -0400
-Received: from main.gmane.org ([80.91.229.2]:38366 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbYEZOFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 10:05:36 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
-Date: Mon, 26 May 2008 15:04:54 +0100
-Message-ID: <g1eg2q$81q$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
-User-Agent: KNode/0.10.4
-Cc: kernel-testers@vger.kernel.org
+	Mon, 26 May 2008 10:08:55 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:37736 "EHLO WNmonitoring"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752071AbYEZOIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 10:08:54 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 1/1] Char: tty_io, fix closecount counting
+Date: Mon, 26 May 2008 16:08:43 +0200
+Message-Id: <1211810923-3122-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<posted & mailed>
+Alan, please N/ACK this.
 
-When using a 32 bit linux-next-20080526 the bootup process will hang at a
-random point (not even sysrq helps) with no additional output on the screen
-(whereas linux-next-20080523 did boot). Mysteriously, booting with
-nmi_watchdog=2 allows the boot to finish (booting with nmi_watchdog=1 still
-stalls). I have bisected it down to commit
-[d1b946b97d71423f365fa797d1428e1847c0bec1]:
+--
 
-commit d1b946b97d71423f365fa797d1428e1847c0bec1
-Author: Cyrill Gorcunov <gorcunov@gmail.com>
-Date:   Sat May 24 19:36:34 2008 +0400
+filp->f_op->write never equals to tty_write for the console device, so
+closecount++ is never reached and we don't close console device so many
+times we open it before. (The closecount is used only for /dev/console.)
 
-    x86: nmi_32.c - add "panic" option
+This is probably a fix for an issue first reported in 2.6.18.1:
+http://lkml.org/lkml/2006/10/20/301
+and
+http://marc.info/?l=linux-mips&m=118797256328587
 
-    Allow to pass "panic" option in 32bit mode
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
+ drivers/char/tty_io.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-    Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-    Cc: hpa@zytor.com
-    Cc: mingo@redhat.com
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-Reverting this seemed to allow the boot to proceed without issue. Here is
-the bisection log:
-
-# bad: [5ffeee1785c30303007b3d2dce85402b0bbf9b00] Add linux-next specific
-files
-# good: [7b6c98f0853b86c101948f1bf4e0a21d3065944f] Add linux-next specific
-files
-git-bisect start 'next-20080526' 'next-20080523'
-# bad: [cab464e32db5aef80c51831c20009ae7c3354396] Merge
-commit 'x86/auto-x86-next'
-git-bisect bad cab464e32db5aef80c51831c20009ae7c3354396
-# good: [497d7294d4fb1a0d2ce14bb891a1d812b2af3745] Merge
-branch 'x86/mpparse' into auto-x86-next
-git-bisect good 497d7294d4fb1a0d2ce14bb891a1d812b2af3745
-# good: [8315d6949d94b7513f8829b62d59d7d5699872dd] USB: driver for gotemp
-device
-git-bisect good 8315d6949d94b7513f8829b62d59d7d5699872dd
-# good: [289c79a4bd350e8a25065102563ad1a183d1b402] vlan: Use bitmask of
-feature flags instead of seperate feature bits
-git-bisect good 289c79a4bd350e8a25065102563ad1a183d1b402
-# bad: [c791e51837f26cba073d3c37cf04803bb3a5c6c0] Merge branch 'x86/timers'
-into auto-x86-next
-git-bisect bad c791e51837f26cba073d3c37cf04803bb3a5c6c0
-# bad: [4039cbaacf7874ab1effd0e9fb6c60bf9217f373] Merge branch 'x86/nmi'
-into auto-x86-next
-git-bisect bad 4039cbaacf7874ab1effd0e9fb6c60bf9217f373
-# bad: [4b82b277707a39b97271439c475f186f63ec4692] x86: nmi_32.c - add
-nmi_watchdog_default helper
-git-bisect bad 4b82b277707a39b97271439c475f186f63ec4692
-# good: [e56b3a12c45e439169f2d1f7194be397667320a6] x86: nmi - die_nmi()
-output message unification
-git-bisect good e56b3a12c45e439169f2d1f7194be397667320a6
-# bad: [d1b946b97d71423f365fa797d1428e1847c0bec1] x86: nmi_32.c -
-add "panic" option
-git-bisect bad d1b946b97d71423f365fa797d1428e1847c0bec1
-# good: [c6425b9f143a75bbcd0a7684b4df40e20d0b2f32] x86: move do_nmi(),
-stop_nmi() and restart_nmi() to traps_64.c
-git-bisect good c6425b9f143a75bbcd0a7684b4df40e20d0b2f32
-
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index c9e6e24..8c7b6ed 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -1434,9 +1434,9 @@ static void do_tty_hangup(struct work_struct *work)
+ 	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
+ 		if (filp->f_op->write == redirected_tty_write)
+ 			cons_filp = filp;
++		closecount++;
+ 		if (filp->f_op->write != tty_write)
+ 			continue;
+-		closecount++;
+ 		tty_fasync(-1, filp, 0);	/* can't block */
+ 		filp->f_op = &hung_up_tty_fops;
+ 	}
 -- 
-Sitsofe | http://sucs.org/~sits/
+1.5.4.5
 
