@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757740AbYEZMc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbYEZMcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757740AbYEZMc2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbYEZMYl
+	id S1754749AbYEZMcs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbYEZMYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:24:41 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:49678 "EHLO
+	Mon, 26 May 2008 08:24:42 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49682 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755328AbYEZMYW (ORCPT
+	with ESMTP id S1756367AbYEZMYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 08:24:22 -0400
+	Mon, 26 May 2008 08:24:24 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 3 24/29] UBIFS: add budgeting
-Date: Mon, 26 May 2008 17:05:38 +0300
-Message-Id: <1211810743-18936-25-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 3 17/29] UBIFS: add TNC shrinker
+Date: Mon, 26 May 2008 17:05:31 +0300
+Message-Id: <1211810743-18936-18-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 26 May 2008 12:23:59.0260 (UTC) FILETIME=[5FD8C5C0:01C8BF2B]
+X-OriginalArrivalTime: 26 May 2008 12:24:20.0822 (UTC) FILETIME=[6CB2DF60:01C8BF2B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because of compression and space wastage (due to paddings) it is not
-always possible to know whether the cached data fits the flash space
-or not. Sometimes this problem is called "ENOSPC" problem. UBIFS
-implements the budgeting sub-system to solve the issue. All the FS
-operations have to acquire the budget. The budgeting subsystem does
-pessimistic space calculations (e.g., assumes the data is not
-compressible) and forces write-back or garbage-collection if needed.
+The TNC cache grows with time, because UBIFS caches the indexing nodes
+when the indexing B-tree is looked-up. But if the the file-system is
+large enough, the TNC may consume a lot of memory, in which UBIFS prunes
+it. Namely, it register memory shrinker for these purposes.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/budget.c |  859 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 859 insertions(+), 0 deletions(-)
+ fs/ubifs/shrinker.c |  322 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 322 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
+diff --git a/fs/ubifs/shrinker.c b/fs/ubifs/shrinker.c
 new file mode 100644
-index 0000000..e340af8
+index 0000000..b100ed9
 --- /dev/null
-+++ b/fs/ubifs/budget.c
-@@ -0,0 +1,859 @@
++++ b/fs/ubifs/shrinker.c
+@@ -0,0 +1,322 @@
 +/*
 + * This file is part of UBIFS.
 + *
@@ -67,846 +64,309 @@ index 0000000..e340af8
 + * this program; if not, write to the Free Software Foundation, Inc., 51
 + * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + *
-+ * Authors: Adrian Hunter
-+ *          Artem Bityutskiy (Битюцкий Артём)
++ * Authors: Artem Bityutskiy (Битюцкий Артём)
++ *          Adrian Hunter
 + */
 +
 +/*
-+ * This file implements the budgeting unit which is responsible for UBIFS space
-+ * management.
++ * This file implements UBIFS shrinker which evicts clean znodes from the TNC
++ * tree when Linux VM needs more RAM.
 + *
-+ * Factors such as compression, wasted space at the ends of LEBs, space in other
-+ * journal heads, the effect of updates on the index, and so on, make it
-+ * impossible to accurately predict the amount of space needed. Consequently
-+ * approximations are used.
++ * We do not implement any LRU lists to find oldest znodes to free because it
++ * would add additional overhead to the file system fast paths. So the shrinker
++ * just walks the TNC tree when searching for znodes to free.
++ *
++ * If the root of a TNC sub-tree is clean and old enough, then the children are
++ * also clean and old enough. So the shrinker walks the TNC in level order and
++ * dumps entire sub-trees.
++ *
++ * The age of znodes is just the time-stamp when they were last looked at.
++ * The current shrinker first tries to evict old znodes, then young ones.
++ *
++ * Since the shrinker is global, it has to protect against races with FS
++ * un-mounts, which is done by the 'ubifs_infos_lock' and 'c->umount_mutex'.
 + */
 +
 +#include "ubifs.h"
-+#include <linux/writeback.h>
-+#include <asm/div64.h>
++
++/* List of all UBIFS file-system instances */
++LIST_HEAD(ubifs_infos);
 +
 +/*
-+ * When pessimistic budget calculations say that there is no enough space,
-+ * UBIFS starts writing back dirty inodes and pages, doing garbage collection,
-+ * or committing. The below constants define maximum number of times UBIFS
-+ * repeats the operations.
++ * We number each shrinker run and record the number on the ubifs_info structure
++ * so that we can easily work out which ubifs_info structures have already been
++ * done by the current run.
 + */
-+#define MAX_SHRINK_RETRIES 8
-+#define MAX_GC_RETRIES     4
-+#define MAX_CMT_RETRIES    2
-+#define MAX_NOSPC_RETRIES  1
++static unsigned int shrinker_run_no;
 +
-+/*
-+ * The below constant defines amount of dirty pages which should be written
-+ * back at when trying to shrink the liability.
-+ */
-+#define NR_TO_WRITE 16
++/* Protects 'ubifs_infos' list */
++DEFINE_SPINLOCK(ubifs_infos_lock);
++
++/* Global clean znode counter (for all mounted UBIFS instances) */
++atomic_long_t ubifs_clean_zn_cnt;
 +
 +/**
-+ * struct retries_info - information about re-tries while making free space.
-+ * @prev_liability: previous liability
-+ * @shrink_cnt: how many times the liability was shrinked
-+ * @shrink_retries: count of liability shrink re-tries (increased when
-+ *                  liability does not shrink)
-+ * @try_gc: GC should be tried first
-+ * @gc_retries: how many times GC was run
-+ * @cmt_retries: how many times commit has been done
-+ * @nospc_retries: how many times GC returned %-ENOSPC
-+ *
-+ * Since we consider budgeting to be the fast-path, and this structure has to
-+ * be allocated on stack and zeroed out, we make it smaller using bit-fields.
-+ */
-+struct retries_info {
-+	long long prev_liability;
-+	unsigned int shrink_cnt;
-+	unsigned int shrink_retries:5;
-+	unsigned int try_gc:1;
-+	unsigned int gc_retries:4;
-+	unsigned int cmt_retries:3;
-+	unsigned int nospc_retries:1;
-+};
-+
-+/**
-+ * shrink_liability - write-back some dirty pages/inodes.
++ * shrink_tnc - shrink TNC tree.
 + * @c: UBIFS file-system description object
-+ * @nr_to_write: how many dirty pages to write-back
++ * @nr: number of znodes to free
++ * @age: the age of znodes to free
++ * @contention: if any contention, this is set to %1
 + *
-+ * This function shrinks UBIFS liability by means of writing back some amount
-+ * of dirty inodes and their pages. Returns the amount of pages which were
-+ * written back. The returned value does not include dirty inodes which were
-+ * synchronized.
-+ *
-+ * Note, this function synchronizes even VFS inodes which are locked
-+ * (@i_mutex) by the caller of the budgeting function, because write-back does
-+ * not touch @i_mutex.
++ * This function traverses TNC tree and frees clean znodes. It does not free
++ * clean znodes which younger then @age. Returns number of freed znodes.
 + */
-+static int shrink_liability(struct ubifs_info *c, int nr_to_write)
++static int shrink_tnc(struct ubifs_info *c, int nr, int age, int *contention)
 +{
-+	struct writeback_control wbc = {
-+		.sync_mode   = WB_SYNC_NONE,
-+		.range_end   = LLONG_MAX,
-+		.nr_to_write = nr_to_write,
-+	};
++	int total_freed = 0;
++	struct ubifs_znode *znode, *zprev;
++	int time = get_seconds();
 +
-+	generic_sync_sb_inodes(c->vfs_sb, &wbc);
-+	dbg_budg("%ld pages were written back", nr_to_write - wbc.nr_to_write);
-+	return nr_to_write - wbc.nr_to_write;
-+}
++	ubifs_assert(mutex_is_locked(&c->umount_mutex));
++	ubifs_assert(mutex_is_locked(&c->tnc_mutex));
 +
-+
-+/**
-+ * run_gc - run garbage collector.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function runs garbage collector to make some more free space. Returns
-+ * zero if a free LEB has been produced, %-EAGAIN if commit is required, and a
-+ * negative error code in case of failure.
-+ */
-+static int run_gc(struct ubifs_info *c)
-+{
-+	int err, lnum;
-+
-+	/* Make some free space by garbage-collecting dirty space */
-+	down_read(&c->commit_sem);
-+	lnum = ubifs_garbage_collect(c, 1);
-+	up_read(&c->commit_sem);
-+	if (lnum < 0)
-+		return lnum;
-+
-+	/* GC freed one LEB, return it to lprops */
-+	dbg_budg("GC freed LEB %d", lnum);
-+	err = ubifs_return_leb(c, lnum);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/**
-+ * make_free_space - make more free space on the file-system.
-+ * @c: UBIFS file-system description object
-+ * @ri: information about previous invocations of this function
-+ *
-+ * This function is called when an operation cannot be budgeted because there
-+ * is supposedly no free space. But in most cases there is some free space:
-+ *   o budgeting is pessimistic, so it always budgets more then it is actually
-+ *     needed, so shrinking the liability is one way to make free space - the
-+ *     cached data will take less space then it was budgeted for;
-+ *   o GC may turn some dark space into free space (budgeting treats dark space
-+ *     as not available);
-+ *   o commit may free some LEB, i.e., turn freeable LEBs into free LEBs.
-+ *
-+ * So this function tries to do the above. Returns %-EAGAIN if some free space
-+ * was presumably made and the caller has to re-try budgeting the operation.
-+ * Returns %-ENOSPC if it couldn't do more free space, and other negative error
-+ * codes on failures.
-+ */
-+static int make_free_space(struct ubifs_info *c, struct retries_info *ri)
-+{
-+	int err;
++	if (!c->zroot.znode || atomic_long_read(&c->clean_zn_cnt) == 0)
++		return 0;
 +
 +	/*
-+	 * If we have some dirty pages and inodes (liability), try to write
-+	 * them back unless this was tried too many times without effect
-+	 * already.
++	 * Traverse the TNC tree in levelorder manner, so that it is possible
++	 * to destroy large sub-trees. Indeed, if a znode is old, then all its
++	 * children are older or of the same age.
++	 *
++	 * Note, we are holding 'c->tnc_mutex', so we do not have to lock the
++	 * 'c->space_lock' when _reading_ 'c->clean_zn_cnt', because it is
++	 * changed only when the 'c->tnc_mutex' is held.
 +	 */
-+	if (ri->shrink_retries < MAX_SHRINK_RETRIES && !ri->try_gc) {
-+		long long liability;
-+
-+		spin_lock(&c->space_lock);
-+		liability = c->budg_idx_growth + c->budg_data_growth +
-+			    c->budg_dd_growth;
-+		spin_unlock(&c->space_lock);
-+
-+		if (ri->prev_liability >= liability) {
-+			/* Liability does not shrink, next time try GC then */
-+			ri->shrink_retries += 1;
-+			if (ri->gc_retries < MAX_GC_RETRIES)
-+				ri->try_gc = 1;
-+			dbg_budg("liability did not shrink: retries %d of %d",
-+				 ri->shrink_retries, MAX_SHRINK_RETRIES);
-+		}
-+
-+		dbg_budg("force write-back (count %d)", ri->shrink_cnt);
-+		shrink_liability(c, NR_TO_WRITE + ri->shrink_cnt);
-+
-+		ri->prev_liability = liability;
-+		ri->shrink_cnt += 1;
-+		return -EAGAIN;
-+	}
-+
-+	/*
-+	 * Try to run garbage collector unless it was already tried too many
-+	 * times.
-+	 */
-+	if (ri->gc_retries < MAX_GC_RETRIES) {
-+		ri->gc_retries += 1;
-+		dbg_budg("run GC, retries %d of %d",
-+			 ri->gc_retries, MAX_GC_RETRIES);
-+
-+		ri->try_gc = 0;
-+		err = run_gc(c);
-+		if (!err)
-+			return -EAGAIN;
-+
-+		if (err == -EAGAIN) {
-+			dbg_budg("GC asked to commit");
-+			err = ubifs_run_commit(c);
-+			if (err)
-+				return err;
-+			return -EAGAIN;
-+		}
-+
-+		if (err != -ENOSPC)
-+			return err;
++	zprev = NULL;
++	znode = ubifs_tnc_levelorder_next(c->zroot.znode, NULL);
++	while (znode && total_freed < nr &&
++	       atomic_long_read(&c->clean_zn_cnt) > 0) {
++		int freed;
 +
 +		/*
-+		 * GC could not make any progress. If this is the first time,
-+		 * then it makes sense to try to commit, because it might make
-+		 * some dirty space.
++		 * If the znode is clean, but it is in the 'c->cnext' list, this
++		 * means that this znode has just been written to flash as a
++		 * part of commit and was marked clean. They will be removed
++		 * from the list at end commit. We cannot change the list,
++		 * because it is not protected by any mutex (design decision to
++		 * make commit really independent and parallel to main I/O). So
++		 * we just skip these znodes.
++		 *
++		 * Note, the 'clean_zn_cnt' counters are not updated until
++		 * after the commit, so the UBIFS shrinker does not report
++		 * the znodes which are in the 'c->cnext' list as freeable.
++		 *
++		 * Also note, if the root of a sub-tree is not in 'c->cnext',
++		 * then the whole sub-tree is not in 'c->cnext' as well, so it
++		 * is safe to dump whole sub-tree.
 +		 */
-+		dbg_budg("GC returned -ENOSPC, retries %d",
-+			 ri->nospc_retries);
-+		if (ri->nospc_retries >= MAX_NOSPC_RETRIES)
-+			return err;
-+		ri->nospc_retries += 1;
-+	}
 +
-+	/* Neither GC nor write-back helped, try to commit */
-+	if (ri->cmt_retries < MAX_CMT_RETRIES) {
-+		ri->cmt_retries += 1;
-+		dbg_budg("run commit, retries %d of %d",
-+			 ri->cmt_retries, MAX_CMT_RETRIES);
-+		err = ubifs_run_commit(c);
-+		if (err)
-+			return err;
-+		return -EAGAIN;
-+	}
++		if (znode->cnext) {
++			/*
++			 * Very soon these znodes will be removed from the list
++			 * and become freeable.
++			 */
++			*contention = 1;
++		} else if (!ubifs_zn_dirty(znode) &&
++			   abs(time - znode->time) >= age) {
++			if (znode->parent)
++				znode->parent->zbranch[znode->iip].znode = NULL;
++			else
++				c->zroot.znode = NULL;
 +
-+	return -ENOSPC;
-+}
++			freed = ubifs_destroy_tnc_subtree(znode);
++			atomic_long_sub(freed, &ubifs_clean_zn_cnt);
++			atomic_long_sub(freed, &c->clean_zn_cnt);
++			ubifs_assert(atomic_long_read(&c->clean_zn_cnt) >= 0);
++			total_freed += freed;
++			znode = zprev;
++		}
 +
-+/**
-+ * ubifs_calc_min_idx_lebs - calculate amount of eraseblocks for the index.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function calculates and returns the number of eraseblocks which should
-+ * be kept for index usage.
-+ */
-+int ubifs_calc_min_idx_lebs(struct ubifs_info *c)
-+{
-+	int ret;
-+	uint64_t idx_size;
++		if (unlikely(!c->zroot.znode))
++			break;
 +
-+	idx_size = c->old_idx_sz + c->budg_idx_growth + c->budg_uncommitted_idx;
-+
-+	/* And make sure we have twice the index size of space reserved */
-+	idx_size <<= 1;
-+
-+	/*
-+	 * We do not maintain 'old_idx_size' as 'old_idx_lebs'/'old_idx_bytes'
-+	 * pair, nor similarly the two variables for the new index size, so we
-+	 * have to do this costly 64-bit division on fast-path.
-+	 */
-+	if (do_div(idx_size, c->leb_size - c->max_idx_node_sz))
-+		ret = idx_size + 1;
-+	else
-+		ret = idx_size;
-+	/*
-+	 * The index head is not available for the in-the-gaps method, so add an
-+	 * extra LEB to compensate.
-+	 */
-+	ret += 1;
-+	/*
-+	 * At present the index needs at least 2 LEBs: one for the index head
-+	 * and one for in-the-gaps method (which currently does not cater for
-+	 * the index head and so excludes it from consideration).
-+	 */
-+	if (ret < 2)
-+		ret = 2;
-+	return ret;
-+}
-+
-+/**
-+ * ubifs_calc_available - calculate available FS space.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function calculates and returns amount of FS space available for use.
-+ */
-+long long ubifs_calc_available(const struct ubifs_info *c)
-+{
-+	long long available, subtract_lebs;
-+
-+	/*
-+	 * Force the amount available to the total size reported if the used
-+	 * space is zero.
-+	 */
-+	if (c->lst.total_used <= UBIFS_INO_NODE_SZ &&
-+	    c->budg_data_growth + c->budg_dd_growth == 0) {
-+		/* Do the same calculation as for c->block_cnt */
-+		available = c->main_lebs - 2;
-+		available *= c->leb_size - c->dark_wm;
-+		return available;
-+	}
-+
-+	available = c->main_bytes - c->lst.total_used;
-+
-+	/*
-+	 * Now 'available' contains theoretically available flash space
-+	 * assuming there is no index, so we have to subtract the space which
-+	 * is reserved for the index.
-+	 */
-+	subtract_lebs = c->min_idx_lebs;
-+
-+	/* Take into account that GC reserves one LEB for its own needs */
-+	subtract_lebs += 1;
-+
-+	/*
-+	 * The GC journal head LEB is not really accessible. And since
-+	 * different write types go to different heads, we may count only on
-+	 * one head's space.
-+	 */
-+	subtract_lebs += c->jhead_cnt - 1;
-+
-+	/* We also reserve one LEB for deletions, which bypass budgeting */
-+	subtract_lebs += 1;
-+
-+	available -= subtract_lebs * c->leb_size;
-+
-+	/* Subtract the dead space which is not available for use */
-+	available -= c->lst.total_dead;
-+
-+	/*
-+	 * Subtract dark space, which might or might not be usable - it depends
-+	 * on the data which we have on the media and which will be written. If
-+	 * this is a lot of uncompressed or not-compressible data, the dark
-+	 * space cannot be used.
-+	 */
-+	available -= c->lst.total_dark;
-+
-+	/*
-+	 * However, there is more dark space. The index may be bigger than
-+	 * min_idx_lebs. Those extra LEBs are assumed to be available, but
-+	 * their dark space is not included in total_dark, so it is subtracted
-+	 * here.
-+	 */
-+	if (c->lst.idx_lebs > c->min_idx_lebs) {
-+		subtract_lebs = c->lst.idx_lebs - c->min_idx_lebs;
-+		available -= subtract_lebs * c->dark_wm;
-+	}
-+
-+	return available;
-+}
-+
-+/**
-+ * rp_can_write - check whether the user is allowed to write.
-+ * @c: UBIFS file-system description object
-+ * @avail: available space on FS
-+ *
-+ * UBIFS has so-called "reserved pool" which is flash space reserved
-+ * for the superuser and for uses whose UID/GID is recorded in UBIFS superblock.
-+ * This function checks whether current user is allowed to write
-+ * to the file-system - it returns %1 if there is plenty of space or the user
-+ * is eligible to use the reserved pool and %0 otherwise.
-+ */
-+static int rp_can_write(struct ubifs_info *c, long long avail)
-+{
-+	if (avail > c->rp_size || current->fsuid == c->rp_uid ||
-+	    capable(CAP_SYS_RESOURCE) ||
-+	    (c->rp_gid != 0 && in_group_p(c->rp_gid)))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/**
-+ * do_budget_space - reserve flash space for index and data growth.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function makes sure UBIFS has enough free eraseblocks for index growth
-+ * and data.
-+ *
-+ * When budgeting index space, UBIFS reserves twice as more LEBs as the index
-+ * would take if it was consolidated and written to the flash. This guarantees
-+ * that the "in-the-gaps" commit method always succeeds and UBIFS will always
-+ * be able to commit dirty index. So this function basically adds amount of
-+ * budgeted index space to the size of the current index, multiplies this by 2,
-+ * and makes sure this does not exceed the amount of free eraseblocks.
-+ *
-+ * Notes about @c->min_idx_lebs and @c->lst.idx_lebs variables:
-+ * o @c->lst.idx_lebs is the number of LEBs the index currently uses. It might
-+ *    be large, because UBIFS does not do any index consolidation as long as
-+ *    there is free space. IOW, the index may take a lot of LEBs, but the LEBs
-+ *    will contain a lot of dirt.
-+ * o @c->min_idx_lebs is the the index presumably takes. IOW, the index may be
-+ *   consolidated to take up to @c->min_idx_lebs LEBs.
-+ *
-+ * This function returns zero in case of success, and %-ENOSPC in case of
-+ * failure.
-+ */
-+static int do_budget_space(struct ubifs_info *c)
-+{
-+	long long outstanding, available;
-+	int lebs, rsvd_idx_lebs, min_idx_lebs;
-+
-+	/* First budget index space */
-+	min_idx_lebs = ubifs_calc_min_idx_lebs(c);
-+
-+	/* Now 'min_idx_lebs' contains number of LEBs to reserve */
-+	if (min_idx_lebs > c->lst.idx_lebs)
-+		rsvd_idx_lebs = min_idx_lebs - c->lst.idx_lebs;
-+	else
-+		rsvd_idx_lebs = 0;
-+
-+	/*
-+	 * The number of LEBs that are available to be used by the index is:
-+	 *
-+	 *     c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
-+	 *     c->lst.taken_empty_lebs
-+	 *
-+	 * empty_lebs are available because they are empty. freeable_cnt are
-+	 * available because they contain only free and dirty space and the
-+	 * index allocation always occurs after wbufs are synch'ed.
-+	 * idx_gc_cnt are available because they are index LEBs that have been
-+	 * garbage collected (including trivial GC) and are awaiting the commit
-+	 * before they can be unmapped - note that the in-the-gaps method will
-+	 * grab these if it needs them. taken_empty_lebs are empty_lebs that
-+	 * have already been allocated for some purpose (also includes those
-+	 * LEBs on the idx_gc list).
-+	 */
-+	lebs = c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt -
-+	       c->lst.taken_empty_lebs;
-+	ubifs_assert(lebs + c->lst.idx_lebs >= c->min_idx_lebs);
-+	if (unlikely(rsvd_idx_lebs > lebs)) {
-+		dbg_budg("out of indexing space: min_idx_lebs %d (old %d), "
-+			 "rsvd_idx_lebs %d", min_idx_lebs, c->min_idx_lebs,
-+			 rsvd_idx_lebs);
-+		return -ENOSPC;
-+	}
-+
-+	available = ubifs_calc_available(c);
-+	outstanding = c->budg_data_growth + c->budg_dd_growth;
-+
-+	if (unlikely(available < outstanding)) {
-+		dbg_budg("out of data space: available %lld, outstanding %lld",
-+			 available, outstanding);
-+		return -ENOSPC;
-+	}
-+
-+	if (!rp_can_write(c, available - outstanding))
-+		return -ENOSPC;
-+
-+	c->min_idx_lebs = min_idx_lebs;
-+	return 0;
-+}
-+
-+/**
-+ * calc_idx_growth - calculate approximate index growth from budgeting request.
-+ * @c: UBIFS file-system description object
-+ * @req: budgeting request
-+ *
-+ * For now we assume each new node adds one znode. But this is rather poor
-+ * approximation, though.
-+ */
-+static int calc_idx_growth(const struct ubifs_info *c,
-+			   const struct ubifs_budget_req *req)
-+{
-+	int znodes;
-+
-+	znodes = req->new_ino + (req->new_page << UBIFS_BLOCKS_PER_PAGE_SHIFT) +
-+		 req->new_dent;
-+	return znodes * c->max_idx_node_sz;
-+}
-+
-+/**
-+ * calc_data_growth - calculate approximate amount of new data from budgeting
-+ * request.
-+ * @c: UBIFS file-system description object
-+ * @req: budgeting request
-+ */
-+static int calc_data_growth(const struct ubifs_info *c,
-+			    const struct ubifs_budget_req *req)
-+{
-+	int data_growth;
-+
-+	data_growth = req->new_ino  ? c->inode_budget : 0;
-+	if (req->new_page)
-+		data_growth += c->page_budget;
-+	if (req->new_dent)
-+		data_growth += c->dent_budget;
-+	data_growth += req->new_ino_d;
-+
-+	return data_growth;
-+}
-+
-+/**
-+ * calc_dd_growth - calculate approximate amount of data which makes other data
-+ * dirty from budgeting request.
-+ * @c: UBIFS file-system description object
-+ * @req: budgeting request
-+ */
-+static int calc_dd_growth(const struct ubifs_info *c,
-+			  const struct ubifs_budget_req *req)
-+{
-+	int dd_growth;
-+
-+	dd_growth = req->dirtied_page ? c->page_budget : 0;
-+
-+	if (req->dirtied_ino)
-+		dd_growth += c->inode_budget << (req->dirtied_ino - 1);
-+	if (req->mod_dent)
-+		dd_growth += c->dent_budget;
-+	dd_growth += req->dirtied_ino_d;
-+
-+	return dd_growth;
-+}
-+
-+/**
-+ * ubifs_budget_space - ensure there is enough space to complete an operation.
-+ * @c: UBIFS file-system description object
-+ * @req: budget request
-+ *
-+ * This function allocates budget for an operation. It uses pessimistic
-+ * approximation of how much flash space the operation needs. The goal of this
-+ * function is to make sure UBIFS always has flash space to flush all dirty
-+ * pages, dirty inodes, and dirty znodes (liability). This function may force
-+ * commit, garbage-collection or write-back. Returns zero in case of success,
-+ * %-ENOSPC if there is no free space and other negative error codes in case of
-+ * failures.
-+ */
-+int ubifs_budget_space(struct ubifs_info *c, struct ubifs_budget_req *req)
-+{
-+	int uninitialized_var(cmt_retries), uninitialized_var(wb_retries);
-+	int err, idx_growth, data_growth, dd_growth;
-+	struct retries_info ri;
-+
-+	data_growth = calc_data_growth(c, req);
-+	dd_growth = calc_dd_growth(c, req);
-+	if (!data_growth && !dd_growth)
-+		return 0;
-+	idx_growth = calc_idx_growth(c, req);
-+	memset(&ri, 0, sizeof(struct retries_info));
-+
-+again:
-+	spin_lock(&c->space_lock);
-+	ubifs_assert(c->budg_idx_growth >= 0);
-+	ubifs_assert(c->budg_data_growth >= 0);
-+	ubifs_assert(c->budg_dd_growth >= 0);
-+
-+	c->budg_idx_growth += idx_growth;
-+	c->budg_data_growth += data_growth;
-+	c->budg_dd_growth += dd_growth;
-+
-+	err = do_budget_space(c);
-+	if (unlikely(err)) {
-+		/* Restore the old values */
-+		c->budg_idx_growth -= idx_growth;
-+		c->budg_data_growth -= data_growth;
-+		c->budg_dd_growth -= dd_growth;
-+		spin_unlock(&c->space_lock);
-+
-+		goto make_space;
-+	}
-+
-+	req->idx_growth = idx_growth;
-+	req->data_growth = data_growth;
-+	req->dd_growth = dd_growth;
-+	spin_unlock(&c->space_lock);
-+
-+	return 0;
-+
-+make_space:
-+	err = make_free_space(c, &ri);
-+	if (err == -EAGAIN) {
-+		dbg_budg("try again");
++		zprev = znode;
++		znode = ubifs_tnc_levelorder_next(c->zroot.znode, znode);
 +		cond_resched();
-+		goto again;
-+	} else if (err == -ENOSPC)
-+		dbg_budg("FS is full, -ENOSPC");
-+	else
-+		ubifs_err("cannot budget space, error %d", err);
-+
-+	return err;
-+}
-+
-+/**
-+ * ubifs_release_budget - release budgeted free space.
-+ * @c: UBIFS file-system description object
-+ * @req: budget request
-+ *
-+ * This function releases the space budgeted by 'ubifs_budget_space()'. Note,
-+ * since the index changes (which were budgeted for in @req->idx_growth) will
-+ * only be written to the media on commit, this function moves the index budget
-+ * from @c->budg_idx_growth to @c->budg_uncommitted_idx. The latter will be
-+ * zeroed by the commit operation.
-+ */
-+void ubifs_release_budget(struct ubifs_info *c, struct ubifs_budget_req *req)
-+{
-+	if (!req->data_growth && !req->dd_growth)
-+		return;
-+
-+	if (req->idx_growth == -1)
-+		req->idx_growth = calc_idx_growth(c, req);
-+
-+	spin_lock(&c->space_lock);
-+	c->budg_idx_growth -= req->idx_growth;
-+	c->budg_uncommitted_idx += req->idx_growth;
-+	c->budg_data_growth -= req->data_growth;
-+	c->budg_dd_growth -= req->dd_growth;
-+	c->min_idx_lebs = ubifs_calc_min_idx_lebs(c);
-+
-+	ubifs_assert(c->budg_idx_growth >= 0);
-+	ubifs_assert(c->budg_data_growth >= 0);
-+	ubifs_assert(c->min_idx_lebs < c->main_lebs);
-+	spin_unlock(&c->space_lock);
-+}
-+
-+/**
-+ * ubifs_convert_page_budget - convert budget of a new page.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function converts budget which was allocated for a new page of data to
-+ * the budget of changing an existing page of data. The latter is not larger
-+ * then the former, so this function only does simple re-calculation and does
-+ * not involve any write-back.
-+ */
-+void ubifs_convert_page_budget(struct ubifs_info *c)
-+{
-+	spin_lock(&c->space_lock);
-+	/* Release the index growth reservation */
-+	c->budg_idx_growth -= c->max_idx_node_sz << UBIFS_BLOCKS_PER_PAGE_SHIFT;
-+	/* Release the data growth reservation */
-+	c->budg_data_growth -= c->page_budget;
-+	/* Increase the dirty data growth reservation instead */
-+	c->budg_dd_growth += c->page_budget;
-+	/* And re-calculate the indexing space reservation */
-+	c->min_idx_lebs = ubifs_calc_min_idx_lebs(c);
-+	spin_unlock(&c->space_lock);
-+}
-+
-+/**
-+ * ubifs_budget_inode_op - budget an operation on inode.
-+ * @c: UBIFS file-system description object
-+ * @inode: VFS inode which will be made dirty by the operation
-+ * @req: budget request of the operation
-+ *
-+ * This function is called to get budget for an operation which changes an
-+ * inode. The inode may be in dirty or clean state. The former means there is
-+ * no need to allocate the budget as it has already been allocated before. The
-+ * latter means that the inode change budget has to be allocated.
-+ *
-+ * The caller has to pass the inode which is going to be changed. This function
-+ * acquires budget the for as described in @req plus the budget for changing
-+ * the inode dirty, if needed. Returns zero in case of success, %-ENOSPC if
-+ * there is no more flash space, and other negative error codes in case of
-+ * failure.
-+ *
-+ * Note, upon exit, this function leaves the inode locked, and the
-+ * 'ubifs_release_ino_dirty()' or 'ubifs_release_ino_clean()' function has to
-+ * be called to unlock it.
-+ */
-+int ubifs_budget_inode_op(struct ubifs_info *c, struct inode *inode,
-+			      struct ubifs_budget_req *req)
-+{
-+	struct ubifs_inode *ui = ubifs_inode(inode);
-+	int err, old = req->dirtied_ino;
-+
-+	ubifs_assert(req->dirtied_ino <= 3);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 3);
-+
-+again:
-+	/*
-+	 * If the inode is clean, it will be dirtied by this operation and we
-+	 * have to budget for this.
-+	 */
-+	req->dirtied_ino += !ui->dirty;
-+	if (req->dirtied_ino > old)
-+		req->dirtied_ino_d += ui->data_len;
-+
-+	/*
-+	 * Note, if the budget request does not actually request anything
-+	 * (i.e., @req contains only zeroes), 'ubifs_budget_space()' will
-+	 * return almost straight away.
-+	 */
-+	err = ubifs_budget_space(c, req);
-+	if (unlikely(err))
-+		return err;
-+
-+	mutex_lock(&ui->budg_mutex);
-+
-+	if (req->dirtied_ino != old + !ui->dirty) {
-+		/* The inode has probably been written back meanwhile */
-+		ubifs_release_budget(c, req);
-+		mutex_unlock(&ui->budg_mutex);
-+		req->dirtied_ino = old;
-+		req->dirtied_ino_d -= ui->data_len;
-+		goto again;
 +	}
 +
-+	UBIFS_DBG(ui->budgeted = 1);
++	return total_freed;
++}
++
++/**
++ * shrink_tnc_trees - shrink UBIFS TNC trees.
++ * @nr: number of znodes to free
++ * @age: the age of znodes to free
++ * @contention: if any contention, this is set to %1
++ *
++ * This function walks the list of mounted UBIFS file-systems and frees clean
++ * znodes which are older then @age, until at least @nr znodes are freed.
++ * Returns the number of freed znodes.
++ */
++static int shrink_tnc_trees(int nr, int age, int *contention)
++{
++	struct ubifs_info *c;
++	struct list_head *p;
++	unsigned int run_no;
++	int freed = 0;
++
++	spin_lock(&ubifs_infos_lock);
++	do
++		run_no = ++shrinker_run_no;
++	while (run_no == 0);
++	/* Iterate over all mounted UBIFS file-systems and try to shrink them */
++	p = ubifs_infos.next;
++	while (p != &ubifs_infos) {
++		c = list_entry(p, struct ubifs_info, infos_list);
++		/*
++		 * We move the ones we do to the end of the list, so we stop
++		 * when we see one we have already done.
++		 */
++		if (c->shrinker_run_no == run_no)
++			break;
++		if (!mutex_trylock(&c->umount_mutex)) {
++			/* Some un-mount is in progress, try next FS */
++			*contention = 1;
++			p = p->next;
++			continue;
++		}
++		/*
++		 * We're holding 'c->umount_mutex', so the file-system won't go
++		 * away.
++		 */
++		if (!mutex_trylock(&c->tnc_mutex)) {
++			mutex_unlock(&c->umount_mutex);
++			*contention = 1;
++			p = p->next;
++			continue;
++		}
++		spin_unlock(&ubifs_infos_lock);
++		/*
++		 * OK, now we have TNC locked, the file-system cannot go away -
++		 * it is safe to reap the cache.
++		 */
++		c->shrinker_run_no = run_no;
++		freed += shrink_tnc(c, nr, age, contention);
++		mutex_unlock(&c->tnc_mutex);
++		spin_lock(&ubifs_infos_lock);
++		/* Get the next list element before we move this one */
++		p = p->next;
++		/*
++		 * Move this one to the end of the list to provide some
++		 * fairness.
++		 */
++		list_del(&c->infos_list);
++		list_add_tail(&c->infos_list, &ubifs_infos);
++		mutex_unlock(&c->umount_mutex);
++		if (freed >= nr)
++			break;
++	}
++	spin_unlock(&ubifs_infos_lock);
++	return freed;
++}
++
++/**
++ * kick_a_thread - kick a background thread to start commit.
++ *
++ * This function kicks a background thread to start background commit. Returns
++ * %-1 if a thread was kicked or there is another reason to assume the memory
++ * will soon be freed or become freeable. If there are no dirty znodes, returns
++ * %0.
++ */
++static int kick_a_thread(void)
++{
++	int i;
++	struct ubifs_info *c;
++
++	/*
++	 * Iterate over all mounted UBIFS file-systems and find out if there is
++	 * already an ongoing commit operation there. If no, then iterate for
++	 * the second time and initiate background commit.
++	 */
++	spin_lock(&ubifs_infos_lock);
++	for (i = 0; i < 2; i++) {
++		list_for_each_entry(c, &ubifs_infos, infos_list) {
++			long dirty_zn_cnt;
++
++			if (!mutex_trylock(&c->umount_mutex)) {
++				/*
++				 * Some un-mount is in progress, it will
++				 * certainly free memory, so just return.
++				 */
++				spin_unlock(&ubifs_infos_lock);
++				return -1;
++			}
++
++			dirty_zn_cnt = atomic_long_read(&c->dirty_zn_cnt);
++
++			if (!dirty_zn_cnt || c->cmt_state == COMMIT_BROKEN ||
++			    c->ro_media) {
++				mutex_unlock(&c->umount_mutex);
++				continue;
++			}
++
++			if (c->cmt_state != COMMIT_RESTING) {
++				spin_unlock(&ubifs_infos_lock);
++				mutex_unlock(&c->umount_mutex);
++				return -1;
++			}
++
++			if (i == 1) {
++				list_del(&c->infos_list);
++				list_add_tail(&c->infos_list, &ubifs_infos);
++				spin_unlock(&ubifs_infos_lock);
++
++				ubifs_request_bg_commit(c);
++				mutex_unlock(&c->umount_mutex);
++				return -1;
++			}
++			mutex_unlock(&c->umount_mutex);
++		}
++	}
++	spin_unlock(&ubifs_infos_lock);
++
 +	return 0;
 +}
 +
-+/**
-+ * ubifs_release_ino_dirty - release budget of a "dirtying" operation.
-+ * @c: UBIFS file-system description object
-+ * @inode: VFS inode the operation worked on
-+ * @req: budget to release
-+ *
-+ * This function has to be called at the end of VFS operations which acquired
-+ * budget via 'ubifs_budget_inode_op()'. It assumes that the inode has been
-+ * marked as dirty and will be synchronized later by write-back, so it does not
-+ * release the budget of the inode.
-+ *
-+ * Note, this function also avoids releasing page budgets which are released
-+ * separately.
-+ */
-+void ubifs_release_ino_dirty(struct ubifs_info *c, struct inode *inode,
-+				struct ubifs_budget_req *req)
++int ubifs_shrinker(int nr, gfp_t gfp_mask)
 +{
-+	ubifs_assert(req->dirtied_ino <= 4);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
-+	ubifs_assert(req->idx_growth >= 0);
-+	ubifs_assert(req->data_growth >= 0);
-+	ubifs_assert(req->dd_growth >= 0);
++	int freed, contention = 0;
++	long clean_zn_cnt = atomic_long_read(&ubifs_clean_zn_cnt);
 +
-+	if (req->dirtied_ino) {
-+		req->dd_growth -= c->inode_budget;
-+		req->dd_growth -= req->dirtied_ino_d;
-+	}
++	if (nr == 0)
++		return clean_zn_cnt;
 +
-+	if (req->dirtied_page) {
-+		req->dd_growth -= c->page_budget;
-+		ubifs_assert(req->new_page == 0);
-+	} else if (req->new_page) {
-+		req->idx_growth -=
-+			c->max_idx_node_sz << UBIFS_BLOCKS_PER_PAGE_SHIFT;
-+		req->data_growth -= c->page_budget;
-+		ubifs_assert(req->dirtied_page == 0);
-+	}
-+
-+	ubifs_assert(req->dd_growth >= 0);
-+	ubifs_release_budget(c, req);
-+	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
-+}
-+
-+/**
-+ * ubifs_cancel_ino_op - cancel budget of an operation on inode.
-+ * @c: UBIFS file-system description object
-+ * @inode: VFS inode the operation worked on
-+ * @req: budget to release
-+ *
-+ * This function has to be called if the operation failed and whole budget has
-+ * to be released, including the budget for inode which would had been
-+ * dirtied. It is important not to mark the inode dirty before calling this
-+ * function.
-+ */
-+void ubifs_cancel_ino_op(struct ubifs_info *c, struct inode *inode,
-+			 struct ubifs_budget_req *req)
-+{
-+	ubifs_assert(req->dirtied_ino <= 4);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
-+	ubifs_assert(req->idx_growth >= 0);
-+	ubifs_assert(req->data_growth >= 0);
-+	ubifs_assert(req->dd_growth >= 0);
-+
-+	ubifs_release_budget(c, req);
-+	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
-+}
-+
-+/**
-+ * ubifs_release_ino_clean - release budget of a "cleaning" operation.
-+ * @c: UBIFS file-system description object
-+ * @inode: VFS inode the operation worked on
-+ * @req: budget to release
-+ *
-+ * This function has to be called at the end of VFS operations which acquired
-+ * budget via 'ubifs_budget_inode_op()'. It assumed the operation synchronized
-+ * the inode, so it marks the inode clean, unlocks it and releases whole budget.
-+ *
-+ * Note, this function also avoids releasing page budgets which are released
-+ * separately.
-+ */
-+void ubifs_release_ino_clean(struct ubifs_info *c, struct inode *inode,
-+			     struct ubifs_budget_req *req)
-+{
-+	struct ubifs_inode *ui = ubifs_inode(inode);
-+
-+	ubifs_assert(req->dirtied_ino <= 4);
-+	ubifs_assert(req->dirtied_ino_d <= UBIFS_MAX_INO_DATA * 4);
-+	ubifs_assert(req->idx_growth >= 0);
-+	ubifs_assert(req->data_growth >= 0);
-+	ubifs_assert(req->dd_growth >= 0);
-+	ubifs_assert(!req->dirtied_page);
-+	ubifs_assert(!req->new_page);
-+	UBIFS_DBG(ui->budgeted = 0);
-+
-+	ubifs_release_budget(c, req);
-+	if (ui->dirty) {
-+		ui->dirty = 0;
++	if (!clean_zn_cnt) {
 +		/*
-+		 * Note, VFS still treats the inode as dirty and
-+		 * 'ubifs_write_inode()' will be called, but it'll do nothing
-+		 * because @ui->dirty is %0.
++		 * No clean znodes, nothing to reap. All we can do in this case
++		 * is to kick background threads to start commit, which will
++		 * probably make clean znodes which, in turn, will be freeable.
++		 * And we return -1 which means will make VM call us again
++		 * later.
 +		 */
-+		atomic_long_dec(&c->dirty_ino_cnt);
-+	}
-+	mutex_unlock(&ubifs_inode(inode)->budg_mutex);
-+}
-+
-+/**
-+ * ubifs_release_new_page_budget - release budget of a new page.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This is a helper function which releases budget corresponding to the budget
-+ * of one new page of data.
-+ */
-+void ubifs_release_new_page_budget(struct ubifs_info *c)
-+{
-+	struct ubifs_budget_req req = { .new_page = 1,
-+					.idx_growth = -1,
-+					.data_growth = c->page_budget };
-+
-+	ubifs_release_budget(c, &req);
-+}
-+
-+/**
-+ * ubifs_budg_get_free_space - return amount of free space.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function returns amount of free space on the file-system.
-+ */
-+long long ubifs_budg_get_free_space(struct ubifs_info *c)
-+{
-+	int min_idx_lebs, rsvd_idx_lebs;
-+	long long available, outstanding, free;
-+
-+	/* Do exactly the same calculations as in 'do_budget_space()' */
-+	spin_lock(&c->space_lock);
-+	min_idx_lebs = ubifs_calc_min_idx_lebs(c);
-+
-+	if (min_idx_lebs > c->lst.idx_lebs)
-+		rsvd_idx_lebs = min_idx_lebs - c->lst.idx_lebs;
-+	else
-+		rsvd_idx_lebs = 0;
-+
-+	if (rsvd_idx_lebs > c->lst.empty_lebs + c->freeable_cnt + c->idx_gc_cnt
-+				- c->lst.taken_empty_lebs) {
-+		spin_unlock(&c->space_lock);
-+		return 0;
++		dbg_tnc("no clean znodes, kick a thread");
++		return kick_a_thread();
 +	}
 +
-+	c->min_idx_lebs = min_idx_lebs;
-+	available = ubifs_calc_available(c);
-+	outstanding = c->budg_data_growth + c->budg_dd_growth;
-+	spin_unlock(&c->space_lock);
++	freed = shrink_tnc_trees(nr, OLD_ZNODE_AGE, &contention);
++	if (freed >= nr)
++		goto out;
 +
-+	if (available > outstanding)
-+		free = ubifs_reported_space(c, available - outstanding);
-+	else
-+		free = 0;
++	dbg_tnc("not enough old znodes, try to free young ones");
++	freed += shrink_tnc_trees(nr - freed, YOUNG_ZNODE_AGE, &contention);
++	if (freed >= nr)
++		goto out;
 +
-+	return free;
++	dbg_tnc("not enough young znodes, free all");
++	freed += shrink_tnc_trees(nr - freed, 0, &contention);
++
++	if (!freed && contention) {
++		dbg_tnc("freed nothing, but contention");
++		return -1;
++	}
++
++out:
++	dbg_tnc("%d znodes were freed, requested %d", freed, nr);
++	return freed;
 +}
 -- 
 1.5.4.1
