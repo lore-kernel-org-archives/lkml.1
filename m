@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbYEZVeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYEZVnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbYEZVeu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 17:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbYEZVek
+	id S1756008AbYEZVnL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 17:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbYEZVm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 17:34:40 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:58509 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754511AbYEZVej (ORCPT
+	Mon, 26 May 2008 17:42:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43136 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754330AbYEZVm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 17:34:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KdSXfs29jFvQgeYnShRndH899FmRC8EqQS44DvmjDtLCe7xxmR6qZYy2WDvYc1ReLqJeoV7opYhKkHko0s02h98o4Tgr+jTlEESjLz3gL6GHPFueoYmc3f1ez4nAKF+AWWkJzjGbmcheMxBohOKCJju7pmgwXeD7W9uFL+JA3cc=
-Message-ID: <9a8748490805261434k24fef763r1de520053df8f8b0@mail.gmail.com>
-Date: Mon, 26 May 2008 23:34:36 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Davi Leal" <davi@leals.com>
-Subject: Re: I am a volunteer
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200805251812.41552.davi@leals.com>
+	Mon, 26 May 2008 17:42:56 -0400
+Date: Mon, 26 May 2008 14:42:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jesper Krogh <jesper@krogh.cc>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Linux 2.6.26-rc4
+In-Reply-To: <483B2A9B.4050007@krogh.cc>
+Message-ID: <alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <483B2A9B.4050007@krogh.cc>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200805251812.41552.davi@leals.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/25 Davi Leal <davi@leals.com>:
-> Hi,
->
-> I would like to carry out some easy task, as realize a clean up replacing the
-> use of one old function for another new one.
->
-> I do not have any problem with C, Git, etc.
->
-> Please, let me know what I can do.
-
-Start by reading Documentation/HOWTO in the source (can be found
-online here if you prefer:
-http://lxr.linux.no/linux+v2.6.24.3/Documentation/HOWTO ).
 
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please http://www.expita.com/nomime.html
+On Mon, 26 May 2008, Jesper Krogh wrote:
+> 
+> I did get this one (which I didn't on 2.6.25.2)
+> 
+> [42949399.810959] ck804xrom ck804xrom_init_one(): Unable to register resource
+> 0x0000000000000000-0x00000000ffffffff - kernel bug?
+
+Something is trying to register a 4GB resource. That sounds unlikely 
+(possible on a 64-bit PCI setup, but I think it's more likely to be some 
+overflow of 0 in "unsigned int").
+
+In fact, this seems to be due to some driver bug. It looks like we have
+
+	window->size = 0xffffffffUL - window->phys + 1UL;
+
+and in order for window->size to be 0x100000000, that means that 
+window->phys has to be 0. Which looks impossible, or at least like 
+ent->driver_data is neither DEV_CK804 nor DEV_MCP55. Very odd.
+
+The warning:
+
+> [42949399.979924] WARNING: at arch/x86/mm/ioremap.c:159 __ioremap_caller+0x299/0x330()
+
+is then just a result of the driver blindly continuing and trying to 
+"ioremap()" the resource even though it's bogus and the resource 
+allocation failed.
+
+In other words, that driver init routine is really bad about error 
+handling. Carl-Daniel? David?
+
+		Linus
