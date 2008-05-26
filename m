@@ -1,102 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYEZQRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYEZQUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbYEZQRI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 12:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYEZQQl
+	id S1755147AbYEZQUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 12:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYEZQUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 12:16:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:64754 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754797AbYEZQQe (ORCPT
+	Mon, 26 May 2008 12:20:38 -0400
+Received: from outbound-mail-10.bluehost.com ([69.89.17.210]:44586 "HELO
+	outbound-mail-10.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753160AbYEZQUh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 12:16:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=upnLBgfxleZjULNXvLXfvYbu1ffecfLUzyRPxgAgroG8nNJkWVRpZm0KHKZZ7oxfVLppp7ghWSTdpHgIkRlS6/QeGM/MyO1lSvOdMK8vnZxOjUHFc+dwc3ND3qolrIQ8j9yzLkY8C6px6+zySt9FCEyyoQW4jbXkLCb5UjioBSk=
-Date: Mon, 26 May 2008 20:16:23 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
-Message-ID: <20080526161623.GC7305@cvg>
-References: <g1eg2q$81q$1@ger.gmane.org>
+	Mon, 26 May 2008 12:20:37 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [patch, -git] pcie hotplug bootup crash fix
+Date: Mon, 26 May 2008 09:20:15 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, drzeus-list@drzeus.cx,
+       kristen.c.accardi@intel.com
+References: <20080524165828.GA29993@elte.hu> <20080526015232.5faac5bb.akpm@linux-foundation.org> <483A9050.5000206@jp.fujitsu.com>
+In-Reply-To: <483A9050.5000206@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <g1eg2q$81q$1@ger.gmane.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200805260920.15912.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
-| <posted & mailed>
-| 
-| When using a 32 bit linux-next-20080526 the bootup process will hang at a
-| random point (not even sysrq helps) with no additional output on the screen
-| (whereas linux-next-20080523 did boot). Mysteriously, booting with
-| nmi_watchdog=2 allows the boot to finish (booting with nmi_watchdog=1 still
-| stalls). I have bisected it down to commit
-| [d1b946b97d71423f365fa797d1428e1847c0bec1]:
-| 
-| commit d1b946b97d71423f365fa797d1428e1847c0bec1
-| Author: Cyrill Gorcunov <gorcunov@gmail.com>
-| Date:   Sat May 24 19:36:34 2008 +0400
-| 
-|     x86: nmi_32.c - add "panic" option
-| 
-|     Allow to pass "panic" option in 32bit mode
-| 
-|     Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-|     Cc: hpa@zytor.com
-|     Cc: mingo@redhat.com
-|     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-| 
-| Reverting this seemed to allow the boot to proceed without issue. Here is
-| the bisection log:
-| 
-| # bad: [5ffeee1785c30303007b3d2dce85402b0bbf9b00] Add linux-next specific
-| files
-| # good: [7b6c98f0853b86c101948f1bf4e0a21d3065944f] Add linux-next specific
-| files
-| git-bisect start 'next-20080526' 'next-20080523'
-| # bad: [cab464e32db5aef80c51831c20009ae7c3354396] Merge
-| commit 'x86/auto-x86-next'
-| git-bisect bad cab464e32db5aef80c51831c20009ae7c3354396
-| # good: [497d7294d4fb1a0d2ce14bb891a1d812b2af3745] Merge
-| branch 'x86/mpparse' into auto-x86-next
-| git-bisect good 497d7294d4fb1a0d2ce14bb891a1d812b2af3745
-| # good: [8315d6949d94b7513f8829b62d59d7d5699872dd] USB: driver for gotemp
-| device
-| git-bisect good 8315d6949d94b7513f8829b62d59d7d5699872dd
-| # good: [289c79a4bd350e8a25065102563ad1a183d1b402] vlan: Use bitmask of
-| feature flags instead of seperate feature bits
-| git-bisect good 289c79a4bd350e8a25065102563ad1a183d1b402
-| # bad: [c791e51837f26cba073d3c37cf04803bb3a5c6c0] Merge branch 'x86/timers'
-| into auto-x86-next
-| git-bisect bad c791e51837f26cba073d3c37cf04803bb3a5c6c0
-| # bad: [4039cbaacf7874ab1effd0e9fb6c60bf9217f373] Merge branch 'x86/nmi'
-| into auto-x86-next
-| git-bisect bad 4039cbaacf7874ab1effd0e9fb6c60bf9217f373
-| # bad: [4b82b277707a39b97271439c475f186f63ec4692] x86: nmi_32.c - add
-| nmi_watchdog_default helper
-| git-bisect bad 4b82b277707a39b97271439c475f186f63ec4692
-| # good: [e56b3a12c45e439169f2d1f7194be397667320a6] x86: nmi - die_nmi()
-| output message unification
-| git-bisect good e56b3a12c45e439169f2d1f7194be397667320a6
-| # bad: [d1b946b97d71423f365fa797d1428e1847c0bec1] x86: nmi_32.c -
-| add "panic" option
-| git-bisect bad d1b946b97d71423f365fa797d1428e1847c0bec1
-| # good: [c6425b9f143a75bbcd0a7684b4df40e20d0b2f32] x86: move do_nmi(),
-| stop_nmi() and restart_nmi() to traps_64.c
-| git-bisect good c6425b9f143a75bbcd0a7684b4df40e20d0b2f32
-| 
-| -- 
-| Sitsofe | http://sucs.org/~sits/
-| 
-| 
+On Monday, May 26, 2008 3:26 am Kenji Kaneshige wrote:
+> Andrew Morton wrote:
+> > On Mon, 26 May 2008 10:47:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> >> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+> >>> I updated Ingo's patch. If it's ok, I'll send it to Jess Barnes with
+> >>> some other patches for the other pciehp regression problems.
+> >>
+> >> looks good to me, thanks Kenji.
+> >
+> > It's a bit sad to add a large workaround like this.  I'm surprised
+> > that fixing it properly is considered unviable for 2.6.26.  Normally
+> > these fixes are pretty simple - just request the IRQ a bit later?
+>
+> Although I have not considered how to implement proper fix deeply,
+> I don't think it's so simple. For example, current pciehp is doing
+> like this:
+>
+> (1) some initialization
+> (2) request_irq()
+> (3) issue command
+> (4) initialize slot data structure
+>
+> Maybe we want to do (2) after (4) to fix the problem. But if we
+> simply move (2) after (4), we cannot detect the command completion
+> event at (3) and it will cause command timeout.
+>
+> It's just an example, and there might be other things like this.
+> This example might be fixed simply, but all my worry is that fixing
+> this quickly might cause another regressions. This is why I think
+> Ingo's approach is better in a short term.
+>
+> And another reason is I'm very nervous because I already caused
+> many problems in pciehp since 2.6.26-rcX... :(
 
-and, btw, could you post your config, please?
+But you also fixed the problems, which is even more important! :)  I'm ok with 
+the workaround for 2.6.26 as long as we can get a more proper fix into 
+2.6.27.
 
-		- Cyrill -
+Any thoughts, Kristen?
+
+Thanks,
+Jesse
+
