@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbYEZKZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYEZK2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbYEZKZf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 06:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYEZKZ0
+	id S1754632AbYEZK2l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 06:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYEZK2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 06:25:26 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45735 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbYEZKZZ (ORCPT
+	Mon, 26 May 2008 06:28:33 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44892 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752184AbYEZK2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 06:25:25 -0400
-Date: Mon, 26 May 2008 11:24:02 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: "Theodore Ts'o" <tytso@mit.edu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10732] REGRESSION: 2.6.26-rc2-git4: X server failed start
- on X61s laptop
-In-Reply-To: <TW_YzGo9TFP.A.VVD.WeIOIB@albercik>
-Message-ID: <Pine.LNX.4.64.0805261115470.3720@blonde.site>
-References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <TW_YzGo9TFP.A.VVD.WeIOIB@albercik>
+	Mon, 26 May 2008 06:28:32 -0400
+Message-ID: <483A9050.5000206@jp.fujitsu.com>
+Date: Mon, 26 May 2008 19:26:24 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       drzeus-list@drzeus.cx
+Subject: Re: [patch, -git] pcie hotplug bootup crash fix
+References: <20080524165828.GA29993@elte.hu>	<20080524104024.a33116a3.akpm@linux-foundation.org>	<483A7663.4000700@jp.fujitsu.com>	<20080526084709.GA2182@elte.hu> <20080526015232.5faac5bb.akpm@linux-foundation.org>
+In-Reply-To: <20080526015232.5faac5bb.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 May 2008, Rafael J. Wysocki wrote:
+Andrew Morton wrote:
+> On Mon, 26 May 2008 10:47:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+>> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+>>
+>>> I updated Ingo's patch. If it's ok, I'll send it to Jess Barnes with 
+>>> some other patches for the other pciehp regression problems.
+>> looks good to me, thanks Kenji.
+>>
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10732
-> Subject		: REGRESSION: 2.6.26-rc2-git4: X server failed start on X61s laptop
-> Submitter	: Theodore Ts'o <tytso@mit.edu>
-> Date		: 2008-05-17 7:32 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&amp;m=121100994722524&amp;w=4
+> It's a bit sad to add a large workaround like this.  I'm surprised
+> that fixing it properly is considered unviable for 2.6.26.  Normally
+> these fixes are pretty simple - just request the IRQ a bit later?
+> 
 
-I believe this was fixed by Jeremy's PTE_MASK fixes in 2.6.26-rc3-git2,
-but can only say that they fixed my own X with PAE since PAT mods problem.
+Although I have not considered how to implement proper fix deeply,
+I don't think it's so simple. For example, current pciehp is doing
+like this:
 
-Ted, when you have a chance, please try a recent kernel and let us
-know if this regression can now be removed from the list - thanks.
+(1) some initialization
+(2) request_irq()
+(3) issue command
+(4) initialize slot data structure
 
-Hugh
+Maybe we want to do (2) after (4) to fix the problem. But if we
+simply move (2) after (4), we cannot detect the command completion
+event at (3) and it will cause command timeout.
+
+It's just an example, and there might be other things like this.
+This example might be fixed simply, but all my worry is that fixing
+this quickly might cause another regressions. This is why I think
+Ingo's approach is better in a short term.
+
+And another reason is I'm very nervous because I already caused
+many problems in pciehp since 2.6.26-rcX... :(
+
+Thanks,
+Kenji Kaneshige
+
+
+
+
