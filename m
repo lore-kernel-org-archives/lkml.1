@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYEZMzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbYEZNGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYEZMzg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYEZMz1
+	id S1753331AbYEZNGr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 09:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbYEZNGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:55:27 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:54648 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752027AbYEZMz0 (ORCPT
+	Mon, 26 May 2008 09:06:38 -0400
+Received: from smtp-01.mandic.com.br ([200.225.81.132]:35953 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbYEZNGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 08:55:26 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-Date: Mon, 26 May 2008 14:53:01 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Takashi Iwai <tiwai@suse.de>
-References: <1211550282.28967.8.camel@pmac.infradead.org> <200805252049.39731.mb@bu3sch.de> <or4p8lzrjl.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <or4p8lzrjl.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Mon, 26 May 2008 09:06:37 -0400
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 May 2008 09:06:37 EDT
+Message-ID: <483AB443.6020807@diamondcut.com.br>
+Date: Mon, 26 May 2008 09:59:47 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: linux-kernel@vger.kernel.org
+Subject: [Bug 10797] Something is consuming power after shutdown
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805261453.01658.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 May 2008 05:13:18 Alexandre Oliva wrote:
-> On May 25, 2008, Michael Buesch <mb@bu3sch.de> wrote:
-> 
-> > One additional thing is to make sure the usability of the whole stuff
-> > is not reduded.
-> 
-> Removing support for slashes wouldn't reduce usability.  It would be
-> no more than silly policy (and ego?) enforcement.
+<http://bugzilla.kernel.org/show_bug.cgi?id=10797>
+<http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
 
-I the other mail you say that the string is _not_ a filename.
-So why do we want to remove the slash from the allowed charset, if
-the string is not a filename?
-This doesn't make any sense. Either it is a filename/pathname, or it is not.
+After poweroff, something still working and consuming power. So I loss 
+~4% of my battery charge in each 12h.
 
--- 
-Greetings Michael.
+If I shutdown my laptop using Kernel 2.6.24/25 when battery is 100%, 
+after 12h my battery charge go to 96% (this information is checked with 
+kpowersave and with LED available in my laptop that change color from 
+blue to yellow when battery is not FULL).
+
+If I shutdown this same laptop by WinXP (I have a dual boot), nothing 
+change. So, my battery still have 100% after 12h (or more).
+
+I see a similar problem in EeePC (the problem is with snd_hda_intel 
+driver), but I don't have this driver loaded:
+http://wiki.debian.org/DebianEeePC/HowTo/Troubleshooting#head-84d9d8a97c9ce198c59edd9cd93a05ab24fd1ff8
+
+Best regards,
+Renato S. Yamane
