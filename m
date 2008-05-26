@@ -1,30 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYE0Kfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbYE0Kfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbYE0Kfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 06:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbYE0Kf0
+	id S1757510AbYE0Kfz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 06:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYE0Kfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 06:35:26 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:35456 "EHLO
+	Tue, 27 May 2008 06:35:36 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:35460 "EHLO
 	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756178AbYE0Kf0 (ORCPT
+	with ESMTP id S1756825AbYE0Kff (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 06:35:26 -0400
-Date: Mon, 26 May 2008 23:08:54 -0400
+	Tue, 27 May 2008 06:35:35 -0400
+Date: Mon, 26 May 2008 15:22:47 -0400
 From: Theodore Tso <tytso@mit.edu>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-Message-ID: <20080527030854.GC7515@mit.edu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10732] REGRESSION: 2.6.26-rc2-git4: X server failed
+	start on X61s laptop
+Message-ID: <20080526192247.GA7515@mit.edu>
 Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	jeff@garzik.org, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080508161008.59361de5@appleyard>
+	Hugh Dickins <hugh@veritas.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Suresh Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>
+References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <TW_YzGo9TFP.A.VVD.WeIOIB@albercik> <Pine.LNX.4.64.0805261115470.3720@blonde.site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080508161008.59361de5@appleyard>
+In-Reply-To: <Pine.LNX.4.64.0805261115470.3720@blonde.site>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
@@ -33,26 +44,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 04:10:08PM -0700, Kristen Carlson Accardi wrote:
-> power off unused ports
+On Mon, May 26, 2008 at 11:24:02AM +0100, Hugh Dickins wrote:
+> On Sat, 24 May 2008, Rafael J. Wysocki wrote:
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.25.  Please verify if it still should be listed.
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10732
+> > Subject		: REGRESSION: 2.6.26-rc2-git4: X server failed start on X61s laptop
+> > Submitter	: Theodore Ts'o <tytso@mit.edu>
+> > Date		: 2008-05-17 7:32 (8 days old)
+> > References	: http://marc.info/?l=linux-kernel&amp;m=121100994722524&amp;w=4
 > 
-> If the port isn't either a drive bay or an external SATA port, do not 
-> keep the phy powered on if the port is unoccupied. This saves .75 watts
-> on most laptops.  A module parameter can be used to override this 
-> behavior and allow the phy's to be powered up regardless of whether it
-> has externally accessible SATA ports. 
+> I believe this was fixed by Jeremy's PTE_MASK fixes in 2.6.26-rc3-git2,
+> but can only say that they fixed my own X with PAE since PAT mods problem.
 > 
-> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> Ted, when you have a chance, please try a recent kernel and let us
+> know if this regression can now be removed from the list - thanks.
 
-Hi,
+Yes, I just tried it, with a freshly pulled mainline, and the problem
+looks like it has been fixed.  So we can close out the bug and remove
+it from the regression list.
 
-I'm wondering what's the status of this patch?  
-
-if this has hit a subsystem tree yet?  0.75 watts power savings sounds
-really cool, but it doesn't seem to be in Linus's mainline yet.  Has
-it hit a subsystem tree yet, or is there some issue that still needs
-to be resolved before it can go it?
-
-Thanks, regards,
-
-							- Ted
+						- Ted
