@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbYEZQca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbYEZQfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbYEZQca (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 12:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYEZQcR
+	id S1755876AbYEZQfg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 12:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbYEZQf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 12:32:17 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45246 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752760AbYEZQcQ (ORCPT
+	Mon, 26 May 2008 12:35:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:32997 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753534AbYEZQf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 12:32:16 -0400
-Date: Mon, 26 May 2008 19:32:14 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <20080526162328.GA9089@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805261926260.24924@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
- <20080526135940.GB24870@elte.hu> <20080526141252.GA31352@elte.hu>
- <Pine.LNX.4.64.0805261745010.16829@wrl-59.cs.helsinki.fi> <20080526162328.GA9089@elte.hu>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1441707997-1211819534=:24924"
+	Mon, 26 May 2008 12:35:26 -0400
+Date: Mon, 26 May 2008 13:34:57 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Andy Walls <awalls@radix.net>, Douglas Landgraf <dougsland@gmail.com>
+Cc: Alan Cox <alan@redhat.com>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] video4linux: Push down the BKL
+Message-ID: <20080526133457.6f892af9@gaivota>
+In-Reply-To: <20080523090919.GA31575@devserv.devel.redhat.com>
+References: <20080522223700.2f103a14@core>
+	<1211508484.3273.86.camel@palomino.walls.org>
+	<20080523090919.GA31575@devserv.devel.redhat.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 23 May 2008 05:09:19 -0400
+Alan Cox <alan@redhat.com> wrote:
 
----696208474-1441707997-1211819534=:24924
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 26 May 2008, Ingo Molnar wrote:
-
+> On Thu, May 22, 2008 at 10:08:04PM -0400, Andy Walls wrote:
+> > Could someone give me a brief education as to what elements of
+> > cx18/ivtv_v4l2_do_ioctl() would be forcing the use of the BKL for these
+> > drivers' ioctls?   I'm assuming it's not the
+> > mutex_un/lock(&....->serialize_lock) and that the answer's not in the
+> > diff.
 > 
-> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> As it stood previous for historical reasons the kernel called the driver
+> ioctl method already holding the big kernel lock. That lock effectively
+> serialized a lot of ioctl processing and also serializes against module
+> loading and registration/open for the most part. If all the resources you
+> are working on within the ioctl handler are driver owned as is likely with
+> a video capture driver, and you have sufficient locking of your own you can
+> drop the lock.
 > 
-> > On Mon, 26 May 2008, Ingo Molnar wrote:
-> > 
-> > > there's a hung distcc task on the system, waiting for socket action 
-> > > forever:
-> > > 
-> > >   [root@europe ~]# strace -fp 19578
-> > >   Process 19578 attached - interrupt to quit
-> > >   select(5, NULL, [4], [4], {82, 90000} <unfinished ...>
-> > 
-> > Hmm, readfds is NULL isn't it?!? Are you sure you straced the right 
-> > process?
-> 
-> yes, i'm stracing the task that is hung unexpectedly.
+> video_usercopy currently also uses the BKL so you might want to copy a
+> version to video_usercopy_unlocked() without that.
 
-But that wasn't the receiving process? (I didn't quickly find into which 
-direction distcc ports go, so I couldn't confirm this). If you still have 
-that situation at hand, could you check which is the receiving process 
-(e.g., using netstat -p, the end which has Recv-Q is the right one) and 
-where it's stuck?
+In the specific case of ivtv and cx18, I think that the better would be to
+convert it first to video_ioctl2. Then, remove the BKL, with a
+video_ioctl2_unlocked version.
 
-> > > disturbing that task via strace did not change the state of the 
-> > > socket - and that's not unexpected as it's a select(). [TCP state 
-> > > might be affected if strace impacted a recvmsg or a sendmsg wait 
-> > > directly.]
-> > 
-> > I fail to understand this paragraph due to excessive negation... :-)
-> 
-> i mean, sometimes a TCP connection can get 'unstuck' if you strace a 
-> task - that is because the TCP related syscall the task sits in gets 
-> interrupted. But in this case it's select() which doesnt explicitly take 
-> the socket, doesnt do any tcp_push_pending_frames() processing, etc. - 
-> it just its on the socket waitqueue AFAICS. And that's expected.
+Douglas already did an experimental patch converting ivtv to video_ioctl2 and
+sent to Hans. It needs testing, since he doesn't have any ivtv board. It should
+be trivial to port this to cx18, since both drivers have similar structures.
 
-This is not in the sender end at all. It's correct behavior of the flow 
-control to stop the sender until more room is made available by the 
-reading end. Thus push_pending_frames couldn't send anything.
+Douglas,
 
-...It may still be that the receiving process is stuck due to the non-net 
-related changes you have there.
+Could you send this patch to the ML for people to review and for Andy to port
+it to cx18?
 
--- 
- i.
----696208474-1441707997-1211819534=:24924--
+Cheers,
+Mauro
