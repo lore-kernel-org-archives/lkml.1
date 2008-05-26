@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbYEZCqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYEZDQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002AbYEZCqj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 22:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYEZCq3
+	id S1753176AbYEZDQQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 23:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYEZDQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 22:46:29 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:49991 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751493AbYEZCq3 (ORCPT
+	Sun, 25 May 2008 23:16:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39881 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751901AbYEZDQE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 22:46:29 -0400
-Date: Mon, 26 May 2008 11:46:27 +0900 (JST)
-Message-Id: <20080526.114627.104044752.ryov@valinux.co.jp>
-To: s-uchida@ap.jp.nec.com
-Cc: axboe@kernel.dk, vtaras@openvz.org, containers@lists.linux-foundation.org,
-       tom-sugawara@ap.jp.nec.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth
- controlling subsystem for CGroups based on CFQ
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com>
-References: <20080513.003316.226782406.ryov@valinux.co.jp>
-	<20080522.220438.226802699.ryov@valinux.co.jp>
-	<003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 25 May 2008 23:16:04 -0400
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
+References: <1211550282.28967.8.camel@pmac.infradead.org>
+	<95BCF0F0-755A-4501-9B44-B421AD3E8F42@holtmann.org>
+	<orej7q1ewq.fsf@oliva.athome.lsd.ic.unicamp.br>
+	<200805252049.39731.mb@bu3sch.de>
+From: Alexandre Oliva <aoliva@redhat.com>
+Organization: Red Hat OS Tools Group
+Date: Mon, 26 May 2008 00:13:18 -0300
+In-Reply-To: <200805252049.39731.mb@bu3sch.de> (Michael Buesch's message of "Sun\, 25 May 2008 20\:49\:39 +0200")
+Message-ID: <or4p8lzrjl.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uchida-san,
+On May 25, 2008, Michael Buesch <mb@bu3sch.de> wrote:
 
-Thanks for your comment.
+> One additional thing is to make sure the usability of the whole stuff
+> is not reduded.
 
-> Where did you build expanded CFQ schedulers?
-> I guess that schedulers can be control I/Os if it is built on guest OS,
-> But not if on Dom0.
-> I guess you built on Dom0 so that you could not control I/O. (maybe, you say)
+Removing support for slashes wouldn't reduce usability.  It would be
+no more than silly policy (and ego?) enforcement.
 
-I built them on guest OS.
+cd /lib/firmware
+for f in test/*; do ln -s $f `echo $f | sed s,^test/,test-,`; done
 
-> I'm testing both systems and get similar results.
-> I will report my test in next week.
+voila
 
-I'm looking forward to your report.
+Removing support for slashes just makes things more cumbersome,
+placing artificial restrictions where none make sense, to impose a
+specific mindset and prohibit very natural uses for no real gain.  But
+it's not like anything really significant is lost.  It is still a flat
+namespace, this change would just be taking out the '/' from the
+available alphabet.
 
-Thanks,
-Ryo Tsuruta
+No big loss, but no real advance in whatever rule one is trying to
+impose with this.  Simply demanding additional work arounds to do
+things that can be done in perfectly simple and natural ways today,
+for no actual advantage.
+
+Reminds me of the additional mailing list recently suggested by Al
+Viro ;-)
+
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+FSFLA Board Member       ¡Sé Libre! => http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
