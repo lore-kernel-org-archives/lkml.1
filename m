@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbYEZKLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbYEZKM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbYEZKLO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 06:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYEZKK7
+	id S1754556AbYEZKM7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 06:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYEZKMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 06:10:59 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:29669 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752309AbYEZKK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 06:10:58 -0400
-Date: Mon, 26 May 2008 19:09:16 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.26-rc4
-Message-ID: <20080526100916.GA18102@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+	Mon, 26 May 2008 06:12:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:54598 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753181AbYEZKMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 06:12:51 -0400
+Date: Mon, 26 May 2008 12:12:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+cc: LKML <linux-kernel@vger.kernel.org>, mingo@redhat.com, hpa@zytor.com
+Subject: Re: gcc "internal error" with 32-bit userspace, 64-bit kernel
+In-Reply-To: <20080525112728.6341c113@mjolnir.drzeus.cx>
+Message-ID: <alpine.LFD.1.10.0805261211040.3295@apollo.tec.linutronix.de>
+References: <20080525112728.6341c113@mjolnir.drzeus.cx>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Sun, 25 May 2008, Pierre Ossman wrote:
+> I'm having a bit of a problem with the x86 32-bit compatibility and I
+> don't really know how to debug it.
+> 
+> The problem is that gcc fails some builds with "internal error" when
+> I'm running a 32-bit userspace on a 64-bit kernel. The same test
+> scenario with a 32-bit kernel works fine.
+> 
+> More specifically, I'm using Red Hat's mock tool on Fedora 9 to build
+> packages. It sets up a chroot:ed environment where (as far as I can
+> tell) everything is from the target system. Building for 32-bit Fedora
+> 8 succeeds, but not Fedora 9 or RHEL 5.
+> 
+> Ideas on how to proceed? From what I've read, the 32-bit compatibility
+> of the kernel should be 100%.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.26.git
+Just tried to reproduce that with git of today. Did not happen.
 
-Which contains:
+Which kernel version are you using ?
 
-Magnus Damm (5):
-      sh: fix USBF resource for sh7722
-      sh: fix VPU interrupt vector for sh7723
-      sh: add probe support for new sh7723 cut
-      sh: use sm501 8250 mfd support on r2d boards
-      sh: update Migo-R defconfig
+Thanks,
+	tglx
 
-Paul Mundt (1):
-      sh: Drop broken URAM support on SH7723.
 
- arch/sh/Kconfig                           |    1 -
- arch/sh/boards/renesas/rts7751r2d/setup.c |   39 +----
- arch/sh/configs/migor_defconfig           |  294 +++++++++++++++++++++++------
- arch/sh/kernel/cpu/sh4/probe.c            |    1 +
- arch/sh/kernel/cpu/sh4a/setup-sh7722.c    |    2 +-
- arch/sh/kernel/cpu/sh4a/setup-sh7723.c    |    8 +-
- 6 files changed, 241 insertions(+), 104 deletions(-)
