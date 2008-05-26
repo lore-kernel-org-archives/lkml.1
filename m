@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbYEZOhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYEZOly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbYEZOhE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 10:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYEZOgz
+	id S1756614AbYEZOly (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 10:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYEZOlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 10:36:55 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49866 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755456AbYEZOgy (ORCPT
+	Mon, 26 May 2008 10:41:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:23003 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755453AbYEZOlq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 10:36:54 -0400
-Message-ID: <483ACAA3.1070705@s5r6.in-berlin.de>
-Date: Mon, 26 May 2008 16:35:15 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Mon, 26 May 2008 10:41:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=co5VlvZlKsBEBY9/hhKf2z4LwGkDkjdgQo/W6MhbxID7uHXqAAMPfmn5+NMiPevoHOamSaZj+B8ueYqUUpi3eJyDVD+V5UtFHD8X1j7j3f0Z9TMvzfYahBPHm4SsYGU8BofDAJiEMp83RGpL2YIyS7O1Myi8NcEsppguP6VH4ls=
+Date: Mon, 26 May 2008 18:41:34 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
+Message-ID: <20080526144134.GA7305@cvg>
+References: <g1eg2q$81q$1@ger.gmane.org>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Davi Leal <davi@leals.com>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: I am a volunteer
-References: <200805251812.41552.davi@leals.com> <20080525163758.GA1791@cs181133002.pp.htv.fi> <200805252023.22510.davi@leals.com> <20080525194721.GH6749@1wt.eu>
-In-Reply-To: <20080525194721.GH6749@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <g1eg2q$81q$1@ger.gmane.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> On Sun, May 25, 2008 at 08:23:22PM +0200, Davi Leal wrote:
->> Adrian Bunk wrote:
->> > The easiest and very valuable task is testing the kernel as described at
->> >   http://kernelnewbies.org/KernelTesters
->> 
->> I am more motivated to do development than testing.
-> 
-> And who do you think will test your dev then ?
-> 
-> Testing very quickly involves development because you will notice bugs
-> first, then missing chunks of code to handle special conditions, and by
-> this time you will feel much better with kernel internals and will have
-> no problem starting on more complex tasks.
-[...]
+[Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
+| <posted & mailed>
+| 
+| When using a 32 bit linux-next-20080526 the bootup process will hang at a
+| random point (not even sysrq helps) with no additional output on the screen
+| (whereas linux-next-20080523 did boot). Mysteriously, booting with
+| nmi_watchdog=2 allows the boot to finish (booting with nmi_watchdog=1 still
+| stalls). I have bisected it down to commit
+| [d1b946b97d71423f365fa797d1428e1847c0bec1]:
+| 
+| commit d1b946b97d71423f365fa797d1428e1847c0bec1
+| Author: Cyrill Gorcunov <gorcunov@gmail.com>
+| Date:   Sat May 24 19:36:34 2008 +0400
+| 
+|     x86: nmi_32.c - add "panic" option
+| 
+|     Allow to pass "panic" option in 32bit mode
+| 
+|     Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+|     Cc: hpa@zytor.com
+|     Cc: mingo@redhat.com
+|     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+| 
+| Reverting this seemed to allow the boot to proceed without issue. Here is
+| the bisection log:
+| 
 
-I second what Adrian and Willy wrote, because that's basically how I
-became involved.  A driver subsystem which I wanted to use didn't work
-quite 100%, so I always checked out the newest sources of the subsystem
-development repo and reported open issues or regressions.  When (a)
-developers vanished and (b) I became more confident I started to submit
-patches myself.
+Hi, so it helps by reverting _only_ that commit? I mean all further commits
+are still appiled?
 
-Another conclusion from that is that you should pick an area which
-genuinely interests you, i.e. a driver or protocol or whatever which you
-actually use yourself frequently.  That's a lot more motivating than to
-pick a project from a todo-list at random.
--- 
-Stefan Richter
--=====-==--- -=-= ==-=-
-http://arcgraph.de/sr/
+		- Cyrill -
