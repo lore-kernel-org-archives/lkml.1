@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYEZRMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYEZRXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYEZRMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 13:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbYEZRMp
+	id S1755881AbYEZRXx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 13:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbYEZRXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 13:12:45 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:58719 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753007AbYEZRMo (ORCPT
+	Mon, 26 May 2008 13:23:42 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:12692 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753916AbYEZRXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 13:12:44 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Alexandre Oliva <aoliva@redhat.com>
-Subject: Re: [PATCH 2/3] firmware: Add CONFIG_BUILTIN_FIRMWARE option
-Date: Mon, 26 May 2008 19:11:59 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       Abhay Salunke <Abhay_Salunke@dell.com>, kay.sievers@vrfy.org,
-       Takashi Iwai <tiwai@suse.de>
-References: <1211550282.28967.8.camel@pmac.infradead.org> <200805261453.01658.mb@bu3sch.de> <orprr9uh53.fsf@oliva.athome.lsd.ic.unicamp.br>
-In-Reply-To: <orprr9uh53.fsf@oliva.athome.lsd.ic.unicamp.br>
+	Mon, 26 May 2008 13:23:41 -0400
+Date: Mon, 26 May 2008 21:23:40 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Timur Tabi <timur@freescale.com>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [SERIAL] fix driver_name conflicts
+Message-ID: <20080526172340.GA17703@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Message-Id: <200805261912.00422.mb@bu3sch.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 May 2008 19:09:12 Alexandre Oliva wrote:
-> On May 26, 2008, Michael Buesch <mb@bu3sch.de> wrote:
-> 
-> > On Monday 26 May 2008 05:13:18 Alexandre Oliva wrote:
-> >> On May 25, 2008, Michael Buesch <mb@bu3sch.de> wrote:
-> >> 
-> >> > One additional thing is to make sure the usability of the whole stuff
-> >> > is not reduded.
-> >> 
-> >> Removing support for slashes wouldn't reduce usability.  It would be
-> >> no more than silly policy (and ego?) enforcement.
-> 
-> > I the other mail you say that the string is _not_ a filename.
-> 
-> I do, and I stand by that claim, that is not backed by documentation,
-> but rather by peeking at the implementation.
+Some drivers are using too generic "serial" name for driver_name, this
+might cause issues, like this:
 
-Right.
+Freescale QUICC Engine UART device driver
+proc_dir_entry 'serial' already registered
+Call Trace:
+[cf82de50] [c0007f7c] show_stack+0x4c/0x1ac (unreliable)
+[cf82de90] [c00b03fc] proc_register+0xfc/0x1ac
+[cf82dec0] [c00b05c8] create_proc_entry+0x60/0xac
+[cf82dee0] [c00b23dc] proc_tty_register_driver+0x60/0x98
+[cf82def0] [c016dbd8] tty_register_driver+0x1b4/0x228
+[cf82df20] [c0184d70] uart_register_driver+0x144/0x194
+[cf82df40] [c030a378] ucc_uart_init+0x2c/0x94
+[cf82df50] [c02f21a0] kernel_init+0x98/0x27c
+[cf82dff0] [c000fa74] kernel_thread+0x44/0x60
 
-> > So why do we want to remove the slash from the allowed charset, if
-> > the string is not a filename?
-> 
-> Exactly my point.  I don't know any reason to do that.  It appears to
-> be just silly policy (and ego) enforcement.
+^^ The board is using ucc_uart.c and 8250.c, both registered as
+   "serial".
 
-Ok I see. It seems I misunderstood your mail. Sorry for that.
+This patch fixes two drivers that are using "serial" for driver_name and
+not "ttyS" for dev_name. Drivers that are using "ttyS" for dev_name, will
+conflict anyway, so we don't bother with these.
 
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/serial/sb1250-duart.c |    2 +-
+ drivers/serial/ucc_uart.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/serial/sb1250-duart.c b/drivers/serial/sb1250-duart.c
+index 2d6c08b..f8e1447 100644
+--- a/drivers/serial/sb1250-duart.c
++++ b/drivers/serial/sb1250-duart.c
+@@ -924,7 +924,7 @@ console_initcall(sbd_serial_console_init);
+ 
+ static struct uart_driver sbd_reg = {
+ 	.owner		= THIS_MODULE,
+-	.driver_name	= "serial",
++	.driver_name	= "sb1250_duart",
+ 	.dev_name	= "duart",
+ 	.major		= TTY_MAJOR,
+ 	.minor		= SB1250_DUART_MINOR_BASE,
+diff --git a/drivers/serial/ucc_uart.c b/drivers/serial/ucc_uart.c
+index 01917c4..566a8b4 100644
+--- a/drivers/serial/ucc_uart.c
++++ b/drivers/serial/ucc_uart.c
+@@ -195,7 +195,7 @@ struct uart_qe_port {
+ 
+ static struct uart_driver ucc_uart_driver = {
+ 	.owner  	= THIS_MODULE,
+-	.driver_name    = "serial",
++	.driver_name    = "ucc_uart",
+ 	.dev_name       = "ttyQE",
+ 	.major  	= SERIAL_QE_MAJOR,
+ 	.minor  	= SERIAL_QE_MINOR,
 -- 
-Greetings Michael.
+1.5.5.1
