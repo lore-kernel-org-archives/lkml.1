@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYEZMZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbYEZMZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbYEZMZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbYEZMXo
+	id S1755641AbYEZMZr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756138AbYEZMXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:23:44 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:49570 "EHLO
+	Mon, 26 May 2008 08:23:48 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49571 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756082AbYEZMXl (ORCPT
+	with ESMTP id S1756084AbYEZMXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 May 2008 08:23:41 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 3 05/29] UBIFS: add I/O sub-system
-Date: Mon, 26 May 2008 17:05:19 +0300
-Message-Id: <1211810743-18936-6-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 3 08/29] UBIFS: add file-system build
+Date: Mon, 26 May 2008 17:05:22 +0300
+Message-Id: <1211810743-18936-9-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=unknown-8bit
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 26 May 2008 12:23:26.0964 (UTC) FILETIME=[4C98CB40:01C8BF2B]
+X-OriginalArrivalTime: 26 May 2008 12:23:31.0276 (UTC) FILETIME=[4F2AC0C0:01C8BF2B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This sub-system is responsible for performing all the I/O-related
-low-level things like calculating and checking checksums, doing
-basic node validation, adding correct padding to the nodes and
-so on. It also implements UBIFS write-buffers and their proper
-synchronization.
+The file-system build code contains most of the UBIFS initialization
+and mount-related functionality implementation.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- fs/ubifs/io.c |  921 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 921 insertions(+), 0 deletions(-)
+ fs/ubifs/super.c | 1956 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1956 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ubifs/io.c b/fs/ubifs/io.c
+diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
 new file mode 100644
-index 0000000..31d107f
+index 0000000..c84656f
 --- /dev/null
-+++ b/fs/ubifs/io.c
-@@ -0,0 +1,921 @@
++++ b/fs/ubifs/super.c
+@@ -0,0 +1,1956 @@
 +/*
 + * This file is part of UBIFS.
 + *
 + * Copyright (C) 2006-2008 Nokia Corporation.
-+ * Copyright (C) 2006, 2007 University of Szeged, Hungary
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
@@ -68,906 +64,1942 @@ index 0000000..31d107f
 + *
 + * Authors: Artem Bityutskiy (Битюцкий Артём)
 + *          Adrian Hunter
-+ *          Zoltan Sogor
 + */
 +
 +/*
-+ * This file implements UBIFS I/O subsystem which provides various I/O-related
-+ * helper functions (reading/writing/checking/validating nodes) and implements
-+ * write-buffering support. Write buffers help to save space which otherwise
-+ * would have been wasted for padding to the nearest minimal I/O unit boundary.
-+ * Instead, data first goes to the write-buffer and is flushed when the
-+ * buffer is full or when it is not used for some time (by timer). This is
-+ * similarto the mechanism is used by JFFS2.
-+ *
-+ * Write-buffers are defined by 'struct ubifs_wbuf' objects and protected by
-+ * mutexes defined inside these objects. Since sometimes upper-level code
-+ * has to lock the write-buffer (e.g. journal space reservation code), many
-+ * functions related to write-buffers have "nolock" suffix which means that the
-+ * caller has to lock the write-buffer before calling this function.
-+ *
-+ * UBIFS stores nodes at 64 bit-aligned addresses. If the node length is not
-+ * aligned, UBIFS starts the next node from the aligned address, and the padded
-+ * bytes may contain any rubbish. In other words, UBIFS does not put padding
-+ * bytes in those small gaps. Common headers of nodes store real node lengths,
-+ * not aligned lengths. Indexing nodes also store real lengths in branches.
-+ *
-+ * UBIFS uses padding when it pads to the next min. I/O unit. In this case it
-+ * uses padding nodes or padding bytes, if the padding node does not fit.
-+ *
-+ * All UBIFS nodes are protected by CRC checksums and UBIFS checks all nodes
-+ * every time they are read from the flash media.
++ * This file implements UBIFS initialization and VFS superblock operations. Some
++ * initialization stuff which is rather large and complex is placed at
++ * corresponding subsystems, but most of it is here.
 + */
 +
-+#include <linux/crc32.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/ctype.h>
++#include <linux/random.h>
++#include <linux/kthread.h>
++#include <linux/parser.h>
++#include <linux/seq_file.h>
++#include <linux/mount.h>
 +#include "ubifs.h"
 +
++/* Slab cache for UBIFS inodes */
++struct kmem_cache *ubifs_inode_slab;
++
++/* UBIFS TNC shrinker description */
++static struct shrinker ubifs_shrinker_info = {
++	.shrink = ubifs_shrinker,
++	.seeks = DEFAULT_SEEKS,
++};
++
 +/**
-+ * ubifs_check_node - check node.
++ * validate_inode - validate inode.
 + * @c: UBIFS file-system description object
-+ * @buf: node to check
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ * @quiet: print no messages
++ * @inode: the inode to validate
 + *
-+ * This function checks node magic number and CRC checksum. This function also
-+ * validates node length to prevent UBIFS from becoming crazy when an attacker
-+ * feeds it a file-system image with incorrect nodes. For example, too large
-+ * node length in the common header could cause UBIFS to read memory outside of
-+ * allocated buffer when checking the CRC checksum.
-+ *
-+ * This function returns zero in case of success %-EUCLEAN in case of bad CRC
-+ * or magic.
++ * This is a helper function for 'ubifs_iget()' which validates various fields
++ * of a newly built inode to make sure they contain sane values and prevent
++ * possible vulnerabilities. Returns zero if the inode is all right and
++ * a non-zero error code if not.
 + */
-+int ubifs_check_node(const struct ubifs_info *c, const void *buf, int lnum,
-+		     int offs, int quiet)
++static int validate_inode(struct ubifs_info *c, const struct inode *inode)
 +{
-+	int err = -EINVAL, type, node_len;
-+	uint32_t crc, node_crc, magic;
-+	const struct ubifs_ch *ch = buf;
++	int err;
++	const struct ubifs_inode *ui = ubifs_inode(inode);
 +
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-+
-+	magic = le32_to_cpu(ch->magic);
-+	if (magic != UBIFS_NODE_MAGIC) {
-+		if (!quiet)
-+			ubifs_err("bad magic %#08x, expected %#08x",
-+				  magic, UBIFS_NODE_MAGIC);
-+		err = -EUCLEAN;
-+		goto out;
++	if (inode->i_size > c->max_inode_sz) {
++		ubifs_err("inode is too large (%lld)",
++			  (long long)inode->i_size);
++		return 1;
 +	}
 +
-+	type = ch->node_type;
-+	if (type < 0 || type >= UBIFS_NODE_TYPES_CNT) {
-+		if (!quiet)
-+			ubifs_err("bad node type %d", type);
-+		goto out;
++	if (ui->compr_type < 0 || ui->compr_type >= UBIFS_COMPR_TYPES_CNT) {
++		ubifs_err("unknown compression type %d", ui->compr_type);
++		return 2;
 +	}
 +
-+	node_len = le32_to_cpu(ch->len);
-+	if (node_len + offs > c->leb_size)
-+		goto out_len;
++	if (ui->xattr_cnt < 0)
++		return 3;
 +
-+	if (c->ranges[type].max_len == 0) {
-+		if (node_len != c->ranges[type].len)
-+			goto out_len;
-+	} else if (node_len < c->ranges[type].min_len ||
-+		   node_len > c->ranges[type].max_len)
-+		goto out_len;
++	if (ui->xattr_size < 0)
++		return 4;
 +
-+	crc = crc32(UBIFS_CRC32_INIT, buf + 8, node_len - 8);
-+	node_crc = le32_to_cpu(ch->crc);
-+	if (crc != node_crc) {
-+		if (!quiet)
-+			ubifs_err("bad CRC: calculated %#08x, read %#08x",
-+				  crc, node_crc);
-+		err = -EUCLEAN;
-+		goto out;
++	if (ui->xattr_names < 0 ||
++	    ui->xattr_names + ui->xattr_cnt > XATTR_LIST_MAX)
++		return 5;
++
++	if (ui->data_len < 0 || ui->data_len > UBIFS_MAX_INO_DATA)
++		return 6;
++
++	if (!ubifs_compr_present(ui->compr_type)) {
++		ubifs_warn("inode %lu uses '%s' compression, but it was not "
++			   "compiled in", inode->i_ino,
++			   ubifs_compr_name(ui->compr_type));
 +	}
 +
-+	return 0;
-+
-+out_len:
-+	if (!quiet)
-+		ubifs_err("bad node length %d", node_len);
-+out:
-+	if (!quiet) {
-+		ubifs_err("bad node at LEB %d:%d", lnum, offs);
-+		dbg_dump_node(c, buf);
-+		dbg_dump_stack();
-+	}
++	err = dbg_check_dir_size(c, inode);
 +	return err;
 +}
 +
-+/**
-+ * ubifs_pad - pad flash space.
-+ * @c: UBIFS file-system description object
-+ * @buf: buffer to put padding to
-+ * @pad: how many bytes to pad
-+ *
-+ * The flash media obliges us to write only in chunks of %c->min_io_size and
-+ * when we have to write less data we add padding node to the write-buffer and
-+ * pad it to the next minimal I/O unit's boundary. Padding nodes help when the
-+ * media is being scanned. If the amount of wasted space is not enough to fit a
-+ * padding node which takes %UBIFS_PAD_NODE_SZ bytes, we write padding bytes
-+ * pattern (%UBIFS_PADDING_BYTE).
-+ *
-+ * Padding nodes are also used to fill gaps when the "commit-in-gaps" method is
-+ * used.
-+ */
-+void ubifs_pad(const struct ubifs_info *c, void *buf, int pad)
++struct inode *ubifs_iget(struct super_block *sb, unsigned long inum)
 +{
-+	uint32_t crc;
++	int err;
++	union ubifs_key key;
++	struct ubifs_ino_node *ino;
++	struct ubifs_info *c = sb->s_fs_info;
++	struct inode *inode;
++	struct ubifs_inode *ui;
 +
-+	ubifs_assert(pad >= 0 && !(pad & 7));
++	dbg_gen("inode %lu", inum);
 +
-+	if (pad >= UBIFS_PAD_NODE_SZ) {
-+		struct ubifs_ch *ch = buf;
-+		struct ubifs_pad_node *pad_node = buf;
++	inode = iget_locked(sb, inum);
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++	if (!(inode->i_state & I_NEW))
++		return inode;
++	ui = ubifs_inode(inode);
 +
-+		ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-+		ch->node_type = UBIFS_PAD_NODE;
-+		ch->group_type = UBIFS_NO_NODE_GROUP;
-+		ch->padding[0] = ch->padding[1] = 0;
-+		ch->sqnum = cpu_to_le64(0);
-+		ch->len = cpu_to_le32(UBIFS_PAD_NODE_SZ);
-+		pad -= UBIFS_PAD_NODE_SZ;
-+		pad_node->pad_len = cpu_to_le32(pad);
-+		crc = crc32(UBIFS_CRC32_INIT, buf + 8, UBIFS_PAD_NODE_SZ - 8);
-+		ch->crc = cpu_to_le32(crc);
-+		memset(buf + UBIFS_PAD_NODE_SZ, 0, pad);
-+	} else if (pad > 0)
-+		/* Too little space, padding node won't fit */
-+		memset(buf, UBIFS_PADDING_BYTE, pad);
-+}
-+
-+/**
-+ * next_sqnum - get next sequence number.
-+ * @c: UBIFS file-system description object
-+ */
-+static unsigned long long next_sqnum(struct ubifs_info *c)
-+{
-+	unsigned long long sqnum;
-+
-+	spin_lock(&c->cnt_lock);
-+	sqnum = ++c->max_sqnum;
-+	spin_unlock(&c->cnt_lock);
-+
-+	if (unlikely(sqnum >= SQNUM_WARN_WATERMARK)) {
-+		if (sqnum >= SQNUM_WATERMARK) {
-+			ubifs_err("sequence number overflow %llu, end of life",
-+				  sqnum);
-+			ubifs_ro_mode(c, -EINVAL);
-+		}
-+		ubifs_warn("running out of sequence numbers, end of life soon");
-+	}
-+
-+	return sqnum;
-+}
-+
-+/**
-+ * ubifs_prepare_node - prepare node to be written to flash.
-+ * @c: UBIFS file-system description object
-+ * @node: the node to pad
-+ * @len: node length
-+ * @pad: if the buffer has to be padded
-+ *
-+ * This function prepares node at @node to be written to the media - it
-+ * calculates node CRC, fills the common header, and adds proper padding up to
-+ * the next minimum I/O unit if @pad is not zero.
-+ */
-+void ubifs_prepare_node(struct ubifs_info *c, void *node, int len, int pad)
-+{
-+	uint32_t crc;
-+	struct ubifs_ch *ch = node;
-+	unsigned long long sqnum = next_sqnum(c);
-+
-+	ubifs_assert(len >= UBIFS_CH_SZ);
-+
-+	ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-+	ch->len = cpu_to_le32(len);
-+	ch->group_type = UBIFS_NO_NODE_GROUP;
-+	ch->sqnum = cpu_to_le64(sqnum);
-+	ch->padding[0] = ch->padding[1] = 0;
-+	crc = crc32(UBIFS_CRC32_INIT, node + 8, len - 8);
-+	ch->crc = cpu_to_le32(crc);
-+
-+	if (pad) {
-+		len = ALIGN(len, 8);
-+		pad = ALIGN(len, c->min_io_size) - len;
-+		ubifs_pad(c, node + len, pad);
-+	}
-+}
-+
-+/**
-+ * ubifs_prep_grp_node - prepare node of a group to be written to flash.
-+ * @c: UBIFS file-system description object
-+ * @node: the node to pad
-+ * @len: node length
-+ * @last: indicates the last node of the group
-+ *
-+ * This function prepares node at @node to be written to the media - it
-+ * calculates node CRC and fills the common header.
-+ */
-+void ubifs_prep_grp_node(struct ubifs_info *c, void *node, int len, int last)
-+{
-+	uint32_t crc;
-+	struct ubifs_ch *ch = node;
-+	unsigned long long sqnum = next_sqnum(c);
-+
-+	ubifs_assert(len >= UBIFS_CH_SZ);
-+
-+	ch->magic = cpu_to_le32(UBIFS_NODE_MAGIC);
-+	ch->len = cpu_to_le32(len);
-+	if (last)
-+		ch->group_type = UBIFS_LAST_OF_NODE_GROUP;
-+	else
-+		ch->group_type = UBIFS_IN_NODE_GROUP;
-+	ch->sqnum = cpu_to_le64(sqnum);
-+	ch->padding[0] = ch->padding[1] = 0;
-+	crc = crc32(UBIFS_CRC32_INIT, node + 8, len - 8);
-+	ch->crc = cpu_to_le32(crc);
-+}
-+
-+/**
-+ * wbuf_timer_callback - write-buffer timer callback function.
-+ * @data: timer data (write-buffer descriptor)
-+ *
-+ * This function is called when the write-buffer timer expires.
-+ */
-+static void wbuf_timer_callback_nolock(unsigned long data)
-+{
-+	struct ubifs_wbuf *wbuf = (struct ubifs_wbuf *)data;
-+
-+	wbuf->need_sync = 1;
-+	wbuf->c->need_wbuf_sync = 1;
-+	ubifs_wake_up_bgt(wbuf->c);
-+}
-+
-+/**
-+ * new_wbuf_timer - start new write-buffer timer.
-+ * @wbuf: write-buffer descriptor
-+ */
-+static void new_wbuf_timer_nolock(struct ubifs_wbuf *wbuf)
-+{
-+	ubifs_assert(!timer_pending(&wbuf->timer));
-+
-+	if (!wbuf->timeout)
-+		return;
-+
-+	wbuf->timer.expires = jiffies + wbuf->timeout;
-+	add_timer(&wbuf->timer);
-+}
-+
-+/**
-+ * cancel_wbuf_timer - cancel write-buffer timer.
-+ * @wbuf: write-buffer descriptor
-+ */
-+static void cancel_wbuf_timer_nolock(struct ubifs_wbuf *wbuf)
-+{
-+	/*
-+	 * If the syncer is waiting for the lock (from the background thread's
-+	 * context) and another task is changing write-buffer then the syncing
-+	 * should be canceled.
-+	 */
-+	wbuf->need_sync = 0;
-+	del_timer(&wbuf->timer);
-+}
-+
-+/**
-+ * ubifs_wbuf_sync_nolock - synchronize write-buffer.
-+ * @wbuf: write-buffer to synchronize
-+ *
-+ * This function synchronizes write-buffer @buf and returns zero in case of
-+ * success or a negative error code in case of failure.
-+ */
-+int ubifs_wbuf_sync_nolock(struct ubifs_wbuf *wbuf)
-+{
-+	struct ubifs_info *c = wbuf->c;
-+	int err, dirt;
-+
-+	cancel_wbuf_timer_nolock(wbuf);
-+	if (!wbuf->used || wbuf->lnum == -1)
-+		/* Write-buffer is empty or not seeked */
-+		return 0;
-+
-+	dbg_io("LEB %d:%d, %d bytes",
-+	       wbuf->lnum, wbuf->offs, wbuf->used);
-+	ubifs_assert(!(c->vfs_sb->s_flags & MS_RDONLY));
-+	ubifs_assert(!(wbuf->avail & 7));
-+	ubifs_assert(wbuf->offs + c->min_io_size <= c->leb_size);
-+
-+	if (c->ro_media)
-+		return -EROFS;
-+
-+	ubifs_pad(c, wbuf->buf + wbuf->used, wbuf->avail);
-+	err = ubi_leb_write(c->ubi, wbuf->lnum, wbuf->buf, wbuf->offs,
-+			    c->min_io_size, wbuf->dtype);
-+	if (err) {
-+		ubifs_err("cannot write %d bytes to LEB %d:%d",
-+			  c->min_io_size, wbuf->lnum, wbuf->offs);
-+		dbg_dump_stack();
-+		return err;
-+	}
-+
-+	dirt = wbuf->avail;
-+
-+	spin_lock(&wbuf->lock);
-+	wbuf->offs += c->min_io_size;
-+	wbuf->avail = c->min_io_size;
-+	wbuf->used = 0;
-+	wbuf->next_ino = 0;
-+	spin_unlock(&wbuf->lock);
-+
-+	if (wbuf->sync_callback)
-+		err = wbuf->sync_callback(c, wbuf->lnum,
-+					  c->leb_size - wbuf->offs, dirt);
-+	return err;
-+}
-+
-+/**
-+ * ubifs_wbuf_seek_nolock - seek write-buffer.
-+ * @wbuf: write-buffer
-+ * @lnum: logical eraseblock number to seek to
-+ * @offs: logical eraseblock offset to seek to
-+ * @dtype: data type
-+ *
-+ * This function targets the write buffer to logical eraseblock @lnum:@offs.
-+ * The write-buffer is synchronized if it is not empty. Returns zero in case of
-+ * success and a negative error code in case of failure.
-+ */
-+int ubifs_wbuf_seek_nolock(struct ubifs_wbuf *wbuf, int lnum, int offs,
-+			   int dtype)
-+{
-+	const struct ubifs_info *c = wbuf->c;
-+
-+	dbg_io("LEB %d:%d", lnum, offs);
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt);
-+	ubifs_assert(offs >= 0 && offs <= c->leb_size);
-+	ubifs_assert(offs % c->min_io_size == 0 && !(offs & 7));
-+	ubifs_assert(lnum != wbuf->lnum);
-+
-+	if (wbuf->used > 0) {
-+		int err = ubifs_wbuf_sync_nolock(wbuf);
-+
-+		if (err)
-+			return err;
-+	}
-+
-+	spin_lock(&wbuf->lock);
-+	wbuf->lnum = lnum;
-+	wbuf->offs = offs;
-+	wbuf->avail = c->min_io_size;
-+	wbuf->used = 0;
-+	spin_unlock(&wbuf->lock);
-+	wbuf->dtype = dtype;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ubifs_bg_wbufs_sync - synchronize write-buffers.
-+ * @c: UBIFS file-system description object
-+ *
-+ * This function is called by background thread to synchronize write-buffers.
-+ * Returns zero in case of success and a negative error code in case of
-+ * failure.
-+ */
-+int ubifs_bg_wbufs_sync(struct ubifs_info *c)
-+{
-+	int err, i;
-+
-+	if (!c->need_wbuf_sync)
-+		return 0;
-+	c->need_wbuf_sync = 0;
-+
-+	if (c->ro_media) {
-+		err = -EROFS;
-+		goto out_timers;
-+	}
-+
-+	dbg_io("synchronize");
-+	for (i = 0; i < c->jhead_cnt; i++) {
-+		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-+
-+		cond_resched();
-+
-+		/*
-+		 * If the mutex is locked then wbuf is being changed, so
-+		 * synchronization is not necessary.
-+		 */
-+		if (mutex_is_locked(&wbuf->io_mutex))
-+			continue;
-+
-+		mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-+		if (!wbuf->need_sync) {
-+			mutex_unlock(&wbuf->io_mutex);
-+			continue;
-+		}
-+
-+		err = ubifs_wbuf_sync_nolock(wbuf);
-+		mutex_unlock(&wbuf->io_mutex);
-+		if (err) {
-+			ubifs_err("cannot sync write-buffer, error %d", err);
-+			ubifs_ro_mode(c, err);
-+			goto out_timers;
-+		}
-+	}
-+
-+	return 0;
-+
-+out_timers:
-+	/* Cancel all timers to prevent repeated errors */
-+	for (i = 0; i < c->jhead_cnt; i++) {
-+		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
-+
-+		mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-+		cancel_wbuf_timer_nolock(wbuf);
-+		mutex_unlock(&wbuf->io_mutex);
-+	}
-+	return err;
-+}
-+
-+/**
-+ * ubifs_wbuf_write_nolock - write data to flash via write-buffer.
-+ * @wbuf: write-buffer
-+ * @buf: node to write
-+ * @len: node length
-+ *
-+ * This function writes data to flash via write-buffer @wbuf. This means that
-+ * the last piece of the node won't reach the flash media immediately if it
-+ * does not take whole minimal I/O unit. Instead, the node will sit in RAM
-+ * until the write-buffer is synchronized (e.g., by timer).
-+ *
-+ * This function returns zero in case of success and a negative error code in
-+ * case of failure. If the node cannot be written because there is no more
-+ * space in this logical eraseblock, %-ENOSPC is returned.
-+ */
-+int ubifs_wbuf_write_nolock(struct ubifs_wbuf *wbuf, void *buf, int len)
-+{
-+	struct ubifs_info *c = wbuf->c;
-+	int err, written, n, aligned_len = ALIGN(len, 8), offs;
-+
-+	dbg_io("%d bytes (%s) to wbuf at LEB %d:%d", len,
-+	       dbg_ntype(((struct ubifs_ch *)buf)->node_type), wbuf->lnum,
-+	       wbuf->offs + wbuf->used);
-+	ubifs_assert(len > 0 && wbuf->lnum >= 0 && wbuf->lnum < c->leb_cnt);
-+	ubifs_assert(wbuf->offs >= 0 && wbuf->offs % c->min_io_size == 0);
-+	ubifs_assert(!(wbuf->offs & 7) && wbuf->offs <= c->leb_size);
-+	ubifs_assert(wbuf->avail > 0 && wbuf->avail <= c->min_io_size);
-+	ubifs_assert(mutex_is_locked(&wbuf->io_mutex));
-+
-+	if (c->leb_size - wbuf->offs - wbuf->used < aligned_len) {
-+		err = -ENOSPC;
++	ino = kmalloc(UBIFS_MAX_INO_NODE_SZ, GFP_NOFS);
++	if (!ino) {
++		err = -ENOMEM;
 +		goto out;
 +	}
 +
-+	cancel_wbuf_timer_nolock(wbuf);
++	ino_key_init(c, &key, inode->i_ino);
 +
-+	if (c->ro_media)
-+		return -EROFS;
-+
-+	if (aligned_len <= wbuf->avail) {
-+		/*
-+		 * The node is not very large and fits entirely within
-+		 * write-buffer.
-+		 */
-+		memcpy(wbuf->buf + wbuf->used, buf, len);
-+
-+		if (aligned_len == wbuf->avail) {
-+			dbg_io("flush wbuf to LEB %d:%d", wbuf->lnum,
-+				wbuf->offs);
-+			err = ubi_leb_write(c->ubi, wbuf->lnum, wbuf->buf,
-+					    wbuf->offs, c->min_io_size,
-+					    wbuf->dtype);
-+			if (err)
-+				goto out;
-+
-+			spin_lock(&wbuf->lock);
-+			wbuf->offs += c->min_io_size;
-+			wbuf->avail = c->min_io_size;
-+			wbuf->used = 0;
-+			wbuf->next_ino = 0;
-+			spin_unlock(&wbuf->lock);
-+		} else {
-+			spin_lock(&wbuf->lock);
-+			wbuf->avail -= aligned_len;
-+			wbuf->used += aligned_len;
-+			spin_unlock(&wbuf->lock);
-+		}
-+
-+		goto exit;
-+	}
-+
-+	/*
-+	 * The node is large enough and does not fit entirely within current
-+	 * minimal I/O unit. We have to fill and flush write-buffer and switch
-+	 * to the next min. I/O unit.
-+	 */
-+	dbg_io("flush wbuf to LEB %d:%d", wbuf->lnum, wbuf->offs);
-+	memcpy(wbuf->buf + wbuf->used, buf, wbuf->avail);
-+	err = ubi_leb_write(c->ubi, wbuf->lnum, wbuf->buf, wbuf->offs,
-+			    c->min_io_size, wbuf->dtype);
++	err = ubifs_tnc_lookup(c, &key, ino);
 +	if (err)
-+		goto out;
++		goto out_ino;
 +
-+	offs = wbuf->offs + c->min_io_size;
-+	len -= wbuf->avail;
-+	aligned_len -= wbuf->avail;
-+	written = wbuf->avail;
++	inode->i_flags |= (S_NOCMTIME | S_NOATIME);
++	inode->i_nlink = le32_to_cpu(ino->nlink);
++	inode->i_uid   = le32_to_cpu(ino->uid);
++	inode->i_gid   = le32_to_cpu(ino->gid);
++	inode->i_atime.tv_sec  = (int64_t)le64_to_cpu(ino->atime_sec);
++	inode->i_atime.tv_nsec = le32_to_cpu(ino->atime_nsec);
++	inode->i_mtime.tv_sec  = (int64_t)le64_to_cpu(ino->mtime_sec);
++	inode->i_mtime.tv_nsec = le32_to_cpu(ino->mtime_nsec);
++	inode->i_ctime.tv_sec  = (int64_t)le64_to_cpu(ino->ctime_sec);
++	inode->i_ctime.tv_nsec = le32_to_cpu(ino->ctime_nsec);
++	inode->i_mode  = le32_to_cpu(ino->mode);
++	inode->i_size  = le64_to_cpu(ino->size);
++
++	ui->data_len    = le32_to_cpu(ino->data_len);
++	ui->flags       = le32_to_cpu(ino->flags);
++	ui->compr_type  = le16_to_cpu(ino->compr_type);
++	ui->creat_sqnum = le64_to_cpu(ino->creat_sqnum);
++	ui->xattr_cnt   = le32_to_cpu(ino->xattr_cnt);
++	ui->xattr_size  = le64_to_cpu(ino->xattr_size);
++	ui->xattr_names = le32_to_cpu(ino->xattr_names);
++
++	err = validate_inode(c, inode);
++	if (err)
++		goto out_invalid;
++
++	/* Disable readahead */
++	inode->i_mapping->backing_dev_info = &ubifs_backing_dev_info;
++
++	switch (inode->i_mode & S_IFMT) {
++	case S_IFREG:
++		inode->i_mapping->a_ops = &ubifs_file_address_operations;
++		inode->i_op = &ubifs_file_inode_operations;
++		inode->i_fop = &ubifs_file_operations;
++		if (ui->data_len != 0) {
++			err = 10;
++			goto out_invalid;
++		}
++		break;
++	case S_IFDIR:
++		inode->i_op  = &ubifs_dir_inode_operations;
++		inode->i_fop = &ubifs_dir_operations;
++		if (ui->data_len != 0) {
++			err = 11;
++			goto out_invalid;
++		}
++		break;
++	case S_IFLNK:
++		inode->i_op = &ubifs_symlink_inode_operations;
++		if (ui->data_len <= 0 || ui->data_len > UBIFS_MAX_INO_DATA) {
++			err = 12;
++			goto out_invalid;
++		}
++		ui->data = kmalloc(ui->data_len + 1, GFP_NOFS);
++		if (!ui->data) {
++			err = -ENOMEM;
++			goto out_ino;
++		}
++		memcpy(ui->data, ino->data, ui->data_len);
++		((char *)ui->data)[ui->data_len] = '\0';
++		break;
++	case S_IFBLK:
++	case S_IFCHR:
++	{
++		dev_t rdev;
++		union ubifs_dev_desc *dev;
++
++		ui->data = kmalloc(sizeof(union ubifs_dev_desc), GFP_NOFS);
++		if (!ui->data) {
++			err = -ENOMEM;
++			goto out_ino;
++		}
++
++		dev = (union ubifs_dev_desc *)ino->data;
++		if (ui->data_len == sizeof(dev->new))
++			rdev = new_decode_dev(le32_to_cpu(dev->new));
++		else if (ui->data_len == sizeof(dev->huge))
++			rdev = huge_decode_dev(le64_to_cpu(dev->huge));
++		else {
++			err = 13;
++			goto out_invalid;
++		}
++		memcpy(ui->data, ino->data, ui->data_len);
++		inode->i_op = &ubifs_file_inode_operations;
++		init_special_inode(inode, inode->i_mode, rdev);
++		break;
++	}
++	case S_IFSOCK:
++	case S_IFIFO:
++		inode->i_op = &ubifs_file_inode_operations;
++		init_special_inode(inode, inode->i_mode, 0);
++		if (ui->data_len != 0) {
++			err = 14;
++			goto out_invalid;
++		}
++		break;
++	default:
++		err = 15;
++		goto out_invalid;
++	}
++
++	kfree(ino);
++	ubifs_set_inode_flags(inode);
++	unlock_new_inode(inode);
++	return inode;
++
++out_invalid:
++	ubifs_err("inode %lu validation failed, error %d", inode->i_ino, err);
++	dbg_dump_node(c, ino);
++	dbg_dump_inode(c, inode);
++	err = -EINVAL;
++out_ino:
++	kfree(ino);
++out:
++	ubifs_err("failed to read inode %lu, error %d", inode->i_ino, err);
++	iget_failed(inode);
++	return ERR_PTR(err);
++}
++
++static struct inode *ubifs_alloc_inode(struct super_block *sb)
++{
++	struct ubifs_inode *ui;
++
++	ui = kmem_cache_alloc(ubifs_inode_slab, GFP_NOFS);
++	if (!ui)
++		return NULL;
++
++	memset((void *)ui + sizeof(struct inode), 0,
++	       sizeof(struct ubifs_inode) - sizeof(struct inode));
++	mutex_init(&ui->budg_mutex);
++	return &ui->vfs_inode;
++};
++
++static void ubifs_destroy_inode(struct inode *inode)
++{
++	struct ubifs_inode *ui = ubifs_inode(inode);
++
++	kfree(ui->data);
++	kmem_cache_free(ubifs_inode_slab, inode);
++}
++
++/*
++ * Note, Linux write-back code calls this without 'i_mutex'.
++ */
++static int ubifs_write_inode(struct inode *inode, int wait)
++{
++	int err;
++	struct ubifs_info *c = inode->i_sb->s_fs_info;
++	struct ubifs_inode *ui = ubifs_inode(inode);
++	struct ubifs_budget_req req = {.dd_growth = c->inode_budget,
++				       .dirtied_ino_d = ui->data_len};
++
++	ubifs_assert(!ui->xattr);
++	if (is_bad_inode(inode))
++		return 0;
++
++	mutex_lock(&ui->budg_mutex);
 +
 +	/*
-+	 * The remaining data may take more whole min. I/O units, so write the
-+	 * remains multiple to min. I/O unit size directly to the flash media.
-+	 * We align node length to 8-byte boundary because we anyway flash wbuf
-+	 * if the remaining space is less than 8 bytes.
++	 * Due to races between write-back forced by budgeting
++	 * (see 'sync_some_inodes()') and pdflush write-back, the inode may
++	 * have already been synchronized, do not do this again.
++	 *
++	 * This might also happen if it was synchronized in e.g. ubifs_link()',
++	 * etc.
 +	 */
-+	n = aligned_len >> c->min_io_shift;
-+	if (n) {
-+		n <<= c->min_io_shift;
-+		dbg_io("write %d bytes to LEB %d:%d", n, wbuf->lnum, offs);
-+		err = ubi_leb_write(c->ubi, wbuf->lnum, buf + written, offs, n,
-+				    wbuf->dtype);
-+		if (err)
-+			goto out;
-+		offs += n;
-+		aligned_len -= n;
-+		len -= n;
-+		written += n;
++	if (!ui->dirty) {
++		mutex_unlock(&ui->budg_mutex);
++		return 0;
 +	}
 +
-+	spin_lock(&wbuf->lock);
-+	if (aligned_len)
++	ubifs_assert(ui->budgeted);
++	dbg_gen("inode %lu", inode->i_ino);
++
++	err = ubifs_jnl_write_inode(c, inode, 0, IS_SYNC(inode));
++	if (err)
++		ubifs_err("can't write inode %lu, error %d", inode->i_ino, err);
++
++	ui->dirty = 0;
++	UBIFS_DBG(ui->budgeted = 0);
++	atomic_long_dec(&c->dirty_ino_cnt);
++
++	ubifs_release_budget(c, &req);
++	mutex_unlock(&ui->budg_mutex);
++
++	return err;
++}
++
++static void ubifs_delete_inode(struct inode *inode)
++{
++	struct ubifs_info *c = inode->i_sb->s_fs_info;
++	struct ubifs_inode *ui = ubifs_inode(inode);
++	struct ubifs_budget_req req = {.dd_growth = c->inode_budget,
++				       .dirtied_ino_d = ui->data_len};
++	int err;
++
++	if (ui->xattr) {
 +		/*
-+		 * And now we have what's left and what does not take whole
-+		 * min. I/O unit, so write it to the write-buffer and we are
-+		 * done.
++		 * Extended attribute inode deletions are fully handled in
++		 * 'ubifs_removexattr()'. These inodes are special and have
++		 * limited usage, so there is nothing to do here.
 +		 */
-+		memcpy(wbuf->buf, buf + written, len);
-+
-+	wbuf->offs = offs;
-+	wbuf->used = aligned_len;
-+	wbuf->avail = c->min_io_size - aligned_len;
-+	wbuf->next_ino = 0;
-+	spin_unlock(&wbuf->lock);
-+
-+exit:
-+	if (wbuf->sync_callback) {
-+		int free = c->leb_size - wbuf->offs - wbuf->used;
-+
-+		err = wbuf->sync_callback(c, wbuf->lnum, free, 0);
-+		if (err)
-+			goto out;
++		ubifs_assert(!ui->dirty);
++		goto out;
 +	}
 +
-+	if (wbuf->used)
-+		new_wbuf_timer_nolock(wbuf);
++	dbg_gen("inode %lu", inode->i_ino);
++	ubifs_assert(!atomic_read(&inode->i_count));
++	ubifs_assert(inode->i_nlink == 0);
++
++	truncate_inode_pages(&inode->i_data, 0);
++	if (is_bad_inode(inode))
++		goto out;
++
++	mutex_lock(&ui->budg_mutex);
++
++	inode->i_size = 0;
++
++	err = ubifs_jnl_write_inode(c, inode, 1, IS_SYNC(inode));
++	if (err)
++		/*
++		 * Worst case we have a lost orphan inode wasting space, so a
++		 * simple error message is ok here.
++		 */
++		ubifs_err("can't write inode %lu, error %d", inode->i_ino, err);
++
++	if (ui->dirty) {
++		ubifs_assert(ui->budgeted);
++		atomic_long_dec(&c->dirty_ino_cnt);
++		ui->dirty = 0;
++		UBIFS_DBG(ui->budgeted = 0);
++		ubifs_release_budget(c, &req);
++	}
++
++	mutex_unlock(&ui->budg_mutex);
++out:
++	clear_inode(inode);
++}
++
++static void ubifs_dirty_inode(struct inode *inode)
++{
++	struct ubifs_inode *ui = ubifs_inode(inode);
++
++	ubifs_assert(mutex_is_locked(&ui->budg_mutex));
++	if (!ui->dirty) {
++		struct ubifs_info *c = inode->i_sb->s_fs_info;
++
++		ui->dirty = 1;
++		atomic_long_inc(&c->dirty_ino_cnt);
++		dbg_gen("inode %lu",  inode->i_ino);
++	}
++}
++
++static int ubifs_statfs(struct dentry *dentry, struct kstatfs *buf)
++{
++	struct ubifs_info *c = dentry->d_sb->s_fs_info;
++	unsigned long long free;
++
++	free = ubifs_budg_get_free_space(c);
++	dbg_gen("free space %lld bytes (%lld blocks)",
++		free, free >> UBIFS_BLOCK_SHIFT);
++
++	buf->f_type = UBIFS_SUPER_MAGIC;
++	buf->f_bsize = UBIFS_BLOCK_SIZE;
++	buf->f_blocks = c->block_cnt;
++	buf->f_bfree = free >> UBIFS_BLOCK_SHIFT;
++	if (free > c->report_rp_size)
++		buf->f_bavail = (free - c->report_rp_size) >> UBIFS_BLOCK_SHIFT;
++	else
++		buf->f_bavail = 0;
++	buf->f_files = 0;
++	buf->f_ffree = 0;
++	buf->f_namelen = UBIFS_MAX_NLEN;
 +
 +	return 0;
-+
-+out:
-+	ubifs_err("cannot write %d bytes to LEB %d:%d, error %d",
-+		  len, wbuf->lnum, wbuf->offs, err);
-+	dbg_dump_node(c, buf);
-+	dbg_dump_stack();
-+	dbg_dump_leb(c, wbuf->lnum);
-+	return err;
 +}
 +
-+/**
-+ * ubifs_write_node - write node to the media.
-+ * @c: UBIFS file-system description object
-+ * @buf: the node to write
-+ * @len: node length
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ * @dtype: node life-time hint (%UBI_LONGTERM, %UBI_SHORTTERM, %UBI_UNKNOWN)
-+ *
-+ * This function automatically fills node magic number, assigns sequence
-+ * number, and calculates node CRC checksum. The length of the @buf buffer has
-+ * to be aligned to the minimal I/O unit size. This function automatically
-+ * appends padding node and padding bytes if needed. Returns zero in case of
-+ * success and a negative error code in case of failure.
-+ */
-+int ubifs_write_node(struct ubifs_info *c, void *buf, int len, int lnum,
-+		     int offs, int dtype)
++static int ubifs_show_options(struct seq_file *s, struct vfsmount *mnt)
 +{
-+	int err, buf_len = ALIGN(len, c->min_io_size);
++	struct ubifs_info *c = mnt->mnt_sb->s_fs_info;
 +
-+	dbg_io("LEB %d:%d, %s, length %d (aligned %d)",
-+	       lnum, offs, dbg_ntype(((struct ubifs_ch *)buf)->node_type), len,
-+	       buf_len);
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(offs % c->min_io_size == 0 && offs < c->leb_size);
++	if (c->mount_opts.unmount_mode == 2)
++		seq_printf(s, ",fast_unmount");
++	else if (c->mount_opts.unmount_mode == 1)
++		seq_printf(s, ",norm_unmount");
 +
-+	if (c->ro_media)
-+		return -EROFS;
-+
-+	ubifs_prepare_node(c, buf, len, 1);
-+	err = ubi_leb_write(c->ubi, lnum, buf, offs, buf_len, dtype);
-+	if (err) {
-+		ubifs_err("cannot write %d bytes to LEB %d:%d, error %d",
-+			  buf_len, lnum, offs, err);
-+		dbg_dump_node(c, buf);
-+		dbg_dump_stack();
-+	}
-+
-+	return err;
++	return 0;
 +}
 +
-+/**
-+ * ubifs_read_node_wbuf - read node from the media or write-buffer.
-+ * @wbuf: wbuf to check for un-written data
-+ * @buf: buffer to read to
-+ * @type: node type
-+ * @len: node length
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ *
-+ * This function reads a node of known type and length, checks it and stores
-+ * in @buf. If the node partially or fully sits in the write-buffer, this
-+ * function takes data from the buffer, otherwise it reads the flash media.
-+ * Returns zero in case of success, %-EUCLEAN if CRC mismatched and a negative
-+ * error code in case of failure.
-+ */
-+int ubifs_read_node_wbuf(struct ubifs_wbuf *wbuf, void *buf, int type, int len,
-+			 int lnum, int offs)
++static int ubifs_sync_fs(struct super_block *sb, int wait)
 +{
-+	const struct ubifs_info *c = wbuf->c;
-+	int err, rlen, overlap;
-+	struct ubifs_ch *ch = buf;
++	struct ubifs_info *c = sb->s_fs_info;
++	int i, ret = 0, err;
 +
-+	dbg_io("LEB %d:%d, %s, length %d", lnum, offs, dbg_ntype(type), len);
-+	ubifs_assert(wbuf && lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-+	ubifs_assert(type >= 0 && type < UBIFS_NODE_TYPES_CNT);
-+
-+	spin_lock(&wbuf->lock);
-+	overlap = (lnum == wbuf->lnum && offs + len > wbuf->offs);
-+	if (!overlap) {
-+		/* We may safely unlock the write-buffer and read the data */
-+		spin_unlock(&wbuf->lock);
-+		return ubifs_read_node(c, buf, type, len, lnum, offs);
-+	}
-+
-+	/* Don't read under wbuf */
-+	rlen = wbuf->offs - offs;
-+	if (rlen < 0)
-+		rlen = 0;
-+
-+	/* Copy the rest from the write-buffer */
-+	memcpy(buf + rlen, wbuf->buf + offs + rlen - wbuf->offs, len - rlen);
-+	spin_unlock(&wbuf->lock);
-+
-+	if (rlen > 0) {
-+		/* Read everything that goes before write-buffer */
-+		err = ubi_read(c->ubi, lnum, buf, offs, rlen);
-+		if (err && err != -EBADMSG) {
-+			ubifs_err("failed to read node %d from LEB %d:%d, "
-+				  "error %d", type, lnum, offs, err);
-+			dbg_dump_stack();
-+			return err;
++	if (c->jheads)
++		for (i = 0; i < c->jhead_cnt; i++) {
++			err = ubifs_wbuf_sync(&c->jheads[i].wbuf);
++			if (err && !ret)
++				ret = err;
 +		}
-+	}
-+
-+	err = ubifs_check_node(c, buf, lnum, offs, 0);
-+	if (err) {
-+		ubifs_err("expected node type %d", type);
-+		return err;
-+	}
-+
-+	if (type != ch->node_type) {
-+		ubifs_err("bad node type (%d but expected %d)",
-+			  ch->node_type, type);
-+		goto out;
-+	}
-+
-+	rlen = le32_to_cpu(ch->len);
-+	if (rlen != len) {
-+		ubifs_err("bad node length %d, expected %d", rlen, len);
-+		goto out;
-+	}
-+
-+	return 0;
-+
-+out:
-+	ubifs_err("bad node at LEB %d:%d", lnum, offs);
-+	dbg_dump_node(c, buf);
-+	dbg_dump_stack();
-+	return -EINVAL;
-+}
-+
-+/**
-+ * ubifs_read_node - read node.
-+ * @c: UBIFS file-system description object
-+ * @buf: buffer to read to
-+ * @type: node type
-+ * @len: node length (not aligned)
-+ * @lnum: logical eraseblock number
-+ * @offs: offset within the logical eraseblock
-+ *
-+ * This function reads a node of known type and and length, checks it and
-+ * stores in @buf. Returns zero in case of success, %-EUCLEAN if CRC mismatched
-+ * and a negative error code in case of failure.
-+ */
-+int ubifs_read_node(const struct ubifs_info *c, void *buf, int type, int len,
-+		    int lnum, int offs)
-+{
-+	int err, l;
-+	struct ubifs_ch *ch = buf;
-+
-+	dbg_io("LEB %d:%d, %s, length %d", lnum, offs, dbg_ntype(type), len);
-+	ubifs_assert(lnum >= 0 && lnum < c->leb_cnt && offs >= 0);
-+	ubifs_assert(len >= UBIFS_CH_SZ && offs + len <= c->leb_size);
-+	ubifs_assert(!(offs & 7) && offs < c->leb_size);
-+	ubifs_assert(type >= 0 && type < UBIFS_NODE_TYPES_CNT);
-+
-+	err = ubi_read(c->ubi, lnum, buf, offs, len);
-+	if (err && err != -EBADMSG) {
-+		ubifs_err("cannot read node %d from LEB %d:%d, error %d",
-+			  type, lnum, offs, err);
-+		return err;
-+	}
-+
-+	err = ubifs_check_node(c, buf, lnum, offs, 0);
-+	if (err) {
-+		ubifs_err("expected node type %d", type);
-+		return err;
-+	}
-+
-+	if (type != ch->node_type) {
-+		ubifs_err("bad node type (%d but expected %d)",
-+			  ch->node_type, type);
-+		goto out;
-+	}
-+
-+	l = le32_to_cpu(ch->len);
-+	if (l != len) {
-+		ubifs_err("bad node length %d, expected %d", l, len);
-+		goto out;
-+	}
-+
-+	return 0;
-+
-+out:
-+	ubifs_err("bad node at LEB %d:%d", lnum, offs);
-+	dbg_dump_node(c, buf);
-+	dbg_dump_stack();
-+	return -EINVAL;
-+}
-+
-+/**
-+ * ubifs_wbuf_init - initialize write-buffer.
-+ * @c: UBIFS file-system description object
-+ * @wbuf: write-buffer to initialize
-+ *
-+ * This function initializes write buffer. Returns zero in case of success
-+ * %-ENOMEM in case of failure.
-+ */
-+int ubifs_wbuf_init(struct ubifs_info *c, struct ubifs_wbuf *wbuf)
-+{
-+	size_t size;
-+
-+	wbuf->buf = kmalloc(c->min_io_size, GFP_KERNEL);
-+	if (!wbuf->buf)
-+		return -ENOMEM;
-+
-+	size = (c->min_io_size / UBIFS_CH_SZ + 1) * sizeof(ino_t);
-+	wbuf->inodes = kmalloc(size, GFP_KERNEL);
-+	if (!wbuf->inodes) {
-+		kfree(wbuf->buf);
-+		wbuf->buf = NULL;
-+		return -ENOMEM;
-+	}
-+
-+	wbuf->used = 0;
-+	wbuf->lnum = wbuf->offs = -1;
-+	wbuf->avail = c->min_io_size;
-+	wbuf->dtype = UBI_UNKNOWN;
-+	wbuf->sync_callback = NULL;
-+	mutex_init(&wbuf->io_mutex);
-+	spin_lock_init(&wbuf->lock);
-+
-+	wbuf->c = c;
-+	init_timer(&wbuf->timer);
-+	wbuf->timer.function = wbuf_timer_callback_nolock;
-+	wbuf->timer.data = (unsigned long)wbuf;
-+	wbuf->timeout = DEFAULT_WBUF_TIMEOUT;
-+	wbuf->next_ino = 0;
-+
-+	return 0;
-+}
-+
-+/**
-+ * ubifs_wbuf_add_ino_nolock - add an inode number into the wbuf inode array.
-+ * @wbuf: the write-buffer whereto add
-+ * @inum: the inode number
-+ *
-+ * This function adds an inode number to the inode array of the write-buffer.
-+ */
-+void ubifs_wbuf_add_ino_nolock(struct ubifs_wbuf *wbuf, ino_t inum)
-+{
-+	if (!wbuf->buf)
-+		/* NOR flash or something similar */
-+		return;
-+
-+	spin_lock(&wbuf->lock);
-+	if (wbuf->used)
-+		wbuf->inodes[wbuf->next_ino++] = inum;
-+	spin_unlock(&wbuf->lock);
-+}
-+
-+/**
-+ * wbuf_has_ino - returns if the wbuf contains data from the inode.
-+ * @wbuf: the write-buffer
-+ * @inum: the inode number
-+ *
-+ * This function returns with %1 if the write-buffer contains some data from the
-+ * given inode otherwise it returns with %0.
-+ */
-+static int wbuf_has_ino(struct ubifs_wbuf *wbuf, ino_t inum)
-+{
-+	int i, ret = 0;
-+
-+	spin_lock(&wbuf->lock);
-+	for (i = 0; i < wbuf->next_ino; i++)
-+		if (inum == wbuf->inodes[i]) {
-+			ret = 1;
-+			break;
-+		}
-+	spin_unlock(&wbuf->lock);
-+
++	/*
++	 * We ought to call sync for c->ubi but it does not have one. If it had
++	 * it would in turn call mtd->sync, however mtd operations are
++	 * synchronous anyway, so we don't lose any sleep here.
++	 */
 +	return ret;
 +}
 +
 +/**
-+ * ubifs_sync_wbufs_by_inodes - synchronize write-buffers which have data.
-+ * belonging to specified inodes.
++ * init_constants_early - initialize UBIFS constants.
 + * @c: UBIFS file-system description object
-+ * @inodes: array of inodes
-+ * @count: number of elements in @inodes
 + *
-+ * This function synchronizes write-buffers which contain nodes belonging to
-+ * any inode specified in @inodes array. Returns zero in case of success and a
++ * This function initialize UBIFS constants which do not need the superblock to
++ * be read. It also checks that the UBI volume satisfies basic UBIFS
++ * requirements. Returns zero in case of success and a negative error code in
++ * case of failure.
++ */
++static int init_constants_early(struct ubifs_info *c)
++{
++	if (c->vi.corrupted) {
++		ubifs_warn("UBI volume is corrupted - read-only mode");
++		c->ro_media = 1;
++	}
++
++	if (c->di.ro_mode) {
++		ubifs_msg("read-only UBI device");
++		c->ro_media = 1;
++	}
++
++	if (c->vi.vol_type == UBI_STATIC_VOLUME) {
++		ubifs_msg("static UBI volume - read-only mode");
++		c->ro_media = 1;
++	}
++
++	c->leb_cnt = c->vi.size;
++	c->leb_size = c->vi.usable_leb_size;
++	c->half_leb_size = c->leb_size / 2;
++	c->min_io_size = c->di.min_io_size;
++	c->min_io_shift = fls(c->min_io_size) - 1;
++
++	if (c->leb_size < UBIFS_MIN_LEB_SZ) {
++		ubifs_err("too small LEBs (%d bytes), min. is %d bytes",
++			  c->leb_size, UBIFS_MIN_LEB_SZ);
++		return -EINVAL;
++	}
++
++	if (c->leb_cnt < UBIFS_MIN_LEB_CNT) {
++		ubifs_err("too few LEBs (%d), min. is %d",
++			  c->leb_cnt, UBIFS_MIN_LEB_CNT);
++		return -EINVAL;
++	}
++
++	if (!is_power_of_2(c->min_io_size)) {
++		ubifs_err("bad min. I/O size %d", c->min_io_size);
++		return -EINVAL;
++	}
++
++	/*
++	 * UBIFS aligns all node to 8-byte boundary, so to make function in
++	 * io.c simpler, assume minimum I/O unit size to be 8 bytes if it is
++	 * less than 8.
++	 */
++	if (c->min_io_size < 8) {
++		c->min_io_size = 8;
++		c->min_io_shift = 3;
++	}
++
++	c->ref_node_alsz = ALIGN(UBIFS_REF_NODE_SZ, c->min_io_size);
++	c->mst_node_alsz = ALIGN(UBIFS_MST_NODE_SZ, c->min_io_size);
++
++	/*
++	 * Initialize node length ranges which are mostly needed for node
++	 * length validation.
++	 */
++	c->ranges[UBIFS_PAD_NODE].len  = UBIFS_PAD_NODE_SZ;
++	c->ranges[UBIFS_SB_NODE].len   = UBIFS_SB_NODE_SZ;
++	c->ranges[UBIFS_MST_NODE].len  = UBIFS_MST_NODE_SZ;
++	c->ranges[UBIFS_REF_NODE].len  = UBIFS_REF_NODE_SZ;
++	c->ranges[UBIFS_TRUN_NODE].len = UBIFS_TRUN_NODE_SZ;
++	c->ranges[UBIFS_CS_NODE].len   = UBIFS_CS_NODE_SZ;
++
++	c->ranges[UBIFS_INO_NODE].min_len  = UBIFS_INO_NODE_SZ;
++	c->ranges[UBIFS_INO_NODE].max_len  = UBIFS_MAX_INO_NODE_SZ;
++	c->ranges[UBIFS_ORPH_NODE].min_len =
++				UBIFS_ORPH_NODE_SZ + sizeof(__le64);
++	c->ranges[UBIFS_ORPH_NODE].max_len = c->leb_size;
++	c->ranges[UBIFS_DENT_NODE].min_len = UBIFS_DENT_NODE_SZ;
++	c->ranges[UBIFS_DENT_NODE].max_len = UBIFS_MAX_DENT_NODE_SZ;
++	c->ranges[UBIFS_XENT_NODE].min_len = UBIFS_XENT_NODE_SZ;
++	c->ranges[UBIFS_XENT_NODE].max_len = UBIFS_MAX_XENT_NODE_SZ;
++	c->ranges[UBIFS_DATA_NODE].min_len = UBIFS_DATA_NODE_SZ;
++	c->ranges[UBIFS_DATA_NODE].max_len = UBIFS_MAX_DATA_NODE_SZ;
++	/*
++	 * Minimum indexing node size is amended later when superblock is
++	 * read and the key length is known.
++	 */
++	c->ranges[UBIFS_IDX_NODE].min_len = UBIFS_IDX_NODE_SZ + UBIFS_BRANCH_SZ;
++	/*
++	 * Maximum indexing node size is amended later when superblock is
++	 * read and the fanout is known.
++	 */
++	c->ranges[UBIFS_IDX_NODE].max_len = INT_MAX;
++
++	/*
++	 * Initialize dead and dark LEB space watermarks.
++	 *
++	 * Dead space is the space which cannot be used. Its watermark is
++	 * equivalent to min. I/O unit or minimum node size if it is greater
++	 * then min. I/O unit.
++	 *
++	 * Dark space is the space which might be used, or might not, depending
++	 * on which node should be written to the LEB. Its watermark is
++	 * equivalent to maximum UBIFS node size.
++	 */
++	c->dead_wm = ALIGN(MIN_WRITE_SZ, c->min_io_size);
++	c->dark_wm = ALIGN(UBIFS_MAX_NODE_SZ, c->min_io_size);
++
++	return 0;
++}
++
++/**
++ * bud_wbuf_callback - bud LEB write-buffer synchronization call-back.
++ * @c: UBIFS file-system description object
++ * @lnum: LEB the write-buffer was synchronized to
++ * @free: how many free bytes left in this LEB
++ * @pad: how many bytes were padded
++ *
++ * This is a callback function which is called by the I/O unit when the
++ * write-buffer is synchronized. We need this to correctly maintain space
++ * accounting in bud logical eraseblocks. This function returns zero in case of
++ * success and a negative error code in case of failure.
++ *
++ * This function actually belongs to the journal, but we keep it here because
++ * we want to keep it static.
++ */
++static int bud_wbuf_callback(struct ubifs_info *c, int lnum, int free, int pad)
++{
++	return ubifs_update_one_lp(c, lnum, free, pad, 0, 0);
++}
++
++/*
++ * init_constants_late - initialize UBIFS constants.
++ * @c: UBIFS file-system description object
++ *
++ * This is a helper function which initializes various UBIFS constants after
++ * the superblock has been read. It also checks various UBIFS parameters and
++ * makes sure they are all right. Returns zero in case of success and a
 + * negative error code in case of failure.
 + */
-+int ubifs_sync_wbufs_by_inodes(struct ubifs_info *c,
-+			       struct inode * const *inodes, int count)
++static int init_constants_late(struct ubifs_info *c)
 +{
-+	int i, j, err = 0;
++	int tmp, err;
++	uint64_t tmp64;
 +
-+	ubifs_assert(count);
++	c->main_bytes = c->main_lebs * c->leb_size;
 +
++	c->max_znode_sz = sizeof(struct ubifs_znode) +
++				c->fanout * sizeof(struct ubifs_zbranch);
++
++	tmp = ubifs_idx_node_sz(c, 1);
++	c->ranges[UBIFS_IDX_NODE].min_len = tmp;
++	c->min_idx_node_sz = ALIGN(tmp, 8);
++
++	tmp = ubifs_idx_node_sz(c, c->fanout);
++	c->ranges[UBIFS_IDX_NODE].max_len = tmp;
++	c->max_idx_node_sz = ALIGN(tmp, 8);
++
++	/* Make sure LEB size is large enough to fit full commit */
++	tmp = UBIFS_CS_NODE_SZ + UBIFS_REF_NODE_SZ * c->jhead_cnt;
++	tmp = ALIGN(tmp, c->min_io_size);
++	if (tmp > c->leb_size) {
++		dbg_err("too small LEB size %d, at least %d needed",
++			c->leb_size, tmp);
++		return -EINVAL;
++	}
++
++	/*
++	 * Make sure that the log is large enough to fit reference nodes for
++	 * all buds plus one reserved LEB.
++	 */
++	tmp64 = c->max_bud_bytes;
++	tmp = do_div(tmp64, c->leb_size);
++	c->max_bud_cnt = tmp64 + !!tmp;
++	tmp = (c->ref_node_alsz * c->max_bud_cnt + c->leb_size - 1);
++	tmp /= c->leb_size;
++	tmp += 1;
++	if (c->log_lebs < tmp) {
++		dbg_err("too small log %d LEBs, required min. %d LEBs",
++			c->log_lebs, tmp);
++		return -EINVAL;
++	}
++
++	/*
++	 * When budgeting we assume worst-case scenarios when the pages are not
++	 * be compressed and direntries are of the maximum size.
++	 *
++	 * Note, data, which may be stored in inodes is budgeted separately, so
++	 * it is not included into 'c->inode_budget'.
++	 */
++	c->page_budget = UBIFS_MAX_DATA_NODE_SZ * UBIFS_BLOCKS_PER_PAGE;
++	c->inode_budget = UBIFS_INO_NODE_SZ;
++	c->dent_budget = UBIFS_MAX_DENT_NODE_SZ;
++
++	/*
++	 * When the amount of flash space used by buds becomes
++	 * 'c->max_bud_bytes', UBIFS just blocks all writers and starts commit.
++	 * The writers are unblocked when the commit is finished. To avoid
++	 * writers to be blocked UBIFS initiates background commit in advance,
++	 * when number of bud bytes becomes above the limit defined below.
++	 */
++	c->bg_bud_bytes = (c->max_bud_bytes * 13) >> 4;
++
++	/*
++	 * Ensure minimum journal size. All the bytes in the journal heads are
++	 * considered to be used, when calculating the current journal usage.
++	 * Consequently, if the journal is too small, UBIFS will treat it as
++	 * always full.
++	 */
++	tmp64 = (uint64_t)(c->jhead_cnt + 1) * c->leb_size + 1;
++	if (c->bg_bud_bytes < tmp64)
++		c->bg_bud_bytes = tmp64;
++	if (c->max_bud_bytes < tmp64 + c->leb_size)
++		c->max_bud_bytes = tmp64 + c->leb_size;
++
++	err = ubifs_calc_lpt_geom(c);
++	if (err)
++		return err;
++
++	c->min_idx_lebs = ubifs_calc_min_idx_lebs(c);
++
++	/*
++	 * Calculate total amount of FS blocks. This number is not used
++	 * internally because it does not make much sense for UBIFS, but it is
++	 * necessary to report something for the 'statfs()' call.
++	 *
++	 * Subtract the LEB reserved for GC and the LEB which is reserved for
++	 * deletions.
++	 *
++	 * Review 'ubifs_calc_available()' if changing this calculation.
++	 */
++	tmp64 = c->main_lebs - 2;
++	tmp64 *= c->leb_size - c->dark_wm;
++	tmp64 = ubifs_reported_space(c, tmp64);
++	c->block_cnt = tmp64 >> UBIFS_BLOCK_SHIFT;
++
++	return 0;
++}
++
++/**
++ * care_about_gc_lnum - take care about reserved GC LEB.
++ * @c: UBIFS file-system description object
++ *
++ * This function ensures that the LEB reserved for garbage collection is
++ * unmapped and is marked as "taken" in lprops. We also have to set free space
++ * to LEB size and dirty space to zero, because lprops may contain out-of-date
++ * information if the file-system was un-mounted before it has been committed.
++ * This function returns zero in case of success and a negative error code in
++ * case of failure.
++ */
++static int care_about_gc_lnum(struct ubifs_info *c)
++{
++	int err;
++
++	if (c->gc_lnum == -1) {
++		ubifs_err("no LEB for GC");
++		return -EINVAL;
++	}
++
++	err = ubifs_leb_unmap(c, c->gc_lnum);
++	if (err)
++		return err;
++
++	/* And we have to tell lprops that this LEB is taken */
++	err = ubifs_change_one_lp(c, c->gc_lnum, c->leb_size, 0,
++				  LPROPS_TAKEN, 0, 0);
++	return err;
++}
++
++/**
++ * alloc_wbufs - allocate write-buffers.
++ * @c: UBIFS file-system description object
++ *
++ * This helper function allocates and initializes UBIFS write-buffers. Returns
++ * zero in case of success and %-ENOMEM in case of failure.
++ */
++static int alloc_wbufs(struct ubifs_info *c)
++{
++	int i, err;
++
++	c->jheads = kzalloc(c->jhead_cnt * sizeof(struct ubifs_jhead),
++			   GFP_KERNEL);
++	if (!c->jheads)
++		return -ENOMEM;
++
++	/* Initialize journal heads */
 +	for (i = 0; i < c->jhead_cnt; i++) {
-+		struct ubifs_wbuf *wbuf = &c->jheads[i].wbuf;
++		INIT_LIST_HEAD(&c->jheads[i].buds_list);
++		err = ubifs_wbuf_init(c, &c->jheads[i].wbuf);
++		if (err)
++			return err;
 +
-+		if (i == GCHD)
-+			/*
-+			 * GC head is special, do not look at it. Even if the
-+			 * head contains something related to this inode, it is
-+			 * a _copy_ of corresponding on-flash node which sits
-+			 * somewhere else.
-+			 */
++		c->jheads[i].wbuf.sync_callback = &bud_wbuf_callback;
++		c->jheads[i].wbuf.jhead = i;
++	}
++
++	c->jheads[BASEHD].wbuf.dtype = UBI_SHORTTERM;
++	/*
++	 * Garbage Collector head likely contains long-term data and
++	 * does not need to be synchronized by timer.
++	 */
++	c->jheads[GCHD].wbuf.dtype = UBI_LONGTERM;
++	c->jheads[GCHD].wbuf.timeout = 0;
++
++	return 0;
++}
++
++/**
++ * free_wbufs - free write-buffers.
++ * @c: UBIFS file-system description object
++ */
++static void free_wbufs(struct ubifs_info *c)
++{
++	int i;
++
++	if (c->jheads) {
++		for (i = 0; i < c->jhead_cnt; i++) {
++			kfree(c->jheads[i].wbuf.buf);
++			kfree(c->jheads[i].wbuf.inodes);
++		}
++		kfree(c->jheads);
++		c->jheads = NULL;
++	}
++}
++
++/**
++ * free_orphans - free orphans.
++ * @c: UBIFS file-system description object
++ */
++static void free_orphans(struct ubifs_info *c)
++{
++	struct ubifs_orphan *orph;
++
++	while (c->orph_dnext) {
++		orph = c->orph_dnext;
++		c->orph_dnext = orph->dnext;
++		list_del(&orph->list);
++		kfree(orph);
++	}
++
++	while (!list_empty(&c->orph_list)) {
++		orph = list_entry(c->orph_list.next, struct ubifs_orphan, list);
++		list_del(&orph->list);
++		kfree(orph);
++		dbg_err("orphan list not empty at unmount");
++	}
++
++	vfree(c->orph_buf);
++	c->orph_buf = NULL;
++}
++
++/**
++ * free_buds - free per-bud objects.
++ * @c: UBIFS file-system description object
++ */
++static void free_buds(struct ubifs_info *c)
++{
++	struct rb_node *this = c->buds.rb_node;
++	struct ubifs_bud *bud;
++
++	while (this) {
++		if (this->rb_left)
++			this = this->rb_left;
++		else if (this->rb_right)
++			this = this->rb_right;
++		else {
++			bud = rb_entry(this, struct ubifs_bud, rb);
++			this = rb_parent(this);
++			if (this) {
++				if (this->rb_left == &bud->rb)
++					this->rb_left = NULL;
++				else
++					this->rb_right = NULL;
++			}
++			kfree(bud);
++		}
++	}
++}
++
++/**
++ * check_volume_empty - check if the UBI volume is empty.
++ * @c: UBIFS file-system description object
++ *
++ * This function checks if the UBIFS volume is empty by looking if its LEBs are
++ * mapped or not. The result of checking is stored in the @c->empty variable.
++ * Returns zero in case of success and a negative error code in case of
++ * failure.
++ */
++static int check_volume_empty(struct ubifs_info *c)
++{
++	int lnum, err;
++
++	c->empty = 1;
++	for (lnum = 0; lnum < c->leb_cnt; lnum++) {
++		err = ubi_is_mapped(c->ubi, lnum);
++		if (unlikely(err < 0))
++			return err;
++		if (err == 1) {
++			c->empty = 0;
++			break;
++		}
++
++		cond_resched();
++	}
++
++	return 0;
++}
++
++/*
++ * UBIFS mount options.
++ *
++ * Opt_fast_unmount: do not run a journal commit before un-mounting
++ * Opt_norm_unmount: run a journal commit before un-mounting
++ * Opt_err: just end of array marker
++ */
++enum {
++	Opt_fast_unmount,
++	Opt_norm_unmount,
++	Opt_err,
++};
++
++static match_table_t tokens = {
++	{Opt_fast_unmount, "fast_unmount"},
++	{Opt_norm_unmount, "norm_unmount"},
++	{Opt_err, NULL},
++};
++
++/**
++ * ubifs_parse_options - parse mount parameters.
++ * @c: UBIFS file-system description object
++ * @options: parameters to parse
++ * @is_remount: non-zero if this is FS re-mount
++ *
++ * This function parses UBIFS mount options and returns zero in case success
++ * and a negative error code in case of failure.
++ */
++static int ubifs_parse_options(struct ubifs_info *c, char *options,
++			       int is_remount)
++{
++	char *p;
++	substring_t args[MAX_OPT_ARGS];
++
++	if (!options)
++		return 0;
++
++	while ((p = strsep(&options, ","))) {
++		int token;
++
++		if (!*p)
 +			continue;
 +
-+		for (j = 0; j < count && !err; j++)
-+			if (wbuf_has_ino(wbuf, inodes[j]->i_ino)) {
-+				mutex_lock_nested(&wbuf->io_mutex, wbuf->jhead);
-+				if (wbuf_has_ino(wbuf, inodes[j]->i_ino))
-+					err = ubifs_wbuf_sync_nolock(wbuf);
-+				mutex_unlock(&wbuf->io_mutex);
-+				break;
-+			}
-+
-+		if (err) {
-+			ubifs_ro_mode(c, err);
++		token = match_token(p, tokens, args);
++		switch (token) {
++		case Opt_fast_unmount:
++			c->mount_opts.unmount_mode = 2;
++			c->fast_unmount = 1;
 +			break;
++		case Opt_norm_unmount:
++			c->mount_opts.unmount_mode = 1;
++			c->fast_unmount = 0;
++			break;
++		default:
++			ubifs_err("unrecognized mount option \"%s\" "
++				  "or missing value", p);
++			return -EINVAL;
 +		}
 +	}
 +
++	return 0;
++}
++
++/**
++ * destroy_journal - destroy journal data structures.
++ * @c: UBIFS file-system description object
++ *
++ * This function destroys journal data structures including those that may have
++ * been created by recovery functions.
++ */
++static void destroy_journal(struct ubifs_info *c)
++{
++	while (!list_empty(&c->unclean_leb_list)) {
++		struct ubifs_unclean_leb *ucleb;
++
++		ucleb = list_entry(c->unclean_leb_list.next,
++				   struct ubifs_unclean_leb, list);
++		list_del(&ucleb->list);
++		kfree(ucleb);
++	}
++	while (!list_empty(&c->old_buds)) {
++		struct ubifs_bud *bud;
++
++		bud = list_entry(c->old_buds.next, struct ubifs_bud, list);
++		list_del(&bud->list);
++		kfree(bud);
++	}
++	ubifs_destroy_idx_gc(c);
++	ubifs_destroy_size_tree(c);
++	ubifs_tnc_close(c);
++	free_buds(c);
++}
++
++/**
++ * mount_ubifs - mount UBIFS file-system.
++ * @c: UBIFS file-system description object
++ *
++ * This function mounts UBIFS file system. Returns zero in case of success and
++ * a negative error code in case of failure.
++ *
++ * Note, the function does not de-allocate resources it it fails half way
++ * through, and the caller has to do this instead.
++ */
++static int mount_ubifs(struct ubifs_info *c)
++{
++	struct super_block *sb = c->vfs_sb;
++	int err, mounted_read_only = (sb->s_flags & MS_RDONLY);
++	unsigned long long x;
++	size_t sz;
++
++	err = init_constants_early(c);
++	if (err)
++		return err;
++
++#ifdef CONFIG_UBIFS_FS_DEBUG
++	c->dbg_buf = vmalloc(c->leb_size);
++	if (!c->dbg_buf)
++		return -ENOMEM;
++#endif
++
++	err = check_volume_empty(c);
++	if (err)
++		goto out_free;
++
++	if (c->empty && (mounted_read_only || c->ro_media)) {
++		/*
++		 * This UBI volume is empty, and read-only, or the file system
++		 * is mounted read-only - we cannot format it.
++		 */
++		ubifs_err("can't format empty UBI volume: read-only %s",
++			  c->ro_media ? "UBI volume" : "mount");
++		err = -EROFS;
++		goto out_free;
++	}
++
++	if (c->ro_media && !mounted_read_only) {
++		ubifs_err("cannot mount read-write - read-only media");
++		err = -EROFS;
++		goto out_free;
++	}
++
++	/*
++	 * The requirement for the buffer is that it should fit indexing B-tree
++	 * height amount of integers. We assume the height if the TNC tree will
++	 * never exceed 64.
++	 */
++	err = -ENOMEM;
++	c->bottom_up_buf = kmalloc(BOTTOM_UP_HEIGHT * sizeof(int), GFP_KERNEL);
++	if (!c->bottom_up_buf)
++		goto out_free;
++
++	c->sbuf = vmalloc(c->leb_size);
++	if (!c->sbuf)
++		goto out_free;
++
++	if (!mounted_read_only) {
++		c->ileb_buf = vmalloc(c->leb_size);
++		if (!c->ileb_buf)
++			goto out_free;
++	}
++
++	err = ubifs_read_superblock(c);
++	if (err)
++		goto out_free;
++
++	/*
++	 * Make sure the compressor which is set as the default on in the
++	 * superblock was actually compiled in.
++	 */
++	if (!ubifs_compr_present(c->default_compr)) {
++		ubifs_warn("'%s' compressor is set by superblock, but not "
++			   "compiled in", ubifs_compr_name(c->default_compr));
++		c->default_compr = UBIFS_COMPR_NONE;
++	}
++
++	dbg_failure_mode_registration(c);
++
++	err = init_constants_late(c);
++	if (err)
++		goto out_dereg;
++
++	sz = ALIGN(c->max_idx_node_sz, c->min_io_size);
++	sz = ALIGN(sz + c->max_idx_node_sz, c->min_io_size);
++	c->cbuf = kmalloc(sz, GFP_NOFS);
++	if (!c->cbuf) {
++		err = -ENOMEM;
++		goto out_dereg;
++	}
++
++	if (!mounted_read_only) {
++		err = alloc_wbufs(c);
++		if (err)
++			goto out_cbuf;
++
++		/* Create background thread */
++		sprintf(c->bgt_name, BGT_NAME_PATTERN, c->vi.ubi_num,
++			c->vi.vol_id);
++		c->bgt = kthread_create(ubifs_bg_thread, c, c->bgt_name);
++		if (!c->bgt)
++			c->bgt = ERR_PTR(-EINVAL);
++		if (IS_ERR(c->bgt)) {
++			err = PTR_ERR(c->bgt);
++			c->bgt = NULL;
++			ubifs_err("cannot spawn \"%s\", error %d",
++				  c->bgt_name, err);
++			goto out_wbufs;
++		}
++		wake_up_process(c->bgt);
++	}
++
++	err = ubifs_read_master(c);
++	if (err)
++		goto out_stop;
++
++	if ((c->mst_node->flags & cpu_to_le32(UBIFS_MST_DIRTY)) != 0) {
++		ubifs_msg("recovery needed");
++		c->need_recovery = 1;
++		if (!mounted_read_only) {
++			err = ubifs_recover_inl_heads(c, c->sbuf);
++			if (err)
++				goto out_master;
++		}
++	} else if (!mounted_read_only) {
++		/*
++		 * Set the "dirty" flag so that if we reboot uncleanly we
++		 * will notice this immediately on the next mount.
++		 */
++		c->mst_node->flags |= cpu_to_le32(UBIFS_MST_DIRTY);
++		err = ubifs_write_master(c);
++		if (err)
++			goto out_master;
++	}
++
++	err = ubifs_lpt_init(c, 1, !mounted_read_only);
++	if (err)
++		goto out_master;
++
++	err = dbg_check_idx_size(c, c->old_idx_sz);
++	if (err)
++		goto out_lpt;
++
++	err = ubifs_replay_journal(c);
++	if (err)
++		goto out_journal;
++
++	if (!mounted_read_only) {
++		int lnum;
++
++		err = ubifs_mount_orphans(c, c->need_recovery);
++		if (err)
++			goto out_journal;
++
++		if (c->need_recovery)
++			err = ubifs_recover_gc_lnum(c);
++		else
++			err = care_about_gc_lnum(c);
++		if (err)
++			goto out_orphans;
++
++		/* Check for enough log space */
++		lnum = c->lhead_lnum + 1;
++		if (lnum >= UBIFS_LOG_LNUM + c->log_lebs)
++			lnum = UBIFS_LOG_LNUM;
++		if (lnum == c->ltail_lnum) {
++			err = ubifs_consolidate_log(c);
++			if (err)
++				goto out_orphans;
++		}
++
++		/* Check for enough free space */
++		if (ubifs_calc_available(c) <= 0) {
++			ubifs_err("insufficient available space");
++			err = -EINVAL;
++			goto out_orphans;
++		}
++
++		err = dbg_check_lprops(c);
++		if (err)
++			goto out_orphans;
++	}
++
++	if (c->need_recovery) {
++		err = ubifs_recover_size(c);
++		if (err)
++			goto out_orphans;
++	}
++
++	spin_lock(&ubifs_infos_lock);
++	list_add_tail(&c->infos_list, &ubifs_infos);
++	spin_unlock(&ubifs_infos_lock);
++
++	if (c->need_recovery) {
++		if (mounted_read_only)
++			ubifs_msg("recovery deferred");
++		else {
++			c->need_recovery = 0;
++			ubifs_msg("recovery completed");
++		}
++	}
++
++	ubifs_msg("mounted UBI device %d, volume %d", c->vi.ubi_num,
++		  c->vi.vol_id);
++	if (mounted_read_only)
++		ubifs_msg("mounted read-only");
++	ubifs_msg("minimal I/O unit size:   %d bytes", c->min_io_size);
++	ubifs_msg("logical eraseblock size: %d bytes (%d KiB)",
++		  c->leb_size, c->leb_size / 1024);
++	x = (unsigned long long)c->main_lebs * c->leb_size;
++	ubifs_msg("file system size:        %lld bytes (%lld KiB, %lld MiB, "
++		  "%d LEBs)", x, x >> 10, x >> 20, c->main_lebs);
++	x = (unsigned long long)c->log_lebs * c->leb_size + c->max_bud_bytes;
++	ubifs_msg("journal size:            %lld bytes (%lld KiB, %lld MiB, "
++		  "%d LEBs)", x, x >> 10, x >> 20,
++		  c->log_lebs + c->max_bud_cnt);
++	ubifs_msg("data journal heads:      %d",
++		  c->jhead_cnt - NONDATA_JHEADS_CNT);
++	ubifs_msg("default compressor:      %s",
++		  ubifs_compr_name(c->default_compr));
++
++	dbg_msg("compiled on:            " __DATE__ " at " __TIME__);
++	dbg_msg("fast unmount:           %d", c->fast_unmount);
++	dbg_msg("big_lpt                 %d", c->big_lpt);
++	dbg_msg("log LEBs:               %d (%d - %d)",
++		c->log_lebs, UBIFS_LOG_LNUM, c->log_last);
++	dbg_msg("LPT area LEBs:          %d (%d - %d)",
++		c->lpt_lebs, c->lpt_first, c->lpt_last);
++	dbg_msg("orphan area LEBs:       %d (%d - %d)",
++		c->orph_lebs, c->orph_first, c->orph_last);
++	dbg_msg("main area LEBs:         %d (%d - %d)",
++		c->main_lebs, c->main_first, c->leb_cnt - 1);
++	dbg_msg("index LEBs:             %d", c->lst.idx_lebs);
++	dbg_msg("total index bytes:      %lld (%lld KiB, %lld MiB)",
++		c->old_idx_sz, c->old_idx_sz >> 10, c->old_idx_sz >> 20);
++	dbg_msg("key hash type:          %d", c->key_hash_type);
++	dbg_msg("tree fanout:            %d", c->fanout);
++	dbg_msg("reserved GC LEB:        %d", c->gc_lnum);
++	dbg_msg("first main LEB:         %d", c->main_first);
++	dbg_msg("dead watermark:         %d", c->dead_wm);
++	dbg_msg("dark watermark:         %d", c->dark_wm);
++	x = c->main_lebs * c->dark_wm;
++	dbg_msg("max. dark space:        %lld (%lld KiB, %lld MiB)",
++		x, x >> 10, x >> 20);
++	dbg_msg("maximum bud bytes:      %lld (%lld KiB, %lld MiB)",
++		c->max_bud_bytes, c->max_bud_bytes >> 10,
++		c->max_bud_bytes >> 20);
++	dbg_msg("BG commit bud bytes:    %lld (%lld KiB, %lld MiB)",
++		c->bg_bud_bytes, c->bg_bud_bytes >> 10,
++		c->bg_bud_bytes >> 20);
++	dbg_msg("current bud bytes       %lld (%lld KiB, %lld MiB)",
++		c->bud_bytes, c->bud_bytes >> 10, c->bud_bytes >> 20);
++	dbg_msg("max. seq. number:       %llu", c->max_sqnum);
++	dbg_msg("commit number:          %llu", c->cmt_no);
++
++	return 0;
++
++out_orphans:
++	free_orphans(c);
++out_journal:
++	destroy_journal(c);
++out_lpt:
++	ubifs_lpt_free(c, 0);
++out_master:
++	kfree(c->mst_node);
++	kfree(c->rcvrd_mst_node);
++out_stop:
++	if (c->bgt)
++		kthread_stop(c->bgt);
++out_wbufs:
++	free_wbufs(c);
++out_cbuf:
++	kfree(c->cbuf);
++out_dereg:
++	dbg_failure_mode_deregistration(c);
++out_free:
++	vfree(c->ileb_buf);
++	vfree(c->sbuf);
++	kfree(c->bottom_up_buf);
++	UBIFS_DBG(vfree(c->dbg_buf));
 +	return err;
 +}
++
++/**
++ * ubifs_umount - un-mount UBIFS file-system.
++ * @c: UBIFS file-system description object
++ *
++ * Note, this function is called to free allocated resourced when un-mounting,
++ * as well as free resources when an error occurred while we were half way
++ * through mounting (error path cleanup function). So it has to make sure the
++ * resource was actually allocated before freeing it.
++ */
++static void ubifs_umount(struct ubifs_info *c)
++{
++	dbg_gen("un-mounting UBI device %d, volume %d", c->vi.ubi_num,
++		c->vi.vol_id);
++
++	if (c->bgt)
++		kthread_stop(c->bgt);
++
++	destroy_journal(c);
++	free_wbufs(c);
++	free_orphans(c);
++	ubifs_lpt_free(c, 0);
++
++	kfree(c->cbuf);
++	kfree(c->rcvrd_mst_node);
++	kfree(c->mst_node);
++	vfree(c->sbuf);
++	kfree(c->bottom_up_buf);
++	UBIFS_DBG(vfree(c->dbg_buf));
++	vfree(c->ileb_buf);
++	dbg_failure_mode_deregistration(c);
++}
++
++/**
++ * ubifs_remount_rw - re-mount in read-write mode.
++ * @c: UBIFS file-system description object
++ *
++ * UBIFS avoids allocating many unnecessary resources when mounted in read-only
++ * mode. This function allocates the needed resources and re-mounts UBIFS in
++ * read-write mode.
++ */
++static int ubifs_remount_rw(struct ubifs_info *c)
++{
++	int err, lnum;
++
++	if (c->ro_media)
++		return -EINVAL;
++
++	mutex_lock(&c->umount_mutex);
++	c->remounting_rw = 1;
++
++	/* Check for enough free space */
++	if (ubifs_calc_available(c) <= 0) {
++		ubifs_err("insufficient available space");
++		err = -EINVAL;
++		goto out;
++	}
++
++	if (c->old_leb_cnt != c->leb_cnt) {
++		struct ubifs_sb_node *sup;
++
++		sup = ubifs_read_sb_node(c);
++		if (IS_ERR(sup)) {
++			err = PTR_ERR(sup);
++			goto out;
++		}
++		sup->leb_cnt = cpu_to_le32(c->leb_cnt);
++		err = ubifs_write_sb_node(c, sup);
++		if (err)
++			goto out;
++	}
++
++	if (c->need_recovery) {
++		ubifs_msg("completing deferred recovery");
++		err = ubifs_write_rcvrd_mst_node(c);
++		if (err)
++			goto out;
++		err = ubifs_recover_size(c);
++		if (err)
++			goto out;
++		err = ubifs_clean_lebs(c, c->sbuf);
++		if (err)
++			goto out;
++		err = ubifs_recover_inl_heads(c, c->sbuf);
++		if (err)
++			goto out;
++	}
++
++	if (!(c->mst_node->flags & cpu_to_le32(UBIFS_MST_DIRTY))) {
++		c->mst_node->flags |= cpu_to_le32(UBIFS_MST_DIRTY);
++		err = ubifs_write_master(c);
++		if (err)
++			goto out;
++	}
++
++	c->ileb_buf = vmalloc(c->leb_size);
++	if (!c->ileb_buf) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	err = ubifs_lpt_init(c, 0, 1);
++	if (err)
++		goto out;
++
++	err = alloc_wbufs(c);
++	if (err)
++		goto out;
++
++	ubifs_create_buds_lists(c);
++
++	/* Create background thread */
++	c->bgt = kthread_create(ubifs_bg_thread, c, c->bgt_name);
++	if (!c->bgt)
++		c->bgt = ERR_PTR(-EINVAL);
++	if (IS_ERR(c->bgt)) {
++		err = PTR_ERR(c->bgt);
++		c->bgt = NULL;
++		ubifs_err("cannot spawn \"%s\", error %d",
++			  c->bgt_name, err);
++		return err;
++	}
++	wake_up_process(c->bgt);
++
++	if (c->need_recovery)
++		err = ubifs_recover_gc_lnum(c);
++	else
++		err = care_about_gc_lnum(c);
++	if (err)
++		goto out;
++
++	err = ubifs_mount_orphans(c, c->need_recovery);
++	if (err)
++		goto out;
++	/* Check for enough log space */
++	lnum = c->lhead_lnum + 1;
++	if (lnum >= UBIFS_LOG_LNUM + c->log_lebs)
++		lnum = UBIFS_LOG_LNUM;
++	if (lnum == c->ltail_lnum) {
++		err = ubifs_consolidate_log(c);
++		if (err)
++			goto out;
++	}
++
++	if (c->need_recovery) {
++		c->need_recovery = 0;
++		ubifs_msg("deferred recovery completed");
++	}
++
++	dbg_gen("re-mounted read-write");
++	c->vfs_sb->s_flags &= ~MS_RDONLY;
++	c->remounting_rw = 0;
++	mutex_unlock(&c->umount_mutex);
++	return 0;
++
++out:
++	free_orphans(c);
++	if (c->bgt) {
++		kthread_stop(c->bgt);
++		c->bgt = NULL;
++	}
++	free_wbufs(c);
++	vfree(c->ileb_buf);
++	c->ileb_buf = NULL;
++	ubifs_lpt_free(c, 1);
++	c->remounting_rw = 0;
++	mutex_unlock(&c->umount_mutex);
++	return err;
++}
++
++/**
++ * commit_on_unmount - commit the journal when un-mounting.
++ * @c: UBIFS file-system description object
++ *
++ * This function is called during un-mounting and it commits the journal unless
++ * the "fast unmount" mode is enabled. It also avoids committing the journal if
++ * it contains too few data.
++ *
++ * Sometimes recovery requires the journal to be committed at least once, and
++ * this function takes care about this.
++ */
++static void commit_on_unmount(struct ubifs_info *c)
++{
++	if (!c->fast_unmount) {
++		long long bud_bytes;
++
++		spin_lock(&c->buds_lock);
++		bud_bytes = c->bud_bytes;
++		spin_unlock(&c->buds_lock);
++		if (bud_bytes > c->leb_size)
++			ubifs_run_commit(c);
++	}
++
++	if (c->recovery_needs_commit)
++		ubifs_recovery_commit(c);
++}
++
++/**
++ * ubifs_remount_ro - re-mount in read-only mode.
++ * @c: UBIFS file-system description object
++ *
++ * We rely on VFS to have stopped writing. Possibly the background thread could
++ * be running a commit, however kthread_stop will wait in that case.
++ */
++static void ubifs_remount_ro(struct ubifs_info *c)
++{
++	int i, err;
++
++	ubifs_assert(!c->need_recovery);
++	commit_on_unmount(c);
++
++	mutex_lock(&c->umount_mutex);
++	if (c->bgt) {
++		kthread_stop(c->bgt);
++		c->bgt = NULL;
++	}
++
++	for (i = 0; i < c->jhead_cnt; i++) {
++		ubifs_wbuf_sync(&c->jheads[i].wbuf);
++		del_timer_sync(&c->jheads[i].wbuf.timer);
++	}
++
++	if (!c->ro_media) {
++		c->mst_node->flags &= ~cpu_to_le32(UBIFS_MST_DIRTY);
++		c->mst_node->flags |= cpu_to_le32(UBIFS_MST_NO_ORPHS);
++		c->mst_node->gc_lnum = cpu_to_le32(c->gc_lnum);
++		err = ubifs_write_master(c);
++		if (err)
++			ubifs_ro_mode(c, err);
++	}
++
++	ubifs_destroy_idx_gc(c);
++	free_wbufs(c);
++	free_orphans(c);
++	vfree(c->ileb_buf);
++	c->ileb_buf = NULL;
++	ubifs_lpt_free(c, 1);
++	mutex_unlock(&c->umount_mutex);
++}
++
++static void ubifs_put_super(struct super_block *sb)
++{
++	int i;
++	struct ubifs_info *c = sb->s_fs_info;
++
++	ubifs_msg("un-mount UBI device %d, volume %d", c->vi.ubi_num,
++		  c->vi.vol_id);
++	/*
++	 * The following asserts are only valid if there has not been a failure
++	 * of the media. For example, there will be dirty inodes if we failed
++	 * to write them back because of I/O errors.
++	 */
++	ubifs_assert(atomic_long_read(&c->dirty_pg_cnt) == 0);
++	ubifs_assert(atomic_long_read(&c->dirty_ino_cnt) == 0);
++	ubifs_assert(c->budg_idx_growth == 0);
++	ubifs_assert(c->budg_data_growth == 0);
++
++	/*
++	 * The 'c->umount_lock' prevents races between UBIFS memory shrinker
++	 * and file system un-mount. Namely, it prevents the shrinker from
++	 * picking this superblock for shrinking - it will be just skipped if
++	 * the mutex is locked.
++	 */
++	mutex_lock(&c->umount_mutex);
++
++	spin_lock(&ubifs_infos_lock);
++	list_del(&c->infos_list);
++	spin_unlock(&ubifs_infos_lock);
++
++	if (!(c->vfs_sb->s_flags & MS_RDONLY)) {
++		/*
++		 * First of all kill the background thread to make sure it does
++		 * not interfere with un-mounting and freeing resources.
++		 */
++		if (c->bgt) {
++			kthread_stop(c->bgt);
++			c->bgt = NULL;
++		}
++
++		/* Synchronize write-buffers */
++		if (c->jheads)
++			for (i = 0; i < c->jhead_cnt; i++) {
++				ubifs_wbuf_sync(&c->jheads[i].wbuf);
++				del_timer_sync(&c->jheads[i].wbuf.timer);
++			}
++
++		/*
++		 * On fatal errors c->ro_media is set to 1, in which case we do
++		 * not write the master node.
++		 */
++		if (!c->ro_media) {
++			/*
++			 * We are being cleanly unmounted which means the
++			 * orphans were killed - indicate this in the master
++			 * node. Also save the reserved GC LEB number.
++			 */
++			int err;
++
++			c->mst_node->flags &= ~cpu_to_le32(UBIFS_MST_DIRTY);
++			c->mst_node->flags |= cpu_to_le32(UBIFS_MST_NO_ORPHS);
++			c->mst_node->gc_lnum = cpu_to_le32(c->gc_lnum);
++			err = ubifs_write_master(c);
++			if (err)
++				/*
++				 * Recovery will attempt to fix the master area
++				 * next mount, so we just print a message and
++				 * continue to unmount normally.
++				 */
++				ubifs_err("failed to write master node, "
++					  "error %d", err);
++		}
++	}
++
++	ubifs_umount(c);
++	ubi_close_volume(c->ubi);
++	mutex_unlock(&c->umount_mutex);
++	kfree(c);
++}
++
++static int ubifs_remount_fs(struct super_block *sb, int *flags, char *data)
++{
++	int err;
++	struct ubifs_info *c = sb->s_fs_info;
++
++	dbg_gen("old flags %#lx, new flags %#x", sb->s_flags, *flags);
++
++	err = ubifs_parse_options(c, data, 1);
++	if (err) {
++		ubifs_err("invalid or unknown remount parameter");
++		return err;
++	}
++	if ((sb->s_flags & MS_RDONLY) && !(*flags & MS_RDONLY)) {
++		err = ubifs_remount_rw(c);
++		if (err)
++			return err;
++	} else if (!(sb->s_flags & MS_RDONLY) && (*flags & MS_RDONLY))
++		ubifs_remount_ro(c);
++
++	return 0;
++}
++
++struct super_operations ubifs_super_operations = {
++	.alloc_inode   = ubifs_alloc_inode,
++	.destroy_inode = ubifs_destroy_inode,
++	.put_super     = ubifs_put_super,
++	.write_inode   = ubifs_write_inode,
++	.delete_inode  = ubifs_delete_inode,
++	.statfs        = ubifs_statfs,
++	.dirty_inode   = ubifs_dirty_inode,
++	.remount_fs    = ubifs_remount_fs,
++	.show_options  = ubifs_show_options,
++	.sync_fs       = ubifs_sync_fs,
++};
++
++/**
++ * open_ubi - parse UBI device name string and open the UBI device.
++ * @name: UBI volume name
++ * @mode: UBI volume open mode
++ *
++ * There are several ways to specify UBI volumes when mounting UBIFS:
++ * o ubiX_Y    - UBI device number X, volume Y;
++ * o ubiY      - UBI device number 0, volume Y;
++ * o ubiX:NAME - mount UBI device X, volume with name NAME;
++ * o ubi:NAME  - mount UBI device 0, volume with name NAME.
++ *
++ * Alternative '!' separator may be used instead of ':' (because some shells
++ * like busybox may interpret ':' as an NFS host name separator). This function
++ * returns ubi volume object in case of success and a negative error code in
++ * case of failure.
++ */
++static struct ubi_volume_desc *open_ubi(const char *name, int mode)
++{
++	int dev, vol;
++	char *endptr;
++
++	if (name[0] != 'u' || name[1] != 'b' || name[2] != 'i')
++		return ERR_PTR(-EINVAL);
++
++	/* ubi:NAME method */
++	if ((name[3] == ':' || name[3] == '!') && name[4] != '\0')
++		return ubi_open_volume_nm(0, name + 4, mode);
++
++	if (!isdigit(name[3]))
++		return ERR_PTR(-EINVAL);
++
++	dev = simple_strtoul(name + 3, &endptr, 0);
++
++	/* ubiY method */
++	if (*endptr == '\0')
++		return ubi_open_volume(0, dev, mode);
++
++	/* ubiX_Y method */
++	if (*endptr == '_' && isdigit(endptr[1])) {
++		vol = simple_strtoul(endptr + 1, &endptr, 0);
++		if (*endptr != '\0')
++			return ERR_PTR(-EINVAL);
++		return ubi_open_volume(dev, vol, mode);
++	}
++
++	/* ubiX:NAME method */
++	if ((*endptr == ':' || *endptr == '!') && endptr[1] != '\0')
++		return ubi_open_volume_nm(dev, ++endptr, mode);
++
++	return ERR_PTR(-EINVAL);
++}
++
++static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
++{
++	struct ubi_volume_desc *ubi = sb->s_fs_info;
++	struct ubifs_info *c;
++	struct inode *root;
++	int err;
++
++	c = kzalloc(sizeof(struct ubifs_info), GFP_KERNEL);
++	if (!c)
++		return -ENOMEM;
++
++	spin_lock_init(&c->cnt_lock);
++	spin_lock_init(&c->cs_lock);
++	spin_lock_init(&c->buds_lock);
++	spin_lock_init(&c->space_lock);
++	spin_lock_init(&c->orphan_lock);
++	init_rwsem(&c->commit_sem);
++	mutex_init(&c->lp_mutex);
++	mutex_init(&c->tnc_mutex);
++	mutex_init(&c->log_mutex);
++	mutex_init(&c->mst_mutex);
++	mutex_init(&c->umount_mutex);
++	init_waitqueue_head(&c->cmt_wq);
++	c->buds = RB_ROOT;
++	c->old_idx = RB_ROOT;
++	c->size_tree = RB_ROOT;
++	c->orph_tree = RB_ROOT;
++	INIT_LIST_HEAD(&c->infos_list);
++	INIT_LIST_HEAD(&c->idx_gc);
++	INIT_LIST_HEAD(&c->replay_list);
++	INIT_LIST_HEAD(&c->replay_buds);
++	INIT_LIST_HEAD(&c->uncat_list);
++	INIT_LIST_HEAD(&c->empty_list);
++	INIT_LIST_HEAD(&c->freeable_list);
++	INIT_LIST_HEAD(&c->frdi_idx_list);
++	INIT_LIST_HEAD(&c->unclean_leb_list);
++	INIT_LIST_HEAD(&c->old_buds);
++	INIT_LIST_HEAD(&c->orph_list);
++	INIT_LIST_HEAD(&c->orph_new);
++
++	c->highest_inum = UBIFS_FIRST_INO;
++	get_random_bytes(&c->vfs_gen, sizeof(int));
++	c->lhead_lnum = c->ltail_lnum = UBIFS_LOG_LNUM;
++
++	ubi_get_volume_info(ubi, &c->vi);
++	ubi_get_device_info(c->vi.ubi_num, &c->di);
++
++	/* Re-open the UBI device in read-write mode */
++	c->ubi = ubi_open_volume(c->vi.ubi_num, c->vi.vol_id, UBI_READWRITE);
++	if (IS_ERR(c->ubi)) {
++		err = PTR_ERR(c->ubi);
++		goto out_free;
++	}
++
++	err = ubifs_parse_options(c, data, 0);
++	if (err)
++		goto out_close;
++
++	c->vfs_sb = sb;
++
++	sb->s_fs_info = c;
++	sb->s_magic = UBIFS_SUPER_MAGIC;
++	sb->s_blocksize = UBIFS_BLOCK_SIZE;
++	sb->s_blocksize_bits = UBIFS_BLOCK_SHIFT;
++	sb->s_dev = c->vi.cdev;
++	sb->s_maxbytes = c->max_inode_sz = key_max_inode_size(c);
++	if (c->max_inode_sz > MAX_LFS_FILESIZE)
++		sb->s_maxbytes = c->max_inode_sz = MAX_LFS_FILESIZE;
++	sb->s_op = &ubifs_super_operations;
++
++	mutex_lock(&c->umount_mutex);
++	err = mount_ubifs(c);
++	if (err) {
++		ubifs_assert(err < 0);
++		goto out_unlock;
++	}
++
++	/* Read the root inode */
++	root = ubifs_iget(sb, UBIFS_ROOT_INO);
++	if (IS_ERR(root)) {
++		err = PTR_ERR(root);
++		goto out_umount;
++	}
++
++	sb->s_root = d_alloc_root(root);
++	if (!sb->s_root)
++		goto out_iput;
++
++	mutex_unlock(&c->umount_mutex);
++
++	return 0;
++
++out_iput:
++	iput(root);
++out_umount:
++	spin_lock(&ubifs_infos_lock);
++	list_del(&c->infos_list);
++	spin_unlock(&ubifs_infos_lock);
++	ubifs_umount(c);
++out_unlock:
++	mutex_unlock(&c->umount_mutex);
++out_close:
++	ubi_close_volume(c->ubi);
++out_free:
++	kfree(c);
++	return err;
++}
++
++static int sb_test(struct super_block *sb, void *data)
++{
++	dev_t *dev = data;
++
++	return sb->s_dev == *dev;
++}
++
++static int sb_set(struct super_block *sb, void *data)
++{
++	dev_t *dev = data;
++
++	sb->s_dev = *dev;
++	return 0;
++}
++
++static int ubifs_get_sb(struct file_system_type *fs_type, int flags,
++			const char *name, void *data, struct vfsmount *mnt)
++{
++	struct ubi_volume_desc *ubi;
++	struct ubi_volume_info vi;
++	struct super_block *sb;
++	int err;
++
++	dbg_gen("name %s, flags %#x", name, flags);
++
++	/*
++	 * Get UBI device number and volume ID. Mount it read-only so far
++	 * because this might be a new mount point, and UBI allows only one
++	 * read-write user at a time.
++	 */
++	ubi = open_ubi(name, UBI_READONLY);
++	if (IS_ERR(ubi)) {
++		ubifs_err("cannot open \"%s\", error %d",
++			  name, (int)PTR_ERR(ubi));
++		return PTR_ERR(ubi);
++	}
++	ubi_get_volume_info(ubi, &vi);
++
++	dbg_gen("opened ubi%d_%d", vi.ubi_num, vi.vol_id);
++
++	sb = sget(fs_type, &sb_test, &sb_set, &vi.cdev);
++	if (IS_ERR(sb)) {
++		err = PTR_ERR(sb);
++		goto out_close;
++	}
++
++	if (sb->s_root) {
++		/* A new mount point for already mounted UBIFS */
++		dbg_gen("this ubi volume is already mounted");
++		if ((flags ^ sb->s_flags) & MS_RDONLY) {
++			err = -EBUSY;
++			goto out_deact;
++		}
++	} else {
++		sb->s_flags = flags;
++		/*
++		 * Pass 'ubi' to 'fill_super()' in sb->s_fs_info where it is
++		 * replaced by 'c'.
++		 */
++		sb->s_fs_info = ubi;
++		err = ubifs_fill_super(sb, data, flags & MS_SILENT ? 1 : 0);
++		if (err)
++			goto out_deact;
++		/* We do not support atime */
++		sb->s_flags |= MS_ACTIVE | MS_NOATIME;
++	}
++
++	/* 'fill_super()' opens ubi again so we must close it here */
++	ubi_close_volume(ubi);
++
++	return simple_set_mnt(mnt, sb);
++
++out_deact:
++	up_write(&sb->s_umount);
++	deactivate_super(sb);
++out_close:
++	ubi_close_volume(ubi);
++	return err;
++}
++
++static void ubifs_kill_sb(struct super_block *sb)
++{
++	struct ubifs_info *c = sb->s_fs_info;
++
++	/*
++	 * We do 'commit_on_unmount()' here instead of 'ubifs_put_super()'
++	 * in order to be outside BKL.
++	 */
++	if (sb->s_root && !(sb->s_flags & MS_RDONLY))
++		commit_on_unmount(c);
++	/* The un-mount routine is actually done in put_super() */
++	generic_shutdown_super(sb);
++}
++
++static struct file_system_type ubifs_fs_type = {
++	.name    = "ubifs",
++	.owner   = THIS_MODULE,
++	.get_sb  = ubifs_get_sb,
++	.kill_sb = ubifs_kill_sb
++};
++
++/*
++ * Inode slab cache constructor.
++ */
++static void inode_slab_ctor(struct kmem_cache *cachep, void *obj)
++{
++	struct ubifs_inode *inode = obj;
++	inode_init_once(&inode->vfs_inode);
++}
++
++static int __init ubifs_init(void)
++{
++	int err;
++
++	BUILD_BUG_ON(sizeof(struct ubifs_ch) != 24);
++
++	/* Make sure node sizes are 8-byte aligned */
++	BUILD_BUG_ON(UBIFS_CH_SZ        & 7);
++	BUILD_BUG_ON(UBIFS_INO_NODE_SZ  & 7);
++	BUILD_BUG_ON(UBIFS_DENT_NODE_SZ & 7);
++	BUILD_BUG_ON(UBIFS_XENT_NODE_SZ & 7);
++	BUILD_BUG_ON(UBIFS_DATA_NODE_SZ & 7);
++	BUILD_BUG_ON(UBIFS_TRUN_NODE_SZ & 7);
++	BUILD_BUG_ON(UBIFS_SB_NODE_SZ   & 7);
++	BUILD_BUG_ON(UBIFS_MST_NODE_SZ  & 7);
++	BUILD_BUG_ON(UBIFS_REF_NODE_SZ  & 7);
++	BUILD_BUG_ON(UBIFS_CS_NODE_SZ   & 7);
++	BUILD_BUG_ON(UBIFS_ORPH_NODE_SZ & 7);
++
++	BUILD_BUG_ON(UBIFS_MAX_DENT_NODE_SZ & 7);
++	BUILD_BUG_ON(UBIFS_MAX_XENT_NODE_SZ & 7);
++	BUILD_BUG_ON(UBIFS_MAX_DATA_NODE_SZ & 7);
++	BUILD_BUG_ON(UBIFS_MAX_INO_NODE_SZ  & 7);
++	BUILD_BUG_ON(UBIFS_MAX_NODE_SZ      & 7);
++	BUILD_BUG_ON(MIN_WRITE_SZ           & 7);
++
++	/* Check min. node size */
++	BUILD_BUG_ON(UBIFS_INO_NODE_SZ  < MIN_WRITE_SZ);
++	BUILD_BUG_ON(UBIFS_DENT_NODE_SZ < MIN_WRITE_SZ);
++	BUILD_BUG_ON(UBIFS_XENT_NODE_SZ < MIN_WRITE_SZ);
++	BUILD_BUG_ON(UBIFS_TRUN_NODE_SZ < MIN_WRITE_SZ);
++
++	BUILD_BUG_ON(UBIFS_MAX_DENT_NODE_SZ > UBIFS_MAX_NODE_SZ);
++	BUILD_BUG_ON(UBIFS_MAX_XENT_NODE_SZ > UBIFS_MAX_NODE_SZ);
++	BUILD_BUG_ON(UBIFS_MAX_DATA_NODE_SZ > UBIFS_MAX_NODE_SZ);
++	BUILD_BUG_ON(UBIFS_MAX_INO_NODE_SZ  > UBIFS_MAX_NODE_SZ);
++
++	/* Defined node sizes */
++	BUILD_BUG_ON(UBIFS_SB_NODE_SZ  != 4096);
++	BUILD_BUG_ON(UBIFS_MST_NODE_SZ != 512);
++	BUILD_BUG_ON(UBIFS_INO_NODE_SZ != 160);
++	BUILD_BUG_ON(UBIFS_REF_NODE_SZ != 64);
++
++	/*
++	 * We require that PAGE_CACHE_SIZE is greater-than-or-equal-to
++	 * UBIFS_BLOCK_SIZE. It is assumed that both are powers of 2.
++	 */
++	if (PAGE_CACHE_SIZE < UBIFS_BLOCK_SIZE) {
++		ubifs_err("VFS page cache size is %u bytes, but UBIFS requires"
++			  " at least 4096 bytes",
++			  (unsigned int)PAGE_CACHE_SIZE);
++		return -EINVAL;
++	}
++
++	err  = bdi_init(&ubifs_backing_dev_info);
++	if (err)
++		return err;
++
++	err = register_filesystem(&ubifs_fs_type);
++	if (err) {
++		ubifs_err("cannot register file system, error %d", err);
++		goto out;
++	}
++
++	err = -ENOMEM;
++	ubifs_inode_slab = kmem_cache_create("ubifs_inode_slab",
++				sizeof(struct ubifs_inode), 0,
++				SLAB_MEM_SPREAD | SLAB_RECLAIM_ACCOUNT,
++				&inode_slab_ctor);
++	if (!ubifs_inode_slab)
++		goto out_reg;
++
++	register_shrinker(&ubifs_shrinker_info);
++
++	err = ubifs_compressors_init();
++	if (err)
++		goto out_compr;
++
++	return 0;
++
++out_compr:
++	unregister_shrinker(&ubifs_shrinker_info);
++	kmem_cache_destroy(ubifs_inode_slab);
++out_reg:
++	unregister_filesystem(&ubifs_fs_type);
++out:
++	bdi_destroy(&ubifs_backing_dev_info);
++	return err;
++}
++/* late_initcall to let compressors initialize first */
++late_initcall(ubifs_init);
++
++static void __exit ubifs_exit(void)
++{
++	ubifs_assert(list_empty(&ubifs_infos));
++	ubifs_assert(atomic_long_read(&ubifs_clean_zn_cnt) == 0);
++
++	ubifs_compressors_exit();
++	unregister_shrinker(&ubifs_shrinker_info);
++	kmem_cache_destroy(ubifs_inode_slab);
++	unregister_filesystem(&ubifs_fs_type);
++	bdi_destroy(&ubifs_backing_dev_info);
++}
++module_exit(ubifs_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_VERSION(__stringify(UBIFS_VERSION));
++MODULE_AUTHOR("Artem Bityutskiy, Adrian Hunter");
++MODULE_DESCRIPTION("UBIFS - UBI File System");
 -- 
 1.5.4.1
 
