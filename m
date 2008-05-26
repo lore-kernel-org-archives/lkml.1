@@ -1,144 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbYEZSwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYEZS4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755516AbYEZSwu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 14:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYEZSwk
+	id S1755934AbYEZS4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 14:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYEZS4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 14:52:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42327 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754656AbYEZSwj (ORCPT
+	Mon, 26 May 2008 14:56:30 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59869 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754632AbYEZS43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 14:52:39 -0400
-Date: Mon, 26 May 2008 11:51:08 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: balbir@linux.vnet.ibm.com
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       Michael Neuling <mikey@neuling.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
-Message-ID: <20080526115108.6a19e2c0@infradead.org>
-In-Reply-To: <483B0348.2000204@linux.vnet.ibm.com>
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com>
-	<20080526085000.33787eac@infradead.org>
-	<483AF25B.6090806@linux.vnet.ibm.com>
-	<20080526110040.5ddc4656@infradead.org>
-	<483B0348.2000204@linux.vnet.ibm.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 26 May 2008 14:56:29 -0400
+Date: Mon, 26 May 2008 20:57:13 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>
+Subject: iommu mess: is there a better way?
+Message-ID: <20080526185713.GA17523@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 00:06:56 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Hi!
 
-> Arjan van de Ven wrote:
-> > On Mon, 26 May 2008 22:54:43 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> >> Arjan,
-> >>
-> >>
-> >> These problems exist anyway, irrespective of scaled accounting (I'd
-> >> say that they are exceptions)
-> >>
-> >> 1. The management tool does have access to the current frequency
-> >> and maximum frequency, irrespective of scaled accounting. The
-> >> decision could still be taken on the data that is already
-> >> available and management tools can already use them 
-> > 
-> > it's sadly not as easy as you make it sound. From everything you
-> > wrote you're making the assumption "if we're not at maximum
-> > frequency, we have room to spare", which is very much not a correct
-> > assumption
-> > 
-> 
-> That's true in general. If the CPUs are throttled due to overheating,
-> the system management application will figure out that it cannot
-> change the frequency. 
+aperture_64.c is basically a subset of drivers/char/agp/amd64-agp.c
+... with the exception that it uses hand-coded pci access so that it
+can run early... because it needs to allocate 64MB of ram.
 
-It's not the system management application but the kernel (and the
-hardware! Esp in case of IDA) that manage the frequency. 
+Could we simply always allocate 64MB of ram for agp, and then free
+them from amd64-agp.c if they are not needed?
 
-> How do I interpret my CPU frequency applet's
-> data when it says that the system is running at 46%?
-
-That is a very good question. The answer is "uhh badly". Sad but true.
-I'm not arguing against that.
-The problem I have is that what you're doing does not make it better!
-
-> 
-> >> 2. With IDA, we'd have to
-> >> document that APERF/MPERF can be greater than 100% if the system is
-> >> overclocked.
-> >>
-> >> Scaled accounting only intends to provide data already available.
-> >> Interpretation is left to management tools and we'll document the
-> >> corner cases that you just mentioned.
-> > 
-> > IDA is not overclocking, nor is it a corner case *at all*. It's the
-> > common case in fact on more modern systems. Having the kernel
-> > present "raw" data to applications that then have no idea how to
-> > really use it to be honest isn't very attractive to me as idea:
-> > you're presenting a very raw hardware interface that will keep
-> > changing over time in terms of how to interpret the data... the
-> > kernel needs to abstract such hard stuff from applications, not
-> > fully expose them to it. Especially since these things *ARE* tricky
-> > and *WILL* change. Future x86 hardware will have behavior that
-> > makes the "oh we'll document the corner cases" extremely
-> > unpractical. Heck, even todays hardware (but arguably not yet the
-> > server hardware) behaves like that. "Documenting the common case as
-> > corner case" is not the right thing to do when introducing some new
-> > behavior/interface. Sorry.
-> 
-> Before I argue against that, I would like to ask
-> 
-> 1. How are APERF/MPERF be meant to be utilized?
-
-It's meant to be used by the cpu frequency governors to figure out how
-many actual cycles are actually used (esp needed in case of IDA).
-
-> 2. The CPU frequency driver/governer uses APERF/MPERF as well - we
-> could argue and say that it should not be using/exposing that data to
-> user space or using that data to make decisions.
-
-that's a case where it really makes sense; it's the case where the
-thing that controls the cpu P-state actually learns about how much work
-was done to reevaluate what the cpu frequency should be going forward.
-Eg it's a case of comparing actual frequency (APERF/MPERF) to see
-what's useful to set next.
-IDA makes this all needed due to the dynamic nature of the concept of
-"frequency".
-
-> 3. How do I answer the following problem
-> 
-> My CPU utilization is 50% at all frequencies (since utilization is
-> time based), does it mean that frequency scaling does not impact my
-> workload?
-
-without knowing anything else than this, then yes that would be a
-logical conclusion: the most likely cause would be because your cpu is
-memory bound. In fact, you could then scale down your cpu
-frequency/voltage to be lower, and save some power without losing
-performance. 
-It's a weird workload though, its probably a time based thing where you
-alternate between idle and fully memory bound loads.
-
-(which is another case where your patches would then expose idle time
-even though your cpu is fully utilized for the 50% of the time it's
-running)
-
-
-
+I'm not quite sure how pci-gart_64.c fits into the picture. It seems
+to duplicate the other half of amd64-agp.c...
+									Pavel
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
