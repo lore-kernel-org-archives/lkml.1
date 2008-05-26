@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYEZXRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYE0ADo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbYEZXRh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 19:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbYEZXR2
+	id S1756054AbYE0ADo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 20:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYE0ADf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 19:17:28 -0400
-Received: from mail.vapor.com ([85.114.133.49]:51226 "EHLO mail.vapor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754362AbYEZXR1 (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 19:17:27 -0400
-X-Greylist: delayed 1259 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 May 2008 19:17:27 EDT
-Subject: [ipv6] Odd behaviour...
-From: Ian Kumlien <pomac@vapor.com>
-Reply-To: pomac@vapor.com
-To: Linux-kernel <Linux-kernel@vger.kernel.org>
-Cc: linux-net <Linux-net@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3OLGDm+tt2/bsqDp0FsK"
-Date: Tue, 27 May 2008 00:58:30 +0200
-Message-Id: <1211842711.8367.11.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Mon, 26 May 2008 20:03:35 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:1539 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753500AbYE0ADe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 20:03:34 -0400
+X-Greylist: delayed 807 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 May 2008 20:03:34 EDT
+Date: Tue, 27 May 2008 01:49:47 +0200
+From: Miquel van Smoorenburg <mikevs@xs4all.net>
+To: Andi Kleen <andi@firstfloor.org>, Glauber Costa <gcosta@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] 2.6.26-rc: x86: pci-dma.c: use __GFP_NO_OOM instead of
+	__GFP_NORETRY
+Message-ID: <20080526234940.GA1376@xs4all.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-NCC-RegID: nl.xs4all
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please consider the below patch for 2.6.26 (can somebody from the
+x86 team pick this up please? Thank you)
 
---=-3OLGDm+tt2/bsqDp0FsK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-Hi,=20
 
-I just recently acquired a new ipv6 tunnel since my two previous brokers
-has gone out of business. I now use hurricane electrics tunnel since i
-have really good ping times to it's node in Amsterdam.
+[PATCH] 2.6.26-rc: x86: pci-dma.c: use __GFP_NO_OOM instead of __GFP_NORETRY
 
-Anyways, i have setup a local network tunnel and enabled forwarding.
+arch/x86/kernel/pci-dma.c::dma_alloc_coherent() adds __GFP_NORETRY to
+the gfp flags before calling alloc_pages() to prevent the oom killer
+from running.
 
-After about 300 seconds, it all stops working. I have to disable and
-re-enable it on the firewall/router to get it working again.
+This has the expected side effect that that alloc_pages() doesn't
+retry anymore. Not really a problem for dma_alloc_coherent(.. GFP_ATOMIC)
+which is the way most drivers use it (through pci_alloc_consistent())
+but drivers that call dma_alloc_coherent(.. GFP_KERNEL) directly can get
+unexpected failures.
 
-tcpdump shows the router/firewall doing odd things like:
-(i renamed my host to piv6)
+Until we have the mask allocator, use a new flag __GFP_NO_OOM
+instead of __GFP_NORETRY.
 
-00:48:14.294173 IP6 piv6 > igloo.stacken.kth.se: ICMP6, echo request,
-seq 321, length 64
+Signed-off-by: Miquel van Smoorenburg <miquels@cistron.nl>
 
-00:48:14.341288 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
-321, length 64
-
-00:48:14.341317 IP6 fe80::55e4:1b90 > igloo.stacken.kth.se: ICMP6,
-redirect, piv6 to piv6, length 160
-
-00:48:14.341332 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
-321, length 64
----
-
-fe80::55e4::1b90 is the local ip of the ipv6 tunnel.
-(note: the packet never arrives at it's destination)
-
-Any ideas of what could be going wrong?		=09
-
---=20
-Ian Kumlien <pomac () vapor ! com> -- http://pomac.netswarm.net
-
---=-3OLGDm+tt2/bsqDp0FsK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkg7QJYACgkQ7F3Euyc51N+eDACgnfltSulml4XgANq8De6ve8tZ
-G78An0buWnzh4yPan4SwknAfHI1GvR9Q
-=RxHd
------END PGP SIGNATURE-----
-
---=-3OLGDm+tt2/bsqDp0FsK--
-
+diff -ruN linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c
+--- linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c	2008-05-18 23:36:41.000000000 +0200
++++ linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c	2008-05-22 20:42:10.000000000 +0200
+@@ -398,7 +398,7 @@
+ 		return NULL;
+ 
+ 	/* Don't invoke OOM killer */
+-	gfp |= __GFP_NORETRY;
++	gfp |= __GFP_NO_OOM;
+ 
+ #ifdef CONFIG_X86_64
+ 	/* Why <=? Even when the mask is smaller than 4GB it is often
+diff -ruN linux-2.6.26-rc3.orig/include/linux/gfp.h linux-2.6.26-rc3/include/linux/gfp.h
+--- linux-2.6.26-rc3.orig/include/linux/gfp.h	2008-05-18 23:36:41.000000000 +0200
++++ linux-2.6.26-rc3/include/linux/gfp.h	2008-05-22 21:17:36.000000000 +0200
+@@ -43,6 +43,7 @@
+ #define __GFP_REPEAT	((__force gfp_t)0x400u)	/* See above */
+ #define __GFP_NOFAIL	((__force gfp_t)0x800u)	/* See above */
+ #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* See above */
++#define __GFP_NO_OOM	((__force gfp_t)0x2000u)/* Don't invoke oomkiller */
+ #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+ #define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+diff -ruN linux-2.6.26-rc3.orig/mm/page_alloc.c linux-2.6.26-rc3/mm/page_alloc.c
+--- linux-2.6.26-rc3.orig/mm/page_alloc.c	2008-05-18 23:36:41.000000000 +0200
++++ linux-2.6.26-rc3/mm/page_alloc.c	2008-05-22 17:39:12.000000000 +0200
+@@ -1583,7 +1583,8 @@
+ 					zonelist, high_zoneidx, alloc_flags);
+ 		if (page)
+ 			goto got_pg;
+-	} else if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
++	} else if ((gfp_mask & __GFP_FS) &&
++			!(gfp_mask & (__GFP_NORETRY|__GFP_NO_OOM))) {
+ 		if (!try_set_zone_oom(zonelist, gfp_mask)) {
+ 			schedule_timeout_uninterruptible(1);
+ 			goto restart;
