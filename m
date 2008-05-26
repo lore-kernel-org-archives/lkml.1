@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYEZHMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYEZHij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbYEZHMq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 03:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYEZHMc
+	id S1754121AbYEZHij (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 03:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYEZHia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 03:12:32 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:45999 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752853AbYEZHMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 03:12:31 -0400
-Date: Mon, 26 May 2008 11:12:15 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Cache coherency, transactions, parallels.
-Message-ID: <20080526071210.GC16366@2ka.mipt.ru>
-References: <20080525134055.GA30630@2ka.mipt.ru> <483A153F.7000907@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <483A153F.7000907@garzik.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 26 May 2008 03:38:30 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:55664 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbYEZHi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 03:38:29 -0400
+Date: Mon, 26 May 2008 03:38:21 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Joe Perches <joe@perches.com>
+cc: Jiri Slaby <jirislaby@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] SERIAL:  Simplify code using ARRAY_SIZE() macro.
+In-Reply-To: <1211740916.8496.27.camel@localhost>
+Message-ID: <alpine.LFD.1.10.0805260337410.29823@localhost.localdomain>
+References: <alpine.LFD.1.10.0805250735560.23325@localhost.localdomain>  <483998EC.5080805@gmail.com>  <alpine.LFD.1.10.0805251308420.25842@localhost.localdomain> <1211740916.8496.27.camel@localhost>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 25, 2008 at 09:41:19PM -0400, Jeff Garzik (jeff@garzik.org) wrote:
-> Often you can capture this information in a more scalable manner, by 
-> having the clients measure an observable _output_ such as latency, over 
-> time.
-> 
-> Each transaction gives the client new feedback about the server(s) being 
-> offline (i.e. timeout), becoming slow, etc.
+On Sun, 25 May 2008, Joe Perches wrote:
 
-Server should be able to provide such info because of sudden changes in
-environment or administrative tasks. It should not be that many of such
-messages, but some info should be broadcasted to connected clients.
-Client by itself should also e able to determine if given server is fast
-enough of course.
- 
-> Another potential tool is having the server(s) send an abstract number, 
-> from 0-100, indicating their level of desire for new { read | write } 
-> transactions.  Let us call this client hint "weight".  Rather than have 
-> a bunch of status messages that indicate server load average, or 
-> do-not-read state, summarize this information into read_weight and 
-> write_weight hints to the client.
+> On Sun, 2008-05-25 at 13:09 -0400, Robert P. J. Day wrote:
+> > > > diff --git a/drivers/serial/68328serial.c b/drivers/serial/68328serial.c
+> > > > index bbf5bc5..71c56c1 100644
+> > > > --- a/drivers/serial/68328serial.c
+> > > > +++ b/drivers/serial/68328serial.c
+> > > > @@ -1413,10 +1413,10 @@ static void m68328_set_baud(void)
+> > > >  	USTCNT = ustcnt & ~USTCNT_TXEN;
+> > > >
+> > > >  again:
+> > > > -	for (i = 0; i < sizeof(baud_table) / sizeof(baud_table[0]); i++)
+> > > > +	for (i = 0; i < BAUD_TABLE_SIZE); i++)
+> > > typo? does this compile?
+> > will resubmit.
+>
+> There are only two uses of BAUD_TABLE_SIZE
+> and MCFRS_BAUD_TABLE_SIZE.
+>
+> I think it better to avoid
+> 	#define SOME_SIZE ARRAY_SIZE(some_array)
+> and use ARRAY_SIZE(some_array) where possible.
+>
+> NR_PORTS seems to be an exception.
 
-I actually meant only single message with status structure, which can
-include whatever we decided to put there including such kind of hints.
+yes, that cleanup could probably be simplified even further.
 
-> With just a few (two?) simple variables, the client is given the ability 
-> to automatically balance and scale load across the cluster, work around 
-> failing servers, etc.
-> 
-> Write balancing need not be overly complex...
+rday
+--
 
-Yup, some kind of that. I did not yet thought about it in details...
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
--- 
-	Evgeniy Polyakov
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
