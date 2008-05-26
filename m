@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYEZQtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYEZQ4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYEZQtg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 12:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYEZQt1
+	id S1756243AbYEZQ4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 12:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYEZQzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 12:49:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45329 "EHLO mx3.mail.elte.hu"
+	Mon, 26 May 2008 12:55:45 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:58853 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbYEZQt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 12:49:27 -0400
-Date: Mon, 26 May 2008 18:48:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Kara <jack@suse.cz>
-Cc: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S1752051AbYEZQy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 12:54:58 -0400
+Date: Mon, 26 May 2008 20:55:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
-Message-ID: <20080526164858.GA24098@elte.hu>
-References: <4836EE8C.1010200@linux.intel.com> <20080524222304.GD20563@atrey.karlin.mff.cuni.cz> <20080524153020.1df96cf2@linux.intel.com> <20080524224554.GA5970@mit.edu> <20080526093913.GG13529@elte.hu> <20080526101646.GD24507@mit.edu> <20080526104832.GG23261@elte.hu> <20080526162048.GH32407@duck.suse.cz>
-MIME-Version: 1.0
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] posix timers: sigqueue_free: don't free sigqueue if it is queued
+Message-ID: <20080526165542.GA10894@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080526162048.GH32407@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently sigqueue_free() removes sigqueue from list, but doesn't cancel the
+pending signal. This is not consistent, the task should either receive the
+"full" signal along with siginfo_t, or it shouldn't receive the signal at all.
 
-* Jan Kara <jack@suse.cz> wrote:
+Change sigqueue_free() to clear SIGQUEUE_PREALLOC but leave sigqueue on list
+if it is queued.
 
-> just fine, as far as I understand. It only spits a dangerously looking 
-> warning and that's it. I agree we shouldn't be doing this but I don't 
-> really find this a critical problem.
+This is a user-visible change. If the signal is blocked, it stays queued
+after sys_timer_delete() until unblocked with the "stale" si_code/si_value,
+and of course it is still counted wrt RLIMIT_SIGPENDING which also limits
+the number of posix timers.
 
-yeah i know it's "just" a warning, i checked the stack dump on 
-kerneloops.org before i wrote the mail.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Pulling removable media out while it might still be mounted is a fact of 
-life and comes not from the stupidity of the user but from the lack of 
-physical barriers on the device side.
+--- 26-rc2/kernel/signal.c~1_SF_DONT_REMOVE	2008-05-26 18:09:12.000000000 +0400
++++ 26-rc2/kernel/signal.c	2008-05-26 18:13:08.000000000 +0400
+@@ -1240,18 +1240,22 @@ void sigqueue_free(struct sigqueue *q)
+ 
+ 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
+ 	/*
+-	 * If the signal is still pending remove it from the
+-	 * pending queue. We must hold ->siglock while testing
+-	 * q->list to serialize with collect_signal() or with
++	 * We must hold ->siglock while testing q->list
++	 * to serialize with collect_signal() or with
+ 	 * __exit_signal()->flush_sigqueue().
+ 	 */
+ 	spin_lock_irqsave(lock, flags);
++	q->flags &= ~SIGQUEUE_PREALLOC;
++	/*
++	 * If it is queued it will be freed when dequeued,
++	 * like the "regular" sigqueue.
++	 */
+ 	if (!list_empty(&q->list))
+-		list_del_init(&q->list);
++		q = NULL;
+ 	spin_unlock_irqrestore(lock, flags);
+ 
+-	q->flags &= ~SIGQUEUE_PREALLOC;
+-	__sigqueue_free(q);
++	if (q)
++		__sigqueue_free(q);
+ }
+ 
+ int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
 
-What if the USB stick was pulled mistakenly, the user notices her 
-mistake later on and plugs the USB stick back in and expects all the 
-data to not be corrupted?
-
-What if the user puts the stick back in and it wont be mounted or will 
-be critically damaged?
-
-How do we even know whether these cases all work 100% robustly if the 
-attitude is that removing a mounted device is a stupid thing to do and a 
-bug related to it gets deprioritized? [starting with the issue of why 
-the user should even care about such a relatively low-level abstraction 
-as a "mounted filesystem".]
-
-And any such problems do come up in the enterprise space as well, in 
-terms of multipath IO issues - and Linux still does quite poorly in that 
-area.
-
-	Ingo
