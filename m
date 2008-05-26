@@ -1,69 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYEZQjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYEZQmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbYEZQjv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 12:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYEZQjn
+	id S1755257AbYEZQmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 12:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbYEZQmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 12:39:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33149 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753164AbYEZQjm (ORCPT
+	Mon, 26 May 2008 12:42:05 -0400
+Received: from mis011-1.exch011.intermedia.net ([64.78.21.128]:51815 "EHLO
+	mis011-1.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753169AbYEZQmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 12:39:42 -0400
-Date: Mon, 26 May 2008 13:39:22 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] video4linux: Push down the BKL
-Message-ID: <20080526133922.4e75f633@gaivota>
-In-Reply-To: <200805230816.05229.hverkuil@xs4all.nl>
-References: <20080522223700.2f103a14@core>
-	<1211508484.3273.86.camel@palomino.walls.org>
-	<200805230816.05229.hverkuil@xs4all.nl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 26 May 2008 12:42:01 -0400
+From: Amit Shah <amit.shah@qumranet.com>
+Organization: Qumranet Inc.
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH v2 -mm 0/2] x86: per-device dma_mapping_ops
+Date: Mon, 26 May 2008 22:14:34 +0530
+User-Agent: KMail/1.9.9
+Cc: muli@il.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       alexisb@us.ibm.com, andi@firstfloor.org, kvm@vger.kernel.org,
+       avi@qumranet.com
+References: <200805221613.03686.amit.shah@qumranet.com> <200805260939.21320.amit.shah@qumranet.com> <20080526151152Q.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080526151152Q.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200805262214.35397.amit.shah@qumranet.com>
+X-OriginalArrivalTime: 26 May 2008 16:42:01.0487 (UTC) FILETIME=[6BF921F0:01C8BF4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 08:16:05 +0200
-Hans Verkuil <hverkuil@xs4all.nl> wrote:
-
-> On Friday 23 May 2008 04:08:04 Andy Walls wrote:
-> > On Thu, 2008-05-22 at 22:37 +0100, Alan Cox wrote:
-> > > For most drivers the generic ioctl handler does the work and we
-> > > update it and it becomes the unlocked_ioctl method. Older drivers
-> > > use the usercopy method so we make it do the work. Finally there
-> > > are a few special cases.
+On Monday 26 May 2008 11:41:52 FUJITA Tomonori wrote:
+> On Mon, 26 May 2008 09:39:20 +0530
+>
+> Amit Shah <amit.shah@qumranet.com> wrote:
+> > On Sunday 25 May 2008 12:50:11 Muli Ben-Yehuda wrote:
+> > > On Thu, May 22, 2008 at 04:13:02PM +0530, Amit Shah wrote:
+> > > > OK; this sounds helpful. the hook can make a hypercall and confirm
+> > > > with the host kernel if the device in question is an assigned
+> > > > physical device. If yes, we replace the dma_ops. Though, the
+> > > > original intent of having stackable ops is that we might want to go
+> > > > through the swiotlb in the guest even for an assigned device if the
+> > > > guest dma addresses are not in the addressable range of the guest
+> > > > chipset.
+> > > >
+> > > > > created (it works with hot plugging). It enables IOMMUs to set up
+> > > > > an appropriate dma_mapping_ops per device.
+> > > >
+> > > > From what we've discussed so far, it looks like stackable dma ops
+> > > > will definitely be needed. Does this patchset provide something that
+> > > > stacking won't?
 > > >
-> > > Signed-off-by: Alan Cox <alan@redhat.com>
+> > > Yes---this patchset let's you have a per-device dma-ops, whereas with
+> > > stackable you only get global dma-ops. I think it's clear we need
+> > > both, and I think per-device dma-ops are the first thing that's
+> > > needed. Stacking can then be introduced on a per-device basis.
 > >
-> > I'd like to start planning out the changes to eliminate the BKL from
-> > cx18.
+> > When we would want stacking, we'll want it globally and not per-device,
+> > isn't it? Or at least for devices on a particular bus.
 > >
-> > Could someone give me a brief education as to what elements of
-> > cx18/ivtv_v4l2_do_ioctl() would be forcing the use of the BKL for
-> > these drivers' ioctls?   I'm assuming it's not the
-> > mutex_un/lock(&....->serialize_lock) and that the answer's not in the
-> > diff.
-> 
-> To the best of my knowledge there is no need for a BKL in ivtv or cx18. 
-> It was just laziness on my part that I hadn't switched to 
-> unlocked_ioctl yet.
+> > When an IOMMU driver registers itself, it should tell which devices it's
+> > interested in (each device behind a bus or by enumerating each device it
+> > cares for). This should take care of all the scenarios and we won't have
+> > the need for per-device dma_ops.
+>
+> Well, without per-device dma_ops, IOMMUs could live. But it's pretty
+> hacky. Every time a dma operation is called, IOMMUs need to figure out
+> how a device should be handled.
 
-I suspect that this is true with almost all drivers. Yet, we may need to enable
-BKL or add other locks on a few places. For example, the old tuner i2c probing
-method relies on a global and unique static var to identify radio and tv
-tuners. I can foresee a race condition there, if you have two boards probing
-tuners at the same time.
+What if this information could be hidden behind (a slightly complicated) 
+get_dma_ops()? Also, each of the operations in dma_ops will see if there's 
+something else down the stack that might be interested in the current device.
 
-Of course, we need to do several tests, since probably there are some issues
-that we cannot foresee.
+My contention is that we are going to need stackable ops, and a full-fledged 
+stackable implementation is going to solve this problem as well. However, 
+this current implementation of per-device dma_ops looks like a really simple 
+and non-intrusive solution to one problem, that of getting rid of some 
+overheads in the IOMMU code.
 
-Cheers,
-Mauro
+> If IOMMUs can set dma_ops for the device when a new device is created,
+> IOMMUs don't care anything any more. That's much clean. That's What
+> the POWER architecture does.
+>
+> > For something like pvdma, we can walk through the list of pci devices and
+> > make a hypercall for each of them to get this information and have the
+> > pvdma version of dma_ops registered for that device. This sounds like
+> > it's per-device dma_ops, but it's not -- internally, the dma operations
+> > walk through each of the IOMMUs registered and call them in sequence.
+>
+> As Muli poinsted out, For pvdma, you need stacking per-device
+> dma_ops. With per-device dma_ops, you don't need hack like adding
+> is_pv_device hook in dma_ops. You can set your dma_ops to only pci
+> devices that you are interested.
+
+The hack was added only because there's no stackable dma api we have now. 
+Sure, per-device dma_ops is going to solve this problem and I like it. I'm 
+only saying we're also going to need stacking ops and in effect, per-device 
+dma_ops would just be replaced by them once we get the complete solution.
