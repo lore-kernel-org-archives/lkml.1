@@ -1,89 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYEZLsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYEZLt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbYEZLsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 07:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYEZLsA
+	id S1755470AbYEZLt0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 07:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYEZLtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 07:48:00 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34109 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754341AbYEZLr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 07:47:59 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1+2yAwh8L+2FJ8iJP34Yae3FiG2uAOPb4J8BG8zUD
-	uLAoAiKgwAgRZ5
-From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: dwmw2@infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH]  MTD: fix 2 "unused variables" warnings  in drivers/mtd/nand/cafe_nand.c
-Date: Mon, 26 May 2008 13:47:51 +0200
-User-Agent: KMail/1.9.9
+	Mon, 26 May 2008 07:49:18 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:11813 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754313AbYEZLtR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 07:49:17 -0400
+Date: Mon, 26 May 2008 15:49:15 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Gary Jennejohn <garyj@denx.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org,
+       Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC PATCH 2/2] mmc: add OpenFirmware bindings for the mmc_spi
+	driver
+Message-ID: <20080526114914.GA26288@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080523182754.GA26891@polina.dev.rtsoft.ru> <20080523182842.GB469@polina.dev.rtsoft.ru> <fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1998067.s3DBDQlSAj";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805261347.55492.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <fa686aa40805232219x7e888d80y394958f1c0a0fad0@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1998067.s3DBDQlSAj
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, May 23, 2008 at 11:19:28PM -0600, Grant Likely wrote:
+> Yup, I like this approach better.  I had been thinking about putting
+> this all in the same file (drivers/mmc/host/mmc_spi.c) instead of
+> exporting the probe/remove symbols and by using clear comment blocks
+> to divide the sections, but I've got no issues with this approach.
+> 
+> This is good work.  Some comments below.  (I won't repeat Stephen's comments)
 
-Hello,
+Thanks!
 
-this patch should fix 2 compiler warnings about unused variables
-if CONFIG_MTD_PARTITIONS is undefined.
+> On Fri, May 23, 2008 at 12:28 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > This patch depends on the Grant Likely's SPI patches, so this is
+> > for RFC only.
+> >
+> > Also, later we'll able to remove OF_GPIO dependency.
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> >  Documentation/powerpc/booting-without-of.txt |   24 ++++
+> >  drivers/mmc/host/Kconfig                     |    7 ++
+> >  drivers/mmc/host/Makefile                    |    2 +-
+> >  drivers/mmc/host/of_mmc_spi.c                |  151 ++++++++++++++++++++++++++
+> >  4 files changed, 183 insertions(+), 1 deletions(-)
+> >  create mode 100644 drivers/mmc/host/of_mmc_spi.c
+> >
+> > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> > index 423cb2b..7d0ef80 100644
+> > --- a/Documentation/powerpc/booting-without-of.txt
+> > +++ b/Documentation/powerpc/booting-without-of.txt
+> > @@ -3151,7 +3151,31 @@ platforms are moved over to use the flattened-device-tree model.
+> >                        };
+> >                };
+> >
+> > +    ...) MMC-over-SPI
+> >
+> > +      Required properties:
+> > +      - #address-cells : should be 0.
+> > +      - #size-cells : should be 0.
+> 
+> Are these properties required at all?  Will this node have any children.
 
-Signed-off-by: Toralf F=F6rster <toralf.foerster@gmx.de>
-=2D--
-diff --git a/drivers/mtd/nand/cafe_nand.c b/drivers/mtd/nand/cafe_nand.c
-index da6ceaa..f1443f0 100644
-=2D-- a/drivers/mtd/nand/cafe_nand.c
-+++ b/drivers/mtd/nand/cafe_nand.c
-@@ -626,9 +626,7 @@ static int __devinit cafe_nand_probe(struct pci_dev *pd=
-ev,
- {
-        struct mtd_info *mtd;
-        struct cafe_priv *cafe;
-=2D       struct mtd_partition *parts;
-        uint32_t ctrl;
-=2D       int nr_parts;
-        int err =3D 0;
+Yeah, my weakness for #a/#s, I always insert it where unnecessary. :-)
+Will fix.
 
-        /* Very old versions shared the same PCI ident for all three
-@@ -800,6 +798,9 @@ static int __devinit cafe_nand_probe(struct pci_dev *pd=
-ev,
-        add_mtd_device(mtd);
+> > +      - compatible : should be "linux,mmc-spi".
+> > +      - linux,modalias  - should be "of_mmc_spi".
+> 
+> I'm not even sure if the whole linux,modalias is even a good idea.  I
+> had kind of thrown it in there as a convenient way to override
+> compatible when needed, but I haven't really thought it out very well
+> and I think it is rather a hack.
+> 
+> The real problem is we don't yet have good method (or place) to apply
+> a translation table from compatible values to modaliases.  Ideally,
+> the translations should be part of the drivers themselves, but that
+> causes a chicken and egg problem of needing to load the driver to get
+> access to the table to know if it is the correct driver... Of course,
+> I'm really not very familiar with the whole module autoloading
+> mechanism.  Regardless; binding should be based on compatible, not on
+> a hacky and bogus linux,modalias property.
 
- #ifdef CONFIG_MTD_PARTITIONS
-+       struct mtd_partition *parts;
-+       int nr_parts;
-+
-        nr_parts =3D parse_mtd_partitions(mtd, part_probes, &parts, 0);
-        if (nr_parts > 0) {
-                cafe->parts =3D parts;
-=2D-=20
-MfG/Sincerely
+I fully agree. Though, I just tried to use your spi_of with a belief
+that you'll implement compatible->modalias translation in spi_of. :-)
 
-Toralf F=F6rster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+> > +      - reg : should specify SPI address (chip-select number).
+> > +      - max-speed : (optional) maximum frequency for this device (Hz).
+> > +      - linux,mmc-ocr-mask : (optional) Linux-specific MMC OCR mask
+> > +        (slot voltage).
+> 
+> Should this property be better defined?
 
---nextPart1998067.s3DBDQlSAj
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Yes, will do. Was a bit lazy to do this for the RFC.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+[...]
+> > +static int mmc_get_cd(struct device *dev)
+> > +{
+> > +       struct of_mmc_spi *oms = dev->archdata.of_node->data;
+> > +
+> > +       return gpio_get_value(oms->cd_gpio);
+> > +}
+> > +
+> > +static int of_mmc_spi_probe(struct spi_device *spi)
+> > +{
+> > +       int ret = -EINVAL;
+> > +       struct device_node *np = spi->dev.archdata.of_node;
+> > +       struct device *dev = &spi->dev;
+> > +       struct of_mmc_spi *oms = kzalloc(sizeof(*oms), GFP_KERNEL);
+> > +       const u32 *ocr_mask;
+> > +       int size;
+> > +
+> > +       if (!oms)
+> > +               return -ENOMEM;
+> > +
+> > +       /* Somebody occupied node's data? */
+> > +       WARN_ON(spi->dev.archdata.of_node->data);
+> 
+> Perhaps bail at this point to avoid corruption?  Would it be better to
+> use container_of() instead for getting a pointer back to the private
+> structure from the pdata pointer?
 
-iEYEABECAAYFAkg6o2sACgkQhyrlCH22naPtLwCfadQFx+X83zkKmWOSwszJtc+l
-inoAn2lhMVIeRIkhjkT8cvJ7Q97WBwWt
-=WWj/
------END PGP SIGNATURE-----
+Using platform_data with container_of isn't always safe (e.g. for
+platform bus we can't use it, this is done so that board's platform_data
+definitions could be made __initdata).
 
---nextPart1998067.s3DBDQlSAj--
+David, would you [not] suggest us to use platform_data with
+container_of, that is, are there any plans to make SPI core copy
+the platform_data instead of passing a pointer directly?
+
+> > +
+> > +       /*
+> > +        * mmc_spi_probe will use drvdata, so we can't use it. Use node's
+> > +        * data instead.
+> > +        */
+> > +       spi->dev.archdata.of_node->data = oms;
+> > +
+[...]
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
