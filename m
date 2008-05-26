@@ -1,143 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYEZB1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbYEZBav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYEZB1O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 21:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYEZB1B
+	id S1753716AbYEZBav (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 21:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYEZBal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 21:27:01 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:62049 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbYEZB1A (ORCPT
+	Sun, 25 May 2008 21:30:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:51595 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752184AbYEZBak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 21:27:00 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.5.2
-cc: linux-kernel@vger.kernel.org
-Date: Sun, 25 May 2008 18:26:46 -0700
-Message-ID: <7viqx1g8ix.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 25 May 2008 21:30:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lW1KdH/TztmEw8FU8STtXZeBasTcQ/hwi7mpq6zw3qYeWQvFfmFeg+6ni+lfm6Bg4P/cCI4ku/Ep5ZyPf4ZjMf0kj8RnAve3V++vTXTCUMR64GQ3C9qe5Dof1Uxd+2xS+ywhl7D3THClIVDhcgGyq5JFu92Ou1ut2RbDJ+nsUnk=
+Message-ID: <3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
+Date: Mon, 26 May 2008 09:30:39 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20080526001527.81E1126FA9E@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: D5618324-2AC2-11DD-B40C-80001473D85F-77302942!a-sasl-fastnet.pobox.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <1211446045.5610.33.camel@elijah.suse.cz>
+	 <3877989d0805220216o5add20ddye2a1fde98a0c1e69@mail.gmail.com>
+	 <20080522111826.BB90326FA24@magilla.localdomain>
+	 <3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
+	 <20080522203428.835D626FA24@magilla.localdomain>
+	 <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
+	 <20080523041940.39E8726FA24@magilla.localdomain>
+	 <3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
+	 <20080526001527.81E1126FA9E@magilla.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.5.2 is available at the
-usual places:
+On Mon, May 26, 2008 at 8:15 AM, Roland McGrath <roland@redhat.com> wrote:
+>> "deliver" here I mean get_signal_to_deliver()...
+>
+> This can never happen inside ptrace_stop.
+> So your line of inquiry doesn't make sense to me.
 
-  http://www.kernel.org/pub/software/scm/git/
+if happens, it should be a bug, right?
 
-  git-1.5.5.2.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.5.2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.5.2.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.5.2-1.$arch.rpm	(RPM)
+>
+> Please tell us the exact code path you think is happening in the error case
+> you can reproduce.
+>
+I will try to customize kernel to capture call trace for a precise code path.
 
-One side effect of declaring to make the cycle toward 1.5.6 shorter is
-that we would not have that many 1.5.5.X maintenance releases.
-Nevertheless, there are quite a few fixes accumulated since 1.5.5.1 hence
-this one.
-
-----------------------------------------------------------------
-
-Changes since v1.5.5.1 are as follows:
-
-A Large Angry SCM (1):
-      git-repack: re-enable parsing of -n command line option
-
-Alex Riesen (2):
-      Use "=" instead of "==" in condition as it is more portable
-      Fix use after free() in builtin-fetch
-
-Andy Parkins (1):
-      post-receive-email: fix accidental removal of a trailing space in signature line
-
-Ariel Badichi (2):
-      copy.c: copy_fd - correctly report write errors
-      archive.c: format_subst - fixed bogus argument to memchr
-
-Brandon Casey (1):
-      git-clone.txt: Adjust note to --shared for new pruning behavior of git-gc
-
-Dan McGee (1):
-      Remove 'header' from --signoff option description
-
-Dmitry Potapov (1):
-      git-gc --prune is deprecated
-
-Dustin Sallings (1):
-      Documentation/config.txt: Mention branch.<name>.rebase applies to "git pull"
-
-Florian Ragwitz (1):
-      filter-branch: Documentation fix.
-
-Gerrit Pape (1):
-      diff-options.txt: document the new "--dirstat" option
-
-Heikki Orsila (1):
-      Add missing "short" alternative to --date in rev-list-options.txt
-
-Ian Hilt (1):
-      Documentation/git-describe.txt: make description more readable
-
-Jeff King (11):
-      Don't force imap.host to be set when imap.tunnel is set
-      t5516: remove ambiguity test (1)
-      doc/git-gc: add a note about what is collected
-      push: allow unqualified dest refspecs to DWIM
-      remote: create fetch config lines with '+'
-      fix reflog approxidate parsing bug
-      cvsimport: always pass user data to "system" as a list
-      checkout: don't rfc2047-encode oneline on detached HEAD
-      doc: clarify definition of "update" for git-add -u
-      doc/git-daemon: s/uploadarchive/uploadarch/
-      git-am: fix typo in usage message
-
-Johannes Sixt (2):
-      wt-status.h: declare global variables as extern
-      rev-parse --symbolic-full-name: don't print '^' if SHA1 is not a ref
-
-Jon Loeliger (2):
-      git-filter-branch: Clarify file removal example.
-      git-show.txt: Not very stubby these days.
-
-Junio C Hamano (3):
-      write-tree: properly detect failure to write tree objects
-      clone: detect and fail on excess parameters
-      fetch-pack: brown paper bag fix
-
-Linus Torvalds (1):
-      fetch-pack: do not stop traversing an already parsed commit
-
-Matt Graham (1):
-      Linked glossary from cvs-migration page
-
-Matthew Ogilvie (1):
-      gitattributes: Fix subdirectory attributes specified from root directory
-
-Michael Weber (1):
-      svn-git: Use binmode for reading/writing binary rev maps
-
-Miklos Vajna (1):
-      diff options documentation: refer to --diff-filter in --name-status
-
-Sam Vilain (1):
-      Amend git-push refspec documentation
-
-Shawn O. Pearce (1):
-      Clarify repack -n documentation
-
-Sitaram Chamarty (1):
-      builtin-commit.c: add -u as short name for --untracked-files
-
-Teemu Likonen (1):
-      bash: Add completion for git diff --base --ours --theirs
-
-Thomas Guyot-Sionnest (1):
-      git-svn bug with blank commits and author file
-
-martin f. krafft (2):
-      Escape project name in regexp
-      Escape project names before creating pathinfo URLs
-
+--Luming
