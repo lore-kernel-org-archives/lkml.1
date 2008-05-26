@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbYEZBlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbYEZCqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbYEZBlf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 May 2008 21:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYEZBlX
+	id S1753002AbYEZCqj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 May 2008 22:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYEZCq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 May 2008 21:41:23 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54826 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751109AbYEZBlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 May 2008 21:41:21 -0400
-Message-ID: <483A153F.7000907@garzik.org>
-Date: Sun, 25 May 2008 21:41:19 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Cache coherency,
- transactions, parallels.
-References: <20080525134055.GA30630@2ka.mipt.ru>
-In-Reply-To: <20080525134055.GA30630@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 25 May 2008 22:46:29 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:49991 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751493AbYEZCq3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 May 2008 22:46:29 -0400
+Date: Mon, 26 May 2008 11:46:27 +0900 (JST)
+Message-Id: <20080526.114627.104044752.ryov@valinux.co.jp>
+To: s-uchida@ap.jp.nec.com
+Cc: axboe@kernel.dk, vtaras@openvz.org, containers@lists.linux-foundation.org,
+       tom-sugawara@ap.jp.nec.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth
+ controlling subsystem for CGroups based on CFQ
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com>
+References: <20080513.003316.226782406.ryov@valinux.co.jp>
+	<20080522.220438.226802699.ryov@valinux.co.jp>
+	<003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote on the blog page:
-> Probably there will be some kind of a status messages for servers (i.e.
-> going offline, do not send me data, or I'm becoming slow, do not read
-> from me and so on). 
+Hi Uchida-san,
 
-Often you can capture this information in a more scalable manner, by 
-having the clients measure an observable _output_ such as latency, over 
-time.
+Thanks for your comment.
 
-Each transaction gives the client new feedback about the server(s) being 
-offline (i.e. timeout), becoming slow, etc.
+> Where did you build expanded CFQ schedulers?
+> I guess that schedulers can be control I/Os if it is built on guest OS,
+> But not if on Dom0.
+> I guess you built on Dom0 so that you could not control I/O. (maybe, you say)
 
+I built them on guest OS.
 
-Another potential tool is having the server(s) send an abstract number, 
-from 0-100, indicating their level of desire for new { read | write } 
-transactions.  Let us call this client hint "weight".  Rather than have 
-a bunch of status messages that indicate server load average, or 
-do-not-read state, summarize this information into read_weight and 
-write_weight hints to the client.
+> I'm testing both systems and get similar results.
+> I will report my test in next week.
 
-With just a few (two?) simple variables, the client is given the ability 
-to automatically balance and scale load across the cluster, work around 
-failing servers, etc.
+I'm looking forward to your report.
 
-Write balancing need not be overly complex...
-
-	Jeff
-
-
+Thanks,
+Ryo Tsuruta
