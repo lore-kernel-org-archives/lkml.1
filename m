@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYEZQae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbYEZQca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbYEZQae (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 12:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYEZQa0
+	id S1755589AbYEZQca (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 12:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYEZQcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 12:30:26 -0400
-Received: from smtp-02.mandic.com.br ([200.225.81.133]:47412 "EHLO
-	smtp-02.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050AbYEZQaZ (ORCPT
+	Mon, 26 May 2008 12:32:17 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45246 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbYEZQcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 12:30:25 -0400
-Message-ID: <483AE59A.9080700@diamondcut.com.br>
-Date: Mon, 26 May 2008 13:30:18 -0300
-From: "Renato S. Yamane" <yamane@diamondcut.com.br>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 26 May 2008 12:32:16 -0400
+Date: Mon, 26 May 2008 19:32:14 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <20080526162328.GA9089@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805261926260.24924@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
+ <20080526135940.GB24870@elte.hu> <20080526141252.GA31352@elte.hu>
+ <Pine.LNX.4.64.0805261745010.16829@wrl-59.cs.helsinki.fi> <20080526162328.GA9089@elte.hu>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, 481493@bugs.debian.org
-Subject: Re: [Bug 10797] Something is consuming power after shutdown
-References: <483AB443.6020807@diamondcut.com.br> <20080526084458.6acce426@infradead.org>
-In-Reply-To: <20080526084458.6acce426@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1441707997-1211819534=:24924"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> "Renato S. Yamane" wrote:
->> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
->> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
->>
->> After poweroff, something still working and consuming power. So I
->> loss ~4% of my battery charge in each 12h.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-1441707997-1211819534=:24924
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Mon, 26 May 2008, Ingo Molnar wrote:
+
 > 
-> the most obvious cause could be Wake-on-Lan, that leaves a part of the
-> system active (specifically, the network card). With the "ethtool"
-> program you can queary and set the state of this.
+> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> 
+> > On Mon, 26 May 2008, Ingo Molnar wrote:
+> > 
+> > > there's a hung distcc task on the system, waiting for socket action 
+> > > forever:
+> > > 
+> > >   [root@europe ~]# strace -fp 19578
+> > >   Process 19578 attached - interrupt to quit
+> > >   select(5, NULL, [4], [4], {82, 90000} <unfinished ...>
+> > 
+> > Hmm, readfds is NULL isn't it?!? Are you sure you straced the right 
+> > process?
+> 
+> yes, i'm stracing the task that is hung unexpectedly.
 
-My network card have option WOL "disabled"
+But that wasn't the receiving process? (I didn't quickly find into which 
+direction distcc ports go, so I couldn't confirm this). If you still have 
+that situation at hand, could you check which is the receiving process 
+(e.g., using netstat -p, the end which has Recv-Q is the right one) and 
+where it's stuck?
 
-# ethtool eth0 | grep Wake
-         Supports Wake-on: pg
-         Wake-on: d
+> > > disturbing that task via strace did not change the state of the 
+> > > socket - and that's not unexpected as it's a select(). [TCP state 
+> > > might be affected if strace impacted a recvmsg or a sendmsg wait 
+> > > directly.]
+> > 
+> > I fail to understand this paragraph due to excessive negation... :-)
+> 
+> i mean, sometimes a TCP connection can get 'unstuck' if you strace a 
+> task - that is because the TCP related syscall the task sits in gets 
+> interrupted. But in this case it's select() which doesnt explicitly take 
+> the socket, doesnt do any tcp_push_pending_frames() processing, etc. - 
+> it just its on the socket waitqueue AFAICS. And that's expected.
 
-> Similarly, but less likely, there is wake-on-serial and wake-on-usb, in
-> theory those are possible too but I've yet to see one of those on any
-> of my machines.
+This is not in the sender end at all. It's correct behavior of the flow 
+control to stop the sender until more room is made available by the 
+reading end. Thus push_pending_frames couldn't send anything.
 
-My laptop don't have serial port and wake-on-usb is disabled too:
+...It may still be that the receiving process is stuck due to the non-net 
+related changes you have there.
 
-# cat /proc/acpi/wakeup
-Device  S-state   Status   Sysfs node
-LID0      S4    *enabled
-RP01      S4     disabled  pci:0000:00:1c.0
-RP02      S4     disabled  pci:0000:00:1c.1
-RP03      S4     disabled
-RP04      S4     disabled
-USB1      S0     disabled  pci:0000:00:1d.0
-USB2      S0     disabled  pci:0000:00:1d.1
-USB3      S0     disabled  pci:0000:00:1d.2
-USB4      S0     disabled  pci:0000:00:1d.3
-USB7      S0     disabled  pci:0000:00:1d.7
-MODM      S4     disabled  pci:0000:00:1e.3
-PS2K      S4     disabled  pnp:00:07
-
-Best regards,
-Renato S. Yamane
+-- 
+ i.
+---696208474-1441707997-1211819534=:24924--
