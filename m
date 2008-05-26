@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYEZVQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbYEZVUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbYEZVQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 17:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbYEZVQu
+	id S1756059AbYEZVUZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 17:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbYEZVUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 17:16:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36571 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753867AbYEZVQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 17:16:49 -0400
-X-Authenticated: #44953887
-X-Provags-ID: V01U2FsdGVkX18HAEYl6joHkIq59jmEABk6FhLF69t/hWlCKSajn0
-	dGBcxXgFxK2HdY
-Subject: Re: [BUG: 2.6.26-rc3] ERROR: "____ilog2_NaN" undefined
-From: Mirco Tischler <mt-ml@gmx.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-In-Reply-To: <1211752151.16921.25.camel@mtlp.tischlernetz>
-References: <1211735607.14556.14.camel@mtlp.tischlernetz>
-	 <20080525181118.GG1791@cs181133002.pp.htv.fi>
-	 <1211742202.14556.25.camel@mtlp.tischlernetz>
-	 <20080525201807.GK1791@cs181133002.pp.htv.fi>
-	 <1211749036.16921.16.camel@mtlp.tischlernetz>
-	 <20080525210329.GN1791@cs181133002.pp.htv.fi>
-	 <1211752151.16921.25.camel@mtlp.tischlernetz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-JrYWYyjHeVO6DF7H2V4E"
-Date: Mon, 26 May 2008 23:16:46 +0200
-Message-Id: <1211836606.10718.18.camel@mtlp.tischlernetz>
+	Mon, 26 May 2008 17:20:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47098 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbYEZVUJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 17:20:09 -0400
+Date: Tue, 27 May 2008 00:20:05 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
+       "Denis V. Lunev" <den@openvz.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <20080526204140.GA13186@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805262348240.24924@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
+ <20080526135940.GB24870@elte.hu> <20080526141252.GA31352@elte.hu>
+ <Pine.LNX.4.64.0805261745010.16829@wrl-59.cs.helsinki.fi> <20080526162328.GA9089@elte.hu>
+ <Pine.LNX.4.64.0805261926260.24924@wrl-59.cs.helsinki.fi> <20080526165407.GB24098@elte.hu>
+ <Pine.LNX.4.64.0805261956090.24924@wrl-59.cs.helsinki.fi> <20080526181216.GA12400@elte.hu>
+ <20080526204140.GA13186@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+...Added Pavel & Denis.
 
---=-JrYWYyjHeVO6DF7H2V4E
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mon, 26 May 2008, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > It's well possible that e.g., net namespaces have some bug in 
+> > > handling of orphaned tcp.
+> > 
+> > yes, that would match the symptoms i think. I half-assumed that it's a 
+> > state machine problem so i didnt even check what the reader does - and 
+> > in this case it appears to not exist at all anymore ;-)
 
-Ok. Situation has changed. I discovered I'm still more dumb than I
-thought I am;). There was that link /usr/local/bin/gcc to the gcc-4.4pre
-executable that I didn't thought of. the ver_linux script didn't check
-that too. So the error only occurs with gcc-4.4. But my version is some
-weeks old so I'm currently compiling a fresh svn version to check if the
-error still exists.
+I keep wondering why distcc in the first place has a connection orphaned
+before it has read all data from it, I guess it should not yet be
+speculatively executing anything or so :-). Anyway, there should be RST
+due to that data because nobody is going read it after the process in gone 
+but since state is still ESTABLISHED, I doubt that tcp_close() was ever 
+executed which adds some strangeness.
 
-I also found the config option that causes the error: enabling
-OPTIMIZE_FOR_SIZE and thus setting -Os instead of -O2 makes the error go
-away, so this is pretty much a compiler problem.
-I will check now if the error is still existent in the current developer
-version of gcc and then maybe contact the gcc team.
+> after ~7 hours of uptime the networking code produced this assertion:
+> 
+>  [25441.140000] KERNEL: assertion (!sk->sk_ack_backlog) failed at 
+>  net/ipv4/inet_connection_sock.c (642)
 
-Meanwhile I'm really sorry for the noise and annoyance.
+...I checked /proc/net/tcp output you gave earlier, and indeed, it shows 
+1 in sk->sk_ack_backlog of the LISTENing socket at that time.
 
-Thanks
-Mirco
+> no further information in the logs. I kept the failing system booted up 
+> for 8 hours and will reboot it now.
 
---=-JrYWYyjHeVO6DF7H2V4E
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBIOyi+z+diZ7c2xfgRAlnWAJ40BDhmwQGQ3kaQ5VSgGdZ/mOup+wCeIwX2
-V8NjnKx2XKgqY3Am6CIVZr0=
-=hyNg
------END PGP SIGNATURE-----
-
---=-JrYWYyjHeVO6DF7H2V4E--
-
+-- 
+ i.
