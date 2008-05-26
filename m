@@ -1,206 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbYEZMYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYEZMYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbYEZMYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 08:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbYEZMXh
+	id S1755435AbYEZMYn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 08:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYEZMXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 08:23:37 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:49201 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756004AbYEZMXg (ORCPT
+	Mon, 26 May 2008 08:23:39 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49549 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756027AbYEZMXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 May 2008 08:23:36 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH take 3 04/29] UBIFS: add brief documentation
-Date: Mon, 26 May 2008 17:05:18 +0300
-Message-Id: <1211810743-18936-5-git-send-email-Artem.Bityutskiy@nokia.com>
+Subject: [PATCH take 3 06/29] UBIFS: add flash scanning
+Date: Mon, 26 May 2008 17:05:20 +0300
+Message-Id: <1211810743-18936-7-git-send-email-Artem.Bityutskiy@nokia.com>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
 References: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com>
-X-OriginalArrivalTime: 26 May 2008 12:23:25.0557 (UTC) FILETIME=[4BC21A50:01C8BF2B]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=unknown-8bit
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 26 May 2008 12:23:32.0838 (UTC) FILETIME=[50191860:01C8BF2B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a small sub-system which is doing eraseblock scanning. For
+example, this is needed during journal replay, recovery, or garbage
+collection.
+
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
 ---
- Documentation/filesystems/ubifs.txt |  163 +++++++++++++++++++++++++++++++++++
- 1 files changed, 163 insertions(+), 0 deletions(-)
+ fs/ubifs/scan.c |  362 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 362 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/ubifs.txt b/Documentation/filesystems/ubifs.txt
+diff --git a/fs/ubifs/scan.c b/fs/ubifs/scan.c
 new file mode 100644
-index 0000000..ab653b4
+index 0000000..acf5c5f
 --- /dev/null
-+++ b/Documentation/filesystems/ubifs.txt
-@@ -0,0 +1,163 @@
-+Introduction
-+=============
++++ b/fs/ubifs/scan.c
+@@ -0,0 +1,362 @@
++/*
++ * This file is part of UBIFS.
++ *
++ * Copyright (C) 2006-2008 Nokia Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
++ *
++ * Authors: Adrian Hunter
++ *          Artem Bityutskiy (Битюцкий Артём)
++ */
 +
-+UBIFS file-system stands for UBI File System. UBI stands for "Unsorted
-+Block Images". UBIFS is a flash file system, which means it is designed
-+to work with flash devices. It is important to understand, that UBIFS
-+is completely different to any traditional file-system in Linux, like
-+Ext2, XFS, JFS, etc. UBIFS represents a separate class of file-systems
-+which work with MTD devices, not block devices. The other Linux
-+file-system of this class is JFFS2.
++/*
++ * This file implements the scan which is a general-purpose function for
++ * determining what nodes are in an eraseblock. The scan is used to replay the
++ * journal, to do garbage collection. for the TNC in-the-gaps method, and by
++ * debugging functions.
++ */
 +
-+To make it more clear, here is a small comparison of MTD devices and
-+block devices.
++#include "ubifs.h"
 +
-+1 MTD devices represent flash devices and they consist of eraseblocks of
-+  rather large size, typically about 128KiB. Block devices consist of
-+  small blocks, typically 512 bytes.
-+2 MTD devices support 3 main operations - read from some offset within an
-+  eraseblock, write to some offset within an eraseblock, and erase a whole
-+  eraseblock. Block  devices support 2 main operations - read a whole
-+  block and write a whole block.
-+3 The whole eraseblock has to be erased before it becomes possible to
-+  re-write its contents. Blocks may be just re-written.
-+4 Eraseblocks become worn out after some number of erase cycles -
-+  typically 100K-1G for SLC NAND and NOR flashes, and 1K-10K for MLC
-+  NAND flashes. Blocks do not have the wear-out property.
-+5 Eraseblocks may become bad (only on NAND flashes) and software should
-+  deal with this. Blocks on hard drives typically do not become bad,
-+  because hardware has mechanisms to substitute bad blocks, at least in
-+  modern LBA disks.
++/**
++ * scan_padding_bytes - scan for padding bytes.
++ * @buf: buffer to scan
++ * @len: length of buffer
++ *
++ * This function returns the number of padding bytes on success and
++ * %SCANNED_GARBAGE on failure.
++ */
++static int scan_padding_bytes(void *buf, int len)
++{
++	int pad_len = 0, max_pad_len = min_t(int, UBIFS_PAD_NODE_SZ, len);
++	uint8_t *p = buf;
 +
-+It should be quite obvious why UBIFS is very different to traditional
-+file-systems.
++	dbg_scan("not a node");
 +
-+UBIFS works on top of UBI. UBI is a separate software layer which may be
-+found in drivers/mtd/ubi. UBI is basically a volume management and
-+wear-leveling layer. It provides so called UBI volumes which is a higher
-+level abstraction than a MTD device. The programming model of UBI devices
-+is very similar to MTD devices - they still consist of large eraseblocks,
-+they have read/write/erase operations, but UBI devices are devoid of
-+limitations like wear and bad blocks (items 4 and 5 in the above list).
++	while (pad_len < max_pad_len && *p++ == UBIFS_PADDING_BYTE)
++		pad_len += 1;
 +
-+In a sense, UBIFS is a next generation of JFFS2 file-system, but it is
-+very different and incompatible to JFFS2. The following are the main
-+differences.
++	if (!pad_len || (pad_len & 7))
++		return SCANNED_GARBAGE;
 +
-+* JFFS2 works on top of MTD devices, UBIFS depends on UBI and works on
-+  top of UBI volumes.
-+* JFFS2 does not have on-media index and has to build it while mounting,
-+  which requires full media scan. UBIFS maintains the FS indexing
-+  information on the flash media and does not require full media scan,
-+  so it mounts many times faster than JFFS2.
-+* JFFS2 is a write-through file-system, while UBIFS supports write-back,
-+  which makes UBIFS much faster on writes.
++	dbg_scan("%d padding bytes", pad_len);
 +
-+Similarly to JFFS2, UBIFS supports on-the-flight compression which makes
-+it possible to fit quite a lot of data to the flash.
++	return pad_len;
++}
 +
-+Similarly to JFFS2, UBIFS is tolerant of unclean reboots and power-cuts.
-+It does not need stuff like ckfs.ext2. UBIFS automatically replays its
-+journal and recovers from crashes, ensuring that the on-flash data
-+structures are consistent.
++/**
++ * ubifs_scan_a_node - scan for a node or padding.
++ * @c: UBIFS file-system description object
++ * @buf: buffer to scan
++ * @len: length of buffer
++ * @lnum: logical eraseblock number
++ * @offs: offset within the logical eraseblock
++ * @quiet: print no messages
++ *
++ * This function returns a scanning code to indicate what was scanned.
++ */
++int ubifs_scan_a_node(const struct ubifs_info *c, void *buf, int len, int lnum,
++		      int offs, int quiet)
++{
++	struct ubifs_ch *ch = buf;
++	uint32_t magic;
 +
-+UBIFS scales logarithmically (most of the data structures it uses are
-+trees), so the mount time and memory consumption do not linearly depend
-+on the flash size, like in case of JFFS2. This is because UBIFS
-+maintains the FS index on the flash media. However, UBIFS depends on
-+UBI, which scales linearly. So overall UBI/UBIFS stack scales linearly.
-+Nevertheless, UBI/UBIFS scales considerably better than JFFS2.
++	magic = le32_to_cpu(ch->magic);
 +
-+The authors of UBIFS believe, that it is possible to develop UBI2 which
-+would scale logarithmically as well. UBI2 would support the same API as UBI,
-+but it would be binary incompatible to UBI. So UBIFS would not need to be
-+changed to use UBI2
++	if (magic == 0xFFFFFFFF) {
++		dbg_scan("hit empty space");
++		return SCANNED_EMPTY_SPACE;
++	}
 +
++	if (magic != UBIFS_NODE_MAGIC)
++		return scan_padding_bytes(buf, len);
 +
-+Mount options
-+=============
++	if (len < UBIFS_CH_SZ)
++		return SCANNED_GARBAGE;
 +
-+(*) == default.
++	dbg_scan("scanning %s", dbg_ntype(ch->node_type));
 +
-+norm_unmount (*)	commit on unmount; the journal is committed
-+			when the file-system is unmounted so that the
-+			next mount does not have to replay the journal
-+			and it becomes very fast;
-+fast_unmount		do not commit on unmount; this option makes
-+			unmount faster, but the next mount slower
-+			because of the need to replay the journal.
++	if (ubifs_check_node(c, buf, lnum, offs, quiet))
++		return SCANNED_A_CORRUPT_NODE;
 +
++	if (ch->node_type == UBIFS_PAD_NODE) {
++		struct ubifs_pad_node *pad = buf;
++		int pad_len = le32_to_cpu(pad->pad_len);
++		int node_len = le32_to_cpu(ch->len);
 +
-+Quick usage instructions
-+========================
++		/* Validate the padding node */
++		if (pad_len < 0 ||
++		    offs + node_len + pad_len > c->leb_size) {
++			if (!quiet) {
++				ubifs_err("bad pad node at LEB %d:%d",
++					  lnum, offs);
++				dbg_dump_node(c, pad);
++			}
++			return SCANNED_A_BAD_PAD_NODE;
++		}
 +
-+The UBI volume to mount is specified using "ubiX_Y" or "ubiX:NAME" syntax,
-+where "X" is UBI device number, "Y" is UBI volume number, and "NAME" is
-+UBI volume name.
++		/* Make the node pads to 8-byte boundary */
++		if ((node_len + pad_len) & 7) {
++			if (!quiet) {
++				dbg_err("bad padding length %d - %d",
++					offs, offs + node_len + pad_len);
++			}
++			return SCANNED_A_BAD_PAD_NODE;
++		}
 +
-+Mount volume 0 on UBI device 0 to /mnt/ubifs:
-+$ mount -t ubifs ubi0_0 /mnt/ubifs
++		dbg_scan("%d bytes padded, offset now %d",
++			 pad_len, ALIGN(offs + node_len + pad_len, 8));
 +
-+Mount "rootfs" volume of UBI device 0 to /mnt/ubifs ("rootfs" is volume
-+name):
-+$ mount -t ubifs ubi0:rootfs /mnt/ubifs
++		return node_len + pad_len;
++	}
 +
-+The following is an example of the kernel boot arguments to attach mtd0
-+to UBI and mount volume "rootfs":
-+ubi.mtd=0 root=ubi0:rootfs rootfstype=ubifs
++	return SCANNED_A_NODE;
++}
 +
++/**
++ * ubifs_start_scan - create LEB scanning information at start of scan.
++ * @c: UBIFS file-system description object
++ * @lnum: logical eraseblock number
++ * @offs: offset to start at (usually zero)
++ * @sbuf: scan buffer (must be c->leb_size)
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++struct ubifs_scan_leb *ubifs_start_scan(const struct ubifs_info *c, int lnum,
++					int offs, void *sbuf)
++{
++	struct ubifs_scan_leb *sleb;
++	int err;
 +
-+Module Parameters for Debugging
-+===============================
++	dbg_scan("scan LEB %d:%d", lnum, offs);
 +
-+When UBIFS has been compiled with debugging enabled, there are 3 module
-+parameters that are available to control aspects of testing and debugging.
-+The parameters are unsigned integers where each bit controls an option.
-+The parameters are:
++	sleb = kzalloc(sizeof(struct ubifs_scan_leb), GFP_NOFS);
++	if (!sleb)
++		return ERR_PTR(-ENOMEM);
 +
-+debug_msgs	Selects which debug messages to display, as follows:
++	sleb->lnum = lnum;
++	INIT_LIST_HEAD(&sleb->nodes);
++	sleb->buf = sbuf;
 +
-+		Message Type				Flag value
++	err = ubi_read(c->ubi, lnum, sbuf + offs, offs, c->leb_size - offs);
++	if (err && err != -EBADMSG) {
++		ubifs_err("cannot read %d bytes from LEB %d:%d,"
++			  " error %d", c->leb_size - offs, lnum, offs, err);
++		kfree(sleb);
++		return ERR_PTR(err);
++	}
 +
-+		General messages			1
-+		Journal messages			2
-+		Mount messages				4
-+		Commit messages				8
-+		LEB search messages			16
-+		Budgeting messages			32
-+		Garbage collection messages		64
-+		Tree Node Cache (TNC) messages		128
-+		LEB properties (lprops) messages	256
-+		Input/output messages			512
-+		Log messages				1024
-+		Scan messages				2048
-+		Recovery messages			4096
++	if (err == -EBADMSG)
++		sleb->ecc = 1;
 +
-+debug_chks	Selects extra checks that UBIFS can do while running:
++	return sleb;
++}
 +
-+		Check					Flag value
++/**
++ * ubifs_end_scan - update LEB scanning information at end of scan.
++ * @c: UBIFS file-system description object
++ * @sleb: scanning information
++ * @lnum: logical eraseblock number
++ * @offs: offset to start at (usually zero)
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++void ubifs_end_scan(const struct ubifs_info *c, struct ubifs_scan_leb *sleb,
++		    int lnum, int offs)
++{
++	lnum = lnum;
++	dbg_scan("stop scanning LEB %d at offset %d", lnum, offs);
++	ubifs_assert(offs % c->min_io_size == 0);
 +
-+		General checks				1
-+		Check Tree Node Cache (TNC)		2
-+		Check indexing tree size		4
-+		Check orphan area			8
-+		Check old indexing tree			16
-+		Check LEB properties (lprops)		32
++	sleb->endpt = ALIGN(offs, c->min_io_size);
++}
 +
-+debug_tsts	Selects a mode of testing, as follows:
++/**
++ * ubifs_add_snod - add a scanned node to LEB scanning information.
++ * @c: UBIFS file-system description object
++ * @sleb: scanning information
++ * @buf: buffer containing node
++ * @offs: offset of node on flash
++ *
++ * This function returns %0 on success and a negative error code on failure.
++ */
++int ubifs_add_snod(const struct ubifs_info *c, struct ubifs_scan_leb *sleb,
++		   void *buf, int offs)
++{
++	struct ubifs_ch *ch = buf;
++	struct ubifs_ino_node *ino = buf;
++	struct ubifs_scan_node *snod;
 +
-+		Test mode				Flag value
++	snod = kzalloc(sizeof(struct ubifs_scan_node), GFP_NOFS);
++	if (!snod)
++		return -ENOMEM;
 +
-+		Force in-the-gaps method		2
-+		Failure mode for recovery testing	4
++	snod->sqnum = le64_to_cpu(ch->sqnum);
++	snod->type = ch->node_type;
++	snod->offs = offs;
++	snod->len = le32_to_cpu(ch->len);
++	snod->node = buf;
 +
-+For example, set debug_msgs to 5 to display General messages and Mount
-+messages.
++	switch (ch->node_type) {
++	case UBIFS_INO_NODE:
++	case UBIFS_DENT_NODE:
++	case UBIFS_XENT_NODE:
++	case UBIFS_DATA_NODE:
++	case UBIFS_TRUN_NODE:
++		/*
++		 * The key is in the same place in all keyed
++		 * nodes.
++		 */
++		key_read(c, &ino->key, &snod->key);
++		break;
++	}
++	list_add_tail(&snod->list, &sleb->nodes);
++	sleb->nodes_cnt += 1;
++	return 0;
++}
 +
++/**
++ * ubifs_scanned_corruption - print information after UBIFS scanned corruption.
++ * @c: UBIFS file-system description object
++ * @lnum: LEB number of corruption
++ * @offs: offset of corruption
++ * @buf: buffer containing corruption
++ */
++void ubifs_scanned_corruption(const struct ubifs_info *c, int lnum, int offs,
++			      void *buf)
++{
++	int len;
 +
-+References
-+==========
++	ubifs_err("corrupted data at LEB %d:%d", lnum, offs);
++	if (dbg_failure_mode)
++		return;
++	len = c->leb_size - offs;
++	if (len > 4096)
++		len = 4096;
++	dbg_err("first %d bytes from LEB %d:%d", len, lnum, offs);
++	print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 32, 4, buf, len, 1);
++}
 +
-+UBIFS documentation and FAQ/HOWTO at the MTD web site:
-+http://www.linux-mtd.infradead.org/doc/ubifs.html
-+http://www.linux-mtd.infradead.org/faq/ubifs.html
++/**
++ * ubifs_scan - scan a logical eraseblock.
++ * @c: UBIFS file-system description object
++ * @lnum: logical eraseblock number
++ * @offs: offset to start at (usually zero)
++ * @sbuf: scan buffer (must be c->leb_size)
++ *
++ * This function scans LEB number @lnum and returns complete information about
++ * its contents. Returns an error code in case of failure.
++ */
++struct ubifs_scan_leb *ubifs_scan(const struct ubifs_info *c, int lnum,
++				  int offs, void *sbuf)
++{
++	void *buf = sbuf + offs;
++	int err, len = c->leb_size - offs;
++	struct ubifs_scan_leb *sleb;
++
++	sleb = ubifs_start_scan(c, lnum, offs, sbuf);
++	if (IS_ERR(sleb))
++		return sleb;
++
++	while (len >= 8) {
++		struct ubifs_ch *ch = buf;
++		int node_len, ret;
++
++		dbg_scan("look at LEB %d:%d (%d bytes left)",
++			 lnum, offs, len);
++
++		cond_resched();
++
++		ret = ubifs_scan_a_node(c, buf, len, lnum, offs, 0);
++
++		if (ret > 0) {
++			/* Padding bytes or a valid padding node */
++			offs += ret;
++			buf += ret;
++			len -= ret;
++			continue;
++		}
++
++		if (ret == SCANNED_EMPTY_SPACE)
++			/* Empty space is checked later */
++			break;
++
++		switch (ret) {
++		case SCANNED_GARBAGE:
++			dbg_err("garbage");
++			goto corrupted;
++		case SCANNED_A_NODE:
++			break;
++		case SCANNED_A_CORRUPT_NODE:
++		case SCANNED_A_BAD_PAD_NODE:
++			dbg_err("bad node");
++			goto corrupted;
++		default:
++			dbg_err("unknown");
++			goto corrupted;
++		}
++
++		err = ubifs_add_snod(c, sleb, buf, offs);
++		if (err)
++			goto error;
++
++		node_len = ALIGN(le32_to_cpu(ch->len), 8);
++		offs += node_len;
++		buf += node_len;
++		len -= node_len;
++	}
++
++	if (offs % c->min_io_size)
++		goto corrupted;
++
++	ubifs_end_scan(c, sleb, lnum, offs);
++
++	for (; len > 4; offs += 4, buf = buf + 4, len -= 4)
++		if (*(uint32_t *)buf != 0xffffffff)
++			break;
++	for (; len; offs++, buf++, len--)
++		if (*(uint8_t *)buf != 0xff) {
++			ubifs_err("corrupt empty space at LEB %d:%d",
++				  lnum, offs);
++			goto corrupted;
++		}
++
++	return sleb;
++
++corrupted:
++	ubifs_scanned_corruption(c, lnum, offs, buf);
++	err = -EUCLEAN;
++error:
++	ubifs_err("LEB %d scanning failed", lnum);
++	ubifs_scan_destroy(sleb);
++	return ERR_PTR(err);
++}
++
++/**
++ * ubifs_scan_destroy - destroy LEB scanning information.
++ * @sleb: scanning information to free
++ */
++void ubifs_scan_destroy(struct ubifs_scan_leb *sleb)
++{
++	struct ubifs_scan_node *node;
++	struct list_head *head;
++
++	head = &sleb->nodes;
++	while (!list_empty(head)) {
++		node = list_entry(head->next, struct ubifs_scan_node, list);
++		list_del(&node->list);
++		kfree(node);
++	}
++	kfree(sleb);
++}
 -- 
 1.5.4.1
 
