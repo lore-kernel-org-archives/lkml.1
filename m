@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYEZO5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbYEZO5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbYEZO5J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 10:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYEZO45
+	id S1757187AbYEZO5r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 10:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbYEZO5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 10:56:57 -0400
-Received: from vena.lwn.net ([206.168.112.25]:45362 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754126AbYEZO44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 10:56:56 -0400
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: drivers/char/dsp56k.c breakage [was: Re: linux-next: Tree for May 26] 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Mon, 26 May 2008 16:46:45 +0200."
-             <Pine.LNX.4.64.0805261644230.4417@anakin> 
-Date: Mon, 26 May 2008 08:56:55 -0600
-Message-ID: <29942.1211813815@vena.lwn.net>
+	Mon, 26 May 2008 10:57:38 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:38727 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754126AbYEZO5h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 10:57:37 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] usblcd: Push down BKL into driver
+Date: Mon, 26 May 2008 16:57:40 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080522220751.599d73ee@core>
+In-Reply-To: <20080522220751.599d73ee@core>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805261657.41398.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Am Donnerstag 22 Mai 2008 23:07:51 schrieb Alan Cox:
+> I'm pretty sure this can be eliminated however I couldn't prove (or find)
+> what stopped the device vanishing mid IOCTL_GET_HARD_VERSION. Perhaps a
+> USB wizard could double check that and see if the lock_kernel can go
+> entirely.
 
-> commit	6fe28df6c14e7e02bfea6b2bebf42716176e6dff
-> 
->     dsp56k: BKL pushdown
-> 
->     Put explicit lock_kernel calls into dsp56k_open().
-> 
-> Broke the build of drivers/char/dsp56k.c by introducing a jump to a
-> non-existent label
+Nothing does. The driver is buggy as it is now irrespective of BKL.
+Thanks for noticing.
 
-Sigh.  Sorry about that.  I've recreated the tree without that dumb
-mistake.
-
-jon
-
-Jonathan Corbet / LWN.net / corbet@lwn.net
+	Regards
+		Oliver
