@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYEZTw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbYEZURT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbYEZTw2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 15:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYEZTwS
+	id S1755934AbYEZURT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 16:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755119AbYEZURB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 15:52:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46716 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754846AbYEZTwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 15:52:11 -0400
-Subject: Re: pci-gart_64.c: could we get better explanation?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <20080526184703.GA17369@elf.ucw.cz>
-References: <20080526184703.GA17369@elf.ucw.cz>
-Content-Type: text/plain
-Date: Tue, 27 May 2008 05:51:39 +1000
-Message-Id: <1211831499.3286.2.camel@pasglop>
+	Mon, 26 May 2008 16:17:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36455 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755068AbYEZURA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 16:17:00 -0400
+Date: Mon, 26 May 2008 21:02:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Timur Tabi <timur@freescale.com>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [SERIAL] fix driver_name conflicts
+Message-ID: <20080526210207.5730e9cc@core>
+In-Reply-To: <20080526172340.GA17703@polina.dev.rtsoft.ru>
+References: <20080526172340.GA17703@polina.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 May 2008 21:23:40 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-On Mon, 2008-05-26 at 20:47 +0200, Pavel Machek wrote:
-> Hi!
+> Some drivers are using too generic "serial" name for driver_name, this
+> might cause issues, like this:
 > 
-> +++ b/arch/x86/kernel/pci-gart_64.c
-> @@ -774,6 +778,7 @@ #endif
->  
->         /*
->          * Try to workaround a bug (thanks to BenH)
->          * Set unmapped entries to a scratch page instead of 0.
->          * Any prefetches that hit unmapped entries won't get an bus abort
+> Freescale QUICC Engine UART device driver
+> proc_dir_entry 'serial' already registered
+> Call Trace:
+> [cf82de50] [c0007f7c] show_stack+0x4c/0x1ac (unreliable)
+> [cf82de90] [c00b03fc] proc_register+0xfc/0x1ac
+> [cf82dec0] [c00b05c8] create_proc_entry+0x60/0xac
+> [cf82dee0] [c00b23dc] proc_tty_register_driver+0x60/0x98
+> [cf82def0] [c016dbd8] tty_register_driver+0x1b4/0x228
+> [cf82df20] [c0184d70] uart_register_driver+0x144/0x194
+> [cf82df40] [c030a378] ucc_uart_init+0x2c/0x94
+> [cf82df50] [c02f21a0] kernel_init+0x98/0x27c
+> [cf82dff0] [c000fa74] kernel_thread+0x44/0x60
 > 
-> Could someone explain? Which bug is being worked around? CPUs
-> prefetching over NULL?
+> ^^ The board is using ucc_uart.c and 8250.c, both registered as
+>    "serial".
+> 
+> This patch fixes two drivers that are using "serial" for driver_name and
+> not "ttyS" for dev_name. Drivers that are using "ttyS" for dev_name, will
+> conflict anyway, so we don't bother with these.
 
-P2P bridge prefetching on DMA reads.
-
-Ben.
-
-
+Acked-by: Alan Cox <alan@redhat.com>
