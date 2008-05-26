@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYEZK2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYEZKiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbYEZK2l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 06:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYEZK2d
+	id S1754874AbYEZKiF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 06:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYEZKhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 06:28:33 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44892 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbYEZK2c (ORCPT
+	Mon, 26 May 2008 06:37:53 -0400
+Received: from lazybastard.de ([212.112.238.170]:45967 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbYEZKhw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 06:28:32 -0400
-Message-ID: <483A9050.5000206@jp.fujitsu.com>
-Date: Mon, 26 May 2008 19:26:24 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 26 May 2008 06:37:52 -0400
+Date: Mon, 26 May 2008 12:37:39 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Davi Leal <davi@leals.com>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: I am a volunteer
+Message-ID: <20080526103738.GA20623@logfs.org>
+References: <200805251812.41552.davi@leals.com> <200805252023.22510.davi@leals.com> <20080525194721.GH6749@1wt.eu> <200805252244.53524.davi@leals.com> <20080525210051.GA5609@1wt.eu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       drzeus-list@drzeus.cx
-Subject: Re: [patch, -git] pcie hotplug bootup crash fix
-References: <20080524165828.GA29993@elte.hu>	<20080524104024.a33116a3.akpm@linux-foundation.org>	<483A7663.4000700@jp.fujitsu.com>	<20080526084709.GA2182@elte.hu> <20080526015232.5faac5bb.akpm@linux-foundation.org>
-In-Reply-To: <20080526015232.5faac5bb.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080525210051.GA5609@1wt.eu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 26 May 2008 10:47:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+On Sun, 25 May 2008 23:00:51 +0200, Willy Tarreau wrote:
 > 
->> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
->>
->>> I updated Ingo's patch. If it's ok, I'll send it to Jess Barnes with 
->>> some other patches for the other pciehp regression problems.
->> looks good to me, thanks Kenji.
->>
-> 
-> It's a bit sad to add a large workaround like this.  I'm surprised
-> that fixing it properly is considered unviable for 2.6.26.  Normally
-> these fixes are pretty simple - just request the IRQ a bit later?
-> 
+> reading code is 100% compatible with time constraints, as there is no
+> deadline. You can even say that a bug that you don't look at may stay
+> there for years. And quite frankly, spending more than one hour every
+> evening on code is generally enough to give you a headache. But you
+> will progress very quickly.
 
-Although I have not considered how to implement proper fix deeply,
-I don't think it's so simple. For example, current pciehp is doing
-like this:
+When looking for something to improve, it often helps to write a new
+code checker or run an existing one.  If you don't know anything better,
+you can write a script that runs Lindent, takes the diff between the
+original file and the Lindent version and sorts files by diff size.
 
-(1) some initialization
-(2) request_irq()
-(3) issue command
-(4) initialize slot data structure
+The point of this excercise is not to run Lindent on every file and
+submit patches for that.  But most code checkers, even a stupid one like
+this, tend to warn about the same files.  And those files tend to be
+ones that are badly maintained, have often been bitrotting for some
+years and could use some work.  Even better, they are in such a bad
+shape that it's hard not to improve things.
 
-Maybe we want to do (2) after (4) to fix the problem. But if we
-simply move (2) after (4), we cannot detect the command completion
-event at (3) and it will cause command timeout.
+For example, I once found something like the below in drivers/cdrom/:
 
-It's just an example, and there might be other things like this.
-This example might be fixed simply, but all my worry is that fixing
-this quickly might cause another regressions. This is why I think
-Ingo's approach is better in a short term.
+#define FOO()	\
+	bar();	\
+	bar();	\
+	bar();	\
+	bar();
 
-And another reason is I'm very nervous because I already caused
-many problems in pciehp since 2.6.26-rcX... :(
+...
 
-Thanks,
-Kenji Kaneshige
+	if (baz)
+		FOO();
 
+So after macro extention, three of the four statements are always
+executed and only one is conditional.  Since I didn't have hardware to
+test things I didn't change the code.  My guess is the code still exists
+unchanged.
 
+Jörn
 
-
+-- 
+All models are wrong. Some models are useful.
+-- George Box
