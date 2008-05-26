@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYEZKtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYEZKvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbYEZKtL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 06:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYEZKs4
+	id S1755131AbYEZKvR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 06:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYEZKu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 06:48:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55225 "EHLO mx2.mail.elte.hu"
+	Mon, 26 May 2008 06:50:59 -0400
+Received: from burp.tkv.asdf.org ([212.16.99.49]:45336 "EHLO burp.tkv.asdf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753425AbYEZKsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 06:48:55 -0400
-Date: Mon, 26 May 2008 12:48:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
-       Jan Kara <jack@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
-Message-ID: <20080526104832.GG23261@elte.hu>
-References: <4836EE8C.1010200@linux.intel.com> <20080524222304.GD20563@atrey.karlin.mff.cuni.cz> <20080524153020.1df96cf2@linux.intel.com> <20080524224554.GA5970@mit.edu> <20080526093913.GG13529@elte.hu> <20080526101646.GD24507@mit.edu>
+	id S1753526AbYEZKu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 06:50:58 -0400
+X-Greylist: delayed 876 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 May 2008 06:50:58 EDT
+To: linux-kernel@vger.kernel.org
+Subject: Bug/misfeature of "securityfs"
+From: Markku Savela <msa@moth.iki.fi>
+Date: Mon, 26 May 2008 13:36:19 +0300
+Message-ID: <87iqx1pd24.fsf@burp.tkv.asdf.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080526101646.GD24507@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0012]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Theodore Tso <tytso@MIT.EDU> wrote:
+I write a module which creates a securityfs on init
 
-> On Mon, May 26, 2008 at 11:39:13AM +0200, Ingo Molnar wrote:
-> > Exactly why is pulling an USB stick considered "stupid"? Last i checked 
-> > there was no physical lock preventing users from doing that.
-> > 
-> > Sure, pulling a mounted USB stick is inconvenient ... for _us_ 
-> > kernel developers. But the user really doesnt care and shouldnt 
-> > care.
-> 
-> Because they could lose data?  Because if the kernel wakes up and 
-> tries writing to the USB stick right as they pull it out, it could 
-> physically damage the flash format?  I know, stupid reason...  :-)
+  foobar =  securityfs_create_dir("foobar", NULL)
+and on exit it does
+  security_fs_remove(foobar);
 
-user can lose data in many other ways, that's not the issue - the issue 
-here is something very crutial: the kernel gets confused about a _very_ 
-common user-triggerable condition.
+When I do "insmod" and "rmmod", I see
 
-That confusion must not happen in a modern OS and the kernel should be 
-resilient and cope with such external events. And we must not 
-deprioritize it with an incorrect "user did something stupid" tag... 
-That argument might have been valid 15 years ago when floppies could be 
-locked and you needed a needle to force-eject it but it is rather lame 
-today when unplugging an USB stick is as easy as moving the mouse.
+  /sys/kernel/security/foobar/
 
-If there's something stupid here it's the kernel not dealing with that 
-condition properly. Yes, the "user action" here looks "trivial" to the 
-user but what happens below is indeed very hard technically, but who 
-said that writing an OS from scratch would be an easy task? ;-)
+appear and go away.
 
-	Ingo
+Now, if have a shell and do "cd /sys/kernel/security/foobar", the
+"rmmod" does not remove the directory. The directory disappears when I
+exit the shell from it via "cd ..". This is fine, and as it should be,
+but....
+
+IF, while having the shell in the directory, I try to "insmod" again,
+the insmod fails with "-1 File exists". Again, understandable, BUT
+when after this I exit the shell from the directory, IT DOES NOT GO
+AWAY. It's permanetly existing, and module install fails always with
+"File Exists".
+
+Is this a bug, or am doing something wrong?
+
+The kernel is Ubuntu Hardy heron
+    2.6.24-16-generic #1 SMP Thu Apr 10 13:23:42 UTC 2008 i686
+
+-- 
+Markku Savela
