@@ -1,97 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbYEZRI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbYEZRKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754386AbYEZRI5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 13:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbYEZRIm
+	id S1756624AbYEZRKM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 13:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbYEZRKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 13:08:42 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48730 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756461AbYEZRIk (ORCPT
+	Mon, 26 May 2008 13:10:00 -0400
+Received: from smtp-out002.kontent.com ([81.88.40.216]:54911 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141AbYEZRJ7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 13:08:40 -0400
-Date: Mon, 26 May 2008 20:08:37 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <20080526165407.GB24098@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805261956090.24924@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <Pine.LNX.4.64.0805261550340.16829@wrl-59.cs.helsinki.fi>
- <20080526135940.GB24870@elte.hu> <20080526141252.GA31352@elte.hu>
- <Pine.LNX.4.64.0805261745010.16829@wrl-59.cs.helsinki.fi> <20080526162328.GA9089@elte.hu>
- <Pine.LNX.4.64.0805261926260.24924@wrl-59.cs.helsinki.fi> <20080526165407.GB24098@elte.hu>
+	Mon, 26 May 2008 13:09:59 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: NOvell
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
+Date: Mon, 26 May 2008 19:09:57 +0200
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Jan Kara <jack@suse.cz>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+References: <4836EE8C.1010200@linux.intel.com> <20080526164858.GA24098@elte.hu> <20080526170147.GB9893@mit.edu>
+In-Reply-To: <20080526170147.GB9893@mit.edu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-1590138542-1211821374=:24924"
-Content-ID: <Pine.LNX.4.64.0805262002580.24924@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200805261909.59032.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Am Montag 26 Mai 2008 19:01:48 schrieb Theodore Tso:
+> If the USB stack folks would like to work on how to recognize that
+> it's the same USB stick that had been previously pulled, so that it
+> gets the same block device, and we can decide for how long we should
+> keep dirty buffers around associated with a pulled USB stick, we can
+> certainly have that conversation.  :-)
 
----696208474-1590138542-1211821374=:24924
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0805262002581.24924@wrl-59.cs.helsinki.fi>
+Even if we could tell whether the device has remained the same, how
+would we know the medium wasn't exchanged?
 
-On Mon, 26 May 2008, Ingo Molnar wrote:
+	Regards
+		Oliver
 
-> 
-> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> 
-> > > > Hmm, readfds is NULL isn't it?!? Are you sure you straced the 
-> > > > right process?
-> > > 
-> > > yes, i'm stracing the task that is hung unexpectedly.
-> > 
-> > But that wasn't the receiving process? (I didn't quickly find into 
-> > which direction distcc ports go, so I couldn't confirm this). If you 
-> > still have that situation at hand, could you check which is the 
-> > receiving process (e.g., using netstat -p, the end which has Recv-Q is 
-> > the right one) and where it's stuck?
-> 
-> it wasnt the receiving process. There's no receiving process - which is 
-> weird:
-> 
-> Active Internet connections (w/o servers)
-> Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   
-> tcp        0 207232 europe:37198                europe:distcc               ESTABLISHED 19578/distcc        
-> tcp        0      0 europe:ssh                  dione:36284                 ESTABLISHED -                   
-> tcp        0      0 europe:ssh                  e2:45910                    ESTABLISHED -                   
-> tcp    72283      0 europe:distcc               europe:37198                ESTABLISHED -                   
-
-Just to be sure (please forgive me if you find this nearly an insult :-)), 
-did you have enough rights to find out the pid (ie., if that process not 
-owned by you then you need superuser privs for that)?
-
-> i just gave it as a general example of why sometimes stracing a task can 
-> 'disturb' the observed system and can kick the TCP state machine out of 
-> a stall. I did not say it's occuring here.
-
-Yeah, I understood that earlier. Similarly, I just wanted to point out
-the end where the problem lies :-).
-
-> > ...It may still be that the receiving process is stuck due to the 
-> > non-net related changes you have there.
-> 
-> the socket does not seem to be owned. It should have closed down? 
-> Refcounting issue?
-
-It's well possible that e.g., net namespaces have some bug in handling
-of orphaned tcp.
-
-> find below the sysrq-t dump.
-
-...I'll have a look into that as well (though with such I'm on a more 
-unfamiliar territory, so it will take a moment).
-
-
--- 
- i.
----696208474-1590138542-1211821374=:24924--
