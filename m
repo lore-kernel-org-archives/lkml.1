@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYEZTe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYEZThv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708AbYEZTe0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 15:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbYEZTeS
+	id S1756137AbYEZThv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 15:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbYEZThn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 15:34:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60833 "EHLO mx1.redhat.com"
+	Mon, 26 May 2008 15:37:43 -0400
+Received: from main.gmane.org ([80.91.229.2]:52180 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755233AbYEZTeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 15:34:17 -0400
-Date: Mon, 26 May 2008 15:33:18 -0400
-From: Rik van Riel <riel@redhat.com>
-To: balbir@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm 00/16] VM pageout scalability improvements (V8)
-Message-ID: <20080526153318.29edc0b2@bree.surriel.com>
-In-Reply-To: <483B0077.7000207@linux.vnet.ibm.com>
-References: <20080523195506.084894989@redhat.com>
-	<483B0077.7000207@linux.vnet.ibm.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	id S1753942AbYEZThn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 15:37:43 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
+Date: Mon, 26 May 2008 20:36:54 +0100
+Message-ID: <g1f3ht$b9g$1@ger.gmane.org>
+References: <g1eg2q$81q$1@ger.gmane.org> <20080526161623.GC7305@cvg> <g1f230$7bl$1@ger.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: KNode/0.10.4
+Cc: kernel-testers@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 May 2008 23:54:55 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+<posted & mailed>
 
-> Rik van Riel wrote:
-> > On large memory systems, the VM can spend way too much time scanning
-> > through pages that it cannot (or should not) evict from memory. Not
-> > only does it use up CPU time, but it also provokes lock contention
-> > and can leave large systems under memory presure in a catatonic state.
+Sitsofe Wheeler wrote:
+
+> Cyrill Gorcunov wrote:
 > 
-> Hi, Rik,
+>> [Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
+>> | When using a 32 bit linux-next-20080526 the bootup process will hang at
+>> | a random point (not even sysrq helps) with no additional output on the
+>> | screen (whereas linux-next-20080523 did boot). Mysteriously, booting
+>> | with nmi_watchdog=2 allows the boot to finish (booting with
+>> | nmi_watchdog=1 still stalls). I have bisected it down to commit
+>> | [d1b946b97d71423f365fa797d1428e1847c0bec1]:
+>>
+>> Hi, so it helps by reverting only that commit? I mean all further commits
+>> are still appiled?
 > 
-> This patchset looks good (I did a brief scan). I'll go ahead and play with it?
-> What is a good memory size to test the patches on (to see improvements).
+> Ah that I hadn't tested. I believe I might need to revert
+> 4b82b277707a39b97271439c475f186f63ec4692 too if later commits are applied
+> (but I'm still testing)
+> 
+>> and, btw, could you post your config, please?
+> 
+> http://sucs.org/~sits/test/config-20080526.txt
 
-The larger, the better.  One known problem with the current upstream
-VM is large numbers of anonymous pages, or a mix of mlocked and anon
-pages.
+OK applying the following patch (which is more or less a revert of 
+[4b82b277707a39b97271439c475f186f63ec4692]) resolves the problem:
 
-Once the system needs to swap something out, every single anon page
-will have the referenced bit set and the system needs to do lots of
-scanning before it can evict the first page.  This scanning causes
-multiple CPUs to pile up and things slow down exponentially and/or
-catastrophically :)
+diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
+index d99ee8a..c55519c 100644
+--- a/arch/x86/kernel/nmi.c
++++ b/arch/x86/kernel/nmi.c
+@@ -480,8 +480,12 @@ int proc_nmi_enabled(struct ctl_table *table, int write, struct file *file,
+                return -EIO;
+        }
+ 
+-       /* if nmi_watchdog is not set yet, then set it */
+-       nmi_watchdog_default();
++       if (nmi_watchdog == NMI_DEFAULT) {
++               if (lapic_watchdog_ok())
++                       nmi_watchdog = NMI_LOCAL_APIC;
++               else
++                       nmi_watchdog = NMI_IO_APIC;
++       }
+ 
+        if (nmi_watchdog == NMI_LOCAL_APIC) {
+                if (nmi_watchdog_enabled)
+diff --git a/include/asm-x86/nmi.h b/include/asm-x86/nmi.h
+index 1e8f34d..7cd5b6a 100644
+--- a/include/asm-x86/nmi.h
++++ b/include/asm-x86/nmi.h
+@@ -38,9 +38,11 @@ static inline void unset_nmi_pm_callback(struct pm_dev *dev)
+ 
+ #ifdef CONFIG_X86_64
+ extern void default_do_nmi(struct pt_regs *);
++extern void nmi_watchdog_default(void);
++#else
++#define nmi_watchdog_default() do {} while (0)
+ #endif
+ 
+-extern void nmi_watchdog_default(void);
+ extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
+ extern int check_nmi_watchdog(void);
+ extern int nmi_watchdog_enabled; 
 
-Unfortunately the largest system I have access to on a regular basis
-has "only" 16GB of RAM :(
-
-I am also making 2.6.25 based kernel RPMs available with the split LRU
-patch set, at http://people.redhat.com/riel/splitvm/
-
-The most recently posted patches are newer, though...
+The removal of extern void nmi_watchdog_default(void) and the inclusion
+of #define nmi_watchdog_default() do {} while (0) look suspicious (why
+would nmi_watchdog_default() need to be an infinite loop on 32 bit
+systems?).
 
 -- 
-All rights reversed.
+Sitsofe | http://sucs.org/~sits/
+
