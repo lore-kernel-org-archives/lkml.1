@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbYEZRDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbYEZRHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbYEZRDA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 13:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbYEZRCk
+	id S1756120AbYEZRHy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 13:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbYEZRHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 13:02:40 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:54092 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754010AbYEZRCi (ORCPT
+	Mon, 26 May 2008 13:07:44 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40646 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751414AbYEZRHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 13:02:38 -0400
-Date: Mon, 26 May 2008 13:01:48 -0400
-From: Theodore Tso <tytso@mit.edu>
+	Mon, 26 May 2008 13:07:43 -0400
+Date: Mon, 26 May 2008 09:24:07 -0700
+From: Arjan van de Ven <arjan@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Kara <jack@suse.cz>, Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
-Message-ID: <20080526170147.GB9893@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-	Jan Kara <jack@suse.cz>, Arjan van de Ven <arjan@linux.intel.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-References: <4836EE8C.1010200@linux.intel.com> <20080524222304.GD20563@atrey.karlin.mff.cuni.cz> <20080524153020.1df96cf2@linux.intel.com> <20080524224554.GA5970@mit.edu> <20080526093913.GG13529@elte.hu> <20080526101646.GD24507@mit.edu> <20080526104832.GG23261@elte.hu> <20080526162048.GH32407@duck.suse.cz> <20080526164858.GA24098@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080526164858.GA24098@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+Message-ID: <20080526092407.76df09d7@infradead.org>
+In-Reply-To: <20080526115628.GA31316@elte.hu>
+References: <20080526115628.GA31316@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 26, 2008 at 06:48:58PM +0200, Ingo Molnar wrote:
+On Mon, 26 May 2008 13:56:28 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> What if the USB stick was pulled mistakenly, the user notices her 
-> mistake later on and plugs the USB stick back in and expects all the 
-> data to not be corrupted?
+> in an overnight -tip testruns that is based on recent -git i got two 
+> stuck TCP connections:
+> 
+> Active Internet connections (w/o servers)
+> Proto Recv-Q Send-Q Local Address               Foreign
+> Address             State tcp        0 174592
+> 10.0.1.14:58015             10.0.1.14:3632              ESTABLISHED
+> tcp    72134      0 10.0.1.14:3632
+> 10.0.1.14:58015             ESTABLISHED 
+> 
+> on a previously reliable machine. That connection has been stuck for
+> 9 hours so it does not time out, etc. - and the distcc run that goes
+> over that connection is stuck as well.
+> 
 
-If the USB stack folks would like to work on how to recognize that
-it's the same USB stick that had been previously pulled, so that it
-gets the same block device, and we can decide for how long we should
-keep dirty buffers around associated with a pulled USB stick, we can
-certainly have that conversation.  :-)
+interestingly enough, I think I'm seeing something very similar to this
+with the claws email client; as of 2.6.26-rc3 (sorry, didn't run
+earlier ones because they broke my wireless) claws gets "stuck" once in
+a while, really stuck, when talking to the imap server.....
+It seems to happen a little less frequently when running under strace,
+but it still happens, so that could just be a timing thing.
 
-> And any such problems do come up in the enterprise space as well, in 
-> terms of multipath IO issues - and Linux still does quite poorly in that 
-> area.
-
-We definitely have problems here, I agree.  But at least with a
-multipath I/O device we have something that sticks around even when
-the last I/O path is pulled.  We could talk about setting up
-dm-multipath with USB, I suppose --- that would have the benefit of
-getting the dm-multipath code much more widely exercised without
-needing exotic (and expensive) hardware kit being required.
-
-	       	    	       		    	  - Ted
