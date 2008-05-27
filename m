@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYE0JB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYE0JBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbYE0JB0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 05:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbYE0JBQ
+	id S1757940AbYE0JBx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 05:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbYE0JBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 05:01:16 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:58255 "EHLO smtp6.pp.htv.fi"
+	Tue, 27 May 2008 05:01:42 -0400
+Received: from www.tglx.de ([62.245.132.106]:52446 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755853AbYE0JBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 05:01:15 -0400
-Date: Tue, 27 May 2008 11:58:30 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC: 2.6 patch] let GROUP_SCHED depend on BROKEN
-Message-ID: <20080527085830.GA20938@cs181133002.pp.htv.fi>
+	id S1757045AbYE0JBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 05:01:42 -0400
+Date: Tue, 27 May 2008 11:01:24 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Pavel Machek <pavel@suse.cz>
+cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, macro@ds2.pg.gda.pl
+Subject: Re: i8259: fix final uglyness
+In-Reply-To: <20080527085541.GA1708@elf.ucw.cz>
+Message-ID: <alpine.LFD.1.10.0805271100450.3295@apollo.tec.linutronix.de>
+References: <20080520151528.GA1596@elf.ucw.cz> <20080520204750.GA31409@elte.hu> <20080521094402.GB12763@elf.ucw.cz> <alpine.LFD.1.10.0805222030050.3295@apollo.tec.linutronix.de> <20080522223232.GA1602@elf.ucw.cz> <alpine.LFD.1.10.0805271043220.3295@apollo.tec.linutronix.de>
+ <20080527085541.GA1708@elf.ucw.cz>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I know that this is controversial, for further background please see the
-discussion in http://bugzilla.kernel.org/show_bug.cgi?id=10761
+On Tue, 27 May 2008, Pavel Machek wrote:
 
-Facts:
-- Bugzilla statistics
-  (not counting duplicate bugs and bugs closed as INVALID):
-  - 6 CPU scheduler regressions reported during 2.6.25-rc
-    1 of them still open as of 2.6.26-rc4
-  - 6 CPU scheduler regressions reported during 2.6.26-rc until now
-    5 of them still open as of 2.6.26-rc4
-  - at about half of the CPU scheduler regressions are related to
-    group scheduling
-- Peter Zijlstra said in Bugzilla bug #10761:
-  > Adrian Bunk said:
-  > The CPU scheduler is currently regressing horribly often, and half of the
-  > regressions are in group scheduling.
-  That is because group scheduling is horribly complex and was never
-  feature complete - trying to solve that is high on my list of
-  priorities.
+> On Tue 2008-05-27 10:46:17, Thomas Gleixner wrote:
+> > On Fri, 23 May 2008, Pavel Machek wrote:
+> > 
+> > > 
+> > > Introduce IRQx_VECTOR on 32-bit, so that #ifdef noise is kept
+> > > down. There should be no object code change.
+> > 
+> > Pavel,
+> > 
+> > thanks for doing this. The patch fails due to other changes in this
+> > area (especially the hw_irq.h unification). Can you please redo against:
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-x86.git;a=shortlog;h=x86/irq
+> > 
+> 
+> Will redoing against linux-x86-tip work?
+> 
+> tip git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
 
-My opinion:
-- features that alter existing kernel functionality should (different
-  from drivers for previously not supported hardware) be in a very good
-  state before being offered in stable kernels
-- Peter is wrong when he thinks that EXPERIMENTAL would somehow hide
-  known-problematic features - in practice nearly everyone has to have 
-  EXPERIMENTAL enabled (e.g. for some hardware driver)
-- group scheduling already has a history of people accidentally enabling 
-  it and then running into problems
+Sure, sorry had the wrong bookmark, but x86 points to tip now. 
 
-I therefore suggest this patch to let GROUP_SCHED depend on BROKEN.
+Thanks,
+	tglx
 
-Once it is feature complete and then got the usual testing through
--next I'll have no objections against offering it again to users.
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-c67cfbbb40895b72760865527dd1949631b1d183 diff --git a/init/Kconfig b/init/Kconfig
-index d9526b5..564deba 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -333,7 +333,7 @@ config HAVE_UNSTABLE_SCHED_CLOCK
- 
- config GROUP_SCHED
- 	bool "Group CPU scheduler"
--	depends on EXPERIMENTAL
-+	depends on BROKEN
- 	default n
- 	help
- 	  This feature lets CPU scheduler recognize task groups and control CPU
 
