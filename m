@@ -1,55 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYE0GUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYE0GWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbYE0GUp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 02:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbYE0GUO
+	id S1756923AbYE0GWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 02:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbYE0GWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 02:20:14 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:40595 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753749AbYE0GUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 02:20:10 -0400
-Message-ID: <483BA80C.4020502@krogh.cc>
-Date: Tue, 27 May 2008 08:19:56 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Tue, 27 May 2008 02:22:30 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:40343 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753661AbYE0GW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 02:22:28 -0400
+Date: Tue, 27 May 2008 08:21:53 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan problems
+Message-ID: <20080527062153.GA3651@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ayaz Abdulla <aabdulla@nvidia.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
+	linux-pm@lists.linux-foundation.org
+References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080518150908.GA4606@yamamaya.is-a-geek.org> <20080525150444.GA29739@yamamaya.is-a-geek.org> <20080525181329.GA5044@yamamaya.is-a-geek.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, matheos.worku@sun.com
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <20080526.123338.161271834.davem@davemloft.net>	<20080526.123951.260448303.davem@davemloft.net>	<483B239D.4090402@krogh.cc> <20080526.151540.191673092.davem@davemloft.net>
-In-Reply-To: <20080526.151540.191673092.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Disposition: inline
+In-Reply-To: <20080525181329.GA5044@yamamaya.is-a-geek.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jesper Krogh <jesper@krogh.cc>
-> Date: Mon, 26 May 2008 22:54:53 +0200
+Tobias Diedrich wrote:
+> Tobias Diedrich wrote:
+> > So my BIOS is not as borked as I thought and it should be possible
+> > to wake up the machine even with platform.  Further debugging will
+> > have to wait until at least next weekend though (maybe longer)...
 > 
->> Applied and running.. I've now pushed 400GB of data through it trying to
->> get it to hit the bug but it is still running.
->>
->> So without saying that it solved the problem, it definately seems so.
->> 2.6.26-rc4 + above patch.
+> Or maybe it doesn't have to wait, I was just too curious:
 > 
-> Thanks for testing.
+> Summary first: I got platform mode to work!
+> 
+> After grepping and reading through kernel/power/disk.c and
+> (rather obfuscated) drivers/acpi/.* code, and reading up on
+> ACPI _GPE (General Purpose Event?), and having a look at my DSDT I
+> noticed two things:
+> 
+> 1) The network controllers are assigned to their own _GPE bits(pins?):
+> |[...]
+> |    Scope (\_GPE)
+> |    {
+> |[...]
+> |        Method (_L0B, 0, NotSerialized)
+> |        {
+> |            Notify (\_SB.PCI0.MMAC, 0x02)
+> |        }
+> |
+> |        Method (_L0A, 0, NotSerialized)
+> |        {
+> |            Notify (\_SB.PCI0.MAC1, 0x02)
+> |        }
+> |[...]
+> 
+> 2) drivers/acpi/sleep/proc.c registers a 'wakeup' file:
+> |        proc_create("wakeup", S_IFREG | S_IRUGO | S_IWUSR,
+> |                    acpi_root_dir, &acpi_system_wakeup_device_fops);
+> 
+> And I then remembered that someone said in
+> http://bugzilla.kernel.org/show_bug.cgi?id=8381
+> it works for him if he writes $MAGICVALUE into a proc file.
+> 
+> And yes, if I write 'MMAC' and 'MAC1' into /proc/acpi/wakeup, then
+> wake-on-lan works even in platform mode.
+> 
+> So...
+> AFAICS this bit of setup magic should not be required, because:
+> 
+> 1) /proc/acpi/wakeup knows which pci device is associated to each GPE bit
+> |ranma@melchior:~$ cat /proc/acpi/wakeup 
+> |Device	S-state	  Status   Sysfs node
+> |HUB0	  S5	 disabled  pci:0000:00:06.0
+> |XVR0	  S5	 disabled  
+> |XVR1	  S5	 disabled  pci:0000:00:0e.0
+> |XVR2	  S5	 disabled  
+> |XVR3	  S5	 disabled  
+> |XVR4	  S5	 disabled  
+> |XVR5	  S5	 disabled  pci:0000:00:0a.0
+> |UAR1	  S5	 disabled  pnp:00:09
+> |PS2K	  S4	 disabled  pnp:00:0b
+> |USB0	  S4	 disabled  pci:0000:00:02.0
+> |USB2	  S4	 disabled  pci:0000:00:02.1
+> |AZAD	  S5	 disabled  pci:0000:00:06.1
+> |MMAC	  S5	 enabled   pci:0000:00:08.0
+> |MAC1	  S5	 enabled   pci:0000:00:09.0
+> (values after manually enabling MMAC and MAC1)
+> 
+> 2) kernel/power/disk.c calls hibernation_ops->enter(), which is
+> acpi_suspend_enter, which calls acpi_enable_wakeup_device, which
+> sets up GPE wakup bits.  This _should_ take care of enabling MMAC
+> and MAC1 automatically, but apparently does not work correctly at
+> some point.
+> 
+> I guess someone more knowledgable in ACPI stuff should have a look
+> at this.
 
-Ok. I was too early out.. it ended up in the same situation again.
+Any reason this patch hasn't made it into the kernel so far?
+http://lists.laptop.org/pipermail/devel/2007-April/004691.html
 
-May 27 08:09:12 hest kernel: [42953871.982072] NETDEV WATCHDOG: eth4: 
-transmit timed out
-May 27 08:09:17 hest kernel: [42953877.827797] NETDEV WATCHDOG: eth4: 
-transmit timed out
-May 27 08:09:22 hest kernel: [42953883.958375] NETDEV WATCHDOG: eth4: 
-transmit timed out
-May 27 08:09:27 hest kernel: [42953890.668401] NETDEV WATCHDOG: eth4: 
-transmit timed out
+(Ok, I tried getting it to apply to a current kernel, but it
+a splodes (reboots instead of powering off, last message on the
+serial console is "ACPI handle has no context!", see below))
+
+The platform_enable_wakeup() hook is still there, but unused.
+AFAICS this patch should solve the "'ethtool -s eth0 wol g' doesn't
+suffice, I also have to write magic values into /proc/acpi/wakeup"
+issue.
+
+[14315431.627226] PM: Hibernation mode set to 'platform'
+[14315431.639031] PM: Marking nosave pages: 000000000009f000 - 0000000000100000
+[14315431.646879] PM: Basic memory bitmaps created
+[14315431.651822] PM: Syncing filesystems ... done.
+[14315431.660495] Freezing user space processes ... (elapsed 0.00 seconds) done.
+[14315431.669364] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) 
+[14315431.677609] PM: Shrinking memory... done (0 pages freed)
+[14315431.924310] PM: Freed 0 kbytes in 0.24 seconds (0.00 MB/s)
+[14315431.932191] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+[14315431.938679] ACPI handle has no context!
+[14315432.534157] serial 00:09: activated
+[14315432.539218] sd 0:0:0:0: [sda] Starting disk
+[14315432.749996] PM: writing image.
+[14315432.775321] PM: Free swap pages: 977947
+[14315432.779662] PM: Saving image data pages (72491 pages) ... done
+[14315436.437643] PM: Wrote 289964 kbytes in 3.65 seconds (79.44 MB/s)
+[14315436.444385] PM: S|
+[14315436.840487] ohci_hcd 0000:00:02.0: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
+[14315436.854132] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+[14315436.859325] sd 0:0:0:0: [sda] Stopping disk
+[14315437.284158] ACPI handle has no context!
+^@[    0.000000] Linux version 2.6.26-rc2 (ranma@melchior) (gcc version 4.2.3 (Debian 4.2.3-5)) #8 PREEMPT Tue May 27 00:03:20 CEST 2008
+[    0.000000] Command line: root=/dev/sda5 resume=/dev/sda6 vga=6 apic=verbose console=ttyS0,115200 console=tty0 pci=nomsi no_console_suspend ro
 
 
-Jesper
 -- 
-Jesper
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
