@@ -1,153 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbYE0NAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYE0NCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507AbYE0NAs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 09:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYE0NAh
+	id S1757780AbYE0NCt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 09:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbYE0NCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 09:00:37 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:50790 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756809AbYE0NAg (ORCPT
+	Tue, 27 May 2008 09:02:42 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:33853 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756153AbYE0NCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 09:00:36 -0400
-Message-ID: <483C059B.9040301@linux.vnet.ibm.com>
-Date: Tue, 27 May 2008 18:29:07 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 27 May 2008 09:02:41 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-8.tower-164.messagelabs.com!1211893359!10047004!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Tue, 27 May 2008 15:02:36 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+CC: <linux-kernel@vger.kernel.org>
+Subject: configure gpio for interrupt function
+Message-ID: <20080527130236.GA18546@digi.com>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       Michael Neuling <mikey@neuling.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526085000.33787eac@infradead.org> <483AF25B.6090806@linux.vnet.ibm.com> <20080526110040.5ddc4656@infradead.org> <483B0348.2000204@linux.vnet.ibm.com> <20080526115108.6a19e2c0@infradead.org>
-In-Reply-To: <20080526115108.6a19e2c0@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 27 May 2008 13:02:36.0450 (UTC) FILETIME=[EF69A820:01C8BFF9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 27 May 2008 00:06:56 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> Arjan van de Ven wrote:
->>> On Mon, 26 May 2008 22:54:43 +0530
->>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->>>> Arjan,
->>>>
->>>>
->>>> These problems exist anyway, irrespective of scaled accounting (I'd
->>>> say that they are exceptions)
->>>>
->>>> 1. The management tool does have access to the current frequency
->>>> and maximum frequency, irrespective of scaled accounting. The
->>>> decision could still be taken on the data that is already
->>>> available and management tools can already use them 
->>> it's sadly not as easy as you make it sound. From everything you
->>> wrote you're making the assumption "if we're not at maximum
->>> frequency, we have room to spare", which is very much not a correct
->>> assumption
->>>
->> That's true in general. If the CPUs are throttled due to overheating,
->> the system management application will figure out that it cannot
->> change the frequency. 
-> 
-> It's not the system management application but the kernel (and the
-> hardware! Esp in case of IDA) that manage the frequency. 
-> 
->> How do I interpret my CPU frequency applet's
->> data when it says that the system is running at 46%?
-> 
-> That is a very good question. The answer is "uhh badly". Sad but true.
-> I'm not arguing against that.
-> The problem I have is that what you're doing does not make it better!
-> 
+Hello David,
 
-Well, how do we make that problem better? Do you have a solution in mind? Many
-of us can live and interpret the data we see - I know that I am running at 46%
-of the maximum potential capacity at this moment.
+I want to use a driver that in turn uses the gpio API (i.e.
+drivers/input/keyboard/gpio_keys.c).  My problem with that is, that my
+machine[1]'s external irqs don't fit into the GPIO API model.  The main
+problem is that gpio_direction_input isn't enough to get an irq.
+I need to explicitly set the gpio to an EXT_IRQ function.
+(I can workaround that because the EXT_IRQ function allows to read the
+state of the gpio.  So I can use the EXT_IRQ function if input is
+requested.)
 
->>>> 2. With IDA, we'd have to
->>>> document that APERF/MPERF can be greater than 100% if the system is
->>>> overclocked.
->>>>
->>>> Scaled accounting only intends to provide data already available.
->>>> Interpretation is left to management tools and we'll document the
->>>> corner cases that you just mentioned.
->>> IDA is not overclocking, nor is it a corner case *at all*. It's the
->>> common case in fact on more modern systems. Having the kernel
->>> present "raw" data to applications that then have no idea how to
->>> really use it to be honest isn't very attractive to me as idea:
->>> you're presenting a very raw hardware interface that will keep
->>> changing over time in terms of how to interpret the data... the
->>> kernel needs to abstract such hard stuff from applications, not
->>> fully expose them to it. Especially since these things *ARE* tricky
->>> and *WILL* change. Future x86 hardware will have behavior that
->>> makes the "oh we'll document the corner cases" extremely
->>> unpractical. Heck, even todays hardware (but arguably not yet the
->>> server hardware) behaves like that. "Documenting the common case as
->>> corner case" is not the right thing to do when introducing some new
->>> behavior/interface. Sorry.
->> Before I argue against that, I would like to ask
->>
->> 1. How are APERF/MPERF be meant to be utilized?
-> 
-> It's meant to be used by the cpu frequency governors to figure out how
-> many actual cycles are actually used (esp needed in case of IDA).
-> 
->> 2. The CPU frequency driver/governer uses APERF/MPERF as well - we
->> could argue and say that it should not be using/exposing that data to
->> user space or using that data to make decisions.
-> 
-> that's a case where it really makes sense; it's the case where the
-> thing that controls the cpu P-state actually learns about how much work
-> was done to reevaluate what the cpu frequency should be going forward.
+Another problem is that I cannot implement irq_to_gpio correctly,
+because several gpio's share the same irq.
+(Note this makes the workaround above less reliable.  Consider two
+gpios sharing the same irq.  I cannot assert that only one of them can
+trigger the interrupt.)
 
-So why should the in kernel governor be the only one to do so. What if I wanted
-to write a user space governor that potentially wanted to do the same thing?
-How would it work? Why should the governor be the only one calculating how much
-work was done, why can't a user space application do the same thing?
+So I suggest to extend the gpio API with two functions like:
 
-> Eg it's a case of comparing actual frequency (APERF/MPERF) to see
-> what's useful to set next.
-> IDA makes this all needed due to the dynamic nature of the concept of
-> "frequency".
-> 
+	int gpio_direction_inputirq(unsigned gpio, unsigned flags);
+	void gpio_ackirq(unsigned gpio);
 
-Could you point me to the IDA specification, so that I can read and understand
-your concern better.
+with flags being similar to the IRQF_TRIGGER_* defines in
+include/linux/interrupt.h.  I need gpio_ackirq because ns9xxx requires
+that an edge triggered irq is acknowledged separatly in the "External
+Interrupt X Control register"[2].  (If you have better names ...)
 
->> 3. How do I answer the following problem
->>
->> My CPU utilization is 50% at all frequencies (since utilization is
->> time based), does it mean that frequency scaling does not impact my
->> workload?
-> 
-> without knowing anything else than this, then yes that would be a
-> logical conclusion: the most likely cause would be because your cpu is
-> memory bound. In fact, you could then scale down your cpu
-> frequency/voltage to be lower, and save some power without losing
-> performance. 
-> It's a weird workload though, its probably a time based thing where you
-> alternate between idle and fully memory bound loads.
-> 
-> (which is another case where your patches would then expose idle time
-> even though your cpu is fully utilized for the 50% of the time it's
-> running)
+Moreover this makes the API more flexible because the irq type can be
+configured.
 
-We expect the end user to see 50% as scaled utilization and 100% as normal
-utilization. We don't intend to remove tsk->utime and tsk->stime. Our patches
-intend to provide the data and not impose what control action should be taken.
+OTOH I'd like to deprecate irq_to_gpio.  $(git grep -l irq_to_gpio
+drivers) suggests that this function is only used in two places.  One of
+them[3] is AT91 specific, the other[4] seems specific for the
+RouterBoard 532.
+(There are some other users below arch/, but I expect no breakage here.
+I expect that every arch that uses the function have it implemented
+anyhow.)
+
+What do you think?
+
+Best regards
+Uwe
+
+[1] http://www.digi.com/products/embeddedsolutions/ns9215.jsp
+    Interesting sections are "Pinout -> General purpose I/O (GPIO)" and
+    "I/O Control Module".  E.g. GPIO4's func1 is "Ext Int Ch 2"
+[2] System Control Module -> External Interrupt 0­3 Control register
+[3] drivers/mmc/host/at91_mci.c
+[4] drivers/ata/pata_rb532_cf.c
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
