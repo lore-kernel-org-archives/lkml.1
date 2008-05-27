@@ -1,79 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbYE0Aem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYE0Ahr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbYE0Aem (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 20:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbYE0Aeb
+	id S1756002AbYE0Ahr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 20:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbYE0Ahj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 20:34:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:30995 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbYE0Aea (ORCPT
+	Mon, 26 May 2008 20:37:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49653 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYE0Ahj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 20:34:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=RtD2nVPrqWqZhBFLQOrD3NbiH9JhnOaQmBPyHfbuokWZF3HFW8rD+2AcSmoT/y9It
-	wCG05HSo77O+XibedUVwg==
-Message-ID: <da824cf30805261734g6dbd43yfda62124973b98cf@mail.gmail.com>
-Date: Mon, 26 May 2008 17:34:25 -0700
-From: "Grant Grundler" <grundler@google.com>
-To: "Mark Lord" <liml@rtr.ca>
-Subject: Re: Marvell 88SX7042 [4 Port SATA PCI-Express x4] Support/Questions
-Cc: "Justin Piszcz" <jpiszcz@lucidpixels.com>, "Jeff Garzik" <jeff@garzik.org>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-In-Reply-To: <4839A63E.4050409@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 26 May 2008 20:37:39 -0400
+Date: Mon, 26 May 2008 17:31:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080526173141.6fc8966e@infradead.org>
+In-Reply-To: <20080526172519.10d944ab@infradead.org>
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
+	<483B2A9B.4050007@krogh.cc>
+	<alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org>
+	<20080526172519.10d944ab@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.10.0805250757550.18572@p34.internal.lan>
-	 <4839A63E.4050409@rtr.ca>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 25, 2008 at 10:47 AM, Mark Lord <liml@rtr.ca> wrote:
-...
-> Sure, if the bus and memory are fast enough.  You'll hit the Linux/libata
-> transactions/sec limit at some point, but I don't know what that is.
->
-> Eg. Here's a 4X (I think) card in my PCIe video slot:
->
-> beefy:~# mdadm --create /dev/md0 --chunk=256 -l 0 --raid-devices=4
-> /dev/sd[bcde]
-> mdadm: array /dev/md0 started.
->
-> beefy:~# hdparm -t --direct /dev/sd[bcde] /dev/md0
->
-> /dev/sdb:
-> Timing O_DIRECT disk reads:  218 MB in  3.01 seconds =  72.46 MB/sec
->
-> /dev/sdc:
-> Timing O_DIRECT disk reads:  256 MB in  3.01 seconds =  85.00 MB/sec
->
-> /dev/sdd:
-> Timing O_DIRECT disk reads:  192 MB in  3.01 seconds =  63.79 MB/sec
->
-> /dev/sde:
-> Timing O_DIRECT disk reads:  256 MB in  3.01 seconds =  85.07 MB/sec
->
-> /dev/md0:
-> Timing O_DIRECT disk reads:  768 MB in  3.00 seconds = 255.69 MB/sec
+On Mon, 26 May 2008 17:25:19 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-The bottle neck here is with the four disks.
-Modern 1TB 7200 rpm disks have raw throughput rates up to around
-100MB/s. Anything in the last 4-5 years should do better than 60MB/s.
+> On Mon, 26 May 2008 14:42:37 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > 
+> > 
+> > On Mon, 26 May 2008, Jesper Krogh wrote:
+> > > 
+> > > I did get this one (which I didn't on 2.6.25.2)
+> > > 
+> > > [42949399.810959] ck804xrom ck804xrom_init_one(): Unable to
+> > > register resource 0x0000000000000000-0x00000000ffffffff - kernel
+> > > bug?
+> > 
+> > Something is trying to register a 4GB resource. That sounds
+> > unlikely (possible on a 64-bit PCI setup, but I think it's more
+> > likely to be some overflow of 0 in "unsigned int").
+> > 
+> > In fact, this seems to be due to some driver bug. It looks like we
+> > have
+> > 
+> > 	window->size = 0xffffffffUL - window->phys + 1UL;
+> > 
+> > and in order for window->size to be 0x100000000, that means that 
+> > window->phys has to be 0. Which looks impossible, or at least like 
+> > ent->driver_data is neither DEV_CK804 nor DEV_MCP55. Very odd.
+> > 
+> > The warning:
+> > 
+> > > [42949399.979924] WARNING: at arch/x86/mm/ioremap.c:159
+> > > __ioremap_caller+0x299/0x330()
+> > 
+> > is then just a result of the driver blindly continuing and trying
+> > to "ioremap()" the resource even though it's bogus and the resource 
+> > allocation failed.
+> > 
+> > In other words, that driver init routine is really bad about error 
+> > handling. Carl-Daniel? David?
+> > 
+> 
+> btw this guy has shown up on kerneloops.org a lot: 
+> http://www.kerneloops.org/searchweek.php?search=__ioremap_caller
+> where it's trying to map memory as uncachable, which is.. well nasty
+> (it seems to map not just the piece it needs, but more, and then turns
+> that "more" uncachable, even if the kernel is using it for "normal"
+> things)
 
-In theory, ~16 disks (4 disks per 7042 port using Port Mulitpliers),
-one should be able to hit 200+ MB/s per 7042 port and approach 900MB/s
-total. Getting more than 900Mb/s will depend on the chipset. IIRC, the
-MMRBC of 128 bytes will result in about 15% protocol overhead in the
-PCI-e link.
-Bigger PCI-e "burst" will result in dramatically less overhead (IIRC,
-256Byte == 9% overhead.)
+one thing to note: it only shows up on 64 bit kernels somehow...
+interesting.
 
-hth,
-grant
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
