@@ -1,67 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYE0Bw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYE0CIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYE0Bw4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 21:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYE0Bwr
+	id S1755958AbYE0CIu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 22:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYE0CIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 21:52:47 -0400
-Received: from fugue.toroid.org ([85.10.196.113]:59059 "EHLO fugue.toroid.org"
+	Mon, 26 May 2008 22:08:41 -0400
+Received: from ozlabs.org ([203.10.76.45]:49519 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752607AbYE0Bwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 21:52:46 -0400
-Date: Tue, 27 May 2008 07:22:43 +0530
-From: Abhijit Menon-Sen <ams@toroid.org>
-To: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesper Krogh <jesper@krogh.cc>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.26-rc4
-Message-ID: <20080527015243.GA19756@toroid.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <483B2A9B.4050007@krogh.cc> <alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org> <483B60DB.7020402@gmx.net> <483B6287.2000202@gmx.net>
+	id S1752864AbYE0CIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 22:08:40 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Michal Schmidt <mschmidt@redhat.com>
+Subject: Re: [PATCH] net: wireless: airo semaphore to mutex
+Date: Tue, 27 May 2008 11:17:22 +1000
+User-Agent: KMail/1.9.9
+Cc: Daniel Walker <dwalker@mvista.com>, linville@tuxdriver.com, matthew@wil.cx,
+       mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, arjan@infradead.org
+References: <20080522232103.120033152@mvista.com> <20080526192914.31045d09@brian.englab.brq.redhat.com>
+In-Reply-To: <20080526192914.31045d09@brian.englab.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <483B6287.2000202@gmx.net>
+Message-Id: <200805271117.23051.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At 2008-05-27 03:23:19 +0200, c-d.hailfinger.devel.2006@gmx.net wrote:
->
-> The change is
-> Signed-off-by: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-> in case someone makes a patch from it.
+On Tuesday 27 May 2008 03:29:14 Michal Schmidt wrote:
+> Mutexes are not allowed in interrupt context, not even mutex_trylock.
 
-Here you go.
+As an aside, does anyone know why?  I know the documentation says so, but it 
+wasn't immediately obvious to me.  I asked before to no response...
 
--- ams
-
-diff --git a/drivers/mtd/maps/ck804xrom.c b/drivers/mtd/maps/ck804xrom.c
-index 59d8fb4..effaf7c 100644
---- a/drivers/mtd/maps/ck804xrom.c
-+++ b/drivers/mtd/maps/ck804xrom.c
-@@ -331,15 +331,15 @@ static void __devexit ck804xrom_remove_one (struct pci_dev *pdev)
- }
- 
- static struct pci_device_id ck804xrom_pci_tbl[] = {
--	{ PCI_VENDOR_ID_NVIDIA, 0x0051, PCI_ANY_ID, PCI_ANY_ID, DEV_CK804 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0360, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0361, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0362, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0363, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0364, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0365, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0366, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
--	{ PCI_VENDOR_ID_NVIDIA, 0x0367, PCI_ANY_ID, PCI_ANY_ID, DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0051), .driver_data = DEV_CK804 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0360), .driver_data = DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0361), .driver_data = DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0362), .driver_data = DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0363), .driver_data = DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0364), .driver_data = DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0365), .driver_data = DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0366), .driver_data = DEV_MCP55 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0367), .driver_data = DEV_MCP55 },
- 	{ 0, }
- };
- 
+Thanks,
+Rusty.
