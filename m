@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYE0JqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756938AbYE0Jru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbYE0JqW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 05:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYE0JqM
+	id S1756938AbYE0Jru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 05:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYE0Jrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 05:46:12 -0400
-Received: from gw.goop.org ([64.81.55.164]:40088 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754370AbYE0JqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 05:46:11 -0400
-Message-ID: <483BD843.5080009@goop.org>
-Date: Tue, 27 May 2008 10:45:39 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@qumranet.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>
-Subject: Re: Question about interrupt routing and irq allocation
-References: <483B34CA.8000600@goop.org> <20080527083729.GF29246@elte.hu>
-In-Reply-To: <20080527083729.GF29246@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 27 May 2008 05:47:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49580 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754634AbYE0Jrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 05:47:42 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/Me2QSFrjM/37Juik2SeV0aYZdY9BF9aaAbfU/ow
+	NTjPwT+MHjx9ng
+Subject: Re: [RFC: 2.6 patch] let GROUP_SCHED depend on BROKEN
+From: Mike Galbraith <efault@gmx.de>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080527085830.GA20938@cs181133002.pp.htv.fi>
+References: <20080527085830.GA20938@cs181133002.pp.htv.fi>
+Content-Type: text/plain
+Date: Tue, 27 May 2008 11:47:38 +0200
+Message-Id: <1211881658.6742.20.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> hm, in theory the highest quality method would be to do this on the 
-> genirq level and register your own special "Xen irq-chip" methods. [see 
-> include/linux/irq.h's "struct irq_chip" and kernel/irq/*.c]
->   
 
-I already have one of those for pv guests, and I think I can reuse it 
-more or less unchanged.
+On Tue, 2008-05-27 at 11:58 +0300, Adrian Bunk wrote:
 
-> you can use set_irq_chip() to claim a specific irq and set up its 
-> handling at the highest level. That way you dont have to do anything in 
-> the x86 hw vector space at all and you'd avoid all the overhead and 
-> complications of x86 irq vectors. You can control how these interrupts 
-> are named in /proc/interrupts, etc.
->   
+> Once it is feature complete and then got the usual testing through
+> -next I'll have no objections against offering it again to users.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> c67cfbbb40895b72760865527dd1949631b1d183 diff --git a/init/Kconfig b/init/Kconfig
+> index d9526b5..564deba 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -333,7 +333,7 @@ config HAVE_UNSTABLE_SCHED_CLOCK
+>  
+>  config GROUP_SCHED
+>  	bool "Group CPU scheduler"
+> -	depends on EXPERIMENTAL
+> +	depends on BROKEN
+>  	default n
+>  	help
+>  	  This feature lets CPU scheduler recognize task groups and control CPU
 
-Yeah, that was my plan.
+FWIW, here's my NAK, and the grounds therefore:  Group scheduling
+clearly fits the current criteria for CONFIG_EXPERIMENTAL.  In-tree
+development is a necessary fact of life, and has always been a fact of
+life.  IMO, your attempt to change the rules is seriously misguided.
 
-> but this needs synchronization with all the other entities that claim 
-> specific irqs and expect to be able to get them. MSI already does that 
-> to a certain level, see arch_setup_msi_irq() / set_irq_msi(). But that 
-> wastes x86 vectors and we dont really want to waste them as you dont 
-> actually want to use any separate per irq hw vectoring mechanism for 
-> these interrupts.
->   
+<quote>
+config EXPERIMENTAL
+	bool "Prompt for non-development and/or absolutely complete code/drivers"
+	---help---
+	  Some of the various things that Linux supports (such as network
+	  drivers, file systems, network protocols, etc.) can be in a state
+	  of development where the functionality, stability, or the level of
+	  testing is not yet high enough for general use. This is usually
+	  known as the "alpha-test" phase among developers. If a feature is
+	  currently in alpha-test, then the developers usually discourage
+	  uninformed widespread use of this feature by the general public to
+	  avoid "Why doesn't this work?" type mail messages. However, active
+	  testing and use of these systems is welcomed. Just be aware that it
+	  may not meet the normal level of reliability or it may fail to work
+	  in some special cases. Detailed bug reports from people familiar
+	  with the kernel internals are usually welcomed by the developers
+	  (before submitting bug reports, please read the documents
+	  <file:README>, <file:MAINTAINERS>, <file:REPORTING-BUGS>,
+	  <file:Documentation/BUG-HUNTING>, and
+	  <file:Documentation/oops-tracing.txt> in the kernel source).
 
-OK.  So if I just used create_irq() that would get me an irq I can use, 
-but would also end up allocating a vector too.
+	  This option will also make obsoleted drivers available. These are
+	  drivers that have been replaced by something else, and/or are
+	  scheduled to be removed in a future kernel release.
 
-> So the most intelligent method would be to reserve the Linux irq itself 
-> but not the vector, i.e. allocate from irq_cfg[] in 
-> arch/x86/kernel/io_apic_64.c so that the irq number does not get reused 
-> - setting irq_cfg[irq].vector to -1 will achieve that.
->   
+	  Unless you intend to help test and develop a feature or driver that
+	  falls into this category, or you have a situation that requires
+	  using these features, you should probably say N here, which will
+	  cause the configurator to present you with fewer choices. If
+	  you say Y here, you will be offered the choice of using features or
+	  drivers that are currently considered to be in the alpha-test phase.
+</quote>
 
-I'm initially targeting 32-bit, though obviously I'd like something that 
-works for both 32 and 64 bit.  irq_cfg[] is missing in io_apic_32.c; 
-would I achieve the same effect by setting irq_vector[irq] = 0xff or 
-something?
+	-Mike
 
-Thanks,
-    J
