@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbYE0XSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbYE0XVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759410AbYE0XSQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 19:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYE0XSA
+	id S1759584AbYE0XVS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 19:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYE0XVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 19:18:00 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:2242 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbYE0XSA (ORCPT
+	Tue, 27 May 2008 19:21:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57474 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751616AbYE0XVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 19:18:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=Re4ZguBNuR2NOSh0CL8ZiVnH6miCrBcoln8zBtIvKYMDMDFsnGTkL3bueXxcUz+AL3dyhkyT/V2TH19WqQFkhAcVFC54psG6C5rEjfk/TKfaRMdcFcCzAcvpXzNEIOhxrutF5XuCUVVSdPMRsmJ7T9aCXwVUrErkJxZZ2dVMAiA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: I am a volunteer
-Date: Wed, 28 May 2008 01:14:07 +0200
-User-Agent: KMail/1.9.9
-Cc: "Davi Leal" <davi@leals.com>, linux-kernel@vger.kernel.org
-References: <200805251812.41552.davi@leals.com> <9a8748490805261434k24fef763r1de520053df8f8b0@mail.gmail.com>
-In-Reply-To: <9a8748490805261434k24fef763r1de520053df8f8b0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200805280114.07798.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 27 May 2008 19:21:04 -0400
+Date: Tue, 27 May 2008 16:20:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Taku Izumi <izumi.taku@jp.fujitsu.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ACPI: add DMI info to enable OSI(Linux) on
+ PRIMEQUEST
+Message-Id: <20080527162029.e549a226.akpm@linux-foundation.org>
+In-Reply-To: <483667A4.9000606@jp.fujitsu.com>
+References: <4816F9B9.3090609@jp.fujitsu.com>
+	<4836660B.3080406@jp.fujitsu.com>
+	<483667A4.9000606@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 May 2008, Jesper Juhl wrote:
-> 2008/5/25 Davi Leal <davi@leals.com>:
-> > Hi,
-> >
-> > I would like to carry out some easy task, as realize a clean up replacing the
-> > use of one old function for another new one.
-> >
-> > I do not have any problem with C, Git, etc.
-> >
-> > Please, let me know what I can do.
+On Fri, 23 May 2008 15:43:48 +0900
+Taku Izumi <izumi.taku@jp.fujitsu.com> wrote:
+
+> This patch adds DMI info to enable OSI(Linux) on PRIMEQUEST.
+> (PRIMEQUEST is ia64 machine.)
 > 
-> Start by reading Documentation/HOWTO in the source (can be found
-> online here if you prefer:
-> http://lxr.linux.no/linux+v2.6.24.3/Documentation/HOWTO ).
+> Signed-off-by: Taku Izumi <izumi.taku@jp.fujitsu.com>
+> 
+> ---
+>   drivers/acpi/blacklist.c |   14 ++++++++++++++
+>   1 file changed, 14 insertions(+)
+> 
+> Index: linux-2.6.25.4/drivers/acpi/blacklist.c
+> ===================================================================
+> --- linux-2.6.25.4.orig/drivers/acpi/blacklist.c
+> +++ linux-2.6.25.4/drivers/acpi/blacklist.c
+> @@ -626,6 +626,20 @@ static struct dmi_system_id acpi_osi_dmi
+>   		     DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
+>   		},
+>   	},
+> +	/*
+> +	 * Enable OSI(Linux) on Fujitsu PRIMEQUEST
+> +	 *
+> +	 * DMI_MATCH(DMI_BIOS_VERSION, "PRIMEQUEST"),
+> +	 *
+> +	 */
+> +	{
+> +	.callback = dmi_enable_osi_linux,
+> +	.ident = "Fujitsu PRIMEQUEST",
+> +	.matches = {
+> +		     DMI_MATCH(DMI_BIOS_VENDOR, "FUJITSU LIMITED"),
+> +		     DMI_MATCH(DMI_BIOS_VERSION, "PRIMEQUEST"),
+> +		},
+> +	},
+>   	{}
+>   };
 
-Nah, nowadays every new kernel diver should start with:
+It is unclear (to me) what the impact of this patch is.  Does it fix a
+problem which would justify including these patches in 2.6.26?
 
-"How to Dive with Sharks: a Primer" by Voltaire Cousteau 
+Also, your email client is performing space-stuffing.  That is easy
+enough to repair at this end (s/^ / /) but please do sort that out for
+next time.  http://mbligh.org/linuxdocs/Email/Clients/Thunderbird
+should help.
 
-http://www.mdaguam.com/divewithsharks.htm
-
-;-)
-
-Bart
+Thanks.
