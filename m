@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYE0Klt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYE0KnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYE0Klt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 06:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbYE0Klm
+	id S1757478AbYE0KnK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 06:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbYE0Km6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 06:41:42 -0400
-Received: from s200aog11.obsmtp.com ([207.126.144.125]:52743 "EHLO
-	s200aog11.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756226AbYE0Kll (ORCPT
+	Tue, 27 May 2008 06:42:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43705 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756338AbYE0Km5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 06:41:41 -0400
-X-Greylist: delayed 1775 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 May 2008 06:41:40 EDT
-Message-ID: <483BDE6A.8040404@st.com>
-Date: Tue, 27 May 2008 12:11:54 +0200
-From: Richard MUSIL <richard.musil@st.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with accessing stable git over http
-References: <47EA26E4.8060602@st.com> <20080404050718.GE23796@1wt.eu> <47F5E701.6020706@st.com> <4804A58E.5070104@st.com> <20080417212849.GA17653@kroah.com>
-In-Reply-To: <20080417212849.GA17653@kroah.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 27 May 2008 06:42:57 -0400
+Date: Tue, 27 May 2008 11:28:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] let GROUP_SCHED depend on BROKEN
+Message-ID: <20080527112812.63697b39@core>
+In-Reply-To: <20080527102654.GB20938@cs181133002.pp.htv.fi>
+References: <20080527085830.GA20938@cs181133002.pp.htv.fi>
+	<1211881658.6742.20.camel@marge.simson.net>
+	<20080527102654.GB20938@cs181133002.pp.htv.fi>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Greg,
+> - as long as we allow hardware drivers to depend on EXPERIMENTAL we
+>   force many users to enable EXPERIMENTAL
+> - the EXPERIMENTAL dependencies in many areas of the kernel are so
+>   out of sync with the actual code quality that the presence or absence
+>   of such a dependency isn't a clear indication of the current status
 
-it seems git-update-server-info should be run regularly, because it
-looks like right now I am stuck at v2.6.24.4 and I cannot get anything
-from 2.6.25.y stable branch - the time you probably run it.
-Could you please fix it?
+It would probably be very useful to actually do an assessment of what is
+marked experimental especially a cross compare with enterprise distros as
+what they ship they have reviewed and consider supportable.
 
-Richard
-
-On 17.4.2008 23:28, Greg KH wrote:
-> On Tue, Apr 15, 2008 at 02:54:38PM +0200, Richard MUSIL wrote:
->> Just to give an update on the topic. I tried to clone stable 2.6.24.y
->> branch and got a bit more info then on fetch:
->>
->>> rmusil@prglx09 ~ $ git clone http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.24.y.git linux-2.6.24.y
->>> Initialized empty Git repository in /home/rmusil/linux-2.6.24.y/.git/
->>> Cannot get remote repository information.
->>> Perhaps git-update-server-info needs to be run there?
->>> rmusil@prglx09 ~ $
->> This is from machine which is behind proxy, but I tried it from another
->> one, which has direct access and got exactly the same output.
->> Is it possible that perhaps git-update-server-info should be run there?
->> Who is responsible for the repository maintenance?
->> So far it looks like the http access is simply not set up on the repo,
->> even though it is advertised on project web page.
->>
->> Greg, could you help me with this?
-> 
-> I've now run git-update-server-info on that repo, let me know if that
-> solves the problem or not.
-> 
-> thanks,
-> 
-> greg k-h
-> 
+Alan
