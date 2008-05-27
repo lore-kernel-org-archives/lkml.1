@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbYE0XmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYE0Xma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760302AbYE0XmL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 19:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbYE0Xly
+	id S1757926AbYE0Xma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 19:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758356AbYE0XmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 19:41:54 -0400
-Received: from mga01.intel.com ([192.55.52.88]:53353 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754160AbYE0Xlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 19:41:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,551,1204531200"; 
-   d="scan'208";a="569321625"
-Date: Tue, 27 May 2008 16:32:51 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-Message-ID: <20080527163251.04054a74@appleyard>
-In-Reply-To: <20080527225926.GE6843@mit.edu>
-References: <20080508161008.59361de5@appleyard>
-	<20080527030854.GC7515@mit.edu>
-	<20080527143202.4bab5bf0@appleyard>
-	<20080527225926.GE6843@mit.edu>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 May 2008 19:42:10 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:11799 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760236AbYE0XmI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 19:42:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=igqAvgJPIzXeFuaOyhhMScl/KzHJGNXtXIDoCH6BJlyDTRQfTCMJd2gD9qu1rWl0lbvwqfzMl8MasPxpYxL4TzBb2g3xa8KyKWwQf9qrHmjjfdGJ9oCAlax1xpeQcnLsFbh9SUzDTgEpEXHqvC/tvZr/D5P9XH7arBNLkf88iRY=
+Message-ID: <12c511ca0805271641r68d50d3do9f6427a8dc6ad469@mail.gmail.com>
+Date: Tue, 27 May 2008 16:41:59 -0700
+From: "Tony Luck" <tony.luck@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] ACPI: add DMI info to enable OSI(Linux) on PRIMEQUEST
+Cc: "Taku Izumi" <izumi.taku@jp.fujitsu.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080527162029.e549a226.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4816F9B9.3090609@jp.fujitsu.com> <4836660B.3080406@jp.fujitsu.com>
+	 <483667A4.9000606@jp.fujitsu.com>
+	 <20080527162029.e549a226.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 1f1f9d52e0dba62c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 18:59:26 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+I'm not sure that sharing drivers/acpi/blacklist.c between different
+architectures is wise idea.  There are entries in there that make
+blanket decisions for all machines made by an OEM.
 
-> On Tue, May 27, 2008 at 02:32:02PM -0700, Kristen Carlson Accardi wrote:
-> > 
-> > As far as I know the patch has gone nowhere.  I believe that 
-> > Jeff wanted something more flexible than the module parameter that
-> > I provided to override the BIOS options.  I am not working on this,
-> > I figured he had a pretty firm idea what he wanted so he was better
-> > equipped to write the patch.
-> 
-> Thanks Kristen,
-> 
-> Can you say which laptops you had tested this on where it saved power?
-> (Did you test any Thinkpads, in particular?)  I'm wondering if it's
-> worth trying to forward port your patch as a private mod to my kernel;
-> 30 to 40 minutes of extra battery life is nothing to sneeze at!
-> 
-> 						- Ted
-> 
+It seems quite possible that an OEM that makes boxes using
+different processor architectures might make different mistakes
+in the respective BIOS teams.
 
-I tested this on an Intel mobile software development platform 
-with a newer mobile ICH - the power savings were measured at the actual 
-component (via probes on the ICH), so I did not measure the power 
-savings at the wall socket, although I would expect the power savings
-to be even greater on the other side of the power supply.  So in short,
-yes, I think it's worth it to give it a try - the patch is pretty
-unintrusive, so it should be that difficult a port to do.
-
+-Tony
