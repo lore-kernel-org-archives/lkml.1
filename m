@@ -1,68 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYE0RlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbYE0Rls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbYE0RlR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 13:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbYE0Rkt
+	id S1758483AbYE0Rls (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 13:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbYE0Rlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 13:40:49 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:34072 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755516AbYE0Rkg convert rfc822-to-8bit (ORCPT
+	Tue, 27 May 2008 13:41:36 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48732 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754795AbYE0Rlg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 13:40:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gplQ75ZVXgh+Wi9KAAj/hmcnB0gGkYsBC2OwMF2m6PaUcQw1vYFDU4KiuNMl0YHtUhT2K0KFkh8PSsO8t3L3pWfvJdU2BQtn9ydOUbQ7kTRprDJxEsMBjlcJHIlz1GhxB1FbTpcpcVDVOVt+YuhxRl837UI5dYurtxSWJySiMTU=
-Message-ID: <40f323d00805271040xcabb660obf8f0a69f9e850b5@mail.gmail.com>
-Date: Tue, 27 May 2008 19:40:32 +0200
-From: "Benoit Boissinot" <bboissin@gmail.com>
-To: "=?ISO-8859-1?Q?N=E9stor_Amigo_Cairo?=" <nestorac@gmail.com>
-Subject: Re: QUESTION: How can I make a driver for a special serial keyboard which also supports output (maybe via serio_raw)?
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       samuel.thibault@ens-lyon.org
-In-Reply-To: <b321594e0805271027w4f4f003ar20ad0eb95f57721a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 May 2008 13:41:36 -0400
+Message-Id: <1211910094.13064.1255315907@webmail.messagingengine.com>
+X-Sasl-Enc: G2LzJFOZfSkARvwKuC2lOJfpIU7hvLIqYHb892VthCPG 1211910094
+From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+To: "Ivo van Doorn" <ivdoorn@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>,
+       "Dmitry Torokhov" <dtor@mail.ru>
 Content-Disposition: inline
-References: <b321594e0805250952q18465dc2h8af60aa25143693d@mail.gmail.com>
-	 <20080527084431.ZZRA012@mailhub.coreip.homeip.net>
-	 <b321594e0805271025ia60c356hc19a040920587713@mail.gmail.com>
-	 <b321594e0805271027w4f4f003ar20ad0eb95f57721a@mail.gmail.com>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
+   <200805231615.33414.IvDoorn@gmail.com>
+   <1211897317.22073.1255269155@webmail.messagingengine.com>
+   <200805271638.04290.IvDoorn@gmail.com>
+Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL RADIOS
+   OFF
+In-Reply-To: <200805271638.04290.IvDoorn@gmail.com>
+Date: Tue, 27 May 2008 14:41:34 -0300
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[please keep the cc list and reply to all]
+On Tue, 27 May 2008 16:38:04 +0200, "Ivo van Doorn" <ivdoorn@gmail.com> said:
+> > So yes, I do feel RFKILL_ALL is different, and it warrants EPO semanthics in
+> > the kernel, while all other rfkill events, such as KEY_WLAN, don't.
+> > 
+> > I don't feel strongly about not giving EPO semanthics to other rfkill events,
+> > but I recommend against giving anything else EPO semanthics in rfkill.
+> 
+> You just made my 2 laptops very happy because apparently they
+> don't behave like most keys do. ;)
+> 
+> Laptop 1)
+> 	- Key to control WLAN (Broadcom)
+> 	- Key to control Bluetooth (Broadcom??)
+> Laptop 2)
+> 	- Key to control WLAN (Intel)
 
-On Tue, May 27, 2008 at 7:27 PM, Néstor Amigo Cairo <nestorac@gmail.com> wrote:
-> I have been thinking on it, but it's easier to reimplement some
-> widgets on Qt for just three keys (I can reuse them easily because of
-> OOP), than managing focus on every widget communicating the
-> application directly with the serial port (I've been using a switch
-> structure for this purpose, which is not very kindly). I saw the
-> device as a keyboard with just three keys and which can also receive
-> some bytes from the application. This makes debugging and testing much
-> easier than dealing directly with the serial interface for changing
-> the focus and managing the application. The only problem is that a
-> driver must be written for the device, but my long-term idea is to
-> write some kind of programmable driver, so it could be reused easily
-> (by instance, assigning a matrix of values to binary data sent to the
-> serial port, and converting those bytes into Keys using these values,
-> as in the original driver, but allowing userspace apps to change this
-> behaviour). I'm not sure if it would be helpful for anyone else. And I
-> also lack any knowledge of the kernel internals, as you can see.
+You don't have a SW_RFKILL_ALL switch :-)   It is the same as my ThinkPad T43,
+it does *NOT* have a SW_RFKILL_ALL switch, and it has a wireless config hotkey,
+which is handled in firmware.  The firmware can wire-kill the Intel WLAN card,
+and it can also unplug(!) the internal Bluetooth device from the internal USB
+bus.
 
-If you just want to use it in X, then you could use ttyx (you can find
-it at http://youpibouh.thefreecat.org/download/) It translates events
-from the serial device to X keyboard event, it was developped by
-Samuel for a similar project (a device with a couple buttons that sends
-the key via a serial port).
-I thinks it would be quite easy to add a table to translate to a different
-key if you need that.
+You'd typically assign KEY_WLAN or something else to those keys, but NOT a 
+(fictitious) KEY_RFKILL_ALL.
 
-regards,
+So, my ThinkPad T43 would NEVER issue *_RFKILL_ALL events by default.
 
-Benoit
+> And each key really controls the hardware, without any software required.
+
+Works just like a ThinkPad before you set its hotkey mask to request the firmware
+to hands-off the hotkeys, then.
+
+> Especially for Laptop one it will not be nice to attack RFKILL_ALL to
+> both keys,
+> since both control specific radio types.
+
+Those keys definately are *NOT* to have *_RFKILL_ALL attached to them by default,
+I agree.
+
+> key or not. Perhaps you do know with some hardware like thinkpad, but
+> with my second laptop for example, it only has 1 kind of radio and that 
+> is WLAN it also has 1 key.
+> When it is pressed, you simply don't know if it is switched off because
+> of the no-RF area or to powersave.
+
+Then you assume it is just a normal key.  If the user wants to promote that
+key to the Wireless EPO key, he changes the default assignment of KEY_WLAN to
+KEY_RFKILL_ALL (although I didn't propose a KEY_RFKILL_ALL yet).
+
+> With my first laptop, the broadcom WLAN driver will register the key, but
+> it doesn't know if it is alone or if Bluetooth hardware is also present. So
+> it cannot know if it is a master switch or not.
+
+Correct.
+
+This is *explicitly* documented by the patches.  The broadcomm driver has to assume
+it is a slave rfkill device, and NEVER report any input events.  It has no knowledge
+of which platform the broadcomm chip was installed into, after all.  OTOH, it *will*
+report the status change through the rfkill notify chain and also through the rfkill
+uevents, and either a platform module for your laptop, or HAL (in userspace) can
+trap those, and issue the relevant input events.
+
+*IF* you get the events only through the broadcomm device, that is. If you get them
+from ACPI as well, you probably want to let the ACPI driver issue the input events.
+
+> > But of course, you have to make sure the master switch WILL bloody well stay off
+> > when off by design.  You engineer it so that all possible failure modes will
+> > cause it to go to the off state.
+> > 
+> > I would really appreciate that the rfkill class would abide to this UI notion for
+> > the master rfkill events (*_RFKILL_ALL).
+> 
+> Such a thing would indeed be nice, as long as you can positively identify
+> a master switch,
+> but as long as that is not possible/implemented it will only be confusing
+> for driver developers,
+> userspace developers and the users.
+
+We document it *throughoutly*, and add a big fat warning about the misuse of
+RFKILL_ALL.   It should be enough.   Will you consider ACKing a new version of
+the patchset which documents better the *_RFKILL_ALL events?
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
+
