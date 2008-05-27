@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbYE0KnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbYE0Kpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbYE0KnK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 06:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbYE0Km6
+	id S1755880AbYE0Kpd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 06:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbYE0Kp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 06:42:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43705 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756338AbYE0Km5 (ORCPT
+	Tue, 27 May 2008 06:45:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43482 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756268AbYE0Kp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 06:42:57 -0400
-Date: Tue, 27 May 2008 11:28:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] let GROUP_SCHED depend on BROKEN
-Message-ID: <20080527112812.63697b39@core>
-In-Reply-To: <20080527102654.GB20938@cs181133002.pp.htv.fi>
-References: <20080527085830.GA20938@cs181133002.pp.htv.fi>
-	<1211881658.6742.20.camel@marge.simson.net>
-	<20080527102654.GB20938@cs181133002.pp.htv.fi>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 May 2008 06:45:26 -0400
+Date: Tue, 27 May 2008 12:46:13 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: [patch] hint users about no_console_suspend option
+Message-ID: <20080527104613.GA13026@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - as long as we allow hardware drivers to depend on EXPERIMENTAL we
->   force many users to enable EXPERIMENTAL
-> - the EXPERIMENTAL dependencies in many areas of the kernel are so
->   out of sync with the actual code quality that the presence or absence
->   of such a dependency isn't a clear indication of the current status
 
-It would probably be very useful to actually do an assessment of what is
-marked experimental especially a cross compare with enterprise distros as
-what they ship they have reviewed and consider supportable.
+Hint user about no_console_suspend option, so that we don't have to
+tell each bug reporter personally.
 
-Alan
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+---
+commit 017834f8541b8ded8ef831e5fe2b5f9cead4f6b0
+tree 80c244e45acfbd1c1e8883f12021683f15356c4e
+parent cc8201de538dda6c17e03fe495146e7fc755f64d
+author Pavel <pavel@amd.ucw.cz> Tue, 27 May 2008 12:45:26 +0200
+committer Pavel <pavel@amd.ucw.cz> Tue, 27 May 2008 12:45:26 +0200
+
+ kernel/printk.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 8fb01c3..6e04669 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -950,7 +950,7 @@ void suspend_console(void)
+ {
+ 	if (!console_suspend_enabled)
+ 		return;
+-	printk("Suspending console(s)\n");
++	printk("Suspending console(s) (no_console_suspend to debug?)\n");
+ 	acquire_console_sem();
+ 	console_suspended = 1;
+ }
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
