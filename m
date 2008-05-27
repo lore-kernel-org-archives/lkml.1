@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbYE0NeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbYE0Nf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbYE0NeD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 09:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbYE0Ndz
+	id S1758125AbYE0Nf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 09:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbYE0NfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 09:33:55 -0400
-Received: from el-out-1112.google.com ([209.85.162.181]:62805 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754835AbYE0Ndy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 09:33:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=mrcHuWjCPgihKwGXeetIQKCyCpz/BBN6ay3JkfQu3nfKiC0fzzHW3I5vr8rJDTBpapeIhVX7eDzlHL5EgV0UceMYM+WO+1etto5gWXwghKgq3A9DczKlQmekBPubFg0e+ZC6WON2XY+cqOU1+lCpoZQUFjMx8N28Wo1HzdG8dag=
-Message-ID: <483C0DBF.6030702@gmail.com>
-Date: Tue, 27 May 2008 15:33:51 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 27 May 2008 09:35:14 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:16317 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757406AbYE0NfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 09:35:13 -0400
+Date: Tue, 27 May 2008 15:35:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: torvalds@osdl.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com
+Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
+Message-ID: <20080527133510.GV7712@kernel.dk>
+References: <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru> <20080429062116.GA5059@martell.zuzino.mipt.ru> <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-To: "Noel (Sourceforge)" <noelb@users.sourceforge.net>
-CC: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: PROBLEM: Serial error
-References: <1211836442.5745.1.camel@roswell.ausics.net> <483B3B7C.1000306@gmail.com> <483C0CDD.2000409@gmail.com>
-In-Reply-To: <483C0CDD.2000409@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080527052740.GB28301@martell.zuzino.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby napsal(a):
->>> 01:0c.0 Serial controller: PLX Technology, Inc. PCI <-> IOBus Bridge
->>> (rev 01) (prog-if 00 [8250])
->>>         Subsystem: Stallion Technologies, Inc. Unknown device f010
->>
->> Do you have some patched driver or whatever, that this binds?
+On Tue, May 27 2008, Alexey Dobriyan wrote:
+> On Sat, May 10, 2008 at 02:37:19PM +0400, Alexey Dobriyan wrote:
+> > > > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
+> > > > > >  		rcu_read_lock();
+> > > > > >  		if (ioc->aic && ioc->aic->dtor)
+> > > > > >  			ioc->aic->dtor(ioc->aic);
+> > > > > > -		rcu_read_unlock();
+> > > > > >  		cfq_dtor(ioc);
+> > > > > > +		rcu_read_unlock();
+> > > > > >  
+> > > > > >  		kmem_cache_free(iocontext_cachep, ioc);
+> > > > > >  		return 1;
+> > > > > 
+> > > > > This helps in sense that 3 times bulk cross-compiles finish to the end.
+> > > > > You'll hear me if another such oops will resurface.
+> > > > 
+> > > > Still looking good?
+> > > 
+> > > Yup!
+> > 
+> > And this with patch in mainline, again with PREEMPT_RCU.
+> 
+> Ping, this happened again with 2.6.26-rc4 and PREEMPT_RCU.
 
-And please post
-lspci -vvxxs 01:0c.0
+Worrisome... Paul, would you mind taking a quick look at cfq
+and see if you can detect why breaks with preempt rcu? It's
+clearly a use-after-free symptom, but I don't see how it can
+happen.
 
-I didn't get how this binds to *stallion drivers.
+-- 
+Jens Axboe
+
