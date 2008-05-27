@@ -1,167 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759435AbYE0Uvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbYE0U7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759435AbYE0Uvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 16:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbYE0Uvf
+	id S1759217AbYE0U7q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 16:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbYE0U7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 16:51:35 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:38259 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757976AbYE0Uvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 16:51:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=QtfljkSb9pgfMs8psFcl0wPvL6LurlBOrKEs0RRXHHOWJWZ6Nrc1S8jdWP7vdm4GR4NyVpeMzfVFjULFhYzqIoEUm6yrNj+Bc69NoTDsb+8Eik9+z0zrl1/Jnob7q3NzEsdX+Agm/0Oy4FJzdBlbSytxJUEUgOQ5eoZWkLQAYuI=  ;
-X-YMail-OSG: lzav9wYVM1lRDbg3pLAMWm9ifAm6Ga4SEuA3Dz3BVP4S_SDv0Vdc1GqUxwGWhXrZf244130UqbUQm2FIHRP6O0FwzeoDDBm.KuCelxfSk6D5ZORc5pwZA5t3295noQl9I0jLxFkOxMuIBDr3KbtqrDmc
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: configure gpio for interrupt function
-Date: Tue, 27 May 2008 13:49:24 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <20080527130236.GA18546@digi.com>
-In-Reply-To: <20080527130236.GA18546@digi.com>
+	Tue, 27 May 2008 16:59:36 -0400
+Received: from www.tglx.de ([62.245.132.106]:43966 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757958AbYE0U7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 16:59:36 -0400
+Date: Tue, 27 May 2008 22:58:37 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
+In-Reply-To: <483C70F9.2030901@goop.org>
+Message-ID: <alpine.LFD.1.10.0805272256240.21533@apollo.tec.linutronix.de>
+References: <200805110030.15510.yhlu.kernel@gmail.com> <200805180118.57863.yhlu.kernel@gmail.com> <200805211840.18619.yhlu.kernel@gmail.com> <200805251000.10205.yhlu.kernel@gmail.com> <alpine.LFD.1.10.0805271744080.3295@apollo.tec.linutronix.de>
+ <483C70F9.2030901@goop.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200805271349.24884.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 May 2008, Uwe Kleine-König wrote:
-> Hello David,
-> 
-> I want to use a driver that in turn uses the gpio API (i.e.
-> drivers/input/keyboard/gpio_keys.c).  My problem with that is, that my
-> machine[1]'s external irqs don't fit into the GPIO API model.  The main
-> problem is that gpio_direction_input isn't enough to get an irq.
-> I need to explicitly set the gpio to an EXT_IRQ function.
+On Tue, 27 May 2008, Jeremy Fitzhardinge wrote:
+> Thomas Gleixner wrote:
+> > On Sun, 25 May 2008, Yinghai Lu wrote:
+> >   
+> > > remove extra -1 in reseve_early calling
+> > >     panic if can not find space for new RAMDISK
+> > > 
+> > >     
+> > 
+> > Thanks, applied on top of the v2 update
+> > 
+> > 	tglx
+> >   
+> This patch is still required to make Xen boot with the e820 changes:
 
-Let me describe your situation a bit differently:  the GPIO
-hardware on your platform doesn't support IRQs, so you want to
-overlay the EXT_IRQ functions as transparently as you can.
+Ok. This one was not in the queue you sent ?
 
-I don't happen to have come across GPIO controllers without
-IRQ support before, unless maybe you consider PXA to work
-like that.  (PXA docs write "GPIO" most places it'd be more
-clear to say "pin", so that's highly confusing.)  I've used
-systems with EXT_INT function options on pins that support
-full GPIO functionality (including pin change IRQs) though.
+Will pick it up.
 
-
-> (I can workaround that because the EXT_IRQ function allows to read the
-> state of the gpio.  So I can use the EXT_IRQ function if input is
-> requested.)
-
-That's part of the reason pinmux and GPIO are orthogonal!
-Your platforms GPIO code can treat EXT_INT pins as input
-GPIOs; it has no reason to care.
-
-So the *cleanest* way to handle this would be as an EXT_IRQ with
-an affiliated GPIO signal, instead of a single funky GPIO.  That
-mapping could be done by gpio_to_irq().
-
-An alternate implementation would make the irq_chip for those GPIOs
-understand the GPIO-to-EXT_IRQ mappings, and use them for those
-pins that are inputs *and* have request_irq() called.  It sounds
-as messy as I'm sure the code would be.
-
-
-> Another problem is that I cannot implement irq_to_gpio correctly,
-> because several gpio's share the same irq.
-
-Sure, no problem.  irq_to_gpio() can't succeed for all GPIOs.
-On your platform, I might be inclined to make it fail in all
-cases to force drivers to record both IRQ and GPIO.
-
-(And yes, that implies gpio_keys needs to generalize a bit.
-Right now it assumes a one-to-one mapping.)
-
-
-> (Note this makes the workaround above less reliable.  Consider two
-> gpios sharing the same irq.  I cannot assert that only one of them can
-> trigger the interrupt.)
-
-This is another reason to prefer the "cleanest" solution above.
-Drivers could request_irq() the EXT_IRQ(N) signal as IRQF_SHARED,
-and the handler could check the relevant IRQ as needed.
-
-Of course, this may require code using your platform to know
-that it needs to track two values (EXT_IRQ and GPIO) not one.
-
-
-> So I suggest to extend the gpio API with two functions like:
-> 
-> 	int gpio_direction_inputirq(unsigned gpio, unsigned flags);
-> 	void gpio_ackirq(unsigned gpio);
-> 
-> with flags being similar to the IRQF_TRIGGER_* defines in
-> include/linux/interrupt.h.  I need gpio_ackirq because ns9xxx requires
-> that an edge triggered irq is acknowledged separatly in the "External
-> Interrupt X Control register"[2].  (If you have better names ...)
-> 
-> Moreover this makes the API more flexible because the irq type can be
-> configured.
-
-I don't see a need to extend the API.  The current APIs will do what
-you need, if you use them correctly:
-
-  - gpio_to_irq() encapsulates your CPU's EXT_IRQ(x) pinmux logic;
-    possibly just a table lookup.
-
-  - irq_to_gpio() may fail in all cases
-
-  - request_irq() kicks in irq_chip logic to ensure that the pin
-    is either input GPIO (and remuxes it) or already EXT_INT ...
-
-  - free_irq() can remux EXT_INT as GPIO, if it changed muxing in
-    the first place.  (so gpio_direction_output can work, later.)
-
-  - set_irq_type() configures the IRQ type via irq_chip hooks
-
-Right?
+Thanks,
+	tglx
 
  
-> OTOH I'd like to deprecate irq_to_gpio.  $(git grep -l irq_to_gpio
-> drivers) suggests that this function is only used in two places.  One of
-> them[3] is AT91 specific, the other[4] seems specific for the
-> RouterBoard 532.
-> (There are some other users below arch/, but I expect no breakage here.
-> I expect that every arch that uses the function have it implemented
-> anyhow.)
-
-That's true for that AT91 case, for example.
-
-
-> What do you think?
-
-Deprecating irq_to_gpio() seems a bit strong to me, but maybe that's
-because I've never worked on hardware that can't support it.  ISTR that
-Russell King disliked it a lot, but couldn't explain "why" to me.  This
-may be a good enough reason to do so:  an example showing non-portability
-(albeit because the IRQ in question is _not_ a GPIO irq).
-
-Why don't you whip up a patch doing the right thing for irq_to_gpio(),
-and send it along.  Right now I'd be inclined to sign off on it.
-
-- Dave
-
-
-
-> Best regards
-> Uwe
+> Subject: xen: boot via i386_start_kernel to get early reservations
 > 
-> [1] http://www.digi.com/products/embeddedsolutions/ns9215.jsp
->     Interesting sections are "Pinout -> General purpose I/O (GPIO)" and
->     "I/O Control Module".  E.g. GPIO4's func1 is "Ext Int Ch 2"
-> [2] System Control Module -> External Interrupt 0­3 Control register
-> [3] drivers/mmc/host/at91_mci.c
-> [4] drivers/ata/pata_rb532_cf.c
+> Boot Xen via i386_start_kernel so that all the early reservations are
+> made properly; without these, it will start using the kernel and
+> pagetables as early heap memory, which is a bit suboptimal.
 > 
-
+> One tricky part is that reserve_early() will just panic if any of the
+> early reservations overlap any others.  When a Xen domain is built, it
+> constructs the initial address space as:
+> 
+>  kernel text+data+bss
+>  initrd
+>  inital pagetable
+> 
+> Therefore, when reserving the pagetable (from &_end to
+> init_pg_tables_end), it covers the whole initrd area.  If it then
+> tries to reserve the initrd, it will panic because of the overlap.
+> 
+> The simple fix here is to reserve INIT_PG_TABLE first, and then only
+> reserve the ramdisk if it doesn't overlap with the previous
+> reservations.  A better/more complex fix might be to make
+> reserve_early() deal with overlapping reservations.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+> arch/x86/kernel/head32.c |    6 ++++--
+> arch/x86/xen/enlighten.c |    2 +-
+> include/asm-x86/setup.h  |    1 +
+> 3 files changed, 6 insertions(+), 3 deletions(-)
+> 
+> ===================================================================
+> --- a/arch/x86/kernel/head32.c
+> +++ b/arch/x86/kernel/head32.c
+> @@ -66,6 +66,7 @@ void __init i386_start_kernel(void)
+> void __init i386_start_kernel(void)
+> {
+> 	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA
+> BSS");
+> +	reserve_early(__pa_symbol(&_end), init_pg_tables_end,
+> "INIT_PG_TABLE");
+> 
+> #ifdef CONFIG_BLK_DEV_INITRD
+> 	/* Reserve INITRD */
+> @@ -73,10 +74,11 @@ void __init i386_start_kernel(void)
+> 		u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+> 		u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+> 		u64 ramdisk_end   = ramdisk_image + ramdisk_size;
+> -		reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
+> +		if (ramdisk_end < __pa_symbol(&_text) ||
+> +		    ramdisk_image >= init_pg_tables_end)
+> +			reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
+> 	}
+> #endif
+> -	reserve_early(__pa_symbol(&_end), init_pg_tables_end,
+> "INIT_PG_TABLE");
+> 
+> 	reserve_ebda_region();
+> 
+> ===================================================================
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -1264,5 +1264,5 @@ asmlinkage void __init xen_start_kernel(
+> 	}
+> 
+> 	/* Start the world */
+> -	start_kernel();
+> +	i386_start_kernel();
+> }
+> ===================================================================
+> --- a/include/asm-x86/setup.h
+> +++ b/include/asm-x86/setup.h
+> @@ -58,6 +58,7 @@ int __init copy_e820_map(struct e820entr
+> int __init copy_e820_map(struct e820entry *biosmap, int nr_map);
+> void __init add_memory_region(unsigned long long start,
+> 			      unsigned long long size, int type);
+> +void __init i386_start_kernel(void);
+> 
+> extern unsigned long init_pg_tables_end;
+> 
+> 
+> 
