@@ -1,65 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYE0Vfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbYE0Vfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbYE0Vfd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758493AbYE0VfZ
+	id S1759901AbYE0Vfr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758641AbYE0Vf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:35:25 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:32612 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758467AbYE0VfY (ORCPT
+	Tue, 27 May 2008 17:35:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:45542 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758467AbYE0VfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:35:24 -0400
-X-IronPort-AV: E=Sophos;i="4.27,550,1204531200"; 
-   d="scan'208";a="104676549"
-From: Roland Dreier <rdreier@cisco.com>
-To: benh@kernel.crashing.org
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
-	<1211922696.3286.82.camel@pasglop>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 27 May 2008 14:33:48 -0700
-In-Reply-To: <1211922696.3286.82.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Wed, 28 May 2008 07:11:36 +1000")
-Message-ID: <adaiqwzsa83.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 27 May 2008 17:35:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s5pvIPlmSpkWmeGNsrJW+W392EtWIwqyjwmfFkXdSQQ8Tl9sljkPF8YKKgVbiahjDpircqgHwTeBMRsm10JkCAOoUrUIYdpg3swYc35cJ7EaItZWNaC7k8KlmgC1LYDLTWqdtoVK4DxeSmNhl5ltmMRoRqXFadNdL7SgdQEeyS0=
+Message-ID: <86802c440805271435l744eab84xe55ac9ce6196c03b@mail.gmail.com>
+Date: Tue, 27 May 2008 14:35:23 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <483C7BB0.6080901@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 May 2008 21:33:49.0091 (UTC) FILETIME=[59BB3F30:01C8C041]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200805110030.15510.yhlu.kernel@gmail.com>
+	 <200805180118.57863.yhlu.kernel@gmail.com>
+	 <200805211840.18619.yhlu.kernel@gmail.com>
+	 <200805251000.10205.yhlu.kernel@gmail.com>
+	 <alpine.LFD.1.10.0805271744080.3295@apollo.tec.linutronix.de>
+	 <483C70F9.2030901@goop.org>
+	 <86802c440805271406l4348db33r5622c440b494baa2@mail.gmail.com>
+	 <483C7BB0.6080901@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > This is a different issue. We deal with it on powerpc by having writel
- > set a per-cpu flag and spin_unlock() test it, and do the barrier if
- > needed there.
+On Tue, May 27, 2008 at 2:22 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Yinghai Lu wrote:
+>>
+>> Can you send out your boot log?
+>>
+>
+> I've included it below.
+>
+>> I still can not figure out INIT_PG_TABLE and RAMDISK could overlap? or
+>> only one byte? or the same page?
+>>
+>
+> Perhaps my explanation in the patch description wasn't clear enough.
+>
+> When Xen builds the domain, it's responsible for layout of the kernel, the
+> initrd and the initial pagetable (the kernel does not create its own
+> pagetable like it does when booting directly on x86).
+>
+> The layout is (from low to high addresses):
+>
+>    kernel start ->+-------+
+>                   |.text  |
+>                   + - - - +
+>                   |.data  |
+>                   + - - - +
+>                   |.bss   |
+>             _end->+-------+
+>                   :padding:
+>                   +-------+<-ramdisk_image
+>                   :       :
+>                   |initrd |
+>                   :       :
+>                   +-------+<-ramdisk_end
+>                   :padding:
+>                   +-------+
+>                   |pgtable|
+> init_pg_tables_end->+-------+
+>
+>
+> Therefore, when you call early_reserve(&end, init_pg_tables_end) to reserve
+> the inital pagetable, you also implicitly reserve the whole ramdisk area.
+>  Since your code currently reserves the ramdisk first, the reservation of
+> the pagetable fails because it overlaps the ramdisk.
+>
+> My patch does two things:
+>
+>  1. reserve the initial pagetable first
+>  2. skip reserving the ramdisk if it is within the pagetable range
+>
+> This makes sure that all the important memory is reserved from early in
+> boot.
+>
+> There are two alternate fixes:
+>
+>  1. try to precisely reserve *just* the pagetable, rather than
+>     assuming it starts at &_end.  I'm not sure there's currently a way
+>     to do this, but it would be easy enough to add.  Or,
+>  2. Make early reservation cope with overlapping ranges, and deal with
+>     them appropriately.
 
-Cool... I assume you do this for mutex_unlock() etc?
+thanks for the explanation...
 
-Is there any reason why ia64 can't do this too so we can kill mmiowb and
-save everyone a lot of hassle?  (mips, sh and frv have non-empty
-mmiowb() definitions too but I'd guess that these are all bugs based on
-misunderstandings of the mmiowb() semantics...)
+method 1 need to be done.
 
- > However, drivers such as e1000 -also- have a wmb() between filling the
- > ring buffer and kicking the DMA with MMIO, with a comment about this
- > being needed for ia64 relaxed ordering.
+BTW, XEN PV only support 32 bit?
 
-I put these barriers into mthca, mlx4 etc, although it came from my
-possible misunderstanding of the memory ordering rules in the kernel
-more than any experience of problems (as opposed the the mmiowb()s,
-which all came from real world bugs).
-
- - R.
+YH
