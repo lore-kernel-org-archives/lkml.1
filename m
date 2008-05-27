@@ -1,155 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYE0MbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbYE0Miz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323AbYE0MbK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 08:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYE0Ma6
+	id S1757425AbYE0Miz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 08:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbYE0Mio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 08:30:58 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37067 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755983AbYE0Ma5 (ORCPT
+	Tue, 27 May 2008 08:38:44 -0400
+Received: from userg500.nifty.com ([202.248.238.80]:44134 "EHLO
+	userg500.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753034AbYE0Min (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 08:30:57 -0400
-Date: Tue, 27 May 2008 21:30:34 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Paul Menage" <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] call_usermodehelper() increase reliability
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080527212423.9CAD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 27 May 2008 08:38:43 -0400
+DomainKey-Signature: a=rsa-sha1; s=userg500; d=nifty.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:in-reply-to:references:
+	x-mailer:mime-version:content-type:content-transfer-encoding;
+	b=DxnJwwrOKZWomSfUtjf/IfMLESIiKlmhR99FVw8PwFwWgwN0fV+rf9+IZcTxZ+4ll
+	8Y7s/hvsD2s0jMUp+noIg==
+X-Nifty-SrcIP: [220.145.30.253]
+Date: Tue, 27 May 2008 21:34:24 +0900
+From: Komuro <komurojun-mbn@nifty.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PLEASE REVERT] "Add a WARN_ON_ONCE" at
+ net/sched/sch_generic.c:
+Message-Id: <20080527213424.125e15dc.komurojun-mbn@nifty.com>
+In-Reply-To: <20080525.051032.186144643.davem@davemloft.net>
+References: <20080525112308.03a5fda7.komurojun-mbn@nifty.com>
+	<20080525.051032.186144643.davem@davemloft.net>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, call_usermodehelper_setup() uses GFP_ATOMIC.
-but it can return NULL _very_ easily.
+On Sun, 25 May 2008 05:10:32 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-GFP_ATOMIC is needed only when we can't sleep.
-and, GFP_KERNEL is robust and better.
+> 
+> > Please revert the patch "Add a WARN_ON_ONCE() to
+> >  the transmit timeout function".
+> > 
+> > The transmit timeout sometimes happens on normal operation.
+> > This message annoys me.
+> 
+> Sometimes, but not often.
+> 
+> Most of the time it does indicate a bug and we absolutely cannot
+> diagnose it without the backtrace.
 
-thus, I add gfp_mask argument to call_usermodehelper_setup().
-
-So, its caller pass below,
-
-call_usermodehelper() and call_usermodehelper_keys(): 
-	depend on 'wait' argument.
-call_usermodehelper_pipe():
-	always GFP_KERNEL because always run under process context.
-orderly_poweroff():
-	pass to GFP_ATOMIC because may run under interrupt context.
+I think the transmit timeout indicates 
+that the cable is not connected or the irq is conflict.
 
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: "Paul Menage" <menage@google.com>
-CC: Li Zefan <lizf@cn.fujitsu.com>
-CC: Jeremy Fitzhardinge <jeremy@xensource.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Andi Kleen <andi@firstfloor.org>
-
----
- include/linux/kmod.h |   11 +++++++----
- kernel/kmod.c        |    9 +++++----
- kernel/sys.c         |    2 +-
- 3 files changed, 13 insertions(+), 9 deletions(-)
-
-Index: b/kernel/kmod.c
-===================================================================
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -352,16 +352,17 @@ static inline void register_pm_notifier_
-  * @path: path to usermode executable
-  * @argv: arg vector for process
-  * @envp: environment for process
-+ * @gfp_mask: gfp mask for memory allocation
-  *
-  * Returns either %NULL on allocation failure, or a subprocess_info
-  * structure.  This should be passed to call_usermodehelper_exec to
-  * exec the process and free the structure.
-  */
--struct subprocess_info *call_usermodehelper_setup(char *path,
--						  char **argv, char **envp)
-+struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
-+						  char **envp, gfp_t gfp_mask)
- {
- 	struct subprocess_info *sub_info;
--	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_ATOMIC);
-+	sub_info = kzalloc(sizeof(struct subprocess_info), gfp_mask);
- 	if (!sub_info)
- 		goto out;
- 
-@@ -494,7 +495,7 @@ int call_usermodehelper_pipe(char *path,
- 	struct subprocess_info *sub_info;
- 	int ret;
- 
--	sub_info = call_usermodehelper_setup(path, argv, envp);
-+	sub_info = call_usermodehelper_setup(path, argv, envp, GFP_KERNEL);
- 	if (sub_info == NULL)
- 		return -ENOMEM;
- 
-Index: b/include/linux/kmod.h
-===================================================================
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -19,6 +19,7 @@
-  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
-+#include <linux/gfp.h>
- #include <linux/stddef.h>
- #include <linux/errno.h>
- #include <linux/compiler.h>
-@@ -40,8 +41,8 @@ struct file;
- struct subprocess_info;
- 
- /* Allocate a subprocess_info structure */
--struct subprocess_info *call_usermodehelper_setup(char *path,
--						  char **argv, char **envp);
-+struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
-+						  char **envp, gfp_t gfp_mask);
- 
- /* Set various pieces of state into the subprocess_info structure */
- void call_usermodehelper_setkeys(struct subprocess_info *info,
-@@ -68,8 +69,9 @@ static inline int
- call_usermodehelper(char *path, char **argv, char **envp, enum umh_wait wait)
- {
- 	struct subprocess_info *info;
-+	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
- 
--	info = call_usermodehelper_setup(path, argv, envp);
-+	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
- 	if (info == NULL)
- 		return -ENOMEM;
- 	return call_usermodehelper_exec(info, wait);
-@@ -80,8 +82,9 @@ call_usermodehelper_keys(char *path, cha
- 			 struct key *session_keyring, enum umh_wait wait)
- {
- 	struct subprocess_info *info;
-+	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
- 
--	info = call_usermodehelper_setup(path, argv, envp);
-+	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
- 	if (info == NULL)
- 		return -ENOMEM;
- 
-Index: b/kernel/sys.c
-===================================================================
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1795,7 +1795,7 @@ int orderly_poweroff(bool force)
- 		goto out;
- 	}
- 
--	info = call_usermodehelper_setup(argv[0], argv, envp);
-+	info = call_usermodehelper_setup(argv[0], argv, envp, GFP_ATOMIC);
- 	if (info == NULL) {
- 		argv_free(argv);
- 		goto out;
-
+Best Regards
+Komuro
 
