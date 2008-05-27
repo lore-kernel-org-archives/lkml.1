@@ -1,68 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbYE0VlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbYE0Vld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759781AbYE0VlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758557AbYE0VlF
+	id S1758700AbYE0Vld (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbYE0VlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:41:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:24131 "EHLO mga02.intel.com"
+	Tue, 27 May 2008 17:41:09 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:38654 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758467AbYE0VlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:41:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,550,1204531200"; 
-   d="scan'208";a="285484300"
-Date: Tue, 27 May 2008 14:32:02 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-Message-ID: <20080527143202.4bab5bf0@appleyard>
-In-Reply-To: <20080527030854.GC7515@mit.edu>
-References: <20080508161008.59361de5@appleyard>
-	<20080527030854.GC7515@mit.edu>
-Reply-To: kristen.c.accardi@intel.com
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1758623AbYE0VlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 17:41:07 -0400
+Date: Wed, 28 May 2008 00:38:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: break mutual header inclusion
+Message-ID: <20080527213819.GC11310@cs181133002.pp.htv.fi>
+References: <20080527204926.GA15020@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080527204926.GA15020@damson.getinternet.no>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 May 2008 23:08:54 -0400
-Theodore Tso <tytso@mit.edu> wrote:
-
-> On Thu, May 08, 2008 at 04:10:08PM -0700, Kristen Carlson Accardi wrote:
-> > power off unused ports
-> > 
-> > If the port isn't either a drive bay or an external SATA port, do not 
-> > keep the phy powered on if the port is unoccupied. This saves .75 watts
-> > on most laptops.  A module parameter can be used to override this 
-> > behavior and allow the phy's to be powered up regardless of whether it
-> > has externally accessible SATA ports. 
-> > 
-> > Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> 
+On Tue, May 27, 2008 at 10:49:26PM +0200, Vegard Nossum wrote:
 > Hi,
 > 
-> I'm wondering what's the status of this patch?  
-> 
-> if this has hit a subsystem tree yet?  0.75 watts power savings sounds
-> really cool, but it doesn't seem to be in Linus's mainline yet.  Has
-> it hit a subsystem tree yet, or is there some issue that still needs
-> to be resolved before it can go it?
-> 
-> Thanks, regards,
-> 
-> 							- Ted
-> 
+> What do you think about this? The new file (vm86_mask.h) could actually be
+> embedded completely in processor-flags.h, but I went for what I believe is
+> the safer approach.
 
-Hi Ted,
-As far as I know the patch has gone nowhere.  I believe that 
-Jeff wanted something more flexible than the module parameter that
-I provided to override the BIOS options.  I am not working on this,
-I figured he had a pretty firm idea what he wanted so he was better
-equipped to write the patch.
+Breaking the mutual header inclusion is appreciated, but some comments 
+are below.
 
-Kristen
+> This has been compile tested on x86_32 and x86_64 defconfig.
+> 
+> Vegard
+>...
+> --- a/include/asm-x86/ptrace.h
+> +++ b/include/asm-x86/ptrace.h
+> @@ -2,8 +2,10 @@
+>  #define _ASM_X86_PTRACE_H
+>  
+>  #include <linux/compiler.h>	/* For __user */
+> +#include <asm/ds.h>		/* the DS BTS struct is used for ptrace too */
+> +#include <asm/segment.h>
+>  #include <asm/ptrace-abi.h>
+> -
+> +#include <asm/vm86_mask.h>
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -55,9 +57,6 @@ struct pt_regs {
+>  	unsigned long ss;
+>  };
+>  
+> -#include <asm/vm86.h>
+> -#include <asm/segment.h>
+> -
+>  #endif /* __KERNEL__ */
+>  
+>  #else /* __i386__ */
+> @@ -127,9 +126,6 @@ struct pt_regs {
+>  
+>  #ifdef __KERNEL__
+>  
+> -/* the DS BTS struct is used for ptrace as well */
+> -#include <asm/ds.h>
+> -
+>  struct task_struct;
+>  
+>  extern void ptrace_bts_take_timestamp(struct task_struct *, enum bts_qualifier);
+
+Moving #include's out of an #ifdef __KERNEL__ can (and does here) break
+our userspace headers.
+
+Running "make headers_check" after touching anything under include/ is
+recommended since it catches these problems.
+
+>...
+> --- /dev/null
+> +++ b/include/asm-x86/vm86_mask.h
+> @@ -0,0 +1,12 @@
+> +#ifndef ASM_X86_VM86_MASK
+> +#define ASM_X86_VM86_MASK
+> +
+> +#include <asm/processor-flags.h>
+> +
+> +#ifdef CONFIG_VM86
+> +#define X86_VM_MASK	X86_EFLAGS_VM
+> +#else
+> +#define X86_VM_MASK	0 /* No VM86 support */
+> +#endif
+> +
+> +#endif
+
+Do we need a new header for this or can it go into processor-flags.h ?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
