@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbYE0VnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbYE0Vnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbYE0VnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759876AbYE0Vmm
+	id S1760404AbYE0Vnh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760251AbYE0Vm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:42:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50991 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758847AbYE0Vml (ORCPT
+	Tue, 27 May 2008 17:42:59 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:45700 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760246AbYE0Vm6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:42:41 -0400
-Date: Tue, 27 May 2008 14:40:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jason Baron <jbaron@redhat.com>
-Cc: joe@perches.com, greg@kroah.com, nick@nick-andrew.net,
-       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/8] debug printk infrastructure -dynamic printk docs
-Message-Id: <20080527144028.83f87adc.akpm@linux-foundation.org>
-In-Reply-To: <20080522211723.GE28070@redhat.com>
-References: <20080522211723.GE28070@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 May 2008 17:42:58 -0400
+Date: Tue, 27 May 2008 15:42:41 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080527214241.GA22636@parisc-linux.org>
+References: <1211852026.3286.36.camel@pasglop> <20080526.184047.88207142.davem@davemloft.net> <1211854540.3286.42.camel@pasglop> <20080526.192812.184590464.davem@davemloft.net> <1211859542.3286.46.camel@pasglop> <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org> <1211922621.3286.80.camel@pasglop> <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org> <1211924335.3286.89.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211924335.3286.89.camel@pasglop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 May 2008 17:17:23 -0400
-Jason Baron <jbaron@redhat.com> wrote:
+On Wed, May 28, 2008 at 07:38:55AM +1000, Benjamin Herrenschmidt wrote:
+> A problem with __raw_ though is that they -also- don't do byteswap,
+> which is a pain in the neck as people use them for either one reason
+> (relaxed ordering) or the other (no byteswap) without always knowing the
+> consequences of doing so...
 
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> ---
->  Documentation/kernel-parameters.txt |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index bf6303e..d9a1245 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1580,6 +1580,11 @@ and is between 256 and 4096 characters. It is defined in the file
->  			autoconfiguration.
->  			Ranges are in pairs (memory base and size).
->  
-> +	dynamic_printk
-> +			Enables pr_debug()/dev_dbg() calls if 
-> +			CONFIG_PRINK_DYNAMIC has been enabled. These can also 
-> +			be switched on/off via <debugfs>/dynamic_printk/modules
-> +
+That's why there's __readl() which does byteswap, but doesn't do
+ordering ...
 
-There is no CONFIG_PRINK_DYNAMIC?  I guess you meant
-CONFIG_DYNAMIC_PRINTK_DEBUG.
+> I'm happy to say that __raw is purely about ordering and make them
+> byteswap on powerpc tho (ie, make them little endian like the non-raw
+> counterpart).
 
->  	print-fatal-signals=
->  			[KNL] debug: print fatal signals
->  			print-fatal-signals=1: print segfault info to
-> -- 
-> 1.5.4.5
-> 
+That would break a lot of drivers.
+
+> Some archs started providing writel_be etc... I added those to powerpc a
+> little while ago, and I tend to prefer that approach for the byteswap
+> issue.
+
+Those are for people who use big endian chips on little endian
+architectures.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
