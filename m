@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbYE0Xmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760204AbYE0XuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760662AbYE0Xmy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 19:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbYE0Xmp
+	id S1760204AbYE0XuQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 19:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbYE0XuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 19:42:45 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:48322 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755687AbYE0Xmo (ORCPT
+	Tue, 27 May 2008 19:50:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42311 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbYE0XuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 19:42:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Hn3/u6uW0AWPsHHJCLNFrmv5ixh+eMNU4TUyvwrnq9CtnVwkWXhb9ZrcLx1O9yhUUh3EUfb1v39u2z62RBoSV/hiHMjop21SCIBEdIWi+DaD+N8gM5YCH8kwmtzaJ1W+sDKE9wqwSsCAjSN86w8pz/RwTFYQClh7ZbX4L9AwoAo=  ;
-X-YMail-OSG: UUtKZO0VM1lxE5Jwo9lfSQiKPK71SUHxI4VbX0uZi1QQl7YD7kr0MpEYk1vTI5dM5R2x1uDZHA8Qsb4LfiUxIymm38TWzLEptQuRQHqfIUkAeW9ITE1M8eT1sBEyha0bJfsRdXCQrUgWiaxrnSRe77My
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: mgross@linux.intel.com
-Subject: Re: Accelerometer, Gyros and ADC's etc within the kernel.
-Date: Tue, 27 May 2008 16:42:42 -0700
-User-Agent: KMail/1.9.9
-Cc: spi-devel-general@lists.sourceforge.net,
-       Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       linux-kernel@vger.kernel.org, LM Sensors <lm-sensors@lm-sensors.org>
-References: <4832A211.4040206@gmail.com> <200805211753.39133.david-b@pacbell.net> <20080527155641.GB29868@linux.intel.com>
-In-Reply-To: <20080527155641.GB29868@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200805271642.42291.david-b@pacbell.net>
+	Tue, 27 May 2008 19:50:01 -0400
+Date: Tue, 27 May 2008 16:49:38 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Oliver Pinter" <oliver.pntr@gmail.com>
+Cc: mrenzmann@otaku42.de, linux-kernel@vger.kernel.org
+Subject: Re: madwifi && v2.6.26-rc4
+Message-ID: <20080527164938.709e53f6@infradead.org>
+In-Reply-To: <6101e8c40805271623xb316cd0i47320ec566c0ba02@mail.gmail.com>
+References: <6101e8c40805270820r5984ceddmcc9ee1137e097b9e@mail.gmail.com>
+	<20080527105123.1c154daf@infradead.org>
+	<6101e8c40805271623xb316cd0i47320ec566c0ba02@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 May 2008, mark gross wrote:
-> 
-> > > Another problem area is around SPI itself.  There are variations of
-> > > device implementations around chip select polarity, clock biasing
-> > > (rising,falling, or midpoint) sampling from one SPI part to the next.
-> > 
-> > Midpoint?  That's not one I've come across before.  All four
-> > standard SPI clock/sample/shift modes are already supported
-> > in the SPI framework though.  Ditto active-high chipselects
-> > (vs normal active-low) etc.
-> 
-> Yeah, its one of the sampling modes for the PIC18F4455 its one of the
-> master mode sampling options  (see page 194 of
-> http://ww1.microchip.com/downloads/en/DeviceDoc/39632D.pdf )
+On Wed, 28 May 2008 01:23:06 +0200
+"Oliver Pinter" <oliver.pntr@gmail.com> wrote:
 
-Actually figure 19-3 (p. 198) may be a bit more clear.
+> On 5/27/08, Arjan van de Ven <arjan@infradead.org> wrote:
+> > On Tue, 27 May 2008 17:20:23 +0200
+> > "Oliver Pinter" <oliver.pntr@gmail.com> wrote:
+> >
+> >> Hi all!
+> >>
+> >> os: debian lenny
+> >> madwifi 0.9.3.3
+> >
+> >
+> > you probably want to use ath5k instead since you're posting to this
+> > list.....
 
-Curious.  That PIC18F controller has *three* bits ... equivalents
-of CPOL and CPHA, plus a bit saying whether to wait a whole or
-half clock after the leading clock edge before sampling it.
-
-A quick survey of some other SPI chips suggests that the most
-conventional interpretation is to sample on the trailing edge
-of the clock, and not presume long hold times.
-
-I would surely hope the SPI interface spec doesn't have to get
-into the mess of timing variations which typify anyone trying to
-make memory controllers do the Right thing ... *shudder* ...
-
-- Dave
+> jah, i know, that the ath5k is the official driver, but ath5k don't
+> supported WPA2-PSK.
+> I cc-ed mrenzmann, hi is the madiwifi webmaster / maintainer
 
 
+but you posted to the linux-kernel mailing list, which is about an open
+source project.... if you want to ask questions about proprietary
+stuff, you're just better off asking the vendor of said module.... not
+lkml, for which your question is basically off-topic.
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
