@@ -1,50 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbYE0SRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYE0SRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbYE0SRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 14:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbYE0SRK
+	id S1757412AbYE0SRe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 14:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757755AbYE0SRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 14:17:10 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:45118 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756670AbYE0SRI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 14:17:08 -0400
-X-IronPort-AV: E=Sophos;i="4.27,549,1204531200"; 
-   d="scan'208";a="72747844"
-From: Roland Dreier <rdreier@cisco.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-       scottwood@freescale.com, torvalds@linux-foundation.org,
-       tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
-	<1211906268.3435.44.camel@localhost.localdomain>
-	<adad4n71wb3.fsf@cisco.com>
-	<1211910825.7160.1.camel@localhost.localdomain>
-	<adamymbvcxi.fsf@cisco.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 27 May 2008 11:17:04 -0700
-In-Reply-To: <adamymbvcxi.fsf@cisco.com> (Roland Dreier's message of "Tue, 27
-	May 2008 11:07:05 -0700")
-Message-ID: <adaej7nvcgv.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 27 May 2008 14:17:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58438 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757522AbYE0SRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 14:17:14 -0400
+Date: Tue, 27 May 2008 14:14:47 -0400
+From: Alan Cox <alan@redhat.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Alan Cox <alan@redhat.com>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] video4linux: Push down the BKL
+Message-ID: <20080527181447.GB17790@devserv.devel.redhat.com>
+References: <20080522223700.2f103a14@core> <20080526135951.7989516d@gaivota> <20080526202317.GA12793@devserv.devel.redhat.com> <20080526181027.1ff9c758@gaivota> <20080526220154.GA15487@devserv.devel.redhat.com> <20080527101039.1c0a3804@gaivota> <20080527094144.1189826a@bike.lwn.net> <20080527133100.6a9302fb@gaivota>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 27 May 2008 18:17:04.0352 (UTC) FILETIME=[DD8F0600:01C8C025]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20080527133100.6a9302fb@gaivota>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Writes are posted yes, but not reordered arbitrarily.
+On Tue, May 27, 2008 at 01:31:00PM -0300, Mauro Carvalho Chehab wrote:
+> It is safer to have a tool to test and stress the driver before going to
+> production.
 
-on standard x86 I mean here...
+Stress testing is rarely useful here - things like ioctl races you find by
+thinking evil thoughts. Stress tests that fail obviously help find some stuff
+but its error cases and hotplug corner cases that are usually the most foul
