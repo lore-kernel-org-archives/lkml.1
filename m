@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbYE0Us5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbYE0Ut2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758860AbYE0Us5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 16:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbYE0Usr
+	id S1759444AbYE0Ut2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 16:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759123AbYE0UtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 16:48:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:34496 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755508AbYE0Usq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 16:48:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=WhWLex1ch9pK0qpLJpaEBZ+Z2jDWhEWLHl19eMDQqCOzn2rALptl3xcIWwB6v4piXcRjGETu6gzU3ijOdx6FId732ckeB3G19hDcwZ7HZLDT06TUfDBPvoA1aQhNOntl8VOuLtFPWEBnXw2xo96ft5I8d7xIMq3N3/Ip8EflUj0=
-Message-ID: <89af77c70805271348y1df96afveb020d0f3f875da1@mail.gmail.com>
-Date: Tue, 27 May 2008 22:48:45 +0200
-From: "Love Hate" <love.and.hate.on.lkml@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Love and Hate on LKML
+	Tue, 27 May 2008 16:49:12 -0400
+Received: from lobo.ruivo.org ([66.92.68.119]:38470 "EHLO lobo.ruivo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759305AbYE0UtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 16:49:10 -0400
+Date: Tue, 27 May 2008 16:48:58 -0400
+From: Aristeu Rozanski <aris@ruivo.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/1] Char: vt, make sysfs operations atomic
+Message-ID: <20080527204858.GI5713@cathedrallabs.org>
+References: <1211802812-13658-1-git-send-email-jirislaby@gmail.com> <20080527194357.GA12185@cathedrallabs.org> <483C6EAE.4050401@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <483C6EAE.4050401@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Developers,
+>> the reason for the code be the way it is is because vcs_{add,remove}_sysfs()
+>> may sleep
+>
+> What's the point? To have races in the code but not sleep inside the semaphore?
+what about fixing the code to remove the race _and_ not sleep inside the
+semaphore? :)
 
-At the outset I would like to thank you for your great work - IMHO Linux is the
-best OS in the Solar System.
+-- 
+Aristeu
 
-Unfortunately, your relationships with certain people are not the best. I do not
-like how some people are treated on LKML. I will publish further episodes
-of "Love and Hate on LKML" until you change the climate around Linux
-development.
-
-http://loveandhateonlkml.wordpress.com/
-
-If your speech is found in some of the episodes, this means that it has
-been considered very offensive.
-
-Kind regards
