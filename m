@@ -1,267 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbYE0Wb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbYE0WjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbYE0Wb2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbYE0WbS
+	id S1759677AbYE0WjX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 18:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757000AbYE0WjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:31:18 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:2176 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757145AbYE0WbR (ORCPT
+	Tue, 27 May 2008 18:39:10 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:9725 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756969AbYE0WjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 18:31:17 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5304"; a="3445237"
-Message-ID: <483C8BA6.8090309@qualcomm.com>
-Date: Tue, 27 May 2008 15:31:02 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 27 May 2008 18:39:09 -0400
+X-IronPort-AV: E=Sophos;i="4.27,550,1204531200"; 
+   d="scan'208";a="29203597"
+From: Roland Dreier <rdreier@cisco.com>
+To: benh@kernel.crashing.org
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
+       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: MMIO and gcc re-ordering issue
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
+	<1211922696.3286.82.camel@pasglop> <adaiqwzsa83.fsf@cisco.com>
+	<1211926410.3286.95.camel@pasglop>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 27 May 2008 15:39:07 -0700
+In-Reply-To: <1211926410.3286.95.camel@pasglop> (Benjamin Herrenschmidt's
+	message of "Wed, 28 May 2008 08:13:30 +1000")
+Message-ID: <adaabibs778.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: pj@sgi.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       menage@google.com, rostedt@goodmis.org
-Subject: Re: [PATCH] [sched] Fixed CPU hotplug and sched domain handling
-References: <1211926006-11559-1-git-send-email-maxk@qualcomm.com> <1211926006-11559-2-git-send-email-maxk@qualcomm.com>
-In-Reply-To: <1211926006-11559-2-git-send-email-maxk@qualcomm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 27 May 2008 22:39:08.0117 (UTC) FILETIME=[79A72850:01C8C04A]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Krasnyansky wrote:
-> First issue is that we're leaking doms_cur. It's allocated in
-> arch_init_sched_domains() which is called for every hotplug event.
-> So we just keep reallocation doms_cur without freeing it.
-> I introduced free_sched_domains() function that cleans things up.
-> 
-> Second issue is that sched domains created by the cpusets are
-> completely destroyed by the CPU hotplug events. For all CPU hotplug
-> events scheduler attaches all CPUs to the NULL domain and then puts
-> them all into the single domain thereby destroying domains created
-> by the cpusets (partition_sched_domains).
-> The solution is simple, when cpusets are enabled scheduler should not
-> create default domain and instead let cpusets do that. Which is
-> exactly what the patch does.
+ > > Cool... I assume you do this for mutex_unlock() etc?
 
-Here is more info on this, with debug logs.
+ > That's a good point... I don't think we do. Maybe we should.
 
-Here is initial cpuset setup.
-cpus 0-3 balanced, cpus 4-7 non-balanced
-
-cd /dev/cgroup
-echo 0 > cpusets.sched_load_balance
-mkdir boot
-echo 0-3 > boot/cpusets.cpus
-echo 1   > boot/cpusets.sched_load_balance
-...
-
------
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU2 attaching NULL sched-domain.
-CPU3 attaching NULL sched-domain.
-CPU4 attaching NULL sched-domain.
-CPU5 attaching NULL sched-domain.
-CPU6 attaching NULL sched-domain.
-CPU7 attaching NULL sched-domain.
-CPU0 attaching sched-domain:
-  domain 0: span 0f
-   groups: 01 02 04 08
-CPU1 attaching sched-domain:
-  domain 0: span 0f
-   groups: 02 04 08 01
-CPU2 attaching sched-domain:
-  domain 0: span 0f
-   groups: 04 08 01 02
-CPU3 attaching sched-domain:
-  domain 0: span 0f
-   groups: 08 01 02 04
------
-
-Looks good so far.
-Now lets bring cpu7 offline (echo 0 > /sys/devices/system/cpu/cpu7/online)
-
------
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU2 attaching NULL sched-domain.
-CPU3 attaching NULL sched-domain.
-CPU4 attaching NULL sched-domain.
-CPU5 attaching NULL sched-domain.
-CPU6 attaching NULL sched-domain.
-CPU7 attaching NULL sched-domain.
-CPU 7 is now offline
-CPU0 attaching sched-domain:
-  domain 0: span 11
-   groups: 01 10
-   domain 1: span 7f
-    groups: 11 22 44 08
-CPU1 attaching sched-domain:
-  domain 0: span 22
-   groups: 02 20
-   domain 1: span 7f
-    groups: 22 44 08 11
-CPU2 attaching sched-domain:
-  domain 0: span 44
-   groups: 04 40
-   domain 1: span 7f
-    groups: 44 08 11 22
-CPU3 attaching sched-domain:
-  domain 0: span 7f
-   groups: 08 11 22 44
-CPU4 attaching sched-domain:
-  domain 0: span 11
-   groups: 10 01
-   domain 1: span 7f
-    groups: 11 22 44 08
-CPU5 attaching sched-domain:
-  domain 0: span 22
-   groups: 20 02
-   domain 1: span 7f
-    groups: 22 44 08 11
-CPU6 attaching sched-domain:
-  domain 0: span 44
-   groups: 40 04
-   domain 1: span 7f
-    groups: 44 08 11 22
-----
-
-All cpus are now in the single domain.
-Same thing happens when cpu7 comes back online.
-
-----
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU2 attaching NULL sched-domain.
-CPU3 attaching NULL sched-domain.
-CPU4 attaching NULL sched-domain.
-CPU5 attaching NULL sched-domain.
-CPU6 attaching NULL sched-domain.
-Booting processor 7/8 APIC 0x7
-Initializing CPU#7
-Calibrating delay using timer specific routine.. 4655.39 BogoMIPS (lpj=9310785)
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 6144K
-CPU: Physical Processor ID: 1
-CPU: Processor Core ID: 3
-Intel(R) Xeon(R) CPU           E5410  @ 2.33GHz stepping 06
-checking TSC synchronization [CPU#3 -> CPU#7]: passed.
-CPU0 attaching sched-domain:
-  domain 0: span 11
-   groups: 01 10
-   domain 1: span ff
-    groups: 11 22 44 88
-CPU1 attaching sched-domain:
-  domain 0: span 22
-   groups: 02 20
-   domain 1: span ff
-    groups: 22 44 88 11
-CPU2 attaching sched-domain:
-  domain 0: span 44
-   groups: 04 40
-   domain 1: span ff
-    groups: 44 88 11 22
-CPU3 attaching sched-domain:
-  domain 0: span 88
-   groups: 08 80
-   domain 1: span ff
-    groups: 88 11 22 44
-CPU4 attaching sched-domain:
-  domain 0: span 11
-   groups: 10 01
-   domain 1: span ff
-    groups: 11 22 44 88
-CPU5 attaching sched-domain:
-  domain 0: span 22
-   groups: 20 02
-   domain 1: span ff
-    groups: 22 44 88 11
-CPU6 attaching sched-domain:
-  domain 0: span 44
-   groups: 40 04
-   domain 1: span ff
-    groups: 44 88 11 22
-CPU7 attaching sched-domain:
-  domain 0: span 88
-   groups: 80 08
-   domain 1: span ff
-    groups: 88 11 22 44
-----
-
-As if cpusets do not exist :).
-With the patch we now do the right thing when cpus go off/online.
-
-----
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU2 attaching NULL sched-domain.
-CPU3 attaching NULL sched-domain.
-CPU4 attaching NULL sched-domain.
-CPU5 attaching NULL sched-domain.
-CPU6 attaching NULL sched-domain.
-CPU7 attaching NULL sched-domain.
-CPU0 attaching sched-domain:
-  domain 0: span 0f
-   groups: 01 02 04 08
-CPU1 attaching sched-domain:
-  domain 0: span 0f
-   groups: 02 04 08 01
-CPU2 attaching sched-domain:
-  domain 0: span 0f
-   groups: 04 08 01 02
-CPU3 attaching sched-domain:
-  domain 0: span 0f
-   groups: 08 01 02 04
-
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU2 attaching NULL sched-domain.
-CPU3 attaching NULL sched-domain.
-CPU4 attaching NULL sched-domain.
-CPU5 attaching NULL sched-domain.
-CPU6 attaching NULL sched-domain.
-CPU7 attaching NULL sched-domain.
-CPU0 attaching sched-domain:
-  domain 0: span 0f
-   groups: 01 02 04 08
-CPU1 attaching sched-domain:
-  domain 0: span 0f
-   groups: 02 04 08 01
-CPU2 attaching sched-domain:
-  domain 0: span 0f
-   groups: 04 08 01 02
-CPU3 attaching sched-domain:
-  domain 0: span 0f
-   groups: 08 01 02 04
-CPU 7 is now offline
-
-CPU0 attaching NULL sched-domain.
-CPU1 attaching NULL sched-domain.
-CPU2 attaching NULL sched-domain.
-CPU3 attaching NULL sched-domain.
-CPU4 attaching NULL sched-domain.
-CPU5 attaching NULL sched-domain.
-CPU6 attaching NULL sched-domain.
-CPU0 attaching sched-domain:
-  domain 0: span 0f
-   groups: 01 02 04 08
-CPU1 attaching sched-domain:
-  domain 0: span 0f
-   groups: 02 04 08 01
-CPU2 attaching sched-domain:
-  domain 0: span 0f
-   groups: 04 08 01 02
-CPU3 attaching sched-domain:
-  domain 0: span 0f
-   groups: 08 01 02 04
-Booting processor 7/8 APIC 0x7
-Initializing CPU#7
-Calibrating delay using timer specific routine.. 4655.37 BogoMIPS (lpj=9310749)
-CPU: L1 I cache: 32K, L1 D cache: 32K
-CPU: L2 cache: 6144K
-CPU: Physical Processor ID: 1
-CPU: Processor Core ID: 3
-Intel(R) Xeon(R) CPU           E5410  @ 2.33GHz stepping 06
-checking TSC synchronization [CPU#3 -> CPU#7]: passed.
-
-Max
+I think it's needed -- take a look at 76d7cc03, which came from a real
+bug seen on Altix boxes.
