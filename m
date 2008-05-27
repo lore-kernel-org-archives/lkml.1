@@ -1,71 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbYE0R7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbYE0R7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758702AbYE0R7E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 13:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbYE0R6x
+	id S1755615AbYE0R7k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 13:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbYE0R7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 13:58:53 -0400
-Received: from ns2.suse.de ([195.135.220.15]:47859 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755768AbYE0R6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 13:58:53 -0400
-Date: Tue, 27 May 2008 10:55:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Hans J. Koch" <hjk@linutronix.de>,
-       Uwe Kleine-K??nig <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org,
-       Jan Altenberg <jan.altenberg@linutronix.de>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
-	interrupts
-Message-ID: <20080527175552.GB11645@suse.de>
-References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <20080523055527.GA28963@digi.com> <20080523104454.4e2af6ec@bluebox.local> <20080523091009.GA22821@digi.com> <20080523120308.7bec1e1c@bluebox.local> <20080523105604.GA23800@digi.com> <20080523135557.27fe4855@bluebox.local> <20080524044354.GA8129@suse.de> <alpine.LFD.1.10.0805250013450.3295@apollo.tec.linutronix.de>
+	Tue, 27 May 2008 13:59:30 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53655 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756082AbYE0R73 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 13:59:29 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <483C4C08.5080402@gmail.com>
+Date: Tue, 27 May 2008 18:59:36 +0100
+From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805250013450.3295@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: avorontsov@ru.mvista.com
+CC: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [spi-devel-general] Accelerometer, Gyros and ADC's etc within
+ the kernel.
+References: <4832A211.4040206@gmail.com> <20080527164415.GA27584@polina.dev.rtsoft.ru>
+In-Reply-To: <20080527164415.GA27584@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 25, 2008 at 12:22:20AM +0200, Thomas Gleixner wrote:
-> On Fri, 23 May 2008, Greg KH wrote:
-> 
-> > On Fri, May 23, 2008 at 01:55:57PM +0200, Hans J. Koch wrote:
-> > > Sometimes it is necessary to enable/disable the interrupt of a UIO device
-> > > from the userspace part of the driver. With this patch, the UIO kernel driver
-> > > can implement an "irqcontrol()" function that does this. Userspace can write
-> > > an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
-> > > UIO core will then call the driver's irqcontrol function.
-> > 
-> > Why not just a new sysfs file for the uio device, irq_enabled, or
-> > something like that?  That way our main read/write path is left alone.
-> 
-> It makes a certain amount of sense to use write. You hold the device
-> file descriptor anyway for the read (wait for interrupt) operation,
-> so using the same file descriptor is not a too bad idea:
-> 
->     while (!stop) {
-> 
->         /* wait for interrupt */
-> 	read(fd);
-> 
-> 	do_stuff();
-> 
-> 	/*reenable interrupt */
-> 	write(fd);
->     }
-> 
-> I thought about using a sysfs entry for a while, but looking at the
-> actual use case made the write() solution a more natural choice.
+Hi Anton
+>> Typical requirements within an application include simply polling for 
+>> current
+>> readings, and using device triggered interrupts to grab data 
+>> continuously to a
+>> ring buffer, for collection by suitable userspace code.  Obviously it 
+>> would be
+>> desirable to standardize sysfs controls for various calibration 
+>> parameters as
+>> much as possible across the various devices.
+>>     
+>
+> Also, I'd mention that most ADC devices could report in "bunched" mode,
+> i.e.
+>
+> 1. Request ADC readings from pins X, Y, Z1, Z2.
+> 2. Wait for single IRQ
+> 3. Read all the results
+>   
+Good point. I guess it's going to be a while before we work out an 
+anywhere near
+exhaustive list of such events that we might want to be able to control.
+> At handhelds.org, we've wrote quite good (I think) ADC subsystem,
+> that keeps in mind ADC capabilities. It implements two interfaces:
+> in-kernel (e.g. for touchscreen drivers), and userspace interface via
+> sysfs. I was planning to implement drivers/input/ interface too.
+> I always don't find time to clean it up and submit, though.
+>   
+I know that feeling!
+> Here is ADC subsystem itself:
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/adc.c
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/include/linux/adc.h
+> ^ It is in drivers/misc/, but I think better placement would be
+>   drivers/adc.
+>   
+Looking at the code (briefly admittedly, I'll have a closer look 
+tomorrow) it looks like a nice simple and
+effective interface. 
 
-Ok, that makes sense, I can accept this.
+The question here, is what functionality of the system under discussion 
+does it fulfill.  Again we are in the
+territory of possibly having multiple drivers for a device depending on 
+how it is being used in the kernel.
+Not ideal, but may in fact be more maintainable in the long run.
 
-Anyone care to respin the patches with the latest updates and send them
-to me?
+The sysfs interface looks similar to that I was intending to implement, 
+but obviously for your application you
+don't need any of the buffering support etc and it makes sense to keep 
+everything as simple as possible.
 
-thanks,
+Perhaps if we aim to keep in mind the possibility of combining your ADC 
+system with a more general
+input device system, it may make sense to do so at a later stage. 
 
-greg k-h
+Anything I write is certainly going to share a considerable amount of 
+functionality and approach with your code.
+> Some drivers for this subsystem:
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/ads7846_adc_ssp.c
+> ^ ADC driver for ADS7846 chips (HP iPaq hx4700 and some HTC phones, the
+>   driver is using SSP subsystem, switching it to the SPI is still in my enless
+>   TODO list).
+>   
+I'll keep these part in mind, as a the moment adding any component for 
+testing involves me getting my soldering iron out
+and I hate soldering!
+
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/samcop_adc.c
+> ^ SAMCOP (HP iPaq H5xxx) ADC driver.
+>
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/tsc2200_adc_ssp.c
+> ^ TSC2200 ADC driver (used AFAIK in some HTC phones, or ASUS handhelds).
+>
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/ad7877.c
+> ^ AD7877 ADC driver (HTC phones too, IIRC).
+>
+> Now, The Generic ADC Touchscreen Driver (tested to work quite good with all
+> above ADC drivers on appropriate hardware):
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/input/touchscreen/ts-adc.c
+>
+> And finally, ADC Battery driver ("backup" batteries in the iPaq devices
+> usually report their voltage via ADC chip, the same used by the
+> touchscreen).
+> http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/power/adc_battery.c
+>
+> p.s.
+> I have more recent (for current Linus' tree) code for ADC subsystem, but
+> it still needs some love to be submittable.
+>   
+Thanks.  I'll have a look at the stuff above and pester you if I need a 
+more recent version.
+
+Jonathan
+
+
