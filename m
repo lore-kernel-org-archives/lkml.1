@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbYE0AST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYE0AW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbYE0AST (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 20:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbYE0ASD
+	id S1756287AbYE0AW3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 20:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYE0AWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 20:18:03 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:56136 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754916AbYE0ASB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 20:18:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JVEi0xbNTZPOSn+KpjeGLCQtEEC9DR6G6W8GwLb7GgGvi0+A2qaZdGnMkqsphlXAv/DW2rEDNFiANztEBODUbFOhPkeJJcB0/kQFSYKW15fWUcce7fWf24keSuHH2iU5rRzJwtgJJGb0/mUkeZmIA1kXx89EHjKzWr/Dyl2dStk=
-Message-ID: <86802c440805261718i616d7740v2e1cbc352d29d58a@mail.gmail.com>
-Date: Mon, 26 May 2008 17:18:00 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: aperture_64.c: corner case wrong
-Cc: "kernel list" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Dave Jones" <davej@codemonkey.org.uk>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <20080526191730.GA18425@elf.ucw.cz>
+	Mon, 26 May 2008 20:22:21 -0400
+Received: from namei.org ([69.55.235.186]:52674 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752460AbYE0AWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 20:22:21 -0400
+Date: Tue, 27 May 2008 10:20:17 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Markku Savela <msa@moth.iki.fi>
+cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: Bug/misfeature of "securityfs"
+In-Reply-To: <87iqx1pd24.fsf@burp.tkv.asdf.org>
+Message-ID: <Xine.LNX.4.64.0805271019550.17391@us.intercode.com.au>
+References: <87iqx1pd24.fsf@burp.tkv.asdf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080526191730.GA18425@elf.ucw.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 26, 2008 at 12:17 PM, Pavel Machek <pavel@suse.cz> wrote:
->
-> If
->
-> fix == 0, aper_enabled == 1, gart_fix_e820 == 0
->
->        if (!fix && !aper_enabled)
->                return;
->
->        if (gart_fix_e820 && !fix && aper_enabled) {
->                if (e820_any_mapped(aper_base, aper_base + aper_size,
->                                    E820_RAM)) {
->                        /* reserve it, so we can reuse it in second
-> kernel */
->                        printk(KERN_INFO "update e820 for GART\n");
->                        add_memory_region(aper_base, aper_size,
-> E820_RESERVED);
->                        update_e820();
->                }
->                return;
->        }
->
->        /* different nodes have different setting, disable them all atfirst*/
->
-> we'll fall back here and disable all the settings, even when they were
-> all consistent.
->
-> What about this? (I hope it compiles...)
->
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
->
->
-> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-> index 02f4dba..aa4876a 100644
-> --- a/arch/x86/kernel/aperture_64.c
-> +++ b/arch/x86/kernel/aperture_64.c
-> @@ -344,14 +323,16 @@ out:
->        if (gart_fix_e820 && !fix && aper_enabled) {
->                if (!e820_all_mapped(aper_base, aper_base + aper_size,
->                                    E820_RESERVED)) {
->                        /* reserve it, so we can reuse it in second kernel */
->                        printk(KERN_INFO "update e820 for GART\n");
->                        add_memory_region(aper_base, aper_size, E820_RESERVED);
->                        update_e820();
->                }
-> -               return;
->        }
->
-> +       if (!fix)
-> +               return;
-> +
->        /* different nodes have different setting, disable them all at first*/
->        for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
->                int bus;
->
-good catch.
+On Mon, 26 May 2008, Markku Savela wrote:
 
-Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> I write a module which creates a securityfs on init
+> 
+>   foobar =  securityfs_create_dir("foobar", NULL)
+> and on exit it does
+>   security_fs_remove(foobar);
+> 
+> When I do "insmod" and "rmmod", I see
+> 
+>   /sys/kernel/security/foobar/
+> 
+> appear and go away.
+> 
+> Now, if have a shell and do "cd /sys/kernel/security/foobar", the
+> "rmmod" does not remove the directory. The directory disappears when I
+> exit the shell from it via "cd ..". This is fine, and as it should be,
+> but....
+> 
+> IF, while having the shell in the directory, I try to "insmod" again,
+> the insmod fails with "-1 File exists". Again, understandable, BUT
+> when after this I exit the shell from the directory, IT DOES NOT GO
+> AWAY. It's permanetly existing, and module install fails always with
+> "File Exists".
+> 
+> Is this a bug, or am doing something wrong?
+> 
+> The kernel is Ubuntu Hardy heron
+>     2.6.24-16-generic #1 SMP Thu Apr 10 13:23:42 UTC 2008 i686
 
-YH
+Sounds like a bug.
+
+
+-- 
+James Morris
+<jmorris@namei.org>
