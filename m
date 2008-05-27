@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbYE0Kfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbYE0KgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510AbYE0Kfz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 06:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYE0Kfg
+	id S1757647AbYE0KgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 06:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbYE0Kfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 06:35:36 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:35460 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756825AbYE0Kff (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 06:35:35 -0400
-Date: Mon, 26 May 2008 15:22:47 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10732] REGRESSION: 2.6.26-rc2-git4: X server failed
-	start on X61s laptop
-Message-ID: <20080526192247.GA7515@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Hugh Dickins <hugh@veritas.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Suresh Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>
-References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <TW_YzGo9TFP.A.VVD.WeIOIB@albercik> <Pine.LNX.4.64.0805261115470.3720@blonde.site>
+	Tue, 27 May 2008 06:35:51 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34529 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757471AbYE0Kfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 06:35:50 -0400
+Message-ID: <483BE3FB.1010602@garzik.org>
+Date: Tue, 27 May 2008 06:35:39 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805261115470.3720@blonde.site>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Linux 2.6.26-rc4
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <483B2A9B.4050007@krogh.cc> <alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org> <483B60DB.7020402@gmx.net>
+In-Reply-To: <483B60DB.7020402@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 26, 2008 at 11:24:02AM +0100, Hugh Dickins wrote:
-> On Sat, 24 May 2008, Rafael J. Wysocki wrote:
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10732
-> > Subject		: REGRESSION: 2.6.26-rc2-git4: X server failed start on X61s laptop
-> > Submitter	: Theodore Ts'o <tytso@mit.edu>
-> > Date		: 2008-05-17 7:32 (8 days old)
-> > References	: http://marc.info/?l=linux-kernel&amp;m=121100994722524&amp;w=4
-> 
-> I believe this was fixed by Jeremy's PTE_MASK fixes in 2.6.26-rc3-git2,
-> but can only say that they fixed my own X with PAE since PAT mods problem.
-> 
-> Ted, when you have a chance, please try a recent kernel and let us
-> know if this regression can now be removed from the list - thanks.
+Carl-Daniel Hailfinger wrote:
+> New code should look like
+> static struct pci_device_id ck804xrom_pci_tbl[] = {
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0051), .driver_data = DEV_CK804 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0360), .driver_data = DEV_MCP55 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0361), .driver_data = DEV_MCP55 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0362), .driver_data = DEV_MCP55 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0363), .driver_data = DEV_MCP55 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0364), .driver_data = DEV_MCP55 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0365), .driver_data = DEV_MCP55 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0366), .driver_data = DEV_MCP55 },
+> 	{ PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, 0x0367), .driver_data = DEV_MCP55 },
+> 	{ 0, }
+> };
 
-Yes, I just tried it, with a freshly pulled mainline, and the problem
-looks like it has been fixed.  So we can close out the bug and remove
-it from the regression list.
 
-						- Ted
+Actually, more like
+
+	{ PCI_VDEVICE(NVIDIA, 0x0367), DEV_MCP55 },
+
+Regards,
+
+	Jeff
+
+
+
