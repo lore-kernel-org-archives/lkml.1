@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbYE0VM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbYE0VNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbYE0VM1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbYE0VMT
+	id S1759510AbYE0VNT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757924AbYE0VNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:12:19 -0400
-Received: from gate.crashing.org ([63.228.1.57]:35116 "EHLO gate.crashing.org"
+	Tue, 27 May 2008 17:13:11 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35136 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757177AbYE0VMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:12:18 -0400
+	id S1757301AbYE0VNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 17:13:09 -0400
 Subject: Re: MMIO and gcc re-ordering issue
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Reply-To: benh@kernel.crashing.org
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <adaprr721c6.fsf@cisco.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com
+In-Reply-To: <alpine.LFD.1.10.0805270943100.2958@woody.linux-foundation.org>
 References: <1211852026.3286.36.camel@pasglop>
 	 <20080526.184047.88207142.davem@davemloft.net>
 	 <1211854540.3286.42.camel@pasglop>
 	 <20080526.192812.184590464.davem@davemloft.net>
-	 <20080526204233.75b71bb8@infradead.org> <1211872130.3286.64.camel@pasglop>
-	 <adaprr721c6.fsf@cisco.com>
+	 <1211859542.3286.46.camel@pasglop>
+	 <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0805270943100.2958@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Wed, 28 May 2008 07:11:36 +1000
-Message-Id: <1211922696.3286.82.camel@pasglop>
+Date: Wed, 28 May 2008 07:12:46 +1000
+Message-Id: <1211922766.3286.84.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -36,27 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-05-27 at 08:50 -0700, Roland Dreier wrote:
-> > Though it's my understanding that at least ia64 does require the
->  > explicit barriers anyway, so we are still in a dodgy situation here
->  > where it's not clear what drivers should do and we end up with
->  > possibly excessive barriers on powerpc where I end up with both
->  > the wmb/rmb/mb that were added for ia64 -and- the ones I have in
->  > readl/writel to make them look synchronous... Not nice.
+On Tue, 2008-05-27 at 09:47 -0700, Linus Torvalds wrote:
 > 
-> ia64 is a disaster with a slightly different ordering problem -- the
-> mmiowb() issue.  I know Ben knows far too much about this, but for big
-> SGI boxes, you sometimes need mmiowb() to avoid problems with driver
-> code that does totally sane stuff like
+> __read[bwlq]()/__write[bwlq]() are not serialized with a :"memory" 
+> barrier, although since they still use "asm volatile" I suspect that
+> i 
+> practice they are probably serial too. Did not look very closely at
+> any 
+> generated code (only did a trivial test to see that the code looks 
+> *roughly* correct).
 
-This is a different issue. We deal with it on powerpc by having writel
-set a per-cpu flag and spin_unlock() test it, and do the barrier if
-needed there.
+Nah, asm volatile doesn't help, it does need the "memory" clobber too.
 
-However, drivers such as e1000 -also- have a wmb() between filling the
-ring buffer and kicking the DMA with MMIO, with a comment about this
-being needed for ia64 relaxed ordering.
-
+Cheers,
 Ben.
 
 
