@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYE0OOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYE0ORt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbYE0OOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 10:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYE0OOL
+	id S1756101AbYE0ORt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 10:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYE0ORm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 10:14:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:18422 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753331AbYE0OOJ (ORCPT
+	Tue, 27 May 2008 10:17:42 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:55791 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754214AbYE0ORm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 10:14:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=j0xn0xW6IOov8M1AMxyphZ0qAD7btIc+m57W17tltmH6Q0+tTFZYqkKOovAC+dBOrKDdRyftK4nOJsg0DvsmURm0r6NrVsbZxriu3+xR+ZTicntx0kA9HxXj3GCoP/4iFns8JpTgGm3p4ZeV0yIL2kSfF3tZMKFaGdhkqQHE4PE=
-Message-ID: <483C1731.2060408@gmail.com>
-Date: Tue, 27 May 2008 16:14:09 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: "Noel (Sourceforge)" <noelb@users.sourceforge.net>
-CC: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-serial@vger.kernel.org
-Subject: Re: PROBLEM: Serial error
-References: <1211836442.5745.1.camel@roswell.ausics.net>	 <483B3B7C.1000306@gmail.com>  <483C0CDD.2000409@gmail.com> <1211895684.1698.10.camel@roswell.ausics.net>
-In-Reply-To: <1211895684.1698.10.camel@roswell.ausics.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 27 May 2008 10:17:42 -0400
+Subject: Re: [RFC: 2.6 patch] let GROUP_SCHED depend on BROKEN
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       vatsa <vatsa@in.ibm.com>
+In-Reply-To: <20080527130828.GC20938@cs181133002.pp.htv.fi>
+References: <20080527085830.GA20938@cs181133002.pp.htv.fi>
+	 <1211888849.12349.28.camel@twins>
+	 <20080527130828.GC20938@cs181133002.pp.htv.fi>
+Content-Type: text/plain
+Date: Tue, 27 May 2008 16:17:34 +0200
+Message-Id: <1211897854.12349.47.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noel (Sourceforge) napsal(a):
-> On Tue, 2008-05-27 at 23:30, Jiri Slaby wrote:
->> Jiri Slaby napsal(a):
->>> On 05/26/2008 11:14 PM, Noel (Sourceforge) wrote:
->>>> serial comms error with smsclient  >2.6.25 , worked fine up until and
->>>> including 2.6.24.7
->> There is >2.6.25. It means post 2.6.26-rc1 inclusively?
->>
+On Tue, 2008-05-27 at 16:08 +0300, Adrian Bunk wrote:
+> On Tue, May 27, 2008 at 01:47:29PM +0200, Peter Zijlstra wrote:
+> >...
+> > FYI your attitude in the past few weeks is getting on my nerves - you
+> > act all self important but have not made a single contribution to the
+> > kernel above the level of a janitor-newbie.
 > 
-> Yes, it broke as of 2.6.25 , I also obtained  .1 through .4 and still
-> broken in each, I have not tried  2.6.26-rc1 as I assume the code
-> breaking this is still in the tree
+> Not a single contribution to the kernel above the level of a 
+> janitor-newbie?
 > 
+> http://article.gmane.org/gmane.linux.kernel/676733
+> http://lkml.org/lkml/2008/5/14/498
+> http://lkml.org/lkml/2008/4/28/561
+> ....
 > 
-> 
->> If you double checked this, trying to CC Alan if he doesn't have a clue.
->> For reference:
->> http://lkml.org/lkml/2008/5/26/260
-> 
-> Yes, checked.
+> Awaiting your apology
 
-Ah, this one goes through platform driver (why do you load istallion and 
-stallion drivers?).
+Oooh, you caught a few bugs in review... *applause*. Of course I
+understand you just forgot to append the url or git commit of the patch
+series that added a significant feature to the core kernel, or solved a
+significant issue.
 
-8250.c driver changes:
-Alan Cox (3):
-       serial: Coding style
-       serial8250: coding style
-       8250: enable rate reporting via termios
+I mean, counting all the way up to 3, that must have been taxing you.
 
-Will Newton (1):
-       8250.c: support specifying DW APB UARTs in device platform_data
+So of course I appologise for my ignorance of your intellectual feats
+and invaluable contributions to the linux kernel. </sarcasm>
 
-Nothing seems intrusive, but whatever changes in the rest of the serial 
-might have caused it. Could you bisect it? I think it would be fast.
+Seriously, you're a good janitor, and I appreciate that. Stick to it, or
+help write code.
 
-git-bisect v2.6.25 v2.6.24 -- drivers/char/ drivers/serial/
