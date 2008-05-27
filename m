@@ -1,87 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYE0NCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYE0NFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757780AbYE0NCt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 09:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756950AbYE0NCm
+	id S1757769AbYE0NFO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 09:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757123AbYE0NFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 09:02:42 -0400
-Received: from mail164.messagelabs.com ([216.82.253.131]:33853 "EHLO
-	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756153AbYE0NCl (ORCPT
+	Tue, 27 May 2008 09:05:01 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:63207 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756950AbYE0NFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 09:02:41 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-8.tower-164.messagelabs.com!1211893359!10047004!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.13]
-Date: Tue, 27 May 2008 15:02:36 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
-CC: <linux-kernel@vger.kernel.org>
-Subject: configure gpio for interrupt function
-Message-ID: <20080527130236.GA18546@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 27 May 2008 09:05:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlAFAKSfO0hMQWqh/2dsb2JhbACBVawF
+Date: Tue, 27 May 2008 09:04:57 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul McKenney <paulmck@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH for 2.6.26] Markers Use RCU sched
+Message-ID: <20080527130457.GA6814@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 27 May 2008 13:02:36.0450 (UTC) FILETIME=[EF69A820:01C8BFF9]
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:44:29 up 88 days,  8:55,  4 users,  load average: 0.27, 0.60,
+	0.60
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+rcu_barrier_sched and call_rcu_sched has been introduced in 2.6.26 for the
+Markers. Change the marker code to use them.
 
-I want to use a driver that in turn uses the gpio API (i.e.
-drivers/input/keyboard/gpio_keys.c).  My problem with that is, that my
-machine[1]'s external irqs don't fit into the GPIO API model.  The main
-problem is that gpio_direction_input isn't enough to get an irq.
-I need to explicitly set the gpio to an EXT_IRQ function.
-(I can workaround that because the EXT_IRQ function allows to read the
-state of the gpio.  So I can use the EXT_IRQ function if input is
-requested.)
+It can be seen as a fix since the marker code was using an ugly,
+temporary, #ifdef hack to work around CONFIG_PREEMPT_RCU.
 
-Another problem is that I cannot implement irq_to_gpio correctly,
-because several gpio's share the same irq.
-(Note this makes the workaround above less reliable.  Consider two
-gpios sharing the same irq.  I cannot assert that only one of them can
-trigger the interrupt.)
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Paul McKenney <paulmck@us.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+---
+ kernel/marker.c |   25 ++++++++-----------------
+ 1 file changed, 8 insertions(+), 17 deletions(-)
 
-So I suggest to extend the gpio API with two functions like:
-
-	int gpio_direction_inputirq(unsigned gpio, unsigned flags);
-	void gpio_ackirq(unsigned gpio);
-
-with flags being similar to the IRQF_TRIGGER_* defines in
-include/linux/interrupt.h.  I need gpio_ackirq because ns9xxx requires
-that an edge triggered irq is acknowledged separatly in the "External
-Interrupt X Control register"[2].  (If you have better names ...)
-
-Moreover this makes the API more flexible because the irq type can be
-configured.
-
-OTOH I'd like to deprecate irq_to_gpio.  $(git grep -l irq_to_gpio
-drivers) suggests that this function is only used in two places.  One of
-them[3] is AT91 specific, the other[4] seems specific for the
-RouterBoard 532.
-(There are some other users below arch/, but I expect no breakage here.
-I expect that every arch that uses the function have it implemented
-anyhow.)
-
-What do you think?
-
-Best regards
-Uwe
-
-[1] http://www.digi.com/products/embeddedsolutions/ns9215.jsp
-    Interesting sections are "Pinout -> General purpose I/O (GPIO)" and
-    "I/O Control Module".  E.g. GPIO4's func1 is "Ext Int Ch 2"
-[2] System Control Module -> External Interrupt 0­3 Control register
-[3] drivers/mmc/host/at91_mci.c
-[4] drivers/ata/pata_rb532_cf.c
+Index: linux-2.6-lttng/kernel/marker.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/marker.c	2008-05-27 05:32:09.000000000 -0400
++++ linux-2.6-lttng/kernel/marker.c	2008-05-27 05:34:22.000000000 -0400
+@@ -443,7 +443,7 @@
+ 	hlist_del(&e->hlist);
+ 	/* Make sure the call_rcu has been executed */
+ 	if (e->rcu_pending)
+-		rcu_barrier();
++		rcu_barrier_sched();
+ 	kfree(e);
+ 	return 0;
+ }
+@@ -478,7 +478,7 @@
+ 	hlist_del(&(*entry)->hlist);
+ 	/* Make sure the call_rcu has been executed */
+ 	if ((*entry)->rcu_pending)
+-		rcu_barrier();
++		rcu_barrier_sched();
+ 	kfree(*entry);
+ 	*entry = e;
+ 	trace_mark(core_marker_format, "name %s format %s",
+@@ -657,7 +657,7 @@
+ 	 * make sure it's executed now.
+ 	 */
+ 	if (entry->rcu_pending)
+-		rcu_barrier();
++		rcu_barrier_sched();
+ 	old = marker_entry_add_probe(entry, probe, probe_private);
+ 	if (IS_ERR(old)) {
+ 		ret = PTR_ERR(old);
+@@ -672,10 +672,7 @@
+ 	entry->rcu_pending = 1;
+ 	/* write rcu_pending before calling the RCU callback */
+ 	smp_wmb();
+-#ifdef CONFIG_PREEMPT_RCU
+-	synchronize_sched();	/* Until we have the call_rcu_sched() */
+-#endif
+-	call_rcu(&entry->rcu, free_old_closure);
++	call_rcu_sched(&entry->rcu, free_old_closure);
+ end:
+ 	mutex_unlock(&markers_mutex);
+ 	return ret;
+@@ -706,7 +703,7 @@
+ 	if (!entry)
+ 		goto end;
+ 	if (entry->rcu_pending)
+-		rcu_barrier();
++		rcu_barrier_sched();
+ 	old = marker_entry_remove_probe(entry, probe, probe_private);
+ 	mutex_unlock(&markers_mutex);
+ 	marker_update_probes();		/* may update entry */
+@@ -718,10 +715,7 @@
+ 	entry->rcu_pending = 1;
+ 	/* write rcu_pending before calling the RCU callback */
+ 	smp_wmb();
+-#ifdef CONFIG_PREEMPT_RCU
+-	synchronize_sched();	/* Until we have the call_rcu_sched() */
+-#endif
+-	call_rcu(&entry->rcu, free_old_closure);
++	call_rcu_sched(&entry->rcu, free_old_closure);
+ 	remove_marker(name);	/* Ignore busy error message */
+ 	ret = 0;
+ end:
+@@ -788,7 +782,7 @@
+ 		goto end;
+ 	}
+ 	if (entry->rcu_pending)
+-		rcu_barrier();
++		rcu_barrier_sched();
+ 	old = marker_entry_remove_probe(entry, NULL, probe_private);
+ 	mutex_unlock(&markers_mutex);
+ 	marker_update_probes();		/* may update entry */
+@@ -799,10 +793,7 @@
+ 	entry->rcu_pending = 1;
+ 	/* write rcu_pending before calling the RCU callback */
+ 	smp_wmb();
+-#ifdef CONFIG_PREEMPT_RCU
+-	synchronize_sched();	/* Until we have the call_rcu_sched() */
+-#endif
+-	call_rcu(&entry->rcu, free_old_closure);
++	call_rcu_sched(&entry->rcu, free_old_closure);
+ 	remove_marker(entry->name);	/* Ignore busy error message */
+ end:
+ 	mutex_unlock(&markers_mutex);
 
 -- 
-Uwe Kleine-König, Software Engineer
-Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
-Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
