@@ -1,59 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbYE0Qo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbYE0Qom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758721AbYE0Qo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 12:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbYE0QoR
+	id S1757648AbYE0Qom (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 12:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbYE0QoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 12:44:17 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:46022 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757405AbYE0QoQ (ORCPT
+	Tue, 27 May 2008 12:44:21 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:15622 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757491AbYE0QoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 12:44:16 -0400
-Message-ID: <483C3A5A.6020207@hp.com>
-Date: Tue, 27 May 2008 09:44:10 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Tue, 27 May 2008 12:44:17 -0400
+Date: Tue, 27 May 2008 20:44:15 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
+       LM Sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [spi-devel-general] Accelerometer, Gyros and ADC's etc within
+	the kernel.
+Message-ID: <20080527164415.GA27584@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <4832A211.4040206@gmail.com>
 MIME-Version: 1.0
-To: Bill Fink <billfink@mindspring.com>
-CC: =?ISO-8859-1?Q?Alejandro_Riveira_Fern=E1ndez?= <ariveira@gmail.com>,
-       Theodore Tso <tytso@MIT.EDU>, Glen Turner <gdt@gdt.id.au>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
- IRQF_SAMPLE_RANDOM
-References: <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org>	<482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org>	<20080516132107.GA11304@csclub.uwaterloo.ca>	<20080516161029.44ded734@core>	<20080516173610.GA27126@csclub.uwaterloo.ca>	<20080516191125.46f59ad6@core>	<a24804730805162155m72e6b40aweb8822515c880c50@mail.gmail.com>	<1211728189.5913.71.camel@andromache>	<20080525232712.GF5970@mit.edu> <20080526154326.1fe44214@Varda> <20080526111458.fff6c311.billfink@mindspring.com>
-In-Reply-To: <20080526111458.fff6c311.billfink@mindspring.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <4832A211.4040206@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> For systems with high resolution timers, even if an attacker has total
-> knowledge/control of the network, it doesn't seem realistically possible
-> for them to determine the low order bits of the nanosecond timer of
-> disk and network I/O system calls, if those were used as a source of
-> entropy. 
+Hi Jonathan,
 
-Around the same time I was working on getting the performance figures 
-for the RNG in the Infineon TPM in the system I had, I tried, however 
-briefly, to concoct a test using netperf and pulling the ITC on an 
-Itanium processor to generate some randomness.  I'm not at all sure I 
-was doing things correctly - I was pulling the bottom one to 4 bits of 
-the ITC after each call to recv() of a TCP_RR test - but when I tried to 
-feed the resulting trickle of data through diehard (which I may have 
-been running poorly) it was giving nothing but a p value of 0.000000 
-which while I don't grok the p-value itself, I understand that 
-consistent value of 0.000000 is bad :(
+On Tue, May 20, 2008 at 11:04:01AM +0100, Jonathan Cameron wrote:
+> This email is basically a request for opinions on how and where such sensors
+> should be integrated into the kernel.
+> 
+> To set the scene...
+> 
+> Increasing numbers of embedded devices are being supplied attached MEMS
+> devices (www.xbow.com imote2 etc). Along with more traditional sensors such
+> as ADC's not being used for hardware monitoring, these do not really 
+> seem to
+> fit with in an particular subsystem of the kernel.  A previous 
+> discussion on
+> lkml in 2006 considered the accelerometers to be found within some laptop
+> hard drives, but I haven't been able to track down any more general 
+> discussions
+> of such non hardware monitoring sensors.
+> 
+> The obvious possibilities are:
+> 
+> * To place the various drivers within the spi / i2c etc subsystems as 
+> relevant.
+> 
+> * To place within the hwmon subsystem as this is probably closest.
+> (there is already at least one straight ADC driver in hwmon)
+> 
+> * To create a new subsystem, or perhaps merely sysfs class to contain these
+>   elements.
+> 
+> Typical requirements within an application include simply polling for 
+> current
+> readings, and using device triggered interrupts to grab data 
+> continuously to a
+> ring buffer, for collection by suitable userspace code.  Obviously it 
+> would be
+> desirable to standardize sysfs controls for various calibration 
+> parameters as
+> much as possible across the various devices.
 
-So, I may have had a bad test case.  If someone has some suggestions for 
-  a better test of the low-order-bits-of-the-interval-timer hypothesis 
-I'd love to hear about them.
+Also, I'd mention that most ADC devices could report in "bunched" mode,
+i.e.
 
-rick jones
+1. Request ADC readings from pins X, Y, Z1, Z2.
+2. Wait for single IRQ
+3. Read all the results
+
+At handhelds.org, we've wrote quite good (I think) ADC subsystem,
+that keeps in mind ADC capabilities. It implements two interfaces:
+in-kernel (e.g. for touchscreen drivers), and userspace interface via
+sysfs. I was planning to implement drivers/input/ interface too.
+
+I always don't find time to clean it up and submit, though.
+
+Here is ADC subsystem itself:
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/adc.c
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/include/linux/adc.h
+^ It is in drivers/misc/, but I think better placement would be
+  drivers/adc.
+
+Some drivers for this subsystem:
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/ads7846_adc_ssp.c
+^ ADC driver for ADS7846 chips (HP iPaq hx4700 and some HTC phones, the
+  driver is using SSP subsystem, switching it to the SPI is still in my enless
+  TODO list).
+
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/samcop_adc.c
+^ SAMCOP (HP iPaq H5xxx) ADC driver.
+
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/tsc2200_adc_ssp.c
+^ TSC2200 ADC driver (used AFAIK in some HTC phones, or ASUS handhelds).
+
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/misc/adc/ad7877.c
+^ AD7877 ADC driver (HTC phones too, IIRC).
+
+Now, The Generic ADC Touchscreen Driver (tested to work quite good with all
+above ADC drivers on appropriate hardware):
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/input/touchscreen/ts-adc.c
+
+And finally, ADC Battery driver ("backup" batteries in the iPaq devices
+usually report their voltage via ADC chip, the same used by the
+touchscreen).
+http://handhelds.org/cgi-bin/cvsweb.cgi/~checkout~/linux/kernel26/drivers/power/adc_battery.c
+
+p.s.
+I have more recent (for current Linus' tree) code for ADC subsystem, but
+it still needs some love to be submittable.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
