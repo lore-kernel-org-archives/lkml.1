@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbYE0Wz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbYE0XAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760486AbYE0Wz2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbYE0WzT
+	id S1758643AbYE0XAM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 19:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbYE0W77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:55:19 -0400
-Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:35278 "HELO
-	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757602AbYE0WzS (ORCPT
+	Tue, 27 May 2008 18:59:59 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:34467 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750739AbYE0W76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 18:55:18 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: [git pull] PCI fixes
-Date: Tue, 27 May 2008 15:55:07 -0700
-User-Agent: KMail/1.9.9
+	Tue, 27 May 2008 18:59:58 -0400
+Date: Tue, 27 May 2008 18:59:26 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ata: ahci: power off unused ports
+Message-ID: <20080527225926.GE6843@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	jeff@garzik.org, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080508161008.59361de5@appleyard> <20080527030854.GC7515@mit.edu> <20080527143202.4bab5bf0@appleyard>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805271555.07912.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+In-Reply-To: <20080527143202.4bab5bf0@appleyard>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull the PCI fixes:
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
+On Tue, May 27, 2008 at 02:32:02PM -0700, Kristen Carlson Accardi wrote:
+> 
+> As far as I know the patch has gone nowhere.  I believe that 
+> Jeff wanted something more flexible than the module parameter that
+> I provided to override the BIOS options.  I am not working on this,
+> I figured he had a pretty firm idea what he wanted so he was better
+> equipped to write the patch.
 
-Hopefully this'll be the last set of important fixes needed for 2.6.26.
-Kenji-san tracked down and fixed several PCI hotplug problems, and Shaohua
-fixed an interesting ASPM bug caused by a PCIe multifunction device that had
-at least one non-PCIe sub-function.  One of the hotplug problems ended up
-being a structural problem, so we'll probably have to rework the fix again
-a bit more properly in 2.6.27 (once we figure out how we want to do it).
+Thanks Kristen,
 
-Thanks,
-Jesse
+Can you say which laptops you had tested this on where it saved power?
+(Did you test any Thinkpads, in particular?)  I'm wondering if it's
+worth trying to forward port your patch as a private mod to my kernel;
+30 to 40 minutes of extra battery life is nothing to sneeze at!
 
-Kenji Kaneshige (7):
-      shpchp: add message about shpchp_slot_with_bus option
-      pciehp: fix NULL dereference in interrupt handler
-      pciehp: fix slow probing
-      pciehp: poll cmd completion if hotplug interrupt is disabled
-      pciehp: move msleep after power off
-      pci hotplug core: add check of duplicate slot name
-      pciehp: add message about pciehp_slot_with_bus option
-
-Shaohua Li (1):
-      PCI: don't enable ASPM on devices with mixed PCIe/PCI functions
-
- hotplug/pci_hotplug_core.c |    7 ++
- hotplug/pciehp.h           |   11 ++-
- hotplug/pciehp_core.c      |    6 +-
- hotplug/pciehp_ctrl.c      |   36 ++++++------
- hotplug/pciehp_hpc.c       |  129 ++++++++++++++++++++++++++++++++++-----------
- hotplug/shpchp_core.c      |    4 +
- pcie/aspm.c                |   20 ++++++
- 7 files changed, 159 insertions(+), 54 deletions(-)
+						- Ted
