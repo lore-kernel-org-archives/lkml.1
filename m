@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYE0Qb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYE0QiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbYE0Qb2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 12:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYE0QbV
+	id S1758055AbYE0QiJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 12:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbYE0Qhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 12:31:21 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46635 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754717AbYE0QbU (ORCPT
+	Tue, 27 May 2008 12:37:55 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51684 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755349AbYE0Qhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 12:31:20 -0400
-Date: Tue, 27 May 2008 13:31:00 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Alan Cox <alan@redhat.com>, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] video4linux: Push down the BKL
-Message-ID: <20080527133100.6a9302fb@gaivota>
-In-Reply-To: <20080527094144.1189826a@bike.lwn.net>
-References: <20080522223700.2f103a14@core>
-	<20080526135951.7989516d@gaivota>
-	<20080526202317.GA12793@devserv.devel.redhat.com>
-	<20080526181027.1ff9c758@gaivota>
-	<20080526220154.GA15487@devserv.devel.redhat.com>
-	<20080527101039.1c0a3804@gaivota>
-	<20080527094144.1189826a@bike.lwn.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Tue, 27 May 2008 12:37:54 -0400
+Subject: Re: MMIO and gcc re-ordering issue
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: benh@kernel.crashing.org, Arjan van de Ven <arjan@infradead.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <adaprr721c6.fsf@cisco.com>
+References: <1211852026.3286.36.camel@pasglop>
+	 <20080526.184047.88207142.davem@davemloft.net>
+	 <1211854540.3286.42.camel@pasglop>
+	 <20080526.192812.184590464.davem@davemloft.net>
+	 <20080526204233.75b71bb8@infradead.org> <1211872130.3286.64.camel@pasglop>
+	 <adaprr721c6.fsf@cisco.com>
+Content-Type: text/plain
+Date: Tue, 27 May 2008 11:37:48 -0500
+Message-Id: <1211906268.3435.44.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 09:41:44 -0600
-Jonathan Corbet <corbet@lwn.net> wrote:
-
-
-> > A next step would be to move the drivers to use the serialized one. 
+On Tue, 2008-05-27 at 08:50 -0700, Roland Dreier wrote:
+> > Though it's my understanding that at least ia64 does require the
+>  > explicit barriers anyway, so we are still in a dodgy situation here
+>  > where it's not clear what drivers should do and we end up with
+>  > possibly excessive barriers on powerpc where I end up with both
+>  > the wmb/rmb/mb that were added for ia64 -and- the ones I have in
+>  > readl/writel to make them look synchronous... Not nice.
 > 
-> So we're replacing the big kernel lock with the big v4l2 lock.  That
-> might help the situation, but you'd need to be sure to serialize
-> against other calls (open(), for example) which are also currently done
-> under the BKL.
-
-True, but on a quick analysis, I suspect that this is already somewhat broken
-on some drivers.
-
-Since the other methods don't explicitly call BKL (and, AFAIK, kernel open
-handler don't call it neither), if a program 1 is opening a device and
-initializing some data, and a program 2 starts doing ioctl, interrupting
-program 1 execution in the middle of a data initialization procedure, you may
-have a race condition, since some devices initialize some device global data
-during open [1].
-
-[1] For example: cx88 and saa7134 will change some data structures if you open
-a device via /dev/radio or via /dev/video. So, if program 1 opens as radio and
-program 2 opens as video, you may have a race condition. A way to fix this is to
-initialize such structs only by the first program that is opening the device,
-and serialize a concurrent open.
-
-> > IMO, we need to create a multi-thread stress userspace tool for
-> > checking the locks at the ioctls. There are a few testing utils at
-> > mercurial tree, under v4l2-apps/test. This can be a starting point
-> > for this tool. Also, Brandon improved one of those tools to work with
-> > multithread.
+> ia64 is a disaster with a slightly different ordering problem -- the
+> mmiowb() issue.  I know Ben knows far too much about this, but for big
+> SGI boxes, you sometimes need mmiowb() to avoid problems with driver
+> code that does totally sane stuff like
 > 
-> I don't think that stress tools are the way to eliminate the BKL.
-> You'll never find all the problems that way.  There's really no way to
-> avoid the task of actually *looking* at each driver and ensuring that
-> it has its act together with regard to locking.
+> 	spin_lock(&mmio_lock);
+> 	writel(val1, reg1);
+> 	writel(val2, reg2);
+> 	spin_unlock(&mmio_lock);
+> 
+> If that snippet is called on two CPUs at the same time, then the device
+> might see a sequence like
+> 
+> 	CPU1 -- write reg1
+> 	CPU2 -- write reg1
+> 	CPU1 -- write reg2
+> 	CPU2 -- write reg2
+> 
+> in spite of the fact that everything is totally ordered on the CPUs by
+> the spin lock.
+> 
+> The reason this is such a disaster is because the code looks right,
+> makes sense, and works fine on 99.99% of all systems out there.  So I
+> would bet that 99% of our drivers have missing mmiowb() "bugs" -- no one
+> has plugged the hardware into an Altix box and cared enough to stress
+> test it.
+> 
+> However for the issue at hand, my expectation as a driver writer is that
+> readl()/writel() are ordered with respect to MMIO operations, but not
+> necessarily with respect to normal writes to coherent CPU memory.  And
+> I've included explicit wmb()s in code I've written like
+> drivers/infiniband/hw/mthca.
 
-True. Yet, just looking at the code may not be enough, since people make
-mistakes. The recent changes at videobuf lock showed this. The lock fix
-patches caused several new locking issues.
+Actually, this specifically should not be.  The need for mmiowb on altix
+is because it explicitly violates some of the PCI rules that would
+otherwise impede performance.   The compromise is that readX on altix
+contains the needed dma flush but there's a variant operator,
+readX_relaxed that doesn't (for drivers that know what they're doing).
+The altix critical drivers have all been converted to use the relaxed
+form for performance, and the unconverted ones should all operate just
+fine (albeit potentially more slowly).
 
-It is safer to have a tool to test and stress the driver before going to
-production.
+You can see all of this in include/asm-ia64/sn/io.h
 
-Cheers,
-Mauro
+It is confusing to me that sn_dma_flush() and sn_mmiowb() have different
+implementations, but I think both fix the spinlock problem you allude to
+by ensuring the DMA operation is completed before the CPU instruction is
+executed.
+
+James
+
+
