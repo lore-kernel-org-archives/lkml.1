@@ -1,162 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbYE0OEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYE0OIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbYE0OEE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 10:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbYE0OD4
+	id S1757974AbYE0OIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 10:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbYE0OIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 10:03:56 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:45996 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756782AbYE0ODz (ORCPT
+	Tue, 27 May 2008 10:08:40 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40278 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757296AbYE0OIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 10:03:55 -0400
-Date: Tue, 27 May 2008 19:34:40 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, venkatesh.pallipadi@intel.com,
-       suresh.b.siddha@intel.com, Michael Neuling <mikey@neuling.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
-Message-ID: <20080527140440.GD5181@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-	Michael Neuling <mikey@neuling.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526085000.33787eac@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 27 May 2008 10:08:39 -0400
+Message-Id: <1211897317.22073.1255269155@webmail.messagingengine.com>
+X-Sasl-Enc: 46d771SsaS6opKdXCEq9Dk82YAsumlKLkkQUUA8fqn2o 1211897317
+From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+To: "Ivo van Doorn" <ivdoorn@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>,
+       "Dmitry Torokhov" <dtor@mail.ru>
 Content-Disposition: inline
-In-Reply-To: <20080526085000.33787eac@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
+   <200805201209.06902.IvDoorn@gmail.com>
+   <20080522205153.GA18483@khazad-dum.debian.net>
+   <200805231615.33414.IvDoorn@gmail.com>
+Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL RADIOS
+   OFF
+In-Reply-To: <200805231615.33414.IvDoorn@gmail.com>
+Date: Tue, 27 May 2008 11:08:37 -0300
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven <arjan@infradead.org> [2008-05-26 08:50:00]:
-
-> On Mon, 26 May 2008 20:01:33 +0530
-> Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+On Fri, 23 May 2008 16:15:33 +0200, "Ivo van Doorn" <ivdoorn@gmail.com> said:
+> On Thursday 22 May 2008, Henrique de Moraes Holschuh wrote:
+> > What makes SW_RFKILL_ALL special, is that it is the kernel view of *The*
+> > RFKill Switch.  SW_RFKILL_ALL is the event you get when the user
+> > manipulates the very *thing* that created the "rfkill switch" term.
 > 
-> > The following RFC patch tries to implement scaled CPU utilisation
-> > statistics using APERF and MPERF MSR registers in an x86 platform.
-> > 
-> > The CPU capacity is significantly changed when the CPU's frequency is
-> > reduced for the purpose of power savings.  The applications that run
-> > at such lower CPU frequencies are also accounted for real CPU time by
-> > default.  If the applications have been run at full CPU frequency,
-> > they would have finished the work faster and not get charged for
-> > excessive CPU time.
-> > 
-> > One of the solution to this problem it so scale the utime and stime
-> > entitlement for the process as per the current CPU frequency.  This
-> > technique is used in powerpc architecture with the help of hardware
-> > registers that accurately capture the entitlement.
-> > 
+> So do keys that are pressed that only send the KEY_WLAN, KEY_BLUETOOTH or
+> KEY_UWB signals. They all indicate the key has been pressed and the
+> radios
+> should be turned on/off.
+
+Indicate versus enforce.  There is a BIG difference there, and you can see it
+even on how it was implemented by the laptop vendor.  The enforcing switch
+has hardware behind it to make sure it works.  For the indication keys, you
+are lucky if you get firmware that can make it work without the O.S.
+
+> > You get that event when someone moves that slider switch in the side/top
+> > of a laptop which has to kill all RF output in hardware as far as safety
+> > regulations go.  Therefore, it refers to the only rfkill switch that has
+> > guidelines that say that it must always work, and that it must not be
+> > possible to override it in software.
 > 
-> there are some issues with this unfortunately, and these make it
-> a very complex thing to do. 
-> Just to mention a few:
-> 1) What if the BIOS no longer allows us to go to the max frequency for
-> a period (for example as a result of overheating); with the approach
-> above, the admin would THINK he can go faster, but he cannot in reality,
-> so there's misleading information (the system looks half busy, while in
-> reality it's actually the opposite, it's overloaded). Management tools
-> will take the wrong decisions (such as moving MORE work to the box, not
-> less)
-> 2) On systems with Intel Dynamic Acceleration technology, you can get
-> over 100% of cycles this way. (For those who don't know what IDA is;
-> IDA is basically a case where if your Penryn based dual core laptop is
-> only using 1 core, the other core can go faster than 100% as long as
-> thermals etc allow it). How do you want to deal with this?
+> That is a valid point, and rfkill is supposed to do that, but making
+> a difference between RFKILL_ALL and the individual types is wrong
+> because that won't result in a clearly defined expected behavior for all
+> rfkill keys.
 
-Hi Arjan,
+IMO, the big difference between regular KEY_* and RFKILL_ALL is that
+RFKILL_ALL has EPO (emergency power-off) semanthics, while the others don't.
 
-Thanks you for the inputs.  The above issues are very valid and our
-solution should be able to react appropriately to the above situation.
+KEY_WLAN is usually easily overriden in firmware and software, vendors often
+don't even bother to implement it in firmware, it is just software.  RFKILL_ALL
+switches cannot be overriden at all in any hardware worth its weight, and they
+work even if the entire system has gone out for lunch and is deadlocked.
+That's quite a big difference.
 
-What we are proposing is a scaled time value that is scaled to the
-current CPU capacity.  If the scaled utilisation is 50% when the CPU
-is at 100% capacity, it is expected to remain at 50% even if the CPU's
-capacity is dropped to 50%, while the traditional utilisation value
-will be 100%.
+The only reason I don't usually call the hardware rfkill switches "radio EPO
+switches" is because they are not big, red, and shaped like a mushroom.  But
+they are in fact required to act like one in airline regulations, AFAIK.  And
+that certainly matches the good implementations of the hardware rfkill switch
+I know of (they wire-kill the radios, not even firmware gets in the way).
 
-The problem in the above two cases is that we had assumed that the
-maximum CPU capacity is 100% at normal capacity (without IDA).
+So yes, I do feel RFKILL_ALL is different, and it warrants EPO semanthics in
+the kernel, while all other rfkill events, such as KEY_WLAN, don't.
 
-If the CPU is at half the maximum frequency, then scaled stats should
-show 50%.  
+I don't feel strongly about not giving EPO semanthics to other rfkill events,
+but I recommend against giving anything else EPO semanthics in rfkill.
 
-Now in case 1, the CPU's capacity cannot be increased further and you
-expect to have shown 100% in scaled stats as well.  If the process ran
-for 10s, then the scaled time should be 10s since we cannot make the
-process run faster.
+> > Too bad that doesn't apply to "removable" radio transmitters, like
+> > PCMCIA and ExpressCard WLAN cards, USB RF transmitters, and so on...
+> > probably, the user is expected to yank them off when he moves the switch
+> > to the "no radios working here!" position.  Well, we can do better.  We
+> > can make it apply to these other radio transmitters, too.
+> 
+> Through the write-only rfkill class right? ;)
 
-In case 2, the CPU's capacity increases beyond assumed 100% and now
-the tasks will have excess of 100% utilisation.  If the real run time
-is 5s, then scaled runtime will be more than 5s say 7s.  This
-essentially says that the process has done work worth of 7s of CPU
-time when it was at 100% capacity.
+More like through the new read-write/write-only rfkill class, since you have
+already ACKed those patches, but yes :-)
 
-The point I am trying to make is whether scaling should be done
-relative to CPUs designed maximum capacity or maximum capacity under
-current constraints is to be discussed.
+> > IMO, "kill ALL radios" events are is the only kind of rfkill input event
+> > that have to *always work*, even if something in userspace tried to
+> > configure it not to.
+> 
+> Well the definition of "ALL radios" is the part that is the question,
+> when the KEY_WLAN is
+> pressed it would be "ALL WLAN radios" and should still have the same
+> rules for allowing
+> or disallowing userspace to overwrite the status.
 
-Case A:
-------
+Not really.  If you are concerned with a type, it is not an emergency situation,
+nor is it a "you are entering a no-RF-emission area" situation.  There *IS* a
+difference when a human decides to shut down EVERYTHING regardless of type, or
+when he just wants the WLAN to stop wasting power but still wants Bluetooth up
+so that he can listen to music on his wireless headphones.
 
-Scaled stats is stats relative to maximum designed capacity including
-IDA
+And that notion carried over as the UI for circuit switches.  There IS a UI
+notion behind "master switches", and it is very different from the notion behind
+"sector switches".  And KEY_WLAN would just be a sector switch, with each 
+wlan device being the room switch... while RFKILL_ALL is certainly The Master
+Switch.
 
-In this case nominal utilisation will always be less than 100%, but
-the higher level software need to know the environment and interpret
-the values so as to determine the remaining capacity.
+You will find this basic UI notion in *everything* dealing with an hierarchy of
+switches: you have it on the power-grid and the mains input on your house, you
+have it on your hydraulic pipes, and you have it in just about everything that
+has not been bitten by the "standby" disease.  When you place a master switch in
+"OFF" state, it bloody well *STAYS* *OFF*, and everything else after it is also
+FORCED OFF, no matter what.
 
-Example: Assume IDA provides a 20% boost
+But of course, you have to make sure the master switch WILL bloody well stay off
+when off by design.  You engineer it so that all possible failure modes will
+cause it to go to the off state.
 
-We know that normal capacity will be 83%, with a 20% boosting in case
-of IDA, we can reach 100%.
+I would really appreciate that the rfkill class would abide to this UI notion for
+the master rfkill events (*_RFKILL_ALL).
 
-If there was a P-State constraint due to power/thermal envelop, the we
-know that the maximum capacity will be reduced to say 40%.
-
-Remaining cap = Available cap - Current Cap
-
-Available capacity is a dynamically varying quantity but still the
-stats are useful and interpretable.
-
-Case B:
-------
-
-Scaled stats is stats relative to current available capacity.
-
-In this case we assume 100% means current available capacity and hence
-any scaled utilisation less than 100% can be counted as spare capacity.
-
-If we are constrained to half frequency, and we are running at 1/4th
-freq, then our scaled stats will be 50%, implying that we can still
-double our capacity by switching to next higher frequency.
-
-This is not very elegant statistics, because the scaled 'time' value
-will not make sense after a long runtime over various transitions
-through the constraints and acceleration.
-
-In this case the OS needs to know about the constraint. The higher
-level management software will not be able to interpret the scaled
-stats at the moment when the constraint has changed.  They need to
-know about the constraints and changes as well.
-
-I will prefer metric as in case A.  I assume even in case of IDA, we
-will know the CPU's maximum capacity with acceleration, and its
-nominal capacity. APERF/MPERF ratio can be interpreted correctly even
-if it exceeds 1.
-
-Please let us know if we can improve the framework to include both the
-power constraint case and acceleration case.
-
-Thanks,
-Vaidy
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
 
