@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbYE0Xu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbYE0X6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760446AbYE0Xu7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 19:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759538AbYE0Xur
+	id S1759943AbYE0X6h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 19:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYE0X62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 19:50:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58802 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759297AbYE0Xuq (ORCPT
+	Tue, 27 May 2008 19:58:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:22202 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753577AbYE0X62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 19:50:46 -0400
-Date: Tue, 27 May 2008 16:50:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Tony Luck" <tony.luck@intel.com>
-Cc: izumi.taku@jp.fujitsu.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ACPI: add DMI info to enable OSI(Linux) on
- PRIMEQUEST
-Message-Id: <20080527165043.6522f061.akpm@linux-foundation.org>
-In-Reply-To: <12c511ca0805271641r68d50d3do9f6427a8dc6ad469@mail.gmail.com>
-References: <4816F9B9.3090609@jp.fujitsu.com>
-	<4836660B.3080406@jp.fujitsu.com>
-	<483667A4.9000606@jp.fujitsu.com>
-	<20080527162029.e549a226.akpm@linux-foundation.org>
-	<12c511ca0805271641r68d50d3do9f6427a8dc6ad469@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 May 2008 19:58:28 -0400
+Message-ID: <385edefc0805271658i2adee6a2k353582a636a59742@mail.gmail.com>
+Date: Tue, 27 May 2008 16:58:25 -0700
+From: "PJ Hyett" <pj@github.com>
+To: linux-kernel@vger.kernel.org
+Subject: New Unofficial Git Mirror at GitHub
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 16:41:59 -0700
-"Tony Luck" <tony.luck@intel.com> wrote:
+Hey folks,
 
-> I'm not sure that sharing drivers/acpi/blacklist.c between different
-> architectures is wise idea.  There are entries in there that make
-> blanket decisions for all machines made by an OEM.
-> 
-> It seems quite possible that an OEM that makes boxes using
-> different processor architectures might make different mistakes
-> in the respective BIOS teams.
-> 
+A buddy of mine at Google was looking for an easier way to fork
+Linus's tree, so I setup a mirror over at GitHub and I figured I
+should share it with the list:
 
-So...  what's the fix?  We don't appear to have a blacklisting table
-under arch/ia64.  Should `#ifdef CONFIG_IA64' be added to
-drivers/acpi/blacklist.c entries?
+http://github.com/github/linux-2.6/tree/master
+
+We built GitHub to facilitate dead-simple contributions to open
+sources projects by making code forking a one-click solution.
+
+Couple of things:
+1) We only track your fork's differences to the source tree, so while
+the free plan has a 100mb limit, that shouldn't be a concern for most
+2) We're powered by beefy hardware, the site isn't running off a box
+in a basement :-)
+3) Tell your friends
+
+
+Criticism, feedback, and bug reports are always welcome (feel free to
+email me off list).
+
+Thanks,
+PJ Hyett
+http://github.com/pjhyett
