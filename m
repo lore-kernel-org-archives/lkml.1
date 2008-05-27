@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYE0PEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbYE0PIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170AbYE0PEn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 11:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbYE0PEf
+	id S1757887AbYE0PIr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 11:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbYE0PIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 11:04:35 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:55856 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756271AbYE0PEe (ORCPT
+	Tue, 27 May 2008 11:08:38 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:36843 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756124AbYE0PIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 11:04:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WPnZs605LZOy7OXr6+hsI4Tz/FE5PsDmd2hMOqtUoVwr0krVUKAobTDiG1fXlCg6p4+0So6j8x5pCHbE2UWpDTZNJJHADIC5Qv8GQfc5RMzhWxEI+EQXxLiYrFnsLnIkWJg4zXntimKEr2TeeIvnl1hkKE13Ip51QcwK/aOalUI=
-Message-ID: <dd18b0c30805270804p454a8fd9x2a0484c482c89440@mail.gmail.com>
-Date: Tue, 27 May 2008 15:04:20 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: appletouch after wakeup
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200805271040.44203.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 27 May 2008 11:08:38 -0400
+Subject: Re: [PATCH] net: wireless: airo semaphore to mutex
+From: Daniel Walker <dwalker@mvista.com>
+To: Dan Williams <dcbw@redhat.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, linville@tuxdriver.com,
+       rusty@rustcorp.com.au, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, arjan@infradead.org
+In-Reply-To: <1211896108.1746.3.camel@localhost.localdomain>
+References: <20080522232103.120033152@mvista.com>
+	 <20080527131325.GJ30894@parisc-linux.org>
+	 <1211896108.1746.3.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 27 May 2008 08:08:35 -0700
+Message-Id: <1211900915.18130.251.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30805262029me288690y237f995fb63ccf54@mail.gmail.com>
-	 <200805271040.44203.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 8:40 AM, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Dienstag, 27. Mai 2008 05:29:04 schrieb Justin Mattock:
->> Hello; with 2.6.26-rc3 I've notice appletouch is going out of whack,
->> here's what I see after waking the machine from suspend,
->> [ 8186.661313] appletouch: incomplete data package (first byte: 2, length: 4).
->> Keep in mind there is not just one of these messages, the entire dmesg
->> is filled.
->
-> Immediately after resumption? STR or STD?
->
->        Regards
->                Oliver
->
->
 
-I have to admit I don't know what STR or STD is for computer terminology!!
-regards;
+On Tue, 2008-05-27 at 09:48 -0400, Dan Williams wrote:
+> 
+> Yeah, that might be the right way to go.  If you want to jump into the
+> driver, feel quite free, but I don't think you need to go into too much
+> detail with it.  Your overall behavior analysis is right on the mark
+> already.
 
--- 
-Justin P. Mattock
+I think we could just remove the trylock from the interrupt case, and
+always force the wake_up_interruptible(&priv->thr_wait) case. It looks
+like the trylocking is just an optimization to save a wakeup ..
+
+Daniel
+
+ 
+
