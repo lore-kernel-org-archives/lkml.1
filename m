@@ -1,198 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbYE0PBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbYE0PDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758296AbYE0PBl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 11:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbYE0PBd
+	id S1757972AbYE0PDc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 11:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbYE0PDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 11:01:33 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:60954 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756236AbYE0PBc (ORCPT
+	Tue, 27 May 2008 11:03:25 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53081 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755833AbYE0PDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 11:01:32 -0400
-Date: Tue, 27 May 2008 20:32:44 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, venkatesh.pallipadi@intel.com,
-       suresh.b.siddha@intel.com, Michael Neuling <mikey@neuling.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 2/3] Make calls to account_scaled_stats
-Message-ID: <20080527150244.GF5181@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-	Michael Neuling <mikey@neuling.org>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526143146.24680.36724.stgit@drishya.in.ibm.com> <483AFEDC.6040309@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <483AFEDC.6040309@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 27 May 2008 11:03:24 -0400
+Date: Tue, 27 May 2008 12:03:03 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, video4linux-list@redhat.com
+Subject: Re: [PATCH] dvb-usb/gp8psk.c: return -errno rather than errno
+Message-ID: <20080527120303.639a5d04@gaivota>
+In-Reply-To: <483BBFD1.3090204@cn.fujitsu.com>
+References: <483BBFD1.3090204@cn.fujitsu.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-05-26 23:48:04]:
+On Tue, 27 May 2008 16:01:21 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> Vaidyanathan Srinivasan wrote:
-> > Hook various accounting functions to call scaled stats
-> > 
-> > * Hook porcess contect switch: __switch_to()
-> > * Hook IRQ handling account_system_vtime() in hardirq.hA
-> > * Update __delayacct_add_tsk() to take care of scaling by 1000
-> > * Update bacct_add_tsk() to take care of scaling by 1000
-> > 
-> > Signed-off-by: Amit K. Arora <aarora@linux.vnet.ibm.com>
-> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  arch/x86/kernel/process_32.c |    8 ++++++++
-> >  include/linux/hardirq.h      |    4 ++++
-> >  kernel/delayacct.c           |    7 ++++++-
-> >  kernel/timer.c               |    2 --
-> >  kernel/tsacct.c              |   10 ++++++++--
-> >  5 files changed, 26 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> > index f8476df..c81a783 100644
-> > --- a/arch/x86/kernel/process_32.c
-> > +++ b/arch/x86/kernel/process_32.c
-> > @@ -56,6 +56,9 @@
-> >  #include <asm/cpu.h>
-> >  #include <asm/kdebug.h>
-> > 
-> > +extern void account_scaled_stats(struct task_struct *tsk);
-> > +extern void reset_for_scaled_stats(struct task_struct *tsk);
-> > +
-> >  asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
-> > 
-> >  static int hlt_counter;
-> > @@ -660,6 +663,11 @@ struct task_struct * __switch_to(struct task_struct *prev_p, struct task_struct
-> >  		loadsegment(gs, next->gs);
-> > 
-> >  	x86_write_percpu(current_task, next_p);
-> > +	/* Account scaled statistics for the task leaving CPU */
-> > +	account_scaled_stats(prev_p);
-> > +	barrier();
-> > +	/* Initialise stats counter for new task */
-> > +	reset_for_scaled_stats(next_p);
-> > 
+> gp8psk_power_ctrl() returns -EINVAL in some failing paths, but
+> returns EINVAL in some other paths.
 > 
-> This is a bad place to hook into. Can't we do scaled accounting they way we do
-> it for powerpc (SPURR)? I would rather hook into account_*time
-
-Agreed and I have also documented it in the intro.  I will try to
-remove them in the next iteration.
-
-> 
-> >  	return prev_p;
-> >  }
-> > diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-> > index 181006c..4458736 100644
-> > --- a/include/linux/hardirq.h
-> > +++ b/include/linux/hardirq.h
-> > @@ -7,6 +7,9 @@
-> >  #include <asm/hardirq.h>
-> >  #include <asm/system.h>
-> > 
-> > +/* TBD: Add config option */
-> > +extern void account_scaled_stats(struct task_struct *tsk);
-> > +
-> >  /*
-> >   * We put the hardirq and softirq counter into the preemption
-> >   * counter. The bitmask has the following meaning:
-> > @@ -115,6 +118,7 @@ struct task_struct;
-> >  #ifndef CONFIG_VIRT_CPU_ACCOUNTING
-> >  static inline void account_system_vtime(struct task_struct *tsk)
-> >  {
-> > +	account_scaled_stats(tsk);
-> >  }
-> >  #endif
-> > 
-> > diff --git a/kernel/delayacct.c b/kernel/delayacct.c
-> > index 10e43fd..3e2938f 100644
-> > --- a/kernel/delayacct.c
-> > +++ b/kernel/delayacct.c
-> > @@ -117,7 +117,12 @@ int __delayacct_add_tsk(struct taskstats *d, struct task_struct *tsk)
-> > 
-> >  	tmp = (s64)d->cpu_scaled_run_real_total;
-> >  	cputime_to_timespec(tsk->utimescaled + tsk->stimescaled, &ts);
-> > -	tmp += timespec_to_ns(&ts);
-> > +	/* HACK: Remember, we multipled the cputime_t by 1000 to include
-> > +	 * fraction.  Now it is time to scale it back to correct 'ns' value.
-> > +	 * Perhaps, we should use nano second unit (u64 type) for utimescaled 
-> > +	 * and stimescaled?
-> > +	 */
-> > +	tmp += div_s64(timespec_to_ns(&ts),1000);
-> 
-> 1000 is a bit magical, please use a meaningful #define
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.cn>
+> ---
+Thanks Li. However, I've committed a few days ago a similar patch from Marcin.
 
 
-Sure I can use a #define.... anyway this needs to be solved.
-This is documented in the intro and explained in other email.
- 
-> >  	d->cpu_scaled_run_real_total =
-> >  		(tmp < (s64)d->cpu_scaled_run_real_total) ? 0 : tmp;
-> > 
-> > diff --git a/kernel/timer.c b/kernel/timer.c
-> > index ceacc66..de8a615 100644
-> > --- a/kernel/timer.c
-> > +++ b/kernel/timer.c
-> > @@ -964,10 +964,8 @@ void account_process_tick(struct task_struct *p, int user_tick)
-> > 
-> >  	if (user_tick) {
-> >  		account_user_time(p, one_jiffy);
-> > -		account_user_time_scaled(p, cputime_to_scaled(one_jiffy));
-> >  	} else {
-> >  		account_system_time(p, HARDIRQ_OFFSET, one_jiffy);
-> > -		account_system_time_scaled(p, cputime_to_scaled(one_jiffy));
-> >  	}
-> 
-> Why couldn't we leverage these functions here?
-
-We don't know the scaling ratio at this time.  The ratio is being
-calculated at every context switch by sampling APERF/MPERF when the
-process occupies the CPU and when it leave the CPU.
-
-We should use these functions once I get centralised scaling ratio
-computation done from cpufreq driver.  Out-of-band frequency variation
-needs to be solved for the other method.  Current implementation will
-do correct accounting even if the freq variation is out-of-band.
-
---Vaidy
-
-> >  }
-> >  #endif
-> > diff --git a/kernel/tsacct.c b/kernel/tsacct.c
-> > index 4ab1b58..ee0d93b 100644
-> > --- a/kernel/tsacct.c
-> > +++ b/kernel/tsacct.c
-> > @@ -62,10 +62,16 @@ void bacct_add_tsk(struct taskstats *stats, struct task_struct *tsk)
-> >  	rcu_read_unlock();
-> >  	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
-> >  	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
-> > +	/* HACK: cputime unit is jiffies on x86 and not good for fractional 
-> > +	 * additional.  cputime_t type {u,s}timescaled is multiplied by 
-> > +	 * 1000 for scaled accounting.  Hence, cputime_to_msecs will actually 
-> > +	 * give the required micro second value.  The multiplier 
-> > +	 * USEC_PER_MSEC has been dropped.
-> > +	 */
-> >  	stats->ac_utimescaled =
-> > -		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
-> > +		cputime_to_msecs(tsk->utimescaled);
-> >  	stats->ac_stimescaled =
-> > -		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
-> > +		cputime_to_msecs(tsk->stimescaled);
-> >  	stats->ac_minflt = tsk->min_flt;
-> >  	stats->ac_majflt = tsk->maj_flt;
-> > 
-> > 
-> 
-> 
-> -- 
-> 	Warm Regards,
-> 	Balbir Singh
-> 	Linux Technology Center
-> 	IBM, ISTL
+Cheers,
+Mauro
