@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbYE0Ozb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758344AbYE0Ozn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398AbYE0Ozb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 10:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbYE0OzQ
+	id S1758344AbYE0Ozn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 10:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbYE0Oz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 10:55:16 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:35472 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756235AbYE0OzN (ORCPT
+	Tue, 27 May 2008 10:55:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:56708 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757906AbYE0Oz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 10:55:13 -0400
+	Tue, 27 May 2008 10:55:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=HRVIX/eXesGIVCi8RhHgvxfWhnnTG6PdrCEc1BJZMbmJ7KT5zgKvbrslDpY+/3d/YWYwYaMj3K+tFjeYflAjQXmbWKEZv19c/BG3O36tSL0pGplQSLPU/1RBuUAnISCv0zMPIMavhsFosEP8HmCMcLyc3kFKLjyjjpRHpE7sFjg=
-Date: Tue, 27 May 2008 10:55:06 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Pau Oliva Fora (pof)" <pau@eslack.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH resend] HTC Shift Touchscreen Driver
-Message-ID: <20080527105118.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080527144603.GA18796@s0.pofhq.net>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=AZ1clM3dtVMVb9yv+JpPe4zYh+8Zs15P2Cq+CP+A6E2gTTtmT8RdUPClH0QeqomnjDm0kCqU8V06kYND51vN0QzjqIKmv5twMJhmCGPDgMQVsyqAPWjPFDCvKy+5Vh81rXjBFtGOTFoj9+so/4XPRjcFbZ6+/T9ZJrDD7nYHEqA=
+Message-ID: <84144f020805270755h3759d2c0x19a05e5940eb152a@mail.gmail.com>
+Date: Tue, 27 May 2008 17:55:24 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Eric Sesterhenn" <snakebyte@gmx.de>
+Subject: Re: Redzone overwritten with CONFIG_SECURITY
+Cc: linux-kernel@vger.kernel.org, vegardno@ifi.uio.no
+In-Reply-To: <20080527140031.GA3380@alice>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080527144603.GA18796@s0.pofhq.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080526143422.GA3203@alice> <20080527140031.GA3380@alice>
+X-Google-Sender-Auth: 175a8e6b27dd9b79
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pau,
+Hi Eric,
 
-I have couple more comments...
+On Tue, May 27, 2008 at 5:00 PM, Eric Sesterhenn <snakebyte@gmx.de> wrote:
+> i tested a kmemcheck kernel as an attempt to debug
+> this further... seems CONFIG_SECURITY is unrelated to
+> this, but slub debugging only catches the
+> overwrite it if i enable CONFIG_SECURITY.
 
-On Tue, May 27, 2008 at 04:46:03PM +0200, Pau Oliva Fora (pof) wrote:
-> +
-> +static void htcpen_close(struct input_dev *dev)
-> +{
-> +	free_irq(HTCPEN_IRQ, dev);
+Unfortunately kmemcheck does not catch writes to red-zone so it won't
+help you debug the original issue.
 
-No, free_irq() should go into htcpen_remove(). Otherwise if we don't
-unload the driver and open the device again we will not have IRQ
-handler installed.
-
-> +	outb_p(DEVICE_DISABLE, HTCPEN_PORT_INIT);
-> +}
-> +
-> +static int __devinit htcpen_isa_probe(struct device *dev, unsigned int id)
-> +{
-> +	int err;
-> +	struct input_dev *htcpen_dev;
-> +
-> +	inb_p(HTCPEN_PORT_IRQ_CLEAR);
-
-You should not touch the ports until you resetved them with request
-region.
-
--- 
-Dmitry
+                        Pekka
