@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759783AbYE0Vro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbYE0VuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759783AbYE0Vro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbYE0Vrh
+	id S1759711AbYE0VuR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbYE0VuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:47:37 -0400
-Received: from gw.goop.org ([64.81.55.164]:43351 "EHLO mail.goop.org"
+	Tue, 27 May 2008 17:50:04 -0400
+Received: from sous-sol.org ([216.99.217.87]:45799 "EHLO sous-sol.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756463AbYE0Vrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:47:37 -0400
-Message-ID: <483C8157.7080702@goop.org>
-Date: Tue, 27 May 2008 22:47:03 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	id S1758363AbYE0VuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 17:50:03 -0400
+Date: Tue, 27 May 2008 14:42:06 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
-References: <200805110030.15510.yhlu.kernel@gmail.com>	 <200805180118.57863.yhlu.kernel@gmail.com>	 <200805211840.18619.yhlu.kernel@gmail.com>	 <200805251000.10205.yhlu.kernel@gmail.com>	 <alpine.LFD.1.10.0805271744080.3295@apollo.tec.linutronix.de>	 <483C70F9.2030901@goop.org>	 <86802c440805271406l4348db33r5622c440b494baa2@mail.gmail.com>	 <483C7BB0.6080901@goop.org> <86802c440805271435l744eab84xe55ac9ce6196c03b@mail.gmail.com>
-In-Reply-To: <86802c440805271435l744eab84xe55ac9ce6196c03b@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH] security: was "Re: capget() overflows buffers."
+Message-ID: <20080527214206.GA30402@sequoia.sous-sol.org>
+References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org> <20080522233757.GD30402@sequoia.sous-sol.org> <48366D9A.70806@kernel.org> <20080523155718.GI30402@sequoia.sous-sol.org> <4837B4F5.4000100@kernel.org> <20080524080734.GV30402@sequoia.sous-sol.org> <483B611B.6040006@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483B611B.6040006@kernel.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> thanks for the explanation...
->
-> method 1 need to be done.
->
-> BTW, XEN PV only support 32 bit?
->   
+* Andrew G. Morgan (morgan@kernel.org) wrote:
+> How about the attached for a combined patch? Chris, the only change over
+> last time is basically your suggested code change, with more comments
+> and a less cautious warning...
 
-At the moment, but 64-bit is being worked on.  Any solution must work 
-for both.
+Looks good, I'll queue it (I added
 
-    J
+  Fixes issue reported in https://bugzilla.redhat.com/show_bug.cgi?id=447518.
+  Thanks to Bojan Smojver for the report.
+
+to the commit message).
+
+thanks,
+-chris
