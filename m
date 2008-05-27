@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYE0BDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbYE0BIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbYE0BDO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 21:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYE0BDC
+	id S1756187AbYE0BIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 21:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbYE0BHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 21:03:02 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:59454 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754256AbYE0BDA (ORCPT
+	Mon, 26 May 2008 21:07:55 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34858 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753272AbYE0BHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 21:03:00 -0400
-Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-In-Reply-To: <20080523163027.50021215.randy.dunlap@oracle.com>
-References: <1211555145.16195.18.camel@new-host>
-	 <20080523163027.50021215.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Mon, 26 May 2008 21:02:56 -0400
-Message-Id: <1211850176.16742.13.camel@new-host.home>
+	Mon, 26 May 2008 21:07:54 -0400
+Date: Tue, 27 May 2008 10:13:02 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Taku Izumi <izumi.taku@jp.fujitsu.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ACPI: add DMI info to enable OSI(Linux) on
+ PRIMEQUEST
+Message-Id: <20080527101302.4bd49e6c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080526080614.GA28147@elf.ucw.cz>
+References: <4816F9B9.3090609@jp.fujitsu.com>
+	<4836660B.3080406@jp.fujitsu.com>
+	<483667A4.9000606@jp.fujitsu.com>
+	<20080525114308.GA5237@ucw.cz>
+	<483A6D15.6030701@jp.fujitsu.com>
+	<20080526080614.GA28147@elf.ucw.cz>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 May 2008 10:06:14 +0200
+Pavel Machek <pavel@suse.cz> wrote:
 
-On Fri, 2008-05-23 at 16:30 -0700, Randy Dunlap wrote:
-> On Fri, 23 May 2008 11:05:45 -0400 Mimi Zohar wrote:
+> On Mon 2008-05-26 16:56:05, Taku Izumi wrote:
+> >
+> > Thank you for your response.
+> >
+> >>> This patch adds DMI info to enable OSI(Linux) on PRIMEQUEST.
+> >>> (PRIMEQUEST is ia64 machine.)
+> >>
+> >> Why is it needed? Why needs your bios know whether it is Linux or BSD
+> >> or whatver running?
+> >
+> >   For memory hotplug support.
+> >   Memory hotplug doesn't work on PRIMEQUEST when OSI(Linux) is disabled.
 > 
-> 
-> > ---
-> > Index: linux-2.6.26-rc3-git2/security/integrity/ima/Kconfig
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6.26-rc3-git2/security/integrity/ima/Kconfig
-> > @@ -0,0 +1,68 @@
-> > +#
-> > +# IBM Integrity Measurement Architecture
-> > +#
-> > +
-> > +config IMA_MEASURE
-> > +	bool "TCG run-time Integrity Measurement Architecture(IMA)"
-> 
-> What is TCG?  It seems to be missing from all of those other TLAs.
+> So fix the BIOS: there's no reason why memory hotplug should not work
+> on BSD or Windows...
+> 									Pavel
+IIRC, PrimeQuest doesn't support BSD ;)
 
-TCG stands for Trusted Computing Group.
-(https://www.trustedcomputinggroup.org/faq/)
+It's not really for memory hotplug. The result of _OSI method (TOOS) is
+used for PCI, EC driver's behavior, etc.. (on my box) 
 
-Thank you for reviewing the code. I'll make the kernel doc, Kconfig
-and Makefile changes and repost.
+BTW, PrimeQuest's firmware is designed in 2.6.18 age and _heavily_ tested under
+_OSI("Linux") environments. So, the acpi layer which returns _OSI("Linux") 
+is valid for PrimeQuest. I don't hear a major firmware update for
+already-sold-hosts is scheduled.
 
-Mimi
-
-
+Thanks,
+-Kame
 
