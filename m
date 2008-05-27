@@ -1,71 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbYE0XEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbYE0XKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbYE0XEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 19:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbYE0XEV
+	id S1759354AbYE0XKH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 19:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbYE0XJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 19:04:21 -0400
-Received: from ozlabs.org ([203.10.76.45]:50312 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750911AbYE0XEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 19:04:20 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18492.37741.798622.696166@cargo.ozlabs.ibm.com>
-Date: Wed, 28 May 2008 09:04:13 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <483C7BE7.10204@nortel.com>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop>
-	<adaprr721c6.fsf@cisco.com>
-	<1211906268.3435.44.camel@localhost.localdomain>
-	<adad4n71wb3.fsf@cisco.com>
-	<1211910825.7160.1.camel@localhost.localdomain>
-	<adamymbvcxi.fsf@cisco.com>
-	<483C7BE7.10204@nortel.com>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+	Tue, 27 May 2008 19:09:56 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2677 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbYE0XJz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 19:09:55 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, agl@us.ibm.com,
+       wli@holomorphy.com, kenchen@google.com, dwg@au1.ibm.com,
+       andi@firstfloor.org, Mel Gorman <mel@csn.ul.ie>, dean@arctic.org,
+       abh@cray.com, Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/3] record MAP_NORESERVE status on vmas and fix small page mprotect reservations
+References: <exportbomb.1211929624@pinky>
+InReply-To: <exportbomb.1211929624@pinky>
+Date: Wed, 28 May 2008 00:09:45 +0100
+Message-Id: <1211929785.0@pinky>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen writes:
 
-> Roland Dreier wrote:
-> 
-> > Writes are posted yes, but not reordered arbitrarily.  If I have code like:
-> > 
-> > 	spin_lock(&mmio_lock);
-> > 	writel(val1, reg1);
-> > 	writel(val2, reg2);
-> > 	spin_unlock(&mmio_lock);
-> > 
-> > then I have a reasonable expectation that if two CPUs run this at the
-> > same time, their writes to reg1/reg2 won't be interleaved with each
-> > other (because the whole section is inside a spinlock).  And Altix
-> > violates that expectation.
-> 
-> Does that necessarily follow?
-> 
-> If you've got a large system with multiple pci bridges, could you end up 
-> with posted writes coming from different cpus taking a different amount 
-> of time to propagate to a device and thus colliding?
+When a small page mapping is created with mmap() reservations are created
+by default for any memory pages required.  When the region is read/write
+the reservation is increased for every page, no reservation is needed for
+read-only regions (as they implicitly share the zero page).  Reservations
+are tracked via the VM_ACCOUNT vma flag which is present when the region
+has reservation backing it.  When we convert a region from read-only to
+read-write new reservations are aquired and VM_ACCOUNT is set.  However,
+when a read-only map is created with MAP_NORESERVE it is indistinguishable
+from a normal mapping.  When we then convert that to read/write we are
+forced to incorrectly create reservations for it as we have no record of
+the original MAP_NORESERVE.
 
-On powerpc we explicitly make sure that can't happen.  That's the "do
-a sync in spin_unlock if there were any writels since the last
-spin_lock" magic.  The sync instruction makes sure the writes have got
-to the host bridge before the spinlock is unlocked.
+This patch introduces a new vma flag VM_NORESERVE which records the
+presence of the original MAP_NORESERVE flag.  This allows us to distinguish
+these two circumstances and correctly account the reserve.
 
-Paul.
+As well as fixing this FIXME in the code, this makes it much easier to
+introduce MAP_NORESERVE support for huge pages as this flag is available
+consistantly for the life of the mapping.  VM_ACCOUNT on the other hand
+is heavily used at the generic level in association with small pages.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ include/linux/mm.h |    1 +
+ mm/mmap.c          |    3 +++
+ mm/mprotect.c      |    6 ++----
+ 3 files changed, 6 insertions(+), 4 deletions(-)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 0ffed95..c2be4c3 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -100,6 +100,7 @@ extern unsigned int kobjsize(const void *objp);
+ #define VM_DONTEXPAND	0x00040000	/* Cannot expand with mremap() */
+ #define VM_RESERVED	0x00080000	/* Count as reserved_vm like IO */
+ #define VM_ACCOUNT	0x00100000	/* Is a VM accounted object */
++#define VM_NORESERVE	0x00200000	/* should the VM suppress accounting */
+ #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
+ #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
+ #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index fac6633..98ab014 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1101,6 +1101,9 @@ munmap_back:
+ 	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
+ 		return -ENOMEM;
+ 
++	if (flags & MAP_NORESERVE)
++		vm_flags |= VM_NORESERVE;
++
+ 	if (accountable && (!(flags & MAP_NORESERVE) ||
+ 			    sysctl_overcommit_memory == OVERCOMMIT_NEVER)) {
+ 		if (vm_flags & VM_SHARED) {
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index a5bf31c..e0d0a6d 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -155,12 +155,10 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
+ 	 * If we make a private mapping writable we increase our commit;
+ 	 * but (without finer accounting) cannot reduce our commit if we
+ 	 * make it unwritable again.
+-	 *
+-	 * FIXME? We haven't defined a VM_NORESERVE flag, so mprotecting
+-	 * a MAP_NORESERVE private mapping to writable will now reserve.
+ 	 */
+ 	if (newflags & VM_WRITE) {
+-		if (!(oldflags & (VM_ACCOUNT|VM_WRITE|VM_SHARED))) {
++		if (!(oldflags & (VM_ACCOUNT|VM_WRITE|
++						VM_SHARED|VM_NORESERVE))) {
+ 			charged = nrpages;
+ 			if (security_vm_enough_memory(charged))
+ 				return -ENOMEM;
