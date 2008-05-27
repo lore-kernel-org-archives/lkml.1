@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758504AbYE0PDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758170AbYE0PEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758504AbYE0PDr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 11:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbYE0PD3
+	id S1758170AbYE0PEn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 11:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbYE0PEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 11:03:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58242 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757204AbYE0PD2 (ORCPT
+	Tue, 27 May 2008 11:04:35 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:55856 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756271AbYE0PEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 11:03:28 -0400
-Date: Tue, 27 May 2008 08:03:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-In-Reply-To: <20080527090605.GA146@tv-sign.ru>
-Message-ID: <alpine.LFD.1.10.0805270746090.2958@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <20080527052318.GA28301@martell.zuzino.mipt.ru> <20080527090605.GA146@tv-sign.ru>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 27 May 2008 11:04:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WPnZs605LZOy7OXr6+hsI4Tz/FE5PsDmd2hMOqtUoVwr0krVUKAobTDiG1fXlCg6p4+0So6j8x5pCHbE2UWpDTZNJJHADIC5Qv8GQfc5RMzhWxEI+EQXxLiYrFnsLnIkWJg4zXntimKEr2TeeIvnl1hkKE13Ip51QcwK/aOalUI=
+Message-ID: <dd18b0c30805270804p454a8fd9x2a0484c482c89440@mail.gmail.com>
+Date: Tue, 27 May 2008 15:04:20 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: appletouch after wakeup
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200805271040.44203.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30805262029me288690y237f995fb63ccf54@mail.gmail.com>
+	 <200805271040.44203.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 27, 2008 at 8:40 AM, Oliver Neukum <oliver@neukum.org> wrote:
+> Am Dienstag, 27. Mai 2008 05:29:04 schrieb Justin Mattock:
+>> Hello; with 2.6.26-rc3 I've notice appletouch is going out of whack,
+>> here's what I see after waking the machine from suspend,
+>> [ 8186.661313] appletouch: incomplete data package (first byte: 2, length: 4).
+>> Keep in mind there is not just one of these messages, the entire dmesg
+>> is filled.
+>
+> Immediately after resumption? STR or STD?
+>
+>        Regards
+>                Oliver
+>
+>
 
+I have to admit I don't know what STR or STD is for computer terminology!!
+regards;
 
-On Tue, 27 May 2008, Oleg Nesterov wrote:
-
-> On 05/27, Alexey Dobriyan wrote:
-> >
-> > PREEMPT_RCU is in use, again.
-
-I do wonder if PREEMPT_RCU is broken.
-
-> > 0xffffffff802447cb is in find_pid_ns (kernel/pid.c:297).
-> > 292             struct hlist_node *elem;
-> > 293             struct upid *pnr;
-> > 294
-> > 295             hlist_for_each_entry_rcu(pnr, elem,
-> > 296                             &pid_hash[pid_hashfn(nr, ns)], pid_chain)
-> > 297                     if (pnr->nr == nr && pnr->ns == ns)
-
-> > general protection fault: 0000 [2] PREEMPT SMP DEBUG_PAGEALLOC
-> > RDX: 6b6b6b6b6b6b6b6b RSI: ffffffff80566760 RDI: 0000000000003cef
-
-That repeated 0x6b is POISON_FREE, and the code is
-
-	cmp    -0x10(%rdx),%edi
-
-which is the load of "pnr->nr". So 'pnr' has been free'd.
-
-On Tue, 27 May 2008, Oleg Nesterov wrote:
-> 
-> Is this reproducible?
-> 
-> In theory find_pid() is not safe without rcu_read_lock() if CONFIG_PREEMPT_RCU.
-> But we have a lot of "read_lock(tasklist_lock) + find_pid()", this was legal
-> and documented. It was actually broken, but happened to work because read_lock()
-> implied rcu_read_lock().
-> 
-> Could you look at
-> 
-> 	[PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
-> 	http://marc.info/?t=120162615300012
-> 
-> ?
-> 
-> I am not sure this is the actual reason though, the race is very unlikely.
-
-That is a *very* unlikely race, especially as that bad_fork_free_pid case 
-would only happen if pid_ns_prepare_proc() fails. And if it fails, it's 
-still very unlikely to hit, I think.
-
-That said, it does smell like a bug. But I *really* would be much much 
-happier if even SRCU at least waited for a grace period, so that it would 
-always be safe to just disable preemption for a "rcu_read_lock()". That 
-way, things that take spinlocks are safe even with SRCU.
-
-Paul? How hard would it be to make preemptable RCU just honor that classic 
-RCU behavior?
-
-			Linus
+-- 
+Justin P. Mattock
