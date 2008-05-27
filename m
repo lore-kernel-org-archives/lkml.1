@@ -1,37 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbYE0Vvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbYE0Vx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759953AbYE0Vvl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758296AbYE0Vvd
+	id S1760072AbYE0Vx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbYE0Vxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:51:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:33276 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757165AbYE0Vvd (ORCPT
+	Tue, 27 May 2008 17:53:46 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:44142 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758398AbYE0Vxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:51:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=lOEIyBX6/PfJ5R8my1zgkSvYEsXtLD09stXAq66M4v6GTd4wbzRJr4e0vucqk2OBLsmmlbm/YfEha43xKlxhJZG+tx8UVARpWBZXErNTw+fxS1hLIXEyu7uEum2CW0TgrBCpBs5cg1KDkxmJs8DLzlnZGn1uUURz5oBG1ruQFpk=
-Message-ID: <e38d12ff0805271451w5466aacbu3f2a7eeb13e7004b@mail.gmail.com>
-Date: Tue, 27 May 2008 17:51:31 -0400
-From: "Andrey Vul" <andrey.vul@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: rt10 on top of grsecurity-2.1.11: issue with marker-upstream.patch
-Cc: mingo@elite.hu
+	Tue, 27 May 2008 17:53:45 -0400
+Date: Tue, 27 May 2008 15:53:28 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, tpiepho@freescale.com
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080527215328.GB22636@parisc-linux.org>
+References: <1211852026.3286.36.camel@pasglop> <20080526.184047.88207142.davem@davemloft.net> <1211854540.3286.42.camel@pasglop> <20080526.192812.184590464.davem@davemloft.net> <1211859542.3286.46.camel@pasglop> <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org> <1211922621.3286.80.camel@pasglop> <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org> <20080527223822.57306677@core>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080527223822.57306677@core>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel version is 2.6.24.7
-When merging grsecurity into mainline, it replaces these members in
-struct module: module_init and init_size and replaces them with
-module_init_rw, module_init_rx, init_size_rw and init_size_rx
-Should imv_unref() inside kernel/modules.c use the rw or rx values (or both) ?
+On Tue, May 27, 2008 at 10:38:22PM +0100, Alan Cox wrote:
+> > re-ordering, even though I doubt it will be visible in practice. So if you 
+> > use the "__" versions, you'd better have barriers even on x86!
+> 
+> Are we also going to have __ioread*/__iowrite* ?
+
+Didn't we already define ioread*() to have loose semantics?
+
 -- 
-Andrey Vul
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
