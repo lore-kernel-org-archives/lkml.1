@@ -1,136 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYE0OIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYE0OOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757974AbYE0OIs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 10:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbYE0OIk
+	id S1755895AbYE0OOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 10:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYE0OOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 10:08:40 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40278 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757296AbYE0OIj (ORCPT
+	Tue, 27 May 2008 10:14:11 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:18422 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753331AbYE0OOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 10:08:39 -0400
-Message-Id: <1211897317.22073.1255269155@webmail.messagingengine.com>
-X-Sasl-Enc: 46d771SsaS6opKdXCEq9Dk82YAsumlKLkkQUUA8fqn2o 1211897317
-From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-To: "Ivo van Doorn" <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>,
-       "Dmitry Torokhov" <dtor@mail.ru>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Tue, 27 May 2008 10:14:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=j0xn0xW6IOov8M1AMxyphZ0qAD7btIc+m57W17tltmH6Q0+tTFZYqkKOovAC+dBOrKDdRyftK4nOJsg0DvsmURm0r6NrVsbZxriu3+xR+ZTicntx0kA9HxXj3GCoP/4iFns8JpTgGm3p4ZeV0yIL2kSfF3tZMKFaGdhkqQHE4PE=
+Message-ID: <483C1731.2060408@gmail.com>
+Date: Tue, 27 May 2008 16:14:09 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
-   <200805201209.06902.IvDoorn@gmail.com>
-   <20080522205153.GA18483@khazad-dum.debian.net>
-   <200805231615.33414.IvDoorn@gmail.com>
-Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL RADIOS
-   OFF
-In-Reply-To: <200805231615.33414.IvDoorn@gmail.com>
-Date: Tue, 27 May 2008 11:08:37 -0300
+To: "Noel (Sourceforge)" <noelb@users.sourceforge.net>
+CC: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-serial@vger.kernel.org
+Subject: Re: PROBLEM: Serial error
+References: <1211836442.5745.1.camel@roswell.ausics.net>	 <483B3B7C.1000306@gmail.com>  <483C0CDD.2000409@gmail.com> <1211895684.1698.10.camel@roswell.ausics.net>
+In-Reply-To: <1211895684.1698.10.camel@roswell.ausics.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 16:15:33 +0200, "Ivo van Doorn" <ivdoorn@gmail.com> said:
-> On Thursday 22 May 2008, Henrique de Moraes Holschuh wrote:
-> > What makes SW_RFKILL_ALL special, is that it is the kernel view of *The*
-> > RFKill Switch.  SW_RFKILL_ALL is the event you get when the user
-> > manipulates the very *thing* that created the "rfkill switch" term.
+Noel (Sourceforge) napsal(a):
+> On Tue, 2008-05-27 at 23:30, Jiri Slaby wrote:
+>> Jiri Slaby napsal(a):
+>>> On 05/26/2008 11:14 PM, Noel (Sourceforge) wrote:
+>>>> serial comms error with smsclient  >2.6.25 , worked fine up until and
+>>>> including 2.6.24.7
+>> There is >2.6.25. It means post 2.6.26-rc1 inclusively?
+>>
 > 
-> So do keys that are pressed that only send the KEY_WLAN, KEY_BLUETOOTH or
-> KEY_UWB signals. They all indicate the key has been pressed and the
-> radios
-> should be turned on/off.
-
-Indicate versus enforce.  There is a BIG difference there, and you can see it
-even on how it was implemented by the laptop vendor.  The enforcing switch
-has hardware behind it to make sure it works.  For the indication keys, you
-are lucky if you get firmware that can make it work without the O.S.
-
-> > You get that event when someone moves that slider switch in the side/top
-> > of a laptop which has to kill all RF output in hardware as far as safety
-> > regulations go.  Therefore, it refers to the only rfkill switch that has
-> > guidelines that say that it must always work, and that it must not be
-> > possible to override it in software.
+> Yes, it broke as of 2.6.25 , I also obtained  .1 through .4 and still
+> broken in each, I have not tried  2.6.26-rc1 as I assume the code
+> breaking this is still in the tree
 > 
-> That is a valid point, and rfkill is supposed to do that, but making
-> a difference between RFKILL_ALL and the individual types is wrong
-> because that won't result in a clearly defined expected behavior for all
-> rfkill keys.
-
-IMO, the big difference between regular KEY_* and RFKILL_ALL is that
-RFKILL_ALL has EPO (emergency power-off) semanthics, while the others don't.
-
-KEY_WLAN is usually easily overriden in firmware and software, vendors often
-don't even bother to implement it in firmware, it is just software.  RFKILL_ALL
-switches cannot be overriden at all in any hardware worth its weight, and they
-work even if the entire system has gone out for lunch and is deadlocked.
-That's quite a big difference.
-
-The only reason I don't usually call the hardware rfkill switches "radio EPO
-switches" is because they are not big, red, and shaped like a mushroom.  But
-they are in fact required to act like one in airline regulations, AFAIK.  And
-that certainly matches the good implementations of the hardware rfkill switch
-I know of (they wire-kill the radios, not even firmware gets in the way).
-
-So yes, I do feel RFKILL_ALL is different, and it warrants EPO semanthics in
-the kernel, while all other rfkill events, such as KEY_WLAN, don't.
-
-I don't feel strongly about not giving EPO semanthics to other rfkill events,
-but I recommend against giving anything else EPO semanthics in rfkill.
-
-> > Too bad that doesn't apply to "removable" radio transmitters, like
-> > PCMCIA and ExpressCard WLAN cards, USB RF transmitters, and so on...
-> > probably, the user is expected to yank them off when he moves the switch
-> > to the "no radios working here!" position.  Well, we can do better.  We
-> > can make it apply to these other radio transmitters, too.
 > 
-> Through the write-only rfkill class right? ;)
-
-More like through the new read-write/write-only rfkill class, since you have
-already ACKed those patches, but yes :-)
-
-> > IMO, "kill ALL radios" events are is the only kind of rfkill input event
-> > that have to *always work*, even if something in userspace tried to
-> > configure it not to.
 > 
-> Well the definition of "ALL radios" is the part that is the question,
-> when the KEY_WLAN is
-> pressed it would be "ALL WLAN radios" and should still have the same
-> rules for allowing
-> or disallowing userspace to overwrite the status.
+>> If you double checked this, trying to CC Alan if he doesn't have a clue.
+>> For reference:
+>> http://lkml.org/lkml/2008/5/26/260
+> 
+> Yes, checked.
 
-Not really.  If you are concerned with a type, it is not an emergency situation,
-nor is it a "you are entering a no-RF-emission area" situation.  There *IS* a
-difference when a human decides to shut down EVERYTHING regardless of type, or
-when he just wants the WLAN to stop wasting power but still wants Bluetooth up
-so that he can listen to music on his wireless headphones.
+Ah, this one goes through platform driver (why do you load istallion and 
+stallion drivers?).
 
-And that notion carried over as the UI for circuit switches.  There IS a UI
-notion behind "master switches", and it is very different from the notion behind
-"sector switches".  And KEY_WLAN would just be a sector switch, with each 
-wlan device being the room switch... while RFKILL_ALL is certainly The Master
-Switch.
+8250.c driver changes:
+Alan Cox (3):
+       serial: Coding style
+       serial8250: coding style
+       8250: enable rate reporting via termios
 
-You will find this basic UI notion in *everything* dealing with an hierarchy of
-switches: you have it on the power-grid and the mains input on your house, you
-have it on your hydraulic pipes, and you have it in just about everything that
-has not been bitten by the "standby" disease.  When you place a master switch in
-"OFF" state, it bloody well *STAYS* *OFF*, and everything else after it is also
-FORCED OFF, no matter what.
+Will Newton (1):
+       8250.c: support specifying DW APB UARTs in device platform_data
 
-But of course, you have to make sure the master switch WILL bloody well stay off
-when off by design.  You engineer it so that all possible failure modes will
-cause it to go to the off state.
+Nothing seems intrusive, but whatever changes in the rest of the serial 
+might have caused it. Could you bisect it? I think it would be fast.
 
-I would really appreciate that the rfkill class would abide to this UI notion for
-the master rfkill events (*_RFKILL_ALL).
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
-
+git-bisect v2.6.25 v2.6.24 -- drivers/char/ drivers/serial/
