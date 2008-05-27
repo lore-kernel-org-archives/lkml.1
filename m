@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbYE0C22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbYE0DBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbYE0C22 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 22:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYE0C2R
+	id S1755766AbYE0DBU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 23:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYE0DBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 22:28:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60717
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753288AbYE0C2Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 22:28:16 -0400
-Date: Mon, 26 May 2008 19:28:12 -0700 (PDT)
-Message-Id: <20080526.192812.184590464.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: linux-arch@vger.kernel.org, scottwood@freescale.com,
-       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1211854540.3286.42.camel@pasglop>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 26 May 2008 23:01:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45796 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753304AbYE0DBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 23:01:06 -0400
+Date: Tue, 27 May 2008 13:00:45 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-next@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for May 26
+Message-Id: <20080527130045.d2b09cf4.sfr@canb.auug.org.au>
+In-Reply-To: <20080527105144.82b975d7.sfr@canb.auug.org.au>
+References: <20080526172222.b6979523.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0805261430020.4417@anakin>
+	<20080527105144.82b975d7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__27_May_2008_13_00_45_+1000_Q2B0SF7p0M7Xmb9P"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 27 May 2008 12:15:40 +1000
+--Signature=_Tue__27_May_2008_13_00_45_+1000_Q2B0SF7p0M7Xmb9P
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Some of them. USB comes to mind. I'd be happy to make it "the rule" and
-> document that MMIO vs. coherent access aren't implicitely ordered. I
-> would still keep them ordered on powerpc for a little while tho until
-> I'm happy enough with driver auditing.
-> 
-> But heh, it's you who was telling me that it would be a bad engineering
-> decision and we had to make everybody look like x86 & fully ordered :-)
-> I decided to agree back then and stuck all those nasty heavy barriers
-> in the powerpc variants of readl/writel/...
+Hi Geert,
 
-I still believe this.
+On Tue, 27 May 2008 10:51:44 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> On Mon, 26 May 2008 16:20:43 +0200 (CEST) Geert Uytterhoeven <geert@linux=
+-m68k.org> wrote:
+> >
+> > Now multi_defconfig is in Linus' tree, do you mind enabling builds for
+> > m68k multi_defconfig and sun3_defconfig using Linus' tree, too?
+>=20
+> OK, will do.
 
-It's just another complicated thing for driver authors to get wrong.
-The other side of the coin is of course the cost.
+Done.  You should see results for this later today.
 
-The only thing I am absolutely sure of is that we should make a
-decision fast, document it, and just stick to it.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__27_May_2008_13_00_45_+1000_Q2B0SF7p0M7Xmb9P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIO3liTgG2atn1QN8RAnimAJ0XhWEo4zLnSmLMAmyu5anOV00pMwCePrKL
+aEI9cHVVF6S20OlVA0UwBI8=
+=M0EX
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__27_May_2008_13_00_45_+1000_Q2B0SF7p0M7Xmb9P--
