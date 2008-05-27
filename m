@@ -1,32 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYE0SEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbYE0SFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYE0SEU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 14:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbYE0SEM
+	id S1758868AbYE0SFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 14:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbYE0SEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 14:04:12 -0400
-Received: from 57.Red-88-2-100.staticIP.rima-tde.net ([88.2.100.57]:48748 "EHLO
-	mail.leals.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756651AbYE0SEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 14:04:12 -0400
-From: Davi Leal <davi@leals.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: I am getting closer
-Date: Tue, 27 May 2008 20:04:07 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200805251812.41552.davi@leals.com> <9a8748490805261434k24fef763r1de520053df8f8b0@mail.gmail.com> <200805271957.51954.davi@leals.com>
-In-Reply-To: <200805271957.51954.davi@leals.com>
+	Tue, 27 May 2008 14:04:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48402 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756732AbYE0SEv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 14:04:51 -0400
+Date: Tue, 27 May 2008 11:04:48 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Eric Sesterhenn <snakebyte@gmx.de>, linux-kernel@vger.kernel.org,
+       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: Redzone overwritten with CONFIG_SECURITY
+In-Reply-To: <84144f020805271059k11498424w3435b748f5254e2e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805271104100.18436@schroedinger.engr.sgi.com>
+References: <20080526143422.GA3203@alice>  <84144f020805270800l5911ed02ia7a92d96a8aa32a7@mail.gmail.com>
+  <20080527151136.GA20750@alice> <20080527161148.GA7291@alice>
+ <84144f020805271059k11498424w3435b748f5254e2e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805272004.07595.davi@leals.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > http://lxr.linux.no/linux+v2.6.24.3/Documentation/HOWTO ).
+On Tue, 27 May 2008, Pekka Enberg wrote:
 
-Very good link. Thanks  ;-)
+> Then it's likely that we corrupt hugetlbfs_inode_cachep because of
+> SLUB merging and the real problem is somewhere else. Can you also try
+> passing 'slub_nomerge" as a kernel parameter with SLUB?
+
+Enabling Redzone disables merging. So its unrelated to merging.
+ 
