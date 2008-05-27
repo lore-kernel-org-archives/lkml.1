@@ -1,87 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYE0TvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYE0UEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758712AbYE0TvW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 15:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756060AbYE0TvN
+	id S1758789AbYE0UEm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 16:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757749AbYE0UEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 15:51:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35029 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756017AbYE0TvM (ORCPT
+	Tue, 27 May 2008 16:04:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45703 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757626AbYE0UEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 15:51:12 -0400
-Date: Tue, 27 May 2008 12:50:41 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Alan Cox <alan@redhat.com>,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] video4linux: Push down the BKL
-Message-ID: <20080527125041.0fc28fd4@infradead.org>
-In-Reply-To: <20080527155942.7693c360@gaivota>
-References: <20080522223700.2f103a14@core>
-	<20080526135951.7989516d@gaivota>
-	<20080526202317.GA12793@devserv.devel.redhat.com>
-	<20080526181027.1ff9c758@gaivota>
-	<20080526220154.GA15487@devserv.devel.redhat.com>
-	<20080527101039.1c0a3804@gaivota>
-	<20080527094144.1189826a@bike.lwn.net>
-	<20080527133100.6a9302fb@gaivota>
-	<20080527103755.1fd67ec1@bike.lwn.net>
-	<20080527155942.7693c360@gaivota>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Tue, 27 May 2008 16:04:32 -0400
+Date: Tue, 27 May 2008 13:04:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hch@lst.de, viro@ZenIV.linux.org.uk,
+       adobriyan@gmail.com, hannes@saeurebad.de
+Subject: Re: [PATCH] ERR_PTR: warn when ERR_PTR parameter is valid argument
+Message-Id: <20080527130413.14dca0cf.akpm@linux-foundation.org>
+In-Reply-To: <1211475019-5596-2-git-send-email-marcin.slusarz@gmail.com>
+References: <1211475019-5596-1-git-send-email-marcin.slusarz@gmail.com>
+	<1211475019-5596-2-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 15:59:42 -0300
-Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+On Thu, 22 May 2008 18:50:19 +0200
+Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 
-> On Tue, 27 May 2008 10:37:55 -0600
-> Jonathan Corbet <corbet@lwn.net> wrote:
+> Check at runtime whether error argument of ERR_PTR is valid.
+> It can catch bugs which possibly lead to oops or panic earlier.
 > 
-> > On Tue, 27 May 2008 13:31:00 -0300
-> > Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > 
-> > > Since the other methods don't explicitly call BKL (and, AFAIK,
-> > > kernel open handler don't call it neither), if a program 1 is
-> > > opening a device and initializing some data, and a program 2
-> > > starts doing ioctl, interrupting program 1 execution in the
-> > > middle of a data initialization procedure, you may have a race
-> > > condition, since some devices initialize some device global data
-> > > during open [1].
-> > 
-> > In fact, 2.6.26 and prior kernels *do* acquire the BKL on open (for
-> > char devices) - that's the behavior that the bkl-removal tree is
-> > there to do away with.  So, for example, I've pushed that
-> > acquisition down into video_open() instead. 
-> > 
-> > So, for now, open() is serialized against ioctl() in video
-> > drivers.  As soon as you take the BKL out of ioctl(), though, that
-> > won't happen, unless the mutex you use is also acquired in the open
-> > path.
+> Currently there are > 600 calls of ERR_PTR with non-constant argument.
 > 
-> Ok.
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Christoph Hellwig <hch@lst.de>
+> Cc: Al Viro <viro@ZenIV.linux.org.uk>
+> Cc: Alexey Dobriyan <adobriyan@gmail.com>
+> Cc: Johannes Weiner <hannes@saeurebad.de>
+> ---
+>  include/linux/err.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> A few drivers seem to be almost read to work without BKL. 
-> 
-> For example, em28xx has already a lock at the operations that change
-> values at "dev" struct, including open() method. However, since the
-> lock is not called at get operations, it needs to be fixed. I would
-> also change it from mutex to a read/write semaphore, since two (or
-> more) get operations can safely happen in parallel.
-> 
-\
+> diff --git a/include/linux/err.h b/include/linux/err.h
+> index 4773ed3..f7e098e 100644
+> --- a/include/linux/err.h
+> +++ b/include/linux/err.h
+> @@ -3,6 +3,7 @@
+>  
+>  #include <linux/compiler.h>
+>  
+> +#include <asm/bug.h>
+>  #include <asm/errno.h>
+>  
+>  /*
+> @@ -22,6 +23,7 @@
+>  
+>  static inline void *__ERR_PTR(long error)
+>  {
+> +	WARN_ON(!VALID_ERR_PTR_ARG(error));
+>  	return (void *) error;
+>  }
 
-please don't use rw/sems just because there MIGHT be parallel.
-THey're more expensive than mutexes by quite a bit and you get a lot
-less checking from lockdep. They make sense for very specific, very
-read biased, contended cases. But please don't use them "just
-because"...
+It would be regrettable to add source-level complexity and runtime cost
+to detect this particular bug.  I think it would be better to do this
+via static source-code checking if at all possible.
 
+Is there _any_ legitimate use of non-negative EFOO?  There might be
+some baroque bits of code which are using non-negative constants in a
+non-buggy fashion, but I bet they could be reworked to use negative
+constants.
+
+In which case I'd have thought that a script which
+
+a) extracts all the EFOO identifiers from include/*/errno.h and
+
+b) greps the tree for non-negative uses of those
+
+would have 100% coverage?
+
+We might need to touch up some code sites to avoid triggering false
+positives and make that script's life a bit easier, but that's fine.
