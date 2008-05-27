@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYE0GZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbYE0GZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbYE0GZF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 02:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbYE0GY4
+	id S1757225AbYE0GZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 02:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbYE0GZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 02:24:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36208 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755340AbYE0GYz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 02:24:55 -0400
-Subject: Re: Linux 2.6.26-rc4
-From: David Woodhouse <dwmw2@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-In-Reply-To: <20080526230022.682688e9@infradead.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-	 <483B2A9B.4050007@krogh.cc>
-	 <alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org>
-	 <20080526172519.10d944ab@infradead.org>
-	 <1211867031.10205.13.camel@shinybook.infradead.org>
-	 <20080526230022.682688e9@infradead.org>
+	Tue, 27 May 2008 02:25:20 -0400
+Received: from styx.suse.cz ([82.119.242.94]:41126 "EHLO elijah.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755639AbYE0GZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 02:25:18 -0400
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a
+	race
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Roland McGrath <roland@redhat.com>
+Cc: Luming Yu <luming.yu@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20080527061209.9A24426FAA6@magilla.localdomain>
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
+	 <20080522203428.835D626FA24@magilla.localdomain>
+	 <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
+	 <20080523041940.39E8726FA24@magilla.localdomain>
+	 <3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
+	 <20080526001527.81E1126FA9E@magilla.localdomain>
+	 <3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
+	 <3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
+	 <20080527040454.053C526FA9E@magilla.localdomain>
+	 <3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
+	 <20080527061209.9A24426FAA6@magilla.localdomain>
 Content-Type: text/plain
-Date: Tue, 27 May 2008 07:24:22 +0100
-Message-Id: <1211869462.10205.19.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Organization: SuSE CR
+Date: Tue, 27 May 2008 08:25:15 +0200
+Message-Id: <1211869515.29836.2.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-26 at 23:00 -0700, Arjan van de Ven wrote:
-> > The driver needs that 'more' to reach the lock registers for the flash
-> > chip. If it's being used for other things, shouldn't the
-> > request_region() fail?
+On Mon, 2008-05-26 at 23:12 -0700, Roland McGrath wrote:
+> >  [<a00000010000a9f0>] skip_rbs_switch+0xe0/0x110
+> >                                 sp=e000000141c9fe30 bsp=e000000141c90cf8
+> >  [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
+> >                                 sp=e000000141ca0000 bsp=e000000141c90cf8
+
+Indeed, there seems to be a large hole here. So, this is either a bug in
+the unwinder, or a bug in the RBS synchronization, which causes
+corruption. My test machine currently needs some work to run 2.6.25
+again, but I'll try your test case as soon as I re-install it later this
+week.
+
+Cheers,
+Petr Tesarik
+
+> >  [<a0000001000971c0>] ptrace_stop+0xa0/0x3e0
+> >                                 sp=e00000014716fdb0 bsp=e000000147160ca8
+> >  [<a000000100097650>] ptrace_notify+0x150/0x1c0
+> >                                 sp=e00000014716fdb0 bsp=e000000147160c88
 > 
-> it does fail....
-> ... and then the driver continues anyway!
-
-Heh. That's.... naughty. There are kind of valid reasons for that kind
-of thing occasionally, but I suspect not this time.
-
-> absolutely
+> If this is a backtrace of a single thread on the same kernel stack, it has
+> a stack depth of over 84MB.  You still need to follow the path inside
+> ia64_ptrace_stop() to see how any of this is possible.
 > 
-> do we need a MODULE_NO_AUTOLOAD() ?
-
-Just dropping the MODULE_DEVICE_TABLE() should suffice. We should
-probably also use the code which is currently in #if 0 which uses
-pci_register_driver() instead of doing things for itself; I'm not
-entirely sure why that is commented out.
-
--- 
-dwmw2
-
+> 
+> Thanks,
+> Roland
