@@ -1,101 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbYE0WaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbYE0Wb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbYE0WaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbYE0WaL
+	id S1760042AbYE0Wb2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 18:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbYE0WbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:30:11 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:40173 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756686AbYE0WaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 18:30:09 -0400
-Date: Wed, 28 May 2008 01:27:21 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: break mutual header inclusion
-Message-ID: <20080527222721.GE11310@cs181133002.pp.htv.fi>
-References: <20080527204926.GA15020@damson.getinternet.no> <20080527213819.GC11310@cs181133002.pp.htv.fi> <19f34abd0805271501p5eb4916h5dd37c18be8d21fb@mail.gmail.com>
+	Tue, 27 May 2008 18:31:18 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:2176 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757145AbYE0WbR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 18:31:17 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5304"; a="3445237"
+Message-ID: <483C8BA6.8090309@qualcomm.com>
+Date: Tue, 27 May 2008 15:31:02 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <19f34abd0805271501p5eb4916h5dd37c18be8d21fb@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: mingo@elte.hu
+CC: pj@sgi.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com, rostedt@goodmis.org
+Subject: Re: [PATCH] [sched] Fixed CPU hotplug and sched domain handling
+References: <1211926006-11559-1-git-send-email-maxk@qualcomm.com> <1211926006-11559-2-git-send-email-maxk@qualcomm.com>
+In-Reply-To: <1211926006-11559-2-git-send-email-maxk@qualcomm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 12:01:02AM +0200, Vegard Nossum wrote:
-> Hi!
+Max Krasnyansky wrote:
+> First issue is that we're leaking doms_cur. It's allocated in
+> arch_init_sched_domains() which is called for every hotplug event.
+> So we just keep reallocation doms_cur without freeing it.
+> I introduced free_sched_domains() function that cleans things up.
 > 
-> On Tue, May 27, 2008 at 11:38 PM, Adrian Bunk <bunk@kernel.org> wrote:
-> > On Tue, May 27, 2008 at 10:49:26PM +0200, Vegard Nossum wrote:
-> >> Hi,
-> >>
-> >> What do you think about this? The new file (vm86_mask.h) could actually be
-> >> embedded completely in processor-flags.h, but I went for what I believe is
-> >> the safer approach.
-> >
-> > Breaking the mutual header inclusion is appreciated, but some comments
-> > are below.
-> 
-> [...]
-> 
-> >> -/* the DS BTS struct is used for ptrace as well */
-> >> -#include <asm/ds.h>
-> >> -
-> >>  struct task_struct;
-> >>
-> >>  extern void ptrace_bts_take_timestamp(struct task_struct *, enum bts_qualifier);
-> >
-> > Moving #include's out of an #ifdef __KERNEL__ can (and does here) break
-> > our userspace headers.
-> >
-> > Running "make headers_check" after touching anything under include/ is
-> > recommended since it catches these problems.
-> >
-> 
-> Ah, that's true. My mistake.
-> 
->   CHECK   include/asm/ptrace.h
-> [...]/usr/include/asm/ptrace.h requires asm/ds.h, which does not exist
-> in exported headers
-> 
-> What do you reckon is better here, to put #ifdef __KERNEL__ around the
-> whole of ds.h and export it, or put #ifdef __KERNEL__ around the
-> #include in ptrace.h? It feels wasteful to put it around the whole
-> ds.h, since what is the point in exporting an empty file? On the other
-> hand, it makes much more sense to put it there than in the "caller" in
-> order to avoid the duplication of #ifdef __KERNEL__. So unless you
-> prefer otherwise, I will choose the former (to export ds.h as well).
+> Second issue is that sched domains created by the cpusets are
+> completely destroyed by the CPU hotplug events. For all CPU hotplug
+> events scheduler attaches all CPUs to the NULL domain and then puts
+> them all into the single domain thereby destroying domains created
+> by the cpusets (partition_sched_domains).
+> The solution is simple, when cpusets are enabled scheduler should not
+> create default domain and instead let cpusets do that. Which is
+> exactly what the patch does.
 
-Our userspace headers are an API, and offering empty previsously 
-unexported headers to userspace sounds like the worse choice to me.
+Here is more info on this, with debug logs.
 
-Additionally, asm/segment.h (and asm/vm86_mask.h) have the same problem.
+Here is initial cpuset setup.
+cpus 0-3 balanced, cpus 4-7 non-balanced
 
-> I hope you agree with the idea of moving the #include line to the top
-> of the file, however?
+cd /dev/cgroup
+echo 0 > cpusets.sched_load_balance
+mkdir boot
+echo 0-3 > boot/cpusets.cpus
+echo 1   > boot/cpusets.sched_load_balance
+...
 
-For me it looks good.
+-----
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU2 attaching NULL sched-domain.
+CPU3 attaching NULL sched-domain.
+CPU4 attaching NULL sched-domain.
+CPU5 attaching NULL sched-domain.
+CPU6 attaching NULL sched-domain.
+CPU7 attaching NULL sched-domain.
+CPU0 attaching sched-domain:
+  domain 0: span 0f
+   groups: 01 02 04 08
+CPU1 attaching sched-domain:
+  domain 0: span 0f
+   groups: 02 04 08 01
+CPU2 attaching sched-domain:
+  domain 0: span 0f
+   groups: 04 08 01 02
+CPU3 attaching sched-domain:
+  domain 0: span 0f
+   groups: 08 01 02 04
+-----
 
-> Thanks for the tip, that is very useful. I didn't realize I should use
-> that and I'm sorry for wasting your time with the first attempt :-(
+Looks good so far.
+Now lets bring cpu7 offline (echo 0 > /sys/devices/system/cpu/cpu7/online)
 
-No problem, and I don't consider it a waste of time.
+-----
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU2 attaching NULL sched-domain.
+CPU3 attaching NULL sched-domain.
+CPU4 attaching NULL sched-domain.
+CPU5 attaching NULL sched-domain.
+CPU6 attaching NULL sched-domain.
+CPU7 attaching NULL sched-domain.
+CPU 7 is now offline
+CPU0 attaching sched-domain:
+  domain 0: span 11
+   groups: 01 10
+   domain 1: span 7f
+    groups: 11 22 44 08
+CPU1 attaching sched-domain:
+  domain 0: span 22
+   groups: 02 20
+   domain 1: span 7f
+    groups: 22 44 08 11
+CPU2 attaching sched-domain:
+  domain 0: span 44
+   groups: 04 40
+   domain 1: span 7f
+    groups: 44 08 11 22
+CPU3 attaching sched-domain:
+  domain 0: span 7f
+   groups: 08 11 22 44
+CPU4 attaching sched-domain:
+  domain 0: span 11
+   groups: 10 01
+   domain 1: span 7f
+    groups: 11 22 44 08
+CPU5 attaching sched-domain:
+  domain 0: span 22
+   groups: 20 02
+   domain 1: span 7f
+    groups: 22 44 08 11
+CPU6 attaching sched-domain:
+  domain 0: span 44
+   groups: 40 04
+   domain 1: span 7f
+    groups: 44 08 11 22
+----
 
->...
-> Thanks for the help :-)
-> 
-> Vegard
+All cpus are now in the single domain.
+Same thing happens when cpu7 comes back online.
 
-cu
-Adrian
+----
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU2 attaching NULL sched-domain.
+CPU3 attaching NULL sched-domain.
+CPU4 attaching NULL sched-domain.
+CPU5 attaching NULL sched-domain.
+CPU6 attaching NULL sched-domain.
+Booting processor 7/8 APIC 0x7
+Initializing CPU#7
+Calibrating delay using timer specific routine.. 4655.39 BogoMIPS (lpj=9310785)
+CPU: L1 I cache: 32K, L1 D cache: 32K
+CPU: L2 cache: 6144K
+CPU: Physical Processor ID: 1
+CPU: Processor Core ID: 3
+Intel(R) Xeon(R) CPU           E5410  @ 2.33GHz stepping 06
+checking TSC synchronization [CPU#3 -> CPU#7]: passed.
+CPU0 attaching sched-domain:
+  domain 0: span 11
+   groups: 01 10
+   domain 1: span ff
+    groups: 11 22 44 88
+CPU1 attaching sched-domain:
+  domain 0: span 22
+   groups: 02 20
+   domain 1: span ff
+    groups: 22 44 88 11
+CPU2 attaching sched-domain:
+  domain 0: span 44
+   groups: 04 40
+   domain 1: span ff
+    groups: 44 88 11 22
+CPU3 attaching sched-domain:
+  domain 0: span 88
+   groups: 08 80
+   domain 1: span ff
+    groups: 88 11 22 44
+CPU4 attaching sched-domain:
+  domain 0: span 11
+   groups: 10 01
+   domain 1: span ff
+    groups: 11 22 44 88
+CPU5 attaching sched-domain:
+  domain 0: span 22
+   groups: 20 02
+   domain 1: span ff
+    groups: 22 44 88 11
+CPU6 attaching sched-domain:
+  domain 0: span 44
+   groups: 40 04
+   domain 1: span ff
+    groups: 44 88 11 22
+CPU7 attaching sched-domain:
+  domain 0: span 88
+   groups: 80 08
+   domain 1: span ff
+    groups: 88 11 22 44
+----
 
--- 
+As if cpusets do not exist :).
+With the patch we now do the right thing when cpus go off/online.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+----
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU2 attaching NULL sched-domain.
+CPU3 attaching NULL sched-domain.
+CPU4 attaching NULL sched-domain.
+CPU5 attaching NULL sched-domain.
+CPU6 attaching NULL sched-domain.
+CPU7 attaching NULL sched-domain.
+CPU0 attaching sched-domain:
+  domain 0: span 0f
+   groups: 01 02 04 08
+CPU1 attaching sched-domain:
+  domain 0: span 0f
+   groups: 02 04 08 01
+CPU2 attaching sched-domain:
+  domain 0: span 0f
+   groups: 04 08 01 02
+CPU3 attaching sched-domain:
+  domain 0: span 0f
+   groups: 08 01 02 04
 
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU2 attaching NULL sched-domain.
+CPU3 attaching NULL sched-domain.
+CPU4 attaching NULL sched-domain.
+CPU5 attaching NULL sched-domain.
+CPU6 attaching NULL sched-domain.
+CPU7 attaching NULL sched-domain.
+CPU0 attaching sched-domain:
+  domain 0: span 0f
+   groups: 01 02 04 08
+CPU1 attaching sched-domain:
+  domain 0: span 0f
+   groups: 02 04 08 01
+CPU2 attaching sched-domain:
+  domain 0: span 0f
+   groups: 04 08 01 02
+CPU3 attaching sched-domain:
+  domain 0: span 0f
+   groups: 08 01 02 04
+CPU 7 is now offline
+
+CPU0 attaching NULL sched-domain.
+CPU1 attaching NULL sched-domain.
+CPU2 attaching NULL sched-domain.
+CPU3 attaching NULL sched-domain.
+CPU4 attaching NULL sched-domain.
+CPU5 attaching NULL sched-domain.
+CPU6 attaching NULL sched-domain.
+CPU0 attaching sched-domain:
+  domain 0: span 0f
+   groups: 01 02 04 08
+CPU1 attaching sched-domain:
+  domain 0: span 0f
+   groups: 02 04 08 01
+CPU2 attaching sched-domain:
+  domain 0: span 0f
+   groups: 04 08 01 02
+CPU3 attaching sched-domain:
+  domain 0: span 0f
+   groups: 08 01 02 04
+Booting processor 7/8 APIC 0x7
+Initializing CPU#7
+Calibrating delay using timer specific routine.. 4655.37 BogoMIPS (lpj=9310749)
+CPU: L1 I cache: 32K, L1 D cache: 32K
+CPU: L2 cache: 6144K
+CPU: Physical Processor ID: 1
+CPU: Processor Core ID: 3
+Intel(R) Xeon(R) CPU           E5410  @ 2.33GHz stepping 06
+checking TSC synchronization [CPU#3 -> CPU#7]: passed.
+
+Max
