@@ -1,123 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbYE0WHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760314AbYE0WHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759110AbYE0WHS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758717AbYE0WGt
+	id S1760314AbYE0WHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 18:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758780AbYE0WGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:06:49 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:20577 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758349AbYE0WGs (ORCPT
+	Tue, 27 May 2008 18:06:50 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:43823 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758595AbYE0WGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 27 May 2008 18:06:48 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5304"; a="3444511"
+X-IronPort-AV: E=McAfee;i="5200,2160,5304"; a="3270389"
 From: Max Krasnyansky <maxk@qualcomm.com>
 To: mingo@elte.hu
 Cc: pj@sgi.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
        menage@google.com, rostedt@goodmis.org,
        Max Krasnyansky <maxk@qualcomm.com>
-Subject: [PATCH] [sched] Fixed CPU hotplug and sched domain handling
-Date: Tue, 27 May 2008 15:06:45 -0700
-Message-Id: <1211926006-11559-2-git-send-email-maxk@qualcomm.com>
+Subject: [PATCH] [sched] Give cpusets exclusive control over sched domains (ie remove cpu_isolated_map)
+Date: Tue, 27 May 2008 15:06:46 -0700
+Message-Id: <1211926006-11559-3-git-send-email-maxk@qualcomm.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1211926006-11559-1-git-send-email-maxk@qualcomm.com>
+In-Reply-To: <1211926006-11559-2-git-send-email-maxk@qualcomm.com>
 References: <1211926006-11559-1-git-send-email-maxk@qualcomm.com>
+ <1211926006-11559-2-git-send-email-maxk@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First issue is that we're leaking doms_cur. It's allocated in
-arch_init_sched_domains() which is called for every hotplug event.
-So we just keep reallocation doms_cur without freeing it.
-I introduced free_sched_domains() function that cleans things up.
+Ingo and Peter mentioned several times that cpu_isolated_map was a horrible hack.
+So lets get rid of it.
 
-Second issue is that sched domains created by the cpusets are
-completely destroyed by the CPU hotplug events. For all CPU hotplug
-events scheduler attaches all CPUs to the NULL domain and then puts
-them all into the single domain thereby destroying domains created
-by the cpusets (partition_sched_domains).
-The solution is simple, when cpusets are enabled scheduler should not
-create default domain and instead let cpusets do that. Which is
-exactly what the patch does.
+cpu_isolated_map is controlling which CPUs are subject to the scheduler load balancing.
+CPUs set in that map are put in the NULL scheduler domain and are excluded from the
+load balancing. This functionality is provided in much more flexible and dynamic way by
+the cpusets subsystem. Scheduler load balancing can be disabled/enabled either system
+wide or per cpuset.
+
+This patch gives cpusets exclusive control over the scheduler domains.
 
 Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
 ---
- kernel/cpuset.c |    6 ++++++
- kernel/sched.c  |   22 ++++++++++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
+ Documentation/cpusets.txt |    3 +--
+ kernel/sched.c            |   34 +++++-----------------------------
+ 2 files changed, 6 insertions(+), 31 deletions(-)
 
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index a1b61f4..29c6304 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1789,6 +1789,12 @@ static void common_cpu_mem_hotplug_unplug(void)
- 	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
- 	scan_for_empty_cpusets(&top_cpuset);
+diff --git a/Documentation/cpusets.txt b/Documentation/cpusets.txt
+index ad2bb3b..d8b269a 100644
+--- a/Documentation/cpusets.txt
++++ b/Documentation/cpusets.txt
+@@ -382,8 +382,7 @@ Put simply, it costs less to balance between two smaller sched domains
+ than one big one, but doing so means that overloads in one of the
+ two domains won't be load balanced to the other one.
  
-+	/*
-+	 * Scheduler destroys domains on hotplug events.
-+	 * Rebuild them based on the current settings.
-+	 */
-+	rebuild_sched_domains();
-+
- 	cgroup_unlock();
- }
+-By default, there is one sched domain covering all CPUs, except those
+-marked isolated using the kernel boot time "isolcpus=" argument.
++By default, there is one sched domain covering all CPUs.
  
+ This default load balancing across all CPUs is not well suited for
+ the following two situations:
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 9694570..5ebf6a7 100644
+index 5ebf6a7..e2eb2be 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -6837,6 +6837,18 @@ void __attribute__((weak)) arch_update_cpu_topology(void)
+@@ -6206,24 +6206,6 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
+ 	rcu_assign_pointer(rq->sd, sd);
  }
  
+-/* cpus with isolated domains */
+-static cpumask_t cpu_isolated_map = CPU_MASK_NONE;
+-
+-/* Setup the mask of cpus configured for isolated domains */
+-static int __init isolated_cpu_setup(char *str)
+-{
+-	int ints[NR_CPUS], i;
+-
+-	str = get_options(str, ARRAY_SIZE(ints), ints);
+-	cpus_clear(cpu_isolated_map);
+-	for (i = 1; i <= ints[0]; i++)
+-		if (ints[i] < NR_CPUS)
+-			cpu_set(ints[i], cpu_isolated_map);
+-	return 1;
+-}
+-
+-__setup("isolcpus=", isolated_cpu_setup);
+-
  /*
-+ * Free current domain masks.
-+ * Called after all cpus are attached to NULL domain.
-+ */
-+static void free_sched_domains(void)
-+{
-+	ndoms_cur = 0;
-+	if (doms_cur != &fallback_doms)
-+		kfree(doms_cur);
-+	doms_cur = &fallback_doms;
-+}
-+
-+/*
+  * init_sched_build_groups takes the cpumask we wish to span, and a pointer
+  * to a function which identifies what group(along with sched group) a CPU
+@@ -6850,8 +6832,6 @@ static void free_sched_domains(void)
+ 
+ /*
   * Set up scheduler domains and groups. Callers must hold the hotplug lock.
-  * For now this just excludes isolated cpus, but could be used to
-  * exclude other special cases in the future.
-@@ -6956,6 +6968,7 @@ int arch_reinit_sched_domains(void)
+- * For now this just excludes isolated cpus, but could be used to
+- * exclude other special cases in the future.
+  */
+ static int arch_init_sched_domains(const cpumask_t *cpu_map)
+ {
+@@ -6862,7 +6842,7 @@ static int arch_init_sched_domains(const cpumask_t *cpu_map)
+ 	doms_cur = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
+ 	if (!doms_cur)
+ 		doms_cur = &fallback_doms;
+-	cpus_andnot(*doms_cur, *cpu_map, cpu_isolated_map);
++	*doms_cur = *cpu_map;
+ 	err = build_sched_domains(doms_cur);
+ 	register_sched_domain_sysctl();
  
- 	get_online_cpus();
- 	detach_destroy_domains(&cpu_online_map);
-+	free_sched_domains();
- 	err = arch_init_sched_domains(&cpu_online_map);
- 	put_online_cpus();
- 
-@@ -7040,6 +7053,7 @@ static int update_sched_domains(struct notifier_block *nfb,
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		detach_destroy_domains(&cpu_online_map);
-+		free_sched_domains();
- 		return NOTIFY_OK;
- 
- 	case CPU_UP_CANCELED:
-@@ -7058,8 +7072,16 @@ static int update_sched_domains(struct notifier_block *nfb,
- 		return NOTIFY_DONE;
+@@ -6923,7 +6903,7 @@ void partition_sched_domains(int ndoms_new, cpumask_t *doms_new)
+ 	if (doms_new == NULL) {
+ 		ndoms_new = 1;
+ 		doms_new = &fallback_doms;
+-		cpus_andnot(doms_new[0], cpu_online_map, cpu_isolated_map);
++		*doms_new = cpu_online_map;
  	}
  
-+#ifndef CONFIG_CPUSETS
-+	/* 
-+	 * Create default domain partitioning if cpusets are disabled.
-+	 * Otherwise we let cpusets rebuild the domains based on the 
-+	 * current setup.
-+	 */
-+
- 	/* The hotplug lock is already held by cpu_up/cpu_down */
- 	arch_init_sched_domains(&cpu_online_map);
-+#endif
+ 	/* Destroy deleted domains */
+@@ -7088,19 +7068,15 @@ static int update_sched_domains(struct notifier_block *nfb,
  
- 	return NOTIFY_OK;
+ void __init sched_init_smp(void)
+ {
+-	cpumask_t non_isolated_cpus;
+-
+ 	get_online_cpus();
+ 	arch_init_sched_domains(&cpu_online_map);
+-	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
+-	if (cpus_empty(non_isolated_cpus))
+-		cpu_set(smp_processor_id(), non_isolated_cpus);
+ 	put_online_cpus();
++
+ 	/* XXX: Theoretical race here - CPU may be hotplugged now */
+ 	hotcpu_notifier(update_sched_domains, 0);
+ 
+-	/* Move init over to a non-isolated CPU */
+-	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
++	/* Update init's affinity mask */
++	if (set_cpus_allowed(current, cpu_online_map) < 0)
+ 		BUG();
+ 	sched_init_granularity();
  }
 -- 
 1.5.4.5
