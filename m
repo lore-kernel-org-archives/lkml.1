@@ -1,58 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760142AbYE0WBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbYE0WBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760142AbYE0WBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758442AbYE0WBD
+	id S1760346AbYE0WBb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 18:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758928AbYE0WBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:01:03 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58406 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756924AbYE0WBB (ORCPT
+	Tue, 27 May 2008 18:01:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:64277 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758349AbYE0WBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 18:01:01 -0400
-Date: Tue, 27 May 2008 22:46:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080527224651.671fc454@core>
-In-Reply-To: <20080527215328.GB22636@parisc-linux.org>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<1211922621.3286.80.camel@pasglop>
-	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	<20080527223822.57306677@core>
-	<20080527215328.GB22636@parisc-linux.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 May 2008 18:01:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=huICjjwETNL8chCKP1GSNAAyyn6sMXNCSFaiCsw6DayGOpnyPWvCb38p09XsoGQqEIVl7mF88p1FSMFoxvQdVOsHHEbkRW2Gvbf8VI2+nw0MNPO/rM8NRwtBz+SfhVS+SEzQQhcGbSqbM66I2SJmAEyE2RgfurPrpimayzqCsEA=
+Message-ID: <19f34abd0805271501p5eb4916h5dd37c18be8d21fb@mail.gmail.com>
+Date: Wed, 28 May 2008 00:01:02 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Adrian Bunk" <bunk@kernel.org>
+Subject: Re: [PATCH] x86: break mutual header inclusion
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080527213819.GC11310@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080527204926.GA15020@damson.getinternet.no>
+	 <20080527213819.GC11310@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 15:53:28 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
+Hi!
 
-> On Tue, May 27, 2008 at 10:38:22PM +0100, Alan Cox wrote:
-> > > re-ordering, even though I doubt it will be visible in practice. So if you 
-> > > use the "__" versions, you'd better have barriers even on x86!
-> > 
-> > Are we also going to have __ioread*/__iowrite* ?
-> 
-> Didn't we already define ioread*() to have loose semantics?
+On Tue, May 27, 2008 at 11:38 PM, Adrian Bunk <bunk@kernel.org> wrote:
+> On Tue, May 27, 2008 at 10:49:26PM +0200, Vegard Nossum wrote:
+>> Hi,
+>>
+>> What do you think about this? The new file (vm86_mask.h) could actually be
+>> embedded completely in processor-flags.h, but I went for what I believe is
+>> the safer approach.
+>
+> Breaking the mutual header inclusion is appreciated, but some comments
+> are below.
 
-The ATA layer doesn't think so.
+[...]
 
-Alan
+>> -/* the DS BTS struct is used for ptrace as well */
+>> -#include <asm/ds.h>
+>> -
+>>  struct task_struct;
+>>
+>>  extern void ptrace_bts_take_timestamp(struct task_struct *, enum bts_qualifier);
+>
+> Moving #include's out of an #ifdef __KERNEL__ can (and does here) break
+> our userspace headers.
+>
+> Running "make headers_check" after touching anything under include/ is
+> recommended since it catches these problems.
+>
+
+Ah, that's true. My mistake.
+
+  CHECK   include/asm/ptrace.h
+[...]/usr/include/asm/ptrace.h requires asm/ds.h, which does not exist
+in exported headers
+
+What do you reckon is better here, to put #ifdef __KERNEL__ around the
+whole of ds.h and export it, or put #ifdef __KERNEL__ around the
+#include in ptrace.h? It feels wasteful to put it around the whole
+ds.h, since what is the point in exporting an empty file? On the other
+hand, it makes much more sense to put it there than in the "caller" in
+order to avoid the duplication of #ifdef __KERNEL__. So unless you
+prefer otherwise, I will choose the former (to export ds.h as well).
+
+I hope you agree with the idea of moving the #include line to the top
+of the file, however?
+
+Thanks for the tip, that is very useful. I didn't realize I should use
+that and I'm sorry for wasting your time with the first attempt :-(
+
+>>...
+>> --- /dev/null
+>> +++ b/include/asm-x86/vm86_mask.h
+>> @@ -0,0 +1,12 @@
+>> +#ifndef ASM_X86_VM86_MASK
+>> +#define ASM_X86_VM86_MASK
+>> +
+>> +#include <asm/processor-flags.h>
+>> +
+>> +#ifdef CONFIG_VM86
+>> +#define X86_VM_MASK  X86_EFLAGS_VM
+>> +#else
+>> +#define X86_VM_MASK  0 /* No VM86 support */
+>> +#endif
+>> +
+>> +#endif
+>
+> Do we need a new header for this or can it go into processor-flags.h ?
+
+It can go in there, yes. I will do that in the re-worked (hopefully
+correct) patch.
+
+This business of breaking cycles is a bit nasty. There are very many
+traps to fall into, very many setups to break, and very little support
+from the tools to help you get it right (though with 'make
+headers_check' I am a little better off).
+
+Thanks for the help :-)
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
