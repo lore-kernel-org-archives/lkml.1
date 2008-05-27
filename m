@@ -1,295 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759091AbYE0VTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbYE0VW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759091AbYE0VTv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbYE0VTl
+	id S1759242AbYE0VW1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbYE0VWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:19:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:50832 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756596AbYE0VTk (ORCPT
+	Tue, 27 May 2008 17:22:19 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:37403 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757157AbYE0VWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:19:40 -0400
+	Tue, 27 May 2008 17:22:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lQ0rs+YDIA5AF4Thki6/rs1wBRh0hX3kVQDj4UNlrwlh7evoC549FfuqotGiSQVPgtNmKouVUZaM1R6R4qLoWhtrblOGcM+1kx+274vkN/nDrhJdz11lmVKBX8qVdSextsStzpwbta6vumcb1sB2KNdK6fcOG30obhdpp8QJUKg=
-Message-ID: <5a4c581d0805271419g9442e29n7e167e6615e60dd0@mail.gmail.com>
-Date: Tue, 27 May 2008 23:19:37 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: SATA disk reports DRDY and goes to PIO0 eventually. noapic fixes it
-Cc: hancockr@shaw.ca, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <20080527124330.12e0d1f3.akpm@linux-foundation.org>
+        b=mPM4e5yrDsb2HrxtIey5r3BXA/Bae/tMMZqLIWYLnwpTbx8HHoE5LvUBhomkDH0+FhWMeMg2VCJlltyyzH8XubVG5e1U8vlPo9d3P7Xpo28XLFdFXnEl1qsWoqcsZsY9xRijIrr9VPgdF9DTNkXjWYx5NvLlRNgmYcN6Q2vZVvE=
+Message-ID: <412bdbff0805271422q10ca3efdq213c3f8bd63e697a@mail.gmail.com>
+Date: Tue, 27 May 2008 17:22:14 -0400
+From: "Devin Heitmueller" <devin.heitmueller@gmail.com>
+To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
+Subject: Re: [PATCH] video4linux: Push down the BKL
+Cc: "Jonathan Corbet" <corbet@lwn.net>, "Alan Cox" <alan@redhat.com>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080527180048.6a27dbf7@gaivota>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <fa.jF9ypkPPBXioKUr869XKpRZGAa4@ifi.uio.no>
-	 <4830E112.9010602@shaw.ca>
-	 <5a4c581d0805191250r5d2ecd30x15e6bc6faafcb587@mail.gmail.com>
-	 <20080527124330.12e0d1f3.akpm@linux-foundation.org>
+References: <20080522223700.2f103a14@core> <20080526181027.1ff9c758@gaivota>
+	 <20080526220154.GA15487@devserv.devel.redhat.com>
+	 <20080527101039.1c0a3804@gaivota>
+	 <20080527094144.1189826a@bike.lwn.net>
+	 <20080527133100.6a9302fb@gaivota>
+	 <20080527103755.1fd67ec1@bike.lwn.net>
+	 <20080527155942.7693c360@gaivota>
+	 <412bdbff0805271226t41fe55b0jd0b8e3c737f34734@mail.gmail.com>
+	 <20080527180048.6a27dbf7@gaivota>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 9:43 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Mon, 19 May 2008 21:50:47 +0200
-> "Alessandro Suardi" <alessandro.suardi@gmail.com> wrote:
+Hello Mauro,
+
+On Tue, May 27, 2008 at 5:00 PM, Mauro Carvalho Chehab
+<mchehab@infradead.org> wrote:
+>> I'm not sure yet exactly how that's going to work, but it's something
+>> that might prompt you to defer converting it from a mutex until we
+>> have that worked out.
 >
->> On Mon, May 19, 2008 at 4:08 AM, Robert Hancock <hancockr@shaw.ca> wrote:
->> > Alessandro Suardi wrote:
->> >>
->> >> Since some time I noticed my nephew's Fedora 8 box would have
->> >>  some noise in /var/log/messages with timeouts reported by the
->> >>  SATA layer, with the drive in DRDY state. Flux is like this (from
->> >>  the base Fedora 9 kernel installed today):
->> >>
->> >> May 17 17:18:39 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:18:39 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
->> >> May 17 17:18:39 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:18:39 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:18:39 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:18:39 rospo kernel: ata4: soft resetting link
->> >> May 17 17:18:39 rospo kernel: ata4.00: configured for UDMA/33
->> >> May 17 17:18:39 rospo kernel: ata4: EH complete
->> >> May 17 17:18:40 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
->> >> usb interface 1:1
->> >> May 17 17:18:40 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
->> >> usb interface 1:1
->> >> May 17 17:18:46 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:18:46 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
->> >> May 17 17:18:46 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:18:46 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:18:46 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:18:46 rospo kernel: ata4: soft resetting link
->> >> May 17 17:18:46 rospo kernel: ata4.00: configured for UDMA/33
->> >> May 17 17:18:46 rospo kernel: ata4: EH complete
->> >> May 17 17:18:53 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:18:53 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
->> >> May 17 17:18:53 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:18:53 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:18:53 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:18:53 rospo kernel: ata4: soft resetting link
->> >> May 17 17:18:54 rospo kernel: ata4.00: configured for UDMA/33
->> >> May 17 17:18:54 rospo kernel: ata4: EH complete
->> >> May 17 17:19:01 rospo kernel: ata4.00: limiting speed to UDMA/25:PIO4
->> >> May 17 17:19:01 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:19:01 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
->> >> May 17 17:19:01 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:19:01 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:19:01 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:19:01 rospo kernel: ata4: soft resetting link
->> >> May 17 17:19:01 rospo kernel: ata4.00: configured for UDMA/25
->> >> May 17 17:19:01 rospo kernel: ata4: EH complete
->> >> May 17 17:19:01 rospo kernel: sr0: CDROM (ioctl) error, command: Get
->> >> event status notification 4a 01 00 00 10 00 00 00 08 00
->> >> May 17 17:19:01 rospo kernel: sr: Sense Key : Aborted Command
->> >> [current] [descriptor]
->> >> May 17 17:19:01 rospo kernel: sr: Add. Sense: No additional sense
->> >> information
->> >> May 17 17:19:06 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
->> >> usb interface 1:1
->> >> May 17 17:19:06 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
->> >> usb interface 1:1
->> >> May 17 17:19:11 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:19:11 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> >> May 17 17:19:11 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:19:11 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:19:11 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:19:11 rospo kernel: ata4: soft resetting link
->> >> May 17 17:19:12 rospo kernel: ata4.00: configured for UDMA/25
->> >> May 17 17:19:12 rospo kernel: ata4: EH complete
->> >> May 17 17:19:22 rospo kernel: ata4.00: limiting speed to PIO4
->> >> May 17 17:19:22 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:19:22 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> >> May 17 17:19:22 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:19:22 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:19:22 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:19:22 rospo kernel: ata4: soft resetting link
->> >> May 17 17:19:22 rospo kernel: ata4.00: configured for PIO4
->> >> May 17 17:19:22 rospo kernel: ata4: EH complete
->> >> May 17 17:19:32 rospo kernel: ata4.00: limiting speed to PIO3
->> >> May 17 17:19:32 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:19:32 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> >> May 17 17:19:32 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:19:32 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:19:32 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:19:32 rospo kernel: ata4: soft resetting link
->> >> May 17 17:19:33 rospo kernel: ata4.00: configured for PIO3
->> >> May 17 17:19:33 rospo kernel: ata4: EH complete
->> >> May 17 17:19:43 rospo kernel: ata4.00: limiting speed to PIO0
->> >> May 17 17:19:43 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:19:43 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> >> May 17 17:19:43 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:19:43 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:19:43 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:19:43 rospo kernel: ata4: soft resetting link
->> >> May 17 17:19:43 rospo kernel: ata4.00: configured for PIO0
->> >> May 17 17:19:43 rospo kernel: ata4: EH complete
->> >> May 17 17:19:50 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
->> >> usb interface 1:1
->> >> May 17 17:19:50 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
->> >> usb interface 1:1
->> >> May 17 17:19:53 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:19:53 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> >> May 17 17:19:53 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:19:53 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:19:53 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:19:53 rospo kernel: ata4: soft resetting link
->> >> May 17 17:19:54 rospo kernel: ata4.00: configured for PIO0
->> >> May 17 17:19:54 rospo kernel: ata4: EH complete
->> >> May 17 17:20:01 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
->> >> usb interface 1:1
->> >> May 17 17:20:04 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:20:04 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> >> May 17 17:20:04 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:20:04 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:20:04 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:20:04 rospo kernel: ata4: soft resetting link
->> >> May 17 17:20:04 rospo kernel: ata4.00: configured for PIO0
->> >> May 17 17:20:04 rospo kernel: ata4: EH complete
->> >> May 17 17:20:04 rospo kernel: sr 3:0:0:0: ioctl_internal_command
->> >> return code = 8000002
->> >> May 17 17:20:04 rospo kernel:    : Sense Key : Aborted Command
->> >> [current] [descriptor]
->> >> May 17 17:20:04 rospo kernel:    : Add. Sense: No additional sense
->> >> information
->> >> May 17 17:20:34 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
->> >> SErr 0x0 action 0x2 frozen
->> >> May 17 17:20:34 rospo kernel: ata4.00: cmd
->> >> a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
->> >> May 17 17:20:34 rospo kernel:          cdb 00 00 00 00 00 00 00 00  00
->> >> 00 00 00 00 00 00 00
->> >> May 17 17:20:34 rospo kernel:          res
->> >> 40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
->> >> May 17 17:20:34 rospo kernel: ata4.00: status: { DRDY }
->> >> May 17 17:20:34 rospo kernel: ata4: soft resetting link
->> >> May 17 17:20:35 rospo kernel: ata4.00: configured for PIO0
->> >> May 17 17:20:35 rospo kernel: ata4: EH complete
->> >>
->> >> ..and on and on and on.
->> >>
->> >> Reading another report on lkml I turned to the ATA wiki @ kernel.org
->> >>  today, as even the newest Fedora 9 update (2.6.25.3-18) was still
->> >>  behaving the same way - pci=nomsi wasn't useful, acpi=off was
->> >>  also not useful, noapic did instead get rid of the messages, even
->> >>  under 'find /' (which would usually turn up the ATA resets in less
->> >>  than 10 seconds).
->> >>
->> >> Is there anything more useful than simply booting noapic that
->> >>  can be done here, or is that it ?
->> >
->> > Please post the full dmesg output from bootup. We can't see what controller
->> > type this is, etc.
->>
->> Robert,
->>
->>   thanks for replying. Of course now that I look a bit more into
->>   the messages file, I notice that ATA 4.00 is the DVD drive,
->>   not the disk <blush>
->>
->> Funny as there is nothing in the DVD drive... oh well.
->>
->> /var/log/messages attached as a .gz file since I'm not sure it's
->>  small enough to avoid being bounced by vger.
->>
 >
-> It'd be nice to fix one of these noapic-fixes-stuff bugs one day :(
-
-Heh - that was the spirit of the report :)
-
-> `grep -i apic' says:
+> The hybrid device mode lock is somewhat complex. The simplest solution would be
+> to block an open() call, if the device is already used by a different mode.
 >
-> May 17 15:41:17 rospo kernel: ACPI: APIC 3FFC0390, 0078 (r1 A M I  OEMAPIC  11000617 MSFT       97)
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x03] lapic_id[0x82] disabled)
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x04] lapic_id[0x83] disabled)
-> May 17 15:41:17 rospo kernel: ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-> May 17 15:41:17 rospo kernel: IOAPIC[0]: apic_id 2, address 0xfec00000, GSI 0-23
-> May 17 15:41:17 rospo kernel: ACPI: IOAPIC (id[0x03] address[0xfecc0000] gsi_base[24])
-> May 17 15:41:17 rospo kernel: IOAPIC[1]: apic_id 3, address 0xfecc0000, GSI 24-47
-> May 17 15:41:17 rospo kernel: Setting APIC routing to flat
-> May 17 15:41:17 rospo kernel: Using local APIC timer interrupts.
-> May 17 15:41:17 rospo kernel: Detected 16.625 MHz APIC timer.
-> May 17 15:41:17 rospo kernel: Booting processor 1/2 APIC 0x1
-> May 17 15:41:17 rospo kernel: ACPI: Using IOAPIC for interrupt routing
-> May 17 15:41:17 rospo kernel: pci 0000:00:11.0: Bypassing VIA 8237 APIC De-Assert Message
+> This will minimize things like firmware reload, on xc3028 devices, where you
+> have different firmwares for analog and digital modes.
 >
-> Is that disbling of local APICs expected?
+> Also, some USB devices (like HVR-900/HVR-950) switches off analog audio and tv
+> demod chips when in digital mode (the reverse is also true - e.g. digital demod
+> is switched off at analog mode).
 >
-> May 17 15:41:17 rospo kernel: ACPI: PM-Timer IO Port: 0x808
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-> May 17 15:41:17 rospo kernel: Processor #0 (Bootup-CPU)
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-> May 17 15:41:17 rospo kernel: Processor #1
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x03] lapic_id[0x82] disabled)
-> May 17 15:41:17 rospo kernel: ACPI: LAPIC (acpi_id[0x04] lapic_id[0x83] disabled)
-> May 17 15:41:17 rospo kernel: ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-> May 17 15:41:17 rospo kernel: IOAPIC[0]: apic_id 2, address 0xfec00000, GSI 0-23
-> May 17 15:41:17 rospo kernel: ACPI: IOAPIC (id[0x03] address[0xfecc0000] gsi_base[24])
-> May 17 15:41:17 rospo kernel: IOAPIC[1]: apic_id 3, address 0xfecc0000, GSI 24-47
-> May 17 15:41:17 rospo kernel: ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> May 17 15:41:17 rospo kernel: ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
-> May 17 15:41:17 rospo kernel: Setting APIC routing to flat
-> May 17 15:41:17 rospo kernel: Using ACPI (MADT) for SMP configuration information
+> So, if you are in digital mode, on HVR-900, and changes to analog, you'll need
+> to re-initialize tvp5150/msp3400. The current code for those devices handles
+> this at open(). If we let this to happen later, we'll need to re-send the video
+> and audio parameters to all I2C connected devices, when switching mode.
 >
-> As the machine only has two CPUs I guess it's a BIOS wart.
+> On the other hand, some userspace apps, like mythtv, opens both analog and
+> digital API's. I'm not sure if it does this at the same time, but, if so, a
+> lock at open() will cause a regression there (someone told me that this is the
+> case - I didn't test it here yet).
+>
+> One possible solution of providing a proper code to change mode, and not
+> blocking open() would be to write something like this:
+>
+> static int check_and_switch_mode(void *priv, int digital)
+> {
+>        struct dev_foo *dev = priv;
+>
+>        mutex_lock(dev->lock);
+>
+>        if (digital)
+>                return change_to_digital(dev);
+>        else
+>                return change_to_analog(dev);
+>
+>        mutex_unlock(dev->lock);
+> }
+>
+> Since this should be called for every valid V4L2 and DVB ioctl, the better
+> place for it would be to add this as a new function callback, at video_ioctl2.
+> Something like [1]:
+>
+> --- a/linux/drivers/media/video/videodev.c      Tue May 27 16:02:56 2008 -0300
+> +++ b/linux/drivers/media/video/videodev.c      Tue May 27 17:34:04 2008 -0300
+> @@ -821,6 +821,10 @@
+>                v4l_print_ioctl(vfd->name, cmd);
+>                printk("\n");
+>        }
+> +
+> +       if (_IOC_TYPE(cmd)=='v') || _IOC_TYPE(cmd)=='V') &&
+> +               vfd->vidioc_switch_mode)
+> +               ret=vfd->vidioc_switch_mode(fh, 0);
+>
+>  #ifdef CONFIG_VIDEO_V4L1_COMPAT
+>        /***********************************************************
+>
+>
+>
+> And something like this, at dvb core [2]:
+>
+> diff -r b94d587ee596 linux/drivers/media/dvb/dvb-core/dvb_frontend.c
+> --- a/linux/drivers/media/dvb/dvb-core/dvb_frontend.c   Tue May 27 16:02:56 2008 -0300
+> +++ b/linux/drivers/media/dvb/dvb-core/dvb_frontend.c   Tue May 27 17:35:57 2008 -0300
+> @@ -784,6 +784,9 @@
+>             cmd == FE_DISEQC_RECV_SLAVE_REPLY))
+>                return -EPERM;
+>
+> +       if (fe->ops.switch_mode)
+> +               err = fe->ops.switch_mode(fe, 1);
+> +
+>        if (down_interruptible (&fepriv->sem))
+>                return -ERESTARTSYS;
+>
+> [1] The code can be more conservative, changing mode only if S_STD or a video
+> stream ioctl is called.
+>
+> [2] We need to think more about the proper places for the DVB changing mode. I
+> suspect that we'll need to add the mode change callback there and/or at other
+> different places.
+>
+> PS.: I suspect that the real code will be much more complex than the above skeletons.
+>
+> Cheers,
+> Mauro
 
-It's a Core2 Duo desktop. In these next days I'll go to dinner at my
- nephew's place (I'm currently constrained by being on crutches so
- even if it's the other side of the street it isn't that easy, alas) and
- see whether there are BIOS updates available, then report back.
+These are all good points (and I had come to some of the same
+conclusions).  I was just trying to say that the fact that we haven't
+worked through these details is a good reason to not attempt to
+optimize the locking routines in the em28xx driver at this point.  But
+it seems like Arjan's comments make that a moot argument anyway.
 
-thanks for taking a look,
+Thanks,
 
---alessandro
-
- "Give me love / Or give me hate
- Give me anything that's not just ok"
-
- (Sophia, 'Weightless')
+-- 
+Devin J. Heitmueller
+http://www.devinheitmueller.com
+AIM: devinheitmueller
