@@ -1,92 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbYE0R4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbYE0R6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbYE0R4c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 13:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYE0R4Y
+	id S1758044AbYE0R6L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 13:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755768AbYE0R56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 13:56:24 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41816 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755351AbYE0R4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 13:56:24 -0400
-Date: Tue, 27 May 2008 20:53:36 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC: 2.6 patch] let GROUP_SCHED depend on BROKEN
-Message-ID: <20080527175336.GA11310@cs181133002.pp.htv.fi>
-References: <20080527085830.GA20938@cs181133002.pp.htv.fi> <20080527142212.GA9076@elte.hu>
+	Tue, 27 May 2008 13:57:58 -0400
+Received: from 57.Red-88-2-100.staticIP.rima-tde.net ([88.2.100.57]:59403 "EHLO
+	mail.leals.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755516AbYE0R55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 13:57:57 -0400
+From: Davi Leal <davi@leals.com>
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: I am a volunteer
+Date: Tue, 27 May 2008 19:57:51 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200805251812.41552.davi@leals.com> <9a8748490805261434k24fef763r1de520053df8f8b0@mail.gmail.com>
+In-Reply-To: <9a8748490805261434k24fef763r1de520053df8f8b0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080527142212.GA9076@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200805271957.51954.davi@leals.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 04:22:12PM +0200, Ingo Molnar wrote:
->...
-> To make sure i'm accurate about this i just spent 15 minutes
-> reviewing all your past commits to the Linux kernel using
-> "git-shortlog --author=Bunk", and the rather sobering truth
-> appears to be that:
-> 
->   - you've _never_ before fixed a complex Linux kernel bug/problem
+Jesper Juhl wrote:
+> Davi Leal wrote:
+> > I would like to carry out some easy task,
+>
+> Start by reading Documentation/HOWTO in the source (can be found
+> online here if you prefer:
+> http://lxr.linux.no/linux+v2.6.24.3/Documentation/HOWTO ).
 
-What is a "complex kernel problem"?
-
-Just looking a bit through the last month:
-
-E.g. http://lkml.org/lkml/2008/5/14/498 was not horribly complex, but 
-for 3 days noone else had bothered to answer the request of the driver 
-maintainer for help with this regression.
-
-As you yourself said http://article.gmane.org/gmane.linux.kernel/676733
-is something where I spotted a real bug just by reading through patches 
-on linux-kernel. The bug might or might not have been complex, but since 
-someone spotted it just when reading through patches (it's entirly 
-possible someone else might have spotted it as well, but we will never 
-know for sure) it never became a bug in any tree.
-
-And for me stuff like http://lkml.org/lkml/2008/4/28/561 isn't complex, 
-but quite frankly my impression is that I'm currently one out of only 
-two people understanding our Kconfig files good enough for fixing such 
-stuff.
-
->   - you've never before written a _single_ Linux kernel feature
->   - you've never before written a _single_ Linux driver
-
-True.
-
-I am not a coder.
-I am just a cleanup and QA guy.
-
-I know that this makes me a persona non grata for some people on this 
-list, but I prefer doing what I'm good at (bugfixes and cleanup
-patches, aiming at not introducing new bugs) over doing what I'm
-bad at (writing code).
-
->   - you've never before done any true self-driven functional 
->     changes/improvements to Linux
-
-I'd claim having started regression tracking (which was 100% self-driven)
-was a functional improvement for Linux kernel development - and I don't 
-care that you disagree on this.
-
->...
-> 	Ingo
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+I plan follow learning slowly. I have took note of all the advices.
