@@ -1,71 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbYE0WP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbYE0WRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759951AbYE0WP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756791AbYE0WPO
+	id S1760096AbYE0WRg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 18:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbYE0WR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:15:14 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57271 "EHLO gate.crashing.org"
+	Tue, 27 May 2008 18:17:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46760 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756760AbYE0WPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 18:15:12 -0400
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <adaiqwzsa83.fsf@cisco.com>
-References: <1211852026.3286.36.camel@pasglop>
-	 <20080526.184047.88207142.davem@davemloft.net>
-	 <1211854540.3286.42.camel@pasglop>
-	 <20080526.192812.184590464.davem@davemloft.net>
-	 <20080526204233.75b71bb8@infradead.org> <1211872130.3286.64.camel@pasglop>
-	 <adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>
-	 <adaiqwzsa83.fsf@cisco.com>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 08:13:30 +1000
-Message-Id: <1211926410.3286.95.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1754475AbYE0WR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 18:17:28 -0400
+Date: Tue, 27 May 2008 18:15:14 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Message-ID: <20080527221514.GA20037@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com> <20080514205204.GJ30469@redhat.com> <1210830110.23707.141.camel@caritas-dev.intel.com> <20080516005121.GA6926@redhat.com> <1211873263.12819.103.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211873263.12819.103.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-05-27 at 14:33 -0700, Roland Dreier wrote:
-> > This is a different issue. We deal with it on powerpc by having writel
->  > set a per-cpu flag and spin_unlock() test it, and do the barrier if
->  > needed there.
+On Tue, May 27, 2008 at 03:27:43PM +0800, Huang, Ying wrote:
+> On Thu, 2008-05-15 at 20:51 -0400, Vivek Goyal wrote:
+> > On Thu, May 15, 2008 at 01:41:50PM +0800, Huang, Ying wrote:
+> > > Hi, Vivek,
+> > > 
+> > > On Wed, 2008-05-14 at 16:52 -0400, Vivek Goyal wrote:
+> > > [...]
+> > > > Ok, I have done some testing on this patch. Currently I have just
+> > > > tested switching back and forth between two kernels and it is working for
+> > > > me.
+> > > > 
+> > > > Just that I had to put LAPIC and IOAPIC in legacy mode for it to work. Few
+> > > > comments/questions are inline.
+> > > 
+> > > It seems that for LAPIC and IOAPIC, there is
+> > > lapic_suspend()/lapic_resume() and ioapic_suspend()/ioapic_resume(),
+> > > which will be called before/after kexec jump through
+> > > device_power_down()/device_power_up(). So, the mechanism for
+> > > LAPIC/IOAPIC is there, we may need to check the corresponding
+> > > implementation.
+> > > 
+> > 
+> > ioapic_suspend() is not putting APICs in Legacy mode and that's why
+> > we are seeing the issue. It only saves the IOAPIC routing table entries
+> > and these entries are restored during ioapic_resume().
+> > 
+> > But I think somebody has to put APICs in legacy mode for normal 
+> > hibernation also. Not sure who does it. May be BIOS, so that during
+> > resume, second kernel can get the timer interrupts.
 > 
-> Cool... I assume you do this for mutex_unlock() etc?
-
-That's a good point... I don't think we do. Maybe we should.
-
-> Is there any reason why ia64 can't do this too so we can kill mmiowb and
-> save everyone a lot of hassle?  (mips, sh and frv have non-empty
-> mmiowb() definitions too but I'd guess that these are all bugs based on
-> misunderstandings of the mmiowb() semantics...)
-
-Well, basically our approach was that mmiowb() is a pain in the neck,
-nobody (ie. driver writers) really understands what it's for, and so
-it's either not there or misused. So we didn't want to introduce it for
-powerpc, but instead did the trick above in order to -slightly- improve
-our writel (ie avoid a sync -after- the write) .
-
->  > However, drivers such as e1000 -also- have a wmb() between filling the
->  > ring buffer and kicking the DMA with MMIO, with a comment about this
->  > being needed for ia64 relaxed ordering.
+> As for IOAPIC legacy mode, is it related to the following code which set
+> the routing table entry for i8259?
 > 
-> I put these barriers into mthca, mlx4 etc, although it came from my
-> possible misunderstanding of the memory ordering rules in the kernel
-> more than any experience of problems (as opposed the the mmiowb()s,
-> which all came from real world bugs).
+> 
 
-Ben.
+Yes.
 
+> void disable_IO_APIC(void)
+> {
+>         /*
+>          * Clear the IO-APIC before rebooting:
+>          */
+>         clear_IO_APIC();
+> 
+>         /*
+>          * If the i8259 is routed through an IOAPIC
+>          * Put that IOAPIC in virtual wire mode
+>          * so legacy interrupts can be delivered.
+>          */
+>         if (ioapic_i8259.pin != -1) {
+>                 struct IO_APIC_route_entry entry;
+> 
+>                 memset(&entry, 0, sizeof(entry));
+>                 entry.mask            = 0; /* Enabled */
+>                 entry.trigger         = 0; /* Edge */
+>                 entry.irr             = 0;
+>                 entry.polarity        = 0; /* High */
+>                 entry.delivery_status = 0;
+>                 entry.dest_mode       = 0; /* Physical */
+>                 entry.delivery_mode   = dest_ExtINT; /* ExtInt */
+>                 entry.vector          = 0;
+>                 entry.dest.physical.physical_dest =
+>                                         GET_APIC_ID(apic_read(APIC_ID));
+> 
+>                 /*
+>                  * Add it to the IO-APIC irq-routing table:
+>                  */
+>                 ioapic_write_entry(ioapic_i8259.apic, ioapic_i8259.pin,
+> entry);
+>         }
+>         disconnect_bsp_APIC(ioapic_i8259.pin != -1);
+> }
+> 
+> 
+> But, because IOAPIC may need to be in original state during
+> suspend/resume, so it is not appropriate to call disable_IO_APIC() in
+> ioapic_suspend(). So I think we can call disable_IO_APIC() in new
+> hibernation/restore callback.
 
+My hunch is suspend/resume will still work if we put this call in
+ioapic_suspend() but I would not recommend that. suspend/resume does
+not need to put IOAPIC in legacy mode.
+  
+I am not sure what is "new hibernation/restore callback"? Are you
+referring to new patches from Rafel?
+
+I think this issue is specifc to kexec and kjump so probably we should
+not tweaking any suspend/resume related bit.
+
+How about calling disable_IO_APIC() in kexec_jump()? We can probably even
+optimize it by calling it only when we are transitioning into new image
+for the first time and not for subsquent transitions (by keeping some kind of
+count in kimage). This is little hackish but, should work...
+
+Thanks
+Vivek
