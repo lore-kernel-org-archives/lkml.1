@@ -1,57 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYE0Geh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbYE0Gfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbYE0Geh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 02:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbYE0Ge1
+	id S1757170AbYE0Gfy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 02:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYE0Gfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 02:34:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:10562 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbYE0Ge0 (ORCPT
+	Tue, 27 May 2008 02:35:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:8383 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755378AbYE0Gfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 02:34:26 -0400
+	Tue, 27 May 2008 02:35:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=B09Sh93Tp9KNv042kXr7PFQrDy88sFVVyqhrq4mllQaGzco70YKZ3LwuGUqFCorvSPFslEM/KFipnEQPyllXhCgUZpdLZID7fU/UMdI2F4VixlRCmUAHMxqYpOe6+wZBg/NTUs9ADOCpS/53xSisXACJDPtKMdirK2eqIJcVzSk=
-Message-ID: <3877989d0805262334j1ce4d0efhe05e0aa8c3975a28@mail.gmail.com>
-Date: Tue, 27 May 2008 14:34:26 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Roland McGrath" <roland@redhat.com>
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20080527061209.9A24426FAA6@magilla.localdomain>
+        b=QUO8xA9spVW/aT6WBKTJvcCWoglaYn8ALYHIJV+ieEHKrAdyj2aufVa5TUblhl6a4bJLU5LScL2mMF1PFWpHH1YMJlAzZ2inH0D8p1zBd+buY6yNqjj6Fnt0JX2mv+YWNEj94oa7Q7q7+WjGXmjFBxDhkGgh1zyCA3Gx+Twkv2A=
+Message-ID: <aa79d98a0805262335lf5cd4e1p8f318d45dfe7ff92@mail.gmail.com>
+Date: Tue, 27 May 2008 10:35:43 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Sitsofe Wheeler" <sitsofe@yahoo.com>
+Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <g1f3ht$b9g$1@ger.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	 <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
-	 <20080523041940.39E8726FA24@magilla.localdomain>
-	 <3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
-	 <20080526001527.81E1126FA9E@magilla.localdomain>
-	 <3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
-	 <3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
-	 <20080527040454.053C526FA9E@magilla.localdomain>
-	 <3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
-	 <20080527061209.9A24426FAA6@magilla.localdomain>
+References: <g1eg2q$81q$1@ger.gmane.org> <20080526161623.GC7305@cvg>
+	 <g1f230$7bl$1@ger.gmane.org> <g1f3ht$b9g$1@ger.gmane.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 2:12 PM, Roland McGrath <roland@redhat.com> wrote:
->>  [<a00000010000a9f0>] skip_rbs_switch+0xe0/0x110
->>                                 sp=e000000141c9fe30 bsp=e000000141c90cf8
->>  [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
->>                                 sp=e000000141ca0000 bsp=e000000141c90cf8
->>  [<a0000001000971c0>] ptrace_stop+0xa0/0x3e0
->>                                 sp=e00000014716fdb0 bsp=e000000147160ca8
->>  [<a000000100097650>] ptrace_notify+0x150/0x1c0
->>                                 sp=e00000014716fdb0 bsp=e000000147160c88
+On 5/26/08, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> <posted & mailed>
 >
-> If this is a backtrace of a single thread on the same kernel stack, it has
-> a stack depth of over 84MB.  You still need to follow the path inside
+> Sitsofe Wheeler wrote:
+>
+> > Cyrill Gorcunov wrote:
+> >
+> >> [Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
+> >> | When using a 32 bit linux-next-20080526 the bootup process will hang at
+> >> | a random point (not even sysrq helps) with no additional output on the
+> >> | screen (whereas linux-next-20080523 did boot). Mysteriously, booting
+> >> | with nmi_watchdog=2 allows the boot to finish (booting with
+> >> | nmi_watchdog=1 still stalls). I have bisected it down to commit
+> >> | [d1b946b97d71423f365fa797d1428e1847c0bec1]:
+> >>
+> >> Hi, so it helps by reverting only that commit? I mean all further commits
+> >> are still appiled?
+> >
+> > Ah that I hadn't tested. I believe I might need to revert
+> > 4b82b277707a39b97271439c475f186f63ec4692 too if later commits are applied
+> > (but I'm still testing)
+> >
+> >> and, btw, could you post your config, please?
+> >
+> > http://sucs.org/~sits/test/config-20080526.txt
+>
+> OK applying the following patch (which is more or less a revert of
+> [4b82b277707a39b97271439c475f186f63ec4692]) resolves the problem:
+>
+> diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
+> index d99ee8a..c55519c 100644
+> --- a/arch/x86/kernel/nmi.c
+> +++ b/arch/x86/kernel/nmi.c
+> @@ -480,8 +480,12 @@ int proc_nmi_enabled(struct ctl_table *table, int write, struct file *file,
+>                return -EIO;
+>        }
+>
+> -       /* if nmi_watchdog is not set yet, then set it */
+> -       nmi_watchdog_default();
+> +       if (nmi_watchdog == NMI_DEFAULT) {
+> +               if (lapic_watchdog_ok())
+> +                       nmi_watchdog = NMI_LOCAL_APIC;
+> +               else
+> +                       nmi_watchdog = NMI_IO_APIC;
+> +       }
+>
+>        if (nmi_watchdog == NMI_LOCAL_APIC) {
+>                if (nmi_watchdog_enabled)
+> diff --git a/include/asm-x86/nmi.h b/include/asm-x86/nmi.h
+> index 1e8f34d..7cd5b6a 100644
+> --- a/include/asm-x86/nmi.h
+> +++ b/include/asm-x86/nmi.h
+> @@ -38,9 +38,11 @@ static inline void unset_nmi_pm_callback(struct pm_dev *dev)
+>
+>  #ifdef CONFIG_X86_64
+>  extern void default_do_nmi(struct pt_regs *);
+> +extern void nmi_watchdog_default(void);
+> +#else
+> +#define nmi_watchdog_default() do {} while (0)
+>  #endif
+>
+> -extern void nmi_watchdog_default(void);
+>  extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
+>  extern int check_nmi_watchdog(void);
+>  extern int nmi_watchdog_enabled;
+>
+> The removal of extern void nmi_watchdog_default(void) and the inclusion
+> of #define nmi_watchdog_default() do {} while (0) look suspicious (why
+> would nmi_watchdog_default() need to be an infinite loop on 32 bit
+> systems?).
+>
+> --
+> Sitsofe | http://sucs.org/~sits/
+>
 
-you are right, I just find outputs of two different thread are mixed!
-Please just ignore the call trace above..
+Hi Sitsofe, actually I can't imagine how this revert have helped you
+from hang. Newly introduced nmi_watchdog_default() didn't change
+the logic of the code being used before this merge-series.
+
+Thomas, Ingo, maybe I've overlooked something (hard to believe ;)?
+Only the change is the adding of new call for nmi_watchdog_default()
+which was say 'inlined' before.
+
+The thread is started on http://lkml.org/lkml/2008/5/26/146
