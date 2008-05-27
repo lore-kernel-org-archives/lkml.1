@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYE0Oys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbYE0Ozb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbYE0Oys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 10:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbYE0OyR
+	id S1757398AbYE0Ozb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 10:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbYE0OzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 10:54:17 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:37873 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757737AbYE0OyP (ORCPT
+	Tue, 27 May 2008 10:55:16 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:35472 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756235AbYE0OzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 10:54:15 -0400
+	Tue, 27 May 2008 10:55:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=doOrPWFNV+CaOLgP1DozJ70ZhAIjMSHBtgceBeUigCRzyrtdyts4m7ESPHQ9ILvLDDNEQTUNtCTwYIUyEpe7ai7JT6AkM5cxx+et3R+rINyQun9dqAA0hxAzrHvdFQaBrB3dYNoQlVCJsSXf7mHl7Sfi7v0SH6HhoQOHJgVYxfM=
-Message-ID: <63386a3d0805270754w7144799dn1de33774d852d6d5@mail.gmail.com>
-Date: Tue, 27 May 2008 16:54:12 +0200
-From: "Linus Walleij" <linus.ml.walleij@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Shifts for clocksources and clockevents
-In-Reply-To: <63386a3d0804090104h59fd6633x41a981eb8a1919ce@mail.gmail.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=HRVIX/eXesGIVCi8RhHgvxfWhnnTG6PdrCEc1BJZMbmJ7KT5zgKvbrslDpY+/3d/YWYwYaMj3K+tFjeYflAjQXmbWKEZv19c/BG3O36tSL0pGplQSLPU/1RBuUAnISCv0zMPIMavhsFosEP8HmCMcLyc3kFKLjyjjpRHpE7sFjg=
+Date: Tue, 27 May 2008 10:55:06 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Pau Oliva Fora (pof)" <pau@eslack.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH resend] HTC Shift Touchscreen Driver
+Message-ID: <20080527105118.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080527144603.GA18796@s0.pofhq.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <63386a3d0804090104h59fd6633x41a981eb8a1919ce@mail.gmail.com>
+In-Reply-To: <20080527144603.GA18796@s0.pofhq.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I asked this on the ARM Linux mailing list a while back, but
-it appears noone there really has a clue. (Or they didn't see
-it.)
+Hi Pau,
 
-Can someone give me a rationale behind the values assigned to
-the .shift field in clock_event_device and clocksource in the current
-ARM platforms?
+I have couple more comments...
 
-When I read the documentation in Documentation/hrtimers/highres.txt
-it points me to the PDF
-http://www.linuxsymposium.org/2006/linuxsymposium_procv1.pdf
-from which I get the impression that shift shall be assigned so
-that
+On Tue, May 27, 2008 at 04:46:03PM +0200, Pau Oliva Fora (pof) wrote:
+> +
+> +static void htcpen_close(struct input_dev *dev)
+> +{
+> +	free_irq(HTCPEN_IRQ, dev);
 
-(time in ns for 1 cycle)
---------------------------     = 1
-           shift
-         2
+No, free_irq() should go into htcpen_remove(). Otherwise if we don't
+unload the driver and open the device again we will not have IRQ
+handler installed.
 
-So for a timer running cycles at 1MHz shift would be something like
-10 so that 1000/1024 ~= 1.
+> +	outb_p(DEVICE_DISABLE, HTCPEN_PORT_INIT);
+> +}
+> +
+> +static int __devinit htcpen_isa_probe(struct device *dev, unsigned int id)
+> +{
+> +	int err;
+> +	struct input_dev *htcpen_dev;
+> +
+> +	inb_p(HTCPEN_PORT_IRQ_CLEAR);
 
-However the current assignments doesn't look like that at all. I get
-the impression that .shift for clock_event_device seem to be set
-to 32 at all times in order to blow 32bit counters up to 64 bit,
-and clocksource .shift is set to something like 18, 20 or 24 for
-unclear reasons.
+You should not touch the ports until you resetved them with request
+region.
 
-Any hints here?
-
-Yours,
-Linus Walleij
+-- 
+Dmitry
