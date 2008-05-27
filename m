@@ -1,97 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbYE0JFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYE0JRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbYE0JFb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 05:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbYE0JFY
+	id S1756701AbYE0JRQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 05:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYE0JQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 05:05:24 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35829 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756966AbYE0JFX (ORCPT
+	Tue, 27 May 2008 05:16:58 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:21632 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755123AbYE0JQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 05:05:23 -0400
-Date: Tue, 27 May 2008 11:06:10 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: aperture_64.c: corner case wrong
-Message-ID: <20080527090610.GC1708@elf.ucw.cz>
-References: <20080526191730.GA18425@elf.ucw.cz> <86802c440805261718i616d7740v2e1cbc352d29d58a@mail.gmail.com>
+	Tue, 27 May 2008 05:16:57 -0400
+Message-ID: <483BD183.9010103@de.ibm.com>
+Date: Tue, 27 May 2008 11:16:51 +0200
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440805261718i616d7740v2e1cbc352d29d58a@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@kernel.org>,
+       Peter Oberparleiter <oberparleiter@googlemail.com>,
+       linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net
+Subject: Re: [PATCH 6/7] kbuild: make source and include paths absolute
+References: <48313E08.8070904@de.ibm.com> <20080522201724.cf4bd471.akpm@linux-foundation.org> <20080523171840.GD28257@cs181133002.pp.htv.fi> <20080523111707.89df9f67.akpm@linux-foundation.org> <20080523190950.GA32541@uranus.ravnborg.org>
+In-Reply-To: <20080523190950.GA32541@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Try to convert comments in aperture_64.c closer to
-english. Unfortunately, I was not able to understand some of the
-sentences :-(. Help welcome.
+Sam Ravnborg wrote:
+> On Fri, May 23, 2008 at 11:17:07AM -0700, Andrew Morton wrote:
+>> On Fri, 23 May 2008 20:18:40 +0300
+>> Adrian Bunk <bunk@kernel.org> wrote:
+>> 
+>> > On Thu, May 22, 2008 at 08:17:24PM -0700, Andrew Morton wrote:
+>> > > On Mon, 19 May 2008 10:44:56 +0200 Peter Oberparleiter <peter.oberparleiter@de.ibm.com> wrote:
+>> > > 
+>> > > > From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+>> > > > 
+>> > > > Change all source and include paths to absolute form when
+>> > > > CONFIG_GCOV_PROFILE is enabled.
+>> > > > 
+>> > > > Example:
+>> > > > 
+>> > > >   gcc -Idir1 -c a.c -o a.o
+>> > > > 
+>> > > > will become
+>> > > > 
+>> > > >   gcc -I/path/to/dir1 -c /path/to/a.c -o a.o
+>> > > > 
+>> > > > Required by the gcov profiling infrastructure: when compiling with
+>> > > > option -fprofile-arcs, gcc stores file names inside object files.
+>> > > > Relative paths prevent the gcov tool from finding corresponding source
+>> > > > files.
+>> > > 
+>> > > I don't like this.  It converts the compiler error messages from
+>> > > relative paths to absolute paths which is rather obnoxious when
+>> > > all kernel developent is (or should be) base-directory-agnostic.
+>> > 
+>> > The compiler error messages are already absolute paths when using O=
+>> > (see e.g. all error messages sent by me in recent years).
+>> > 
+>> 
+>> Well I guess that's understandable with O=.
+>> 
+>> But I find it rather nasty.  (I guess it'd be less nasty if I were to
+>> get off my butt and work out how to teach rxvt that "/" is a word
+>> separator).
+>> 
+>> What do others think?
+> 
+> That the gcov tool has a bug if it insist on using absolute paths.
+> And thus we should fix gcov and not workaround it in the kernel.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+I've given this some more thought and came up with a possible
+alternative solution that doesn't require paths to be absolute:
 
-diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-index 5373f78..183d907 100644
---- a/arch/x86/kernel/aperture_64.c
-+++ b/arch/x86/kernel/aperture_64.c
-@@ -75,21 +75,20 @@ static u32 __init allocate_aperture(void
- 	/*
- 	 * Aperture has to be naturally aligned. This means a 2GB aperture
- 	 * won't have much chance of finding a place in the lower 4GB of
--	 * memory. Unfortunately we cannot move it up because that would
-+	 * memory. Unfortunately, we cannot move it up because that would
- 	 * make the IOMMU useless.
--	 */
--	/*
--	 * using 512M as goal, in case kexec will load kernel_big
-+	 *
-+	 * Using 512M as goal, in case kexec will load kernel_big
- 	 * that will do the on position decompress, and  could overlap with
- 	 * that positon with gart that is used.
--	 * sequende:
-+	 * sequence:
- 	 * kernel_small
- 	 * ==> kexec (with kdump trigger path or previous doesn't shutdown gart)
--	 * ==> kernel_small(gart area become e820_reserved)
-+	 * ==> kernel_small (gart area becomes e820_reserved)
- 	 * ==> kexec (with kdump trigger path or previous doesn't shutdown gart)
--	 * ==> kerne_big (uncompressed size will be big than 64M or 128M)
-+	 * ==> kernel_big (uncompressed size will be bigger than 64M or 128M)
- 	 * so don't use 512M below as gart iommu, leave the space for kernel
--	 * code for safe
-+	 * code to be safe.
- 	 */
- 	p = __alloc_bootmem_nopanic(aper_size, aper_size, 512ULL<<20);
- 	if (!p || __pa(p)+aper_size > 0xffffffff) {
-@@ -262,14 +261,15 @@ early_param("gart_fix_e820", parse_gart_
- void __init early_gart_iommu_check(void)
- {
- 	/*
--	 * in case it is enabled before, esp for kexec/kdump,
--	 * previous kernel already enable that. memset called
--	 * by allocate_aperture/__alloc_bootmem_nopanic cause restart.
--	 * or second kernel have different position for GART hole. and new
-+	 * In case it is enabled before, esp for kexec/kdump,
-+	 * previous kernel already enabled that. memset called
-+	 * by allocate_aperture/__alloc_bootmem_nopanic causes restart.
-+	 * Or second kernel could have different position for GART hole, and new
- 	 * kernel could use hole as RAM that is still used by GART set by
--	 * first kernel
--	 * or BIOS forget to put that in reserved.
--	 * try to update e820 to make that region as reserved.
-+	 * first kernel.
-+	 * Or maybe BIOS forgot to put that in reserved.
-+	 *
-+	 * Try to update e820 to make that region as reserved.
- 	 */
- 	int fix, slot;
- 	u32 ctl;
+For a given source file x.c, gcov requires x.c (main source),
+x.gcno (static coverage meta data) and x.gcda (dynamically created
+coverage data) to work. x.gcno may refer to further source files. To
+find these files the corresponding paths need to be either absolute or
+gcov must be called from gcc's current working directory during
+compilation (which always should be $(objtree)).
 
+Currently these files are placed like this:
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  sysfs:
+    x.gcda
+    x.gcno -> symbolic link to $(objtree)/rel/path/x.gcno
+    x.c -> symbolic link to $(srctree)/rel/path/x.c
+
+  objtree:
+    x.gcno
+
+  srctree:
+    x.c
+
+Instead, kbuild could be modified to create links to x.gcda in
+$(objtree) like this:
+
+  sysfs:
+    x.gcda
+ 
+  objtree:
+    x.gcno
+    x.gcda -> symbolic link to /sys/kernel/debug/gcov/rel/path/x.gcda
+
+  srctree:
+    x.c
+
+gcov could then be called like this:
+
+  cd $(objtree)
+  gcov -o rel/path/ $(srctree)/rel/path/x.c
+
+Would this be an acceptable approach? Also, for automated collection of
+coverage data, there must be some algorithm to find the source file for
+a given .gcda file. Is the assumption correct that the "rel/path/" part
+is the same for $(srctree) and $(objtree), i.e. can the source file
+be derived like this?:
+
+    $(objtree)/rel/path/x.o -> $(srctree)/rel/path/x.c
+
+Alternatively, kbuild could also create a link to x.c in $(objtree),
+though I'm not sure if that wouldn't have side effects like e.g. naming
+conflicts with generated .c files in $(objtree).
