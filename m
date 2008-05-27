@@ -1,177 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYE0G40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbYE0G7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbYE0G40 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 02:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYE0G4O
+	id S1756948AbYE0G7s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 02:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbYE0G7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 02:56:14 -0400
-Received: from ns1.suse.de ([195.135.220.2]:55096 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753965AbYE0G4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 02:56:12 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Mike Snitzer" <snitzer@gmail.com>
-Date: Tue, 27 May 2008 16:56:03 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 May 2008 02:59:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35539 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753575AbYE0G7h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 02:59:37 -0400
+Date: Mon, 26 May 2008 23:59:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: "Greg KH" <greg@kroah.com>, matthew@wil.cx, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
+Message-Id: <20080526235934.8a28bfba.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0805262342g2dec037eqfdf376e66459e758@mail.gmail.com>
+References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
+	<20080520030232.fc91b64e.akpm@linux-foundation.org>
+	<20080520172139.GA11666@kroah.com>
+	<a8e1da0805262342g2dec037eqfdf376e66459e758@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18491.45187.557090.225552@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-In-Reply-To: message from Mike Snitzer on Tuesday May 20
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-	<18466.39418.578722.92979@notabene.brown>
-	<170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
-	<18467.43895.220708.254814@notabene.brown>
-	<170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
-	<18467.59565.676987.926988@notabene.brown>
-	<170fa0d20805090800p45654901p36eea51e1ea7e9c7@mail.gmail.com>
-	<18477.30199.992302.271647@notabene.brown>
-	<170fa0d20805182133o46501cc4va81b087fb6b417bf@mail.gmail.com>
-	<18481.4005.570022.160686@notabene.brown>
-	<170fa0d20805200830w184709dch221f8b9636f3bc0e@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday May 20, snitzer@gmail.com wrote:
+On Tue, 27 May 2008 14:42:51 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+
+> On Wed, May 21, 2008 at 1:21 AM, Greg KH <greg@kroah.com> wrote:
+> > On Tue, May 20, 2008 at 03:02:32AM -0700, Andrew Morton wrote:
+> >> On Tue, 20 May 2008 17:55:54 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+> >>
+> >> > Converting class semaphore to mutex cause lockdep warnings due to
+> >> > class_interface_register/unregister will possible call device_add/del
+> >>
+> >> Shouldn't we just fix that?
+> >
+> > Um, no, that's a "feature" that some types of hardware and interfaces
+> > require.
+> >
+> > This is one reason I really don't like this type of conversion, it's
+> > causing lots of problems for no known gain.
+> >
+> > So I would just recommend dropping this patch set, the current "convert
+> > class semaphore to a mutex" patch in the -mm tree is already causing
+> > lockdep warnings, and trying to do something like this isn't really
+> > going to solve the root problem here.
 > 
-> Hi Neil,
+> At last, I decide to give up.
 > 
-> We're much closer.  The events_cleared is symmetric on both the failed
-> and active member of the raid1.  But there have been some instances
-> where the md thread hits a deadlock during my testing.  What follows
-> is the backtrace and live crash info:
-...
+> Andrew, I could not do more for this issue now, you can drop the
+> conversion patch if there's no suitable fix from others.
 > 
-> So running with your latest patches seems to introduce a race in
-> bitmap_daemon_work's if (unlikely((*bmc & COUNTER_MAX) ==
-> COUNTER_MAX)) { } block.
 
-As you not, that block is in the wrong place.
-It is actually locking up in 
-				wait_event(bitmap->mddev->sb_wait,
-				    !test_bit(MD_CHANGE_CLEAN,
-					      &bitmap->mddev->flags));
+If that semaphore is being used as a mutex then we should convert it to
+a mutex (dammit).
 
-which the patch adds.  However with my last update that wait_event
-isn't needed any more.  I was using it to ensure mddev->events matched
-what was on disk.  But we now read mddev->events much earlier and it
-will definitely be on disc by this time.
+Leaving it implemented as a semphore is not the proper way of
+suppressing the lockdep warnings.  It would be better to convert it to
+a mutex then add suitable (and suitably commented) open-coded lockdep
+annotations to suppress the runtime warnings.
 
-So: this combined patch should do it.
+And afaik that's pretty much what your patch did, except you added that
+unpopular macro.  If instead of the macro we were to convert that patch
+to add open-coded lockdep annotation, what problems remain?
 
-Thanks for all your testing.
-
-NeilBrown
-
-
----------------------------
-Improve setting of "events_cleared" for write-intent bitmaps.
-
-When an array is degraded, bits in the write-intent bitmap are not
-cleared, so that if the missing device is re-added, it can be synced
-by only updated those parts of the device that have changed since
-it was removed.
-
-The enable this a 'events_cleared' value is stored. It is the event
-counter for the array the last time that any bits were cleared.
-
-Sometimes - if a device disappears from an array while it is 'clean' -
-the events_cleared value gets updated incorrectly (there are subtle
-ordering issues between updateing events in the main metadata and the
-bitmap metadata) resulting in the missing device appearing to require
-a full resync when it is re-added.
-
-With this patch, we update events_cleared precisely when we are about
-to clear a bit in the bitmap.  We record events_cleared when we clear
-the bit internally, and copy that to the superblock which is written
-out before the bit on storage.  This makes it more "obviously correct".
-
-We also need to update events_cleared when the event_count is going
-backwards (as happens on a dirty->clean transition of a non-degraded
-array).
-
-Thanks to Mike Snitzer for identifying this problem and testing early
-"fixes".
-
-
-Cc:  "Mike Snitzer" <snitzer@gmail.com>
-Signed-off-by: Neil Brown <neilb@suse.de>
-Signed-off-by: Neil Brown <neilb@suse.de>
-
-### Diffstat output
- ./drivers/md/bitmap.c         |   29 ++++++++++++++++++++++++-----
- ./include/linux/raid/bitmap.h |    1 +
- 2 files changed, 25 insertions(+), 5 deletions(-)
-
-diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
---- .prev/drivers/md/bitmap.c	2008-05-27 16:50:04.000000000 +1000
-+++ ./drivers/md/bitmap.c	2008-05-27 16:50:53.000000000 +1000
-@@ -454,8 +454,11 @@ void bitmap_update_sb(struct bitmap *bit
- 	spin_unlock_irqrestore(&bitmap->lock, flags);
- 	sb = (bitmap_super_t *)kmap_atomic(bitmap->sb_page, KM_USER0);
- 	sb->events = cpu_to_le64(bitmap->mddev->events);
--	if (!bitmap->mddev->degraded)
--		sb->events_cleared = cpu_to_le64(bitmap->mddev->events);
-+	if (bitmap->mddev->events < bitmap->events_cleared) {
-+		/* rocking back to read-only */
-+		bitmap->events_cleared = bitmap->mddev->events;
-+		sb->events_cleared = cpu_to_le64(bitmap->events_cleared);
-+	}
- 	kunmap_atomic(sb, KM_USER0);
- 	write_page(bitmap, bitmap->sb_page, 1);
- }
-@@ -1085,9 +1088,19 @@ void bitmap_daemon_work(struct bitmap *b
- 			} else
- 				spin_unlock_irqrestore(&bitmap->lock, flags);
- 			lastpage = page;
--/*
--			printk("bitmap clean at page %lu\n", j);
--*/
-+
-+			/* We are possibly going to clear some bits, so make
-+			 * sure that events_cleared is up-to-date.
-+			 */
-+			if (bitmap->need_sync) {
-+				bitmap_super_t *sb;
-+				bitmap->need_sync = 0;
-+				sb = kmap_atomic(bitmap->sb_page, KM_USER0);
-+				sb->events_cleared =
-+					cpu_to_le64(bitmap->events_cleared);
-+				kunmap_atomic(sb, KM_USER0);
-+				write_page(bitmap, bitmap->sb_page, 1);
-+			}
- 			spin_lock_irqsave(&bitmap->lock, flags);
- 			clear_page_attr(bitmap, page, BITMAP_PAGE_CLEAN);
- 		}
-@@ -1257,6 +1270,12 @@ void bitmap_endwrite(struct bitmap *bitm
- 			return;
- 		}
- 
-+		if (success &&
-+		    bitmap->events_cleared < bitmap->mddev->events) {
-+			bitmap->events_cleared = bitmap->mddev->events;
-+			bitmap->need_sync = 1;
-+		}
-+
- 		if (!success && ! (*bmc & NEEDED_MASK))
- 			*bmc |= NEEDED_MASK;
- 
-
-diff .prev/include/linux/raid/bitmap.h ./include/linux/raid/bitmap.h
---- .prev/include/linux/raid/bitmap.h	2008-05-26 09:46:04.000000000 +1000
-+++ ./include/linux/raid/bitmap.h	2008-05-27 16:50:19.000000000 +1000
-@@ -221,6 +221,7 @@ struct bitmap {
- 	unsigned long syncchunk;
- 
- 	__u64	events_cleared;
-+	int need_sync;
- 
- 	/* bitmap spinlock */
- 	spinlock_t lock;
