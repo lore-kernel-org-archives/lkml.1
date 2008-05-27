@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbYE0Ljh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYE0LlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757596AbYE0Ljh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 07:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbYE0Lj2
+	id S1757968AbYE0LlP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 07:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbYE0LlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 07:39:28 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43454 "EHLO
+	Tue, 27 May 2008 07:41:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43806 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbYE0Lj1 (ORCPT
+	with ESMTP id S1755880AbYE0LlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 07:39:27 -0400
-Date: Tue, 27 May 2008 13:40:14 +0200
+	Tue, 27 May 2008 07:41:00 -0400
+Date: Tue, 27 May 2008 13:41:46 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@linux.intel.com>,
-       Jan Kara <jack@suse.cz>,
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Jan Kara <jack@suse.cz>, Arjan van de Ven <arjan@linux.intel.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
-Message-ID: <20080527114014.GA16868@elf.ucw.cz>
-References: <4836EE8C.1010200@linux.intel.com> <20080524222304.GD20563@atrey.karlin.mff.cuni.cz> <20080524153020.1df96cf2@linux.intel.com> <20080524224554.GA5970@mit.edu> <20080526093913.GG13529@elte.hu> <20080526101646.GD24507@mit.edu> <20080526104832.GG23261@elte.hu>
+Message-ID: <20080527114146.GB16868@elf.ucw.cz>
+References: <4836EE8C.1010200@linux.intel.com> <20080526164858.GA24098@elte.hu> <20080526170147.GB9893@mit.edu> <200805261909.59032.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080526104832.GG23261@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805261909.59032.oliver@neukum.org>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-05-26 12:48:32, Ingo Molnar wrote:
+On Mon 2008-05-26 19:09:57, Oliver Neukum wrote:
+> Am Montag 26 Mai 2008 19:01:48 schrieb Theodore Tso:
+> > If the USB stack folks would like to work on how to recognize that
+> > it's the same USB stick that had been previously pulled, so that it
+> > gets the same block device, and we can decide for how long we should
+> > keep dirty buffers around associated with a pulled USB stick, we can
+> > certainly have that conversation.  :-)
 > 
-> * Theodore Tso <tytso@MIT.EDU> wrote:
-> 
-> > On Mon, May 26, 2008 at 11:39:13AM +0200, Ingo Molnar wrote:
-> > > Exactly why is pulling an USB stick considered "stupid"? Last i checked 
-> > > there was no physical lock preventing users from doing that.
-> > > 
-> > > Sure, pulling a mounted USB stick is inconvenient ... for _us_ 
-> > > kernel developers. But the user really doesnt care and shouldnt 
-> > > care.
-> > 
-> > Because they could lose data?  Because if the kernel wakes up and 
-> > tries writing to the USB stick right as they pull it out, it could 
-> > physically damage the flash format?  I know, stupid reason...  :-)
-> 
-> user can lose data in many other ways, that's not the issue - the issue 
-> here is something very crutial: the kernel gets confused about a _very_ 
-> common user-triggerable condition.
-> 
-> That confusion must not happen in a modern OS and the kernel should be 
-> resilient and cope with such external events. And we must not 
-> deprioritize it with an incorrect "user did something stupid" tag... 
+> Even if we could tell whether the device has remained the same, how
+> would we know the medium wasn't exchanged?
 
-Of course unavoidable "data corruption happens when user pulls the
-stick without unmounting" has lower priority than, for example "usb
-stick stops working randomly when used overnight"?
-
-And we have still bugs of the second class, so yes unexpected pulls do
-have lower priority.
-									Pavel
+We need filesystem support for that, but I guess we should just bite
+the bullet and do it for the most common filesystems... it is very
+useful for suspend/resume, too and I have heared about (misdesigned)
+machines where it will be basically mandatory...
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
