@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYE0QHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbYE0QIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758065AbYE0QHI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 12:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbYE0QG5
+	id S1758340AbYE0QIM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 12:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbYE0QH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 12:06:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:42369 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755925AbYE0QG4 (ORCPT
+	Tue, 27 May 2008 12:07:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:46910 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757209AbYE0QH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 12:06:56 -0400
+	Tue, 27 May 2008 12:07:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CC4xFGS9sgMTHYPGUo61fEPunkNIUuqZtBnWxrp6vDxCK8uaUs9E4PcbCWjfK17Teh6hilYflvDzWbxbTWHWaiKGXM/7lMusWB/dIBbPioWAn3jGxjmNpRyNIAH5LbNvIqPe7jwSjxIJPT34Zx/4giKpAsAymBsKvVSG6hv5X8g=
-Message-ID: <2f11576a0805270906x35a1f15eu7fe7414bbfe5c4b4@mail.gmail.com>
-Date: Wed, 28 May 2008 01:06:55 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: apw@shadowen.org
-Subject: Re: [PATCH 2/3] slub: record page flag overlays explicitly
-Cc: linux-mm@kvack.org, "Andrew Morton" <akpm@osdl.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080527145250.GA3407@shadowen.org>
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=dbcnSco+NF5pVcEbDAwDU6Ly9N21tMVExTxUE9Gzef85akPouJpVqM6MnLXvvJSfZP0bfrm9JaHAAF18aSZqRBCtD9o9fsa2oO/SG/a+lE54pYKgWkSlLNq5B9vQ1Bcul1C2AZDBU6YuODBdlIsZnqckaxqjya4zMQrc1fnEc2U=
+Date: Tue, 27 May 2008 18:07:50 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] h8300: fix typo in header guard
+Message-ID: <20080527160750.GA7550@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <exportbomb.1211560342@pinky> <1211560402.0@pinky>
-	 <20080526133755.4664.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080527145250.GA3407@shadowen.org>
-X-Google-Sender-Auth: 25adfae9fa3441e3
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > -           if (SlabDebug(page))
->> > -                   printk(KERN_ERR "SLUB %s: SlabDebug set on "
->> > +           if (PageSlubDebug(page))
->> > +                   printk(KERN_ERR "SLUB %s: SlubDebug set on "
->> >                             "slab 0x%p\n", s->name, page);
->> >     }
->> >  }
->>
->> Why if(SLABDEBUG) check is unnecessary?
->
-> They were unconditional before as well.  SlabDebug would always return
-> 0 before the patch.  The point being, to my reading, that if you asked
-> for debug on the slab and debug was not compiled in you would still get
-> told that it was not set; which it cannot without the support.
+Hi Andrew,
 
-Thank you explain!
+I'm not sure who exactly to mail this as I couldn't find a MAINTAINERS
+entry for the arch. I hope this is OK too.
 
-  Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Vegard
+
+
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Tue, 27 May 2008 17:25:42 +0200
+Subject: [PATCH] h8300: fix typo in header guard
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ include/asm-h8300/cacheflush.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-h8300/cacheflush.h b/include/asm-h8300/cacheflush.h
+index 71210d1..5ffdca2 100644
+--- a/include/asm-h8300/cacheflush.h
++++ b/include/asm-h8300/cacheflush.h
+@@ -3,7 +3,7 @@
+  */
+ 
+ #ifndef _ASM_H8300_CACHEFLUSH_H
+-#define _AMS_H8300_CACHEFLUSH_H
++#define _ASM_H8300_CACHEFLUSH_H
+ 
+ /*
+  * Cache handling functions
+-- 
+1.5.4.1
+
