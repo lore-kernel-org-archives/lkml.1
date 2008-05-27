@@ -1,183 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbYE0Lby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbYE0Ldh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757827AbYE0Lby (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 07:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYE0Lbq
+	id S1757898AbYE0Ldh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 07:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbYE0Ld3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 07:31:46 -0400
-Received: from smtp09.mtu.ru ([62.5.255.13]:52433 "EHLO smtp09.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756799AbYE0Lbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 07:31:46 -0400
-X-Greylist: delayed 519 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 May 2008 07:31:45 EDT
-Message-ID: <483BEF1A.3080808@aknet.ru>
-Date: Tue, 27 May 2008 15:23:06 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 27 May 2008 07:33:29 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:53587 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756809AbYE0Ld2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 07:33:28 -0400
+From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
+To: "'Ryo Tsuruta'" <ryov@valinux.co.jp>
+Cc: <axboe@kernel.dk>, <vtaras@openvz.org>,
+       <containers@lists.linux-foundation.org>, <tom-sugawara@ap.jp.nec.com>,
+       <linux-kernel@vger.kernel.org>
+References: <20080513.003316.226782406.ryov@valinux.co.jp>	<20080522.220438.226802699.ryov@valinux.co.jp>	<003701c8bc80$3a5f9ec0$af1edc40$@jp.nec.com> <20080526.114627.104044752.ryov@valinux.co.jp>
+In-Reply-To: <20080526.114627.104044752.ryov@valinux.co.jp>
+Subject: RE: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth controlling subsystem for CGroups based on CFQ
+Date: Tue, 27 May 2008 20:32:48 +0900
+Message-Id: <004f01c8bfed$640fa380$2c2eea80$@jp.nec.com>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: ambx1@neo.rr.com, bjorn.helgaas@hp.com, david-b@pacbell.net, mingo@elte.hu,
-       tglx@linutronix.de, dbrownell@users.sourceforge.net,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: [patch][resend] provide rtc_cmos platform device, take 2
-References: <200805212334.m4LNY42M006425@imap1.linux-foundation.org>
-In-Reply-To: <200805212334.m4LNY42M006425@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/mixed;
- boundary="------------040408090606020006010905"
-X-DCC-STREAM-Metrics: smtp09.mtu.ru; whitelist
+Content-Type: text/plain;
+	charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Aci+2rKusftDbOA3RLWfa9wTmQ7VDwBEIuMg
+Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040408090606020006010905
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Hi, Tsuruta-san.
 
-Hello.
+> I'm looking forward to your report.
+>
 
-akpm@linux-foundation.org wrote:
-> This patch was dropped because an updated version will be merged
-How is the attached one for an updated
-version?
+I report my tests.
 
-----
-RTC doesn't work with pnpacpi=off.
-The attached patch fixes the problem by creating the platform device for
-the RTC when PNP is disabled. This may also help running the PNP-enabled
-kernel on an older PCs.
+My test shows following features.
 
-Signed-off-by: Stas Sergeev <stsp@aknet.ru>
-Cc: David Brownell <david-b@pacbell.net>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Adam Belay <ambx1@neo.rr.com>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>
+ o The guaranteeing degrees are widely in write I/Os than in read I/Os for each environment.
+ o Vasily's scheduler can guarantee I/O control.
+    However, its guaranteeing degree is narrow.
+      (in particular, at low priority)
+ o Satoshi's scheduler can guarantee I/O control.
+   However, guaranteeing degree is too small in write only and low priority case.
+ o Write I/Os are faster than read I/Os.
+   And, CFQ scheduler controls I/Os by time slice.
+   So, guaranteeing degree is caused difference from estimating degree at requests level by the situation of read and write I/Os. 
 
---------------040408090606020006010905
-Content-Type: text/x-patch;
- name="rtc_platf1.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="rtc_platf1.diff"
-
-diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
-index 9615eee..01459d2 100644
---- a/arch/x86/kernel/rtc.c
-+++ b/arch/x86/kernel/rtc.c
-@@ -4,9 +4,12 @@
- #include <linux/acpi.h>
- #include <linux/bcd.h>
- #include <linux/mc146818rtc.h>
-+#include <linux/platform_device.h>
-+#include <linux/pnp.h>
- 
- #include <asm/time.h>
- #include <asm/vsyscall.h>
-+#include <asm/mc146818rtc.h>
- 
- #ifdef CONFIG_X86_32
- /*
-@@ -197,3 +200,35 @@ unsigned long long native_read_tsc(void)
- }
- EXPORT_SYMBOL(native_read_tsc);
- 
-+
-+static struct resource rtc_resources[] = {
-+	[0] = {
-+		.start	= RTC_PORT(0),
-+		.end	= RTC_PORT(1),
-+		.flags	= IORESOURCE_IO,
-+	},
-+	[1] = {
-+		.start	= RTC_IRQ,
-+		.end	= RTC_IRQ,
-+		.flags	= IORESOURCE_IRQ,
-+	}
-+};
-+
-+static struct platform_device rtc_device = {
-+	.name		= "rtc_cmos",
-+	.id		= -1,
-+	.resource	= rtc_resources,
-+	.num_resources	= ARRAY_SIZE(rtc_resources),
-+};
-+
-+static __init int add_rtc_cmos(void)
-+{
-+#ifdef CONFIG_PNP
-+	if (!pnp_platform_devices)
-+		platform_device_register(&rtc_device);
-+#else
-+	platform_device_register(&rtc_device);
-+#endif /* CONFIG_PNP */
-+	return 0;
-+}
-+device_initcall(add_rtc_cmos);
-diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index d060a06..d7bb9ba 100644
---- a/drivers/rtc/rtc-cmos.c
-+++ b/drivers/rtc/rtc-cmos.c
-@@ -905,19 +905,7 @@ static struct pnp_driver cmos_pnp_driver = {
- 	.resume		= cmos_pnp_resume,
- };
- 
--static int __init cmos_init(void)
--{
--	return pnp_register_driver(&cmos_pnp_driver);
--}
--module_init(cmos_init);
--
--static void __exit cmos_exit(void)
--{
--	pnp_unregister_driver(&cmos_pnp_driver);
--}
--module_exit(cmos_exit);
--
--#else	/* no PNP */
-+#endif	/* CONFIG_PNP */
- 
- /*----------------------------------------------------------------*/
- 
-@@ -958,20 +946,33 @@ static struct platform_driver cmos_platform_driver = {
- 
- static int __init cmos_init(void)
- {
-+#ifdef	CONFIG_PNP
-+	if (pnp_platform_devices)
-+		return pnp_register_driver(&cmos_pnp_driver);
-+	else
-+		return platform_driver_probe(&cmos_platform_driver,
-+			cmos_platform_probe);
-+#else
- 	return platform_driver_probe(&cmos_platform_driver,
- 			cmos_platform_probe);
-+#endif /* CONFIG_PNP */
- }
- module_init(cmos_init);
- 
- static void __exit cmos_exit(void)
- {
-+#ifdef	CONFIG_PNP
-+	if (pnp_platform_devices)
-+		pnp_unregister_driver(&cmos_pnp_driver);
-+	else
-+		platform_driver_unregister(&cmos_platform_driver);
-+#else
- 	platform_driver_unregister(&cmos_platform_driver);
-+#endif /* CONFIG_PNP */
- }
- module_exit(cmos_exit);
- 
- 
--#endif	/* !PNP */
--
- MODULE_AUTHOR("David Brownell");
- MODULE_DESCRIPTION("Driver for PC-style 'CMOS' RTCs");
- MODULE_LICENSE("GPL");
+I'll continue testing variously.
+I hope to improve I/O control scheduler through many tests.
 
 
---------------040408090606020006010905--
+Details of the tests are as follows:
+
+Environment:
+   Linux version 2.6.25-rc5-mm1 based.
+     4 type:
+         kernel with Vasily's scheduler
+         kernel with Satoshi's scheduler
+         Native kernel
+         Native kernel and use ionice commands to each process.
+
+   CPU0: Intel(R) Core(TM)2 CPU          6700  @ 2.66GHz stepping 6
+   CPU1: Intel(R) Core(TM)2 CPU          6700  @ 2.66GHz stepping 6
+   Memory: 4060180k/5242880k available (2653k kernel code, 132264k reserved, 1412k data, 356k init)
+   scsi 3:0:0:0: Direct-Access     ATA      WDC WD2500JS-19N 10.0 PQ: 0 ANSI: 5
+   sd 3:0:0:0: [sdb] 488282256 512-byte hardware sectors (250001 MB)
+   sd 3:0:0:0: [sdb] Write Protect is off
+sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+   sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+   sd 3:0:0:0: [sdb] 488282256 512-byte hardware sectors (250001 MB)
+   sd 3:0:0:0: [sdb] Write Protect is off
+   sd 3:0:0:0: [sdb] Mode Sense: 00 3a 00 00
+   sd 3:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+   sdb: sdb1 sdb2 sdb3 sdb4 < sdb5 >
+
+
+Test 1:
+ Procedures:
+   o Prepare 200 files which size is 250MB on 1 partition sdb3
+   o Create 3 groups with priority 0, 4 and 7.
+       Estimate peformance in Vasily's  scheduler : group-1 57.1%  group-2 35.7%  group-3 7.2%
+       Estimate peformance in Satoshi's scheduler : group-1 61.5%  group-2 30.8%  group-3 7.7%
+       Estimate peformance in Native Linux CFQ scheduler with ionice command :
+                                                   group-1 92.8%  group-2  5.8%  group-3 1.4%
+   o Run many processes issuing random direct I/O with 4KB data on each files in 3 groups.
+        #1 Run 25 processes issuing read I/O only per groups.
+        #2 Run 25 processes issuing write I/O only per groups.
+        #3 Run 15 processes issuing read I/O and 15 processes issuing writeI/O only per groups.
+  o Count up the number of I/Os which have done in 120 seconds.
+  o Measure at 5 times in each situation.
+  o Results is calculated by averatve of 5 times.
+
+
+Results:
+                          Vasily's scheduler
+               The number of I/Os (percentage to total I/Os)
+   -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  | priority      |   7(highest)     |        4         |     0(lowest)    |    I/Os  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 Read       |  6077.2 (46.33%) |  3680.8 (28.06%) |  3360.2 (25.61%) |  13118.2 |
+  | #2 Write      | 10291.2 (53.13%) |  5282.8 (27.27%) |  3796.2 (19.60%) |  19370.2 |
+  | #3 Read&Write |  7218.0 (49.86%) |  4273.0 (29.52%) |  2986.0 (20.63%) |  14477.0 |
+  |               |    (Read 45.52%) |    (Read 51.96%) |     (Read 52.63%)|   (Read 48.89%)|
+   ------------------------------------------------------------------------------------
+
+                          Satoshi's scheduler
+               The number of I/Os (percentage to total I/O)
+    -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  | priority      |   0(highest)     |        4         |     7(lowest)    |    I/Os  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 Read       |  9082.2 (60.90%) |  4403.0 (29.53%) |  1427.4 (9.57%)  |  14912.6 |
+  | #2 Write      | 15449.0 (68.74%) |  6144.2 (27.34%) |   881.8 (3.92%)  |  22475.0 |
+  | #3 Read&Write | 11283.6 (65.35%) |  4699.0 (27.21%) |  1284.8 (7.44%)  |  17267.4 |
+  |               |    (Read 41.08%) |    (Read 47.84%) |     (Read 57.07%)|   (Read 44.11%)|
+   ------------------------------------------------------------------------------------
+
+                         Native Linux CFQ scheduler
+               The number of I/Os (percentage to total I/O)
+    -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 Read       |  4362.2 (34.94%) |  3864.4 (30.95%) |  4259.8 (34.12%) |  12486.4 |
+  | #2 Write      |  6918.4 (37.23%) |  5894.0 (31.71%) |  5772.0 (31.06%) |  18584.4 |
+  | #3 Read&Write |  4701.2 (33.62%) |  4788.0 (34.24%) |  4496.0 (32.15%) |  13985.2 |
+  |               |    (Read 45.85%) |    (Read 48.99%) |     (Read 51.28%)|   (Read 48.67%)|
+   ------------------------------------------------------------------------------------
+ 
+                        Native Linux CFQ scheduler with ionice command
+               The number of I/Os (percentage to total I/O)
+    -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  | priority      |   0(highest)     |        4         |     7(lowest)    |    I/Os  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 Read       | 12844.2 (85.34%) |  1544.8 (10.26%) |   661.8 (4.40%)  |  15050.8 |
+  | #2 Write      | 24858.4 (92.44%) |  1568.4 ( 5.83%) |   463.4 (1.72%)  |  26890.2 |
+  | #3 Read&Write | 16205.4 (85.53%) |  2016.8 (10.64%) |   725.6 (3.83%)  |  18947.8 |
+  |               |    (Read 37.49%) |    (Read 57.97%) |     (Read 56.62%)|   (Read 40.40%)|
+   ------------------------------------------------------------------------------------
+
+
+
+Test 2:
+ Procedures:
+   o Prepare 200 files which size is 250MB on 1 partition sdb3
+   o Create 3 groups with priority 0, 4 and 7.
+   o Run many processes issuing random direct I/O with 4KB data on each files in 3 groups.
+        #1 Run 25 processes issuing read I/O only in group 1 and group 2 and run 25 processes issuing write I/O only in group 3.
+            (This pattern is represent by "R-R-W".)
+        #2 Run 25 processes issuing read I/O only in group 1 and group 3 and run 25 processes issuing write I/O only in group 2.
+            (This pattern is represent by "R-W-R".)
+        #3 Run 25 processes issuing read I/O only in group 2 and group 3 and run 25 processes issuing write I/O only in group 1.
+            (This pattern is represent by "R-R-W".)
+  o Count up the number of I/Os which have done in 120 seconds.
+  o Measure at 5 times in each situation.
+  o Results is calculated by averatve of 5 times.
+
+
+
+Results:
+                          Vasily's scheduler
+               The number of I/Os (percentage to total I/Os)
+   -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  | priority      |   7(highest)     |        4         |     0(lowest)    |    I/Os  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 R-R-W      |  8828.2 (52.46%) |  4372.2 (25.98%) |  3628.8 (21.56%) |  16829.2 |
+  | #2 R-W-R      |  5510.2 (35.01%) |  6584.6 (41.83%) |  3646.0 (23.16%) |  15740.8 |
+  | #3 W-R-R      |  6400.4 (41.91%) |  3856.4 (25.25%) |  5016.4 (32.84%) |  15273.2 |
+   ------------------------------------------------------------------------------------ 
+
+   Results shows peculiar case in test #2.
+   I/O counts in group 2 are 5911, 4895, 8498, 9300 and 4319.
+   In third and fourth time, I/O counts are huge.
+   An average of first, second and fifth results is following.
+   -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  | priority      |   7(highest)     |        4         |     0(lowest)    |    I/Os  |
+  |---------------+------------------+------------------+------------------|----------|
+　| #2 R-W-R      |  6285.7 (41.82%) |  5041.7 (33.54%) |  3702.7 (24.64%) |  15030.0 | 
+　  -----------------------------------------------------------------------------------
+
+
+                          Satoshi's scheduler
+               The number of I/Os (percentage to total I/O)
+    -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  | priority      |   0(highest)     |        4         |     7(lowest)    |    I/Os  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 R-R-W      |  9178.6 (61.95%) |  4510.8 (30.44%) |  1127.4 (7.61%)  |  14816.8 |
+  | #2 R-W-R      |  9398.0 (56.29%) |  6152.2 (36.85%) |  1146.4 (6.87%)  |  16696.6 |
+  | #3 W-R-R      | 15527.0 (72.38%) |  4544.8 (21.19%) |  1380.0 (6.43%)  |  21451.8 |
+   ------------------------------------------------------------------------------------
+
+
+                         Native Linux CFQ scheduler
+               The number of I/Os (percentage to total I/O)
+    -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 R-R-W      |  4622.4 (33.15%) |  4739.2 (33.98%) |  4583.4 (32.87%) |  13945.0 |
+  | #2 R-W-R      |  4610.6 (31.72%) |  5502.2 (37.85%) |  4422.4 (30.43%) |  14535.2 |
+  | #3 W-R-R      |  5518.0 (37.57%) |  4734.2 (32.24%) |  4433.2 (30.19%) |  14685.4 |
+   -----------------------------------------------------------------------------------
+
+
+                         Native Linux CFQ scheduler with ionice
+               The number of I/Os (percentage to total I/O)
+    -----------------------------------------------------------------------------------
+  | group         |    group 1       |     group 2      |      group 3     |   total  |
+  | priority      |   0(highest)     |        4         |     7(lowest)    |    I/Os  |
+  |---------------+------------------+------------------+------------------|----------|
+  | #1 Read       | 12619.4 (84.49%) |  1537.4 (10.29%) |   779.2 (5.22%)  |  14936.0 |
+  | #2 Write      | 12724.4 (81.44%) |  2276.6 (14.57%) |   623.2 (3.99%)  |  15624.2 |
+  | #3 Read&Write | 24442.8 (91.75%) |  1592.6 ( 5.98%) |   604.6 (2.27%)  |  26640.0 |
+   -----------------------------------------------------------------------------------
+
+
+Thanks,
+Satoshi UCHIDA.
+
+
+
