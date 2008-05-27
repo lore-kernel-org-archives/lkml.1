@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbYE0VuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbYE0Vwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759711AbYE0VuR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758549AbYE0VuE
+	id S1760054AbYE0Vwf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbYE0Vw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:50:04 -0400
-Received: from sous-sol.org ([216.99.217.87]:45799 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758363AbYE0VuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:50:03 -0400
-Date: Tue, 27 May 2008 14:42:06 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>
-Subject: Re: [PATCH] security: was "Re: capget() overflows buffers."
-Message-ID: <20080527214206.GA30402@sequoia.sous-sol.org>
-References: <20080522140402.GB2071@codemonkey.org.uk> <20080522175744.GE4018@sequoia.sous-sol.org> <20080522205341.GA30402@sequoia.sous-sol.org> <4835F929.7010200@kernel.org> <20080522233757.GD30402@sequoia.sous-sol.org> <48366D9A.70806@kernel.org> <20080523155718.GI30402@sequoia.sous-sol.org> <4837B4F5.4000100@kernel.org> <20080524080734.GV30402@sequoia.sous-sol.org> <483B611B.6040006@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <483B611B.6040006@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 27 May 2008 17:52:27 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57401 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758296AbYE0Vw0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 17:52:26 -0400
+Date: Tue, 27 May 2008 22:38:22 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, tpiepho@freescale.com
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080527223822.57306677@core>
+In-Reply-To: <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<1211859542.3286.46.camel@pasglop>
+	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
+	<1211922621.3286.80.camel@pasglop>
+	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew G. Morgan (morgan@kernel.org) wrote:
-> How about the attached for a combined patch? Chris, the only change over
-> last time is basically your suggested code change, with more comments
-> and a less cautious warning...
+> re-ordering, even though I doubt it will be visible in practice. So if you 
+> use the "__" versions, you'd better have barriers even on x86!
 
-Looks good, I'll queue it (I added
+Are we also going to have __ioread*/__iowrite* ?
 
-  Fixes issue reported in https://bugzilla.redhat.com/show_bug.cgi?id=447518.
-  Thanks to Bojan Smojver for the report.
+Also is the sematics of __readl/__writel defined for all architectures -
+I used it ages ago in the i2o drivers for speed and it got removed
+because it didn't build on some platforms.
 
-to the commit message).
+Alan
 
-thanks,
--chris
