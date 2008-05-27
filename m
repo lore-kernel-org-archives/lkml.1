@@ -1,153 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbYE0VB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbYE0VGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759415AbYE0VB0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbYE0VBS
+	id S1759026AbYE0VGR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757006AbYE0VGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:01:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52732 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756450AbYE0VBR (ORCPT
+	Tue, 27 May 2008 17:06:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:22473 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756505AbYE0VGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:01:17 -0400
-Date: Tue, 27 May 2008 18:00:48 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Devin Heitmueller" <devin.heitmueller@gmail.com>
-Cc: "Jonathan Corbet" <corbet@lwn.net>, "Alan Cox" <alan@redhat.com>,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] video4linux: Push down the BKL
-Message-ID: <20080527180048.6a27dbf7@gaivota>
-In-Reply-To: <412bdbff0805271226t41fe55b0jd0b8e3c737f34734@mail.gmail.com>
-References: <20080522223700.2f103a14@core>
-	<20080526135951.7989516d@gaivota>
-	<20080526202317.GA12793@devserv.devel.redhat.com>
-	<20080526181027.1ff9c758@gaivota>
-	<20080526220154.GA15487@devserv.devel.redhat.com>
-	<20080527101039.1c0a3804@gaivota>
-	<20080527094144.1189826a@bike.lwn.net>
-	<20080527133100.6a9302fb@gaivota>
-	<20080527103755.1fd67ec1@bike.lwn.net>
-	<20080527155942.7693c360@gaivota>
-	<412bdbff0805271226t41fe55b0jd0b8e3c737f34734@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 May 2008 17:06:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ncyE1g65HTLi04vq89h8+gNecEKOiTcnl0lJ8FedEtchowzz9Sz63DqsR2AyPnHHw5lME90qL+t5NMeG09xc7uxkHCHHqZnnnynMMH4HyCmoFZEIPfQel+WGaRiFYLhWSuTvXWLhLHXGeA+X/z+RuGmOFNeJ+GfCvilXEq6gYH8=
+Message-ID: <86802c440805271406l4348db33r5622c440b494baa2@mail.gmail.com>
+Date: Tue, 27 May 2008 14:06:04 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <483C70F9.2030901@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <200805110030.15510.yhlu.kernel@gmail.com>
+	 <200805180118.57863.yhlu.kernel@gmail.com>
+	 <200805211840.18619.yhlu.kernel@gmail.com>
+	 <200805251000.10205.yhlu.kernel@gmail.com>
+	 <alpine.LFD.1.10.0805271744080.3295@apollo.tec.linutronix.de>
+	 <483C70F9.2030901@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Devin,
+On Tue, May 27, 2008 at 1:37 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Thomas Gleixner wrote:
+>>
+>> On Sun, 25 May 2008, Yinghai Lu wrote:
+>>
+>>>
+>>> remove extra -1 in reseve_early calling
+>>>    panic if can not find space for new RAMDISK
+>>>
+>>>
+>>
+>> Thanks, applied on top of the v2 update
+>>
+>>        tglx
+>>
+>
+> This patch is still required to make Xen boot with the e820 changes:
+>
+> Subject: xen: boot via i386_start_kernel to get early reservations
+>
+> Boot Xen via i386_start_kernel so that all the early reservations are
+> made properly; without these, it will start using the kernel and
+> pagetables as early heap memory, which is a bit suboptimal.
+>
+> One tricky part is that reserve_early() will just panic if any of the
+> early reservations overlap any others.  When a Xen domain is built, it
+> constructs the initial address space as:
+>
+>  kernel text+data+bss
+>  initrd
+>  inital pagetable
+>
+> Therefore, when reserving the pagetable (from &_end to
+> init_pg_tables_end), it covers the whole initrd area.  If it then
+> tries to reserve the initrd, it will panic because of the overlap.
+>
+> The simple fix here is to reserve INIT_PG_TABLE first, and then only
+> reserve the ramdisk if it doesn't overlap with the previous
+> reservations.  A better/more complex fix might be to make
+> reserve_early() deal with overlapping reservations.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+> arch/x86/kernel/head32.c |    6 ++++--
+> arch/x86/xen/enlighten.c |    2 +-
+> include/asm-x86/setup.h  |    1 +
+> 3 files changed, 6 insertions(+), 3 deletions(-)
+>
+> ===================================================================
+> --- a/arch/x86/kernel/head32.c
+> +++ b/arch/x86/kernel/head32.c
+> @@ -66,6 +66,7 @@ void __init i386_start_kernel(void)
+> void __init i386_start_kernel(void)
+> {
+>        reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA
+> BSS");
+> +       reserve_early(__pa_symbol(&_end), init_pg_tables_end,
+> "INIT_PG_TABLE");
+>
+> #ifdef CONFIG_BLK_DEV_INITRD
+>        /* Reserve INITRD */
+> @@ -73,10 +74,11 @@ void __init i386_start_kernel(void)
+>                u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+>                u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+>                u64 ramdisk_end   = ramdisk_image + ramdisk_size;
+> -               reserve_early(ramdisk_image, ramdisk_end, "RAMDISK");
+> +               if (ramdisk_end < __pa_symbol(&_text) ||
+> +                   ramdisk_image >= init_pg_tables_end)
+> +                       reserve_early(ramdisk_image, ramdisk_end,
+> "RAMDISK");
+>        }
+> #endif
+> -       reserve_early(__pa_symbol(&_end), init_pg_tables_end,
+> "INIT_PG_TABLE");
+>
+>        reserve_ebda_region();
+>
+> ===================================================================
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -1264,5 +1264,5 @@ asmlinkage void __init xen_start_kernel(
+>        }
+>
+>        /* Start the world */
+> -       start_kernel();
+> +       i386_start_kernel();
+> }
+> ===================================================================
+> --- a/include/asm-x86/setup.h
+> +++ b/include/asm-x86/setup.h
+> @@ -58,6 +58,7 @@ int __init copy_e820_map(struct e820entr
+> int __init copy_e820_map(struct e820entry *biosmap, int nr_map);
+> void __init add_memory_region(unsigned long long start,
+>                              unsigned long long size, int type);
+> +void __init i386_start_kernel(void);
+>
+> extern unsigned long init_pg_tables_end;
 
-On Tue, 27 May 2008 15:26:27 -0400
-"Devin Heitmueller" <devin.heitmueller@gmail.com> wrote:
+Jeremy,
 
-> Hello Mauro,
-> 
-> On Tue, May 27, 2008 at 2:59 PM, Mauro Carvalho Chehab
-> <mchehab@infradead.org> wrote:
-> > For example, em28xx has already a lock at the operations that change values at
-> > "dev" struct, including open() method. However, since the lock is not called at
-> > get operations, it needs to be fixed. I would also change it from mutex to a
-> > read/write semaphore, since two (or more) get operations can safely happen in
-> > parallel.
-> 
-> Please bear in mind that we have not worked out the locking semantics
-> for hybrid tuner devices, and it's entirely possible that the get()
-> routines will need to switch the tuner mode, which would eliminate any
-> benefits of converting to a read/write semaphore.
+Can you send out your boot log?
 
-Arjan pointed some good reasons about why we shouldn't use r/w semaphores. So,
-it seems better to keep using mutexes.
+I still can not figure out INIT_PG_TABLE and RAMDISK could overlap? or
+only one byte? or the same page?
 
-> I'm not sure yet exactly how that's going to work, but it's something
-> that might prompt you to defer converting it from a mutex until we
-> have that worked out.
-
-
-The hybrid device mode lock is somewhat complex. The simplest solution would be
-to block an open() call, if the device is already used by a different mode.
-
-This will minimize things like firmware reload, on xc3028 devices, where you
-have different firmwares for analog and digital modes.
-
-Also, some USB devices (like HVR-900/HVR-950) switches off analog audio and tv
-demod chips when in digital mode (the reverse is also true - e.g. digital demod
-is switched off at analog mode).
-
-So, if you are in digital mode, on HVR-900, and changes to analog, you'll need
-to re-initialize tvp5150/msp3400. The current code for those devices handles
-this at open(). If we let this to happen later, we'll need to re-send the video
-and audio parameters to all I2C connected devices, when switching mode.
-
-On the other hand, some userspace apps, like mythtv, opens both analog and
-digital API's. I'm not sure if it does this at the same time, but, if so, a
-lock at open() will cause a regression there (someone told me that this is the
-case - I didn't test it here yet).
-
-One possible solution of providing a proper code to change mode, and not
-blocking open() would be to write something like this:
-
-static int check_and_switch_mode(void *priv, int digital)
-{
-	struct dev_foo *dev = priv;
-
-	mutex_lock(dev->lock);
-
-	if (digital)
-		return change_to_digital(dev);
-	else
-		return change_to_analog(dev);
-
-	mutex_unlock(dev->lock);
-}
-
-Since this should be called for every valid V4L2 and DVB ioctl, the better
-place for it would be to add this as a new function callback, at video_ioctl2.
-Something like [1]:
-
---- a/linux/drivers/media/video/videodev.c	Tue May 27 16:02:56 2008 -0300
-+++ b/linux/drivers/media/video/videodev.c	Tue May 27 17:34:04 2008 -0300
-@@ -821,6 +821,10 @@
- 		v4l_print_ioctl(vfd->name, cmd);
- 		printk("\n");
- 	}
-+
-+	if (_IOC_TYPE(cmd)=='v') || _IOC_TYPE(cmd)=='V') &&
-+		vfd->vidioc_switch_mode)
-+		ret=vfd->vidioc_switch_mode(fh, 0);
- 
- #ifdef CONFIG_VIDEO_V4L1_COMPAT
- 	/***********************************************************
-
-
-
-And something like this, at dvb core [2]:
-
-diff -r b94d587ee596 linux/drivers/media/dvb/dvb-core/dvb_frontend.c
---- a/linux/drivers/media/dvb/dvb-core/dvb_frontend.c	Tue May 27 16:02:56 2008 -0300
-+++ b/linux/drivers/media/dvb/dvb-core/dvb_frontend.c	Tue May 27 17:35:57 2008 -0300
-@@ -784,6 +784,9 @@
- 	     cmd == FE_DISEQC_RECV_SLAVE_REPLY))
- 		return -EPERM;
- 
-+	if (fe->ops.switch_mode)
-+		err = fe->ops.switch_mode(fe, 1);
-+
- 	if (down_interruptible (&fepriv->sem))
- 		return -ERESTARTSYS;
-
-[1] The code can be more conservative, changing mode only if S_STD or a video
-stream ioctl is called.
-
-[2] We need to think more about the proper places for the DVB changing mode. I
-suspect that we'll need to add the mode change callback there and/or at other
-different places.
-
-PS.: I suspect that the real code will be much more complex than the above skeletons.
-
-Cheers,
-Mauro
+YH
