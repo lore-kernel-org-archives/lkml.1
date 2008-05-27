@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYE0QMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbYE0QM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbYE0QMD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 12:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbYE0QLx
+	id S1758928AbYE0QM0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 12:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758787AbYE0QMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 12:11:53 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33571 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757543AbYE0QLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 12:11:52 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1+LkeFD3XWLue3OeyIHiD4CfNWc6UcreCrikCr6vn
-	pWM700Fulz/XcV
-Date: Tue, 27 May 2008 18:11:48 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>,
-       James Morris <jmorris@namei.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: Redzone overwritten with CONFIG_SECURITY
-Message-ID: <20080527161148.GA7291@alice>
-References: <20080526143422.GA3203@alice> <84144f020805270800l5911ed02ia7a92d96a8aa32a7@mail.gmail.com> <20080527151136.GA20750@alice>
+	Tue, 27 May 2008 12:12:00 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:24515 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758763AbYE0QL7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 12:11:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=jWoZxM1oKc63lGXYU5gTmqaDv7Fq6qO6LkGcdh1QYDXcUG8JxBrJmrOGmUIcZTR1zNqYl13FUV34MjD+oznLuJiJ3DEIhz0fm0T5Q4gmNoWNi5kd30DIO1xflvmFAs6zFDLLHFQPC+2Ii4g8RsFHdXvuqO2L83WP/c8mUbQUZZU=
+Date: Tue, 27 May 2008 18:11:53 +0200
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] arm: fix header guards
+Message-ID: <20080527161153.GE7550@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080527151136.GA20750@alice>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.26-rc3 (x86_64)
-X-Uptime: 18:02:30 up  5:19,  1 user,  load average: 0.26, 0.43, 0.48
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric Sesterhenn (snakebyte@gmx.de) wrote:
-> * Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> 
-> I am currently trying to reproduce this with SLAB as Vegard
-> suggested for the kmemcheck report. After this I'll retest this
-> on a fresh tree to make sure it isnt something buggy on my part
-> and try some older kernels.
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Tue, 27 May 2008 17:32:10 +0200
+Subject: [PATCH] arm: fix header guards
 
-ok, with CONFIG_SECURITY, SLAB and CONFIG_DEBUG_SLAB on the
--rc3 based kmemcheck tree enabled i dont get any error.
-I am currently building a fresh -rc4 (with SLUB) to make
-sure this is for real, then i'll try that again with SLAB
-and then start testing older kernels. 
+Cc: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ include/asm-arm/arch-iop13xx/dma.h |    2 +-
+ include/asm-arm/arch-msm/irqs.h    |    1 +
+ include/asm-arm/arch-msm/timex.h   |    1 +
+ 3 files changed, 3 insertions(+), 1 deletions(-)
 
-Greetings, Eric
+diff --git a/include/asm-arm/arch-iop13xx/dma.h b/include/asm-arm/arch-iop13xx/dma.h
+index 2e15da5..d79846f 100644
+--- a/include/asm-arm/arch-iop13xx/dma.h
++++ b/include/asm-arm/arch-iop13xx/dma.h
+@@ -1,3 +1,3 @@
+ #ifndef _IOP13XX_DMA_H
+-#define _IOP13XX_DMA_H_
++#define _IOP13XX_DMA_H
+ #endif
+diff --git a/include/asm-arm/arch-msm/irqs.h b/include/asm-arm/arch-msm/irqs.h
+index 565430c..e62a108 100644
+--- a/include/asm-arm/arch-msm/irqs.h
++++ b/include/asm-arm/arch-msm/irqs.h
+@@ -15,6 +15,7 @@
+  */
+ 
+ #ifndef __ASM_ARCH_MSM_IRQS_H
++#define __ASM_ARCH_MSM_IRQS_H
+ 
+ /* MSM ARM11 Interrupt Numbers */
+ /* See 80-VE113-1 A, pp219-221     */
+diff --git a/include/asm-arm/arch-msm/timex.h b/include/asm-arm/arch-msm/timex.h
+index 154b23f..8724487 100644
+--- a/include/asm-arm/arch-msm/timex.h
++++ b/include/asm-arm/arch-msm/timex.h
+@@ -14,6 +14,7 @@
+  */
+ 
+ #ifndef __ASM_ARCH_MSM_TIMEX_H
++#define __ASM_ARCH_MSM_TIMEX_H
+ 
+ #define CLOCK_TICK_RATE		1000000
+ 
+-- 
+1.5.4.1
 
