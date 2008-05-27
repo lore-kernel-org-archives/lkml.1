@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYE0AW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYE0A0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756287AbYE0AW3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 20:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYE0AWV
+	id S1756591AbYE0A0Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 20:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755663AbYE0A0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 20:22:21 -0400
-Received: from namei.org ([69.55.235.186]:52674 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752460AbYE0AWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 20:22:21 -0400
-Date: Tue, 27 May 2008 10:20:17 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Markku Savela <msa@moth.iki.fi>
-cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: Bug/misfeature of "securityfs"
-In-Reply-To: <87iqx1pd24.fsf@burp.tkv.asdf.org>
-Message-ID: <Xine.LNX.4.64.0805271019550.17391@us.intercode.com.au>
-References: <87iqx1pd24.fsf@burp.tkv.asdf.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 May 2008 20:26:17 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56546 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754675AbYE0A0R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 20:26:17 -0400
+Date: Mon, 26 May 2008 17:25:19 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080526172519.10d944ab@infradead.org>
+In-Reply-To: <alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
+	<483B2A9B.4050007@krogh.cc>
+	<alpine.LFD.1.10.0805261428140.2958@woody.linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 May 2008, Markku Savela wrote:
+On Mon, 26 May 2008 14:42:37 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
 > 
-> I write a module which creates a securityfs on init
 > 
->   foobar =  securityfs_create_dir("foobar", NULL)
-> and on exit it does
->   security_fs_remove(foobar);
+> On Mon, 26 May 2008, Jesper Krogh wrote:
+> > 
+> > I did get this one (which I didn't on 2.6.25.2)
+> > 
+> > [42949399.810959] ck804xrom ck804xrom_init_one(): Unable to
+> > register resource 0x0000000000000000-0x00000000ffffffff - kernel
+> > bug?
 > 
-> When I do "insmod" and "rmmod", I see
+> Something is trying to register a 4GB resource. That sounds unlikely 
+> (possible on a 64-bit PCI setup, but I think it's more likely to be
+> some overflow of 0 in "unsigned int").
 > 
->   /sys/kernel/security/foobar/
+> In fact, this seems to be due to some driver bug. It looks like we
+> have
 > 
-> appear and go away.
+> 	window->size = 0xffffffffUL - window->phys + 1UL;
 > 
-> Now, if have a shell and do "cd /sys/kernel/security/foobar", the
-> "rmmod" does not remove the directory. The directory disappears when I
-> exit the shell from it via "cd ..". This is fine, and as it should be,
-> but....
+> and in order for window->size to be 0x100000000, that means that 
+> window->phys has to be 0. Which looks impossible, or at least like 
+> ent->driver_data is neither DEV_CK804 nor DEV_MCP55. Very odd.
 > 
-> IF, while having the shell in the directory, I try to "insmod" again,
-> the insmod fails with "-1 File exists". Again, understandable, BUT
-> when after this I exit the shell from the directory, IT DOES NOT GO
-> AWAY. It's permanetly existing, and module install fails always with
-> "File Exists".
+> The warning:
 > 
-> Is this a bug, or am doing something wrong?
+> > [42949399.979924] WARNING: at arch/x86/mm/ioremap.c:159
+> > __ioremap_caller+0x299/0x330()
 > 
-> The kernel is Ubuntu Hardy heron
->     2.6.24-16-generic #1 SMP Thu Apr 10 13:23:42 UTC 2008 i686
+> is then just a result of the driver blindly continuing and trying to 
+> "ioremap()" the resource even though it's bogus and the resource 
+> allocation failed.
+> 
+> In other words, that driver init routine is really bad about error 
+> handling. Carl-Daniel? David?
+> 
 
-Sounds like a bug.
-
-
--- 
-James Morris
-<jmorris@namei.org>
+btw this guy has shown up on kerneloops.org a lot: 
+http://www.kerneloops.org/searchweek.php?search=__ioremap_caller
+where it's trying to map memory as uncachable, which is.. well nasty
+(it seems to map not just the piece it needs, but more, and then turns
+that "more" uncachable, even if the kernel is using it for "normal"
+things)
