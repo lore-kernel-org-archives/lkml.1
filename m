@@ -1,47 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbYE0D3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbYE0Dbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbYE0D3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 23:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbYE0D3G
+	id S1756253AbYE0Dbx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 23:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYE0Dbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 23:29:06 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:36800 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207AbYE0D3E (ORCPT
+	Mon, 26 May 2008 23:31:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:5059 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754224AbYE0Dbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 23:29:04 -0400
+	Mon, 26 May 2008 23:31:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=lElAECaDVNKUB8Mr4pd6XTs4E5F533Gil7KX51M71EwLWtr0lv4Sj59XQ1riiPOsc03hwBSeYGqsdjPp46VxW+/G7miDg+v0xHIdRYjXcwMkQd3VdNPyE1yPmc+TXTItRksp7sgpDXag8iaLBrVHz3vOITcc/UPQFLkQR1tkWjg=
-Message-ID: <dd18b0c30805262029me288690y237f995fb63ccf54@mail.gmail.com>
-Date: Tue, 27 May 2008 03:29:04 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: appletouch after wakeup
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ucp6u/q1RsdH8FPJ/+VJqC2Epkgl5Hm3svAnBT+naiXRVIlV5+5Ew7LUX+fPdt4cnS5g1L1JLdK9lUYsW0YyqM6cBYPmb2oUUmXH/iz0my1SOXZl3jXDovtAkBMkJmxKhWfIOVGNE0IJtGOaNqUWV8Ki3NKdk2392/HKrvCpTrc=
+Message-ID: <3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
+Date: Tue, 27 May 2008 11:31:43 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <3877989d0805220216o5add20ddye2a1fde98a0c1e69@mail.gmail.com>
+	 <20080522111826.BB90326FA24@magilla.localdomain>
+	 <3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
+	 <20080522203428.835D626FA24@magilla.localdomain>
+	 <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
+	 <20080523041940.39E8726FA24@magilla.localdomain>
+	 <3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
+	 <20080526001527.81E1126FA9E@magilla.localdomain>
+	 <3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello; with 2.6.26-rc3 I've notice appletouch is going out of whack,
-here's what I see after waking the machine from suspend,
-[ 8186.661313] appletouch: incomplete data package (first byte: 2, length: 4).
-Keep in mind there is not just one of these messages, the entire dmesg
-is filled.
+>
+> if happens, it should be a bug, right?
 
-Also I decided to watch some DVD's and noticed this when using mplayer:
-[14852.274794] end_request: I/O error, dev sr0, sector 11083800
-[14852.276264] sr 0:0:0:0: [sr0] Device not ready: Sense Key : 0x2 [current]
-[14852.276264] sr 0:0:0:0: [sr0] Device not ready: ASC=0x3a ASCQ=0x0
-The same as appletouch, the entire dmesg is filled. Now during my
-entertaining night  with will smith, jodie foster, and matt daemon I
-did pause the movie to
-take five. So maybe this might have cause the unalignment.
-regards;
+It does happen!!
 
--- 
-Justin P. Mattock
+Call Trace:
+ [<a000000100011bd0>] show_stack+0x50/0xa0
+                                sp=e000000146bbfbb0 bsp=e000000146bb0e08
+ [<a000000100011c50>] dump_stack+0x30/0x60
+                                sp=e000000146bbfd80 bsp=e000000146bb0de8
+ [<a0000001000979a0>] get_signal_to_deliver+0x60/0x6e0
+                                sp=e000000146bbfd80 bsp=e000000146bb0d80
+ [<a0000001000343d0>] ia64_do_signal+0xb0/0xd00
+                                sp=e000000146bbfd80 bsp=e000000146bb0cd8
+ [<a000000100012650>] do_notify_resume_user+0xf0/0x140
+                                sp=e000000146bbfe20 bsp=e000000146bb0ca8
+ [<a00000010000aac0>] notify_resume_user+0x40/0x60
+                                sp=e000000146bbfe20 bsp=e000000146bb0c58
+ [<a00000010000a9f0>] skip_rbs_switch+0xe0/0x110
+                                sp=e000000146bbfe30 bsp=e000000146bb0c58
+ [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
+                                sp=e000000146bc0000 bsp=e000000146bb0c58
+
+>>
+> I will try to customize kernel to capture call trace for a precise code path.
+
+I applied the following patch , and got the call trace above..
+If apply my RFC patch as antidote,  I don't see "deliver" ...
+Is the problem clear now?  I will serve you until every thing is clear to you.
+
+Thanks,
+Luming
+
+Signed-off-by: Yu Luming <luming.yu@intel.com>
+
+diff -Bru 1/kernel/signal.c 0/kernel/signal.c
+--- 1/kernel/signal.c   2008-05-27 15:18:48.000000000 +0800
++++ 0/kernel/signal.c   2008-05-27 15:08:51.000000000 +0800
+@@ -38,6 +38,7 @@
+  */
+
+ static struct kmem_cache *sigqueue_cachep;
++unsigned long global_arch_ptrace_stop_flag =0;
+
+ static int __sig_ignored(struct task_struct *t, int sig)
+ {
+@@ -1501,9 +1502,12 @@
+                 * siglock.  That must prevent us from sleeping in TASK_TRACED.
+                 * So after regaining the lock, we must check for SIGKILL.
+                 */
++               global_arch_ptrace_stop_flag = 1;
+                spin_unlock_irq(&current->sighand->siglock);
+                arch_ptrace_stop(exit_code, info);
++
+                spin_lock_irq(&current->sighand->siglock);
++               global_arch_ptrace_stop_flag = 0;
+                killed = sigkill_pending(current);
+        }
+
+@@ -1701,6 +1705,8 @@
+        struct signal_struct *signal = current->signal;
+        int signr;
+
++       if (global_arch_ptrace_stop_flag)
++               dump_stack();
+ relock:
+        /*
+         * We'll jump back here after any time we were stopped in TASK_STOPPED.
