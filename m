@@ -1,67 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbYE0HKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbYE0HSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756764AbYE0HKK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 03:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbYE0HJ5
+	id S1756802AbYE0HSO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 03:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbYE0HSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 03:09:57 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37380 "EHLO gate.crashing.org"
+	Tue, 27 May 2008 03:18:01 -0400
+Received: from burp.tkv.asdf.org ([212.16.99.49]:54926 "EHLO burp.tkv.asdf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751161AbYE0HJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 03:09:57 -0400
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, tpiepho@freescale.com
-In-Reply-To: <20080526204233.75b71bb8@infradead.org>
-References: <1211852026.3286.36.camel@pasglop>
-	 <20080526.184047.88207142.davem@davemloft.net>
-	 <1211854540.3286.42.camel@pasglop>
-	 <20080526.192812.184590464.davem@davemloft.net>
-	 <20080526204233.75b71bb8@infradead.org>
-Content-Type: text/plain
-Date: Tue, 27 May 2008 17:08:50 +1000
-Message-Id: <1211872130.3286.64.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1754045AbYE0HSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 03:18:00 -0400
+Date: Tue, 27 May 2008 10:17:53 +0300
+From: Markku Savela <msa@moth.iki.fi>
+Message-Id: <200805270717.m4R7HriQ016260@burp.tkv.asdf.org>
+To: Greg KH <greg@kroah.com>
+CC: jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+In-reply-to: <20080527035241.GB20295@kroah.com> (message from Greg KH on Mon,
+	26 May 2008 20:52:41 -0700)
+Subject: Re: Bug/misfeature of "securityfs"
+References: <87iqx1pd24.fsf@burp.tkv.asdf.org> <Xine.LNX.4.64.0805271019550.17391@us.intercode.com.au> <20080527035241.GB20295@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I should not really reply from hip in the morning, ignore more
+previous message. The "file exists" definitely comes from the module
+init failing, because it finds the directory existing.
 
-> ... and try to find a way to test for it at runtime or compile time.
-> 
-> either via sparse or some fancy lockdep like "device store" thing?
-> If we can't test for it and it doesn't show up on x86 ... it'll just be
-> an eterrnal chase.
+Here is some more detailed information and a test module
+(unfortunately, just pasted in this message):
 
-It's hard. I haven't managed to come up with a good idea on how
-to test for it either at runtime or from sparse.
+*shell1*
+	*shell2*
 
-There -might- be way to test up to a certain point with sparse
-by defining a __coherent attribute for coherent memory and trying
-to figure out patterns like write to __coherent followed by MMIO
-with no barrier in between but that's fishy and won't catch many
-cases.
+         > cd /sys/kernel/security/
+         > ls
+         apparmor
+ > sudo insmod foobar.ko
+        > ls
+        apparmor  foobar
+ > sudo rmmod foobar.ko
+        > ls
+        apparmor
 
-Sticking barriers in the accessors is thus indeed the "easy" and
-somewhat safe fix and keeping everything as ordered as possible
+// so far fine, directory comes and goes...
 
-Though it's my understanding that at least ia64 does require the
-explicit barriers anyway, so we are still in a dodgy situation here
-where it's not clear what drivers should do and we end up with
-possibly excessive barriers on powerpc where I end up with both
-the wmb/rmb/mb that were added for ia64 -and- the ones I have in
-readl/writel to make them look synchronous... Not nice.
+ > sudo insmod foobar.ko
+        > ls
+        apparmor  foobar
+        > cd foobar/
+ > sudo rmmod foobar.ko
+ > ls /sys/kernel/security/
+apparmor  foobar
+        > cd ..
+ > ls /sys/kernel/security/
+apparmor
 
-I'm not sure there is a good answer...
+// so far fine, directory goes when
+// other shell exits it.
 
-Cheers,
-Ben.
+ > sudo insmod foobar.ko
+        > cd foobar/
+ > sudo rmmod foobar.ko
+ > ls /sys/kernel/security/
+apparmor  foobar
+ > sudo insmod foobar.ko
+insmod: error inserting 'foobar.ko': -1 File exists
+        > cd ..
+        > ls
+        apparmor  foobar
+// 'foobar' still exists, while module unloaded
+// and shell also is out.
+
+ > ls /sys/kernel/security/
+apparmor  foobar
+ > ls /sys/kernel/security/
+apparmor  foobar
+ > sudo insmod foobar.ko
+insmod: error inserting 'foobar.ko': -1 File exists
+
+// And, now only reboot seems to remove the directory"
+
+-------------------------------------------------------------------
+tail /var/log/syslog
+
+May 27 09:49:13 maja kernel: [  192.771424] foobar: Module 'foobar' loaded
+May 27 09:49:28 maja kernel: [  207.637838] foobar: Module 'foobar' unloaded
+May 27 09:49:35 maja kernel: [  214.890241] foobar: Module 'foobar' loaded
+May 27 09:49:46 maja kernel: [  225.719495] foobar: Module 'foobar' unloaded
+May 27 09:50:19 maja kernel: [  258.782263] foobar: Module 'foobar' loaded
+May 27 09:50:27 maja kernel: [  266.641655] foobar: Module 'foobar' unloaded
+May 27 09:50:48 maja kernel: [  288.383145] foobar: Foobar FS create failed
+May 27 09:51:11 maja kernel: [  311.323851] foobar: Foobar FS create failed
+
+------------------------------------------------------------------
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/security.h>
+
+#define FOOBAR_NAME "foobar"
+
+#undef DBG
+#undef DBGG
+#undef INFO
+#undef ERR
+
+#ifdef FOOBAR_DEBUG
+#	define DBG(args...) printk(KERN_DEBUG FOOBAR_NAME ": " args)
+#else
+#	define DBG(args...)
+#endif
+#define DBGG(args...)
+#define INFO(args...) printk(KERN_INFO FOOBAR_NAME ": " args)
+#define ERR(args...) printk(KERN_ERR FOOBAR_NAME ": " args)
+
+static struct dentry* foobar_fs;
+
+static void foobar_cleanup(void)
+	{
+	if (foobar_fs && !IS_ERR(foobar_fs))
+		{
+		securityfs_remove(foobar_fs);
+		};
+	}
+
+static int __init foobar_init(void)
+	{
+	DBG("foobar_init\n");
+	if (foobar_fs)
+		{
+		ERR("Foobar FS already exists\n");
+		return -EEXIST;
+		}
+
+	foobar_fs = securityfs_create_dir(FOOBAR_NAME, NULL);
+	if (IS_ERR(foobar_fs))
+		{
+		ERR("Foobar FS create failed\n");
+		foobar_cleanup();
+		return PTR_ERR(foobar_fs);
+		}
+	INFO("Module 'foobar' loaded\n");
+	return 0;
+	}
+
+static void __exit foobar_exit(void)
+	{
+	DBG("foobar_exit\n");
+	foobar_cleanup();
+	INFO("Module 'foobar' unloaded\n");
+	}
+
+module_init(foobar_init);
+module_exit(foobar_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Markku Savela");
 
 
