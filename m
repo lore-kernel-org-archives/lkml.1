@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbYE0Vbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbYE0Vc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbYE0Vbc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758430AbYE0VbW
+	id S1759686AbYE0Vc1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758500AbYE0VcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:31:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45465 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758468AbYE0VbV (ORCPT
+	Tue, 27 May 2008 17:32:16 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:47787 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758548AbYE0VcP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:31:21 -0400
-Date: Tue, 27 May 2008 14:30:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <1211922621.3286.80.camel@pasglop>
-Message-ID: <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-References: <1211852026.3286.36.camel@pasglop>  <20080526.184047.88207142.davem@davemloft.net>  <1211854540.3286.42.camel@pasglop>  <20080526.192812.184590464.davem@davemloft.net>  <1211859542.3286.46.camel@pasglop>  <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
- <1211922621.3286.80.camel@pasglop>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 27 May 2008 17:32:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=4BnZc1fQeYOtgD87PQj/HNB8kxzannEow5SDZlZF21AuSK1fdAZEnV+cJvk2wDY/eZ+qel/ySfTV5YV5djH1NhtyTshPeamMBwAiAYJPKiE26qdSB+0J8+m9eH1hgsVn8HwDS2NrW3dNBzex4BAlZfxqN1tGz8bZLFUWW+dJf50=  ;
+X-YMail-OSG: V2KdYRIVM1nH7AynkRdo3aBK.mHWm1Ejji0sqLiO.UfoBI17ERMslb8RNb9Pd5gLVeKe.JmDJ4bbgsCYOub89.Njk9TOSRCpASmInr.6Gl5F8pvIy1q3mvrRNpq6oZvztnE-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan problems
+Date: Tue, 27 May 2008 14:32:12 -0700
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080525181329.GA5044@yamamaya.is-a-geek.org> <20080527062153.GA3651@yamamaya.is-a-geek.org>
+In-Reply-To: <20080527062153.GA3651@yamamaya.is-a-geek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200805271432.12881.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 26 May 2008, Tobias Diedrich wrote:
+> The platform_enable_wakeup() hook is still there, but unused.
+
+The patches to support it (still) haven't been merged.
 
 
-On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
-> 
-> On Tue, 2008-05-27 at 08:35 -0700, Linus Torvalds wrote:
-> > 
-> > Expecting people to fix up all drivers is simply not going to happen. And 
-> > serializing things shouldn't be *that* expensive. People who cannot take 
-> > the expense can continue to use the magic __raw_writel() etc stuff.
-> 
-> Ok.
-> 
-> Do we also remove wmb/rmb/... from drivers then ? :-) I think ia64 would
-> need to be fixed to make their writel serializing...
+> AFAICS this patch should solve the "'ethtool -s eth0 wol g' doesn't
+> suffice, I also have to write magic values into /proc/acpi/wakeup"
+> issue.
 
-Well..
+Yeah; under ACPI, PCI does not act like it does everywhere else.
+Nor does wakeup in general.
 
-There's really two different issues:
+After sending patches to fix that for a couple years now, I'm
+well past being tired of doing that.  I suggest it's overdue for
+the ACPI team to get this part of their act together.
 
- (a) x86 and the fact that we have thousands of drivers
+That is:  either start merging those patches, possibly with updates
+to handle broken hardware better; or rewrite them; ... or just say
+explicitly the message I've been receiving:  "Linux ACPI will never
+support wakeup the way the rest of Linux can and does".  (And the
+"why" should be something reasonable.)
 
-which in turn conflicts with
-
- (b) non-x86 and the fact that other architectures tend to be absolute 
-     pieces of cr*p when it comes to ordering, _especially_ across IO.
-
-and the thing about (b) is that the number of drivers involved is a hell 
-of a lot smaller. For example, ia64 and the big SGI machines probably 
-really only care about roughly five drivers (number taken out of my nether 
-regions). 
-
-So practically speaking, I suspect that the right approach is to just say 
-"ok, x86 will continue to be pretty darn ordered, and the barriers won't 
-really matter (*)" but at the same time also saying "we wish reality was 
-different, and well-maintained drivers should probably try to work in the 
-presense of re-ordering".
-
-In *practice*, that probably means that most architectures will be better 
-off if they emulate x86 closely, just because that means that they won't 
-rely on drivers always getting things right, but I think we can leave the 
-door open for the odd machines. We should just realize that they will 
-never get a lot of testing, but on the other hand, their usage scenarios 
-will generally also be very limited (very specific loads, and _very_ 
-specific hardware).
-
-And the patch I sent out actually made "__[raw_]readl()" different from 
-"readl()" on x86 too, in that the assembly _allows_ a bit more 
-re-ordering, even though I doubt it will be visible in practice. So if you 
-use the "__" versions, you'd better have barriers even on x86!
-
-			Linus
-
-(*) With the possible but unlikely exception of some big machines with 
-separate IO networks, but if they happen they will fall into the 'ia64' 
-case of just having a few relevant drivers.
