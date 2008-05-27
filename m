@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbYE0IBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbYE0IDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbYE0IBP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 04:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbYE0IA5
+	id S1757020AbYE0IDD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 04:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbYE0ICs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 04:00:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35623 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755006AbYE0IA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 04:00:56 -0400
-Date: Tue, 27 May 2008 10:00:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: mikukkon@iki.fi
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       arjan@linux.intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 2.6.26-rc4] Fix nesting error checking in
-	arch/x86/mm/ioremap.c
-Message-ID: <20080527080030.GC29246@elte.hu>
-References: <20080527054930.GA2488@srv1-m700-lanp.koti>
+	Tue, 27 May 2008 04:02:48 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55035 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755215AbYE0ICp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 04:02:45 -0400
+Message-ID: <483BBFD1.3090204@cn.fujitsu.com>
+Date: Tue, 27 May 2008 16:01:21 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080527054930.GA2488@srv1-m700-lanp.koti>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: mchehab@infradead.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, video4linux-list@redhat.com
+Subject: [PATCH] dvb-usb/gp8psk.c: return -errno rather than errno
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mika Kukkonen <mikukkon@srv1-m700-lanp.koti> wrote:
+gp8psk_power_ctrl() returns -EINVAL in some failing paths, but
+returns EINVAL in some other paths.
 
->  	unsigned int nesting;
->  
-> -	nesting = --early_ioremap_nested;
-> -	WARN_ON(nesting < 0);
-> +	if (early_ioremap_nested)
-> +		nesting = --early_ioremap_nested;
-> +	else { 
-> +		nesting = 0;
-> +		WARN_ON(1);
-> +	}
-
-the better fix would be to turn 'nesting' into an int, hm?
-
-Also, instead of forcing nesting to 0, it is better to just return - as 
-we cannot do any sane unmap here anymore. (we are unbalanced)
-
-I.e. something like the fix below?
-
-	Ingo
-
------------------------------->
-Subject: ioremap: nesting fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue May 27 09:56:49 CEST 2008
-
-Mika Kukkonen noticed that the nesting check in early_iounmap() is not 
-actually done.
-
-Reported-by: Mika Kukkonen <mikukkon@srv1-m700-lanp.koti>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.cn>
 ---
- arch/x86/mm/ioremap.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/media/dvb/dvb-usb/gp8psk.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux/arch/x86/mm/ioremap.c
-===================================================================
---- linux.orig/arch/x86/mm/ioremap.c
-+++ linux/arch/x86/mm/ioremap.c
-@@ -602,10 +602,11 @@ void __init early_iounmap(void *addr, un
- 	unsigned long offset;
- 	unsigned int nrpages;
- 	enum fixed_addresses idx;
--	unsigned int nesting;
-+	int nesting;
+diff --git a/drivers/media/dvb/dvb-usb/gp8psk.c b/drivers/media/dvb/dvb-usb/gp8psk.c
+index 9a942af..2653120 100644
+--- a/drivers/media/dvb/dvb-usb/gp8psk.c
++++ b/drivers/media/dvb/dvb-usb/gp8psk.c
+@@ -146,24 +146,24 @@ static int gp8psk_power_ctrl(struct dvb_usb_device *d, int onoff)
+ 		if (gp_product_id == USB_PID_GENPIX_8PSK_REV_1_WARM)
+ 			if (! (status & bm8pskFW_Loaded)) /* BCM4500 firmware loaded */
+ 				if(gp8psk_load_bcm4500fw(d))
+-					return EINVAL;
++					return -EINVAL;
  
- 	nesting = --early_ioremap_nested;
--	WARN_ON(nesting < 0);
-+	if (WARN_ON(nesting < 0))
-+		return;
+ 		if (! (status & bmIntersilOn)) /* LNB Power */
+ 			if (gp8psk_usb_in_op(d, START_INTERSIL, 1, 0,
+ 					&buf, 1))
+-				return EINVAL;
++				return -EINVAL;
  
- 	if (early_ioremap_debug) {
- 		printk(KERN_INFO "early_iounmap(%p, %08lx) [%d]\n", addr,
+ 		/* Set DVB mode to 1 */
+ 		if (gp_product_id == USB_PID_GENPIX_8PSK_REV_1_WARM)
+ 			if (gp8psk_usb_out_op(d, SET_DVB_MODE, 1, 0, NULL, 0))
+-				return EINVAL;
++				return -EINVAL;
+ 		/* Abort possible TS (if previous tune crashed) */
+ 		if (gp8psk_usb_out_op(d, ARM_TRANSFER, 0, 0, NULL, 0))
+-			return EINVAL;
++			return -EINVAL;
+ 	} else {
+ 		/* Turn off LNB power */
+ 		if (gp8psk_usb_in_op(d, START_INTERSIL, 0, 0, &buf, 1))
+-			return EINVAL;
++			return -EINVAL;
+ 		/* Turn off 8psk power */
+ 		if (gp8psk_usb_in_op(d, BOOT_8PSK, 0, 0, &buf, 1))
+ 			return -EINVAL;
+-- 1.5.4.rc3
