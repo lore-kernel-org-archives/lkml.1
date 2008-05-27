@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbYE0AwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYE0BDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756004AbYE0AwT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 May 2008 20:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYE0AwH
+	id S1756044AbYE0BDO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 May 2008 21:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYE0BDC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 May 2008 20:52:07 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52954 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754002AbYE0AwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 May 2008 20:52:05 -0400
-Date: Tue, 27 May 2008 10:51:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-next@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 26
-Message-Id: <20080527105144.82b975d7.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0805261430020.4417@anakin>
-References: <20080526172222.b6979523.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0805261430020.4417@anakin>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Mon, 26 May 2008 21:03:02 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:59454 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754256AbYE0BDA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 May 2008 21:03:00 -0400
+Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       CaseySchaufler <casey@schaufler-ca.com>
+In-Reply-To: <20080523163027.50021215.randy.dunlap@oracle.com>
+References: <1211555145.16195.18.camel@new-host>
+	 <20080523163027.50021215.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Mon, 26 May 2008 21:02:56 -0400
+Message-Id: <1211850176.16742.13.camel@new-host.home>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__27_May_2008_10_51_44_+1000_N.ltvz/nyhfzZNPO"
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__27_May_2008_10_51_44_+1000_N.ltvz/nyhfzZNPO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Geert,
+On Fri, 2008-05-23 at 16:30 -0700, Randy Dunlap wrote:
+> On Fri, 23 May 2008 11:05:45 -0400 Mimi Zohar wrote:
+> 
+> 
+> > ---
+> > Index: linux-2.6.26-rc3-git2/security/integrity/ima/Kconfig
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6.26-rc3-git2/security/integrity/ima/Kconfig
+> > @@ -0,0 +1,68 @@
+> > +#
+> > +# IBM Integrity Measurement Architecture
+> > +#
+> > +
+> > +config IMA_MEASURE
+> > +	bool "TCG run-time Integrity Measurement Architecture(IMA)"
+> 
+> What is TCG?  It seems to be missing from all of those other TLAs.
 
-On Mon, 26 May 2008 16:20:43 +0200 (CEST) Geert Uytterhoeven <geert@linux-m=
-68k.org> wrote:
->
-> Now multi_defconfig is in Linus' tree, do you mind enabling builds for
-> m68k multi_defconfig and sun3_defconfig using Linus' tree, too?
+TCG stands for Trusted Computing Group.
+(https://www.trustedcomputinggroup.org/faq/)
 
-OK, will do.
+Thank you for reviewing the code. I'll make the kernel doc, Kconfig
+and Makefile changes and repost.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Mimi
 
---Signature=_Tue__27_May_2008_10_51_44_+1000_N.ltvz/nyhfzZNPO
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIO1slTgG2atn1QN8RAlnnAJ98Qjv6OQKM6G/TCZIdInfOY2R7PwCgiTaM
-qDlfts1+HzVhyUKHXtQOADM=
-=eILE
------END PGP SIGNATURE-----
-
---Signature=_Tue__27_May_2008_10_51_44_+1000_N.ltvz/nyhfzZNPO--
