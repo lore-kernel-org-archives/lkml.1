@@ -1,88 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYE0KGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbYE0KJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYE0KGV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 06:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbYE0KGN
+	id S1757399AbYE0KJg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 06:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbYE0KJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 06:06:13 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:56764 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755740AbYE0KGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 06:06:12 -0400
-Date: Tue, 27 May 2008 13:06:05 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080527090605.GA146@tv-sign.ru>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <20080527052318.GA28301@martell.zuzino.mipt.ru>
-Mime-Version: 1.0
+	Tue, 27 May 2008 06:09:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:62265 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756059AbYE0KJY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 06:09:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=RylKjG0h8A9McDQSnGS+gwTo7dtXFINezU4ykwkobUdTZAjc8fuinBayIWE/vVnrJ5MKkuiIjUs0HdQa3VYHy0in8mXzHeS0MuRvrmpALZGbFa7CPK/oV3Vnbqzwpev63XHc5lQJwIMiRiTVCIyagcRIEQ/9UJJbhSE3y5Mp5XE=
+Date: Tue, 27 May 2008 18:10:09 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: akpm@linux-foundation.org
+Cc: greg@kroah.com, matthew@wil.cx, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [PATCH][-mm] reclassify sg_sysfs_class for lockdep
+Message-ID: <20080527101009.GA3015@darkstar.te-china.tietoenator.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080527052318.GA28301@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/27, Alexey Dobriyan wrote:
->
-> PREEMPT_RCU is in use, again. And die counter is 2 because of CFQ oops
-> I haven't noticed earlier.
+As register sg_interface, the sg_add will be called, which then will
+add device to sg_sysfs_class. This will cause lockdep warning,
+please see following email
+
+In this case the locks are from diffrent classi, one is sdev_class,
+another is sg_sysfs_class 
+
+Here reclassify the sg_sysfs_class for lockdep
+
+Date: Wed, 14 May 2008 08:56:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-scsi@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: lockdep whine in 2.6.26-rc2-mm1
+Message-ID: <20080514155639.GB28594@kroah.com>
+References: <20080514000933.56adc131.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514000933.56adc131.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+
+
+On Wed, May 14, 2008 at 12:09:33AM -0700, Andrew Morton wrote:
 > 
-> 0xffffffff802447cb is in find_pid_ns (kernel/pid.c:297).
-> 292             struct hlist_node *elem;
-> 293             struct upid *pnr;
-> 294
-> 295             hlist_for_each_entry_rcu(pnr, elem,
-> 296                             &pid_hash[pid_hashfn(nr, ns)], pid_chain)
-> 297                     if (pnr->nr == nr && pnr->ns == ns)
-> 298                             return container_of(pnr, struct pid,
-> 299                                             numbers[ns->level]);
-> 300
-> 301             return NULL;
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.26-rc2-mm1 #15
+> ---------------------------------------------
+> modprobe/942 is trying to acquire lock:
+>  (&cls->mutex){--..}, at: [<ffffffff811b431e>] device_add+0x43d/0x57a
 > 
+> but task is already holding lock:
+>  (&cls->mutex){--..}, at: [<ffffffff811b6787>] class_interface_register+0x48/0xbd
 > 
-> general protection fault: 0000 [2] PREEMPT SMP DEBUG_PAGEALLOC
-> CPU 0 
-> Modules linked in: ext2 nf_conntrack_irc xt_state iptable_filter ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack ip_tables x_tables usblp ehci_hcd uhci_hcd usbcore sr_mod cdrom
-> Pid: 15599, comm: profil01 Tainted: G      D   2.6.26-rc4 #1
-> RIP: 0010:[<ffffffff802447cb>]  [<ffffffff802447cb>] find_pid_ns+0x6b/0xa0
-> RSP: 0018:ffff810129021ea8  EFLAGS: 00010202
-> RAX: ffff810130580948 RBX: 0000000000003cef RCX: ffff81017d865278
-> RDX: 6b6b6b6b6b6b6b6b RSI: ffffffff80566760 RDI: 0000000000003cef
-> RBP: ffff810129021ea8 R08: 0000000000000000 R09: 00007f9a93987b70
-> R10: 0000000000000000 R11: 0000000000000202 R12: 0000000000000000
-> R13: 0000000000000011 R14: 0000000000000000 R15: 0000000000000000
-> FS:  00007f9a9397c6f0(0000) GS:ffffffff805c6000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 000000000257f2e8 CR3: 0000000102479000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process profil01 (pid: 15599, threadinfo ffff810129020000, task ffff81004bc24500)
-> Stack:  ffff810129021eb8 ffffffff8024487d ffff810129021f78 ffffffff8023f275
->  0000000000000011 0000000000000000 0000000000003cef ffff810129020000
->  ffffffff8061b140 00007f9a93989bc0 00007fff9b98a410 ffffffff8045fd63
+> other info that might help us debug this:
+> 1 lock held by modprobe/942:
+>  #0:  (&cls->mutex){--..}, at: [<ffffffff811b6787>] class_interface_register+0x48/0xbd
+> 
+> stack backtrace:
+> Pid: 942, comm: modprobe Not tainted 2.6.26-rc2-mm1 #15
+> 
 > Call Trace:
->  [<ffffffff8024487d>] find_vpid+0x1d/0x20
->  [<ffffffff8023f275>] sys_kill+0x85/0x1b0
+>  [<ffffffff81056be1>] __lock_acquire+0x90d/0xc50
+>  [<ffffffff8100c50f>] ? restore_args+0x0/0x30
+>  [<ffffffff811b431e>] ? device_add+0x43d/0x57a
+>  [<ffffffff81057276>] lock_acquire+0x91/0xb7
+>  [<ffffffff811b431e>] ? device_add+0x43d/0x57a
+>  [<ffffffff812b23ab>] mutex_lock_nested+0xf2/0x278
+>  [<ffffffff811b431e>] ? device_add+0x43d/0x57a
+>  [<ffffffff812b3acd>] ? _spin_unlock+0x23/0x28
+>  [<ffffffff811b431e>] device_add+0x43d/0x57a
+>  [<ffffffff811b4471>] device_register+0x16/0x1b
+>  [<ffffffff811b4555>] device_create+0xdf/0x112
+>  [<ffffffff81055fdc>] ? trace_hardirqs_on+0xd/0xf
+>  [<ffffffff81055fdc>] ? trace_hardirqs_on+0xd/0xf
+>  [<ffffffff812b1fe1>] ? mutex_unlock+0x9/0xb
+>  [<ffffffff811b79b7>] ? kobj_map+0x113/0x124
+>  [<ffffffff810ac0f5>] ? exact_lock+0x0/0x14
+>  [<ffffffff810abd09>] ? exact_match+0x0/0x9
+>  [<ffffffffa00ec448>] :sg:sg_add+0x2a3/0x3bd
+>  [<ffffffff811b67b6>] class_interface_register+0x77/0xbd
+>  [<ffffffffa005d869>] :scsi_mod:scsi_register_interface+0x11/0x13
+>  [<ffffffffa00d50a3>] :sg:init_sg+0xa3/0x155
+>  [<ffffffff8105ea8f>] sys_init_module+0x1823/0x197a
+>  [<ffffffff810c45bc>] ? seq_release+0x0/0x56
+>  [<ffffffff8100bebb>] system_call_after_swapgs+0x7b/0x80
 
-Is this reproducible?
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-In theory find_pid() is not safe without rcu_read_lock() if CONFIG_PREEMPT_RCU.
-But we have a lot of "read_lock(tasklist_lock) + find_pid()", this was legal
-and documented. It was actually broken, but happened to work because read_lock()
-implied rcu_read_lock().
+---
+drivers/scsi/sg.c |    6 ++++++
+1 file changed, 6 insertions(+)
 
-Could you look at
-
-	[PATCH] fix tasklist + find_pid() with CONFIG_PREEMPT_RCU
-	http://marc.info/?t=120162615300012
-
-?
-
-I am not sure this is the actual reason though, the race is very unlikely.
-
-Oleg.
-
+diff -upr linux/drivers/scsi/sg.c linux.new/drivers/scsi/sg.c
+--- linux/drivers/scsi/sg.c	2008-05-27 17:09:42.000000000 +0800
++++ linux.new/drivers/scsi/sg.c	2008-05-27 17:09:51.000000000 +0800
+@@ -49,6 +49,7 @@ static int sg_version_num = 30534;	/* 2 
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+ #include <linux/blktrace_api.h>
++#include <linux/lockdep.h>
+ 
+ #include "scsi.h"
+ #include <scsi/scsi_dbg.h>
+@@ -67,6 +68,8 @@ static int sg_proc_init(void);
+ static void sg_proc_cleanup(void);
+ #endif
+ 
++static struct lock_class_key sg_class_key;
++
+ #define SG_ALLOW_DIO_DEF 0
+ #define SG_ALLOW_DIO_CODE /* compile out by commenting this define */
+ 
+@@ -1579,6 +1582,9 @@ init_sg(void)
+ 		rc = PTR_ERR(sg_sysfs_class);
+ 		goto err_out;
+         }
++
++	lockdep_set_class_and_name(&sg_sysfs_class->mutex, &sg_class_key,
++						sg_sysfs_class->name);
+ 	sg_sysfs_valid = 1;
+ 	rc = scsi_register_interface(&sg_interface);
+ 	if (0 == rc) {
