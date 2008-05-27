@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYE0Ftz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYE0Fvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756060AbYE0Ftz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 01:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbYE0Ftq
+	id S1756581AbYE0Fvv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 01:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYE0Fvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 01:49:46 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:37944 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbYE0Ftp (ORCPT
+	Tue, 27 May 2008 01:51:43 -0400
+Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:28440 "EHLO
+	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753768AbYE0Fvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 01:49:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PcWnXC/e5YdMQYKWflEo0QqOyON3ltxBuLS7/IYJe6J0k/FcB2Z0IOuRRKzSqDyysucClAVsdlswTqvcn+fQaMJQqAExk7vUhMUF81FUckiMQJjbCkKJXN+Iaf3r2o26yXdDNK1uIb9eMkUTSoceX3/6r66J0U/MAZhI8/AVzeA=
-Message-ID: <3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
-Date: Tue, 27 May 2008 13:49:44 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Roland McGrath" <roland@redhat.com>
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20080527040454.053C526FA9E@magilla.localdomain>
+	Tue, 27 May 2008 01:51:42 -0400
+From: Amit Shah <amit.shah@qumranet.com>
+Organization: Qumranet Inc.
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH v2 -mm 0/2] x86: per-device dma_mapping_ops
+Date: Tue, 27 May 2008 11:24:08 +0530
+User-Agent: KMail/1.9.9
+Cc: muli@il.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       alexisb@us.ibm.com, andi@firstfloor.org, kvm@vger.kernel.org,
+       avi@qumranet.com
+References: <200805262214.35397.amit.shah@qumranet.com> <200805271023.22574.amit.shah@qumranet.com> <20080527142406Y.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080527142406Y.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	 <3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
-	 <20080522203428.835D626FA24@magilla.localdomain>
-	 <3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
-	 <20080523041940.39E8726FA24@magilla.localdomain>
-	 <3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
-	 <20080526001527.81E1126FA9E@magilla.localdomain>
-	 <3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
-	 <3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
-	 <20080527040454.053C526FA9E@magilla.localdomain>
+Message-Id: <200805271124.09453.amit.shah@qumranet.com>
+X-OriginalArrivalTime: 27 May 2008 05:51:41.0452 (UTC) FILETIME=[BCA20CC0:01C8BFBD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
->> It does happen!!
->
-> Um.  Really?  What does happen exactly?
+On Tuesday 27 May 2008 10:54:06 FUJITA Tomonori wrote:
 
-I revised patch a bit, and managed to get this:
+> > An example with per-device dma_ops and stacking will look like this:
+> >
+> > pvdma->hardware->nommu/swiotlb
+> >     ^             ^
+> >
+> >  e1000     rtl8139
+> >
+> > And this scheme is going to suit everyone, agreed?
+> >
+> > This is simple and doesn't need too many changes all around.
+>
+> Sorry, I'm not sure what this picture represents.
 
-Call Trace:
- [<a000000100011bd0>] show_stack+0x50/0xa0
-                                sp=e000000141c9fbb0 bsp=e000000141c90ea8
- [<a000000100011c50>] dump_stack+0x30/0x60
-                                sp=e000000141c9fd80 bsp=e000000141c90e90
- [<a000000100097a20>] get_signal_to_deliver+0xa0/0x720
-                                sp=e000000141c9fd80 bsp=e000000141c90e28
- [<a0000001000343d0>] ia64_do_signal+0xb0/0xd00
-                                sp=e000000141c9fd80 bsp=e000000141c90d78
- [<a000000100012650>] do_notify_resume_user+0xf0/0x140
-                                sp=e000000141c9fe20 bsp=e000000141c90d48
- [<a00000010000aac0>] notify_resume_user+0x40/0x60
-                                sp=e000000141c9fe20 bsp=e000000141c90cf8
- [<a00000010000a9f0>] skip_rbs_switch+0xe0/0x110
-                                sp=e000000141c9fe30 bsp=e000000141c90cf8
- [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
-                                sp=e000000141ca0000 bsp=e000000141c90cf8
- [<a0000001000971c0>] ptrace_stop+0xa0/0x3e0
-                                sp=e00000014716fdb0 bsp=e000000147160ca8
- [<a000000100097650>] ptrace_notify+0x150/0x1c0
-                                sp=e00000014716fdb0 bsp=e000000147160c88
- [<a00000010002adb0>] syscall_trace+0x30/0xc0
-                                sp=e00000014716fe30 bsp=e000000147160c70
- [<a00000010002aea0>] syscall_trace_enter+0x60/0xa0
-                                sp=e00000014716fe30 bsp=e000000147160c18
- [<a00000010000a300>] ia64_trace_syscall+0x40/0x110
-                                sp=e00000014716fe30 bsp=e000000147160c18
- [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
-                                sp=e000000147170000 bsp=e000000147160c18
+It meant to show just e1000 needs to go through the pvdma translations. 
+rtl8139 goes via the other iommus. e1000 also goes through the other iommus 
+(mainly if it's going to be the swiotlb that a guest might need).
+
+> BTW, without pvdma, there is no need to hardware->nommu/swiotlb
+> stacking for IOMMUs like Calgary. Per-device dma_ops wor for them.
+
+Hmm, ok. Then this argument doesn't count.
+
+> > I was suggesting something more than this that can handle cases like an
+> > iommu wanting to have each device behind a bus to pass through it (it's
+> > still possible, but needs a per-device walk). Also, in the scenario
+> > depicted above, each device will start by pointing to the first iommu in
+> > the chain (pvdma in this case) and the iommu will then determine if that
+> > device needs to be passed via its translations.
+>
+> No, IOMMUs doesn't need to do that. We need to put a stacking
+> mechanism in dma-mapping.h. A stacking mechanism should not be visible
+> to IOMMUs.
+
+OK; then just per-device dma_ops will work and for the pvdma case, we'll have 
+to have the stacking. Since this is a special case, any kind of generic APIs 
+shouldn't be needed as well.
+
+What is the plan with this patch then? When do you plan to ask for mainline 
+merging?
