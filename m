@@ -1,102 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbYE0QuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbYE0QyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758663AbYE0QuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 12:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbYE0QuO
+	id S1758536AbYE0QyK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 12:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbYE0Qx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 12:50:14 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:58957 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757204AbYE0QuM (ORCPT
+	Tue, 27 May 2008 12:53:56 -0400
+Received: from mga02.intel.com ([134.134.136.20]:17902 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756797AbYE0Qxz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 12:50:12 -0400
-Date: Tue, 27 May 2008 17:50:21 +0100
-From: Ben Dooks <ben@fluff.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [spi-devel-general] Accelerometer, Gyros and ADC's etc within	the kernel.
-Message-ID: <20080527165021.GA22585@trinity.fluff.org>
-References: <4832A211.4040206@gmail.com> <20080527164415.GA27584@polina.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080527164415.GA27584@polina.dev.rtsoft.ru>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+	Tue, 27 May 2008 12:53:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,549,1204531200"; 
+   d="scan'208";a="387565479"
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Subject: RE: [PATCH 1/1] Only output msgmni value at boot time
+Date: Tue, 27 May 2008 09:52:44 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843EC016AC45B@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080527082502.538707000@bull.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] Only output msgmni value at boot time
+Thread-Index: Aci/0x41p8jIL31pRmauqLAGRpuo8QARjQdQ
+References: <20080527082441.239624000@bull.net> <20080527082502.538707000@bull.net>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: <Nadia.Derbey@bull.net>, <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 27 May 2008 16:53:43.0496 (UTC) FILETIME=[38D0F480:01C8C01A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 08:44:15PM +0400, Anton Vorontsov wrote:
-> Hi Jonathan,
-> 
-> On Tue, May 20, 2008 at 11:04:01AM +0100, Jonathan Cameron wrote:
-> > This email is basically a request for opinions on how and where such sensors
-> > should be integrated into the kernel.
-> > 
-> > To set the scene...
-> > 
-> > Increasing numbers of embedded devices are being supplied attached MEMS
-> > devices (www.xbow.com imote2 etc). Along with more traditional sensors such
-> > as ADC's not being used for hardware monitoring, these do not really 
-> > seem to
-> > fit with in an particular subsystem of the kernel.  A previous 
-> > discussion on
-> > lkml in 2006 considered the accelerometers to be found within some laptop
-> > hard drives, but I haven't been able to track down any more general 
-> > discussions
-> > of such non hardware monitoring sensors.
-> > 
-> > The obvious possibilities are:
-> > 
-> > * To place the various drivers within the spi / i2c etc subsystems as 
-> > relevant.
-> > 
-> > * To place within the hwmon subsystem as this is probably closest.
-> > (there is already at least one straight ADC driver in hwmon)
-> > 
-> > * To create a new subsystem, or perhaps merely sysfs class to contain these
-> >   elements.
-> > 
-> > Typical requirements within an application include simply polling for 
-> > current
-> > readings, and using device triggered interrupts to grab data 
-> > continuously to a
-> > ring buffer, for collection by suitable userspace code.  Obviously it 
-> > would be
-> > desirable to standardize sysfs controls for various calibration 
-> > parameters as
-> > much as possible across the various devices.
+> In http://lkml.org/lkml/2008/4/29/575 Tony Luck complained that this message
+> references an ipc namespace address that is useless.
+>
+> I first thought of using an audit_log instead of a printk, as suggested by
+> Serge Hallyn. But unfortunately, we do not have any other information than
+> the namespace address to provide here too.
+> So I chose to move the message and output it only at boot time, removing the
+> reference to the namespace.
 
-The two drivers i've seen so far use the input subsystem to report
-their data to the user. I'm working on an driver for the SMB380 which
-can be both i2c and spi.
+Diffing my before/after dmesg(8) output:
+< msgmni has been set to 7964 for ipc namespace a000000100a1ad58
+---
+> msgmni has been set to 7964
+
+Much prettier.  Thank you.
+
+I'll leave it to SGI to ponder whether it is correct to compute
+msgmni based on a linear function of lowmem (their big systems can
+have terabytes of memory, all of which is counted as lowmem).
+
+> This patch applies to 2.6.26-rc2-mm1.
+
+Acked-by: Tony Luck <tony.luck@intel.com>
+
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+
+---
+ ipc/msg.c |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.26-rc2-mm1/ipc/msg.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/ipc/msg.c	2008-05-26 12:25:37.000000000 +0200
++++ linux-2.6.26-rc2-mm1/ipc/msg.c	2008-05-27 10:59:34.000000000 +0200
+@@ -98,20 +98,15 @@ void recompute_msgmni(struct ipc_namespa
  
-> Also, I'd mention that most ADC devices could report in "bunched" mode,
-> i.e.
-> 
-> 1. Request ADC readings from pins X, Y, Z1, Z2.
-> 2. Wait for single IRQ
-> 3. Read all the results
-> 
-> At handhelds.org, we've wrote quite good (I think) ADC subsystem,
-> that keeps in mind ADC capabilities. It implements two interfaces:
-> in-kernel (e.g. for touchscreen drivers), and userspace interface via
-> sysfs. I was planning to implement drivers/input/ interface too.
+ 	if (allowed < MSGMNI) {
+ 		ns->msg_ctlmni = MSGMNI;
+-		goto out_callback;
++		return;
+ 	}
+ 
+ 	if (allowed > IPCMNI / nb_ns) {
+ 		ns->msg_ctlmni = IPCMNI / nb_ns;
+-		goto out_callback;
++		return;
+ 	}
+ 
+ 	ns->msg_ctlmni = allowed;
+-
+-out_callback:
+-
+-	printk(KERN_INFO "msgmni has been set to %d for ipc namespace %p\n",
+-		ns->msg_ctlmni, ns);
+ }
+ 
+ void msg_init_ns(struct ipc_namespace *ns)
+@@ -136,6 +131,10 @@ void msg_exit_ns(struct ipc_namespace *n
+ void __init msg_init(void)
+ {
+ 	msg_init_ns(&init_ipc_ns);
++
++	printk(KERN_INFO "msgmni has been set to %d\n",
++		init_ipc_ns.msg_ctlmni);
++
+ 	ipc_init_proc_interface("sysvipc/msg",
+ 				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
+ 				IPC_MSG_IDS, sysvipc_msg_proc_show);
 
-handhelds.org's track history of getting things into the kernel
-is poor.
-
--- 
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+--
