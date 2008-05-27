@@ -1,91 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbYE0IWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYE0IYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246AbYE0IWR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 04:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755779AbYE0IWB
+	id S1756969AbYE0IYv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 04:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbYE0IYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 04:22:01 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:45434 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753645AbYE0IV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 04:21:59 -0400
-Date: Tue, 27 May 2008 13:52:42 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Srinivasa D S <srinivasa@in.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mhiramat@redhat.com, jkenisto@us.ibm.com, srikar@linux.vnet.ibm.com
-Subject: Re: [RFC] [PATCH] To improve kretprobe scalability
-Message-ID: <20080527082242.GA3473@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <200805210632.17655.srinivasa@in.ibm.com> <20080521163235.0fcb39ed.akpm@linux-foundation.org> <200805221356.40098.srinivasa@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805221356.40098.srinivasa@in.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 27 May 2008 04:24:43 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:51482 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753645AbYE0IYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 04:24:42 -0400
+Message-Id: <20080527082502.538707000@bull.net>
+References: <20080527082441.239624000@bull.net>
+User-Agent: quilt/0.45-1
+Date: Tue, 27 May 2008 10:24:42 +0200
+From: Nadia.Derbey@bull.net
+To: akpm@linux-foundation.org
+Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: [PATCH 1/1] Only output msgmni value at boot time
+Content-Disposition: inline; filename=fix_msgmni_printk.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 01:56:39PM +0530, Srinivasa D S wrote:
-> On Thursday 22 May 2008 05:02:35 am Andrew Morton wrote:
-> > On Wed, 21 May 2008 06:32:17 +0530
-> >
-> > Srinivasa D S <srinivasa@in.ibm.com> wrote:
+Hi,
 
-...
+When posting:
+[PATCH 1/8] Scaling msgmni to the amount of lowmem
+(see http://lkml.org/lkml/2008/2/11/171), I have added a KERN_INFO message
+that is output each time msgmni is recomputed.
+
+In http://lkml.org/lkml/2008/4/29/575 Tony Luck complained that this message
+references an ipc namespace address that is useless.
+
+I first thought of using an audit_log instead of a printk, as suggested by
+Serge Hallyn. But unfortunately, we do not have any other information than
+the namespace address to provide here too.
+So I chose to move the message and output it only at boot time, removing the
+reference to the namespace.
+
+This patch applies to 2.6.26-rc2-mm1.
+
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+
+---
+ ipc/msg.c |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.26-rc2-mm1/ipc/msg.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/ipc/msg.c	2008-05-26 12:25:37.000000000 +0200
++++ linux-2.6.26-rc2-mm1/ipc/msg.c	2008-05-27 10:59:34.000000000 +0200
+@@ -98,20 +98,15 @@ void recompute_msgmni(struct ipc_namespa
  
-> Resending the patch, Again
-> 
-> 
-> Currently list of kretprobe instances are stored in kretprobe object (as
-> used_instances,free_instances) and in kretprobe hash table. We have one 
-> global kretprobe lock to serialise the access to these lists. This causes 
-> only one kretprobe handler to execute at a time. Hence affects system 
-> performance, particularly on SMP systems and when return probe is set on
-> lot of functions (like on all systemcalls).
-> 
-> Solution proposed here gives fine-grain locks that performs better on SMP
-> system compared to present kretprobe implementation.
-> 
-> Solution:
->    1) Instead of having one global lock to protect kretprobe instances  
-> present 
-> in kretprobe object and kretprobe hash table. We will have two locks, one lock
-> for protecting kretprobe hash table and another lock for kretporbe object.
-> 	
->   2) We hold lock present in kretprobe object while we modify kretprobe 
-> instance in
-> kretprobe object and we hold per-hash-list lock while modifying kretprobe 
-> instances 
-> present in that hash list. To prevent deadlock, we never grab a per-hash-list
-> lock while holding a kretprobe lock.
-> 
->   3) We can remove used_instances from struct kretprobe, as we can track used
-> instances of kretprobe instances using kretprobe hash table.
-> 
-> Time duration for  kernel compilation ("make -j 8") on a 8-way ppc64 system
-> with return probes set on all systemcalls looks like this.
-> 
-> cacheline              non-cacheline             Un-patched kernel 
-> aligned patch 	       aligned patch                            
-> ===============================================================================
-> real    9m46.784s       9m54.412s                  10m2.450s   
-> user    40m5.715s       40m7.142s                  40m4.273s 
-> sys     2m57.754s       2m58.583s                  3m17.430s                            
-> ===========================================================
-> 
-> Time duration for kernel compilation ("make -j 8) on the same system, when 
-> kernel is not probed.
-> =========================
-> real    9m26.389s
-> user    40m8.775s
-> sys     2m7.283s
-> =========================
-> 
-> Please let me know your comments on the patch attached here.
-> 
-> Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
-> Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
+ 	if (allowed < MSGMNI) {
+ 		ns->msg_ctlmni = MSGMNI;
+-		goto out_callback;
++		return;
+ 	}
+ 
+ 	if (allowed > IPCMNI / nb_ns) {
+ 		ns->msg_ctlmni = IPCMNI / nb_ns;
+-		goto out_callback;
++		return;
+ 	}
+ 
+ 	ns->msg_ctlmni = allowed;
+-
+-out_callback:
+-
+-	printk(KERN_INFO "msgmni has been set to %d for ipc namespace %p\n",
+-		ns->msg_ctlmni, ns);
+ }
+ 
+ void msg_init_ns(struct ipc_namespace *ns)
+@@ -136,6 +131,10 @@ void msg_exit_ns(struct ipc_namespace *n
+ void __init msg_init(void)
+ {
+ 	msg_init_ns(&init_ipc_ns);
++
++	printk(KERN_INFO "msgmni has been set to %d\n",
++		init_ipc_ns.msg_ctlmni);
++
+ 	ipc_init_proc_interface("sysvipc/msg",
+ 				"       key      msqid perms      cbytes       qnum lspid lrpid   uid   gid  cuid  cgid      stime      rtime      ctime\n",
+ 				IPC_MSG_IDS, sysvipc_msg_proc_show);
 
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+--
