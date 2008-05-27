@@ -1,264 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759124AbYE0RH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYE0RQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759124AbYE0RH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 13:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757927AbYE0RHU
+	id S1756044AbYE0RQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 13:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751107AbYE0RQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 13:07:20 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:59154 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757691AbYE0RHR (ORCPT
+	Tue, 27 May 2008 13:16:41 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:41578 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbYE0RQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 13:07:17 -0400
-Date: Tue, 27 May 2008 22:45:28 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       pj@sgi.com, Balbir Singh <balbir@in.ibm.com>,
-       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
-Subject: Re: fair group scheduler not so fair?
-Message-ID: <20080527171528.GD30285@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <4834B75A.40900@nortel.com>
-MIME-Version: 1.0
+	Tue, 27 May 2008 13:16:40 -0400
+Date: Tue, 27 May 2008 18:16:56 +0100
+From: Ben Dooks <ben@fluff.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jean Delvare <khali@linux-fr.org>, spi-devel-general@lists.sourceforge.net,
+       Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       linux-kernel@vger.kernel.org, LM Sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [spi-devel-general] Accelerometer, Gyros and ADC's etc within the kernel.
+Message-ID: <20080527171656.GA870@trinity.fluff.org>
+References: <4832A211.4040206@gmail.com> <20080520132817.03fb74ea@hyperion.delvare> <20080521093520.ZZRA012@mailhub.coreip.homeip.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4834B75A.40900@nortel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080521093520.ZZRA012@mailhub.coreip.homeip.net>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 05:59:22PM -0600, Chris Friesen wrote:
-> I just downloaded the current git head and started playing with the fair 
-> group scheduler.  (This is on a dual cpu Mac G5.)
->
-> I created two groups, "a" and "b".  Each of them was left with the default 
-> share of 1024.
->
-> I created three cpu hogs by doing "cat /dev/zero > /dev/null".  One hog 
-> (pid 2435) was put into group "a", while the other two were put into group 
-> "b".
->
-> After giving them time to settle down, "top" showed the following:
->
-> 2438 cfriesen  20   0  3800  392  336 R 99.5  0.0   4:02.82 cat 
-> 2435 cfriesen  20   0  3800  392  336 R 65.9  0.0   3:30.94 cat 
-> 2437 cfriesen  20   0  3800  392  336 R 34.3  0.0   3:14.89 cat 
->
->
-> Where pid 2435 should have gotten a whole cpu worth of time, it actually 
-> only got 66% of a cpu. Is this expected behaviour?
+On Wed, May 21, 2008 at 09:49:42AM -0400, Dmitry Torokhov wrote:
+> On Tue, May 20, 2008 at 01:28:17PM +0200, Jean Delvare wrote:
+> > Hi Jonathan,
+> > 
+> > On Tue, 20 May 2008 11:04:01 +0100, Jonathan Cameron wrote:
+> > > This email is basically a request for opinions on how and where such sensors
+> > > should be integrated into the kernel.
+> > > 
+> > > To set the scene...
+> > > 
+> > > Increasing numbers of embedded devices are being supplied attached MEMS
+> > > devices (www.xbow.com imote2 etc). Along with more traditional sensors such
+> > > as ADC's not being used for hardware monitoring, these do not really 
+> > > seem to
+> > > fit with in an particular subsystem of the kernel.  A previous 
+> > > discussion on
+> > > lkml in 2006 considered the accelerometers to be found within some laptop
+> > > hard drives, but I haven't been able to track down any more general 
+> > > discussions
+> > > of such non hardware monitoring sensors.
+> > > 
+> > > The obvious possibilities are:
+> > > 
+> > > * To place the various drivers within the spi / i2c etc subsystems as 
+> > > relevant.
+> > 
+> > Bad idea. Grouping drivers by connectivity is almost always the wrong
+> > thing to do, as it means that different persons will maintain them and
+> > they have all chances to diverge. You really want to group drivers by
+> > functionality. On top of that, I am busy enough maintaining the i2c
+> > core and bus drivers without having more i2c device drivers added to my
+> > plate. These days I am trying to _empty_ drivers/i2c/chips, if anything.
 
-Definitely not an expected behavior and I think I understand why this is
-happening.
+I concur for these sorts of devices, where the connectivity to the
+device is quite an easy part of the driver, thus you end up with tiny
+little bus drivers all over the place, and a main core driver. The kernel
+build system should allow easy selection of interface depending on what
+is available without huge #ifdef hacks. An example could be:
 
-But first, note that Groups "a" and "b" share bandwidth with all tasks
-in /dev/cgroup/tasks. Lets say that /dev/cgroup/tasks had T0-T1,
-/dev/cgroup/a/tasks has TA1 while /dev/cgroup/b/tasks has
-TB1 (all tasks of weight 1024).
+Makefile:
+mysensor-y		:= mysensor-core.o
+mysensor-$(CONFIG_SPI)	+= mysensor-spi.o
+mysensor-$(CONFIG_I2C)	+= mysensor-i2c.o
+obj-$(CONFIG_MYSENSOR)	+= mysensor.o
 
-Then TA1 is expected to get 1/(1+1+2) = 25% bandwidth
+> > > * To place within the hwmon subsystem as this is probably closest.
+> > > (there is already at least one straight ADC driver in hwmon)
+> > 
+> > Probably not the wisest choice, if nothing else, because the hwmon
+> > maintainer is already overloaded. And I don't think that these devices
+> > have much in common with the traditional hardware monitoring components
+> > anyway.
+> > 
+> > I'm not sure what "straight ADC driver" you are referring to, but
+> > anything which measures a voltage and exports the reading to user-space
+> > is, well, a voltage sensor, and thus fix within hwmon. If the same chip
+> > is used for a higher-level, dedicated function then we would probably
+> > have a separate driver for it, outside of hwmon.
+> > 
+> > > * To create a new subsystem, or perhaps merely sysfs class to contain these
+> > >   elements.
+> > 
+> > Would be OK. Or:
+> > 
+> > * Place these within the input subsystem. You might want to discuss
+> > this with the input subsystem maintainer Dmitry Torokhov (Cc'd). The
+> > Wii remote is essentially a joystick, and joysticks belong to the input
+> > subsystem.
+> > 
+> 
+> I don't think that input subsystem woudl be the best choice. While we
+> do support the event-driven mechanism for delivering information to
+> userspace input is mostly oriented for human interface devices, not
+> general data acquisition. If anything input_dev is too fat. Another
+> thing is that input layer anonymizes input devices, makes them
+> capability-oriented. I.e. we dont really care what model of joystick
+> we have, we want something that reports ABS_X, ABS_Y, BTN_FIRE and
+> userpsace can use it whether it a simple analog joystick or something
+> fancy and USB connected. For your purposes you probably do want to know
+> what the device is and what exactly being sampled/measured.
 
-Similarly T0, T1, TB1 all get 25% bandwidth.
+Can you explain to me how the input system anonymizes things? I thought
+it was quite easy to read the name of the device? You could easily add
+a symlink from the driver's device binding in sysfs to the relevant
+input device as well.
 
-IOW, Groups "a" and "b" are peers of each task in /dev/cgroup/tasks.
-
-Having said that, here's what I do for my testing:
-
-	# mkdir /cgroup
-	# mount -t cgroup -ocpu none /cgroup
-	# cd /cgroup
-
-	# #Move all tasks to 'sys' group and give it low shares
-	# mkdir sys
-	# cd sys
-	# for i in `cat ../tasks`
-	  do
-		echo $i > tasks
-	  done
-	# echo 100 > cpu.shares
-
-	# mkdir a
-	# mkdir b
-
-	# echo <pid> > a/tasks
-	..
-
-Now, why did Group "a" get less than what it deserved? Here's what was
-happening:
-
-	CPU0		CPU1
-
-	  a0		b0
-	  b1
-
-cpu0.load = 1024 (Grp a load) + 512 (Grp b load)
-cpu1.load = 512 (Grp b load)
-
-imbalance = 1024
-
-max_load_move = 512 (to equalize load)
-
-load_balance_fair() is invoked on CPU1 with this max_load_move target of 512. 
-Ideally it can move b1 to CPU1, which would attain perfect balance. This
-does not happen because:
-
-load_balance_fair() iterates thr' the task list in the order they
-were created. So it first examines what tasks it can pull from Group "a".
-
-	It invokes __load_balance_fair() to see if it can pull any tasks
-	worth max weight 512 (rem_load). Ideally since a0's weight is
-	1024, it should not pull a0. However, balance_tasks() is eager
-	to pull atleast one task (because of SCHED_LOAD_SCALE_FUZZ) and
-	ends up pulling a0. This results in more load being moved (1024)
-	than the required target.
-
-Next, when CPU0 tries pulling load of 512, it ends up pulling a0 again.
-
-This a0 ping pongs between both CPUs.
-
-
-The following experimental patch (on top of 2.6.26-rc3 +
-http://programming.kicks-ass.net/kernel-patches/sched-smp-group-fixes/) seems 
-to fix the problem.
-
-Note that this works only when /dev/cgroup/sys/cpu.shares = 100 (or some low
-number). Otherwise top (or whatever command you run to observe load 
-distribution) contributes to some load in /dev/cgroup/sys group, which skews the
-results. IMHO, find_busiest_group() needs to use cpu utilization (rather than 
-cpu load) as the metric to balance across CPUs (rather than task/group load).
-
-Can you check if this makes a difference for you as well?
-
-
-Not-yet-Signed-off-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-
----
- include/linux/sched.h |    4 ++++
- init/Kconfig          |    2 +-
- kernel/sched.c        |    5 ++++-
- kernel/sched_debug.c  |    2 +-
- 4 files changed, 10 insertions(+), 3 deletions(-)
-
-Index: current/include/linux/sched.h
-===================================================================
---- current.orig/include/linux/sched.h
-+++ current/include/linux/sched.h
-@@ -698,7 +698,11 @@ enum cpu_idle_type {
- #define SCHED_LOAD_SHIFT	10
- #define SCHED_LOAD_SCALE	(1L << SCHED_LOAD_SHIFT)
- 
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+#define SCHED_LOAD_SCALE_FUZZ	0
-+#else
- #define SCHED_LOAD_SCALE_FUZZ	SCHED_LOAD_SCALE
-+#endif
- 
- #ifdef CONFIG_SMP
- #define SD_LOAD_BALANCE		1	/* Do load balancing on this domain. */
-Index: current/init/Kconfig
-===================================================================
---- current.orig/init/Kconfig
-+++ current/init/Kconfig
-@@ -349,7 +349,7 @@ config RT_GROUP_SCHED
- 	  See Documentation/sched-rt-group.txt for more information.
- 
- choice
--	depends on GROUP_SCHED
-+	depends on GROUP_SCHED && (FAIR_GROUP_SCHED || RT_GROUP_SCHED)
- 	prompt "Basis for grouping tasks"
- 	default USER_SCHED
- 
-Index: current/kernel/sched.c
-===================================================================
---- current.orig/kernel/sched.c
-+++ current/kernel/sched.c
-@@ -1534,6 +1534,9 @@ tg_shares_up(struct task_group *tg, int 
- 	unsigned long shares = 0;
- 	int i;
- 
-+	if (!tg->parent)
-+		return;
-+
- 	for_each_cpu_mask(i, sd->span) {
- 		rq_weight += tg->cfs_rq[i]->load.weight;
- 		shares += tg->cfs_rq[i]->shares;
-@@ -2919,7 +2922,7 @@ next:
- 	 * skip a task if it will be the highest priority task (i.e. smallest
- 	 * prio value) on its new queue regardless of its load weight
- 	 */
--	skip_for_load = (p->se.load.weight >> 1) > rem_load_move +
-+	skip_for_load = (p->se.load.weight >> 1) >= rem_load_move +
- 							 SCHED_LOAD_SCALE_FUZZ;
- 	if ((skip_for_load && p->prio >= *this_best_prio) ||
- 	    !can_migrate_task(p, busiest, this_cpu, sd, idle, &pinned)) {
-Index: current/kernel/sched_debug.c
-===================================================================
---- current.orig/kernel/sched_debug.c
-+++ current/kernel/sched_debug.c
-@@ -119,7 +119,7 @@ void print_cfs_rq(struct seq_file *m, in
- 	struct sched_entity *last;
- 	unsigned long flags;
- 
--#if !defined(CONFIG_CGROUP_SCHED) || !defined(CONFIG_USER_SCHED)
-+#ifndef CONFIG_CGROUP_SCHED
- 	SEQ_printf(m, "\ncfs_rq[%d]:\n", cpu);
- #else
- 	char path[128] = "";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
-
-
-
-
-
->
->
->
-> I then redid the test with two hogs in one group and three hogs in the 
-> other group.  Unfortunately, the cpu shares were not equally distributed 
-> within each group.  Using a 10-sec interval in "top", I got the following:
->
->
-> 2522 cfriesen  20   0  3800  392  336 R 52.2  0.0   1:33.38 cat 
-> 2523 cfriesen  20   0  3800  392  336 R 48.9  0.0   1:37.85 cat 
-> 2524 cfriesen  20   0  3800  392  336 R 37.0  0.0   1:23.22 cat 
-> 2525 cfriesen  20   0  3800  392  336 R 32.6  0.0   1:22.62 cat 
-> 2559 cfriesen  20   0  3800  392  336 R 28.7  0.0   0:24.30 cat 
->
-> Do we expect to see upwards of 9% relative unfairness between processes 
-> within a class?
->
-> I tried messing with the tuneables in /proc/sys/kernel (sched_latency_ns, 
-> sched_migration_cost, sched_min_granularity_ns) but was unable to 
-> significantly improve these results.
->
-> Any pointers would be appreciated.
->
-> Thanks,
->
-> Chris
+Also, why would you not want all your accelerometers grouped into a set
+of accelerometers? If your application software just searches all input
+devices for anything reporting itself as an accelerometer, then it would
+get the right result... 
 
 -- 
-Regards,
-vatsa
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
