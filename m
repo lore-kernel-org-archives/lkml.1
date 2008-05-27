@@ -1,123 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbYE0Rls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbYE0Rnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758483AbYE0Rls (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 13:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbYE0Rlg
+	id S1758339AbYE0Rnp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 13:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYE0Rni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 13:41:36 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48732 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754795AbYE0Rlg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 13:41:36 -0400
-Message-Id: <1211910094.13064.1255315907@webmail.messagingengine.com>
-X-Sasl-Enc: G2LzJFOZfSkARvwKuC2lOJfpIU7hvLIqYHb892VthCPG 1211910094
-From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-To: "Ivo van Doorn" <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>,
-       "Dmitry Torokhov" <dtor@mail.ru>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Tue, 27 May 2008 13:43:38 -0400
+Received: from www.tglx.de ([62.245.132.106]:41084 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755490AbYE0Rnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 13:43:37 -0400
+Date: Tue, 27 May 2008 19:30:42 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       vatsa <vatsa@in.ibm.com>
+Subject: Re: [RFC: 2.6 patch] let GROUP_SCHED depend on BROKEN
+In-Reply-To: <20080527130828.GC20938@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.10.0805271527060.3295@apollo.tec.linutronix.de>
+References: <20080527085830.GA20938@cs181133002.pp.htv.fi> <1211888849.12349.28.camel@twins> <20080527130828.GC20938@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
-   <200805231615.33414.IvDoorn@gmail.com>
-   <1211897317.22073.1255269155@webmail.messagingengine.com>
-   <200805271638.04290.IvDoorn@gmail.com>
-Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL RADIOS
-   OFF
-In-Reply-To: <200805271638.04290.IvDoorn@gmail.com>
-Date: Tue, 27 May 2008 14:41:34 -0300
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 16:38:04 +0200, "Ivo van Doorn" <ivdoorn@gmail.com> said:
-> > So yes, I do feel RFKILL_ALL is different, and it warrants EPO semanthics in
-> > the kernel, while all other rfkill events, such as KEY_WLAN, don't.
-> > 
-> > I don't feel strongly about not giving EPO semanthics to other rfkill events,
-> > but I recommend against giving anything else EPO semanthics in rfkill.
+On Tue, 27 May 2008, Adrian Bunk wrote:
+> On Tue, May 27, 2008 at 01:47:29PM +0200, Peter Zijlstra wrote:
+> >...
+> > FYI your attitude in the past few weeks is getting on my nerves - you
+> > act all self important but have not made a single contribution to the
+> > kernel above the level of a janitor-newbie.
 > 
-> You just made my 2 laptops very happy because apparently they
-> don't behave like most keys do. ;)
+> Not a single contribution to the kernel above the level of a 
+> janitor-newbie?
 > 
-> Laptop 1)
-> 	- Key to control WLAN (Broadcom)
-> 	- Key to control Bluetooth (Broadcom??)
-> Laptop 2)
-> 	- Key to control WLAN (Intel)
+> http://article.gmane.org/gmane.linux.kernel/676733
+> http://lkml.org/lkml/2008/5/14/498
+> http://lkml.org/lkml/2008/4/28/561
+> ...
 
-You don't have a SW_RFKILL_ALL switch :-)   It is the same as my ThinkPad T43,
-it does *NOT* have a SW_RFKILL_ALL switch, and it has a wireless config hotkey,
-which is handled in firmware.  The firmware can wire-kill the Intel WLAN card,
-and it can also unplug(!) the internal Bluetooth device from the internal USB
-bus.
+Adrian, do you really believe that the above is substantial ? 
 
-You'd typically assign KEY_WLAN or something else to those keys, but NOT a 
-(fictitious) KEY_RFKILL_ALL.
+You spotted a bug, decoded a bug report and fixed a Kconfig. Nobody
+says that this is a bad contribution, but it does not qualify you at
+all to act as the uber controller of the kernel.
 
-So, my ThinkPad T43 would NEVER issue *_RFKILL_ALL events by default.
+I always defended your contributions, which were questioned by a lot
+of kernel developers, but your recent attitude of artificially
+inflating bugs, which are either already resolved, have patches
+pending or are actively worked on is annoying a lot of kernel folks,
+not only Peter.
 
-> And each key really controls the hardware, without any software required.
+I'm sure Peter would have accepted such a patch, if there was a good
+technical reason for it.
 
-Works just like a ThinkPad before you set its hotkey mask to request the firmware
-to hands-off the hotkeys, then.
+Your book-keeper list of bugreports lacks technical insight and is not
+a good technical reason, it's just a strawman to gain control and/or
+importance.
 
-> Especially for Laptop one it will not be nice to attack RFKILL_ALL to
-> both keys,
-> since both control specific radio types.
+The bugzilla lists are good to remind us about outstanding problems,
+but they are in no way the sole technical measure for marking a
+functionality broken. Bugzilla is a tracking tool, nothing else. Using
+it as a technical measure is just like the management illusion that
+you can control a company with spread-sheets.
 
-Those keys definately are *NOT* to have *_RFKILL_ALL attached to them by default,
-I agree.
+Following your book-keeper logic we have to mark HIBERNATE, SUSPEND,
+NOHZ, HIGHRES, TSC and tons of other things BROKEN as well.
 
-> key or not. Perhaps you do know with some hardware like thinkpad, but
-> with my second laptop for example, it only has 1 kind of radio and that 
-> is WLAN it also has 1 key.
-> When it is pressed, you simply don't know if it is switched off because
-> of the no-RF area or to powersave.
+Marking it BROKEN is the last resort when we have something unfixable
+which causes data corruption or crashes for which there is no active
+maintainer who's willing to stand up for breakage.
 
-Then you assume it is just a normal key.  If the user wants to promote that
-key to the Wireless EPO key, he changes the default assignment of KEY_WLAN to
-KEY_RFKILL_ALL (although I didn't propose a KEY_RFKILL_ALL yet).
+Marking an incomplete default off feature, which does not result in
+crashes or data corruption, BROKEN is just wrong. EXPERIMENTAL is the
+correct category to get it exposed to users which helps to get
+information about the side effects.
 
-> With my first laptop, the broadcom WLAN driver will register the key, but
-> it doesn't know if it is alone or if Bluetooth hardware is also present. So
-> it cannot know if it is a master switch or not.
+I enjoy working with Rafael on a technical level on those bugzilla
+issues, but your vain attempt to influence the kernel development by
+bureaucrazy will just lead to further ignorance vs. the kernel
+bugzilla as the signal/noise ratio already reached an high annoyance
+level since you started to abuse it for your renewed quality crusade.
 
-Correct.
+Your previous attempt to control kernel development via the regression
+list failed and you resigned. Now you come back and attack particular
+subsystem developers/maintainers with the same method. Do you really
+believe that abusing statistics for your exaggerated problem inflation
+is solving any problems ?
 
-This is *explicitly* documented by the patches.  The broadcomm driver has to assume
-it is a slave rfkill device, and NEVER report any input events.  It has no knowledge
-of which platform the broadcomm chip was installed into, after all.  OTOH, it *will*
-report the status change through the rfkill notify chain and also through the rfkill
-uevents, and either a platform module for your laptop, or HAL (in userspace) can
-trap those, and issue the relevant input events.
+No, it's causing more problems because you slander and frustrate
+active developers who are aware of the issues and are working hard to
+resolve them. The least thing they need is "motivation" in form of
+such patches.
 
-*IF* you get the events only through the broadcomm device, that is. If you get them
-from ACPI as well, you probably want to let the ACPI driver issue the input events.
+> Awaiting your apology
 
-> > But of course, you have to make sure the master switch WILL bloody well stay off
-> > when off by design.  You engineer it so that all possible failure modes will
-> > cause it to go to the off state.
-> > 
-> > I would really appreciate that the rfkill class would abide to this UI notion for
-> > the master rfkill events (*_RFKILL_ALL).
-> 
-> Such a thing would indeed be nice, as long as you can positively identify
-> a master switch,
-> but as long as that is not possible/implemented it will only be confusing
-> for driver developers,
-> userspace developers and the users.
+For what ? For telling the truth ?
 
-We document it *throughoutly*, and add a big fat warning about the misuse of
-RFKILL_ALL.   It should be enough.   Will you consider ACKing a new version of
-the patchset which documents better the *_RFKILL_ALL events?
+Thanks,
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
-
+	tglx
