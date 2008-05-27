@@ -1,39 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYE0Q46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYE0Q5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYE0Q46 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 12:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbYE0Q4v
+	id S1758880AbYE0Q5f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 12:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbYE0Q52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 12:56:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45912 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756758AbYE0Q4u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 12:56:50 -0400
-Date: Tue, 27 May 2008 09:54:30 -0700
-From: Greg KH <greg@kroah.com>
-To: Richard MUSIL <richard.musil@st.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with accessing stable git over http
-Message-ID: <20080527165430.GC3699@kroah.com>
-References: <47EA26E4.8060602@st.com> <20080404050718.GE23796@1wt.eu> <47F5E701.6020706@st.com> <4804A58E.5070104@st.com> <20080417212849.GA17653@kroah.com> <483BDE6A.8040404@st.com>
-MIME-Version: 1.0
+	Tue, 27 May 2008 12:57:28 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:37093 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756839AbYE0Q51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 12:57:27 -0400
+Date: Tue, 27 May 2008 20:58:57 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] signals: collect_signal: simplify the "still_pending" logic
+Message-ID: <20080527165857.GA1407@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <483BDE6A.8040404@st.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 12:11:54PM +0200, Richard MUSIL wrote:
-> Hello Greg,
-> 
-> it seems git-update-server-info should be run regularly, because it
-> looks like right now I am stuck at v2.6.24.4 and I cannot get anything
-> from 2.6.25.y stable branch - the time you probably run it.
-> Could you please fix it?
+Factor out sigdelset() calls and remove the "still_pending" variable.
 
-It should now work, sorry about this.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Acked-by: Roland McGrath <roland@redhat.com>
 
-greg k-h
+--- 26-rc2/kernel/signal.c~3_CLEANUP_STILL_PENDING	2008-05-27 18:37:10.000000000 +0400
++++ 26-rc2/kernel/signal.c	2008-05-27 19:06:55.000000000 +0400
+@@ -341,7 +341,6 @@ unblock_all_signals(void)
+ static int collect_signal(int sig, struct sigpending *list, siginfo_t *info)
+ {
+ 	struct sigqueue *q, *first = NULL;
+-	int still_pending = 0;
+ 
+ 	/*
+ 	 * Collect the siginfo appropriate to this signal.  Check if
+@@ -349,26 +348,24 @@ static int collect_signal(int sig, struc
+ 	*/
+ 	list_for_each_entry(q, &list->list, list) {
+ 		if (q->info.si_signo == sig) {
+-			if (first) {
+-				still_pending = 1;
+-				break;
+-			}
++			if (first)
++				goto still_pending;
+ 			first = q;
+ 		}
+ 	}
++
++	sigdelset(&list->signal, sig);
++
+ 	if (first) {
++still_pending:
+ 		list_del_init(&first->list);
+ 		copy_siginfo(info, &first->info);
+ 		__sigqueue_free(first);
+-		if (!still_pending)
+-			sigdelset(&list->signal, sig);
+ 	} else {
+-
+ 		/* Ok, it wasn't in the queue.  This must be
+ 		   a fast-pathed signal or we must have been
+ 		   out of queue space.  So zero out the info.
+ 		 */
+-		sigdelset(&list->signal, sig);
+ 		info->si_signo = sig;
+ 		info->si_errno = 0;
+ 		info->si_code = 0;
+
