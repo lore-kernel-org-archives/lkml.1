@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbYE0Wxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760454AbYE0WyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbYE0Wxk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757418AbYE0Wxc
+	id S1760454AbYE0WyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 18:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757531AbYE0WyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:53:32 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:40947 "EHLO smtp5.pp.htv.fi"
+	Tue, 27 May 2008 18:54:10 -0400
+Received: from mga02.intel.com ([134.134.136.20]:2910 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757348AbYE0Wxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 18:53:31 -0400
-Date: Wed, 28 May 2008 01:50:42 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
-Message-ID: <20080527225042.GG11310@cs181133002.pp.htv.fi>
-References: <g1eg2q$81q$1@ger.gmane.org> <20080526161623.GC7305@cvg> <g1f230$7bl$1@ger.gmane.org> <g1f3ht$b9g$1@ger.gmane.org> <aa79d98a0805262335lf5cd4e1p8f318d45dfe7ff92@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <aa79d98a0805262335lf5cd4e1p8f318d45dfe7ff92@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1757711AbYE0WyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 18:54:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,550,1204531200"; 
+   d="scan'208";a="285503819"
+Date: Tue, 27 May 2008 15:45:07 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, drzeus-list@drzeus.cx
+Subject: Re: [patch, -git] pcie hotplug bootup crash fix
+Message-ID: <20080527154507.76c61d40@appleyard>
+In-Reply-To: <200805260920.15912.jbarnes@virtuousgeek.org>
+References: <20080524165828.GA29993@elte.hu>
+	<20080526015232.5faac5bb.akpm@linux-foundation.org>
+	<483A9050.5000206@jp.fujitsu.com>
+	<200805260920.15912.jbarnes@virtuousgeek.org>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 10:35:43AM +0400, Cyrill Gorcunov wrote:
-> On 5/26/08, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> > <posted & mailed>
-> >
-> > Sitsofe Wheeler wrote:
-> >
-> > > Cyrill Gorcunov wrote:
-> > >
-> > >> [Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
-> > >> | When using a 32 bit linux-next-20080526 the bootup process will hang at
-> > >> | a random point (not even sysrq helps) with no additional output on the
-> > >> | screen (whereas linux-next-20080523 did boot). Mysteriously, booting
-> > >> | with nmi_watchdog=2 allows the boot to finish (booting with
-> > >> | nmi_watchdog=1 still stalls). I have bisected it down to commit
-> > >> | [d1b946b97d71423f365fa797d1428e1847c0bec1]:
+On Mon, 26 May 2008 09:20:15 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> On Monday, May 26, 2008 3:26 am Kenji Kaneshige wrote:
+> > Andrew Morton wrote:
+> > > On Mon, 26 May 2008 10:47:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> > >> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+> > >>> I updated Ingo's patch. If it's ok, I'll send it to Jess Barnes with
+> > >>> some other patches for the other pciehp regression problems.
 > > >>
-> > >> Hi, so it helps by reverting only that commit? I mean all further commits
-> > >> are still appiled?
+> > >> looks good to me, thanks Kenji.
 > > >
-> > > Ah that I hadn't tested. I believe I might need to revert
-> > > 4b82b277707a39b97271439c475f186f63ec4692 too if later commits are applied
-> > > (but I'm still testing)
-> > >
-> > >> and, btw, could you post your config, please?
-> > >
-> > > http://sucs.org/~sits/test/config-20080526.txt
+> > > It's a bit sad to add a large workaround like this.  I'm surprised
+> > > that fixing it properly is considered unviable for 2.6.26.  Normally
+> > > these fixes are pretty simple - just request the IRQ a bit later?
 > >
-> > OK applying the following patch (which is more or less a revert of
-> > [4b82b277707a39b97271439c475f186f63ec4692]) resolves the problem:
->...
+> > Although I have not considered how to implement proper fix deeply,
+> > I don't think it's so simple. For example, current pciehp is doing
+> > like this:
+> >
+> > (1) some initialization
+> > (2) request_irq()
+> > (3) issue command
+> > (4) initialize slot data structure
+> >
+> > Maybe we want to do (2) after (4) to fix the problem. But if we
+> > simply move (2) after (4), we cannot detect the command completion
+> > event at (3) and it will cause command timeout.
+> >
+> > It's just an example, and there might be other things like this.
+> > This example might be fixed simply, but all my worry is that fixing
+> > this quickly might cause another regressions. This is why I think
+> > Ingo's approach is better in a short term.
+> >
+> > And another reason is I'm very nervous because I already caused
+> > many problems in pciehp since 2.6.26-rcX... :(
 > 
-> Hi Sitsofe, actually I can't imagine how this revert have helped you
-> from hang. Newly introduced nmi_watchdog_default() didn't change
-> the logic of the code being used before this merge-series.
+> But you also fixed the problems, which is even more important! :)  I'm ok with 
+> the workaround for 2.6.26 as long as we can get a more proper fix into 
+> 2.6.27.
 > 
-> Thomas, Ingo, maybe I've overlooked something (hard to believe ;)?
-> Only the change is the adding of new call for nmi_watchdog_default()
-> which was say 'inlined' before.
->...
+> Any thoughts, Kristen?
+> 
+> Thanks,
+> Jesse
+> 
 
-arch/x86/kernel/smpboot.c:native_smp_prepare_cpus() also calls
-the no longer empty nmi_watchdog_default() on 32bit.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+I'm in favor of the workaround for now.
