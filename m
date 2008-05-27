@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYE0It2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbYE0IwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbYE0It2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 04:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757604AbYE0ItO
+	id S1757813AbYE0IwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 04:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbYE0IwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 04:49:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43766 "EHLO
+	Tue, 27 May 2008 04:52:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36076 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757500AbYE0ItM (ORCPT
+	by vger.kernel.org with ESMTP id S1756805AbYE0IwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 04:49:12 -0400
-Date: Tue, 27 May 2008 01:47:20 -0700
+	Tue, 27 May 2008 04:52:14 -0400
+Date: Tue, 27 May 2008 01:51:35 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Miquel van Smoorenburg <mikevs@xs4all.net>
-Cc: Andi Kleen <andi@firstfloor.org>, Glauber Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] 2.6.26-rc: x86: pci-dma.c: use __GFP_NO_OOM instead of
- __GFP_NORETRY
-Message-Id: <20080527014720.6db68517.akpm@linux-foundation.org>
-In-Reply-To: <20080526234940.GA1376@xs4all.net>
-References: <20080526234940.GA1376@xs4all.net>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] VFS: Pagecache usage optimization on
+ pagesize!=blocksize environment
+Message-Id: <20080527015135.561eeb6d.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20080527172732.05447770@172.19.0.2>
+References: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
+	<20080521001930.202446eb.akpm@linux-foundation.org>
+	<6.0.0.20.2.20080522160939.051ca938@172.19.0.2>
+	<20080522010355.32590474.akpm@linux-foundation.org>
+	<6.0.0.20.2.20080527172732.05447770@172.19.0.2>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,42 +31,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 01:49:47 +0200 Miquel van Smoorenburg <mikevs@xs4all.net> wrote:
+On Tue, 27 May 2008 17:38:34 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-> Please consider the below patch for 2.6.26 (can somebody from the
-> x86 team pick this up please? Thank you)
-> 
-> 
-> 
-> [PATCH] 2.6.26-rc: x86: pci-dma.c: use __GFP_NO_OOM instead of __GFP_NORETRY
-> 
-> arch/x86/kernel/pci-dma.c::dma_alloc_coherent() adds __GFP_NORETRY to
-> the gfp flags before calling alloc_pages() to prevent the oom killer
-> from running.
+> I cleaned up and simplified block_is_partially_uptodate.
+> Following patch is for linux-2.6.26-rc4.
+> Please review my patch.
 
-Now, why does dma_alloc_coherent() do that?
+We seem to have lost the changelog which means that the patch can't go
+much further and it makes it considerably harder for people to review
+the patch.
 
-If __GFP_FS is cleared (most cases) then we won't be calling
-out_of_memory() anyway.
+Please maintain the changelog alongside the patch and resend it (possibly after
+suitable updates) along with each iteration of the patch.
 
-If __GFP_FS _is_ set then setting __GFP_NORETRY will do much more than
-avoiding oom-killings.  It will prevent the page allocator from
-retrying and will cause the problems which one assumes (without
-evidence :() you have observed.
-
-So...  why not just remove the setting of __GFP_NORETRY?  Why is it
-wrong to oom-kill things in this case?
-
-> This has the expected side effect that that alloc_pages() doesn't
-> retry anymore. Not really a problem for dma_alloc_coherent(.. GFP_ATOMIC)
-> which is the way most drivers use it (through pci_alloc_consistent())
-> but drivers that call dma_alloc_coherent(.. GFP_KERNEL) directly can get
-> unexpected failures.
-> 
-> Until we have the mask allocator, use a new flag __GFP_NO_OOM
-> instead of __GFP_NORETRY.
-> 
-
-But this change increases the chances of a caller getting stuck in the
-page allocator for ever, unable to make progress?
-
+Thanks.
