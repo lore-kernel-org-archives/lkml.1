@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbYE0V43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbYE0V7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759711AbYE0V43 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 17:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbYE0V4U
+	id S1759484AbYE0V7i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 17:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758055AbYE0V7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 17:56:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35316 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756591AbYE0V4U (ORCPT
+	Tue, 27 May 2008 17:59:31 -0400
+Received: from exhub016-3.exch016.msoutlookonline.net ([207.5.72.226]:54481
+	"EHLO EXHUB016-3.exch016.msoutlookonline.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757898AbYE0V7a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 17:56:20 -0400
-Date: Tue, 27 May 2008 14:55:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <1211924335.3286.89.camel@pasglop>
-Message-ID: <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-References: <1211852026.3286.36.camel@pasglop>  <20080526.184047.88207142.davem@davemloft.net>  <1211854540.3286.42.camel@pasglop>  <20080526.192812.184590464.davem@davemloft.net>  <1211859542.3286.46.camel@pasglop>  <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-  <1211922621.3286.80.camel@pasglop>  <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org> <1211924335.3286.89.camel@pasglop>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 27 May 2008 17:59:30 -0400
+X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 May 2008 17:59:30 EDT
+Message-ID: <483C81DE.8060002@cfl.rr.com>
+Date: Tue, 27 May 2008 17:49:18 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gene Heskett <gene.heskett@gmail.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: floppy question of the hour
+References: <200805232114.20937.gene.heskett@gmail.com> <4837DFC6.9010202@s5r6.in-berlin.de> <200805240852.58268.gene.heskett@gmail.com>
+In-Reply-To: <200805240852.58268.gene.heskett@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
+Gene Heskett wrote:
+> This is a 250 kilobaud data rate format, the maximum the WD-1773 FDC chip in the 
+> target machine can handle, with 18, 256 byte sectors per track, two sides=73728 
+> bits to write a track, /250000 (baud rate)=0.294912 seconds to write one full 
+> tracks worth of data. 80 tracks=23.59296 seconds to write the whole disk if it 
+> were streaming, but it takes 3 minutes and change?  And nearly 2 to read it 
+> back as above?  Odd.  With the interleave of 3, I could see 75 seconds maybe 
+> for efficient methods.  I also understand this is a one size fits all scene 
+> too, and that there must be compromises.
 > 
-> A problem with __raw_ though is that they -also- don't do byteswap,
+> I format these DD discs in the target machine with an interleave factor of 3 cuz 
+> that machines cpu is running at as low as .89MHZ and can't handle the read data 
+> any faster than that.
+> 
+> Is this non-1 interleave responsible for the slowness of the writes or reads on 
+> this box?  I can control the interleave on the target box, so I suppose I could 
+> test that effect easily enough.
 
-Well, that's why there is __readl() and __raw_readl(), no?
+Yes, the interleave slows you down, since after accessing sector 1, the 
+head must wait to pass over 3 other sectors before finally reaching 
+sector 2, therefore, you can only read 1/4 of the sectors on the track 
+each revolution of the disk.  That leaves 4 revolutions at 300 rpm 
+giving 0.8s to read a track, or 64 seconds to read all 80 tracks, plus 
+seek time.  That still does not explain 3 minutes though... not sure 
+what else could be slowing you down.
 
-Neither does ordering, and __raw_readl() doesn't do byte-swap.
 
-Of course, I'm not going to guarantee every architecture even has all 
-those versions, nor am I going to guarantee they all work as advertised :)
-
-For x86, they have historially all been 100% identical. With the inline 
-asm patch I posted, the "__" version (whether "raw" or not) lack the 
-"memory" barrier, so they allow a *little* bit more re-ordering.
-
-(They won't be re-ordered wrt spinlocks etc, unless gcc starts reordering 
-volatile asm's against each other, which would be a bug).
-
-In practice, I doubt it matters. Whatever small compiler re-ordering it 
-might affect won't have any real performance impack one way or the other, 
-I think.
-
-		Linus
