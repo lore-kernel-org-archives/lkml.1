@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbYE0UZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbYE0U20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759243AbYE0UZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 16:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbYE0UZU
+	id S1759123AbYE0U20 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 16:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbYE0U2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 16:25:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53075 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756379AbYE0UZU (ORCPT
+	Tue, 27 May 2008 16:28:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:3592 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755993AbYE0U2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 16:25:20 -0400
-Date: Tue, 27 May 2008 17:24:46 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, Alan Cox <alan@redhat.com>,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+	Tue, 27 May 2008 16:28:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=xxM4p1jGFLNPMI+rnjFkzAptzBRqQpLYkAfBHe9ZvAUq54Ero1hsHbKhlouqgpkvw1iY13zlyAiyArnocRWeBlkdOJIZNBvpuYhNUXQrEBmSis9oCyhW+1hng3YntEYnwJKMq3s2QTj4V4vrqKuzLt++XqY74z3yVHRieHWZwJw=
+Message-ID: <483C6EAE.4050401@gmail.com>
+Date: Tue, 27 May 2008 22:27:26 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Aristeu Rozanski <aris@ruivo.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] video4linux: Push down the BKL
-Message-ID: <20080527172446.6f856f21@gaivota>
-In-Reply-To: <20080527125041.0fc28fd4@infradead.org>
-References: <20080522223700.2f103a14@core>
-	<20080526135951.7989516d@gaivota>
-	<20080526202317.GA12793@devserv.devel.redhat.com>
-	<20080526181027.1ff9c758@gaivota>
-	<20080526220154.GA15487@devserv.devel.redhat.com>
-	<20080527101039.1c0a3804@gaivota>
-	<20080527094144.1189826a@bike.lwn.net>
-	<20080527133100.6a9302fb@gaivota>
-	<20080527103755.1fd67ec1@bike.lwn.net>
-	<20080527155942.7693c360@gaivota>
-	<20080527125041.0fc28fd4@infradead.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [PATCH 1/1] Char: vt, make sysfs operations atomic
+References: <1211802812-13658-1-git-send-email-jirislaby@gmail.com> <20080527194357.GA12185@cathedrallabs.org>
+In-Reply-To: <20080527194357.GA12185@cathedrallabs.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 12:50:41 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
+On 05/27/2008 09:43 PM, Aristeu Rozanski wrote:
+>> Hold console sem while creating/destroying sysfs files. Serialisation is
+>> so far done by BKL held in tty release_dev and chrdev_open, but no other
+>> locks are held in open path.
+>>
+>>  				tty->termios->c_iflag |= IUTF8;
+>>  			else
+>>  				tty->termios->c_iflag &= ~IUTF8;
+>> -			release_console_sem();
+>>  			vcs_make_sysfs(tty);
+>> +			release_console_sem();
+>>  			return ret;
+>>  		}
+>>  	}
+>> @@ -2772,8 +2772,8 @@ static void con_close(struct tty_struct *tty, struct file *filp)
+>>  		if (vc)
+>>  			vc->vc_tty = NULL;
+>>  		tty->driver_data = NULL;
+>> -		release_console_sem();
+>>  		vcs_remove_sysfs(tty);
+>> +		release_console_sem();
+>>  		mutex_unlock(&tty_mutex);
+>>  		/*
+>>  		 * tty_mutex is released, but we still hold BKL, so there is
+> the reason for the code be the way it is is because vcs_{add,remove}_sysfs()
+> may sleep
 
-> On Tue, 27 May 2008 15:59:42 -0300
-> Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> 
-> > On Tue, 27 May 2008 10:37:55 -0600
-> > Jonathan Corbet <corbet@lwn.net> wrote:
-> > 
-> > > On Tue, 27 May 2008 13:31:00 -0300
-> > > Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
-> > > 
-> > > > Since the other methods don't explicitly call BKL (and, AFAIK,
-> > > > kernel open handler don't call it neither), if a program 1 is
-> > > > opening a device and initializing some data, and a program 2
-> > > > starts doing ioctl, interrupting program 1 execution in the
-> > > > middle of a data initialization procedure, you may have a race
-> > > > condition, since some devices initialize some device global data
-> > > > during open [1].
-> > > 
-> > > In fact, 2.6.26 and prior kernels *do* acquire the BKL on open (for
-> > > char devices) - that's the behavior that the bkl-removal tree is
-> > > there to do away with.  So, for example, I've pushed that
-> > > acquisition down into video_open() instead. 
-> > > 
-> > > So, for now, open() is serialized against ioctl() in video
-> > > drivers.  As soon as you take the BKL out of ioctl(), though, that
-> > > won't happen, unless the mutex you use is also acquired in the open
-> > > path.
-> > 
-> > Ok.
-> > 
-> > A few drivers seem to be almost read to work without BKL. 
-> > 
-> > For example, em28xx has already a lock at the operations that change
-> > values at "dev" struct, including open() method. However, since the
-> > lock is not called at get operations, it needs to be fixed. I would
-> > also change it from mutex to a read/write semaphore, since two (or
-> > more) get operations can safely happen in parallel.
-> > 
-> \
-> 
-> please don't use rw/sems just because there MIGHT be parallel.
-> THey're more expensive than mutexes by quite a bit and you get a lot
-> less checking from lockdep. They make sense for very specific, very
-> read biased, contended cases. But please don't use them "just
-> because"...
-> 
-Good point. The nature of get operations on V4L are not worthy enough to justify
-the loss of lockdep checking.
-
-Cheers,
-Mauro
+What's the point? To have races in the code but not sleep inside the semaphore?
