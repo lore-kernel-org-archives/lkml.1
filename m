@@ -1,114 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYE0Odg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYE0Oev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbYE0Odg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 10:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbYE0Od3
+	id S1757368AbYE0Oev (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 10:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbYE0Oen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 10:33:29 -0400
-Received: from rn-out-0910.google.com ([64.233.170.187]:59489 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755678AbYE0Od2 (ORCPT
+	Tue, 27 May 2008 10:34:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:21098 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755036AbYE0Oem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 10:33:28 -0400
+	Tue, 27 May 2008 10:34:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TGWVf2jg7f1xskuKQCUXX2OoFqX2P7jjmCmJRPB4oP6Ja/8WuAPhxtaqlFVEnGziY+jN3etHNR5htWZWQAh4+NEDi2oLDiTDM+ojNWvB/HgPRYFAHw+uujsCKHcmEx85NItf7H8zUs6cJTJG4KHJicR48jnsqYeSLdIKeuFwurI=
-Message-ID: <170fa0d20805270733n4e685e5fs6e456e3b2edbff76@mail.gmail.com>
-Date: Tue, 27 May 2008 10:33:26 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-In-Reply-To: <18491.45187.557090.225552@notabene.brown>
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=eRbe2AwL7TEDHnQX4davn0QSKhGTZw2taoJa7t7319BvtK94/73/hq2A/aIJICK8cjHmEvMqnws1ENxSVoBv9eRX8BVQxE3sxeVmTDyyq92pcheSJDb0vTJjs1rzmFuosfx+rF7TZXqCmFaleU1JlvG/GboZjxHahAvjjDOq9L4=
+To: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
+Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL RADIOS OFF
+Date: Tue, 27 May 2008 16:38:04 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>,
+       "Dmitry Torokhov" <dtor@mail.ru>
+References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <200805231615.33414.IvDoorn@gmail.com> <1211897317.22073.1255269155@webmail.messagingengine.com>
+In-Reply-To: <1211897317.22073.1255269155@webmail.messagingengine.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-	 <18467.43895.220708.254814@notabene.brown>
-	 <170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
-	 <18467.59565.676987.926988@notabene.brown>
-	 <170fa0d20805090800p45654901p36eea51e1ea7e9c7@mail.gmail.com>
-	 <18477.30199.992302.271647@notabene.brown>
-	 <170fa0d20805182133o46501cc4va81b087fb6b417bf@mail.gmail.com>
-	 <18481.4005.570022.160686@notabene.brown>
-	 <170fa0d20805200830w184709dch221f8b9636f3bc0e@mail.gmail.com>
-	 <18491.45187.557090.225552@notabene.brown>
+Message-Id: <200805271638.04290.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 2:56 AM, Neil Brown <neilb@suse.de> wrote:
-> On Tuesday May 20, snitzer@gmail.com wrote:
->>
->> Hi Neil,
->>
->> We're much closer.  The events_cleared is symmetric on both the failed
->> and active member of the raid1.  But there have been some instances
->> where the md thread hits a deadlock during my testing.  What follows
->> is the backtrace and live crash info:
-> ...
->>
->> So running with your latest patches seems to introduce a race in
->> bitmap_daemon_work's if (unlikely((*bmc & COUNTER_MAX) ==
->> COUNTER_MAX)) { } block.
->
-> As you not, that block is in the wrong place.
-> It is actually locking up in
->                                wait_event(bitmap->mddev->sb_wait,
->                                    !test_bit(MD_CHANGE_CLEAN,
->                                              &bitmap->mddev->flags));
->
-> which the patch adds.  However with my last update that wait_event
-> isn't needed any more.  I was using it to ensure mddev->events matched
-> what was on disk.  But we now read mddev->events much earlier and it
-> will definitely be on disc by this time.
->
-> So: this combined patch should do it.
->
-> Thanks for all your testing.
->
-> NeilBrown
->
->
-> ---------------------------
-> Improve setting of "events_cleared" for write-intent bitmaps.
->
-> When an array is degraded, bits in the write-intent bitmap are not
-> cleared, so that if the missing device is re-added, it can be synced
-> by only updated those parts of the device that have changed since
-> it was removed.
->
-> The enable this a 'events_cleared' value is stored. It is the event
-> counter for the array the last time that any bits were cleared.
->
-> Sometimes - if a device disappears from an array while it is 'clean' -
-> the events_cleared value gets updated incorrectly (there are subtle
-> ordering issues between updateing events in the main metadata and the
-> bitmap metadata) resulting in the missing device appearing to require
-> a full resync when it is re-added.
->
-> With this patch, we update events_cleared precisely when we are about
-> to clear a bit in the bitmap.  We record events_cleared when we clear
-> the bit internally, and copy that to the superblock which is written
-> out before the bit on storage.  This makes it more "obviously correct".
->
-> We also need to update events_cleared when the event_count is going
-> backwards (as happens on a dirty->clean transition of a non-degraded
-> array).
->
-> Thanks to Mike Snitzer for identifying this problem and testing early
-> "fixes".
->
->
-> Cc:  "Mike Snitzer" <snitzer@gmail.com>
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> Signed-off-by: Neil Brown <neilb@suse.de>
+> > > You get that event when someone moves that slider switch in the side/top
+> > > of a laptop which has to kill all RF output in hardware as far as safety
+> > > regulations go.  Therefore, it refers to the only rfkill switch that has
+> > > guidelines that say that it must always work, and that it must not be
+> > > possible to override it in software.
+> > 
+> > That is a valid point, and rfkill is supposed to do that, but making
+> > a difference between RFKILL_ALL and the individual types is wrong
+> > because that won't result in a clearly defined expected behavior for all
+> > rfkill keys.
+> 
+> IMO, the big difference between regular KEY_* and RFKILL_ALL is that
+> RFKILL_ALL has EPO (emergency power-off) semanthics, while the others don't.
+> 
+> KEY_WLAN is usually easily overriden in firmware and software, vendors often
+> don't even bother to implement it in firmware, it is just software.  RFKILL_ALL
+> switches cannot be overriden at all in any hardware worth its weight, and they
+> work even if the entire system has gone out for lunch and is deadlocked.
+> That's quite a big difference.
+> 
+> The only reason I don't usually call the hardware rfkill switches "radio EPO
+> switches" is because they are not big, red, and shaped like a mushroom.  But
+> they are in fact required to act like one in airline regulations, AFAIK.  And
+> that certainly matches the good implementations of the hardware rfkill switch
+> I know of (they wire-kill the radios, not even firmware gets in the way).
+> 
+> So yes, I do feel RFKILL_ALL is different, and it warrants EPO semanthics in
+> the kernel, while all other rfkill events, such as KEY_WLAN, don't.
+> 
+> I don't feel strongly about not giving EPO semanthics to other rfkill events,
+> but I recommend against giving anything else EPO semanthics in rfkill.
 
-Neil,
+You just made my 2 laptops very happy because apparently they
+don't behave like most keys do. ;)
 
-Works great now.  Thanks.
+Laptop 1)
+	- Key to control WLAN (Broadcom)
+	- Key to control Bluetooth (Broadcom??)
+Laptop 2)
+	- Key to control WLAN (Intel)
 
-Tested-by: Mike Snitzer <snitzer@gmail.com>
+And each key really controls the hardware, without any software required.
+Especially for Laptop one it will not be nice to attack RFKILL_ALL to both keys,
+since both control specific radio types.
+
+> > > IMO, "kill ALL radios" events are is the only kind of rfkill input event
+> > > that have to *always work*, even if something in userspace tried to
+> > > configure it not to.
+> > 
+> > Well the definition of "ALL radios" is the part that is the question,
+> > when the KEY_WLAN is
+> > pressed it would be "ALL WLAN radios" and should still have the same
+> > rules for allowing
+> > or disallowing userspace to overwrite the status.
+> 
+> Not really.  If you are concerned with a type, it is not an emergency situation,
+> nor is it a "you are entering a no-RF-emission area" situation.  There *IS* a
+> difference when a human decides to shut down EVERYTHING regardless of type, or
+> when he just wants the WLAN to stop wasting power but still wants Bluetooth up
+> so that he can listen to music on his wireless headphones.
+
+True, but the trick is that you don't know exactly when the radio is the emergency
+key or not. Perhaps you do know with some hardware like thinkpad, but with my second
+laptop for example, it only has 1 kind of radio and that is WLAN it also has 1 key.
+When it is pressed, you simply don't know if it is switched off because of the
+no-RF area or to powersave.
+
+With my first laptop, the broadcom WLAN driver will register the key, but it doesn't know
+if it is alone or if Bluetooth hardware is also present. So it cannot know if it is a master
+switch or not.
+
+> But of course, you have to make sure the master switch WILL bloody well stay off
+> when off by design.  You engineer it so that all possible failure modes will
+> cause it to go to the off state.
+> 
+> I would really appreciate that the rfkill class would abide to this UI notion for
+> the master rfkill events (*_RFKILL_ALL).
+
+Such a thing would indeed be nice, as long as you can positively identify a master switch,
+but as long as that is not possible/implemented it will only be confusing for driver developers,
+userspace developers and the users.
+
+Ivo
