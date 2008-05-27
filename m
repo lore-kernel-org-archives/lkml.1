@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbYE0WZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbYE0W0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759621AbYE0WZX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 18:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbYE0WZL
+	id S1759836AbYE0W0b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 18:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbYE0W0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 18:25:11 -0400
-Received: from main.gmane.org ([80.91.229.2]:38177 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756022AbYE0WZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 18:25:10 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
-Date: Tue, 27 May 2008 23:16:41 +0100
-Message-ID: <g1i1ls$pkl$1@ger.gmane.org>
-References: <g1eg2q$81q$1@ger.gmane.org> <20080526161623.GC7305@cvg> <g1f230$7bl$1@ger.gmane.org> <g1f3ht$b9g$1@ger.gmane.org> <aa79d98a0805262335lf5cd4e1p8f318d45dfe7ff92@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
-User-Agent: KNode/0.10.4
-Cc: kernel-testers@vger.kernel.org
+	Tue, 27 May 2008 18:26:24 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:41386 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755811AbYE0W0X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 18:26:23 -0400
+Date: Tue, 27 May 2008 18:26:18 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: floppy question of the hour
+In-reply-to: <483C81DE.8060002@cfl.rr.com>
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
+       Jens Axboe <axboe@kernel.dk>
+Message-id: <200805271826.18320.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200805232114.20937.gene.heskett@gmail.com>
+ <200805240852.58268.gene.heskett@gmail.com> <483C81DE.8060002@cfl.rr.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<posted & mailed>
+On Tuesday 27 May 2008, Phillip Susi wrote:
+>Gene Heskett wrote:
+>> This is a 250 kilobaud data rate format, the maximum the WD-1773 FDC chip
+>> in the target machine can handle, with 18, 256 byte sectors per track, two
+>> sides=73728 bits to write a track, /250000 (baud rate)=0.294912 seconds to
+>> write one full tracks worth of data. 80 tracks=23.59296 seconds to write
+>> the whole disk if it were streaming, but it takes 3 minutes and change? 
+>> And nearly 2 to read it back as above?  Odd.  With the interleave of 3, I
+>> could see 75 seconds maybe for efficient methods.  I also understand this
+>> is a one size fits all scene too, and that there must be compromises.
+>>
+>> I format these DD discs in the target machine with an interleave factor of
+>> 3 cuz that machines cpu is running at as low as .89MHZ and can't handle
+>> the read data any faster than that.
+>>
+>> Is this non-1 interleave responsible for the slowness of the writes or
+>> reads on this box?  I can control the interleave on the target box, so I
+>> suppose I could test that effect easily enough.
+>
+>Yes, the interleave slows you down, since after accessing sector 1, the
+>head must wait to pass over 3 other sectors before finally reaching
+>sector 2, therefore, you can only read 1/4 of the sectors on the track
+>each revolution of the disk.  That leaves 4 revolutions at 300 rpm
+>giving 0.8s to read a track, or 64 seconds to read all 80 tracks, plus
+>seek time.  That still does not explain 3 minutes though... not sure
+>what else could be slowing you down.
 
-Cyrill Gorcunov wrote:
+Does anyone know if either the floppy driver, or dd, is doing a verification 
+read after each sector is written?  That could make it just sort of ooze thru 
+the data as that alone would add an additional 18 revolutions of the disk per 
+track written, 256 byte sectors in this mode.  That thought has crossed my 
+mind, but a full read of that same disk with dd which picks up another 200k of 
+empty data, completes in maybe 10 seconds less in total elapsed time.
 
-> Hi Sitsofe, actually I can't imagine how this revert have helped you
-> from hang. Newly introduced nmi_watchdog_default() didn't change
-> the logic of the code being used before this merge-series.
-
-I've just retested again and I'm fairly sure it's that commit. I can do the
-following:
-
-git checkout -f 4039cbaacf7874ab1effd0e9fb6c60bf9217f373
-
-(compiled kernel hangs during boot)
-
-git revert 1798bc22b2790bf2a956588e6b17c36ef79ceff7
-git revert fd5cea02de100197a4c26d9e103508cf09b50a82
-git revert 4b82b277707a39b97271439c475f186f63ec4692
-
-(compiled kernel boots normally)
-
-The last thing I normally see is
-ACPI: Sleep Button (CM) [SLPB
-during a normal boot is followed by
-ACPI: device:03 is registered as cooling_device0
-input: Video Bus
-as /devices/LNXSYSTM:00/device:00/PNP0A08:00/device:02/input/input3
-
-If you can give me a patch that reverts just
-4b82b277707a39b97271439c475f186f63ec4692 again the current HEAD of
-linux-next then I will try that too...
+Also, does anyone know how long after a floppy is inserted before it is 
+recognized?  From observation today, it appears to be something in the 5 minute 
+territory before a getfdprm returns data instead of "/dev/fd0: no such device".
 
 -- 
-Sitsofe | http://sucs.org/~sits/
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+I hear what you're saying but I just don't care.
