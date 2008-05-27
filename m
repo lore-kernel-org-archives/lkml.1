@@ -1,107 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbYE0Rsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbYE0RtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbYE0Rsx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 13:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbYE0Rsm
+	id S1758494AbYE0RtR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 13:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbYE0Rsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 13:48:42 -0400
-Received: from sous-sol.org ([216.99.217.87]:47632 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754328AbYE0Rsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 13:48:42 -0400
-Date: Tue, 27 May 2008 10:47:38 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>, linux-kernel@vger.kernel.org,
-       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: Redzone overwritten with CONFIG_SECURITY
-Message-ID: <20080527174738.GZ30402@sequoia.sous-sol.org>
-References: <20080526143422.GA3203@alice> <84144f020805270800l5911ed02ia7a92d96a8aa32a7@mail.gmail.com>
+	Tue, 27 May 2008 13:48:53 -0400
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:8453 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757536AbYE0Rsv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 13:48:51 -0400
+X-Greylist: delayed 592 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 May 2008 13:48:51 EDT
+X-IronPort-AV: E=Sophos;i="4.27,549,1204531200"; 
+   d="scan'208";a="14331408"
+From: Roland Dreier <rdreier@cisco.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: benh@kernel.crashing.org, Arjan van de Ven <arjan@infradead.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: MMIO and gcc re-ordering issue
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
+	<1211906268.3435.44.camel@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 27 May 2008 10:38:56 -0700
+In-Reply-To: <1211906268.3435.44.camel@localhost.localdomain> (James
+	Bottomley's message of "Tue, 27 May 2008 11:37:48 -0500")
+Message-ID: <adad4n71wb3.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020805270800l5911ed02ia7a92d96a8aa32a7@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 27 May 2008 17:38:57.0423 (UTC) FILETIME=[8A7159F0:01C8C020]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> On Mon, May 26, 2008 at 5:34 PM, Eric Sesterhenn <snakebyte@gmx.de> wrote:
-> > i enabled CONFIG_SECURITY on current git and get tons of
-> > Redzone overwritten errors during early boot, even
-> > with CONFIG_SECURITY_CAPABILITIES and CONFIG_SECURITY_NETWORK
-> > disabled. After a while it ends with a kernel panic
-> > saying: not syncing: Out of memory and no killable process...
-> > Root partition is ext3 format.
-> 
-> So what kernel version is this and what's the last known version that
-> worked? As it's early boot crash, maybe you can try to do git bisect
-> on it?
-> 
-> >
-> > At the moment i dont have a camera at hand, so i'll try
-> > to write down everything which looks interesting, please tell
-> > me if i missed something.
-> >
-> > The first 24 Bytes of the overwritten section contain
-> > zeros. Then we have a constant 0x18, and three changing
-> > values. the next three bites contain exactly the same
-> > values, first the 0x18, then the two changing ones.
-> >
-> > The only value i found so far matching the 0x18 and
-> > which might be related to CONFIG_SECURITY is CAP_SYS_RESOURCE
-> > defined in /include/linux/capability.h
-> >
-> > BUG hugetlbfs_inode_cache: Redzone overwritten
-> >
-> > INFO: 0xccd8e250-0xccd8e253. First byte 0x0 instead of 0xbb
-> > Info: Slab 0xc119d1c0 objects=12 used=0 fs=0xccd8e000 flags=0x400020c3
-> > Info: Object 0xccd8e00 offset=0 fp=0xccd8e280
-> >
-> > Object 0xccd8e00: 00 00 00 ...
-> > Object 0xccd8e10: 00 00 00 00 00 00 00 00 00 18 e0 d8 cc 18 e0 d8 cc
-> > Object 0xccd8e20  00 00 00 ...
+ > Actually, this specifically should not be.  The need for mmiowb on altix
+ > is because it explicitly violates some of the PCI rules that would
+ > otherwise impede performance.   The compromise is that readX on altix
+ > contains the needed dma flush but there's a variant operator,
+ > readX_relaxed that doesn't (for drivers that know what they're doing).
+ > The altix critical drivers have all been converted to use the relaxed
+ > form for performance, and the unconverted ones should all operate just
+ > fine (albeit potentially more slowly).
 
-That looks like an addr within the object, like an INIT_LIST_HEAD.
+Is this a recent change?  Because as of October 2007, 76d7cc03
+("IB/mthca: Use mmiowb() to avoid firmware commands getting jumbled up")
+was needed.  But this was involving writel() (__raw_writel() actually,
+looking at the code), not readl().  But writel_relaxed() doesn't exist
+(and doesn't make sense).
 
-> > Pid: 1, comm:swapper Not tainted 2.6.26-rc3-00436-gb373303 #42
-> > print_trailer
-> > check_bytes_and_report
-> > check_object
-> > __slab_alloc
-> > kmem_cache_alloc
-> > ? hugetlbfs_alloc_inode
-> > ? hugetlbfs_alloc_inode
-> > hugetlbfs_alloc_inode
-> > alloc_inote
-> > new_inode
-> > hugetlbs_get_inote
-> > hugetlbfs_fill_super
-> > ? sget
-> > ? set_anon_super
-> > get_sb_node
-> > hugetlbfs_get_sb
-> > ? hugetlbfs_fill_super
-> > vfs_kern_mount
-> > kern_mount_data
-> > init_hugetlbfs_fs
-> > ? init_once
-> > ? kernel_init
-> > kernel_init
-
-ok, do_init_calls time frame with that config...CONFIG_SECURITY isn't
-really doing any allocations, nor much in the way of memory writes.
-It would get called into via the:
-
- hugetlbs_get_inode
-   new_inode
-     alloc_inode
-       security_inode_alloc <-- and that'd be basically a no-op
-
-> > Config follows:
-
-I couldn't recreate with that config.
+ - R.
