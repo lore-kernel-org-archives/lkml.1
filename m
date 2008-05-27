@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759004AbYE0UT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbYE0UTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759004AbYE0UT2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 16:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbYE0UTU
+	id S1759084AbYE0UTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 16:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbYE0UT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 16:19:20 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63886 "EHLO serum.com.pl"
+	Tue, 27 May 2008 16:19:27 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63894 "EHLO serum.com.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756067AbYE0UTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 16:19:19 -0400
-Date: Tue, 27 May 2008 21:18:38 +0100 (BST)
+	id S1758500AbYE0UT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 16:19:26 -0400
+Date: Tue, 27 May 2008 21:19:09 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
 To: Ingo Molnar <mingo@elte.hu>
 cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 8/8] x86: I/O APIC: Timer through 8259A second-chance
-In-Reply-To: <Pine.LNX.4.55.0805212036320.4894@cliff.in.clinika.pl>
-Message-ID: <Pine.LNX.4.55.0805271910130.18833@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805212036320.4894@cliff.in.clinika.pl>
+Subject: [PATCH 1/8] x86: I/O APIC: Fix the name of the L-APIC IRQ handler
+Message-ID: <Pine.LNX.4.55.0805271903270.18833@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008, Maciej W. Rozycki wrote:
+ The local APIC interrupt handler gets registered with
+set_irq_chip_and_handler_name(), which results in
+"local-APIC-edge-fasteoi" reported as the name of the handler.  Fix by
+removing the type of the handler left over from before the generic
+handlers were introduced.
 
->  Some systems incorrectly report the ExtINTA pin of the I/O APIC as the
-> genuine target of the timer interrupt.  Here is a change that copies timer
-> pin information found to the other pin if one has been found only.  This 
-> way both a direct and a through-8259A route is tested with the pin letting 
-> these problematic systems work well enough.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
-> patch-2.6.26-rc1-20080505-timer-pins-0
+ The 64-bit variation should get fixed with the upcoming merge.
 
- Please withdraw this patch only.  I shall follow with a replacement
-series straight away.  Please apply patches in the order of submission.  
-You should end up with 15 patches from both series combined.  Unless a 
-problem is reported I think this concludes the work required for the timer 
-for now.
+ NB It should really use the "edge" handler and not the "fasteoi" one, but
+that's a separate issue.
 
-  Maciej
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+patch-2.6.26-rc1-20080505-lapic-chip-0
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c
+--- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c	2008-05-05 02:55:24.000000000 +0000
++++ linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c	2008-05-25 01:21:58.000000000 +0000
+@@ -2037,7 +2037,7 @@ static void unmask_lapic_irq (unsigned i
+ }
+ 
+ static struct irq_chip lapic_chip __read_mostly = {
+-	.name		= "local-APIC-edge",
++	.name		= "local-APIC",
+ 	.mask		= mask_lapic_irq,
+ 	.unmask		= unmask_lapic_irq,
+ 	.eoi		= ack_apic,
