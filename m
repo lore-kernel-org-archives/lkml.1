@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758794AbYE0SOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbYE0SRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758794AbYE0SOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 14:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbYE0SN4
+	id S1758755AbYE0SRV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 14:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbYE0SRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 14:13:56 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:61802 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756342AbYE0SNz (ORCPT
+	Tue, 27 May 2008 14:17:10 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:45118 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756670AbYE0SRI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 14:13:55 -0400
-Message-ID: <483C4F5A.2010104@nortel.com>
-Date: Tue, 27 May 2008 12:13:46 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Tue, 27 May 2008 14:17:08 -0400
+X-IronPort-AV: E=Sophos;i="4.27,549,1204531200"; 
+   d="scan'208";a="72747844"
+From: Roland Dreier <rdreier@cisco.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+       scottwood@freescale.com, torvalds@linux-foundation.org,
+       tpiepho@freescale.com, alan@lxorguk.ukuu.org.uk,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: MMIO and gcc re-ordering issue
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<20080526204233.75b71bb8@infradead.org>
+	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
+	<1211906268.3435.44.camel@localhost.localdomain>
+	<adad4n71wb3.fsf@cisco.com>
+	<1211910825.7160.1.camel@localhost.localdomain>
+	<adamymbvcxi.fsf@cisco.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 27 May 2008 11:17:04 -0700
+In-Reply-To: <adamymbvcxi.fsf@cisco.com> (Roland Dreier's message of "Tue, 27
+	May 2008 11:07:05 -0700")
+Message-ID: <adaej7nvcgv.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: vatsa@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       pj@sgi.com, Balbir Singh <balbir@in.ibm.com>,
-       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
-Subject: Re: fair group scheduler not so fair?
-References: <4834B75A.40900@nortel.com> <20080527171528.GD30285@linux.vnet.ibm.com>
-In-Reply-To: <20080527171528.GD30285@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 May 2008 18:13:50.0814 (UTC) FILETIME=[6A3377E0:01C8C025]
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 27 May 2008 18:17:04.0352 (UTC) FILETIME=[DD8F0600:01C8C025]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srivatsa Vaddagiri wrote:
+ > Writes are posted yes, but not reordered arbitrarily.
 
-> But first, note that Groups "a" and "b" share bandwidth with all tasks
-> in /dev/cgroup/tasks.
-
-Ah, good point.  I've switched over to your group setup for testing.
-
-> The following experimental patch (on top of 2.6.26-rc3 +
-> http://programming.kicks-ass.net/kernel-patches/sched-smp-group-fixes/) seems 
-> to fix the problem.
-
-> Can you check if this makes a difference for you as well?
-
-Initially it looked promising.  I put pid 2498 in group A, and pids 2499 
-and 2500 in group B.  2498 got basically a full cpu, and the other two 
-got 50% each.
-
-However, I then moved pid 2499 from group B to group A, and the system 
-got stuck in the following behaviour:
-
-2498 cfriesen  20   0  3800  392  336 R 99.7  0.0   3:00.22 cat
-2500 cfriesen  20   0  3800  392  336 R 66.7  0.0   1:39.10 cat
-2499 cfriesen  20   0  3800  392  336 R 33.0  0.0   1:24.31 cat
-
-I reproduced this a number of times.
-
-Chris
+on standard x86 I mean here...
