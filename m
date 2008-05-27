@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYE0Rfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbYE0Rko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbYE0Rfu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 13:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbYE0Rfm
+	id S1757605AbYE0Rko (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 13:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbYE0Rkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 13:35:42 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:38165 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752636AbYE0Rfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 13:35:41 -0400
-Date: Tue, 27 May 2008 21:37:11 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: 2.6.26-rc4: RIP find_pid_ns+0x6b/0xa0
-Message-ID: <20080527173711.GA1458@tv-sign.ru>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <20080527052318.GA28301@martell.zuzino.mipt.ru> <20080527090605.GA146@tv-sign.ru> <alpine.LFD.1.10.0805270746090.2958@woody.linux-foundation.org> <20080527164519.GA826@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080527164519.GA826@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	Tue, 27 May 2008 13:40:33 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:64097 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754079AbYE0Rkc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 13:40:32 -0400
+Message-ID: <483C478E.9000908@onlinehome.de>
+Date: Tue, 27 May 2008 19:40:30 +0200
+From: Felix Homann <fexpop@onlinehome.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [Patch]: USB ID for Philips CPWUA054/00 Wireless USB Adapter 11g
+Content-Type: multipart/mixed;
+ boundary="------------060606040609050405030908"
+X-Provags-ID: V01U2FsdGVkX1+bJVHNEUZEvap5ZYUgcq7P2PF/OggvER45UDk
+ vVHc+fUZ2htXkr/1xfKGwTHgr3AgED3uLS5cr/Iu2VnwxqqEvI
+ Fvw7AMeE9TAUrKxbdmVVW8kQ0nOCdZl
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/27, Oleg Nesterov wrote:
->
-> But I agree, this race is pretty much theoretical.
+This is a multi-part message in MIME format.
+--------------060606040609050405030908
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Perhaps we have the unbalanced put_pid(), in that case "struct pid" will
-be freed without waiting for a grace period.
+Hi,
 
-Alexey, could you re-test with the patch below?
+here's a patch to enable the Philips CPWUA054/00 in p54usb.
 
-Oleg.
-
-Add the temporary debugging code to catch the unbalanced put_pid()'s.
-At least those which can free the "live" pid.
-
---- MM/kernel/pid.c~	2008-02-20 18:29:40.000000000 +0300
-+++ MM/kernel/pid.c	2008-02-20 18:35:15.000000000 +0300
-@@ -208,6 +208,10 @@ void put_pid(struct pid *pid)
- 	ns = pid->numbers[pid->level].ns;
- 	if ((atomic_read(&pid->count) == 1) ||
- 	     atomic_dec_and_test(&pid->count)) {
-+		int type = PIDTYPE_MAX;
-+		while (--type >= 0)
-+			if (WARN_ON(!hlist_empty(&pid->tasks[type])))
-+				return;
- 		kmem_cache_free(ns->pid_cachep, pid);
- 		put_pid_ns(ns);
- 	}
+You might want to include it in future kernels. (At least I would like 
+to see it included ;-)
 
 
+Kind regards,
+
+Felix
+
+--------------060606040609050405030908
+Content-Type: text/x-diff;
+ name="CPWUA054_00.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="CPWUA054_00.patch"
+
+diff --git a/drivers/net/wireless/p54usb.c b/drivers/net/wireless/p54usb.c
+index 98ddbb3..1610a73 100644
+--- a/drivers/net/wireless/p54usb.c
++++ b/drivers/net/wireless/p54usb.c
+@@ -49,6 +49,7 @@ static struct usb_device_id p54u_table[] __devinitdata = {
+ 	{USB_DEVICE(0x5041, 0x2235)},	/* Linksys WUSB54G Portable */
+ 
+ 	/* Version 2 devices (3887) */
++	{USB_DEVICE(0x0471, 0x1230)},   /* Philips CPWUA054/00 */
+ 	{USB_DEVICE(0x050d, 0x7050)},	/* Belkin F5D7050 ver 1000 */
+ 	{USB_DEVICE(0x0572, 0x2000)},	/* Cohiba Proto board */
+ 	{USB_DEVICE(0x0572, 0x2002)},	/* Cohiba Proto board */
+
+--------------060606040609050405030908--
