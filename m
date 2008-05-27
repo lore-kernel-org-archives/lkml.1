@@ -1,222 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbYE0UVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbYE0UZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759549AbYE0UVx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 16:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbYE0UUM
+	id S1759243AbYE0UZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 16:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbYE0UZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 16:20:12 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63947 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758331AbYE0UUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 16:20:10 -0400
-Date: Tue, 27 May 2008 21:19:51 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 8/8] x86: I/O APIC: Timer through 8259A second-chance
-Message-ID: <Pine.LNX.4.55.0805271950010.18833@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 27 May 2008 16:25:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53075 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756379AbYE0UZU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 16:25:20 -0400
+Date: Tue, 27 May 2008 17:24:46 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Alan Cox <alan@redhat.com>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] video4linux: Push down the BKL
+Message-ID: <20080527172446.6f856f21@gaivota>
+In-Reply-To: <20080527125041.0fc28fd4@infradead.org>
+References: <20080522223700.2f103a14@core>
+	<20080526135951.7989516d@gaivota>
+	<20080526202317.GA12793@devserv.devel.redhat.com>
+	<20080526181027.1ff9c758@gaivota>
+	<20080526220154.GA15487@devserv.devel.redhat.com>
+	<20080527101039.1c0a3804@gaivota>
+	<20080527094144.1189826a@bike.lwn.net>
+	<20080527133100.6a9302fb@gaivota>
+	<20080527103755.1fd67ec1@bike.lwn.net>
+	<20080527155942.7693c360@gaivota>
+	<20080527125041.0fc28fd4@infradead.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Some systems incorrectly report the ExtINTA pin of the I/O APIC as the
-genuine target of the timer interrupt.  Here is a change that copies timer
-pin information found to the other pin if one has been found only.  This
-way both a direct and a through-8259A route is tested with the pin letting
-these problematic systems work well enough.  If no timer pin information
-has been found for the I/O APIC, then local APIC variations are tried
-only, similarly to what is done without the change (except without the
-misleading messages).
+On Tue, 27 May 2008 12:50:41 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
- Obviously if we try the first-chance path without being told by the BIOS 
-to do so, we should not complain either, so do not print the message in 
-this case.
+> On Tue, 27 May 2008 15:59:42 -0300
+> Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+> 
+> > On Tue, 27 May 2008 10:37:55 -0600
+> > Jonathan Corbet <corbet@lwn.net> wrote:
+> > 
+> > > On Tue, 27 May 2008 13:31:00 -0300
+> > > Mauro Carvalho Chehab <mchehab@infradead.org> wrote:
+> > > 
+> > > > Since the other methods don't explicitly call BKL (and, AFAIK,
+> > > > kernel open handler don't call it neither), if a program 1 is
+> > > > opening a device and initializing some data, and a program 2
+> > > > starts doing ioctl, interrupting program 1 execution in the
+> > > > middle of a data initialization procedure, you may have a race
+> > > > condition, since some devices initialize some device global data
+> > > > during open [1].
+> > > 
+> > > In fact, 2.6.26 and prior kernels *do* acquire the BKL on open (for
+> > > char devices) - that's the behavior that the bkl-removal tree is
+> > > there to do away with.  So, for example, I've pushed that
+> > > acquisition down into video_open() instead. 
+> > > 
+> > > So, for now, open() is serialized against ioctl() in video
+> > > drivers.  As soon as you take the BKL out of ioctl(), though, that
+> > > won't happen, unless the mutex you use is also acquired in the open
+> > > path.
+> > 
+> > Ok.
+> > 
+> > A few drivers seem to be almost read to work without BKL. 
+> > 
+> > For example, em28xx has already a lock at the operations that change
+> > values at "dev" struct, including open() method. However, since the
+> > lock is not called at get operations, it needs to be fixed. I would
+> > also change it from mutex to a read/write semaphore, since two (or
+> > more) get operations can safely happen in parallel.
+> > 
+> \
+> 
+> please don't use rw/sems just because there MIGHT be parallel.
+> THey're more expensive than mutexes by quite a bit and you get a lot
+> less checking from lockdep. They make sense for very specific, very
+> read biased, contended cases. But please don't use them "just
+> because"...
+> 
+Good point. The nature of get operations on V4L are not worthy enough to justify
+the loss of lockdep checking.
 
- The 64-bit variation should be updated with a call to
-replace_pin_at_irq() which can be done with the upcoming merge.  Since
-add_pin_to_irq() is now always called in the first-chance path, the
-condition to require it in the second-chance path no longer happens.  
-
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-Ingo,
-
- Despite looking quite innocent, this is the most intrusive modification
-in the series.  I tested this change (on top of all the other 14 ones)  
-with as many variations of interrupt wiring configuration as I could
-imagine and simulate with my system.  Of course my machine is perfectly
-unbroken, :) so chances are more exotic convolutions may have escaped my
-attention.  Also I tested the 32-bit variation only.  So again, I
-recommend a good amount of testing in the field before this patch is
-propagated upstream.
-
-  Maciej
-
-patch-2.6.26-rc1-20080505-timer-pins-2
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c	2008-05-25 22:24:53.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c	2008-05-27 19:42:31.000000000 +0000
-@@ -2122,6 +2122,7 @@ static inline void __init unlock_ExtINT_
- static inline void __init check_timer(void)
- {
- 	int apic1, pin1, apic2, pin2;
-+	int no_pin1 = 0;
- 	int vector;
- 	unsigned int ver;
- 	unsigned long flags;
-@@ -2159,10 +2160,30 @@ static inline void __init check_timer(vo
- 	printk(KERN_INFO "..TIMER: vector=0x%02X apic1=%d pin1=%d apic2=%d pin2=%d\n",
- 		vector, apic1, pin1, apic2, pin2);
- 
-+	/*
-+	 * Some BIOS writers are clueless and report the ExtINTA
-+	 * I/O APIC input from the cascaded 8259A as the timer
-+	 * interrupt input.  So just in case, if only one pin
-+	 * was found above, try it both directly and through the
-+	 * 8259A.  --macro
-+	 */
-+	if (pin1 == -1) {
-+		pin1 = pin2;
-+		apic1 = apic2;
-+		no_pin1 = 1;
-+	} else if (pin2 == -1) {
-+		pin2 = pin1;
-+		apic2 = apic1;
-+	}
-+
- 	if (pin1 != -1) {
- 		/*
- 		 * Ok, does IRQ0 through the IOAPIC work?
- 		 */
-+		if (no_pin1) {
-+			add_pin_to_irq(0, apic1, pin1);
-+			setup_timer_IRQ0_pin(apic1, pin1, vector);
-+		}
- 		unmask_IO_APIC_irq(0);
- 		if (timer_irq_works()) {
- 			if (nmi_watchdog == NMI_IO_APIC) {
-@@ -2174,26 +2195,23 @@ static inline void __init check_timer(vo
- 			goto out;
- 		}
- 		clear_IO_APIC_pin(apic1, pin1);
--		printk(KERN_ERR "..MP-BIOS bug: 8254 timer not connected to "
--				"IO-APIC\n");
--	}
-+		if (!no_pin1)
-+			printk(KERN_ERR "..MP-BIOS bug: "
-+			       "8254 timer not connected to IO-APIC\n");
- 
--	printk(KERN_INFO "...trying to set up timer (IRQ0) through the 8259A ... ");
--	if (pin2 != -1) {
-+		printk(KERN_INFO "...trying to set up timer (IRQ0) "
-+		       "through the 8259A ... ");
- 		printk("\n..... (found pin %d) ...", pin2);
- 		/*
- 		 * legacy devices should be connected to IO APIC #0
- 		 */
-+		replace_pin_at_irq(0, apic1, pin1, apic2, pin2);
- 		setup_timer_IRQ0_pin(apic2, pin2, vector);
- 		unmask_IO_APIC_irq(0);
- 		enable_8259A_irq(0);
- 		if (timer_irq_works()) {
- 			printk("works.\n");
- 			timer_through_8259 = 1;
--			if (pin1 != -1)
--				replace_pin_at_irq(0, apic1, pin1, apic2, pin2);
--			else
--				add_pin_to_irq(0, apic2, pin2);
- 			if (nmi_watchdog == NMI_IO_APIC) {
- 				disable_8259A_irq(0);
- 				setup_nmi();
-@@ -2206,8 +2224,8 @@ static inline void __init check_timer(vo
- 		 */
- 		disable_8259A_irq(0);
- 		clear_IO_APIC_pin(apic2, pin2);
-+		printk(" failed.\n");
- 	}
--	printk(" failed.\n");
- 
- 	if (nmi_watchdog == NMI_IO_APIC) {
- 		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_64.c linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_64.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_64.c	2008-05-25 22:26:43.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_64.c	2008-05-27 19:44:19.000000000 +0000
-@@ -1638,6 +1638,7 @@ static inline void __init check_timer(vo
- 	struct irq_cfg *cfg = irq_cfg + 0;
- 	int apic1, pin1, apic2, pin2;
- 	unsigned long flags;
-+	int no_pin1 = 0;
- 
- 	local_irq_save(flags);
- 
-@@ -1662,10 +1663,30 @@ static inline void __init check_timer(vo
- 	apic_printk(APIC_VERBOSE,KERN_INFO "..TIMER: vector=0x%02X apic1=%d pin1=%d apic2=%d pin2=%d\n",
- 		cfg->vector, apic1, pin1, apic2, pin2);
- 
-+	/*
-+	 * Some BIOS writers are clueless and report the ExtINTA
-+	 * I/O APIC input from the cascaded 8259A as the timer
-+	 * interrupt input.  So just in case, if only one pin
-+	 * was found above, try it both directly and through the
-+	 * 8259A.  --macro
-+	 */
-+	if (pin1 == -1) {
-+		pin1 = pin2;
-+		apic1 = apic2;
-+		no_pin1 = 1;
-+	} else if (pin2 == -1) {
-+		pin2 = pin1;
-+		apic2 = apic1;
-+	}
-+
- 	if (pin1 != -1) {
- 		/*
- 		 * Ok, does IRQ0 through the IOAPIC work?
- 		 */
-+		if (no_pin1) {
-+			add_pin_to_irq(0, apic1, pin1);
-+			setup_timer_IRQ0_pin(apic1, pin1, vector);
-+		}
- 		unmask_IO_APIC_irq(0);
- 		if (!no_timer_check && timer_irq_works()) {
- 			nmi_watchdog_default();
-@@ -1678,18 +1699,19 @@ static inline void __init check_timer(vo
- 			goto out;
- 		}
- 		clear_IO_APIC_pin(apic1, pin1);
--		apic_printk(APIC_QUIET,KERN_ERR "..MP-BIOS bug: 8254 timer not "
--				"connected to IO-APIC\n");
--	}
--
--	apic_printk(APIC_VERBOSE,KERN_INFO "...trying to set up timer (IRQ0) "
--				"through the 8259A ... ");
--	if (pin2 != -1) {
-+		if (!no_pin1)
-+			apic_printk(APIC_QUIET,KERN_ERR "..MP-BIOS bug: "
-+				    "8254 timer not connected to IO-APIC\n");
-+
-+		apic_printk(APIC_VERBOSE,KERN_INFO
-+			"...trying to set up timer (IRQ0) "
-+			"through the 8259A ... ");
- 		apic_printk(APIC_VERBOSE,"\n..... (found apic %d pin %d) ...",
- 			apic2, pin2);
- 		/*
- 		 * legacy devices should be connected to IO APIC #0
- 		 */
-+		/* replace_pin_at_irq(0, apic1, pin1, apic2, pin2); */
- 		setup_timer_IRQ0_pin(apic2, pin2, cfg->vector);
- 		unmask_IO_APIC_irq(0);
- 		enable_8259A_irq(0);
-@@ -1709,8 +1731,8 @@ static inline void __init check_timer(vo
- 		 */
- 		disable_8259A_irq(0);
- 		clear_IO_APIC_pin(apic2, pin2);
-+		apic_printk(APIC_VERBOSE," failed.\n");
- 	}
--	apic_printk(APIC_VERBOSE," failed.\n");
- 
- 	if (nmi_watchdog == NMI_IO_APIC) {
- 		printk(KERN_WARNING "timer doesn't work through the IO-APIC - disabling NMI Watchdog!\n");
+Cheers,
+Mauro
