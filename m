@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYE0GMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYE0GNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYE0GMv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 02:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbYE0GMl
+	id S1756902AbYE0GNg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 02:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbYE0GNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 02:12:41 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:38793 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752738AbYE0GMk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 02:12:40 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: "Bart Van Assche" <bart.vanassche@gmail.com>
-Subject: Re: Top 10 bugs/warnings for the week of March 23rd, 2008
-Date: Tue, 27 May 2008 08:12:37 +0200
-User-Agent: KMail/1.9.9
-Cc: "Theodore Tso" <tytso@mit.edu>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jan Kara" <jack@suse.cz>, "Arjan van de Ven" <arjan@linux.intel.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Greg KH" <greg@kroah.com>, "Andrew Morton" <akpm@linux-foundation.org>
-References: <4836EE8C.1010200@linux.intel.com> <200805261909.59032.oliver@neukum.org> <e2e108260805261028o204d4fc7l3f20ad3919cf778b@mail.gmail.com>
-In-Reply-To: <e2e108260805261028o204d4fc7l3f20ad3919cf778b@mail.gmail.com>
+	Tue, 27 May 2008 02:13:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40689 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755054AbYE0GMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 02:12:43 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805270812.38797.oliver@neukum.org>
+From: Roland McGrath <roland@redhat.com>
+To: "Luming Yu" <luming.yu@gmail.com>
+X-Fcc: ~/Mail/linus
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+In-Reply-To: Luming Yu's message of  Tuesday, 27 May 2008 13:49:44 +0800 <3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	<3877989d0805220624i259a9d1j708795c65c636ca0@mail.gmail.com>
+	<20080522203428.835D626FA24@magilla.localdomain>
+	<3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
+	<20080523041940.39E8726FA24@magilla.localdomain>
+	<3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
+	<20080526001527.81E1126FA9E@magilla.localdomain>
+	<3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
+	<3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
+	<20080527040454.053C526FA9E@magilla.localdomain>
+	<3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080527061209.9A24426FAA6@magilla.localdomain>
+Date: Mon, 26 May 2008 23:12:09 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 26 Mai 2008 19:28:23 schrieb Bart Van Assche:
-> > Even if we could tell whether the device has remained the same, how
-> > would we know the medium wasn't exchanged?
-> 
-> Looking at the filesystem UUID could help -- this is an ID that is
-> present as data on the disk, and that is even independent of the bus
-> type. See also /dev/disk/by-uuid.
+>  [<a00000010000a9f0>] skip_rbs_switch+0xe0/0x110
+>                                 sp=e000000141c9fe30 bsp=e000000141c90cf8
+>  [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
+>                                 sp=e000000141ca0000 bsp=e000000141c90cf8
+>  [<a0000001000971c0>] ptrace_stop+0xa0/0x3e0
+>                                 sp=e00000014716fdb0 bsp=e000000147160ca8
+>  [<a000000100097650>] ptrace_notify+0x150/0x1c0
+>                                 sp=e00000014716fdb0 bsp=e000000147160c88
 
-The medium may or may not hold a filesystem that has a UUID.
-In addition you can clone filesystems with dd but reuse them as
-independent filesystems.
+If this is a backtrace of a single thread on the same kernel stack, it has
+a stack depth of over 84MB.  You still need to follow the path inside
+ia64_ptrace_stop() to see how any of this is possible.
 
-Yes, you could checksum parts of the filesystem and say that at some
-point the user should suffer the consequences of his stupidity, but
-such things don't belong into the kernel and neither are they specific
-to USB.
 
-	Regards
-		Oliver
-
+Thanks,
+Roland
