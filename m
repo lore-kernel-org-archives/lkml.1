@@ -1,56 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYE0MTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbYE0MbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYE0MTH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 08:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYE0MSy
+	id S1757323AbYE0MbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 08:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYE0Ma6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 08:18:54 -0400
-Received: from www.tglx.de ([62.245.132.106]:57350 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754663AbYE0MSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 08:18:53 -0400
-Date: Tue, 27 May 2008 14:18:19 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Pavel Machek <pavel@suse.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: amd64-agp: resume but too late?
-In-Reply-To: <20080526182904.GA13683@elf.ucw.cz>
-Message-ID: <alpine.LFD.1.10.0805271415160.3295@apollo.tec.linutronix.de>
-References: <20080526182904.GA13683@elf.ucw.cz>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 27 May 2008 08:30:58 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37067 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755983AbYE0Ma5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 08:30:57 -0400
+Date: Tue, 27 May 2008 21:30:34 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: "Paul Menage" <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] call_usermodehelper() increase reliability
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080527212423.9CAD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 May 2008, Pavel Machek wrote:
-> Hi!
-> 
-> I don't get it:
-> 
-> --- a/drivers/char/agp/amd64-agp.c
-> +++ b/drivers/char/agp/amd64-agp.c
-> @@ -549,6 +549,8 @@ static int agp_amd64_suspend(struct pci_
->         return 0;
->  }
->  
-> +/* FIXME: this is strange; we enable iommu translation here, but that
-> + * may be too late, no? */
->  static int agp_amd64_resume(struct pci_dev *pdev)
->  {
->         pci_set_power_state(pdev, PCI_D0);
-> 
-> ...but resume is normal pci device, so other devices may be resumed
-> before this one, and already depend on iommu running...
-> 
-> How is this supposed to work? Should agp_amd64_resume be called from
-> sysdev or something like that?
+Now, call_usermodehelper_setup() uses GFP_ATOMIC.
+but it can return NULL _very_ easily.
 
-Hmm, you sent a patch some days ago to change it to
-suspend_late/resume_early. Is the discussion resolved about that ?
+GFP_ATOMIC is needed only when we can't sleep.
+and, GFP_KERNEL is robust and better.
 
-Thanks,
-	tglx
+thus, I add gfp_mask argument to call_usermodehelper_setup().
+
+So, its caller pass below,
+
+call_usermodehelper() and call_usermodehelper_keys(): 
+	depend on 'wait' argument.
+call_usermodehelper_pipe():
+	always GFP_KERNEL because always run under process context.
+orderly_poweroff():
+	pass to GFP_ATOMIC because may run under interrupt context.
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: "Paul Menage" <menage@google.com>
+CC: Li Zefan <lizf@cn.fujitsu.com>
+CC: Jeremy Fitzhardinge <jeremy@xensource.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: Andi Kleen <andi@firstfloor.org>
+
+---
+ include/linux/kmod.h |   11 +++++++----
+ kernel/kmod.c        |    9 +++++----
+ kernel/sys.c         |    2 +-
+ 3 files changed, 13 insertions(+), 9 deletions(-)
+
+Index: b/kernel/kmod.c
+===================================================================
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -352,16 +352,17 @@ static inline void register_pm_notifier_
+  * @path: path to usermode executable
+  * @argv: arg vector for process
+  * @envp: environment for process
++ * @gfp_mask: gfp mask for memory allocation
+  *
+  * Returns either %NULL on allocation failure, or a subprocess_info
+  * structure.  This should be passed to call_usermodehelper_exec to
+  * exec the process and free the structure.
+  */
+-struct subprocess_info *call_usermodehelper_setup(char *path,
+-						  char **argv, char **envp)
++struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
++						  char **envp, gfp_t gfp_mask)
+ {
+ 	struct subprocess_info *sub_info;
+-	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_ATOMIC);
++	sub_info = kzalloc(sizeof(struct subprocess_info), gfp_mask);
+ 	if (!sub_info)
+ 		goto out;
+ 
+@@ -494,7 +495,7 @@ int call_usermodehelper_pipe(char *path,
+ 	struct subprocess_info *sub_info;
+ 	int ret;
+ 
+-	sub_info = call_usermodehelper_setup(path, argv, envp);
++	sub_info = call_usermodehelper_setup(path, argv, envp, GFP_KERNEL);
+ 	if (sub_info == NULL)
+ 		return -ENOMEM;
+ 
+Index: b/include/linux/kmod.h
+===================================================================
+--- a/include/linux/kmod.h
++++ b/include/linux/kmod.h
+@@ -19,6 +19,7 @@
+  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
++#include <linux/gfp.h>
+ #include <linux/stddef.h>
+ #include <linux/errno.h>
+ #include <linux/compiler.h>
+@@ -40,8 +41,8 @@ struct file;
+ struct subprocess_info;
+ 
+ /* Allocate a subprocess_info structure */
+-struct subprocess_info *call_usermodehelper_setup(char *path,
+-						  char **argv, char **envp);
++struct subprocess_info *call_usermodehelper_setup(char *path, char **argv,
++						  char **envp, gfp_t gfp_mask);
+ 
+ /* Set various pieces of state into the subprocess_info structure */
+ void call_usermodehelper_setkeys(struct subprocess_info *info,
+@@ -68,8 +69,9 @@ static inline int
+ call_usermodehelper(char *path, char **argv, char **envp, enum umh_wait wait)
+ {
+ 	struct subprocess_info *info;
++	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
+ 
+-	info = call_usermodehelper_setup(path, argv, envp);
++	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
+ 	if (info == NULL)
+ 		return -ENOMEM;
+ 	return call_usermodehelper_exec(info, wait);
+@@ -80,8 +82,9 @@ call_usermodehelper_keys(char *path, cha
+ 			 struct key *session_keyring, enum umh_wait wait)
+ {
+ 	struct subprocess_info *info;
++	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
+ 
+-	info = call_usermodehelper_setup(path, argv, envp);
++	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
+ 	if (info == NULL)
+ 		return -ENOMEM;
+ 
+Index: b/kernel/sys.c
+===================================================================
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1795,7 +1795,7 @@ int orderly_poweroff(bool force)
+ 		goto out;
+ 	}
+ 
+-	info = call_usermodehelper_setup(argv[0], argv, envp);
++	info = call_usermodehelper_setup(argv[0], argv, envp, GFP_ATOMIC);
+ 	if (info == NULL) {
+ 		argv_free(argv);
+ 		goto out;
+
+
