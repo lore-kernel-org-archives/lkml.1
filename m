@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYE0Fvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYE0Fwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbYE0Fvv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 01:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbYE0Fvn
+	id S1756741AbYE0Fwj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 01:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYE0Fwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 01:51:43 -0400
-Received: from mis011-2.exch011.intermedia.net ([64.78.21.129]:28440 "EHLO
-	mis011-2.exch011.intermedia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753768AbYE0Fvm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 01:51:42 -0400
-From: Amit Shah <amit.shah@qumranet.com>
-Organization: Qumranet Inc.
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH v2 -mm 0/2] x86: per-device dma_mapping_ops
-Date: Tue, 27 May 2008 11:24:08 +0530
-User-Agent: KMail/1.9.9
-Cc: muli@il.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       alexisb@us.ibm.com, andi@firstfloor.org, kvm@vger.kernel.org,
-       avi@qumranet.com
-References: <200805262214.35397.amit.shah@qumranet.com> <200805271023.22574.amit.shah@qumranet.com> <20080527142406Y.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080527142406Y.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 27 May 2008 01:52:31 -0400
+Received: from qmta09.westchester.pa.mail.comcast.net ([76.96.62.96]:57940
+	"EHLO QMTA09.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754110AbYE0Fwa convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 01:52:30 -0400
+X-Authority-Analysis: v=1.0 c=1 a=MCpCiylFjwwA:10 a=1bI6uNfP4_8A:10
+ a=D19gQVrFAAAA:8 a=ljdhCwAWjYUpvCMN-QoA:9 a=zfbmhX0FnVWSJadxupcA:7
+ a=IDH03NcjD7Teg9abecI0OwSdUjEA:4 a=MSl-tDqOz04A:10 a=LY0hPdMaydYA:10
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Bruno =?utf-8?q?Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Subject: Re: Input+S3: extra keycodes forgotten after suspend
+Date: Tue, 27 May 2008 01:52:24 -0400
+User-Agent: KMail/1.9.3
+Cc: Linux Input <linux-input@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+References: <200805162225.44284.bonbons@linux-vserver.org> <20080523044430.GA9809@anvil.corenet.prv> <20080523225714.3f0953f3@neptune.home>
+In-Reply-To: <20080523225714.3f0953f3@neptune.home>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200805271124.09453.amit.shah@qumranet.com>
-X-OriginalArrivalTime: 27 May 2008 05:51:41.0452 (UTC) FILETIME=[BCA20CC0:01C8BFBD]
+Message-Id: <200805270152.25744.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 May 2008 10:54:06 FUJITA Tomonori wrote:
+On Friday 23 May 2008 16:57, Bruno Prémont wrote:
+> On Fri, 23 May 2008 Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> > > Ah, ok, great.. I think we simply need to move dritek out of the
+> > > place where you put it in so it does not interfere with our efforts
+> > > to resume keyboard and mouse ;) I will see what I can do there..
+> > > 
+> > 
+> > So what about the patch below? Does it work for you?
+> > 
+> > Thanks!
+> 
+> Hi Dmitry,
+> 
+> Yes, this patch works for me (in combination with
+> http://lkml.org/lkml/2008/5/16/430 ), see attached boot+suspend&resume
+> log.
+> 
+> You will eventually note the following lines during resume process:
+> ...
+> [  150.588965] /usr/src/linux-2.6.25.4-orig/drivers/input/serio/i8042.c: 60 -> i8042 (command) [15985]
+> [  150.588965] /usr/src/linux-2.6.25.4-orig/drivers/input/serio/i8042.c: 47 -> i8042 (parameter) [15985]
+> [  150.588965] /usr/src/linux-2.6.25.4-orig/drivers/input/serio/i8042.c: 00 <- i8042 (interrupt, 0, 0) [15985]
+> [  150.588965] atkbd.c: Unknown key pressed (translated set 2, code 0x0 on isa0060/serio0).
+> [  150.588965] atkbd.c: Use 'setkeycodes 00 <keycode>' to make it known.
+> [  150.588965] /usr/src/linux-2.6.25.4-orig/drivers/input/serio/i8042.c: f2 -> i8042 (kbd-data) [15985]
+> [  150.609410] /usr/src/linux-2.6.25.4-orig/drivers/input/serio/i8042.c: fa <- i8042 (interrupt, 0, 1) [15987]
+> ...
+> 
 
-> > An example with per-device dma_ops and stacking will look like this:
-> >
-> > pvdma->hardware->nommu/swiotlb
-> >     ^             ^
-> >
-> >  e1000     rtl8139
-> >
-> > And this scheme is going to suit everyone, agreed?
-> >
-> > This is simple and doesn't need too many changes all around.
->
-> Sorry, I'm not sure what this picture represents.
+I see. Could you please try the patch below (in addition to the other
+2 you have) and see if that 00 keycode is still reported?
 
-It meant to show just e1000 needs to go through the pvdma translations. 
-rtl8139 goes via the other iommus. e1000 also goes through the other iommus 
-(mainly if it's going to be the swiotlb that a guest might need).
+Thanks! 
 
-> BTW, without pvdma, there is no need to hardware->nommu/swiotlb
-> stacking for IOMMUs like Calgary. Per-device dma_ops wor for them.
+-- 
+Dmitry
 
-Hmm, ok. Then this argument doesn't count.
+Input: atkbd - mark keyboard as disabled when suspending/unloading
 
-> > I was suggesting something more than this that can handle cases like an
-> > iommu wanting to have each device behind a bus to pass through it (it's
-> > still possible, but needs a per-device walk). Also, in the scenario
-> > depicted above, each device will start by pointing to the first iommu in
-> > the chain (pvdma in this case) and the iommu will then determine if that
-> > device needs to be passed via its translations.
->
-> No, IOMMUs doesn't need to do that. We need to put a stacking
-> mechanism in dma-mapping.h. A stacking mechanism should not be visible
-> to IOMMUs.
+This will shut off garbage that may come from KBD port during resume.
 
-OK; then just per-device dma_ops will work and for the pvdma case, we'll have 
-to have the stacking. Since this is a special case, any kind of generic APIs 
-shouldn't be needed as well.
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+ drivers/input/keyboard/atkbd.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-What is the plan with this patch then? When do you plan to ask for mainline 
-merging?
+Index: work/drivers/input/keyboard/atkbd.c
+===================================================================
+--- work.orig/drivers/input/keyboard/atkbd.c
++++ work/drivers/input/keyboard/atkbd.c
+@@ -807,6 +807,8 @@ static int atkbd_activate(struct atkbd *
+ static void atkbd_cleanup(struct serio *serio)
+ {
+ 	struct atkbd *atkbd = serio_get_drvdata(serio);
++
++	atkbd_disable(atkbd);
+ 	ps2_command(&atkbd->ps2dev, NULL, ATKBD_CMD_RESET_BAT);
+ }
+ 
