@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbYE1JX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYE1J2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753458AbYE1JX4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 05:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYE1JXr
+	id S1753643AbYE1J2V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 05:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYE1J2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 05:23:47 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:40135 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbYE1JXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 05:23:46 -0400
-Date: Wed, 28 May 2008 11:21:09 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Ben Nizette <bn@niasdigital.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
-Subject: Re: Latest gpio gumph
-Message-ID: <20080528112109.47747cb5@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <200805280201.24256.david-b@pacbell.net>
-References: <1211942475.27810.37.camel@moss.renham>
-	<200805272144.33334.david-b@pacbell.net>
-	<20080528101425.611e0145@hskinnemo-gx745.norway.atmel.com>
-	<200805280201.24256.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Wed, 28 May 2008 05:28:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38425 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbYE1J2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 05:28:09 -0400
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+In-Reply-To: <20080526115628.GA31316@elte.hu>
+References: <20080526115628.GA31316@elte.hu>
+Content-Type: text/plain
+Date: Wed, 28 May 2008 11:27:14 +0200
+Message-Id: <1211966834.12349.62.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 May 2008 09:21:00.0690 (UTC) FILETIME=[24EF6F20:01C8C0A4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell <david-b@pacbell.net> wrote:
-> On Wednesday 28 May 2008, Haavard Skinnemoen wrote:
-> > > 
-> > >  * gpio_direction_output() should disable the pullups just like
-> > >    at32_select_gpio(... AT32_GPIOF_OUTPUT) does, for consistency
-> > >    between those alternative initialization paths.
-> > 
-> > But then we need to keep track of whether pullups used to be enabled so
-> > that we can re-enable it in gpio_direction_input(), don't we?
+On Mon, 2008-05-26 at 13:56 +0200, Ingo Molnar wrote:
+> in an overnight -tip testruns that is based on recent -git i got two 
+> stuck TCP connections:
 > 
-> "Need"?  I'd figure that changing direction like that would be
-> uncommon without something determining signal level (like an
-> external driver or pullup) ... and if nothing did so, then it'd
-> be important to use the AVR32-private API with pullup control.
-
-If you enable the internal pullup during port configuration, it should
-stay that way, I think. But I think at32_select_gpio() should be fixed
-so that when the user specifies AT32_GPIOF_OUTPUT | AT32_GPIOF_PULLUP,
-the pullup will be turned on.
-
-> > I can't see the harm of keeping the pullup enabled while the port is
-> > configured as output. For consistency, I'd rather honor the pullup flag
-> > in at32_select_gpio() regardless of AT32_GPIOF_OUTPUT.
+> Active Internet connections (w/o servers)
+> Proto Recv-Q Send-Q Local Address               Foreign Address
+> State      
+> tcp        0 174592 10.0.1.14:58015             10.0.1.14:3632
+> ESTABLISHED 
+> tcp    72134      0 10.0.1.14:3632              10.0.1.14:58015
+> ESTABLISHED 
 > 
-> I guess I don't like the idea of facilitating the constant current
-> waste that implies if output is being driven low.  Even if it's not
-> a huge current waste!  (These pullups being a lot weaker than I'd
-> have expected, at typically 190 kOhm.)  No big deal here I guess.
-
-I don't think we're talking about a lot of pins that need to switch
-direction on the fly, and the pullup is very weak as you say. And a
-floating input might waste a lot more power than the pullup ever will.
-
-> For an open drain output it's probably less of an issue, unless
-> there are too many pullups.
-
-The board designer should know this and set the AT32_GPIOF_PULLUP flag
-as appropriate.
-
-> > >  * On the odd chance some code uses a pin as a GPIO IRQ without
-> > >    calling gpio_request() or gpio_direction_input(), the debug
-> > >    dump should still show its pin status.
-> > 
-> > Hmm. I guess that makes sense, though I would be lying if I said I care
-> > all that much. I think gpiolib is going pretty far to accommodate buggy
-> > drivers that don't call gpio_request() as it is.
+> on a previously reliable machine. That connection has been stuck for 9 
+> hours so it does not time out, etc. - and the distcc run that goes over 
+> that connection is stuck as well.
 > 
-> For diagnostic/debug code, I'd say it's reasonably useful to cope
-> with buglets like that. 
+> kernel config is attached.
 > 
-> I actually observed that happening.  Setup code was passing the irq
-> to the driver, and everything worked fine because the reset default
-> was fine.  I happened to notice that /sys/kernel/debug/gpio output
-> didn't match up to /proc/interrupts (bug) ... but it would have been
-> much faster to see the bug if the listing for that pin had a "?" label
-> showing that it hadn't been requested.
+> in terms of debugging there's not much i can do i'm afraid. It's not 
+> possible to get a tcpdump of this incident, given the extreme amount of 
+> load these testboxes handle. This problem started sometime around rc3 
+> and it occured on two boxes (on a laptop and on a desktop), both are SMP 
+> Core2Duo based systems. I never saw this problem before on thousands of 
+> similar bootups, so i'm 99.9% sure the bug is either new or became 
+> easier to trigger.
+> 
+> It's not possible to bisect it as it needs up to 12 hours of heavy 
+> workload to trigger. The incident happened about 5 times since the first 
+> incident a couple of days ago - 4 times on one box and once on another 
+> box. The first failing head i became aware of was 78b58e549a3098. (-tip 
+> has other changes beyond -git but changes nothing in networking.)
+> 
+> One clue (which might or might not matter) is that distcc is one of the 
+> very few applications that makes use of sendfile().
 
-Yes, but it will only catch that particular case, not missing
-gpio_request() calls in general.
+Just a quick note to say, me too!!
 
-I'm not really opposed to the second change; I would have applied it if
-it came separately. But I think the first change is wrong.
+same scenario: distcc on localhost.
 
-Haavard
