@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbYE1Koz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYE1Ktr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754770AbYE1Koz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 06:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYE1Kos
+	id S1754538AbYE1Ktr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 06:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYE1Kti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 06:44:48 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59684 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbYE1Kor (ORCPT
+	Wed, 28 May 2008 06:49:38 -0400
+Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:47815 "EHLO
+	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbYE1Kth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 06:44:47 -0400
-Date: Wed, 28 May 2008 12:42:50 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Dave Jones <davej@codemonkey.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: amd64-agp: resume but too late?
-Message-ID: <20080528104250.GC5728@elf.ucw.cz>
-References: <20080526182904.GA13683@elf.ucw.cz> <alpine.LFD.1.10.0805271415160.3295@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805271415160.3295@apollo.tec.linutronix.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 28 May 2008 06:49:37 -0400
+To: amit.shah@qumranet.com
+Cc: fujita.tomonori@lab.ntt.co.jp, muli@il.ibm.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       alexisb@us.ibm.com, andi@firstfloor.org, kvm@vger.kernel.org,
+       avi@qumranet.com
+Subject: Re: [PATCH v2 -mm 0/2] x86: per-device dma_mapping_ops
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200805271124.09453.amit.shah@qumranet.com>
+References: <200805271023.22574.amit.shah@qumranet.com>
+	<20080527142406Y.fujita.tomonori@lab.ntt.co.jp>
+	<200805271124.09453.amit.shah@qumranet.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080528191932Z.fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 28 May 2008 19:19:32 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-05-27 14:18:19, Thomas Gleixner wrote:
-> On Mon, 26 May 2008, Pavel Machek wrote:
-> > Hi!
-> > 
-> > I don't get it:
-> > 
-> > --- a/drivers/char/agp/amd64-agp.c
-> > +++ b/drivers/char/agp/amd64-agp.c
-> > @@ -549,6 +549,8 @@ static int agp_amd64_suspend(struct pci_
-> >         return 0;
-> >  }
-> >  
-> > +/* FIXME: this is strange; we enable iommu translation here, but that
-> > + * may be too late, no? */
-> >  static int agp_amd64_resume(struct pci_dev *pdev)
-> >  {
-> >         pci_set_power_state(pdev, PCI_D0);
-> > 
-> > ...but resume is normal pci device, so other devices may be resumed
-> > before this one, and already depend on iommu running...
-> > 
-> > How is this supposed to work? Should agp_amd64_resume be called from
-> > sysdev or something like that?
+On Tue, 27 May 2008 11:24:08 +0530
+Amit Shah <amit.shah@qumranet.com> wrote:
+
+> On Tuesday 27 May 2008 10:54:06 FUJITA Tomonori wrote:
 > 
-> Hmm, you sent a patch some days ago to change it to
-> suspend_late/resume_early. Is the discussion resolved about that ?
+> > > An example with per-device dma_ops and stacking will look like this:
+> > >
+> > > pvdma->hardware->nommu/swiotlb
+> > >     ^             ^
+> > >
+> > >  e1000     rtl8139
+> > >
+> > > And this scheme is going to suit everyone, agreed?
+> > >
+> > > This is simple and doesn't need too many changes all around.
+> >
+> > Sorry, I'm not sure what this picture represents.
+> 
+> It meant to show just e1000 needs to go through the pvdma translations. 
+> rtl8139 goes via the other iommus. e1000 also goes through the other iommus 
+> (mainly if it's going to be the swiotlb that a guest might need).
+> 
+> > BTW, without pvdma, there is no need to hardware->nommu/swiotlb
+> > stacking for IOMMUs like Calgary. Per-device dma_ops wor for them.
+> 
+> Hmm, ok. Then this argument doesn't count.
+> 
+> > > I was suggesting something more than this that can handle cases like an
+> > > iommu wanting to have each device behind a bus to pass through it (it's
+> > > still possible, but needs a per-device walk). Also, in the scenario
+> > > depicted above, each device will start by pointing to the first iommu in
+> > > the chain (pvdma in this case) and the iommu will then determine if that
+> > > device needs to be passed via its translations.
+> >
+> > No, IOMMUs doesn't need to do that. We need to put a stacking
+> > mechanism in dma-mapping.h. A stacking mechanism should not be visible
+> > to IOMMUs.
+> 
+> OK; then just per-device dma_ops will work and for the pvdma case, we'll have 
+> to have the stacking. Since this is a special case, any kind of generic APIs 
+> shouldn't be needed as well.
 
-I'm not aware of such patch. I don't think I sent it.
+I'm not sure what you mean exactly, but there might be other people
+who want to use the dma_ops stacking though I'm not sure yet how they
+use it:
 
-I did add suspend/resume support to pci-gart_64.c , which is
-confusingly similar code. That patch needs a bit more testing, and
-some de-uglyfication.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://lkml.org/lkml/2008/5/15/79
+
+
+> What is the plan with this patch then? When do you plan to ask for mainline 
+> merging?
+
+Andrew already put this patchset in -mm. Unless someone comes with a
+new reason against this patchset, it will be merged, I think.
+
+BTW, Andrew, really sorry about several compile bugs due to the first
+patch (changing dma_mapping_error) in this patchset. And thanks a lot
+for fixing them.
