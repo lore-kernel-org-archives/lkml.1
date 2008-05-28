@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbYE1Blt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbYE1BmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759640AbYE1Blt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 21:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYE1Blm
+	id S1759755AbYE1BmL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 21:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759218AbYE1Blx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 21:41:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:42870 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751698AbYE1Bll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 21:41:41 -0400
-Date: Wed, 28 May 2008 11:41:12 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Artem.Bityutskiy@nokia.com
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: can UBIFS be taken to linux-next?
-Message-Id: <20080528114112.b8600074.sfr@canb.auug.org.au>
-In-Reply-To: <483BA79F.9030100@nokia.com>
-References: <483BA79F.9030100@nokia.com>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW"
+	Tue, 27 May 2008 21:41:53 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:20418 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758507AbYE1Blq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 21:41:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=XCTncByeruEpa7HiuT+AJgSl5TlRIGtW9XT8lnhI9QljnYkZ1lOY5TU9jxfC+qImhje/Jv1VDbzLskeqktCTEhWx8wpuJhD+rUBcWivCEQTzl4/uhq7VoTeMOOuj/IJUpB5VQV4k0DdEOlYuKIc4aHBrMUy2aZP63sFiS4AbMvo=  ;
+X-YMail-OSG: KV3QiiQVM1nuwq2gNeOY7hVVbgWvX6Pz9kIXxXD50JqE23MbTDr3ykTNACDi.4zXdZd5jqZZy4rbjFwLtLj13dygt9Peqqj4ZPfgRlCqjebmeZEoO_J3krMcrVG20knPxaw-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
+Subject: Re: HAVE_CLK (for <linux/clk.h> support)
+Date: Tue, 27 May 2008 18:41:16 -0700
+User-Agent: KMail/1.9.9
+Cc: "Felipe Balbi" <felipe.balbi@nokia.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200805231044.59969.david-b@pacbell.net> <200805271614.55233.david-b@pacbell.net> <31e679430805271701h73ee1eb2p80329900008827f8@mail.gmail.com>
+In-Reply-To: <31e679430805271701h73ee1eb2p80329900008827f8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805271841.16793.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 27 May 2008, Felipe Balbi wrote:
+> >
+> > I don't know of any other drivers with this particular issue,
+> > but nonetheless ... I think the following is an appropriate
+> > resolution.
+> >
+> > Comments from anyone else?
+> 
+> I actually like it. I didn't see this error cuz I was only building
+> musb for arm architecture.
+> 
+> But why only davinci and omap?
 
-Hi Artem,
+They're the only one affected by the musb_hdrc patch...
 
-On Tue, 27 May 2008 09:18:07 +0300 Artem Bityutskiy <Artem.Bityutskiy@nokia=
-.com> wrote:
->
-> we would like to ask for UBIFS mainline inclusion the next merge window.
-> Of course we cannot say for sure whether Linus will merge it or not,
-> but it would be helpful to have it in your tree for some time anyway.
-> UBIFS is already in -mm tree so I assume it should not have too many
-> build issues.
 
-OK, my requirements are that you intend for it to be integrated in the
-next merge window, that it be reviewed and that it be unit tested (i.e.
-tested as well as you can in isolation).  You seem to have done all that,
-so I will add it.
+> What about: mach-aaec2000, mach-at91, mach-ep93xx, mach-integrator,
+> mach-lh7a40x, mach-ns9xxx, mach-pnx4008, mach-pxa, mach-realview,
+> mach-sa1100, mach-versatile, mach-s3c24x.
 
-I will put it at the end of the merge today.
+If this approach goes forward, I'd expect those platforms
+to "select HAVE_CLK" too.  Ditto some SH, PowerPC, etc.
 
-Andrew, does that make sense to you?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW
-Content-Type: application/pgp-signature
+> Instead of making the driver dependant on HAVE_CLK (which would be
+> true for virtually any driver comming from linux-omap), you could make
+> clk_enable a nop in case arch doesn't HAVE_CLK. How does that sound?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Best done by #ifdef HAVE_CLK in <linux/clk.h> support, and
+putting the stubs there.  However, since those platforms
+don't actually have clocks, I'd make them all report errors
+of whichever kind.
 
-iD8DBQFIPLg+TgG2atn1QN8RAjeoAJ44eSVHjzYEe0hS3UnflxdZPxnluwCdGSRa
-CqZeoCnaSNodCMFgTRNY02k=
-=mrlE
------END PGP SIGNATURE-----
+That's kind of a second-order question to "should we create
+a HAVE_CLK in Kconfig".  Since Certain People have objected
+to patches touching <linux/clk.h> I avoided doing that the
+first time around ... it'd be a better solution, yes.
 
---Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW--
+- Dave
+
