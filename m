@@ -1,111 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYE1TBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYE1TC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYE1TBI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYE1TA6
+	id S1754167AbYE1TC7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYE1TCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:00:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:19665 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbYE1TA5 (ORCPT
+	Wed, 28 May 2008 15:02:51 -0400
+Received: from 213.237.47.228.adsl.vbr.worldonline.dk ([213.237.47.228]:29076
+	"EHLO rap.rap.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbYE1TCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:00:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=b6onsVHU8PRoIUuoL/+jKSIEN7MzgToZcb5TiN/1m1XcPBPbvlTuItlfzQEC9TRiYPilJDI1QMXVKgXM2Eg0w6BKuQOEaEAVbRMv7M2uofGgf3rZUkEu1x3Vd2s6uTyqVBdiy+dfALPW2wlLfvw3FnvnCDUJvvpgnOLuKQbt9yI=
-Date: Wed, 28 May 2008 23:00:47 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Sitsofe Wheeler <sitsofe@yahoo.com>, Adrian Bunk <bunk@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: nmi - fix incorrect NMI watchdog used by default
-Message-ID: <20080528190047.GE6910@cvg>
-MIME-Version: 1.0
+	Wed, 28 May 2008 15:02:50 -0400
+Date: Wed, 28 May 2008 21:02:42 +0200
+From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+Message-ID: <20080528190242.GA5171@rap.rap.dk>
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit
+I added this in the wiki performance section.
+I think it would have been informative if also a test with one drive in
+a non-raid setup was described.
 
-	commit 4b82b277707a39b97271439c475f186f63ec4692
-	Author: Cyrill Gorcunov <gorcunov@gmail.com>
-	Date:   Sat May 24 19:36:35 2008 +0400
+Are there any particular findings you want to highlight?
 
-set nmi_watchdog to NMI_IO_APIC as by default. This causes hangs on some
-machines with buggy watchdogs. Fix it - i.e. restore old behaviour.
+Is there some way to estimate random read and writes from this test?
 
-Thanks to Sitsofe Wheeler and Adrian Bunk for catching the problem
-and Maciej W. Rozycki for explanation what is going on there.
+Are the XFS file systems completely new when running the tests?
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Maciej W. Rozycki <macro@linux-mips.org>
----
+Best regards
+keld
 
-The patch is over today tip/x86/nmi
-
-Index: linux-2.6.git/arch/x86/kernel/nmi.c
-====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/nmi.c	2008-05-28 22:32:38.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/nmi.c	2008-05-28 22:40:48.000000000 +0400
-@@ -84,20 +84,15 @@ static inline unsigned int get_timer_irq
- #endif
- }
- 
-+#ifdef CONFIG_X86_64
- /* Run after command line and cpu_init init, but before all other checks */
- void nmi_watchdog_default(void)
- {
- 	if (nmi_watchdog != NMI_DEFAULT)
- 		return;
--#ifdef CONFIG_X86_64
- 	nmi_watchdog = NMI_NONE;
--#else
--	if (lapic_watchdog_ok())
--		nmi_watchdog = NMI_LOCAL_APIC;
--	else
--		nmi_watchdog = NMI_IO_APIC;
--#endif
- }
-+#endif
- 
- #ifdef CONFIG_SMP
- /*
-@@ -488,8 +483,15 @@ int proc_nmi_enabled(struct ctl_table *t
- 		return -EIO;
- 	}
- 
-+#ifdef CONFIG_X86_64
- 	/* if nmi_watchdog is not set yet, then set it */
- 	nmi_watchdog_default();
-+#else
-+	if (lapic_watchdog_ok())
-+		nmi_watchdog = NMI_LOCAL_APIC;
-+	else
-+		nmi_watchdog = NMI_IO_APIC;
-+#endif
- 
- 	if (nmi_watchdog == NMI_LOCAL_APIC) {
- 		if (nmi_watchdog_enabled)
-Index: linux-2.6.git/include/asm-x86/nmi.h
-====================================================================
---- linux-2.6.git.orig/include/asm-x86/nmi.h	2008-05-28 22:32:41.000000000 +0400
-+++ linux-2.6.git/include/asm-x86/nmi.h	2008-05-28 22:39:55.000000000 +0400
-@@ -38,9 +38,11 @@ static inline void unset_nmi_pm_callback
- 
- #ifdef CONFIG_X86_64
- extern void default_do_nmi(struct pt_regs *);
-+extern void nmi_watchdog_default(void);
-+#else
-+#define nmi_watchdog_default(void) do {} while (0)
- #endif
- 
--extern void nmi_watchdog_default(void);
- extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
- extern int check_nmi_watchdog(void);
- extern int nmi_watchdog_enabled;
+On Wed, May 28, 2008 at 04:53:47AM -0400, Justin Piszcz wrote:
+> Hardware:
+> 
+> 1. Utilized (6) 400 gigabyte sata hard drives.
+> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
+> 
+> Used the following 'optimizations' for all tests.
+> 
+> # Set read-ahead.
+> echo "Setting read-ahead to 64 MiB for /dev/md3"
+> blockdev --setra 65536 /dev/md3
+> 
+> # Set stripe-cache_size for RAID5.
+> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+> echo 16384 > /sys/block/md3/md/stripe_cache_size
+> 
+> # Disable NCQ on all disks.
+> echo "Disabling NCQ on all disks..."
+> for i in $DISKS
+> do
+>   echo "Disabling NCQ on $i"
+>   echo 1 > /sys/block/"$i"/device/queue_depth
+> done
+> 
+> Software:
+> 
+> Kernel: 2.6.23.1 x86_64
+> Filesystem: XFS
+> Mount options: defaults,noatime
+> 
+> Results:
+> 
+> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
+> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
+> 
+> Note: 'deg' means degraded and the number after is the number of disks 
+> failed, I did not test degraded raid10 because there are many ways you can 
+> degrade a raid10; however, the 3 types of raid10 were benchmarked 
+> f2,n2,o2.
+> 
+> Each test was run 3 times and averaged--FYI.
+> 
+> Justin.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
