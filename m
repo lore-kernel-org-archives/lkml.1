@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbYE1Pg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752202AbYE1Pkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbYE1Pg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 11:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYE1PgV
+	id S1752202AbYE1Pkq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 11:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYE1Pkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 11:36:21 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61645 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751316AbYE1PgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 11:36:20 -0400
-Date: Wed, 28 May 2008 16:35:14 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/11] x86: nmi_32/64.c - use apic_write_around instead
- of apic_write
-In-Reply-To: <48383740.0407560a.4764.7d1b@mx.google.com>
-Message-ID: <Pine.LNX.4.55.0805281628320.29522@cliff.in.clinika.pl>
-References: <20080524153630.669797039@gmail.com>> <48383740.0407560a.4764.7d1b@mx.google.com>
+	Wed, 28 May 2008 11:40:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55722 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751238AbYE1Pkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 11:40:35 -0400
+Message-ID: <483D7CE8.4000600@redhat.com>
+Date: Wed, 28 May 2008 11:40:24 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 May 2008, Cyrill Gorcunov wrote:
-
-> apic_write_around will be expanded to apic_write in 64bit mode
-> anyway. Only a few CPUs (well, old CPUs to be precise) requires
-> such an action. In general it should not hurt and could be cleaned
-> up for apic_write (just in case)
+Justin Piszcz wrote:
+> Hardware:
 > 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> ---
+> 1. Utilized (6) 400 gigabyte sata hard drives.
+> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
+> 
+> Used the following 'optimizations' for all tests.
+> 
+> # Set read-ahead.
+> echo "Setting read-ahead to 64 MiB for /dev/md3"
+> blockdev --setra 65536 /dev/md3
+> 
+> # Set stripe-cache_size for RAID5.
+> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+> echo 16384 > /sys/block/md3/md/stripe_cache_size
+> 
+> # Disable NCQ on all disks.
+> echo "Disabling NCQ on all disks..."
+> for i in $DISKS
+> do
+>   echo "Disabling NCQ on $i"
+>   echo 1 > /sys/block/"$i"/device/queue_depth
+> done
 
-Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
+Given that one of the greatest benefits of NCQ/TCQ is with parity RAID, 
+I'd be fascinated to see how enabling NCQ changes your results.  Of 
+course, you'd want to use a single SATA controller with a known good NCQ 
+implementation, and hard drives known to not do stupid things like 
+disable readahead when NCQ is enabled.
 
- Almost all local APIC write accesses must use apic_write_around().  The
-notable exceptions are appropriately guarded accesses to the ESR (there is
-no need ever to write to this register on Pentium processors and a read of
-the register has side-effects) and pieces of code known never to run on
-original Pentium processors.
-
-  Maciej
+-- Chris
