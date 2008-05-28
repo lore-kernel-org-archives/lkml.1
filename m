@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbYE1EKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbYE1Ej5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbYE1EKJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 00:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbYE1EJ5
+	id S1753065AbYE1Ej5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 00:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbYE1Ejr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 00:09:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42345 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbYE1EJ5 (ORCPT
+	Wed, 28 May 2008 00:39:47 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:38114 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbYE1Ejq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 00:09:57 -0400
-Date: Tue, 27 May 2008 21:09:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Fede <fedux@lugmen.org.ar>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: bad pmd ffff810000207238(9090909090909090).
-Message-ID: <20080527210924.0537cb44@infradead.org>
-In-Reply-To: <483CBCDD.10401@lugmen.org.ar>
-References: <483CBCDD.10401@lugmen.org.ar>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 May 2008 00:39:46 -0400
+Message-ID: <483CE20E.6040104@in.ibm.com>
+Date: Wed, 28 May 2008 10:09:42 +0530
+From: Sharyathi Nagesh <sharyath@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+MIME-Version: 1.0
+To: Bernhard Walle <bwalle@suse.de>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@osdl.org,
+       sachinp@in.ibm.com, mohd.omar@in.ibm.com,
+       Kexec Mailing List <kexec@lists.infradead.org>, fastboot@lists.osdl.org,
+       linux-kernel@vger.kernel.org, mohan@in.ibm.com, IndhuDurai@in.ibm.com
+Subject: Re: correction to compat_sys_kexec_load
+References: <4836AC3C.3090005@in.ibm.com> <m1ve144w25.fsf@frodo.ebiederm.org> <20080523233348.13fe0c63@kopernikus.site> <m1od6w4jxx.fsf@frodo.ebiederm.org> <20080526223259.4d3d2979@kopernikus.site>
+In-Reply-To: <20080526223259.4d3d2979@kopernikus.site>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 23:01:01 -0300
-Fede <fedux@lugmen.org.ar> wrote:
-
-> Hi,
+Bernhard/Eric
+   Thanks for helping with this. kexec patch has been submitted up stream
+Thanks
+Yeehaw
+Bernhard Walle wrote:
+> * ebiederm@xmission.com (Eric W. Biederman) [2008-05-23 17:36]:
+>> As there is no real justification for it.  At this
+>> point getting user space fixed so that it works on older kernels
+>> seems important. 
 > 
-> Today I tried to start a firewalling script and failed due to an 
-> unrelated issue, but when I checked the log I saw this:
+> http://article.gmane.org/gmane.linux.kernel.kexec/1534 should fix this.
 > 
-> May 27 20:38:15 kaoz ip_tables: (C) 2000-2006 Netfilter Core Team
-> May 27 20:38:28 kaoz Netfilter messages via NETLINK v0.30.
-> May 27 20:38:28 kaoz nf_conntrack version 0.5.0 (16384 buckets, 65536
-> max) May 27 20:38:28 kaoz ctnetlink v0.93: registering with nfnetlink.
-> May 27 20:38:28 kaoz ClusterIP Version 0.8 loaded successfully
-> May 27 20:38:28 kaoz mm/memory.c:127: bad pmd 
-> ffff810000207238(9090909090909090).
+> 
 
-
-909090 is asm for "nop nop nop", a pattern often used in rootkits to
-deal with slightly unknown memory locations
-
-
-
-I would REALLY REALLY strongly suggest that you check for rootkits and
-the like on your system...
-
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
