@@ -1,83 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbYE1Urd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYE1Ust@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbYE1Urd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 16:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYE1UrW
+	id S1754651AbYE1Ust (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 16:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYE1Usl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 16:47:22 -0400
-Received: from 1wt.eu ([62.212.114.60]:1319 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752738AbYE1UrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 16:47:21 -0400
-Date: Wed, 28 May 2008 22:43:56 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Hugh Dickins <hugh@veritas.com>, Fede <fedux@lugmen.org.ar>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] Re: bad pmd ffff810000207238(9090909090909090).
-Message-ID: <20080528204356.GA12687@1wt.eu>
-References: <483CBCDD.10401@lugmen.org.ar> <Pine.LNX.4.64.0805281922530.7959@blonde.site> <20080528195637.GA11662@1wt.eu> <alpine.LNX.1.10.0805282210580.19264@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 May 2008 16:48:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:51711 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbYE1Usk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 16:48:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ikp4Nc7Ftu+fxe7aR7JhXZzy55XWVHqWXygtDFrtK/lt6wlAI7GBU1PnnQIzRx/wq0sUiCgEyHtxQINSQjNXSBQzKx6aeVFNXaXBwk3Rk7J35pslV1t/1TCpp+3SPKXHiZdJK1ZplvF1OvF13q7t63xZoW1AF/dmRpgvoAGHwBA=
+Message-ID: <86802c440805281348u2fdd6ce2t71231f0fc94d8b5b@mail.gmail.com>
+Date: Wed, 28 May 2008 13:48:39 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
+Cc: "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <483D2D8A.5040800@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0805282210580.19264@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.11
+References: <200805110030.15510.yhlu.kernel@gmail.com>
+	 <200805251000.10205.yhlu.kernel@gmail.com>
+	 <alpine.LFD.1.10.0805271744080.3295@apollo.tec.linutronix.de>
+	 <483C70F9.2030901@goop.org>
+	 <86802c440805271406l4348db33r5622c440b494baa2@mail.gmail.com>
+	 <483C7BB0.6080901@goop.org>
+	 <86802c440805271435l744eab84xe55ac9ce6196c03b@mail.gmail.com>
+	 <483C8157.7080702@goop.org>
+	 <86802c440805271552k724415a6i66686b9abb8c083f@mail.gmail.com>
+	 <483D2D8A.5040800@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 10:14:31PM +0200, Jan Engelhardt wrote:
-> 
-> On Wednesday 2008-05-28 21:56, Willy Tarreau wrote:
-> >On Wed, May 28, 2008 at 07:36:07PM +0100, Hugh Dickins wrote:
-> >> On Tue, 27 May 2008, Fede wrote:
-> >> > 
-> >> > Today I tried to start a firewalling script and failed due to an unrelated
-> >> > issue, but when I checked the log I saw this:
-> >> > 
-> >> > May 27 20:38:15 kaoz ip_tables: (C) 2000-2006 Netfilter Core Team
-> >> > May 27 20:38:28 kaoz Netfilter messages via NETLINK v0.30.
-> >> > May 27 20:38:28 kaoz nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
-> >> > May 27 20:38:28 kaoz ctnetlink v0.93: registering with nfnetlink.
-> >> > May 27 20:38:28 kaoz ClusterIP Version 0.8 loaded successfully
-> >> > May 27 20:38:28 kaoz mm/memory.c:127: bad pmd
-> >> > ffff810000207238(9090909090909090).
-> >> > 
-> >> > I also found another post with a very similar issue. The other post had almost
-> >> > the same message (*mm*/*memory*.*c*:*127*: *bad* *pmd*
-> >> > ffff810000207808(9090909090909090).)
-> >> > 
-> >> > Does anyone know what is it?
-> >> 
-> >> Thanks a lot for re-reporting this: it was fun to work it out.
-> >> It's not a rootkit, it's harmless, but we ought to fix the noise.
-> >> Simple patch below, but let me explain more verbosely first.
-> >> 
-> >> What was really interesting in your report was that the address
-> >> is so close to that in OGAWA-San's report.  I had a look at that
-> >> page on my x86_64 boxes, and they have lots of 0x90s there too.
-> >> It's just some page alignment filler that x86_64 kernel startup
-> >> has missed cleaning up - patch below fixes that.  There's no
-> >> security aspect to it: the entries were already not-present,
-> >> they just generate this noise by triggering the pmd_bad test.
-> >
-> >Is there a particular reason we use 0x90 as an alignment filler ?
-> 
-> Alignment within functions. You could use a JMP to jump over
-> the alignment, but that would be costly. So in order to
-> "run through the wall", you need an opcode that does not
-> do anything, something like 0x90.
-> 0xAF would map to scasd on x86, and I'd hardly call that a
-> no-op.
+On Wed, May 28, 2008 at 3:01 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Yinghai Lu wrote:
+>>
+>> can you try attached patch?
+>>
+>
+> Thanks, that nearly works.  I needed the patch below to get it to
+> successfully boot.
+>
+> For reference, this is what the early reserve map looks like now:
+>
+> (early) 256MB LOWMEM available.
+> (early)   low ram: 02634000 - 10000000
+> (early)   bootmap 02634000 - 02636000
+> (early)   early res: 0 [0-fff] BIOS data page
+> (early)   early res: 1 [1000-1fff] EX TRAMPOLINE
+> (early)   early res: 2 [6000-6fff] TRAMPOLINE
+> (early)   early res: 3 [25db000-261dfff] XEN
+> (early)   early res: 4 [1000000-18a8303] TEXT DATA BSS
+> (early)   early res: 5 [18a9000-25dafff] RAMDISK
+> (early)   early res: 6 [261e000-2633fff] INIT_PG_TABLE
+> (early)   early res: 7 [2634000-2635fff] BOOTMAP
+>
+>
+>   J
+>
+>
+> Subject: xen: reserve_early Xen-specific memory
+>
+> Make sure that the start_info and pfn->mfn translation array are reserved.
+> i386_start_kernel will arrange to reserve the kernel code/data, initrd
+> and pagetable.
+>
+> Also, add prototype for i386_start_kernel.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+> arch/x86/xen/enlighten.c |    9 +++++++++
+> include/asm-x86/setup.h  |    1 +
+> 2 files changed, 10 insertions(+)
+>
+> ===================================================================
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -1266,6 +1266,15 @@
+>                add_preferred_console("hvc", 0, NULL);
+>        }
+>
+> +       /*
+> +        * Reserve Xen bits:
+> +        *  - mfn_list
+> +        *  - xen_start_info
+> +        * See comment above "struct start_info" in <xen/interface/xen.h>
+> +        */
+> +       reserve_early(__pa(xen_start_info->mfn_list),
+> +                     __pa(xen_start_info->pt_base), "XEN");
+> +
 
-OK, I did not understand from Hugh's explanation that it was
-all about alignment within functions. Of course, 0x90 is fine
-there (though there are multi-byte NOPs available).
+can we use e820 entries for that? So the domain builder could have
+several entries for E820_RAM and E820_RESERVED...
 
-Cheers,
-Willy
+>        /* Start the world */
+>        i386_start_kernel();
+> }
+> ===================================================================
+> --- a/include/asm-x86/setup.h
+> +++ b/include/asm-x86/setup.h
+> @@ -58,6 +58,7 @@
+> int __init copy_e820_map(struct e820entry *biosmap, int nr_map);
+> void __init add_memory_region(unsigned long long start,
+>                              unsigned long long size, int type);
+> +void __init i386_start_kernel(void);
 
+will need x86_64_start_kernel there, maybe we should change all name
+to x86_start_kernel
+
+YH
