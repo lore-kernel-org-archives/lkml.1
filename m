@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYE1Neh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbYE1NgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbYE1Neh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYE1NeX
+	id S1752888AbYE1NgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbYE1NgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:34:23 -0400
-Received: from ns1.siteground211.com ([209.62.36.12]:60157 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbYE1NeV (ORCPT
+	Wed, 28 May 2008 09:36:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:55990 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbYE1NgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:34:21 -0400
+	Wed, 28 May 2008 09:36:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EeIMkQH11Q/WfP8s4BUoKo0BI/wrTC5xCdb278G55V3HVAygNoy1W6LCmKlDoCXETzi0ZMA29mqCc9GX8rIM37rdgdR3qjUuN1LcnlRNuIeU9kyjHKNUn5kM9lSo5EhrN4PDWilno1pGu7y0XPGCsMLYMe7Za26pAeNLt6aEBcw=
+Message-ID: <8dacd7b30805280636p34097a84t6f7e5c7ebe98747a@mail.gmail.com>
+Date: Wed, 28 May 2008 15:36:12 +0200
+From: "Jan Niklas Hasse" <jhasse@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: libata - DMA problems ICH7 rev 02
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <8dacd7b30805280634s77492f0ag15ee65150f8bedad@mail.gmail.com>
 MIME-Version: 1.0
-Date: Wed, 28 May 2008 08:34:05 -0500
-From: Felipe Balbi <me@felipebalbi.com>
-To: jidong xiao <jidong.xiao@gmail.com>
-Cc: Adrian Bunk <bunk@kernel.org>, greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] remove Documentation/usb/uhci.txt
-In-Reply-To: <4104961b0805272338o5fe40727i26b74f195ef1af89@mail.gmail.com>
-References: <20080519220024.GX17716@cs181133002.pp.htv.fi> <4104961b0805272338o5fe40727i26b74f195ef1af89@mail.gmail.com>
-Message-ID: <417e6455e9cc5c73d1ddeb00592b77b3@felipebalbi.com>
-User-Agent: FelipeBalbi.com Webmail
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.6VoLd5Q2gfHHZZfYneNkQcGjXKk@ifi.uio.no>
+	 <fa.kzdMLVO0bqLAbXEBqWrKyBntgxc@ifi.uio.no>
+	 <fa.h4D6h2c4Yz08K7snVTVtewbsziM@ifi.uio.no> <481BD00E.7050302@shaw.ca>
+	 <8dacd7b30805120855q406f566ma187142719bf5bd4@mail.gmail.com>
+	 <4828DEE1.1070905@shaw.ca>
+	 <8dacd7b30805280634s77492f0ag15ee65150f8bedad@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 28 May 2008 14:38:42 +0800, "jidong xiao" <jidong.xiao@gmail.com>
-wrote:
-> On Tue, May 20, 2008 at 6:00 AM, Adrian Bunk <bunk@kernel.org> wrote:
->> The driver was removed before kernel 2.6.0
+On Wed, May 28, 2008 at 3:34 PM, Jan Niklas Hasse <jhasse@gmail.com> wrote:
 >>
->> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->>
->> ---
->>
-> 
-> But I think this document is still very useful and informative
-> especially to those who are not quite familiar with UHCI HCDs. It is
-> not necessary to remove this one at the moment.
+>> It looks like you have the hard drive and the burner on the same IDE channel? Such problems are unavoidable in this setup since commands to one device on the channel can't execute while the other device is busy (especially for long commands like finalizing the disc). It would be better to move the drives onto separate channels.
+>
 
-True. I vote for keeping the doc :-)
-
-
--- 
-Best Regards,
-
-Felipe Balbi
-http://felipebalbi.com
-me@felipebalbi.com
-
+As I have a notebook, I think I can't do that, can I?
