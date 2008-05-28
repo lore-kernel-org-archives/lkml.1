@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYE1Vnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbYE1Vny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbYE1Vnk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 17:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbYE1Vm3
+	id S1754993AbYE1Vny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 17:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbYE1Vmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 17:42:29 -0400
+	Wed, 28 May 2008 17:42:39 -0400
 Received: from mu-out-0910.google.com ([209.85.134.187]:49842 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754012AbYE1Vm2 (ORCPT
+	with ESMTP id S1754823AbYE1Vmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 17:42:28 -0400
+	Wed, 28 May 2008 17:42:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=VJAcYtjYNqRtnCluDVnxLOtzGL26bcLoeAz4EUaL3QWy/vhkumAMF4tnS/eyzvMpb6qtk9dfsUUhypQAasYWSJ7pGvrK9lugsvqQ6Z9MX+Gr7O+acJjxqOP3JQqx2lQ66ZGe2qKICh9fPcfW4PHmvC91t0nckKSbpm9NaKrz3Io=
+        b=r8NmSfwzlomvNM8fId9j/AGNErGSBSRq37xE29LJx1RRFJKm5ObWJWUsimrzyfN/8ny5JJTCj4c7q52DlG0K1fHaqWcqm+QcJt2f/vBXBJdmvsAJDspQAEKRzROpyBcv+NkxncShUNKH0qFfEe/lZmgsEFN2cU4uZ36JV5UyRIk=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 28 May 2008 23:40:02 +0200
-Message-Id: <20080528214002.16327.28489.sendpatchset@localhost.localdomain>
+Date: Wed, 28 May 2008 23:40:10 +0200
+Message-Id: <20080528214010.16327.75848.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080528213944.16327.92950.sendpatchset@localhost.localdomain>
 References: <20080528213944.16327.92950.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/21] ide: remove unused XFER_UDMA_SLOW
+Subject: [PATCH 03/21] ide: use u8 for xfer modes in ide-timing.h
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Remove unused XFER_UDMA_SLOW from ide_timing[].
-
-While at it:
-
-- fix re-defining XFER_PIO_5 (no need to define it in ide-timing.h as
-  it is defined in <linux/ata.h> which is included by <linux/hdreg.h>)
-
-- fix whitespace damage
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-timing.h |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/ide/ide-timing.h |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 Index: b/drivers/ide/ide-timing.h
 ===================================================================
 --- a/drivers/ide/ide-timing.h
 +++ b/drivers/ide/ide-timing.h
-@@ -28,9 +28,6 @@
- #include <linux/kernel.h>
+@@ -29,7 +29,7 @@
  #include <linux/hdreg.h>
  
--#define XFER_PIO_5		0x0d
--#define XFER_UDMA_SLOW		0x4f
--
  struct ide_timing {
- 	short mode;
+-	short mode;
++	u8    mode;
  	short setup;	/* t1 */
-@@ -61,12 +58,10 @@ static struct ide_timing ide_timing[] = 
- 	{ XFER_UDMA_1,     0,   0,   0,   0,   0,   0,   0,  80 },
- 	{ XFER_UDMA_0,     0,   0,   0,   0,   0,   0,   0, 120 },
+ 	short act8b;	/* t2 for 8-bit io */
+ 	short rec8b;	/* t2i for 8-bit io */
+@@ -76,7 +76,7 @@ static struct ide_timing ide_timing[] = 
  
--	{ XFER_UDMA_SLOW,  0,   0,   0,   0,   0,   0,   0, 150 },
--                                          
- 	{ XFER_MW_DMA_2,  25,   0,   0,   0,  70,  25, 120,   0 },
- 	{ XFER_MW_DMA_1,  45,   0,   0,   0,  80,  50, 150,   0 },
- 	{ XFER_MW_DMA_0,  60,   0,   0,   0, 215, 215, 480,   0 },
--                                          
-+
- 	{ XFER_SW_DMA_2,  60,   0,   0,   0, 120, 120, 240,   0 },
- 	{ XFER_SW_DMA_1,  90,   0,   0,   0, 240, 240, 480,   0 },
- 	{ XFER_SW_DMA_0, 120,   0,   0,   0, 480, 480, 960,   0 },
+ 	{ XFER_PIO_SLOW, 120, 290, 240, 960, 290, 240, 960,   0 },
+ 
+-	{ -1 }
++	{ 0xff }
+ };
+ 
+ #define IDE_TIMING_SETUP	0x01
+@@ -122,17 +122,18 @@ static void ide_timing_merge(struct ide_
+ 	if (what & IDE_TIMING_UDMA   ) m->udma    = max(a->udma,    b->udma);
+ }
+ 
+-static struct ide_timing* ide_timing_find_mode(short speed)
++static struct ide_timing *ide_timing_find_mode(u8 speed)
+ {
+ 	struct ide_timing *t;
+ 
+ 	for (t = ide_timing; t->mode != speed; t++)
+-		if (t->mode < 0)
++		if (t->mode == 0xff)
+ 			return NULL;
+ 	return t; 
+ }
+ 
+-static int ide_timing_compute(ide_drive_t *drive, short speed, struct ide_timing *t, int T, int UT)
++static int ide_timing_compute(ide_drive_t *drive, u8 speed,
++			      struct ide_timing *t, int T, int UT)
+ {
+ 	struct hd_driveid *id = drive->id;
+ 	struct ide_timing *s, p;
