@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbYE1BmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759959AbYE1BoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbYE1BmL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 21:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759218AbYE1Blx
+	id S1759959AbYE1BoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 21:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYE1Bn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 21:41:53 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:20418 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758507AbYE1Blq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 21:41:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XCTncByeruEpa7HiuT+AJgSl5TlRIGtW9XT8lnhI9QljnYkZ1lOY5TU9jxfC+qImhje/Jv1VDbzLskeqktCTEhWx8wpuJhD+rUBcWivCEQTzl4/uhq7VoTeMOOuj/IJUpB5VQV4k0DdEOlYuKIc4aHBrMUy2aZP63sFiS4AbMvo=  ;
-X-YMail-OSG: KV3QiiQVM1nuwq2gNeOY7hVVbgWvX6Pz9kIXxXD50JqE23MbTDr3ykTNACDi.4zXdZd5jqZZy4rbjFwLtLj13dygt9Peqqj4ZPfgRlCqjebmeZEoO_J3krMcrVG20knPxaw-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
-Subject: Re: HAVE_CLK (for <linux/clk.h> support)
-Date: Tue, 27 May 2008 18:41:16 -0700
-User-Agent: KMail/1.9.9
-Cc: "Felipe Balbi" <felipe.balbi@nokia.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200805231044.59969.david-b@pacbell.net> <200805271614.55233.david-b@pacbell.net> <31e679430805271701h73ee1eb2p80329900008827f8@mail.gmail.com>
-In-Reply-To: <31e679430805271701h73ee1eb2p80329900008827f8@mail.gmail.com>
+	Tue, 27 May 2008 21:43:58 -0400
+Received: from mail.windriver.com ([147.11.1.11]:50220 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230AbYE1Bn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 21:43:58 -0400
+Message-ID: <483CB8B5.2040702@windriver.com>
+Date: Tue, 27 May 2008 20:43:17 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: David Miller <davem@davemloft.net>
+CC: tglx@linutronix.de, a.beregalov@gmail.com,
+       kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: kgdb test suite failure
+References: <a4423d670805201130l649440acl3ef31f60503b279d@mail.gmail.com>	<48344D5B.1020308@windriver.com>	<alpine.LFD.1.10.0805222304250.3295@apollo.tec.linutronix.de> <20080523.000129.193706282.davem@davemloft.net>
+In-Reply-To: <20080523.000129.193706282.davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805271841.16793.david-b@pacbell.net>
+X-OriginalArrivalTime: 28 May 2008 01:43:11.0714 (UTC) FILETIME=[30265420:01C8C064]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 May 2008, Felipe Balbi wrote:
-> >
-> > I don't know of any other drivers with this particular issue,
-> > but nonetheless ... I think the following is an appropriate
-> > resolution.
-> >
-> > Comments from anyone else?
-> 
-> I actually like it. I didn't see this error cuz I was only building
-> musb for arm architecture.
-> 
-> But why only davinci and omap?
+David Miller wrote:
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Date: Thu, 22 May 2008 23:14:23 +0200 (CEST)
+>
+>> Please use HW breakpoints in the test suite. The RFC patch looks
+>> horrible :)
+>
+> ftrace needs basically the same kind of facility as kgdb
+> needs here. So bypassing the need for kgdb won't get around
+> the problem in general.
 
-They're the only one affected by the musb_hdrc patch...
+It does seem like there should be a general way to force a controlled
+write to a read-only page. That would certainly allow for the use of
+software breakpoints with KGDB. At the point in time that such calls
+come into existence I would certainly consider adding a toggle which
+you can use from the debugger to provide such access.
 
+At least for the current time for kgdb, we will use hardware
+breakpoints.
 
-> What about: mach-aaec2000, mach-at91, mach-ep93xx, mach-integrator,
-> mach-lh7a40x, mach-ns9xxx, mach-pnx4008, mach-pxa, mach-realview,
-> mach-sa1100, mach-versatile, mach-s3c24x.
-
-If this approach goes forward, I'd expect those platforms
-to "select HAVE_CLK" too.  Ditto some SH, PowerPC, etc.
-
-
-> Instead of making the driver dependant on HAVE_CLK (which would be
-> true for virtually any driver comming from linux-omap), you could make
-> clk_enable a nop in case arch doesn't HAVE_CLK. How does that sound?
-
-Best done by #ifdef HAVE_CLK in <linux/clk.h> support, and
-putting the stubs there.  However, since those platforms
-don't actually have clocks, I'd make them all report errors
-of whichever kind.
-
-That's kind of a second-order question to "should we create
-a HAVE_CLK in Kconfig".  Since Certain People have objected
-to patches touching <linux/clk.h> I avoided doing that the
-first time around ... it'd be a better solution, yes.
-
-- Dave
+Jason.
 
