@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbYE1JIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYE1JOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbYE1JIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 05:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYE1JIi
+	id S1753341AbYE1JOj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 05:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYE1JO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 05:08:38 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:51123 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbYE1JIh (ORCPT
+	Wed, 28 May 2008 05:14:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:21922 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYE1JO2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 05:08:37 -0400
-Message-Id: <483D20F2.1010307@mxp.nes.nec.co.jp>
-Date: Wed, 28 May 2008 18:08:02 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 28 May 2008 05:14:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MW+FNF6yymfl37WQnBdZGx5U0G7yZ6zaetGnqIRQY5xPDWh5nnsVRC3uJxl1ejr8lI/I3iyXtTIHhF0upmawlxAFM4wMV85POOLwXT2SMEfuN6ALa8MFNQb947k8qdroQ2r0MXUBwzM1Q5XLc2UDzAAkP4WvEy+g3pEUEKH6E4I=
+Message-ID: <3877989d0805280214y645c7e0ex91a95f1fe47a6abf@mail.gmail.com>
+Date: Wed, 28 May 2008 17:14:28 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <3877989d0805270148h1b9e7972w880e380c2c4c9b09@mail.gmail.com>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       MinChan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm 04/16] free swap space on swap-in/activation
-References: <20080523195506.084894989@redhat.com> <20080523195535.063198671@redhat.com>
-In-Reply-To: <20080523195535.063198671@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <20080523041940.39E8726FA24@magilla.localdomain>
+	 <3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
+	 <20080526001527.81E1126FA9E@magilla.localdomain>
+	 <3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
+	 <3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
+	 <20080527040454.053C526FA9E@magilla.localdomain>
+	 <3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
+	 <20080527061209.9A24426FAA6@magilla.localdomain>
+	 <3877989d0805270148h1b9e7972w880e380c2c4c9b09@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -1203,6 +1206,8 @@ static void shrink_active_list(unsigned 
->  			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
->  			pgmoved = 0;
->  			spin_unlock_irq(&zone->lru_lock);
-> +			if (vm_swap_full())
-> +				pagevec_swap_free(&pvec);
->  			__pagevec_release(&pvec);
->  			spin_lock_irq(&zone->lru_lock);
->  		}
-> @@ -1212,6 +1217,8 @@ static void shrink_active_list(unsigned 
->  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
->  	__count_vm_events(PGDEACTIVATE, pgdeactivate);
->  	spin_unlock_irq(&zone->lru_lock);
-> +	if (vm_swap_full())
-> +		pagevec_swap_free(&pvec);
->  
->  	pagevec_release(&pvec);
->  }
+Some correction about the test case hang,  the ps output should looks
+like the following:
+13925 S+ strace -f ./test1
+13926 S+ ./test1
+13927 T+  /bin/bash ./test2
 
-I'm sorry if I misunderstand your patches, but is this part needed
-after
-  [PATCH -mm 07/16] second chance replacement for anonymous pages
-is applied?
-After the patch, if shrink_active_list() is called about
-anon pages(that is, with file=0), those pages should go to inactive list,
-so they should not be removed from swap cache, should they?
-
-
-Thanks,
-Daisuke Nishimura.
-
+I'm trying upstream kdump to get more detailed data for help analysis
+the scenario..
+But unfortunately upstream kernel just hang when I echo c to
+sysrq-trigger.  Downgrade the kernel to 2.6.22,  'echo c' doesn't
+hang, but I just got "zero" dump file...
+Will try F9 later... But from the symptom shouldn't we ask this
+question: why  process 13927 can't wake up?  Roland,  please confirm
+if ptrace_untrace is the only way to get Traced process wake up?  Back
+up to caller of ptrace_untrace, maybe we can find out why my RFC patch
+happen to fix the problem... Any suggestions are welcome!
+--Luming
