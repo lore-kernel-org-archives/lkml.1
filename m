@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbYE1NBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYE1NBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbYE1NBR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbYE1NBA
+	id S1754870AbYE1NBb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYE1NBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:01:00 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5641 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752678AbYE1NA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:00:59 -0400
-Date: Wed, 28 May 2008 15:00:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-btrace@vger.kernel.org
-Subject: Re: [PATCH] Changed blk trace msgs to directly use relay buffer
-Message-ID: <20080528130056.GW25504@kernel.dk>
-References: <483C1C5A.5000001@hp.com> <20080528121329.GU25504@kernel.dk> <483D4F73.5020503@hp.com>
+	Wed, 28 May 2008 09:01:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53951 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753252AbYE1NBJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 09:01:09 -0400
+Date: Wed, 28 May 2008 09:01:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pavel Machek <pavel@ucw.cz>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] x86: enable preemption in delay
+In-Reply-To: <20080525180122.GA4247@ucw.cz>
+Message-ID: <Pine.LNX.4.58.0805280855250.25179@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
+ <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
+ <20080525180122.GA4247@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <483D4F73.5020503@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28 2008, Alan D. Brunelle wrote:
-> Jens Axboe wrote:
-> > On Tue, May 27 2008, Alan D. Brunelle wrote:
-> > 
-> >> From 43c8ea2b78f31d7ccd349384a9a2084e787aafc1 Mon Sep 17 00:00:00 2001
-> >> From: Alan D. Brunelle <alan.brunelle@hp.com>
-> >> Date: Tue, 27 May 2008 10:32:36 -0400
-> >> Subject: [PATCH] Changed blk trace msgs to directly use relay buffer
-> >>
-> >> Allows for SMP-usage without corruption, and removes an extra copy at
-> >> the expense of copying extra bytes. Reduced message size from 1024 to 128.
-> > 
-> > Or, alternatively, something like the below. Then we don't
-> > unconditionally reserve and copy 128 bytes for each message, at the
-> > cost 128 bytes per-cpu per trace.
-> 
-> I looked into something like this, but thought the added complexity
-> wasn't worth it. Besides the extra per-cpu stuff, you also have an
-> extra memcopy involved - in my patch you print directly into the relay
-> buffer.  I figure that /if/ copying (128-msg_size) extra bytes is too
-> much, one could always shrink the 128 down further. [I would think 64
-> bytes is probably ok.]
-> 
-> I'd bet that the reduced complexity, and skipping the extra memcopy
-> more than offsets having to copy a few extra bytes...
 
-The complexity is the same imho, both versions are fairly trivial.
-I wasn't out to optimize this in a memory copy sense. To me the most
-precious resource is the data stream to the app, and 128 bytes
-is probably 6 times larger than the normal message would be. With
-the actual trace structure, we are down to about 3 times the byte
-size.
 
-So it was just an idea, I don't care much either way. With 128 bytes,
-we could just put the buffer on the stack (and still do the copy to
-the relay buffer). The per-cpu buffers has the advantage that we
-could grow the size easily if we wanted to.
+On Sun, 25 May 2008, Pavel Machek wrote:
+> > +		if (unlikely(cpu != smp_processor_id())) {
+> > +			if (loops <= TSC_MIGRATE_COUNT)
+> > +				break;
+> > +			cpu = smp_processor_id();
+> > +			rdtscl(bclock);
+> > +			loops -= TSC_MIGRATE_COUNT;
+> > +		} else {
+> > +			rdtscl(now);
+> > +			if ((now - bclock) >= loops)
+> > +				break;
+> > +			loops -= (now - bclock);
+> > +			bclock = now;
+>
+> What happens with different cpus running on different frequencies...?
+> Cpufreq?
 
-So, given everything, which do you prefer?
+It's not even protected with the old code.
 
--- 
-Jens Axboe
+inline void __const_udelay(unsigned long xloops)
+{
+	__delay(((xloops * HZ *
+		cpu_data(raw_smp_processor_id()).loops_per_jiffy) >> 32) + 1);
+}
+
+Here it calculates the loops_per_jiffy for the CPU and calls into __delay.
+But it can easily be preempted here and the delay could run on another
+CPU.
+
+-- Steve
 
