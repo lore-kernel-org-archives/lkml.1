@@ -1,40 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbYE1Tyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYE1T6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754442AbYE1Tyz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYE1Tys
+	id S1754350AbYE1T6X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYE1T6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:54:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:9168 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752960AbYE1Tyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:54:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=eWncxMffYG1bwfqpmIt8309OwMdeUO6RIF6X3gMwdncL1xlk2/sxdLld0J71+hFZV/vHtsSyXlskeyJLMLjU+OyEOyraRKQnZ5gNVjV4QQ9atId1PpH6T62BMFvqlHLXJYBko0/iFB2bpJgxpD0XimFpe3e5ULcpL9iAykobpBI=
-Message-ID: <84144f020805281254o16c903b6p2c14e5874d5ad67f@mail.gmail.com>
-Date: Wed, 28 May 2008 22:54:47 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Steve French" <smfrench@gmail.com>
-Subject: Re: optimizing out inline functions
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <524f69650805281251r1b1d99a1tc3223d15e3aeb50c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 28 May 2008 15:58:15 -0400
+Received: from 1wt.eu ([62.212.114.60]:1308 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752669AbYE1T6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 15:58:14 -0400
+Date: Wed, 28 May 2008 21:56:37 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Fede <fedux@lugmen.org.ar>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Re: bad pmd ffff810000207238(9090909090909090).
+Message-ID: <20080528195637.GA11662@1wt.eu>
+References: <483CBCDD.10401@lugmen.org.ar> <Pine.LNX.4.64.0805281922530.7959@blonde.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <524f69650805281251r1b1d99a1tc3223d15e3aeb50c@mail.gmail.com>
-X-Google-Sender-Auth: 0d410cbb5fa67446
+In-Reply-To: <Pine.LNX.4.64.0805281922530.7959@blonde.site>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 10:51 PM, Steve French <smfrench@gmail.com> wrote:
-> Is one or the other style (with or without #define of empty function)
-> preferred?  Does the compiler optimize both #else clauses out
-> properly?  sparse and checkpatch seem to take either
+On Wed, May 28, 2008 at 07:36:07PM +0100, Hugh Dickins wrote:
+> On Tue, 27 May 2008, Fede wrote:
+> > 
+> > Today I tried to start a firewalling script and failed due to an unrelated
+> > issue, but when I checked the log I saw this:
+> > 
+> > May 27 20:38:15 kaoz ip_tables: (C) 2000-2006 Netfilter Core Team
+> > May 27 20:38:28 kaoz Netfilter messages via NETLINK v0.30.
+> > May 27 20:38:28 kaoz nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+> > May 27 20:38:28 kaoz ctnetlink v0.93: registering with nfnetlink.
+> > May 27 20:38:28 kaoz ClusterIP Version 0.8 loaded successfully
+> > May 27 20:38:28 kaoz mm/memory.c:127: bad pmd
+> > ffff810000207238(9090909090909090).
+> > 
+> > I also found another post with a very similar issue. The other post had almost
+> > the same message (*mm*/*memory*.*c*:*127*: *bad* *pmd*
+> > ffff810000207808(9090909090909090).)
+> > 
+> > Does anyone know what is it?
+> 
+> Thanks a lot for re-reporting this: it was fun to work it out.
+> It's not a rootkit, it's harmless, but we ought to fix the noise.
+> Simple patch below, but let me explain more verbosely first.
+> 
+> What was really interesting in your report was that the address
+> is so close to that in OGAWA-San's report.  I had a look at that
+> page on my x86_64 boxes, and they have lots of 0x90s there too.
+> It's just some page alignment filler that x86_64 kernel startup
+> has missed cleaning up - patch below fixes that.  There's no
+> security aspect to it: the entries were already not-present,
+> they just generate this noise by triggering the pmd_bad test.
 
-Both are optimized out but empty function is preferred for type checking.
+Is there a particular reason we use 0x90 as an alignment filler ?
+If we can put anything else, at least next time it will not get
+confused with NOPs. We could use 0xAF (Alignment Filler) for
+instance.
+
+Well done BTW ;-)
+
+Reagrds,
+Willy
+
