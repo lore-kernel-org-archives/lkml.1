@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbYE1TEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbYE1TFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754234AbYE1TEy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYE1TEr
+	id S1754381AbYE1TFv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYE1TFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:04:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41031 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752506AbYE1TEq (ORCPT
+	Wed, 28 May 2008 15:05:42 -0400
+Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:2398 "EHLO
+	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbYE1TFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:04:46 -0400
-Date: Wed, 28 May 2008 12:02:53 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD
- Barcelona
-Message-ID: <20080528120253.26fcdb9d@infradead.org>
-In-Reply-To: <20080528165813.8D8E5814C@erda.amd.com>
-References: <20080526180616.GB2752@erda.amd.com>
-	<20080528165813.8D8E5814C@erda.amd.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 28 May 2008 15:05:41 -0400
+X-Greylist: delayed 513 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 15:05:41 EDT
+Date: Wed, 28 May 2008 18:56:11 +0000
+From: thunder7@xs4all.nl
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: thunder7@xs4all.nl, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: vt/fbcon: fix background color on line feed
+Message-ID: <20080528185611.GA25696@wl500g>
+References: <alpine.LNX.1.10.0805101015110.19952@fbirervta.pbzchgretzou.qr> <20080527193304.GA21560@amd64.of.nowhere> <alpine.LNX.1.10.0805281003040.12937@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0805281003040.12937@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Sep 2007 10:17:39 +0200
-Robert Richter <robert.richter@amd.com> wrote:
+From: Jan Engelhardt <jengelh@medozas.de>
+Date: Wed, May 28, 2008 at 07:08:30PM +0200
 
-Hi,
-
-As said before, I like the general approach. I have two comments below
-though...
-
+> commit 7f676fb7cf34dd2982d0cf79aeea7e5b06ad91eb
+> Author: Jan Engelhardt <jengelh@medozas.de>
+> Date:   Wed May 28 10:00:41 2008 +0200
+> 
+>     vt: fix background color on line feed, DEC invert
+>     
+>     Original report: """I used to force my console to black-on-white by
+>     the command `setterm -inversescreen on`. In 2.6.26-rc4, I get lots of
+>     black background characters."""
+>     
+>     Another addendum to commit c9e587ab.
+>     This was previously missed out since I was not aware of what
+>     vc_decscnm was for.
+>     
+>     Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
+> ---
+>  drivers/char/vt.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+> index fa1ffbf..b8b2498 100644
+> --- a/drivers/char/vt.c
+> +++ b/drivers/char/vt.c
+> @@ -434,7 +434,7 @@ static void update_attr(struct vc_data *vc)
+>  	              vc->vc_blink, vc->vc_underline,
+>  	              vc->vc_reverse ^ vc->vc_decscnm, vc->vc_italic);
+>  	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm, 0) << 8) | ' ';
+> -	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, false, false) << 8) | ' ';
+> +	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, vc->vc_decscnm, false) << 8) | ' ';
+>  }
 >  
-> -	if ((bus > 255) || (devfn > 255) || (reg > 255)) 
-> +	if ((bus > 255) || (devfn > 255) || (reg > 4095))
->  		return -EINVAL;
->  
+>  /* Note: inverting the screen twice should revert to the original state */
+> 
 
-Comment 1:
-Can we make the 256/4096 thing conditional on actually having the
-feature somehow? (while not making the code TOO ugly)
+Thanks, that fixes my issue with setterm -inversescreen on in
+2.6.26-rc4.
 
-Comment 2: 
-The cpu_has_XXX is a bit dubious; while it's dependent on your cpu
-model right now, I'm a bit hesitant to consider a PCI feature something
-that belongs in the cpu_has_XXX namespace. (Yes I know PCI is moving
-into the cpu package, but on a logical level it seems just the wrong
-place).
-Do we need a platform_has_XXX namespace for things like this?
-
-
+Kind regards,
+Jurriaan
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+"Light makes shadows. We all cast them. We'd be foolish to believe other-
+wise. But that one--" She tilted her chin over her shoulder. "She darkens
+those near her. She was a shadow before the sun ever touched her."
+	Melanie Rawn - Skybowl
