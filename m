@@ -1,180 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbYE1QYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYE1QZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752816AbYE1QYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYE1QYm
+	id S1753316AbYE1QZr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYE1QZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:24:42 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:45889 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751316AbYE1QYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:24:41 -0400
-Date: Wed, 28 May 2008 22:03:18 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       pj@sgi.com, Balbir Singh <balbir@in.ibm.com>,
-       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
-Subject: Re: fair group scheduler not so fair?
-Message-ID: <20080528163318.GG30285@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <4834B75A.40900@nortel.com> <20080527171528.GD30285@linux.vnet.ibm.com> <483C4F5A.2010104@nortel.com>
+	Wed, 28 May 2008 12:25:39 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:44299 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbYE1QZi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 12:25:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=i91Ia4PP58E5EcN6e0sJEmF0xepyKPrvbm/oQ1rxpeSo24ajgxgINvWrhKh9WBxjJcPf19/PsxwNsjgc7pFej3n40Rl2trcAup6MfkRpP3K2J8UbMWl294QDweGSxePZAQ/8aqr0abid4x/E9lJ3Tq46S49Y4eDHTk4joBmPOd8=
+Date: Wed, 28 May 2008 20:25:27 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/11] x86: nmi_32/64.c - use apic_write_around instead
+	of apic_write
+Message-ID: <20080528162527.GB6910@cvg>
+References: <20080524153630.669797039@gmail.com>> <48383740.0407560a.4764.7d1b@mx.google.com> <Pine.LNX.4.55.0805281628320.29522@cliff.in.clinika.pl> <20080528160413.GA6910@cvg> <Pine.LNX.4.55.0805281712200.29522@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <483C4F5A.2010104@nortel.com>
+In-Reply-To: <Pine.LNX.4.55.0805281712200.29522@cliff.in.clinika.pl>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 12:13:46PM -0600, Chris Friesen wrote:
->> Can you check if this makes a difference for you as well?
->
-> Initially it looked promising.  I put pid 2498 in group A, and pids 2499 
-> and 2500 in group B.  2498 got basically a full cpu, and the other two got 
-> 50% each.
->
-> However, I then moved pid 2499 from group B to group A, and the system got 
-> stuck in the following behaviour:
->
-> 2498 cfriesen  20   0  3800  392  336 R 99.7  0.0   3:00.22 cat
-> 2500 cfriesen  20   0  3800  392  336 R 66.7  0.0   1:39.10 cat
-> 2499 cfriesen  20   0  3800  392  336 R 33.0  0.0   1:24.31 cat
->
-> I reproduced this a number of times.
+[Maciej W. Rozycki - Wed, May 28, 2008 at 05:13:08PM +0100]
+| On Wed, 28 May 2008, Cyrill Gorcunov wrote:
+| 
+| > Could you take a look please on
+| > 
+| > http://lkml.org/lkml/2008/5/26/146
+| > 
+| > i'm investigateting what is happening (Adrian pointed on
+| > main reason I think) but can't understand why is that.
+| 
+|  Do you have a link with the patch included?
+| 
+|   Maciej
+| 
 
-Thanks for trying this combination. I discovered a task-leak in this loop
-(__load_balance_iterator):
-
-        /* Skip over entities that are not tasks */
-        do {
-                se = list_entry(next, struct sched_entity, group_node);
-                next = next->next;
-        } while (next != &cfs_rq->tasks && !entity_is_task(se));
-
-        if (next == &cfs_rq->tasks)
-                return NULL;
-
-We seem to be skipping the last element in the task list always. In your
-case, the lone task in Group a/b is always skipped because of this.
-
-The following hunk seems to fix this:
-
-@@ -1386,9 +1386,6 @@ __load_balance_iterator(struct cfs_rq *c
- 		next = next->next;
- 	} while (next != &cfs_rq->tasks && !entity_is_task(se));
- 
--	if (next == &cfs_rq->tasks)
--		return NULL;
--
- 	cfs_rq->balance_iterator = next;
- 
- 	if (entity_is_task(se))
-
-
-Updated patch (on top of 2.6.26-rc3 +
-http://programming.kicks-ass.net/kernel-patches/sched-smp-group-fixes/)
-below.  Pls let me know how it fares!
-
+Here is the patch itself:
 
 ---
- include/linux/sched.h |    4 ++++
- init/Kconfig          |    2 +-
- kernel/sched.c        |    5 ++++-
- kernel/sched_debug.c  |    3 ++-
- kernel/sched_fair.c   |    3 ---
- 5 files changed, 11 insertions(+), 6 deletions(-)
+x86: nmi_32.c - add nmi_watchdog_default helper
 
-Index: current/include/linux/sched.h
-===================================================================
---- current.orig/include/linux/sched.h
-+++ current/include/linux/sched.h
-@@ -698,7 +698,11 @@ enum cpu_idle_type {
- #define SCHED_LOAD_SHIFT	10
- #define SCHED_LOAD_SCALE	(1L << SCHED_LOAD_SHIFT)
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
+
+Index: linux-2.6.git/arch/x86/kernel/nmi_32.c
+====================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/nmi_32.c	2008-05-24 13:01:21.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/nmi_32.c	2008-05-24 13:04:20.000000000 +0400
+@@ -51,6 +51,17 @@ static DEFINE_PER_CPU(short, wd_enabled)
  
-+#ifdef CONFIG_FAIR_GROUP_SCHED
-+#define SCHED_LOAD_SCALE_FUZZ	0
-+#else
- #define SCHED_LOAD_SCALE_FUZZ	SCHED_LOAD_SCALE
-+#endif
+ static int endflag __initdata = 0;
  
- #ifdef CONFIG_SMP
- #define SD_LOAD_BALANCE		1	/* Do load balancing on this domain. */
-Index: current/init/Kconfig
-===================================================================
---- current.orig/init/Kconfig
-+++ current/init/Kconfig
-@@ -349,7 +349,7 @@ config RT_GROUP_SCHED
- 	  See Documentation/sched-rt-group.txt for more information.
- 
- choice
--	depends on GROUP_SCHED
-+	depends on GROUP_SCHED && (FAIR_GROUP_SCHED || RT_GROUP_SCHED)
- 	prompt "Basis for grouping tasks"
- 	default USER_SCHED
- 
-Index: current/kernel/sched.c
-===================================================================
---- current.orig/kernel/sched.c
-+++ current/kernel/sched.c
-@@ -1534,6 +1534,9 @@ tg_shares_up(struct task_group *tg, int 
- 	unsigned long shares = 0;
- 	int i;
- 
-+	if (!tg->parent)
++/* Run after command line and cpu_init init, but before all other checks */
++void nmi_watchdog_default(void)
++{
++	if (nmi_watchdog != NMI_DEFAULT)
 +		return;
++	if (lapic_watchdog_ok())
++		nmi_watchdog = NMI_LOCAL_APIC;
++	else
++		nmi_watchdog = NMI_IO_APIC;
++}
 +
- 	for_each_cpu_mask(i, sd->span) {
- 		rq_weight += tg->cfs_rq[i]->load.weight;
- 		shares += tg->cfs_rq[i]->shares;
-@@ -2919,7 +2922,7 @@ next:
- 	 * skip a task if it will be the highest priority task (i.e. smallest
- 	 * prio value) on its new queue regardless of its load weight
- 	 */
--	skip_for_load = (p->se.load.weight >> 1) > rem_load_move +
-+	skip_for_load = (p->se.load.weight >> 1) >= rem_load_move +
- 							 SCHED_LOAD_SCALE_FUZZ;
- 	if ((skip_for_load && p->prio >= *this_best_prio) ||
- 	    !can_migrate_task(p, busiest, this_cpu, sd, idle, &pinned)) {
-Index: current/kernel/sched_debug.c
-===================================================================
---- current.orig/kernel/sched_debug.c
-+++ current/kernel/sched_debug.c
-@@ -119,7 +119,7 @@ void print_cfs_rq(struct seq_file *m, in
- 	struct sched_entity *last;
- 	unsigned long flags;
- 
--#if !defined(CONFIG_CGROUP_SCHED) || !defined(CONFIG_USER_SCHED)
-+#ifndef CONFIG_CGROUP_SCHED
- 	SEQ_printf(m, "\ncfs_rq[%d]:\n", cpu);
- #else
- 	char path[128] = "";
-@@ -170,6 +170,7 @@ void print_cfs_rq(struct seq_file *m, in
- #ifdef CONFIG_FAIR_GROUP_SCHED
  #ifdef CONFIG_SMP
- 	SEQ_printf(m, "  .%-30s: %lu\n", "shares", cfs_rq->shares);
-+	SEQ_printf(m, "  .%-30s: %lu\n", "h_load", cfs_rq->h_load);
- #endif
- #endif
- }
-Index: current/kernel/sched_fair.c
-===================================================================
---- current.orig/kernel/sched_fair.c
-+++ current/kernel/sched_fair.c
-@@ -1386,9 +1386,6 @@ __load_balance_iterator(struct cfs_rq *c
- 		next = next->next;
- 	} while (next != &cfs_rq->tasks && !entity_is_task(se));
+ /* The performance counters used by NMI_LOCAL_APIC don't trigger when
+  * the CPU is idle. To make sure the NMI watchdog really ticks on all
+@@ -437,12 +448,8 @@ int proc_nmi_enabled(struct ctl_table *t
+ 		return -EIO;
+ 	}
  
--	if (next == &cfs_rq->tasks)
--		return NULL;
--
- 	cfs_rq->balance_iterator = next;
+-	if (nmi_watchdog == NMI_DEFAULT) {
+-		if (lapic_watchdog_ok())
+-			nmi_watchdog = NMI_LOCAL_APIC;
+-		else
+-			nmi_watchdog = NMI_IO_APIC;
+-	}
++	/* if nmi_watchdog is not set yet, then set it */
++	nmi_watchdog_default();
  
- 	if (entity_is_task(se))
+ 	if (nmi_watchdog == NMI_LOCAL_APIC) {
+ 		if (nmi_watchdog_enabled)
+Index: linux-2.6.git/include/asm-x86/nmi.h
+====================================================================
+--- linux-2.6.git.orig/include/asm-x86/nmi.h	2008-05-24 13:00:50.000000000 +0400
++++ linux-2.6.git/include/asm-x86/nmi.h	2008-05-24 13:04:51.000000000 +0400
+@@ -38,11 +38,9 @@ static inline void unset_nmi_pm_callback
+ 
+ #ifdef CONFIG_X86_64
+ extern void default_do_nmi(struct pt_regs *);
+-extern void nmi_watchdog_default(void);
+-#else
+-#define nmi_watchdog_default() do {} while (0)
+ #endif
+ 
++extern void nmi_watchdog_default(void);
+ extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
+ extern int check_nmi_watchdog(void);
+ extern int nmi_watchdog_enabled;
+---
 
+So I've moved a part of code (32bit) from proc_nmi_enabled() to
+nmi_watchdog_default() BUT this nmi_watchdog_default() also called
+from smpboot.c:native_smp_prepare_cpus() and before this patch
+this call was just an empty call (and eliminated by gcc I think)
+now it's not empy. But how it leads to hang I can't understand.
+The only thing is done - nmi_watchdog is set to NMI_LOCAL_APIC
+or NMI_IO_APIC and my only suspicious is that something happens
+asynchronously and leads to machine hang. Let me know if I wrote
+in obscure manner.
 
--- 
-Regards,
-vatsa
+		- Cyrill -
