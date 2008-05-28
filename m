@@ -1,73 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYE1KlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYE1Kmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYE1KlK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 06:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYE1Kk6
+	id S1754311AbYE1Kmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 06:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYE1Kmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 06:40:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:40070 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751863AbYE1Kk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 06:40:58 -0400
-Message-ID: <483D3697.1070702@goop.org>
-Date: Wed, 28 May 2008 11:40:23 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 28 May 2008 06:42:31 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59672 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbYE1Kmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 06:42:31 -0400
+Date: Wed, 28 May 2008 12:42:57 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, macro@ds2.pg.gda.pl
+Subject: Re: i8259: fix final uglyness
+Message-ID: <20080528104257.GD5728@elf.ucw.cz>
+References: <20080520151528.GA1596@elf.ucw.cz> <20080520204750.GA31409@elte.hu> <20080521094402.GB12763@elf.ucw.cz> <alpine.LFD.1.10.0805222030050.3295@apollo.tec.linutronix.de> <20080522223232.GA1602@elf.ucw.cz> <alpine.LFD.1.10.0805271043220.3295@apollo.tec.linutronix.de> <20080527085541.GA1708@elf.ucw.cz> <alpine.LFD.1.10.0805271100450.3295@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@qumranet.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>
-Subject: Re: Question about interrupt routing and irq allocation
-References: <483B34CA.8000600@goop.org> <20080527083729.GF29246@elte.hu>	<483BD843.5080009@goop.org> <20080527145606.GB24457@elte.hu>	<483C35AA.5060102@goop.org> <m1ve0yai0j.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1ve0yai0j.fsf@frodo.ebiederm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805271100450.3295@apollo.tec.linutronix.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> - I think using create_irq is a good step.
-> - I think all vectors are wasted in the case of Xen.
->   
+Hi!
 
-The case I'm discussing now is in hvm domains - ie, fully virtualized PC 
-platform. I'm adding a driver to poke a hole through all the emulated 
-hardware to get directly to the underlying Xen layer so that we can run 
-paravirtual drivers to get better performance. Only the irqs associated 
-with pv drivers will waste their vectors.
+> > > > Introduce IRQx_VECTOR on 32-bit, so that #ifdef noise is kept
+> > > > down. There should be no object code change.
+> > > 
+> > > thanks for doing this. The patch fails due to other changes in this
+> > > area (especially the hw_irq.h unification). Can you please redo against:
 
-> - I think we want a individual irq for each xen irq source.
->   Sparc already does a demux in similar circumstances with
->   a queue of received MSI messages an a single cpu irq
->   that these get demuxed from.
->   If we don't have individual irqs per drivers it will be hard
->   to share a source base with native drivers.
->   
+Done.
 
-In this case the sharing is between fully paravirtualized paravirt_ops 
-Xen and pv-on-hvm drivers. In general I want those drivers to look as 
-normal as possible, so they should use irqs in a normal way.
+--- 
 
-> - I think it would be very nice if we could get irqs allocated
->   in request_irq instead of create_irq (and equivalents).
->   
+Introduce IRQx_VECTOR on 32-bit, so that #ifdef noise is kept
+down. There should be no object code change.
 
-Something along the lines of passing -1 as the irq, and it would return 
-the allocated irq? It's not clear to me how all that would fit together.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-> - I think ultimately it makes sense to port the per vector
->   code to 32bit linux.  On single cpu systems the cost should
->   be just a hair more code, but no extra data structures.  We
->   can easily restrict the irq allocation to allocating the same
->   vector on all cpus for any old machines that prove flaky with
->   irq migration.
->
->   The code between the two architectures we kept fairly close
->   in sync when I worked on it so a merge should not be a big deal.
+diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
+index 7a0fda8..dc92b49 100644
+--- a/arch/x86/kernel/i8259.c
++++ b/arch/x86/kernel/i8259.c
+@@ -297,34 +297,28 @@ void init_8259A(int auto_eoi)
+ 	 * outb_pic - this has to work on a wide range of PC hardware.
+ 	 */
+ 	outb_pic(0x11, PIC_MASTER_CMD);	/* ICW1: select 8259A-1 init */
+-#ifndef CONFIG_X86_64
+-	outb_pic(0x20 + 0, PIC_MASTER_IMR);	/* ICW2: 8259A-1 IR0-7 mapped to 0x20-0x27 */
+-	outb_pic(1U << PIC_CASCADE_IR, PIC_MASTER_IMR);	/* 8259A-1 (the master) has a slave on IR2 */
+-#else /* CONFIG_X86_64 */
+-	/* ICW2: 8259A-1 IR0-7 mapped to 0x30-0x37 */
++
++	/* ICW2: 8259A-1 IR0-7 mapped to 0x30-0x37 on x86-64,
++	                       to 0x20-0x27 on i386 */
+ 	outb_pic(IRQ0_VECTOR, PIC_MASTER_IMR);
++
+ 	/* 8259A-1 (the master) has a slave on IR2 */
+-	outb_pic(0x04, PIC_MASTER_IMR);
+-#endif /* CONFIG_X86_64 */
++	outb_pic(1U << PIC_CASCADE_IR, PIC_MASTER_IMR);
++
+ 	if (auto_eoi)	/* master does Auto EOI */
+ 		outb_pic(MASTER_ICW4_DEFAULT | PIC_ICW4_AEOI, PIC_MASTER_IMR);
+ 	else		/* master expects normal EOI */
+ 		outb_pic(MASTER_ICW4_DEFAULT, PIC_MASTER_IMR);
+ 
+ 	outb_pic(0x11, PIC_SLAVE_CMD);	/* ICW1: select 8259A-2 init */
+-#ifndef CONFIG_X86_64
+-	outb_pic(0x20 + 8, PIC_SLAVE_IMR);	/* ICW2: 8259A-2 IR0-7 mapped to 0x28-0x2f */
+-	outb_pic(PIC_CASCADE_IR, PIC_SLAVE_IMR);	/* 8259A-2 is a slave on master's IR2 */
+-	outb_pic(SLAVE_ICW4_DEFAULT, PIC_SLAVE_IMR); /* (slave's support for AEOI in flat mode is to be investigated) */
+-#else /* CONFIG_X86_64 */
+-	/* ICW2: 8259A-2 IR0-7 mapped to 0x38-0x3f */
++
++	/* ICW2: 8259A-2 IR0-7 mapped to IRQ8_VECTOR */
+ 	outb_pic(IRQ8_VECTOR, PIC_SLAVE_IMR);
+ 	/* 8259A-2 is a slave on master's IR2 */
+ 	outb_pic(PIC_CASCADE_IR, PIC_SLAVE_IMR);
+ 	/* (slave's support for AEOI in flat mode is to be investigated) */
+ 	outb_pic(SLAVE_ICW4_DEFAULT, PIC_SLAVE_IMR);
+ 
+-#endif /* CONFIG_X86_64 */
+ 	if (auto_eoi)
+ 		/*
+ 		 * In AEOI mode we just have to mask the interrupt
+diff --git a/include/asm-x86/irq_vectors.h b/include/asm-x86/irq_vectors.h
+index 3cb6d8c..b58581e 100644
+--- a/include/asm-x86/irq_vectors.h
++++ b/include/asm-x86/irq_vectors.h
+@@ -18,17 +18,20 @@ # define IA32_SYSCALL_VECTOR	0x80
+ #endif
+ 
+ /*
+- * Vectors 0x20-0x2f are used for ISA interrupts on 32 bit.
+- *
+  * Reserve the lowest usable priority level 0x20 - 0x2f for triggering
+  * cleanup after irq migration on 64 bit.
+  */
+ #define IRQ_MOVE_CLEANUP_VECTOR	FIRST_EXTERNAL_VECTOR
+ 
+ /*
+- * Vectors 0x30-0x3f are used for ISA interrupts on 64 bit
++ * Vectors 0x20-0x2f are used for ISA interrupts on 32 bit.
++ * Vectors 0x30-0x3f are used for ISA interrupts on 64 bit.
+  */
++#ifdef CONFIG_X86_32
++#define IRQ0_VECTOR		(FIRST_EXTERNAL_VECTOR)
++#else
+ #define IRQ0_VECTOR		(FIRST_EXTERNAL_VECTOR + 0x10)
++#endif
+ #define IRQ1_VECTOR		(IRQ0_VECTOR + 1)
+ #define IRQ2_VECTOR		(IRQ0_VECTOR + 2)
+ #define IRQ3_VECTOR		(IRQ0_VECTOR + 3)
 
-Well, if I find myself at a loose end, I'll have a look at it.
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
