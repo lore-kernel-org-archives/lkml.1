@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYE1Fin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbYE1GCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYE1Fin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 01:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYE1Fig
+	id S1754212AbYE1GCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 02:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYE1GCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 01:38:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48333 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751342AbYE1Fif (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 01:38:35 -0400
-Date: Tue, 27 May 2008 22:38:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Guillaume Chazarain <guichaz@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
-Message-Id: <20080527223832.f7131761.akpm@linux-foundation.org>
-In-Reply-To: <20080523203429.11846.84137.stgit@localhost.localdomain>
-References: <20080523203429.11846.84137.stgit@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 28 May 2008 02:02:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53240 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753280AbYE1GCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 02:02:08 -0400
+Date: Wed, 28 May 2008 16:01:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
+       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH -next] block: genhd errors when CONFIG_PROC_FS=n
+Message-Id: <20080528160158.775932b5.sfr@canb.auug.org.au>
+In-Reply-To: <20080527222036.1141e43a.akpm@linux-foundation.org>
+References: <20080523094411.06f173e0.randy.dunlap@oracle.com>
+	<20080527222036.1141e43a.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__28_May_2008_16_01_58_+1000__rX.On58Al+ZTiAX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 22:34:29 +0200 Guillaume Chazarain <guichaz@gmail.com> wrote:
+--Signature=_Wed__28_May_2008_16_01_58_+1000__rX.On58Al+ZTiAX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index 495214d..0e6881e 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -454,6 +454,7 @@ void generic_sync_sb_inodes(struct super_block *sb,
->  		struct address_space *mapping = inode->i_mapping;
->  		struct backing_dev_info *bdi = mapping->backing_dev_info;
->  		long pages_skipped;
-> +		int err;
->  
->  		if (!bdi_cap_writeback_dirty(bdi)) {
->  			redirty_tail(inode);
-> @@ -498,7 +499,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
->  		BUG_ON(inode->i_state & I_FREEING);
->  		__iget(inode);
->  		pages_skipped = wbc->pages_skipped;
-> -		__writeback_single_inode(inode, wbc);
-> +		err = __writeback_single_inode(inode, wbc);
-> +		mapping_set_error(mapping, err);
->  		if (wbc->sync_mode == WB_SYNC_HOLD) {
->  			inode->dirtied_when = jiffies;
->  			list_move(&inode->i_list, &sb->s_dirty);
+On Tue, 27 May 2008 22:20:36 -0700 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
+>
+> This is a fix against
+>=20
+> commit ce8568d9535b4756ea304a97ea803314ce895d3c
+> Author: Greg Kroah-Hartman <gregkh@suse.de>
+> Date:   Thu May 22 17:21:08 2008 -0400
 
-ho hum, I've forgotten why I didn't like this.  Let's give it a run.
+Yeah,  Greg has added it to his series for tomorrow and I have added it
+to the end of linux-next for today.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__28_May_2008_16_01_58_+1000__rX.On58Al+ZTiAX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIPPVdTgG2atn1QN8RAp2fAKCKiz4o3TzTabVRRyLBfZ9lG7jaogCePn4o
+2de/YC3fT7uWKPCQwfo/7FQ=
+=vHYY
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__28_May_2008_16_01_58_+1000__rX.On58Al+ZTiAX--
