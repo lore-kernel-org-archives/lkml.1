@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbYE1NiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbYE1NkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbYE1NiY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYE1NiK
+	id S1752897AbYE1NkA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbYE1Njw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:38:10 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:39997 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbYE1NiI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:38:08 -0400
-Message-ID: <483D5FED.7080709@linux.vnet.ibm.com>
-Date: Wed, 28 May 2008 19:06:45 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [PATCH -mm 00/16] VM pageout scalability improvements (V8)
-References: <20080523195506.084894989@redhat.com> <483B0077.7000207@linux.vnet.ibm.com> <20080526153318.29edc0b2@bree.surriel.com> <483D46CE.2020507@linux.vnet.ibm.com> <2f11576a0805280633p2be93911n3050c11861c1ebb@mail.gmail.com>
-In-Reply-To: <2f11576a0805280633p2be93911n3050c11861c1ebb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 May 2008 09:39:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49854 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbYE1Njw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 09:39:52 -0400
+Date: Wed, 28 May 2008 09:39:18 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mm 07/16] second chance replacement for anonymous pages
+Message-ID: <20080528093918.37660860@bree.surriel.com>
+In-Reply-To: <483CEF78.9050802@mxp.nes.nec.co.jp>
+References: <20080523195506.084894989@redhat.com>
+	<20080523195535.302440037@redhat.com>
+	<483CEF78.9050802@mxp.nes.nec.co.jp>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Hi balir-san,
-> 
->> I've run into a case where with the splitvm patches the memory controller
->> immediately OOMs a task in the cgroup on exceeding it's limit. I am going to try
->> and find the root cause for it.
-> 
-> I sent the patch of fix this problem.
-> please see it.
+On Wed, 28 May 2008 14:36:56 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-Yes, I just saw it after I sent out my email. Let me try those patches. I'll
-revert back
+> >  	/*
+> > +	 * Count the referenced anon pages as rotated, to balance pageout
+> > +	 * scan pressure between file and anonymous pages in get_sacn_ratio.
+> > +	 */
+> > +	if (!file)
+> > +		zone->recent_rotated_anon += pgmoved;
+> > +
+> 
+> Shouldn't 'pgmoved' be cleared to 0 before scanning l_hold?
+> It's used to store the result of sc->isolate_pages() before
+> scanning l_hold.
 
+It is zeroed 2 statements down.
+
+        if (!file)
+                zone->recent_rotated_anon += pgmoved;
+
+        /*
+         * Now put the pages back on the appropriate [file or anon] inactive
+         * and active lists.
+         */
+        pagevec_init(&pvec, 1);
+        pgmoved = 0;
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+All rights reversed.
