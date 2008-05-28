@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751231AbYE1Ndr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYE1Neh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751231AbYE1Ndr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYE1Ndd
+	id S1753252AbYE1Neh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYE1NeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:33:33 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:51602 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752488AbYE1Ndc (ORCPT
+	Wed, 28 May 2008 09:34:23 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:60157 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837AbYE1NeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:33:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=uqG2Dqcv/Ww++PvrqNYBeJF+WznSvd4gvCHQOf30sF/L5VqzZ8WuZfLBUbC/wMmgy/2DIhu1goBFICq2oUFyjCuY9cJ0nulKoXFWNjeRUAnCKfH1NERsCGoWnVL3MnERerM5/zNGu1gFi5/wOEpRsekj5tI0Ps7/2YMMcqifo10=
-Message-ID: <2f11576a0805280633p2be93911n3050c11861c1ebb@mail.gmail.com>
-Date: Wed, 28 May 2008 22:33:26 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH -mm 00/16] VM pageout scalability improvements (V8)
-Cc: "Rik van Riel" <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Lee Schermerhorn" <lee.schermerhorn@hp.com>
-In-Reply-To: <483D46CE.2020507@linux.vnet.ibm.com>
+	Wed, 28 May 2008 09:34:21 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080523195506.084894989@redhat.com>
-	 <483B0077.7000207@linux.vnet.ibm.com>
-	 <20080526153318.29edc0b2@bree.surriel.com>
-	 <483D46CE.2020507@linux.vnet.ibm.com>
-X-Google-Sender-Auth: 1d8065a6945f499c
+Date: Wed, 28 May 2008 08:34:05 -0500
+From: Felipe Balbi <me@felipebalbi.com>
+To: jidong xiao <jidong.xiao@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, greg@kroah.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] remove Documentation/usb/uhci.txt
+In-Reply-To: <4104961b0805272338o5fe40727i26b74f195ef1af89@mail.gmail.com>
+References: <20080519220024.GX17716@cs181133002.pp.htv.fi> <4104961b0805272338o5fe40727i26b74f195ef1af89@mail.gmail.com>
+Message-ID: <417e6455e9cc5c73d1ddeb00592b77b3@felipebalbi.com>
+User-Agent: FelipeBalbi.com Webmail
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi balir-san,
 
-> I've run into a case where with the splitvm patches the memory controller
-> immediately OOMs a task in the cgroup on exceeding it's limit. I am going to try
-> and find the root cause for it.
 
-I sent the patch of fix this problem.
-please see it.
+On Wed, 28 May 2008 14:38:42 +0800, "jidong xiao" <jidong.xiao@gmail.com>
+wrote:
+> On Tue, May 20, 2008 at 6:00 AM, Adrian Bunk <bunk@kernel.org> wrote:
+>> The driver was removed before kernel 2.6.0
+>>
+>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>>
+>> ---
+>>
+> 
+> But I think this document is still very useful and informative
+> especially to those who are not quite familiar with UHCI HCDs. It is
+> not necessary to remove this one at the moment.
+
+True. I vote for keeping the doc :-)
+
+
+-- 
+Best Regards,
+
+Felipe Balbi
+http://felipebalbi.com
+me@felipebalbi.com
+
