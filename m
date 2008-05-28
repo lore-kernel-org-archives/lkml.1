@@ -1,104 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYE1KC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbYE1KET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260AbYE1KC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 06:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYE1KCV
+	id S1754281AbYE1KET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 06:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYE1KEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 06:02:21 -0400
-Received: from gw.goop.org ([64.81.55.164]:53966 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbYE1KCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 06:02:21 -0400
-Message-ID: <483D2D8A.5040800@goop.org>
-Date: Wed, 28 May 2008 11:01:46 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Wed, 28 May 2008 06:04:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51580 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751722AbYE1KEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 06:04:09 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX1/bZLIRbeXbKByyWz+g+NyDoLzCuZIdgYhOCDtMpF
+	IAWXsP00/js/Vb
+Date: Wed, 28 May 2008 12:03:57 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
-References: <200805110030.15510.yhlu.kernel@gmail.com>	 <200805180118.57863.yhlu.kernel@gmail.com>	 <200805211840.18619.yhlu.kernel@gmail.com>	 <200805251000.10205.yhlu.kernel@gmail.com>	 <alpine.LFD.1.10.0805271744080.3295@apollo.tec.linutronix.de>	 <483C70F9.2030901@goop.org>	 <86802c440805271406l4348db33r5622c440b494baa2@mail.gmail.com>	 <483C7BB0.6080901@goop.org>	 <86802c440805271435l744eab84xe55ac9ce6196c03b@mail.gmail.com>	 <483C8157.7080702@goop.org> <86802c440805271552k724415a6i66686b9abb8c083f@mail.gmail.com>
-In-Reply-To: <86802c440805271552k724415a6i66686b9abb8c083f@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: Redzone overwritten with CONFIG_SECURITY
+Message-ID: <20080528100357.GA2510@alice>
+References: <20080526143422.GA3203@alice> <84144f020805270800l5911ed02ia7a92d96a8aa32a7@mail.gmail.com> <20080527174738.GZ30402@sequoia.sous-sol.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080527174738.GZ30402@sequoia.sous-sol.org>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.26-rc4 (x86_64)
+X-Uptime: 11:59:11 up  3:08,  1 user,  load average: 0.21, 0.12, 0.12
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->
-> can you try attached patch?
->   
+* Chris Wright (chrisw@sous-sol.org) wrote:
+> * Pekka Enberg (penberg@cs.helsinki.fi) wrote:
+> > On Mon, May 26, 2008 at 5:34 PM, Eric Sesterhenn <snakebyte@gmx.de> wrote:
+> > > i enabled CONFIG_SECURITY on current git and get tons of
+> > > Redzone overwritten errors during early boot, even
+> > > with CONFIG_SECURITY_CAPABILITIES and CONFIG_SECURITY_NETWORK
+> > > disabled. After a while it ends with a kernel panic
+> > > saying: not syncing: Out of memory and no killable process...
+> > > Root partition is ext3 format.
+> > 
+> > So what kernel version is this and what's the last known version that
+> > worked? As it's early boot crash, maybe you can try to do git bisect
+> > on it?
+> > 
+> > >
+> > > At the moment i dont have a camera at hand, so i'll try
+> > > to write down everything which looks interesting, please tell
+> > > me if i missed something.
+> > >
+> > > The first 24 Bytes of the overwritten section contain
+> > > zeros. Then we have a constant 0x18, and three changing
+> > > values. the next three bites contain exactly the same
+> > > values, first the 0x18, then the two changing ones.
+> > >
+> > > The only value i found so far matching the 0x18 and
+> > > which might be related to CONFIG_SECURITY is CAP_SYS_RESOURCE
+> > > defined in /include/linux/capability.h
+> > >
+> > > BUG hugetlbfs_inode_cache: Redzone overwritten
+> > >
+> > > INFO: 0xccd8e250-0xccd8e253. First byte 0x0 instead of 0xbb
+> > > Info: Slab 0xc119d1c0 objects=12 used=0 fs=0xccd8e000 flags=0x400020c3
+> > > Info: Object 0xccd8e00 offset=0 fp=0xccd8e280
+> > >
+> > > Object 0xccd8e00: 00 00 00 ...
+> > > Object 0xccd8e10: 00 00 00 00 00 00 00 00 00 18 e0 d8 cc 18 e0 d8 cc
+> > > Object 0xccd8e20  00 00 00 ...
+> 
+> That looks like an addr within the object, like an INIT_LIST_HEAD.
+> 
+> > > Pid: 1, comm:swapper Not tainted 2.6.26-rc3-00436-gb373303 #42
+> > > print_trailer
+> > > check_bytes_and_report
+> > > check_object
+> > > __slab_alloc
+> > > kmem_cache_alloc
+> > > ? hugetlbfs_alloc_inode
+> > > ? hugetlbfs_alloc_inode
+> > > hugetlbfs_alloc_inode
+> > > alloc_inote
+> > > new_inode
+> > > hugetlbs_get_inote
+> > > hugetlbfs_fill_super
+> > > ? sget
+> > > ? set_anon_super
+> > > get_sb_node
+> > > hugetlbfs_get_sb
+> > > ? hugetlbfs_fill_super
+> > > vfs_kern_mount
+> > > kern_mount_data
+> > > init_hugetlbfs_fs
+> > > ? init_once
+> > > ? kernel_init
+> > > kernel_init
+> 
+> ok, do_init_calls time frame with that config...CONFIG_SECURITY isn't
+> really doing any allocations, nor much in the way of memory writes.
+> It would get called into via the:
+> 
+>  hugetlbs_get_inode
+>    new_inode
+>      alloc_inode
+>        security_inode_alloc <-- and that'd be basically a no-op
+> 
+> > > Config follows:
+> 
+> I couldn't recreate with that config.
 
-Thanks, that nearly works.  I needed the patch below to get it to 
-successfully boot.
+I did a fresh git-clone and tried again without being able
+to reproduce this.
+I diffed all .h and .c files and except for
+the autogenerated ones they are exactly the same...
 
-For reference, this is what the early reserve map looks like now:
+Is it possible that this was caused because a file didnt
+get rebuild correctly? I can still reproduce it with the
+old checkout. Sorry if this causes unessecary noise :(
 
-(early) 256MB LOWMEM available.
-(early)   low ram: 02634000 - 10000000
-(early)   bootmap 02634000 - 02636000
-(early)   early res: 0 [0-fff] BIOS data page
-(early)   early res: 1 [1000-1fff] EX TRAMPOLINE
-(early)   early res: 2 [6000-6fff] TRAMPOLINE
-(early)   early res: 3 [25db000-261dfff] XEN
-(early)   early res: 4 [1000000-18a8303] TEXT DATA BSS
-(early)   early res: 5 [18a9000-25dafff] RAMDISK
-(early)   early res: 6 [261e000-2633fff] INIT_PG_TABLE
-(early)   early res: 7 [2634000-2635fff] BOOTMAP
-
-
-    J
-
-
-Subject: xen: reserve_early Xen-specific memory
-
-Make sure that the start_info and pfn->mfn translation array are reserved.
-i386_start_kernel will arrange to reserve the kernel code/data, initrd
-and pagetable.
-
-Also, add prototype for i386_start_kernel.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/enlighten.c |    9 +++++++++
- include/asm-x86/setup.h  |    1 +
- 2 files changed, 10 insertions(+)
-
-===================================================================
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1266,6 +1266,15 @@
- 		add_preferred_console("hvc", 0, NULL);
- 	}
- 
-+	/*
-+	 * Reserve Xen bits:
-+	 *  - mfn_list
-+	 *  - xen_start_info
-+	 * See comment above "struct start_info" in <xen/interface/xen.h>
-+	 */
-+	reserve_early(__pa(xen_start_info->mfn_list),
-+		      __pa(xen_start_info->pt_base), "XEN");
-+
- 	/* Start the world */
- 	i386_start_kernel();
- }
-===================================================================
---- a/include/asm-x86/setup.h
-+++ b/include/asm-x86/setup.h
-@@ -58,6 +58,7 @@
- int __init copy_e820_map(struct e820entry *biosmap, int nr_map);
- void __init add_memory_region(unsigned long long start,
- 			      unsigned long long size, int type);
-+void __init i386_start_kernel(void);
- 
- extern unsigned long init_pg_tables_start;
- extern unsigned long init_pg_tables_end;
-
-
+Greetings, Eric
