@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYE1Fhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYE1Fin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbYE1Fhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 01:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYE1FhV
+	id S1755327AbYE1Fin (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 01:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYE1Fig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 01:37:21 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58362 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750876AbYE1FhV (ORCPT
+	Wed, 28 May 2008 01:38:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48333 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751342AbYE1Fif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 01:37:21 -0400
-Message-Id: <483CEF78.9050802@mxp.nes.nec.co.jp>
-Date: Wed, 28 May 2008 14:36:56 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm 07/16] second chance replacement for anonymous pages
-References: <20080523195506.084894989@redhat.com> <20080523195535.302440037@redhat.com>
-In-Reply-To: <20080523195535.302440037@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 May 2008 01:38:35 -0400
+Date: Tue, 27 May 2008 22:38:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guillaume Chazarain <guichaz@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
+Message-Id: <20080527223832.f7131761.akpm@linux-foundation.org>
+In-Reply-To: <20080523203429.11846.84137.stgit@localhost.localdomain>
+References: <20080523203429.11846.84137.stgit@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, 23 May 2008 22:34:29 +0200 Guillaume Chazarain <guichaz@gmail.com> wrote:
 
-> @@ -1008,7 +1008,7 @@ static inline int zone_is_near_oom(struc
->  static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
->  			struct scan_control *sc, int priority, int file)
->  {
-> -	unsigned long pgmoved;
-> +	unsigned long pgmoved = 0;
->  	int pgdeactivate = 0;
->  	unsigned long pgscanned;
->  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> @@ -1040,13 +1040,25 @@ static void shrink_active_list(unsigned 
->  		cond_resched();
->  		page = lru_to_page(&l_hold);
->  		list_del(&page->lru);
-> -		if (page_referenced(page, 0, sc->mem_cgroup))
-> +		if (page_referenced(page, 0, sc->mem_cgroup) && file) {
-> +			/* Referenced file pages stay active. */
->  			list_add(&page->lru, &l_active);
-> -		else
-> +		} else {
->  			list_add(&page->lru, &l_inactive);
-> +			if (!file)
-> +				/* Anonymous pages always get deactivated. */
-> +				pgmoved++;
-> +		}
->  	}
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 495214d..0e6881e 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -454,6 +454,7 @@ void generic_sync_sb_inodes(struct super_block *sb,
+>  		struct address_space *mapping = inode->i_mapping;
+>  		struct backing_dev_info *bdi = mapping->backing_dev_info;
+>  		long pages_skipped;
+> +		int err;
 >  
->  	/*
-> +	 * Count the referenced anon pages as rotated, to balance pageout
-> +	 * scan pressure between file and anonymous pages in get_sacn_ratio.
-> +	 */
-> +	if (!file)
-> +		zone->recent_rotated_anon += pgmoved;
-> +
+>  		if (!bdi_cap_writeback_dirty(bdi)) {
+>  			redirty_tail(inode);
+> @@ -498,7 +499,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
+>  		BUG_ON(inode->i_state & I_FREEING);
+>  		__iget(inode);
+>  		pages_skipped = wbc->pages_skipped;
+> -		__writeback_single_inode(inode, wbc);
+> +		err = __writeback_single_inode(inode, wbc);
+> +		mapping_set_error(mapping, err);
+>  		if (wbc->sync_mode == WB_SYNC_HOLD) {
+>  			inode->dirtied_when = jiffies;
+>  			list_move(&inode->i_list, &sb->s_dirty);
 
-Shouldn't 'pgmoved' be cleared to 0 before scanning l_hold?
-It's used to store the result of sc->isolate_pages() before
-scanning l_hold.
-
-
-Thanks,
-Daisuke Nishimura.
+ho hum, I've forgotten why I didn't like this.  Let's give it a run.
 
