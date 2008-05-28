@@ -1,97 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbYE1SQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbYE1SRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752433AbYE1SQp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 14:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYE1SQ3
+	id S1753890AbYE1SRM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 14:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYE1SQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 14:16:29 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:36750 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753716AbYE1SQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 14:16:28 -0400
-Subject: Re: [PATCH 3/3] Guarantee that COW faults for a process that
-	called mmap(MAP_PRIVATE) on hugetlbfs will succeed
-From: Adam Litke <agl@us.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: akpm@linux-foundation.org, dean@arctic.org, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com, dwg@au1.ibm.com, apw@shadowen.org,
-       linux-mm@kvack.org, andi@firstfloor.org, kenchen@google.com,
-       abh@cray.com
-In-Reply-To: <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
-References: <20080527185028.16194.57978.sendpatchset@skynet.skynet.ie>
-	 <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
-Content-Type: text/plain
+	Wed, 28 May 2008 14:16:55 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:37537 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbYE1SQx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 14:16:53 -0400
+To: "Andrew Morton" <akpm@linux-foundation.org>, zanussi@comcast.net
+Subject: Re: [RFC Patch 1/1] trace_printk and trace_dump interface - v2
+Reply-To: prasad@linux.vnet.ibm.com
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 Organization: IBM
-Date: Wed, 28 May 2008 13:16:07 -0500
-Message-Id: <1211998567.12036.65.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Cc: linux-kernel@vger.kernel.org, dwilder@us.ibm.com, hch@infradead.org,
+       prasad@linux.vnet.ibm.com
+Content-Type: text/plain; charset=utf-8
+MIME-Version: 1.0
+In-Reply-To: <op.ubla5cik03j166@prasadkr_t60p.in.ibm.com>
+References: <op.ua9axd2a03j166@prasadkr_t60p.in.ibm.com> <op.ua9a1r0y03j166@prasadkr_t60p.in.ibm.com> <op.ua90vfwv03j166@prasadkr_t60p.in.ibm.com> <20080519162149.50f58b80.akpm@linux-foundation.org> <op.ubgxivbq03j166@prasadkr_t60p.in.ibm.com> <20080520131225.46175b3b.akpm@linux-foundation.org> <op.ubla5cik03j166@prasadkr_t60p.in.ibm.com>
 Content-Transfer-Encoding: 7bit
+Date: Wed, 28 May 2008 23:46:19 +0530
+Message-ID: <op.ubvmdr1i03j166@prasadkr_t60p.in.ibm.com>
+User-Agent: Opera Mail/9.26 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-27 at 19:51 +0100, Mel Gorman wrote:
-> After patch 2 in this series, a process that successfully calls mmap()
-> for a MAP_PRIVATE mapping will be guaranteed to successfully fault until a
-> process calls fork().  At that point, the next write fault from the parent
-> could fail due to COW if the child still has a reference.
-> 
-> We only reserve pages for the parent but a copy must be made to avoid leaking
-> data from the parent to the child after fork(). Reserves could be taken for
-> both parent and child at fork time to guarantee faults but if the mapping
-> is large it is highly likely we will not have sufficient pages for the
-> reservation, and it is common to fork only to exec() immediatly after. A
-> failure here would be very undesirable.
-> 
-> Note that the current behaviour of mainline with MAP_PRIVATE pages is
-> pretty bad.  The following situation is allowed to occur today.
-> 
-> 1. Process calls mmap(MAP_PRIVATE)
-> 2. Process calls mlock() to fault all pages and makes sure it succeeds
-> 3. Process forks()
-> 4. Process writes to MAP_PRIVATE mapping while child still exists
-> 5. If the COW fails at this point, the process gets SIGKILLed even though it
->    had taken care to ensure the pages existed
-> 
-> This patch improves the situation by guaranteeing the reliability of the
-> process that successfully calls mmap(). When the parent performs COW, it
-> will try to satisfy the allocation without using reserves. If that fails the
-> parent will steal the page leaving any children without a page. Faults from
-> the child after that point will result in failure. If the child COW happens
-> first, an attempt will be made to allocate the page without reserves and
-> the child will get SIGKILLed on failure.
-> 
-> To summarise the new behaviour:
-> 
-> 1. If the original mapper performs COW on a private mapping with multiple
->    references, it will attempt to allocate a hugepage from the pool or
->    the buddy allocator without using the existing reserves. On fail, VMAs
->    mapping the same area are traversed and the page being COW'd is unmapped
->    where found. It will then steal the original page as the last mapper in
->    the normal way.
-> 
-> 2. The VMAs the pages were unmapped from are flagged to note that pages
->    with data no longer exist. Future no-page faults on those VMAs will
->    terminate the process as otherwise it would appear that data was corrupted.
->    A warning is printed to the console that this situation occured.
-> 
-> 2. If the child performs COW first, it will attempt to satisfy the COW
->    from the pool if there are enough pages or via the buddy allocator if
->    overcommit is allowed and the buddy allocator can satisfy the request. If
->    it fails, the child will be killed.
-> 
-> If the pool is large enough, existing applications will not notice that the
-> reserves were a factor. Existing applications depending on the no-reserves
-> been set are unlikely to exist as for much of the history of hugetlbfs,
-> pages were prefaulted at mmap(), allocating the pages at that point or failing
-> the mmap().
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+On Fri, May 23, 2008 at 10:07:50AM +0530, K.Prasad wrote:
+> On Tue, May 20, 2008 at 01:12:25PM -0700, Andrew Morton wrote:
+>> On Wed, 21 May 2008 01:23:09 +0530
+>> "K.Prasad" <prasad@linux.vnet.ibm.com> wrote:
+>>>> The name 'trace' (previously GTSC), I gather that it was the chosen
+>> after
+>> > much deliberation (http://tinyurl.com/6odoh4), however I'm open to the
+>> > idea of changing the name (say dbg_printk/dbg_dump?).
+>> >> Kindly let me know of your suggestions for this, and I will change them
+>> > during the next version.
+>> Well I was just putting it out there for consideration.  Yes, I think
+>> the whole idea of consuming the "trace_*" namespace in this patchset
+>> was ill-advised.
+> Since "trace_*" uses relay infrastructure underneath, I am thinking, if it
+> would be acceptable to rename them to "relay_*", say relay_printk() and
+> relay_dump(). I would be glad to hear from the 'relay' folks about this
+> thought.
+>
+Hi Andrew,
+    Given that "trace_*" consists of wrapper functions around "relay"
+(relay + debugfs filesystem), I'm sending out the following patches
+which rename lib/trace.[ch] to kernel/relay_debugfs.[ch]. The "trace_*"
+functions are renamed to "relay_*" functions without any name-space
+clashes with existing "relay" functions.
 
-Acked-by: Adam Litke <agl@us.ibm.com>
+Now the new functions relay_printk() and relay_dump() will provide an
+easy-to-use interface for "relay" and will also reduce the amount of
+code require to setup/cleanup relay.
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+>> Also, I don't know how to move forward with the whole feature - I
+>> haven't seen a lot of interest from others and I haven't seen much
+>> discussion of how this feature differs from all the other tracing
+>> things which have been floating about.
+> More than a tracing mechanism, this is a tool that aids in tracing, by
+> providing a powerful function that directs its output onto the debugfs
+> mount path which could be later harnessed by user-space applications
+> too. A potential in-kernel user could be the 'marker' handlers which
+> more often would be interested in logging data.
+>
+>> And even if the proposed patches presently offer unique and useful
+>> features, will one of the other tracing implementations (eg: ltt) later
+>> grow to close that gap?
+>> I'm also a bit dubious about the whole thing based on past experience
+>> with kernel-developer-only in-kernel tools.  People just don't use them
+>> much.  One example: fault injection.
+>
+> Among the other enhancements that we were contemplating for this
+> mechanism, to make it more powerful and unique, is the ability to
+> a)Define callback functions typically invoked everytime before accessing/
+>   printing each variable (which may say, acquire a lock or prefix a
+>   timestamp) by adding fields to the trace_printk_data structure.
+> b)Provide sequencing information for the output, along with ability to
+>   prefix the output with essential data such as PID, Timestamp, CPUID,
+>   etc.
+>
+Along with the above mentioned points, the sole in-kernel user of
+"relay" which is "blktrace" was also converted to use (the erstwhile)
+"trace_*", which resulted in significant code reduction. I will now migrate
+"blktrace" to use "relay_*".
 
+Kindly let us know what you think about the patches.
+
+Thanks,
+K.Prasad
+P.S.: The second patch which actually effects the name change, along
+with addition of relay_printk()/relay_dump() interface is found to be
+quite lengthy. Since the patches have been previously reviewed I'm
+sending them as a single chunk of patch.
