@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbYE1Ro0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbYE1RsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752967AbYE1Ro0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 13:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYE1RoS
+	id S1753035AbYE1RsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 13:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYE1RsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 13:44:18 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55850 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbYE1RoS (ORCPT
+	Wed, 28 May 2008 13:48:06 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56731 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751910AbYE1RsF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 13:44:18 -0400
-Message-ID: <483D99CA.8050802@zytor.com>
-Date: Wed, 28 May 2008 10:43:38 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 28 May 2008 13:48:05 -0400
+Date: Wed, 28 May 2008 19:48:03 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Dave Jones <davej@redhat.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [X86] Fix up silly i1586 boot message.
+In-Reply-To: <20080528165713.GA412@redhat.com>
+Message-ID: <alpine.LNX.1.10.0805281943330.19264@fbirervta.pbzchgretzou.qr>
+References: <20080528165713.GA412@redhat.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-References: <1211995212.3445.52.camel@localhost.localdomain>
-In-Reply-To: <1211995212.3445.52.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> 
-> but there are many more.  The greatest problem, as I see it is that by
-> pouring vitriol like this on newbies, we're really damaging our
-> reputation as a community that welcomes newcomers and strangling our
-> necessary supply of willing volunteers.  On the other hand, as a
-> maintainer, when there's people yelling me at about patches not being
-> included plus a persistent regressions list and about ten bug reports to
-> track down, the last thing I want to see within a million miles of my
-> inbox is a white space fixing patch.  The more of these patches we get,
-> the worse the problem becomes and the shorter and more inflammatory the
-> responses get. We can't go on like this.
-> 
 
-As far as whitespace fixes, it seems we should just declare a flag day, 
-specifically, right before Linus releases 2.6.26 or .27 he'd run 
-"cleanfile" on the WHOLE TREE and check it in (either as one patch or 
-several.)
+On Wednesday 2008-05-28 18:57, Dave Jones wrote:
 
-After that, one would either have to use "patch -l" to refresh patches 
-across the flag day, or I would write a reverse version of "cleanpatch" 
-(one which cleans the minus lines and the context instead of the output) 
-to fix them up.
+>Trying to boot a 64-bit kernel on a 32bit Pentium 4 gets
+>you an amusing message along the lines of.
+>"you need an x86-64, but you only have an i1586"
+>due to the P4 being family F.  Munge it to be 686.
 
-Then the whole tree would be whitespace-clean, it would concentrate the 
-pain to a single event, and then we can go on with life.
+What is wrong with it? If i386, 486, 586 and 686 are valid names,
+why should not 786 (or rather 1586... since someone thought it
+would be cool to jump the number^1) be?
 
-	-hpa
+
+[^1 Which also is interesting because the original number had an 80
+prepended, i.e. 80286, 80586,... and you'd guess what number 1586
+would map to.]
