@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbYE1QxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYE1RHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753066AbYE1QxI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYE1Qwz
+	id S1752583AbYE1RHG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 13:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYE1RGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:52:55 -0400
-Received: from mailout05.t-online.de ([194.25.134.82]:54194 "EHLO
-	mailout05.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbYE1Qwz (ORCPT
+	Wed, 28 May 2008 13:06:54 -0400
+Received: from atlantis.cc.ndsu.NoDak.edu ([134.129.99.37]:58552 "EHLO
+	atlantis.cc.ndsu.NoDak.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751766AbYE1RGy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:52:55 -0400
-Message-ID: <483D8DA6.20903@t-online.de>
-Date: Wed, 28 May 2008 18:51:50 +0200
-From: Bernd Schmidt <bernds_cb1@t-online.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080506)
+	Wed, 28 May 2008 13:06:54 -0400
+X-Greylist: delayed 1234 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 13:06:54 EDT
+Date: Wed, 28 May 2008 11:46:16 -0500
+From: Bryan Mesich <bryan.mesich@ndsu.edu>
+To: Jens =?iso-8859-1?Q?B=E4ckman?= <jens.backman@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+Message-ID: <20080528164616.GB29722@atlantis.cc.ndsu.NoDak.edu>
+Reply-To: Bryan Mesich <bryan.mesich@ndsu.edu>
+Mail-Followup-To: Bryan Mesich <bryan.mesich@ndsu.edu>,
+	Jens =?iso-8859-1?Q?B=E4ckman?= <jens.backman@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+	xfs@oss.sgi.com
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Ungerer <gerg@snapgear.com>,
-       David McCullough <davidm@snapgear.com>,
-       Paul Mundt <lethal@linux-sh.org>, Matt Mackall <mpm@selenic.com>,
-       "Wu, Bryan" <Bryan.Wu@analog.com>,
-       Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH, RFD] Unbreaking nommu mmap, v2
-References: <483C3874.9010004@t-online.de> <31103.1211993234@redhat.com>
-In-Reply-To: <31103.1211993234@redhat.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ID: rCqF2EZTrhO8VxNs0mexzX5I1WNFyYWQSeQAKrdm519FEiJ1r8i99fQCY6QpTH-ZRm
-X-TOI-MSGID: 3900a202-54fb-443f-99e6-500d22ad6075
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
+X-Operating-System: Fedora Release 8
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> Note that this patch unconditionally trims allocations, whereas on yours this
-> is optional.  That can be easily remedied, if, in fact, the ability to request
-> untrimmed allocations is worth doing.
+On Wed, May 28, 2008 at 06:34:00PM +0200, Jens Bäckman wrote:
 
-Have you investigated the effect on fragmentation?  I backed off on 
-trimming allocations, as it gave unacceptable results.
+> Either the RAID 1 read speed must be wrong, or something is odd in the
+> Linux implementation. There's six drives that can be used for reading
+> at the same time, as they contain the very same data. 63MB/s
+> sequential looks like what you would get from a single drive.
 
-Is this patch different from the ones I tested last year?  They were not 
-stable in my tests back then (fragmentation may have been an issue).
+The RAID 1 read speed metrics do not depict multithreaded
+processes reading from the array simutaneouly. I would suspect
+that the read performance metrics would look better if 2 bonnie
+simulations were ran together (for RAID 1 that is).
 
-
-Bernd
--- 
-This footer brought to you by insane German lawmakers.
-Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
-Sitz der Gesellschaft Muenchen, Registergericht Muenchen HRB 40368
-Geschaeftsfuehrer Thomas Wessel, William A. Martin, Margaret Seif
+Bryan 
