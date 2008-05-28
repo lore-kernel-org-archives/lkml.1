@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYE1UAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYE1UFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYE1UAc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 16:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbYE1UAT
+	id S1753982AbYE1UFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 16:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYE1UFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 16:00:19 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:51311 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753306AbYE1UAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 16:00:18 -0400
-Date: Wed, 28 May 2008 22:00:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Steve French <smfrench@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: optimizing out inline functions
-Message-ID: <20080528200057.GA7300@uranus.ravnborg.org>
-References: <524f69650805281251r1b1d99a1tc3223d15e3aeb50c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <524f69650805281251r1b1d99a1tc3223d15e3aeb50c@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 28 May 2008 16:05:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36130 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbYE1UFb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 16:05:31 -0400
+Message-ID: <483DBA85.2060502@cs.helsinki.fi>
+Date: Wed, 28 May 2008 23:03:17 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>,
+       cooloney@kernel.org
+CC: akpm@linux-foundation.org, dhowells@redhat.com, mpm@selenic.com,
+       clameter@sgi.com
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
+References: <Pine.LNX.4.64.0805281646470.27125@sbz-30.cs.Helsinki.FI> <20080528153648.GA27783@linux-sh.org>
+In-Reply-To: <20080528153648.GA27783@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 02:51:02PM -0500, Steve French wrote:
-> In trying to remove some macros, I ran across another kernel style
-> question.  I see two ways that people try to let the compiler optimize
-> out unused code and would like to know which is preferred.  The first
-> example uses an empty inline function and trusts the compiler will
-> optimize it out.
-> 
-> #ifdef CONFIG_DEBUG_SOMETHING
-> static inline void some_debug_function(var1)
-> {
->     something = var1;
->     printk(some debug text);
-> }
-> #else
-> static inline void some_debug_function(var1)
-> {
->    /* empty function */
-> }
-> #endif
+(cc'ing linux-kernel)
 
-With reference to a recent thread about kconfig
-I would prefer:
-static inline void some_debug_function(var1)
-{
-	if (KCONFIG_DEBUG_SOMETHING) {
-		something = var1;
-		printk(some debug text);
-	}
-}
+Paul Mundt wrote:
+> I have no idea why you are maintaining the page->index case here, it's
+> completely broken for page cache pages. Unless someone more familiar with
+> the page->index BUG_ON() tests objects, the BUG_ON() there should be
+> removed completely. Neither Christoph nor I were able to work out what the
+> point of the page->index tests were, and no one else has spoken up about
+> them, so it's likely safe to treat them as bogus.
 
+We use kobjsize() for pointers returned from do_mmap() which is why I 
+kept the page->index case. Are we using PageCompound for those as well?
 
-But we do not have KCONFIG_DEBUG_SOMETHING available
-so the second best is to use an empty function
-to keep the typechecking in place.
+Paul Mundt wrote:
+> SLOB on nommu will oops on any page cache page in the current git kernels
+> until those BUG_ON()'s are killed. The more distressing thing is the fact
+> that the blackfin people have been patching SLOB when it's obvious that
+> they haven't been testing (ie, even booting!) it.
 
-IIRC gcc optimize both away.
-
-	Sam
+Hmm...
