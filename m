@@ -1,54 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbYE1W5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbYE1XOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755731AbYE1W5m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 18:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYE1W5e
+	id S1755299AbYE1XOh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 19:14:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbYE1XO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 18:57:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55627 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753962AbYE1W5d (ORCPT
+	Wed, 28 May 2008 19:14:27 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46255 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754270AbYE1XO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 18:57:33 -0400
-Date: Wed, 28 May 2008 15:57:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Aristeu Rozanski <aris@ruivo.org>
-Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 1/1] Char: vt, make sysfs operations atomic
-Message-Id: <20080528155719.3114d54f.akpm@linux-foundation.org>
-In-Reply-To: <20080527204858.GI5713@cathedrallabs.org>
-References: <1211802812-13658-1-git-send-email-jirislaby@gmail.com>
-	<20080527194357.GA12185@cathedrallabs.org>
-	<483C6EAE.4050401@gmail.com>
-	<20080527204858.GI5713@cathedrallabs.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 May 2008 19:14:26 -0400
+Date: Thu, 29 May 2008 00:13:35 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christoph Rohland <hans-christoph.rohland@sap.com>,
+       Lawrence Greenfield <leg@google.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] tmpfs: support aio
+Message-ID: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 16:48:58 -0400
-Aristeu Rozanski <aris@ruivo.org> wrote:
+We have a request for tmpfs to support the AIO interface: easily done,
+no more than replacing the old shmem_file_read by shmem_file_aio_read,
+cribbed from generic_file_aio_read.  (In 2.6.25 its write side was
+already changed to use generic_file_aio_write.)
 
-> >> the reason for the code be the way it is is because vcs_{add,remove}_sysfs()
-> >> may sleep
-> >
-> > What's the point? To have races in the code but not sleep inside the semaphore?
-> what about fixing the code to remove the race _and_ not sleep inside the
-> semaphore? :)
-> 
+Tests out fine with LTP's ltp-aiodio.sh, given hacks (not included)
+to support O_DIRECT.  tmpfs cannot honestly support O_DIRECT: its
+cache-avoiding-IO nature is at odds with direct IO-avoiding-cache.
 
-The patch does fix a race, by extending console_sem coverage to provide
-exclusion between the sysfs creation and teardown operations.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Tested-by: Lawrence Greenfield <leg@google.com>
+---
 
-I assume - no race was identified in the changelog.  Can we actually
-simultaneously run con_open() and con_close() against the same device? 
-I guess it might be possible if userspace tried hard enough.
+ mm/shmem.c |   57 +++++++++++++++++++++++++++++++++------------------
+ 1 file changed, 37 insertions(+), 20 deletions(-)
 
-I renamed the patch to the much more accurate "vt: hold console_sem
-across sysfs operations" - "atomic" in the kernel context means "cannot
-context switch" and nothing "atomic" is happening in this patch.
-
+--- 2.6.26-rc4/mm/shmem.c	2008-05-03 21:55:12.000000000 +0100
++++ linux/mm/shmem.c	2008-05-28 23:51:24.000000000 +0100
+@@ -1690,26 +1690,42 @@ static void do_shmem_file_read(struct fi
+ 	file_accessed(filp);
+ }
+ 
+-static ssize_t shmem_file_read(struct file *filp, char __user *buf, size_t count, loff_t *ppos)
++static ssize_t shmem_file_aio_read(struct kiocb *iocb,
++		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
+ {
+-	read_descriptor_t desc;
+-
+-	if ((ssize_t) count < 0)
+-		return -EINVAL;
+-	if (!access_ok(VERIFY_WRITE, buf, count))
+-		return -EFAULT;
+-	if (!count)
+-		return 0;
+-
+-	desc.written = 0;
+-	desc.count = count;
+-	desc.arg.buf = buf;
+-	desc.error = 0;
+-
+-	do_shmem_file_read(filp, ppos, &desc, file_read_actor);
+-	if (desc.written)
+-		return desc.written;
+-	return desc.error;
++	struct file *filp = iocb->ki_filp;
++	ssize_t retval;
++	unsigned long seg;
++	size_t count;
++	loff_t *ppos = &iocb->ki_pos;
++
++	count = 0;
++	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
++	if (retval)
++		return retval;
++
++	retval = 0;
++	if (count) {
++		for (seg = 0; seg < nr_segs; seg++) {
++			read_descriptor_t desc;
++
++			desc.written = 0;
++			desc.arg.buf = iov[seg].iov_base;
++			desc.count = iov[seg].iov_len;
++			if (desc.count == 0)
++				continue;
++			desc.error = 0;
++			do_shmem_file_read(filp, ppos, &desc, file_read_actor);
++			retval += desc.written;
++			if (desc.error) {
++				retval = retval ?: desc.error;
++				break;
++			}
++			if (desc.count > 0)
++				break;
++		}
++	}
++	return retval;
+ }
+ 
+ static int shmem_statfs(struct dentry *dentry, struct kstatfs *buf)
+@@ -2369,8 +2385,9 @@ static const struct file_operations shme
+ 	.mmap		= shmem_mmap,
+ #ifdef CONFIG_TMPFS
+ 	.llseek		= generic_file_llseek,
+-	.read		= shmem_file_read,
++	.read		= do_sync_read,
+ 	.write		= do_sync_write,
++	.aio_read	= shmem_file_aio_read,
+ 	.aio_write	= generic_file_aio_write,
+ 	.fsync		= simple_sync_file,
+ 	.splice_read	= generic_file_splice_read,
