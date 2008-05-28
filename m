@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbYE1Ax7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbYE1BAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759352AbYE1Ax7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 20:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757272AbYE1Axv
+	id S1759354AbYE1BAQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 21:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756738AbYE1BAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 20:53:51 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:42381 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755040AbYE1Axv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 20:53:51 -0400
-Date: Wed, 28 May 2008 10:53:47 +1000
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: Re: PPC PReP link failure - copy_page, empty_zero_page
-Message-ID: <20080528005346.GK20457@bakeyournoodle.com>
-References: <Pine.SOC.4.64.0805272022260.869@math.ut.ee>
+	Tue, 27 May 2008 21:00:04 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58284 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755943AbYE1BAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 21:00:03 -0400
+Message-ID: <483CAE30.7080707@cn.fujitsu.com>
+Date: Wed, 28 May 2008 08:58:24 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0805272022260.869@math.ut.ee>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, video4linux-list@redhat.com
+Subject: Re: [PATCH] dvb-usb/gp8psk.c: return -errno rather than errno
+References: <483BBFD1.3090204@cn.fujitsu.com> <20080527120303.639a5d04@gaivota>
+In-Reply-To: <20080527120303.639a5d04@gaivota>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 08:25:43PM +0300, Meelis Roos wrote:
-> While compiling the current kernel on prep ppc:
+Mauro Carvalho Chehab wrote:
+> On Tue, 27 May 2008 16:01:21 +0800
+> Li Zefan <lizf@cn.fujitsu.com> wrote:
 > 
->   MODPOST 703 modules
-> ERROR: "copy_page" [fs/fuse/fuse.ko] undefined!
-> ERROR: "empty_zero_page" [fs/ext4/ext4dev.ko] undefined!
+>> gp8psk_power_ctrl() returns -EINVAL in some failing paths, but
+>> returns EINVAL in some other paths.
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.cn>
+>> ---
+> Thanks Li. However, I've committed a few days ago a similar patch from Marcin.
+> 
 
-Try that patch at: http://patchwork.ozlabs.org/linuxppc/patch?id=18710
+Good to know this. :)
 
-Fixes it for me.
-
-Yours Tony
-
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
-
+> 
+> Cheers,
+> Mauro
+> 
+> 
