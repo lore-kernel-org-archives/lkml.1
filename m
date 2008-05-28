@@ -1,38 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbYE1NlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751147AbYE1NnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753611AbYE1NlH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:41:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYE1Nko
+	id S1751147AbYE1NnL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbYE1Nm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:40:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49914 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbYE1Nkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:40:43 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0805281614250.26675@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0805281614250.26675@sbz-30.cs.Helsinki.FI> <Pine.LNX.4.64.0805221907250.4056@sbz-30.cs.Helsinki.FI> <2874.1211980355@redhat.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: dhowells@redhat.com, clameter@sgi.com, mpm@selenic.com,
-       lethal@linux-sh.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 28 May 2008 14:40:25 +0100
-Message-ID: <24227.1211982025@redhat.com>
+	Wed, 28 May 2008 09:42:59 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:33128 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751035AbYE1Nm6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 09:42:58 -0400
+Date: Wed, 28 May 2008 09:42:57 -0400
+To: Phillip Susi <psusi@cfl.rr.com>
+Cc: Gene Heskett <gene.heskett@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
+Subject: Re: floppy question of the hour
+Message-ID: <20080528134257.GA16164@csclub.uwaterloo.ca>
+References: <200805232114.20937.gene.heskett@gmail.com> <4837DFC6.9010202@s5r6.in-berlin.de> <200805240852.58268.gene.heskett@gmail.com> <483C81DE.8060002@cfl.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483C81DE.8060002@cfl.rr.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+On Tue, May 27, 2008 at 05:49:18PM -0400, Phillip Susi wrote:
+> Yes, the interleave slows you down, since after accessing sector 1, the 
+> head must wait to pass over 3 other sectors before finally reaching 
+> sector 2, therefore, you can only read 1/4 of the sectors on the track 
+> each revolution of the disk.  That leaves 4 revolutions at 300 rpm 
+> giving 0.8s to read a track, or 64 seconds to read all 80 tracks, plus 
+> seek time.  That still does not explain 3 minutes though... not sure 
+> what else could be slowing you down.
 
-> Thanks for testing! Where do I send these patches though? There's no entry 
-> for no-MMU in MAINTAINERS. I guess I could just send them to Andrew...
+Just do what the Amiga did:  Read the entire track into a buffer in
+memory, then deal with the sectors, and write the entire track back. :)
 
-Andrew and/or Linus.
-
-David
+-- 
+Len Sorensen
