@@ -1,246 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYE1Mo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbYE1Mol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYE1Mo7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 08:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYE1Moa
+	id S1753453AbYE1Mol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 08:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYE1Mo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 08:44:30 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:2419 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752511AbYE1Mo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 08:44:27 -0400
-Date: Wed, 28 May 2008 14:44:24 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
-Message-ID: <20080528124423.GV25504@kernel.dk>
-References: <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk> <20080528103026.GE8255@linux.vnet.ibm.com>
+	Wed, 28 May 2008 08:44:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:62020 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752477AbYE1MoM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 08:44:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Fw2gYyT0UJjUNQe4eGbKAS1g0L1Tl5N+J+YljxfKfQmuP2eI7HAtS4oGTbT9liYik1oFm93XwKVSAXO5koFGHkORx+4gOe501+Bec8VfFMVYShcUYtx/emN9GxpXm+zD9J0ShInwkOjYV/SUe95J43px5z14v9PbCluALaUj3bk=
+Message-ID: <bc64b4640805280544o7fac1565gd7e1e09ece6c5500@mail.gmail.com>
+Date: Wed, 28 May 2008 16:44:12 +0400
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+Subject: Re: [RFC][PATCH 1/2] Clocklib: add generic framework for managing clocks.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rmk+lkml@arm.linux.org.uk, lethal@linux-sh.org, philipp.zabel@gmail.com,
+       pavel@ucw.cz, tony@atomide.com, paul@pwsan.com, david-b@pacbell.net,
+       "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20080528094457.6687e0dd@hskinnemo-gx745.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080528103026.GE8255@linux.vnet.ibm.com>
+References: <20080522211942.GA11271@doriath.ww600.siemens.net>
+	 <20080522212142.GA11850@doriath.ww600.siemens.net>
+	 <20080527150919.8d5a3e1c.akpm@linux-foundation.org>
+	 <20080527234115.GA13110@doriath.ww600.siemens.net>
+	 <20080528094457.6687e0dd@hskinnemo-gx745.norway.atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28 2008, Paul E. McKenney wrote:
-> On Wed, May 28, 2008 at 12:07:21PM +0200, Jens Axboe wrote:
-> > On Tue, May 27 2008, Paul E. McKenney wrote:
-> > > On Tue, May 27, 2008 at 03:35:10PM +0200, Jens Axboe wrote:
-> > > > On Tue, May 27 2008, Alexey Dobriyan wrote:
-> > > > > On Sat, May 10, 2008 at 02:37:19PM +0400, Alexey Dobriyan wrote:
-> > > > > > > > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
-> > > > > > > > > >  		rcu_read_lock();
-> > > > > > > > > >  		if (ioc->aic && ioc->aic->dtor)
-> > > > > > > > > >  			ioc->aic->dtor(ioc->aic);
-> > > > > > > > > > -		rcu_read_unlock();
-> > > > > > > > > >  		cfq_dtor(ioc);
-> > > > > > > > > > +		rcu_read_unlock();
-> > > > > > > > > >  
-> > > > > > > > > >  		kmem_cache_free(iocontext_cachep, ioc);
-> > > > > > > > > >  		return 1;
-> > > > > > > > > 
-> > > > > > > > > This helps in sense that 3 times bulk cross-compiles finish to the end.
-> > > > > > > > > You'll hear me if another such oops will resurface.
-> > > > > > > > 
-> > > > > > > > Still looking good?
-> > > > > > > 
-> > > > > > > Yup!
-> > > > > > 
-> > > > > > And this with patch in mainline, again with PREEMPT_RCU.
-> > > > > 
-> > > > > Ping, this happened again with 2.6.26-rc4 and PREEMPT_RCU.
-> > > > 
-> > > > Worrisome... Paul, would you mind taking a quick look at cfq
-> > > > and see if you can detect why breaks with preempt rcu? It's
-> > > > clearly a use-after-free symptom, but I don't see how it can
-> > > > happen.
-> > > 
-> > > Some quick and probably off-the-mark questions...
-> > 
-> > Thanks!
-> 
-> Glad it actually was of help!  ;-)
+Hi,
 
-Your reviews are ALWAYS greatly appreciated!
+Haavard, few words before detailed comments. In this version of the patchset
+I tried to solve the problem of dynamic unregistration of clocks.
+Consider this example:
+1) Module A register CLKA
+2) Module B clk_gets CLKA
+3) Module A is unloaded
+3.1) As it's unloaded module A unregisters CLKA
+4) Module B tries to clk_get_rate on CLKA
 
-> > > o	What is the purpose of __call_for_each_cic()?  When called
-> > > 	from call_for_each_cic(), it is under rcu_read_lock(), as
-> > > 	required, but it is also called from cfq_free_io_context(),
-> > > 	which is assigned to the ->dtor and ->exit members of the
-> > > 	cfq_io_context struct.  What protects calls through these
-> > > 	members?
-> > > 
-> > > 	(This is for the ->cic_list field of the cfq_io_context structure.
-> > > 	One possibility is that the io_context's ->lock member is held,
-> > > 	but I don't see this.  Not that I looked all that hard...)
-> > > 
-> > > 	My suggestion would be to simply change all invocations of
-> > > 	__call_for_each_cic() to instead invoke call_for_each_cic().
-> > > 	The rcu_read_lock()/rcu_read_unlock() pair is pretty
-> > > 	lightweight, even in CONFIG_PREEMPT_RCU.
-> > 
-> > __call_for_each_cic() is always called under rcu_read_lock(), it merely
-> > exists to avoid a double rcu_read_lock(). Even if it is cheap. The
-> > convention follows the usual __lock_is_already_held() double under
-> > score, but I guess it could do with a comment! There are only two
-> > callers of the function, call_for_each_cic() which does the
-> > rcu_read_lock(), and cfq_free_io_context() which is called from ->dtor
-> > (and holds the rcu_read_lock() and ->trim which actually does not. That
-> > looks like it could be problematic, but it's only called when an io
-> > scheduler module is removed so not really critical. I'll add it, though!
-> > Actually, the task_lock() should be enough there. So no bug, but (again)
-> > it could do with a comment.
-> 
-> Sounds good!
-> 
-> > > o	When calling cfq_slab_kill(), for example from cfq_exit(),
-> > > 	what ensures that all previous RCU callbacks have completed?
-> > > 	
-> > > 	I suspect that you need an rcu_barrier() at the beginning
-> > > 	of cfq_slab_kill(), but I could be missing something.
-> > 
-> > So we have two callers of that, one is from the error path at init time
-> > and is obviously ok. The other does need rcu_barrier()! I'll add that.
-> 
-> OK, that does make my brain hurt less.  ;-)
+I can think of several solutions for this problem, but IMO the most clear one is
+to force struct clk to be fully dynamic and to use kobjects for it's management.
+This helped me:
+1) to cleanup the above case
+2) to cleanup that "clk_alloc_function" mess (required for clock aliasing, etc)
+3) to get sysfs integration for free
 
-So that one was also OK, as Fabio pointed out. If you follow the
-ioc_gone and user tracking, the:
+Also, please, bear in mind, that I titled this version of the patchset as "RFC".
+I just wanted to know your opinion on this approach. If it's less acceptable,
+I'll get back to my previous patchset.
 
-        if (elv_ioc_count_read(ioc_count))
-                wait_for_completion(ioc_gone);
+2008/5/28 Haavard Skinnemoen <haavard.skinnemoen@atmel.com>:
+> Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+>> Hi,
+>>
+>> On Tue, May 27, 2008 at 03:09:19PM -0700, Andrew Morton wrote:
+>> > On Fri, 23 May 2008 01:21:42 +0400
+>> > Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+>> >
+>> > > Provide a generic framework that platform may choose
+>> > > to support clocks api. In particular this provides
+>> > > platform-independant struct clk definition, a full
+>> > > implementation of clocks api and a set of functions
+>> > > for registering and unregistering clocks in a safe way.
+>> > >
+>> >
+>> > Nobody interested in this?
+>
+> Sorry. I am...or at least I used to be until struct clk went all porky
+> and got hidden away in a .c file...
 
-also has the side effect of waiting for RCU callbacks calling
-kmem_cache_free() to have finished as well.
+It get hidden because in this patchset it contains only private fields
+not intended for public usage.
 
-> > > o	What protects the first rcu_dereference() in cfq_cic_lookup()?
-> > > 	There needs to be either an enclose rcu_read_lock() on the
-> > > 	one hand or the ->queue_lock needs to be held.
-> > > 
-> > > 	(My guess is the latter, given the later rcu_assign_pointer()
-> > > 	in this same function, but I don't see a lock acquisition
-> > > 	in the immediate vicinity -- might be further up the function
-> > > 	call stack, though.)
-> > 
-> > There's no locking going into that function when coming from
-> > cfq_get_io_context(), the other paths (happen) to hold the queue lock
-> > already though.
-> 
-> So the call from cfq_get_io_context() needs an rcu_read_lock()?
-> Not seeing this in the patch below, but maybe you have it up a
-> function-call level or two?
+>
+> Like I've said before, I think the size of this thing is a real problem
+> and will prevent most arch maintainers from even considering it. The
+> previous version looked very good in that respect, but now the
+> porkiness of struct clk is back with a vengeance.
+>
+> While I actually liked the previous version, there's no way I'm going
+> to use this version on avr32 with its 50+ clocks, and I expect the omap
+> people to be even more unhappy.
+>
+>> > > +struct clk_ops {
+>> > > + int (*can_get)(struct clk *clk, void *data, struct device *dev);
+>> > > + int (*set_parent)(struct clk *clk, void *data, struct clk *parent);
+>> > > + int (*set_mode)(struct clk *clk, void *data, bool enable);
+>> >
+>> > `set_mode' seems to be misnamed?
+>> >
+>> > We prefer to avoid functions which take a `heres-what-to-do' argument
+>> > like this.  I'd have thought that it would be cleaner to have separate
+>> > `enable' and `disable' operations?
+>>
+>> This was suggested before by Haavard. Probably the reason was space
+>> reduction.
+>
+> Yeah, that's true, but it was before struct clk_ops was split out from
+> struct clk. The size of struct clk_ops is far less important than the
+> size of struct clk, so feel free to reintroduce separate enable/disable
+> hooks.
 
-It's in there, it now does:
+ok.
 
-        rcu_read_lock();
-        cic = rcu_dereference(ioc->ioc_data);
-        if (cic && cic->key == cfqd) {
-                rcu_read_unlock();
-                return cic;
-        }
-        ...
+>
+>> > The documentation should perhaps explain that set_mode() is called
+>> > under spin_lock_irqsave() and hence cannot do much.
+>>
+>> All functions from clk_ops are run with spinlock held.
+>
+> Why is that necessary?
+>
+> I've been thinking a bit lately about starting up oscillators through
+> the clk framework, and that may take up to several seconds. Doing that
+> under an irqsafe spinlock would be madness...
 
-OK? Which is basically what remains of the patch now, except for the
-comment additions. Oh, and the ioc->lock protecting setting of
-->ioc_data as well. New version below. Alexey, care to give this a
-spin? Seems your box is very well suited for finding RCU preempt
-problems :-)
+Consider two kernel threads trying to enable single clock...
+I'm sure locking conditions can be relaxed, but I can't come up with
+the solution yet. Maybe you can?
 
+>
+>> > > +EXPORT_SYMBOL(clks_register);
+>> >
+>> > The patch generally has nice documentation, but these two major
+>> > interface functions were omitted.
+>>
+>> Oops...
+>
+> Where's the interface to register a single clock btw?
+>
+> I have to say I really hate this "struct clk_table" thing. Another
+> reason why struct clk should be in a header file, not a .c file.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 4df3f05..d01b411 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1142,6 +1142,9 @@ static void cfq_put_queue(struct cfq_queue *cfqq)
- 	kmem_cache_free(cfq_pool, cfqq);
- }
- 
-+/*
-+ * Must always be called with the rcu_read_lock() held
-+ */
- static void
- __call_for_each_cic(struct io_context *ioc,
- 		    void (*func)(struct io_context *, struct cfq_io_context *))
-@@ -1197,6 +1200,11 @@ static void cic_free_func(struct io_context *ioc, struct cfq_io_context *cic)
- 	cfq_cic_free(cic);
- }
- 
-+/*
-+ * Must be called with rcu_read_lock() held or preemption otherwise disabled.
-+ * Only two callers of this - ->dtor() which is called with the rcu_read_lock(),
-+ * and ->trim() which is called with the task lock held
-+ */
- static void cfq_free_io_context(struct io_context *ioc)
- {
- 	/*
-@@ -1502,20 +1510,24 @@ static struct cfq_io_context *
- cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
- {
- 	struct cfq_io_context *cic;
-+	unsigned long flags;
- 	void *k;
- 
- 	if (unlikely(!ioc))
- 		return NULL;
- 
-+	rcu_read_lock();
-+
- 	/*
- 	 * we maintain a last-hit cache, to avoid browsing over the tree
- 	 */
- 	cic = rcu_dereference(ioc->ioc_data);
--	if (cic && cic->key == cfqd)
-+	if (cic && cic->key == cfqd) {
-+		rcu_read_unlock();
- 		return cic;
-+	}
- 
- 	do {
--		rcu_read_lock();
- 		cic = radix_tree_lookup(&ioc->radix_root, (unsigned long) cfqd);
- 		rcu_read_unlock();
- 		if (!cic)
-@@ -1524,10 +1536,13 @@ cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
- 		k = cic->key;
- 		if (unlikely(!k)) {
- 			cfq_drop_dead_cic(cfqd, ioc, cic);
-+			rcu_read_lock();
- 			continue;
- 		}
- 
-+		spin_lock_irqsave(&ioc->lock, flags);
- 		rcu_assign_pointer(ioc->ioc_data, cic);
-+		spin_unlock_irqrestore(&ioc->lock, flags);
- 		break;
- 	} while (1);
- 
-@@ -2134,6 +2149,10 @@ static void *cfq_init_queue(struct request_queue *q)
- 
- static void cfq_slab_kill(void)
- {
-+	/*
-+	 * Caller already ensured that pending RCU callbacks are completed,
-+	 * so we should have no busy allocations at this point.
-+	 */
- 	if (cfq_pool)
- 		kmem_cache_destroy(cfq_pool);
- 	if (cfq_ioc_pool)
-@@ -2292,6 +2311,11 @@ static void __exit cfq_exit(void)
- 	ioc_gone = &all_gone;
- 	/* ioc_gone's update must be visible before reading ioc_count */
- 	smp_wmb();
-+
-+	/*
-+	 * this also protects us from entering cfq_slab_kill() with
-+	 * pending RCU callbacks
-+	 */
- 	if (elv_ioc_count_read(ioc_count))
- 		wait_for_completion(ioc_gone);
- 	cfq_slab_kill();
+See above. The struct clk incorporates the kobject, so it should
+never ever be declared.
+
+>
+>> >
+>> > > +
+>> > > +struct clk *clk_get(struct device *dev, const char *name)
+>> > > +{
+>> > > + struct clk *clk = ERR_PTR(-ENOENT);
+>> > > + struct clk *p;
+>> > > + unsigned long flags;
+>> > > + struct kobject *k;
+>> > > +
+>> > > + /* Take both clocks_lock and kset lock */
+>> > > + spin_lock_irqsave(&clocks_lock, flags);
+>> > > + spin_lock(&clks_kset->list_lock);
+>> > > +
+>> > > + list_for_each_entry(k, &clks_kset->list, entry) {
+>> > > +         if (kobject_name(k) && !strcmp(kobject_name(k), name)
+>> > > +                         ) {
+>> > > +                 p = container_of(kobject_get(k), struct clk, kobj);
+>> > > +                 if (p->ops && p->ops->can_get &&
+>> > > +                                 p->ops->can_get(p, p->data, dev)) {
+>> > > +                         clk = p;
+>> > > +                         break;
+>> > > +                 }
+>> > > +                 kobject_put(k);
+>> > > +         }
+>> > > + }
+>> > > +
+>> > > + list_for_each_entry(k, &clks_kset->list, entry) {
+>> > > +         if (kobject_name(k) && !strcmp(kobject_name(k), name)
+>> > > +                         ) {
+>> > > +                 p = container_of(kobject_get(k), struct clk, kobj);
+>> > > +                 if (!p->ops || !p->ops->can_get) {
+>> > > +                         clk = p;
+>> > > +                         break;
+>> > > +                 }
+>> > > +                 kobject_put(k);
+>> > > +                 break;
+>> > > +         }
+>> > > + }
+>
+> Why do you have to iterate over clks_kset->list twice?
+
+There are two types of clocks. Ones that are bound to devices
+and ones that aren't. E.g. on my development board there is
+a MMCCLK which is driven by the chip and is used by my driver
+and there is a MMCCLK which is driven by PXA and used by
+pxa2xx-mci driver. That's why first you try to find the clock from
+"bound" ones (ones wich provide can_get) and then from
+all other.
+
+>> > > + spin_lock_irqsave(&clocks_lock, flags);
+>> > > +
+>> > > + if (!clk->ops || !clk->ops->get_rate)
+>> > > +         goto out;
+>> >
+>> > Did we really need to hold the lock to perform this check?
+>> >
+>> > Is it really valid for a clock to have no ->ops and no -ops->get_rate?
+>> > Please consider mandating that these fields must be provided, then
+>> > remove this check.
+>>
+>> With this patch clocks can be registered and unregistered at any time.
+>> When the clock in unregistered I drop the reference to the clk_ops (so
+>> the module can be unregistered, but if the clock is still referenced,
+>> those functions still can be called. That's why I have to check for the
+>> presense of ->ops. On the other hand ->ops->get_rate can be made mandatory.
+>
+> So...how does the user know that the clock disappeared? Is it really a
+> good idea to allow clocks to be unregistered while someone is using it?
+
+What should we do if a user explicitly unbinds the driver that has registered
+a clock? We can't fail that operation and say "keep the device bound".
+So the only way is to let him use the reference, but return some error
+for each call.
+
+>
+>> > > +static unsigned long clk_get_rate_parent(struct clk *clk, void *data)
+>> > > +{
+>> > > + struct clk *parent = __clk_get_parent(clk);
+>> > > + unsigned long rate = 0;
+>> > > +
+>> > > + BUG_ON(!parent);
+>> > > +
+>> > > + if (!parent->ops || !parent->ops->get_rate)
+>> > > +         WARN_ON(1);
+>> > > + else
+>> > > +         rate = parent->ops->get_rate(parent, parent->data);
+>> > > +
+>> > > + clk_put(parent);
+>> > > +
+>> > > + return rate;
+>> > > +}
+>> >
+>> > Can we avoid the (mysterious) void* here?  Do something which will
+>> > allow the C type system to check our stuff?
+>>
+>> I don't know how we can avoid it. Each clock can have "private" data
+>> bound to it. Previously the proposed way was to embed struct clk. However
+>> since struct clk is dynamic now, it's not directly possible. And all
+>> solutions I can think upon are more or less hacky.
+>
+> Can't you just add some sort of additional_size parameter to the alloc
+> function to make it possible for clock drivers to extend it?
+
+... and fill the "extension" with private information. Wait! That information
+is already present in some form in the kernel. So if we won't use a pointer
+to it, we'll duplicate that info and in fact increase the memory cost
+of the clock.
+That seems like the real drawback.
+
+> Removing the kobject would of course solve this too. I forgot why we
+> wanted a kobject in there in the first place (I think I actually said
+> that I _didn't_ want it.)
+
+Yes, I remeber that mail. But things are so easy with kobjects...
 
 -- 
-Jens Axboe
-
+With best wishes
+Dmitry
