@@ -1,69 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbYE1Wfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbYE1Woe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755107AbYE1Wfm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 18:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbYE1Wfc
+	id S1754992AbYE1Woe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 18:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYE1WoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 18:35:32 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52384 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752801AbYE1Wfb (ORCPT
+	Wed, 28 May 2008 18:44:23 -0400
+Received: from mail1.physik.fu-berlin.de ([160.45.35.12]:59532 "EHLO
+	mail1.physik.fu-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbYE1WoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 18:35:31 -0400
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1212013125.2236.58.camel@shinybook.infradead.org>
-References: <1211995212.3445.52.camel@localhost.localdomain>
-	 <1212007760.2236.17.camel@shinybook.infradead.org>
-	 <1212008517.3445.89.camel@localhost.localdomain>
-	 <84144f020805281431y1aac903am442b333a2a13cd15@mail.gmail.com>
-	 <1212010931.3445.103.camel@localhost.localdomain>
-	 <1212013125.2236.58.camel@shinybook.infradead.org>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 17:35:27 -0500
-Message-Id: <1212014127.3445.115.camel@localhost.localdomain>
+	Wed, 28 May 2008 18:44:22 -0400
+X-Greylist: delayed 2756 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 18:44:21 EDT
+Subject: Re: [PATCH] usb-serial: option: Don't match Huawei driver CD images
+From: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>
+To: Greg KH <greg@kroah.com>
+Cc: smurf@smurf.noris.de, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+In-Reply-To: <20080528171741.GA11307@kroah.com>
+References: <1208472569.14194.5.camel@hermes2.karcher.local>
+	 <20080418032405.GB8754@kroah.com>
+	 <1208498494.14194.28.camel@hermes2.karcher.local>
+	 <1208500241.4749.3.camel@hermes2.karcher.local>
+	 <20080528171741.GA11307@kroah.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-iFSFDF7aXmqBUT9TKDS8"
+Date: Wed, 28 May 2008 23:58:18 +0200
+Message-Id: <1212011898.11658.2.camel@hermes2.karcher.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 
+X-HELO-Warning: Remote host 89.247.199.115 (i59f7c773.versanet.de) incorrectly presented itself as [192.168.0.126]
+X-ZEDV-Virus-Scanned: No viruses found. [ClamAV 0.92/7281/Wed May 28 23:10:58 2008]
+X-ZEDV-Spam-Level: ----
+X-ZEDV-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on zs01.physik.fu-berlin.de
+X-ZEDV-Spam-Status: No, score=-4.4 required=5.0 tests=ALL_TRUSTED,BAYES_00,UPPERCASE_50_75 autolearn=no version=3.2.3
+X-ZEDV-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	*  0.0 UPPERCASE_50_75 message body is 50-75% uppercase
+X-Scan-Signature: cc0eb9fc590319ea0ad8e46d5cf9b460
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-29 at 01:18 +0300, David Woodhouse wrote:
-> On Wed, 2008-05-28 at 16:42 -0500, James Bottomley wrote:
-> > Appeals to be politer tend to only work in the short term (having given
-> > quite a few of them).  I think we're developing a root cause problem in
-> > the way we recruit people to work in the kernel and we have to think
-> > about fixing it there.
-> 
-> Do we really have a problem recruiting people to work in the kernel? On
-> what do you base that observation?
 
-Yes, the median age of the MAINTAINERS is rising.  Not quite at the rate
-of a year per year which would show we have practically no turn over,
-but it is rising.
+--=-iFSFDF7aXmqBUT9TKDS8
+Content-Type: multipart/mixed; boundary="=-RJYjmwQH4n3IEhz6MAzZ"
 
-However, even if there were no recruitment problem at all, getting more
-people involved is always better because it means more contributions.
-And contributions (useful ones) are the lifeblood that moves the kernel
-forwards.
 
-> On a similar note, do we have any real data on the question of whether
-> those who are volunteering the patches which raise so much ire would
-> _ever_ become productive members of the team, even if we were to nurture
-> them properly?
+--=-RJYjmwQH4n3IEhz6MAzZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I don't think so.  But that's not really what I'm saying.  I'm saying we
-need to make the process of encouraging useful contributors more
-streamlined (as in less aggro on the mailing list).  If that involves
-cutting out the less useful ones earlier, so be it.  If we can come up
-with a better conversion process, that's great too.  I want to start the
-discussion, not necessarily prescribe the solution.
+Am Mittwoch, den 28.05.2008, 10:17 -0700 schrieb Greg KH:
+> Oops, sorry, I lost this message in the queue.
+No problem. Would be nice to have it in 2.6.26.
 
-James
+> Can you regenerate your patch against 2.6.26-rc4 and resend it?
+Regenerated agains git HEAD, attached.
 
+Regards,
+  Michael Karcher
+
+--=-RJYjmwQH4n3IEhz6MAzZ
+Content-Disposition: attachment; filename=huawei-id.diff
+Content-Type: text/x-patch; name=huawei-id.diff; charset=utf-8
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdXNiL3NlcmlhbC9vcHRpb24uYyBiL2RyaXZlcnMvdXNiL3Nl
+cmlhbC9vcHRpb24uYw0KaW5kZXggNmNlY2QyYy4uNDNjZmRlOCAxMDA2NDQNCi0tLSBhL2RyaXZl
+cnMvdXNiL3NlcmlhbC9vcHRpb24uYw0KKysrIGIvZHJpdmVycy91c2Ivc2VyaWFsL29wdGlvbi5j
+DQpAQCAtMjM2LDI1ICsyMzYsMjUgQEAgc3RhdGljIHN0cnVjdCB1c2JfZGV2aWNlX2lkIG9wdGlv
+bl9pZHNbXSA9IHsNCiAJeyBVU0JfREVWSUNFKE9QVElPTl9WRU5ET1JfSUQsIE9QVElPTl9QUk9E
+VUNUX0VUTkFfTkVUV09SS19FWCkgfSwNCiAJeyBVU0JfREVWSUNFKE9QVElPTl9WRU5ET1JfSUQs
+IE9QVElPTl9QUk9EVUNUX0VUTkFfS09JX01PREVNKSB9LA0KIAl7IFVTQl9ERVZJQ0UoT1BUSU9O
+X1ZFTkRPUl9JRCwgT1BUSU9OX1BST0RVQ1RfRVROQV9LT0lfTkVUV09SSykgfSwNCi0JeyBVU0Jf
+REVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNUX0U2MDApIH0sDQorCXsgVVNC
+X0RFVklDRV9BTkRfSU5URVJGQUNFX0lORk8oSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RV
+Q1RfRTYwMCwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCiAJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZB
+Q0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMjIwLCAweGZmLCAweGZm
+LCAweGZmKSB9LA0KIAl7IFVTQl9ERVZJQ0VfQU5EX0lOVEVSRkFDRV9JTkZPKEhVQVdFSV9WRU5E
+T1JfSUQsIEhVQVdFSV9QUk9EVUNUX0UyMjBCSVMsIDB4ZmYsIDB4ZmYsIDB4ZmYpIH0sDQotCXsg
+VVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwMSkgfSwNCi0J
+eyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNUX0UxNDAzKSB9LA0K
+LQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RVQ1RfRTE0MDUpIH0s
+DQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwNikg
+fSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNUX0UxNDA4
+KSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RVQ1RfRTE0
+MDkpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9F
+MTQxMCkgfSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNU
+X0UxNDExKSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RV
+Q1RfRTE0MTIpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJP
+RFVDVF9FMTQxMykgfSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9Q
+Uk9EVUNUX0UxNDE0KSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJ
+X1BST0RVQ1RfRTE0MTUpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFX
+RUlfUFJPRFVDVF9FMTQxNikgfSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhV
+QVdFSV9QUk9EVUNUX0UxNDE3KSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwg
+SFVBV0VJX1BST0RVQ1RfRTE0MTgpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lE
+LCBIVUFXRUlfUFJPRFVDVF9FMTQxOSkgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0Vf
+SU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwMSwgMHhmZiwgMHhmZiwg
+MHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9S
+X0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwMywgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0Jf
+REVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVD
+VF9FMTQwNSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZB
+Q0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwNiwgMHhmZiwgMHhm
+ZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVO
+RE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwOCwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBV
+U0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJP
+RFVDVF9FMTQwOSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRF
+UkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxMCwgMHhmZiwg
+MHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlf
+VkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxMSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJ
+eyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlf
+UFJPRFVDVF9FMTQxMiwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9J
+TlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxMywgMHhm
+ZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFX
+RUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxNCwgMHhmZiwgMHhmZiwgMHhmZikgfSwN
+CisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFX
+RUlfUFJPRFVDVF9FMTQxNSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FO
+RF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxNiwg
+MHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhI
+VUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxNywgMHhmZiwgMHhmZiwgMHhmZikg
+fSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBI
+VUFXRUlfUFJPRFVDVF9FMTQxOCwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNF
+X0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQx
+OSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCiAJeyBVU0JfREVWSUNFKEFNT0lfVkVORE9SX0lELCBB
+TU9JX1BST0RVQ1RfOTUwOCkgfSwNCiAJeyBVU0JfREVWSUNFKE5PVkFURUxXSVJFTEVTU19WRU5E
+T1JfSUQsIE5PVkFURUxXSVJFTEVTU19QUk9EVUNUX1Y2NDApIH0sIC8qIE5vdmF0ZWwgTWVybGlu
+IFY2NDAvWFY2MjAgKi8NCiAJeyBVU0JfREVWSUNFKE5PVkFURUxXSVJFTEVTU19WRU5ET1JfSUQs
+IE5PVkFURUxXSVJFTEVTU19QUk9EVUNUX1Y2MjApIH0sIC8qIE5vdmF0ZWwgTWVybGluIFY2MjAv
+UzYyMCAqLw0K
+
+
+--=-RJYjmwQH4n3IEhz6MAzZ--
+
+--=-iFSFDF7aXmqBUT9TKDS8
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Dies ist ein digital signierter Nachrichtenteil
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBIPdV6zhek2R7EicoRAr63AJ43Cc5ihYrHcbEid3h7JXx/R35K6wCfQnsb
+OOFww76HQ0+IwqFKf4Hbf0I=
+=hgGX
+-----END PGP SIGNATURE-----
+
+--=-iFSFDF7aXmqBUT9TKDS8--
 
