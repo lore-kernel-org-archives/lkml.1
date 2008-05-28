@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbYE1TC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbYE1TEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbYE1TC7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYE1TCv
+	id S1754234AbYE1TEy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbYE1TEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:02:51 -0400
-Received: from 213.237.47.228.adsl.vbr.worldonline.dk ([213.237.47.228]:29076
-	"EHLO rap.rap.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbYE1TCu (ORCPT
+	Wed, 28 May 2008 15:04:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41031 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbYE1TEq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:02:50 -0400
-Date: Wed, 28 May 2008 21:02:42 +0200
-From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-Message-ID: <20080528190242.GA5171@rap.rap.dk>
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
+	Wed, 28 May 2008 15:04:46 -0400
+Date: Wed, 28 May 2008 12:02:53 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD
+ Barcelona
+Message-ID: <20080528120253.26fcdb9d@infradead.org>
+In-Reply-To: <20080528165813.8D8E5814C@erda.amd.com>
+References: <20080526180616.GB2752@erda.amd.com>
+	<20080528165813.8D8E5814C@erda.amd.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I added this in the wiki performance section.
-I think it would have been informative if also a test with one drive in
-a non-raid setup was described.
+On Mon, 3 Sep 2007 10:17:39 +0200
+Robert Richter <robert.richter@amd.com> wrote:
 
-Are there any particular findings you want to highlight?
+Hi,
 
-Is there some way to estimate random read and writes from this test?
+As said before, I like the general approach. I have two comments below
+though...
 
-Are the XFS file systems completely new when running the tests?
+>  
+> -	if ((bus > 255) || (devfn > 255) || (reg > 255)) 
+> +	if ((bus > 255) || (devfn > 255) || (reg > 4095))
+>  		return -EINVAL;
+>  
 
-Best regards
-keld
+Comment 1:
+Can we make the 256/4096 thing conditional on actually having the
+feature somehow? (while not making the code TOO ugly)
 
-On Wed, May 28, 2008 at 04:53:47AM -0400, Justin Piszcz wrote:
-> Hardware:
-> 
-> 1. Utilized (6) 400 gigabyte sata hard drives.
-> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
-> 
-> Used the following 'optimizations' for all tests.
-> 
-> # Set read-ahead.
-> echo "Setting read-ahead to 64 MiB for /dev/md3"
-> blockdev --setra 65536 /dev/md3
-> 
-> # Set stripe-cache_size for RAID5.
-> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
-> echo 16384 > /sys/block/md3/md/stripe_cache_size
-> 
-> # Disable NCQ on all disks.
-> echo "Disabling NCQ on all disks..."
-> for i in $DISKS
-> do
->   echo "Disabling NCQ on $i"
->   echo 1 > /sys/block/"$i"/device/queue_depth
-> done
-> 
-> Software:
-> 
-> Kernel: 2.6.23.1 x86_64
-> Filesystem: XFS
-> Mount options: defaults,noatime
-> 
-> Results:
-> 
-> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
-> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
-> 
-> Note: 'deg' means degraded and the number after is the number of disks 
-> failed, I did not test degraded raid10 because there are many ways you can 
-> degrade a raid10; however, the 3 types of raid10 were benchmarked 
-> f2,n2,o2.
-> 
-> Each test was run 3 times and averaged--FYI.
-> 
-> Justin.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Comment 2: 
+The cpu_has_XXX is a bit dubious; while it's dependent on your cpu
+model right now, I'm a bit hesitant to consider a PCI feature something
+that belongs in the cpu_has_XXX namespace. (Yes I know PCI is moving
+into the cpu package, but on a logical level it seems just the wrong
+place).
+Do we need a platform_has_XXX namespace for things like this?
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
