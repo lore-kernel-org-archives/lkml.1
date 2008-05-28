@@ -1,125 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbYE1L5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYE1L6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbYE1L5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 07:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYE1L5W
+	id S1754078AbYE1L6Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 07:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYE1L6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 07:57:22 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:51199 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbYE1L5V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 07:57:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=mn6OAYyazkimokUZct75x/ybhgwTmuXLU4jqpGgSNHWu2qRvAvdhpuDbVgFNy8VzBsyzJJZm8qXJOW/o14J5PTzfjkV+F60DJ72ZXSIjfKrCILVwf4ECxn1U8kvfGrAY7h5i3NwQRngUmTcYoHK4NrcUdejppnguHi/hZydMOcc=
-Message-ID: <483D49E8.9060705@gmail.com>
-Date: Wed, 28 May 2008 08:02:48 -0400
-From: Scott Lovenberg <scott.lovenberg@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 28 May 2008 07:58:18 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:22833 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750957AbYE1L6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 07:58:17 -0400
+Date: Wed, 28 May 2008 13:58:15 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
+Message-ID: <20080528115814.GT25504@kernel.dk>
+References: <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk> <20080528115238.GB1283@gandalf.sssup.it>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Chris Snook <csnook@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Love and Hate on LKML
-References: <89af77c70805271348y1df96afveb020d0f3f875da1@mail.gmail.com> <483C85EB.7060604@redhat.com>
-In-Reply-To: <483C85EB.7060604@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080528115238.GB1283@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
-> Love Hate wrote:
->> Dear Developers,
->>
->> At the outset I would like to thank you for your great work - IMHO 
->> Linux is the
->> best OS in the Solar System.
->>
->> Unfortunately, your relationships with certain people are not the 
->> best. I do not
->> like how some people are treated on LKML. I will publish further episodes
->> of "Love and Hate on LKML" until you change the climate around Linux
->> development.
->>
->> http://loveandhateonlkml.wordpress.com/
->>
->> If your speech is found in some of the episodes, this means that it has
->> been considered very offensive.
->>
->> Kind regards
+On Wed, May 28 2008, Fabio Checconi wrote:
+> > From: Jens Axboe <jens.axboe@oracle.com>
+> > Date: Wed, May 28, 2008 12:07:21PM +0200
+> >
+> > On Tue, May 27 2008, Paul E. McKenney wrote:
+> > > o	When calling cfq_slab_kill(), for example from cfq_exit(),
+> > > 	what ensures that all previous RCU callbacks have completed?
+> > > 	
+> > > 	I suspect that you need an rcu_barrier() at the beginning
+> > > 	of cfq_slab_kill(), but I could be missing something.
+> > 
+> > So we have two callers of that, one is from the error path at init time
+> > and is obviously ok. The other does need rcu_barrier()! I'll add that.
+> > 
 > 
-> This is a classic example of a problem-seeking idea.  Quite a lot of 
-> people post to this list with some idea that they think will make a 
-> large impact on the community at large, certainly far larger than a 
-> lowly patch in a subsystem it would take weeks to understand.  Typically 
-> the proximal cause is sleep deprivation, a condition that afflicts many 
-> kernel developers and enthusiasts, with the result being a decreased 
-> inhibition against ideation of reference and ideation of grandeur.  This 
-> causes the believe that you have "discovered" something which is really 
-> quite well understood and is being addressed with the priority it is 
-> due, and that as a result of your discovery you are uniquely qualified 
-> to guide the community to its resolution.
-> 
-> I don't mean to throw stones here.  If you dig through the archives, you 
-> can find examples of some grandiose ideas I've posted that never 
-> resulted in a single line of code, or turned out to be impractical 
-> generalizations of more specific optimizations that have already been 
-> implemented.  Invariably these were posted while sleep-deprived, and 
-> I've been quite embarrassed by them the next morning, and relieved that 
-> for the most part they were ignored.
-> 
-> If not for the importance of addressing this issue, I would leave this 
-> post ignored as well.  I have no qualms with the goal of improving 
-> civility on LKML, but it's not something that's going to be solved by 
-> anonymously shaming people on a blog.  The goal of your blog appears to 
-> be to chastise kernel developers, which is at best a needless escalation 
-> of hostilities.
-> 
-> If you want to improve the quality of discourse here, then get involved 
-> and make good posts.  Email makes filtering very easy, so if someone is 
-> a troll or is posting on technical matters they don't understand, we can 
-> simply ignore them. If you want to rebuke people for particular conduct, 
-> do it on the list, so the people who read and post to this list can 
-> engage in a discussion of what is acceptable here.  The only people who 
-> will read a blog such as yours are malcontents looking for reasons to 
-> dismiss those who have criticized or ignored them.
-> 
-> My suggestion to you, and to everyone else who wants to improve the 
-> quality of this community, is to become a part of it.  Learn a 
-> subsystem.  Post patches that fix problems people care about.  Listen to 
-> criticism and respond to it constructively.  This will make your posts 
-> relevant to the list, and give you far more influence than a blog about 
-> a technical mailing list that has no technical objective.  Convincing 
-> other people to be nice is not a technical problem that can be resolved 
-> by one person analyzing it and implementing a solution in a late-night 
-> hacking/blogging session.  Quite the contrary, late-night 
-> hacking/blogging sessions tend to be detrimental to this goal.
-> 
-> -- Chris
+> But isn't the ioc_gone completion (notified only when there are no more
+> cic allocated) assuring that cfq_slab_kill() is called only after all
+> the rcu callbacks are completed?  This should avoid the need for the
+> rcu_barrier().
 
-  I'm just a software development major in college who follows kernel 
-development (it's kind of like following a sport that's played 24/7, and I can 
-participate in!) fairly closely.  But, for what it's worth, Chris, I really 
-appreciated your comment.  It's really refreshing to actually see a positive 
-outlook with a call to action these days (especially where thousands of 
-introverts are concerned).  Thank you for a humble, well thought out reply to a 
-slightly hostile post.
+Good point, I was thinking we decremented the mod count on call_rcu(),
+but we don't actually do it before the rcu callback has completed. So
+that part is actually OK already.
 
-I've always wished the list would have a slashdot style moderation system, 
-because great comments like this probably get skipped over too much.
+-- 
+Jens Axboe
 
-OK, I'm actually punchy (like I'm the only one who cuts a few hours off of the 
-nights sleep to get up early and write some code... which, after a good nights 
-sleep, I'm going to imprint my forehead in my desk and replace with five lines 
-of good code that actually work correctly... but I digress) and I'm sure that I 
-didn't word any of this as I would have liked to, but I really do appreciate the 
-time you took to write up this reply.
-
-I really think I'm going to print it out and keep it around for the next time I 
-want to light up a troll.  Especially when I'm shooting off my mouth on topics I 
-know nothing about.  I'll admit I really appreciated this post because it was a 
-double-bladed sword to me.
