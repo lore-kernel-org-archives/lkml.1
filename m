@@ -1,62 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbYE1Qky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbYE1QoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbYE1Qky (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYE1Qke
+	id S1752731AbYE1QoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbYE1QoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:40:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42233 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbYE1Qkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:40:33 -0400
-Date: Wed, 28 May 2008 09:49:39 -0400
-From: Dave Jones <davej@redhat.com>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26rc4 GFS2 oops.
-Message-ID: <20080528134939.GB29374@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Steven Whitehouse <swhiteho@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20080527194420.GB14577@redhat.com> <1211974564.3635.585.camel@quoit>
+	Wed, 28 May 2008 12:44:10 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:48979 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbYE1QoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 12:44:09 -0400
+Date: Wed, 28 May 2008 11:44:05 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Cc: jeff@garzik.org, tklein@de.ibm.com, themann@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       ossthema@de.ibm.com
+Subject: Re: [PATCH 2/3] [2.6.26] ehea: Add dependency to Kconfig
+Message-ID: <20080528164405.GA4836@localdomain>
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1211974564.3635.585.camel@quoit>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 4A4A9414-2CD5-11DD-A3AF-80001473D85F-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 12:36:04PM +0100, Steven Whitehouse wrote:
- > Hi,
- > 
- > On Tue, 2008-05-27 at 15:44 -0400, Dave Jones wrote:
- > > Single node GFS2 filesystem. Run fsx. Boom.
- > > 
- > I've tried it on -nmw and it seems to run ok, and I'm currently running
- > it on the current upstream kernel and its done 1/2 hour so far with no
- > sign of a problem.
- > 
- > Can you give a few more details, such as the block size of the fs
+Hello,
 
-whatever the defaults that mkfs used. (unless anaconda did something funky,
-which is unlikely).  [the box is switched off right now, and I'm not near it
-so I can't check it easily].
+Hannes Hering wrote:
+> The new ehea memory hot plug implementation depends on MEMORY_HOTPLUG.
+> 
+> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> ---
+> 
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index f90a86b..181cd86 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2440,7 +2440,7 @@ config CHELSIO_T3
+>  
+>  config EHEA
+>  	tristate "eHEA Ethernet support"
+> -	depends on IBMEBUS && INET && SPARSEMEM
+> +	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
+>  	select INET_LRO
+>  	---help---
+>  	  This driver supports the IBM pSeries eHEA ethernet adapter.
 
- > , the
- > exact command line for fsx (I was just running with defaults)
+I disagree with this change.
 
-same.  just "./fsx foo"
+It makes it impossible to build the ehea driver without memory hotplug
+enabled.  Presumably, this commit was intended to work around a build
+break of this sort (with EHEA=m and MEMORY_HOTPLUG=n):
 
- > and
- > perhaps check all the info into a Red Hat bugzilla? I know this is
- > upstream, but I tend to use "Fedora/rawhide" to keep tabs on such things
- > just so as all the bugs are in the same place,
+drivers/net/ehea/ehea_qmr.c: In function 'ehea_create_busmap':
+drivers/net/ehea/ehea_qmr.c:635: error: implicit declaration of function 'walk_memory_resource'
 
-no problem.
+(some indication of this should have been in the commit message, btw)
 
-	Dave 
+I think this was the wrong way to fix the issue.  EHEA=m and
+MEMORY_HOTPLUG=n is a valid configuration for machines I test.
 
--- 
-http://www.codemonkey.org.uk
+Any thoughts on the following, which makes walk_memory_resource()
+available regardless of MEMORY_HOTPLUG's setting?  I've tested it on a
+JS22 (Power6 blade).
+
+---
+
+ arch/powerpc/mm/mem.c          |    3 +--
+ drivers/net/Kconfig            |    2 +-
+ include/linux/memory_hotplug.h |   16 ++++++++--------
+ 3 files changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index f67e118..51f82d8 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -151,6 +151,7 @@ out:
+ 	return ret;
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
++#endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+ /*
+  * walk_memory_resource() needs to make sure there is no holes in a given
+@@ -184,8 +185,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+ }
+ EXPORT_SYMBOL_GPL(walk_memory_resource);
+ 
+-#endif /* CONFIG_MEMORY_HOTPLUG */
+-
+ void show_mem(void)
+ {
+ 	unsigned long total = 0, reserved = 0;
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index dd0ec9e..f4182cf 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2426,7 +2426,7 @@ config CHELSIO_T3
+ 
+ config EHEA
+ 	tristate "eHEA Ethernet support"
+-	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
++	depends on IBMEBUS && INET && SPARSEMEM
+ 	select INET_LRO
+ 	---help---
+ 	  This driver supports the IBM pSeries eHEA ethernet adapter.
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index 73e3586..ea9f5ad 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -77,14 +77,6 @@ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+ extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+ 	unsigned long nr_pages);
+ 
+-/*
+- * Walk through all memory which is registered as resource.
+- * arg is (start_pfn, nr_pages, private_arg_pointer)
+- */
+-extern int walk_memory_resource(unsigned long start_pfn,
+-			unsigned long nr_pages, void *arg,
+-			int (*func)(unsigned long, unsigned long, void *));
+-
+ #ifdef CONFIG_NUMA
+ extern int memory_add_physaddr_to_nid(u64 start);
+ #else
+@@ -199,6 +191,14 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
+ 
+ #endif /* ! CONFIG_MEMORY_HOTPLUG */
+ 
++/*
++ * Walk through all memory which is registered as resource.
++ * arg is (start_pfn, nr_pages, private_arg_pointer)
++ */
++extern int walk_memory_resource(unsigned long start_pfn,
++			unsigned long nr_pages, void *arg,
++			int (*func)(unsigned long, unsigned long, void *));
++
+ extern int add_memory(int nid, u64 start, u64 size);
+ extern int arch_add_memory(int nid, u64 start, u64 size);
+ extern int remove_memory(u64 start, u64 size);
