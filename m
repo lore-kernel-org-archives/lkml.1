@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbYE1Xiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbYE1Xn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbYE1Xiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 19:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbYE1XiW
+	id S1754663AbYE1Xn6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 19:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYE1Xnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 19:38:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39736 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753927AbYE1XiV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 19:38:21 -0400
-Date: Wed, 28 May 2008 16:36:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: ambx1@neo.rr.com, bjorn.helgaas@hp.com, david-b@pacbell.net, mingo@elte.hu,
-       tglx@linutronix.de, dbrownell@users.sourceforge.net,
-       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch][resend] provide rtc_cmos platform device, take 2
-Message-Id: <20080528163600.b4c3c12c.akpm@linux-foundation.org>
-In-Reply-To: <483BEF1A.3080808@aknet.ru>
-References: <200805212334.m4LNY42M006425@imap1.linux-foundation.org>
-	<483BEF1A.3080808@aknet.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 28 May 2008 19:43:50 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:34053 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752466AbYE1Xnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 19:43:50 -0400
+Date: Thu, 29 May 2008 01:44:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Doug Reiland <dreiland@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: KBUILD_DEFCONFIG change
+Message-ID: <20080528234430.GA8607@uranus.ravnborg.org>
+References: <6844644e0805281505g7dc813b9x5ee544e5fe957f6b@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6844644e0805281505g7dc813b9x5ee544e5fe957f6b@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 15:23:06 +0400
-Stas Sergeev <stsp@aknet.ru> wrote:
-
-> RTC doesn't work with pnpacpi=off.
-> The attached patch fixes the problem by creating the platform device for
-> the RTC when PNP is disabled. This may also help running the PNP-enabled
-> kernel on an older PCs.
+On Wed, May 28, 2008 at 06:05:28PM -0400, Doug Reiland wrote:
+> The following used to work:
+> ARCH=ia64 KBUILD_DEFCONFIG=bigsur_defconfig make defconfig
 > 
-> Signed-off-by: Stas Sergeev <stsp@aknet.ru>
-> Cc: David Brownell <david-b@pacbell.net>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Cc: Adam Belay <ambx1@neo.rr.com>
-> CC: Russell King <rmk+lkml@arm.linux.org.uk>
+> Now 2.6.25 makes you do:
+> 
+> ARCH=ia64 make KBUILD_DEFCONFIG=bigsur_defconfig defconfig
 
-So is everyone happy with this now?
+Use the shorter version:
+ARCH=ia64 make bigsur_defconfig
 
-It got lost from the changelog but IIRC this fixes a small sort-of regression
-which was added in 2.6.25(?) because Stas switched drivers.  I assume
-that the incompatibility was unintentional.
+There is no need to fiddle with KBUILD_DEFCONFIG.
+KBUILD_DEFCONFIG is a pure internal thing that
+may change without notice.
 
-So it might be 2.6.26 material, and possibly even 2.6.25.x?
+	Sam
