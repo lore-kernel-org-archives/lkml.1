@@ -1,124 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbYE1VWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYE1VWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbYE1VWb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 17:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYE1VWX
+	id S1753400AbYE1VWu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 17:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbYE1VWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 17:22:23 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:62733 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753246AbYE1VWW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 17:22:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UeLQ+Uho/oIOaDZoZdPQ+oZTudngnk5ZDvEm1ku0hyZuQBvJAWsiPFkrOwPhX2smaXt226ij8l0EjrJc/sV6+TgonyevvLPu/BmlnaF1fmL6MBOa6H7nAYURishN5X75VdQJgQF9UmaxIWxt9ad+xQ+xs04lMmxBFtZCxI2ljVg=
-Message-ID: <d8d698ae0805281422i212ef0c3ocd8b28ccd9e0b70d@mail.gmail.com>
-Date: Wed, 28 May 2008 18:22:20 -0300
-From: "Fausto Richetti Blanco" <fausto.blanco@gmail.com>
+	Wed, 28 May 2008 17:22:39 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:58831 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753274AbYE1VWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 17:22:38 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
 To: linux-kernel@vger.kernel.org
-Subject: Re: Pipe buffers' limit of 16 * 4K
-Cc: riel@redhat.com, fausto.blanco@gmail.com
-In-Reply-To: <d8d698ae0805261043u125b653ve73d067cd92caa16@mail.gmail.com>
+Subject: Oops during hibernation - two times the same one
+Date: Wed, 28 May 2008 23:23:19 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <d8d698ae0805231255i4d0da724p68cb2b9376134797@mail.gmail.com>
-	 <d8d698ae0805231719g4202edf2k947bba4128385ab6@mail.gmail.com>
-	 <20080523205630.444fe2b9@bree.surriel.com>
-	 <d8d698ae0805261043u125b653ve73d067cd92caa16@mail.gmail.com>
+Message-Id: <200805282323.20679.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think you did not receive it so I'm sending again....
+Hello,
+I'm using hibernation on my desktop machine every day instead of power off. It 
+mostly works but sometimes aborts with "no space left on device" error. 
+Closing some programs and trying again usually fixes it - but recently, I got 
+two oopses instead. I'm sending them because they're the same, only some 
+details are different. Does anyone know what might be wrong?
 
-On Mon, May 26, 2008 at 2:43 PM, Fausto Richetti Blanco
-<fausto.blanco@gmail.com> wrote:
-> Hi Rik,
->
->    I'll try to explain my problem...
->
->    Well, we have a cgi which uses a lib. This lib is used by a lot of
-> other systems and we don't want to change it nor create a specific
-> version of the lib to solve our problem. The webserver passes the post
-> content to the cgi via stdin which, in this case, is a pipe.
->
->    Our problem is that our application must look at the post content
-> (ie.: by reading stdin and, consequently, removing its content from
-> the pipe buffer), take some decisions and then call the lib. The lib
-> itself will also look at the stdin and here is the problem: since our
-> application had already consumed the input content, we must restore it
-> in order to the lib to be able to read it again.
->
->    We can't write to stdin because we only have access to the 'read
-> side' of the pipe. The way we find to circumvent this is by creating
-> another pipe. So, our application reads the stdin and saves its
-> content in a buffer. To restore the stdin, we are doing this:
->
->        void restore_input(void){
->                int filedes[2];
->                pipe(filedes);
->                write(filedes[1], newstdin, stdbuffsz); // *1
->                close(filedes[1]);
->                close(STDIN_FILENO);
->                dup2(filedes[0], STDIN_FILENO);
->                close(filedes[0]);
->        }
->        //  *1 newstdin is the buffer we have saved the input
->
->    So, we can:
->        read_input_and_save_it()
->        take_our_decisions()
->        restore_input()
->        call_the_lib()
->
->    It works very well, except when the input has more than 4K (or 16
-> * 4K in more recent kernels) because the restore_input() blocks at
-> this limit.
->
->    I kwow there are other solutions to my problem (e.g: using a
-> thread, moving our decisions to the lib, etc...) by I'm wondering if
-> making the pipe buffers' limit adjustable is not a good idea. Maybe it
-> should be helpful for another things too (like Jan Engelhardt said in
-> his email).
->
->    In fact, I didn't find any way of restoring the input (with the
-> input being the 'read side' of a pipe) other than using pipes. That's
-> because I've decided to ask this in the linux-kernel list. Is there a
-> reason for this limit not to be an adjustable parameter ?
->
->    Thanks in advance,
->
->          Fausto Richetti Blanco
->
-> On Fri, May 23, 2008 at 9:56 PM, Rik van Riel <riel@redhat.com> wrote:
->> On Fri, 23 May 2008 21:19:13 -0300
->> "Fausto Richetti Blanco" <fausto.blanco@gmail.com> wrote:
->>
->>> Hello guys,
->>>
->>>        I'm working with a 2.6.9 kernel (ok, I know it's quite old) and
->>> faced a problem with the 4K (one page) buffer limit for the pipes.
->>> I've found that in the 2.6.11 the pipes' buffers were changed to a
->>> circular list of pages which increased this limit to 16 * 4K. This
->>> limit is hardcoded here /usr/src/linux/include/linux/pipe_fs_i.h:6
->>> #define PIPE_BUFFERS (16)
->>>
->>>        Is there a reason for this not to be an adjustable parameter
->>> (eg.: by an ulimit in the userspace) ?
->>
->> What is the problem you found?
->>
->> Why do you need to change the limit from 16?
->>
->> Did it bring you any performance enhancements?
->>
->> If so, how much?
->>
->> --
->> All rights reversed.
->>
->
+
+------------[ cut here ]------------
+Kernel BUG at c015610b [verbose debug info unavailable]
+invalid opcode: 0000 [#1]
+Modules linked in: snd_sb16 ppdev snd_opl3_synth snd_seq_midi_emul 
+snd_opl3_lib snd_hwdep snd_sb16_dsp snd_sb_common snd_mpu401_uart snd_rawmidi 
+3c509 de2104x sr_mod cdrom [last unloaded: snd_sb16]
+
+Pid: 8634, comm: bash Not tainted (2.6.25.3-pentium #3)
+EIP: 0060:[<c015610b>] EFLAGS: 00210246 CPU: 0
+EIP is at iput+0x19/0x61
+EAX: c02db808 EBX: cf402c08 ECX: 0001ec9e EDX: 00000000
+ESI: cf402ba0 EDI: cf987c00 EBP: 00000000 ESP: c9a4deb4
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process bash (pid: 8634, ti=c9a4c000 task=c3975000 task.ti=c9a4c000)
+Stack: 00000000 c0163eb5 cf402bac ffffffe4 c142b000 c0329881 cf80b6a0 c012e212
+       00000001 c38de7ac 00200286 00001000 00000000 00000001 00000000 00000000
+       c142b000 00000000 00000000 0001ec82 0001ec82 00200246 0001ec82 fffffa5d
+Call Trace:
+ [<c0163eb5>] __blkdev_put+0xc2/0xda
+ [<c012e212>] swsusp_write+0x307/0x311
+ [<c012c81b>] hibernate+0xb4/0x131
+ [<c012b9ad>] state_store+0x41/0xa3
+ [<c012b96c>] state_store+0x0/0xa3
+ [<c01babcb>] kobj_attr_store+0x18/0x1c
+ [<c0173dd0>] sysfs_write_file+0xab/0xd8
+ [<c0173d25>] sysfs_write_file+0x0/0xd8
+ [<c0148a58>] vfs_write+0x7f/0xec
+ [<c0148e9c>] sys_write+0x3c/0x63
+ [<c01039d2>] syscall_call+0x7/0xb
+ [<c02d0000>] i8042_probe+0x4c4/0x4db
+ =======================
+Code: 08 01 00 00 77 ff ff ff eb e5 e8 90 ad 17 00 31 c0 c3 53 85 c0 89 c3 74 
+58 8b 80 8c 00 00 00 83 bb 08 01 00 00 40 8b 40 20 75 04 <0f> 0b eb fe 85 c0 
+74 0b 8b 50 10 85 d2 74 04 89 d8 ff d2 8d 43
+EIP: [<c015610b>] iput+0x19/0x61 SS:ESP 0068:c9a4deb4
+---[ end trace a4ef9e45bccfe6a8 ]---
+ata2.01: configured for PIO2
+
+
+
+
+
+------------[ cut here ]------------
+Kernel BUG at c015610b [verbose debug info unavailable]
+invalid opcode: 0000 [#1]
+Modules linked in: snd_opl3_synth snd_seq_midi_emul snd_sb16 snd_opl3_lib 
+snd_hwdep snd_sb16_dsp snd_sb_common snd_mpu401_uart snd_rawmidi 3c509 ppdev 
+sr_mod cdrom de2104x
+
+Pid: 31990, comm: bash Not tainted (2.6.25.3-pentium #3)
+EIP: 0060:[<c015610b>] EFLAGS: 00210246 CPU: 0
+EIP is at iput+0x19/0x61
+EAX: c02db808 EBX: cf402c08 ECX: 0000680c EDX: 00000000
+ESI: cf402ba0 EDI: cf987c00 EBP: 00000000 ESP: cf445eb4
+ DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+Process bash (pid: 31990, ti=cf454000 task=cbbbeaa0 task.ti=cf454000)
+Stack: 00000000 c0163eb5 cf402bac ffffffe4 ce7d3000 c0329881 cf80b6a0 c012e212
+       00000001 cbbbeaa0 cf997260 00001000 00000000 00000001 00000000 00000000
+       ce7d3000 00000000 00000000 000067f0 000067f0 00200246 000067f0 fffffa65
+Call Trace:
+ [<c0163eb5>] __blkdev_put+0xc2/0xda
+ [<c012e212>] swsusp_write+0x307/0x311
+ [<c012c81b>] hibernate+0xb4/0x131
+ [<c012b9ad>] state_store+0x41/0xa3
+ [<c012b96c>] state_store+0x0/0xa3
+ [<c01babcb>] kobj_attr_store+0x18/0x1c
+ [<c0173dd0>] sysfs_write_file+0xab/0xd8
+ [<c0173d25>] sysfs_write_file+0x0/0xd8
+ [<c0148a58>] vfs_write+0x7f/0xec
+ [<c0148e9c>] sys_write+0x3c/0x63
+ [<c01039d2>] syscall_call+0x7/0xb
+ [<c02d0000>] i8042_probe+0x4c4/0x4db
+ =======================
+Code: 08 01 00 00 77 ff ff ff eb e5 e8 90 ad 17 00 31 c0 c3 53 85 c0 89 c3 74 
+58 8b 80 8c 00 00 00 83 bb 08 01
+00 00 40 8b 40 20 75 04 <0f> 0b eb fe 85 c0 74 0b 8b 50 10 85 d2 74 04 89 d8 
+ff d2 8d 43
+EIP: [<c015610b>] iput+0x19/0x61 SS:ESP 0068:cf455eb4
+---[ end trace a135a0b42e7aa142 ]---
+ata2.01: configured for PIO2
+
+
+
+
+
+
+-- 
+Ondrej Zary
