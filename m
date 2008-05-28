@@ -1,124 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYE1QZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbYE1Qdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbYE1QZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYE1QZj
+	id S1752519AbYE1Qdv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbYE1Qdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:25:39 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:44299 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYE1QZi (ORCPT
+	Wed, 28 May 2008 12:33:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52030 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612AbYE1Qdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:25:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=i91Ia4PP58E5EcN6e0sJEmF0xepyKPrvbm/oQ1rxpeSo24ajgxgINvWrhKh9WBxjJcPf19/PsxwNsjgc7pFej3n40Rl2trcAup6MfkRpP3K2J8UbMWl294QDweGSxePZAQ/8aqr0abid4x/E9lJ3Tq46S49Y4eDHTk4joBmPOd8=
-Date: Wed, 28 May 2008 20:25:27 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/11] x86: nmi_32/64.c - use apic_write_around instead
-	of apic_write
-Message-ID: <20080528162527.GB6910@cvg>
-References: <20080524153630.669797039@gmail.com>> <48383740.0407560a.4764.7d1b@mx.google.com> <Pine.LNX.4.55.0805281628320.29522@cliff.in.clinika.pl> <20080528160413.GA6910@cvg> <Pine.LNX.4.55.0805281712200.29522@cliff.in.clinika.pl>
+	Wed, 28 May 2008 12:33:32 -0400
+Date: Wed, 28 May 2008 09:28:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
+Message-ID: <20080528162839.GA12366@kroah.com>
+References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com> <20080520030232.fc91b64e.akpm@linux-foundation.org> <20080520172139.GA11666@kroah.com> <a8e1da0805262342g2dec037eqfdf376e66459e758@mail.gmail.com> <20080526235934.8a28bfba.akpm@linux-foundation.org> <20080528154840.GJ22636@parisc-linux.org> <20080528160637.GB3851@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0805281712200.29522@cliff.in.clinika.pl>
+In-Reply-To: <20080528160637.GB3851@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Wed, May 28, 2008 at 05:13:08PM +0100]
-| On Wed, 28 May 2008, Cyrill Gorcunov wrote:
-| 
-| > Could you take a look please on
-| > 
-| > http://lkml.org/lkml/2008/5/26/146
-| > 
-| > i'm investigateting what is happening (Adrian pointed on
-| > main reason I think) but can't understand why is that.
-| 
-|  Do you have a link with the patch included?
-| 
-|   Maciej
-| 
+On Wed, May 28, 2008 at 09:06:37AM -0700, Greg KH wrote:
+> On Wed, May 28, 2008 at 09:48:40AM -0600, Matthew Wilcox wrote:
+> > On Mon, May 26, 2008 at 11:59:34PM -0700, Andrew Morton wrote:
+> > > If that semaphore is being used as a mutex then we should convert it to
+> > > a mutex (dammit).
+> > 
+> > Right.
+> > 
+> > > Leaving it implemented as a semphore is not the proper way of
+> > > suppressing the lockdep warnings.  It would be better to convert it to
+> > > a mutex then add suitable (and suitably commented) open-coded lockdep
+> > > annotations to suppress the runtime warnings.
+> > 
+> > We don't even have to go that far.  Here's all that's needed:
+> > 
+> > diff -u a/drivers/base/class.c b/drivers/base/class.c
+> > --- a/drivers/base/class.c
+> > +++ b/drivers/base/class.c
+> > @@ -134,7 +134,7 @@
+> >  	}
+> >  }
+> >  
+> > -int class_register(struct class *cls)
+> > +int __class_register(struct class *cls, struct lock_class_key *key)
+> 
+> Sorry, this will not work properly, as class_create() is now more
+> commonly called, and it calls class_register() from within the driver
+> core.  So there would be a lot of classes with the same "key" because of
+> this.
+> 
+> So try changing class_create also.
 
-Here is the patch itself:
+Oh forget it, I'm messing around in this area anyway, so all of these
+changes are not going to apply to tomorrow's -next tree at all.
 
----
-x86: nmi_32.c - add nmi_watchdog_default helper
+I'll take this and get it working, give me a bit...
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+thanks,
 
-Index: linux-2.6.git/arch/x86/kernel/nmi_32.c
-====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/nmi_32.c	2008-05-24 13:01:21.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/nmi_32.c	2008-05-24 13:04:20.000000000 +0400
-@@ -51,6 +51,17 @@ static DEFINE_PER_CPU(short, wd_enabled)
- 
- static int endflag __initdata = 0;
- 
-+/* Run after command line and cpu_init init, but before all other checks */
-+void nmi_watchdog_default(void)
-+{
-+	if (nmi_watchdog != NMI_DEFAULT)
-+		return;
-+	if (lapic_watchdog_ok())
-+		nmi_watchdog = NMI_LOCAL_APIC;
-+	else
-+		nmi_watchdog = NMI_IO_APIC;
-+}
-+
- #ifdef CONFIG_SMP
- /* The performance counters used by NMI_LOCAL_APIC don't trigger when
-  * the CPU is idle. To make sure the NMI watchdog really ticks on all
-@@ -437,12 +448,8 @@ int proc_nmi_enabled(struct ctl_table *t
- 		return -EIO;
- 	}
- 
--	if (nmi_watchdog == NMI_DEFAULT) {
--		if (lapic_watchdog_ok())
--			nmi_watchdog = NMI_LOCAL_APIC;
--		else
--			nmi_watchdog = NMI_IO_APIC;
--	}
-+	/* if nmi_watchdog is not set yet, then set it */
-+	nmi_watchdog_default();
- 
- 	if (nmi_watchdog == NMI_LOCAL_APIC) {
- 		if (nmi_watchdog_enabled)
-Index: linux-2.6.git/include/asm-x86/nmi.h
-====================================================================
---- linux-2.6.git.orig/include/asm-x86/nmi.h	2008-05-24 13:00:50.000000000 +0400
-+++ linux-2.6.git/include/asm-x86/nmi.h	2008-05-24 13:04:51.000000000 +0400
-@@ -38,11 +38,9 @@ static inline void unset_nmi_pm_callback
- 
- #ifdef CONFIG_X86_64
- extern void default_do_nmi(struct pt_regs *);
--extern void nmi_watchdog_default(void);
--#else
--#define nmi_watchdog_default() do {} while (0)
- #endif
- 
-+extern void nmi_watchdog_default(void);
- extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
- extern int check_nmi_watchdog(void);
- extern int nmi_watchdog_enabled;
----
-
-So I've moved a part of code (32bit) from proc_nmi_enabled() to
-nmi_watchdog_default() BUT this nmi_watchdog_default() also called
-from smpboot.c:native_smp_prepare_cpus() and before this patch
-this call was just an empty call (and eliminated by gcc I think)
-now it's not empy. But how it leads to hang I can't understand.
-The only thing is done - nmi_watchdog is set to NMI_LOCAL_APIC
-or NMI_IO_APIC and my only suspicious is that something happens
-asynchronously and leads to machine hang. Let me know if I wrote
-in obscure manner.
-
-		- Cyrill -
+greg k-h
