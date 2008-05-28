@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbYE1V4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYE1V5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbYE1V4z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 17:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbYE1V4R
+	id S1755356AbYE1V5X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 17:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYE1V4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 17:56:17 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54456 "EHLO mail.suse.cz"
+	Wed, 28 May 2008 17:56:18 -0400
+Received: from styx.suse.cz ([82.119.242.94]:54459 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753389AbYE1V4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753406AbYE1V4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 May 2008 17:56:15 -0400
 From: Jan Kara <jack@suse.cz>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
        Jan Kara <jack@suse.cz>
-Subject: [PATCH] ext3: Silence warnings about non-uptodate buffers
-Date: Wed, 28 May 2008 23:56:10 +0200
-Message-Id: <12120117732496-git-send-email-jack@suse.cz>
+Subject: [PATCH] jbd: Silence warnings about non-uptodate buffers
+Date: Wed, 28 May 2008 23:56:11 +0200
+Message-Id: <12120117744167-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.5.2.4
 In-Reply-To: <12120117733479-git-send-email-jack@suse.cz>
 References: <12120117733479-git-send-email-jack@suse.cz>
@@ -30,29 +30,21 @@ uptodate before marking it dirty.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/ext3/super.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ fs/jbd/journal.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index fe3119a..19d2fb4 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -398,6 +398,7 @@ static void ext3_put_super (struct super_block * sb)
- 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
- 		es->s_state = cpu_to_le16(sbi->s_mount_state);
- 		BUFFER_TRACE(sbi->s_sbh, "marking dirty");
-+		set_buffer_uptodate(sbi->s_sbh);
- 		mark_buffer_dirty(sbi->s_sbh);
- 		ext3_commit_super(sb, es, 1);
- 	}
-@@ -2248,6 +2249,7 @@ static void ext3_commit_super (struct super_block * sb,
- 	es->s_free_blocks_count = cpu_to_le32(ext3_count_free_blocks(sb));
- 	es->s_free_inodes_count = cpu_to_le32(ext3_count_free_inodes(sb));
- 	BUFFER_TRACE(sbh, "marking dirty");
-+	set_buffer_uptodate(sbh);
- 	mark_buffer_dirty(sbh);
- 	if (sync)
- 		sync_dirty_buffer(sbh);
+diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
+index b99c3b3..9303608 100644
+--- a/fs/jbd/journal.c
++++ b/fs/jbd/journal.c
+@@ -959,6 +959,7 @@ void journal_update_superblock(journal_t *journal, int wait)
+ 	spin_unlock(&journal->j_state_lock);
+ 
+ 	BUFFER_TRACE(bh, "marking dirty");
++	set_buffer_uptodate(bh);
+ 	mark_buffer_dirty(bh);
+ 	if (wait)
+ 		sync_dirty_buffer(bh);
 -- 
 1.5.2.4
 
