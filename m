@@ -1,128 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYE1Kmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYE1KnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbYE1Kmj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 06:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYE1Kmb
+	id S1754860AbYE1KnM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 06:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbYE1Km5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 06:42:31 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59672 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbYE1Kmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 06:42:31 -0400
-Date: Wed, 28 May 2008 12:42:57 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, macro@ds2.pg.gda.pl
-Subject: Re: i8259: fix final uglyness
-Message-ID: <20080528104257.GD5728@elf.ucw.cz>
-References: <20080520151528.GA1596@elf.ucw.cz> <20080520204750.GA31409@elte.hu> <20080521094402.GB12763@elf.ucw.cz> <alpine.LFD.1.10.0805222030050.3295@apollo.tec.linutronix.de> <20080522223232.GA1602@elf.ucw.cz> <alpine.LFD.1.10.0805271043220.3295@apollo.tec.linutronix.de> <20080527085541.GA1708@elf.ucw.cz> <alpine.LFD.1.10.0805271100450.3295@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805271100450.3295@apollo.tec.linutronix.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 28 May 2008 06:42:57 -0400
+Received: from mail.windriver.com ([147.11.1.11]:34171 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752212AbYE1Km4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 06:42:56 -0400
+Subject: Re: [PATCH] x86: Get irq for hpet timer
+From: Kevin Hao <kexin.hao@windriver.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Clemens Ladisch <clemens@ladisch.de>, venkatesh.pallipadi@intel.com,
+       bob.picco@hp.com, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>
+In-Reply-To: <Pine.LNX.4.55.0805221609280.13339@cliff.in.clinika.pl>
+References: <1210917912.10881.1.camel@kevin-desktop>
+	 <482D49CF.4030902@ladisch.de> <1210929270.11912.3.camel@kevin-desktop>
+	 <4831A678.5070208@ladisch.de> <1211274219.8718.7.camel@kevin-desktop>
+	 <Pine.LNX.4.55.0805201631010.31790@cliff.in.clinika.pl>
+	 <4833DD38.2010702@ladisch.de>
+	 <Pine.LNX.4.55.0805220105560.4894@cliff.in.clinika.pl>
+	 <1211441231.7323.10.camel@kevin-desktop>
+	 <Pine.LNX.4.55.0805221609280.13339@cliff.in.clinika.pl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 28 May 2008 18:42:10 +0800
+Message-Id: <1211971330.6085.33.camel@kevin-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 28 May 2008 10:41:50.0003 (UTC) FILETIME=[6F59E030:01C8C0AF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Sorry for the delays.
 
-> > > > Introduce IRQx_VECTOR on 32-bit, so that #ifdef noise is kept
-> > > > down. There should be no object code change.
-> > > 
-> > > thanks for doing this. The patch fails due to other changes in this
-> > > area (especially the hw_irq.h unification). Can you please redo against:
+I have revised this patch according to Maciej & Clemens suggestions.
+The modifications include:
 
-Done.
+1. Assign a irq to the timer when we open the timer device. I think it's
+better than do it in platform code. So we will have little impact on
+other device.
 
---- 
+2. Set IRQ routing entry for the irq we select.
 
-Introduce IRQx_VECTOR on 32-bit, so that #ifdef noise is kept
-down. There should be no object code change.
+3. If we in PIC mode, we skip all the well known legacy IRQ. And in io
+apic we skip all the legacy IRQ.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+4. Use level triggered mode by default.
 
-diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
-index 7a0fda8..dc92b49 100644
---- a/arch/x86/kernel/i8259.c
-+++ b/arch/x86/kernel/i8259.c
-@@ -297,34 +297,28 @@ void init_8259A(int auto_eoi)
- 	 * outb_pic - this has to work on a wide range of PC hardware.
- 	 */
- 	outb_pic(0x11, PIC_MASTER_CMD);	/* ICW1: select 8259A-1 init */
--#ifndef CONFIG_X86_64
--	outb_pic(0x20 + 0, PIC_MASTER_IMR);	/* ICW2: 8259A-1 IR0-7 mapped to 0x20-0x27 */
--	outb_pic(1U << PIC_CASCADE_IR, PIC_MASTER_IMR);	/* 8259A-1 (the master) has a slave on IR2 */
--#else /* CONFIG_X86_64 */
--	/* ICW2: 8259A-1 IR0-7 mapped to 0x30-0x37 */
-+
-+	/* ICW2: 8259A-1 IR0-7 mapped to 0x30-0x37 on x86-64,
-+	                       to 0x20-0x27 on i386 */
- 	outb_pic(IRQ0_VECTOR, PIC_MASTER_IMR);
-+
- 	/* 8259A-1 (the master) has a slave on IR2 */
--	outb_pic(0x04, PIC_MASTER_IMR);
--#endif /* CONFIG_X86_64 */
-+	outb_pic(1U << PIC_CASCADE_IR, PIC_MASTER_IMR);
-+
- 	if (auto_eoi)	/* master does Auto EOI */
- 		outb_pic(MASTER_ICW4_DEFAULT | PIC_ICW4_AEOI, PIC_MASTER_IMR);
- 	else		/* master expects normal EOI */
- 		outb_pic(MASTER_ICW4_DEFAULT, PIC_MASTER_IMR);
+BTW, Maciej. I am not familiar with ACPI subsystem. But I think the 
+acpi_register_gsi should return -1 if mp_find_ioapic return error.
+Is that right? If you also think so, I will make a patch for that.
+
+---
+ drivers/char/hpet.c  |   61 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/hpet.h |    3 +-
+ 2 files changed, 63 insertions(+), 1 deletion(-)
+---
+commit fa8e14bc3abb93832fbc9b7f86da0d2cf5b3b7a7
+Author: Kevin Hao <kexin.hao@windriver.com>
+Date:   Wed May 28 13:28:20 2008 +0800
+
+    HPET timer's IRQ is 0 by default. So we have to select which irq
+    will be used by these timers. We wait to set the timer's irq until
+    we really open it in order to reduce the chance of conflicting with
+    other device.
+    
+    Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
+
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index e7fb0bc..94dbfdc 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -184,6 +184,65 @@ static irqreturn_t hpet_interrupt(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
  
- 	outb_pic(0x11, PIC_SLAVE_CMD);	/* ICW1: select 8259A-2 init */
--#ifndef CONFIG_X86_64
--	outb_pic(0x20 + 8, PIC_SLAVE_IMR);	/* ICW2: 8259A-2 IR0-7 mapped to 0x28-0x2f */
--	outb_pic(PIC_CASCADE_IR, PIC_SLAVE_IMR);	/* 8259A-2 is a slave on master's IR2 */
--	outb_pic(SLAVE_ICW4_DEFAULT, PIC_SLAVE_IMR); /* (slave's support for AEOI in flat mode is to be investigated) */
--#else /* CONFIG_X86_64 */
--	/* ICW2: 8259A-2 IR0-7 mapped to 0x38-0x3f */
++static void hpet_timer_set_irq(struct hpet_dev *devp)
++{
++	unsigned long v;
++	int irq, gsi;
++	struct hpet_timer __iomem *timer;
 +
-+	/* ICW2: 8259A-2 IR0-7 mapped to IRQ8_VECTOR */
- 	outb_pic(IRQ8_VECTOR, PIC_SLAVE_IMR);
- 	/* 8259A-2 is a slave on master's IR2 */
- 	outb_pic(PIC_CASCADE_IR, PIC_SLAVE_IMR);
- 	/* (slave's support for AEOI in flat mode is to be investigated) */
- 	outb_pic(SLAVE_ICW4_DEFAULT, PIC_SLAVE_IMR);
++	spin_lock_irq(&hpet_lock);
++	if (devp->hd_hdwirq) {
++		spin_unlock_irq(&hpet_lock);
++		return;
++	}
++
++	timer = devp->hd_timer;
++
++	/* we prefer level triggered mode */
++	v = readl(&timer->hpet_config);
++	if (!(v & Tn_INT_TYPE_CNF_MASK)) {
++		v |= Tn_INT_TYPE_CNF_MASK;
++		writel(v, &timer->hpet_config);
++	}
++	spin_unlock_irq(&hpet_lock);
++
++	v = (readq(&timer->hpet_config) & Tn_INT_ROUTE_CAP_MASK)
++				 >> Tn_INT_ROUTE_CAP_SHIFT;
++
++	/*
++	 * In PIC mode, skip IRQ0-4, IRQ6-8, IRQ12-15 which is always used by
++	 * legacy device. In IO APIC mode, we skip all the legacy IRQS.
++	 */
++	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC)
++		v &= ~0xf1df;
++	else
++		v &= ~0xffff;
++
++	for (irq = find_first_bit(&v, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
++		irq = find_next_bit(&v, HPET_MAX_IRQ, 1 + irq)) {
++
++		if (irq >= NR_IRQS) {
++			irq = HPET_MAX_IRQ;
++			break;
++		}
++
++		gsi = acpi_register_gsi(irq, ACPI_LEVEL_SENSITIVE,
++					ACPI_ACTIVE_LOW);
++		if (gsi > 0)
++			break;
++	}
++
++	if  (irq < HPET_MAX_IRQ) {
++		spin_lock_irq(&hpet_lock);
++		v = readl(&timer->hpet_config);
++		v |= irq << Tn_INT_ROUTE_CNF_SHIFT;
++		writel(v, &timer->hpet_config);
++		devp->hd_hdwirq = gsi;
++		spin_unlock_irq(&hpet_lock);
++	}
++	return;
++}
++
+ static int hpet_open(struct inode *inode, struct file *file)
+ {
+ 	struct hpet_dev *devp;
+@@ -215,6 +274,8 @@ static int hpet_open(struct inode *inode, struct file *file)
+ 	devp->hd_flags |= HPET_OPEN;
+ 	spin_unlock_irq(&hpet_lock);
  
--#endif /* CONFIG_X86_64 */
- 	if (auto_eoi)
- 		/*
- 		 * In AEOI mode we just have to mask the interrupt
-diff --git a/include/asm-x86/irq_vectors.h b/include/asm-x86/irq_vectors.h
-index 3cb6d8c..b58581e 100644
---- a/include/asm-x86/irq_vectors.h
-+++ b/include/asm-x86/irq_vectors.h
-@@ -18,17 +18,20 @@ # define IA32_SYSCALL_VECTOR	0x80
- #endif
++	hpet_timer_set_irq(devp);
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/hpet.h b/include/linux/hpet.h
+index 2dc29ce..440ca72 100644
+--- a/include/linux/hpet.h
++++ b/include/linux/hpet.h
+@@ -37,6 +37,7 @@ struct hpet {
+ #define	hpet_compare	_u1._hpet_compare
+ 
+ #define	HPET_MAX_TIMERS	(32)
++#define HPET_MAX_IRQ	(32)
  
  /*
-- * Vectors 0x20-0x2f are used for ISA interrupts on 32 bit.
-- *
-  * Reserve the lowest usable priority level 0x20 - 0x2f for triggering
-  * cleanup after irq migration on 64 bit.
+  * HPET general capabilities register
+@@ -64,7 +65,7 @@ struct hpet {
   */
- #define IRQ_MOVE_CLEANUP_VECTOR	FIRST_EXTERNAL_VECTOR
  
- /*
-- * Vectors 0x30-0x3f are used for ISA interrupts on 64 bit
-+ * Vectors 0x20-0x2f are used for ISA interrupts on 32 bit.
-+ * Vectors 0x30-0x3f are used for ISA interrupts on 64 bit.
-  */
-+#ifdef CONFIG_X86_32
-+#define IRQ0_VECTOR		(FIRST_EXTERNAL_VECTOR)
-+#else
- #define IRQ0_VECTOR		(FIRST_EXTERNAL_VECTOR + 0x10)
-+#endif
- #define IRQ1_VECTOR		(IRQ0_VECTOR + 1)
- #define IRQ2_VECTOR		(IRQ0_VECTOR + 2)
- #define IRQ3_VECTOR		(IRQ0_VECTOR + 3)
+ #define	Tn_INT_ROUTE_CAP_MASK		(0xffffffff00000000ULL)
+-#define	Tn_INI_ROUTE_CAP_SHIFT		(32UL)
++#define	Tn_INT_ROUTE_CAP_SHIFT		(32UL)
+ #define	Tn_FSB_INT_DELCAP_MASK		(0x8000UL)
+ #define	Tn_FSB_INT_DELCAP_SHIFT		(15)
+ #define	Tn_FSB_EN_CNF_MASK		(0x4000UL)
+---
+
+Best Regards,
+Kevin
 
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Thu, 2008-05-22 at 16:25 +0100, Maciej W. Rozycki wrote: 
+> On Thu, 22 May 2008, Kevin Hao wrote:
+> 
+> > But if we avoid all the legacy range, the hpet timer will have no chance
+> > to work on a host using legacy PIC.
+> 
+>  It's not meant to be wired to the legacy PIC anyway (except from the
+> timers #0 and #1 in some configurations, meant to emulate timer interrupts
+> of the 8254 and the RTC), though I can imagine such a non-standard
+> extension.
+> 
+> > Yes, we should setup routing in the I/O APIC and use level-triggered
+> > mode. I think it's better to use acpi_register_gsi than mp_register_gsi.
+> > Is that right?
+> 
+>  It sounds right to me.
+> 
+>   Maciej
