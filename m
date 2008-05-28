@@ -1,44 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbYE1TUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbYE1TWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936AbYE1TUe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYE1TUZ
+	id S1754426AbYE1TWo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYE1TWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:20:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46495 "EHLO mx1.redhat.com"
+	Wed, 28 May 2008 15:22:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46611 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752587AbYE1TUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:20:24 -0400
-Date: Wed, 28 May 2008 15:17:56 -0400
-From: Rik van Riel <riel@redhat.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NTP: Let update_persistent_clock() sleep
-Message-ID: <20080528151756.00869703@bree.surriel.com>
-In-Reply-To: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752750AbYE1TWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 15:22:34 -0400
+Message-ID: <483DB0EC.3090403@redhat.com>
+Date: Wed, 28 May 2008 15:22:20 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <483D7CE8.4000600@redhat.com> <alpine.DEB.1.10.0805281329450.29755@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0805281329450.29755@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 19:15:41 +0100 (BST)
-"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
-
->  This is a change that makes the 11-minute RTC update be run in the
-> process context.  This is so that update_persistent_clock() can sleep,
-> which may be required for certain types of RTC hardware -- most notably
-> I2C devices.
+Justin Piszcz wrote:
 > 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> 
+> On Wed, 28 May 2008, Chris Snook wrote:
+> 
+>> Justin Piszcz wrote:
+>>> Hardware:
+>>>
+>>> 1. Utilized (6) 400 gigabyte sata hard drives.
+>>> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
+>>>
+>>> Used the following 'optimizations' for all tests.
+>>>
+>>> # Set read-ahead.
+>>> echo "Setting read-ahead to 64 MiB for /dev/md3"
+>>> blockdev --setra 65536 /dev/md3
+>>>
+>>> # Set stripe-cache_size for RAID5.
+>>> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+>>> echo 16384 > /sys/block/md3/md/stripe_cache_size
+>>>
+>>> # Disable NCQ on all disks.
+>>> echo "Disabling NCQ on all disks..."
+>>> for i in $DISKS
+>>> do
+>>>   echo "Disabling NCQ on $i"
+>>>   echo 1 > /sys/block/"$i"/device/queue_depth
+>>> done
+>>
+>> Given that one of the greatest benefits of NCQ/TCQ is with parity 
+>> RAID, I'd be fascinated to see how enabling NCQ changes your results.  
+>> Of course, you'd want to use a single SATA controller with a known 
+>> good NCQ implementation, and hard drives known to not do stupid things 
+>> like disable readahead when NCQ is enabled.
+> Only/usually on multi-threaded jobs/tasks, yes?
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Generally, yes, but there's caching and readahead at various layers in 
+software that can expose the benefit on certain single-threaded 
+workloads as well.
 
--- 
-All rights reversed.
+> Also, I turn off NCQ on all of my hosts that has it enabled by default 
+> because
+> there are many bugs that occur when NCQ is on, they are working on it in 
+> the
+> libata layer but IMO it is not safe at all for running SATA disks w/NCQ as
+> with it on I have seen drives drop out of the array (with it off, no 
+> problems).
+> 
+
+Are you using SATA drives with RAID-optimized firmware?  Most SATA 
+manufacturers have variants of their drives for a few dollars more that 
+have firmware that provides bounded latency for error recovery 
+operations, for precisely this reason.
+
+-- Chris
