@@ -1,36 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbYE1Rja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbYE1Ro0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbYE1Rja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 13:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbYE1RjW
+	id S1752967AbYE1Ro0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 13:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYE1RoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 13:39:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57068 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbYE1RjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 13:39:22 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com> <2874.1211980355@redhat.com> <Pine.LNX.4.64.0805221907250.4056@sbz-30.cs.Helsinki.FI> <24762.1211983758@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: dhowells@redhat.com, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       mpm@selenic.com, lethal@linux-sh.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 28 May 2008 18:38:55 +0100
-Message-ID: <7613.1211996335@redhat.com>
+	Wed, 28 May 2008 13:44:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55850 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbYE1RoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 13:44:18 -0400
+Message-ID: <483D99CA.8050802@zytor.com>
+Date: Wed, 28 May 2008 10:43:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+References: <1211995212.3445.52.camel@localhost.localdomain>
+In-Reply-To: <1211995212.3445.52.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter <clameter@sgi.com> wrote:
+James Bottomley wrote:
+> 
+> but there are many more.  The greatest problem, as I see it is that by
+> pouring vitriol like this on newbies, we're really damaging our
+> reputation as a community that welcomes newcomers and strangling our
+> necessary supply of willing volunteers.  On the other hand, as a
+> maintainer, when there's people yelling me at about patches not being
+> included plus a persistent regressions list and about ten bug reports to
+> track down, the last thing I want to see within a million miles of my
+> inbox is a white space fixing patch.  The more of these patches we get,
+> the worse the problem becomes and the shorter and more inflammatory the
+> responses get. We can't go on like this.
+> 
 
-> Right. SLAB/SLUB align to long long. SLOB needs to do the same.
+As far as whitespace fixes, it seems we should just declare a flag day, 
+specifically, right before Linus releases 2.6.26 or .27 he'd run 
+"cleanfile" on the WHOLE TREE and check it in (either as one patch or 
+several.)
 
-I fixed it by setting ARCH_KMALLOC_MINALIGN and ARCH_SLAB_MINALIGN.
+After that, one would either have to use "patch -l" to refresh patches 
+across the flag day, or I would write a reverse version of "cleanpatch" 
+(one which cleans the minus lines and the context instead of the output) 
+to fix them up.
 
-David
+Then the whole tree would be whitespace-clean, it would concentrate the 
+pain to a single event, and then we can go on with life.
+
+	-hpa
