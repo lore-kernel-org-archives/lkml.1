@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbYE1Oh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300AbYE1Oj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752942AbYE1Oh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 10:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYE1OhN
+	id S1752300AbYE1Oj1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 10:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYE1OjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 10:37:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33870 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244AbYE1OhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 10:37:12 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Specify the minimum slab/kmalloc alignment
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: penberg@cs.helsinki.fi, dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Wed, 28 May 2008 15:36:34 +0100
-Message-ID: <20080528143634.29463.2720.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Wed, 28 May 2008 10:39:20 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:58820 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750972AbYE1OjT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 10:39:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=rhnmsUzUXf/cA9S/OTDMJEOPwqL2kmSJ3V4hcKNoitNVqyAug7Yrwsnw7lFlxBVY+epNIZy60k2lHuoLsoFlRuGxPpVRfpdnYuuduR0xf/qqVuUbFFUNcgQYq6CnLGA0SFXsP6Cu5jeJ4Wlhm5pYm6Bb2MJ58FKXDzLMfjJ/oKc=
+Message-ID: <483D6E8D.7030409@gmail.com>
+Date: Wed, 28 May 2008 23:39:09 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-acpi@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] libata: Handle bay devices in dock stations
+References: <20080528143857.GB5585@homac.suse.de>
+In-Reply-To: <20080528143857.GB5585@homac.suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+Holger Macht wrote:
+> * Differentiate between bay devices in dock stations and others:
+> 
+>  - When an ACPI_NOTIFY_EJECT_REQUEST appears, just signal uevent to
+>    userspace (that is when the optional eject button on a bay device is
+>    pressed/pulled) giving the possibility to unmount file systems and to
+>    clean up. Also, only send uevent in case we get an EJECT_REQUEST
+>    without doing anything else. In other cases, you'll get an add/remove
+>    event because libata attaches/detaches the device.
+> 
+>  - In case of a dock event, which in turn signals an
+>    ACPI_NOTIFY_EJECT_REQUEST, immediately detach the device, because it
+>    may already have been gone
+> 
+> * In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
+>   the device has been plugged or unplugged. If plugged, hotplug it, if
+>   unplugged, just signal event to userspace
+>   (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
+> 
+> * Call ACPI _EJ0 for detached devices
+> 
+> Signed-off-by: Holger Macht <hmacht@suse.de>
 
-Specify the minimum slab/kmalloc alignment to be 8 bytes.  This fixes a crash
-when SLOB is selected as the memory allocator.  The FRV arch needs this so
-that it can use the load- and store-double instructions without faulting.  By
-default SLOB sets the minimum to be 4 bytes.
+Acked-by: Tejun Heo <htejun@gmail.com>
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- include/asm-frv/mem-layout.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-
-diff --git a/include/asm-frv/mem-layout.h b/include/asm-frv/mem-layout.h
-index 734a1d0..8a15c90 100644
---- a/include/asm-frv/mem-layout.h
-+++ b/include/asm-frv/mem-layout.h
-@@ -31,6 +31,13 @@
- 
- #define PAGE_MASK			(~(PAGE_SIZE-1))
- 
-+/*
-+ * the slab must be aligned such that load- and store-double instructions don't
-+ * fault if used
-+ */
-+#define	ARCH_KMALLOC_MINALIGN		(sizeof(long) * 2)
-+#define	ARCH_SLAB_MINALIGN		(sizeof(long) * 2)
-+
- /*****************************************************************************/
- /*
-  * virtual memory layout from kernel's point of view
-
+-- 
+tejun
