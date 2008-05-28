@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYE1RIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbYE1RKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbYE1RIj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 13:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYE1RIc
+	id S1753112AbYE1RKF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 13:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYE1RJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 13:08:32 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39519 "EHLO
+	Wed, 28 May 2008 13:09:55 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39528 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbYE1RIb (ORCPT
+	with ESMTP id S1751857AbYE1RJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 13:08:31 -0400
-Date: Wed, 28 May 2008 19:08:30 +0200 (CEST)
+	Wed, 28 May 2008 13:09:55 -0400
+Date: Wed, 28 May 2008 19:09:51 +0200 (CEST)
 From: Jan Engelhardt <jengelh@medozas.de>
-To: thunder7@xs4all.nl
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: vt/fbcon: fix background color on line feed
-In-Reply-To: <20080527193304.GA21560@amd64.of.nowhere>
-Message-ID: <alpine.LNX.1.10.0805281003040.12937@fbirervta.pbzchgretzou.qr>
-References: <alpine.LNX.1.10.0805101015110.19952@fbirervta.pbzchgretzou.qr> <20080527193304.GA21560@amd64.of.nowhere>
+To: Takashi Iwai <tiwai@suse.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sound: azx_get_response timeout
+In-Reply-To: <s5h1w4ox2d8.wl%tiwai@suse.de>
+Message-ID: <alpine.LNX.1.10.0804291439100.21466@fbirervta.pbzchgretzou.qr>
+References: <alpine.LNX.1.10.0804291225350.21466@fbirervta.pbzchgretzou.qr> <s5h63u0x6i4.wl%tiwai@suse.de> <alpine.LNX.1.10.0804291326160.21466@fbirervta.pbzchgretzou.qr> <s5h1w4ox2d8.wl%tiwai@suse.de>
 User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -27,43 +25,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 2008-05-27 21:33, thunder7@xs4all.nl wrote:
+
+On Tuesday 2008-04-29 14:38, Takashi Iwai wrote:
+>> >> Out of the blue, sound stops and dmesg throws:
+>> >> 
+>> >> ALSA sound/pci/hda/hda_intel.c:596: hda_intel: azx_get_response timeout, 
+>> >> switching to polling mode: last cmd=0x000f0000
+>> >
+>> >It's a warining and usually OK as long as you don't get errors with
+>> >single_cmd mode after this message.
+>> 
+>> Well I do ..
 >
->I used to force my console to black-on-white by the command 'setterm
->inversescreen on'. This worked well. In 2.6.26-rc4, I get lots of black
->background characters. Something as simple as typing 'ls' multiple times
->until the screen scrolls gives black characters. I see them at the end
->of lines, I see spaces changed in black characters, I see lots of black. 
+>Then the message is a red herring.
 
-commit 7f676fb7cf34dd2982d0cf79aeea7e5b06ad91eb
-Author: Jan Engelhardt <jengelh@medozas.de>
-Date:   Wed May 28 10:00:41 2008 +0200
+Ah nah.. for some reason I forgot to delete that line from the mail.
 
-    vt: fix background color on line feed, DEC invert
-    
-    Original report: """I used to force my console to black-on-white by
-    the command `setterm -inversescreen on`. In 2.6.26-rc4, I get lots of
-    black background characters."""
-    
-    Another addendum to commit c9e587ab.
-    This was previously missed out since I was not aware of what
-    vc_decscnm was for.
-    
-    Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
----
- drivers/char/vt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+But then it seems to be running for half an hour with 2.6.23.17 so far, 
+so that may be a bisection helping point. Will report bisect findings as 
+comes available.
 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index fa1ffbf..b8b2498 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -434,7 +434,7 @@ static void update_attr(struct vc_data *vc)
- 	              vc->vc_blink, vc->vc_underline,
- 	              vc->vc_reverse ^ vc->vc_decscnm, vc->vc_italic);
- 	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm, 0) << 8) | ' ';
--	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, false, false) << 8) | ' ';
-+	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, vc->vc_decscnm, false) << 8) | ' ';
- }
- 
- /* Note: inverting the screen twice should revert to the original state */
+>> >What show /proc/asound/card0/codec#* files?
+>>[..]
+>
+>This proc file looks fine.  You don't hear from the headphone but from
+>the line-out jack, right?
+
+The voulme control for 'Headphones' is 0, but I do hear things,
+so I do use the "Master Front" mixer. (There is just one green
+jack on the mainboard anyway.)
+
+>To be sure, get the codec proc files before and after the problem to
+>compare.  (lspci register dump might be worth to check, too.)
+
+(have not booted into 2.6.25 again yet, but will do)
