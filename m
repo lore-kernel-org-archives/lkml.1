@@ -1,127 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbYE1KET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYE1KHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281AbYE1KET (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 06:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYE1KEL
+	id S1754141AbYE1KHA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 06:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYE1KGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 06:04:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51580 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751722AbYE1KEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 06:04:09 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/bZLIRbeXbKByyWz+g+NyDoLzCuZIdgYhOCDtMpF
-	IAWXsP00/js/Vb
-Date: Wed, 28 May 2008 12:03:57 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: Redzone overwritten with CONFIG_SECURITY
-Message-ID: <20080528100357.GA2510@alice>
-References: <20080526143422.GA3203@alice> <84144f020805270800l5911ed02ia7a92d96a8aa32a7@mail.gmail.com> <20080527174738.GZ30402@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080527174738.GZ30402@sequoia.sous-sol.org>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.26-rc4 (x86_64)
-X-Uptime: 11:59:11 up  3:08,  1 user,  load average: 0.21, 0.12, 0.12
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+	Wed, 28 May 2008 06:06:52 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:34034 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751414AbYE1KGv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 06:06:51 -0400
+Subject: Re: two different oopses with 2.6.26-rc4
+From: Johannes Berg <johannes@sipsolutions.net>
+To: alejandro.riveira@gmail.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <1211968234.9895.7.camel@Varda> (sfid-20080528_115058_065425_05FEB1E1)
+References: <1211968234.9895.7.camel@Varda>
+	 (sfid-20080528_115058_065425_05FEB1E1)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1U2QRpjKjWz+07RQnKMB"
+Date: Wed, 28 May 2008 12:05:35 +0200
+Message-Id: <1211969135.21624.2.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Wright (chrisw@sous-sol.org) wrote:
-> * Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> > On Mon, May 26, 2008 at 5:34 PM, Eric Sesterhenn <snakebyte@gmx.de> wrote:
-> > > i enabled CONFIG_SECURITY on current git and get tons of
-> > > Redzone overwritten errors during early boot, even
-> > > with CONFIG_SECURITY_CAPABILITIES and CONFIG_SECURITY_NETWORK
-> > > disabled. After a while it ends with a kernel panic
-> > > saying: not syncing: Out of memory and no killable process...
-> > > Root partition is ext3 format.
-> > 
-> > So what kernel version is this and what's the last known version that
-> > worked? As it's early boot crash, maybe you can try to do git bisect
-> > on it?
-> > 
-> > >
-> > > At the moment i dont have a camera at hand, so i'll try
-> > > to write down everything which looks interesting, please tell
-> > > me if i missed something.
-> > >
-> > > The first 24 Bytes of the overwritten section contain
-> > > zeros. Then we have a constant 0x18, and three changing
-> > > values. the next three bites contain exactly the same
-> > > values, first the 0x18, then the two changing ones.
-> > >
-> > > The only value i found so far matching the 0x18 and
-> > > which might be related to CONFIG_SECURITY is CAP_SYS_RESOURCE
-> > > defined in /include/linux/capability.h
-> > >
-> > > BUG hugetlbfs_inode_cache: Redzone overwritten
-> > >
-> > > INFO: 0xccd8e250-0xccd8e253. First byte 0x0 instead of 0xbb
-> > > Info: Slab 0xc119d1c0 objects=12 used=0 fs=0xccd8e000 flags=0x400020c3
-> > > Info: Object 0xccd8e00 offset=0 fp=0xccd8e280
-> > >
-> > > Object 0xccd8e00: 00 00 00 ...
-> > > Object 0xccd8e10: 00 00 00 00 00 00 00 00 00 18 e0 d8 cc 18 e0 d8 cc
-> > > Object 0xccd8e20  00 00 00 ...
-> 
-> That looks like an addr within the object, like an INIT_LIST_HEAD.
-> 
-> > > Pid: 1, comm:swapper Not tainted 2.6.26-rc3-00436-gb373303 #42
-> > > print_trailer
-> > > check_bytes_and_report
-> > > check_object
-> > > __slab_alloc
-> > > kmem_cache_alloc
-> > > ? hugetlbfs_alloc_inode
-> > > ? hugetlbfs_alloc_inode
-> > > hugetlbfs_alloc_inode
-> > > alloc_inote
-> > > new_inode
-> > > hugetlbs_get_inote
-> > > hugetlbfs_fill_super
-> > > ? sget
-> > > ? set_anon_super
-> > > get_sb_node
-> > > hugetlbfs_get_sb
-> > > ? hugetlbfs_fill_super
-> > > vfs_kern_mount
-> > > kern_mount_data
-> > > init_hugetlbfs_fs
-> > > ? init_once
-> > > ? kernel_init
-> > > kernel_init
-> 
-> ok, do_init_calls time frame with that config...CONFIG_SECURITY isn't
-> really doing any allocations, nor much in the way of memory writes.
-> It would get called into via the:
-> 
->  hugetlbs_get_inode
->    new_inode
->      alloc_inode
->        security_inode_alloc <-- and that'd be basically a no-op
-> 
-> > > Config follows:
-> 
-> I couldn't recreate with that config.
 
-I did a fresh git-clone and tried again without being able
-to reproduce this.
-I diffed all .h and .c files and except for
-the autogenerated ones they are exactly the same...
+--=-1U2QRpjKjWz+07RQnKMB
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Is it possible that this was caused because a file didnt
-get rebuild correctly? I can still reproduce it with the
-old checkout. Sorry if this causes unessecary noise :(
 
-Greetings, Eric
+> i cced wireless becouse of the first oops
+=EF=BB=BF
+Yeah. Please don't. Report one bug per email, to the appropriate forum.
+wireless really doesn't want to see any debugging of weird other
+problems.
+
+Anyhow, the wireless problem here is known and a fix is on its way, so
+everybody *please* drop wireless from CC if you want to reply.
+
+johannes
+
+--=-1U2QRpjKjWz+07RQnKMB
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASD0ubaVg1VMiehFYAQIVwA/+PlW0lAtUygV+HDbMwWmCOA8xKwGgvGU+
+dnLuX048CmGhNi0NNZwP8+u2qzbhsRZIOXpf9yz9mX24jCf7ay3fWMu5FhhSZpka
++TkUZ1GVRoo5DIMJr+lANi80CtlMr31HZ96WK7UlMz/swkdF9IvIlXIgqlKj7xC8
+waPeuSmNOBJCAadkGs+VrR91PET3NADDcdfZJfFEVV/j96Au1X3IDDmSf45T51oW
+BWSHBS3Z3hx2hZNtTLo55h7Lw3kPB7n5m9pWGnp/0JrznriNgR4WtVoIUeN2QJu1
+bHm7slnrd+gX1Pbuqa8ShEMUWQGHE79BdlD3yvYtnjoTHDqJ9w+Myb7HaqidAOa1
+FsZOSw5xWiwWucbr9J4T3uuUmiX/un1Db3K4jfmi9/0ZYnPfFo0xLcF2wKTZ90Sf
+/G0fcXJI1m8pdIn7eiy9YoIPOBrEeaFjYa3lI7OjUUjrQIJNFhe8/sQOmhbvRuXc
+O/t2a35NC8LceZQ02Jc3QO76AYmsgeYb95nKspf6Z7w95rMSHnUhQbH2aMluGEzi
+sjG1NnzFcEAKtdzyxVb58rTlefkRzIEae5Y6e2ZFoyf0GokfhfjQbwFVjZ9//6du
+1odpnKn8URQRx00PENslVAhzJjANn5coyDLUkTpOUgSzrXrhET8CJOqbbVsGmpI1
+Jwj7VUepgVE=
+=9Oed
+-----END PGP SIGNATURE-----
+
+--=-1U2QRpjKjWz+07RQnKMB--
+
