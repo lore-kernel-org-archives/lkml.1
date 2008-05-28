@@ -1,241 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967AbYE1PUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751974AbYE1Pe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751967AbYE1PUw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 11:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYE1PUm
+	id S1751974AbYE1Pe5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 11:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYE1Per
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 11:20:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51191 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbYE1PUl (ORCPT
+	Wed, 28 May 2008 11:34:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:63537 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbYE1Peq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 11:20:41 -0400
-Subject: Re: trace_mark ugliness
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080527133651.GA9428@Krystal>
-References: <Pine.LNX.4.58.0805220949560.14724@gandalf.stny.rr.com>
-	 <20080522171602.GB22806@Krystal>
-	 <1211714403.6463.294.camel@lappy.programming.kicks-ass.net>
-	 <20080527133651.GA9428@Krystal>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 17:19:37 +0200
-Message-Id: <1211987977.12349.91.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 May 2008 11:34:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=j86NZW3eg5ib0DX1G1002igQlbKxgDHWdWA1l/ifHj+Pa1siJEYA7s7CwPawNJvfJmW/7rY/KyrNkicto28JprRDSFeM2b4h+Qc6UwneGo0HH9yTXKbTvpZez5nDbSVtJGYk/SJELxBm14rw8/K0JAOHrc8tu/YdqWkTacqLnFw=
+Date: Wed, 28 May 2008 19:34:34 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rmk+lkml@arm.linux.org.uk, lethal@linux-sh.org, philipp.zabel@gmail.com,
+       pavel@ucw.cz, tony@atomide.com, paul@pwsan.com, david-b@pacbell.net,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [RFC][PATCH 1/2] Clocklib: add generic framework for managing
+	clocks.
+Message-ID: <20080528153434.GA10062@doriath.ww600.siemens.net>
+References: <20080522211942.GA11271@doriath.ww600.siemens.net> <20080522212142.GA11850@doriath.ww600.siemens.net> <20080527150919.8d5a3e1c.akpm@linux-foundation.org> <20080527234115.GA13110@doriath.ww600.siemens.net> <20080528094457.6687e0dd@hskinnemo-gx745.norway.atmel.com> <bc64b4640805280544o7fac1565gd7e1e09ece6c5500@mail.gmail.com> <20080528155645.38a88953@hskinnemo-gx745.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080528155645.38a88953@hskinnemo-gx745.norway.atmel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-27 at 09:36 -0400, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Thu, 2008-05-22 at 13:16 -0400, Mathieu Desnoyers wrote:
+Hi,
+
+On Wed, May 28, 2008 at 03:56:45PM +0200, Haavard Skinnemoen wrote:
+> Dmitry <dbaryshkov@gmail.com> wrote:
+> > Hi,
 > > 
-> > > > The thing that bothers us the most is the force use of the "pretty print"
-> > > > interface. There's got to be a better way. I'd much rather see a
-> > > > file_marker.h file that has the interfaces defined, like what we have for
-> > > > sched.c.
-> > > > 
-> > > > Where we have a sched_trace.h that has the defined prototypes. That is
-> > > > what the tracers should use too.
-> > > > 
-> > > > The trace_mark should just have the string to find the tracer, but get rid
-> > > > of the "pretty print" aspect of it. Sorry, but the more I think about it,
-> > > > the nastier it seems. It forces all the users to do a va_start.
-> > > > 
-> > > > I know you developed trace_mark for LTT, and that's great. But where I'm
-> > > > disagreeing is that you should not force all other users of trace_mark to
-> > > > conform to the LTT way when it can be easier to have LTT conform to a more
-> > > > generic way.
-> > > > 
-> > > > Hence, this is what I propose.
-> > > > 
-> > > > Remove the format part altogether, the format should be checked via the
-> > > > prototype. I know that you are afraid of changes to markers and that
-> > > > breaking code, but honestly, that is up to the developers of the tracers
-> > > > to fix. This should not be placed in the code itself. The markers
-> > > > shouldn't change anyway. If there is to be a check, it should be a compile
-> > > > time check (i.e. prototype compare) not a runtime check (as it is now).
-> > > > 
-> > > 
-> > > Hrm, hrm, ok, let's brainstorm along these lines. So we would like to
-> > > have :
-> > > - Multiple tracers
-> > > - Each tracer can connect either to one or more different markers
-> > > - Each marker should support many tracers connected to it
-> > > - Checking for marker/tracer probe compatibility should be done via
-> > >   function prototypes.
-> > > 
-> > > The main issue here seems to be to support multiple probes connected at
-> > > once on a given marker. With the current markers, I deal with this by
-> > > taking a pointer on the va_list and go through as many va_start/va_end
-> > > as required (one pair for each connected probe). By the way, the probes
-> > > does not have to issue va_start/end; marker.c deals with this.
-> > > 
-> > > Also, given that I want to support SystemTAP, it adds the following
-> > > constraint : we cannot expect the probes to be there at compile-time,
-> > > since they can be provided by modules built much later. Therefore, we
-> > > have to provide support for dynamic connection of an arbitrary number of
-> > > probes on any given marker.
-> > > 
-> > > So while I *could* remove the format string easily, it's the variable
-> > > argument list which I don't see clearly how to drop while still
-> > > providing flexible argument types -and- compile-time type verification.
-> > > 
-> > > What currently looks like (this is a simplified pseudo-code) :
-> > > 
-> > > void marker_probe_cb(const struct marker *mdata, void *call_private, ...)
-> > > {
-> > >   va_list args;
-> > >   int i;
-> > > 
-> > >   preempt_disable();
-> > >   for (i = 0; multi[i].func; i++)  {
-> > >     va_start(args, call_private);
-> > >     multi[i].func(multi[i].probe_private, call_private,
-> > >       mdata->format, &args);
-> > >     va_end(args);
-> > >   }
-> > >   preempt_enable();
-> > > }
-> > > 
-> > > Would have to be changed into specialized functions for each marker,
-> > > involving quite a lot of code to be generated, e.g. :
-> > > 
-> > > void marker_XXnameXX_probe_cb(const struct marker *mdata,
-> > >     int arg1, void *arg2, struct mystruct *arg3)
-> > > {
-> > >   int i;
-> > > 
-> > >   preempt_disable();
-> > >   for (i = 0; multi[i].func; i++)
-> > >     multi[i].func(multi[i].probe_private, arg1, arg2, arg3);
-> > >   preempt_enable();
-> > > }
-> > > 
-> > > That would imply that the struct marker_probe_closure, currently defined
-> > > as :
-> > > 
-> > > typedef void marker_probe_func(void *probe_private, void *call_private,
-> > >                 const char *fmt, va_list *args);
-> > > 
-> > > struct marker_probe_closure {
-> > >         marker_probe_func *func;        /* Callback */
-> > >         void *probe_private;            /* Private probe data */
-> > > };
-> > > 
-> > > Would have to be duplicated for each marker prototype so we can provide
-> > > compile-time check of these prototypes. The registration functions would
-> > > also have to be duplicated to take parameters which include all those
-> > > various prototypes. They are required so that kernel modules can provide
-> > > probes (e.g. systemtap and LTTng).
-> > > 
-> > > I don't really see how your proposal deals with these constraints
-> > > without duplicating much of the marker code on a per marker basis.
-> > > However, if we can find a clever way to do it without the code
-> > > duplication, I'm all in.
-> > > 
-> > > Ideas/insights are welcome,
-> > 
-> > How about something like:
-> > 
-> > marker.c:
-> > 
-> > void __trace_mark(const struct marker *mdata, va_list *args)
-> > {
-> > 	int i;
-> > 
-> > 	preempt_disable();
-> > 	for (i = 0; multi[i].func; i++) {
-> > 		va_list l;
-> > 
-> > 		va_copy(l, *args);
-> > 		multi[i].func(multi[i].probe_private, &l);
-> > 		va_end(l);
-> > 	}
-> > 	preempt_enable();
-> > }
-> > 
-> > 
-> > marker.h:
-> > 
-> > #define TRACE_FUNC(name, args...)				\
-> > static inline void trace_##name(const struct marker *mdata, ## args) \
-> > {								\
-> > 	va_list l;						\
-> > 	va_start(l, mdata);					\
-> > 	__trace_mark(mdata, &l);				\
-> > 	va_end(l);						\
-> > }
-> > 
-> > #define TRACE_MARK(name, args...)				\
-> > 	trace_##name(trace_##name##_data, ## args)
-> > 
-> > TRACE_FUNC(sched_switch, const struct task_struct *prev, const struct task_struct *next)
-> > 
-> > 
-> > sched.c:
-> > 
-> > 	TRACE_MARK(sched_switch, prev, next);
-> > 
+> > Haavard, few words before detailed comments. In this version of the patchset
+> > I tried to solve the problem of dynamic unregistration of clocks.
+> > Consider this example:
+> > 1) Module A register CLKA
+> > 2) Module B clk_gets CLKA
+> > 3) Module A is unloaded
+> > 3.1) As it's unloaded module A unregisters CLKA
+> > 4) Module B tries to clk_get_rate on CLKA
 > 
-> Hi Peter,
+> clk_get_rate() returns unsigned long, so we're screwed. I think we need
+> to prevent unloading module A until module B clk_puts CLKA.
+
+That can be changed to plain long.
+
 > 
-> Thanks for looking into this. There seems that there are a few problems
-> with the solution you propose. The first problem being that there is a
-> va_start in a function taking fixed arguments (the generated
-> trace_##name function).
+> > I can think of several solutions for this problem, but IMO the most clear one is
+> > to force struct clk to be fully dynamic and to use kobjects for it's management.
+> > This helped me:
+> > 1) to cleanup the above case
+> 
+> You forgot to audit all drivers to make sure they handle bogus return
+> values from the clk functions appropriately.
 
-Hmm, indeed it seems that isn't legal :-(
+I don't think it's a primary task...
 
-> The second problem I see is that the callback registered to be called by
-> multi[i].func(multi[i].probe_private, &l); will have no type checking at
-> all, so the type checking problem is still present.
+> 
+> > 2) to cleanup that "clk_alloc_function" mess (required for clock aliasing, etc)
+> 
+> I have to say I'm glad the "clk function" stuff is gone as I never
+> really understood it...
 
-Doesn't leave much room...
+:)
 
-void _trace_mark(const struct marker *mdata, ...)
-{
-	va_list l;
+> 
+> > 3) to get sysfs integration for free
+> 
+> I wouldn't call making struct clk twice as big as it used to be "free".
+> 
+> > Also, please, bear in mind, that I titled this version of the patchset as "RFC".
+> > I just wanted to know your opinion on this approach. If it's less acceptable,
+> > I'll get back to my previous patchset.
+> 
+> Yes, I think it's less acceptable than the previous patchset. But if
+> other people like this patchset better, I can always stay with my own
+> implementation of the clk api on avr32.
 
-	preempt_disable();
-	for (iter = mdata->funcs; iter; iter = iter->next) {	
-		va_start(l, mdata);
-		iter->func(mdata, &l);
-		va_end(l);
-	}
-	preempt_enable();
-}
+No, that's not my goal.
 
-#define TRACE_FUNC4(name, type1, type2, type3, type4)			\
-struct marker_##name {							\
-	struct marker mdata;						\
-	void (*func_##name)(type1, type2, type3, type4);		\
-}									\
-static inline void trace_##name##_func(const struct marker *mdata,	\
-	type1 a1, type2 a2, type3 a3, type4 a4)				\
-{									\
-	_trace_mark(mdata, a1, a2, a3, a4);				\
-}									\
-static inline void _trace_##name##_call(const struct marker *mdata, 	\
-	va_list *l)							\
-{									\
-	type1 a1 = va_arg(*l, type1);					\
-	type2 a2 = va_arg(*l, type2);					\
-	type3 a3 = va_arg(*l, type3);					\
-	type4 a4 = va_arg(*l, type4);					\
-									\
-	((struct marker_##name *)mdata)->func_##name(a1, a2, a3, a4); 	\
-}
+> > 2008/5/28 Haavard Skinnemoen <haavard.skinnemoen@atmel.com>:
+> > > Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+> > >> Hi,
+> > >>
+> > >> On Tue, May 27, 2008 at 03:09:19PM -0700, Andrew Morton wrote:
+> > >> > On Fri, 23 May 2008 01:21:42 +0400
+> > >> > Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
+> > >> >
+> > >> > > Provide a generic framework that platform may choose
+> > >> > > to support clocks api. In particular this provides
+> > >> > > platform-independant struct clk definition, a full
+> > >> > > implementation of clocks api and a set of functions
+> > >> > > for registering and unregistering clocks in a safe way.
+> > >> > >
+> > >> >
+> > >> > Nobody interested in this?
+> > >
+> > > Sorry. I am...or at least I used to be until struct clk went all porky
+> > > and got hidden away in a .c file...
+> > 
+> > It get hidden because in this patchset it contains only private fields
+> > not intended for public usage.
+> 
+> "private" fields for a mid-layer that doesn't actually do anything
+> translates into useless fields in my book.
 
-The sad truth is that gcc is taking out most of the function forwarding
-helpers in favour of libffi, and libffi is far from self hosting and
-quite horrible to look at - so importing that into the kernel isn't
-going to work either :-/
+Sorry, I don't understand you. Here is the definition from the C file:
+struct clk {
+	struct kobject kobj;
+	int usage;
+	const struct clk_ops *ops;
+	void *data;
+};
 
+Which fields are useless from your POV? The mid-layer manages clocks
+registration, so kobj. It manages usage (enablement) counters.
+It serves per-clock operations. What do you dislike here?
 
+> > >> > The documentation should perhaps explain that set_mode() is called
+> > >> > under spin_lock_irqsave() and hence cannot do much.
+> > >>
+> > >> All functions from clk_ops are run with spinlock held.
+> > >
+> > > Why is that necessary?
+> > >
+> > > I've been thinking a bit lately about starting up oscillators through
+> > > the clk framework, and that may take up to several seconds. Doing that
+> > > under an irqsafe spinlock would be madness...
+> > 
+> > Consider two kernel threads trying to enable single clock...
+> > I'm sure locking conditions can be relaxed, but I can't come up with
+> > the solution yet. Maybe you can?
+> 
+> No, I really wish I could, but I can't think of any way to remove the
+> lock. A mutex is not an option I guess since these things might get
+> called from interrupt handlers and whatnot.
+> 
+> > >
+> > >> > > +EXPORT_SYMBOL(clks_register);
+> > >> >
+> > >> > The patch generally has nice documentation, but these two major
+> > >> > interface functions were omitted.
+> > >>
+> > >> Oops...
+> > >
+> > > Where's the interface to register a single clock btw?
+> > >
+> > > I have to say I really hate this "struct clk_table" thing. Another
+> > > reason why struct clk should be in a header file, not a .c file.
+> > 
+> > See above. The struct clk incorporates the kobject, so it should
+> > never ever be declared.
+> 
+> I don't understand that reasoning. Why can't you declare a struct that
+> contains a kobject? I've allocated platform_devices statically lots of
+> times -- those have embedded kobjects too.
+
+Citing Documentation/kobject.txt:
+Because kobjects are dynamic, they must not be declared statically or on
+the stack, but instead, always allocated dynamically.  Future versions of
+the kernel will contain a run-time check for kobjects that are created
+statically and will warn the developer of this improper usage.
+
+However as static devices do work, we can probably go that way.
+
+> 
+> Why not split out the registration bits of clk_alloc() into a separate
+> clk_register() or clk_add() call?
+> 
+> > > Why do you have to iterate over clks_kset->list twice?
+> > 
+> > There are two types of clocks. Ones that are bound to devices
+> > and ones that aren't. E.g. on my development board there is
+> > a MMCCLK which is driven by the chip and is used by my driver
+> > and there is a MMCCLK which is driven by PXA and used by
+> > pxa2xx-mci driver. That's why first you try to find the clock from
+> > "bound" ones (ones wich provide can_get) and then from
+> > all other.
+> 
+> Oh.
+> 
+> How about making can_get() mandatory and provide a default
+> clk_can_always_get() function for clocks that aren't bound to devices?
+
+ok.
+
+> > >> > > + spin_lock_irqsave(&clocks_lock, flags);
+> > >> > > +
+> > >> > > + if (!clk->ops || !clk->ops->get_rate)
+> > >> > > +         goto out;
+> > >> >
+> > >> > Did we really need to hold the lock to perform this check?
+> > >> >
+> > >> > Is it really valid for a clock to have no ->ops and no -ops->get_rate?
+> > >> > Please consider mandating that these fields must be provided, then
+> > >> > remove this check.
+> > >>
+> > >> With this patch clocks can be registered and unregistered at any time.
+> > >> When the clock in unregistered I drop the reference to the clk_ops (so
+> > >> the module can be unregistered, but if the clock is still referenced,
+> > >> those functions still can be called. That's why I have to check for the
+> > >> presense of ->ops. On the other hand ->ops->get_rate can be made mandatory.
+> > >
+> > > So...how does the user know that the clock disappeared? Is it really a
+> > > good idea to allow clocks to be unregistered while someone is using it?
+> > 
+> > What should we do if a user explicitly unbinds the driver that has registered
+> > a clock? We can't fail that operation and say "keep the device bound".
+> > So the only way is to let him use the reference, but return some error
+> > for each call.
+> 
+> Why can't we fail that operation? We certainly can't return an error
+> for all calls with the existing API.
+> 
+> Isn't it quite common to prevent a module from being unloaded if
+> another module is using it? try_module_get() in clk_get() and
+> module_put() in clk_put() should do the trick, no?
+> 
+> Or you can stall the unregistration until all users are gone. The DMA
+> engine layer does something like that.
+
+try_module_get()/module_put() won't help.
+Stalling the unregistration sounds pretty bad also. However maybe we
+should just BUG() in such cases :)
+
+> 
+> > >> > > +static unsigned long clk_get_rate_parent(struct clk *clk, void *data)
+> > >> > > +{
+> > >> > > + struct clk *parent = __clk_get_parent(clk);
+> > >> > > + unsigned long rate = 0;
+> > >> > > +
+> > >> > > + BUG_ON(!parent);
+> > >> > > +
+> > >> > > + if (!parent->ops || !parent->ops->get_rate)
+> > >> > > +         WARN_ON(1);
+> > >> > > + else
+> > >> > > +         rate = parent->ops->get_rate(parent, parent->data);
+> > >> > > +
+> > >> > > + clk_put(parent);
+> > >> > > +
+> > >> > > + return rate;
+> > >> > > +}
+> > >> >
+> > >> > Can we avoid the (mysterious) void* here?  Do something which will
+> > >> > allow the C type system to check our stuff?
+> > >>
+> > >> I don't know how we can avoid it. Each clock can have "private" data
+> > >> bound to it. Previously the proposed way was to embed struct clk. However
+> > >> since struct clk is dynamic now, it's not directly possible. And all
+> > >> solutions I can think upon are more or less hacky.
+> > >
+> > > Can't you just add some sort of additional_size parameter to the alloc
+> > > function to make it possible for clock drivers to extend it?
+> > 
+> > ... and fill the "extension" with private information. Wait! That information
+> > is already present in some form in the kernel. So if we won't use a pointer
+> > to it, we'll duplicate that info and in fact increase the memory cost
+> > of the clock.
+> > That seems like the real drawback.
+> 
+> Huh? Isn't that a very strong argument against keeping struct clk
+> hidden? That's certainly going to cause duplication since you can't
+> share any data at all between the mid-layer and the hardware driver...
+> 
+> I guess what I'm not understanding is why this struct clk with an
+> embedded kobject in it is so special that you can't allocate it in a
+> normal way (even though clk_alloc() does a quite normal kmalloc() in
+> order to allocate it...)
+
+OK.
+
+> 
+> > > Removing the kobject would of course solve this too. I forgot why we
+> > > wanted a kobject in there in the first place (I think I actually said
+> > > that I _didn't_ want it.)
+> > 
+> > Yes, I remeber that mail. But things are so easy with kobjects...
+> 
+> Easy?
+> 
+> You have to use different data structures for registration and normal
+> use, all users are burdened with the task of checking whether the clock
+> is actually valid every time they try to use it, sharing of data
+> between the mid-layer and the hardware driver is prevented, and all
+> driver hooks got an extra parameter.
+
+Haavard, if I return struct clk definition to header, permit clocks to
+be allocated statically, drop again that "priv" in favour of embedding,
+would you agree on kobject-based implementation? I'd really like to use
+them. Because otherwise we are nearly reimplementing them from scratch.
+
+-- 
+With best wishes
+Dmitry
 
