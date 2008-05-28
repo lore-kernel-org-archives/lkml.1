@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbYE1Qkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbYE1Qky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbYE1Qkk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbYE1Qk3
+	id S1751868AbYE1Qky (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYE1Qke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:40:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42227 "EHLO mx1.redhat.com"
+	Wed, 28 May 2008 12:40:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42233 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751443AbYE1Qk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:40:28 -0400
-Message-ID: <483D8AE0.8090606@redhat.com>
-Date: Wed, 28 May 2008 12:40:00 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1751785AbYE1Qkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 12:40:33 -0400
+Date: Wed, 28 May 2008 09:49:39 -0400
+From: Dave Jones <davej@redhat.com>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26rc4 GFS2 oops.
+Message-ID: <20080528134939.GB29374@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Steven Whitehouse <swhiteho@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20080527194420.GB14577@redhat.com> <1211974564.3635.585.camel@quoit>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Jens_B=E4ckman?= <jens.backman@gmail.com>
-CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
-In-Reply-To: <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211974564.3635.585.camel@quoit>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Bäckman wrote:
-> On Wed, May 28, 2008 at 10:53 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->> Results:
->>
->> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
->> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
-> 
-> Either the RAID 1 read speed must be wrong, or something is odd in the
-> Linux implementation. There's six drives that can be used for reading
-> at the same time, as they contain the very same data. 63MB/s
-> sequential looks like what you would get from a single drive.
+On Wed, May 28, 2008 at 12:36:04PM +0100, Steven Whitehouse wrote:
+ > Hi,
+ > 
+ > On Tue, 2008-05-27 at 15:44 -0400, Dave Jones wrote:
+ > > Single node GFS2 filesystem. Run fsx. Boom.
+ > > 
+ > I've tried it on -nmw and it seems to run ok, and I'm currently running
+ > it on the current upstream kernel and its done 1/2 hour so far with no
+ > sign of a problem.
+ > 
+ > Can you give a few more details, such as the block size of the fs
 
-The test is a single thread reading one block at a time, so this is not 
-surprising.  If you get this doing multi-megabyte readahead, or with 
-several threads, something is very wrong.
+whatever the defaults that mkfs used. (unless anaconda did something funky,
+which is unlikely).  [the box is switched off right now, and I'm not near it
+so I can't check it easily].
 
--- Chris
+ > , the
+ > exact command line for fsx (I was just running with defaults)
+
+same.  just "./fsx foo"
+
+ > and
+ > perhaps check all the info into a Red Hat bugzilla? I know this is
+ > upstream, but I tend to use "Fedora/rawhide" to keep tabs on such things
+ > just so as all the bugs are in the same place,
+
+no problem.
+
+	Dave 
+
+-- 
+http://www.codemonkey.org.uk
