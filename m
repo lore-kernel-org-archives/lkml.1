@@ -1,122 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYE1VWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYE1VY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbYE1VWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 17:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbYE1VWj
+	id S1754813AbYE1VY5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 17:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbYE1VYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 17:22:39 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:58831 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274AbYE1VWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 17:22:38 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: linux-kernel@vger.kernel.org
-Subject: Oops during hibernation - two times the same one
-Date: Wed, 28 May 2008 23:23:19 +0200
-User-Agent: KMail/1.9.9
+	Wed, 28 May 2008 17:24:50 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:53792 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753297AbYE1VYt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 17:24:49 -0400
+Date: Wed, 28 May 2008 23:24:48 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Willy Tarreau <w@1wt.eu>
+cc: Hugh Dickins <hugh@veritas.com>, Fede <fedux@lugmen.org.ar>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Re: bad pmd ffff810000207238(9090909090909090).
+In-Reply-To: <20080528204356.GA12687@1wt.eu>
+Message-ID: <alpine.LNX.1.10.0805282321050.19264@fbirervta.pbzchgretzou.qr>
+References: <483CBCDD.10401@lugmen.org.ar> <Pine.LNX.4.64.0805281922530.7959@blonde.site> <20080528195637.GA11662@1wt.eu> <alpine.LNX.1.10.0805282210580.19264@fbirervta.pbzchgretzou.qr> <20080528204356.GA12687@1wt.eu>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805282323.20679.linux@rainbow-software.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-I'm using hibernation on my desktop machine every day instead of power off. It 
-mostly works but sometimes aborts with "no space left on device" error. 
-Closing some programs and trying again usually fixes it - but recently, I got 
-two oopses instead. I'm sending them because they're the same, only some 
-details are different. Does anyone know what might be wrong?
 
+On Wednesday 2008-05-28 22:43, Willy Tarreau wrote:
+>> >
+>> >Is there a particular reason we use 0x90 as an alignment filler ?
+>> 
+>> Alignment within functions. You could use a JMP to jump over
+>> the alignment, but that would be costly. So in order to
+>> "run through the wall", you need an opcode that does not
+>> do anything, something like 0x90.
+>> 0xAF would map to scasd on x86, and I'd hardly call that a
+>> no-op.
+>
+>OK, I did not understand from Hugh's explanation that it was
+>all about alignment within functions. Of course, 0x90 is fine
+>there (though there are multi-byte NOPs available).
 
-------------[ cut here ]------------
-Kernel BUG at c015610b [verbose debug info unavailable]
-invalid opcode: 0000 [#1]
-Modules linked in: snd_sb16 ppdev snd_opl3_synth snd_seq_midi_emul 
-snd_opl3_lib snd_hwdep snd_sb16_dsp snd_sb_common snd_mpu401_uart snd_rawmidi 
-3c509 de2104x sr_mod cdrom [last unloaded: snd_sb16]
-
-Pid: 8634, comm: bash Not tainted (2.6.25.3-pentium #3)
-EIP: 0060:[<c015610b>] EFLAGS: 00210246 CPU: 0
-EIP is at iput+0x19/0x61
-EAX: c02db808 EBX: cf402c08 ECX: 0001ec9e EDX: 00000000
-ESI: cf402ba0 EDI: cf987c00 EBP: 00000000 ESP: c9a4deb4
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process bash (pid: 8634, ti=c9a4c000 task=c3975000 task.ti=c9a4c000)
-Stack: 00000000 c0163eb5 cf402bac ffffffe4 c142b000 c0329881 cf80b6a0 c012e212
-       00000001 c38de7ac 00200286 00001000 00000000 00000001 00000000 00000000
-       c142b000 00000000 00000000 0001ec82 0001ec82 00200246 0001ec82 fffffa5d
-Call Trace:
- [<c0163eb5>] __blkdev_put+0xc2/0xda
- [<c012e212>] swsusp_write+0x307/0x311
- [<c012c81b>] hibernate+0xb4/0x131
- [<c012b9ad>] state_store+0x41/0xa3
- [<c012b96c>] state_store+0x0/0xa3
- [<c01babcb>] kobj_attr_store+0x18/0x1c
- [<c0173dd0>] sysfs_write_file+0xab/0xd8
- [<c0173d25>] sysfs_write_file+0x0/0xd8
- [<c0148a58>] vfs_write+0x7f/0xec
- [<c0148e9c>] sys_write+0x3c/0x63
- [<c01039d2>] syscall_call+0x7/0xb
- [<c02d0000>] i8042_probe+0x4c4/0x4db
- =======================
-Code: 08 01 00 00 77 ff ff ff eb e5 e8 90 ad 17 00 31 c0 c3 53 85 c0 89 c3 74 
-58 8b 80 8c 00 00 00 83 bb 08 01 00 00 40 8b 40 20 75 04 <0f> 0b eb fe 85 c0 
-74 0b 8b 50 10 85 d2 74 04 89 d8 ff d2 8d 43
-EIP: [<c015610b>] iput+0x19/0x61 SS:ESP 0068:c9a4deb4
----[ end trace a4ef9e45bccfe6a8 ]---
-ata2.01: configured for PIO2
-
-
-
-
-
-------------[ cut here ]------------
-Kernel BUG at c015610b [verbose debug info unavailable]
-invalid opcode: 0000 [#1]
-Modules linked in: snd_opl3_synth snd_seq_midi_emul snd_sb16 snd_opl3_lib 
-snd_hwdep snd_sb16_dsp snd_sb_common snd_mpu401_uart snd_rawmidi 3c509 ppdev 
-sr_mod cdrom de2104x
-
-Pid: 31990, comm: bash Not tainted (2.6.25.3-pentium #3)
-EIP: 0060:[<c015610b>] EFLAGS: 00210246 CPU: 0
-EIP is at iput+0x19/0x61
-EAX: c02db808 EBX: cf402c08 ECX: 0000680c EDX: 00000000
-ESI: cf402ba0 EDI: cf987c00 EBP: 00000000 ESP: cf445eb4
- DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-Process bash (pid: 31990, ti=cf454000 task=cbbbeaa0 task.ti=cf454000)
-Stack: 00000000 c0163eb5 cf402bac ffffffe4 ce7d3000 c0329881 cf80b6a0 c012e212
-       00000001 cbbbeaa0 cf997260 00001000 00000000 00000001 00000000 00000000
-       ce7d3000 00000000 00000000 000067f0 000067f0 00200246 000067f0 fffffa65
-Call Trace:
- [<c0163eb5>] __blkdev_put+0xc2/0xda
- [<c012e212>] swsusp_write+0x307/0x311
- [<c012c81b>] hibernate+0xb4/0x131
- [<c012b9ad>] state_store+0x41/0xa3
- [<c012b96c>] state_store+0x0/0xa3
- [<c01babcb>] kobj_attr_store+0x18/0x1c
- [<c0173dd0>] sysfs_write_file+0xab/0xd8
- [<c0173d25>] sysfs_write_file+0x0/0xd8
- [<c0148a58>] vfs_write+0x7f/0xec
- [<c0148e9c>] sys_write+0x3c/0x63
- [<c01039d2>] syscall_call+0x7/0xb
- [<c02d0000>] i8042_probe+0x4c4/0x4db
- =======================
-Code: 08 01 00 00 77 ff ff ff eb e5 e8 90 ad 17 00 31 c0 c3 53 85 c0 89 c3 74 
-58 8b 80 8c 00 00 00 83 bb 08 01
-00 00 40 8b 40 20 75 04 <0f> 0b eb fe 85 c0 74 0b 8b 50 10 85 d2 74 04 89 d8 
-ff d2 8d 43
-EIP: [<c015610b>] iput+0x19/0x61 SS:ESP 0068:cf455eb4
----[ end trace a135a0b42e7aa142 ]---
-ata2.01: configured for PIO2
-
-
-
-
-
-
--- 
-Ondrej Zary
+"All about alignment within functions" -- I am not sure about that,
+you just happened to ask about 0x90 :)
+And if you have a 1-byte NOP (which fits perfectly everywhere),
+which is also a real NOP (and not just a filler byte that could
+possibly be an opcode doing something very different), you've
+got an ideal candidate for padding, no?
+There is probably nothing wrong with padding .data sections
+with 0xAF or even 0xDB and ud2 to catch execute-readonly-data
+cases. To that end, I think something like that should be
+proposed to binutils.
