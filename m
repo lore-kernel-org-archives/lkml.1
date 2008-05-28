@@ -1,100 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbYE1DV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYE1DeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbYE1DV4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 23:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYE1DVp
+	id S1754116AbYE1DeX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 23:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbYE1DeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 23:21:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:17962 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbYE1DVo (ORCPT
+	Tue, 27 May 2008 23:34:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54723 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750722AbYE1DeJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 23:21:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DwFLSIf9cR6S94LnurFQvqmJ4nC19t5r4ldTABvm163Bi0YYXM2uuKbvjWxacHL4YESB2Ntijax8Fse+E/G2c91bNwU9CxO6ou7DqbUEi7z65lhgLLpVb+FqG6GeqOytloS9HSkOkzDEJRrJxPUqHajXZjlVpafOo/XpXNa8NcA=
-Message-ID: <aa79d98a0805272021v7cc73d26p9714d0c5b0b9fc77@mail.gmail.com>
-Date: Wed, 28 May 2008 07:21:43 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>, "Sitsofe Wheeler" <sitsofe@yahoo.com>,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [REGRESSION][BISECTED][X86] next-20080526 hangs on boot
-In-Reply-To: <20080527225042.GG11310@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 27 May 2008 23:34:09 -0400
+Date: Tue, 27 May 2008 20:33:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Chris Wright <chrisw@sous-sol.org>, Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, bojan@rexursive.com,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH] security: was "Re: capget() overflows buffers."
+Message-Id: <20080527203312.411de6c3.akpm@linux-foundation.org>
+In-Reply-To: <483B611B.6040006@kernel.org>
+References: <20080522140402.GB2071@codemonkey.org.uk>
+	<20080522175744.GE4018@sequoia.sous-sol.org>
+	<20080522205341.GA30402@sequoia.sous-sol.org>
+	<4835F929.7010200@kernel.org>
+	<20080522233757.GD30402@sequoia.sous-sol.org>
+	<48366D9A.70806@kernel.org>
+	<20080523155718.GI30402@sequoia.sous-sol.org>
+	<4837B4F5.4000100@kernel.org>
+	<20080524080734.GV30402@sequoia.sous-sol.org>
+	<483B611B.6040006@kernel.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <g1eg2q$81q$1@ger.gmane.org> <20080526161623.GC7305@cvg>
-	 <g1f230$7bl$1@ger.gmane.org> <g1f3ht$b9g$1@ger.gmane.org>
-	 <aa79d98a0805262335lf5cd4e1p8f318d45dfe7ff92@mail.gmail.com>
-	 <20080527225042.GG11310@cs181133002.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-thanks a lot for checking this!
-I'll take a look today evening.
+On Mon, 26 May 2008 18:17:15 -0700 "Andrew G. Morgan" <morgan@kernel.org> wrote:
 
-On 5/28/08, Adrian Bunk <bunk@kernel.org> wrote:
-> On Tue, May 27, 2008 at 10:35:43AM +0400, Cyrill Gorcunov wrote:
->> On 5/26/08, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
->> > <posted & mailed>
->> >
->> > Sitsofe Wheeler wrote:
->> >
->> > > Cyrill Gorcunov wrote:
->> > >
->> > >> [Sitsofe Wheeler - Mon, May 26, 2008 at 03:04:54PM +0100]
->> > >> | When using a 32 bit linux-next-20080526 the bootup process will
->> > >> hang at
->> > >> | a random point (not even sysrq helps) with no additional output on
->> > >> the
->> > >> | screen (whereas linux-next-20080523 did boot). Mysteriously,
->> > >> booting
->> > >> | with nmi_watchdog=2 allows the boot to finish (booting with
->> > >> | nmi_watchdog=1 still stalls). I have bisected it down to commit
->> > >> | [d1b946b97d71423f365fa797d1428e1847c0bec1]:
->> > >>
->> > >> Hi, so it helps by reverting only that commit? I mean all further
->> > >> commits
->> > >> are still appiled?
->> > >
->> > > Ah that I hadn't tested. I believe I might need to revert
->> > > 4b82b277707a39b97271439c475f186f63ec4692 too if later commits are
->> > > applied
->> > > (but I'm still testing)
->> > >
->> > >> and, btw, could you post your config, please?
->> > >
->> > > http://sucs.org/~sits/test/config-20080526.txt
->> >
->> > OK applying the following patch (which is more or less a revert of
->> > [4b82b277707a39b97271439c475f186f63ec4692]) resolves the problem:
->>...
->>
->> Hi Sitsofe, actually I can't imagine how this revert have helped you
->> from hang. Newly introduced nmi_watchdog_default() didn't change
->> the logic of the code being used before this merge-series.
->>
->> Thomas, Ingo, maybe I've overlooked something (hard to believe ;)?
->> Only the change is the adding of new call for nmi_watchdog_default()
->> which was say 'inlined' before.
->>...
+> Source code out there hard-codes a notion of what the
+> _LINUX_CAPABILITY_VERSION #define means in terms of the semantics of the
+> raw capability system calls capget() and capset().  Its unfortunate, but
+> true.
+> 
+> Since the confusing header file has been in a released kernel, there is
+> software that is erroneously using 64-bit capabilities with the semantics
+> of 32-bit compatibilities.  These recently compiled programs may suffer
+> corruption of their memory when sys_getcap() overwrites more memory than
+> they are coded to expect, and the raising of added capabilities when using
+> sys_capset().
+> 
+> As such, this patch does a number of things to clean up the situation
+> for all. It
+> 
+>   1. forces the _LINUX_CAPABILITY_VERSION define to always retain its
+>      legacy value.
+> 
+>   2. adopts a new #define strategy for the kernel's internal
+>      implementation of the preferred magic.
+> 
+>   3. depreciates v2 capability magic in favor of a new (v3) magic
+>      number. The functionality of v3 is entirely equivalent to v2,
+>      the only difference being that the v2 magic causes the kernel
+>      to log a "depreciated" warning so the admin can find applications
+>      that may be using v2 inappropriately.
+> 
+> [User space code continues to be encouraged to use the libcap API which
+> protects the application from details like this.  libcap-2.10 is the first
+> to support v3 capabilities.]
+> 
+> ...
 >
-> arch/x86/kernel/smpboot.c:native_smp_prepare_cpus() also calls
-> the no longer empty nmi_watchdog_default() on 32bit.
->
-> cu
-> Adrian
->
-> --
->
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
->
->
+> + * Version 2 capabilities worked fine, but the linux/capability.h file
+> + * that accompanied their introduction encouraged their use without
+> + * the necessary user-space source code changes. As such, we have
+> + * created a version 3 with equivalent functionality to version 2, but
+> + * with a header change to protect legacy source code from using
+> + * version 2 when it wanted to use version 1. If your system has code
+> + * that trips the following warning, it is using version 2 specific
+> + * capabilities and may be doing so insecurely.
+> + *
+> + * The remedy is to either upgrade your version of libcap (to 2.10+,
+> + * if the application is linked against it), or recompile your
+> + * application with modern kernel headers and this warning will go
+> + * away.
+> + */
+> +
+> +static void warn_depreciated_v2(void)
+
+"deprecated", please.  "depreciated" is where you don't want your
+investments to be.
+
+--- a/include/linux/capability.h~capabilities-remain-source-compatible-with-32-bit-raw-legacy-capability-support-fix
++++ a/include/linux/capability.h
+@@ -31,7 +31,7 @@ struct task_struct;
+ #define _LINUX_CAPABILITY_VERSION_1  0x19980330
+ #define _LINUX_CAPABILITY_U32S_1     1
+ 
+-#define _LINUX_CAPABILITY_VERSION_2  0x20071026  /* depreciated - use v3 */
++#define _LINUX_CAPABILITY_VERSION_2  0x20071026  /* deprecated - use v3 */
+ #define _LINUX_CAPABILITY_U32S_2     2
+ 
+ #define _LINUX_CAPABILITY_VERSION_3  0x20080522
+--- a/kernel/capability.c~capabilities-remain-source-compatible-with-32-bit-raw-legacy-capability-support-fix
++++ a/kernel/capability.c
+@@ -68,13 +68,13 @@ static void warn_legacy_capability_use(v
+  * away.
+  */
+ 
+-static void warn_depreciated_v2(void)
++static void warn_deprecated_v2(void)
+ {
+ 	static int warned = 0;
+ 	if (!warned) {
+ 		char name[sizeof(current->comm)];
+ 
+-		printk(KERN_INFO "warning: `%s' uses depreciated v2"
++		printk(KERN_INFO "warning: `%s' uses deprecated v2"
+ 		       " capabilities in a way that may be insecure.\n",
+ 		       get_task_comm(name, current));
+ 		warned = 1;
+@@ -98,7 +98,7 @@ static int cap_validate_magic(cap_user_h
+ 		*tocopy = _LINUX_CAPABILITY_U32S_1;
+ 		break;
+ 	case _LINUX_CAPABILITY_VERSION_2:
+-		warn_depreciated_v2();
++		warn_deprecated_v2();
+ 		/*
+ 		 * fall through - v3 is otherwise equivalent to v2.
+ 		 */
+_
+
+> +{
+> +	static int warned = 0;
+> +	if (!warned) {
+
+We were going to have a ONCE() macro to do this but that seems to have
+not happened.
+
+> +		char name[sizeof(current->comm)];
+> +
+> +		printk(KERN_INFO "warning: `%s' uses depreciated v2"
+> +		       " capabilities in a way that may be insecure.\n",
+> +		       get_task_comm(name, current));
+> +		warned = 1;
+> +	}
+> +}
+> +
+> +/*
+> + * Version check. Return the number of u32s in each capability flag
+> + * array, or a negative value on error.
+> + */
+> +static int cap_validate_magic(cap_user_header_t header, unsigned *tocopy)
+> +{
+> +	__u32 version;
+> +
+> +	if (get_user(version, &header->version))
+> +		return -EFAULT;
+> +
+> +	switch (version) {
+> +	case _LINUX_CAPABILITY_VERSION_1:
+> +		warn_legacy_capability_use();
+> +		*tocopy = _LINUX_CAPABILITY_U32S_1;
+> +		break;
+> +	case _LINUX_CAPABILITY_VERSION_2:
+> +		warn_depreciated_v2();
+> +		/*
+> +		 * fall through - v3 is otherwise equivalent to v2.
+> +		 */
+> +	case _LINUX_CAPABILITY_VERSION_3:
+> +		*tocopy = _LINUX_CAPABILITY_U32S_3;
+> +		break;
+> +	default:
+> +		if (put_user(_KERNEL_CAPABILITY_VERSION, &header->version))
+
+This is a bit fragile.  It is dependent upon the compiler's view of
+sizeof(_KERNEL_CAPABILITY_VERSION).
+
+And it'll work OK for now:
+
+#define _LINUX_CAPABILITY_VERSION_3  0x20080522
+...
+#define _KERNEL_CAPABILITY_VERSION _LINUX_CAPABILITY_VERSION_3
+
+but if, for example, someone comes up and accidentally puts an "L" at
+the end of that 0x20080522 then whoops, we just broke the ABI.  I think
+it would be good to do something a bit more explicit there.
+
+Perhaps:
+
+--- a/kernel/capability.c~capabilities-remain-source-compatible-with-32-bit-raw-legacy-capability-support-fix-fix
++++ a/kernel/capability.c
+@@ -106,7 +106,7 @@ static int cap_validate_magic(cap_user_h
+ 		*tocopy = _LINUX_CAPABILITY_U32S_3;
+ 		break;
+ 	default:
+-		if (put_user(_KERNEL_CAPABILITY_VERSION, &header->version))
++		if (put_user((u32)_KERNEL_CAPABILITY_VERSION, &header->version))
+ 			return -EFAULT;
+ 		return -EINVAL;
+ 	}
+_
+
+?
+
