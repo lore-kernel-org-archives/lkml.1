@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbYE1FOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbYE1FPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755114AbYE1FOo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 01:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYE1FOf
+	id S1755237AbYE1FPm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 01:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYE1FPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 01:14:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42260 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752460AbYE1FOf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 01:14:35 -0400
-Date: Tue, 27 May 2008 22:14:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, rusty@rustcorp.com.au
-Subject: Re: [patch -mmotm] docbook: duplicate kernel-locking doc merge
-Message-Id: <20080527221419.2f5ca991.akpm@linux-foundation.org>
-In-Reply-To: <20080527221327.dfcb4fb6.randy.dunlap@oracle.com>
-References: <20080527221327.dfcb4fb6.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Wed, 28 May 2008 01:15:33 -0400
+Received: from venema.h4ckr.net ([217.24.1.135]:55123 "EHLO venema.h4ckr.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752388AbYE1FPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 01:15:32 -0400
+X-Greylist: delayed 1960 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 01:15:32 EDT
+Message-ID: <58970.84.58.190.170.1211949769.squirrel@webmail.madwifi.org>
+In-Reply-To: <6101e8c40805271623xb316cd0i47320ec566c0ba02@mail.gmail.com>
+References: <6101e8c40805270820r5984ceddmcc9ee1137e097b9e@mail.gmail.com>
+    <20080527105123.1c154daf@infradead.org>
+    <6101e8c40805271623xb316cd0i47320ec566c0ba02@mail.gmail.com>
+Date: Wed, 28 May 2008 06:42:49 +0200 (CEST)
+Subject: Re: madwifi && v2.6.26-rc4
+From: "Michael Renzmann" <mrenzmann@otaku42.de>
+To: "Oliver Pinter" <oliver.pntr@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.9a
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 22:13:27 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Hi.
 
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Removed duplicated patch lines.
-> 
-> I was checking mmotm (2008-0527) kernel docs and got this error:
-> 
-> xmlto: input does not validate (status 3)
-> /local/linsrc/mmotm-2008-0527-0032/Documentation/DocBook/kernel-locking.xml:722: element chapter: validity error : ID trylock-functions already defined
-> <chapter id="trylock-functions">
->                                ^
-> /local/linsrc/mmotm-2008-0527-0032/Documentation/DocBook/kernel-locking.xml:722: element chapter: validity error : ID trylock-functions already defined
-> Document /local/linsrc/mmotm-2008-0527-0032/Documentation/DocBook/kernel-locking.xml does not validate
-> make[1]: *** [Documentation/DocBook/kernel-locking.html] Error 3
-> make[1]: *** Waiting for unfinished jobs....
-> make: *** [htmldocs] Error 2
-> 
-> Looks like Rusty's doc additions were duplicated.
+> jah, i know, that the ath5k is the official driver, but ath5k don't
+> supported WPA2-PSK.
+> I cc-ed mrenzmann, hi is the madiwifi webmaster / maintainer
 
-ah, thanks, that's me trying to pick up patches which aren't in linux-next
-yet.  I normally don't bother doing that unless there's a lot of material
-involved.
+I'm not "the maintainer" of MadWifi, just one of the guys working on the
+project.
 
-I'll zap the erroneously-included
-rusty-misc-doc_add_a_chapter_about_trylock_functions_bug_9011.patch
+I agree with Arjan that this report is off-topic on lkml, since MadWifi is
+not part of the Linux kernel. Please report this either via our bugtracker
+or via one of the MadWifi-related mailing lists (see
+http://madwifi.org/wiki/Resources).
+
+Bye, Mike
+
