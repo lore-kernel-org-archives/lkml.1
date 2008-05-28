@@ -1,160 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759440AbYE1BiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbYE1Blt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759440AbYE1BiW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 21:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbYE1BiO
+	id S1759640AbYE1Blt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 21:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbYE1Blm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 21:38:14 -0400
-Received: from mail.windriver.com ([147.11.1.11]:48393 "EHLO mail.wrs.com"
+	Tue, 27 May 2008 21:41:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42870 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083AbYE1BiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 21:38:13 -0400
-Message-ID: <483CB74D.3030203@windriver.com>
-Date: Tue, 27 May 2008 20:37:17 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Alexander Beregalov <a.beregalov@gmail.com>,
-       kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: kgdb test suite failure
-References: <a4423d670805090714iaae7d4fj2883889ede15a4be@mail.gmail.com>  <4832EBCF.2000407@windriver.com> <a4423d670805201130l649440acl3ef31f60503b279d@mail.gmail.com> <48344D5B.1020308@windriver.com> <alpine.LFD.1.10.0805222304250.3295@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0805222304250.3295@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 May 2008 01:37:11.0348 (UTC) FILETIME=[595AD740:01C8C063]
+	id S1751698AbYE1Bll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 May 2008 21:41:41 -0400
+Date: Wed, 28 May 2008 11:41:12 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Artem.Bityutskiy@nokia.com
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: can UBIFS be taken to linux-next?
+Message-Id: <20080528114112.b8600074.sfr@canb.auug.org.au>
+In-Reply-To: <483BA79F.9030100@nokia.com>
+References: <483BA79F.9030100@nokia.com>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Wed, 21 May 2008, Jason Wessel wrote:
->> An RFC type patch follows which addresses the problem, but in my
->> opinion not in a terribly clean way...  Perhaps other folks will
->> comment on a different or better way to approach the problem or chime
->> in on if it should be fixed at all.  Certainly the test suite could be
->> changed to use HW breakpoints for the case where the text segments are
->> going to be read only as an example.
-> 
-> Please use HW breakpoints in the test suite. The RFC patch looks
-> horrible :)
-> 
-> Thanks,
-> 	tglx
+--Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Artem,
 
-I believe the kgdb tests should pass for this configuration, and the
-tests have been adjusted to support boards that do and don't have
-working hardware breakpoints.
+On Tue, 27 May 2008 09:18:07 +0300 Artem Bityutskiy <Artem.Bityutskiy@nokia=
+.com> wrote:
+>
+> we would like to ask for UBIFS mainline inclusion the next merge window.
+> Of course we cannot say for sure whether Linus will merge it or not,
+> but it would be helpful to have it in your tree for some time anyway.
+> UBIFS is already in -mm tree so I assume it should not have too many
+> build issues.
 
-I queued the patch below into the for_linus branch for the 2.6.26
-tree.
+OK, my requirements are that you intend for it to be integrated in the
+next merge window, that it be reviewed and that it be unit tested (i.e.
+tested as well as you can in isolation).  You seem to have done all that,
+so I will add it.
 
-Jason.
+I will put it at the end of the merge today.
 
+Andrew, does that make sense to you?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
----
-From: Jason Wessel <jason.wessel@windriver.com>
-Subject: kgdbts: Use HW breakpoints with CONFIG_DEBUG_RODATA
+--Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW
+Content-Type: application/pgp-signature
 
-Whenever CONFIG_DEBUG_RODATA is set in the kernel config many kernel
-text sections become read-only, and the use of software breakpoints in
-the kgdb tests will cause the kernel to fail to complete the start up.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Until such time that there is an official API for modifying read-only
-text sections hardware breakpoints must be used to run the do_fork or
-sys_open tests or the tests get skipped.
+iD8DBQFIPLg+TgG2atn1QN8RAjeoAJ44eSVHjzYEe0hS3UnflxdZPxnluwCdGSRa
+CqZeoCnaSNodCMFgTRNY02k=
+=mrlE
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-
----
- drivers/misc/kgdbts.c |   27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
-
---- a/drivers/misc/kgdbts.c
-+++ b/drivers/misc/kgdbts.c
-@@ -130,6 +130,8 @@ static int repeat_test;
- static int test_complete;
- static int send_ack;
- static int final_ack;
-+static int force_hwbrks;
-+static int hwbreaks_ok;
- static int hw_break_val;
- static int hw_break_val2;
- #if defined(CONFIG_ARM) || defined(CONFIG_MIPS) || defined(CONFIG_SPARC)
-@@ -233,12 +235,12 @@ static void break_helper(char *bp_type, 
- 
- static void sw_break(char *arg)
- {
--	break_helper("Z0", arg, 0);
-+	break_helper(force_hwbrks ? "Z1" : "Z0", arg, 0);
- }
- 
- static void sw_rem_break(char *arg)
- {
--	break_helper("z0", arg, 0);
-+	break_helper(force_hwbrks ? "z1" : "z0", arg, 0);
- }
- 
- static void hw_break(char *arg)
-@@ -780,6 +782,8 @@ static void run_breakpoint_test(int is_h
- 		return;
- 
- 	eprintk("kgdbts: ERROR %s test failed\n", ts.name);
-+	if (is_hw_breakpoint)
-+		hwbreaks_ok = 0;
- }
- 
- static void run_hw_break_test(int is_write_test)
-@@ -797,9 +801,11 @@ static void run_hw_break_test(int is_wri
- 	kgdb_breakpoint();
- 	hw_break_val_access();
- 	if (is_write_test) {
--		if (test_complete == 2)
-+		if (test_complete == 2) {
- 			eprintk("kgdbts: ERROR %s broke on access\n",
- 				ts.name);
-+			hwbreaks_ok = 0;
-+		}
- 		hw_break_val_write();
- 	}
- 	kgdb_breakpoint();
-@@ -808,6 +814,7 @@ static void run_hw_break_test(int is_wri
- 		return;
- 
- 	eprintk("kgdbts: ERROR %s test failed\n", ts.name);
-+	hwbreaks_ok = 0;
- }
- 
- static void run_nmi_sleep_test(int nmi_sleep)
-@@ -911,6 +918,7 @@ static void kgdbts_run_tests(void)
- 
- 	/* All HW break point tests */
- 	if (arch_kgdb_ops.flags & KGDB_HW_BREAKPOINT) {
-+		hwbreaks_ok = 1;
- 		v1printk("kgdbts:RUN hw breakpoint test\n");
- 		run_breakpoint_test(1);
- 		v1printk("kgdbts:RUN hw write breakpoint test\n");
-@@ -924,6 +932,19 @@ static void kgdbts_run_tests(void)
- 		run_nmi_sleep_test(nmi_sleep);
- 	}
- 
-+#ifdef CONFIG_DEBUG_RODATA
-+	/* Until there is an api to write to read-only text segments, use
-+	 * HW breakpoints for the remainder of any tests, else print a
-+	 * failure message if hw breakpoints do not work.
-+	 */
-+	if (!(arch_kgdb_ops.flags & KGDB_HW_BREAKPOINT && hwbreaks_ok)) {
-+		eprintk("kgdbts: HW breakpoints do not work,"
-+			"skipping remaining tests\n");
-+		return;
-+	}
-+	force_hwbrks = 1;
-+#endif /* CONFIG_DEBUG_RODATA */
-+
- 	/* If the do_fork test is run it will be the last test that is
- 	 * executed because a kernel thread will be spawned at the very
- 	 * end to unregister the debug hooks.
-
-
+--Signature=_Wed__28_May_2008_11_41_12_+1000_twnOC9_sZSYdB+WW--
