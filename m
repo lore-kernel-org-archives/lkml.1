@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbYE1QAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbYE1QEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbYE1QAi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYE1QAa
+	id S1752619AbYE1QEe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbYE1QEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:00:30 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59617 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbYE1QA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:00:29 -0400
-Date: Wed, 28 May 2008 17:00:25 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: dean@arctic.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       dwg@au1.ibm.com, apw@shadowen.org, linux-mm@kvack.org,
-       andi@firstfloor.org, kenchen@google.com, agl@us.ibm.com, abh@cray.com,
-       hannes@saeurebad.de
-Subject: Re: [PATCH 3/3] Guarantee that COW faults for a process that called mmap(MAP_PRIVATE) on hugetlbfs will succeed
-Message-ID: <20080528160024.GA19349@csn.ul.ie>
-References: <20080527185028.16194.57978.sendpatchset@skynet.skynet.ie> <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
+	Wed, 28 May 2008 12:04:25 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:49733 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYE1QEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 12:04:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Pz1N/ek35nyoEKcURvoLYa/G84iTiIeH54IWsJ0pvwNo/PAF6RSgA5lFjunFHXAURSIC6xqronvCVOo59gGmUdhfiI93UVk49+cBq8yXg4K4Z3dUFBWft/VLU78kNfJq0dgp2OiFcsQdOzoQcnNfOhVfptJF735K1AG9U+p3TeE=
+Date: Wed, 28 May 2008 20:04:13 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/11] x86: nmi_32/64.c - use apic_write_around instead
+	of apic_write
+Message-ID: <20080528160413.GA6910@cvg>
+References: <20080524153630.669797039@gmail.com>> <48383740.0407560a.4764.7d1b@mx.google.com> <Pine.LNX.4.55.0805281628320.29522@cliff.in.clinika.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.55.0805281628320.29522@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 4/3] Fix prio tree lookup
+[Maciej W. Rozycki - Wed, May 28, 2008 at 04:35:14PM +0100]
+| On Sat, 24 May 2008, Cyrill Gorcunov wrote:
+| 
+| > apic_write_around will be expanded to apic_write in 64bit mode
+| > anyway. Only a few CPUs (well, old CPUs to be precise) requires
+| > such an action. In general it should not hurt and could be cleaned
+| > up for apic_write (just in case)
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| > ---
+| 
+| Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
+| 
+|  Almost all local APIC write accesses must use apic_write_around().  The
+| notable exceptions are appropriately guarded accesses to the ESR (there is
+| no need ever to write to this register on Pentium processors and a read of
+| the register has side-effects) and pieces of code known never to run on
+| original Pentium processors.
+| 
+|   Maciej
+| 
 
-I spoke too soon. This is a fix to patch 3/3.
+Thanks Maciej!
 
-If a child unmaps the start of the VMA, the start address is different and
-that is perfectly legimite making the BUG_ON check bogus and should be removed.
-While page cache lookups are in HPAGE_SIZE, the vma->vm_pgoff is in PAGE_SIZE
-units, not HPAGE_SIZE. The offset calculation needs to be in PAGE_SIZE units
-to find other VMAs that are mapping the same range of pages. This patch
-fixes the offset calculation and adds an explanation comment as to why it
-is different from a page cache lookup.
+Could you take a look please on
 
-Credit goes to Johannes Weiner for spotting the bogus BUG_ON on IRC which
-led to the discovery of the faulty offset calculation.
+http://lkml.org/lkml/2008/5/26/146
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- mm/hugetlb.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+i'm investigateting what is happening (Adrian pointed on
+main reason I think) but can't understand why is that.
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.26-rc2-mm1-0030-reliable_parent_faults/mm/hugetlb.c linux-2.6.26-rc2-mm1-1010_fix_priotree_lookup/mm/hugetlb.c
---- linux-2.6.26-rc2-mm1-0030-reliable_parent_faults/mm/hugetlb.c	2008-05-28 14:57:51.000000000 +0100
-+++ linux-2.6.26-rc2-mm1-1010_fix_priotree_lookup/mm/hugetlb.c	2008-05-28 15:05:32.000000000 +0100
-@@ -1035,14 +1035,18 @@ int unmap_ref_private(struct mm_struct *
- {
- 	struct vm_area_struct *iter_vma;
- 	struct address_space *mapping;
--	pgoff_t pgoff = ((address - vma->vm_start) >> HPAGE_SHIFT)
--		+ (vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
- 	struct prio_tree_iter iter;
-+	pgoff_t pgoff;
- 
-+	/*
-+	 * vm_pgoff is in PAGE_SIZE units, hence the different calculation
-+	 * from page cache lookup which is in HPAGE_SIZE units.
-+	 */
-+	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT)
-+		+ (vma->vm_pgoff >> PAGE_SHIFT);
- 	mapping = (struct address_space *)page_private(page);
--	vma_prio_tree_foreach(iter_vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
--		BUG_ON(vma->vm_start != iter_vma->vm_start);
- 
-+	vma_prio_tree_foreach(iter_vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
- 		/* Do not unmap the current VMA */
- 		if (iter_vma == vma)
- 			continue;
+		- Cyrill -
