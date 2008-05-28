@@ -1,59 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbYE1OWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbYE1O1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562AbYE1OWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 10:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbYE1OWm
+	id S1752184AbYE1O1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 10:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYE1O1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 10:22:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44130 "EHLO mx1.redhat.com"
+	Wed, 28 May 2008 10:27:06 -0400
+Received: from quasar.osc.edu ([192.148.249.15]:47322 "EHLO quasar.osc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750831AbYE1OWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 10:22:41 -0400
-Date: Wed, 28 May 2008 09:43:24 -0400
-From: Rik van Riel <riel@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [PATCH -mm 07/16] second chance replacement for anonymous pages
-Message-ID: <20080528094324.39f625a8@bree.surriel.com>
-In-Reply-To: <20080528195925.9CD3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080523195506.084894989@redhat.com>
-	<20080523195535.302440037@redhat.com>
-	<20080528195925.9CD3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751342AbYE1O1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 10:27:05 -0400
+X-Greylist: delayed 496 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 10:27:05 EDT
+Date: Wed, 28 May 2008 10:18:48 -0400
+From: Pete Wyckoff <pw@osc.edu>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: michaelc@cs.wisc.edu, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: bsg locking patches update
+Message-ID: <20080528141848.GA17325@osc.edu>
+References: <20080526165318.GA5466@osc.edu> <20080528210048L.tomof@acm.org> <200805281351.m4SDpTIl030554@mbox.iij4u.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805281351.m4SDpTIl030554@mbox.iij4u.or.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 20:03:11 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> > @@ -1129,7 +1141,11 @@ static unsigned long shrink_list(enum lr
-> >  {
-> >  	int file = is_file_lru(lru);
-> >  
-> > -	if (lru == LRU_ACTIVE_ANON || lru == LRU_ACTIVE_FILE) {
-> > +	if (lru == LRU_ACTIVE_FILE) {
-> > +		shrink_active_list(nr_to_scan, zone, sc, priority, file);
-> > +		return 0;
-> > +	}
-> > +	if (lru == LRU_ACTIVE_ANON && inactive_anon_low(zone)) {
-> >  		shrink_active_list(nr_to_scan, zone, sc, priority, file);
-> >  		return 0;
-> >  	}
+fujita.tomonori@lab.ntt.co.jp wrote on Wed, 28 May 2008 22:51 +0900:
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: Re: bsg locking patches update
+> Date: Wed, 28 May 2008 21:00:56 +0900
 > 
-> I made memcgroup noreclaim infrastructure today.
-> and, I found slightly odd behaviour.
+> > On Mon, 26 May 2008 12:53:18 -0400
+> > Pete Wyckoff <pw@osc.edu> wrote:
+> > 
+> > > I finally got around to testing the set of lifetime management
+> > > fixes you applied.  This is 2.6.26-rc3 with some varlen, bidi,
+> > > iser patches, and iovec on bsg, but nothing that should affect
+> > > the locking.
+> > > 
+> > > I can confirm that the first two of these three old bugs are
+> > > no longer reproducable:
+> > > 
+> > >     http://marc.info/?l=linux-scsi&m=120508166505141&w=2
+> > >     http://marc.info/?l=linux-scsi&m=120508177905365&w=2
+> > >     http://marc.info/?l=linux-scsi&m=120508178005376&w=2
+> > > 
+> > > Thanks!  The third, however, is a hang that still can happen.  But
+> > > it is very obscure and requires a bit of timing to get right.  As a
+> > > reminder, here's the setup, and updated traces.
+> > 
+> > Ah, sorry about it. I didn't understand the third correctly.
+> > 
+> > 
+> > > Maybe it is necessary to split up that bsg_mutex to use multiple
+> > > finer-grained locks.
+> > 
+> > We could but we use bsg_mutex to protect bsg_device_list and idr. So I
+> > think that we don't need hold bsg_mutex during
+> > bsg_complete_all_commands. How about this?
 > 
-> this condition increase OOM, because prevent active -> inactive moving 
-> even though non global reclaim.
+> On second thoughts, I realized that the previous patch leads to a race
+> between bsg_put_device and __bsg_get_device (__bsg_get_device possibly
+> finds a device that is being removed). Here's new one.
 
-Good catch, I have applied your patch to my tree.
+Looks good.  I can't see any problems with this approach.  And it
+tests okay in my problem scenario, on top of 2.6.26-rc4.  You can
+add my tested-by and submit as a bug fix to .26 safely, I think.
+Thanks again!
 
--- 
-All rights reversed.
+		-- Pete
+
+> diff --git a/block/bsg.c b/block/bsg.c
+> index f0b7cd3..7cdec32 100644
+> --- a/block/bsg.c
+> +++ b/block/bsg.c
+> @@ -724,8 +724,13 @@ static int bsg_put_device(struct bsg_device *bd)
+>  	mutex_lock(&bsg_mutex);
+>  
+>  	do_free = atomic_dec_and_test(&bd->ref_count);
+> -	if (!do_free)
+> +	if (!do_free) {
+> +		mutex_unlock(&bsg_mutex);
+>  		goto out;
+> +	}
+> +
+> +	hlist_del(&bd->dev_list);
+> +	mutex_unlock(&bsg_mutex);
+>  
+>  	dprintk("%s: tearing down\n", bd->name);
+>  
+> @@ -741,10 +746,8 @@ static int bsg_put_device(struct bsg_device *bd)
+>  	 */
+>  	ret = bsg_complete_all_commands(bd);
+>  
+> -	hlist_del(&bd->dev_list);
+>  	kfree(bd);
+>  out:
+> -	mutex_unlock(&bsg_mutex);
+>  	kref_put(&q->bsg_dev.ref, bsg_kref_release_function);
+>  	if (do_free)
+>  		blk_put_queue(q);
+> 
