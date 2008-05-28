@@ -1,244 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbYE1Kaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYE1Kee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbYE1Kaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 06:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYE1Kah
+	id S1754021AbYE1Kee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 06:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYE1KeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 06:30:37 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:54313 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750854AbYE1Kag (ORCPT
+	Wed, 28 May 2008 06:34:23 -0400
+Received: from smtp-dmz-233-wednesday.dmz.nerim.net ([195.5.254.233]:55007
+	"EHLO kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751414AbYE1KeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 06:30:36 -0400
-Date: Wed, 28 May 2008 03:30:26 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
-Message-ID: <20080528103026.GE8255@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080429062116.GA5059@martell.zuzino.mipt.ru> <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk>
+	Wed, 28 May 2008 06:34:22 -0400
+X-Greylist: delayed 1978 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 06:34:22 EDT
+Message-ID: <483D2D11.9080803@plouf.fr.eu.org>
+Date: Wed, 28 May 2008 11:59:45 +0200
+From: Pascal Hambourg <pascal.mail@plouf.fr.eu.org>
+Organization: Plouf !
+User-Agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)
+X-Accept-Language: fr,en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080528100721.GQ25504@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Willy Tarreau <w@1wt.eu>
+CC: Matthias Cramer <matthias.cramer@interway.ch>,
+       James Chapman <jchapman@katalix.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: Wired behaviour with IPv6 over PPP
+References: <48341C0B.7010003@interway.ch> <20080522014959.0f6191aa.akpm@linux-foundation.org> <48354318.60202@katalix.com> <4835C40B.60603@interway.ch> <20080524042911.GE6749@1wt.eu>
+In-Reply-To: <20080524042911.GE6749@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 12:07:21PM +0200, Jens Axboe wrote:
-> On Tue, May 27 2008, Paul E. McKenney wrote:
-> > On Tue, May 27, 2008 at 03:35:10PM +0200, Jens Axboe wrote:
-> > > On Tue, May 27 2008, Alexey Dobriyan wrote:
-> > > > On Sat, May 10, 2008 at 02:37:19PM +0400, Alexey Dobriyan wrote:
-> > > > > > > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
-> > > > > > > > >  		rcu_read_lock();
-> > > > > > > > >  		if (ioc->aic && ioc->aic->dtor)
-> > > > > > > > >  			ioc->aic->dtor(ioc->aic);
-> > > > > > > > > -		rcu_read_unlock();
-> > > > > > > > >  		cfq_dtor(ioc);
-> > > > > > > > > +		rcu_read_unlock();
-> > > > > > > > >  
-> > > > > > > > >  		kmem_cache_free(iocontext_cachep, ioc);
-> > > > > > > > >  		return 1;
-> > > > > > > > 
-> > > > > > > > This helps in sense that 3 times bulk cross-compiles finish to the end.
-> > > > > > > > You'll hear me if another such oops will resurface.
-> > > > > > > 
-> > > > > > > Still looking good?
-> > > > > > 
-> > > > > > Yup!
-> > > > > 
-> > > > > And this with patch in mainline, again with PREEMPT_RCU.
-> > > > 
-> > > > Ping, this happened again with 2.6.26-rc4 and PREEMPT_RCU.
-> > > 
-> > > Worrisome... Paul, would you mind taking a quick look at cfq
-> > > and see if you can detect why breaks with preempt rcu? It's
-> > > clearly a use-after-free symptom, but I don't see how it can
-> > > happen.
-> > 
-> > Some quick and probably off-the-mark questions...
-> 
-> Thanks!
+Hello all,
 
-Glad it actually was of help!  ;-)
+Willy Tarreau a écrit/wrote :
+> On Thu, May 22, 2008 at 09:05:47PM +0200, Matthias Cramer wrote:
+> 
+>>James Chapman wrote:
+>>
+>>>Andrew Morton wrote:
+>>>
+>>>>On Wed, 21 May 2008 14:56:43 +0200 Matthias Cramer
+>>>><matthias.cramer@interway.ch> wrote:
+>>>>
+>>>>>I have a very wired behaviour when doing IPv6 over PPPoE.
+>>>>>
+>>>>>The situation:
+>>>>>
+>>>>>A linux box connected to a DSL Modem, on the other side is a Cisco
+>>>>>LNS which terminates the PPP session (actually L2TP).
+>>>>>I have control over both ends.
+>>>>>
+>>>>>When I have net.ipv6.conf.all.forwarding set to 0 then the ppp
+>>>>>Interface gets a IPv6 address from the Cisco via IP6CP.
+>>>>>When I have net.ipv6.conf.all.forwarding set to 1 them the ppp
+>>>>>Interface does not get an address, it has only a normal link local
+>>>>>address.
 
-> > o	What is the purpose of __call_for_each_cic()?  When called
-> > 	from call_for_each_cic(), it is under rcu_read_lock(), as
-> > 	required, but it is also called from cfq_free_io_context(),
-> > 	which is assigned to the ->dtor and ->exit members of the
-> > 	cfq_io_context struct.  What protects calls through these
-> > 	members?
-> > 
-> > 	(This is for the ->cic_list field of the cfq_io_context structure.
-> > 	One possibility is that the io_context's ->lock member is held,
-> > 	but I don't see this.  Not that I looked all that hard...)
-> > 
-> > 	My suggestion would be to simply change all invocations of
-> > 	__call_for_each_cic() to instead invoke call_for_each_cic().
-> > 	The rcu_read_lock()/rcu_read_unlock() pair is pretty
-> > 	lightweight, even in CONFIG_PREEMPT_RCU.
-> 
-> __call_for_each_cic() is always called under rcu_read_lock(), it merely
-> exists to avoid a double rcu_read_lock(). Even if it is cheap. The
-> convention follows the usual __lock_is_already_held() double under
-> score, but I guess it could do with a comment! There are only two
-> callers of the function, call_for_each_cic() which does the
-> rcu_read_lock(), and cfq_free_io_context() which is called from ->dtor
-> (and holds the rcu_read_lock() and ->trim which actually does not. That
-> looks like it could be problematic, but it's only called when an io
-> scheduler module is removed so not really critical. I'll add it, though!
-> Actually, the task_lock() should be enough there. So no bug, but (again)
-> it could do with a comment.
+AFAIK IPV6CP/PPP only allows to negotiate link local addresses. So I 
+guess the global address and default route is assigned by another 
+mechanism, maybe stateless autoconfiguration using router advertisement, 
+although I was not aware it could be used on a PPP link because of the 
+absence of MAC address. Enabling global forwarding 
+(net.ipv6.conf.all.forwarding=1) disables stateless autoconfiguration 
+(see ip-sysctl.txt in kernel documentation) on all interfaces. I believe 
+this is consistent with the observed behaviour.
 
-Sounds good!
+>>>>>When I start the ppp session with forwarding set to 0 I can ping out
+>>>>>and there exists a default route to ppp0 , then I switch forwarding to 1
+>>>>>the default route disappears and therefore routing does not work any
+>>>>>longer.
 
-> > o	When calling cfq_slab_kill(), for example from cfq_exit(),
-> > 	what ensures that all previous RCU callbacks have completed?
-> > 	
-> > 	I suspect that you need an rcu_barrier() at the beginning
-> > 	of cfq_slab_kill(), but I could be missing something.
-> 
-> So we have two callers of that, one is from the error path at init time
-> and is obviously ok. The other does need rcu_barrier()! I'll add that.
+I have read reports about this. I guess the logic is that enabling 
+forwarding turns the box into a router, so the default route learned 
+from another router's advertisements by autoconfiguration should be 
+deleted. Even the autoconfigured global address will eventually expire.
 
-OK, that does make my brain hurt less.  ;-)
+> Well, at least it has been working for years in kernel 2.4 for me with
+> pppd 2.4.2b3 to 2.4.4 (I've not upgraded my firewall to 2.6 yet). So
+> it has definitely been working at some point.
 
-> > o	Updates to the ->ioc_data field of the cfq_io_context
-> > 	seem to be protected by the request_queue ->queue_lock
-> > 	field.  This seems very strange to me.  It is OK if every
-> > 	cfq_io_context is associated with only one request_queue
-> > 	structure -- is this the case?
-> 
-> ->ioc_data is part of the io_context, not cfq_io_context. And it can be
-> shared now, so the correct locking for that would be ioc->lock and not
-> the queue lock. __cfq_exit_single_io_context() is serialized in the
-> sense that only one process gets to call the exit path.
+What exactly has been working ?
 
-Makes sense to me!
-
-> > o	What protects the first rcu_dereference() in cfq_cic_lookup()?
-> > 	There needs to be either an enclose rcu_read_lock() on the
-> > 	one hand or the ->queue_lock needs to be held.
-> > 
-> > 	(My guess is the latter, given the later rcu_assign_pointer()
-> > 	in this same function, but I don't see a lock acquisition
-> > 	in the immediate vicinity -- might be further up the function
-> > 	call stack, though.)
-> 
-> There's no locking going into that function when coming from
-> cfq_get_io_context(), the other paths (happen) to hold the queue lock
-> already though.
-
-So the call from cfq_get_io_context() needs an rcu_read_lock()?
-Not seeing this in the patch below, but maybe you have it up a
-function-call level or two?
-
-> > o	Why is there no grace period associated with the ioc_data?
-> > 	For example, what happens to the old value of ->ioc_data
-> > 	after the rcu_assign_pointer() in cfq_cic_lookup()?  Readers
-> > 	might still be referencing the old version, right?  If so,
-> > 	how do we avoid messing them up?
-> > 
-> > 	Or are we somehow leveraging the call_rcu() in cfq_cic_free()?
-> 
-> The data belonging to ->ioc_data (the cic, or per-process per-queue
-> context) is only freed through call_rcu().
-
-Ah, OK, got it.
-
-> > Any of this at all helpful?
-> 
-> Very, perhaps with a few more rounds we can find some more bugs :-). I'm
-> attaching a patch below, how does that look?
-
-Looks much improved!  Very interested  to hear how it does with  the testing.
-
-							Thanx, Paul
-
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 4df3f05..75db529 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -1142,6 +1142,9 @@ static void cfq_put_queue(struct cfq_queue *cfqq)
->  	kmem_cache_free(cfq_pool, cfqq);
->  }
-> 
-> +/*
-> + * Must always be called with the rcu_read_lock() held
-> + */
->  static void
->  __call_for_each_cic(struct io_context *ioc,
->  		    void (*func)(struct io_context *, struct cfq_io_context *))
-> @@ -1197,6 +1200,11 @@ static void cic_free_func(struct io_context *ioc, struct cfq_io_context *cic)
->  	cfq_cic_free(cic);
->  }
-> 
-> +/*
-> + * Must be called with rcu_read_lock() held or preemption otherwise disabled.
-> + * Only two callers of this - ->dtor() which is called with the rcu_read_lock(),
-> + * and ->trim() which is called with the task lock held
-> + */
->  static void cfq_free_io_context(struct io_context *ioc)
->  {
->  	/*
-> @@ -1502,20 +1510,24 @@ static struct cfq_io_context *
->  cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
->  {
->  	struct cfq_io_context *cic;
-> +	unsigned long flags;
->  	void *k;
-> 
->  	if (unlikely(!ioc))
->  		return NULL;
-> 
-> +	rcu_read_lock();
-> +
->  	/*
->  	 * we maintain a last-hit cache, to avoid browsing over the tree
->  	 */
->  	cic = rcu_dereference(ioc->ioc_data);
-> -	if (cic && cic->key == cfqd)
-> +	if (cic && cic->key == cfqd) {
-> +		rcu_read_unlock();
->  		return cic;
-> +	}
-> 
->  	do {
-> -		rcu_read_lock();
->  		cic = radix_tree_lookup(&ioc->radix_root, (unsigned long) cfqd);
->  		rcu_read_unlock();
->  		if (!cic)
-> @@ -1524,10 +1536,13 @@ cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
->  		k = cic->key;
->  		if (unlikely(!k)) {
->  			cfq_drop_dead_cic(cfqd, ioc, cic);
-> +			rcu_read_lock();
->  			continue;
->  		}
-> 
-> +		spin_lock_irqsave(&ioc->lock, flags);
->  		rcu_assign_pointer(ioc->ioc_data, cic);
-> +		spin_unlock_irqrestore(&ioc->lock, flags);
->  		break;
->  	} while (1);
-> 
-> @@ -2134,6 +2149,11 @@ static void *cfq_init_queue(struct request_queue *q)
-> 
->  static void cfq_slab_kill(void)
->  {
-> +	/*
-> +	 * Make sure that all existing RCU callbacks have been processed
-> +	 */
-> +	rcu_barrier();
-> +
->  	if (cfq_pool)
->  		kmem_cache_destroy(cfq_pool);
->  	if (cfq_ioc_pool)
-> 
-> -- 
-> Jens Axboe
-> 
+PS : Willy, do you plan to backport the security fix for the sit module 
+from 2.6.25.3 into 2.4 ?
