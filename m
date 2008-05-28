@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300AbYE1Oj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbYE1OkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752300AbYE1Oj1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 10:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYE1OjU
+	id S1752686AbYE1OkV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 10:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYE1OkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 10:39:20 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:58820 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbYE1OjT (ORCPT
+	Wed, 28 May 2008 10:40:07 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:57595 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751025AbYE1OkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 10:39:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=rhnmsUzUXf/cA9S/OTDMJEOPwqL2kmSJ3V4hcKNoitNVqyAug7Yrwsnw7lFlxBVY+epNIZy60k2lHuoLsoFlRuGxPpVRfpdnYuuduR0xf/qqVuUbFFUNcgQYq6CnLGA0SFXsP6Cu5jeJ4Wlhm5pYm6Bb2MJ58FKXDzLMfjJ/oKc=
-Message-ID: <483D6E8D.7030409@gmail.com>
-Date: Wed, 28 May 2008 23:39:09 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-acpi@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] libata: Handle bay devices in dock stations
-References: <20080528143857.GB5585@homac.suse.de>
-In-Reply-To: <20080528143857.GB5585@homac.suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 May 2008 10:40:06 -0400
+Subject: Re: [PATCH][-mm] reclassify sg_sysfs_class for lockdep
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: akpm@linux-foundation.org, greg@kroah.com, matthew@wil.cx,
+       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20080527101009.GA3015@darkstar.te-china.tietoenator.com>
+References: <20080527101009.GA3015@darkstar.te-china.tietoenator.com>
+Content-Type: text/plain
+Date: Wed, 28 May 2008 09:40:00 -0500
+Message-Id: <1211985600.3445.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Holger Macht wrote:
-> * Differentiate between bay devices in dock stations and others:
+On Tue, 2008-05-27 at 18:10 +0800, Dave Young wrote:
+> As register sg_interface, the sg_add will be called, which then will
+> add device to sg_sysfs_class. This will cause lockdep warning,
+> please see following email
 > 
->  - When an ACPI_NOTIFY_EJECT_REQUEST appears, just signal uevent to
->    userspace (that is when the optional eject button on a bay device is
->    pressed/pulled) giving the possibility to unmount file systems and to
->    clean up. Also, only send uevent in case we get an EJECT_REQUEST
->    without doing anything else. In other cases, you'll get an add/remove
->    event because libata attaches/detaches the device.
+> In this case the locks are from diffrent classi, one is sdev_class,
+> another is sg_sysfs_class 
 > 
->  - In case of a dock event, which in turn signals an
->    ACPI_NOTIFY_EJECT_REQUEST, immediately detach the device, because it
->    may already have been gone
-> 
-> * In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
->   the device has been plugged or unplugged. If plugged, hotplug it, if
->   unplugged, just signal event to userspace
->   (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
-> 
-> * Call ACPI _EJ0 for detached devices
-> 
-> Signed-off-by: Holger Macht <hmacht@suse.de>
+> Here reclassify the sg_sysfs_class for lockdep
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+This isn't really a generic solution, is it?  It only works because we
+currently only have two users of the interface functions, so if we
+reclassify one they look separate to lockdep.  It will fall over again
+if we ever get another one.
 
--- 
-tejun
+Surely the correct fix is to initialise lockdep for the mutex the same
+way we did for the semaphore in class_register() (which does exactly the
+same locking without triggering lockdep)?  That way we'll also fix the
+problem for other conversions of semaphore->mutex.
+
+James
+
+
+
