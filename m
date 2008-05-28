@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbYE1Cac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYE1CcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757687AbYE1Cac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 May 2008 22:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYE1CaY
+	id S1757990AbYE1CcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 May 2008 22:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYE1CcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 22:30:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46088 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753152AbYE1CaY (ORCPT
+	Tue, 27 May 2008 22:32:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55462 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbYE1CcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 22:30:24 -0400
-Date: Tue, 27 May 2008 19:29:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Artem.Bityutskiy@nokia.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can UBIFS be taken to linux-next?
-Message-Id: <20080527192942.f4e3dd7b.akpm@linux-foundation.org>
-In-Reply-To: <20080528114112.b8600074.sfr@canb.auug.org.au>
-References: <483BA79F.9030100@nokia.com>
-	<20080528114112.b8600074.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 27 May 2008 22:32:11 -0400
+Date: Wed, 28 May 2008 04:40:54 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] call_usermodehelper() increase reliability
+Message-ID: <20080528024053.GA20824@one.firstfloor.org>
+References: <20080527212423.9CAD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080527212423.9CAD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 11:41:12 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Tue, May 27, 2008 at 09:30:34PM +0900, KOSAKI Motohiro wrote:
+> Now, call_usermodehelper_setup() uses GFP_ATOMIC.
+> but it can return NULL _very_ easily.
+> 
+> GFP_ATOMIC is needed only when we can't sleep.
+> and, GFP_KERNEL is robust and better.
+> 
+> thus, I add gfp_mask argument to call_usermodehelper_setup().
 
-> Hi Artem,
-> 
-> On Tue, 27 May 2008 09:18:07 +0300 Artem Bityutskiy <Artem.Bityutskiy@nokia.com> wrote:
-> >
-> > we would like to ask for UBIFS mainline inclusion the next merge window.
-> > Of course we cannot say for sure whether Linus will merge it or not,
-> > but it would be helpful to have it in your tree for some time anyway.
-> > UBIFS is already in -mm tree so I assume it should not have too many
-> > build issues.
-> 
-> OK, my requirements are that you intend for it to be integrated in the
-> next merge window, that it be reviewed and that it be unit tested (i.e.
-> tested as well as you can in isolation).  You seem to have done all that,
-> so I will add it.
-> 
-> I will put it at the end of the merge today.
-> 
-> Andrew, does that make sense to you?
+Patch looks good to me. Thanks for fixing this properly.
 
-I'm not aware of any issues which would block a 2.6.27 merge.
-
-I haven't reviewed the filesystem myself.  Christoph Hellwig seems to
-have had a good go through it and had numerous review comments, but it
-is unclear what stage things are at with addressing them?
+-Andi
