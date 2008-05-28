@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYE1Vr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbYE1VsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbYE1Vr5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 17:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbYE1VpS
+	id S1755962AbYE1VsZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 17:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbYE1Vp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 17:45:18 -0400
+	Wed, 28 May 2008 17:45:27 -0400
 Received: from mu-out-0910.google.com ([209.85.134.191]:51381 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755920AbYE1VpQ (ORCPT
+	with ESMTP id S1755941AbYE1VpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 17:45:16 -0400
+	Wed, 28 May 2008 17:45:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=cNQ99UPoavyaXr3QGrzrat9OgnPQSG6yhjiMp598GaPIB3ZSuaQQWbt0c5U24isFH1QtS3R42RM2GgVW3IvdV7FRB5EkUj/3eMV5VyiAtOmrZCgHRB0m0VS9WAvLctGcN4iOQh17fmgaID9NlXsRAFQ2emFr1yjh4UKuImAlbUI=
+        b=mdlZNN7SHSj9qFOFRw/IssX2ePHEZPkN2WoWdA91hE35G70YSHznxgUmpVk/qo7v7N8WZ32nInxnUyz4BIwmq985Cihm6tjNbttilXnR9scNIiqAu5ttFyOW0tm6Y7PN/VqF5xWHmZIOkyNE4Ru3k6a5znjS0uKBEkgWphfq6VI=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 28 May 2008 23:42:51 +0200
-Message-Id: <20080528214251.16327.69202.sendpatchset@localhost.localdomain>
+Date: Wed, 28 May 2008 23:42:58 +0200
+Message-Id: <20080528214258.16327.89370.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080528213944.16327.92950.sendpatchset@localhost.localdomain>
 References: <20080528213944.16327.92950.sendpatchset@localhost.localdomain>
-Subject: [PATCH 15/21] opti621: convert to use ide_timing_find_mode()
+Subject: [PATCH 16/21] sl82c105: convert to use ide_timing_find_mode()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -31,44 +31,36 @@ There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/Kconfig       |    1 +
- drivers/ide/pci/opti621.c |   10 +++++-----
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/ide/Kconfig        |    1 +
+ drivers/ide/pci/sl82c105.c |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
 Index: b/drivers/ide/Kconfig
 ===================================================================
 --- a/drivers/ide/Kconfig
 +++ b/drivers/ide/Kconfig
-@@ -426,6 +426,7 @@ config BLK_DEV_GENERIC
- config BLK_DEV_OPTI621
- 	tristate "OPTi 82C621 chipset enhanced support (EXPERIMENTAL)"
- 	depends on EXPERIMENTAL
+@@ -704,6 +704,7 @@ config BLK_DEV_SIS5513
+ config BLK_DEV_SL82C105
+ 	tristate "Winbond SL82c105 support"
+ 	depends on (PPC || ARM)
 +	select IDE_TIMINGS
- 	select BLK_DEV_IDEPCI
+ 	select BLK_DEV_IDEDMA_PCI
  	help
- 	  This is a driver for the OPTi 82C621 EIDE controller.
-Index: b/drivers/ide/pci/opti621.c
+ 	  If you have a Winbond SL82c105 IDE controller, say Y here to enable
+Index: b/drivers/ide/pci/sl82c105.c
 ===================================================================
---- a/drivers/ide/pci/opti621.c
-+++ b/drivers/ide/pci/opti621.c
-@@ -208,15 +208,15 @@ typedef struct pio_clocks_s {
- static void compute_clocks(int pio, pio_clocks_t *clks)
+--- a/drivers/ide/pci/sl82c105.c
++++ b/drivers/ide/pci/sl82c105.c
+@@ -47,10 +47,11 @@
+  */
+ static unsigned int get_pio_timings(ide_drive_t *drive, u8 pio)
  {
- 	if (pio != PIO_NOT_EXIST) {
--		int adr_setup, data_pls;
-+		struct ide_timing *t = ide_timing_find_mode(XFER_PIO_0 + pio);
-+		int adr_setup = t->setup, data_pls = t->active;
- 		int bus_speed = ide_pci_clk ? ide_pci_clk : 33;
++	struct ide_timing *t = ide_timing_find_mode(XFER_PIO_0 + pio);
+ 	unsigned int cmd_on, cmd_off;
+ 	u8 iordy = 0;
  
--		adr_setup = ide_pio_timings[pio].setup_time;
--		data_pls = ide_pio_timings[pio].active_time;
- 		clks->address_time = cmpt_clk(adr_setup, bus_speed);
- 		clks->data_time = cmpt_clk(data_pls, bus_speed);
--		clks->recovery_time = cmpt_clk(ide_pio_timings[pio].cycle_time
--			- adr_setup-data_pls, bus_speed);
-+		clks->recovery_time = cmpt_clk(t->cycle	- adr_setup - data_pls,
-+					       bus_speed);
-+
- 		if (clks->address_time < 1)
- 			clks->address_time = 1;
- 		if (clks->address_time > 4)
+-	cmd_on  = (ide_pio_timings[pio].active_time + 29) / 30;
++	cmd_on  = (t->active + 29) / 30;
+ 	cmd_off = (ide_pio_cycle_time(drive, pio) - 30 * cmd_on + 29) / 30;
+ 
+ 	if (cmd_on == 0)
