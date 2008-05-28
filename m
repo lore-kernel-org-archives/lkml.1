@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYE1Vma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYE1Vmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661AbYE1Vma (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 17:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbYE1VmR
+	id S1753477AbYE1Vmt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 17:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYE1VmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 17:42:17 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54647 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753261AbYE1VmQ (ORCPT
+	Wed, 28 May 2008 17:42:18 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:49842 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753007AbYE1VmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 May 2008 17:42:16 -0400
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <84144f020805281431y1aac903am442b333a2a13cd15@mail.gmail.com>
-References: <1211995212.3445.52.camel@localhost.localdomain>
-	 <1212007760.2236.17.camel@shinybook.infradead.org>
-	 <1212008517.3445.89.camel@localhost.localdomain>
-	 <84144f020805281431y1aac903am442b333a2a13cd15@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 16:42:11 -0500
-Message-Id: <1212010931.3445.103.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=B7Z7m2SsYIuPBxBDoTMuXZbMX9J3Fm29ZFcM5GkjxUIJD7y4ZWyB613U3GT+n/oksyCGh3QHYS30FlV9zx4H6Om1/Rsl1XYSdKKd0T47Wf+WPwhC2nTS4WvcTo4jL4k8WGJx2MbqSphfPQcLH0J/JlPAsPq8bv6EipfD24Ok8SU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Wed, 28 May 2008 23:39:44 +0200
+Message-Id: <20080528213944.16327.92950.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/21] ide: convert ide-timing.h to ide-timings.c library
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-29 at 00:31 +0300, Pekka Enberg wrote:
-> On Thu, May 29, 2008 at 12:01 AM, James Bottomley
-> <James.Bottomley@hansenpartnership.com> wrote:
-> > Right, but that's why I think we have to change the process.  If we keep
-> > the Janitors project, then the bar has to be raised so that it becomes
-> > more participatory and thought oriented (i.e. eliminate from the outset
-> > anyone who is not going to graduate from mechanical changes to more
-> > useful ones).
-> 
-> I'm not sure what you expect to happen if we "shut down" the Janitors
-> project. The important janitorial work doesn't just magically
-> disappear. For example, we still need people for:
 
-I'm just outlining the possible solutions; shutting it down wasn't the
-one I advocated. One can argue that janitorial changes with enough
-intrinsic value tend to get done anyway regardless of whether we have
-the project or not.
+This (fairly obvious/trivial) patchset converts drivers/ide/ide-timing.h
+into ide-timings.c library (enabled by host drivers that want to use it by
+selecting CONFIG_IDE_TIMINGS config option) and updates host drivers still
+using ide_pio_timings[] to use ide_timing_find_mode() instead.
 
->   - Fixing API misuse
->   - Converting code from old APIs to new ones
->   - Consolidating duplicate code
->   - Fixing error handling code
->   - Removing unused code
->   - De-obfuscating code (e.g. removing bad macro magic, etc.)
-> 
-> And, quite frankly, I don't see what the big fuss is about. I know
-> we've had way too many "whitespace cleanup" patches in the past six
-> months or so, but can't we just NAK them politely and be done with it?
+Also as a bonus it moves PIO blacklist from ide-lib.c to ide-pio-blacklist.c.
 
-The problem is that there's something in the way all of this is working
-that's causing politeness to get short shrift. In turn that's giving
-lkml a larger than normal reputation for being a free for all dog fight
-and discouraging potential contributors from coming forwards.
+diffstat:
 
-Appeals to be politer tend to only work in the short term (having given
-quite a few of them).  I think we're developing a root cause problem in
-the way we recruit people to work in the kernel and we have to think
-about fixing it there.
-
-James
-
-
+ drivers/ide/Kconfig             |   16 +
+ drivers/ide/Makefile            |    4 
+ drivers/ide/arm/palm_bk3710.c   |    2 
+ drivers/ide/ide-lib.c           |  151 -----------------
+ drivers/ide/ide-pio-blacklist.c |   94 +++++++++++
+ drivers/ide/ide-timing.h        |  341 +++++++---------------------------------
+ drivers/ide/ide-timings.c       |  201 +++++++++++++++++++++++
+ drivers/ide/legacy/ali14xx.c    |    3 
+ drivers/ide/legacy/ht6560b.c    |    7 
+ drivers/ide/legacy/qd65xx.c     |    3 
+ drivers/ide/pci/alim15x3.c      |    6 
+ drivers/ide/pci/amd74xx.c       |    2 
+ drivers/ide/pci/cmd640.c        |    8 
+ drivers/ide/pci/cmd64x.c        |    6 
+ drivers/ide/pci/cs5535.c        |    6 
+ drivers/ide/pci/cy82c693.c      |    9 -
+ drivers/ide/pci/opti621.c       |   10 -
+ drivers/ide/pci/sis5513.c       |    3 
+ drivers/ide/pci/sl82c105.c      |    3 
+ drivers/ide/pci/via82cxxx.c     |    2 
+ drivers/ide/ppc/mpc8xx.c        |   33 +--
+ drivers/ide/ppc/pmac.c          |   15 -
+ include/linux/ide.h             |   45 ++++-
+ 23 files changed, 461 insertions(+), 509 deletions(-)
