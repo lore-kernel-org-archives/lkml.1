@@ -1,81 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYE1FVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYE1F0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbYE1FVG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 01:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbYE1FUz
+	id S1754842AbYE1F0r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 01:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbYE1F0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 01:20:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40891 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752499AbYE1FUy (ORCPT
+	Wed, 28 May 2008 01:26:37 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:23533 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752955AbYE1F0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 01:20:54 -0400
-Date: Tue, 27 May 2008 22:20:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-next@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       jens.axboe@oracle.com, Greg KH <greg@kroah.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH -next] block: genhd errors when CONFIG_PROC_FS=n
-Message-Id: <20080527222036.1141e43a.akpm@linux-foundation.org>
-In-Reply-To: <20080523094411.06f173e0.randy.dunlap@oracle.com>
-References: <20080523094411.06f173e0.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 May 2008 01:26:36 -0400
+Message-ID: <483CED9A.4070102@yandex.ru>
+Date: Wed, 28 May 2008 08:28:58 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: Lennert Buytenhek <buytenh@wantstofly.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: bad example in Documentation/atomic_ops.txt ?
+References: <4836DC57.1020101@yandex.ru>
+In-Reply-To: <4836DC57.1020101@yandex.ru>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 28 May 2008 05:26:27.0282 (UTC) FILETIME=[6087CB20:01C8C083]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 09:44:11 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+David,
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+do you have any comments on this? I paste the example below for
+convenience.
+
+Artem Bityutskiy wrote:
+> I it looks like the example in the Documentation/atomic_ops.txt
+> file at line 232 is not quite right. The obj->active = 0 will
+> be delayed, but not further than spin_unlock() in obj_timeout().
+> Becaus spin_unlock() has a memory barrier.
 > 
-> block/genhd.c has build errors when CONFIG_PROC_FS=n, so omit some of
-> its functions in that case.
+> I guess you would need to move spin_lock(&global_list_lock) to
+> obj_list_del() to make the example valid.
 > 
-> /local/linsrc/linux-next-20080523/block/genhd.c: In function 'diskstats_start':
-> /local/linsrc/linux-next-20080523/block/genhd.c:555: error: 'find_start' undeclared (first use in this function)
-> /local/linsrc/linux-next-20080523/block/genhd.c:555: error: (Each undeclared identifier is reported only once
-> /local/linsrc/linux-next-20080523/block/genhd.c:555: error: for each function it appears in.)
-> make[2]: *** [block/genhd.o] Error 1
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  block/genhd.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- linux-next-20080523.orig/block/genhd.c
-> +++ linux-next-20080523/block/genhd.c
-> @@ -539,6 +539,7 @@ static struct device_type disk_type = {
->  	.release	= disk_release,
->  };
->  
-> +#ifdef CONFIG_PROC_FS
->  /*
->   * aggregate disk stat collector.  Uses the same stats that the sysfs
->   * entries do, above, but makes them available through one seq_file.
-> @@ -644,6 +645,7 @@ const struct seq_operations diskstats_op
->  	.stop	= diskstats_stop,
->  	.show	= diskstats_show
->  };
-> +#endif /* CONFIG_PROC_FS */
->  
->  static void media_change_notify_thread(struct work_struct *work)
->  {
+> This confused me when I read the file.
 
-This is a fix against
+static void obj_list_add(struct obj *obj)
+{
+        obj->active = 1;
+        list_add(&obj->list);
+}
 
-commit ce8568d9535b4756ea304a97ea803314ce895d3c
-Author: Greg Kroah-Hartman <gregkh@suse.de>
-Date:   Thu May 22 17:21:08 2008 -0400
+static void obj_list_del(struct obj *obj)
+{
+        list_del(&obj->list);
+        obj->active = 0;
+}
 
-    block: make proc files seq_start use the class_find_device()
-    
-    Use the proper class iterator function instead of mucking around in the
-    internals of the class structures.
-    
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+static void obj_destroy(struct obj *obj)
+{
+        BUG_ON(obj->active);
+        kfree(obj);
+}
 
+struct obj *obj_list_peek(struct list_head *head)
+{
+        if (!list_empty(head)) {
+                struct obj *obj;
+
+                obj = list_entry(head->next, struct obj, list);
+                atomic_inc(&obj->refcnt);
+                return obj;
+        }
+        return NULL;
+}
+
+void obj_poke(void)
+{
+        struct obj *obj;
+
+        spin_lock(&global_list_lock);
+        obj = obj_list_peek(&global_list);
+        spin_unlock(&global_list_lock);
+
+        if (obj) {
+                obj->ops->poke(obj);
+                if (atomic_dec_and_test(&obj->refcnt))
+                        obj_destroy(obj);
+        }
+}
+
+void obj_timeout(struct obj *obj)
+{
+        spin_lock(&global_list_lock);
+        obj_list_del(obj);
+        spin_unlock(&global_list_lock);
+
+        if (atomic_dec_and_test(&obj->refcnt))
+                obj_destroy(obj);
+}
+
+(This is a simplification of the ARP queue management in the
+ generic neighbour discover code of the networking.  Olaf Kirch
+ found a bug wrt. memory barriers in kfree_skb() that exposed
+ the atomic_t memory barrier requirements quite clearly.)
+
+Given the above scheme, it must be the case that the obj->active
+update done by the obj list deletion be visible to other processors
+before the atomic counter decrement is performed.
+
+Otherwise, the counter could fall to zero, yet obj->active would still
+be set, thus triggering the assertion in obj_destroy().  The error
+sequence looks like this:
+
+        cpu 0                           cpu 1
+        obj_poke()                      obj_timeout()
+        obj = obj_list_peek();
+        ... gains ref to obj, refcnt=2
+                                        obj_list_del(obj);
+                                        obj->active = 0 ...
+                                        ... visibility delayed ...
+                                        atomic_dec_and_test()
+                                        ... refcnt drops to 1 ...
+        atomic_dec_and_test()
+        ... refcount drops to 0 ...
+        obj_destroy()
+        BUG() triggers since obj->active
+        still seen as one
+                                        obj->active update visibility occurs
+
+With the memory barrier semantics required of the atomic_t operations
+which return values, the above sequence of memory visibility can never
+happen.  Specifically, in the above case the atomic_dec_and_test()
+counter decrement would not become globally visible until the
+obj->active update does.
+
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
