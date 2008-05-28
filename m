@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbYE1QJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbYE1QJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752982AbYE1QJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYE1QJY
+	id S1751828AbYE1QJs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYE1QJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:09:24 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49186 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbYE1QJX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:09:23 -0400
-Date: Wed, 28 May 2008 09:06:37 -0700
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Young <hidave.darkstar@gmail.com>, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
-Message-ID: <20080528160637.GB3851@kroah.com>
-References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com> <20080520030232.fc91b64e.akpm@linux-foundation.org> <20080520172139.GA11666@kroah.com> <a8e1da0805262342g2dec037eqfdf376e66459e758@mail.gmail.com> <20080526235934.8a28bfba.akpm@linux-foundation.org> <20080528154840.GJ22636@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080528154840.GJ22636@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 28 May 2008 12:09:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47945 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751582AbYE1QJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 12:09:27 -0400
+Date: Wed, 28 May 2008 12:08:31 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: d-nishimura@mtf.biglobe.ne.jp, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mm 07/16] second chance replacement for anonymous pages
+Message-ID: <20080528120831.7ebcf765@bree.surriel.com>
+In-Reply-To: <483D7D7C.70607@mtf.biglobe.ne.jp>
+References: <20080523195506.084894989@redhat.com>
+	<20080523195535.302440037@redhat.com>
+	<483CEF78.9050802@mxp.nes.nec.co.jp>
+	<20080528093918.37660860@bree.surriel.com>
+	<483D7D7C.70607@mtf.biglobe.ne.jp>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 09:48:40AM -0600, Matthew Wilcox wrote:
-> On Mon, May 26, 2008 at 11:59:34PM -0700, Andrew Morton wrote:
-> > If that semaphore is being used as a mutex then we should convert it to
-> > a mutex (dammit).
-> 
-> Right.
-> 
-> > Leaving it implemented as a semphore is not the proper way of
-> > suppressing the lockdep warnings.  It would be better to convert it to
-> > a mutex then add suitable (and suitably commented) open-coded lockdep
-> > annotations to suppress the runtime warnings.
-> 
-> We don't even have to go that far.  Here's all that's needed:
-> 
-> diff -u a/drivers/base/class.c b/drivers/base/class.c
-> --- a/drivers/base/class.c
-> +++ b/drivers/base/class.c
-> @@ -134,7 +134,7 @@
->  	}
->  }
->  
-> -int class_register(struct class *cls)
-> +int __class_register(struct class *cls, struct lock_class_key *key)
+On Thu, 29 May 2008 00:42:52 +0900
+Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
 
-Sorry, this will not work properly, as class_create() is now more
-commonly called, and it calls class_register() from within the driver
-core.  So there would be a lot of classes with the same "key" because of
-this.
+> When all the patches applied, shrink_active_list() looks like:
 
-So try changing class_create also.
+> So, I wondered that there is no need to clear pgmoved before 1156 line.
 
-thanks,
+You are right, of course.
 
-greg k-h
+Looks like that code got mangled a little during one of the forward merges :)
+
+-- 
+All rights reversed.
