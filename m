@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYE1Kee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYE1KlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbYE1Kee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 06:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYE1KeX
+	id S1753906AbYE1KlK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 06:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbYE1Kk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 06:34:23 -0400
-Received: from smtp-dmz-233-wednesday.dmz.nerim.net ([195.5.254.233]:55007
-	"EHLO kellthuzad.dmz.nerim.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751414AbYE1KeW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 06:34:22 -0400
-X-Greylist: delayed 1978 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 06:34:22 EDT
-Message-ID: <483D2D11.9080803@plouf.fr.eu.org>
-Date: Wed, 28 May 2008 11:59:45 +0200
-From: Pascal Hambourg <pascal.mail@plouf.fr.eu.org>
-Organization: Plouf !
-User-Agent: Mozilla Thunderbird 1.0.6 (Windows/20050716)
-X-Accept-Language: fr,en
+	Wed, 28 May 2008 06:40:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:40070 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751863AbYE1Kk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 06:40:58 -0400
+Message-ID: <483D3697.1070702@goop.org>
+Date: Wed, 28 May 2008 11:40:23 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Matthias Cramer <matthias.cramer@interway.ch>,
-       James Chapman <jchapman@katalix.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: Wired behaviour with IPv6 over PPP
-References: <48341C0B.7010003@interway.ch> <20080522014959.0f6191aa.akpm@linux-foundation.org> <48354318.60202@katalix.com> <4835C40B.60603@interway.ch> <20080524042911.GE6749@1wt.eu>
-In-Reply-To: <20080524042911.GE6749@1wt.eu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@qumranet.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>
+Subject: Re: Question about interrupt routing and irq allocation
+References: <483B34CA.8000600@goop.org> <20080527083729.GF29246@elte.hu>	<483BD843.5080009@goop.org> <20080527145606.GB24457@elte.hu>	<483C35AA.5060102@goop.org> <m1ve0yai0j.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1ve0yai0j.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+Eric W. Biederman wrote:
+> - I think using create_irq is a good step.
+> - I think all vectors are wasted in the case of Xen.
+>   
 
-Willy Tarreau a écrit/wrote :
-> On Thu, May 22, 2008 at 09:05:47PM +0200, Matthias Cramer wrote:
-> 
->>James Chapman wrote:
->>
->>>Andrew Morton wrote:
->>>
->>>>On Wed, 21 May 2008 14:56:43 +0200 Matthias Cramer
->>>><matthias.cramer@interway.ch> wrote:
->>>>
->>>>>I have a very wired behaviour when doing IPv6 over PPPoE.
->>>>>
->>>>>The situation:
->>>>>
->>>>>A linux box connected to a DSL Modem, on the other side is a Cisco
->>>>>LNS which terminates the PPP session (actually L2TP).
->>>>>I have control over both ends.
->>>>>
->>>>>When I have net.ipv6.conf.all.forwarding set to 0 then the ppp
->>>>>Interface gets a IPv6 address from the Cisco via IP6CP.
->>>>>When I have net.ipv6.conf.all.forwarding set to 1 them the ppp
->>>>>Interface does not get an address, it has only a normal link local
->>>>>address.
+The case I'm discussing now is in hvm domains - ie, fully virtualized PC 
+platform. I'm adding a driver to poke a hole through all the emulated 
+hardware to get directly to the underlying Xen layer so that we can run 
+paravirtual drivers to get better performance. Only the irqs associated 
+with pv drivers will waste their vectors.
 
-AFAIK IPV6CP/PPP only allows to negotiate link local addresses. So I 
-guess the global address and default route is assigned by another 
-mechanism, maybe stateless autoconfiguration using router advertisement, 
-although I was not aware it could be used on a PPP link because of the 
-absence of MAC address. Enabling global forwarding 
-(net.ipv6.conf.all.forwarding=1) disables stateless autoconfiguration 
-(see ip-sysctl.txt in kernel documentation) on all interfaces. I believe 
-this is consistent with the observed behaviour.
+> - I think we want a individual irq for each xen irq source.
+>   Sparc already does a demux in similar circumstances with
+>   a queue of received MSI messages an a single cpu irq
+>   that these get demuxed from.
+>   If we don't have individual irqs per drivers it will be hard
+>   to share a source base with native drivers.
+>   
 
->>>>>When I start the ppp session with forwarding set to 0 I can ping out
->>>>>and there exists a default route to ppp0 , then I switch forwarding to 1
->>>>>the default route disappears and therefore routing does not work any
->>>>>longer.
+In this case the sharing is between fully paravirtualized paravirt_ops 
+Xen and pv-on-hvm drivers. In general I want those drivers to look as 
+normal as possible, so they should use irqs in a normal way.
 
-I have read reports about this. I guess the logic is that enabling 
-forwarding turns the box into a router, so the default route learned 
-from another router's advertisements by autoconfiguration should be 
-deleted. Even the autoconfigured global address will eventually expire.
+> - I think it would be very nice if we could get irqs allocated
+>   in request_irq instead of create_irq (and equivalents).
+>   
 
-> Well, at least it has been working for years in kernel 2.4 for me with
-> pppd 2.4.2b3 to 2.4.4 (I've not upgraded my firewall to 2.6 yet). So
-> it has definitely been working at some point.
+Something along the lines of passing -1 as the irq, and it would return 
+the allocated irq? It's not clear to me how all that would fit together.
 
-What exactly has been working ?
+> - I think ultimately it makes sense to port the per vector
+>   code to 32bit linux.  On single cpu systems the cost should
+>   be just a hair more code, but no extra data structures.  We
+>   can easily restrict the irq allocation to allocating the same
+>   vector on all cpus for any old machines that prove flaky with
+>   irq migration.
+>
+>   The code between the two architectures we kept fairly close
+>   in sync when I worked on it so a merge should not be a big deal.
 
-PS : Willy, do you plan to backport the security fix for the sit module 
-from 2.6.25.3 into 2.4 ?
+Well, if I find myself at a loose end, I'll have a look at it.
