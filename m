@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbYE1Qdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752983AbYE1QeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbYE1Qdv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbYE1Qdk
+	id S1752983AbYE1QeV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbYE1QeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:33:40 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52030 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbYE1Qdc (ORCPT
+	Wed, 28 May 2008 12:34:05 -0400
+Received: from el-out-1112.google.com ([209.85.162.179]:9248 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbYE1QeD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:33:32 -0400
-Date: Wed, 28 May 2008 09:28:39 -0700
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Young <hidave.darkstar@gmail.com>, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
-Message-ID: <20080528162839.GA12366@kroah.com>
-References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com> <20080520030232.fc91b64e.akpm@linux-foundation.org> <20080520172139.GA11666@kroah.com> <a8e1da0805262342g2dec037eqfdf376e66459e758@mail.gmail.com> <20080526235934.8a28bfba.akpm@linux-foundation.org> <20080528154840.GJ22636@parisc-linux.org> <20080528160637.GB3851@kroah.com>
+	Wed, 28 May 2008 12:34:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O6L4Ppjuv8iTzRZnZhccYi+Ft7u1Zang6JpkyTxFPNKyyo/ehsHNTPBttIeIUZgQTv+5kNrbaCGSgsNJFBIgbnFeSZtBEROTjiOUp1kmkHWGvZHGTLpsnDhDcf/Z47FGQnPHEF0wwPk+PC5rw6hYBslqVHaS4Ux8CmXkSHQq3+E=
+Message-ID: <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
+Date: Wed, 28 May 2008 18:34:00 +0200
+From: "=?ISO-8859-1?Q?Jens_B=E4ckman?=" <jens.backman@gmail.com>
+To: "Justin Piszcz" <jpiszcz@lucidpixels.com>
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+In-Reply-To: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080528160637.GB3851@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 09:06:37AM -0700, Greg KH wrote:
-> On Wed, May 28, 2008 at 09:48:40AM -0600, Matthew Wilcox wrote:
-> > On Mon, May 26, 2008 at 11:59:34PM -0700, Andrew Morton wrote:
-> > > If that semaphore is being used as a mutex then we should convert it to
-> > > a mutex (dammit).
-> > 
-> > Right.
-> > 
-> > > Leaving it implemented as a semphore is not the proper way of
-> > > suppressing the lockdep warnings.  It would be better to convert it to
-> > > a mutex then add suitable (and suitably commented) open-coded lockdep
-> > > annotations to suppress the runtime warnings.
-> > 
-> > We don't even have to go that far.  Here's all that's needed:
-> > 
-> > diff -u a/drivers/base/class.c b/drivers/base/class.c
-> > --- a/drivers/base/class.c
-> > +++ b/drivers/base/class.c
-> > @@ -134,7 +134,7 @@
-> >  	}
-> >  }
-> >  
-> > -int class_register(struct class *cls)
-> > +int __class_register(struct class *cls, struct lock_class_key *key)
-> 
-> Sorry, this will not work properly, as class_create() is now more
-> commonly called, and it calls class_register() from within the driver
-> core.  So there would be a lot of classes with the same "key" because of
-> this.
-> 
-> So try changing class_create also.
+On Wed, May 28, 2008 at 10:53 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+> Results:
+>
+> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
+> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
 
-Oh forget it, I'm messing around in this area anyway, so all of these
-changes are not going to apply to tomorrow's -next tree at all.
-
-I'll take this and get it working, give me a bit...
-
-thanks,
-
-greg k-h
+Either the RAID 1 read speed must be wrong, or something is odd in the
+Linux implementation. There's six drives that can be used for reading
+at the same time, as they contain the very same data. 63MB/s
+sequential looks like what you would get from a single drive.
