@@ -1,148 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbYE1Woe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYE1Wsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbYE1Woe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 18:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYE1WoX
+	id S1755254AbYE1Wsz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 18:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYE1Wsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 18:44:23 -0400
-Received: from mail1.physik.fu-berlin.de ([160.45.35.12]:59532 "EHLO
-	mail1.physik.fu-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753588AbYE1WoW (ORCPT
+	Wed, 28 May 2008 18:48:45 -0400
+Received: from mail.tmr.com ([64.65.253.246]:48975 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753322AbYE1Wso convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 18:44:22 -0400
-X-Greylist: delayed 2756 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 18:44:21 EDT
-Subject: Re: [PATCH] usb-serial: option: Don't match Huawei driver CD images
-From: Michael Karcher <kernel@mkarcher.dialup.fu-berlin.de>
-To: Greg KH <greg@kroah.com>
-Cc: smurf@smurf.noris.de, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <20080528171741.GA11307@kroah.com>
-References: <1208472569.14194.5.camel@hermes2.karcher.local>
-	 <20080418032405.GB8754@kroah.com>
-	 <1208498494.14194.28.camel@hermes2.karcher.local>
-	 <1208500241.4749.3.camel@hermes2.karcher.local>
-	 <20080528171741.GA11307@kroah.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-iFSFDF7aXmqBUT9TKDS8"
-Date: Wed, 28 May 2008 23:58:18 +0200
-Message-Id: <1212011898.11658.2.camel@hermes2.karcher.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-HELO-Warning: Remote host 89.247.199.115 (i59f7c773.versanet.de) incorrectly presented itself as [192.168.0.126]
-X-ZEDV-Virus-Scanned: No viruses found. [ClamAV 0.92/7281/Wed May 28 23:10:58 2008]
-X-ZEDV-Spam-Level: ----
-X-ZEDV-Spam-Checker-Version: SpamAssassin 3.2.3 (2007-08-08) on zs01.physik.fu-berlin.de
-X-ZEDV-Spam-Status: No, score=-4.4 required=5.0 tests=ALL_TRUSTED,BAYES_00,UPPERCASE_50_75 autolearn=no version=3.2.3
-X-ZEDV-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	*  0.0 UPPERCASE_50_75 message body is 50-75% uppercase
-X-Scan-Signature: cc0eb9fc590319ea0ad8e46d5cf9b460
+	Wed, 28 May 2008 18:48:44 -0400
+Message-ID: <483DE40D.8090608@tmr.com>
+Date: Wed, 28 May 2008 19:00:29 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: =?UTF-8?B?SmVucyBCw6Rja21hbg==?= <jens.backman@gmail.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>	<95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com> <20080528195752.0cdcbc6d@core>
+In-Reply-To: <20080528195752.0cdcbc6d@core>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+> On Wed, 28 May 2008 18:34:00 +0200
+> "Jens Bäckman" <jens.backman@gmail.com> wrote:
+> 
+>> On Wed, May 28, 2008 at 10:53 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>>> Results:
+>>>
+>>> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
+>>> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
+>> Either the RAID 1 read speed must be wrong, or something is odd in the
+>> Linux implementation. There's six drives that can be used for reading
+>> at the same time, as they contain the very same data. 63MB/s
+>> sequential looks like what you would get from a single drive.
+> 
+> Which is fairly typical of a cheap desktop PC where the limitation is the
+> memory and PCI bridge as much as the drive.
+> 
+I really don't think that's any part of the issue, the same memory and 
+bridge went 4-5x faster in other read cases. The truth is that the 
+raid-1 performance is really bad, and it's the code causing it AFAIK. If 
+you track the actual io it seems to read one drive at a time, in order, 
+without overlap.
 
---=-iFSFDF7aXmqBUT9TKDS8
-Content-Type: multipart/mixed; boundary="=-RJYjmwQH4n3IEhz6MAzZ"
-
-
---=-RJYjmwQH4n3IEhz6MAzZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Am Mittwoch, den 28.05.2008, 10:17 -0700 schrieb Greg KH:
-> Oops, sorry, I lost this message in the queue.
-No problem. Would be nice to have it in 2.6.26.
-
-> Can you regenerate your patch against 2.6.26-rc4 and resend it?
-Regenerated agains git HEAD, attached.
-
-Regards,
-  Michael Karcher
-
---=-RJYjmwQH4n3IEhz6MAzZ
-Content-Disposition: attachment; filename=huawei-id.diff
-Content-Type: text/x-patch; name=huawei-id.diff; charset=utf-8
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdXNiL3NlcmlhbC9vcHRpb24uYyBiL2RyaXZlcnMvdXNiL3Nl
-cmlhbC9vcHRpb24uYw0KaW5kZXggNmNlY2QyYy4uNDNjZmRlOCAxMDA2NDQNCi0tLSBhL2RyaXZl
-cnMvdXNiL3NlcmlhbC9vcHRpb24uYw0KKysrIGIvZHJpdmVycy91c2Ivc2VyaWFsL29wdGlvbi5j
-DQpAQCAtMjM2LDI1ICsyMzYsMjUgQEAgc3RhdGljIHN0cnVjdCB1c2JfZGV2aWNlX2lkIG9wdGlv
-bl9pZHNbXSA9IHsNCiAJeyBVU0JfREVWSUNFKE9QVElPTl9WRU5ET1JfSUQsIE9QVElPTl9QUk9E
-VUNUX0VUTkFfTkVUV09SS19FWCkgfSwNCiAJeyBVU0JfREVWSUNFKE9QVElPTl9WRU5ET1JfSUQs
-IE9QVElPTl9QUk9EVUNUX0VUTkFfS09JX01PREVNKSB9LA0KIAl7IFVTQl9ERVZJQ0UoT1BUSU9O
-X1ZFTkRPUl9JRCwgT1BUSU9OX1BST0RVQ1RfRVROQV9LT0lfTkVUV09SSykgfSwNCi0JeyBVU0Jf
-REVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNUX0U2MDApIH0sDQorCXsgVVNC
-X0RFVklDRV9BTkRfSU5URVJGQUNFX0lORk8oSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RV
-Q1RfRTYwMCwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCiAJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZB
-Q0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMjIwLCAweGZmLCAweGZm
-LCAweGZmKSB9LA0KIAl7IFVTQl9ERVZJQ0VfQU5EX0lOVEVSRkFDRV9JTkZPKEhVQVdFSV9WRU5E
-T1JfSUQsIEhVQVdFSV9QUk9EVUNUX0UyMjBCSVMsIDB4ZmYsIDB4ZmYsIDB4ZmYpIH0sDQotCXsg
-VVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwMSkgfSwNCi0J
-eyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNUX0UxNDAzKSB9LA0K
-LQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RVQ1RfRTE0MDUpIH0s
-DQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwNikg
-fSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNUX0UxNDA4
-KSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RVQ1RfRTE0
-MDkpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9F
-MTQxMCkgfSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9QUk9EVUNU
-X0UxNDExKSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJX1BST0RV
-Q1RfRTE0MTIpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJP
-RFVDVF9FMTQxMykgfSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhVQVdFSV9Q
-Uk9EVUNUX0UxNDE0KSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwgSFVBV0VJ
-X1BST0RVQ1RfRTE0MTUpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lELCBIVUFX
-RUlfUFJPRFVDVF9FMTQxNikgfSwNCi0JeyBVU0JfREVWSUNFKEhVQVdFSV9WRU5ET1JfSUQsIEhV
-QVdFSV9QUk9EVUNUX0UxNDE3KSB9LA0KLQl7IFVTQl9ERVZJQ0UoSFVBV0VJX1ZFTkRPUl9JRCwg
-SFVBV0VJX1BST0RVQ1RfRTE0MTgpIH0sDQotCXsgVVNCX0RFVklDRShIVUFXRUlfVkVORE9SX0lE
-LCBIVUFXRUlfUFJPRFVDVF9FMTQxOSkgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0Vf
-SU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwMSwgMHhmZiwgMHhmZiwg
-MHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9S
-X0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwMywgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0Jf
-REVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVD
-VF9FMTQwNSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZB
-Q0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwNiwgMHhmZiwgMHhm
-ZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVO
-RE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQwOCwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBV
-U0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJP
-RFVDVF9FMTQwOSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRF
-UkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxMCwgMHhmZiwg
-MHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlf
-VkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxMSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJ
-eyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlf
-UFJPRFVDVF9FMTQxMiwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9J
-TlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxMywgMHhm
-ZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFX
-RUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxNCwgMHhmZiwgMHhmZiwgMHhmZikgfSwN
-CisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFX
-RUlfUFJPRFVDVF9FMTQxNSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FO
-RF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxNiwg
-MHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhI
-VUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQxNywgMHhmZiwgMHhmZiwgMHhmZikg
-fSwNCisJeyBVU0JfREVWSUNFX0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBI
-VUFXRUlfUFJPRFVDVF9FMTQxOCwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCisJeyBVU0JfREVWSUNF
-X0FORF9JTlRFUkZBQ0VfSU5GTyhIVUFXRUlfVkVORE9SX0lELCBIVUFXRUlfUFJPRFVDVF9FMTQx
-OSwgMHhmZiwgMHhmZiwgMHhmZikgfSwNCiAJeyBVU0JfREVWSUNFKEFNT0lfVkVORE9SX0lELCBB
-TU9JX1BST0RVQ1RfOTUwOCkgfSwNCiAJeyBVU0JfREVWSUNFKE5PVkFURUxXSVJFTEVTU19WRU5E
-T1JfSUQsIE5PVkFURUxXSVJFTEVTU19QUk9EVUNUX1Y2NDApIH0sIC8qIE5vdmF0ZWwgTWVybGlu
-IFY2NDAvWFY2MjAgKi8NCiAJeyBVU0JfREVWSUNFKE5PVkFURUxXSVJFTEVTU19WRU5ET1JfSUQs
-IE5PVkFURUxXSVJFTEVTU19QUk9EVUNUX1Y2MjApIH0sIC8qIE5vdmF0ZWwgTWVybGluIFY2MjAv
-UzYyMCAqLw0K
-
-
---=-RJYjmwQH4n3IEhz6MAzZ--
-
---=-iFSFDF7aXmqBUT9TKDS8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Dies ist ein digital signierter Nachrichtenteil
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIPdV6zhek2R7EicoRAr63AJ43Cc5ihYrHcbEid3h7JXx/R35K6wCfQnsb
-OOFww76HQ0+IwqFKf4Hbf0I=
-=hgGX
------END PGP SIGNATURE-----
-
---=-iFSFDF7aXmqBUT9TKDS8--
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
