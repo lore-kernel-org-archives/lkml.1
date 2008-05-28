@@ -1,60 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbYE1Nn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbYE1Nvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753414AbYE1Nn4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYE1Nnt
+	id S1751942AbYE1Nvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYE1Nvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:43:49 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:35882 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750909AbYE1Nns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:43:48 -0400
-Date: Wed, 28 May 2008 15:42:43 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.24 not recognizing 2G MMC card?
-Message-ID: <20080528154243.46011abf@mjolnir.drzeus.cx>
-In-Reply-To: <20080521172104.GC2592@fieldses.org>
-References: <20080521172104.GC2592@fieldses.org>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.0; i386-redhat-linux-gnu)
+	Wed, 28 May 2008 09:51:48 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:60047 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750950AbYE1Nvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 09:51:48 -0400
+Message-Id: <200805281351.m4SDpTIl030554@mbox.iij4u.or.jp>
+To: pw@osc.edu
+Cc: michaelc@cs.wisc.edu, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp
+Subject: Re: bsg locking patches update
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080528210048L.tomof@acm.org>
+References: <20080526165318.GA5466@osc.edu>
+	<20080528210048L.tomof@acm.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Date: Wed, 28 May 2008 22:51:29 +0900
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 13:21:04 -0400
-"J. Bruce Fields" <bfields@fieldses.org> wrote:
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: bsg locking patches update
+Date: Wed, 28 May 2008 21:00:56 +0900
 
-> Please forgive a somewhat naive question--I'm not sure how to go about
-> debugging this kind of thing:
+> On Mon, 26 May 2008 12:53:18 -0400
+> Pete Wyckoff <pw@osc.edu> wrote:
 > 
-> I have a Dell 1420n with card readers reported by lspci as:
+> > I finally got around to testing the set of lifetime management
+> > fixes you applied.  This is 2.6.26-rc3 with some varlen, bidi,
+> > iser patches, and iovec on bsg, but nothing that should affect
+> > the locking.
+> > 
+> > I can confirm that the first two of these three old bugs are
+> > no longer reproducable:
+> > 
+> >     http://marc.info/?l=linux-scsi&m=120508166505141&w=2
+> >     http://marc.info/?l=linux-scsi&m=120508177905365&w=2
+> >     http://marc.info/?l=linux-scsi&m=120508178005376&w=2
+> > 
+> > Thanks!  The third, however, is a hang that still can happen.  But
+> > it is very obscure and requires a bit of timing to get right.  As a
+> > reminder, here's the setup, and updated traces.
 > 
-> 03:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
-> 03:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+> Ah, sorry about it. I didn't understand the third correctly.
 > 
-> I have a 512MB MicroSD card which seems to be recognized fine, but a 2GB
-> MMC card is not.
 > 
-
-Do you have any other MMC cards that work? Ricoh doesn't something
-silly when it comes to MMC cards that fouls things up.
-
+> > Maybe it is necessary to split up that bsg_mutex to use multiple
+> > finer-grained locks.
 > 
-> Anything I should try?  Thanks in advance for any suggestions.
+> We could but we use bsg_mutex to protect bsg_device_list and idr. So I
+> think that we don't need hold bsg_mutex during
+> bsg_complete_all_commands. How about this?
 > 
+> 
+> diff --git a/block/bsg.c b/block/bsg.c
+> index f0b7cd3..d81104e 100644
+> --- a/block/bsg.c
+> +++ b/block/bsg.c
 
-If you have a newer controller, then the ricoh_mmc module won't be able
-to do its magic. Try the following patch:
+On second thoughts, I realized that the previous patch leads to a race
+between bsg_put_device and __bsg_get_device (__bsg_get_device possibly
+finds a device that is being removed). Here's new one.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=882c49164d72c45f37d7fa1bb3de7c31cf1a5fab
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+diff --git a/block/bsg.c b/block/bsg.c
+index f0b7cd3..7cdec32 100644
+--- a/block/bsg.c
++++ b/block/bsg.c
+@@ -724,8 +724,13 @@ static int bsg_put_device(struct bsg_device *bd)
+ 	mutex_lock(&bsg_mutex);
+ 
+ 	do_free = atomic_dec_and_test(&bd->ref_count);
+-	if (!do_free)
++	if (!do_free) {
++		mutex_unlock(&bsg_mutex);
+ 		goto out;
++	}
++
++	hlist_del(&bd->dev_list);
++	mutex_unlock(&bsg_mutex);
+ 
+ 	dprintk("%s: tearing down\n", bd->name);
+ 
+@@ -741,10 +746,8 @@ static int bsg_put_device(struct bsg_device *bd)
+ 	 */
+ 	ret = bsg_complete_all_commands(bd);
+ 
+-	hlist_del(&bd->dev_list);
+ 	kfree(bd);
+ out:
+-	mutex_unlock(&bsg_mutex);
+ 	kref_put(&q->bsg_dev.ref, bsg_kref_release_function);
+ 	if (do_free)
+ 		blk_put_queue(q);
