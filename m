@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYE1Iqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbYE1IyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYE1Iqi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 04:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYE1Iq3
+	id S1753643AbYE1IyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 04:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYE1Ixt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 04:46:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33553 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750854AbYE1Iq3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 04:46:29 -0400
-Date: Wed, 28 May 2008 01:46:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Guillaume Chazarain <guichaz@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
-Message-Id: <20080528014615.2583e8dc.akpm@linux-foundation.org>
-In-Reply-To: <20080528084313.GE3819@disturbed>
-References: <20080523203429.11846.84137.stgit@localhost.localdomain>
-	<20080527223832.f7131761.akpm@linux-foundation.org>
-	<20080528082550.GD3819@disturbed>
-	<20080528013549.9636349c.akpm@linux-foundation.org>
-	<20080528084313.GE3819@disturbed>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 May 2008 04:53:49 -0400
+Received: from lucidpixels.com ([75.144.35.66]:39846 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751542AbYE1Ixs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 04:53:48 -0400
+Date: Wed, 28 May 2008 04:53:47 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+cc: linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+Message-ID: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 18:43:13 +1000 Dave Chinner <david@fromorbit.com> wrote:
+Hardware:
 
-> On Wed, May 28, 2008 at 01:35:49AM -0700, Andrew Morton wrote:
-> > On Wed, 28 May 2008 18:25:50 +1000 Dave Chinner <david@fromorbit.com> wrote:
-> > > On Tue, May 27, 2008 at 10:38:32PM -0700, Andrew Morton wrote:
-> > > > On Fri, 23 May 2008 22:34:29 +0200 Guillaume Chazarain <guichaz@gmail.com> wrote:
-> > > > > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> > > > > index 495214d..0e6881e 100644
-> > > > > --- a/fs/fs-writeback.c
-> > > > > +++ b/fs/fs-writeback.c
-> > > > > @@ -454,6 +454,7 @@ void generic_sync_sb_inodes(struct super_block *sb,
-> > > > >  		struct address_space *mapping = inode->i_mapping;
-> > > > >  		struct backing_dev_info *bdi = mapping->backing_dev_info;
-> > > > >  		long pages_skipped;
-> > > > > +		int err;
-> > > > >  
-> > > > >  		if (!bdi_cap_writeback_dirty(bdi)) {
-> > > > >  			redirty_tail(inode);
-> > > > > @@ -498,7 +499,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
-> > > > >  		BUG_ON(inode->i_state & I_FREEING);
-> > > > >  		__iget(inode);
-> > > > >  		pages_skipped = wbc->pages_skipped;
-> > > > > -		__writeback_single_inode(inode, wbc);
-> > > > > +		err = __writeback_single_inode(inode, wbc);
-> > > > > +		mapping_set_error(mapping, err);
-> > > > >  		if (wbc->sync_mode == WB_SYNC_HOLD) {
-> > > > >  			inode->dirtied_when = jiffies;
-> > > > >  			list_move(&inode->i_list, &sb->s_dirty);
-> > > > 
-> > > > ho hum, I've forgotten why I didn't like this.  Let's give it a run.
-> > > 
-> > > IIRC, it'll produce lots of spurious EIO errors under writeback on
-> > > XFS as XFS will return EAGAIN if we've been asked for a non-blocking
-> > > flush and we would have blocked....
-> > 
-> > OIC.  This, I guess...
-> > 
-> > --- a/fs/fs-writeback.c~fs-writeback-handle-errors-in-sync_sb_inodes-fix
-> > +++ a/fs/fs-writeback.c
-> > @@ -500,7 +500,8 @@ void generic_sync_sb_inodes(struct super
-> >  		__iget(inode);
-> >  		pages_skipped = wbc->pages_skipped;
-> >  		err = __writeback_single_inode(inode, wbc);
-> > -		mapping_set_error(mapping, err);
-> > +		if (err == -EIO || err == -ENOSPC) /* xfs can return -EAGAIN */
-> > +			mapping_set_error(mapping, err);
-> 
-> Rapidly gets messy. XFS can also return at least EDQUOT and EUCLEAN
-> (i.e. EFSCORRUPTED) from here as well, and it's likely that there's
-> other real errors I can't think of right now as well.
-> 
+1. Utilized (6) 400 gigabyte sata hard drives.
+2. Everything is on PCI-e (965 chipset & a 2port sata card)
 
-argh.  Who said it was allowed to do that :(
+Used the following 'optimizations' for all tests.
 
-Give up.  We (ie: I) need to fix this one properly.
+# Set read-ahead.
+echo "Setting read-ahead to 64 MiB for /dev/md3"
+blockdev --setra 65536 /dev/md3
+
+# Set stripe-cache_size for RAID5.
+echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+echo 16384 > /sys/block/md3/md/stripe_cache_size
+
+# Disable NCQ on all disks.
+echo "Disabling NCQ on all disks..."
+for i in $DISKS
+do
+   echo "Disabling NCQ on $i"
+   echo 1 > /sys/block/"$i"/device/queue_depth
+done
+
+Software:
+
+Kernel: 2.6.23.1 x86_64
+Filesystem: XFS
+Mount options: defaults,noatime
+
+Results:
+
+http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
+http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
+
+Note: 'deg' means degraded and the number after is the number of disks 
+failed, I did not test degraded raid10 because there are many ways you can 
+degrade a raid10; however, the 3 types of raid10 were benchmarked 
+f2,n2,o2.
+
+Each test was run 3 times and averaged--FYI.
+
+Justin.
