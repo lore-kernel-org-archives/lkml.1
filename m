@@ -1,68 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYE1NBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYE1NBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbYE1NBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYE1NBL
+	id S1755243AbYE1NBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbYE1NBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 28 May 2008 09:01:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48279 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753453AbYE1NBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 May 2008 09:01:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53951 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753252AbYE1NBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:01:09 -0400
-Date: Wed, 28 May 2008 09:01:06 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Pavel Machek <pavel@ucw.cz>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] x86: enable preemption in delay
-In-Reply-To: <20080525180122.GA4247@ucw.cz>
-Message-ID: <Pine.LNX.4.58.0805280855250.25179@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com>
- <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de>
- <20080525180122.GA4247@ucw.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <7211.1211396187@redhat.com>
+References: <7211.1211396187@redhat.com> <20080521174231.GH15355@cs181133002.pp.htv.fi>
+Cc: dhowells@redhat.com, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] don't offer BINFMT_FLAT on frv
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 28 May 2008 14:00:46 +0100
+Message-ID: <21450.1211979646@redhat.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Howells <dhowells@redhat.com> wrote:
 
+> Looks fine, though I can't test it till next week.
+> 
+> Acked-by: David Howells <dhowells@redhat.com>
 
-On Sun, 25 May 2008, Pavel Machek wrote:
-> > +		if (unlikely(cpu != smp_processor_id())) {
-> > +			if (loops <= TSC_MIGRATE_COUNT)
-> > +				break;
-> > +			cpu = smp_processor_id();
-> > +			rdtscl(bclock);
-> > +			loops -= TSC_MIGRATE_COUNT;
-> > +		} else {
-> > +			rdtscl(now);
-> > +			if ((now - bclock) >= loops)
-> > +				break;
-> > +			loops -= (now - bclock);
-> > +			bclock = now;
->
-> What happens with different cpus running on different frequencies...?
-> Cpufreq?
+Consider it tested too.
 
-It's not even protected with the old code.
-
-inline void __const_udelay(unsigned long xloops)
-{
-	__delay(((xloops * HZ *
-		cpu_data(raw_smp_processor_id()).loops_per_jiffy) >> 32) + 1);
-}
-
-Here it calculates the loops_per_jiffy for the CPU and calls into __delay.
-But it can easily be preempted here and the delay could run on another
-CPU.
-
--- Steve
-
+David
