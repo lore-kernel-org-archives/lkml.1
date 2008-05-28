@@ -1,98 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYE1JlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbYE1JnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYE1JlB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 05:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYE1Jkw
+	id S1754006AbYE1JnD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 05:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbYE1Jmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 05:40:52 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:58604 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbYE1Jkv (ORCPT
+	Wed, 28 May 2008 05:42:52 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:50839 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbYE1Jmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 05:40:51 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Avi Kivity <avi@qumranet.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>
-References: <483B34CA.8000600@goop.org> <20080527083729.GF29246@elte.hu>
-	<483BD843.5080009@goop.org> <20080527145606.GB24457@elte.hu>
-	<483C35AA.5060102@goop.org>
-Date: Wed, 28 May 2008 02:35:08 -0700
-In-Reply-To: <483C35AA.5060102@goop.org> (Jeremy Fitzhardinge's message of
-	"Tue, 27 May 2008 17:24:10 +0100")
-Message-ID: <m1ve0yai0j.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 28 May 2008 05:42:50 -0400
+Message-ID: <483D28C5.4060406@linux.vnet.ibm.com>
+Date: Wed, 28 May 2008 15:11:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0128]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: Question about interrupt routing and irq allocation
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+To: linux-scsi@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: MPTSAS problems in 2.6.26-rc2-mm1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+I have 2.6.26-rc2-mm1 with Rik's splitvm patches. While booting the kernel, I
+ran into the following. I searched my email quickly to see that no one else has
+reported this problem. Lockdep seems to be complaining about the same lock being
+held at the same location (the message is a bit confusing to me).
 
-> Ingo Molnar wrote:
->>> I'm initially targeting 32-bit, though obviously I'd like something that
->>> works for both 32 and 64 bit.  irq_cfg[] is missing in io_apic_32.c; would I
->>> achieve the same effect by setting irq_vector[irq] = 0xff or something?
->>>
->>
->> ok, here comes the next phase of a rather cunning plan: please unify these
->> vector allocators first! ;-)
->>
->
-> Somehow I knew you were going to say that...
->
->> it's nontrivial but would result in rather nice code. I dont know whether we
->> want to extend per-CPU vectors to 32-bit as well ... but might be worth an
->> attempt and we could give any exploratory patches a try in -tip. Eric, what do
->> you think about the general approach?
->>
->> this would also pave the way towards unified APIC code. Hm
->
-> All of that sounds very appealing, particularly as the work on xen-dom0
-> continues.  But in the meantime I'm just using create_irq(), and I'll wear the
-> wasted vector (after all, it will only happen when booting under Xen-hvm).
 
-- I think using create_irq is a good step.
-- I think all vectors are wasted in the case of Xen.
-- I think we want a individual irq for each xen irq source.
-  Sparc already does a demux in similar circumstances with
-  a queue of received MSI messages an a single cpu irq
-  that these get demuxed from.
-  If we don't have individual irqs per drivers it will be hard
-  to share a source base with native drivers.
-- I think it would be very nice if we could get irqs allocated
-  in request_irq instead of create_irq (and equivalents).
-  
-- I think ultimately it makes sense to port the per vector
-  code to 32bit linux.  On single cpu systems the cost should
-  be just a hair more code, but no extra data structures.  We
-  can easily restrict the irq allocation to allocating the same
-  vector on all cpus for any old machines that prove flaky with
-  irq migration.
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.26-rc2-mm1 #2
+---------------------------------------------
+insmod/1072 is trying to acquire lock:
+ (&cls->mutex){--..}, at: [<ffffffff803eb2cc>] device_add+0x46e/0x5d7
 
-  The code between the two architectures we kept fairly close
-  in sync when I worked on it so a merge should not be a big deal.
+but task is already holding lock:
+ (&cls->mutex){--..}, at: [<ffffffff803eb2cc>] device_add+0x46e/0x5d7
 
-  Trouble is I'm not finding a lot of time to work on any of this
-  stuff lately :(
+other info that might help us debug this:
+3 locks held by insmod/1072:
+ #0:  (&ioc->sas_discovery_mutex){--..}, at: [<ffffffffa003e7e9>]
+mptsas_probe+0x3a1/0x442 [mptsas]
+ #1:  (&shost->scan_mutex){--..}, at: [<ffffffff80466cbd>]
+scsi_scan_target+0x71/0xb0
+ #2:  (&cls->mutex){--..}, at: [<ffffffff803eb2cc>] device_add+0x46e/0x5d7
 
-Eric
+stack backtrace:
+Pid: 1072, comm: insmod Not tainted 2.6.26-rc2-mm1 #2
+
+Call Trace:
+ [<ffffffff80254545>] __lock_acquire+0x911/0xc4c
+ [<ffffffff80254835>] ? __lock_acquire+0xc01/0xc4c
+ [<ffffffff803eb2cc>] ? device_add+0x46e/0x5d7
+ [<ffffffff8025490e>] lock_acquire+0x8e/0xb2
+ [<ffffffff803eb2cc>] ? device_add+0x46e/0x5d7
+ [<ffffffff8059e067>] mutex_lock_nested+0xf2/0x27f
+ [<ffffffff803eb2cc>] ? device_add+0x46e/0x5d7
+ [<ffffffff8059f80b>] ? _spin_unlock+0x26/0x2a
+ [<ffffffff803eb2cc>] device_add+0x46e/0x5d7
+ [<ffffffff803eb44e>] device_register+0x19/0x1d
+ [<ffffffff803eb531>] device_create+0xdf/0x110
+ [<ffffffff80253794>] ? trace_hardirqs_on_caller+0xf9/0x124
+ [<ffffffff802537cc>] ? trace_hardirqs_on+0xd/0xf
+ [<ffffffff8059df73>] ? mutex_unlock+0x9/0xb
+ [<ffffffff803eed13>] ? kobj_map+0x119/0x12e
+ [<ffffffff802a4488>] ? exact_lock+0x0/0x14
+ [<ffffffff802a4364>] ? exact_match+0x0/0x9
+ [<ffffffff80488bb4>] sg_add+0x262/0x394
+ [<ffffffff8059f80b>] ? _spin_unlock+0x26/0x2a
+ [<ffffffff803eb31b>] device_add+0x4bd/0x5d7
+ [<ffffffff80467d9b>] scsi_sysfs_add_sdev+0xde/0x200
+ [<ffffffff80465feb>] scsi_probe_and_add_lun+0x847/0x977
+ [<ffffffff8046639d>] __scsi_scan_target+0xbf/0x522
+ [<ffffffff80253794>] ? trace_hardirqs_on_caller+0xf9/0x124
+ [<ffffffff80250b9d>] ? debug_mutex_free_waiter+0x46/0x4a
+ [<ffffffff8059e1e5>] ? mutex_lock_nested+0x270/0x27f
+ [<ffffffff80466cbd>] ? scsi_scan_target+0x71/0xb0
+ [<ffffffff80466ce8>] scsi_scan_target+0x9c/0xb0
+ [<ffffffffa001ad60>] :scsi_transport_sas:sas_rphy_add+0x14c/0x15b
+ [<ffffffffa003cc17>] :mptsas:mptsas_probe_one_phy+0x364/0x3a9
+ [<ffffffffa003d651>] :mptsas:mptsas_probe_hba_phys+0x5bb/0x614
+ [<ffffffffa0028aeb>] ? :mptbase:mpt_timer_expired+0x0/0x2e
+ [<ffffffffa0028aeb>] ? :mptbase:mpt_timer_expired+0x0/0x2e
+ [<ffffffffa0028aeb>] ? :mptbase:mpt_timer_expired+0x0/0x2e
+ [<ffffffffa003e7f1>] :mptsas:mptsas_probe+0x3a9/0x442
+ [<ffffffff8039126a>] pci_device_probe+0xbd/0x116
+ [<ffffffff803ed1f0>] driver_probe_device+0xdb/0x162
+ [<ffffffff803ed2c6>] __driver_attach+0x4f/0x79
+ [<ffffffff803ed277>] ? __driver_attach+0x0/0x79
+ [<ffffffff803ec832>] bus_for_each_dev+0x4d/0x7e
+ [<ffffffff803ed01c>] driver_attach+0x1c/0x1e
+ [<ffffffff803eccc0>] bus_add_driver+0xba/0x212
+ [<ffffffff803ed4a6>] driver_register+0x93/0x10a
+ [<ffffffff80391526>] __pci_register_driver+0x73/0xad
+ [<ffffffffa00450e2>] :mptsas:mptsas_init+0xe2/0xfa
+ [<ffffffff8025c25e>] sys_init_module+0x9e/0x1b2
+ [<ffffffff8020b20b>] system_call_after_swapgs+0x7b/0x80
+
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
