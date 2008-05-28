@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYE1USS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYE1UTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYE1USS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 16:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYE1USI
+	id S1754775AbYE1UTV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 16:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYE1UTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 16:18:08 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:50120 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbYE1USH (ORCPT
+	Wed, 28 May 2008 16:19:12 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:57810 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbYE1UTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 16:18:07 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: ksummit-2008-discuss@lists.linux-foundation.org
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-Date: Wed, 28 May 2008 16:15:55 -0400
-User-Agent: KMail/1.9.9
-Cc: Rik van Riel <riel@redhat.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1211995212.3445.52.camel@localhost.localdomain> <20080528150837.685aa677@bree.surriel.com>
-In-Reply-To: <20080528150837.685aa677@bree.surriel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805281615.55386.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 28 May 2008 16:19:11 -0400
+Subject: Re: Linux 2.6.26-rc4
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org, John Linville <linville@tuxdriver.com>
+In-Reply-To: <alpine.LFD.1.10.0805281307150.2958@woody.linux-foundation.org> (sfid-20080528_221047_669541_BE57D5DF)
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
+	 <20080527124315.131b1343@Varda>
+	 <alpine.LFD.1.10.0805281307150.2958@woody.linux-foundation.org>
+	 (sfid-20080528_221047_669541_BE57D5DF)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9XnJ+yhkO3WoZphoPs9o"
+Date: Wed, 28 May 2008 22:17:57 +0200
+Message-Id: <1212005877.21624.47.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 May 2008, Rik van Riel wrote:
-> On Wed, 28 May 2008 12:20:12 -0500
->
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > The most obvious solution might be to shut the Janitors project down, or
-> > at least more tightly manage its TODO list
->
-> I've had some limited success with:
->
-> http://kernelnewbies.org/KernelProjects
->
-> One problem is that people end up beginning with a project but
-> for some reason stop working on it later - with no indication
-> as to whether the project ended up being too difficult, or they
-> ran out of time, or something else happened...
 
-I think our mistake is the assumption that everyone who wants to contribute to 
-the kernel wants to code, or that everyone wants to end up at the top of the 
-major feature contributors list.  For lots of people, we're going to be that 
-experiment from college they never quite want to admit to later on in life.
+--=-9XnJ+yhkO3WoZphoPs9o
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Looking at the KernelProjects link, bugzilla is at the buttom and janitors is 
-at the top.  I've always thought the janitors project was important, but 
-maybe we want to change the emphasis around a bit.
 
-The regressions page on kernelnewbies is out of date, and there are many more 
-howtos on coding than on bug hunting.  It doesn't mention linux-next 
-anywhere.
+> >  4) if i try to run some sudo command it gets stuck (Crtl +C doesnt' he=
+lp)
+> >     "ip route" gets stuck too. User programs i tried wrok fine (only ls=
+ and
+> >     htop). Network realted problem?
+>=20
+> I assume it's related to the oops above - the oops probably happened whil=
+e=20
+> holding some mutex or other lock, which is why network-related stuff then=
+=20
+> blocks on that lock (which will never be released, since the oops killed=20
+> the process that held it).
 
-I'm not picking on kernelnewbies, it is one of our best resources.  But, going 
-back to James' ideas, introducing people to bug hunting is a better way to 
-involve them in the community.
+rtnl, in fact, I suspect.
+=EF=BB=BF
+> I suspect the oops is also why the bootup breaks, so it's likely all the=20
+> same issue. Please save the dmesg into a file, reboot into a working=20
+> setup, and send that. Along with hw information (it's likely related to=20
+> your network device driver, since I've not seen an uproar of these kinds=20
+> of problems from everybody else..).
 
-Maintainers are easier to interact with when you send good bug reports along 
-with a clear way to reproduce it and perhaps a bisection
+Actually, please apply the patch "=EF=BB=BFrt2x00: Use atomic interface
+iteration in irq context" before trying anything more, that'll fix it.
+I'm not sure where Linville is hiding ;)
 
-Getting all of the above is often 95% of the work of fixing it, people are 
-most likely to jump into the coding when they've found a bad patch and start 
-to wonder if they can fix it themselves.
+(http://article.gmane.org/gmane.linux.kernel.wireless.general/15268)
 
-Along those lines, how about a kernel bug hunting challenge.  The top 
-contributor(s) to creating bugzillas that get solved get a new pc, laptop, 
-high end graphics card, ssd device...whatever.  We could send the best 
-testers hardware that breaks most often...everyone wins.
+johannes
 
-Other prizes could include tickets to a linux conf of choice (not airline 
-tickets, just free entry).
+--=-9XnJ+yhkO3WoZphoPs9o
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-One motivation here is to bring bug reporters from active distro communities 
-into testing mainline kernels as well.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
--chris
+iQIVAwUASD299KVg1VMiehFYAQIiEg/8C+iLVxvWEFSi+C784nrvRe/3ZBxkVut2
+gtczpascZyZii9Xr6pNWoRvl4U70gOx37KMMXCL49vxhqsKFICu6IKl9lZbCLY/H
+8P/kl1vB/pFe7MoR+P3IsUIKFajHFKHeKApDSNpizRCZVXxHBg7vwF+ldni74ILQ
+kz8IXgi2TmUJ+GSQcEPzH0f0xwObILlCh1LrXOwRBC+hXE8qPY+S6ovJKHdkT4Zu
+e3fxGr2kGejzKvgOpnuL3NGThfqNpLwBnv0FQy09IjHBFAPvAhQHDeufmmCa9xIw
+ppi5BkY3uuAdKY5J+CbIPdu8eWTtWAOCKFDgYwmxPGd/WnODbVGaQ4T4E8y24YA0
+A0DRrtmvh6lJ83olfu/xSMyi2Wx1oDvoHO84KYvFwgXLT8lUMVstOx4tYUrb+Dnd
+t3OSc4GU2iBh8bjqD0dv5ZIMXEyReknwbocRTi7N9VQ446zmnf0GEEseU/N8Q5JZ
+4leTPFtSsDQr7MtAA2a610wcTH+v17NPFZ9UpeJ6Plujoe1TbW0DFNl1+Mko8az2
+yVWny7EyfF1UUBYnBuTok5B8UC3YmfTNRgFTYbF98DF+Hl+ydOFs4kB/sbYMLRLe
+8H+2ZCxif+n/YL4AWx3qVnuJQsyPpqwaIj2OPepOAZjFAyf1fmXOXiEo9y36fJlU
+RT2MvVW69Kg=
+=w69Z
+-----END PGP SIGNATURE-----
+
+--=-9XnJ+yhkO3WoZphoPs9o--
+
