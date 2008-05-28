@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbYE1RHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYE1RIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752583AbYE1RHG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 13:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbYE1RGy
+	id S1752837AbYE1RIj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 13:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYE1RIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 13:06:54 -0400
-Received: from atlantis.cc.ndsu.NoDak.edu ([134.129.99.37]:58552 "EHLO
-	atlantis.cc.ndsu.NoDak.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751766AbYE1RGy (ORCPT
+	Wed, 28 May 2008 13:08:32 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39519 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbYE1RIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 13:06:54 -0400
-X-Greylist: delayed 1234 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 13:06:54 EDT
-Date: Wed, 28 May 2008 11:46:16 -0500
-From: Bryan Mesich <bryan.mesich@ndsu.edu>
-To: Jens =?iso-8859-1?Q?B=E4ckman?= <jens.backman@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-Message-ID: <20080528164616.GB29722@atlantis.cc.ndsu.NoDak.edu>
-Reply-To: Bryan Mesich <bryan.mesich@ndsu.edu>
-Mail-Followup-To: Bryan Mesich <bryan.mesich@ndsu.edu>,
-	Jens =?iso-8859-1?Q?B=E4ckman?= <jens.backman@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-	xfs@oss.sgi.com
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
+	Wed, 28 May 2008 13:08:31 -0400
+Date: Wed, 28 May 2008 19:08:30 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: thunder7@xs4all.nl
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: vt/fbcon: fix background color on line feed
+In-Reply-To: <20080527193304.GA21560@amd64.of.nowhere>
+Message-ID: <alpine.LNX.1.10.0805281003040.12937@fbirervta.pbzchgretzou.qr>
+References: <alpine.LNX.1.10.0805101015110.19952@fbirervta.pbzchgretzou.qr> <20080527193304.GA21560@amd64.of.nowhere>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
-X-Operating-System: Fedora Release 8
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 06:34:00PM +0200, Jens Bäckman wrote:
+On Tuesday 2008-05-27 21:33, thunder7@xs4all.nl wrote:
+>
+>I used to force my console to black-on-white by the command 'setterm
+>inversescreen on'. This worked well. In 2.6.26-rc4, I get lots of black
+>background characters. Something as simple as typing 'ls' multiple times
+>until the screen scrolls gives black characters. I see them at the end
+>of lines, I see spaces changed in black characters, I see lots of black. 
 
-> Either the RAID 1 read speed must be wrong, or something is odd in the
-> Linux implementation. There's six drives that can be used for reading
-> at the same time, as they contain the very same data. 63MB/s
-> sequential looks like what you would get from a single drive.
+commit 7f676fb7cf34dd2982d0cf79aeea7e5b06ad91eb
+Author: Jan Engelhardt <jengelh@medozas.de>
+Date:   Wed May 28 10:00:41 2008 +0200
 
-The RAID 1 read speed metrics do not depict multithreaded
-processes reading from the array simutaneouly. I would suspect
-that the read performance metrics would look better if 2 bonnie
-simulations were ran together (for RAID 1 that is).
+    vt: fix background color on line feed, DEC invert
+    
+    Original report: """I used to force my console to black-on-white by
+    the command `setterm -inversescreen on`. In 2.6.26-rc4, I get lots of
+    black background characters."""
+    
+    Another addendum to commit c9e587ab.
+    This was previously missed out since I was not aware of what
+    vc_decscnm was for.
+    
+    Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
+---
+ drivers/char/vt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Bryan 
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index fa1ffbf..b8b2498 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -434,7 +434,7 @@ static void update_attr(struct vc_data *vc)
+ 	              vc->vc_blink, vc->vc_underline,
+ 	              vc->vc_reverse ^ vc->vc_decscnm, vc->vc_italic);
+ 	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm, 0) << 8) | ' ';
+-	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, false, false) << 8) | ' ';
++	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, vc->vc_decscnm, false) << 8) | ' ';
+ }
+ 
+ /* Note: inverting the screen twice should revert to the original state */
