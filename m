@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbYE1WMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbYE1WTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbYE1WMc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 18:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYE1WMV
+	id S1754844AbYE1WTB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 18:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYE1WSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 18:12:21 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:39476 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752001AbYE1WMU (ORCPT
+	Wed, 28 May 2008 18:18:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45929 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbYE1WSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 18:12:20 -0400
-Subject: Re: pull request: wireless-2.6 2008-05-28
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: davem@davemloft.net, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080528213831.GA3133@tuxdriver.com> (sfid-20080528_235847_981601_A47BB9BE)
-References: <20080528213831.GA3133@tuxdriver.com>
-	 (sfid-20080528_235847_981601_A47BB9BE)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-y51Y1hJYL9KnL8+UZg8j"
-Date: Thu, 29 May 2008 00:11:10 +0200
-Message-Id: <1212012670.21624.48.camel@johannes.berg>
+	Wed, 28 May 2008 18:18:51 -0400
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+From: David Woodhouse <dwmw2@infradead.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1212010931.3445.103.camel@localhost.localdomain>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+	 <1212007760.2236.17.camel@shinybook.infradead.org>
+	 <1212008517.3445.89.camel@localhost.localdomain>
+	 <84144f020805281431y1aac903am442b333a2a13cd15@mail.gmail.com>
+	 <1212010931.3445.103.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 01:18:45 +0300
+Message-Id: <1212013125.2236.58.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-05-28 at 16:42 -0500, James Bottomley wrote:
+> Appeals to be politer tend to only work in the short term (having given
+> quite a few of them).  I think we're developing a root cause problem in
+> the way we recruit people to work in the kernel and we have to think
+> about fixing it there.
 
---=-y51Y1hJYL9KnL8+UZg8j
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Do we really have a problem recruiting people to work in the kernel? On
+what do you base that observation?
 
-On Wed, 2008-05-28 at 17:38 -0400, John W. Linville wrote:
-> David,
->=20
-> Another round of fixes for 2.6.26 follows...
->=20
-> Please let me know if there are problems!
+On a similar note, do we have any real data on the question of whether
+those who are volunteering the patches which raise so much ire would
+_ever_ become productive members of the team, even if we were to nurture
+them properly?
 
-What about
-
-[PATCH] b43legacy: fix build errors when DMA or PIO are not selected
-
-johannes
-
---=-y51Y1hJYL9KnL8+UZg8j
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUASD3YfaVg1VMiehFYAQKKfg//Wcy5F+w7RH6pGFGXoolb2IoxtQrWEYho
-C7lWIObQ3PKVDChgxMA/TtZnk9VWBTUi09+VrCkuP+2WJiJOcOZb79ZiL4zXbCbn
-Odi1AlPr3sVsA2awGeDFfVg/vqV68o6kfZbeZBuuEG62mWwkWRbFUMx6VyOXhA15
-jf3hQDkYMeC3YezXyPqFNKaHWLV0lp8pOsy9VYtZ7NwA6C758AYR9489TPd6qvGI
-1uJzz7sOqpRYwupEmYT4U9rerzDFT+PZJUJkOV4qVGz+vc69/72WvydaTMum71m2
-dHeplYWBIcdyFUp1vBNoo2LW4tBONOFJXwYiKn7nUmgwh+Og1PqTAe5z+K1F9t6j
-vBDS4+Vne1hb4hSz0tBoe1P/4UGmP9Lo+0F3qazvoyTzc1t5dMAvS2TWqcXn6cm6
-bESvSSkDJVts/HYCerC1sKx4HppbFoPjB2bEI5bYQs/aP2wuYwLDQP+fD+GbU1xK
-wiR8+2CjH/ktdBKRQFUsSkYYVL/WekF3QHG+Cq/bDQYrC8y43oyIN7LM46HyQndw
-iiX3tx+40nkxgiast+2OgBXJLXHVb1sJMrAcefhU+J1ht+CocjoI5eljlGQNsHR+
-YWtWX9oxkZFvpbW1CefC+8eS1pnJypnrtPzJVJaAe0UCE59EDidfHwxr8KIK6wnM
-++PUYf5iLDE=
-=OkFP
------END PGP SIGNATURE-----
-
---=-y51Y1hJYL9KnL8+UZg8j--
+-- 
+dwmw2
 
