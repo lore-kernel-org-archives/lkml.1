@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYE1TSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbYE1TUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbYE1TSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYE1TSL
+	id S1753936AbYE1TUe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYE1TUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:18:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53443 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752436AbYE1TSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:18:09 -0400
-Date: Wed, 28 May 2008 12:18:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: hidave.darkstar@gmail.com, greg@kroah.com, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH][-mm] reclassify sg_sysfs_class for lockdep
-Message-Id: <20080528121806.a0207130.akpm@linux-foundation.org>
-In-Reply-To: <20080528144943.GI22636@parisc-linux.org>
-References: <20080527101009.GA3015@darkstar.te-china.tietoenator.com>
-	<20080528144943.GI22636@parisc-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 28 May 2008 15:20:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46495 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752587AbYE1TUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 15:20:24 -0400
+Date: Wed, 28 May 2008 15:17:56 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NTP: Let update_persistent_clock() sleep
+Message-ID: <20080528151756.00869703@bree.surriel.com>
+In-Reply-To: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,209 +28,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 08:49:43 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
+On Wed, 28 May 2008 19:15:41 +0100 (BST)
+"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
 
-> On Tue, May 27, 2008 at 06:10:09PM +0800, Dave Young wrote:
-> > As register sg_interface, the sg_add will be called, which then will
-> > add device to sg_sysfs_class. This will cause lockdep warning,
-> > please see following email
-> > 
-> > In this case the locks are from diffrent classi, one is sdev_class,
-> > another is sg_sysfs_class 
-> > 
-> > Here reclassify the sg_sysfs_class for lockdep
+>  This is a change that makes the 11-minute RTC update be run in the
+> process context.  This is so that update_persistent_clock() can sleep,
+> which may be required for certain types of RTC hardware -- most notably
+> I2C devices.
 > 
-> Look, you've been told how to do this properly.  Send me the patch that
-> does the mutex conversion and I'll do a patch on top of that.
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 
-Below.
+Acked-by: Rik van Riel <riel@redhat.com>
 
->  I have no
-> inclination to go wading in the cesspool of patches that is mm trying to
-> find yours.
-
-Feel free to identify the cessful patches so they can be fixed or dropped.
-
-
-From: Dave Young <hidave.darkstar@gmail.com>
-
-The class_device is already removed, so do the class->sem to mutex conversion.
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-Cc: Greg KH <greg@kroah.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/base/class.c   |   22 +++++++++++-----------
- drivers/base/core.c    |    9 ++++-----
- include/linux/device.h |    3 ++-
- 3 files changed, 17 insertions(+), 17 deletions(-)
-
-diff -puN drivers/base/class.c~struct-class-sem-to-mutex-converting drivers/base/class.c
---- a/drivers/base/class.c~struct-class-sem-to-mutex-converting
-+++ a/drivers/base/class.c
-@@ -143,7 +143,7 @@ int class_register(struct class *cls)
- 	INIT_LIST_HEAD(&cls->devices);
- 	INIT_LIST_HEAD(&cls->interfaces);
- 	kset_init(&cls->class_dirs);
--	init_MUTEX(&cls->sem);
-+	mutex_init(&cls->mutex);
- 	error = kobject_set_name(&cls->subsys.kobj, "%s", cls->name);
- 	if (error)
- 		return error;
-@@ -268,7 +268,7 @@ char *make_class_name(const char *name, 
-  * We check the return of @fn each time. If it returns anything
-  * other than 0, we break out and return that value.
-  *
-- * Note, we hold class->sem in this function, so it can not be
-+ * Note, we hold class->mutex in this function, so it can not be
-  * re-acquired in @fn, otherwise it will self-deadlocking. For
-  * example, calls to add or remove class members would be verboten.
-  */
-@@ -280,7 +280,7 @@ int class_for_each_device(struct class *
- 
- 	if (!class)
- 		return -EINVAL;
--	down(&class->sem);
-+	mutex_lock(&class->mutex);
- 	list_for_each_entry(dev, &class->devices, node) {
- 		if (start) {
- 			if (start == dev)
-@@ -293,7 +293,7 @@ int class_for_each_device(struct class *
- 		if (error)
- 			break;
- 	}
--	up(&class->sem);
-+	mutex_unlock(&class->mutex);
- 
- 	return error;
- }
-@@ -316,7 +316,7 @@ EXPORT_SYMBOL_GPL(class_for_each_device)
-  *
-  * Note, you will need to drop the reference with put_device() after use.
-  *
-- * We hold class->sem in this function, so it can not be
-+ * We hold class->mutex in this function, so it can not be
-  * re-acquired in @match, otherwise it will self-deadlocking. For
-  * example, calls to add or remove class members would be verboten.
-  */
-@@ -330,7 +330,7 @@ struct device *class_find_device(struct 
- 	if (!class)
- 		return NULL;
- 
--	down(&class->sem);
-+	mutex_lock(&class->mutex);
- 	list_for_each_entry(dev, &class->devices, node) {
- 		if (start) {
- 			if (start == dev)
-@@ -344,7 +344,7 @@ struct device *class_find_device(struct 
- 		} else
- 			put_device(dev);
- 	}
--	up(&class->sem);
-+	mutex_unlock(&class->mutex);
- 
- 	return found ? dev : NULL;
- }
-@@ -362,13 +362,13 @@ int class_interface_register(struct clas
- 	if (!parent)
- 		return -EINVAL;
- 
--	down(&parent->sem);
-+	mutex_lock(&parent->mutex);
- 	list_add_tail(&class_intf->node, &parent->interfaces);
- 	if (class_intf->add_dev) {
- 		list_for_each_entry(dev, &parent->devices, node)
- 			class_intf->add_dev(dev, class_intf);
- 	}
--	up(&parent->sem);
-+	mutex_unlock(&parent->mutex);
- 
- 	return 0;
- }
-@@ -381,13 +381,13 @@ void class_interface_unregister(struct c
- 	if (!parent)
- 		return;
- 
--	down(&parent->sem);
-+	mutex_lock(&parent->mutex);
- 	list_del_init(&class_intf->node);
- 	if (class_intf->remove_dev) {
- 		list_for_each_entry(dev, &parent->devices, node)
- 			class_intf->remove_dev(dev, class_intf);
- 	}
--	up(&parent->sem);
-+	mutex_unlock(&parent->mutex);
- 
- 	class_put(parent);
- }
-diff -puN drivers/base/core.c~struct-class-sem-to-mutex-converting drivers/base/core.c
---- a/drivers/base/core.c~struct-class-sem-to-mutex-converting
-+++ a/drivers/base/core.c
-@@ -20,7 +20,6 @@
- #include <linux/notifier.h>
- #include <linux/genhd.h>
- #include <linux/kallsyms.h>
--#include <linux/semaphore.h>
- 
- #include "base.h"
- #include "power/power.h"
-@@ -889,7 +888,7 @@ int device_add(struct device *dev)
- 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
- 
- 	if (dev->class) {
--		down(&dev->class->sem);
-+		mutex_lock(&dev->class->mutex);
- 		/* tie the class to the device */
- 		list_add_tail(&dev->node, &dev->class->devices);
- 
-@@ -897,7 +896,7 @@ int device_add(struct device *dev)
- 		list_for_each_entry(class_intf, &dev->class->interfaces, node)
- 			if (class_intf->add_dev)
- 				class_intf->add_dev(dev, class_intf);
--		up(&dev->class->sem);
-+		mutex_unlock(&dev->class->mutex);
- 	}
-  Done:
- 	put_device(dev);
-@@ -998,14 +997,14 @@ void device_del(struct device *dev)
- 	if (dev->class) {
- 		device_remove_class_symlinks(dev);
- 
--		down(&dev->class->sem);
-+		mutex_lock(&dev->class->mutex);
- 		/* notify any interfaces that the device is now gone */
- 		list_for_each_entry(class_intf, &dev->class->interfaces, node)
- 			if (class_intf->remove_dev)
- 				class_intf->remove_dev(dev, class_intf);
- 		/* remove the device from the class list */
- 		list_del_init(&dev->node);
--		up(&dev->class->sem);
-+		mutex_unlock(&dev->class->mutex);
- 	}
- 	device_remove_file(dev, &uevent_attr);
- 	device_remove_attrs(dev);
-diff -puN include/linux/device.h~struct-class-sem-to-mutex-converting include/linux/device.h
---- a/include/linux/device.h~struct-class-sem-to-mutex-converting
-+++ a/include/linux/device.h
-@@ -20,6 +20,7 @@
- #include <linux/types.h>
- #include <linux/module.h>
- #include <linux/pm.h>
-+#include <linux/mutex.h>
- #include <linux/semaphore.h>
- #include <asm/atomic.h>
- #include <asm/device.h>
-@@ -185,7 +186,7 @@ struct class {
- 	struct list_head	devices;
- 	struct list_head	interfaces;
- 	struct kset		class_dirs;
--	struct semaphore	sem; /* locks children, devices, interfaces */
-+	struct mutex		mutex; /* locks devices, interfaces */
- 	struct class_attribute		*class_attrs;
- 	struct device_attribute		*dev_attrs;
- 	struct kobject			*dev_kobj;
-_
-
+-- 
+All rights reversed.
