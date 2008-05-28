@@ -1,74 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbYE1Sci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbYE1Sfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbYE1Sci (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 14:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYE1Sca
+	id S1753597AbYE1Sfl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 14:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbYE1Sfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 14:32:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:29736 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbYE1Sc3 (ORCPT
+	Wed, 28 May 2008 14:35:34 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:42285 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752263AbYE1Sfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 14:32:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Iu+tyv5JFLimWUbLDzglxyan7CuDNWnsYKne8df5AzfJ4c7aXaycSmXcGgsWBKhF6hhb361AyQPqE3sBO+4XlEfxXVueHYmveApGW7sjzDFDYCSd1GgzRSv/UFF47/ecpgmBdc0cltCkaH1Zywwivudc3cZjqo1b1LOTE9/5eoI=
-Date: Wed, 28 May 2008 22:32:12 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/11] x86: nmi_32/64.c - use apic_write_around instead
-	of apic_write
-Message-ID: <20080528183212.GD6910@cvg>
-References: <20080524153630.669797039@gmail.com>> <48383740.0407560a.4764.7d1b@mx.google.com> <Pine.LNX.4.55.0805281628320.29522@cliff.in.clinika.pl> <20080528160413.GA6910@cvg> <Pine.LNX.4.55.0805281712200.29522@cliff.in.clinika.pl> <20080528162527.GB6910@cvg> <Pine.LNX.4.55.0805281755370.29522@cliff.in.clinika.pl> <20080528171620.GC6910@cvg> <Pine.LNX.4.55.0805281828210.29522@cliff.in.clinika.pl>
+	Wed, 28 May 2008 14:35:33 -0400
+Message-ID: <483DA5E7.5050600@nortel.com>
+Date: Wed, 28 May 2008 12:35:19 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0805281828210.29522@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: vatsa@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       pj@sgi.com, Balbir Singh <balbir@in.ibm.com>,
+       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
+Subject: Re: fair group scheduler not so fair?
+References: <4834B75A.40900@nortel.com> <20080527171528.GD30285@linux.vnet.ibm.com> <483C4F5A.2010104@nortel.com> <20080528163318.GG30285@linux.vnet.ibm.com>
+In-Reply-To: <20080528163318.GG30285@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 May 2008 18:35:29.0099 (UTC) FILETIME=[9A73C9B0:01C8C0F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Wed, May 28, 2008 at 06:47:56PM +0100]
-| On Wed, 28 May 2008, Cyrill Gorcunov wrote:
-| 
-| > Thanks a lot, Maciej!!! Could you please explain me how did you find
-| > that? 'cause reporter said that with nmi_watchdog=2 it works and with
-| > nmi_watchdog=1 it stalls? Maybe I should better make this function
-| > the same as 64bit version has? I.e. set nmi_watchdog = NMI_NONE by default?
-| 
-|  Well, nmi_watchdog=1 is the I/O APIC watchdog and if no watchdog has been
-| specified at the command line, the piece of code you have moved selects
-| between the local and the I/O APIC watchdog based on availability of the
-| former.  So in this case the local watchdog must have been unavailable as
-| it works if requested explicitly.
-| 
-|  No piece of code in nmi_watchdog_default() touches peripheral hardware
-| and native_smp_prepare_cpus() is called early enough the system is still
-| running UP and no APIC setup has happened yet, so any interference with
-| running hardware can be excluded.
-| 
-|  Random lock-ups are a typical symptom of the NMI watchdog interfering
-| with SMM firmware -- of course in the context of the watchdog being
-| suspected in the first place -- there may be plenty of other reasons of
-| random lock-ups.  Obviously this is the SMM firmware asking for trouble
-| explicitly, because NMIs are disabled by the processor upon entering the
-| SMM and it is the SMI handler that unmasks the NMI explicitly (with an
-| IRET, which shouldn't be used in the SMM mode at all) -- otherwise it
-| wouldn't even notice the watchdog running, but there you go.
-| 
-|  As a rule of thumb any piece of firmware that has a possibility to run
-| from an OS context should not use interrupts of any kind, because it is
-| quite likely it cannot handle them in the way the OS expects them to be
-| handled.  It is as simple as that, but perhaps too simple for some to
-| comprehend. :(
-| 
-|   Maciej
-| 
+Srivatsa Vaddagiri wrote:
 
-oh... :( i think i just restore old behaviour for now. Thanks for explanation!
+> We seem to be skipping the last element in the task list always. In your
+> case, the lone task in Group a/b is always skipped because of this.
 
-		- Cyrill -
+> Updated patch (on top of 2.6.26-rc3 +
+> http://programming.kicks-ass.net/kernel-patches/sched-smp-group-fixes/)
+> below.  Pls let me know how it fares!
+
+Looking much better, but still some fairness issues with more complex 
+setups.
+
+pid 2477 in A, others in B
+2477	99.5%
+2478	49.9%
+2479	49.9%
+
+move 2478 to A
+2479	99.9%
+2477	49.9%
+2478	49.9%
+
+So far so good.  I then created C, and moved 2478 to it.  A 3-second 
+"top" gave almost a 15% error from the desired behaviour for one group:
+
+2479	76.2%
+2477	72.2%
+2478	51.0%
+
+
+A 10-sec average was better, but we still see errors of 6%:
+2478	72.8%
+2477	64.0%
+2479	63.2%
+
+
+I then set up a scenario with 3 tasks in A, 2 in B, and 1 in C.  A 
+10-second "top" gave errors of up to 6.5%:
+2500	60.1%
+2491	37.5%
+2492	37.4%
+2489	25.0%
+2488	19.9%
+2490	19.9%
+
+a re-test gave errors of up to 8.1%:
+
+2534	74.8%
+2533	30.1%
+2532	30.0%
+2529	25.0%
+2530	20.0%
+2531	20.0%
+
+Another retest gave perfect results initially:
+
+2559	66.5%
+2560	33.4%
+2561	33.3%
+2564	22.3%
+2562	22.2%
+2563	22.1%
+
+but moving 2564 from group A to C and then back to A disturbed the 
+perfect division of time and resulted in almost the same utilization 
+pattern as above:
+
+2559	74.9%
+2560	30.0%
+2561	29.6%
+2564	25.3%
+2562	20.0%
+2563	20.0%
+
+It looks like perfect balancing is a metastable state where it can stay 
+happily for some time, but any small disturbance may be enough to kick 
+it over into a more stable but incorrect state.  Once we get into such 
+an incorrect division of time, it appears very difficult to return to 
+perfect balancing.
+
+Chris
+
+
+
+
