@@ -1,103 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYE1SQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbYE1SQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYE1SQa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 14:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYE1SQW
+	id S1752433AbYE1SQp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 14:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYE1SQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 14:16:22 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64343 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751919AbYE1SQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 14:16:22 -0400
-Date: Wed, 28 May 2008 19:15:41 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org
-Subject: [PATCH] NTP: Let update_persistent_clock() sleep
-Message-ID: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 May 2008 14:16:29 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:36750 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753716AbYE1SQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 14:16:28 -0400
+Subject: Re: [PATCH 3/3] Guarantee that COW faults for a process that
+	called mmap(MAP_PRIVATE) on hugetlbfs will succeed
+From: Adam Litke <agl@us.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, dean@arctic.org, linux-kernel@vger.kernel.org,
+       wli@holomorphy.com, dwg@au1.ibm.com, apw@shadowen.org,
+       linux-mm@kvack.org, andi@firstfloor.org, kenchen@google.com,
+       abh@cray.com
+In-Reply-To: <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
+References: <20080527185028.16194.57978.sendpatchset@skynet.skynet.ie>
+	 <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 28 May 2008 13:16:07 -0500
+Message-Id: <1211998567.12036.65.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This is a change that makes the 11-minute RTC update be run in the
-process context.  This is so that update_persistent_clock() can sleep,
-which may be required for certain types of RTC hardware -- most notably
-I2C devices.
+On Tue, 2008-05-27 at 19:51 +0100, Mel Gorman wrote:
+> After patch 2 in this series, a process that successfully calls mmap()
+> for a MAP_PRIVATE mapping will be guaranteed to successfully fault until a
+> process calls fork().  At that point, the next write fault from the parent
+> could fail due to COW if the child still has a reference.
+> 
+> We only reserve pages for the parent but a copy must be made to avoid leaking
+> data from the parent to the child after fork(). Reserves could be taken for
+> both parent and child at fork time to guarantee faults but if the mapping
+> is large it is highly likely we will not have sufficient pages for the
+> reservation, and it is common to fork only to exec() immediatly after. A
+> failure here would be very undesirable.
+> 
+> Note that the current behaviour of mainline with MAP_PRIVATE pages is
+> pretty bad.  The following situation is allowed to occur today.
+> 
+> 1. Process calls mmap(MAP_PRIVATE)
+> 2. Process calls mlock() to fault all pages and makes sure it succeeds
+> 3. Process forks()
+> 4. Process writes to MAP_PRIVATE mapping while child still exists
+> 5. If the COW fails at this point, the process gets SIGKILLed even though it
+>    had taken care to ensure the pages existed
+> 
+> This patch improves the situation by guaranteeing the reliability of the
+> process that successfully calls mmap(). When the parent performs COW, it
+> will try to satisfy the allocation without using reserves. If that fails the
+> parent will steal the page leaving any children without a page. Faults from
+> the child after that point will result in failure. If the child COW happens
+> first, an attempt will be made to allocate the page without reserves and
+> the child will get SIGKILLed on failure.
+> 
+> To summarise the new behaviour:
+> 
+> 1. If the original mapper performs COW on a private mapping with multiple
+>    references, it will attempt to allocate a hugepage from the pool or
+>    the buddy allocator without using the existing reserves. On fail, VMAs
+>    mapping the same area are traversed and the page being COW'd is unmapped
+>    where found. It will then steal the original page as the last mapper in
+>    the normal way.
+> 
+> 2. The VMAs the pages were unmapped from are flagged to note that pages
+>    with data no longer exist. Future no-page faults on those VMAs will
+>    terminate the process as otherwise it would appear that data was corrupted.
+>    A warning is printed to the console that this situation occured.
+> 
+> 2. If the child performs COW first, it will attempt to satisfy the COW
+>    from the pool if there are enough pages or via the buddy allocator if
+>    overcommit is allowed and the buddy allocator can satisfy the request. If
+>    it fails, the child will be killed.
+> 
+> If the pool is large enough, existing applications will not notice that the
+> reserves were a factor. Existing applications depending on the no-reserves
+> been set are unlikely to exist as for much of the history of hugetlbfs,
+> pages were prefaulted at mmap(), allocating the pages at that point or failing
+> the mmap().
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
-Hello,
+Acked-by: Adam Litke <agl@us.ibm.com>
 
- After the initial enthusiasm, I am not sure how my series of patches to
-let read_persistent_clock() and update_persistent_clock() use the class
-RTC subsystem is going to be handled.  As keeping the order of patches is 
-required to avoid breakage in various places, I will try to coordinate the 
-changes and submit them one by one as the dependencies get satisfied.  I 
-hope this is OK and will take less than half a year. ;)
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
- Given this one applies to generic code and is required by all the other
-changes, while not requiring anything and not meant to break anything, ;) 
-I think this is ready to go.  It may be worth testing that moving the 
-function into the process context does not cause any regressions for some 
-obscure configuration.
-
- I am not sure who actually claims maintenance of kernel/time/ntp.c, but
-it looks, Thomas, you seem to be our current time overseer -- could you
-please speak out on this change?  I'd like this change to get applied
-somewhere reasonable -- is it -mm?
-
-  Maciej
-
-patch-2.6.26-rc1-20080505-sync-cmos-work-0
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c linux-2.6.26-rc1-20080505/kernel/time/ntp.c
---- linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c	2008-05-05 02:56:03.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/kernel/time/ntp.c	2008-05-05 21:10:50.000000000 +0000
-@@ -3,6 +3,8 @@
-  *
-  * NTP state machine interfaces and logic.
-  *
-+ * Copyright (c) 2008  Maciej W. Rozycki
-+ *
-  * This code was mainly moved from kernel/timer.c and kernel/time.c
-  * Please see those files for relevant copyright info and historical
-  * changelogs.
-@@ -17,6 +19,7 @@
- #include <linux/capability.h>
- #include <linux/math64.h>
- #include <linux/clocksource.h>
-+#include <linux/workqueue.h>
- #include <asm/timex.h>
- 
- /*
-@@ -218,11 +221,13 @@ void second_overflow(void)
- /* Disable the cmos update - used by virtualization and embedded */
- int no_sync_cmos_clock  __read_mostly;
- 
--static void sync_cmos_clock(unsigned long dummy);
-+static void sync_cmos_clock(unsigned long data);
-+static void do_sync_cmos_clock(struct work_struct *work);
- 
- static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
-+static DECLARE_WORK(sync_cmos_work, do_sync_cmos_clock);
- 
--static void sync_cmos_clock(unsigned long dummy)
-+static void do_sync_cmos_clock(struct work_struct *work)
- {
- 	struct timespec now, next;
- 	int fail = 1;
-@@ -261,6 +266,12 @@ static void sync_cmos_clock(unsigned lon
- 	mod_timer(&sync_cmos_timer, jiffies + timespec_to_jiffies(&next));
- }
- 
-+static void sync_cmos_clock(unsigned long data)
-+{
-+	/* Some implementations of update_persistent_clock() may sleep.  */
-+	schedule_work(&sync_cmos_work);
-+}
-+
- static void notify_cmos_timer(void)
- {
- 	if (!no_sync_cmos_clock)
