@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbYE1E7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbYE1FBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbYE1E7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 00:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYE1E7o
+	id S1753957AbYE1FBR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 01:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYE1FBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 00:59:44 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:19448 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbYE1E7i (ORCPT
+	Wed, 28 May 2008 01:01:07 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:59328 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbYE1FBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 00:59:38 -0400
-Message-ID: <483CE625.7090805@yandex.ru>
-Date: Wed, 28 May 2008 07:57:09 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH take 3 29/29] UBIFS: include FS to compilation
-References: <1211810743-18936-1-git-send-email-Artem.Bityutskiy@nokia.com> <1211810743-18936-30-git-send-email-Artem.Bityutskiy@nokia.com> <20080527220516.GD11310@cs181133002.pp.htv.fi>
-In-Reply-To: <20080527220516.GD11310@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 28 May 2008 04:58:35.0537 (UTC) FILETIME=[7C17C010:01C8C07F]
-X-Nokia-AV: Clean
+	Wed, 28 May 2008 01:01:06 -0400
+Date: Tue, 27 May 2008 22:13:27 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: rusty@rustcorp.com.au, akpm <akpm@linux-foundation.org>
+Subject: [patch -mmotm] docbook: duplicate kernel-locking doc merge
+Message-Id: <20080527221327.dfcb4fb6.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Mon, May 26, 2008 at 05:05:43PM +0300, Artem Bityutskiy wrote:
->> ...
->> --- /dev/null
->> +++ b/fs/ubifs/Kconfig
->> @@ -0,0 +1,71 @@
->> +config UBIFS_FS
->> +	tristate "UBIFS file system support"
->> +	select CRC16
->> +	select CRC32
->> +	depends on MTD_UBI
->> +	help
->> +	  UBIFS is a file system for flash devices which works on top of UBI.
->> ...
-...
-> 
-> Please change this and similar other options to:
-> 
-> config UBIFS_FS
-> 	tristate "UBIFS file system support"
-> 	select CRC16
-> 	select CRC32
-> 	select CRYPTO if UBIFS_FS_LZO
-> 	select CRYPTO_LZO if UBIFS_FS_LZO
-> 	depends on MTD_UBI
-...
-> This way UBIFS_FS=m, UBIFS_FS_LZO=y will only force CRYPTO_LZO=m and not 
-> CRYPTO_LZO=y.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Ok, thanks for suggestion. Will be done.
+Removed duplicated patch lines.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+I was checking mmotm (2008-0527) kernel docs and got this error:
+
+xmlto: input does not validate (status 3)
+/local/linsrc/mmotm-2008-0527-0032/Documentation/DocBook/kernel-locking.xml:722: element chapter: validity error : ID trylock-functions already defined
+<chapter id="trylock-functions">
+                               ^
+/local/linsrc/mmotm-2008-0527-0032/Documentation/DocBook/kernel-locking.xml:722: element chapter: validity error : ID trylock-functions already defined
+Document /local/linsrc/mmotm-2008-0527-0032/Documentation/DocBook/kernel-locking.xml does not validate
+make[1]: *** [Documentation/DocBook/kernel-locking.html] Error 3
+make[1]: *** Waiting for unfinished jobs....
+make: *** [htmldocs] Error 2
+
+Looks like Rusty's doc additions were duplicated.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/DocBook/kernel-locking.tmpl |   25 -------------------------
+ 1 file changed, 25 deletions(-)
+
+--- mmotm-2008-0527-0032.orig/Documentation/DocBook/kernel-locking.tmpl
++++ mmotm-2008-0527-0032/Documentation/DocBook/kernel-locking.tmpl
+@@ -719,31 +719,6 @@
+   </para>
+ </chapter>
+ 
+-<chapter id="trylock-functions">
+- <title>The trylock Functions</title>
+-  <para>
+-   There are functions that try to acquire a lock only once and immediately
+-   return a value telling about success or failure to acquire the lock.
+-   They can be used if you need no access to the data protected with the lock
+-   when some other thread is holding the lock. You should acquire the lock
+-   later if you then need access to the data protected with the lock.
+-  </para>
+-
+-  <para>
+-    <function>spin_trylock()</function> does not spin but returns non-zero if
+-    it acquires the spinlock on the first try or 0 if not. This function can
+-    be used in all contexts like <function>spin_lock</function>: you must have
+-    disabled the contexts that might interrupt you and acquire the spin lock.
+-  </para>
+-
+-  <para>
+-    <function>mutex_trylock()</function> does not suspend your task
+-    but returns non-zero if it could lock the mutex on the first try
+-    or 0 if not. This function cannot be safely used in hardware or software
+-    interrupt contexts despite not sleeping.
+-  </para>
+-</chapter>
+-
+   <chapter id="Examples">
+    <title>Common Examples</title>
+     <para>
