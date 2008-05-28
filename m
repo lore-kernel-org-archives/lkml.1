@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYE1V5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYE1V5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbYE1V5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 17:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbYE1V4S
+	id S1756516AbYE1V5j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 17:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbYE1V4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 17:56:18 -0400
-Received: from styx.suse.cz ([82.119.242.94]:54459 "EHLO mail.suse.cz"
+	Wed, 28 May 2008 17:56:19 -0400
+Received: from styx.suse.cz ([82.119.242.94]:54463 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753406AbYE1V4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753424AbYE1V4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 May 2008 17:56:15 -0400
 From: Jan Kara <jack@suse.cz>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
        Jan Kara <jack@suse.cz>
-Subject: [PATCH] jbd: Silence warnings about non-uptodate buffers
-Date: Wed, 28 May 2008 23:56:11 +0200
-Message-Id: <12120117744167-git-send-email-jack@suse.cz>
+Subject: [PATCH] jbd2: Silence warnings about non-uptodate buffers
+Date: Wed, 28 May 2008 23:56:12 +0200
+Message-Id: <12120117743119-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.5.2.4
 In-Reply-To: <12120117733479-git-send-email-jack@suse.cz>
 References: <12120117733479-git-send-email-jack@suse.cz>
@@ -30,14 +30,14 @@ uptodate before marking it dirty.
 
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- fs/jbd/journal.c |    1 +
+ fs/jbd2/journal.c |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index b99c3b3..9303608 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -959,6 +959,7 @@ void journal_update_superblock(journal_t *journal, int wait)
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index 2e24567..55de8f7 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -1261,6 +1261,7 @@ void jbd2_journal_update_superblock(journal_t *journal, int wait)
  	spin_unlock(&journal->j_state_lock);
  
  	BUFFER_TRACE(bh, "marking dirty");
