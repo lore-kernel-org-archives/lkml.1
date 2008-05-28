@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbYE1Nvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752081AbYE1NxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751942AbYE1Nvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYE1Nvs
+	id S1752081AbYE1NxA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbYE1Nww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:51:48 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:60047 "EHLO mo10.iij4u.or.jp"
+	Wed, 28 May 2008 09:52:52 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58660 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbYE1Nvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:51:48 -0400
-Message-Id: <200805281351.m4SDpTIl030554@mbox.iij4u.or.jp>
-To: pw@osc.edu
-Cc: michaelc@cs.wisc.edu, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp
-Subject: Re: bsg locking patches update
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080528210048L.tomof@acm.org>
-References: <20080526165318.GA5466@osc.edu>
-	<20080528210048L.tomof@acm.org>
+	id S1750909AbYE1Nwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 09:52:51 -0400
+Subject: Re: [PATCH 2/3] Reserve huge pages for reliable MAP_PRIVATE
+	hugetlbfs mappings until fork()
+From: Adam Litke <agl@us.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, abh@cray.com, dean@arctic.org,
+       linux-kernel@vger.kernel.org, wli@holomorphy.com, dwg@au1.ibm.com,
+       linux-mm@kvack.org, andi@firstfloor.org, kenchen@google.com,
+       apw@shadowen.org
+In-Reply-To: <20080527185108.16194.87892.sendpatchset@skynet.skynet.ie>
+References: <20080527185028.16194.57978.sendpatchset@skynet.skynet.ie>
+	 <20080527185108.16194.87892.sendpatchset@skynet.skynet.ie>
+Content-Type: text/plain
+Organization: IBM
+Date: Wed, 28 May 2008 08:52:44 -0500
+Message-Id: <1211982764.12036.58.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-Date: Wed, 28 May 2008 22:51:29 +0900
-X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: bsg locking patches update
-Date: Wed, 28 May 2008 21:00:56 +0900
+On Tue, 2008-05-27 at 19:51 +0100, Mel Gorman wrote:
+> This patch reserves huge pages at mmap() time for MAP_PRIVATE mappings in a
+> similar manner to the reservations taken for MAP_SHARED mappings. The reserve count is
+> accounted both globally and on a per-VMA basis for private mappings. This
+> guarantees that a process that successfully calls mmap() will successfully
+> fault all pages in the future unless fork() is called.
+> 
+> The characteristics of private mappings of hugetlbfs files behaviour after
+> this patch are;
+> 
+> 1. The process calling mmap() is guaranteed to succeed all future faults until
+>    it forks().
+> 2. On fork(), the parent may die due to SIGKILL on writes to the private
+>    mapping if enough pages are not available for the COW. For reasonably
+>    reliable behaviour in the face of a small huge page pool, children of
+>    hugepage-aware processes should not reference the mappings; such as
+>    might occur when fork()ing to exec().
+> 3. On fork(), the child VMAs inherit no reserves. Reads on pages already
+>    faulted by the parent will succeed. Successful writes will depend on enough
+>    huge pages being free in the pool.
+> 4. Quotas of the hugetlbfs mount are checked at reserve time for the mapper
+>    and at fault time otherwise.
+> 
+> Before this patch, all reads or writes in the child potentially needs page
+> allocations that can later lead to the death of the parent. This applies
+> to reads and writes of uninstantiated pages as well as COW. After the
+> patch it is only a write to an instantiated page that causes problems.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-> On Mon, 26 May 2008 12:53:18 -0400
-> Pete Wyckoff <pw@osc.edu> wrote:
-> 
-> > I finally got around to testing the set of lifetime management
-> > fixes you applied.  This is 2.6.26-rc3 with some varlen, bidi,
-> > iser patches, and iovec on bsg, but nothing that should affect
-> > the locking.
-> > 
-> > I can confirm that the first two of these three old bugs are
-> > no longer reproducable:
-> > 
-> >     http://marc.info/?l=linux-scsi&m=120508166505141&w=2
-> >     http://marc.info/?l=linux-scsi&m=120508177905365&w=2
-> >     http://marc.info/?l=linux-scsi&m=120508178005376&w=2
-> > 
-> > Thanks!  The third, however, is a hang that still can happen.  But
-> > it is very obscure and requires a bit of timing to get right.  As a
-> > reminder, here's the setup, and updated traces.
-> 
-> Ah, sorry about it. I didn't understand the third correctly.
-> 
-> 
-> > Maybe it is necessary to split up that bsg_mutex to use multiple
-> > finer-grained locks.
-> 
-> We could but we use bsg_mutex to protect bsg_device_list and idr. So I
-> think that we don't need hold bsg_mutex during
-> bsg_complete_all_commands. How about this?
-> 
-> 
-> diff --git a/block/bsg.c b/block/bsg.c
-> index f0b7cd3..d81104e 100644
-> --- a/block/bsg.c
-> +++ b/block/bsg.c
+Acked-by: Adam Litke <agl@us.ibm.com>
 
-On second thoughts, I realized that the previous patch leads to a race
-between bsg_put_device and __bsg_get_device (__bsg_get_device possibly
-finds a device that is being removed). Here's new one.
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
-
-diff --git a/block/bsg.c b/block/bsg.c
-index f0b7cd3..7cdec32 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -724,8 +724,13 @@ static int bsg_put_device(struct bsg_device *bd)
- 	mutex_lock(&bsg_mutex);
- 
- 	do_free = atomic_dec_and_test(&bd->ref_count);
--	if (!do_free)
-+	if (!do_free) {
-+		mutex_unlock(&bsg_mutex);
- 		goto out;
-+	}
-+
-+	hlist_del(&bd->dev_list);
-+	mutex_unlock(&bsg_mutex);
- 
- 	dprintk("%s: tearing down\n", bd->name);
- 
-@@ -741,10 +746,8 @@ static int bsg_put_device(struct bsg_device *bd)
- 	 */
- 	ret = bsg_complete_all_commands(bd);
- 
--	hlist_del(&bd->dev_list);
- 	kfree(bd);
- out:
--	mutex_unlock(&bsg_mutex);
- 	kref_put(&q->bsg_dev.ref, bsg_kref_release_function);
- 	if (do_free)
- 		blk_put_queue(q);
