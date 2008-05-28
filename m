@@ -1,49 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYE1X5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYE1X7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYE1X5j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 19:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYE1X51
+	id S1753974AbYE1X7G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 19:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYE1X6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 19:57:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:61524 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751325AbYE1X5N (ORCPT
+	Wed, 28 May 2008 19:58:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53069 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751367AbYE1X6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 19:57:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=E027/XBP3TAtzX0iglvHOGK3UM99MzP1AwqSZOeD5mx7BWCVEksiijioskL2Iv30TmUDoOdT08Yp/hB5jUk/dFnkFa94BzpY7mda642NEeTM2iwqCpWwtVd/h1XluSSdTU3HgDybtdtQv1OVvamhPjlFADSbDl4hFPrN16PM0uE=
-Message-ID: <75b66ecd0805281657k7b988bf1qa46e806810da0c17@mail.gmail.com>
-Date: Wed, 28 May 2008 19:57:11 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: Raz <raziebe@gmail.com>
-Subject: Re: mmap over HPET - 32 bit wrap arround
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <5d96567b0805281519v7ee18eb0l27f2e4edc18af01c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 May 2008 19:58:54 -0400
+Date: Wed, 28 May 2008 16:58:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: hans-christoph.rohland@sap.com, leg@google.com, pbadari@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tmpfs: support aio
+Message-Id: <20080528165815.f4e4982c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
+References: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <83CA05F64804AF43B8F733C4ABDFAA5101384F73@mail1.bitband.com>
-	 <83CA05F64804AF43B8F733C4ABDFAA5101384FA4@mail1.bitband.com>
-	 <5d96567b0805281519v7ee18eb0l27f2e4edc18af01c@mail.gmail.com>
-X-Google-Sender-Auth: 5095e11c8f888cbd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 6:19 PM, Raz <raziebe@gmail.com> wrote:
-> I am wondering wether someone can explain how hpet behaves. The bellow
-> is a short program that reads from a mmaped /dev/hpet the time. I am
-> running it and it looks that afer ~296 seconds the counter resets . I
-> AM RUNNING  64bi KERNEL(2.6.18-8.el5)  and reading a 64BIT VARIABLE.
-> my hpet is 14MHZ, so I  am guessing a 32bit wraparound ( ~296 * 14Mhz
-> ) =  MAX_INT . but why ?
->
+On Thu, 29 May 2008 00:13:35 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-HPET counter can be either 32 or 64 bit.  Check COUNT_SIZE_CAP.
+> +	struct file *filp = iocb->ki_filp;
+> +	ssize_t retval;
+> +	unsigned long seg;
+> +	size_t count;
+> +	loff_t *ppos = &iocb->ki_pos;
+> +
+> +	count = 0;
+> +	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
+> +	if (retval)
+> +		return retval;
+> +
+> +	retval = 0;
+> +	if (count) {
+> +		for (seg = 0; seg < nr_segs; seg++) {
+> +			read_descriptor_t desc;
+> +
+> +			desc.written = 0;
+> +			desc.arg.buf = iov[seg].iov_base;
+> +			desc.count = iov[seg].iov_len;
+> +			if (desc.count == 0)
+> +				continue;
+> +			desc.error = 0;
+> +			do_shmem_file_read(filp, ppos, &desc, file_read_actor);
+> +			retval += desc.written;
+> +			if (desc.error) {
+> +				retval = retval ?: desc.error;
+> +				break;
+> +			}
+> +			if (desc.count > 0)
+> +				break;
+> +		}
+> +	}
+> +	return retval;
+>  }
 
-http://www.intel.com/hardwaredesign/hpetspec_1.pdf
+hm.  This version:
 
-Lee
+static ssize_t shmem_file_aio_read(struct kiocb *iocb,
+		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
+{
+	struct file *filp = iocb->ki_filp;
+	ssize_t retval;
+	unsigned long seg;
+	size_t count;
+	loff_t *ppos = &iocb->ki_pos;
+
+	count = 0;
+	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
+	if (retval)
+		return retval;
+	if (count == 0)
+		return 0;
+
+	retval = 0;
+	for (seg = 0; seg < nr_segs; seg++) {
+		if (iov[seg].iov_len) {
+			read_descriptor_t desc = {
+				.arg.buf = iov[seg].iov_base,
+				.count = iov[seg].iov_len;
+			};
+
+			do_shmem_file_read(filp, ppos, &desc, file_read_actor);
+			retval += desc.written;
+			if (desc.error) {
+				retval = retval ?: desc.error;
+				break;
+			}
+			if (desc.count > 0)
+				break;
+		}
+	}
+	return retval;
+}
+
+is neater but generates 21 bytes more code.  Stupid gcc.
+
+I don't believe we needed to check for count == 0?  We'd just loop around
+N times doing nothing.
+
