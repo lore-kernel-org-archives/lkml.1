@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbYE1TWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbYE1T0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbYE1TWo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYE1TWf
+	id S1754200AbYE1T0t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbYE1T0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:22:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46611 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752750AbYE1TWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:22:34 -0400
-Message-ID: <483DB0EC.3090403@redhat.com>
-Date: Wed, 28 May 2008 15:22:20 -0400
-From: Chris Snook <csnook@redhat.com>
+	Wed, 28 May 2008 15:26:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59171 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbYE1T0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 15:26:41 -0400
+Message-ID: <483DA034.9060408@zytor.com>
+Date: Wed, 28 May 2008 11:11:00 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <483D7CE8.4000600@redhat.com> <alpine.DEB.1.10.0805281329450.29755@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0805281329450.29755@p34.internal.lan>
+To: Dave Jones <davej@redhat.com>, Jan Engelhardt <jengelh@medozas.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [X86] Fix up silly i1586 boot message.
+References: <20080528165713.GA412@redhat.com> <alpine.LNX.1.10.0805281943330.19264@fbirervta.pbzchgretzou.qr> <20080528175941.GA4642@redhat.com>
+In-Reply-To: <20080528175941.GA4642@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
+Dave Jones wrote:
+> On Wed, May 28, 2008 at 07:48:03PM +0200, Jan Engelhardt wrote:
+>  > 
+>  > On Wednesday 2008-05-28 18:57, Dave Jones wrote:
+>  > 
+>  > >Trying to boot a 64-bit kernel on a 32bit Pentium 4 gets
+>  > >you an amusing message along the lines of.
+>  > >"you need an x86-64, but you only have an i1586"
+>  > >due to the P4 being family F.  Munge it to be 686.
+>  > 
+>  > What is wrong with it? If i386, 486, 586 and 686 are valid names,
+>  > why should not 786 (or rather 1586... since someone thought it
+>  > would be cool to jump the number^1) be?
 > 
-> 
-> On Wed, 28 May 2008, Chris Snook wrote:
-> 
->> Justin Piszcz wrote:
->>> Hardware:
->>>
->>> 1. Utilized (6) 400 gigabyte sata hard drives.
->>> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
->>>
->>> Used the following 'optimizations' for all tests.
->>>
->>> # Set read-ahead.
->>> echo "Setting read-ahead to 64 MiB for /dev/md3"
->>> blockdev --setra 65536 /dev/md3
->>>
->>> # Set stripe-cache_size for RAID5.
->>> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
->>> echo 16384 > /sys/block/md3/md/stripe_cache_size
->>>
->>> # Disable NCQ on all disks.
->>> echo "Disabling NCQ on all disks..."
->>> for i in $DISKS
->>> do
->>>   echo "Disabling NCQ on $i"
->>>   echo 1 > /sys/block/"$i"/device/queue_depth
->>> done
->>
->> Given that one of the greatest benefits of NCQ/TCQ is with parity 
->> RAID, I'd be fascinated to see how enabling NCQ changes your results.  
->> Of course, you'd want to use a single SATA controller with a known 
->> good NCQ implementation, and hard drives known to not do stupid things 
->> like disable readahead when NCQ is enabled.
-> Only/usually on multi-threaded jobs/tasks, yes?
+> When you find the Intel literature that refers to the '786' or the '1586',
+> feel free to send a patch. In the meantime, we'll refer to it as
+> the rest of the world does.
 
-Generally, yes, but there's caching and readahead at various layers in 
-software that can expose the benefit on certain single-threaded 
-workloads as well.
+Actually, I have seen some Intel literature talking about the 786.  This 
+was back when the 486 was new, and they wanted to impress how advanced 
+their roadmap was.  Needless to say, it was completely bogus.
 
-> Also, I turn off NCQ on all of my hosts that has it enabled by default 
-> because
-> there are many bugs that occur when NCQ is on, they are working on it in 
-> the
-> libata layer but IMO it is not safe at all for running SATA disks w/NCQ as
-> with it on I have seen drives drop out of the array (with it off, no 
-> problems).
-> 
-
-Are you using SATA drives with RAID-optimized firmware?  Most SATA 
-manufacturers have variants of their drives for a few dollars more that 
-have firmware that provides bounded latency for error recovery 
-operations, for precisely this reason.
-
--- Chris
+	-hpa
