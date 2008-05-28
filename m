@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbYE1OKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbYE1OUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752346AbYE1OKN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 10:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYE1OJ6
+	id S1752204AbYE1OUw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 10:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYE1OUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 10:09:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56294 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752314AbYE1OJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 10:09:45 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <2874.1211980355@redhat.com>
-References: <2874.1211980355@redhat.com> <Pine.LNX.4.64.0805221907250.4056@sbz-30.cs.Helsinki.FI>
-Cc: dhowells@redhat.com, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       clameter@sgi.com, mpm@selenic.com, lethal@linux-sh.org,
+	Wed, 28 May 2008 10:20:46 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62875 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751211AbYE1OUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 10:20:46 -0400
+Date: Wed, 28 May 2008 15:15:10 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+cc: Timur Tabi <timur@freescale.com>, linux-serial@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 28 May 2008 15:09:18 +0100
-Message-ID: <24762.1211983758@redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+Subject: Re: [PATCH] [SERIAL] fix driver_name conflicts
+In-Reply-To: <20080526172340.GA17703@polina.dev.rtsoft.ru>
+Message-ID: <Pine.LNX.4.55.0805281511160.29522@cliff.in.clinika.pl>
+References: <20080526172340.GA17703@polina.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+On Mon, 26 May 2008, Anton Vorontsov wrote:
 
-> Works for SLAB and SLUB.  SLOB breaks well before getting to anything these
-> patches affect.
+> This patch fixes two drivers that are using "serial" for driver_name and
+> not "ttyS" for dev_name. Drivers that are using "ttyS" for dev_name, will
+> conflict anyway, so we don't bother with these.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  drivers/serial/sb1250-duart.c |    2 +-
+>  drivers/serial/ucc_uart.c     |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Okay...  The problem with SLOB is that it can return large objects (8Kb in this
-case) that aren't 8-byte aligned.  This screws up FRV as it expects to be able
-to use load and store-double instructions, which fault if they don't get
-8-byte (double register) alignment.
+ Not that it makes much sense to have both included in the same kernel,
+but for the purpose of purity:
 
-David
+Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
+
+  Maciej
