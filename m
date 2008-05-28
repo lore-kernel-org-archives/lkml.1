@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbYE1FPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYE1FRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbYE1FPm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 01:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbYE1FPd
+	id S1754892AbYE1FRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 01:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYE1FRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 01:15:33 -0400
-Received: from venema.h4ckr.net ([217.24.1.135]:55123 "EHLO venema.h4ckr.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752388AbYE1FPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 01:15:32 -0400
-X-Greylist: delayed 1960 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 01:15:32 EDT
-Message-ID: <58970.84.58.190.170.1211949769.squirrel@webmail.madwifi.org>
-In-Reply-To: <6101e8c40805271623xb316cd0i47320ec566c0ba02@mail.gmail.com>
-References: <6101e8c40805270820r5984ceddmcc9ee1137e097b9e@mail.gmail.com>
-    <20080527105123.1c154daf@infradead.org>
-    <6101e8c40805271623xb316cd0i47320ec566c0ba02@mail.gmail.com>
-Date: Wed, 28 May 2008 06:42:49 +0200 (CEST)
-Subject: Re: madwifi && v2.6.26-rc4
-From: "Michael Renzmann" <mrenzmann@otaku42.de>
-To: "Oliver Pinter" <oliver.pntr@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
+	Wed, 28 May 2008 01:17:10 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:22147 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752602AbYE1FRJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 01:17:09 -0400
+Message-ID: <483CEA50.4050902@yandex.ru>
+Date: Wed, 28 May 2008 08:14:56 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Artem.Bityutskiy@nokia.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: can UBIFS be taken to linux-next?
+References: <483BA79F.9030100@nokia.com> <20080528114112.b8600074.sfr@canb.auug.org.au>
+In-Reply-To: <20080528114112.b8600074.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 28 May 2008 05:16:21.0711 (UTC) FILETIME=[F794FDF0:01C8C081]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Stephen Rothwell wrote:
+> OK, my requirements are that you intend for it to be integrated in the
+> next merge window,
+Yes.
 
-> jah, i know, that the ath5k is the official driver, but ath5k don't
-> supported WPA2-PSK.
-> I cc-ed mrenzmann, hi is the madiwifi webmaster / maintainer
+> that it be reviewed 
+We have not got too much review, just because there are not so many people
+involved into the area. But we have got some review. The best one was
+from Christoph Hellwig.
 
-I'm not "the maintainer" of MadWifi, just one of the guys working on the
-project.
+> and that it be unit tested (i.e.
+> tested as well as you can in isolation). 
+Yes, we do this on regular basis. We have our own tests [1] ans we use
+older JFFS2 tests [2]. We also use it in Nokia and we have several users
+in the community.
 
-I agree with Arjan that this report is off-topic on lkml, since MadWifi is
-not part of the Linux kernel. Please report this either via our bugtracker
-or via one of the MadWifi-related mailing lists (see
-http://madwifi.org/wiki/Resources).
+> You seem to have done all that,
+> so I will add it.
+Thanks.
 
-Bye, Mike
+[1] git://git.infradead.org/~dedekind/ubifs-userspace.git
+or  http://git.infradead.org/users/dedekind/ubifs-userspace.git
+[2] git://git.infradead.org/mtd-utils.git
+or http://git.infradead.org/mtd-utils.git
 
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
