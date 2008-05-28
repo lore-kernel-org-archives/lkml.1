@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbYE1RNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbYE1RQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752850AbYE1RNG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 13:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYE1RMz
+	id S1752662AbYE1RQk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 13:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYE1RQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 13:12:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59751 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751556AbYE1RMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 13:12:54 -0400
-Date: Wed, 28 May 2008 12:57:13 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [X86] Fix up silly i1586 boot message.
-Message-ID: <20080528165713.GA412@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-	Thomas Gleixner <tglx@linutronix.de>
+	Wed, 28 May 2008 13:16:31 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:30574 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751366AbYE1RQb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 13:16:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=j56ELYS/h+h1e89LzU52L/DeoVt6YhlgFWK6QaExuhCpKSEDbI+ey2D7QUtZTlfB6nJQY/yAM7dv8+nsw2Z/fLmenVTcxvWFXrtgEmDhFUGJNLm8RGyE2wWcMPPainqoutWmxoUR3iyB5ZukRwryT54t4aqRas2IVOm/2uldKRY=
+Date: Wed, 28 May 2008 21:16:20 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/11] x86: nmi_32/64.c - use apic_write_around instead
+	of apic_write
+Message-ID: <20080528171620.GC6910@cvg>
+References: <20080524153630.669797039@gmail.com>> <48383740.0407560a.4764.7d1b@mx.google.com> <Pine.LNX.4.55.0805281628320.29522@cliff.in.clinika.pl> <20080528160413.GA6910@cvg> <Pine.LNX.4.55.0805281712200.29522@cliff.in.clinika.pl> <20080528162527.GB6910@cvg> <Pine.LNX.4.55.0805281755370.29522@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.55.0805281755370.29522@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to boot a 64-bit kernel on a 32bit Pentium 4 gets
-you an amusing message along the lines of.
-"you need an x86-64, but you only have an i1586"
-due to the P4 being family F.  Munge it to be 686.
+[Maciej W. Rozycki - Wed, May 28, 2008 at 06:09:38PM +0100]
+| On Wed, 28 May 2008, Cyrill Gorcunov wrote:
+| 
+| > So I've moved a part of code (32bit) from proc_nmi_enabled() to
+| > nmi_watchdog_default() BUT this nmi_watchdog_default() also called
+| > from smpboot.c:native_smp_prepare_cpus() and before this patch
+| > this call was just an empty call (and eliminated by gcc I think)
+| > now it's not empy. But how it leads to hang I can't understand.
+| > The only thing is done - nmi_watchdog is set to NMI_LOCAL_APIC
+| > or NMI_IO_APIC and my only suspicious is that something happens
+| > asynchronously and leads to machine hang. Let me know if I wrote
+| > in obscure manner.
+| 
+|  The problem is the I/O APIC NMI watchdog which does not work correctly on
+| the reporter's machine.  Your patch makes the NMI watchdog be enabled by
+| default on 32-bit platforms (OTOH, proc_nmi_enabled() is only called by an
+| explicit request via sysctl).  Unfortunately many hardware vendors have
+| not fully recognised the existence of Linux yet and the NMI watchdog
+| frequently triggers breakage in SMM firmware even on modern equipment;  
+| actually it was less likely to break in the old days.
+| 
+|   Maciej
+| 
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+Thanks a lot, Maciej!!! Could you please explain me how did you find
+that? 'cause reporter said that with nmi_watchdog=2 it works and with
+nmi_watchdog=1 it stalls? Maybe I should better make this function
+the same as 64bit version has? I.e. set nmi_watchdog = NMI_NONE by default?
 
-diff --git a/arch/x86/boot/cpu.c b/arch/x86/boot/cpu.c
-index 00e19ed..882c839 100644
---- a/arch/x86/boot/cpu.c
-+++ b/arch/x86/boot/cpu.c
-@@ -28,6 +28,8 @@ static char *cpu_name(int level)
- 	if (level == 64) {
- 		return "x86-64";
- 	} else {
-+		if (level == 15)
-+			level = 6;
- 		sprintf(buf, "i%d86", level);
- 		return buf;
- 	}
-
--- 
-http://www.codemonkey.org.uk
+		- Cyrill -
