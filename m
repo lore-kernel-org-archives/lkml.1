@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYE1IlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYE1Il6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbYE1IlR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 04:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYE1IlF
+	id S1754213AbYE1Il6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 04:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbYE1Ilt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 04:41:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48527 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751305AbYE1IlD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 04:41:03 -0400
-Date: Wed, 28 May 2008 01:40:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miquel van Smoorenburg <mikevs@xs4all.net>
-Cc: Andi Kleen <andi@firstfloor.org>, Glauber Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] 2.6.26-rc: x86: pci-dma.c: use __GFP_NO_OOM instead of
- __GFP_NORETRY
-Message-Id: <20080528014017.9b3d116f.akpm@linux-foundation.org>
-In-Reply-To: <1211963485.28138.14.camel@localhost.localdomain>
-References: <20080526234940.GA1376@xs4all.net>
-	<20080527014720.6db68517.akpm@linux-foundation.org>
-	<20080528024727.GB20824@one.firstfloor.org>
-	<1211963485.28138.14.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 28 May 2008 04:41:49 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:39083 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751170AbYE1Ils (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 04:41:48 -0400
+X-Greylist: delayed 89651 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 May 2008 04:41:48 EDT
+Date: Wed, 28 May 2008 10:36:48 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: benh@kernel.crashing.org
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <1211926636.3286.100.camel@pasglop>
+References: <1211852026.3286.36.camel@pasglop>
+	<20080526.184047.88207142.davem@davemloft.net>
+	<1211854540.3286.42.camel@pasglop>
+	<20080526.192812.184590464.davem@davemloft.net>
+	<1211859542.3286.46.camel@pasglop>
+	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
+	<1211922621.3286.80.camel@pasglop>
+	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
+	<1211924335.3286.89.camel@pasglop>
+	<20080527214241.GA22636@parisc-linux.org>
+	<1211926636.3286.100.camel@pasglop>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 May 2008 08:36:38.0759 (UTC) FILETIME=[F24CFF70:01C8C09D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 10:31:25 +0200 Miquel van Smoorenburg <mikevs@xs4all.net> wrote:
-
-> > When the 16MB zone overflows (which can be common in some workloads)
-> > calling the OOM killer is pretty useless because it has barely any 
-> > real user data [only exception would be the "only 16MB" case Alan
-> > mentioned]. Killing random processes in this case is bad. 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > > I'm happy to say that __raw is purely about ordering and make them
+> > > byteswap on powerpc tho (ie, make them little endian like the non-raw
+> > > counterpart).  
 > > 
-> > I think for 16MB __GFP_NORETRY is ok because there should be 
-> > nothing freeable in there so looping is useless. Only exception would be the 
-> > "only 16MB total" case again but I'm not sure 2.6 supports that at all
-> > on x86.
-> > 
-> > On the other hand d_a_c() does more allocations than just 16MB, especially
-> > on 64bit and the other zones need different strategies.
+> > That would break a lot of drivers.  
 > 
-> Okay, so how about this then ?
-> 
-> --- linux-2.6.26-rc4.orig/arch/x86/kernel/pci-dma.c	2008-05-26 20:08:11.000000000 +0200
-> +++ linux-2.6.26-rc4/arch/x86/kernel/pci-dma.c	2008-05-28 10:27:41.000000000 +0200
-> @@ -397,9 +397,6 @@
->  	if (dev->dma_mask == NULL)
->  		return NULL;
->  
-> -	/* Don't invoke OOM killer */
-> -	gfp |= __GFP_NORETRY;
-> -
->  #ifdef CONFIG_X86_64
->  	/* Why <=? Even when the mask is smaller than 4GB it is often
->  	   larger than 16MB and in this case we have a chance of
-> @@ -410,7 +407,9 @@
->  #endif
->  
->   again:
-> -	page = dma_alloc_pages(dev, gfp, get_order(size));
-> +	/* Don't invoke OOM killer or retry in lower 16MB DMA zone */
-> +	page = dma_alloc_pages(dev,
-> +		(gfp & GFP_DMA) ? gfp | __GFP_NORETRY : gfp, get_order(size));
->  	if (page == NULL)
->  		return NULL;
+> How many actually use __raw_ * ?
 
-I guess that's more specifally solving that-which-we-wish-to-solve.
+I do -- in all the drivers for on-chip peripherals that are shared
+between AT91 ARM (LE) and AVR32 (BE). Since everything goes on inside
+the chip, we must use LE accesses on ARM and BE accesses on AVR32.
 
-Formally we should be testing __GFP_DMA here, not GFP_DMA - just the
-zone selector field.  They're presently equal, but someone could
-legitimately come along and do
+Currently, this is the only interface I know that can do native-endian
+accesses, so if you take it away, I'm gonna need an alternative
+interface that doesn't do byteswapping.
 
-#define GFP_DMA (__GFP_DMA|__GFP_HIGH)
-
-or similar.
+Haavard
