@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbYE1QF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbYE1QJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbYE1QF5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 12:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbYE1QFs
+	id S1752982AbYE1QJe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 12:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYE1QJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 12:05:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:33870 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751794AbYE1QFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 12:05:47 -0400
-Message-ID: <483D82BB.8040005@goop.org>
-Date: Wed, 28 May 2008 17:05:15 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 28 May 2008 12:09:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49186 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYE1QJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 12:09:23 -0400
+Date: Wed, 28 May 2008 09:06:37 -0700
+From: Greg KH <greg@kroah.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
+Message-ID: <20080528160637.GB3851@kroah.com>
+References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com> <20080520030232.fc91b64e.akpm@linux-foundation.org> <20080520172139.GA11666@kroah.com> <a8e1da0805262342g2dec037eqfdf376e66459e758@mail.gmail.com> <20080526235934.8a28bfba.akpm@linux-foundation.org> <20080528154840.GJ22636@parisc-linux.org>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] arch/sh: use __page_aligned_bss
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080528154840.GJ22636@parisc-linux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch "make page-aligned data and bss less fragile" introduces
-__page_aligned_data and __page_aligned_bss to make sure that page
-aligned things remain so, even if there are non-page-sized
-page-aligned things.
+On Wed, May 28, 2008 at 09:48:40AM -0600, Matthew Wilcox wrote:
+> On Mon, May 26, 2008 at 11:59:34PM -0700, Andrew Morton wrote:
+> > If that semaphore is being used as a mutex then we should convert it to
+> > a mutex (dammit).
+> 
+> Right.
+> 
+> > Leaving it implemented as a semphore is not the proper way of
+> > suppressing the lockdep warnings.  It would be better to convert it to
+> > a mutex then add suitable (and suitably commented) open-coded lockdep
+> > annotations to suppress the runtime warnings.
+> 
+> We don't even have to go that far.  Here's all that's needed:
+> 
+> diff -u a/drivers/base/class.c b/drivers/base/class.c
+> --- a/drivers/base/class.c
+> +++ b/drivers/base/class.c
+> @@ -134,7 +134,7 @@
+>  	}
+>  }
+>  
+> -int class_register(struct class *cls)
+> +int __class_register(struct class *cls, struct lock_class_key *key)
 
-This paragraph converts the two C instances of page-aligned bss
-variables to use them.  It's a purely decorative patch.
+Sorry, this will not work properly, as class_create() is now more
+commonly called, and it calls class_register() from within the driver
+core.  So there would be a lot of classes with the same "key" because of
+this.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
----
- arch/sh/kernel/irq.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+So try changing class_create also.
 
-===================================================================
---- a/arch/sh/kernel/irq.c
-+++ b/arch/sh/kernel/irq.c
-@@ -9,6 +9,7 @@
- #include <linux/irq.h>
- #include <linux/interrupt.h>
- #include <linux/module.h>
-+#include <linux/linkage.h>
- #include <linux/kernel_stat.h>
- #include <linux/seq_file.h>
- #include <asm/processor.h>
-@@ -157,11 +158,8 @@
- }
- 
- #ifdef CONFIG_IRQSTACKS
--static char softirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__section__(".bss.page_aligned")));
--
--static char hardirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__section__(".bss.page_aligned")));
-+static char softirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
-+static char hardirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
- 
- /*
-  * allocate per-cpu stacks for hardirq and for softirq processing
+thanks,
 
-
+greg k-h
