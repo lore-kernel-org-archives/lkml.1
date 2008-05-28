@@ -1,257 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751781AbYE1NU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbYE1NWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751781AbYE1NU2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 09:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbYE1NUT
+	id S1751896AbYE1NWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 09:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbYE1NWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 09:20:19 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57609 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbYE1NUR (ORCPT
+	Wed, 28 May 2008 09:22:12 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:42294 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbYE1NWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 09:20:17 -0400
-Date: Wed, 28 May 2008 06:20:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
-Message-ID: <20080528132012.GF8255@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk> <20080528103026.GE8255@linux.vnet.ibm.com> <20080528124423.GV25504@kernel.dk>
+	Wed, 28 May 2008 09:22:09 -0400
+Date: Wed, 28 May 2008 14:21:52 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-input@vger.kernel.org
+Cc: linu-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kristen.c.accardi@intel.com
+Message-ID: <20080528132152.GB32646@srcf.ucam.org>
+References: <20080523160955.GA19674@srcf.ucam.org> <20080528130621.GA32646@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080528124423.GV25504@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080528130621.GA32646@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: [PATCH 2/3] ACPI: Send switch event on dock events
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 02:44:24PM +0200, Jens Axboe wrote:
-> On Wed, May 28 2008, Paul E. McKenney wrote:
-> > On Wed, May 28, 2008 at 12:07:21PM +0200, Jens Axboe wrote:
-> > > On Tue, May 27 2008, Paul E. McKenney wrote:
-> > > > On Tue, May 27, 2008 at 03:35:10PM +0200, Jens Axboe wrote:
-> > > > > On Tue, May 27 2008, Alexey Dobriyan wrote:
-> > > > > > On Sat, May 10, 2008 at 02:37:19PM +0400, Alexey Dobriyan wrote:
-> > > > > > > > > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
-> > > > > > > > > > >  		rcu_read_lock();
-> > > > > > > > > > >  		if (ioc->aic && ioc->aic->dtor)
-> > > > > > > > > > >  			ioc->aic->dtor(ioc->aic);
-> > > > > > > > > > > -		rcu_read_unlock();
-> > > > > > > > > > >  		cfq_dtor(ioc);
-> > > > > > > > > > > +		rcu_read_unlock();
-> > > > > > > > > > >  
-> > > > > > > > > > >  		kmem_cache_free(iocontext_cachep, ioc);
-> > > > > > > > > > >  		return 1;
-> > > > > > > > > > 
-> > > > > > > > > > This helps in sense that 3 times bulk cross-compiles finish to the end.
-> > > > > > > > > > You'll hear me if another such oops will resurface.
-> > > > > > > > > 
-> > > > > > > > > Still looking good?
-> > > > > > > > 
-> > > > > > > > Yup!
-> > > > > > > 
-> > > > > > > And this with patch in mainline, again with PREEMPT_RCU.
-> > > > > > 
-> > > > > > Ping, this happened again with 2.6.26-rc4 and PREEMPT_RCU.
-> > > > > 
-> > > > > Worrisome... Paul, would you mind taking a quick look at cfq
-> > > > > and see if you can detect why breaks with preempt rcu? It's
-> > > > > clearly a use-after-free symptom, but I don't see how it can
-> > > > > happen.
-> > > > 
-> > > > Some quick and probably off-the-mark questions...
-> > > 
-> > > Thanks!
-> > 
-> > Glad it actually was of help!  ;-)
-> 
-> Your reviews are ALWAYS greatly appreciated!
+Send a switch event on docking for consistency with docks that don't 
+present as a separate device.
 
-:-)
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-> > > > o	What is the purpose of __call_for_each_cic()?  When called
-> > > > 	from call_for_each_cic(), it is under rcu_read_lock(), as
-> > > > 	required, but it is also called from cfq_free_io_context(),
-> > > > 	which is assigned to the ->dtor and ->exit members of the
-> > > > 	cfq_io_context struct.  What protects calls through these
-> > > > 	members?
-> > > > 
-> > > > 	(This is for the ->cic_list field of the cfq_io_context structure.
-> > > > 	One possibility is that the io_context's ->lock member is held,
-> > > > 	but I don't see this.  Not that I looked all that hard...)
-> > > > 
-> > > > 	My suggestion would be to simply change all invocations of
-> > > > 	__call_for_each_cic() to instead invoke call_for_each_cic().
-> > > > 	The rcu_read_lock()/rcu_read_unlock() pair is pretty
-> > > > 	lightweight, even in CONFIG_PREEMPT_RCU.
-> > > 
-> > > __call_for_each_cic() is always called under rcu_read_lock(), it merely
-> > > exists to avoid a double rcu_read_lock(). Even if it is cheap. The
-> > > convention follows the usual __lock_is_already_held() double under
-> > > score, but I guess it could do with a comment! There are only two
-> > > callers of the function, call_for_each_cic() which does the
-> > > rcu_read_lock(), and cfq_free_io_context() which is called from ->dtor
-> > > (and holds the rcu_read_lock() and ->trim which actually does not. That
-> > > looks like it could be problematic, but it's only called when an io
-> > > scheduler module is removed so not really critical. I'll add it, though!
-> > > Actually, the task_lock() should be enough there. So no bug, but (again)
-> > > it could do with a comment.
-> > 
-> > Sounds good!
-> > 
-> > > > o	When calling cfq_slab_kill(), for example from cfq_exit(),
-> > > > 	what ensures that all previous RCU callbacks have completed?
-> > > > 	
-> > > > 	I suspect that you need an rcu_barrier() at the beginning
-> > > > 	of cfq_slab_kill(), but I could be missing something.
-> > > 
-> > > So we have two callers of that, one is from the error path at init time
-> > > and is obviously ok. The other does need rcu_barrier()! I'll add that.
-> > 
-> > OK, that does make my brain hurt less.  ;-)
-> 
-> So that one was also OK, as Fabio pointed out. If you follow the
-> ioc_gone and user tracking, the:
-> 
->         if (elv_ioc_count_read(ioc_count))
->                 wait_for_completion(ioc_gone);
-> 
-> also has the side effect of waiting for RCU callbacks calling
-> kmem_cache_free() to have finished as well.
+---
 
-I stand corrected.
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index fa44fb9..a67e74c 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -25,6 +25,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/input.h>
+ #include <linux/types.h>
+ #include <linux/notifier.h>
+ #include <linux/platform_device.h>
+@@ -65,6 +66,7 @@ struct dock_station {
+ 	struct mutex hp_lock;
+ 	struct list_head dependent_devices;
+ 	struct list_head hotplug_devices;
++	struct input_dev *dock_input;
+ };
+ 
+ struct dock_dependent_device {
+@@ -345,10 +347,13 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
+ 	char event_string[13];
+ 	char *envp[] = { event_string, NULL };
+ 
+-	if (num == UNDOCK_EVENT)
++	if (num == UNDOCK_EVENT) {
++		input_report_switch(dock_station->dock_input, SW_DOCK, 0);
+ 		sprintf(event_string, "EVENT=undock");
+-	else
++	} else {
++		input_report_switch(dock_station->dock_input, SW_DOCK, 1);
+ 		sprintf(event_string, "EVENT=dock");
++	}
+ 
+ 	/*
+ 	 * Indicate that the status of the dock station has
+@@ -834,6 +839,19 @@ static int dock_add(acpi_handle handle)
+ 		goto dock_add_err;
+ 	}
+ 
++	/* Set up input device */
++	dock_station->dock_input = input_allocate_device();
++	dock_station->dock_input->name = "ACPI dock";
++	dock_station->dock_input->phys = "dock/input0";
++	dock_station->dock_input->id.bustype = BUS_HOST;
++	dock_station->dock_input->dev.parent = &dock_device->dev;
++	set_bit(EV_SW, dock_station->dock_input->evbit);
++	set_bit(SW_DOCK, dock_station->dock_input->swbit);
++	ret = input_register_device(dock_station->dock_input);
++
++	if (ret)
++		input_free_device(dock_station->dock_input);
++
+ 	printk(KERN_INFO PREFIX "%s \n", ACPI_DOCK_DRIVER_DESCRIPTION);
+ 
+ 	return 0;
+@@ -881,6 +899,8 @@ static int dock_remove(void)
+ 	device_remove_file(&dock_device->dev, &dev_attr_flags);
+ 	platform_device_unregister(dock_device);
+ 
++	input_unregister_device(dock_station->dock_input);
++
+ 	/* free dock station memory */
+ 	kfree(dock_station);
+ 	dock_station = NULL;
 
-> > > > o	What protects the first rcu_dereference() in cfq_cic_lookup()?
-> > > > 	There needs to be either an enclose rcu_read_lock() on the
-> > > > 	one hand or the ->queue_lock needs to be held.
-> > > > 
-> > > > 	(My guess is the latter, given the later rcu_assign_pointer()
-> > > > 	in this same function, but I don't see a lock acquisition
-> > > > 	in the immediate vicinity -- might be further up the function
-> > > > 	call stack, though.)
-> > > 
-> > > There's no locking going into that function when coming from
-> > > cfq_get_io_context(), the other paths (happen) to hold the queue lock
-> > > already though.
-> > 
-> > So the call from cfq_get_io_context() needs an rcu_read_lock()?
-> > Not seeing this in the patch below, but maybe you have it up a
-> > function-call level or two?
-> 
-> It's in there, it now does:
-> 
->         rcu_read_lock();
->         cic = rcu_dereference(ioc->ioc_data);
->         if (cic && cic->key == cfqd) {
->                 rcu_read_unlock();
->                 return cic;
->         }
->         ...
-> 
-> OK? Which is basically what remains of the patch now, except for the
-> comment additions. Oh, and the ioc->lock protecting setting of
-> ->ioc_data as well. New version below. Alexey, care to give this a
-> spin? Seems your box is very well suited for finding RCU preempt
-> problems :-)
-
-OK, looks good.
-
-						Thanx, Paul
-
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index 4df3f05..d01b411 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -1142,6 +1142,9 @@ static void cfq_put_queue(struct cfq_queue *cfqq)
->  	kmem_cache_free(cfq_pool, cfqq);
->  }
-> 
-> +/*
-> + * Must always be called with the rcu_read_lock() held
-> + */
->  static void
->  __call_for_each_cic(struct io_context *ioc,
->  		    void (*func)(struct io_context *, struct cfq_io_context *))
-> @@ -1197,6 +1200,11 @@ static void cic_free_func(struct io_context *ioc, struct cfq_io_context *cic)
->  	cfq_cic_free(cic);
->  }
-> 
-> +/*
-> + * Must be called with rcu_read_lock() held or preemption otherwise disabled.
-> + * Only two callers of this - ->dtor() which is called with the rcu_read_lock(),
-> + * and ->trim() which is called with the task lock held
-> + */
->  static void cfq_free_io_context(struct io_context *ioc)
->  {
->  	/*
-> @@ -1502,20 +1510,24 @@ static struct cfq_io_context *
->  cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
->  {
->  	struct cfq_io_context *cic;
-> +	unsigned long flags;
->  	void *k;
-> 
->  	if (unlikely(!ioc))
->  		return NULL;
-> 
-> +	rcu_read_lock();
-> +
->  	/*
->  	 * we maintain a last-hit cache, to avoid browsing over the tree
->  	 */
->  	cic = rcu_dereference(ioc->ioc_data);
-> -	if (cic && cic->key == cfqd)
-> +	if (cic && cic->key == cfqd) {
-> +		rcu_read_unlock();
->  		return cic;
-> +	}
-> 
->  	do {
-> -		rcu_read_lock();
->  		cic = radix_tree_lookup(&ioc->radix_root, (unsigned long) cfqd);
->  		rcu_read_unlock();
->  		if (!cic)
-> @@ -1524,10 +1536,13 @@ cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
->  		k = cic->key;
->  		if (unlikely(!k)) {
->  			cfq_drop_dead_cic(cfqd, ioc, cic);
-> +			rcu_read_lock();
->  			continue;
->  		}
-> 
-> +		spin_lock_irqsave(&ioc->lock, flags);
->  		rcu_assign_pointer(ioc->ioc_data, cic);
-> +		spin_unlock_irqrestore(&ioc->lock, flags);
->  		break;
->  	} while (1);
-> 
-> @@ -2134,6 +2149,10 @@ static void *cfq_init_queue(struct request_queue *q)
-> 
->  static void cfq_slab_kill(void)
->  {
-> +	/*
-> +	 * Caller already ensured that pending RCU callbacks are completed,
-> +	 * so we should have no busy allocations at this point.
-> +	 */
->  	if (cfq_pool)
->  		kmem_cache_destroy(cfq_pool);
->  	if (cfq_ioc_pool)
-> @@ -2292,6 +2311,11 @@ static void __exit cfq_exit(void)
->  	ioc_gone = &all_gone;
->  	/* ioc_gone's update must be visible before reading ioc_count */
->  	smp_wmb();
-> +
-> +	/*
-> +	 * this also protects us from entering cfq_slab_kill() with
-> +	 * pending RCU callbacks
-> +	 */
->  	if (elv_ioc_count_read(ioc_count))
->  		wait_for_completion(ioc_gone);
->  	cfq_slab_kill();
-> 
-> -- 
-> Jens Axboe
-> 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
