@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYE1WZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYE1W2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbYE1WZm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 18:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYE1WZf
+	id S1755325AbYE1W2n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 18:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbYE1W2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 18:25:35 -0400
-Received: from tesla.selinc.com ([12.110.71.2]:33199 "EHLO tesla.selinc.com"
+	Wed, 28 May 2008 18:28:34 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4875 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753477AbYE1WZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 18:25:34 -0400
-To: linux-kernel@vger.kernel.org
-Subject: BUG/OOPS: Double Lock in fsl_usb2_udc.c
+	id S1753650AbYE1W2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 18:28:33 -0400
+Date: Wed, 28 May 2008 17:48:12 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080528214812.GB3133@tuxdriver.com>
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <20080527124315.131b1343@Varda> <alpine.LFD.1.10.0805281307150.2958@woody.linux-foundation.org> <1212005877.21624.47.camel@johannes.berg>
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OF581BDA23.991E51FC-ON88257457.007166AD-88257457.007B3064@selinc.com>
-From: Eugene_Bordenkircher@selinc.com
-Date: Wed, 28 May 2008 15:25:31 -0700
-X-MIMETrack: Serialize by Router on Edison2/SEL(Release 7.0.3|September 26, 2007) at 05/28/2008
- 03:25:33 PM,
-	Serialize complete at 05/28/2008 03:25:33 PM
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1212005877.21624.47.camel@johannes.berg>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All, 
+On Wed, May 28, 2008 at 10:17:57PM +0200, Johannes Berg wrote:
 
-I have recently found an instance in the drivers/usb/gadget/fsl_usb2_udc.c 
-file that causes the udc->lock spinlock to be taken twice.  The problem 
-arises when you disconnect from the DR port and then reconnect.  The 
-interrupt routine for the driver receives a 'reset' event which takes the 
-lock and calls reset_queues() which in turn calls 
-udc->driver->disconnect().  Eventually, that disconnect() call comes back 
-up to the fsl_usb2_udc driver and calls fsl_ep_disable() which attempts to 
-take the udc->lock again.  Unfortunately the lock was not released before 
-the call to disconnect(), therefore the double lock is taken. 
+> > I suspect the oops is also why the bootup breaks, so it's likely all the 
+> > same issue. Please save the dmesg into a file, reboot into a working 
+> > setup, and send that. Along with hw information (it's likely related to 
+> > your network device driver, since I've not seen an uproar of these kinds 
+> > of problems from everybody else..).
+> 
+> Actually, please apply the patch "﻿rt2x00: Use atomic interface
+> iteration in irq context" before trying anything more, that'll fix it.
+> I'm not sure where Linville is hiding ;)
+> 
+> (http://article.gmane.org/gmane.linux.kernel.wireless.general/15268)
 
-Looking through other drivers, I have seen them releasing the lock 
-immediately before calling disconnect(), however, without being an expert 
-with this driver, I'm not entirely sure that is the best option here. 
+Zzzzzzz....huh, what?? :-)
 
-I have seen the behavior directly on a 2.6.23.9-rt13 kernel, but have 
-perused the latest source and the same problem appears to be there. 
-Attached below is the generated BUG trace for the 2.6.23.9-rt13 kernel. 
+I just sent a pull request to Dave M. with that patch in it.
+Last weekend was a long one in the USA, so I apologize for the delay...
 
-Please CC me directly if possible for immediate responses.  Otherwise I 
-will have to wait for the archives to post to read responses. 
-
-Eugene T. Bordenkircher 
-
----Begin BUG: 
-
-kernel BUG at kernel/rtmutex.c:683! 
-stopped custom tracer. 
-Oops: Exception in kernel mode, sig: 5 [#1] 
-PREEMPT MPC834x ITX 
-NIP: c021629c LR: c0216270 CTR: 00000000 
-REGS: df761d70 TRAP: 0700   Not tainted  (2.6.23.9-rt13) 
-MSR: 00021032 <ME,IR,DR>  CR: 28000022  XER: 00000000 
-TASK = df632080[241] 'IRQ-38' THREAD: df760000 
-GPR00: 00000001 df761e20 df632080 00000000 11111111 00000000 df761e6c 
-00000000 
-GPR08: df761e48 00000000 df761e50 00000000 80000000 ede5cdde 1fffd000 
-00800000 
-GPR16: ffffffff 00000000 007fff00 00000040 00000000 007ffeb0 00000000 
-1fff8b08 
-GPR24: 00000000 00000026 00000000 df79a320 c026b2e8 c02240bc 00009032 
-df79a320 
-NIP [c021629c] rt_spin_lock_slowlock+0x9c/0x200 
-LR [c0216270] rt_spin_lock_slowlock+0x70/0x200 
-Call Trace: 
-[df761e20] [c0216270] rt_spin_lock_slowlock+0x70/0x200 (unreliable) 
-[df761e90] [c0182828] fsl_ep_disable+0xcc/0x154 
-[df761eb0] [c0184d30] eth_reset_config+0x88/0x1d0 
-[df761ed0] [c0184ec0] eth_disconnect+0x48/0x64 
-[df761ef0] [c01831a4] reset_queues+0x60/0x78 
-[df761f00] [c0183b74] fsl_udc_irq+0x9b8/0xa58 
-[df761f50] [c003ef30] handle_IRQ_event+0x64/0x100 
-[df761f80] [c003f758] thread_simple_irq+0x6c/0xc8 
-[df761fa0] [c003f888] do_irqd+0xd4/0x2e4 
-[df761fd0] [c0032284] kthread+0x50/0x8c 
-[df761ff0] [c000f9b4] kernel_thread+0x44/0x60 
-Instruction dump: 
-4be25fb9 2f830000 41be0014 7fe3fb78 7fc4f378 48000f69 48000168 801f0024 
-5400003a 7c001278 21600000 7c0b0114 <0f000000> 38000004 90010008 80010008 
-note: IRQ-38[241] exited with preempt_count 1 
-BUG: sleeping function called from invalid context IRQ-38(241) at 
-kernel/rtmutex.c:637 
-in_atomic():1 [00000001], irqs_disabled():0 
-Call Trace: 
-[df761c20] [c0008674] show_stack+0x54/0x174 (unreliable) 
-[df761c50] [c0014e74] __might_sleep+0xe0/0xf4 
-[df761c60] [c02169f8] __lock_text_start+0x30/0x48 
-[df761c70] [c001e928] do_exit+0x1f8/0x7bc 
-[df761ca0] [c000d0bc] die+0x198/0x1b0 
-[df761cc0] [c000d26c] _exception+0x38/0xf8 
-[df761d60] [c000f1bc] ret_from_except_full+0x0/0x4c 
---- Exception: 700 at rt_spin_lock_slowlock+0x9c/0x200 
-   LR = rt_spin_lock_slowlock+0x70/0x200 
-[df761e90] [c0182828] fsl_ep_disable+0xcc/0x154 
-[df761eb0] [c0184d30] eth_reset_config+0x88/0x1d0 
-[df761ed0] [c0184ec0] eth_disconnect+0x48/0x64 
-[df761ef0] [c01831a4] reset_queues+0x60/0x78 
-[df761f00] [c0183b74] fsl_udc_irq+0x9b8/0xa58 
-[df761f50] [c003ef30] handle_IRQ_event+0x64/0x100 
-[df761f80] [c003f758] thread_simple_irq+0x6c/0xc8 
-[df761fa0] [c003f888] do_irqd+0xd4/0x2e4 
-[df761fd0] [c0032284] kthread+0x50/0x8c 
-[df761ff0] [c000f9b4] kernel_thread+0x44/0x60 
-
----End BUG 
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
