@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751504AbYE1ISZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbYE1ITV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751504AbYE1ISZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 04:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbYE1ISN
+	id S1753587AbYE1ITV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 04:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYE1ITH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 04:18:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:56621 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYE1ISM (ORCPT
+	Wed, 28 May 2008 04:19:07 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:47688 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbYE1ITF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 04:18:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=u6ik3XhfzxKPMKwTsh5V/O6g40rmZX6RScrKi/ZPQcj1x5xEFJoAdrqsjgbz7flM5ObhqhKRUMl28XKEZVZrvTlXKq16DT9wL9mNry85tI/JGoW8aPWnmf7gZ7Z0j6Sg8E7jSZgK2yuxg/7V5HAgt/oJ1ZTNbB1ulVYbYp23bQ0=
-Message-ID: <3d8471ca0805280118y5e9408eeo6ec907579d4b5e89@mail.gmail.com>
-Date: Wed, 28 May 2008 10:18:10 +0200
-From: "Guillaume Chazarain" <guichaz@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fs-writeback: handle errors in sync_sb_inodes()
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080527223832.f7131761.akpm@linux-foundation.org>
+	Wed, 28 May 2008 04:19:05 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.5.3
+References: <7viqx1g8ix.fsf@gitster.siamese.dyndns.org>
+cc: linux-kernel@vger.kernel.org
+Date: Wed, 28 May 2008 01:18:55 -0700
+In-Reply-To: <7viqx1g8ix.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
+ message of "Sun, 25 May 2008 18:26:46 -0700")
+Message-ID: <7vlk1ux2mo.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080523203429.11846.84137.stgit@localhost.localdomain>
-	 <20080527223832.f7131761.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: BA97515E-2C8E-11DD-A9F7-80001473D85F-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 7:38 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> ho hum, I've forgotten why I didn't like this.
+The latest maintenance release GIT 1.5.5.3 is available at the
+usual places:
 
-http://lkml.org/lkml/2007/1/2/238
+  http://www.kernel.org/pub/software/scm/git/
 
-Hope that helps :-)
+  git-1.5.5.3.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.5.3.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.5.3.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.5.3-1.$arch.rpm	(RPM)
 
--- 
-Guillaume
+This one is much smaller than 1.5.5.2, primarily to push out a few fixes
+to send-email and bisect that have already been in 'master' for a while.
+
+----------------------------------------------------------------
+
+Changes since v1.5.5.2 are as follows:
+
+Christian Couder (1):
+      bisect: print an error message when "git rev-list --bisect-vars" fails
+
+Gerrit Pape (3):
+      git-bisect.sh: don't accidentally override existing branch "bisect"
+      Documentation/git-bundle.txt: fix synopsis
+      commit --interactive: properly update the index before commiting
+
+Horst H. von Brand (1):
+      Fix recipient santitization
+
+Jeff King (2):
+      send-email: specify content-type of --compose body
+      send-email: rfc2047-quote subject lines with non-ascii characters
+
+Johannes Sixt (1):
+      Revert "filter-branch: subdirectory filter needs --full-history"
+
+Junio C Hamano (3):
+      Release Notes for 1.5.5.2
+      show-branch --current: do not barf on detached HEAD
+      GIT 1.5.5.3
+
+Lea Wiemann (1):
+      gitweb: only display "next" links in logs if there is a next page
+
+Michele Ballabio (1):
+      Documentation: fix graph in git-rev-parse.txt
+
+Pieter de Bie (1):
+      builtin-fast-export: Only output a single parent per line
+
