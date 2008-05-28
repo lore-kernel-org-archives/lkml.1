@@ -1,166 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334AbYE1M3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYE1Mo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334AbYE1M3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 08:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYE1M3L
+	id S1754033AbYE1Mo7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 08:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYE1Moa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 08:29:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39706 "EHLO mx2.mail.elte.hu"
+	Wed, 28 May 2008 08:44:30 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:2419 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbYE1M3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 08:29:10 -0400
-Date: Wed, 28 May 2008 14:28:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       x86@kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: [bisected] Re: [PATCH 05 of 12] xen: add p2m mfn_list_list
-Message-ID: <20080528122813.GA5502@elte.hu>
-References: <patchbomb.1211550067@localhost> <a405e5f9ddf6f5f142ea.1211550072@localhost>
+	id S1752511AbYE1Mo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 08:44:27 -0400
+Date: Wed, 28 May 2008 14:44:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
+Message-ID: <20080528124423.GV25504@kernel.dk>
+References: <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk> <20080528103026.GE8255@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a405e5f9ddf6f5f142ea.1211550072@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080528103026.GE8255@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 28 2008, Paul E. McKenney wrote:
+> On Wed, May 28, 2008 at 12:07:21PM +0200, Jens Axboe wrote:
+> > On Tue, May 27 2008, Paul E. McKenney wrote:
+> > > On Tue, May 27, 2008 at 03:35:10PM +0200, Jens Axboe wrote:
+> > > > On Tue, May 27 2008, Alexey Dobriyan wrote:
+> > > > > On Sat, May 10, 2008 at 02:37:19PM +0400, Alexey Dobriyan wrote:
+> > > > > > > > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
+> > > > > > > > > >  		rcu_read_lock();
+> > > > > > > > > >  		if (ioc->aic && ioc->aic->dtor)
+> > > > > > > > > >  			ioc->aic->dtor(ioc->aic);
+> > > > > > > > > > -		rcu_read_unlock();
+> > > > > > > > > >  		cfq_dtor(ioc);
+> > > > > > > > > > +		rcu_read_unlock();
+> > > > > > > > > >  
+> > > > > > > > > >  		kmem_cache_free(iocontext_cachep, ioc);
+> > > > > > > > > >  		return 1;
+> > > > > > > > > 
+> > > > > > > > > This helps in sense that 3 times bulk cross-compiles finish to the end.
+> > > > > > > > > You'll hear me if another such oops will resurface.
+> > > > > > > > 
+> > > > > > > > Still looking good?
+> > > > > > > 
+> > > > > > > Yup!
+> > > > > > 
+> > > > > > And this with patch in mainline, again with PREEMPT_RCU.
+> > > > > 
+> > > > > Ping, this happened again with 2.6.26-rc4 and PREEMPT_RCU.
+> > > > 
+> > > > Worrisome... Paul, would you mind taking a quick look at cfq
+> > > > and see if you can detect why breaks with preempt rcu? It's
+> > > > clearly a use-after-free symptom, but I don't see how it can
+> > > > happen.
+> > > 
+> > > Some quick and probably off-the-mark questions...
+> > 
+> > Thanks!
+> 
+> Glad it actually was of help!  ;-)
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Your reviews are ALWAYS greatly appreciated!
 
-> When saving a domain, the Xen tools need to remap all our mfns to 
-> portable pfns.  In order to remap our p2m table, it needs to know 
-> where all its pages are, so maintain the references to the p2m table 
-> for it to use.
+> > > o	What is the purpose of __call_for_each_cic()?  When called
+> > > 	from call_for_each_cic(), it is under rcu_read_lock(), as
+> > > 	required, but it is also called from cfq_free_io_context(),
+> > > 	which is assigned to the ->dtor and ->exit members of the
+> > > 	cfq_io_context struct.  What protects calls through these
+> > > 	members?
+> > > 
+> > > 	(This is for the ->cic_list field of the cfq_io_context structure.
+> > > 	One possibility is that the io_context's ->lock member is held,
+> > > 	but I don't see this.  Not that I looked all that hard...)
+> > > 
+> > > 	My suggestion would be to simply change all invocations of
+> > > 	__call_for_each_cic() to instead invoke call_for_each_cic().
+> > > 	The rcu_read_lock()/rcu_read_unlock() pair is pretty
+> > > 	lightweight, even in CONFIG_PREEMPT_RCU.
+> > 
+> > __call_for_each_cic() is always called under rcu_read_lock(), it merely
+> > exists to avoid a double rcu_read_lock(). Even if it is cheap. The
+> > convention follows the usual __lock_is_already_held() double under
+> > score, but I guess it could do with a comment! There are only two
+> > callers of the function, call_for_each_cic() which does the
+> > rcu_read_lock(), and cfq_free_io_context() which is called from ->dtor
+> > (and holds the rcu_read_lock() and ->trim which actually does not. That
+> > looks like it could be problematic, but it's only called when an io
+> > scheduler module is removed so not really critical. I'll add it, though!
+> > Actually, the task_lock() should be enough there. So no bug, but (again)
+> > it could do with a comment.
+> 
+> Sounds good!
+> 
+> > > o	When calling cfq_slab_kill(), for example from cfq_exit(),
+> > > 	what ensures that all previous RCU callbacks have completed?
+> > > 	
+> > > 	I suspect that you need an rcu_barrier() at the beginning
+> > > 	of cfq_slab_kill(), but I could be missing something.
+> > 
+> > So we have two callers of that, one is from the error path at init time
+> > and is obviously ok. The other does need rcu_barrier()! I'll add that.
+> 
+> OK, that does make my brain hurt less.  ;-)
 
--tip tree auto-testing found the following early bootup hang:
+So that one was also OK, as Fabio pointed out. If you follow the
+ioc_gone and user tracking, the:
 
--------------->
-get_memcfg_from_srat: assigning address to rsdp
-RSD PTR  v0 [Nvidia]
-BUG: Int 14: CR2 ffd00040
-     EDI 8092fbfe  ESI ffd00040  EBP 80b0aee8  ESP 80b0aed0
-     EBX 000f76f0  EDX 0000000e  ECX 00000003  EAX ffd00040
-     err 00000000  EIP 802c055a   CS 00000060  flg 00010006
-Stack: ffd00040 80bc78d0 80b0af6c 80b1dbfe 8093d8ba 00000008 80b42810 80b4ddb4
-       80b42842 00000000 80b0af1c 801079c8 808e724e 00000000 80b42871 802c0531
-       00000100 00000000 0003fff0 80b0af40 80129999 00040100 00040100 00000000
-Pid: 0, comm: swapper Not tainted 2.6.26-rc4-sched-devel.git #570
- [<802c055a>] ? strncmp+0x11/0x25
- [<80b1dbfe>] ? get_memcfg_from_srat+0xb4/0x568
- [<801079c8>] ? mcount_call+0x5/0x9
- [<802c0531>] ? strcmp+0xa/0x22
- [<80129999>] ? printk+0x38/0x3a
- [<80129999>] ? printk+0x38/0x3a
- [<8011b122>] ? memory_present+0x66/0x6f
- [<80b216b4>] ? setup_memory+0x13/0x40c
- [<80b16b47>] ? propagate_e820_map+0x80/0x97
- [<80b1622a>] ? setup_arch+0x248/0x477
- [<80129999>] ? printk+0x38/0x3a
- [<80b11759>] ? start_kernel+0x6e/0x2eb
- [<80b110fc>] ? i386_start_kernel+0xeb/0xf2
- =======================
-<------
+        if (elv_ioc_count_read(ioc_count))
+                wait_for_completion(ioc_gone);
 
-with this config:
+also has the side effect of waiting for RCU callbacks calling
+kmem_cache_free() to have finished as well.
 
-   http://redhat.com/~mingo/misc/config-Wed_May_28_01_33_33_CEST_2008.bad
+> > > o	What protects the first rcu_dereference() in cfq_cic_lookup()?
+> > > 	There needs to be either an enclose rcu_read_lock() on the
+> > > 	one hand or the ->queue_lock needs to be held.
+> > > 
+> > > 	(My guess is the latter, given the later rcu_assign_pointer()
+> > > 	in this same function, but I don't see a lock acquisition
+> > > 	in the immediate vicinity -- might be further up the function
+> > > 	call stack, though.)
+> > 
+> > There's no locking going into that function when coming from
+> > cfq_get_io_context(), the other paths (happen) to hold the queue lock
+> > already though.
+> 
+> So the call from cfq_get_io_context() needs an rcu_read_lock()?
+> Not seeing this in the patch below, but maybe you have it up a
+> function-call level or two?
 
-The thing is, the crash makes little sense at first sight. We crash on a 
-benign-looking printk. The code around it got changed in -tip but 
-checking those topic branches individually did not reproduce the bug.
+It's in there, it now does:
 
-Bisection led to this commit:
+        rcu_read_lock();
+        cic = rcu_dereference(ioc->ioc_data);
+        if (cic && cic->key == cfqd) {
+                rcu_read_unlock();
+                return cic;
+        }
+        ...
 
-|   d5edbc1f75420935b1ec7e65df10c8f81cea82de is first bad commit
-|   commit d5edbc1f75420935b1ec7e65df10c8f81cea82de
-|   Author: Jeremy Fitzhardinge <jeremy@goop.org>
-|   Date:   Mon May 26 23:31:22 2008 +0100
-|
-|   xen: add p2m mfn_list_list
+OK? Which is basically what remains of the patch now, except for the
+comment additions. Oh, and the ioc->lock protecting setting of
+->ioc_data as well. New version below. Alexey, care to give this a
+spin? Seems your box is very well suited for finding RCU preempt
+problems :-)
 
-Which is somewhat surprising, as on native hardware Xen client side 
-should have little to no side-effects.
 
-After some head scratching, it turns out the following happened: 
-randconfig enabled the following Xen options:
-
-  CONFIG_XEN=y
-  CONFIG_XEN_MAX_DOMAIN_MEMORY=8
-  # CONFIG_XEN_BLKDEV_FRONTEND is not set
-  # CONFIG_XEN_NETDEV_FRONTEND is not set
-  CONFIG_HVC_XEN=y
-  # CONFIG_XEN_BALLOON is not set
-
-which activated this piece of code in arch/x86/xen/mmu.c:
-
-> @@ -69,6 +69,13 @@
->  	__attribute__((section(".data.page_aligned"))) =
->  		{ [ 0 ... TOP_ENTRIES - 1] = &p2m_missing[0] };
->  
-> +/* Arrays of p2m arrays expressed in mfns used for save/restore */
-> +static unsigned long p2m_top_mfn[TOP_ENTRIES]
-> +	__attribute__((section(".bss.page_aligned")));
-> +
-> +static unsigned long p2m_top_mfn_list[TOP_ENTRIES / P2M_ENTRIES_PER_PAGE]
-> +	__attribute__((section(".bss.page_aligned")));
-
-The problem is, you must only put variables into .bss.page_aligned that 
-have a _size_ that is _exactly_ page aligned. In this case the size of 
-p2m_top_mfn_list is not page aligned:
-
- 80b8d000 b p2m_top_mfn
- 80b8f000 b p2m_top_mfn_list
- 80b8f008 b softirq_stack
- 80b97008 b hardirq_stack
- 80b9f008 b bm_pte
-
-So all subsequent variables get unaligned which, depending on luck, 
-breaks the kernel in various funny ways. In this case what killed the 
-kernel first was the misaligned bootmap pte page, resulting in that 
-creative crash above.
-
-Anyway, this was a fun bug to track down :-)
-
-I think the moral is that .bss.page_aligned is a dangerous construct in 
-its current form, and the symptoms of breakage are very non-trivial, so 
-i think we need build-time checks to make sure all symbols in 
-.bss.page_aligned are truly page aligned.
-
-Sam, any ideas how to accomplish that best?
-
-The Xen fix below gets the kernel booting again. I suspect we really 
-need this list to stay in its separate page due to Xen assumptions, even 
-though it's only 8 bytes large?
-
-	Ingo
-
----
- arch/x86/xen/mmu.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux/arch/x86/xen/mmu.c
-===================================================================
---- linux.orig/arch/x86/xen/mmu.c
-+++ linux/arch/x86/xen/mmu.c
-@@ -73,7 +73,8 @@ static unsigned long *p2m_top[TOP_ENTRIE
- static unsigned long p2m_top_mfn[TOP_ENTRIES]
- 	__attribute__((section(".bss.page_aligned")));
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 4df3f05..d01b411 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1142,6 +1142,9 @@ static void cfq_put_queue(struct cfq_queue *cfqq)
+ 	kmem_cache_free(cfq_pool, cfqq);
+ }
  
--static unsigned long p2m_top_mfn_list[TOP_ENTRIES / P2M_ENTRIES_PER_PAGE]
-+static unsigned long p2m_top_mfn_list[
-+			PAGE_ALIGN(TOP_ENTRIES / P2M_ENTRIES_PER_PAGE)]
- 	__attribute__((section(".bss.page_aligned")));
++/*
++ * Must always be called with the rcu_read_lock() held
++ */
+ static void
+ __call_for_each_cic(struct io_context *ioc,
+ 		    void (*func)(struct io_context *, struct cfq_io_context *))
+@@ -1197,6 +1200,11 @@ static void cic_free_func(struct io_context *ioc, struct cfq_io_context *cic)
+ 	cfq_cic_free(cic);
+ }
  
- static inline unsigned p2m_top_index(unsigned long pfn)
++/*
++ * Must be called with rcu_read_lock() held or preemption otherwise disabled.
++ * Only two callers of this - ->dtor() which is called with the rcu_read_lock(),
++ * and ->trim() which is called with the task lock held
++ */
+ static void cfq_free_io_context(struct io_context *ioc)
+ {
+ 	/*
+@@ -1502,20 +1510,24 @@ static struct cfq_io_context *
+ cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
+ {
+ 	struct cfq_io_context *cic;
++	unsigned long flags;
+ 	void *k;
+ 
+ 	if (unlikely(!ioc))
+ 		return NULL;
+ 
++	rcu_read_lock();
++
+ 	/*
+ 	 * we maintain a last-hit cache, to avoid browsing over the tree
+ 	 */
+ 	cic = rcu_dereference(ioc->ioc_data);
+-	if (cic && cic->key == cfqd)
++	if (cic && cic->key == cfqd) {
++		rcu_read_unlock();
+ 		return cic;
++	}
+ 
+ 	do {
+-		rcu_read_lock();
+ 		cic = radix_tree_lookup(&ioc->radix_root, (unsigned long) cfqd);
+ 		rcu_read_unlock();
+ 		if (!cic)
+@@ -1524,10 +1536,13 @@ cfq_cic_lookup(struct cfq_data *cfqd, struct io_context *ioc)
+ 		k = cic->key;
+ 		if (unlikely(!k)) {
+ 			cfq_drop_dead_cic(cfqd, ioc, cic);
++			rcu_read_lock();
+ 			continue;
+ 		}
+ 
++		spin_lock_irqsave(&ioc->lock, flags);
+ 		rcu_assign_pointer(ioc->ioc_data, cic);
++		spin_unlock_irqrestore(&ioc->lock, flags);
+ 		break;
+ 	} while (1);
+ 
+@@ -2134,6 +2149,10 @@ static void *cfq_init_queue(struct request_queue *q)
+ 
+ static void cfq_slab_kill(void)
+ {
++	/*
++	 * Caller already ensured that pending RCU callbacks are completed,
++	 * so we should have no busy allocations at this point.
++	 */
+ 	if (cfq_pool)
+ 		kmem_cache_destroy(cfq_pool);
+ 	if (cfq_ioc_pool)
+@@ -2292,6 +2311,11 @@ static void __exit cfq_exit(void)
+ 	ioc_gone = &all_gone;
+ 	/* ioc_gone's update must be visible before reading ioc_count */
+ 	smp_wmb();
++
++	/*
++	 * this also protects us from entering cfq_slab_kill() with
++	 * pending RCU callbacks
++	 */
+ 	if (elv_ioc_count_read(ioc_count))
+ 		wait_for_completion(ioc_gone);
+ 	cfq_slab_kill();
+
+-- 
+Jens Axboe
+
