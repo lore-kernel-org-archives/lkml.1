@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYE1UOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYE1UO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbYE1UOn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 16:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYE1UOd
+	id S1754730AbYE1UO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 16:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbYE1UOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 16:14:33 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37917 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbYE1UOd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 16:14:33 -0400
-Date: Wed, 28 May 2008 22:14:31 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Willy Tarreau <w@1wt.eu>
-cc: Hugh Dickins <hugh@veritas.com>, Fede <fedux@lugmen.org.ar>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] Re: bad pmd ffff810000207238(9090909090909090).
-In-Reply-To: <20080528195637.GA11662@1wt.eu>
-Message-ID: <alpine.LNX.1.10.0805282210580.19264@fbirervta.pbzchgretzou.qr>
-References: <483CBCDD.10401@lugmen.org.ar> <Pine.LNX.4.64.0805281922530.7959@blonde.site> <20080528195637.GA11662@1wt.eu>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 28 May 2008 16:14:39 -0400
+Received: from sous-sol.org ([216.99.217.87]:38330 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753505AbYE1UOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 16:14:37 -0400
+Date: Wed, 28 May 2008 13:14:00 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Stephen Hemminger <stephen.hemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] sysctl: permission check based on capability not euid
+Message-ID: <20080528201400.GG30402@sequoia.sous-sol.org>
+References: <20080528121200.54c04b5a@speedy>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080528121200.54c04b5a@speedy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Stephen Hemminger (stephen.hemminger@vyatta.com) wrote:
+> This patch modifies the permission checks for sysctl's from being based on uid=0 (root)
+> to use the capability system. This matches the behavior of other OS's using sysctl's
+> and capabilities. Linux has tried to get away from using uid=0 for security overrides
+> and use capabilities instead. 
+> 
+> I was working on Quagga enhancement that involved enabling a sysctl, and it didn't
+> work because is a safe daemon and drops privileges and resets its real/effective uid
+> after initialization; it then re-enables only the capabilities when it needs to
+> do some privileged operation. This wouldn't work because sysctl's were still using
+> the root based permission check. The existing code in quagga to enable ip forwarding
+> doesn't work for the same reason.
 
-On Wednesday 2008-05-28 21:56, Willy Tarreau wrote:
->On Wed, May 28, 2008 at 07:36:07PM +0100, Hugh Dickins wrote:
->> On Tue, 27 May 2008, Fede wrote:
->> > 
->> > Today I tried to start a firewalling script and failed due to an unrelated
->> > issue, but when I checked the log I saw this:
->> > 
->> > May 27 20:38:15 kaoz ip_tables: (C) 2000-2006 Netfilter Core Team
->> > May 27 20:38:28 kaoz Netfilter messages via NETLINK v0.30.
->> > May 27 20:38:28 kaoz nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
->> > May 27 20:38:28 kaoz ctnetlink v0.93: registering with nfnetlink.
->> > May 27 20:38:28 kaoz ClusterIP Version 0.8 loaded successfully
->> > May 27 20:38:28 kaoz mm/memory.c:127: bad pmd
->> > ffff810000207238(9090909090909090).
->> > 
->> > I also found another post with a very similar issue. The other post had almost
->> > the same message (*mm*/*memory*.*c*:*127*: *bad* *pmd*
->> > ffff810000207808(9090909090909090).)
->> > 
->> > Does anyone know what is it?
->> 
->> Thanks a lot for re-reporting this: it was fun to work it out.
->> It's not a rootkit, it's harmless, but we ought to fix the noise.
->> Simple patch below, but let me explain more verbosely first.
->> 
->> What was really interesting in your report was that the address
->> is so close to that in OGAWA-San's report.  I had a look at that
->> page on my x86_64 boxes, and they have lots of 0x90s there too.
->> It's just some page alignment filler that x86_64 kernel startup
->> has missed cleaning up - patch below fixes that.  There's no
->> security aspect to it: the entries were already not-present,
->> they just generate this noise by triggering the pmd_bad test.
->
->Is there a particular reason we use 0x90 as an alignment filler ?
-
-Alignment within functions. You could use a JMP to jump over
-the alignment, but that would be costly. So in order to
-"run through the wall", you need an opcode that does not
-do anything, something like 0x90.
-0xAF would map to scasd on x86, and I'd hardly call that a
-no-op.
+I don't think CAP_SYS_ADMIN makes sense for net.*, for example.
