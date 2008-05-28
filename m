@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbYE1TMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYE1TMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754380AbYE1TMQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 15:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYE1TL5
+	id S1754643AbYE1TMa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 15:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbYE1TME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 15:11:57 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48063 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752676AbYE1TL4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 15:11:56 -0400
-Date: Wed, 28 May 2008 19:57:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Jens =?UTF-8?B?QsOkY2ttYW4=?=" <jens.backman@gmail.com>
-Cc: "Justin Piszcz" <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-Message-ID: <20080528195752.0cdcbc6d@core>
-In-Reply-To: <95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
-	<95711f160805280934y77ed7d91tec5aeb531bf8013c@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 28 May 2008 15:12:04 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:56554 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753313AbYE1TMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 15:12:01 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -2.499
+Date: Wed, 28 May 2008 12:12:00 -0700
+From: Stephen Hemminger <stephen.hemminger@vyatta.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Chris Wright <chrisw@osdl.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] sysctl: permission check based on capability not euid
+Message-ID: <20080528121200.54c04b5a@speedy>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 18:34:00 +0200
-"Jens Bäckman" <jens.backman@gmail.com> wrote:
+This patch modifies the permission checks for sysctl's from being based on uid=0 (root)
+to use the capability system. This matches the behavior of other OS's using sysctl's
+and capabilities. Linux has tried to get away from using uid=0 for security overrides
+and use capabilities instead. 
 
-> On Wed, May 28, 2008 at 10:53 AM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
-> > Results:
-> >
-> > http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
-> > http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
-> 
-> Either the RAID 1 read speed must be wrong, or something is odd in the
-> Linux implementation. There's six drives that can be used for reading
-> at the same time, as they contain the very same data. 63MB/s
-> sequential looks like what you would get from a single drive.
+I was working on Quagga enhancement that involved enabling a sysctl, and it didn't
+work because is a safe daemon and drops privileges and resets its real/effective uid
+after initialization; it then re-enables only the capabilities when it needs to
+do some privileged operation. This wouldn't work because sysctl's were still using
+the root based permission check. The existing code in quagga to enable ip forwarding
+doesn't work for the same reason.
 
-Which is fairly typical of a cheap desktop PC where the limitation is the
-memory and PCI bridge as much as the drive.
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 
-Alan
+---
+Maybe once the BKL is gone, the last vestiges of current->euid == 0 can be wiped out
+as well.
+
+--- a/include/linux/capability.h	2008-05-27 17:33:02.000000000 -0700
++++ b/include/linux/capability.h	2008-05-27 17:33:27.000000000 -0700
+@@ -261,6 +261,7 @@ typedef struct kernel_cap_struct {
+    arbitrary SCSI commands */
+ /* Allow setting encryption key on loopback filesystem */
+ /* Allow setting zone reclaim policy */
++/* Allow setting any sysctl value */
+ 
+ #define CAP_SYS_ADMIN        21
+ 
+--- a/kernel/sysctl.c	2008-05-27 17:32:33.000000000 -0700
++++ b/kernel/sysctl.c	2008-05-27 17:32:46.000000000 -0700
+@@ -1561,7 +1561,7 @@ out:
+ 
+ static int test_perm(int mode, int op)
+ {
+-	if (!current->euid)
++	if (capable(CAP_SYS_ADMIN))
+ 		mode >>= 6;
+ 	else if (in_egroup_p(0))
+ 		mode >>= 3;
