@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbYE1UKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbYE1UOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbYE1UKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 16:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYE1UKn
+	id S1754391AbYE1UOn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 16:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYE1UOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 16:10:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51552 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752755AbYE1UKm (ORCPT
+	Wed, 28 May 2008 16:14:33 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37917 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752230AbYE1UOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 16:10:42 -0400
-Date: Wed, 28 May 2008 13:10:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: =?ISO-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
-	<ariveira@gmail.com>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: Linux 2.6.26-rc4
-In-Reply-To: <20080527124315.131b1343@Varda>
-Message-ID: <alpine.LFD.1.10.0805281307150.2958@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <20080527124315.131b1343@Varda>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 28 May 2008 16:14:33 -0400
+Date: Wed, 28 May 2008 22:14:31 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Willy Tarreau <w@1wt.eu>
+cc: Hugh Dickins <hugh@veritas.com>, Fede <fedux@lugmen.org.ar>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Re: bad pmd ffff810000207238(9090909090909090).
+In-Reply-To: <20080528195637.GA11662@1wt.eu>
+Message-ID: <alpine.LNX.1.10.0805282210580.19264@fbirervta.pbzchgretzou.qr>
+References: <483CBCDD.10401@lugmen.org.ar> <Pine.LNX.4.64.0805281922530.7959@blonde.site> <20080528195637.GA11662@1wt.eu>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Wednesday 2008-05-28 21:56, Willy Tarreau wrote:
+>On Wed, May 28, 2008 at 07:36:07PM +0100, Hugh Dickins wrote:
+>> On Tue, 27 May 2008, Fede wrote:
+>> > 
+>> > Today I tried to start a firewalling script and failed due to an unrelated
+>> > issue, but when I checked the log I saw this:
+>> > 
+>> > May 27 20:38:15 kaoz ip_tables: (C) 2000-2006 Netfilter Core Team
+>> > May 27 20:38:28 kaoz Netfilter messages via NETLINK v0.30.
+>> > May 27 20:38:28 kaoz nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+>> > May 27 20:38:28 kaoz ctnetlink v0.93: registering with nfnetlink.
+>> > May 27 20:38:28 kaoz ClusterIP Version 0.8 loaded successfully
+>> > May 27 20:38:28 kaoz mm/memory.c:127: bad pmd
+>> > ffff810000207238(9090909090909090).
+>> > 
+>> > I also found another post with a very similar issue. The other post had almost
+>> > the same message (*mm*/*memory*.*c*:*127*: *bad* *pmd*
+>> > ffff810000207808(9090909090909090).)
+>> > 
+>> > Does anyone know what is it?
+>> 
+>> Thanks a lot for re-reporting this: it was fun to work it out.
+>> It's not a rootkit, it's harmless, but we ought to fix the noise.
+>> Simple patch below, but let me explain more verbosely first.
+>> 
+>> What was really interesting in your report was that the address
+>> is so close to that in OGAWA-San's report.  I had a look at that
+>> page on my x86_64 boxes, and they have lots of 0x90s there too.
+>> It's just some page alignment filler that x86_64 kernel startup
+>> has missed cleaning up - patch below fixes that.  There's no
+>> security aspect to it: the entries were already not-present,
+>> they just generate this noise by triggering the pmd_bad test.
+>
+>Is there a particular reason we use 0x90 as an alignment filler ?
 
-On Tue, 27 May 2008, Alejandro Riveira Fernández wrote:
->  
->   Compiled and booting into 2.6.26-rc4
-> 
->  1) With splash quiet on grub line it doesn't boot (or i didin't wait long
->     enough)
->  2) without quiet and splash I get into VT X filas becouse i use the evil
->     nvidia driver that's expected. But ubuntu failsafe mode (xserver with vesa
->     in low res) doesn't show up either *regression*
-
-Can you give more details about where it stops? 
-
->  3) i get an oops with network manager
-
-.. again, please give the full oops, without that we just know that "an 
-oops happened".
-
->  4) if i try to run some sudo command it gets stuck (Crtl +C doesnt' help)
->     "ip route" gets stuck too. User programs i tried wrok fine (only ls and
->     htop). Network realted problem?
-
-I assume it's related to the oops above - the oops probably happened while 
-holding some mutex or other lock, which is why network-related stuff then 
-blocks on that lock (which will never be released, since the oops killed 
-the process that held it).
-
-I suspect the oops is also why the bootup breaks, so it's likely all the 
-same issue. Please save the dmesg into a file, reboot into a working 
-setup, and send that. Along with hw information (it's likely related to 
-your network device driver, since I've not seen an uproar of these kinds 
-of problems from everybody else..).
-
->  5) printk times on dmesg go crazy
-
-More details, please, again.
-
-			Linus
+Alignment within functions. You could use a JMP to jump over
+the alignment, but that would be costly. So in order to
+"run through the wall", you need an opcode that does not
+do anything, something like 0x90.
+0xAF would map to scasd on x86, and I'd hardly call that a
+no-op.
