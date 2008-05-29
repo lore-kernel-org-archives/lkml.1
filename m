@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbYE2X2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYE2Xdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759443AbYE2X2n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 19:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbYE2X2g
+	id S1757983AbYE2Xdy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 19:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYE2Xdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 19:28:36 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38634 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754390AbYE2X2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 19:28:35 -0400
-Message-ID: <483F3C27.40508@linux.vnet.ibm.com>
-Date: Thu, 29 May 2008 18:28:39 -0500
-From: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 29 May 2008 19:33:42 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:35612 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYE2Xdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 19:33:41 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>,
+       Sverre Rabbelier <alturin@gmail.com>, Joe Perches <joe@perches.com>,
+       git@vger.kernel.org
+Subject: Re: whomto.pl -- finding out whom to send patches to
+References: <20080529210018.GA5508@damson.getinternet.no>
+Date: Thu, 29 May 2008 16:33:22 -0700
+In-Reply-To: <20080529210018.GA5508@damson.getinternet.no> (Vegard Nossum's
+ message of "Thu, 29 May 2008 23:00:18 +0200")
+Message-ID: <7vr6bkofct.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Martin Bligh <mbligh@mbligh.org>
-CC: "Randy.Dunlap" <rdunlap@xenotime.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Theodore Tso <tytso@mit.edu>, Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       bugme-admin@linux-foundation.org
-Subject: Re: [Bug #10732] REGRESSION: 2.6.26-rc2-git4: X server failed start
- on X61s laptop
-References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <20080526192247.GA7515@mit.edu>  <20080527125426.GJ7515@mit.edu> <200805292254.55248.rjw@sisk.pl> <Pine.LNX.4.64.0805291414340.16189@shark.he.net> <8f3aa8d60805291454s280a28d1g6c3891276c69a69e@mail.gmail.com>
-In-Reply-To: <8f3aa8d60805291454s280a28d1g6c3891276c69a69e@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: A9980516-2DD7-11DD-BF84-80001473D85F-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Bligh wrote:
-> On Thu, May 29, 2008 at 2:15 PM, Randy.Dunlap <rdunlap@xenotime.net> wrote:
->   
->> On Thu, 29 May 2008, Rafael J. Wysocki wrote:
->>
->>     
->>> On Tuesday, 27 of May 2008, Theodore Tso wrote:
->>>       
->>>> Bug #10732 is now closed.  BTW, it seems d*mned strange that the
->>>> submitter of the bug doesn't have the power to close a bug without
->>>> first grabbing the bug as the bug-fixer, changing its state to
->>>> ASSIGNED, and *then* being allowed to close the bug.  Grumble,
->>>> bugzilla's !#@#?@ process straightjacket....
->>>>         
->>> That depends on your account's access rights within the Bugzilla, which always
->>> have been a mystery to me.
->>>       
->> Martin Bligh should be able to clear that mystery up.
->>     
+Vegard Nossum <vegard.nossum@gmail.com> writes:
+
+> I've written this perl script that takes a patch as input and prints the
+> authors/committers of the affected lines, using git-blame as the back end.
 >
-> Jon ... is that something we can configure? Seems ... wrong.
-> Submitter and owner should both have power to edit the bug.
->   
-Submitter and owner should be able to edit the bug as far I as can see.
+> (The purpose of this is of course to find out whom to send patches to.)
+>
+> There are some caveats:
+>
+> - If I've understood correctly, git-blame incremental output doesn't split
+>   commits when a newer one is found, so we currently possibly take into
+>   account more than just the last patch to touch a line. This might not be
+>   a disadvantage, however...
 
-If the bug is not already in the resolved state then you can use the
-Close check box at the end of the 'Resolve' option line to close a bug
-with one submit.  You do not have to change it to the assign state in
-order to close it either - if it is the submitter or owner that is
-closing it.  These statements do not apply to bugzilla in general but do
-apply to the bugzilla.kernel.org one.
+"git blame" does not give irrelevant commits in its output, with or
+without --incremental.  Perhaps you were thinking about the "oops, earlier
+one was wrong, here are the corrections" behaviour of "git log
+--early-output", which is an unrelated mechanism in a different command.
 
-Jon
+But I have to wonder why you used --incremental and not --porcelain
+format, the latter of which is more compact and is designed for parsing by
+tools.
+
+I also have to wonder why you did not use -M, -C, and/or -w, if you used
+blame to find the true origin of lines that are involved.
+
+Unless the patch is truly about a narrow region of a handful files
+(e.g. micro-optimizing the implementation of a single function without
+changing its external interface at all, or fixing an off-by-one error in a
+group of functions that do similar things), I suspect that it would make
+more sense to use "git shortlog --no-merges -- paths" to get the list of
+people who are involved in the general area, even though they may not have
+been involved in particular _lines_ that the patch touches.  For example,
+if a patch changes the lines in a function's implementation, you would
+want input not only from the people who improved the implementation of the
+function over the years, but more from the people who care about the
+calling sites of that function the patch is touching.
 
