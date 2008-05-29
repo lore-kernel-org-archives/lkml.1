@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYE2NJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYE2NKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbYE2NJs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYE2NJi
+	id S1755942AbYE2NKX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYE2NKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:09:38 -0400
-Received: from styx.suse.cz ([82.119.242.94]:52120 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752507AbYE2NJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:09:36 -0400
-Date: Thu, 29 May 2008 15:09:35 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] jbd2: Silence warnings about non-uptodate buffers
-Message-ID: <20080529130935.GC29602@duck.suse.cz>
-References: <12120117733479-git-send-email-jack@suse.cz> <12120117743119-git-send-email-jack@suse.cz> <20080528205913.10c31851.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080528205913.10c31851.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 29 May 2008 09:10:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37994 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752577AbYE2NKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 09:10:05 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com>
+References: <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com> <2874.1211980355@redhat.com> <Pine.LNX.4.64.0805221907250.4056@sbz-30.cs.Helsinki.FI> <24762.1211983758@redhat.com> <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com> <7613.1211996335@redhat.com>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: dhowells@redhat.com, "Christoph Lameter" <clameter@sgi.com>,
+       "Pekka J Enberg" <penberg@cs.helsinki.fi>, mpm@selenic.com,
+       lethal@linux-sh.org, linux-kernel@vger.kernel.org,
+       "Bryan Wu" <cooloney@kernel.org>
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Thu, 29 May 2008 14:03:28 +0100
+Message-ID: <29553.1212066208@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 28-05-08 20:59:13, Andrew Morton wrote:
-> On Wed, 28 May 2008 23:56:12 +0200 Jan Kara <jack@suse.cz> wrote:
-> 
-> > When underlying block device becomes unavailable (e.g. someone pulling an
-> > USB stick from under us), kernel produces warning about non-uptodate buffer
-> > (superblock) being marked dirty. Silence these warnings by making buffer
-> > uptodate before marking it dirty.
-> > 
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > ---
-> >  fs/jbd2/journal.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-> > index 2e24567..55de8f7 100644
-> > --- a/fs/jbd2/journal.c
-> > +++ b/fs/jbd2/journal.c
-> > @@ -1261,6 +1261,7 @@ void jbd2_journal_update_superblock(journal_t *journal, int wait)
-> >  	spin_unlock(&journal->j_state_lock);
-> >  
-> >  	BUFFER_TRACE(bh, "marking dirty");
-> > +	set_buffer_uptodate(bh);
-> >  	mark_buffer_dirty(bh);
-> >  	if (wait)
-> >  		sync_dirty_buffer(bh);
-> 
-> I have issues....
-> 
-> - Are we really really sure that we aren't about to wreck people's
->   filesystems when this happens?  I mean, a non-uptodate buffer might
->   have random garbage in it, and it would be sad to write that to disk.
-  Well, as far as I've looked into the code, we already write the buffer
-anyway. So far we just warned that we are writing non-uptodate buffer. So
-in this regard, I don't think there's any difference with/without my patch.
+Mike Frysinger <vapier.adi@gmail.com> wrote:
 
->   Either way, I do think that potentially falsely setting BH_Uptodate
->   just to squish a WARN_ON_ONCE() is not a good solution.  Better to
->   set a new BH_Nowarn, or to call a new mark_buffer_dirty_nowarn() here.
+> > I fixed it by setting ARCH_KMALLOC_MINALIGN and ARCH_SLAB_MINALIGN.
 > 
-> - Did the reads of these buffers encounter an IO error?  If so,
->   perhaps we could set a new BH_GotIOError or something.
-  I've changed only the "superblock buffers". Those have the property that
-we read that just once during mount (and if this fails, we won't try to
-write them anyway), keep pointer to them and occasionally try to write
-them. Also we shouldn't really have garbage in them - they can be !uptodate
-only because underlying device was not able to write them... For most other
-buffers, when we fail to read them, we just bail out and don't try marking
-them dirty, so we don't issue warning for them.
+> what was the change exactly ?
 
-> Even if I'm completely wrong about everything as usual, I do think that
-> the code change should at least include a comment explaining why the
-> filesystem is doing set_buffer_uptodate() in such a weird place.
-  Agreed, I'll add some comment to the code.
+The attached patch.
 
-> One nice way of adding that comment would be to implement a new
-> 
-> /*
->  * comment goes here
->  */
-> set_buffer_uptodate_for_mark_buffer_dirty(struct buffer_head *bh); /* needs better name */
-> 
-> and call that.
-> 
-> But I agree with me: this looks like abuse of buffer_uptodate(), and a
-> mark_buffer_dirty_nowarn() would be a cleaner solution.
-  OK. I've thought about one more option - if buffer isn't uptodate, just
-avoid marking it dirty and writing it. That has the advantage that if the
-spotted error is real bad block, then we won't retry writing it which
-usually takes non-trivial time. But at the same time it is a disadvantage
-because in case there's a transient error writing super-block, we'd never
-retry writing it. So I decided to keep the current behavior...
+David
+---
+[PATCH] FRV: Specify the minimum slab/kmalloc alignment
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+From: David Howells <dhowells@redhat.com>
+
+Specify the minimum slab/kmalloc alignment to be 8 bytes.  This fixes a crash
+when SLOB is selected as the memory allocator.  The FRV arch needs this so
+that it can use the load- and store-double instructions without faulting.  By
+default SLOB sets the minimum to be 4 bytes.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ include/asm-frv/mem-layout.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+
+diff --git a/include/asm-frv/mem-layout.h b/include/asm-frv/mem-layout.h
+index 734a1d0..2947764 100644
+--- a/include/asm-frv/mem-layout.h
++++ b/include/asm-frv/mem-layout.h
+@@ -31,6 +31,13 @@
+ 
+ #define PAGE_MASK			(~(PAGE_SIZE-1))
+ 
++/*
++ * the slab must be aligned such that load- and store-double instructions don't
++ * fault if used
++ */
++#define	ARCH_KMALLOC_MINALIGN		8
++#define	ARCH_SLAB_MINALIGN		8
++
+ /*****************************************************************************/
+ /*
+  * virtual memory layout from kernel's point of view
