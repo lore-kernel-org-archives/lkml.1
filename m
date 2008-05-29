@@ -1,220 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbYE2Lfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbYE2LgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbYE2Lfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 07:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYE2Ldd
+	id S1756099AbYE2LgL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 07:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbYE2Ldf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 07:33:33 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56707 "EHLO
+	Thu, 29 May 2008 07:33:35 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56713 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753914AbYE2LdX (ORCPT
+	with ESMTP id S1754223AbYE2Ld0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 07:33:23 -0400
-Message-Id: <20080529113314.181992948@szeredi.hu>
+	Thu, 29 May 2008 07:33:26 -0400
+Message-Id: <20080529113318.257547449@szeredi.hu>
 References: <20080529113245.450308367@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 29 May 2008 13:32:50 +0200
+Date: Thu, 29 May 2008 13:32:53 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: linux-fsdevel@vger.kernel.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: [patch 5/8] vfs: annotate permission operations
-Content-Disposition: inline; filename=permission_op.patch
+Subject: [patch 8/8] vfs: create file_remove_suid() helper
+Content-Disposition: inline; filename=file_remove_suid.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Add more PERM_OP_ flags to permission() calls.  This allows
-filesystems like NFS and security modules like AppArmor to make
-precise decisions about whent permissions need to be checked, and when
-they will be checked later together with the actual operation.
+All calls to remove_suid() are made with a file pointer.  This is not
+accidental: similarly to file_update_time(), this function is called
+when the file is written.
+
+So simplify callers by passing the file pointer instead of the dentry.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/namei.c         |   16 ++++++++--------
- fs/nfsd/nfsfh.c    |    2 +-
- fs/open.c          |    6 +++---
- fs/utimes.c        |    2 +-
- fs/xattr.c         |    2 +-
- include/linux/fs.h |   19 +++++++++++++++++++
- 6 files changed, 33 insertions(+), 14 deletions(-)
+ fs/fuse/file.c             |    2 +-
+ fs/ntfs/file.c             |    2 +-
+ fs/splice.c                |    4 ++--
+ fs/xfs/linux-2.6/xfs_lrw.c |    2 +-
+ include/linux/fs.h         |    2 +-
+ mm/filemap.c               |    7 ++++---
+ mm/filemap_xip.c           |    2 +-
+ 7 files changed, 11 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/fs/namei.c
+Index: linux-2.6/fs/ntfs/file.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-29 12:46:20.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-29 12:46:24.000000000 +0200
-@@ -492,7 +492,7 @@ static int exec_permission_lite(struct i
- 
- 	return -EACCES;
- ok:
--	return security_inode_permission(inode, MAY_EXEC);
-+	return security_inode_permission(inode, MAY_LOOKUP);
- }
- 
- /*
-@@ -899,7 +899,7 @@ static int __link_path_walk(const char *
- 		nd->flags |= LOOKUP_CONTINUE;
- 		err = exec_permission_lite(inode);
- 		if (err == -EAGAIN)
--			err = path_permission(&nd->path, MAY_EXEC);
-+			err = path_permission(&nd->path, MAY_LOOKUP);
-  		if (err)
- 			break;
- 
-@@ -1174,7 +1174,7 @@ static int do_path_lookup(int dfd, const
- 		if (!S_ISDIR(dentry->d_inode->i_mode))
- 			goto fput_fail;
- 
--		retval = file_permission(file, MAY_EXEC);
-+		retval = file_permission(file, MAY_LOOKUP);
- 		if (retval)
- 			goto fput_fail;
- 
-@@ -1347,7 +1347,7 @@ static struct dentry *lookup_hash(struct
- {
+--- linux-2.6.orig/fs/ntfs/file.c	2008-05-29 12:46:19.000000000 +0200
++++ linux-2.6/fs/ntfs/file.c	2008-05-29 12:46:26.000000000 +0200
+@@ -2118,7 +2118,7 @@ static ssize_t ntfs_file_aio_write_noloc
+ 		goto out;
+ 	if (!count)
+ 		goto out;
+-	err = remove_suid(file->f_path.dentry);
++	err = file_remove_suid(file);
+ 	if (err)
+ 		goto out;
+ 	file_update_time(file);
+Index: linux-2.6/fs/splice.c
+===================================================================
+--- linux-2.6.orig/fs/splice.c	2008-05-29 12:46:19.000000000 +0200
++++ linux-2.6/fs/splice.c	2008-05-29 12:46:26.000000000 +0200
+@@ -762,7 +762,7 @@ generic_file_splice_write_nolock(struct 
+ 	ssize_t ret;
  	int err;
  
--	err = path_permission(&nd->path, MAY_EXEC);
-+	err = path_permission(&nd->path, MAY_LOOKUP);
- 	if (err)
- 		return ERR_PTR(err);
- 	return __lookup_hash(&nd->last, nd->path.dentry, nd);
-@@ -1395,7 +1395,7 @@ struct dentry *lookup_one_len(const char
- 	if (err)
- 		return ERR_PTR(err);
+-	err = remove_suid(out->f_path.dentry);
++	err = file_remove_suid(out);
+ 	if (unlikely(err))
+ 		return err;
  
--	err = dentry_permission(base, MAY_EXEC);
-+	err = dentry_permission(base, MAY_LOOKUP);
- 	if (err)
- 		return ERR_PTR(err);
- 	return __lookup_hash(&this, base, NULL);
-@@ -1487,7 +1487,7 @@ static int may_delete(struct dentry *dir
- 	BUG_ON(victim->d_parent->d_inode != dir);
- 	audit_inode_child(victim->d_name.name, victim, dir);
+@@ -820,7 +820,7 @@ generic_file_splice_write(struct pipe_in
+ 	ssize_t ret;
  
--	error = dentry_permission(dir_dentry, MAY_WRITE | MAY_EXEC);
-+	error = dentry_permission(dir_dentry, MAY_DELETE);
- 	if (error)
- 		return error;
- 	if (IS_APPEND(dir))
-@@ -1523,7 +1523,7 @@ static inline int may_create(struct dent
- 		return -EEXIST;
- 	if (IS_DEADDIR(dir_dentry->d_inode))
- 		return -ENOENT;
--	return dentry_permission(dir_dentry, MAY_WRITE | MAY_EXEC);
-+	return dentry_permission(dir_dentry, MAY_CREATE);
- }
- 
- /* 
-@@ -2687,7 +2687,7 @@ static int vfs_rename_dir(struct inode *
- 	 * we'll need to flip '..'.
- 	 */
- 	if (new_dir != old_dir) {
--		error = dentry_permission(old_dentry, MAY_WRITE);
-+		error = dentry_permission(old_dentry, MAY_MOVE_DIR);
- 		if (error)
- 			return error;
- 	}
-Index: linux-2.6/fs/nfsd/nfsfh.c
+ 	inode_double_lock(inode, pipe->inode);
+-	ret = remove_suid(out->f_path.dentry);
++	ret = file_remove_suid(out);
+ 	if (likely(!ret))
+ 		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
+ 	inode_double_unlock(inode, pipe->inode);
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_lrw.c
 ===================================================================
---- linux-2.6.orig/fs/nfsd/nfsfh.c	2008-05-29 12:46:23.000000000 +0200
-+++ linux-2.6/fs/nfsd/nfsfh.c	2008-05-29 12:46:24.000000000 +0200
-@@ -52,7 +52,7 @@ static int nfsd_acceptable(void *expv, s
- 		int err;
- 
- 		parent.dentry = dget_parent(tdentry);
--		err = path_permission(&parent, MAY_EXEC);
-+		err = path_permission(&parent, MAY_LOOKUP);
- 		if (err < 0) {
- 			dput(parent.dentry);
- 			break;
-Index: linux-2.6/fs/open.c
-===================================================================
---- linux-2.6.orig/fs/open.c	2008-05-29 12:46:20.000000000 +0200
-+++ linux-2.6/fs/open.c	2008-05-29 12:46:24.000000000 +0200
-@@ -513,7 +513,7 @@ asmlinkage long sys_chdir(const char __u
- 	if (error)
- 		goto out;
- 
--	error = path_permission(&nd.path, MAY_EXEC | PERM_OP_CHDIR);
-+	error = path_permission(&nd.path, MAY_CHDIR);
- 	if (error)
- 		goto dput_and_out;
- 
-@@ -542,7 +542,7 @@ asmlinkage long sys_fchdir(unsigned int 
- 	if (!S_ISDIR(inode->i_mode))
- 		goto out_putf;
- 
--	error = file_permission(file, MAY_EXEC | PERM_OP_CHDIR);
-+	error = file_permission(file, MAY_CHDIR);
- 	if (!error)
- 		set_fs_pwd(current->fs, &file->f_path);
- out_putf:
-@@ -560,7 +560,7 @@ asmlinkage long sys_chroot(const char __
- 	if (error)
- 		goto out;
- 
--	error = path_permission(&nd.path, MAY_EXEC);
-+	error = path_permission(&nd.path, MAY_CHROOT);
- 	if (error)
- 		goto dput_and_out;
- 
-Index: linux-2.6/fs/utimes.c
-===================================================================
---- linux-2.6.orig/fs/utimes.c	2008-05-29 12:46:20.000000000 +0200
-+++ linux-2.6/fs/utimes.c	2008-05-29 12:46:24.000000000 +0200
-@@ -141,7 +141,7 @@ static int do_utimes_name(int dfd, char 
- 			goto out_path_put;
- 
- 		if (!is_owner_or_cap(inode)) {
--			error = path_permission(&nd.path, MAY_WRITE);
-+			error = path_permission(&nd.path, MAY_UTIMES);
- 			if (error)
- 				goto out_path_put;
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_lrw.c	2008-05-29 12:46:19.000000000 +0200
++++ linux-2.6/fs/xfs/linux-2.6/xfs_lrw.c	2008-05-29 12:46:26.000000000 +0200
+@@ -711,7 +711,7 @@ start:
+ 	     !capable(CAP_FSETID)) {
+ 		error = xfs_write_clear_setuid(xip);
+ 		if (likely(!error))
+-			error = -remove_suid(file->f_path.dentry);
++			error = -file_remove_suid(file);
+ 		if (unlikely(error)) {
+ 			goto out_unlock_internal;
  		}
-Index: linux-2.6/fs/xattr.c
-===================================================================
---- linux-2.6.orig/fs/xattr.c	2008-05-29 12:46:20.000000000 +0200
-+++ linux-2.6/fs/xattr.c	2008-05-29 12:46:24.000000000 +0200
-@@ -65,7 +65,7 @@ xattr_permission(struct path *path, cons
- 			return -EPERM;
- 	}
- 
--	return path_permission(path, mask);
-+	return path_permission(path, mask | PERM_OP_XATTR);
- }
- 
- static int
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-29 12:46:20.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-29 12:46:24.000000000 +0200
-@@ -70,6 +70,25 @@ extern int dir_notify_enable;
- #define PERM_OP_OPEN	(0x1 << 28)
- #define PERM_OP_ACCESS	(0x2 << 28)
- #define PERM_OP_CHDIR	(0x3 << 28)
-+#define PERM_OP_CHROOT	(0x4 << 28)
-+#define PERM_OP_LOOKUP	(0x5 << 28)
-+#define PERM_OP_CREATE	(0x6 << 28)
-+#define PERM_OP_DELETE	(0x7 << 28)
-+#define PERM_OP_MOVE_DIR	(0x8 << 28)
-+#define PERM_OP_UTIMES	(0x9 << 28)
-+#define PERM_OP_XATTR	(0xa << 28)
-+
-+/*
-+ * Combined MAY_ flags
-+ */
-+#define MAY_CHDIR	(PERM_OP_CHDIR | MAY_EXEC)
-+#define MAY_CHROOT	(PERM_OP_CHROOT | MAY_EXEC)
-+#define MAY_LOOKUP	(PERM_OP_LOOKUP | MAY_EXEC)
-+#define MAY_CREATE	(PERM_OP_CREATE | MAY_EXEC | MAY_WRITE)
-+#define MAY_DELETE	(PERM_OP_DELETE | MAY_EXEC | MAY_WRITE)
-+#define MAY_MOVE_DIR	(PERM_OP_MOVE_DIR | MAY_WRITE)
-+#define MAY_UTIMES	(PERM_OP_UTIMES | MAY_WRITE)
-+
+--- linux-2.6.orig/include/linux/fs.h	2008-05-29 12:46:25.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-05-29 12:46:26.000000000 +0200
+@@ -1850,7 +1850,7 @@ extern void clear_inode(struct inode *);
+ extern void destroy_inode(struct inode *);
+ extern struct inode *new_inode(struct super_block *);
+ extern int should_remove_suid(struct dentry *);
+-extern int remove_suid(struct dentry *);
++extern int file_remove_suid(struct file *);
  
- #define FMODE_READ 1
- #define FMODE_WRITE 2
+ extern void __insert_inode_hash(struct inode *, unsigned long hashval);
+ extern void remove_inode_hash(struct inode *);
+Index: linux-2.6/mm/filemap.c
+===================================================================
+--- linux-2.6.orig/mm/filemap.c	2008-05-29 12:46:19.000000000 +0200
++++ linux-2.6/mm/filemap.c	2008-05-29 12:46:26.000000000 +0200
+@@ -1668,8 +1668,9 @@ static int __remove_suid(struct dentry *
+ 	return notify_change(dentry, &newattrs);
+ }
+ 
+-int remove_suid(struct dentry *dentry)
++int file_remove_suid(struct file *file)
+ {
++	struct dentry *dentry = file->f_path.dentry;
+ 	int killsuid = should_remove_suid(dentry);
+ 	int killpriv = security_inode_need_killpriv(dentry);
+ 	int error = 0;
+@@ -1683,7 +1684,7 @@ int remove_suid(struct dentry *dentry)
+ 
+ 	return error;
+ }
+-EXPORT_SYMBOL(remove_suid);
++EXPORT_SYMBOL(file_remove_suid);
+ 
+ static size_t __iovec_copy_from_user_inatomic(char *vaddr,
+ 			const struct iovec *iov, size_t base, size_t bytes)
+@@ -2394,7 +2395,7 @@ __generic_file_aio_write_nolock(struct k
+ 	if (count == 0)
+ 		goto out;
+ 
+-	err = remove_suid(file->f_path.dentry);
++	err = file_remove_suid(file);
+ 	if (err)
+ 		goto out;
+ 
+Index: linux-2.6/mm/filemap_xip.c
+===================================================================
+--- linux-2.6.orig/mm/filemap_xip.c	2008-05-29 12:46:19.000000000 +0200
++++ linux-2.6/mm/filemap_xip.c	2008-05-29 12:46:26.000000000 +0200
+@@ -380,7 +380,7 @@ xip_file_write(struct file *filp, const 
+ 	if (count == 0)
+ 		goto out_backing;
+ 
+-	ret = remove_suid(filp->f_path.dentry);
++	ret = file_remove_suid(filp);
+ 	if (ret)
+ 		goto out_backing;
+ 
+Index: linux-2.6/fs/fuse/file.c
+===================================================================
+--- linux-2.6.orig/fs/fuse/file.c	2008-05-29 12:46:19.000000000 +0200
++++ linux-2.6/fs/fuse/file.c	2008-05-29 12:46:26.000000000 +0200
+@@ -893,7 +893,7 @@ static ssize_t fuse_file_aio_write(struc
+ 	if (count == 0)
+ 		goto out;
+ 
+-	err = remove_suid(file->f_path.dentry);
++	err = file_remove_suid(file);
+ 	if (err)
+ 		goto out;
+ 
 
 --
