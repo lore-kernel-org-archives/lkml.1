@@ -1,239 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYE2DRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbYE2DRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYE2DRl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 23:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYE2DRc
+	id S1755788AbYE2DRy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 23:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYE2DRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 23:17:32 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:43047 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbYE2DRa (ORCPT
+	Wed, 28 May 2008 23:17:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32823 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754398AbYE2DRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 23:17:30 -0400
-Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-In-Reply-To: <20080528012242.a0e98d87.akpm@linux-foundation.org>
-References: <1211555145.16195.18.camel@new-host>
-	 <20080528012242.a0e98d87.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 23:17:26 -0400
-Message-Id: <1212031046.4747.57.camel@new-host.home>
+	Wed, 28 May 2008 23:17:38 -0400
+Date: Wed, 28 May 2008 20:16:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Alessandro Zummo <a.zummo@towertech.it>, linux-kernel@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH] NTP: Let update_persistent_clock() sleep
+Message-Id: <20080528201612.d2641dc3.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805281856200.29522@cliff.in.clinika.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-28 at 01:22 -0700, Andrew Morton wrote: 
-> On Fri, 23 May 2008 11:05:45 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+On Wed, 28 May 2008 19:15:41 +0100 (BST) "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+
+>  This is a change that makes the 11-minute RTC update be run in the
+> process context.  This is so that update_persistent_clock() can sleep,
+> which may be required for certain types of RTC hardware -- most notably
+> I2C devices.
 > 
-> > This is a re-release of Integrity Measurement Architecture(IMA) as an
-> > independent Linunx Integrity Module(LIM) service provider, which implements
-> > the new LIM must_measure(), collect_measurement(), store_measurement(), and
-> > display_template() API calls. The store_measurement() call supports two 
-> > types of data, IMA (i.e. file data) and generic template data.
-> > 
-> > When store_measurement() is called for the IMA type of data, the file 
-> > measurement and the file name hint are used to form an IMA template.
-> > IMA then calculates the IMA template measurement(hash) and submits it 
-> > to the TPM chip for inclusion in one of the chip's Platform Configuration 
-> > Registers (PCR).  
-> > 
-> > When store_measurement() is called for generic template data, IMA 
-> > calculates the measurement(hash) of the template data, and submits 
-> > the template measurement to the TPM chip for inclusion in one of the
-> > chip's Platform Configuration Registers(PCR).
-> > 
-> > In order to view the contents of template data through securityfs, the
-> > template_display() function must be defined in the registered 
-> > template_operations.  In the case of the IMA template, the list of 
-> > file names and files hashes submitted can be viewed through securityfs. 
-> > 
-> > IMA can be included or excluded in the kernel configuration.  If
-> > included in the kernel and the IMA_BOOTPARAM is selected, IMA can 
-> > also be enabled/disabled on the kernel command line with 'ima='.
-> > 
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+> Hello,
 > 
-> - I see lots of user file I/O being done from within the kernel. 
->   This makes eyebrows raise.  Also some other eyebrow-raising
->   file-related things in there.
-
-The amount of I/O is dependent on the number of files being measured.
-The default policy measures a whole lot.  An LSM specific integrity 
-policy would cut down on the number of files being measured. For now,
-either remove the third rule in default_rules or replace the default
-rules with a new policy. To load a new policy execute:
-	./integrity_load < policy
-
-policy:
-#
-# Integrity measure policy
-#
-func=BPRM_CHECK 
-func=FILE_MMAP mask=MAY_EXEC
-#func=INODE_PERMISSION mask=MAY_READ
-
-integrity_load.c:
-/* 
- * integrity_load.c 
- *
- * Strip comments from integrity measurement policy file and load 
- * policy rules into the kernel by writing to security/ima/policy.
- *
- */
-#include <sys/types.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-int main(int argc, char *argv[])
-{
-	int fd;
-	char *policyname = "/sys/kernel/security/ima/policy";
-	char *line = NULL;
-	ssize_t len = 0, readcnt;
-	int rc = 0;
-
-	if (argc == 2)
-		policyname = argv[1];
-
-	fd = open(policyname, O_WRONLY);
-	if (fd == -1) {
-		perror("opening policy");
-		exit(EXIT_FAILURE);
-	}
-	while ((readcnt = getline(&line, &len, stdin)) != -1) {
-		if (*line == '#')
-			continue;
-		printf("%s", line);
-		rc = write(fd, line, readcnt);
-		if (rc == -1) {
-			perror("write");
-			break;
-		}
-	}
-
-	close(fd);
-	if (line)
-		free(line);
-	return (rc == -1) ? EXIT_FAILURE : EXIT_SUCCESS;
-}
-
-> - A complicated-looking in-kernel string parser which is implementing
->   an new and apparently-undocumented user->kernel ABI.
-
-oops, will document.
-
-> - Some GFP_ATOMICs which can hopefully become GFP_KERNEL.
-Ok.
-
-> - timespec_set() is unneeeded - just use struct assignment (ie: "=")
-
-Am confused.  timespec_set is doing an assignment. Should I
-replace timespec_set with a memcpy?
-
-> - timespec_recent() looks a bit hacky.  The problems which are being
->   solved here should be described in the changelog.  Perhaps we can
->   think of a better way, but first we have to know about it.
-
-Ok.
-
-> - shouldn't ima_inode_init() initialise tv_usec too?
-
-I don't think it matters.  timespec_equal checks that the mtime in
-the iint and inode are the same.  If they are the same then we don't
-need to recalculate the hash, unless it's been updated in really
-quick succession.
-
-> - All the games with mtimes should be described in the changelog too.
-
-Ok. The timespec_recent and mtime issues are part of the same problem
-of detecting when a file has been modified.
-
-> - All the `static struct integrity_operations' instances could be
->   made const.  And lots of other foo_operations too, I expect.
+>  After the initial enthusiasm, I am not sure how my series of patches to
+> let read_persistent_clock() and update_persistent_clock() use the class
+> RTC subsystem is going to be handled.  As keeping the order of patches is 
+> required to avoid breakage in various places, I will try to coordinate the 
+> changes and submit them one by one as the dependencies get satisfied.  I 
+> hope this is OK and will take less than half a year. ;)
 > 
->   That will lead to a constification chase all over the place, but
->   it's probably for the best.  This is after all a "security" feature
->   and there is perhaps some benefit in getting your eminently
->   hijackable function pointers into read-only memory.
-
-Ok.
-
-> - ima_fixup_inodes looks like it will race and crash against a
->   well-timed unmount.  I expect you will need to bump s_count before
->   dropping sb_lock.  See writeback_inodes() for an example.
-
-ima_fixup_inodes() is called once at initialization.  
-
-> - bug: ima_fixup_inodes() does a GFP_KERNEL allocation inside
->   inode->i_lock.  This bug shouldn't have got this far.  Please always
->   enable all kernel debugging features when testing code. 
->   Documentation/SubmitChecklist has useful things.
-
-sorry.
-
-> - inode.i_lock is defined as an innermost lock which is used for
->   protecting data internal to the inode.  You appear to be using it for
->   way too much stuff in here.
+>  Given this one applies to generic code and is required by all the other
+> changes, while not requiring anything and not meant to break anything, ;) 
+> I think this is ready to go.  It may be worth testing that moving the 
+> function into the process context does not cause any regressions for some 
+> obscure configuration.
 > 
-> - It would be useful to add a comment explaining why
->   late_initcall(init_ima) is using late_initcall() rather than plain
->   old module_init().  Because it is impossible for the reader to
->   determine this information from the implementation.
-> 
-> - mutex_init(&ima_extend_list_mutex) is unneeded.
+>  I am not sure who actually claims maintenance of kernel/time/ntp.c, but
+> it looks, Thomas, you seem to be our current time overseer -- could you
+> please speak out on this change?  I'd like this change to get applied
+> somewhere reasonable -- is it -mm?
 
-Ok.
+Roman does most of the NTP work afaik.  I consider Thomas's git-hrt
+tree to be the route via which NTP changes get into linux-next and
+mainline.
 
-> - Does ima_add_digest_entry() need to use the unreliable GFP_ATOMIC?
-> 
->   This matters.  This is a security feature and if that
->   kmalloc(GFP_ATOMIC) fails (as it easily can do) then I expect the
->   system will either be insecure or will outright malfunction.
+> patch-2.6.26-rc1-20080505-sync-cmos-work-0
+> diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c linux-2.6.26-rc1-20080505/kernel/time/ntp.c
+> --- linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c	2008-05-05 02:56:03.000000000 +0000
+> +++ linux-2.6.26-rc1-20080505/kernel/time/ntp.c	2008-05-05 21:10:50.000000000 +0000
+> @@ -3,6 +3,8 @@
+>   *
+>   * NTP state machine interfaces and logic.
+>   *
+> + * Copyright (c) 2008  Maciej W. Rozycki
+> + *
+>   * This code was mainly moved from kernel/timer.c and kernel/time.c
+>   * Please see those files for relevant copyright info and historical
+>   * changelogs.
+> @@ -17,6 +19,7 @@
+>  #include <linux/capability.h>
+>  #include <linux/math64.h>
+>  #include <linux/clocksource.h>
+> +#include <linux/workqueue.h>
+>  #include <asm/timex.h>
+>  
+>  /*
+> @@ -218,11 +221,13 @@ void second_overflow(void)
+>  /* Disable the cmos update - used by virtualization and embedded */
+>  int no_sync_cmos_clock  __read_mostly;
+>  
+> -static void sync_cmos_clock(unsigned long dummy);
+> +static void sync_cmos_clock(unsigned long data);
+> +static void do_sync_cmos_clock(struct work_struct *work);
+>  
+>  static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
+> +static DECLARE_WORK(sync_cmos_work, do_sync_cmos_clock);
+>  
+> -static void sync_cmos_clock(unsigned long dummy)
+> +static void do_sync_cmos_clock(struct work_struct *work)
+>  {
+>  	struct timespec now, next;
+>  	int fail = 1;
+> @@ -261,6 +266,12 @@ static void sync_cmos_clock(unsigned lon
+>  	mod_timer(&sync_cmos_timer, jiffies + timespec_to_jiffies(&next));
+>  }
+>  
+> +static void sync_cmos_clock(unsigned long data)
+> +{
+> +	/* Some implementations of update_persistent_clock() may sleep.  */
+> +	schedule_work(&sync_cmos_work);
+> +}
+> +
+>  static void notify_cmos_timer(void)
+>  {
+>  	if (!no_sync_cmos_clock)
 
-Ok.
+OK, that timer code in there now officially makes my brain hurt.
 
-> - Why does CONFIG_IMA_BOOTPARAM exist, and can it be removed (ie:
->   made unconditional)?
-> 
-> - Similarly CONFIG_IMA_BOOTPARAM_VALUE.  Let's be decisive here -
->   distributors only get one shot at setting these things.
+Is it as simple as it could be?
 
-Fine with me.
-
-> - mode_setup() will identify itself as "mode_setup" in its KERN_INFO
->   printk.  That's a bit unhelpful.  I'd suggest that all/most printks
->   here be prefixed with "integrity:".
-
-Yes, will do throughout.
-
-> - GFP_ATOMICs everywhere :(
-
-Will address throughout.
-
-> - As ima_htable.violations "can overflow", atomic_long_t might be a
->   better choice of type.
-> 
-> - skip_measurement(): the hard-coded test for PROC_SUPER_MAGIC,
->   SYSFS_MAGIC etc is quite unpleasant.  Surely there is a better way.
-
-Yes, one solution is to add policy support so that rules could be 
-defined instead of actually hard coding each and every fs magic 
-number here in skip_measurement. This is on my list of todo's.
-
-> Generally: the code is all moderately intrusive into the VFS and this
-> sort of thing does need careful explanation and justification, please. 
-> Once we have some understanding of what you're trying to achieve here
-> we will inevitably ask "can't that be done in userspace".  So it would
-> be best if your description were to preemptively answer all that.  
-
-Ok.
+Would schedule_delayed_work() make my brain feel better?
 
