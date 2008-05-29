@@ -1,73 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYE2BId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYE2BoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYE2BId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 21:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYE2BIX
+	id S1754658AbYE2BoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 21:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYE2BoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 21:08:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52441 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146AbYE2BIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 21:08:23 -0400
-Date: Wed, 28 May 2008 21:00:55 -0400
-From: Dave Jones <davej@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-Message-ID: <20080529010055.GA31952@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
-	"Luck, Tony" <tony.luck@intel.com>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>,
-	ksummit-2008-discuss@lists.linux-foundation.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	David Woodhouse <dwmw2@infradead.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080528225136.GA29014@kroah.com> <1FE6DD409037234FAB833C420AA843EC016FFF69@orsmsx424.amr.corp.intel.com> <20080529003657.GA17505@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080529003657.GA17505@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 28 May 2008 21:44:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46664 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753653AbYE2BoD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 21:44:03 -0400
+Date: Wed, 28 May 2008 18:42:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: dean@arctic.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
+       dwg@au1.ibm.com, apw@shadowen.org, linux-mm@kvack.org,
+       andi@firstfloor.org, kenchen@google.com, agl@us.ibm.com, abh@cray.com
+Subject: Re: [PATCH 3/3] Guarantee that COW faults for a process that called
+ mmap(MAP_PRIVATE) on hugetlbfs will succeed
+Message-Id: <20080528184246.4753a78b.akpm@linux-foundation.org>
+In-Reply-To: <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
+References: <20080527185028.16194.57978.sendpatchset@skynet.skynet.ie>
+	<20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 05:36:57PM -0700, Greg Kroah-Hartman wrote:
- > On Wed, May 28, 2008 at 04:23:52PM -0700, Luck, Tony wrote:
- > > > My raw numbers show that the number of individual kernel contributors
- > > > continues to increase with every release, so this might not be as much
- > > > of a problem as it's made out to be.
- > > 
- > > That depends on whether we are gradually adding to the pool
- > > of developers, or seeing an increasing stream of newcomers
- > > who supply a patch or two before disappearing again.
- > > 
- > > If you look at the list of contributors some old release for
- > > which we have good data (say 2.6.16).  How many of those people
- > > contributed to each of the following releases? Does the
- > > decay curve look steeper or more gentle if you start from
- > > a more recent release?
- > 
- > I don't know, I haven't tracked the people individually that way, only
- > looked at the basic numbers of developers per release.
+On Tue, 27 May 2008 19:51:28 +0100 (IST) Mel Gorman <mel@csn.ul.ie> wrote:
 
-Are you just doing something like
- git log v2.6.16..v2.6.17 | grep ^Author: | sort -u| wc -l  
+> 
+> After patch 2 in this series, a process that successfully calls mmap()
+> for a MAP_PRIVATE mapping will be guaranteed to successfully fault until a
+> process calls fork().  At that point, the next write fault from the parent
+> could fail due to COW if the child still has a reference.
+> 
+> We only reserve pages for the parent but a copy must be made to avoid leaking
+> data from the parent to the child after fork(). Reserves could be taken for
+> both parent and child at fork time to guarantee faults but if the mapping
+> is large it is highly likely we will not have sufficient pages for the
+> reservation, and it is common to fork only to exec() immediatly after. A
+> failure here would be very undesirable.
+> 
+> Note that the current behaviour of mainline with MAP_PRIVATE pages is
+> pretty bad.  The following situation is allowed to occur today.
+> 
+> 1. Process calls mmap(MAP_PRIVATE)
+> 2. Process calls mlock() to fault all pages and makes sure it succeeds
+> 3. Process forks()
+> 4. Process writes to MAP_PRIVATE mapping while child still exists
+> 5. If the COW fails at this point, the process gets SIGKILLed even though it
+>    had taken care to ensure the pages existed
+> 
+> This patch improves the situation by guaranteeing the reliability of the
+> process that successfully calls mmap(). When the parent performs COW, it
+> will try to satisfy the allocation without using reserves. If that fails the
+> parent will steal the page leaving any children without a page. Faults from
+> the child after that point will result in failure. If the child COW happens
+> first, an attempt will be made to allocate the page without reserves and
+> the child will get SIGKILLed on failure.
+> 
+> To summarise the new behaviour:
+> 
+> 1. If the original mapper performs COW on a private mapping with multiple
+>    references, it will attempt to allocate a hugepage from the pool or
+>    the buddy allocator without using the existing reserves. On fail, VMAs
+>    mapping the same area are traversed and the page being COW'd is unmapped
+>    where found. It will then steal the original page as the last mapper in
+>    the normal way.
+> 
+> 2. The VMAs the pages were unmapped from are flagged to note that pages
+>    with data no longer exist. Future no-page faults on those VMAs will
+>    terminate the process as otherwise it would appear that data was corrupted.
+>    A warning is printed to the console that this situation occured.
+> 
+> 2. If the child performs COW first, it will attempt to satisfy the COW
+>    from the pool if there are enough pages or via the buddy allocator if
+>    overcommit is allowed and the buddy allocator can satisfy the request. If
+>    it fails, the child will be killed.
+> 
+> If the pool is large enough, existing applications will not notice that the
+> reserves were a factor. Existing applications depending on the no-reserves
+> been set are unlikely to exist as for much of the history of hugetlbfs,
+> pages were prefaulted at mmap(), allocating the pages at that point or failing
+> the mmap().
+> 
 
-or do you have some script that maps addresses to people ?
-One person may appear once in 2.6.20, and then a half dozen times
-in 2.6.21 if they use multiple email addresses for example.
-(Also, typos, and people using full hostnames in their sign-off's
- instead of email addresses skew this somewhat).
+Implementation nitlets:
 
-I'm guessing the latter, due to the graph thing you did. Pointers?
+> +#define HPAGE_RESV_OWNER    (1UL << (BITS_PER_LONG - 1))
+> +#define HPAGE_RESV_UNMAPPED (1UL << (BITS_PER_LONG - 2))
+> +#define HPAGE_RESV_MASK (HPAGE_RESV_OWNER | HPAGE_RESV_UNMAPPED)
+>  /*
+>   * These helpers are used to track how many pages are reserved for
+>   * faults in a MAP_PRIVATE mapping. Only the process that called mmap()
+> @@ -54,17 +57,32 @@ static unsigned long vma_resv_huge_pages
+>  {
+>  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+>  	if (!(vma->vm_flags & VM_SHARED))
+> -		return (unsigned long)vma->vm_private_data;
+> +		return (unsigned long)vma->vm_private_data & ~HPAGE_RESV_MASK;
+>  	return 0;
+>  }
 
-	Dave
+It might be better to have
 
--- 
-http://www.codemonkey.org.uk
+unsigned long get_vma_private_data(struct vm_area_struct);
+unsigned long set_vma_private_data(struct vm_area_struct);
+
+(or even get_private & set_private)
+
+to do away with all the funky casting.
+
+Or it might not be, too.
+
+> +	pgoff_t pgoff = ((address - vma->vm_start) >> HPAGE_SHIFT)
+> +		+ (vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
+>
+> ...
+>
+> +	unsigned long idx;
+> +
+> +	mapping = vma->vm_file->f_mapping;
+> +	idx = ((address - vma->vm_start) >> HPAGE_SHIFT)
+> +		+ (vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
+
+It would be clearer to have a little helper function for the above two
+snippets.
+
+And the first uses pgoff_t whereas the second uses bare ulong.
+
