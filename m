@@ -1,45 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbYE2Gh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYE2GjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbYE2Gh5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 02:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYE2Ghq
+	id S1753918AbYE2GjR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 02:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYE2GjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 02:37:46 -0400
-Received: from drutsystem.com ([80.72.38.138]:3513 "EHLO drutsystem.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbYE2Ghp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 02:37:45 -0400
-Message-ID: <483E4F36.8050902@ziu.info>
-Date: Thu, 29 May 2008 08:37:42 +0200
-From: Michal Soltys <soltys@ziu.info>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: linux-raid@vger.kernel.org
-Cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <483DE612.5000804@tmr.com>
-In-Reply-To: <483DE612.5000804@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 29 May 2008 02:39:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35573 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751154AbYE2GjF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 02:39:05 -0400
+Date: Wed, 28 May 2008 23:38:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: block: make blktrace use per-cpu buffers for message notes
+Message-Id: <20080528233801.e9e55eeb.akpm@linux-foundation.org>
+In-Reply-To: <20080529062214.GG25504@kernel.dk>
+References: <200805281559.m4SFx7b9022392@hera.kernel.org>
+	<20080528231351.a35001bc.akpm@linux-foundation.org>
+	<20080529062214.GG25504@kernel.dk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV on drutsystem.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> A very nice bit of work, my only questions is if you ever feel motivated 
-> to repeat this test, it would be fun to do it with ext3 (or ext4) using 
-> the stride= parameter. I did limited testing and it really seemed to 
-> help, but nothing remotely as format as your test.
-> 
+On Thu, 29 May 2008 08:22:15 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Speaking about which, it would probably be good to adjust a little how 
-the filesystem is created and mounted (both in xfs and ext3/4 cases). 
-E.g. lazy-count=1 is still not the default last time I checked mkfs.xfs. 
-And even ext4.txt from kernel documentation recommends mounting it with 
-data=writeback,nobh when doing comparison with metadata journaling 
-filesystems (the same would go for ext3).
+> On Wed, May 28 2008, Andrew Morton wrote:
+> > On Wed, 28 May 2008 15:59:07 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+> > 
+> > > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=64565911cdb57c2f512a9715b985b5617402cc67
+> > > Commit:     64565911cdb57c2f512a9715b985b5617402cc67
+> > > Parent:     4722dc52a891ab6cb2d637ddb87233e0ce277827
+> > > Author:     Jens Axboe <jens.axboe@oracle.com>
+> > > AuthorDate: Wed May 28 14:45:33 2008 +0200
+> > > Committer:  Jens Axboe <jens.axboe@oracle.com>
+> > > CommitDate: Wed May 28 14:49:27 2008 +0200
+> > 
+> > please try to avoid merging unreviewed changes.
+> 
+> Just because you didn't review it doesn't mean it's unreviewed :-)
+> 
+> It's not unreviewed, it was posted on lkml and a few version were
+> bounced back and forth.
 
-Along with different journal sizes, keeping an eye on stripe & 
-stripe-width, and other settings that might be of interest.
+OK.  The Subject: swizzling confounded me.
+
+> > >  		if (unlikely(bt))					\
+> > >  			__trace_note_message(bt, fmt, ##__VA_ARGS__);	\
+> > >  	} while (0)
+> > > -#define BLK_TN_MAX_MSG		1024
+> > > +#define BLK_TN_MAX_MSG		128
+> > 
+> > It seems a bit strange to do this right when we've taken this _off_ the
+> > stack.  But I suppose nothing will break.
+> 
+> It was never on the stack, it was a global static char array. We are
+> still allocating memory for this, per-cpu. So I think it still makes
+> sense to shrink the size. It's really meant for small trace messages,
+> 128 bytes is plenty. It's an in-kernel property, the userland app
+> doesn't care. So we could easily grow this in the future, should the
+> need arise.
+
+yup.
+
+It's a bit sad to stage the data in a local per-cpu buffer and then
+copy it into relay's per-cpu buffer.  I guess this is because the
+length of the output isn't known beforehand.  Could be fixed by doing
+what kvasprintf() does, but that might well be slower.
