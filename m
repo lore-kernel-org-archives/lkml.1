@@ -1,68 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYE2W3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYE2Wb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYE2W3E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 18:29:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbYE2W2y
+	id S1758048AbYE2Wb3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 18:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbYE2WbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 18:28:54 -0400
-Received: from main.gmane.org ([80.91.229.2]:49785 "EHLO ciao.gmane.org"
+	Thu, 29 May 2008 18:31:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52753 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753143AbYE2W2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 18:28:53 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	id S1756071AbYE2WbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 18:31:21 -0400
+From: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
 To: linux-kernel@vger.kernel.org
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: [X86] Watchdog lockdep warning with next-20080529
-Date: Thu, 29 May 2008 23:25:53 +0100
-Message-ID: <g1namq$qk5$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
-User-Agent: KNode/0.10.4
-Cc: kernel-testers@vger.kernel.org
+Cc: =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH 1/2 v4] Use structs instead of hardcoded offsets in x86 boot decompressor.
+Date: Thu, 29 May 2008 18:31:14 -0400
+Message-Id: <1212100275-5512-1-git-send-email-krh@redhat.com>
+X-Mailer: git-send-email 1.5.4.5
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<posted & mailed>
+Signed-off-by: Kristian Høgsberg <krh@redhat.com>
+---
 
-While using linux-next-20080529 the following warning was printed:
+Updated to not use the RM_SCREEN_INFO macro but just access
+real_mode->screen_info directly.  Slightly bigger patch but cleaner
+result.
 
-[ 1108.103357] ------------[ cut here ]------------
-[ 1108.103370] WARNING: at kernel/lockdep.c:2680 check_flags+0x8a/0x12d()
-[ 1108.103377] Modules linked in:
-[ 1108.103384] Pid: 5, comm: watchdog/0 Not tainted
-2.6.26-rc4-next-20080529skw #134
-[ 1108.103392]  [<c0122f80>] warn_on_slowpath+0x41/0x6a
-[ 1108.103402]  [<c013cc30>] ? trace_hardirqs_off+0xb/0xd
-[ 1108.103411]  [<c013ea60>] ? trace_hardirqs_on+0xb/0xd
-[ 1108.103419]  [<c013ea19>] ? trace_hardirqs_on_caller+0xe8/0x124
-[ 1108.103428]  [<c013ea60>] ? trace_hardirqs_on+0xb/0xd
-[ 1108.103436]  [<c011d428>] ? hrtick_set+0xce/0xd6
-[ 1108.103445]  [<c013c87e>] check_flags+0x8a/0x12d
-[ 1108.103452]  [<c013f9a0>] lock_acquire+0x3b/0x89
-[ 1108.103459]  [<c0361ada>] _read_lock+0x1c/0x49
-[ 1108.103467]  [<c01538b2>] ? watchdog+0x97/0x1a9
-[ 1108.103475]  [<c015381b>] ? watchdog+0x0/0x1a9
-[ 1108.103483]  [<c01538b2>] watchdog+0x97/0x1a9
-[ 1108.103489]  [<c015381b>] ? watchdog+0x0/0x1a9
-[ 1108.103497]  [<c0133044>] kthread+0x3b/0x63
-[ 1108.103504]  [<c0133009>] ? kthread+0x0/0x63
-[ 1108.103512]  [<c01038ab>] kernel_thread_helper+0x7/0x10
-[ 1108.103520]  =======================
-[ 1108.103525] ---[ end trace bf12fd91b8f59e65 ]---
-[ 1108.103529] possible reason: unannotated irqs-on.
-[ 1108.103534] irq event stamp: 18
-[ 1108.103538] hardirqs last  enabled at (17): [<c013ea60>]
-trace_hardirqs_on+0xb/0xd
-[ 1108.103548] hardirqs last disabled at (18): [<c013cc30>]
-trace_hardirqs_off+0xb/0xd
-[ 1108.103558] softirqs last  enabled at (0): [<c01216ab>]
-copy_process+0x2dd/0xf9a
-[ 1108.103568] softirqs last disabled at (0): [<00000000>] 0x0
+ arch/x86/boot/compressed/misc.c |   26 +++++++++++---------------
+ 1 files changed, 11 insertions(+), 15 deletions(-)
 
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
+index 90456ce..74ed3c0 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -30,6 +30,7 @@
+ #include <asm/io.h>
+ #include <asm/page.h>
+ #include <asm/boot.h>
++#include <asm/bootparam.h>
+ 
+ /* WARNING!!
+  * This code is compiled with -fPIC and it is relocated dynamically
+@@ -187,13 +188,7 @@ static void gzip_release(void **);
+ /*
+  * This is set up by the setup-routine at boot-time
+  */
+-static unsigned char *real_mode; /* Pointer to real-mode data */
+-
+-#define RM_EXT_MEM_K   (*(unsigned short *)(real_mode + 0x2))
+-#ifndef STANDARD_MEMORY_BIOS_CALL
+-#define RM_ALT_MEM_K   (*(unsigned long *)(real_mode + 0x1e0))
+-#endif
+-#define RM_SCREEN_INFO (*(struct screen_info *)(real_mode+0))
++static struct boot_params *real_mode;		/* Pointer to real-mode data */
+ 
+ extern unsigned char input_data[];
+ extern int input_len;
+@@ -276,12 +271,13 @@ static void putstr(const char *s)
+ 	char c;
+ 
+ #ifdef CONFIG_X86_32
+-	if (RM_SCREEN_INFO.orig_video_mode == 0 && lines == 0 && cols == 0)
++	if (real_mode->screen_info.orig_video_mode == 0 &&
++	    lines == 0 && cols == 0)
+ 		return;
+ #endif
+ 
+-	x = RM_SCREEN_INFO.orig_x;
+-	y = RM_SCREEN_INFO.orig_y;
++	x = real_mode->screen_info.orig_x;
++	y = real_mode->screen_info.orig_y;
+ 
+ 	while ((c = *s++) != '\0') {
+ 		if (c == '\n') {
+@@ -302,8 +298,8 @@ static void putstr(const char *s)
+ 		}
+ 	}
+ 
+-	RM_SCREEN_INFO.orig_x = x;
+-	RM_SCREEN_INFO.orig_y = y;
++	real_mode->screen_info.orig_x = x;
++	real_mode->screen_info.orig_y = y;
+ 
+ 	pos = (x + cols * y) * 2;	/* Update cursor position */
+ 	outb(14, vidport);
+@@ -430,7 +426,7 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
+ {
+ 	real_mode = rmode;
+ 
+-	if (RM_SCREEN_INFO.orig_video_mode == 7) {
++	if (real_mode->screen_info.orig_video_mode == 7) {
+ 		vidmem = (char *) 0xb0000;
+ 		vidport = 0x3b4;
+ 	} else {
+@@ -438,8 +434,8 @@ asmlinkage void decompress_kernel(void *rmode, memptr heap,
+ 		vidport = 0x3d4;
+ 	}
+ 
+-	lines = RM_SCREEN_INFO.orig_video_lines;
+-	cols = RM_SCREEN_INFO.orig_video_cols;
++	lines = real_mode->screen_info.orig_video_lines;
++	cols = real_mode->screen_info.orig_video_cols;
+ 
+ 	window = output;		/* Output buffer (Normally at 1M) */
+ 	free_mem_ptr     = heap;	/* Heap */
 -- 
-Sitsofe | http://sucs.org/~sits/
+1.5.4.5
 
