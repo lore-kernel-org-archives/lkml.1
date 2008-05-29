@@ -1,67 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752550AbYE2LMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYE2LOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752550AbYE2LMp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 07:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbYE2LMg
+	id S1753183AbYE2LOz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 07:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYE2LOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 07:12:36 -0400
-Received: from cpe-089228.fiber.wadsnet.net ([65.114.89.228]:42859 "HELO
-	postoffice.embeddedalley.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750768AbYE2LMf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 07:12:35 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 May 2008 07:12:34 EDT
-Cc: benh@kernel.crashing.org, Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-Message-Id: <4B443E30-4B6C-4E37-A038-AB05214EE78C@embeddedalley.com>
-From: Pantelis Antoniou <panto@embeddedalley.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-In-Reply-To: <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed; delsp=yes
-Content-Transfer-Encoding: 8BIT
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Thu, 29 May 2008 14:05:48 +0300
-References: <1211852026.3286.36.camel@pasglop> <20080526.184047.88207142.davem@davemloft.net> <1211854540.3286.42.camel@pasglop> <20080526.192812.184590464.davem@davemloft.net> <1211859542.3286.46.camel@pasglop> <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org> <1211922621.3286.80.camel@pasglop> <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org> <1211924335.3286.89.camel@pasglop> <20080527214241.GA22636@parisc-linux.org> <1211926636.3286.100.camel@pasglop> <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-X-Mailer: Apple Mail (2.924)
+	Thu, 29 May 2008 07:14:46 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52984 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751550AbYE2LOp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 07:14:45 -0400
+Date: Thu, 29 May 2008 14:14:42 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <20080529084524.GA24892@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <20080529084524.GA24892@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 May 2008, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > in an overnight -tip testruns that is based on recent -git i got two 
+> > stuck TCP connections:
+> > 
+> > Active Internet connections (w/o servers)
+> > Proto Recv-Q Send-Q Local Address               Foreign Address             State      
+> > tcp        0 174592 10.0.1.14:58015             10.0.1.14:3632              ESTABLISHED 
+> > tcp    72134      0 10.0.1.14:3632              10.0.1.14:58015             ESTABLISHED 
+> 
+> update: in the past 5 days of -tip testing i've gathered about 10 
+> randconfig kernel configs that all produced such failures.
 
-On 28 Μαϊ 2008, at 11:36 ΠΜ, Haavard Skinnemoen wrote:
+...I tried yesterday some accept (& read some) & close/exit type 
+stressing but I couldn't get it to show up (though I'll try longer 
+time later on and also fault style exiting).
 
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->>>> I'm happy to say that __raw is purely about ordering and make them
->>>> byteswap on powerpc tho (ie, make them little endian like the non- 
->>>> raw
->>>> counterpart).
->>>
->>> That would break a lot of drivers.
->>
->> How many actually use __raw_ * ?
->
-> I do -- in all the drivers for on-chip peripherals that are shared
-> between AT91 ARM (LE) and AVR32 (BE). Since everything goes on inside
-> the chip, we must use LE accesses on ARM and BE accesses on AVR32.
->
-> Currently, this is the only interface I know that can do native-endian
-> accesses, so if you take it away, I'm gonna need an alternative
-> interface that doesn't do byteswapping.
->
-> Haavard
+> Since the bug itself is very elusive (it takes up to 50 boot + 
+> kernel-rebuild-via-distccc iterations to trigger) bisection was still 
+> not an option - but with 10 configs statistical analysis of the configs 
+> is now possible.
+> 
+> I made a histogram of all kernel options present in those configs, and 
+> one networking related kernel option stood out:
+> 
+>       5 CONFIG_TCP_CONG_ADVANCED=y
+>       6 CONFIG_INET_TCP_DIAG=y
+>       6 CONFIG_TCP_MD5SIG=y
+>       9 CONFIG_TCP_CONG_CUBIC=y
+> 
+> that code is called in the bootlogs:
+> 
+> > [   13.279410] calling  cubictcp_register+0x0/0x80
+> > [   13.279412] TCP cubic registered
+> 
+> the likelyhood of CONFIG_TCP_CONG_CUBIC=y being enabled in my randconfig 
+> runs is 75%. The likelyhood of CONFIG_TCP_CONG_CUBIC=y being enabled in 
+> 10 configs in a row is 0.75^10, or 5.6%. So statistical analysis can say 
+> it with a 95% confidence that the presence of this option correlates to 
+> the hung sockets.
 
-I certainly do too.
+Do I understand you correctly... it doesn't explain the tenth case out 
+of ten but just nine of them?
 
-Quite a lot of SoC specific drivers use __raw for accessing their
-on-chip peripherals.
+> i have started testing this theory now, via the patch below, which turns 
+> off TCP_CONG_CUBIC. It will take about 50 bootups on the affected 
+> testsystems to confirm. (it will take a couple of hours today as not all 
+> testsystems show these hung socket symptoms)
+> 
+> distributions enable TCP_CONG_CUBIC by default:
+> 
+>   $ grep CUBIC /boot/config-2.6.24.7-92.fc8
+>   CONFIG_TCP_CONG_CUBIC=y
+>   CONFIG_DEFAULT_CUBIC=y
+> 
+> which would explain why Arjan and Peter triggered similar hangs as well.
 
-Please don't change the __raw semantics, you'll end up breaking almost
-everything that's BE.
+Main problem with this explanation is that congestion control modules are 
+only in use when TCP is in ESTABLISHED and transmitting normally, while it 
+has nothing to do how we enter or leave ESTABLISHED.
 
--- Pantelis
+But if it's really that the process who owned the connection already went 
+away, I think we should end up into tcp_close() which changes the state 
+from established (and send RST too if there's still data to be received, 
+which would be picked up by the other end and that end would no longer 
+keep established either). ...A failure to send the reset would show up in 
+LINUX_MIB_TCPABORTFAILED. Because both ends remain in established, it kind 
+of excludes the possibility that something would have accidently allowed 
+the Recv-Q end to return back to established too (due to some bug).
 
+To me there are mainly two weird things:
+1) Why we see orphaning with data in the first place (I think distcc would 
+be interested to read everything, unless some worker crashed in early...
+Though some timeout in distcc could explain it as well but I don't know 
+too well how distcc does everything)...
+2) Why the connection is still in ESTABLISHED when it was orphaned and 
+it has some data to receive... If it had some unread data, should be in 
+CLOSE or in FIN_WAIT1 otherwise.
+
+-- 
+ i.
