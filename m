@@ -1,55 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYE2Vur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYE2VvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758067AbYE2Vur (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYE2Vuj
+	id S1755870AbYE2VvG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757094AbYE2Vup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:50:39 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:43784 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751138AbYE2Vui (ORCPT
+	Thu, 29 May 2008 17:50:45 -0400
+Received: from smtp3.tech.numericable.fr ([82.216.111.39]:32847 "EHLO
+	smtp3.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756894AbYE2Vuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:50:38 -0400
-Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-In-Reply-To: <20080528203013.5a927d30.akpm@linux-foundation.org>
-References: <1211555145.16195.18.camel@new-host>
-	 <20080528012242.a0e98d87.akpm@linux-foundation.org>
-	 <1212031046.4747.57.camel@new-host.home>
-	 <20080528203013.5a927d30.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 29 May 2008 17:50:34 -0400
-Message-Id: <1212097834.15923.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Thu, 29 May 2008 17:50:44 -0400
+Message-ID: <483F2566.2060102@numericable.fr>
+Date: Thu, 29 May 2008 23:51:34 +0200
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird 3.0a1 (X11/2008051919)
+MIME-Version: 1.0
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem
+ error
+References: <4822A6F7.7010704@numericable.fr> <B5B0CFF685D7DF46A05CF1678CFB42ED20E04609@orsmsx423.amr.corp.intel.com> <20080508192555.GA8643@linux-os.sc.intel.com> <48235DA1.5060809@numericable.fr> <20080508213722.GA28372@linux-os.sc.intel.com> <482373C5.1060202@zytor.com> <20080508215931.GA5035@jamoon.sc.intel.com> <20080508234016.GA14169@linux-os.sc.intel.com> <482392C4.7080901@zytor.com> <20080509003424.GA19710@linux-os.sc.intel.com> <20080529190143.GA26185@linux-os.sc.intel.com>
+In-Reply-To: <20080529190143.GA26185@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Venki Pallipadi wrote:
+> On Thu, May 08, 2008 at 05:34:24PM -0700, Pallipadi, Venkatesh wrote:
+>    
+>>     On Thu, May 08, 2008 at 04:54:44PM -0700, H. Peter Anvin wrote:
+>>     >  Venki Pallipadi wrote:
+>>     >  >
+>>     >  >Also, note that we only look for start while looking at fixed range
+>>     MTRRs.
+>>     >  >This is not as scary as it seems. We are finding the effective memory
+>>     type
+>>     >  >by just looking at the start of the address range. We still go through
+>>     >  >the PAT reserve free mechanism, once we find the effective memory type
+>>     >  >and that list will catch any other users with conflicting type anywhere
+>>     >  >in the start to end range. And we will still keep effective type
+>>     consistent
+>>     >  >across all mappings.
+>>     >  >
+>>     >
+>>     >  So what you're saying here is "it's bogus, but it doesn't really matter
+>>     >  anyway?"  Why bother having it at all, then?
+>>     >
+>>     >  Seriously, if it's not unconditionally correct, then:
+>>     >
+>>     >  a. it should be *clearly* labelled a heuristic.
+>>     >  b. it should be *clearly* explained why having the heuristic is much
+>>     >  better than not having anything.
+>>     >
+>>     >  In this case, neither of those conditions appear to be addressed.
+>>
+>>     Agree that is has to be called a heuristic. Yes. Not having that will work
+>>     may be not as optimially. Having it gives us better starting point when we
+>>     start to find a proper memory type for requests, especially when there are
+>>     no other overlapping mappings in PAT list.
+>>
+>>     One of the reason for heristic was to get proper type for /dev/mem maps
+>>     for WB
+>>     region (ACPI and BIOS area). /dev/mem checks to see the mtrr type of the
+>>     start
+>>     address and starts with that type for the request. As long as there are no
+>>     other conflict in PAT list, we can give WB to this /dev/mem request. Not
+>>     having this heuristic we will have to most probably default to UC.
+>>
+>>     When there are overlapping PAT list entries, the mtrr_lookup does not
+>>     matter
+>>     as we have to inherit things from those PAT entries or conflicting with
+>>     them.
+>>
+>>     This discussion points to - code is not sufficiently commented and/or
+>>     needs
+>>     some refactoring. Will look at this afresh tomorrow morning and see
+>>     whether
+>>     I can some up with some better alternative.
+>>
+>>      
+>
+>
+> This is an alternate solution to the problem in this thread. The change
+> clarifies what is expected out of mtrr_lookup in PAT code and how we handle
+> failure.
+>
+> Thanks,
+> Venki
+>
+>
+>
+> Alternate patch to clarify the usage of mtrr_lookup() in PAT code, and to make
+> PAT code resilient to mtrr lookup problems.
+>
+> Specifically, pat_x_mtrr_type() is restructured to highlight, under
+> what conditions we look for mtrr hint. pat_x_mtrr_type() uses a default
+> type when there are any errors in mtrr lookup (still maintaining the pat
+> consistency). And, reserve_memtype() highlights its usage ot mtrr_lookup for
+> request type of '-1' and also defaults in a sane way on any mtrr lookup failure.
+>
+> pat.c looks at mtrr type of a range to get a hint on what mapping type
+> to request when user/API:
+> (1) hasn't specified any type (/dev/mem mapping) and we do not want to take
+> performance hit by always mapping UC_MINUS. This will be the case
+> for /dev/mem mappings used to map BIOS area or ACPI region which are WB'able.
+> In this case, as long as MTRR is not WB, PAT will request UC_MINUS for such
+> mappings.
+>
+> (2) user/API requests WB mapping while in reality MTRR may have UC or WC.
+> In this case, PAT can map as WB (without checking MTRR) and still effective
+> type will be UC or WC. But, a subsequent request to map same region as
+> UC or WC may fail, as the region will get trackked as WB in PAT list. Looking
+> at MTRR hint helps us to track based on effective type rather than what user
+> requested. Again, here mtrr_lookup is only used as hint and we fallback to
+> WB mapping (as requested by user) as default.
+>
+> In both cases, after using the mtrr hint, we still go through the memtype
+> list to make sure there are no inconsistencies among multiple users.
+>
+>
+> Signed-off-by: Venkatesh Pallipadi<venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha<suresh.b.siddha@intel.com>
+>
+> ---
+>   arch/x86/mm/pat.c |   49 ++++++++++++++++++++++++-------------------------
+>   1 file changed, 24 insertions(+), 25 deletions(-)
+>
+> Index: linux-2.6/arch/x86/mm/pat.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/pat.c	2008-05-28 13:19:28.000000000 -0700
+> +++ linux-2.6/arch/x86/mm/pat.c	2008-05-28 15:18:22.000000000 -0700
+> @@ -151,32 +151,33 @@ static int pat_x_mtrr_type(u64 start, u6
+>   	unsigned long pat_type;
+>   	u8 mtrr_type;
+>
+> -	mtrr_type = mtrr_type_lookup(start, end);
+> -	if (mtrr_type == 0xFF) {		/* MTRR not enabled */
+> -		*ret_prot = prot;
+> -		return 0;
+> -	}
+> -	if (mtrr_type == 0xFE) {		/* MTRR match error */
+> -		*ret_prot = _PAGE_CACHE_UC;
+> -		return -1;
+> -	}
+> -	if (mtrr_type != MTRR_TYPE_UNCACHABLE&&
+> -	    mtrr_type != MTRR_TYPE_WRBACK&&
+> -	    mtrr_type != MTRR_TYPE_WRCOMB) {	/* MTRR type unhandled */
+> -		*ret_prot = _PAGE_CACHE_UC;
+> -		return -1;
+> -	}
+> -
+>   	pat_type = prot&  _PAGE_CACHE_MASK;
+>   	prot&= (~_PAGE_CACHE_MASK);
+>
+> -	/* Currently doing intersection by hand. Optimize it later. */
+> +	/*
+> +	 * We return the PAT request directly for types where PAT takes
+> +	 * precedence with respect to MTRR and for UC_MINUS.
+> +	 * Consistency checks with other PAT requests is done later
+> +	 * while going through memtype list.
+> +	 */
+>   	if (pat_type == _PAGE_CACHE_WC) {
+>   		*ret_prot = prot | _PAGE_CACHE_WC;
+> +		return 0;
+>   	} else if (pat_type == _PAGE_CACHE_UC_MINUS) {
+>   		*ret_prot = prot | _PAGE_CACHE_UC_MINUS;
+> -	} else if (pat_type == _PAGE_CACHE_UC ||
+> -	           mtrr_type == MTRR_TYPE_UNCACHABLE) {
+> +		return 0;
+> +	} else if (pat_type == _PAGE_CACHE_UC) {
+> +		*ret_prot = prot | _PAGE_CACHE_UC;
+> +		return 0;
+> +	}
+> +
+> +	/*
+> +	 * Look for MTRR hint to get the effective type in case where PAT
+> +	 * request is for WB.
+> +	 */
+> +	mtrr_type = mtrr_type_lookup(start, end);
+> +
+> +	if (mtrr_type == MTRR_TYPE_UNCACHABLE) {
+>   		*ret_prot = prot | _PAGE_CACHE_UC;
+>   	} else if (mtrr_type == MTRR_TYPE_WRCOMB) {
+>   		*ret_prot = prot | _PAGE_CACHE_WC;
+> @@ -233,14 +234,12 @@ int reserve_memtype(u64 start, u64 end,
+>
+>   	if (req_type == -1) {
+>   		/*
+> -		 * Special case where caller wants to inherit from mtrr or
+> -		 * existing pat mapping, defaulting to UC_MINUS in case of
+> -		 * no match.
+> +		 * Call mtrr_lookup to get the type hint. This is an
+> +		 * optimization for /dev/mem mmap'ers into WB memory (BIOS
+> +		 * tools and ACPI tools). Use WB request for WB memory and use
+> +		 * UC_MINUS otherwise.
+>   		 */
+>   		u8 mtrr_type = mtrr_type_lookup(start, end);
+> -		if (mtrr_type == 0xFE) { /* MTRR match error */
+> -			err = -1;
+> -		}
+>
+>   		if (mtrr_type == MTRR_TYPE_WRBACK) {
+>   			req_type = _PAGE_CACHE_WB;
+>
+>
+>    
+Hi Venki,
 
-On Wed, 2008-05-28 at 20:30 -0700, Andrew Morton wrote:
+I try your patch above and it works fine for my config, as your previous 
+patch.
 
-> > ...
-> >
-> > > - All the games with mtimes should be described in the changelog too.
-> > 
-> > Ok. The timespec_recent and mtime issues are part of the same problem
-> > of detecting when a file has been modified.
-> 
-> Can't use inode.i_version?
+Thanks for your help.
 
-i_version is now working on my system.  It looks good. Is
-there anything that I need to be concerned about, such as
-limited filesystem support or the i_version is not updated 
-by file_close for mmaped files?
-
-Thanks!
-
-Mimi
-
+Regards.
