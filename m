@@ -1,76 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYE2I13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbYE2IaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbYE2I13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 04:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYE2I1W
+	id S1755105AbYE2IaF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 04:30:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbYE2I3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 04:27:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54158 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751745AbYE2I1U (ORCPT
+	Thu, 29 May 2008 04:29:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49850 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752287AbYE2I3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 04:27:20 -0400
-Date: Thu, 29 May 2008 01:26:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: alejandro.riveira@gmail.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: two different oopses with 2.6.26-rc4
-Message-Id: <20080529012652.6b9027a3.akpm@linux-foundation.org>
-In-Reply-To: <1211968234.9895.7.camel@Varda>
-References: <1211968234.9895.7.camel@Varda>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 29 May 2008 04:29:53 -0400
+Subject: [PATCH 29/28] firmware: Add 'firmware_install' make target
+From: David Woodhouse <dwmw2@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: sam@ravnborg.org, alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       johannes@sipsolutions.net
+In-Reply-To: <1211975163.3902.11.camel@shinybook.infradead.org>
+References: <1211708969@pmac.infradead.org>
+	 <E1K0DOP-0007EW-F0@shinybook.infradead.org>
+	 <1211734802.31212.129.camel@shinybook.infradead.org>
+	 <1211792300.23085.1.camel@pmac.infradead.org>
+	 <1211975163.3902.11.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 11:29:13 +0300
+Message-Id: <1212049753.15816.9.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 11:50:34 +0200 Alejandro Riveira Fern__ndez  <alejandro.riveira@gmail.com> wrote:
+This installs all the in-kernel-tree firmware into $(INSTALL_FW_PATH),
+which defaults to $(objtree)/usr/lib/firmware and is intended end up
+in /lib/firmware for udev to find the files.
 
-> I sent this to the list with other mail address and it didn't reach it
-> afaics. apologies if someone sees this twice
-> 
-> i cced wireless becouse of the first oops
-> 
-> First boot into 2.6.26-rc4 
-> 
->   Compiled and booting into 2.6.26-rc4
-> 
->  1) With splash quiet on grub line it doesn't boot (or i didin't wait long
->     enough)
->  2) without quiet and splash I get into VT X filas becouse i use the evil
->     nvidia driver that's expected. But ubuntu failsafe mode (xserver with vesa
->     in low res) doesn't show up either *regression*
->  3) i get an oops with network manager
->  4) if i try to run some sudo command it gets stuck (Crtl +C doesnt' help)
->     "ip route" gets stuck too. User programs i tried wrok fine (only ls and
->     htop). Network realted problem?
-> 
->  5) printk times on dmesg go crazy
-> 
-> But the second time a boot into it i got a working system (i even compiled the
-> *famous* nvidia driver) with only a bluetooth related oops ...
-> 
-> Both dmesg follow. This is on a hardy 8.04 64 bits system. If more info is needed
-> just ask
-> 
-> No working first one
->
-> ...
->
-> [    0.000000] Using ACPI (MADT) for SMP configuration information
-> [    0.000000] Allocating PCI resources starting at c4000000 (gap: c0000000:3f380000)
-> [    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
-> [    0.000000] PERCPU: Allocating 33860 bytes of per cpu data
-> [    0.000000] NR_CPUS: 2, nr_cpu_ids: 2
-> [4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 774451
-> [4294014.506571] Kernel command line: BOOT_IMAGE=(hd0,2)/vmlinuz-2.6.26-rc4 root=UUID=ee465ea1-394d-4dd2-a5f9-a35567176c40 ro
-> [4294014.506571] Initializing CPU#0
+This, in conjunction with the builtin-firmware support, makes it simple
+for drivers with associated firmware to move over to request_firmware()
+and give the user a choice of whether to have it built in to the kernel
+image or loaded separately from userspace.
 
-whee, time warp.
+As with kernel header installation for userspace, it intentionally pays
+no attention to configuration variables -- it installs _all_ available
+firmware blobs, unconditionally.
 
-Ingo, Thomas: what's the story here?  There've been zillions of reports
-and I thought we'd already fixed it?
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+---
+ Makefile                |    9 +++++++++
+ scripts/Makefile.fwinst |   26 ++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 0 deletions(-)
+ create mode 100644 scripts/Makefile.fwinst
+
+diff --git a/Makefile b/Makefile
+index ac2ab7e..3521afe 100644
+--- a/Makefile
++++ b/Makefile
+@@ -995,6 +995,15 @@ depend dep:
+ 	@echo '*** Warning: make $@ is unnecessary now.'
+ 
+ # ---------------------------------------------------------------------------
++# Firmware install
++INSTALL_FW_PATH=$(objtree)/usr/lib/firmware
++export INSTALL_FW_PATH
++
++PHONY += firmware_install
++firmware_install: FORCE
++	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.fwinst obj=firmware __fw_install
++
++# ---------------------------------------------------------------------------
+ # Kernel headers
+ INSTALL_HDR_PATH=$(objtree)/usr
+ export INSTALL_HDR_PATH
+diff --git a/scripts/Makefile.fwinst b/scripts/Makefile.fwinst
+new file mode 100644
+index 0000000..bde4073
+--- /dev/null
++++ b/scripts/Makefile.fwinst
+@@ -0,0 +1,26 @@
++# ==========================================================================
++# Installing firmware
++#
++# We don't include the .config, so all firmware files are in $(fw-shipped-)
++# rather than in $(fw-shipped-y) or $(fw-shipped-n).
++# ==========================================================================
++
++INSTALL := install
++
++include scripts/Kbuild.include 
++include $(srctree)/$(obj)/Makefile
++
++installed-fw := $(addprefix $(INSTALL_FW_PATH)/,$(fw-shipped-))
++installed-fw-dirs := $(dir $(installed-fw))
++
++quiet_cmd_install = INSTALL $(subst $(srctree)/,,$@)
++      cmd_install = $(INSTALL) -m0644 $< $@
++
++$(installed-fw-dirs):
++	$(call cmd,mkdir)
++
++$(installed-fw): $(INSTALL_FW_PATH)/%: $(obj)/% | $(INSTALL_FW_PATH)/$$(dir %)/	
++	$(call cmd,install)
++
++.PHONY: __fw_install
++__fw_install: $(installed-fw)
+-- 
+1.5.4.5
+
+
+-- 
+dwmw2
 
