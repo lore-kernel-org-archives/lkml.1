@@ -1,290 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbYE2HKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYE2HK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbYE2HKk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 03:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYE2HKO
+	id S1754786AbYE2HK5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 03:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYE2HKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 03:10:14 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52913 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbYE2HKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 03:10:12 -0400
-Message-ID: <483E564A.5050807@cn.fujitsu.com>
-Date: Thu, 29 May 2008 15:07:54 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 29 May 2008 03:10:45 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:56074 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754580AbYE2HKn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 03:10:43 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: benh@kernel.crashing.org
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Thu, 29 May 2008 09:10:06 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com
+References: <1211852026.3286.36.camel@pasglop> <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org> <1211926779.3286.104.camel@pasglop>
+In-Reply-To: <1211926779.3286.104.camel@pasglop>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-CC: Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>
-Subject: [RFC] [PATCH 1/2] cpusets: restructure the function update_cpumask()
- and update_nodemask()
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805290910.07207.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18ZB+ffE2+GuY6hAwJ+Y4xbjsvL6YP/A/ACoOm
+ ByU/kElgs4Lvyrzo/pdB9SkyGPr515X0QuzCKcsH5Q3t1+9lj5
+ o8sqNvedICqUdQMnzLJvQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-extract two functions from update_cpumask() and update_nodemask().They will be
-used later for updating tasks' cpus_allowed and mems_allowed after CPU/NODE
-offline/online.
+On Wednesday 28 May 2008, Benjamin Herrenschmidt wrote:
+> On Tue, 2008-05-27 at 14:55 -0700, Linus Torvalds wrote:
+> > 
+> > On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
+> > > 
+> > > A problem with __raw_ though is that they -also- don't do byteswap,
+> > 
+> > Well, that's why there is __readl() and __raw_readl(), no?
+> 
+> As I replied to somebody else, __readl() is news to me :-) we dont' have
+> those on powerpc.
+> 
 
-NOTE: In original code of update_cpumask(), the variable heap's memory space was
-allocated before changing the cpuset's cpus_allowed. Now we do it in the
-function update_tasks_cpumask after changing the cpuset's cpus_allowed. Similar
-to update_nodemask().
+It's not exactly a well-established interface. Only five architectures
+define these functions, and there is not a single user in the kernel
+source outside of these architecture's io.h files.
 
-Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
-
----
- kernel/cpuset.c |  180 +++++++++++++++++++++++++++++++++---------------------
- 1 files changed, 110 insertions(+), 70 deletions(-)
-
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index 86ea9e3..2c2aafa 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -766,6 +766,38 @@ static void cpuset_change_cpumask(struct task_struct *tsk,
- }
- 
- /**
-+ * update_tasks_cpumask - Scan tasks in cpuset cs, and update the cpumasks of
-+ * any that need an update.
-+ * @cs: the cpuset in which each task's cpus_allowed mask needs to be changed
-+ *
-+ * Called with cgroup_mutex held
-+ *
-+ * The cgroup_scan_tasks() function will scan all the tasks in a cgroup,
-+ * calling callback functions for each.
-+ *
-+ * Return 0 if successful, -errno if not.
-+ */
-+static int update_tasks_cpumask(struct cpuset *cs)
-+{
-+	struct cgroup_scanner scan;
-+	struct ptr_heap heap;
-+	int retval = 0;
-+
-+	retval = heap_init(&heap, PAGE_SIZE, GFP_KERNEL, &started_after);
-+	if (retval)
-+		return retval;
-+
-+	scan.cg = cs->css.cgroup;
-+	scan.test_task = cpuset_test_cpumask;
-+	scan.process_task = cpuset_change_cpumask;
-+	scan.heap = &heap;
-+	retval = cgroup_scan_tasks(&scan);
-+
-+	heap_free(&heap);
-+	return retval;
-+}
-+
-+/**
-  * update_cpumask - update the cpus_allowed mask of a cpuset and all tasks in it
-  * @cs: the cpuset to consider
-  * @buf: buffer of cpu numbers written to this cpuset
-@@ -773,8 +805,6 @@ static void cpuset_change_cpumask(struct task_struct *tsk,
- static int update_cpumask(struct cpuset *cs, char *buf)
- {
- 	struct cpuset trialcs;
--	struct cgroup_scanner scan;
--	struct ptr_heap heap;
- 	int retval;
- 	int is_load_balanced;
- 
-@@ -807,10 +837,6 @@ static int update_cpumask(struct cpuset *cs, char *buf)
- 	if (cpus_equal(cs->cpus_allowed, trialcs.cpus_allowed))
- 		return 0;
- 
--	retval = heap_init(&heap, PAGE_SIZE, GFP_KERNEL, &started_after);
--	if (retval)
--		return retval;
--
- 	is_load_balanced = is_sched_load_balance(&trialcs);
- 
- 	mutex_lock(&callback_mutex);
-@@ -821,12 +847,9 @@ static int update_cpumask(struct cpuset *cs, char *buf)
- 	 * Scan tasks in the cpuset, and update the cpumasks of any
- 	 * that need an update.
- 	 */
--	scan.cg = cs->css.cgroup;
--	scan.test_task = cpuset_test_cpumask;
--	scan.process_task = cpuset_change_cpumask;
--	scan.heap = &heap;
--	cgroup_scan_tasks(&scan);
--	heap_free(&heap);
-+	retval = update_tasks_cpumask(cs);
-+	if (retval < 0)
-+		return retval;
- 
- 	if (is_load_balanced)
- 		rebuild_sched_domains();
-@@ -882,72 +905,26 @@ static void cpuset_migrate_mm(struct mm_struct *mm, const nodemask_t *from,
- 	mutex_unlock(&callback_mutex);
- }
- 
--/*
-- * Handle user request to change the 'mems' memory placement
-- * of a cpuset.  Needs to validate the request, update the
-- * cpusets mems_allowed and mems_generation, and for each
-- * task in the cpuset, rebind any vma mempolicies and if
-- * the cpuset is marked 'memory_migrate', migrate the tasks
-- * pages to the new memory.
-- *
-- * Call with cgroup_mutex held.  May take callback_mutex during call.
-- * Will take tasklist_lock, scan tasklist for tasks in cpuset cs,
-- * lock each such tasks mm->mmap_sem, scan its vma's and rebind
-- * their mempolicies to the cpusets new mems_allowed.
-- */
--
- static void *cpuset_being_rebound;
- 
--static int update_nodemask(struct cpuset *cs, char *buf)
-+/**
-+ * update_tasks_nodemask - Scan tasks in cpuset cs, and update the nodemasks of
-+ * any that need an update.
-+ * @cs: the cpuset in which each task's mems_allowed mask needs to be changed
-+ * @oldmem: old mems_allowed of cpuset cs
-+ *
-+ * Called with cgroup_mutex held
-+ * Return 0 if successful, -errno if not.
-+ */
-+static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
- {
--	struct cpuset trialcs;
--	nodemask_t oldmem;
- 	struct task_struct *p;
- 	struct mm_struct **mmarray;
- 	int i, n, ntasks;
- 	int migrate;
- 	int fudge;
--	int retval;
- 	struct cgroup_iter it;
--
--	/*
--	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
--	 * it's read-only
--	 */
--	if (cs == &top_cpuset)
--		return -EACCES;
--
--	trialcs = *cs;
--
--	/*
--	 * An empty mems_allowed is ok iff there are no tasks in the cpuset.
--	 * Since nodelist_parse() fails on an empty mask, we special case
--	 * that parsing.  The validate_change() call ensures that cpusets
--	 * with tasks have memory.
--	 */
--	buf = strstrip(buf);
--	if (!*buf) {
--		nodes_clear(trialcs.mems_allowed);
--	} else {
--		retval = nodelist_parse(buf, trialcs.mems_allowed);
--		if (retval < 0)
--			goto done;
--	}
--	nodes_and(trialcs.mems_allowed, trialcs.mems_allowed,
--						node_states[N_HIGH_MEMORY]);
--	oldmem = cs->mems_allowed;
--	if (nodes_equal(oldmem, trialcs.mems_allowed)) {
--		retval = 0;		/* Too easy - nothing to do */
--		goto done;
--	}
--	retval = validate_change(cs, &trialcs);
--	if (retval < 0)
--		goto done;
--
--	mutex_lock(&callback_mutex);
--	cs->mems_allowed = trialcs.mems_allowed;
--	cs->mems_generation = cpuset_mems_generation++;
--	mutex_unlock(&callback_mutex);
-+	int retval = 0;
- 
- 	cpuset_being_rebound = cs;		/* causes mpol_dup() rebind */
- 
-@@ -1014,7 +991,7 @@ static int update_nodemask(struct cpuset *cs, char *buf)
- 
- 		mpol_rebind_mm(mm, &cs->mems_allowed);
- 		if (migrate)
--			cpuset_migrate_mm(mm, &oldmem, &cs->mems_allowed);
-+			cpuset_migrate_mm(mm, oldmem, &cs->mems_allowed);
- 		mmput(mm);
- 	}
- 
-@@ -1026,6 +1003,69 @@ done:
- 	return retval;
- }
- 
-+/*
-+ * Handle user request to change the 'mems' memory placement
-+ * of a cpuset.  Needs to validate the request, update the
-+ * cpusets mems_allowed and mems_generation, and for each
-+ * task in the cpuset, rebind any vma mempolicies and if
-+ * the cpuset is marked 'memory_migrate', migrate the tasks
-+ * pages to the new memory.
-+ *
-+ * Call with cgroup_mutex held.  May take callback_mutex during call.
-+ * Will take tasklist_lock, scan tasklist for tasks in cpuset cs,
-+ * lock each such tasks mm->mmap_sem, scan its vma's and rebind
-+ * their mempolicies to the cpusets new mems_allowed.
-+ */
-+static int update_nodemask(struct cpuset *cs, char *buf)
-+{
-+	struct cpuset trialcs;
-+	nodemask_t oldmem;
-+	int retval;
-+
-+	/*
-+	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
-+	 * it's read-only
-+	 */
-+	if (cs == &top_cpuset)
-+		return -EACCES;
-+
-+	trialcs = *cs;
-+
-+	/*
-+	 * An empty mems_allowed is ok iff there are no tasks in the cpuset.
-+	 * Since nodelist_parse() fails on an empty mask, we special case
-+	 * that parsing.  The validate_change() call ensures that cpusets
-+	 * with tasks have memory.
-+	 */
-+	buf = strstrip(buf);
-+	if (!*buf) {
-+		nodes_clear(trialcs.mems_allowed);
-+	} else {
-+		retval = nodelist_parse(buf, trialcs.mems_allowed);
-+		if (retval < 0)
-+			goto done;
-+	}
-+	nodes_and(trialcs.mems_allowed, trialcs.mems_allowed,
-+						node_states[N_HIGH_MEMORY]);
-+	oldmem = cs->mems_allowed;
-+	if (nodes_equal(oldmem, trialcs.mems_allowed)) {
-+		retval = 0;		/* Too easy - nothing to do */
-+		goto done;
-+	}
-+	retval = validate_change(cs, &trialcs);
-+	if (retval < 0)
-+		goto done;
-+
-+	mutex_lock(&callback_mutex);
-+	cs->mems_allowed = trialcs.mems_allowed;
-+	cs->mems_generation = cpuset_mems_generation++;
-+	mutex_unlock(&callback_mutex);
-+
-+	retval = update_tasks_nodemask(cs, &oldmem);
-+done:
-+	return retval;
-+}
-+
- int current_cpuset_is_being_rebound(void)
- {
- 	return task_cs(current) == cpuset_being_rebound;
--- 
-1.5.4.rc3
-
-
-
+	Arnd <><
