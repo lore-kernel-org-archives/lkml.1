@@ -1,43 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYE2RTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYE2RVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbYE2RTk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 13:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbYE2RTc
+	id S1757336AbYE2RVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 13:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYE2RVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 13:19:32 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48693 "EHLO pasmtpB.tele.dk"
+	Thu, 29 May 2008 13:21:34 -0400
+Received: from saeurebad.de ([85.214.36.134]:36594 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751820AbYE2RTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 13:19:32 -0400
-Date: Thu, 29 May 2008 19:20:12 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Steve French <smfrench@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: optimizing out inline functions
-Message-ID: <20080529172012.GA15469@uranus.ravnborg.org>
-References: <524f69650805281251r1b1d99a1tc3223d15e3aeb50c@mail.gmail.com> <20080528200057.GA7300@uranus.ravnborg.org> <524f69650805290939v65f9f5b8m65fd1ba23acd08d8@mail.gmail.com>
-Mime-Version: 1.0
+	id S1751930AbYE2RVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 13:21:33 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [patch 06/11] showmem: Only walk spanned pages.
+References: <20080529125501.196123527@de.ibm.com>
+	<20080529125729.607377419@de.ibm.com>
+Date: Thu, 29 May 2008 19:20:57 +0200
+In-Reply-To: <20080529125729.607377419@de.ibm.com> (Martin Schwidefsky's
+	message of "Thu, 29 May 2008 14:55:07 +0200")
+Message-ID: <8763sxowli.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <524f69650805290939v65f9f5b8m65fd1ba23acd08d8@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 11:39:32AM -0500, Steve French wrote:
-> Ran into one loosely related question, printk takes a variable
-> argument list, so the calling function in this case would also need to
-> be able to handle thos variable arguments.  With macros, we are able
-> to do things like with variable arguments easily
-> 
-> #define function_to_print_some_warning(format, arg...)
-> printk(KERN_WARNING ": " format "\n" , ## arg)
-> 
-> Are there style rules (or nicely written examples) for doing this
-> (variable argument lists) with (inline) functions
+Hi,
 
-Searching the code base I'm sure you will find plenty.
-But I cannot point one out from the top of my head.
+Martin Schwidefsky <schwidefsky@de.ibm.com> writes:
 
-	Sam
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+>
+> Convert show_mem() so its nearly the same as on x86/powerpc.
+> Gives us proper locking and we get also rid of the only use of max_mapnr.
+> Also the number of pages was contained in an int which might not be
+> sufficient not too far in the future.
+>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+>
+>  arch/s390/mm/init.c |   42 +++++++++++++++++++++++-------------------
+>  1 file changed, 23 insertions(+), 19 deletions(-)
+>
+> Index: quilt-2.6/arch/s390/mm/init.c
+> ===================================================================
+> --- quilt-2.6.orig/arch/s390/mm/init.c
+> +++ quilt-2.6/arch/s390/mm/init.c
+> @@ -44,30 +44,34 @@ char  empty_zero_page[PAGE_SIZE] __attri
+>  
+>  void show_mem(void)
+>  {
+> -	int i, total = 0, reserved = 0;
+> -	int shared = 0, cached = 0;
+> +	unsigned long i, total = 0, reserved = 0;
+> +	unsigned long shared = 0, cached = 0;
+> +	unsigned long flags;
+>  	struct page *page;
+> +	pg_data_t *pgdat;
+>  
+>  	printk("Mem-info:\n");
+>  	show_free_areas();
+> -	i = max_mapnr;
+> -	while (i-- > 0) {
+> -		if (!pfn_valid(i))
+> -			continue;
+> -		page = pfn_to_page(i);
+> -		total++;
+> -		if (PageReserved(page))
+> -			reserved++;
+> -		else if (PageSwapCache(page))
+> -			cached++;
+> -		else if (page_count(page))
+> -			shared += page_count(page) - 1;
+> +	for_each_online_pgdat(pgdat) {
+> +		pgdat_resize_lock(pgdat, &flags);
+> +		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+> +			if (!pfn_valid(pgdat->node_start_pfn + i))
+> +				continue;
+> +			page = pfn_to_page(pgdat->node_start_pfn + i);
+> +			total++;
+> +			if (PageReserved(page))
+> +				reserved++;
+> +			else if (PageSwapCache(page))
+> +				cached++;
+> +			else if (page_count(page))
+> +				shared += page_count(page) - 1;
+> +		}
+> +		pgdat_resize_unlock(pgdat, &flags);
+>  	}
+> -	printk("%d pages of RAM\n", total);
+> -	printk("%d reserved pages\n", reserved);
+> -	printk("%d pages shared\n", shared);
+> -	printk("%d pages swap cached\n", cached);
+> -
+> +	printk("%ld pages of RAM\n", total);
+> +	printk("%ld reserved pages\n", reserved);
+> +	printk("%ld pages shared\n", shared);
+> +	printk("%ld pages swap cached\n", cached);
+
+>  	printk("%lu pages dirty\n", global_page_state(NR_FILE_DIRTY));
+>  	printk("%lu pages writeback\n", global_page_state(NR_WRITEBACK));
+>  	printk("%lu pages mapped\n", global_page_state(NR_FILE_MAPPED));
+
+These are redundant, check show_free_areas().
+
+	Hannes
