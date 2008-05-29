@@ -1,586 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbYE2IY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYE2I0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbYE2IY3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 04:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYE2IYT
+	id S1754649AbYE2I0Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 04:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYE2I0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 04:24:19 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:41268 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751565AbYE2IYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 04:24:16 -0400
-Date: Thu, 29 May 2008 09:23:56 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-input@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       carlos@strangeworlds.co.uk
-Message-ID: <20080529082356.GE16444@srcf.ucam.org>
-References: <20080528132152.GB32646@srcf.ucam.org> <20080528132900.GC32646@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080528132900.GC32646@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: RESEND: [PATCH 3/3] Misc: Add HP WMI laptop extras driver
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Thu, 29 May 2008 04:26:17 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59038 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751696AbYE2I0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 04:26:14 -0400
+Date: Thu, 29 May 2008 18:25:56 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for May 29
+Message-Id: <20080529182556.2994310a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__29_May_2008_18_25_56_+1000_2i.h7ndDe1DR+NBZ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver adds support for reading and configuring certain information 
-on modern HP laptops with WMI BIOS interfaces. It supports enabling and 
-disabling the ambient light sensor, querying attached displays and hard 
-drive temperature, sending events on docking and querying the state of 
-the dock and toggling the state of the wifi, bluetooth and wwan hardware 
-via rfkill. It also makes the little "(i)" button work on machines that 
-send that via WMI rather than via the keyboard controller.
+--Signature=_Thu__29_May_2008_18_25_56_+1000_2i.h7ndDe1DR+NBZ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Hi all,
 
----
+Changes since next-20080528:
 
-Contains cleanups suggested by Andrew, along with the missing Kconfig 
-and makefile hunks.
+The pci tree replaced one conflict with two different ones.
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 636af28..290c245 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -200,6 +200,18 @@ config TC1100_WMI
- 	  This is a driver for the WMI extensions (wireless and bluetooth power
- 	  control) of the HP Compaq TC1100 tablet.
- 
-+config HP_WMI
-+       tristate "HP WMI extras"
-+       depends on ACPI_WMI
-+       depends on INPUT
-+       depends on RFKILL
-+       help
-+         Say Y here if you want to support WMI-based hotkeys on HP laptops and
-+	 to read data from WMI such as docking or ambient light sensor state.
-+
-+         To compile this driver as a module, choose M here: the module will
-+         be called hp-wmi.
-+
- config MSI_LAPTOP
-         tristate "MSI Laptop Extras"
-         depends on X86
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index 1952875..bb4945d 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
- obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
- obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
- obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
-+obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
- obj-$(CONFIG_LKDTM)		+= lkdtm.o
- obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
- obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
-diff --git a/drivers/misc/hp-wmi.c b/drivers/misc/hp-wmi.c
-new file mode 100644
-index 0000000..1dbcbcb
---- /dev/null
-+++ b/drivers/misc/hp-wmi.c
-@@ -0,0 +1,494 @@
-+/*
-+ * HP WMI hotkeys
-+ *
-+ * Copyright (C) 2008 Red Hat <mjg@redhat.com>
-+ *
-+ * Portions based on wistron_btns.c:
-+ * Copyright (C) 2005 Miloslav Trmac <mitr@volny.cz>
-+ * Copyright (C) 2005 Bernhard Rosenkraenzer <bero@arklinux.org>
-+ * Copyright (C) 2005 Dmitry Torokhov <dtor@mail.ru>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/input.h>
-+#include <acpi/acpi_drivers.h>
-+#include <linux/platform_device.h>
-+#include <linux/acpi.h>
-+#include <linux/rfkill.h>
-+#include <linux/string.h>
-+
-+MODULE_AUTHOR("Matthew Garrett <mjg59@srcf.ucam.org>");
-+MODULE_DESCRIPTION("HP laptop WMI hotkeys driver");
-+MODULE_LICENSE("GPL");
-+
-+MODULE_ALIAS("wmi:95F24279-4D7B-4334-9387-ACCDC67EF61C");
-+MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
-+
-+#define HPWMI_EVENT_GUID "95F24279-4D7B-4334-9387-ACCDC67EF61C"
-+#define HPWMI_BIOS_GUID "5FB7F034-2C63-45e9-BE91-3D44E2C707E4"
-+
-+#define HPWMI_DISPLAY_QUERY 0x1
-+#define HPWMI_HDDTEMP_QUERY 0x2
-+#define HPWMI_ALS_QUERY 0x3
-+#define HPWMI_DOCK_QUERY 0x4
-+#define HPWMI_WIRELESS_QUERY 0x5
-+
-+static int __init hp_wmi_bios_setup(struct platform_device *device);
-+static int __exit hp_wmi_bios_remove(struct platform_device *device);
-+
-+struct bios_args {
-+	u32 signature;
-+	u32 command;
-+	u32 commandtype;
-+	u32 datasize;
-+	u32 data;
-+};
-+
-+struct bios_return {
-+	u32 sigpass;
-+	u32 return_code;
-+	u32 value;
-+};
-+
-+struct key_entry {
-+	char type;		/* See KE_* below */
-+	u8 code;
-+	u16 keycode;
-+};
-+
-+enum { KE_KEY, KE_SW, KE_END };
-+
-+static struct key_entry hp_wmi_keymap[] = {
-+	{KE_SW, 0x01, SW_DOCK},
-+	{KE_KEY, 0x02, KEY_BRIGHTNESSUP},
-+	{KE_KEY, 0x03, KEY_BRIGHTNESSDOWN},
-+	{KE_KEY, 0x04, KEY_HELP},
-+	{KE_END, 0}
-+};
-+
-+static struct input_dev *hp_wmi_input_dev;
-+static struct platform_device *hp_wmi_platform_dev;
-+
-+static struct rfkill *wifi_rfkill;
-+static struct rfkill *bluetooth_rfkill;
-+static struct rfkill *wwan_rfkill;
-+
-+static struct platform_driver hp_wmi_driver = {
-+	.driver = {
-+		   .name = "hp-wmi",
-+		   .owner = THIS_MODULE,
-+	},
-+	.probe = hp_wmi_bios_setup,
-+	.remove = hp_wmi_bios_remove,
-+};
-+
-+static int hp_wmi_perform_query(int query, int write, int value)
-+{
-+	struct bios_return bios_return;
-+	acpi_status status;
-+	union acpi_object *obj;
-+	struct bios_args args = {
-+		.signature = 0x55434553,
-+		.command = write ? 0x2 : 0x1,
-+		.commandtype = query,
-+		.datasize = write ? 0x4 : 0,
-+		.data = value,
-+	};
-+	struct acpi_buffer input = { sizeof(struct bios_args), &args };
-+	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, NULL };
-+
-+	status = wmi_evaluate_method(HPWMI_BIOS_GUID, 0, 0x3, &input, &output);
-+
-+	obj = output.pointer;
-+
-+	if (!obj || obj->type != ACPI_TYPE_BUFFER)
-+		return -EINVAL;
-+
-+	bios_return = *((struct bios_return *)obj->buffer.pointer);
-+	if (bios_return.return_code > 0)
-+		return bios_return.return_code * -1;
-+	else
-+		return bios_return.value;
-+}
-+
-+static int hp_wmi_display_state(void)
-+{
-+	return hp_wmi_perform_query(HPWMI_DISPLAY_QUERY, 0, 0);
-+}
-+
-+static int hp_wmi_hddtemp_state(void)
-+{
-+	return hp_wmi_perform_query(HPWMI_HDDTEMP_QUERY, 0, 0);
-+}
-+
-+static int hp_wmi_als_state(void)
-+{
-+	return hp_wmi_perform_query(HPWMI_ALS_QUERY, 0, 0);
-+}
-+
-+static int hp_wmi_dock_state(void)
-+{
-+	return hp_wmi_perform_query(HPWMI_DOCK_QUERY, 0, 0);
-+}
-+
-+static int hp_wmi_wifi_set(void *data, enum rfkill_state state)
-+{
-+	if (state)
-+		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x101);
-+	else
-+		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x100);
-+}
-+
-+static int hp_wmi_bluetooth_set(void *data, enum rfkill_state state)
-+{
-+	if (state)
-+		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x202);
-+	else
-+		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x200);
-+}
-+
-+static int hp_wmi_wwan_set(void *data, enum rfkill_state state)
-+{
-+	if (state)
-+		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x404);
-+	else
-+		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x400);
-+}
-+
-+static int hp_wmi_wifi_state(void)
-+{
-+	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
-+
-+	if (wireless & 0x100)
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+static int hp_wmi_bluetooth_state(void)
-+{
-+	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
-+
-+	if (wireless & 0x10000)
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+static int hp_wmi_wwan_state(void)
-+{
-+	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
-+
-+	if (wireless & 0x1000000)
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+static ssize_t show_display(struct device *dev, struct device_attribute *attr,
-+			    char *buf)
-+{
-+	int value = hp_wmi_display_state();
-+	if (value < 0)
-+		return -EINVAL;
-+	return sprintf(buf, "%d\n", value);
-+}
-+
-+static ssize_t show_hddtemp(struct device *dev, struct device_attribute *attr,
-+			    char *buf)
-+{
-+	int value = hp_wmi_hddtemp_state();
-+	if (value < 0)
-+		return -EINVAL;
-+	return sprintf(buf, "%d\n", value);
-+}
-+
-+static ssize_t show_als(struct device *dev, struct device_attribute *attr,
-+			char *buf)
-+{
-+	int value = hp_wmi_als_state();
-+	if (value < 0)
-+		return -EINVAL;
-+	return sprintf(buf, "%d\n", value);
-+}
-+
-+static ssize_t show_dock(struct device *dev, struct device_attribute *attr,
-+			 char *buf)
-+{
-+	int value = hp_wmi_dock_state();
-+	if (value < 0)
-+		return -EINVAL;
-+	return sprintf(buf, "%d\n", value);
-+}
-+
-+static ssize_t set_als(struct device *dev, struct device_attribute *attr,
-+		       const char *buf, size_t count)
-+{
-+	u32 tmp = simple_strtoul(buf, NULL, 10);
-+	hp_wmi_perform_query(HPWMI_ALS_QUERY, 1, tmp);
-+	return count;
-+}
-+
-+static DEVICE_ATTR(display, S_IRUGO, show_display, NULL);
-+static DEVICE_ATTR(hddtemp, S_IRUGO, show_hddtemp, NULL);
-+static DEVICE_ATTR(als, S_IRUGO | S_IWUSR, show_als, set_als);
-+static DEVICE_ATTR(dock, S_IRUGO, show_dock, NULL);
-+
-+static struct key_entry *hp_wmi_get_entry_by_scancode(int code)
-+{
-+	struct key_entry *key;
-+
-+	for (key = hp_wmi_keymap; key->type != KE_END; key++)
-+		if (code == key->code)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static struct key_entry *hp_wmi_get_entry_by_keycode(int keycode)
-+{
-+	struct key_entry *key;
-+
-+	for (key = hp_wmi_keymap; key->type != KE_END; key++)
-+		if (key->type == KE_KEY && keycode == key->keycode)
-+			return key;
-+
-+	return NULL;
-+}
-+
-+static int hp_wmi_getkeycode(struct input_dev *dev, int scancode, int *keycode)
-+{
-+	struct key_entry *key = hp_wmi_get_entry_by_scancode(scancode);
-+
-+	if (key && key->type == KE_KEY) {
-+		*keycode = key->keycode;
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int hp_wmi_setkeycode(struct input_dev *dev, int scancode, int keycode)
-+{
-+	struct key_entry *key;
-+	int old_keycode;
-+
-+	if (keycode < 0 || keycode > KEY_MAX)
-+		return -EINVAL;
-+
-+	key = hp_wmi_get_entry_by_scancode(scancode);
-+	if (key && key->type == KE_KEY) {
-+		old_keycode = key->keycode;
-+		key->keycode = keycode;
-+		set_bit(keycode, dev->keybit);
-+		if (!hp_wmi_get_entry_by_keycode(old_keycode))
-+			clear_bit(old_keycode, dev->keybit);
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+void hp_wmi_notify(u32 value, void *context)
-+{
-+	struct acpi_buffer response = { ACPI_ALLOCATE_BUFFER, NULL };
-+	static struct key_entry *key;
-+	union acpi_object *obj;
-+
-+	wmi_get_event_data(value, &response);
-+
-+	obj = (union acpi_object *)response.pointer;
-+
-+	if (obj && obj->type == ACPI_TYPE_BUFFER && obj->buffer.length == 8) {
-+		int eventcode = *((u8 *) obj->buffer.pointer);
-+		key = hp_wmi_get_entry_by_scancode(eventcode);
-+		if (key) {
-+			switch (key->type) {
-+			case KE_KEY:
-+				input_report_key(hp_wmi_input_dev,
-+						 key->keycode, 1);
-+				input_sync(hp_wmi_input_dev);
-+				input_report_key(hp_wmi_input_dev,
-+						 key->keycode, 0);
-+				input_sync(hp_wmi_input_dev);
-+				break;
-+			case KE_SW:
-+				input_report_switch(hp_wmi_input_dev,
-+						    key->keycode,
-+						    hp_wmi_dock_state());
-+				input_sync(hp_wmi_input_dev);
-+				break;
-+			}
-+		} else if (eventcode == 0x5) {
-+			if (wifi_rfkill)
-+				wifi_rfkill->state = hp_wmi_wifi_state();
-+			if (bluetooth_rfkill)
-+				bluetooth_rfkill->state =
-+				    hp_wmi_bluetooth_state();
-+			if (wwan_rfkill)
-+				wwan_rfkill->state = hp_wmi_wwan_state();
-+		} else
-+			printk(KERN_INFO "HP WMI: Unknown key pressed - %x\n",
-+			       eventcode);
-+	} else
-+		printk(KERN_INFO "HP WMI: Unknown response received\n");
-+}
-+
-+static int __init hp_wmi_input_setup(void)
-+{
-+	struct key_entry *key;
-+	int err;
-+
-+	hp_wmi_input_dev = input_allocate_device();
-+
-+	hp_wmi_input_dev->name = "HP WMI hotkeys";
-+	hp_wmi_input_dev->phys = "wmi/input0";
-+	hp_wmi_input_dev->id.bustype = BUS_HOST;
-+	hp_wmi_input_dev->getkeycode = hp_wmi_getkeycode;
-+	hp_wmi_input_dev->setkeycode = hp_wmi_setkeycode;
-+
-+	for (key = hp_wmi_keymap; key->type != KE_END; key++) {
-+		switch (key->type) {
-+		case KE_KEY:
-+			set_bit(EV_KEY, hp_wmi_input_dev->evbit);
-+			set_bit(key->keycode, hp_wmi_input_dev->keybit);
-+			break;
-+		case KE_SW:
-+			set_bit(EV_SW, hp_wmi_input_dev->evbit);
-+			set_bit(key->keycode, hp_wmi_input_dev->swbit);
-+			break;
-+		}
-+	}
-+
-+	err = input_register_device(hp_wmi_input_dev);
-+
-+	if (err) {
-+		input_free_device(hp_wmi_input_dev);
-+		return err;
-+	}
-+
-+	return 0;
-+}
-+
-+static void cleanup_sysfs(struct platform_device *device)
-+{
-+	device_remove_file(&device->dev, &dev_attr_display);
-+	device_remove_file(&device->dev, &dev_attr_hddtemp);
-+	device_remove_file(&device->dev, &dev_attr_als);
-+	device_remove_file(&device->dev, &dev_attr_dock);
-+}
-+
-+static int __init hp_wmi_bios_setup(struct platform_device *device)
-+{
-+	int err;
-+
-+	err = device_create_file(&device->dev, &dev_attr_display);
-+	if (err)
-+		goto add_sysfs_error;
-+	err = device_create_file(&device->dev, &dev_attr_hddtemp);
-+	if (err)
-+		goto add_sysfs_error;
-+	err = device_create_file(&device->dev, &dev_attr_als);
-+	if (err)
-+		goto add_sysfs_error;
-+	err = device_create_file(&device->dev, &dev_attr_dock);
-+	if (err)
-+		goto add_sysfs_error;
-+
-+	wifi_rfkill = rfkill_allocate(&device->dev, RFKILL_TYPE_WLAN);
-+	wifi_rfkill->name = "hp-wifi";
-+	wifi_rfkill->state = hp_wmi_wifi_state();
-+	wifi_rfkill->toggle_radio = hp_wmi_wifi_set;
-+	wifi_rfkill->user_claim_unsupported = 1;
-+
-+	bluetooth_rfkill = rfkill_allocate(&device->dev,
-+					   RFKILL_TYPE_BLUETOOTH);
-+	bluetooth_rfkill->name = "hp-bluetooth";
-+	bluetooth_rfkill->state = hp_wmi_bluetooth_state();
-+	bluetooth_rfkill->toggle_radio = hp_wmi_bluetooth_set;
-+	bluetooth_rfkill->user_claim_unsupported = 1;
-+
-+	wwan_rfkill = rfkill_allocate(&device->dev, RFKILL_TYPE_WIMAX);
-+	wwan_rfkill->name = "hp-wwan";
-+	wwan_rfkill->state = hp_wmi_wwan_state();
-+	wwan_rfkill->toggle_radio = hp_wmi_wwan_set;
-+	wwan_rfkill->user_claim_unsupported = 1;
-+
-+	rfkill_register(wifi_rfkill);
-+	rfkill_register(bluetooth_rfkill);
-+	rfkill_register(wwan_rfkill);
-+
-+	return 0;
-+add_sysfs_error:
-+	cleanup_sysfs(device);
-+	return err;
-+}
-+
-+static int __exit hp_wmi_bios_remove(struct platform_device *device)
-+{
-+	cleanup_sysfs(device);
-+
-+	rfkill_unregister(wifi_rfkill);
-+	rfkill_unregister(bluetooth_rfkill);
-+	rfkill_unregister(wwan_rfkill);
-+
-+	return 0;
-+}
-+
-+static int __init hp_wmi_init(void)
-+{
-+	int err;
-+
-+	if (wmi_has_guid(HPWMI_EVENT_GUID)) {
-+		err = wmi_install_notify_handler(HPWMI_EVENT_GUID,
-+						 hp_wmi_notify, NULL);
-+		if (!err)
-+			hp_wmi_input_setup();
-+	}
-+
-+	if (wmi_has_guid(HPWMI_BIOS_GUID)) {
-+		err = platform_driver_register(&hp_wmi_driver);
-+		if (err)
-+			return 0;
-+		hp_wmi_platform_dev = platform_device_alloc("hp-wmi", -1);
-+		if (!hp_wmi_platform_dev) {
-+			platform_driver_unregister(&hp_wmi_driver);
-+			return 0;
-+		}
-+		platform_device_add(hp_wmi_platform_dev);
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit hp_wmi_exit(void)
-+{
-+	if (wmi_has_guid(HPWMI_EVENT_GUID)) {
-+		wmi_remove_notify_handler(HPWMI_EVENT_GUID);
-+		input_unregister_device(hp_wmi_input_dev);
-+	}
-+	if (hp_wmi_platform_dev) {
-+		platform_device_del(hp_wmi_platform_dev);
-+		platform_driver_unregister(&hp_wmi_driver);
-+	}
-+}
-+
-+module_init(hp_wmi_init);
-+module_exit(hp_wmi_exit);
+The s390 tree picked up several conflicts with the driver-core tree.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+The wireless tree picked up a conflict with the wireless-current tree.
+
+The rr tree picked up two conflicts with the driverd-core tree.
+
+The semaphore-removal tree still needed three patches reverted because simi=
+lar
+patches were merged into upstream and the scsi-rc-fixes trees.
+
+I have applied the following temporary patch for known build problems:
+
+	"Fix various 8390 builds" - the net tree broke builds on various
+architectures - hopefully this patch will go into the net tree shortly.
+	"hil_kbd: restore pci_ids.h" - this is to fix a patch in the
+semaphore tree and hopefully will be fixed there shortly.
+	"sparc: fallout from pci_name() constifying" - caused by the
+constifying of the return value of pci_name in the driver-core tree.
+
+The "block: genhd errors when CONFIG_PROC_FS=3Dn" patch is no longer needed.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 81 trees (counting Linus' and 13 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging quilt/driver-core
+Merging quilt/usb
+Merging x86/auto-x86-next
+Merging sched/auto-sched-next
+Merging ftrace/auto-ftrace-next
+Applying ftrace: fix rculist split fallout
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/base/power/main.c
+CONFLICT (content): Merge conflict in include/linux/device.h
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in drivers/i2c/i2c-core.c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd.c
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd_eckd.c
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd_fba.c
+CONFLICT (content): Merge conflict in drivers/s390/char/tape_core.c
+CONFLICT (content): Merge conflict in drivers/s390/cio/device_fsm.c
+CONFLICT (content): Merge conflict in drivers/s390/net/claw.c
+CONFLICT (content): Merge conflict in drivers/s390/net/ctcm_main.c
+CONFLICT (content): Merge conflict in drivers/s390/net/lcs.c
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging hrt/mm
+Merging lblnet/master
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/main.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2x00dev=
+.c
+Merging crypto/master
+Merging vfs/vfs-2.6.25
+Merging sound/master
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in drivers/virtio/virtio.c
+CONFLICT (content): Merge conflict in drivers/virtio/virtio_pci.c
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging rcu/core/rcu
+Merging locking/core/locking
+Merging safe-poison-pointers/safe-poison-pointers
+Merging stackprotector/stackprotector
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
+CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
+$ git reset --hard
+$ git checkout -b tmp semaphore-removal/semaphore-removal
+Created commit 521ba1f: Revert "Convert qla_os to use mutex instead of sema=
+phore"
+Created commit 0f70b86: Revert "9p: Convert from semaphore to spinlock"
+Created commit 577fb2c: Revert "qla2xxx: Turn vport_sem into vport_mutex"
+$ git checkout master
+CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
+Merging quilt/ldp.next
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+Merging ubifs/for_andrew
+Applying Fix various 8390 builds
+Applying hil_kbd: restore pci_ids.h
+Applying sparc: fallout from pci_name() constifying
+
+--Signature=_Thu__29_May_2008_18_25_56_+1000_2i.h7ndDe1DR+NBZ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIPmijTgG2atn1QN8RAoy2AJ9YdUfnZyxQdx+aQMSLzMwjXnf6RgCeNgGH
+9P+9F4qVe4Krgbt81AlVVwY=
+=xQ2Y
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__29_May_2008_18_25_56_+1000_2i.h7ndDe1DR+NBZ--
