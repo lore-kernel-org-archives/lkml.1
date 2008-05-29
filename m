@@ -1,43 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbYE2SVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbYE2SWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbYE2SVv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 14:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYE2SVl
+	id S1755094AbYE2SWQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 14:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbYE2SV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 14:21:41 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55988 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755349AbYE2SVk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 14:21:40 -0400
-Date: Thu, 29 May 2008 19:20:03 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: hans-christoph.rohland@sap.com, leg@google.com, pbadari@us.ibm.com,
-       harvey.harrison@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tmpfs: support aio
-In-Reply-To: <20080528165815.f4e4982c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0805291912490.553@blonde.site>
-References: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
- <20080528165815.f4e4982c.akpm@linux-foundation.org>
+	Thu, 29 May 2008 14:21:57 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62417 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758657AbYE2SV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 14:21:56 -0400
+Date: Thu, 29 May 2008 19:19:04 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Roman Zippel <zippel@linux-m68k.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Alessandro Zummo <a.zummo@towertech.it>, Rik van Riel <riel@redhat.com>,
+       David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] NTP: Let update_persistent_clock() sleep
+Message-ID: <Pine.LNX.4.55.0805291649300.8254@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008, Andrew Morton wrote:
-> 
-> hm.  This version:
-> is neater but generates 21 bytes more code.  Stupid gcc.
-> 
-> I don't believe we needed to check for count == 0?  We'd just loop around
-> N times doing nothing.
+ This is a change that makes the 11-minute RTC update be run in the
+process context.  This is so that update_persistent_clock() can sleep,
+which may be required for certain types of RTC hardware -- most notably
+I2C devices.
 
-You're right, thanks, and that's hardly a path we need to optimize.
-I was just blindly copying generic_file_aio_read, but they would
-both benefit from your improvement.  If you don't mind, I'll send
-you a replacement patch for shmem.c, and a patch for filemap.c.
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+Hello,
 
-Hugh
+ This is the second version of the change -- the use of
+schedule_delayed_work() makes it simpler and lets the timer be removed
+altogether.  It obsoletes ntp-make-the-rtc-sync-mode-11-minute-again.patch
+too (Andrew, please withdraw it from your tree), which is a good sign.
+
+ Tested like the original with a Broadcom SWARM board and its M41T81 RTC
+chip using the rtc-m41t80.c driver through the set of changes published 
+earlier.
+
+  Maciej
+
+patch-2.6.26-rc1-20080505-sync-cmos-work-3
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c linux-2.6.26-rc1-20080505/kernel/time/ntp.c
+--- linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c	2008-05-05 02:56:03.000000000 +0000
++++ linux-2.6.26-rc1-20080505/kernel/time/ntp.c	2008-05-29 17:49:04.000000000 +0000
+@@ -10,13 +10,13 @@
+ 
+ #include <linux/mm.h>
+ #include <linux/time.h>
+-#include <linux/timer.h>
+ #include <linux/timex.h>
+ #include <linux/jiffies.h>
+ #include <linux/hrtimer.h>
+ #include <linux/capability.h>
+ #include <linux/math64.h>
+ #include <linux/clocksource.h>
++#include <linux/workqueue.h>
+ #include <asm/timex.h>
+ 
+ /*
+@@ -218,11 +218,11 @@ void second_overflow(void)
+ /* Disable the cmos update - used by virtualization and embedded */
+ int no_sync_cmos_clock  __read_mostly;
+ 
+-static void sync_cmos_clock(unsigned long dummy);
++static void sync_cmos_clock(struct work_struct *work);
+ 
+-static DEFINE_TIMER(sync_cmos_timer, sync_cmos_clock, 0, 0);
++static DECLARE_DELAYED_WORK(sync_cmos_work, sync_cmos_clock);
+ 
+-static void sync_cmos_clock(unsigned long dummy)
++static void sync_cmos_clock(struct work_struct *work)
+ {
+ 	struct timespec now, next;
+ 	int fail = 1;
+@@ -258,13 +258,13 @@ static void sync_cmos_clock(unsigned lon
+ 		next.tv_sec++;
+ 		next.tv_nsec -= NSEC_PER_SEC;
+ 	}
+-	mod_timer(&sync_cmos_timer, jiffies + timespec_to_jiffies(&next));
++	schedule_delayed_work(&sync_cmos_work, timespec_to_jiffies(&next));
+ }
+ 
+ static void notify_cmos_timer(void)
+ {
+ 	if (!no_sync_cmos_clock)
+-		mod_timer(&sync_cmos_timer, jiffies + 1);
++		schedule_delayed_work(&sync_cmos_work, 0);
+ }
+ 
+ #else
