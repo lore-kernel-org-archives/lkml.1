@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbYE2C2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYE2C3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbYE2C2L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 22:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYE2C17
+	id S1754912AbYE2C3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 22:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbYE2C3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 22:27:59 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:45793 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbYE2C16 (ORCPT
+	Wed, 28 May 2008 22:29:06 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54607 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750926AbYE2C3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 22:27:58 -0400
-Date: Wed, 28 May 2008 20:27:41 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+	Wed, 28 May 2008 22:29:05 -0400
+Date: Wed, 28 May 2008 19:26:32 -0700
+From: Greg KH <greg@kroah.com>
+To: Dave Jones <davej@redhat.com>, "Luck, Tony" <tony.luck@intel.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Woodhouse <dwmw2@infradead.org>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss]  Fixing the Kernel Janitors project
-Message-ID: <20080529022741.GO22636@parisc-linux.org>
-References: <1211995212.3445.52.camel@localhost.localdomain>
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+Message-ID: <20080529022632.GB5180@kroah.com>
+References: <20080528225136.GA29014@kroah.com> <1FE6DD409037234FAB833C420AA843EC016FFF69@orsmsx424.amr.corp.intel.com> <20080529003657.GA17505@kroah.com> <20080529010055.GA31952@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1211995212.3445.52.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080529010055.GA31952@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 12:20:12PM -0500, James Bottomley wrote:
-> In the spirit of having a more process than technical based kernel
-> summit, I'd like to put the topic of the kernel Janitors project up for
-> discussion.
+On Wed, May 28, 2008 at 09:00:55PM -0400, Dave Jones wrote:
+> On Wed, May 28, 2008 at 05:36:57PM -0700, Greg Kroah-Hartman wrote:
+>  > On Wed, May 28, 2008 at 04:23:52PM -0700, Luck, Tony wrote:
+>  > > > My raw numbers show that the number of individual kernel contributors
+>  > > > continues to increase with every release, so this might not be as much
+>  > > > of a problem as it's made out to be.
+>  > > 
+>  > > That depends on whether we are gradually adding to the pool
+>  > > of developers, or seeing an increasing stream of newcomers
+>  > > who supply a patch or two before disappearing again.
+>  > > 
+>  > > If you look at the list of contributors some old release for
+>  > > which we have good data (say 2.6.16).  How many of those people
+>  > > contributed to each of the following releases? Does the
+>  > > decay curve look steeper or more gentle if you start from
+>  > > a more recent release?
+>  > 
+>  > I don't know, I haven't tracked the people individually that way, only
+>  > looked at the basic numbers of developers per release.
+> 
+> Are you just doing something like
+>  git log v2.6.16..v2.6.17 | grep ^Author: | sort -u| wc -l  
 
-I suspect many of the people contributing to this thread aren't on the
-kernel-janitors list.  They're only seeing janitorial-style patches hit
-them in the face, and they know they don't like it.
+Ah, if it were only so easy :)
 
-> On the other hand, as a
-> maintainer, when there's people yelling me at about patches not being
-> included plus a persistent regressions list and about ten bug reports to
-> track down, the last thing I want to see within a million miles of my
-> inbox is a white space fixing patch.
+> or do you have some script that maps addresses to people ?
+> One person may appear once in 2.6.20, and then a half dozen times
+> in 2.6.21 if they use multiple email addresses for example.
+> (Also, typos, and people using full hostnames in their sign-off's
+>  instead of email addresses skew this somewhat).
+> 
+> I'm guessing the latter, due to the graph thing you did. Pointers?
 
-Part of the problem is that whitespace fixing patches are treated like
-they're real patches.  We get conflicts with real patches, they're pinged
-like they're real patches, and the contributors name gets put in the
-shortlog like it was a real patch.
+Yes, it's the later.  Jon Corbet has a great little python tool that we
+have used to create the "who is writing the kernel" series of articles.
+I've been using it to keep track of who maps to what email address and
+for what company for a while now.
 
-I liked the trivial service that Rusty had setup.  Patch started getting
-conflicts?  Dropped.  Pinged?  By an automated device, not by akpm.  We
-didn't have contributor names back then, but maybe we should anonymise
-whitespace patches -- just accept that something that could have been
-done by a machine isn't worth attaching a name to.
+An older version can be found at:
+	http://www.kernel.org/pub/linux/kernel/people/gregkh/kernel_history/
+it's the 'gitdm' tool there.  I don't know if he has an updated version
+around anywhere, I suppose as it looks like I'm doing the releases for
+it, I can put up a new snapshot if people are really interested.
 
-> The most obvious solution might be to shut the Janitors project down, or
-> at least more tightly manage its TODO list (although a lot of what gets
-> seen as janitorial patches, like whitespace fixes, isn't on the TODO
-> list in the first place).
+I also have "cleaned up" versions of the kernel log files for just the
+reason you say above.  You would not believe the number of times some
+people mispell their own name in a single kernel release...  That makes
+it easier to do this kind of mapping.  The cleaned up logs are in that
+directory as well.
 
-Also, a lot of the trivial patches don't come across the janitors list
-first, so shutting the project down will not, IMO, reduce the problem.
-So, most obvious, but wrong ;-)
+thanks,
 
-> However, since the purpose is to get new
-> people involved with kernel development, perhaps we should repurpose the
-> project so it actually does this.  My suggestion is that we replace it
-> with the kernel bugs project.  Kudos for finding bugs, more for finding
-> better ways of finding bugs, and the most for finding and actually
-> fixing a bug.  
-
-That's a good idea.  We'd all be happier if more people spent time on
-bug triage, investigation and fixing.
-
-> Perhaps we should simply start the discussion with the premise that we
-> want to encourage new people to do useful work and draw them into the
-> development community and see where it leads.
-
-There are some of those things going on in the current janitors project,
-it's just they're drowned out by the noise.  I'd like to mention a few.
-
-Mark Asselstine has been working to remove the last remnants of cli/sti
-from the kernel.  I believe patches to get rid of them all are now
-either merged or sitting in trees waiting to be merged.  I found him
-receptive to feedback and willing to sit down and really analyse a
-driver to figure out what was going on.  If he chooses to continue his
-kernel hacking career, he'll be a great asset.
-
-Julia Lawall has a fun tool that spots patterns which are buggy.  I've
-worked on a number of patches with her recently where we compare
-unsigned integers < 0.  Again, we need people to look at the piece of
-code in context to figure out what the original author meant (not too
-dissimilar from the coverity reports).
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+greg k-h
