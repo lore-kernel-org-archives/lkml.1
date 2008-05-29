@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbYE2GBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbYE2GJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752553AbYE2GBz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 02:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYE2GBs
+	id S1752262AbYE2GJp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 02:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYE2GJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 02:01:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60878 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751023AbYE2GBr (ORCPT
+	Thu, 29 May 2008 02:09:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57496
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751154AbYE2GJj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 02:01:47 -0400
-Date: Wed, 28 May 2008 23:01:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexander Karpenko <alexander@comm.utoronto.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix fn key on Macbook Pro 4,1 and Macbook Air   (CC me
- on replies)
-Message-Id: <20080528230137.c25b5e87.akpm@linux-foundation.org>
-In-Reply-To: <3CF690CE-DD01-4EE4-8B40-E2641D5C06AB@comm.utoronto.ca>
-References: <3CF690CE-DD01-4EE4-8B40-E2641D5C06AB@comm.utoronto.ca>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 29 May 2008 02:09:39 -0400
+Date: Wed, 28 May 2008 23:09:34 -0700 (PDT)
+Message-Id: <20080528.230934.131215087.davem@davemloft.net>
+To: James.Bottomley@HansenPartnership.com
+Cc: dwmw2@infradead.org, penberg@cs.helsinki.fi,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1212014127.3445.115.camel@localhost.localdomain>
+References: <1212010931.3445.103.camel@localhost.localdomain>
+	<1212013125.2236.58.camel@shinybook.infradead.org>
+	<1212014127.3445.115.camel@localhost.localdomain>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 May 2008 23:59:01 -0400 Alexander Karpenko <alexander@comm.utoronto.ca> wrote:
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Wed, 28 May 2008 17:35:27 -0500
 
-> Summary: The fn key does not work on Macbook Pro 4,1 and Air,  
-> preventing the user from using the keyboard's media keys, volume keys,  
-> PgUp, PgDn, Home, End, Delete, and adjusting screen brightness.
-> 
-> Keywords: macbook, fn key, keyboard, hid, quirks
-> 
-> Kernel version: 2.6.24-16-generic
-> 
-> I've posted the patch to this bug report, which outlines the problem,  
-> debugging, and fix in more detail: https://bugs.launchpad.net/mactel-support/+bug/207127
-> 
-> The direct link to the patch is: http://launchpadlibrarian.net/14613817/fix_fn_key_on_macbookpro_4_1_and_mb_air.patch
-> 
-> Patch description:
-> The patch adds the device IDs of the keyboards (ANSI, ISO, JIS for MB  
-> Pro/Air) to drivers/hid/usbhid/hid-quirks.c.
-> 
-> Please CC me on replies, as I'm not subscribed to this mailing list.
-> 
+> However, even if there were no recruitment problem at all, getting more
+> people involved is always better because it means more contributions.
 
-Please include the patch, all relevant descriptive matter and a
-signed-off-by: all in the same email.
+This is not true at all.
 
-Documentation/SubmittingPatches goes into details.
+If people are getting involved, just for the sake of being involved,
+which there is strong evidence of, then it's not a positive thing.
 
-Thanks.
+We want people who are passionate about doing things with the
+kernel, are self-motivated, and frankly don't need a ton of hand
+holding and do not work on things that require absolutely no
+thinking.
+
+Look at anyone who is extremely nimble with the kernel, and ask them
+what they worked on to get going with development.  Did Andrew Morton
+fixup whitespace errors when he was starting to become familiar with
+the tree?  Did I?  No, none of us did this stuff.  We read over the
+code and learned how it worked, did a port, optimized a lookup
+algorithm somewhere.
+
+Consistently we see people turding with whitespace, and not breaking
+out of that cycle.  That is a problem.
