@@ -1,203 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYE2GXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYE2G03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbYE2GXu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 02:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYE2GXk
+	id S1753341AbYE2G03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 02:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYE2G0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 02:23:40 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:40760 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbYE2GXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 02:23:39 -0400
-Date: Wed, 28 May 2008 23:23:26 -0700 (PDT)
-From: Chris Peterson <cpeterso@cpeterso.com>
-To: netdev@vger.kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] [resend] drivers/net: remove network drivers' last few uses
- of IRQF_SAMPLE_RANDOM
-Message-ID: <Pine.LNX.4.62.0805282319090.19567@ikari.dreamhost.com>
+	Thu, 29 May 2008 02:26:20 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:28343 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751179AbYE2G0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 02:26:19 -0400
+Date: Thu, 29 May 2008 08:26:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
+Message-ID: <20080529062617.GH25504@kernel.dk>
+References: <20080504201542.GA1040@martell.zuzino.mipt.ru> <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk> <20080528103026.GE8255@linux.vnet.ibm.com> <20080528124423.GV25504@kernel.dk> <20080528132012.GF8255@linux.vnet.ibm.com> <20080529043852.GA15489@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529043852.GA15489@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 28 2008, Paul E. McKenney wrote:
+> On Wed, May 28, 2008 at 06:20:12AM -0700, Paul E. McKenney wrote:
+> > On Wed, May 28, 2008 at 02:44:24PM +0200, Jens Axboe wrote:
+> > > On Wed, May 28 2008, Paul E. McKenney wrote:
+> > > > On Wed, May 28, 2008 at 12:07:21PM +0200, Jens Axboe wrote:
+> > > > > On Tue, May 27 2008, Paul E. McKenney wrote:
+> > > > > > On Tue, May 27, 2008 at 03:35:10PM +0200, Jens Axboe wrote:
+> > > > > > > On Tue, May 27 2008, Alexey Dobriyan wrote:
+> > > > > > > > On Sat, May 10, 2008 at 02:37:19PM +0400, Alexey Dobriyan wrote:
+> > > > > > > > > > > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
+> > > > > > > > > > > > >  		rcu_read_lock();
+> > > > > > > > > > > > >  		if (ioc->aic && ioc->aic->dtor)
+> > > > > > > > > > > > >  			ioc->aic->dtor(ioc->aic);
+> > > > > > > > > > > > > -		rcu_read_unlock();
+> > > > > > > > > > > > >  		cfq_dtor(ioc);
+> > > > > > > > > > > > > +		rcu_read_unlock();
+> > > > > > > > > > > > >  
+> > > > > > > > > > > > >  		kmem_cache_free(iocontext_cachep, ioc);
+> > > > > > > > > > > > >  		return 1;
+> > > > > > > > > > > > 
+> > > > > > > > > > > > This helps in sense that 3 times bulk cross-compiles finish to the end.
+> > > > > > > > > > > > You'll hear me if another such oops will resurface.
+> > > > > > > > > > > 
+> > > > > > > > > > > Still looking good?
+> > > > > > > > > > 
+> > > > > > > > > > Yup!
+> > > > > > > > > 
+> > > > > > > > > And this with patch in mainline, again with PREEMPT_RCU.
+> > > > > > > > 
+> > > > > > > > Ping, this happened again with 2.6.26-rc4 and PREEMPT_RCU.
+> > > > > > > 
+> > > > > > > Worrisome... Paul, would you mind taking a quick look at cfq
+> > > > > > > and see if you can detect why breaks with preempt rcu? It's
+> > > > > > > clearly a use-after-free symptom, but I don't see how it can
+> > > > > > > happen.
+> > > > > > 
+> > > > > > Some quick and probably off-the-mark questions...
+> > > > > 
+> > > > > Thanks!
+> > > > 
+> > > > Glad it actually was of help!  ;-)
+> > > 
+> > > Your reviews are ALWAYS greatly appreciated!
+> > 
+> > :-)
+> > 
+> > > > > > o	What is the purpose of __call_for_each_cic()?  When called
+> > > > > > 	from call_for_each_cic(), it is under rcu_read_lock(), as
+> > > > > > 	required, but it is also called from cfq_free_io_context(),
+> > > > > > 	which is assigned to the ->dtor and ->exit members of the
+> > > > > > 	cfq_io_context struct.  What protects calls through these
+> > > > > > 	members?
+> > > > > > 
+> > > > > > 	(This is for the ->cic_list field of the cfq_io_context structure.
+> > > > > > 	One possibility is that the io_context's ->lock member is held,
+> > > > > > 	but I don't see this.  Not that I looked all that hard...)
+> > > > > > 
+> > > > > > 	My suggestion would be to simply change all invocations of
+> > > > > > 	__call_for_each_cic() to instead invoke call_for_each_cic().
+> > > > > > 	The rcu_read_lock()/rcu_read_unlock() pair is pretty
+> > > > > > 	lightweight, even in CONFIG_PREEMPT_RCU.
+> > > > > 
+> > > > > __call_for_each_cic() is always called under rcu_read_lock(), it merely
+> > > > > exists to avoid a double rcu_read_lock(). Even if it is cheap. The
+> > > > > convention follows the usual __lock_is_already_held() double under
+> > > > > score, but I guess it could do with a comment! There are only two
+> > > > > callers of the function, call_for_each_cic() which does the
+> > > > > rcu_read_lock(), and cfq_free_io_context() which is called from ->dtor
+> > > > > (and holds the rcu_read_lock() and ->trim which actually does not. That
+> > > > > looks like it could be problematic, but it's only called when an io
+> > > > > scheduler module is removed so not really critical. I'll add it, though!
+> > > > > Actually, the task_lock() should be enough there. So no bug, but (again)
+> > > > > it could do with a comment.
+> > > > 
+> > > > Sounds good!
+> > > > 
+> > > > > > o	When calling cfq_slab_kill(), for example from cfq_exit(),
+> > > > > > 	what ensures that all previous RCU callbacks have completed?
+> > > > > > 	
+> > > > > > 	I suspect that you need an rcu_barrier() at the beginning
+> > > > > > 	of cfq_slab_kill(), but I could be missing something.
+> > > > > 
+> > > > > So we have two callers of that, one is from the error path at init time
+> > > > > and is obviously ok. The other does need rcu_barrier()! I'll add that.
+> > > > 
+> > > > OK, that does make my brain hurt less.  ;-)
+> > > 
+> > > So that one was also OK, as Fabio pointed out. If you follow the
+> > > ioc_gone and user tracking, the:
+> > > 
+> > >         if (elv_ioc_count_read(ioc_count))
+> > >                 wait_for_completion(ioc_gone);
+> > > 
+> > > also has the side effect of waiting for RCU callbacks calling
+> > > kmem_cache_free() to have finished as well.
+> > 
+> > I stand corrected.
+> 
+> But one additional question...
+> 
+> 	static void cfq_cic_free_rcu(struct rcu_head *head)
+> 	{
+> 		struct cfq_io_context *cic;
+> 
+> 		cic = container_of(head, struct cfq_io_context, rcu_head);
+> 
+> 		kmem_cache_free(cfq_ioc_pool, cic);
+> 		elv_ioc_count_dec(ioc_count);
+> 
+> 		if (ioc_gone && !elv_ioc_count_read(ioc_count))
+> 			complete(ioc_gone);
+> 	}
+> 
+> Suppose that a pair of tasks both execute the elv_ioc_count_dec()
+> at the same time, so that all counters are now zero.  Both then
+> find that there is still an ioc_gone, and that the count is
+> now zero.  One of the tasks invokes complete(ioc_gone).  This
+> awakens the corresponding cfq_exit(), which now returns, getting
+> rid of its stack frame -- and corrupting the all_gone auto variable
+> that ioc_gone references.
+> 
+> Now the second task gets a big surprise when it tries to invoke
+> complete(ioc_gone).
+> 
+> Or is there something else that I am missing here?
 
-Remove network drivers' last few uses of theoretically-exploitable network 
-entropy. Only 12 net drivers are affected. Headless boxes should use a 
-more secure source of entropy, such as the userspace daemons rngd, clrngd, 
-egd, audio_entropyd, and/or video_entroyd.
+No, I think that's a problem spot as well. To my knowledge, nobody has
+ever hit that. The anticipatory scheduler has the same code.
 
-I'm also thinking about writing a "Frankenstein" daemon that combines the 
-entropy-collecting algorithms from those daemons into one. Whereas rngd 
-only uses /dev/hw_random, my hypothetical daemon would make a best effort 
-attempt: use /dev/hw_random if it exists, otherwise fallback (or use in 
-addition) the other entropy sources.
+What we want to avoid here is making cfq_cic_free_rcu() a lot more
+expensive, which is why the elv_ioc_count_read() is behind that
+ioc_gone check. I'll need to think a bit on how to handle that
+better :-)
 
+-- 
+Jens Axboe
 
-Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
----
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/3c523.c linux-2.6.26-rc4/drivers/net/3c523.c
---- linux-2.6.26-rc4.orig/drivers/net/3c523.c	2008-05-18 10:03:23.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/3c523.c	2008-05-27 21:44:23.000000000 -0700
-@@ -289,8 +289,7 @@ static int elmc_open(struct net_device *
- 
- 	elmc_id_attn586();	/* disable interrupts */
- 
--	ret = request_irq(dev->irq, &elmc_interrupt, IRQF_SHARED | IRQF_SAMPLE_RANDOM,
--			  dev->name, dev);
-+	ret = request_irq(dev->irq, &elmc_interrupt, IRQF_SHARED, dev->name, dev);
- 	if (ret) {
- 		printk(KERN_ERR "%s: couldn't get irq %d\n", dev->name, dev->irq);
- 		elmc_id_reset586();
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/3c527.c linux-2.6.26-rc4/drivers/net/3c527.c
---- linux-2.6.26-rc4.orig/drivers/net/3c527.c	2008-05-27 21:18:52.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/3c527.c	2008-05-27 21:44:23.000000000 -0700
-@@ -434,7 +434,7 @@ static int __init mc32_probe1(struct net
- 	 *	Grab the IRQ
- 	 */
- 
--	err = request_irq(dev->irq, &mc32_interrupt, IRQF_SHARED | IRQF_SAMPLE_RANDOM, DRV_NAME, dev);
-+	err = request_irq(dev->irq, &mc32_interrupt, IRQF_SHARED, DRV_NAME, dev);
- 	if (err) {
- 		release_region(dev->base_addr, MC32_IO_EXTENT);
- 		printk(KERN_ERR "%s: unable to get IRQ %d.\n", DRV_NAME, dev->irq);
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/atlx/atl1.c linux-2.6.26-rc4/drivers/net/atlx/atl1.c
---- linux-2.6.26-rc4.orig/drivers/net/atlx/atl1.c	2008-05-27 21:18:52.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/atlx/atl1.c	2008-05-27 21:44:23.000000000 -0700
-@@ -2610,7 +2610,7 @@ static s32 atl1_up(struct atl1_adapter *
- {
- 	struct net_device *netdev = adapter->netdev;
- 	int err;
--	int irq_flags = IRQF_SAMPLE_RANDOM;
-+	int irq_flags = 0;
- 
- 	/* hardware has been reset, we need to reload some things */
- 	atlx_set_multi(netdev);
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/cris/eth_v10.c linux-2.6.26-rc4/drivers/net/cris/eth_v10.c
---- linux-2.6.26-rc4.orig/drivers/net/cris/eth_v10.c	2008-05-18 10:03:34.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/cris/eth_v10.c	2008-05-27 21:44:23.000000000 -0700
-@@ -490,7 +490,7 @@ e100_open(struct net_device *dev)
- 	/* allocate the irq corresponding to the receiving DMA */
- 
- 	if (request_irq(NETWORK_DMA_RX_IRQ_NBR, e100rxtx_interrupt,
--			IRQF_SAMPLE_RANDOM, cardname, (void *)dev)) {
-+			0, cardname, (void *)dev)) {
- 		goto grace_exit0;
- 	}
- 
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/ibmlana.c linux-2.6.26-rc4/drivers/net/ibmlana.c
---- linux-2.6.26-rc4.orig/drivers/net/ibmlana.c	2008-05-18 10:03:41.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/ibmlana.c	2008-05-27 21:44:23.000000000 -0700
-@@ -783,7 +783,7 @@ static int ibmlana_open(struct net_devic
- 
- 	/* register resources - only necessary for IRQ */
- 
--	result = request_irq(priv->realirq, irq_handler, IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
-+	result = request_irq(priv->realirq, irq_handler, IRQF_SHARED, dev->name, dev);
- 	if (result != 0) {
- 		printk(KERN_ERR "%s: failed to register irq %d\n", dev->name, dev->irq);
- 		return result;
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/macb.c linux-2.6.26-rc4/drivers/net/macb.c
---- linux-2.6.26-rc4.orig/drivers/net/macb.c	2008-05-27 21:19:39.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/macb.c	2008-05-27 21:44:23.000000000 -0700
-@@ -1151,8 +1151,7 @@ static int __init macb_probe(struct plat
- 	}
- 
- 	dev->irq = platform_get_irq(pdev, 0);
--	err = request_irq(dev->irq, macb_interrupt, IRQF_SAMPLE_RANDOM,
--			  dev->name, dev);
-+	err = request_irq(dev->irq, macb_interrupt, 0, dev->name, dev);
- 	if (err) {
- 		printk(KERN_ERR
- 		       "%s: Unable to request IRQ %d (error %d)\n",
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/mv643xx_eth.c linux-2.6.26-rc4/drivers/net/mv643xx_eth.c
---- linux-2.6.26-rc4.orig/drivers/net/mv643xx_eth.c	2008-05-27 21:19:39.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/mv643xx_eth.c	2008-05-27 21:44:23.000000000 -0700
-@@ -1329,7 +1329,7 @@ static int mv643xx_eth_open(struct net_d
- 	rdl(mp, INTERRUPT_CAUSE_EXTEND_REG(port_num));
- 
- 	err = request_irq(dev->irq, mv643xx_eth_int_handler,
--			IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
-+			IRQF_SHARED, dev->name, dev);
- 	if (err) {
- 		printk(KERN_ERR "%s: Can not assign IRQ\n", dev->name);
- 		return -EAGAIN;
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/netxen/netxen_nic_main.c linux-2.6.26-rc4/drivers/net/netxen/netxen_nic_main.c
---- linux-2.6.26-rc4.orig/drivers/net/netxen/netxen_nic_main.c	2008-05-27 21:19:39.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/netxen/netxen_nic_main.c	2008-05-27 21:44:23.000000000 -0700
-@@ -838,7 +838,7 @@ static int netxen_nic_open(struct net_de
- 	int err = 0;
- 	int ctx, ring;
- 	irq_handler_t handler;
--	unsigned long flags = IRQF_SAMPLE_RANDOM;
-+	unsigned long flags = 0;
- 
- 	if (adapter->is_up != NETXEN_ADAPTER_UP_MAGIC) {
- 		err = netxen_init_firmware(adapter);
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/niu.c linux-2.6.26-rc4/drivers/net/niu.c
---- linux-2.6.26-rc4.orig/drivers/net/niu.c	2008-05-27 21:19:39.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/niu.c	2008-05-27 21:44:23.000000000 -0700
-@@ -5599,8 +5599,7 @@ static int niu_request_irq(struct niu *n
- 		struct niu_ldg *lp = &np->ldg[i];
- 
- 		err = request_irq(lp->irq, niu_interrupt,
--				  IRQF_SHARED | IRQF_SAMPLE_RANDOM,
--				  np->dev->name, lp);
-+				  IRQF_SHARED, np->dev->name, lp);
- 		if (err)
- 			goto out_free_irqs;
- 
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/qla3xxx.c linux-2.6.26-rc4/drivers/net/qla3xxx.c
---- linux-2.6.26-rc4.orig/drivers/net/qla3xxx.c	2008-05-27 21:19:41.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/qla3xxx.c	2008-05-27 21:44:24.000000000 -0700
-@@ -3618,7 +3618,7 @@ static int ql_adapter_up(struct ql3_adap
- {
- 	struct net_device *ndev = qdev->ndev;
- 	int err;
--	unsigned long irq_flags = IRQF_SAMPLE_RANDOM | IRQF_SHARED;
-+	unsigned long irq_flags = IRQF_SHARED;
- 	unsigned long hw_flags;
- 
- 	if (ql_alloc_mem_resources(qdev)) {
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/tg3.c linux-2.6.26-rc4/drivers/net/tg3.c
---- linux-2.6.26-rc4.orig/drivers/net/tg3.c	2008-05-27 21:19:51.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/tg3.c	2008-05-27 21:44:24.000000000 -0700
-@@ -7496,12 +7496,12 @@ static int tg3_request_irq(struct tg3 *t
- 		fn = tg3_msi;
- 		if (tp->tg3_flags2 & TG3_FLG2_1SHOT_MSI)
- 			fn = tg3_msi_1shot;
--		flags = IRQF_SAMPLE_RANDOM;
-+		flags = 0;
- 	} else {
- 		fn = tg3_interrupt;
- 		if (tp->tg3_flags & TG3_FLAG_TAGGED_STATUS)
- 			fn = tg3_interrupt_tagged;
--		flags = IRQF_SHARED | IRQF_SAMPLE_RANDOM;
-+		flags = IRQF_SHARED;
- 	}
- 	return (request_irq(tp->pdev->irq, fn, flags, dev->name, dev));
- }
-@@ -7519,7 +7519,7 @@ static int tg3_test_interrupt(struct tg3
- 	free_irq(tp->pdev->irq, dev);
- 
- 	err = request_irq(tp->pdev->irq, tg3_test_isr,
--			  IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
-+			  IRQF_SHARED, dev->name, dev);
- 	if (err)
- 		return err;
- 
-diff -pruN linux-2.6.26-rc4.orig/drivers/net/xen-netfront.c linux-2.6.26-rc4/drivers/net/xen-netfront.c
---- linux-2.6.26-rc4.orig/drivers/net/xen-netfront.c	2008-05-27 21:19:53.000000000 -0700
-+++ linux-2.6.26-rc4/drivers/net/xen-netfront.c	2008-05-27 21:44:24.000000000 -0700
-@@ -1361,8 +1361,7 @@ static int setup_netfront(struct xenbus_
- 		goto fail;
- 
- 	err = bind_evtchn_to_irqhandler(info->evtchn, xennet_interrupt,
--					IRQF_SAMPLE_RANDOM, netdev->name,
--					netdev);
-+					0, netdev->name, netdev);
- 	if (err < 0)
- 		goto fail;
- 	netdev->irq = err;
