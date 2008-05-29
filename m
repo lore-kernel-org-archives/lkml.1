@@ -1,354 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759431AbYE2VZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760163AbYE2VZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759431AbYE2VZU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbYE2VZG
+	id S1760163AbYE2VZl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYE2VZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:25:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55671 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752785AbYE2VZD (ORCPT
+	Thu, 29 May 2008 17:25:08 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:56791 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753998AbYE2VZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:25:03 -0400
-Date: Thu, 29 May 2008 22:10:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: [RFC PATCH] libata-sff: Fix oops reported in kerneloops.org for pnp
- devices with no ctl
-Message-ID: <20080529221058.1169e140@core>
-In-Reply-To: <483F049E.2090809@garzik.org>
-References: <20080529161453.24735.805.stgit@core>
-	<alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
-	<20080529190235.258d304e@core>
-	<483EF536.90801@garzik.org>
-	<20080529194238.36458a46@core>
-	<483F049E.2090809@garzik.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 17:25:05 -0400
+X-Sasl-enc: ROfJpcJJanToUXx3xvALpXoc1hXEna9waLSDTAIag/mH 1212096303
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Ivo van Doorn <IvDoorn@gmail.com>
+Subject: [PATCH] Input: rename SW_RADIO to SW_RFKILL_ALL (v2)
+Date: Thu, 29 May 2008 18:25:00 -0300
+Message-Id: <1212096300-30989-1-git-send-email-hmh@hmh.eng.br>
+X-Mailer: git-send-email 1.5.5.2
+In-Reply-To: <20080529211621.GA18419@khazad-dum.debian.net>
+References: <20080529211621.GA18419@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Want me to roll a patch in that style ?
-> 
-> Works for me...
+The SW_RADIO code for EV_SW events has a name that is not descriptive
+enough of its intended function, and could induce someone to think
+KEY_RADIO is its EV_KEY counterpart, which is false.
 
-Ok
+Rename it to SW_RFKILL_ALL, and document what this event is for.  Keep
+the old name around, to avoid userspace ABI breaks.
 
-- Make ata_sff_altstatus private so nobody uses it by mistake
-- Drop the 400nS delay from it
+The SW_RFKILL_ALL event is meant to be used by rfkill master switches.  It
+is not bound to a particular radio switch type, and usually applies to all
+types.  It is semantically tied to master rfkill switches that enable or
+disable every radio in a system.
 
-Add
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Acked-by: Dmitry Torokhov <dtor@mail.ru>
+Cc: Ivo van Doorn <IvDoorn@gmail.com>
+---
+ Documentation/laptops/thinkpad-acpi.txt |    2 +-
+ drivers/misc/thinkpad_acpi.c            |    4 ++--
+ include/linux/input.h                   |    4 +++-
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-ata_sff_irq_status	-	encapsulates the IRQ check logic
+diff --git a/Documentation/laptops/thinkpad-acpi.txt b/Documentation/laptops/thinkpad-acpi.txt
+index 01c6c3d..64b3f14 100644
+--- a/Documentation/laptops/thinkpad-acpi.txt
++++ b/Documentation/laptops/thinkpad-acpi.txt
+@@ -503,7 +503,7 @@ generate input device EV_KEY events.
+ In addition to the EV_KEY events, thinkpad-acpi may also issue EV_SW
+ events for switches:
+ 
+-SW_RADIO	T60 and later hardare rfkill rocker switch
++SW_RFKILL_ALL	T60 and later hardare rfkill rocker switch
+ SW_TABLET_MODE	Tablet ThinkPads HKEY events 0x5009 and 0x500A
+ 
+ Non hot-key ACPI HKEY event map:
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 3f28f6e..a111148 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -1293,7 +1293,7 @@ static void tpacpi_input_send_radiosw(void)
+ 		mutex_lock(&tpacpi_inputdev_send_mutex);
+ 
+ 		input_report_switch(tpacpi_inputdev,
+-				    SW_RADIO, !!wlsw);
++				    SW_RFKILL_ALL, !!wlsw);
+ 		input_sync(tpacpi_inputdev);
+ 
+ 		mutex_unlock(&tpacpi_inputdev_send_mutex);
+@@ -2199,7 +2199,7 @@ static int __init hotkey_init(struct ibm_init_struct *iibm)
+ 
+ 		if (tp_features.hotkey_wlsw) {
+ 			set_bit(EV_SW, tpacpi_inputdev->evbit);
+-			set_bit(SW_RADIO, tpacpi_inputdev->swbit);
++			set_bit(SW_RFKILL_ALL, tpacpi_inputdev->swbit);
+ 		}
+ 		if (tp_features.hotkey_tablet) {
+ 			set_bit(EV_SW, tpacpi_inputdev->evbit);
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 28a094f..e075c4b 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -637,7 +637,9 @@ struct input_absinfo {
+ #define SW_LID			0x00  /* set = lid shut */
+ #define SW_TABLET_MODE		0x01  /* set = tablet mode */
+ #define SW_HEADPHONE_INSERT	0x02  /* set = inserted */
+-#define SW_RADIO		0x03  /* set = radio enabled */
++#define SW_RFKILL_ALL		0x03  /* rfkill master switch, type "any"
++					 set = radio enabled */
++#define SW_RADIO		SW_RFKILL_ALL	/* deprecated */
+ #define SW_MAX			0x0f
+ #define SW_CNT			(SW_MAX+1)
+ 
+-- 
+1.5.5.2
 
-This function keeps the existing behaviour for altstatus using devices. I
-actually suspect the logic was wrong before the changes but -rc isn't the
-time to play with that
-
-ata_sff_sync		-	ensure writes hit the device
-
-Really we want an io* operation for 'is posted' eg ioisposted(ioaddr) so
-that we can fix the nasty delay this causes on most systems.
-
-- ata_sff_pause		-	400nS delay
-
-Ensure the command hit the device and delay 400nS
-
-- ata_sff_dma_pause
-
-Ensure the I/O hit the device and enforce an HDMA1:0 transition delay.
-Requires altstatus register exists, BUG if not so we don't risk
-corruption in MWDMA modes. (UDMA the checksum will save your backside in
-theory)
-
-The only other complication then is devices with their own handlers.
-rb532 can use dma_pause but scc needs to access its own altstatus
-register for internal errata workarounds so directly call the drivers own
-altstatus function.
-
-
-Signed-off-by: Alan Cox <alan@redhat.com>
-
- drivers/ata/libata-sff.c    |  115 +++++++++++++++++++++++++++++++++++++------
- drivers/ata/pata_icside.c   |    2 -
- drivers/ata/pata_rb532_cf.c |    4 +
- drivers/ata/pata_scc.c      |    5 +-
- include/linux/libata.h      |   16 +-----
- 5 files changed, 109 insertions(+), 33 deletions(-)
-
-
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index 3c2d228..90d20c6 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -247,7 +247,7 @@ u8 ata_sff_check_status(struct ata_port *ap)
-  *	LOCKING:
-  *	Inherited from caller.
-  */
--u8 ata_sff_altstatus(struct ata_port *ap)
-+static u8 ata_sff_altstatus(struct ata_port *ap)
- {
- 	if (ap->ops->sff_check_altstatus)
- 		return ap->ops->sff_check_altstatus(ap);
-@@ -256,6 +256,93 @@ u8 ata_sff_altstatus(struct ata_port *ap)
- }
- 
- /**
-+ *	ata_sff_irq_status - Check if the device is busy
-+ *	@ap: port where the device is
-+ *
-+ *	Determine if the port is currently busy. Uses altstatus
-+ *	if available in order to avoid clearing shared IRQ status
-+ *	when finding an IRQ source. Non ctl capable devices don't
-+ *	share interrupt lines fortunately for us.
-+ *
-+ *	LOCKING:
-+ *	Inherited from caller.
-+ */
-+static u8 ata_sff_irq_status(struct ata_port *ap)
-+{
-+	u8 status;
-+
-+	if (ap->ops->sff_check_altstatus || ap->ioaddr.altstatus_addr) {
-+		status = ata_sff_altstatus(ap);
-+		/* Not us: We are busy */
-+		if (status & ATA_BUSY)
-+		    	return status;
-+	}
-+	/* Clear INTRQ latch */
-+	status = ata_sff_check_status(ap);
-+	return status;
-+}
-+
-+/**
-+ *	ata_sff_sync - Flush writes
-+ *	@ap: Port to wait for.
-+ *
-+ *	CAUTION:
-+ *	If we have an mmio device with no ctl and no altstatus
-+ *	method this will fail. No such devices are known to exist.
-+ *
-+ *	LOCKING:
-+ *	Inherited from caller.
-+ */
-+
-+static void ata_sff_sync(struct ata_port *ap)
-+{
-+	if (ap->ops->sff_check_altstatus)
-+		ap->ops->sff_check_altstatus(ap);
-+	else if (ap->ioaddr.altstatus_addr)
-+		ioread8(ap->ioaddr.altstatus_addr);
-+}
-+
-+/**
-+ *	ata_sff_pause		-	Flush writes and wait 400nS
-+ *	@ap: Port to pause for.
-+ *
-+ *	CAUTION:
-+ *	If we have an mmio device with no ctl and no altstatus
-+ *	method this will fail. No such devices are known to exist.
-+ *
-+ *	LOCKING:
-+ *	Inherited from caller.
-+ */
-+
-+void ata_sff_pause(struct ata_port *ap)
-+{
-+	ata_sff_sync(ap);
-+	ndelay(400);
-+}
-+
-+/**
-+ *	ata_sff_dma_pause	-	Pause before commencing DMA
-+ *	@ap: Port to pause for.
-+ *
-+ *	Perform I/O fencing and ensure sufficient cycle delays occur
-+ *	for the HDMA1:0 transition
-+ */
-+ 
-+void ata_sff_dma_pause(struct ata_port *ap)
-+{
-+	if (ap->ops->sff_check_altstatus || ap->ioaddr.altstatus_addr) {
-+		/* An altstatus read will cause the needed delay without
-+		   messing up the IRQ status */
-+		ata_sff_altstatus(ap);
-+		return;
-+	}
-+	/* There are no DMA controllers without ctl. BUG here to ensure
-+	   we never violate the HDMA1:0 transition timing and risk
-+	   corruption. */
-+	BUG();
-+}
-+
-+/**
-  *	ata_sff_busy_sleep - sleep until BSY clears, or timeout
-  *	@ap: port containing status register to be polled
-  *	@tmout_pat: impatience timeout
-@@ -742,7 +829,7 @@ static void ata_pio_sectors(struct ata_queued_cmd *qc)
- 	} else
- 		ata_pio_sector(qc);
- 
--	ata_sff_altstatus(qc->ap); /* flush */
-+	ata_sff_sync(qc->ap); /* flush */
- }
- 
- /**
-@@ -763,8 +850,9 @@ static void atapi_send_cdb(struct ata_port *ap, struct ata_queued_cmd *qc)
- 	WARN_ON(qc->dev->cdb_len < 12);
- 
- 	ap->ops->sff_data_xfer(qc->dev, qc->cdb, qc->dev->cdb_len, 1);
--	ata_sff_altstatus(ap); /* flush */
--
-+	ata_sff_sync(ap);
-+	/* FIXME: If the CDB is for DMA do we need to do the transition delay
-+	   or is bmdma_start guaranteed to do it ? */
- 	switch (qc->tf.protocol) {
- 	case ATAPI_PROT_PIO:
- 		ap->hsm_task_state = HSM_ST;
-@@ -905,7 +993,7 @@ static void atapi_pio_bytes(struct ata_queued_cmd *qc)
- 
- 	if (unlikely(__atapi_pio_bytes(qc, bytes)))
- 		goto err_out;
--	ata_sff_altstatus(ap); /* flush */
-+	ata_sff_sync(ap); /* flush */
- 
- 	return;
- 
-@@ -1489,14 +1577,10 @@ inline unsigned int ata_sff_host_intr(struct ata_port *ap,
- 		goto idle_irq;
- 	}
- 
--	/* check altstatus */
--	status = ata_sff_altstatus(ap);
--	if (status & ATA_BUSY)
--		goto idle_irq;
- 
--	/* check main status, clearing INTRQ */
--	status = ap->ops->sff_check_status(ap);
--	if (unlikely(status & ATA_BUSY))
-+	/* check main status, clearing INTRQ if needed */
-+	status = ata_sff_irq_status(ap);
-+	if (status & ATA_BUSY)
- 		goto idle_irq;
- 
- 	/* ack bmdma irq events */
-@@ -2030,7 +2114,7 @@ void ata_sff_error_handler(struct ata_port *ap)
- 		ap->ops->bmdma_stop(qc);
- 	}
- 
--	ata_sff_altstatus(ap);
-+	ata_sff_sync(ap);		/* FIXME: We don't need this */
- 	ap->ops->sff_check_status(ap);
- 	ap->ops->sff_irq_clear(ap);
- 
-@@ -2203,7 +2287,7 @@ void ata_bmdma_stop(struct ata_queued_cmd *qc)
- 		 mmio + ATA_DMA_CMD);
- 
- 	/* one-PIO-cycle guaranteed wait, per spec, for HDMA1:0 transition */
--	ata_sff_altstatus(ap);        /* dummy read */
-+	ata_sff_dma_pause(ap);
- }
- 
- /**
-@@ -2722,7 +2806,8 @@ EXPORT_SYMBOL_GPL(ata_sff_qc_prep);
- EXPORT_SYMBOL_GPL(ata_sff_dumb_qc_prep);
- EXPORT_SYMBOL_GPL(ata_sff_dev_select);
- EXPORT_SYMBOL_GPL(ata_sff_check_status);
--EXPORT_SYMBOL_GPL(ata_sff_altstatus);
-+EXPORT_SYMBOL_GPL(ata_sff_dma_pause);
-+EXPORT_SYMBOL_GPL(ata_sff_pause);
- EXPORT_SYMBOL_GPL(ata_sff_busy_sleep);
- EXPORT_SYMBOL_GPL(ata_sff_wait_ready);
- EXPORT_SYMBOL_GPL(ata_sff_tf_load);
-diff --git a/drivers/ata/pata_icside.c b/drivers/ata/pata_icside.c
-index 1713843..cf9e984 100644
---- a/drivers/ata/pata_icside.c
-+++ b/drivers/ata/pata_icside.c
-@@ -270,7 +270,7 @@ static void pata_icside_bmdma_stop(struct ata_queued_cmd *qc)
- 	disable_dma(state->dma);
- 
- 	/* see ata_bmdma_stop */
--	ata_sff_altstatus(ap);
-+	ata_sff_dma_pause(ap);
- }
- 
- static u8 pata_icside_bmdma_status(struct ata_port *ap)
-diff --git a/drivers/ata/pata_rb532_cf.c b/drivers/ata/pata_rb532_cf.c
-index a108d25..f8b3ffc 100644
---- a/drivers/ata/pata_rb532_cf.c
-+++ b/drivers/ata/pata_rb532_cf.c
-@@ -57,7 +57,9 @@ static inline void rb532_pata_finish_io(struct ata_port *ap)
- 	struct ata_host *ah = ap->host;
- 	struct rb532_cf_info *info = ah->private_data;
- 
--	ata_sff_altstatus(ap);
-+	/* FIXME: Keep previous delay. If this is merely a fence then
-+	   ata_sff_sync might be sufficient. */
-+	ata_sff_dma_pause(ap);
- 	ndelay(RB500_CF_IO_DELAY);
- 
- 	set_irq_type(info->irq, IRQ_TYPE_LEVEL_HIGH);
-diff --git a/drivers/ata/pata_scc.c b/drivers/ata/pata_scc.c
-index e965b25..bbf5aa3 100644
---- a/drivers/ata/pata_scc.c
-+++ b/drivers/ata/pata_scc.c
-@@ -726,7 +726,7 @@ static void scc_bmdma_stop (struct ata_queued_cmd *qc)
- 		 in_be32(bmid_base + SCC_DMA_CMD) & ~ATA_DMA_START);
- 
- 	/* one-PIO-cycle guaranteed wait, per spec, for HDMA1:0 transition */
--	ata_sff_altstatus(ap);	/* dummy read */
-+	ata_sff_dma_pause(ap);	/* dummy read */
- }
- 
- /**
-@@ -747,7 +747,8 @@ static u8 scc_bmdma_status (struct ata_port *ap)
- 		return host_stat;
- 
- 	/* errata A252,A308 workaround: Step4 */
--	if ((ata_sff_altstatus(ap) & ATA_ERR) && (int_status & INTSTS_INTRQ))
-+	if ((scc_check_altstatus(ap) & ATA_ERR)
-+					&& (int_status & INTSTS_INTRQ))
- 		return (host_stat | ATA_DMA_INTR);
- 
- 	/* errata A308 workaround Step5 */
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 4a92fba..57cfd92 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -1435,7 +1435,8 @@ extern void ata_sff_qc_prep(struct ata_queued_cmd *qc);
- extern void ata_sff_dumb_qc_prep(struct ata_queued_cmd *qc);
- extern void ata_sff_dev_select(struct ata_port *ap, unsigned int device);
- extern u8 ata_sff_check_status(struct ata_port *ap);
--extern u8 ata_sff_altstatus(struct ata_port *ap);
-+extern void ata_sff_pause(struct ata_port *ap);
-+extern void ata_sff_dma_pause(struct ata_port *ap);
- extern int ata_sff_busy_sleep(struct ata_port *ap,
- 			      unsigned long timeout_pat, unsigned long timeout);
- extern int ata_sff_wait_ready(struct ata_link *link, unsigned long deadline);
-@@ -1496,19 +1497,6 @@ extern int ata_pci_sff_init_one(struct pci_dev *pdev,
- #endif /* CONFIG_PCI */
- 
- /**
-- *	ata_sff_pause - Flush writes and pause 400 nanoseconds.
-- *	@ap: Port to wait for.
-- *
-- *	LOCKING:
-- *	Inherited from caller.
-- */
--static inline void ata_sff_pause(struct ata_port *ap)
--{
--	ata_sff_altstatus(ap);
--	ndelay(400);
--}
--
--/**
-  *	ata_sff_busy_wait - Wait for a port status register
-  *	@ap: Port to wait for.
-  *	@bits: bits that must be clear
