@@ -1,124 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbYE2Mjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbYE2Mq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbYE2Mjr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 08:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYE2Mje
+	id S1753914AbYE2Mq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 08:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYE2Mqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 08:39:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55851 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751271AbYE2Mjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 08:39:33 -0400
-Date: Thu, 29 May 2008 22:39:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [git patches] net driver updates for .27
-Message-Id: <20080529223928.30cee44f.sfr@canb.auug.org.au>
-In-Reply-To: <20080529.033302.254596590.davem@davemloft.net>
-References: <20080522191049.GA29882@havoc.gtf.org>
-	<20080529.033302.254596590.davem@davemloft.net>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 08:46:49 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:46073 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751751AbYE2Mqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 08:46:48 -0400
+Date: Thu, 29 May 2008 08:45:48 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Miller <davem@davemloft.net>, James.Bottomley@HansenPartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+Message-ID: <20080529124548.GC8065@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	David Miller <davem@davemloft.net>,
+	James.Bottomley@HansenPartnership.com,
+	ksummit-2008-discuss@lists.linux-foundation.org,
+	linux-kernel@vger.kernel.org
+References: <1211995212.3445.52.camel@localhost.localdomain> <20080528.225826.40264516.davem@davemloft.net> <1212041839.8888.38.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212041839.8888.38.camel@pasglop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+On Thu, May 29, 2008 at 04:17:19PM +1000, Benjamin Herrenschmidt wrote:
+> Having been stopped a couple of times last year when trying to bring
+> some technical subjects for the reason that they were "off topic, KS is
+> for process" I tend to agree :-)
 
-On Thu, 29 May 2008 03:33:02 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
->
-> From: Jeff Garzik <jeff@garzik.org>
-> Date: Thu, 22 May 2008 15:10:49 -0400
+We did have some technical topics last year.  So I don't think the KS
+will ever be purely for process.
+
+> There are some things that are hard to get through the list, or even
+> IRC, such as wanting to reorganize some part of the core and wanting to
+> get "live" input and discussion with most arch maintainers.
 > 
-> > Please pull from 'upstream-next-davem' branch of
-> > master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-next-davem
+> There are other areas like that which would benefit from that kind of
+> hard core tech discussion face to face.
 
-Is there some reason you missed "Fix various 8390 builds" from Tony
-Breeds.  I have been carrying it in linux-next for some time and would
-appreciate it being merged.  It fixes a build regression in the current
-net-next tree.
+I agree that sometimes face-to-face discussions are crucial to
+resolving technical issues.  The problem is that we try to nail down
+the agenda a 3-4 weeks ahead of time, and realistically if a
+particular topic requires certain stakeholders to be invited, we need
+to decide that we're going to do that topic at least 8-9 weeks in
+advance, maybe more, so those people can make travel plans and/or get
+travel approvals.  And there is always the chance the topic will
+resolve itself via e-mail.  So the trick is being able to identifying
+the topics where a face-to-face discussion really will be useful.
 
-I have included the patch below.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> However, on the other hand, KS is only 2 days, which doesn't leave room
+> for that much stuff. And I don't think splitting into sub-groups or
+> mini-summits is necessarily the answers. There are some areas where it's
+> useful to do the tech beatup -with- everybody in the room.
 
-Date: Mon, 19 May 2008 15:03:52 +1000
-To: David Miller <davem@davemloft.net>, Jeff Garzik <jgarzik@redhat.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-	Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: [PATCH v3] Fix various 8390 builds
-From: tony@bakeyournoodle.com (Tony Breeds)
+First of all, if there is interest in holding some topic-area specific
+mini-summits on Sunday before the Kernel Summit, we may be able to
+scare up some space.  So if there is interest, please let me know.
 
-The commit 3f8cb098859bbea29d7b3765a3102e4a6bf81b85
-(drivers/net/lib8390: fix warning, trim trailing whitespace) removed
-ei_local from ei_tx_err() and ei_rx_overrun() resulting in the following
-build errors on m68k and sh:
+Secondly, one of the things which has been suggested in the past is
+that we move the BOF's into an afternoon session slot, and maybe push
+the last session to run until 7pm, perhaps.  That might make it easier
+for people to attend BOF's on the spur of the moment --- which might
+be useful in some cases where there is only 10 or so people you need
+to hash our some issue.
 
-Using /scratch1/tony/next as source for kernel
-GEN     /scratch1/tony/next_out/Makefile
-CHK     include/linux/version.h
-CHK     include/linux/utsrelease.h
-CALL    /scratch1/tony/next/scripts/checksyscalls.sh
-CHK     include/linux/compile.h
-CC [M]  drivers/net/zorro8390.o
-In file included from /scratch1/tony/next/drivers/net/zorro8390.c:47:
-drivers/net/lib8390.c: In function 'ei_tx_err':
-drivers/net/lib8390.c:556: error: 'ei_local' undeclared (first use in this function)
-drivers/net/lib8390.c:556: error: (Each undeclared identifier is reported only once
-drivers/net/lib8390.c:556: error: for each function it appears in.)
-drivers/net/lib8390.c: In function 'ei_rx_overrun':
-drivers/net/lib8390.c:823: error: 'ei_local' undeclared (first use in this function)
-make[3]: *** [drivers/net/zorro8390.o] Error 1
-make[2]: *** [drivers/net] Error 2
-make[1]: *** [drivers] Error 2
-make: *** [sub-make] Error 2
+And, of course, we try to schedule plenty of break time so that some
+of these discussions can happy in the hallway.
 
-The problem is that ei_inb_p() is using various #defines (from
-drivers/net/8390.h) that use EI_SHIFT, which in some drivers on some
-architectures use ei_local.  Tag ei_local as "__maybe_unused" to keep it
-around and keep the warnings the original commit is trying to silence
-... silenced.
+Do any of these possibilities sound particularly attractive or likely
+to address your concerns?  If so, which ones do you think we should
+try this year, as an experiment?
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-Updated to remove pointless casts
-
- drivers/net/lib8390.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
- Dave, Jeff can one of you take this?
-
-
-diff --git a/drivers/net/lib8390.c b/drivers/net/lib8390.c
-index ed49527..00d59ab 100644
---- a/drivers/net/lib8390.c
-+++ b/drivers/net/lib8390.c
-@@ -553,6 +553,8 @@ static void __ei_poll(struct net_device *dev)
- static void ei_tx_err(struct net_device *dev)
- {
- 	unsigned long e8390_base = dev->base_addr;
-+	/* ei_local is used on some platforms via the EI_SHIFT macro */
-+	struct ei_device *ei_local __maybe_unused = netdev_priv(dev);
- 	unsigned char txsr = ei_inb_p(e8390_base+EN0_TSR);
- 	unsigned char tx_was_aborted = txsr & (ENTSR_ABT+ENTSR_FU);
- 
-@@ -815,6 +817,8 @@ static void ei_rx_overrun(struct net_device *dev)
- {
- 	unsigned long e8390_base = dev->base_addr;
- 	unsigned char was_txing, must_resend = 0;
-+	/* ei_local is used on some platforms via the EI_SHIFT macro */
-+	struct ei_device *ei_local __maybe_unused = netdev_priv(dev);
- 
- 	/*
- 	 * Record whether a Tx was in progress and then issue the
-
-
+						- Ted
