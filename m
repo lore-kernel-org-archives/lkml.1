@@ -1,95 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYE2JZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYE2J2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbYE2JZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 05:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYE2JZT
+	id S1755469AbYE2J2b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 05:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYE2J2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 05:25:19 -0400
-Received: from viefep32-int.chello.at ([62.179.121.50]:48261 "EHLO
-	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752566AbYE2JZS (ORCPT
+	Thu, 29 May 2008 05:28:21 -0400
+Received: from yue.linux-ipv6.org ([203.178.140.15]:53559 "EHLO
+	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbYE2J2V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 05:25:18 -0400
-Subject: Re: two different oopses with 2.6.26-rc4
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, alejandro.riveira@gmail.com,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <483E73EF.6010901@googlemail.com>
-References: <1211968234.9895.7.camel@Varda>
-	 <20080529012652.6b9027a3.akpm@linux-foundation.org>
-	 <483E73EF.6010901@googlemail.com>
-Content-Type: text/plain
-Date: Thu, 29 May 2008 11:24:07 +0200
-Message-Id: <1212053047.12349.127.camel@twins>
+	Thu, 29 May 2008 05:28:21 -0400
+Date: Thu, 29 May 2008 18:28:53 +0900 (JST)
+Message-Id: <20080529.182853.67833046.yoshfuji@linux-ipv6.org>
+To: pomac@vapor.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, yoshfuji@linux-ipv6.org
+Subject: Re: [ipv6] Odd behaviour...
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
+	<yoshfuji@linux-ipv6.org>
+In-Reply-To: <20080529084157.GD11812@pomac.netswarm.net>
+References: <1211842711.8367.11.camel@localhost>
+	<20080529002729.d87fed29.akpm@linux-foundation.org>
+	<20080529084157.GD11812@pomac.netswarm.net>
+Organization: USAGI Project
+X-URL: http://www.yoshifuji.org/%7Ehideaki/
+X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
+X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
+ $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
+X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-29 at 11:14 +0200, Gabriel C wrote:
-> Andrew Morton wrote:
-> 
-> > On Wed, 28 May 2008 11:50:34 +0200 Alejandro Riveira Fern__ndez  <alejandro.riveira@gmail.com> wrote:
+In article <20080529084157.GD11812@pomac.netswarm.net> (at Thu, 29 May 2008 10:41:57 +0200), pomac@vapor.com says:
+
+> On Thu, May 29, 2008 at 12:27:29AM -0700, Andrew Morton wrote:
+> > On Tue, 27 May 2008 00:58:30 +0200 Ian Kumlien <pomac@vapor.com> wrote:
 > > 
-> >> I sent this to the list with other mail address and it didn't reach it
-> >> afaics. apologies if someone sees this twice
-> >>
-> >> i cced wireless becouse of the first oops
-> >>
-> >> First boot into 2.6.26-rc4 
-> >>
-> >>   Compiled and booting into 2.6.26-rc4
-> >>
-> >>  1) With splash quiet on grub line it doesn't boot (or i didin't wait long
-> >>     enough)
-> >>  2) without quiet and splash I get into VT X filas becouse i use the evil
-> >>     nvidia driver that's expected. But ubuntu failsafe mode (xserver with vesa
-> >>     in low res) doesn't show up either *regression*
-> >>  3) i get an oops with network manager
-> >>  4) if i try to run some sudo command it gets stuck (Crtl +C doesnt' help)
-> >>     "ip route" gets stuck too. User programs i tried wrok fine (only ls and
-> >>     htop). Network realted problem?
-> >>
-> >>  5) printk times on dmesg go crazy
-> >>
-> >> But the second time a boot into it i got a working system (i even compiled the
-> >> *famous* nvidia driver) with only a bluetooth related oops ...
-> >>
-> >> Both dmesg follow. This is on a hardy 8.04 64 bits system. If more info is needed
-> >> just ask
-> >>
-> >> No working first one
-> >>
-> >> ...
-> >>
-> >> [    0.000000] Using ACPI (MADT) for SMP configuration information
-> >> [    0.000000] Allocating PCI resources starting at c4000000 (gap: c0000000:3f380000)
-> >> [    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
-> >> [    0.000000] PERCPU: Allocating 33860 bytes of per cpu data
-> >> [    0.000000] NR_CPUS: 2, nr_cpu_ids: 2
-> >> [4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 774451
-> >> [4294014.506571] Kernel command line: BOOT_IMAGE=(hd0,2)/vmlinuz-2.6.26-rc4 root=UUID=ee465ea1-394d-4dd2-a5f9-a35567176c40 ro
-> >> [4294014.506571] Initializing CPU#0
+> > > Hi, 
+> > > 
+> > > I just recently acquired a new ipv6 tunnel since my two previous brokers
+> > > has gone out of business. I now use hurricane electrics tunnel since i
+> > > have really good ping times to it's node in Amsterdam.
+> > > 
+> > > Anyways, i have setup a local network tunnel and enabled forwarding.
+> > > 
+> > > After about 300 seconds, it all stops working. I have to disable and
+> > > re-enable it on the firewall/router to get it working again.
+> > > 
+> > > tcpdump shows the router/firewall doing odd things like:
+> > > (i renamed my host to piv6)
+> > > 
+> > > 00:48:14.294173 IP6 piv6 > igloo.stacken.kth.se: ICMP6, echo request,
+> > > seq 321, length 64
+> > > 
+> > > 00:48:14.341288 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
+> > > 321, length 64
+> > > 
+> > > 00:48:14.341317 IP6 fe80::55e4:1b90 > igloo.stacken.kth.se: ICMP6,
+> > > redirect, piv6 to piv6, length 160
+> > > 
+> > > 00:48:14.341332 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
+> > > 321, length 64
+> > > ---
+> > > 
+> > > fe80::55e4::1b90 is the local ip of the ipv6 tunnel.
+> > > (note: the packet never arrives at it's destination)
+> > > 
+> > > Any ideas of what could be going wrong?			
 > > 
-> > whee, time warp.
-> > 
-> > Ingo, Thomas: what's the story here?  There've been zillions of reports
-> > and I thought we'd already fixed it?
+> > (cc netdev - afaik linux-net is kind of dead)
 > 
+> Thanks, i knew i missed something, -net was the one that was already in
+> my email client so... =)
 > 
-> There is an patch[1] for this issue but I get rejects against current git.
+> > What kernel version are you running?
 > 
-> Peter Zijlstra asked to test his v2.6.26-rc2-group-load-balance branch[2] which fixes the problem at least for me.
+> The router/fw is running 2.6.25.1, the client is running 2.6.25.4
 > 
-> [1] http://bugzilla.kernel.org/show_bug.cgi?id=10648#c3
-> [2] http://lkml.org/lkml/2008/5/20/683
+> Any additional information i should provide?
 
-patch is queued in some critical branch and should be included in a pull
-request soonish..
+How do you assign the address?
 
-
-
+--yoshfuji
