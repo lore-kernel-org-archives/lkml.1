@@ -1,120 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYE2U6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYE2U71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYE2U6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 16:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYE2U6I
+	id S1758048AbYE2U71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 16:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYE2U7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 16:58:08 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37750 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbYE2U6H (ORCPT
+	Thu, 29 May 2008 16:59:20 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:46800 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752093AbYE2U7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 16:58:07 -0400
-Date: Thu, 29 May 2008 21:57:05 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: hans-christoph.rohland@sap.com, leg@google.com, pbadari@us.ibm.com,
-       harvey.harrison@gmail.com, zach.brown@oracle.com,
+	Thu, 29 May 2008 16:59:19 -0400
+Date: Thu, 29 May 2008 14:59:18 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: David Miller <davem@davemloft.net>
+Cc: tytso@mit.edu, James.Bottomley@hansenpartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH v2] tmpfs: support aio
-In-Reply-To: <Pine.LNX.4.64.0805292148220.29474@blonde.site>
-Message-ID: <Pine.LNX.4.64.0805292156030.29474@blonde.site>
-References: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
- <20080528165815.f4e4982c.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0805291912490.553@blonde.site> <Pine.LNX.4.64.0805292148220.29474@blonde.site>
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+Message-ID: <20080529205917.GA22636@parisc-linux.org>
+References: <20080528.225826.40264516.davem@davemloft.net> <1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu> <20080529.135431.235149338.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529.135431.235149338.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have a request for tmpfs to support the AIO interface: easily done,
-no more than replacing the old shmem_file_read by shmem_file_aio_read,
-cribbed from generic_file_aio_read.  (In 2.6.25 its write side was
-already changed to use generic_file_aio_write.)
+On Thu, May 29, 2008 at 01:54:31PM -0700, David Miller wrote:
+> Ted, we are adults and professional kernel hackers.
+> 
+> If you put us in a room together, we know what the heck to talk
+> about and what is relevant.  So saying we need to plan the topics and
+> invite the right people, that's pure hogwash, just invite the same
+> kind of people we've always been inviting and it will be fine.
 
-Incorporate cleanups from Andrew Morton and Harvey Harrison.
+Ooh, do I hear a supporter for my idea from a few years ago of having
+half the time in sessions and half the time in the hallway track?
 
-Tests out fine with LTP's ltp-aiodio.sh, given hacks (not included)
-to support O_DIRECT.  tmpfs cannot honestly support O_DIRECT: its
-cache-avoiding-IO nature is at odds with direct IO-avoiding-cache.
+(I always felt the presentations were more or less useless.  Maybe that
+was different last year.)
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Tested-by: Lawrence Greenfield <leg@google.com>
----
-
- mm/shmem.c |   53 +++++++++++++++++++++++++++++++--------------------
- 1 file changed, 33 insertions(+), 20 deletions(-)
-
---- 2.6.26-rc4/mm/shmem.c	2008-05-03 21:55:12.000000000 +0100
-+++ linux/mm/shmem.c	2008-05-29 18:47:20.000000000 +0100
-@@ -1690,26 +1690,38 @@ static void do_shmem_file_read(struct fi
- 	file_accessed(filp);
- }
- 
--static ssize_t shmem_file_read(struct file *filp, char __user *buf, size_t count, loff_t *ppos)
-+static ssize_t shmem_file_aio_read(struct kiocb *iocb,
-+		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
- {
--	read_descriptor_t desc;
--
--	if ((ssize_t) count < 0)
--		return -EINVAL;
--	if (!access_ok(VERIFY_WRITE, buf, count))
--		return -EFAULT;
--	if (!count)
--		return 0;
--
--	desc.written = 0;
--	desc.count = count;
--	desc.arg.buf = buf;
--	desc.error = 0;
--
--	do_shmem_file_read(filp, ppos, &desc, file_read_actor);
--	if (desc.written)
--		return desc.written;
--	return desc.error;
-+	struct file *filp = iocb->ki_filp;
-+	ssize_t retval;
-+	unsigned long seg;
-+	size_t count;
-+	loff_t *ppos = &iocb->ki_pos;
-+
-+	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
-+	if (retval)
-+		return retval;
-+
-+	for (seg = 0; seg < nr_segs; seg++) {
-+		read_descriptor_t desc;
-+
-+		desc.written = 0;
-+		desc.arg.buf = iov[seg].iov_base;
-+		desc.count = iov[seg].iov_len;
-+		if (desc.count == 0)
-+			continue;
-+		desc.error = 0;
-+		do_shmem_file_read(filp, ppos, &desc, file_read_actor);
-+		retval += desc.written;
-+		if (desc.error) {
-+			retval = retval ?: desc.error;
-+			break;
-+		}
-+		if (desc.count > 0)
-+			break;
-+	}
-+	return retval;
- }
- 
- static int shmem_statfs(struct dentry *dentry, struct kstatfs *buf)
-@@ -2369,8 +2381,9 @@ static const struct file_operations shme
- 	.mmap		= shmem_mmap,
- #ifdef CONFIG_TMPFS
- 	.llseek		= generic_file_llseek,
--	.read		= shmem_file_read,
-+	.read		= do_sync_read,
- 	.write		= do_sync_write,
-+	.aio_read	= shmem_file_aio_read,
- 	.aio_write	= generic_file_aio_write,
- 	.fsync		= simple_sync_file,
- 	.splice_read	= generic_file_splice_read,
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
