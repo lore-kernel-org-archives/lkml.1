@@ -1,167 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbYE2FmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbYE2F6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752146AbYE2FmS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 01:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbYE2FmJ
+	id S1752044AbYE2F6k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 01:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbYE2F6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 01:42:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53793 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750711AbYE2FmI (ORCPT
+	Thu, 29 May 2008 01:58:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36530
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750911AbYE2F6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 01:42:08 -0400
-Date: Wed, 28 May 2008 22:42:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-input@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, carlos@strangeworlds.co.uk
-Subject: Re: RESEND: [PATCH 3/3] Misc: Add HP WMI laptop extras driver
-Message-Id: <20080528224200.0c740819.akpm@linux-foundation.org>
-In-Reply-To: <20080528132900.GC32646@srcf.ucam.org>
-References: <20080528132152.GB32646@srcf.ucam.org>
-	<20080528132900.GC32646@srcf.ucam.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 29 May 2008 01:58:30 -0400
+Date: Wed, 28 May 2008 22:58:26 -0700 (PDT)
+Message-Id: <20080528.225826.40264516.davem@davemloft.net>
+To: James.Bottomley@HansenPartnership.com
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1211995212.3445.52.camel@localhost.localdomain>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 14:34:25 +0100 Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Wed, 28 May 2008 12:20:12 -0500
 
-> This driver adds support for reading and configuring certain information 
-> on modern HP laptops with WMI BIOS interfaces. It supports enabling and 
-> disabling the ambient light sensor, querying attached displays and hard 
-> drive temperature, sending events on docking and querying the state of 
-> the dock and toggling the state of the wifi, bluetooth and wwan hardware 
-> via rfkill. It also makes the little "(i)" button work on machines that 
-> send that via WMI rather than via the keyboard controller.
-> 
-> ...
->
-> --- /dev/null
-> +++ b/drivers/misc/hp-wmi.c
+> In the spirit of having a more process than technical based kernel
+> summit, I'd like to put the topic of the kernel Janitors project up for
+> discussion.
 
-I see no Kconfig or Makefile updates.
+Not to distract from your points, but I think it's been a huge
+mistake to not allow folks to work hard on technical issues
+during the summit.
 
->
-> ...
->
-> +static struct key_entry hp_wmi_keymap[] = {
-> +	{KE_SW, 0x01, SW_DOCK},
-> +	{KE_KEY, 0x02, KEY_BRIGHTNESSUP},
-> +	{KE_KEY, 0x03, KEY_BRIGHTNESSDOWN},
-> +	{KE_KEY, 0x04, KEY_HELP},
-> +	{KE_END, 0}
-> +};
+I feel like I'm at the edge of my seat dieing to talk about
+some tech topics, but it's all of this process stuff, it makes
+me want to disappear into the local cafe during the main
+summit with some folks and talk tech.
 
-Could be made const.  hp_wmi_input_setup() already honours that,
-others will need tweaks.
-
-> +static struct input_dev *hp_wmi_input_dev;
-> +static struct platform_device *hp_wmi_platform_dev;
-> +
-> +static struct rfkill *wifi_rfkill;
-> +static struct rfkill *bluetooth_rfkill;
-> +static struct rfkill *wwan_rfkill;
-
-It will be interesting to see the Kconfig rules for this driver..
-
-> +static struct platform_driver hp_wmi_driver = {
-> +	.driver = {
-> +		   .name = "hp-wmi",
-> +		   .owner = THIS_MODULE,
-> +		   },
-
-	.driver = {
-		   .name = "hp-wmi",
-		   .owner = THIS_MODULE,
-	},
-
-would be more conventional layout.
-
-> +	.probe = hp_wmi_bios_setup,
-> +	.remove = hp_wmi_bios_remove,
-> +};
-> +
-> +static int hp_wmi_perform_query(int query, int write, int value)
-> +{
-> +	struct acpi_buffer input, output = { ACPI_ALLOCATE_BUFFER, NULL };
-
-The NULL isn't strictly needed.
-
-> +	struct bios_args args;
-> +	struct bios_return bios_return;
-> +	acpi_status status;
-> +	union acpi_object *obj;
-> +
-> +	args.signature = 0x55434553;
-> +	args.command = write ? 0x2 : 0x1;
-> +	args.commandtype = query;
-> +	args.datasize = write ? 0x4 : 0;
-> +	args.data = value;
-
-Could have populated args with `= { .name = value, ... }'?
-
-> +	input.length = sizeof(struct bios_args);
-> +	input.pointer = &args;
-
-And `input', perhaps.
-
-> +	status = wmi_evaluate_method(HPWMI_BIOS_GUID, 0, 0x3, &input, &output);
-> +
-> +	obj = output.pointer;
-> +
-> +	if (!obj || obj->type != ACPI_TYPE_BUFFER)
-> +		return -EINVAL;
-> +
-> +	bios_return = *((struct bios_return *)obj->buffer.pointer);
-> +	if (bios_return.return_code > 0)
-> +		return bios_return.return_code * -1;
-> +	else
-> +		return bios_return.value;
-> +}
-> +
->
-> ...
->
-> +static int hp_wmi_setkeycode(struct input_dev *dev, int scancode, int keycode)
-> +{
-> +	struct key_entry *key;
-> +
-> +	int old_keycode;
-
-Unneeded newline.
-
-> +	if (keycode < 0 || keycode > KEY_MAX)
-> +		return -EINVAL;
-> +
-> +	key = hp_wmi_get_entry_by_scancode(scancode);
-> +	if (key && key->type == KE_KEY) {
-> +		old_keycode = key->keycode;
-> +		key->keycode = keycode;
-> +		set_bit(keycode, dev->keybit);
-> +		if (!hp_wmi_get_entry_by_keycode(old_keycode))
-> +			clear_bit(old_keycode, dev->keybit);
-> +		return 0;
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +
->
-> ...
->
-> +static int __init hp_wmi_bios_setup(struct platform_device *device)
-> +{
-> +	device_create_file(&device->dev, &dev_attr_display);
-> +	device_create_file(&device->dev, &dev_attr_hddtemp);
-> +	device_create_file(&device->dev, &dev_attr_als);
-> +	device_create_file(&device->dev, &dev_attr_dock);
-
-wham, four new warnings.
-
-Please check and suitably handle errors.
-
-
+I think it would even fix the attitude and process issues,
+to be able to talk face-to-face about technical issues instead
+of always hashing stuff out in email which is the source of
+all of the bad behavior.
