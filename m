@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbYE2Kpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbYE2KqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbYE2Kpz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 06:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbYE2Kpp
+	id S1754282AbYE2KqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 06:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbYE2Kp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 06:45:45 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:53566 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbYE2Kpo (ORCPT
+	Thu, 29 May 2008 06:45:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36567 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753168AbYE2Kpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 06:45:44 -0400
-Date: Thu, 29 May 2008 19:46:16 +0900 (JST)
-Message-Id: <20080529.194616.51574992.yoshfuji@linux-ipv6.org>
-To: pomac@vapor.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, yoshfuji@linux-ipv6.org
-Subject: Re: [ipv6] Odd behaviour...
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <20080529100822.GF11812@pomac.netswarm.net>
-References: <20080529084157.GD11812@pomac.netswarm.net>
-	<20080529.182853.67833046.yoshfuji@linux-ipv6.org>
-	<20080529100822.GF11812@pomac.netswarm.net>
-Organization: USAGI Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
+	Thu, 29 May 2008 06:45:55 -0400
+Date: Thu, 29 May 2008 11:31:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Xiaoming Li" <forrubm2@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [help]How to block new write in a "Thin Provisioning" logical
+ volume manager as a virtual device driver when physical spaces run out?
+Message-ID: <20080529113159.113a7f06@core>
+In-Reply-To: <5f7c1d2c0805290212i45aece46j7fae2dcf9c158b92@mail.gmail.com>
+References: <5f7c1d2c0805290212i45aece46j7fae2dcf9c158b92@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <20080529100822.GF11812@pomac.netswarm.net> (at Thu, 29 May 2008 12:08:22 +0200), pomac@vapor.com says:
+> As a result, with LVM, you can never export a "logical volume" with
+> claimed storage space larger than of the underlying physical storage
+> devices (e.g. SATA disks, Hardware RAID array etc.); but with ASD, you
+> can export "logical volumes" which have much larger logical storage
+> space.
 
-> On Thu, May 29, 2008 at 06:28:53PM +0900, YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> > In article <20080529084157.GD11812@pomac.netswarm.net> (at Thu, 29 May 2008 10:41:57 +0200), pomac@vapor.com says:
-> > 
-> > > On Thu, May 29, 2008 at 12:27:29AM -0700, Andrew Morton wrote:
-> > > > On Tue, 27 May 2008 00:58:30 +0200 Ian Kumlien <pomac@vapor.com> wrote:
-> > > > 
-> > > > > Hi, 
-> > > > > 
-> > > > > I just recently acquired a new ipv6 tunnel since my two previous brokers
-> > > > > has gone out of business. I now use hurricane electrics tunnel since i
-> > > > > have really good ping times to it's node in Amsterdam.
-> > > > > 
-> > > > > Anyways, i have setup a local network tunnel and enabled forwarding.
-> > > > > 
-> > > > > After about 300 seconds, it all stops working. I have to disable and
-> > > > > re-enable it on the firewall/router to get it working again.
-> > > > > 
-> > > > > tcpdump shows the router/firewall doing odd things like:
-> > > > > (i renamed my host to piv6)
-> > > > > 
-> > > > > 00:48:14.294173 IP6 piv6 > igloo.stacken.kth.se: ICMP6, echo request,
-> > > > > seq 321, length 64
-> > > > > 
-> > > > > 00:48:14.341288 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
-> > > > > 321, length 64
-> > > > > 
-> > > > > 00:48:14.341317 IP6 fe80::55e4:1b90 > igloo.stacken.kth.se: ICMP6,
-> > > > > redirect, piv6 to piv6, length 160
-> > > > > 
-> > > > > 00:48:14.341332 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
-> > > > > 321, length 64
-> > > > > ---
-> > > > > 
-> > > > > fe80::55e4::1b90 is the local ip of the ipv6 tunnel.
-> > > > > (note: the packet never arrives at it's destination)
-> > > > > 
-> > > > > Any ideas of what could be going wrong?			
-> > > > 
-> > > > (cc netdev - afaik linux-net is kind of dead)
-> > > 
-> > > Thanks, i knew i missed something, -net was the one that was already in
-> > > my email client so... =)
-> > > 
-> > > > What kernel version are you running?
-> > > 
-> > > The router/fw is running 2.6.25.1, the client is running 2.6.25.4
-> > > 
-> > > Any additional information i should provide?
-> > 
-> > How do you assign the address?
-> 
-> On the router/fw there is a sit tunnel thats started with 'ip'.
-> 
-> The clients get their addresses by radvd which only uses a local
-> interface on the router/fw...
+Why do that ?
 
-Please draw w a network topology figure.
+> Does anyone have some ideas for a better solution?
 
---yoshfuji
+Take one file system such as ext3, or even a cluster file system like
+GFS2 or OCFS. Create top level subdirectories in it for each machine.
+Either export the subdirectory via NFS. Alternatively mount the clustered
+file system somewhere on each node and then remount the subdirectory into
+the right place in the file tree
+
+(And for a clustered/shared pool root you can use pivot_root() to start
+from initrd or local disk and then switch to running entirely within the
+clusterfs)
+
+Alan
+
