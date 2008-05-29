@@ -1,130 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbYE2P6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYE2P7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756191AbYE2P6J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 11:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYE2P5z
+	id S1756946AbYE2P7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 11:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbYE2P7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 11:57:55 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:51053 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753370AbYE2P5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 11:57:54 -0400
-Date: Thu, 29 May 2008 17:57:50 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/2] Eliminate double kfree
-In-Reply-To: <20080529101012.ZZRA012@mailhub.coreip.homeip.net>
-Message-ID: <Pine.LNX.4.64.0805291754480.26229@ask.diku.dk>
-References: <Pine.LNX.4.64.0805291504400.26229@ask.diku.dk>
- <20080529101012.ZZRA012@mailhub.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 May 2008 11:59:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:65035 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbYE2P7a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 11:59:30 -0400
+Subject: 2.6.25.4-rt4
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 11:59:14 -0400
+Message-Id: <1212076754.24785.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Dmitry Torokhov wrote:
+We are pleased to announce the 2.6.25.4-rt4 tree, which can be
+downloaded from the location:
 
-> Hi Julia,
-> 
-> On Thu, May 29, 2008 at 03:05:07PM +0200, Julia Lawall wrote:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > The variable report is only non-NULL and non-freed in a small region of
-> > code, so it should only be freed in error handling code that comes from
-> > that region.
-> > 
-> 
-> Thank you for your patch. There isn't a double-kfree though, as far
-> as I can see.
+  http://rt.et.redhat.com/download/
 
-There was a double free because the error handling at the end of the 
-function (for input_register_device) would fall through to the 
-kfree(report) under err_free_devs, even though report is already freed at 
-that point.
+Information on the RT patch can be found at:
 
-Your solution does indeed look more elegant, and seems to preserve the 
-semantics of the original code.
+  http://rt.wiki.kernel.org/index.php/Main_Page
 
-julia
+Changes since 2.6.25.4-rt3
 
-> Because we need to free the report in both success and
-> failure cases the error handling is a bit unwieldy I agree. I don't
-> want to apply your patch though because I don't like when we bypass
-> parts of error handling path that weren't bypassed if we aborted
-> earlier, if you follow me.
-> 
-> What do you think about the patch below?
-> 
-> -- 
-> Dmitry
-> 
-> Input: gtco - clean up error handling in gtco_probe
-> 
-> Thanks to Julia Lawall for noticing ugliness.
-> 
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
->  drivers/input/tablet/gtco.c |   17 +++++++----------
->  1 file changed, 7 insertions(+), 10 deletions(-)
-> 
-> Index: linux/drivers/input/tablet/gtco.c
-> ===================================================================
-> --- linux.orig/drivers/input/tablet/gtco.c
-> +++ linux/drivers/input/tablet/gtco.c
-> @@ -830,7 +830,7 @@ static int gtco_probe(struct usb_interfa
->  	struct gtco             *gtco;
->  	struct input_dev        *input_dev;
->  	struct hid_descriptor   *hid_desc;
-> -	char                    *report = NULL;
-> +	char                    *report;
->  	int                     result = 0, retry;
->  	int			error;
->  	struct usb_endpoint_descriptor *endpoint;
-> @@ -916,12 +916,16 @@ static int gtco_probe(struct usb_interfa
->  					 le16_to_cpu(hid_desc->wDescriptorLength),
->  					 5000); /* 5 secs */
->  
-> -		if (result == le16_to_cpu(hid_desc->wDescriptorLength))
-> +		dbg("usb_control_msg result: %d", result);
-> +		if (result == le16_to_cpu(hid_desc->wDescriptorLength)) {
-> +			parse_hid_report_descriptor(gtco, report, result);
->  			break;
-> +		}
->  	}
->  
-> +	kfree(report);
-> +
->  	/* If we didn't get the report, fail */
-> -	dbg("usb_control_msg result: :%d", result);
->  	if (result != le16_to_cpu(hid_desc->wDescriptorLength)) {
->  		err("Failed to get HID Report Descriptor of size: %d",
->  		    hid_desc->wDescriptorLength);
-> @@ -929,12 +933,6 @@ static int gtco_probe(struct usb_interfa
->  		goto err_free_urb;
->  	}
->  
-> -	/* Now we parse the report */
-> -	parse_hid_report_descriptor(gtco, report, result);
-> -
-> -	/* Now we delete it */
-> -	kfree(report);
-> -
->  	/* Create a device file node */
->  	usb_make_path(gtco->usbdev, gtco->usbpath, sizeof(gtco->usbpath));
->  	strlcat(gtco->usbpath, "/input0", sizeof(gtco->usbpath));
-> @@ -988,7 +986,6 @@ static int gtco_probe(struct usb_interfa
->  	usb_buffer_free(gtco->usbdev, REPORT_MAX_SIZE,
->  			gtco->buffer, gtco->buf_dma);
->   err_free_devs:
-> -	kfree(report);
->  	input_free_device(input_dev);
->  	kfree(gtco);
->  	return error;
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+(Mostly stuff that has been pushed to 24-rt)
+
+ - Upgraded new ftrace (Steven Rostedt)
+
+  - RT downgrade_write (Steven Rostedt)
+
+  - fix RT rwlocks typecasts (Steven Rostedt)
+
+  - default sched_nr_migrate to 8 (Steven Rostedt)
+
+  - ARM compile fix (Remy Bohmer)
+
+  - vdso vsyscall generic (Luis Goncalves)
+
+  - git-ignore update (Hiroshi Shimamoto)
+
+  - lockstat updates (Peter Zijlstra)
+
+  - Adjust pi_lock in wakeup waiters (Peter Morreale)
+
+  - optimize rt_spin wakeup (Peter Morreale)
+
+  - all archs use task->oncpu (Gregory Haskins)
+     [modified use in header by Steven Rostedt]
+
+  - remove redundant try_to_take_lock (Peter Morreale)
+
+  - fastpath try_to_take_lock on steal (Steven Rostedt)
+
+  - preempt __delay fix (Steven Rostedt)
+
+  - ftrace minor fixes (Steven Rostedt, Clark Williams,
+                     and Abhishek Sagar)
+
+  - disable ftrace daemon (Steven Rostedt)
+
+  - sched_rt migration updates (Gregory Haskins)
+
+  - nmi show regs fix (Hiroshi Shimamoto)
+
+  - Trace histogram divide by zero fix (Carsten Emde)
+
+to build a 2.6.25.4-rt4 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.25.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.25.4.bz2
+  http://rt.et.redhat.com/download/patch-2.6.25.4-rt4.bz2
+
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+
+-- Steve
+
+
