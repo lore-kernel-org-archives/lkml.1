@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYE2Ltr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYE2LuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbYE2Ltr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 07:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYE2Lth
+	id S1755328AbYE2LuQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 07:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbYE2LuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 07:49:37 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:20910 "EHLO kernel.dk"
+	Thu, 29 May 2008 07:50:01 -0400
+Received: from jaguar.mkp.net ([192.139.46.146]:57565 "EHLO jaguar.mkp.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751582AbYE2Lth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 07:49:37 -0400
-Date: Thu, 29 May 2008 13:49:34 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/2] Kill unused parameter to smp_call_function and friends
-Message-ID: <20080529114934.GB25504@kernel.dk>
-References: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com> <483E80E4.6030403@goop.org>
+	id S1751213AbYE2LuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 07:50:00 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmtimer: Push BKL down into the ioctl handler
+References: <20080522214244.457da3d7@core>
+From: Jes Sorensen <jes@sgi.com>
+Date: 29 May 2008 07:49:59 -0400
+In-Reply-To: <20080522214244.457da3d7@core>
+Message-ID: <yq0r6bls520.fsf@jaguar.mkp.net>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <483E80E4.6030403@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29 2008, Jeremy Fitzhardinge wrote:
-> Jens Axboe wrote:
-> >It bothers me how the smp call functions accept a 'nonatomic' or 
-> >'retry'
-> >parameter (depending on who you ask), but don't do anything with it.
-> >So kill that silly thing.
-> >
-> >Two patches here, one for smp_call_function*() and one for 
-> >on_each_cpu().
-> >This patchset applies on top of the generic-ipi patchset just sent 
-> >out.
-> >  
-> 
-> Yay!
-> 
-> Acked++-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>>>>> "Alan" == Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Thanks Jeremy, added!
+Alan> Switches to unlocked_ioctl read to remove ioctl BKL method. Fix
+Alan> the unknown ioctl return. Probably a nice easy one to kill off
+Alan> BKL usage entirely later
 
--- 
-Jens Axboe
+Alan> Signed-off-by: Alan Cox <alan@redhat.com>
 
+Looks good to me, I should check whether we can't just kill the
+lock_kernel() here - I suspect it shouldn't be an issue.
+
+Acked-by: Jes Sorensen <jes@sgi.com>
+
+Cheers,
+Jes
