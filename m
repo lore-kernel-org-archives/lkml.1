@@ -1,89 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYE2G1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbYE2G1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYE2G1U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 02:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYE2G1M
+	id S1754365AbYE2G1e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 02:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYE2G1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 02:27:12 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:35935 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751168AbYE2G1L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 02:27:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=joAEurk1LDoQMQWq5BqpsZZIuEGlPr+ki95xtSzSCNiCysmqKIoU+XYKpMza5m6LJoc+2irgWhsil3f0YjL8TowwlOpT8ho2xrtIN7LOa5UQv+RU4Q4WHpjBFKY5QJNrOgRSW5CzYYu59UELHegcSGwCe63DKl6A8hQAf3FXGF8=  ;
-X-YMail-OSG: ZcBwgTwVM1kswMwM9F6QRr2e40ldTl0E8R1T8zc_pXc3J53zey5tv8eqd_ZDkfUyW5CAhKDl8ho0qP6dPN9PdCQLCgqAxLZG1fHQPHa5mYxtMFGm3crHByhCCPr_COK6pSk-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Stas Sergeev <stsp@aknet.ru>, akpm@linux-foundation.org
-Subject: Re: [patch][resend] provide rtc_cmos platform device, take 2
-Date: Wed, 28 May 2008 23:27:08 -0700
+	Thu, 29 May 2008 02:27:17 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:46526 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751560AbYE2G1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 02:27:16 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Oops during hibernation - two times the same one
+Date: Thu, 29 May 2008 08:27:11 +0200
 User-Agent: KMail/1.9.9
-Cc: ambx1@neo.rr.com, bjorn.helgaas@hp.com, mingo@elte.hu, tglx@linutronix.de,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-References: <200805212334.m4LNY42M006425@imap1.linux-foundation.org> <483BEF1A.3080808@aknet.ru>
-In-Reply-To: <483BEF1A.3080808@aknet.ru>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, pavel@ucw.cz
+References: <200805282323.20679.linux@rainbow-software.org> <200805290009.37281.rjw@sisk.pl> <20080528152919.a5f264cd.akpm@linux-foundation.org>
+In-Reply-To: <20080528152919.a5f264cd.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805282327.08981.david-b@pacbell.net>
+Message-Id: <200805290827.12722.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 May 2008, Stas Sergeev wrote:
-> --- a/arch/x86/kernel/rtc.c
-> +++ b/arch/x86/kernel/rtc.c
-> @@ -4,9 +4,12 @@
->  #include <linux/acpi.h>
->  #include <linux/bcd.h>
->  #include <linux/mc146818rtc.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pnp.h>
->  
->  #include <asm/time.h>
->  #include <asm/vsyscall.h>
-> +#include <asm/mc146818rtc.h>
+On Thursday 29 May 2008, Andrew Morton wrote:
+> On Thu, 29 May 2008 00:09:36 +0200
+>
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > On Wednesday, 28 of May 2008, Ondrej Zary wrote:
+> > > Hello,
+> > > I'm using hibernation on my desktop machine every day instead of power
+> > > off. It mostly works but sometimes aborts with "no space left on
+> > > device" error. Closing some programs and trying again usually fixes it
+> > > - but recently, I got two oopses instead. I'm sending them because
+> > > they're the same, only some details are different. Does anyone know
+> > > what might be wrong?
+> >
+> > Thanks for the report, but I have no idea of what could go wrong.
+> >
+> > Rafael
+> >
+> > > ------------[ cut here ]------------
+> > > Kernel BUG at c015610b [verbose debug info unavailable]
+>
+> Looks like this is
+>
+> 	BUG_ON(inode->i_state == I_CLEAR);
+>
+> Please do enable CONFIG_DEBUG_BUGVERBOSE.  Turning off this stuff
+> doesn't gain much.
+>
+> > > invalid opcode: 0000 [#1]
+> > > Modules linked in: snd_sb16 ppdev snd_opl3_synth snd_seq_midi_emul
+> > > snd_opl3_lib snd_hwdep snd_sb16_dsp snd_sb_common snd_mpu401_uart
+> > > snd_rawmidi 3c509 de2104x sr_mod cdrom [last unloaded: snd_sb16]
+> > >
+> > > Pid: 8634, comm: bash Not tainted (2.6.25.3-pentium #3)
+> > > EIP: 0060:[<c015610b>] EFLAGS: 00210246 CPU: 0
+> > > EIP is at iput+0x19/0x61
+> > > EAX: c02db808 EBX: cf402c08 ECX: 0001ec9e EDX: 00000000
+> > > ESI: cf402ba0 EDI: cf987c00 EBP: 00000000 ESP: c9a4deb4
+> > >  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> > > Process bash (pid: 8634, ti=c9a4c000 task=c3975000 task.ti=c9a4c000)
+> > > Stack: 00000000 c0163eb5 cf402bac ffffffe4 c142b000 c0329881 cf80b6a0
+> > > c012e212 00000001 c38de7ac 00200286 00001000 00000000 00000001 00000000
+> > > 00000000 c142b000 00000000 00000000 0001ec82 0001ec82 00200246 0001ec82
+> > > fffffa5d Call Trace:
+> > >  [<c0163eb5>] __blkdev_put+0xc2/0xda
+> > >  [<c012e212>] swsusp_write+0x307/0x311
+> > >  [<c012c81b>] hibernate+0xb4/0x131
+> > >  [<c012b9ad>] state_store+0x41/0xa3
+> > >  [<c012b96c>] state_store+0x0/0xa3
+> > >  [<c01babcb>] kobj_attr_store+0x18/0x1c
+> > >  [<c0173dd0>] sysfs_write_file+0xab/0xd8
+> > >  [<c0173d25>] sysfs_write_file+0x0/0xd8
+> > >  [<c0148a58>] vfs_write+0x7f/0xec
+> > >  [<c0148e9c>] sys_write+0x3c/0x63
+> > >  [<c01039d2>] syscall_call+0x7/0xb
+> > >  [<c02d0000>] i8042_probe+0x4c4/0x4db
+> > >  =======================
+> > > Code: 08 01 00 00 77 ff ff ff eb e5 e8 90 ad 17 00 31 c0 c3 53 85 c0 89
+> > > c3 74 58 8b 80 8c 00 00 00 83 bb 08 01 00 00 40 8b 40 20 75 04 <0f> 0b
+> > > eb fe 85 c0 74 0b 8b 50 10 85 d2 74 04 89 d8 ff d2 8d 43
+> > > EIP: [<c015610b>] iput+0x19/0x61 SS:ESP 0068:c9a4deb4
+>
+> Beats me.  Somehow the swap device's blockdev inode got I_CLEAR set
+> while swsusp_write() was playing with it.  Or during.
+>
+> I guess we could add I_CLEAR checks on resume_bdev into
+> kernel/power/swap.c in various places.
+>
+> Had there been any swapoffs before or during this suspend?
 
-The <asm/mc146818rtc.h> isn't needed, since it's automatically
-included via <linux/mc146818rtc.h> ... see right at the top.
+Yes, you're right. I almost forgot that. I have two swaps - one 256MB swap 
+partition (the machine has 256MB RAM) and one 128MB swap file. The silly 
+thing is that the partition fills up first while the swapfile remains empty 
+(ok, it's possible to change the priority - but haven't tried that yet). So 
+when the hibernation failed, I tried to free the swap partition using swapoff 
+and swapon. Sometimes, it crashes during the swapoff - like yesterday (will 
+post later).
 
-And for good fun, notice how the asm file includes the linux
-version ... seems like a cleanup would be nice someday.  :)
-
-
-> --- a/drivers/rtc/rtc-cmos.c
-> +++ b/drivers/rtc/rtc-cmos.c
-
-> @@ -958,20 +946,33 @@ static struct platform_driver cmos_platform_driver = {
->  
->  static int __init cmos_init(void)
->  {
-> +#ifdef CONFIG_PNP
-> +       if (pnp_platform_devices)
-> +               return pnp_register_driver(&cmos_pnp_driver);
-> +       else
-> +               return platform_driver_probe(&cmos_platform_driver,
-> +                       cmos_platform_probe);
-> +#else
->         return platform_driver_probe(&cmos_platform_driver,
->                         cmos_platform_probe);
-> +#endif /* CONFIG_PNP */
->  }
->  module_init(cmos_init);
-
-That's kind of ugly, but not wrong.
-
-My only question is whether that resolves the problem Russell was 
-reporting.  I think his situation needed to register *both* types
-of bus glue (but I never saw his patch).  If we're going to fix this,
-best merge just one patch...
-
-- Dave
+>
+> Does the above BUG only occur when swsusp encountered an out-of-space
+> error?  If so, perhaps something has gone wrong on the error-handling
+> path, but I didn't spot it.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 
+-- 
+Ondrej Zary
