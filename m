@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYE2NAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYE2NBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbYE2NAs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYE2NAk
+	id S1755555AbYE2NBX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbYE2NBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:00:40 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:58446 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbYE2NAj (ORCPT
+	Thu, 29 May 2008 09:01:01 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:38040 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752341AbYE2NBA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:00:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VQH2AZhqfCACYuAvzUOqyZIzSiYhrwQTaGmCbkHpSaVybjdQoc7nPvheyF+MeFeOf64bsN49IMxPqdMRsyXBP0SCa0Lr0ElyuQJPziSLnATWTRGU29wxDknB9JNCD0ISGVYdFqPesiG45rjmfhH1Y5g56+M8H+f2K1wq6qbyhTU=
-Message-ID: <d8d698ae0805290600s782e16b4pe70d725f55826cf0@mail.gmail.com>
-Date: Thu, 29 May 2008 10:00:36 -0300
-From: "Fausto Richetti Blanco" <fausto.blanco@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Pipe buffers' limit of 16 * 4K
-Cc: riel@redhat.com, jengelh@medozas.de, fausto.blanco@gmail.com
-In-Reply-To: <alpine.LNX.1.10.0805290000400.19264@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d8d698ae0805231255i4d0da724p68cb2b9376134797@mail.gmail.com>
-	 <d8d698ae0805231719g4202edf2k947bba4128385ab6@mail.gmail.com>
-	 <20080523205630.444fe2b9@bree.surriel.com>
-	 <d8d698ae0805261043u125b653ve73d067cd92caa16@mail.gmail.com>
-	 <d8d698ae0805281422i212ef0c3ocd8b28ccd9e0b70d@mail.gmail.com>
-	 <alpine.LNX.1.10.0805290000400.19264@fbirervta.pbzchgretzou.qr>
+	Thu, 29 May 2008 09:01:00 -0400
+Message-Id: <20080529125729.607377419@de.ibm.com>
+References: <20080529125501.196123527@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 29 May 2008 14:55:07 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 06/11] showmem: Only walk spanned pages.
+Content-Disposition: inline; filename=006-showmem.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, I need an unspecified amount (it is the data content of a HTTP POST).
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-The tee system call appeared in the 2.6.17 (I'm using 2.6.9). That's
-because I did my implementation using a buffer and copying it using
-write. Unfortunately, both solutions suffer from the kernel buffer
-limitation.
+Convert show_mem() so its nearly the same as on x86/powerpc.
+Gives us proper locking and we get also rid of the only use of max_mapnr.
+Also the number of pages was contained in an int which might not be
+sufficient not too far in the future.
 
-As I said, there's a lot of other solutions to my specific problem.
-I'll problably move my solution inside the lib =/ But I decided to
-write to this list to ask for dynamically adjustable sizes for the
-pipes' buffers. Is there any good reason for this not to be pushed to
-the kernel head ?
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-On Wed, May 28, 2008 at 7:05 PM, Jan Engelhardt <jengelh@medozas.de> wrote:
->
-> On Wednesday 2008-05-28 23:22, Fausto Richetti Blanco wrote:
->>>
->>>    It works very well, except when the input has more than 4K (or 16
->>> * 4K in more recent kernels) because the restore_input() blocks at
->>> this limit.
->>>
->>>    I kwow there are other solutions to my problem (e.g: using a
->>> thread, moving our decisions to the lib, etc...) by I'm wondering if
->>> making the pipe buffers' limit adjustable is not a good idea. Maybe it
->>> should be helpful for another things too (like Jan Engelhardt said in
->>> his email).
->>>
->>>    In fact, I didn't find any way of restoring the input (with the
->>> input being the 'read side' of a pipe) other than using pipes. That's
->>> because I've decided to ask this in the linux-kernel list. Is there a
->>> reason for this limit not to be an adjustable parameter ?
->
-> You could have a look at the tee(2) system call and see whether it helps
-> you a bit. Something along the lines of:
->
->        int pfd[2];
->        pipe(pfd); /* tee() wants an fd... */
->        tee(STDIN_FILENO, pfd[1], len, SPLICE_F_NONBLOCK);
->        read(pfd[0], ..., also in nonblock-mode)
->
-> Of course this also has a certain drawback, namely that the pipe will
-> only give you as much bytes as it carries, and no more than that,
-> because the write side of the pipe at STDIN_FILENO is currently
-> blocking exactly because the pipe is full.
-> In other words, at most "4K" to be read with tee().
->
-> Alternatively, if you need to consume an unspecified amount, it is
-> probably best to go the thread way.
+ arch/s390/mm/init.c |   42 +++++++++++++++++++++++-------------------
+ 1 file changed, 23 insertions(+), 19 deletions(-)
+
+Index: quilt-2.6/arch/s390/mm/init.c
+===================================================================
+--- quilt-2.6.orig/arch/s390/mm/init.c
++++ quilt-2.6/arch/s390/mm/init.c
+@@ -44,30 +44,34 @@ char  empty_zero_page[PAGE_SIZE] __attri
+ 
+ void show_mem(void)
+ {
+-	int i, total = 0, reserved = 0;
+-	int shared = 0, cached = 0;
++	unsigned long i, total = 0, reserved = 0;
++	unsigned long shared = 0, cached = 0;
++	unsigned long flags;
+ 	struct page *page;
++	pg_data_t *pgdat;
+ 
+ 	printk("Mem-info:\n");
+ 	show_free_areas();
+-	i = max_mapnr;
+-	while (i-- > 0) {
+-		if (!pfn_valid(i))
+-			continue;
+-		page = pfn_to_page(i);
+-		total++;
+-		if (PageReserved(page))
+-			reserved++;
+-		else if (PageSwapCache(page))
+-			cached++;
+-		else if (page_count(page))
+-			shared += page_count(page) - 1;
++	for_each_online_pgdat(pgdat) {
++		pgdat_resize_lock(pgdat, &flags);
++		for (i = 0; i < pgdat->node_spanned_pages; i++) {
++			if (!pfn_valid(pgdat->node_start_pfn + i))
++				continue;
++			page = pfn_to_page(pgdat->node_start_pfn + i);
++			total++;
++			if (PageReserved(page))
++				reserved++;
++			else if (PageSwapCache(page))
++				cached++;
++			else if (page_count(page))
++				shared += page_count(page) - 1;
++		}
++		pgdat_resize_unlock(pgdat, &flags);
+ 	}
+-	printk("%d pages of RAM\n", total);
+-	printk("%d reserved pages\n", reserved);
+-	printk("%d pages shared\n", shared);
+-	printk("%d pages swap cached\n", cached);
+-
++	printk("%ld pages of RAM\n", total);
++	printk("%ld reserved pages\n", reserved);
++	printk("%ld pages shared\n", shared);
++	printk("%ld pages swap cached\n", cached);
+ 	printk("%lu pages dirty\n", global_page_state(NR_FILE_DIRTY));
+ 	printk("%lu pages writeback\n", global_page_state(NR_WRITEBACK));
+ 	printk("%lu pages mapped\n", global_page_state(NR_FILE_MAPPED));
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
