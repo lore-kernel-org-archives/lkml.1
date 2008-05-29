@@ -1,219 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbYE2Boj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYE2BxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbYE2Boj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 21:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYE2BoI
+	id S1754761AbYE2BxB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 21:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYE2Bwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 21:44:08 -0400
-Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:61779
-	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753666AbYE2BoE (ORCPT
+	Wed, 28 May 2008 21:52:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32864 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753653AbYE2Bwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 21:44:04 -0400
-Message-ID: <483E0AAE.2020107@sngx.net>
-Date: Wed, 28 May 2008 20:45:18 -0500
-From: James Cammarata <jimi@sngx.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Linux Netdev List <netdev@vger.kernel.org>
-Subject: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
-References: <482DA5B6.1020606@sngx.net> <482DB46A.8020103@cosmosbay.com> <482EF192.4070707@sngx.net> <482F5113.5090703@cosmosbay.com> <482F610D.2080108@sngx.net> <20080518003104.GK28241@solarflare.com> <482FBA09.80201@sngx.net>
-In-Reply-To: <482FBA09.80201@sngx.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 28 May 2008 21:52:50 -0400
+Date: Wed, 28 May 2008 18:51:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, agl@us.ibm.com,
+       wli@holomorphy.com, kenchen@google.com, dwg@au1.ibm.com,
+       andi@firstfloor.org, Mel Gorman <mel@csn.ul.ie>, dean@arctic.org,
+       abh@cray.com, Michael Kerrisk <mtk.manpages@googlemail.com>
+Subject: Re: [PATCH 3/3]
+ hugetlb-allow-huge-page-mappings-to-be-created-without-reservations
+Message-Id: <20080528185121.86805747.akpm@linux-foundation.org>
+In-Reply-To: <1211929806.0@pinky>
+References: <exportbomb.1211929624@pinky>
+	<1211929806.0@pinky>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I had originally submitted this ability as a patch to procfs, and
-general consensus was that it seemed "hackish" to do it that way.  It
-was suggested that it be implemented as a feature of ethtool, so I 
-thought I'd take on the challenge and add it that way.
+On Wed, 28 May 2008 00:10:06 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
 
-I've laid the groundwork here, and added the ability to two of the 
-drivers for which I have hardware to test on (e1000 and pcnet32).  I 
-also added the code required to call this functionality to the ethtool 
-code base, and have been using that to test my changes (using -z as the 
-flag to ethtool for clearing stats for now).
+> +		unsigned long idx = ((addr - vma->vm_start) >> HPAGE_SHIFT) +
+> +				(vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
+> +		return region_chg(&inode->i_mapping->private_list,
+> +							idx, idx + 1);
+> +
+> +	} else {
+> +		if (!is_vma_resv_set(vma, HPAGE_RESV_OWNER))
+> +			return 1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +static void vma_commit_reservation(struct vm_area_struct *vma,
+> +							unsigned long addr)
+> +{
+> +	struct address_space *mapping = vma->vm_file->f_mapping;
+> +	struct inode *inode = mapping->host;
+> +
+> +	if (vma->vm_flags & VM_SHARED) {
+> +		unsigned long idx = ((addr - vma->vm_start) >> HPAGE_SHIFT) +
+> +				(vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
+> +		region_add(&inode->i_mapping->private_list, idx, idx + 1);
 
-If this is an acceptable start, I will gladly start working on adding 
-this to as many drivers as possible (we do have some bnx2 hardware, 
-though I'm not sure if it's available for testing).
+There are a couple more users of the little helper function which I
+suggested that Mel add.
 
-Some other sys-admins have mentioned to me that ethtool doesn't work 
-sometimes and they fall back to using mii-tool to configure interfaces,
-so I'd still like to have the procfs change implemented to accommodate 
-that hardware, but I agree, this is a better way forward.
+They both use ulong too - I do think that pgoff_t has a little
+documentary value.
 
-
-Signed-off-by: James Cammarata <jimi@sngx.net>
----
-
---- linux-2.6.25.4/include/linux/ethtool.h	2008-05-15 10:00:12.000000000 -0500
-+++ linux-2.6.25.4-jcammara/include/linux/ethtool.h	2008-05-28 17:45:56.000000000 -0500
-@@ -325,6 +325,7 @@ int ethtool_op_set_flags(struct net_devi
-  * get_strings: Return a set of strings that describe the requested objects 
-  * phys_id: Identify the device
-  * get_stats: Return statistics about the device
-+ * clear_ethtool_stats: Clear device statistics
-  * get_flags: get 32-bit flags bitmap
-  * set_flags: set 32-bit flags bitmap
-  * 
-@@ -383,6 +384,7 @@ struct ethtool_ops {
- 	void	(*get_strings)(struct net_device *, u32 stringset, u8 *);
- 	int	(*phys_id)(struct net_device *, u32);
- 	void	(*get_ethtool_stats)(struct net_device *, struct ethtool_stats *, u64 *);
-+	int	(*clear_ethtool_stats)(struct net_device *);
- 	int	(*begin)(struct net_device *);
- 	void	(*complete)(struct net_device *);
- 	u32     (*get_ufo)(struct net_device *);
-@@ -441,6 +443,7 @@ struct ethtool_ops {
- #define ETHTOOL_SFLAGS		0x00000026 /* Set flags bitmap(ethtool_value) */
- #define ETHTOOL_GPFLAGS		0x00000027 /* Get driver-private flags bitmap */
- #define ETHTOOL_SPFLAGS		0x00000028 /* Set driver-private flags bitmap */
-+#define ETHTOOL_CSTATS		0x00000029 /* Clear NIC statistics */
- 
- /* compatibility with older code */
- #define SPARC_ETH_GSET		ETHTOOL_GSET
---- linux-2.6.25.4/net/core/ethtool.c	2008-05-15 10:00:12.000000000 -0500
-+++ linux-2.6.25.4-jcammara/net/core/ethtool.c	2008-05-28 17:48:51.000000000 -0500
-@@ -714,6 +714,16 @@ static int ethtool_get_stats(struct net_
- 	return ret;
- }
- 
-+static int ethtool_clear_stats(struct net_device *dev, void __user *useraddr)
-+{
-+	const struct ethtool_ops *ops = dev->ethtool_ops;
-+
-+	if (!ops->clear_ethtool_stats)
-+		return -EOPNOTSUPP;
-+
-+	return ops->clear_ethtool_stats(dev);
-+}
-+
- static int ethtool_get_perm_addr(struct net_device *dev, void __user *useraddr)
- {
- 	struct ethtool_perm_addr epaddr;
-@@ -964,6 +974,9 @@ int dev_ethtool(struct net *net, struct 
- 		rc = ethtool_set_value(dev, useraddr,
- 				       dev->ethtool_ops->set_priv_flags);
- 		break;
-+	case ETHTOOL_CSTATS:
-+		rc = ethtool_clear_stats(dev, useraddr);
-+		break;
- 	default:
- 		rc = -EOPNOTSUPP;
- 	}
---- linux-2.6.25.4/drivers/net/e1000/e1000_main.c	2008-05-15 10:00:12.000000000 -0500
-+++ linux-2.6.25.4-jcammara/drivers/net/e1000/e1000_main.c	2008-05-28 17:51:07.000000000 -0500
-@@ -141,6 +141,7 @@ static void e1000_free_tx_resources(stru
- static void e1000_free_rx_resources(struct e1000_adapter *adapter,
-                              struct e1000_rx_ring *rx_ring);
- void e1000_update_stats(struct e1000_adapter *adapter);
-+void e1000_clear_stats(struct e1000_adapter *adapter);
- 
- static int e1000_init_module(void);
- static void e1000_exit_module(void);
-@@ -3819,6 +3820,31 @@ e1000_update_stats(struct e1000_adapter 
- 	spin_unlock_irqrestore(&adapter->stats_lock, flags);
- }
- 
-+void
-+e1000_clear_stats(struct e1000_adapter *adapter)
-+{
-+	struct pci_dev *pdev = adapter->pdev;
-+	unsigned long flags;
-+
-+	#define PHY_IDLE_ERROR_COUNT_MASK 0x00FF
-+
-+	/*
-+	 * Prevent stats update while adapter is being reset, or if the pci
-+	 * connection is down.
-+	 */
-+	if (adapter->link_speed == 0)
-+		return;
-+	if (pci_channel_offline(pdev))
-+		return;
-+
-+	spin_lock_irqsave(&adapter->stats_lock, flags);
-+
-+	memset(&adapter->stats, 0, sizeof(struct e1000_hw_stats));
-+	memset(&adapter->net_stats, 0, sizeof(struct net_device_stats));
-+
-+	spin_unlock_irqrestore(&adapter->stats_lock, flags);
-+}
-+
- /**
-  * e1000_intr_msi - Interrupt Handler
-  * @irq: interrupt number
---- linux-2.6.25.4/drivers/net/e1000/e1000_ethtool.c	2008-05-15 10:00:12.000000000 -0500
-+++ linux-2.6.25.4-jcammara/drivers/net/e1000/e1000_ethtool.c	2008-05-28 17:53:28.000000000 -0500
-@@ -42,7 +42,7 @@ extern int e1000_setup_all_tx_resources(
- extern void e1000_free_all_rx_resources(struct e1000_adapter *adapter);
- extern void e1000_free_all_tx_resources(struct e1000_adapter *adapter);
- extern void e1000_update_stats(struct e1000_adapter *adapter);
--
-+extern void e1000_clear_stats(struct e1000_adapter *adapter);
- 
- struct e1000_stats {
- 	char stat_string[ETH_GSTRING_LEN];
-@@ -1940,6 +1940,14 @@ e1000_get_ethtool_stats(struct net_devic
- /*	BUG_ON(i != E1000_STATS_LEN); */
- }
- 
-+static int
-+e1000_clear_ethtool_stats(struct net_device *netdev)
-+{
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	e1000_clear_stats(adapter);
-+	return 0;
-+}
-+
- static void
- e1000_get_strings(struct net_device *netdev, uint32_t stringset, uint8_t *data)
- {
-@@ -1991,6 +1999,7 @@ static const struct ethtool_ops e1000_et
- 	.get_strings            = e1000_get_strings,
- 	.phys_id                = e1000_phys_id,
- 	.get_ethtool_stats      = e1000_get_ethtool_stats,
-+	.clear_ethtool_stats	= e1000_clear_ethtool_stats,
- 	.get_sset_count		= e1000_get_sset_count,
- };
- 
---- linux-2.6.25.4/drivers/net/pcnet32.c	2008-05-15 10:00:12.000000000 -0500
-+++ linux-2.6.25.4-jcammara/drivers/net/pcnet32.c	2008-05-28 17:59:42.000000000 -0500
-@@ -312,6 +312,7 @@ static void pcnet32_tx_timeout(struct ne
- static irqreturn_t pcnet32_interrupt(int, void *);
- static int pcnet32_close(struct net_device *);
- static struct net_device_stats *pcnet32_get_stats(struct net_device *);
-+static int pcnet32_clear_stats(struct net_device *);
- static void pcnet32_load_multicast(struct net_device *dev);
- static void pcnet32_set_multicast_list(struct net_device *);
- static int pcnet32_ioctl(struct net_device *, struct ifreq *, int);
-@@ -1532,6 +1533,7 @@ static const struct ethtool_ops pcnet32_
- 	.get_regs_len		= pcnet32_get_regs_len,
- 	.get_regs		= pcnet32_get_regs,
- 	.get_sset_count		= pcnet32_get_sset_count,
-+	.clear_ethtool_stats	= pcnet32_clear_stats,
- };
- 
- /* only probes for non-PCI devices, the rest are handled by
-@@ -2719,6 +2721,17 @@ static struct net_device_stats *pcnet32_
- 	return &dev->stats;
- }
- 
-+static int pcnet32_clear_stats(struct net_device *dev)
-+{
-+	struct pcnet32_private *lp = netdev_priv(dev);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&lp->lock, flags);
-+	memset(&dev->stats, 0, sizeof(struct net_device_stats));
-+	spin_unlock_irqrestore(&lp->lock, flags);
-+	return 0;
-+}
-+
- /* taken from the sunlance driver, which it took from the depca driver */
- static void pcnet32_load_multicast(struct net_device *dev)
- {
+I guess these changes impact the manpages, but the mmap manpage doesn't
+seem to know about huge pages at all.
