@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbYE2WLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYE2WMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758875AbYE2WLq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 18:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYE2WLf
+	id S1755325AbYE2WMA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 18:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbYE2WLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 18:11:35 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2580 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918AbYE2WLf (ORCPT
+	Thu, 29 May 2008 18:11:38 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36030 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754323AbYE2WLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 18:11:35 -0400
-Subject: Re: whomto.pl -- finding out whom to send patches to
-From: Joe Perches <joe@perches.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>,
-       Sverre Rabbelier <alturin@gmail.com>, git@vger.kernel.org
-In-Reply-To: <20080529210018.GA5508@damson.getinternet.no>
-References: <20080529210018.GA5508@damson.getinternet.no>
+	Thu, 29 May 2008 18:11:36 -0400
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+	kernel.
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: arjan@linux.intel.com, James.Bottomley@HansenPartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080529.140919.160813310.davem@davemloft.net>
+References: <1212077700.26088.83.camel@shinybook.infradead.org>
+	 <20080529164745.GA21763@kroah.com> <483F1232.4010003@linux.intel.com>
+	 <20080529.140919.160813310.davem@davemloft.net>
 Content-Type: text/plain
-Date: Thu, 29 May 2008 11:20:33 -0700
-Message-Id: <1212085233.27103.54.camel@localhost>
+Date: Fri, 30 May 2008 01:11:00 +0300
+Message-Id: <1212099060.18530.53.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've written this perl script that takes a patch as input and prints the
-> authors/committers of the affected lines, using git-blame as the back end.
+On Thu, 2008-05-29 at 14:09 -0700, David Miller wrote:
+> I've fought, like, forever, to
+> keep the tg3 driver with it's firmware in-tree.  I refuse to let the
+> driver get broken like that, it's staying working, and that means
+> in-tree and linked into the driver.
 
-Nice enough script.
-It's unfortunate that it can't output the appropriate mailing lists.
+Am I missing something here, or is the tg3 firmware contained in
+'tg3FwText' and similar non-swappable u32 arrays which haven't changed
+_ever_ in our current git history?
 
-I think the shell script that Linus gave awhile ago:
-http://lkml.org/lkml/2007/8/14/276
-
-        #!/bin/sh
-               git log --since=6.months.ago -- "$@" |
-                       grep -i '^    [-a-z]*by:.*@' |
-                       sort | uniq -c |
-                       sort -r -n | head
-        
-         (Maybe you want to add a
-               grep -v '\(Linus Torvalds\)\|\(Andrew Morton\)'
-        
-might work just as well.
-
-I still prefer the file pattern match in MAINTAINERS, or
-another external file, and/or data stored directly into GIT
-via gitattributes approaches.
-
-This script can give maintainer, mailing lists, and git
-contact information for patches or files.
-http://lkml.org/lkml/2007/8/20/352
-The script works with git-send-email to cc the appropriate parties.
-
-This script and git repository is very old and probably doesn't apply...
-git pull git://repo.or.cz/linux-2.6/trivial-mods.git get_maintainer
-
-
+-- 
+dwmw2
 
