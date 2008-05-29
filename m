@@ -1,48 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbYE2NQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYE2NRF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756012AbYE2NQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbYE2NPx
+	id S1756236AbYE2NRF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:17:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYE2NQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:15:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45462 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751751AbYE2NPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:15:51 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0805281328310.982@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805281328310.982@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0805281646470.27125@sbz-30.cs.Helsinki.FI> <20080528153648.GA27783@linux-sh.org> <483DBA85.2060502@cs.helsinki.fi> <Pine.LNX.4.64.0805281325260.932@schroedinger.engr.sgi.com> <483DBFC3.1070108@cs.helsinki.fi>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: dhowells@redhat.com, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Paul Mundt <lethal@linux-sh.org>, LKML <linux-kernel@vger.kernel.org>,
-       cooloney@kernel.org, akpm@linux-foundation.org, mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 29 May 2008 14:08:37 +0100
-Message-ID: <29611.1212066517@redhat.com>
+	Thu, 29 May 2008 09:16:51 -0400
+Received: from intcomgrp.com ([216.54.13.120]:38057 "EHLO beta.intcomgrp.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751730AbYE2NQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 09:16:50 -0400
+Message-ID: <483EAB9F.20508@beta.intcomgrp.com>
+Date: Thu, 29 May 2008 09:11:59 -0400
+From: James Kosin <jkosin@beta.intcomgrp.com>
+Organization: International Communications Group, Inc.
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Johannes Weiner <hannes@saeurebad.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: optimizing out inline functions
+References: <ayzYV-7mv-5@gated-at.bofh.it> <ayA8E-89e-29@gated-at.bofh.it>	<483DC28B.4060001@support.intcomgrp.com> <87lk1trdr8.fsf@saeurebad.de>
+In-Reply-To: <87lk1trdr8.fsf@saeurebad.de>
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=7BB59129
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig60A23811A5BA7AF15AE07AD8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig60A23811A5BA7AF15AE07AD8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Christoph Lameter <clameter@sgi.com> wrote:
+Johannes Weiner wrote:
+> Hi,
+>
+> James Kosin <jkosin@beta.intcomgrp.com> writes:
+>
+>  =20
+>> Sam Ravnborg wrote:
+>>    =20
+>>> On Wed, May 28, 2008 at 02:51:02PM -0500, Steve French wrote:
+>>>      =20
+>>>> In trying to remove some macros, I ran across another kernel style
+>>>>        =20
+>> <<--SNIP-->>
+>>    =20
+>>> With reference to a recent thread about kconfig
+>>> I would prefer:
+>>> static inline void some_debug_function(var1)
+>>> {
+>>> 	if (KCONFIG_DEBUG_SOMETHING) {
+>>> 		something =3D var1;
+>>> 		printk(some debug text);
+>>> 	}
+>>> }
+>>>
+>>>
+>>> But we do not have KCONFIG_DEBUG_SOMETHING available
+>>> so the second best is to use an empty function
+>>> to keep the typechecking in place.
+>>>
+>>> IIRC gcc optimize both away.
+>>>      =20
+>> Another way would be to have:
+>>
+>> static inline void some_debug_function(var1)
+>> {
+>>    #ifdef KCONFIG_DEBUG_SOMETHING
+>>       something =3D var1;
+>>       printk(some debug text);
+>>    #endif
+>> }
+>>
+>> BUT, this probably violates some styling rules.
+>>    =20
+>
+> Without indenting the ifdefs, I think this solution is the best.
+>
+> It gives you the advantages of type checking but saves a superfluous
+> prototype.
+>
+> 	Hannes
+>
+>  =20
+Actually, Joe Perches, gave a good reason for using the MACRO #define=20
+method; so, this could really turn into an interesting discussion.
+Pros and Cons are always interesting when there is more than one way to=20
+do something.
 
-> Could the nommu people either tell us what this is all about? Or junk the 
-> code. This looks very wrong.
+James
 
-ELF-FDPIC is currently using kobjsize() so that it can expand the heap/stack
-segment to fill up the entirety of its allocation.  It's probably worth
-dropping that, though.
 
-NOMMU mmap() is using kobjsize()/ksize() to keep track of the number of bytes
-allocated and the amount of dead space.  We can probably ditch that too.
+--------------enig60A23811A5BA7AF15AE07AD8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-However, fs/proc/task_nommu.c uses kobjsize() quite a bit to determine how
-much metadata space a process is carrying around.  We could just use sizeof(),
-I suppose, and not bother calculating the slack.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-David
+iEYEARECAAYFAkg+q6MACgkQkNLDmnu1kSnVPgCfeE9ehnsDDzywSiwyYDxTLNkb
+d/sAn1Zud1SVjd2obdjjX952lGKofwXX
+=J+LC
+-----END PGP SIGNATURE-----
+
+--------------enig60A23811A5BA7AF15AE07AD8--
