@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYE2NaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYE2Nas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYE2NaX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYE2NaK
+	id S1756164AbYE2Nas (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbYE2Naj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:30:10 -0400
-Received: from ns.suse.de ([195.135.220.2]:58067 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752210AbYE2NaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:30:09 -0400
-Date: Thu, 29 May 2008 15:33:02 +0200
-From: Holger Macht <hmacht@suse.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] libata: Handle bay devices in dock stations
-Message-ID: <20080529133302.GA9268@homac.suse.de>
-Mail-Followup-To: Matthew Garrett <mjg59@srcf.ucam.org>,
-	linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-	linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	linux-acpi@vger.kernel.org, akpm@linux-foundation.org
-References: <20080528143857.GB5585@homac.suse.de> <20080529132253.GA22309@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080529132253.GA22309@srcf.ucam.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 29 May 2008 09:30:39 -0400
+Received: from fallback1.mail.ox.ac.uk ([163.1.2.175]:55458 "EHLO
+	fallback1.mail.ox.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751828AbYE2Nai (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 09:30:38 -0400
+X-Greylist: delayed 570 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 May 2008 09:30:38 EDT
+Subject: Re: GPL Violation: Compro Technology Inc, 2.6.17 modified
+	binary-only kernel distribution
+From: Jo Shields <directhex@apebox.org>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <20080517003206.25e90937@olorin>
+References: <1210975212.7181.26.camel@mortos>
+	 <20080517003206.25e90937@olorin>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 14:21:05 +0100
+Message-Id: <1212067265.11105.125.camel@osc-franzibald>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 May 2008 13:21:05.0963 (UTC) FILETIME=[D98F67B0:01C8C18E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 29. May - 14:22:53, Matthew Garrett wrote:
-> Hm. This deadlocks my Thinkpad when I pull a device from the internal 
-> bay.
+On Sat, 2008-05-17 at 00:32 +0200, FD Cami wrote:
+> (adding gpl-violations.org in CC)
 
-Can you please give a bit more details? Does your userspace react on the
-eject request? I tested with Thinkpads, too.
+The infringing drivers have been removed from Compro's website, and
+replaced with the following message:
 
- - Holger
+"We are in the process of adhering to the GNU General Public License
+rules and we expect to have the drivers ready by Q3 2008."
+
+Crisis over, then.
+
+--Jo Shields
 
