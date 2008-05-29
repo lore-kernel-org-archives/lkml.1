@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYE2NER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYE2NEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbYE2NER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYE2NBQ
+	id S1756178AbYE2NEj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbYE2NBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:01:16 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:3703 "EHLO
+	Thu, 29 May 2008 09:01:18 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:3707 "EHLO
 	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755438AbYE2NBL (ORCPT
+	with ESMTP id S1752001AbYE2NBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:01:11 -0400
-Message-Id: <20080529125730.405854660@de.ibm.com>
+	Thu, 29 May 2008 09:01:13 -0400
+Message-Id: <20080529125730.645201695@de.ibm.com>
 References: <20080529125501.196123527@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 29 May 2008 14:55:10 +0200
+Date: Thu, 29 May 2008 14:55:11 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 09/11] 3270: fix race with stack local wait_queue_head_t.
-Content-Disposition: inline; filename=009-3270-waitqueue.diff
+Subject: [patch 10/11] tape: fix race with stack local wait_queue_head_t.
+Content-Disposition: inline; filename=010-tape-waitqueue.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,52 +28,99 @@ From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 A wait_event call with a stack local wait_queue_head_t structure that is
 used to do the wake up for the wait_event is inherently racy. After the
 wait_event finished the wake_up call might not have completed yet.
-Remove the stack local wait_queue_head_t from raw3270_start_init and
-use the global raw3270_wait_queue instead.
+Replace the stack local wait_queue_head_t in tape_do_io and
+tape_do_io_interruptible with a per device wait queue.
 
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/char/raw3270.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/s390/char/tape.h      |    3 +++
+ drivers/s390/char/tape_core.c |   16 +++++++---------
+ 2 files changed, 10 insertions(+), 9 deletions(-)
 
-Index: quilt-2.6/drivers/s390/char/raw3270.c
+Index: quilt-2.6/drivers/s390/char/tape_core.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/char/raw3270.c
-+++ quilt-2.6/drivers/s390/char/raw3270.c
-@@ -549,7 +549,6 @@ raw3270_start_init(struct raw3270 *rp, s
- 		   struct raw3270_request *rq)
+--- quilt-2.6.orig/drivers/s390/char/tape_core.c
++++ quilt-2.6/drivers/s390/char/tape_core.c
+@@ -449,6 +449,7 @@ tape_alloc_device(void)
+ 	INIT_LIST_HEAD(&device->req_queue);
+ 	INIT_LIST_HEAD(&device->node);
+ 	init_waitqueue_head(&device->state_change_wq);
++	init_waitqueue_head(&device->wait_queue);
+ 	device->tape_state = TS_INIT;
+ 	device->medium_state = MS_UNKNOWN;
+ 	*device->modeset_byte = 0;
+@@ -954,21 +955,19 @@ __tape_wake_up(struct tape_request *requ
+ int
+ tape_do_io(struct tape_device *device, struct tape_request *request)
  {
- 	unsigned long flags;
 -	wait_queue_head_t wq;
  	int rc;
  
- #ifdef CONFIG_TN3270_CONSOLE
-@@ -566,20 +565,20 @@ raw3270_start_init(struct raw3270 *rp, s
- 		return rq->rc;
- 	}
- #endif
 -	init_waitqueue_head(&wq);
- 	rq->callback = raw3270_wake_init;
--	rq->callback_data = &wq;
-+	rq->callback_data = &raw3270_wait_queue;
- 	spin_lock_irqsave(get_ccwdev_lock(view->dev->cdev), flags);
- 	rc = __raw3270_start(rp, view, rq);
- 	spin_unlock_irqrestore(get_ccwdev_lock(view->dev->cdev), flags);
+ 	spin_lock_irq(get_ccwdev_lock(device->cdev));
+ 	/* Setup callback */
+ 	request->callback = __tape_wake_up;
+-	request->callback_data = &wq;
++	request->callback_data = &device->wait_queue;
+ 	/* Add request to request queue and try to start it. */
+ 	rc = __tape_start_request(device, request);
+ 	spin_unlock_irq(get_ccwdev_lock(device->cdev));
  	if (rc)
  		return rc;
- 	/* Now wait for the completion. */
--	rc = wait_event_interruptible(wq, raw3270_request_final(rq));
-+	rc = wait_event_interruptible(raw3270_wait_queue,
-+				      raw3270_request_final(rq));
- 	if (rc == -ERESTARTSYS) {	/* Interrupted by a signal. */
- 		raw3270_halt_io(view->dev, rq);
- 		/* No wait for the halt to complete. */
--		wait_event(wq, raw3270_request_final(rq));
-+		wait_event(raw3270_wait_queue, raw3270_request_final(rq));
- 		return -ERESTARTSYS;
- 	}
- 	return rq->rc;
+ 	/* Request added to the queue. Wait for its completion. */
+-	wait_event(wq, (request->callback == NULL));
++	wait_event(device->wait_queue, (request->callback == NULL));
+ 	/* Get rc from request */
+ 	return request->rc;
+ }
+@@ -989,20 +988,19 @@ int
+ tape_do_io_interruptible(struct tape_device *device,
+ 			 struct tape_request *request)
+ {
+-	wait_queue_head_t wq;
+ 	int rc;
+ 
+-	init_waitqueue_head(&wq);
+ 	spin_lock_irq(get_ccwdev_lock(device->cdev));
+ 	/* Setup callback */
+ 	request->callback = __tape_wake_up_interruptible;
+-	request->callback_data = &wq;
++	request->callback_data = &device->wait_queue;
+ 	rc = __tape_start_request(device, request);
+ 	spin_unlock_irq(get_ccwdev_lock(device->cdev));
+ 	if (rc)
+ 		return rc;
+ 	/* Request added to the queue. Wait for its completion. */
+-	rc = wait_event_interruptible(wq, (request->callback == NULL));
++	rc = wait_event_interruptible(device->wait_queue,
++				      (request->callback == NULL));
+ 	if (rc != -ERESTARTSYS)
+ 		/* Request finished normally. */
+ 		return request->rc;
+@@ -1015,7 +1013,7 @@ tape_do_io_interruptible(struct tape_dev
+ 		/* Wait for the interrupt that acknowledges the halt. */
+ 		do {
+ 			rc = wait_event_interruptible(
+-				wq,
++				device->wait_queue,
+ 				(request->callback == NULL)
+ 			);
+ 		} while (rc == -ERESTARTSYS);
+Index: quilt-2.6/drivers/s390/char/tape.h
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/tape.h
++++ quilt-2.6/drivers/s390/char/tape.h
+@@ -231,6 +231,9 @@ struct tape_device {
+ 	/* Request queue. */
+ 	struct list_head		req_queue;
+ 
++	/* Request wait queue. */
++	wait_queue_head_t		wait_queue;
++
+ 	/* Each tape device has (currently) two minor numbers. */
+ 	int				first_minor;
+ 
 
 -- 
 blue skies,
