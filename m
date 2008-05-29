@@ -1,181 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYE2Nzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757465AbYE2N4H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758249AbYE2Nzr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbYE2Nvc
+	id S1757465AbYE2N4H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:56:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbYE2NvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:51:32 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46153 "EHLO
+	Thu, 29 May 2008 09:51:22 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46162 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757072AbYE2NvG (ORCPT
+	with ESMTP id S1757110AbYE2NvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:51:06 -0400
-Message-Id: <20080529135015.946555205@szeredi.hu>
+	Thu, 29 May 2008 09:51:10 -0400
+Message-Id: <20080529135012.283939708@szeredi.hu>
 References: <20080529134903.615127628@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 29 May 2008 15:49:17 +0200
+Date: Thu, 29 May 2008 15:49:14 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
        casey@schaufler-ca.com, agruen@suse.de, jjohansen@suse.de,
        penguin-kernel@I-love.SAKURA.ne.jp, hch@infradead.org,
        viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: [patch 14/15] vfs: more path_permission() conversions
-Content-Disposition: inline; filename=path_permission_more.patch
+Subject: [patch 11/15] security: pass path to inode_listxattr
+Content-Disposition: inline; filename=security_listxattr_path.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Use path_permission() instead of dentry_permission() from may_delete()
-may_create() and vfs_rename().
-
-dentry_permission() is now only called from lookup_one_len() and
-path_permission().
+In the inode_listxattr() security operation and related functions pass
+the path (vfsmount + dentry) instead of the dentry.  AppArmor will need
+this.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/namei.c |   39 ++++++++++++++++++++++-----------------
- 1 file changed, 22 insertions(+), 17 deletions(-)
+ fs/xattr.c               |    2 +-
+ include/linux/security.h |    8 ++++----
+ security/dummy.c         |    2 +-
+ security/security.c      |    6 +++---
+ security/selinux/hooks.c |    4 ++--
+ 5 files changed, 11 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/fs/namei.c
+Index: linux-2.6/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-29 12:20:55.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-29 12:20:56.000000000 +0200
-@@ -1475,10 +1475,10 @@ static inline int check_sticky(struct in
-  * 10. We don't allow removal of NFS sillyrenamed files; it's handled by
-  *     nfs_async_unlink().
-  */
--static int may_delete(struct dentry *dir_dentry, struct dentry *victim,
-+static int may_delete(struct path *dir_path, struct dentry *victim,
- 		      int isdir)
- {
--	struct inode *dir = dir_dentry->d_inode;
-+	struct inode *dir = dir_path->dentry->d_inode;
- 	int error;
+--- linux-2.6.orig/fs/xattr.c	2008-05-29 12:20:57.000000000 +0200
++++ linux-2.6/fs/xattr.c	2008-05-29 12:20:58.000000000 +0200
+@@ -189,7 +189,7 @@ path_listxattr(struct path *path, char *
+ 	struct dentry *d = path->dentry;
+ 	ssize_t error;
  
- 	if (!victim->d_inode)
-@@ -1487,7 +1487,7 @@ static int may_delete(struct dentry *dir
- 	BUG_ON(victim->d_parent->d_inode != dir);
- 	audit_inode_child(victim->d_name.name, victim, dir);
- 
--	error = dentry_permission(dir_dentry, MAY_DELETE);
-+	error = path_permission(dir_path, MAY_DELETE);
+-	error = security_inode_listxattr(d);
++	error = security_inode_listxattr(path);
  	if (error)
  		return error;
- 	if (IS_APPEND(dir))
-@@ -1517,13 +1517,13 @@ static int may_delete(struct dentry *dir
-  *  3. We should have write and exec permissions on dir
-  *  4. We can't do it if dir is immutable (done in permission())
-  */
--static inline int may_create(struct dentry *dir_dentry, struct dentry *child)
-+static inline int may_create(struct path *dir_path, struct dentry *child)
- {
- 	if (child->d_inode)
- 		return -EEXIST;
--	if (IS_DEADDIR(dir_dentry->d_inode))
-+	if (IS_DEADDIR(dir_path->dentry->d_inode))
- 		return -ENOENT;
--	return dentry_permission(dir_dentry, MAY_CREATE);
-+	return path_permission(dir_path, MAY_CREATE);
+ 	error = -EOPNOTSUPP;
+Index: linux-2.6/include/linux/security.h
+===================================================================
+--- linux-2.6.orig/include/linux/security.h	2008-05-29 12:20:57.000000000 +0200
++++ linux-2.6/include/linux/security.h	2008-05-29 12:20:58.000000000 +0200
+@@ -439,7 +439,7 @@ static inline void security_free_mnt_opt
+  *	Return 0 if permission is granted.
+  * @inode_listxattr:
+  *	Check permission before obtaining the list of extended attribute
+- *	names for @dentry.
++ *	names for @path.
+  *	Return 0 if permission is granted.
+  * @inode_removexattr:
+  *	Check permission before removing the extended attribute
+@@ -1376,7 +1376,7 @@ struct security_operations {
+ 	void (*inode_post_setxattr) (struct dentry *dentry, const char *name,
+ 				     const void *value, size_t size, int flags);
+ 	int (*inode_getxattr) (struct path *path, const char *name);
+-	int (*inode_listxattr) (struct dentry *dentry);
++	int (*inode_listxattr) (struct path *path);
+ 	int (*inode_removexattr) (struct dentry *dentry, const char *name);
+ 	int (*inode_need_killpriv) (struct dentry *dentry);
+ 	int (*inode_killpriv) (struct dentry *dentry);
+@@ -1648,7 +1648,7 @@ int security_inode_setxattr(struct dentr
+ void security_inode_post_setxattr(struct dentry *dentry, const char *name,
+ 				  const void *value, size_t size, int flags);
+ int security_inode_getxattr(struct path *path, const char *name);
+-int security_inode_listxattr(struct dentry *dentry);
++int security_inode_listxattr(struct path *path);
+ int security_inode_removexattr(struct dentry *dentry, const char *name);
+ int security_inode_need_killpriv(struct dentry *dentry);
+ int security_inode_killpriv(struct dentry *dentry);
+@@ -2063,7 +2063,7 @@ static inline int security_inode_getxatt
+ 	return 0;
  }
  
- /* 
-@@ -1590,7 +1590,7 @@ static int vfs_create(struct path *dir_p
- 		      int mode,	struct nameidata *nd)
+-static inline int security_inode_listxattr(struct dentry *dentry)
++static inline int security_inode_listxattr(struct path *path)
  {
- 	struct inode *dir = dir_path->dentry->d_inode;
--	int error = may_create(dir_path->dentry, dentry);
-+	int error = may_create(dir_path, dentry);
+ 	return 0;
+ }
+Index: linux-2.6/security/dummy.c
+===================================================================
+--- linux-2.6.orig/security/dummy.c	2008-05-29 12:20:57.000000000 +0200
++++ linux-2.6/security/dummy.c	2008-05-29 12:20:58.000000000 +0200
+@@ -384,7 +384,7 @@ static int dummy_inode_getxattr(struct p
+ 	return 0;
+ }
  
- 	if (error)
- 		return error;
-@@ -2048,7 +2048,7 @@ static int vfs_mknod(struct path *dir_pa
- 		     int mode, dev_t dev)
+-static int dummy_inode_listxattr (struct dentry *dentry)
++static int dummy_inode_listxattr(struct path *path)
  {
- 	struct inode *dir = dir_path->dentry->d_inode;
--	int error = may_create(dir_path->dentry, dentry);
-+	int error = may_create(dir_path, dentry);
+ 	return 0;
+ }
+Index: linux-2.6/security/security.c
+===================================================================
+--- linux-2.6.orig/security/security.c	2008-05-29 12:20:57.000000000 +0200
++++ linux-2.6/security/security.c	2008-05-29 12:20:58.000000000 +0200
+@@ -516,11 +516,11 @@ int security_inode_getxattr(struct path 
+ 	return security_ops->inode_getxattr(path, name);
+ }
  
- 	if (error)
- 		return error;
-@@ -2146,7 +2146,7 @@ asmlinkage long sys_mknod(const char __u
- static int vfs_mkdir(struct path *dir_path, struct dentry *dentry, int mode)
+-int security_inode_listxattr(struct dentry *dentry)
++int security_inode_listxattr(struct path *path)
  {
- 	struct inode *dir = dir_path->dentry->d_inode;
--	int error = may_create(dir_path->dentry, dentry);
-+	int error = may_create(dir_path, dentry);
+-	if (unlikely(IS_PRIVATE(dentry->d_inode)))
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_listxattr(dentry);
++	return security_ops->inode_listxattr(path);
+ }
  
- 	if (error)
- 		return error;
-@@ -2247,7 +2247,7 @@ void dentry_unhash(struct dentry *dentry
- static int vfs_rmdir(struct path *dir_path, struct dentry *dentry)
+ int security_inode_removexattr(struct dentry *dentry, const char *name)
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c	2008-05-29 12:20:57.000000000 +0200
++++ linux-2.6/security/selinux/hooks.c	2008-05-29 12:20:58.000000000 +0200
+@@ -2702,9 +2702,9 @@ static int selinux_inode_getxattr(struct
+ 	return dentry_has_perm(current, NULL, path->dentry, FILE__GETATTR);
+ }
+ 
+-static int selinux_inode_listxattr(struct dentry *dentry)
++static int selinux_inode_listxattr(struct path *path)
  {
- 	struct inode *dir = dir_path->dentry->d_inode;
--	int error = may_delete(dir_path->dentry, dentry, 1);
-+	int error = may_delete(dir_path, dentry, 1);
+-	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
++	return dentry_has_perm(current, NULL, path->dentry, FILE__GETATTR);
+ }
  
- 	if (error)
- 		return error;
-@@ -2341,7 +2341,7 @@ asmlinkage long sys_rmdir(const char __u
- static int vfs_unlink(struct path *dir_path, struct dentry *dentry)
- {
- 	struct inode *dir = dir_path->dentry->d_inode;
--	int error = may_delete(dir_path->dentry, dentry, 0);
-+	int error = may_delete(dir_path, dentry, 0);
- 
- 	if (error)
- 		return error;
-@@ -2456,7 +2456,7 @@ static int vfs_symlink(struct path *dir_
- 		       const char *oldname)
- {
- 	struct inode *dir = dir_path->dentry->d_inode;
--	int error = may_create(dir_path->dentry, dentry);
-+	int error = may_create(dir_path, dentry);
- 
- 	if (error)
- 		return error;
-@@ -2541,7 +2541,7 @@ static int vfs_link(struct dentry *old_d
- 	if (!inode)
- 		return -ENOENT;
- 
--	error = may_create(new_dir_path->dentry, new_dentry);
-+	error = may_create(new_dir_path, new_dentry);
- 	if (error)
- 		return error;
- 
-@@ -2741,14 +2741,14 @@ static int vfs_rename(struct path *old_d
- 	if (old_dentry->d_inode == new_dentry->d_inode)
-  		return 0;
-  
--	error = may_delete(old_dir_path->dentry, old_dentry, is_dir);
-+	error = may_delete(old_dir_path, old_dentry, is_dir);
- 	if (error)
- 		return error;
- 
- 	if (!new_dentry->d_inode)
--		error = may_create(new_dir_path->dentry, new_dentry);
-+		error = may_create(new_dir_path, new_dentry);
- 	else
--		error = may_delete(new_dir_path->dentry, new_dentry, is_dir);
-+		error = may_delete(new_dir_path, new_dentry, is_dir);
- 	if (error)
- 		return error;
- 
-@@ -2760,7 +2760,12 @@ static int vfs_rename(struct path *old_d
- 	 * we'll need to flip '..'.
- 	 */
- 	if (is_dir && new_dir != old_dir) {
--		error = dentry_permission(old_dentry, MAY_MOVE_DIR);
-+		struct path old_path = {
-+			.mnt = old_dir_path->mnt,
-+			.dentry = old_dentry,
-+		};
-+
-+		error = path_permission(&old_path, MAY_MOVE_DIR);
- 		if (error)
- 			return error;
- 	}
+ static int selinux_inode_removexattr(struct dentry *dentry, const char *name)
 
 --
