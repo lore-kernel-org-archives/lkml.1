@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbYE2Dnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYE2DtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbYE2Dnf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 23:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYE2Dn1
+	id S1755371AbYE2DtQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 23:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYE2DtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 23:43:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35981 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751795AbYE2Dn1 (ORCPT
+	Wed, 28 May 2008 23:49:05 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1276 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbYE2DtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 23:43:27 -0400
-Date: Wed, 28 May 2008 22:43:25 -0500
-From: Paul Jackson <pj@sgi.com>
-To: miaox@cn.fujitsu.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, menage@google.com
-Subject: Re: [RFC] [PATCH] cpusets: update tasks' cpus_allowed and
- mems_allowed after CPU/NODE offline/online
-Message-Id: <20080528224325.436bc70f.pj@sgi.com>
-In-Reply-To: <483E25D4.6090809@cn.fujitsu.com>
-References: <483E1D77.30400@cn.fujitsu.com>
-	<20080528223353.61affb22.pj@sgi.com>
-	<483E25D4.6090809@cn.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Wed, 28 May 2008 23:49:04 -0400
+Subject: Re: optimizing out inline functions
+From: Joe Perches <joe@perches.com>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: James Kosin <jkosin@beta.intcomgrp.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <87lk1trdr8.fsf@saeurebad.de>
+References: <ayzYV-7mv-5@gated-at.bofh.it> <ayA8E-89e-29@gated-at.bofh.it>
+	 <483DC28B.4060001@support.intcomgrp.com>  <87lk1trdr8.fsf@saeurebad.de>
+Content-Type: text/plain
+Date: Wed, 28 May 2008 20:04:22 -0700
+Message-Id: <1212030262.27103.20.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ok, I will do it.
+On Thu, 2008-05-29 at 05:27 +0200, Johannes Weiner wrote:
+> James Kosin <jkosin@beta.intcomgrp.com> writes:
+> >> But we do not have KCONFIG_DEBUG_SOMETHING available
+> >> so the second best is to use an empty function
+> >> to keep the typechecking in place.
+> >> IIRC gcc optimize both away.
+> > Another way would be to have:
+> > static inline void some_debug_function(var1)
+> > {
+> >    #ifdef KCONFIG_DEBUG_SOMETHING
+> >       something = var1;
+> >       printk(some debug text);
+> >    #endif
+> > }
 
-Ok - I will wait until I see that, before thinking
-any more about this.  Good.
+A potential issue is a possible unnecessary call of any
+function used as an argument to some_debug_function.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+int unnecessary_debug_test(void)
+{
+	int foo;
+	[]
+	return foo;
+}
+
+static inline void some_debug_function(int bar)
+{
+}
+
+some_debug_function(unnecessary_debug_test())
+
+unnecessary_debug_test will still get called
+
+Macro wrappers/statement expressions can be used to avoid
+the function call.  see kernel.h/pr_debug for an example.
+
+#ifdef DEBUG
+/* If you are writing a driver, please use dev_dbg instead */
+#define pr_debug(fmt, arg...) \
+	printk(KERN_DEBUG fmt, ##arg)
+#else
+#define pr_debug(fmt, arg...) \
+	({ if (0) printk(KERN_DEBUG fmt, ##arg); 0; })
+#endif
+
+
