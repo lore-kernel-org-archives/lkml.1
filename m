@@ -1,38 +1,42 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbYE0I1d (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 27 May 2008 04:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbYE0I1X
+	id S1757355AbYE2QGt (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 29 May 2008 12:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYE2QGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 May 2008 04:27:23 -0400
-Received: from [220.178.254.34] ([220.178.254.34]:1554 "HELO 192.168.1.195"
-	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
-	id S1755317AbYE0I1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 May 2008 04:27:23 -0400
-Reply-To: sl@cnjczz.com
-Message-ID: <00b401c8bfd3$ffc132c2$0000226f@cnjczz.com>
-From: "cnsl" <sl@cnjczz.com>
-To: "linux" <linux-kernel@vger.kernel.org>
-Subject: 
-Date: Tue, 27 May 2008 16:27:22 +0800
-X-Priority: 3
-X-Mailer: Microsoft Outlook IMO, Build 9.0.2416 (9.0.2910.0)
+	Thu, 29 May 2008 12:06:41 -0400
+Received: from hu-out-0506.google.com ([72.14.214.225]:62905 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753278AbYE2QGk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 12:06:40 -0400
+Message-ID: <e21c2cdc0805290904ud6f4afr3038854acc0078fe@mail.gmail.com>
+Date: Fri, 30 May 2008 00:04:49 +0800
+From: "guo jame" <cc394559@gmail.com>
+To: service@apol.com.tw, h8g@bbs.kkcity.com.tw, htv@bbs.kkcity.com.tw,
+	i51@bbs.kkcity.com.tw, jaj@bbs.kkcity.com.tw,
+	juw@bbs.kkcity.com.tw, gdebtor.roger383a@gmail.com,
+	editor@cdnews.com.tw, cinedl@newsis.com, coolhj@newsis.com,
+	dshong@yna.co.kr, ironshutter@yna.co.kr, news@photoro.com,
+	d66oqt1xjhwcpa2.210320081543@openbrick.kicks-ass.net,
+	fcoaflnicurqasuzavpasu@msn.com, a7238086@yahoo.com.tw
+Subject: =?BIG5?B?oe6iqT09PT09IDI0pHCuycCwp0GmrL/6?= =?BIG5?B?qrqkdajjID09PT09IKKoofM/obqh9T4=?=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Content-Type: text/plain; charset=BIG5
 Content-Transfer-Encoding: base64
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757364AbYE0I1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757355AbYE2QGt@vger.kernel.org>
 
-sLK71cqhyP3Bprv6tLLWxtTs09DP3rmry76jrMr0sLK71cqhw/vFxqGiw+K87LL6xrfJ+rL6xvPS
-taOssLK71cqhuN/Qwry8yvXG89K1o6zC7bCwyb3K0KGw16ihor6roaLM2KGi0MKhscbz0rWjrMLt
-sLDJvcrQz8K42sqn0rXWsLmk1Nm+zdK1u/m12KOsvenT2sTPvqmhos7fuv7Wrrzko6zX+MLk1NrW
-+MP7tcS41rPHwu2wsMm9ytCjrLfhuLu1xLjWzPrXytS0zqq5q8u+tcS3otW5zOG5qcHLtcPM7LbA
-uvG1xNPFysaho7mry77VvLXYw+a7/TEwODAwMMa9t73D16Os1vfSqsn6svqhsLTzyqKhscXGz7XB
-0Lz0sOW7+qGi1dvN5Lv6oaK+7bDlu/qhor/sy9nRucGmu/qhorPltLKhor+qvu3Qo8a9u/qhotDN
-ssTN5Mf6u/q1tsSjvt+1yLL6xrejrNeo0rXOqrq9v9WhosfhuaShotKxvfChoruvuaShor2o1v7G
-+7O1oaK158GmoaLXsOTqtcjQ0NK1zOG5qcv50OjSqrXE16jTw7v60LW6zbPJzNfJ6LG4o6yy+sa3
-z/rN+cirufq497XYus3Ft8PLvLC2q8TP0ce12Mf4sqLUts/6xM+3x6GjIA0Ktee7sKO6MDU1NS02
-NzIxMjQ5ICAgIHd3dy5jbmpjenouY29t
-
+JqHwPT09PT09PT2l/rJ5pqyz5iCkarOwpEilwbn0KKV+pWQrpLqlZCkgrPyw6rlCs3GlZCCkaqjT
+pWQgVklTQSBNQVNURVIgSkJDPT09PT09PT09PT09PaH2P6H3ofUjob2h7qG5CgoKPz09Pa3TK6S9
+pXE9PT09prOnzrDTq34rtUynzqpBsMi2taXYPT09PT2noaVpv+yyem9rLS0tJCQkJCQkCgqhuj09
+PS6rSKXOt+Wyq6FCr1Ou7abmt36l56Vpv+yyegoKobo9PT0upWmw6rvapeYKCqG7PT09Lr5Bpli3
+UcHIv/ouLi4uLqZVpuamVbd+CgpAPT09u8im5rBopfOhQqnuvvehQqnapqym5rd+s6Olaaj8snoK
+CqHwPT09pf6yeaass+Y9Pby3tNogIKVpq/ypd7n0p08KCqG/PT09LqVpuGC1fCCs2bV8Cgql/rJ5
+pqyz5qV4xlewz6VOsno9PaSktdilfKTouvS49Kzsp96q0aX3prOtraS9pXEgvke4Z7J6IDA5MTUx
+MTExMjggKKjIpNMpCr5BpGqkpLXYsM+lzbdOqbmo06jPpc4gPT09PcX9sXql/rJ5pGq1b7lGCgoK
+CgoKCgoKPT09PaKooqmiqSR+ofihuaKoQKH3ob2huaKoob6h9KHzoqmh8aG5ofGiqKH4ofGh96G9
+obojPKHxNDhmIKG5ob+hu6HvoeKh9qG5ob+htKH0JaG5ob2h86HzobtAob2h76KpNDJBCqHiPqH4
+PqH4oe6h+D+iqS+h7j6iqKH2oqgjofWiqKG7oboK
