@@ -1,91 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbYE2TNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbYE2TOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757546AbYE2TNm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 15:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYE2TNe
+	id S1758720AbYE2TOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 15:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYE2TOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 15:13:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49001 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752889AbYE2TNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 15:13:33 -0400
-Message-ID: <483F002E.5060002@garzik.org>
-Date: Thu, 29 May 2008 15:12:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 29 May 2008 15:14:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:11318 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbYE2TOX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 15:14:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FOG1UxiQ3M3Vkt8KkRIInqXcdLa6oWTPtXmv+HySSfhetFFgC67OrM1ioQlugQ8SidN+8yvf2jSwyiD0ztQsu1HyrMq1kVJSCBS0/jKeQozcED5j4LdBOyB88RdmQZEziqMTv/NqTIEa1IABcg4s4afTXjGN033/0CZfRveGYvI=
+Message-ID: <86802c440805291214r50879732qc263b245985b4ba4@mail.gmail.com>
+Date: Thu, 29 May 2008 12:14:20 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH] x86: extend e820 ealy_res support 32bit - fix #2
+Cc: "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440805291152w1cdfa5feoac7c92bc2ecca9d6@mail.gmail.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Theodore Tso <tytso@mit.edu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       James.Bottomley@HansenPartnership.com,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: RFC: Moving firmware blobs out of the kernel.
-References: <1211995212.3445.52.camel@localhost.localdomain>	 <20080528.225826.40264516.davem@davemloft.net>	 <1212041839.8888.38.camel@pasglop>  <20080529124548.GC8065@mit.edu> <1212077700.26088.83.camel@shinybook.infradead.org>
-In-Reply-To: <1212077700.26088.83.camel@shinybook.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+References: <200805110030.15510.yhlu.kernel@gmail.com>
+	 <86802c440805271406l4348db33r5622c440b494baa2@mail.gmail.com>
+	 <483C7BB0.6080901@goop.org>
+	 <86802c440805271435l744eab84xe55ac9ce6196c03b@mail.gmail.com>
+	 <483C8157.7080702@goop.org>
+	 <86802c440805271552k724415a6i66686b9abb8c083f@mail.gmail.com>
+	 <483D2D8A.5040800@goop.org>
+	 <86802c440805281348u2fdd6ce2t71231f0fc94d8b5b@mail.gmail.com>
+	 <483EB18F.4070105@goop.org>
+	 <86802c440805291152w1cdfa5feoac7c92bc2ecca9d6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> I'm kind of hoping that this is going to be one of those topics that
-> resolves itself -- but just in case it isn't, I'd like to discuss it at
-> the kernel summit:
-> 
-> I'd like to remove all firmware blobs from the kernel source tree.
-> 
-> With the intention of making that less contentious, I've done the
-> following: 
-> 
-> I've added support to the firmware loader for finding firmware in a
-> special section of the static kernel, so that using request_firmware()
-> no longer forces you to use an initrd or udev. You can build _arbitrary_
-> firmware files into your kernel, if you want to. Whether you're allowed
-> to distribute the resulting vmlinux or not is still a question you ought
-> to ask your lawyer.
-> 
-> I'm working on converting drivers over to use request_firmware(), and
-> shifting their firmware blobs into .ihex files in a firmware/ directory
-> of the source tree. For each one, I'm giving the option of continuing to
-> build it in statically, using the above mechanism.
-> 
-> I've implemented a 'make firmware_install' Kbuild target, which takes
-> all those firmware blobs and installs them somewhere where udev can load
-> them on request.
-> 
-> By the time the kernel summit comes around, we should have made decent
-> progress on moving _all_ the firmware blobs to the firmware/ directory.
-> And at that point I'd like to remove them completely, to a separate git
-> tree and tarball. Those who really want to build them in to their static
-> kernel would still be able to, but it wouldn't be the default behaviour.
+On Thu, May 29, 2008 at 11:52 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Thu, May 29, 2008 at 6:37 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>> Yinghai Lu wrote:
+>>>
+>>> can we use e820 entries for that? So the domain builder could have
+>>> several entries for E820_RAM and E820_RESERVED...
+>>>
+>>
+>> I tried this, but it doesn't work; the kernel crashes during boot,
+>> presumably because it's trying to use the reserved memory as heap.  I
+>> suspect the e820 maps are not registered early enough or something...
+>>
+>> (One thought: if reserving in the E820 map were enough, then couldn't we use
+>> it for all the early reservations?)
+>>
+>> I've attached the non-working patch below.
+>>
+>> The working kernel reports:
+>>
+>> (early) BIOS-provided physical RAM map:
+>> (early)  Xen: 0000000000000000 - 000000000009f000 (usable)
+>> (early)  Xen: 0000000000100000 - 0000000010000000 (usable)
+>> (early) console [xenboot0] enabled
+>> (early) debug: ignoring loglevel setting.
+>> (early) 0MB HIGHMEM available.
+>> (early) 256MB LOWMEM available.
+>> (early)   low ram: 018fd000 - 10000000
+>> (early)   bootmap 018fd000 - 018ff000
+>> (early)   early res: 0 [0-fff] BIOS data page
+>> (early)   early res: 1 [1000-1fff] EX TRAMPOLINE
+>> (early)   early res: 2 [6000-6fff] TRAMPOLINE
+>> (early)   early res: 3 [18aa000-18ecfff] XEN
+>> (early)   early res: 4 [1000000-18a9303] TEXT DATA BSS
+>> (early)   early res: 5 [18ed000-18fcfff] INIT_PG_TABLE
+>> (early)   early res: 6 [18fd000-18fefff] BOOTMAP
+>>
+>> But the non-working one says:
+>>
+>> (early) BIOS-provided physical RAM map:
+>> (early)  Xen: 0000000000000000 - 000000000009f000 (usable)
+>> (early)  Xen: 0000000000100000 - 0000000010000000 (usable)
+>> (early)  Xen: 00000000018aa000 - 00000000018ed000 (reserved)
+>
+> it seems we miss to call sanitize_e820_map for 32 bit. we should get
+> (early)  Xen: 0000000000000000 - 000000000009f000 (usable)
+> (early)  Xen: 0000000000100000 - 00000000018aa000 (usable)
+> (early)  Xen: 00000000018aa000 - 00000000018ed000 (reserved)
+> (early)  Xen: 00000000018ed000 - 0000000010000000 (usable)
 
+xen pv override the memory_setup. and default one is
+machine_specific_memory_setup(), and it does call sanitize_e820_map...
 
-I like your idea, all the way to the point where you actually remove the 
-firmware file from the kernel tree :)
+so you may need to add sanitize_e820_map to xen_memory_setup, or re
+arrange your add_memory_range parameter...
 
-I think it's a good move to make the firmware files standalone and not 
-#include'd as a C header file, but it's just plain easier to ship them 
-with the kernel tree in a lot of cases.  $FOO-firmware packages in 
-Fedora prove other methods of firmware distribution are quite usable, 
-but that does not therefore imply that in-kernel built-in firmwares have 
-no utility.
-
-Personally, living in an imaginary all-open-source world, I wouldn't 
-mind seeing firmware source for firmware built into drivers, a la 
-drivers/scsi/aic7xxx/aicasm/, living in the kernel tree.
-
-If the firmware has a compatible license and is required for critical 
-operations like booting the machine, built-in firmware should remain an 
-option.  For certain embedded cases, I could certainly see that 
-in-kernel firmware being the best method for firmware distribution, for 
-both $Platform's users and $Platform's developers.
-
-	Jeff
-
-
-
+YH
