@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYE2HFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbYE2HGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753168AbYE2HFi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 03:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYE2HFa
+	id S1753851AbYE2HGn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 03:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYE2HGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 03:05:30 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:33632 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219AbYE2HFa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 03:05:30 -0400
-Date: Thu, 29 May 2008 12:36:18 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, suresh.b.siddha@intel.com
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH] sched: update the sched-domains debug documentation
-Message-ID: <20080529070618.GA28006@in.ibm.com>
-Reply-To: ego@in.ibm.com
+	Thu, 29 May 2008 03:06:33 -0400
+Received: from dwdmx4.dwd.de ([141.38.3.230]:38801 "EHLO dwdmx4.dwd.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbYE2HGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 03:06:32 -0400
+X-Greylist: delayed 1332 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 May 2008 03:06:31 EDT
+Date: Thu, 29 May 2008 06:44:13 +0000 (GMT)
+From: Holger Kiehl <Holger.Kiehl@dwd.de>
+X-X-Sender: kiehl@diagnostix.dwd.de
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+In-Reply-To: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0805290636020.20192@diagnostix.dwd.de>
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Author: Gautham R Shenoy <ego@in.ibm.com>
-Date:   Thu May 29 12:33:15 2008 +0530
+On Wed, 28 May 2008, Justin Piszcz wrote:
 
-    sched: Update the sched-domains debug documentation.
+> Hardware:
+>
+> 1. Utilized (6) 400 gigabyte sata hard drives.
+> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
+>
+> Used the following 'optimizations' for all tests.
+>
+> # Set read-ahead.
+> echo "Setting read-ahead to 64 MiB for /dev/md3"
+> blockdev --setra 65536 /dev/md3
+>
+> # Set stripe-cache_size for RAID5.
+> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+> echo 16384 > /sys/block/md3/md/stripe_cache_size
+>
+> # Disable NCQ on all disks.
+> echo "Disabling NCQ on all disks..."
+> for i in $DISKS
+> do
+>  echo "Disabling NCQ on $i"
+>  echo 1 > /sys/block/"$i"/device/queue_depth
+> done
+>
+> Software:
+>
+> Kernel: 2.6.23.1 x86_64
+> Filesystem: XFS
+> Mount options: defaults,noatime
+>
+> Results:
+>
+> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
+> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
+>
+Why is the Sequential Output (Block) for raid6 165719 and for raid5 only
+86797? I would have thought that raid6 was always a bit slower in writting
+due to having to write double amount of parity data.
 
-    SCHED_DOMAIN_DEBUG mentioned in the Documentation for sched-domains
-    for enabling sched-domains debugging doesn't exist anymore.
+Holger
 
-    Update the documentation to reflect the correct way of enabling
-    sched-domain debugging.
-
-    Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-
-diff --git a/Documentation/scheduler/sched-domains.txt b/Documentation/scheduler/sched-domains.txt
-index a9e990a..373ceac 100644
---- a/Documentation/scheduler/sched-domains.txt
-+++ b/Documentation/scheduler/sched-domains.txt
-@@ -61,10 +61,7 @@ builder by #define'ing ARCH_HASH_SCHED_DOMAIN, and exporting your
- arch_init_sched_domains function. This function will attach domains to all
- CPUs using cpu_attach_domain.
- 
--Implementors should change the line
--#undef SCHED_DOMAIN_DEBUG
--to
--#define SCHED_DOMAIN_DEBUG
--in kernel/sched.c as this enables an error checking parse of the sched domains
-+The sched-domains debugging infrastructure can be enabled by enabling
-+CONFIG_SCHED_DEBUG. This enables an error checking parse of the sched domains
- which should catch most possible errors (described above). It also prints out
- the domain structure in a visual format.
--- 
-Thanks and Regards
-gautham
