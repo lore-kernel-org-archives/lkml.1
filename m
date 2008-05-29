@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbYE2X0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbYE2X2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759726AbYE2X0v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 19:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbYE2X0l
+	id S1759443AbYE2X2n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 19:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbYE2X2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 19:26:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36156 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755084AbYE2X0k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 19:26:40 -0400
-Date: Thu, 29 May 2008 18:26:34 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       menage@google.com, rostedt@goodmis.org, maxk@qualcomm.com
-Subject: Re: [PATCH] sched: Move cpu masks from kernel/sched.c into
- kernel/cpu.c
-Message-Id: <20080529182634.e9146033.pj@sgi.com>
-In-Reply-To: <1212085023-22284-2-git-send-email-maxk@qualcomm.com>
-References: <1212085023-22284-1-git-send-email-maxk@qualcomm.com>
-	<1212085023-22284-2-git-send-email-maxk@qualcomm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 May 2008 19:28:36 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:38634 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754390AbYE2X2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 19:28:35 -0400
+Message-ID: <483F3C27.40508@linux.vnet.ibm.com>
+Date: Thu, 29 May 2008 18:28:39 -0500
+From: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Martin Bligh <mbligh@mbligh.org>
+CC: "Randy.Dunlap" <rdunlap@xenotime.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Theodore Tso <tytso@mit.edu>, Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       bugme-admin@linux-foundation.org
+Subject: Re: [Bug #10732] REGRESSION: 2.6.26-rc2-git4: X server failed start
+ on X61s laptop
+References: <1NnHL0AVfcI.A.hJC.ZdIOIB@albercik> <20080526192247.GA7515@mit.edu>  <20080527125426.GJ7515@mit.edu> <200805292254.55248.rjw@sisk.pl> <Pine.LNX.4.64.0805291414340.16189@shark.he.net> <8f3aa8d60805291454s280a28d1g6c3891276c69a69e@mail.gmail.com>
+In-Reply-To: <8f3aa8d60805291454s280a28d1g6c3891276c69a69e@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max wrote:
-> kernel/cpu.c is now built for the UP kernel too, but it does not
-> affect the size the kernel sections.
+Martin Bligh wrote:
+> On Thu, May 29, 2008 at 2:15 PM, Randy.Dunlap <rdunlap@xenotime.net> wrote:
+>   
+>> On Thu, 29 May 2008, Rafael J. Wysocki wrote:
+>>
+>>     
+>>> On Tuesday, 27 of May 2008, Theodore Tso wrote:
+>>>       
+>>>> Bug #10732 is now closed.  BTW, it seems d*mned strange that the
+>>>> submitter of the bug doesn't have the power to close a bug without
+>>>> first grabbing the bug as the bug-fixer, changing its state to
+>>>> ASSIGNED, and *then* being allowed to close the bug.  Grumble,
+>>>> bugzilla's !#@#?@ process straightjacket....
+>>>>         
+>>> That depends on your account's access rights within the Bugzilla, which always
+>>> have been a mystery to me.
+>>>       
+>> Martin Bligh should be able to clear that mystery up.
+>>     
+>
+> Jon ... is that something we can configure? Seems ... wrong.
+> Submitter and owner should both have power to edit the bug.
+>   
+Submitter and owner should be able to edit the bug as far I as can see.
 
-I don't think this is possible.  It must affect the size.
+If the bug is not already in the resolved state then you can use the
+Close check box at the end of the 'Resolve' option line to close a bug
+with one submit.  You do not have to change it to the assign state in
+order to close it either - if it is the submitter or owner that is
+closing it.  These statements do not apply to bugzilla in general but do
+apply to the bugzilla.kernel.org one.
 
-The patch moves kernel/cpu.o from being included only if CONFIG_SMP,
-to being included always:
+Jon
 
-     obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
-    -	    exit.o itimer.o time.o softirq.o resource.o \
-    +	    cpu.o exit.o itimer.o time.o softirq.o resource.o \
-		sysctl.o capability.o ptrace.o timer.o user.o \
-		signal.o sys.o kmod.o workqueue.o pid.o \
-		rcupdate.o extable.o params.o posix-timers.o \
-    @@ -27,7 +27,7 @@ obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
-     obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
-     obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
-     obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
-    -obj-$(CONFIG_SMP) += cpu.o spinlock.o
-    +obj-$(CONFIG_SMP) += spinlock.o
-
-The kernel/cpu.o object file is non-empty; it has size,
-perhaps 1 or 2 kbytes of text, and a little bit of data.
-
-So adding it to builds which disabled SMP must add to the
-size of the resultant kernel, by my thinking anyway.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
