@@ -1,50 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbYE2NJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYE2NJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbYE2NJE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYE2NIw
+	id S1756104AbYE2NJs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYE2NJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:08:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41517 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbYE2NIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:08:51 -0400
-Date: Thu, 29 May 2008 15:08:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>
-Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Message-ID: <20080529130823.GA8364@elte.hu>
-References: <20080526115628.GA31316@elte.hu> <20080529084524.GA24892@elte.hu> <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> <20080529112257.GA18130@elte.hu>
+	Thu, 29 May 2008 09:09:38 -0400
+Received: from styx.suse.cz ([82.119.242.94]:52120 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752507AbYE2NJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 09:09:36 -0400
+Date: Thu, 29 May 2008 15:09:35 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] jbd2: Silence warnings about non-uptodate buffers
+Message-ID: <20080529130935.GC29602@duck.suse.cz>
+References: <12120117733479-git-send-email-jack@suse.cz> <12120117743119-git-send-email-jack@suse.cz> <20080528205913.10c31851.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080529112257.GA18130@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0137]
+In-Reply-To: <20080528205913.10c31851.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed 28-05-08 20:59:13, Andrew Morton wrote:
+> On Wed, 28 May 2008 23:56:12 +0200 Jan Kara <jack@suse.cz> wrote:
+> 
+> > When underlying block device becomes unavailable (e.g. someone pulling an
+> > USB stick from under us), kernel produces warning about non-uptodate buffer
+> > (superblock) being marked dirty. Silence these warnings by making buffer
+> > uptodate before marking it dirty.
+> > 
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > ---
+> >  fs/jbd2/journal.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+> > index 2e24567..55de8f7 100644
+> > --- a/fs/jbd2/journal.c
+> > +++ b/fs/jbd2/journal.c
+> > @@ -1261,6 +1261,7 @@ void jbd2_journal_update_superblock(journal_t *journal, int wait)
+> >  	spin_unlock(&journal->j_state_lock);
+> >  
+> >  	BUFFER_TRACE(bh, "marking dirty");
+> > +	set_buffer_uptodate(bh);
+> >  	mark_buffer_dirty(bh);
+> >  	if (wait)
+> >  		sync_dirty_buffer(bh);
+> 
+> I have issues....
+> 
+> - Are we really really sure that we aren't about to wreck people's
+>   filesystems when this happens?  I mean, a non-uptodate buffer might
+>   have random garbage in it, and it would be sad to write that to disk.
+  Well, as far as I've looked into the code, we already write the buffer
+anyway. So far we just warned that we are writing non-uptodate buffer. So
+in this regard, I don't think there's any difference with/without my patch.
 
-btw., i now also have a hung socket over real network:
+>   Either way, I do think that potentially falsely setting BH_Uptodate
+>   just to squish a WARN_ON_ONCE() is not a good solution.  Better to
+>   set a new BH_Nowarn, or to call a new mark_buffer_dirty_nowarn() here.
+> 
+> - Did the reads of these buffers encounter an IO error?  If so,
+>   perhaps we could set a new BH_GotIOError or something.
+  I've changed only the "superblock buffers". Those have the property that
+we read that just once during mount (and if this fails, we won't try to
+write them anyway), keep pointer to them and occasionally try to write
+them. Also we shouldn't really have garbage in them - they can be !uptodate
+only because underlying device was not able to write them... For most other
+buffers, when we fail to read them, we just bail out and don't try marking
+them dirty, so we don't issue warning for them.
 
-titan:~> netstat -nt
-Active Internet connections (w/o servers)
-Proto Recv-Q Send-Q Local Address               Foreign Address             State
-tcp        0  86752 10.0.1.14:49921             10.0.1.16:3632              ESTABLISHED
+> Even if I'm completely wrong about everything as usual, I do think that
+> the code change should at least include a comment explaining why the
+> filesystem is doing set_buffer_uptodate() in such a weird place.
+  Agreed, I'll add some comment to the code.
 
-(the scenario is similar to the incident i've analyzed before, so i wont 
-repeat the tcpdump, etc.)
+> One nice way of adding that comment would be to implement a new
+> 
+> /*
+>  * comment goes here
+>  */
+> set_buffer_uptodate_for_mark_buffer_dirty(struct buffer_head *bh); /* needs better name */
+> 
+> and call that.
+> 
+> But I agree with me: this looks like abuse of buffer_uptodate(), and a
+> mark_buffer_dirty_nowarn() would be a cleaner solution.
+  OK. I've thought about one more option - if buffer isn't uptodate, just
+avoid marking it dirty and writing it. That has the advantage that if the
+spotted error is real bad block, then we won't retry writing it which
+usually takes non-trivial time. But at the same time it is a disadvantage
+because in case there's a transient error writing super-block, we'd never
+retry writing it. So I decided to keep the current behavior...
 
-	Ingo
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
