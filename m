@@ -1,105 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbYE2GWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYE2GXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbYE2GWZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 02:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYE2GWS
+	id S1753409AbYE2GXu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 02:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYE2GXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 02:22:18 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:6279 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbYE2GWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 02:22:18 -0400
-Date: Thu, 29 May 2008 08:22:15 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: block: make blktrace use per-cpu buffers for message notes
-Message-ID: <20080529062214.GG25504@kernel.dk>
-References: <200805281559.m4SFx7b9022392@hera.kernel.org> <20080528231351.a35001bc.akpm@linux-foundation.org>
+	Thu, 29 May 2008 02:23:40 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:40760 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbYE2GXj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 02:23:39 -0400
+Date: Wed, 28 May 2008 23:23:26 -0700 (PDT)
+From: Chris Peterson <cpeterso@cpeterso.com>
+To: netdev@vger.kernel.org
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [resend] drivers/net: remove network drivers' last few uses
+ of IRQF_SAMPLE_RANDOM
+Message-ID: <Pine.LNX.4.62.0805282319090.19567@ikari.dreamhost.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080528231351.a35001bc.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28 2008, Andrew Morton wrote:
-> On Wed, 28 May 2008 15:59:07 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
-> 
-> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=64565911cdb57c2f512a9715b985b5617402cc67
-> > Commit:     64565911cdb57c2f512a9715b985b5617402cc67
-> > Parent:     4722dc52a891ab6cb2d637ddb87233e0ce277827
-> > Author:     Jens Axboe <jens.axboe@oracle.com>
-> > AuthorDate: Wed May 28 14:45:33 2008 +0200
-> > Committer:  Jens Axboe <jens.axboe@oracle.com>
-> > CommitDate: Wed May 28 14:49:27 2008 +0200
-> 
-> please try to avoid merging unreviewed changes.
 
-Just because you didn't review it doesn't mean it's unreviewed :-)
+Remove network drivers' last few uses of theoretically-exploitable network 
+entropy. Only 12 net drivers are affected. Headless boxes should use a 
+more secure source of entropy, such as the userspace daemons rngd, clrngd, 
+egd, audio_entropyd, and/or video_entroyd.
 
-It's not unreviewed, it was posted on lkml and a few version were
-bounced back and forth.
+I'm also thinking about writing a "Frankenstein" daemon that combines the 
+entropy-collecting algorithms from those daemons into one. Whereas rngd 
+only uses /dev/hw_random, my hypothetical daemon would make a best effort 
+attempt: use /dev/hw_random if it exists, otherwise fallback (or use in 
+addition) the other entropy sources.
 
-> >     block: make blktrace use per-cpu buffers for message notes
-> >     
-> >     Currently it uses a single static char array, but that risks
-> >     being corrupted when multiple users issue message notes at the
-> >     same time. Make the buffers dynamically allocated when the trace
-> >     is setup and make them per-cpu instead.
-> >     
-> >     The default max message size of 1k is also very large, the
-> >     interface is mainly for small text notes. So shrink it to 128 bytes.
-> >     
-> >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > ---
-> >  block/blktrace.c             |   15 ++++++++++++---
-> >  include/linux/blktrace_api.h |    3 ++-
-> >  2 files changed, 14 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/block/blktrace.c b/block/blktrace.c
-> > index 20e11f3..7ae87cc 100644
-> > --- a/block/blktrace.c
-> > +++ b/block/blktrace.c
-> > @@ -79,13 +79,16 @@ void __trace_note_message(struct blk_trace *bt, const char *fmt, ...)
-> >  {
-> >  	int n;
-> >  	va_list args;
-> > -	static char bt_msg_buf[BLK_TN_MAX_MSG];
-> > +	char *buf;
-> >  
-> > +	preempt_disable();
-> > +	buf = per_cpu_ptr(bt->msg_data, smp_processor_id());
-> 
-> get_cpu()/put_cpu() is the standard way of doing this.
 
-Sure, end result is the same though. get_cpu()/put_cpu() is cleaner,
-though.
-
-> > @@ -172,7 +173,7 @@ extern void __trace_note_message(struct blk_trace *, const char *fmt, ...);
-> >  		if (unlikely(bt))					\
-> >  			__trace_note_message(bt, fmt, ##__VA_ARGS__);	\
-> >  	} while (0)
-> > -#define BLK_TN_MAX_MSG		1024
-> > +#define BLK_TN_MAX_MSG		128
-> 
-> It seems a bit strange to do this right when we've taken this _off_ the
-> stack.  But I suppose nothing will break.
-
-It was never on the stack, it was a global static char array. We are
-still allocating memory for this, per-cpu. So I think it still makes
-sense to shrink the size. It's really meant for small trace messages,
-128 bytes is plenty. It's an in-kernel property, the userland app
-doesn't care. So we could easily grow this in the future, should the
-need arise.
-
-> I cannot work out why 9d5f09a424a67ddb959829894efb4c71cbf6d600 ("Added
-> in MESSAGE notes for blktraces") was -rc material.
-
-Well it's probably really not, but the impact is truly minimal. But
-strictly speaking, it was not -rcX material, I agree.
-
--- 
-Jens Axboe
-
+Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
+---
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/3c523.c linux-2.6.26-rc4/drivers/net/3c523.c
+--- linux-2.6.26-rc4.orig/drivers/net/3c523.c	2008-05-18 10:03:23.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/3c523.c	2008-05-27 21:44:23.000000000 -0700
+@@ -289,8 +289,7 @@ static int elmc_open(struct net_device *
+ 
+ 	elmc_id_attn586();	/* disable interrupts */
+ 
+-	ret = request_irq(dev->irq, &elmc_interrupt, IRQF_SHARED | IRQF_SAMPLE_RANDOM,
+-			  dev->name, dev);
++	ret = request_irq(dev->irq, &elmc_interrupt, IRQF_SHARED, dev->name, dev);
+ 	if (ret) {
+ 		printk(KERN_ERR "%s: couldn't get irq %d\n", dev->name, dev->irq);
+ 		elmc_id_reset586();
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/3c527.c linux-2.6.26-rc4/drivers/net/3c527.c
+--- linux-2.6.26-rc4.orig/drivers/net/3c527.c	2008-05-27 21:18:52.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/3c527.c	2008-05-27 21:44:23.000000000 -0700
+@@ -434,7 +434,7 @@ static int __init mc32_probe1(struct net
+ 	 *	Grab the IRQ
+ 	 */
+ 
+-	err = request_irq(dev->irq, &mc32_interrupt, IRQF_SHARED | IRQF_SAMPLE_RANDOM, DRV_NAME, dev);
++	err = request_irq(dev->irq, &mc32_interrupt, IRQF_SHARED, DRV_NAME, dev);
+ 	if (err) {
+ 		release_region(dev->base_addr, MC32_IO_EXTENT);
+ 		printk(KERN_ERR "%s: unable to get IRQ %d.\n", DRV_NAME, dev->irq);
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/atlx/atl1.c linux-2.6.26-rc4/drivers/net/atlx/atl1.c
+--- linux-2.6.26-rc4.orig/drivers/net/atlx/atl1.c	2008-05-27 21:18:52.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/atlx/atl1.c	2008-05-27 21:44:23.000000000 -0700
+@@ -2610,7 +2610,7 @@ static s32 atl1_up(struct atl1_adapter *
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 	int err;
+-	int irq_flags = IRQF_SAMPLE_RANDOM;
++	int irq_flags = 0;
+ 
+ 	/* hardware has been reset, we need to reload some things */
+ 	atlx_set_multi(netdev);
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/cris/eth_v10.c linux-2.6.26-rc4/drivers/net/cris/eth_v10.c
+--- linux-2.6.26-rc4.orig/drivers/net/cris/eth_v10.c	2008-05-18 10:03:34.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/cris/eth_v10.c	2008-05-27 21:44:23.000000000 -0700
+@@ -490,7 +490,7 @@ e100_open(struct net_device *dev)
+ 	/* allocate the irq corresponding to the receiving DMA */
+ 
+ 	if (request_irq(NETWORK_DMA_RX_IRQ_NBR, e100rxtx_interrupt,
+-			IRQF_SAMPLE_RANDOM, cardname, (void *)dev)) {
++			0, cardname, (void *)dev)) {
+ 		goto grace_exit0;
+ 	}
+ 
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/ibmlana.c linux-2.6.26-rc4/drivers/net/ibmlana.c
+--- linux-2.6.26-rc4.orig/drivers/net/ibmlana.c	2008-05-18 10:03:41.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/ibmlana.c	2008-05-27 21:44:23.000000000 -0700
+@@ -783,7 +783,7 @@ static int ibmlana_open(struct net_devic
+ 
+ 	/* register resources - only necessary for IRQ */
+ 
+-	result = request_irq(priv->realirq, irq_handler, IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
++	result = request_irq(priv->realirq, irq_handler, IRQF_SHARED, dev->name, dev);
+ 	if (result != 0) {
+ 		printk(KERN_ERR "%s: failed to register irq %d\n", dev->name, dev->irq);
+ 		return result;
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/macb.c linux-2.6.26-rc4/drivers/net/macb.c
+--- linux-2.6.26-rc4.orig/drivers/net/macb.c	2008-05-27 21:19:39.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/macb.c	2008-05-27 21:44:23.000000000 -0700
+@@ -1151,8 +1151,7 @@ static int __init macb_probe(struct plat
+ 	}
+ 
+ 	dev->irq = platform_get_irq(pdev, 0);
+-	err = request_irq(dev->irq, macb_interrupt, IRQF_SAMPLE_RANDOM,
+-			  dev->name, dev);
++	err = request_irq(dev->irq, macb_interrupt, 0, dev->name, dev);
+ 	if (err) {
+ 		printk(KERN_ERR
+ 		       "%s: Unable to request IRQ %d (error %d)\n",
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/mv643xx_eth.c linux-2.6.26-rc4/drivers/net/mv643xx_eth.c
+--- linux-2.6.26-rc4.orig/drivers/net/mv643xx_eth.c	2008-05-27 21:19:39.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/mv643xx_eth.c	2008-05-27 21:44:23.000000000 -0700
+@@ -1329,7 +1329,7 @@ static int mv643xx_eth_open(struct net_d
+ 	rdl(mp, INTERRUPT_CAUSE_EXTEND_REG(port_num));
+ 
+ 	err = request_irq(dev->irq, mv643xx_eth_int_handler,
+-			IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
++			IRQF_SHARED, dev->name, dev);
+ 	if (err) {
+ 		printk(KERN_ERR "%s: Can not assign IRQ\n", dev->name);
+ 		return -EAGAIN;
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/netxen/netxen_nic_main.c linux-2.6.26-rc4/drivers/net/netxen/netxen_nic_main.c
+--- linux-2.6.26-rc4.orig/drivers/net/netxen/netxen_nic_main.c	2008-05-27 21:19:39.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/netxen/netxen_nic_main.c	2008-05-27 21:44:23.000000000 -0700
+@@ -838,7 +838,7 @@ static int netxen_nic_open(struct net_de
+ 	int err = 0;
+ 	int ctx, ring;
+ 	irq_handler_t handler;
+-	unsigned long flags = IRQF_SAMPLE_RANDOM;
++	unsigned long flags = 0;
+ 
+ 	if (adapter->is_up != NETXEN_ADAPTER_UP_MAGIC) {
+ 		err = netxen_init_firmware(adapter);
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/niu.c linux-2.6.26-rc4/drivers/net/niu.c
+--- linux-2.6.26-rc4.orig/drivers/net/niu.c	2008-05-27 21:19:39.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/niu.c	2008-05-27 21:44:23.000000000 -0700
+@@ -5599,8 +5599,7 @@ static int niu_request_irq(struct niu *n
+ 		struct niu_ldg *lp = &np->ldg[i];
+ 
+ 		err = request_irq(lp->irq, niu_interrupt,
+-				  IRQF_SHARED | IRQF_SAMPLE_RANDOM,
+-				  np->dev->name, lp);
++				  IRQF_SHARED, np->dev->name, lp);
+ 		if (err)
+ 			goto out_free_irqs;
+ 
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/qla3xxx.c linux-2.6.26-rc4/drivers/net/qla3xxx.c
+--- linux-2.6.26-rc4.orig/drivers/net/qla3xxx.c	2008-05-27 21:19:41.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/qla3xxx.c	2008-05-27 21:44:24.000000000 -0700
+@@ -3618,7 +3618,7 @@ static int ql_adapter_up(struct ql3_adap
+ {
+ 	struct net_device *ndev = qdev->ndev;
+ 	int err;
+-	unsigned long irq_flags = IRQF_SAMPLE_RANDOM | IRQF_SHARED;
++	unsigned long irq_flags = IRQF_SHARED;
+ 	unsigned long hw_flags;
+ 
+ 	if (ql_alloc_mem_resources(qdev)) {
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/tg3.c linux-2.6.26-rc4/drivers/net/tg3.c
+--- linux-2.6.26-rc4.orig/drivers/net/tg3.c	2008-05-27 21:19:51.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/tg3.c	2008-05-27 21:44:24.000000000 -0700
+@@ -7496,12 +7496,12 @@ static int tg3_request_irq(struct tg3 *t
+ 		fn = tg3_msi;
+ 		if (tp->tg3_flags2 & TG3_FLG2_1SHOT_MSI)
+ 			fn = tg3_msi_1shot;
+-		flags = IRQF_SAMPLE_RANDOM;
++		flags = 0;
+ 	} else {
+ 		fn = tg3_interrupt;
+ 		if (tp->tg3_flags & TG3_FLAG_TAGGED_STATUS)
+ 			fn = tg3_interrupt_tagged;
+-		flags = IRQF_SHARED | IRQF_SAMPLE_RANDOM;
++		flags = IRQF_SHARED;
+ 	}
+ 	return (request_irq(tp->pdev->irq, fn, flags, dev->name, dev));
+ }
+@@ -7519,7 +7519,7 @@ static int tg3_test_interrupt(struct tg3
+ 	free_irq(tp->pdev->irq, dev);
+ 
+ 	err = request_irq(tp->pdev->irq, tg3_test_isr,
+-			  IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
++			  IRQF_SHARED, dev->name, dev);
+ 	if (err)
+ 		return err;
+ 
+diff -pruN linux-2.6.26-rc4.orig/drivers/net/xen-netfront.c linux-2.6.26-rc4/drivers/net/xen-netfront.c
+--- linux-2.6.26-rc4.orig/drivers/net/xen-netfront.c	2008-05-27 21:19:53.000000000 -0700
++++ linux-2.6.26-rc4/drivers/net/xen-netfront.c	2008-05-27 21:44:24.000000000 -0700
+@@ -1361,8 +1361,7 @@ static int setup_netfront(struct xenbus_
+ 		goto fail;
+ 
+ 	err = bind_evtchn_to_irqhandler(info->evtchn, xennet_interrupt,
+-					IRQF_SAMPLE_RANDOM, netdev->name,
+-					netdev);
++					0, netdev->name, netdev);
+ 	if (err < 0)
+ 		goto fail;
+ 	netdev->irq = err;
