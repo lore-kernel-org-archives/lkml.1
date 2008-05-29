@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYE2SYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbYE2S0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758803AbYE2SYj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 14:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYE2SYa
+	id S1758528AbYE2S0U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 14:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYE2S0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 14:24:30 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60284 "EHLO pasmtpA.tele.dk"
+	Thu, 29 May 2008 14:26:07 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47869 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbYE2SY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 14:24:29 -0400
-Date: Thu, 29 May 2008 20:25:10 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Philipp Marek <philipp@marek.priv.at>
-Cc: linux-trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] removes casting of (void*) private structure members
-Message-ID: <20080529182510.GA15712@uranus.ravnborg.org>
-References: <200805291933.54529@marek.priv.at>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805291933.54529@marek.priv.at>
-User-Agent: Mutt/1.4.2.1i
+	id S1753021AbYE2S0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 14:26:06 -0400
+Message-ID: <483EF536.90801@garzik.org>
+Date: Thu, 29 May 2008 14:25:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: RESEND: [PATCH] libata-sff: Fix oops reported in kerneloops.org
+ for pnp devices with no ctl
+References: <20080529161453.24735.805.stgit@core>	<alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org> <20080529190235.258d304e@core>
+In-Reply-To: <20080529190235.258d304e@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 07:33:54PM +0200, Philipp Marek wrote:
-> Hello everybody,
-> 
-> here's another trivial patch, against v2.6.26-rc3-243-gd40ace0.
+Alan Cox wrote:
+> maybe_altstatus is crap naming but simply making ata_sff_altstatus fake a
+> reply in arbitary cases risks not catching mistakes and could mean we
+> don't catch corrupting mistakes which would be very bad indeed.
 
-Sample from your patch:
- static int geode_rng_data_read(struct hwrng *rng, u32 *data)
- {
--       void __iomem *mem = (void __iomem *)rng->priv;
-+       void __iomem *mem = rng->priv;
+Please grep the remaining users, IMO you will find that's not really 
+true.  After your patch no core users remain, only ones in a few 
+scattered drivers that most likely want your logic (or a 
+simplified-for-that-controller version thereof).
 
-And from hw_random.h:
-struct hwrng {
-        const char *name;
-        int (*init)(struct hwrng *rng);
-        void (*cleanup)(struct hwrng *rng);
-        int (*data_present)(struct hwrng *rng, int wait);
-        int (*data_read)(struct hwrng *rng, u32 *data);
-        unsigned long priv;
-
-        /* internal. */
-        struct list_head list;
-};
+	Jeff
 
 
-So rng->priv is unsigend long.
-Therefore the cast is legitimate.
-
-And I expect gcc to emit:
-warning: assignment makes pointer from integer without a cast
-
-
-	Sam
