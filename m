@@ -1,144 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYE2SRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbYE2SRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbYE2SRe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 14:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbYE2SRJ
+	id S1757992AbYE2SRr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 14:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbYE2SRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 14:17:09 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:54023 "EHLO
+	Thu, 29 May 2008 14:17:10 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:39001 "EHLO
 	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbYE2SRG (ORCPT
+	with ESMTP id S1753579AbYE2SRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 14:17:06 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5306"; a="3500816"
+	Thu, 29 May 2008 14:17:07 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5306"; a="3500817"
 From: Max Krasnyansky <maxk@qualcomm.com>
 To: mingo@elte.hu
 Cc: pj@sgi.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
        menage@google.com, rostedt@goodmis.org,
        Max Krasnyansky <maxk@qualcomm.com>
-Subject: [PATCH] sched: Move cpu masks from kernel/sched.c into kernel/cpu.c
-Date: Thu, 29 May 2008 11:17:02 -0700
-Message-Id: <1212085023-22284-2-git-send-email-maxk@qualcomm.com>
+Subject: [PATCH] sched: Give cpusets exclusive control over sched domains (ie remove cpu_isolated_map)
+Date: Thu, 29 May 2008 11:17:03 -0700
+Message-Id: <1212085023-22284-3-git-send-email-maxk@qualcomm.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1212085023-22284-1-git-send-email-maxk@qualcomm.com>
+In-Reply-To: <1212085023-22284-2-git-send-email-maxk@qualcomm.com>
 References: <1212085023-22284-1-git-send-email-maxk@qualcomm.com>
+ <1212085023-22284-2-git-send-email-maxk@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/cpu.c seems a more logical place for those maps since they do not really
-have much to do with the scheduler these days.
+Ingo and Peter mentioned several times that cpu_isolated_map was a horrible hack.
+So lets get rid of it.
 
-kernel/cpu.c is now built for the UP kernel too, but it does not affect the size
-the kernel sections.
+cpu_isolated_map is controlling which CPUs are subject to the scheduler load balancing.
+CPUs set in that map are put in the NULL scheduler domain and are excluded from the
+load balancing. This functionality is provided in much more flexible and dynamic way by
+the cpusets subsystem. Scheduler load balancing can be disabled/enabled either system
+wide or per cpuset.
 
-$ size vmlinux
-
-before
-   text       data        bss        dec        hex    filename
-3313797     307060     310352    3931209     3bfc49    vmlinux
-
-after
-   text       data        bss        dec        hex    filename
-3313797     307060     310352    3931209     3bfc49    vmlinux
+This patch gives cpusets exclusive control over the scheduler domains.
 
 Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
 ---
- kernel/Makefile |    4 ++--
- kernel/cpu.c    |   24 ++++++++++++++++++++++++
- kernel/sched.c  |   18 ------------------
- 3 files changed, 26 insertions(+), 20 deletions(-)
+ Documentation/cpusets.txt |    3 +--
+ kernel/sched.c            |   34 +++++-----------------------------
+ 2 files changed, 6 insertions(+), 31 deletions(-)
 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 6c584c5..bb8da0a 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -3,7 +3,7 @@
- #
+diff --git a/Documentation/cpusets.txt b/Documentation/cpusets.txt
+index ad2bb3b..d8b269a 100644
+--- a/Documentation/cpusets.txt
++++ b/Documentation/cpusets.txt
+@@ -382,8 +382,7 @@ Put simply, it costs less to balance between two smaller sched domains
+ than one big one, but doing so means that overloads in one of the
+ two domains won't be load balanced to the other one.
  
- obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
--	    exit.o itimer.o time.o softirq.o resource.o \
-+	    cpu.o exit.o itimer.o time.o softirq.o resource.o \
- 	    sysctl.o capability.o ptrace.o timer.o user.o \
- 	    signal.o sys.o kmod.o workqueue.o pid.o \
- 	    rcupdate.o extable.o params.o posix-timers.o \
-@@ -27,7 +27,7 @@ obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
- obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
- obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
- obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
--obj-$(CONFIG_SMP) += cpu.o spinlock.o
-+obj-$(CONFIG_SMP) += spinlock.o
- obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
- obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
- obj-$(CONFIG_UID16) += uid16.o
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 2eff3f6..6aa48cf 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -15,6 +15,28 @@
- #include <linux/stop_machine.h>
- #include <linux/mutex.h>
+-By default, there is one sched domain covering all CPUs, except those
+-marked isolated using the kernel boot time "isolcpus=" argument.
++By default, there is one sched domain covering all CPUs.
  
-+/*
-+ * Represents all cpu's present in the system
-+ * In systems capable of hotplug, this map could dynamically grow
-+ * as new cpu's are detected in the system via any platform specific
-+ * method, such as ACPI for e.g.
-+ */
-+cpumask_t cpu_present_map __read_mostly;
-+EXPORT_SYMBOL(cpu_present_map);
-+
-+#ifndef CONFIG_SMP
-+
-+/*
-+ * Represents all cpu's that are currently online.
-+ */
-+cpumask_t cpu_online_map __read_mostly = CPU_MASK_ALL;
-+EXPORT_SYMBOL(cpu_online_map);
-+
-+cpumask_t cpu_possible_map __read_mostly = CPU_MASK_ALL;
-+EXPORT_SYMBOL(cpu_possible_map);
-+
-+#else /* CONFIG_SMP */
-+
- /* Serializes the updates to cpu_online_map, cpu_present_map */
- static DEFINE_MUTEX(cpu_add_remove_lock);
- 
-@@ -413,3 +435,5 @@ out:
- 	cpu_maps_update_done();
- }
- #endif /* CONFIG_PM_SLEEP_SMP */
-+
-+#endif /* CONFIG_SMP */
+ This default load balancing across all CPUs is not well suited for
+ the following two situations:
 diff --git a/kernel/sched.c b/kernel/sched.c
-index fc8f46b..5ebf6a7 100644
+index 5ebf6a7..e2eb2be 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -4850,24 +4850,6 @@ asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len,
- 	return sched_setaffinity(pid, new_mask);
+@@ -6206,24 +6206,6 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
+ 	rcu_assign_pointer(rq->sd, sd);
  }
  
--/*
-- * Represents all cpu's present in the system
-- * In systems capable of hotplug, this map could dynamically grow
-- * as new cpu's are detected in the system via any platform specific
-- * method, such as ACPI for e.g.
-- */
+-/* cpus with isolated domains */
+-static cpumask_t cpu_isolated_map = CPU_MASK_NONE;
 -
--cpumask_t cpu_present_map __read_mostly;
--EXPORT_SYMBOL(cpu_present_map);
+-/* Setup the mask of cpus configured for isolated domains */
+-static int __init isolated_cpu_setup(char *str)
+-{
+-	int ints[NR_CPUS], i;
 -
--#ifndef CONFIG_SMP
--cpumask_t cpu_online_map __read_mostly = CPU_MASK_ALL;
--EXPORT_SYMBOL(cpu_online_map);
+-	str = get_options(str, ARRAY_SIZE(ints), ints);
+-	cpus_clear(cpu_isolated_map);
+-	for (i = 1; i <= ints[0]; i++)
+-		if (ints[i] < NR_CPUS)
+-			cpu_set(ints[i], cpu_isolated_map);
+-	return 1;
+-}
 -
--cpumask_t cpu_possible_map __read_mostly = CPU_MASK_ALL;
--EXPORT_SYMBOL(cpu_possible_map);
--#endif
+-__setup("isolcpus=", isolated_cpu_setup);
 -
- long sched_getaffinity(pid_t pid, cpumask_t *mask)
+ /*
+  * init_sched_build_groups takes the cpumask we wish to span, and a pointer
+  * to a function which identifies what group(along with sched group) a CPU
+@@ -6850,8 +6832,6 @@ static void free_sched_domains(void)
+ 
+ /*
+  * Set up scheduler domains and groups. Callers must hold the hotplug lock.
+- * For now this just excludes isolated cpus, but could be used to
+- * exclude other special cases in the future.
+  */
+ static int arch_init_sched_domains(const cpumask_t *cpu_map)
  {
- 	struct task_struct *p;
+@@ -6862,7 +6842,7 @@ static int arch_init_sched_domains(const cpumask_t *cpu_map)
+ 	doms_cur = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
+ 	if (!doms_cur)
+ 		doms_cur = &fallback_doms;
+-	cpus_andnot(*doms_cur, *cpu_map, cpu_isolated_map);
++	*doms_cur = *cpu_map;
+ 	err = build_sched_domains(doms_cur);
+ 	register_sched_domain_sysctl();
+ 
+@@ -6923,7 +6903,7 @@ void partition_sched_domains(int ndoms_new, cpumask_t *doms_new)
+ 	if (doms_new == NULL) {
+ 		ndoms_new = 1;
+ 		doms_new = &fallback_doms;
+-		cpus_andnot(doms_new[0], cpu_online_map, cpu_isolated_map);
++		*doms_new = cpu_online_map;
+ 	}
+ 
+ 	/* Destroy deleted domains */
+@@ -7088,19 +7068,15 @@ static int update_sched_domains(struct notifier_block *nfb,
+ 
+ void __init sched_init_smp(void)
+ {
+-	cpumask_t non_isolated_cpus;
+-
+ 	get_online_cpus();
+ 	arch_init_sched_domains(&cpu_online_map);
+-	cpus_andnot(non_isolated_cpus, cpu_possible_map, cpu_isolated_map);
+-	if (cpus_empty(non_isolated_cpus))
+-		cpu_set(smp_processor_id(), non_isolated_cpus);
+ 	put_online_cpus();
++
+ 	/* XXX: Theoretical race here - CPU may be hotplugged now */
+ 	hotcpu_notifier(update_sched_domains, 0);
+ 
+-	/* Move init over to a non-isolated CPU */
+-	if (set_cpus_allowed(current, non_isolated_cpus) < 0)
++	/* Update init's affinity mask */
++	if (set_cpus_allowed(current, cpu_online_map) < 0)
+ 		BUG();
+ 	sched_init_granularity();
+ }
 -- 
 1.5.4.5
 
