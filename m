@@ -1,56 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752190AbYFAOrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYFCAcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752190AbYFAOrW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 10:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYFAOpU
+	id S1756040AbYFCAcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 20:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYFCAcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 10:45:20 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4310 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751881AbYFAOpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 10:45:18 -0400
-Date: Sat, 31 May 2008 09:54:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       zohar@us.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
-Message-ID: <20080531075425.GF5405@ucw.cz>
-References: <1211555145.16195.18.camel@new-host> <20080528012242.a0e98d87.akpm@linux-foundation.org>
+	Mon, 2 Jun 2008 20:32:31 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:54263 "EHLO
+	vonnegut.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbYFCAca (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 20:32:30 -0400
+X-Greylist: delayed 3371 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jun 2008 20:32:30 EDT
+Subject: Re: in-kernel DRM tree move around....
+From: Eric Anholt <eric@anholt.net>
+To: Dave Airlie <airlied@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       dri-devel <dri-devel@lists.sourceforge.net>
+In-Reply-To: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com>
+References: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-B5nFKiiSI3Gfw410BW6E"
+Date: Thu, 29 May 2008 12:41:25 -0700
+Message-Id: <1212090086.2563.42.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080528012242.a0e98d87.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.0 FreeBSD GNOME Team Port 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-05-28 01:22:42, Andrew Morton wrote:
-> On Fri, 23 May 2008 11:05:45 -0400 Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
-> 
-> > This is a re-release of Integrity Measurement Architecture(IMA) as an
-> > independent Linunx Integrity Module(LIM) service provider, which implements
-> > the new LIM must_measure(), collect_measurement(), store_measurement(), and
-> > display_template() API calls. The store_measurement() call supports two 
-> > types of data, IMA (i.e. file data) and generic template data.
-...
-> Generally: the code is all moderately intrusive into the VFS and this
-> sort of thing does need careful explanation and justification, please. 
-> Once we have some understanding of what you're trying to achieve here
-> we will inevitably ask "can't that be done in userspace".  So it would
-> be best if your description were to preemptively answer all that.  
 
-...also, it would be nice to see explanation 'what is this good for'.
+--=-B5nFKiiSI3Gfw410BW6E
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Closest explanation I remember was 'it will protect you by making
-system unbootable if someone stole disk with your /usr filesystem --
-but not / filesystem -- added some rootkit, and then stealthily
-returned it'. That seems a) very unlikely scenario and b) probably
-better solved by encrypting /usr.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Thu, 2008-05-29 at 10:46 +1000, Dave Airlie wrote:
+> Hi,
+>=20
+> So I've been growing more annoyed with the current layout of the drm
+> tree in the kernel,
+>=20
+> a) it lives under char.
+> b) everything in one directory.
+> c) header files in one directory.
+> d) no header files exposed to userspace.
+>=20
+> http://git.kernel.org/?p=3Dlinux/kernel/git/airlied/drm-2.6.git;a=3Dcommi=
+tdiff;h=3D7df9a948d0f849466e3de259cccb49bc54cbad68
+>=20
+> is a proposal to create drivers/gpu/drm, (I may move AGP in there as
+> well later). It also creates per-driver subdirs.
+>=20
+> This to me solves the a-d problems.
+>=20
+> There is also an out-of-tree kernel drm which I'll probably give some
+> more thought later.
+
+I like it.
+
+For upstream DRM, my first thought was something like:
+
+=EF=BB=BF=EF=BB=BFdrm/src/i915/i915_*.[ch]
+drm/src/r128/r128_*.[ch]
+drm/src/drm.h
+drm/src/bsd/drm_*.[ch]
+drm/src/bsd/Makefile
+drm/src/bsd/i915/Makefile
+drm/src/bsd/r128/Makefile
+drm/src/linux/drm_*.=EF=BB=BF[ch]
+drm/src/linux/Makefile
+
+Get rid of the -core absurdity, and move the shared code to top-level of
+the kernel instead of alongside other kernel code.
+
+But maybe nicer for merging on both of our parts would be:
+
+drm/linux/Makefile
+drm/linux/drm*.[ch]
+=EF=BB=BF=EF=BB=BFdrm/linux/i915/Makefile
+drm/linux/i915/i915_*.[ch]
+=EF=BB=BFdrm/linux/=EF=BB=BFi915/Makefile
+=EF=BB=BFdrm/linux/r128/r128_*.[ch]
+drm/bsd/drm.h -> ../linux/drm.h
+drm/bsd/drm*.[ch]
+drm/bsd/Makefile
+=EF=BB=BFdrm/bsd/i915/Makefile
+drm/bsd/i915/i915_drv.c
+=EF=BB=BFdrm/bsd/i915/i915_*.[ch] -> ../../linux/i915/i915_*.[ch]
+=EF=BB=BF=EF=BB=BFdrm/bsd/r128/Makefile
+drm/bsd/r128/r128_drv.c
+=EF=BB=BFdrm/bsd/r128/r128_*.[ch] -> ../../linux/r128/r128_*.[ch]
+
+--=20
+Eric Anholt                             anholt@FreeBSD.org
+eric@anholt.net                         eric.anholt@intel.com
+
+
+--=-B5nFKiiSI3Gfw410BW6E
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (FreeBSD)
+
+iEYEABECAAYFAkg/BuUACgkQHUdvYGzw6veqawCfYlqB77AtXKdFcLSVLLmf7tEF
+SwQAoIlM1AWylsrk6KJSqqIp8Zc6lI9U
+=poZy
+-----END PGP SIGNATURE-----
+
+--=-B5nFKiiSI3Gfw410BW6E--
