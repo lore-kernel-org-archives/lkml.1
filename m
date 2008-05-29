@@ -1,63 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYE2PRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbYE2PVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbYE2PRw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 11:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbYE2PQS
+	id S1756924AbYE2PVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 11:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYE2PVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 11:16:18 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:35035 "EHLO smtp.movial.fi"
+	Thu, 29 May 2008 11:21:00 -0400
+Received: from ozlabs.org ([203.10.76.45]:57210 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755142AbYE2PQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 11:16:17 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-To: linux-mips@linux-mips.org, ralf@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] [MIPS] unexport {allocate,free}_irqno
-Date: Thu, 29 May 2008 17:57:11 +0300
-Message-Id: <12120730324097-git-send-email-dmitri.vorobiev@movial.fi>
-X-Mailer: git-send-email 1.4.4.3
-In-Reply-To: <12120730323761-git-send-email-dmitri.vorobiev@movial.fi>
-References: <12120730323761-git-send-email-dmitri.vorobiev@movial.fi>
+	id S1751971AbYE2PU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 11:20:59 -0400
+From: Michael Neuling <mikey@neuling.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, venkatesh.pallipadi@intel.com,
+       suresh.b.siddha@intel.com, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v1 2/3] Make calls to account_scaled_stats 
+In-reply-to: <20080526143146.24680.36724.stgit@drishya.in.ibm.com> 
+References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526143146.24680.36724.stgit@drishya.in.ibm.com>
+Comments: In-reply-to Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+   message dated "Mon, 26 May 2008 20:01:46 +0530."
+X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.1.1
+Date: Thu, 29 May 2008 10:18:56 -0500
+Message-ID: <19576.1212074336@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following routines
+In message <20080526143146.24680.36724.stgit@drishya.in.ibm.com> you wrote:
+> Hook various accounting functions to call scaled stats
+> 
+> * Hook porcess contect switch: __switch_to()
+> * Hook IRQ handling account_system_vtime() in hardirq.hA
+> * Update __delayacct_add_tsk() to take care of scaling by 1000
+> * Update bacct_add_tsk() to take care of scaling by 1000
+> 
+> Signed-off-by: Amit K. Arora <aarora@linux.vnet.ibm.com>
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> ---
+> 
+>  arch/x86/kernel/process_32.c |    8 ++++++++
+>  include/linux/hardirq.h      |    4 ++++
+>  kernel/delayacct.c           |    7 ++++++-
+>  kernel/timer.c               |    2 --
+>  kernel/tsacct.c              |   10 ++++++++--
+>  5 files changed, 26 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index f8476df..c81a783 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -56,6 +56,9 @@
+>  #include <asm/cpu.h>
+>  #include <asm/kdebug.h>
+>  
+> +extern void account_scaled_stats(struct task_struct *tsk);
+> +extern void reset_for_scaled_stats(struct task_struct *tsk);
+> +
+>  asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+>  
+>  static int hlt_counter;
+> @@ -660,6 +663,11 @@ struct task_struct * __switch_to(struct task_struct *pre
+v_p, struct task_struct
+>  		loadsegment(gs, next->gs);
+>  
+>  	x86_write_percpu(current_task, next_p);
+> +	/* Account scaled statistics for the task leaving CPU */
+> +	account_scaled_stats(prev_p);
+> +	barrier();
+> +	/* Initialise stats counter for new task */
+> +	reset_for_scaled_stats(next_p);
+>  
+>  	return prev_p;
+>  }
+> diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+> index 181006c..4458736 100644
+> --- a/include/linux/hardirq.h
+> +++ b/include/linux/hardirq.h
+> @@ -7,6 +7,9 @@
+>  #include <asm/hardirq.h>
+>  #include <asm/system.h>
+>  
+> +/* TBD: Add config option */
+> +extern void account_scaled_stats(struct task_struct *tsk);
+> +
+>  /*
+>   * We put the hardirq and softirq counter into the preemption
+>   * counter. The bitmask has the following meaning:
+> @@ -115,6 +118,7 @@ struct task_struct;
+>  #ifndef CONFIG_VIRT_CPU_ACCOUNTING
+>  static inline void account_system_vtime(struct task_struct *tsk)
+>  {
+> +	account_scaled_stats(tsk);
+>  }
+>  #endif
+>  
+> diff --git a/kernel/delayacct.c b/kernel/delayacct.c
+> index 10e43fd..3e2938f 100644
+> --- a/kernel/delayacct.c
+> +++ b/kernel/delayacct.c
+> @@ -117,7 +117,12 @@ int __delayacct_add_tsk(struct taskstats *d, struct task
+_struct *tsk)
+>  
+>  	tmp = (s64)d->cpu_scaled_run_real_total;
+>  	cputime_to_timespec(tsk->utimescaled + tsk->stimescaled, &ts);
+> -	tmp += timespec_to_ns(&ts);
+> +	/* HACK: Remember, we multipled the cputime_t by 1000 to include
+> +	 * fraction.  Now it is time to scale it back to correct 'ns' value.
+> +	 * Perhaps, we should use nano second unit (u64 type) for utimescaled 
+> +	 * and stimescaled?
+> +	 */
+> +	tmp += div_s64(timespec_to_ns(&ts),1000);
 
-allocate_irqno()
-free_irqno()
+This is going to break other archs (specifically powerpc) which doesn't
+do this magical scale by 1000.
 
-seem not to be used outside of the core kernel code, hence
-exporting these functions is pointless. This patch removes
-the export.
+How often is this function called as the divide is going to slow things
+down?  
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
----
- arch/mips/kernel/irq.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+>  	d->cpu_scaled_run_real_total =
+>  		(tmp < (s64)d->cpu_scaled_run_real_total) ? 0 : tmp;
+>  
+> diff --git a/kernel/timer.c b/kernel/timer.c
+> index ceacc66..de8a615 100644
+> --- a/kernel/timer.c
+> +++ b/kernel/timer.c
+> @@ -964,10 +964,8 @@ void account_process_tick(struct task_struct *p, int use
+r_tick)
+>  
+>  	if (user_tick) {
+>  		account_user_time(p, one_jiffy);
+> -		account_user_time_scaled(p, cputime_to_scaled(one_jiffy));
+>  	} else {
+>  		account_system_time(p, HARDIRQ_OFFSET, one_jiffy);
+> -		account_system_time_scaled(p, cputime_to_scaled(one_jiffy));
+>  	}
+>  }
 
-diff --git a/arch/mips/kernel/irq.c b/arch/mips/kernel/irq.c
-index ba4e331..ffd80de 100644
---- a/arch/mips/kernel/irq.c
-+++ b/arch/mips/kernel/irq.c
-@@ -44,8 +44,6 @@ again:
- 	return irq;
- }
- 
--EXPORT_SYMBOL_GPL(allocate_irqno);
--
- void free_irqno(unsigned int irq)
- {
- 	smp_mb__before_clear_bit();
-@@ -53,8 +51,6 @@ void free_irqno(unsigned int irq)
- 	smp_mb__after_clear_bit();
- }
- 
--EXPORT_SYMBOL_GPL(free_irqno);
--
- /*
-  * 'what should we do if we get a hw irq event on an illegal vector'.
-  * each architecture has to answer this themselves.
--- 
-1.4.4.3
+Why did you remove this?
+
+>  #endif
+> diff --git a/kernel/tsacct.c b/kernel/tsacct.c
+> index 4ab1b58..ee0d93b 100644
+> --- a/kernel/tsacct.c
+> +++ b/kernel/tsacct.c
+> @@ -62,10 +62,16 @@ void bacct_add_tsk(struct taskstats *stats, struct task_s
+truct *tsk)
+>  	rcu_read_unlock();
+>  	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
+>  	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
+> +	/* HACK: cputime unit is jiffies on x86 and not good for fractional 
+> +	 * additional.  cputime_t type {u,s}timescaled is multiplied by 
+> +	 * 1000 for scaled accounting.  Hence, cputime_to_msecs will actually 
+> +	 * give the required micro second value.  The multiplier 
+> +	 * USEC_PER_MSEC has been dropped.
+> +	 */
+>  	stats->ac_utimescaled =
+> -		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
+> +		cputime_to_msecs(tsk->utimescaled);
+>  	stats->ac_stimescaled =
+> -		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
+> +		cputime_to_msecs(tsk->stimescaled);
+
+Again, isn't this going to effect other archs?  
+
+Mikey
+
+>  	stats->ac_minflt = tsk->min_flt;
+>  	stats->ac_majflt = tsk->maj_flt;
+>  
+> 
+
 
