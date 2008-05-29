@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYE2BxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYE2CHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbYE2BxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 21:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYE2Bwv
+	id S1754497AbYE2CHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 22:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYE2CGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 21:52:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32864 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753653AbYE2Bwu (ORCPT
+	Wed, 28 May 2008 22:06:50 -0400
+Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:54276
+	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751342AbYE2CGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 21:52:50 -0400
-Date: Wed, 28 May 2008 18:51:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, agl@us.ibm.com,
-       wli@holomorphy.com, kenchen@google.com, dwg@au1.ibm.com,
-       andi@firstfloor.org, Mel Gorman <mel@csn.ul.ie>, dean@arctic.org,
-       abh@cray.com, Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: Re: [PATCH 3/3]
- hugetlb-allow-huge-page-mappings-to-be-created-without-reservations
-Message-Id: <20080528185121.86805747.akpm@linux-foundation.org>
-In-Reply-To: <1211929806.0@pinky>
-References: <exportbomb.1211929624@pinky>
-	<1211929806.0@pinky>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 May 2008 22:06:49 -0400
+Message-ID: <483E1005.3080804@sngx.net>
+Date: Wed, 28 May 2008 21:08:05 -0500
+From: James Cammarata <jimi@sngx.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
+References: <482DA5B6.1020606@sngx.net> <482DB46A.8020103@cosmosbay.com> <482EF192.4070707@sngx.net> <482F5113.5090703@cosmosbay.com> <482F610D.2080108@sngx.net> <20080518003104.GK28241@solarflare.com> <482FBA09.80201@sngx.net> <483E0AAE.2020107@sngx.net>
+In-Reply-To: <483E0AAE.2020107@sngx.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 00:10:06 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+Missed an errant define in some copied code (from the get_stats function in e1000_main.c).
 
-> +		unsigned long idx = ((addr - vma->vm_start) >> HPAGE_SHIFT) +
-> +				(vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
-> +		return region_chg(&inode->i_mapping->private_list,
-> +							idx, idx + 1);
-> +
-> +	} else {
-> +		if (!is_vma_resv_set(vma, HPAGE_RESV_OWNER))
-> +			return 1;
-> +	}
-> +
-> +	return 0;
-> +}
-> +static void vma_commit_reservation(struct vm_area_struct *vma,
-> +							unsigned long addr)
-> +{
-> +	struct address_space *mapping = vma->vm_file->f_mapping;
-> +	struct inode *inode = mapping->host;
-> +
-> +	if (vma->vm_flags & VM_SHARED) {
-> +		unsigned long idx = ((addr - vma->vm_start) >> HPAGE_SHIFT) +
-> +				(vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
-> +		region_add(&inode->i_mapping->private_list, idx, idx + 1);
+Signed-off-by: James Cammarata <jimi@sngx.net>
+---
 
-There are a couple more users of the little helper function which I
-suggested that Mel add.
+--- linux-2.6.25.4/drivers/net/e1000/e1000_main.c	2008-05-15 10:00:12.000000000 -0500
++++ linux-2.6.25.4-jcammara/drivers/net/e1000/e1000_main.c	2008-05-28 21:06:19.000000000 -0500
+@@ -141,6 +141,7 @@ static void e1000_free_tx_resources(stru
+ static void e1000_free_rx_resources(struct e1000_adapter *adapter,
+                              struct e1000_rx_ring *rx_ring);
+ void e1000_update_stats(struct e1000_adapter *adapter);
++void e1000_clear_stats(struct e1000_adapter *adapter);
+ 
+ static int e1000_init_module(void);
+ static void e1000_exit_module(void);
+@@ -3819,6 +3820,29 @@ e1000_update_stats(struct e1000_adapter 
+ 	spin_unlock_irqrestore(&adapter->stats_lock, flags);
+ }
+ 
++void
++e1000_clear_stats(struct e1000_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	unsigned long flags;
++
++	/*
++	 * Prevent stats update while adapter is being reset, or if the pci
++	 * connection is down.
++	 */
++	if (adapter->link_speed == 0)
++		return;
++	if (pci_channel_offline(pdev))
++		return;
++
++	spin_lock_irqsave(&adapter->stats_lock, flags);
++
++	memset(&adapter->stats, 0, sizeof(struct e1000_hw_stats));
++	memset(&adapter->net_stats, 0, sizeof(struct net_device_stats));
++
++	spin_unlock_irqrestore(&adapter->stats_lock, flags);
++}
++
+ /**
+  * e1000_intr_msi - Interrupt Handler
+  * @irq: interrupt number
 
-They both use ulong too - I do think that pgoff_t has a little
-documentary value.
-
-I guess these changes impact the manpages, but the mmap manpage doesn't
-seem to know about huge pages at all.
