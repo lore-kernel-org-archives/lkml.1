@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYE2Gpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYE2GuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYE2Gpc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 02:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYE2GpX
+	id S1753309AbYE2GuV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 02:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYE2GuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 02:45:23 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5107 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751259AbYE2GpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 02:45:22 -0400
-Date: Thu, 29 May 2008 08:45:20 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: block: make blktrace use per-cpu buffers for message notes
-Message-ID: <20080529064520.GJ25504@kernel.dk>
-References: <200805281559.m4SFx7b9022392@hera.kernel.org> <20080528231351.a35001bc.akpm@linux-foundation.org> <20080529062214.GG25504@kernel.dk> <20080528233801.e9e55eeb.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080528233801.e9e55eeb.akpm@linux-foundation.org>
+	Thu, 29 May 2008 02:50:04 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:60684 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbYE2GuB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 02:50:01 -0400
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net,
+       akpm@linux-foundation.org
+Message-Id: <AD9D7FA8-9626-473B-838F-B05ED91742D8@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080528213006.02964148@infradead.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] bluetooth: fix locking bug in the rfcomm socket cleanup handling
+Date: Thu, 29 May 2008 08:49:53 +0200
+References: <20080528213006.02964148@infradead.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28 2008, Andrew Morton wrote:
-> On Thu, 29 May 2008 08:22:15 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Wed, May 28 2008, Andrew Morton wrote:
-> > > On Wed, 28 May 2008 15:59:07 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
-> > > 
-> > > > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=64565911cdb57c2f512a9715b985b5617402cc67
-> > > > Commit:     64565911cdb57c2f512a9715b985b5617402cc67
-> > > > Parent:     4722dc52a891ab6cb2d637ddb87233e0ce277827
-> > > > Author:     Jens Axboe <jens.axboe@oracle.com>
-> > > > AuthorDate: Wed May 28 14:45:33 2008 +0200
-> > > > Committer:  Jens Axboe <jens.axboe@oracle.com>
-> > > > CommitDate: Wed May 28 14:49:27 2008 +0200
-> > > 
-> > > please try to avoid merging unreviewed changes.
-> > 
-> > Just because you didn't review it doesn't mean it's unreviewed :-)
-> > 
-> > It's not unreviewed, it was posted on lkml and a few version were
-> > bounced back and forth.
-> 
-> OK.  The Subject: swizzling confounded me.
-> 
-> > > >  		if (unlikely(bt))					\
-> > > >  			__trace_note_message(bt, fmt, ##__VA_ARGS__);	\
-> > > >  	} while (0)
-> > > > -#define BLK_TN_MAX_MSG		1024
-> > > > +#define BLK_TN_MAX_MSG		128
-> > > 
-> > > It seems a bit strange to do this right when we've taken this _off_ the
-> > > stack.  But I suppose nothing will break.
-> > 
-> > It was never on the stack, it was a global static char array. We are
-> > still allocating memory for this, per-cpu. So I think it still makes
-> > sense to shrink the size. It's really meant for small trace messages,
-> > 128 bytes is plenty. It's an in-kernel property, the userland app
-> > doesn't care. So we could easily grow this in the future, should the
-> > need arise.
-> 
-> yup.
-> 
-> It's a bit sad to stage the data in a local per-cpu buffer and then
-> copy it into relay's per-cpu buffer.  I guess this is because the
-> length of the output isn't known beforehand.  Could be fixed by doing
-> what kvasprintf() does, but that might well be slower.
+Hi Arjan,
 
-I agree, this is what we debated. My reasoning is that it's better
-to minimize usage of the relay buffer, so the stage-and-copy doesn't
-matter a whole lot.
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: [PATCH] bluetooth: fix locking bug in the rfcomm socket  
+> cleanup handling
+>
+> in net/bluetooth/rfcomm/sock.c, rfcomm_sk_state_change() does the
+> following operation:
+>
+>      if (parent && sock_flag(sk, SOCK_ZAPPED)) {
+>              /* We have to drop DLC lock here, otherwise
+>               * rfcomm_sock_destruct() will dead lock. */
+>              rfcomm_dlc_unlock(d);
+>              rfcomm_sock_kill(sk);
+>              rfcomm_dlc_lock(d);
+>      }
+> }
+>
+> which is fine, since rfcomm_sock_kill() will call sk_free() which  
+> will call
+> rfcomm_sock_destruct() which takes the rfcomm_dlc_lock()... so far  
+> so good.
+>
+> HOWEVER, this assumes that the rfcomm_sk_state_change() function  
+> always gets
+> called with the rfcomm_dlc_lock() taken. This is the case for all  
+> but one
+> case, and in that case where we don't have the lock, we do a double  
+> unlock
+> followed by an attempt to take the lock, which due to underflow isn't
+> going anywhere fast.
+>
+> This patch fixes this by moving the stragling case inside the lock,  
+> like
+> the other usages of the same call are doing in this code.
+>
+> This was found with the help of the www.kerneloops.org project,  
+> where this
+> deadlock was observed 51 times at this point in time:
+> http://www.kerneloops.org/search.php?search=rfcomm_sock_destruct
+>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+> net/bluetooth/rfcomm/core.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/net/bluetooth/rfcomm/core.c b/net/bluetooth/rfcomm/core.c
+> index eb62558..0c2c937 100644
+> --- a/net/bluetooth/rfcomm/core.c
+> +++ b/net/bluetooth/rfcomm/core.c
+> @@ -423,8 +423,8 @@ static int __rfcomm_dlc_close(struct rfcomm_dlc  
+> *d, int err)
+>
+> 		rfcomm_dlc_lock(d);
+> 		d->state = BT_CLOSED;
+> -		rfcomm_dlc_unlock(d);
+> 		d->state_change(d, err);
+> +		rfcomm_dlc_unlock(d);
+>
+> 		skb_queue_purge(&d->tx_queue);
+> 		rfcomm_dlc_unlink(d);
 
-I seem to recall a relay_unreserve() patch from Tom back in the day,
-if we had something like that we could do the optimal approach of:
+this is really embarrassing, but a good catch on your side. I simply  
+never realized that mistake when going through that part of the code.
 
-        buf = relay_reserver(max_size);
-        n = vscnprintf(buf, max_size, ...);
-        if (max_size - n)
-                relay_unreserve(max_size - n);
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
 
-and get the best of both worlds. But, again, it's not really a big deal
-I think.
+David, you might wanna queue this up for stable, too.
 
-My main interest in this is adding cfq trace messages, so we have
-direct ways of comparing queue+dispatch with what cfq is deciding to
-do.
+Regards
 
--- 
-Jens Axboe
+Marcel
 
