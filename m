@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbYE2OuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbYE2Ovn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756682AbYE2OuK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 10:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbYE2Ot5
+	id S1756978AbYE2Ovn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 10:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbYE2Ovd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 10:49:57 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:58939 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbYE2Ot4 (ORCPT
+	Thu, 29 May 2008 10:51:33 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:51355 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbYE2Ovc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 10:49:56 -0400
-Date: Thu, 29 May 2008 15:49:34 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-Message-ID: <20080529144934.GA24382@srcf.ucam.org>
-References: <20080528143857.GB5585@homac.suse.de> <20080529132253.GA22309@srcf.ucam.org> <483EB33D.6010101@gmail.com> <20080529140213.GA23373@srcf.ucam.org> <20080529141421.GC9268@homac.suse.de> <20080529143541.GA24013@srcf.ucam.org> <483EBFC5.7020406@gmail.com>
+	Thu, 29 May 2008 10:51:32 -0400
+Date: Thu, 29 May 2008 08:51:31 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Gerb Stralko <gerb.stralko@gmail.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] scsi: remove CDROM not ready printk
+Message-ID: <20080529145131.GS22636@parisc-linux.org>
+References: <alpine.LFD.1.10.0805271502370.3985@localhost.localdomain> <20080529004154.bbc7b1d4.akpm@linux-foundation.org> <1212069932.3428.1.camel@localhost.localdomain> <75b57c110805290735i493eca0fp882f4a38901a416c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <483EBFC5.7020406@gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] libata: Handle bay devices in dock stations
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <75b57c110805290735i493eca0fp882f4a38901a416c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Got it. It works if I lose the ata_port_freeze() from 
-ata_acpi_detach_device. 
+On Thu, May 29, 2008 at 10:35:08AM -0400, Gerb Stralko wrote:
+> On Thu, May 29, 2008 at 10:05 AM, James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
+> > That's correct.  cgc is the data from the packet command that was sent
+> > in from the ioctl.  The user application is actually the one that
+> > decides whether you get to see the message or not.  Modern apps like hal
+> > set it because they take care of all state updates and notifications
+> > themselves.  Which is the application that's doing this (because it
+> > probably needs updating).
+> 
+> So is that printk really needed?  Should the kernel even need to print
+> a message like that, esp. if user-space is handling state updates and
+> notifications.  Or do i need to configure hald to be quietier?   FWIW
+> I'm using fedora core 9 and hald version:
+> -bash-3.2$ /usr/sbin/hald --version
+> HAL package version: 0.5.11
+
+I think you misunderstood.  James is saying that an app like HAL will
+set the ->quiet flag.  You must be using some other application that
+isn't setting the ->quiet flag.  Any idea what this other application
+is?
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
