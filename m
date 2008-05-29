@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYE2PXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYE2PYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbYE2PXQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 11:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYE2PW7
+	id S1757497AbYE2PYt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 11:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbYE2PYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 11:22:59 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49079 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750807AbYE2PW6 (ORCPT
+	Thu, 29 May 2008 11:24:41 -0400
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:36241 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753974AbYE2PYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 11:22:58 -0400
-Subject: Re: [PATCH] scsi: remove CDROM not ready printk
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Gerb Stralko <gerb.stralko@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <75b57c110805290804p2280a6ffwf68174754db59e9c@mail.gmail.com>
-References: <alpine.LFD.1.10.0805271502370.3985@localhost.localdomain>
-	 <20080529004154.bbc7b1d4.akpm@linux-foundation.org>
-	 <1212069932.3428.1.camel@localhost.localdomain>
-	 <75b57c110805290735i493eca0fp882f4a38901a416c@mail.gmail.com>
-	 <1212072912.3428.28.camel@localhost.localdomain>
-	 <75b57c110805290804p2280a6ffwf68174754db59e9c@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 29 May 2008 10:22:53 -0500
-Message-Id: <1212074573.3428.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 11:24:40 -0400
+Date: Thu, 29 May 2008 20:56:32 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] sched: Print the sd->level in sched_domain_debug code
+Message-ID: <20080529152632.GB28006@in.ibm.com>
+Reply-To: ego@in.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-29 at 11:04 -0400, Gerb Stralko wrote:
-> On Thu, May 29, 2008 at 10:55 AM, James Bottomley
-> <James.Bottomley@hansenpartnership.com> wrote:
-> > On Thu, 2008-05-29 at 10:35 -0400, Gerb Stralko wrote:
-> >> So is that printk really needed?  Should the kernel even need to print
-> >> a message like that, esp. if user-space is handling state updates and
-> >> notifications.  Or do i need to configure hald to be quietier?   FWIW
-> >> I'm using fedora core 9 and hald version:
-> >> -bash-3.2$ /usr/sbin/hald --version
-> >> HAL package version: 0.5.11
-> >
-> > Actually, I misspoke; it's set internally via sets of ioctls.  However,
-> > it's designed only to show on ioctls that do medium requiring things.
-> >
-> > I'm also using FC9 and I see no such messages (and for noisy cgc,
-> > they're printed out for every action on the CD).  You have some
-> > application that's poking the CD wrongly (probably not hal), so you
-> > really need to find out what it is.  It may be pointing to some other
-> > error in the kernel that needs fixing, but simply removing the message
-> > is covering up the issue.
-> >
-> > To help track the application, you could update the printk to print out
-> > current->comm and current->pid.  That would tell you who is responsible
-> >
-> > James
-> >
-> >
-> >
-> Okay, i'll do some investigation and see if I can track this down,
-> I'll let you know.   Thanks for the info.
-> 
-> Are you using GNOME or KDE?  I'm currently using KDE.
+sched: Print the sd->level in sched_domain_debug code
 
-I'm using gnome ... there are intermittent reports of kde problems
-mainly with k3b though (the burner program), but if you put the printk
-in it should identify the application.
+From: Gautham R Shenoy <ego@in.ibm.com>
 
-James
+While printing out the visual representation of the sched-domains, print
+the level (MC, SMT, CPU, NODE, ... ) of each of the sched_domains.
+
+Credit: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+---
+
+ kernel/sched.c |   25 ++++++++++++++++++++++++-
+ 1 files changed, 24 insertions(+), 1 deletions(-)
 
 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 1846451..7b81114 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6638,6 +6638,28 @@ void __init migration_init(void)
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+ 
++static inline const char *sd_level_to_string(enum sched_domain_level lvl)
++{
++	switch (lvl) {
++	case SD_LV_NONE:
++			return "NONE";
++	case SD_LV_SIBLING:
++			return "SIBLING";
++	case SD_LV_MC:
++			return "MC";
++	case SD_LV_CPU:
++			return "CPU";
++	case SD_LV_NODE:
++			return "NODE";
++	case SD_LV_ALLNODES:
++			return "ALLNODES";
++	case SD_LV_MAX:
++			return "MAX";
++
++	}
++	return "MAX";
++}
++
+ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 				  cpumask_t *groupmask)
+ {
+@@ -6657,7 +6679,8 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 		return -1;
+ 	}
+ 
+-	printk(KERN_CONT "span %s\n", str);
++	printk(KERN_CONT "span %s level %s\n",
++		str, sd_level_to_string(sd->level));
+ 
+ 	if (!cpu_isset(cpu, sd->span)) {
+ 		printk(KERN_ERR "ERROR: domain->span does not contain "
+-- 
+Thanks and Regards
+gautham
