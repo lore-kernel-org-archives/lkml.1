@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759029AbYE2W1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYE2W3E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759029AbYE2W1m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 18:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYE2W1e
+	id S1754033AbYE2W3E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 18:29:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbYE2W2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 18:27:34 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:61744 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbYE2W1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 18:27:33 -0400
-Date: Thu, 29 May 2008 15:25:31 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: Roland Dreier <rdreier@cisco.com>
-cc: Jes Sorensen <jes@sgi.com>, benh@kernel.crashing.org,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       scottwood@freescale.com, torvalds@linux-foundation.org,
-       David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <adawslcojdg.fsf@cisco.com>
-Message-ID: <Pine.LNX.4.64.0805291517140.18832@t2.domain.actdsltmp>
-References: <1211852026.3286.36.camel@pasglop> <20080526.184047.88207142.davem@davemloft.net>
- <1211854540.3286.42.camel@pasglop> <20080526.192812.184590464.davem@davemloft.net>
- <20080526204233.75b71bb8@infradead.org> <1211872130.3286.64.camel@pasglop>
- <adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>
- <adaiqwzsa83.fsf@cisco.com> <yq0iqwxrwuh.fsf@jaguar.mkp.net>
- <adawslcojdg.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Thu, 29 May 2008 18:28:54 -0400
+Received: from main.gmane.org ([80.91.229.2]:49785 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753143AbYE2W2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 18:28:53 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: [X86] Watchdog lockdep warning with next-20080529
+Date: Thu, 29 May 2008 23:25:53 +0100
+Message-ID: <g1namq$qk5$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: KNode/0.10.4
+Cc: kernel-testers@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Roland Dreier wrote:
-> > The problem is that your two writel's, despite being both issued on
-> > cpu X, due to the spin lock, in your example, can end up with the
-> > first one going through NR 1 and the second one going through NR 2. If
-> > there's contention on NR 1, the write going via NR 2 may hit the PCI
-> > bridge prior to the one going via NR 1.
->
-> Really??  I can't see how you can expect any drivers to work reliably if
-> simple code like
->
-> 	writel(reg1);
-> 	writel(reg2);
->
-> might end up with the write to reg2 hitting the device before the write
-> to reg1.  Almost all MMIO stuff has ordering requirements and will
+<posted & mailed>
 
-This is how powerpc is natively (the linux accessors have extra ordering to
-not allow this of course), and there are non-Linux drivers that are written
-for this ordering model.
+While using linux-next-20080529 the following warning was printed:
 
-I think what makes altix so hard is that writes to the _same_ register may be
-be re-ordered.  Re-ordering writes to the same address is much less common
-than allowing writes to different addresses to be re-ordered.
+[ 1108.103357] ------------[ cut here ]------------
+[ 1108.103370] WARNING: at kernel/lockdep.c:2680 check_flags+0x8a/0x12d()
+[ 1108.103377] Modules linked in:
+[ 1108.103384] Pid: 5, comm: watchdog/0 Not tainted
+2.6.26-rc4-next-20080529skw #134
+[ 1108.103392]  [<c0122f80>] warn_on_slowpath+0x41/0x6a
+[ 1108.103402]  [<c013cc30>] ? trace_hardirqs_off+0xb/0xd
+[ 1108.103411]  [<c013ea60>] ? trace_hardirqs_on+0xb/0xd
+[ 1108.103419]  [<c013ea19>] ? trace_hardirqs_on_caller+0xe8/0x124
+[ 1108.103428]  [<c013ea60>] ? trace_hardirqs_on+0xb/0xd
+[ 1108.103436]  [<c011d428>] ? hrtick_set+0xce/0xd6
+[ 1108.103445]  [<c013c87e>] check_flags+0x8a/0x12d
+[ 1108.103452]  [<c013f9a0>] lock_acquire+0x3b/0x89
+[ 1108.103459]  [<c0361ada>] _read_lock+0x1c/0x49
+[ 1108.103467]  [<c01538b2>] ? watchdog+0x97/0x1a9
+[ 1108.103475]  [<c015381b>] ? watchdog+0x0/0x1a9
+[ 1108.103483]  [<c01538b2>] watchdog+0x97/0x1a9
+[ 1108.103489]  [<c015381b>] ? watchdog+0x0/0x1a9
+[ 1108.103497]  [<c0133044>] kthread+0x3b/0x63
+[ 1108.103504]  [<c0133009>] ? kthread+0x0/0x63
+[ 1108.103512]  [<c01038ab>] kernel_thread_helper+0x7/0x10
+[ 1108.103520]  =======================
+[ 1108.103525] ---[ end trace bf12fd91b8f59e65 ]---
+[ 1108.103529] possible reason: unannotated irqs-on.
+[ 1108.103534] irq event stamp: 18
+[ 1108.103538] hardirqs last  enabled at (17): [<c013ea60>]
+trace_hardirqs_on+0xb/0xd
+[ 1108.103548] hardirqs last disabled at (18): [<c013cc30>]
+trace_hardirqs_off+0xb/0xd
+[ 1108.103558] softirqs last  enabled at (0): [<c01216ab>]
+copy_process+0x2dd/0xf9a
+[ 1108.103568] softirqs last disabled at (0): [<00000000>] 0x0
+
+-- 
+Sitsofe | http://sucs.org/~sits/
+
