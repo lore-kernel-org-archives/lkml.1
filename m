@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYE2Oep@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011AbYE2Ofg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbYE2Oep (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 10:34:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbYE2Oef
+	id S1755011AbYE2Ofg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 10:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbYE2OfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 10:34:35 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64312 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751352AbYE2Oee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 10:34:34 -0400
-Date: Thu, 29 May 2008 15:32:42 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Kevin Hao <kexin.hao@windriver.com>
-cc: Clemens Ladisch <clemens@ladisch.de>, venkatesh.pallipadi@intel.com,
-       bob.picco@hp.com, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>
-Subject: Re: [PATCH] x86: Get irq for hpet timer
-In-Reply-To: <1212057664.8343.29.camel@kevin-desktop>
-Message-ID: <Pine.LNX.4.55.0805291319250.8254@cliff.in.clinika.pl>
-References: <1210917912.10881.1.camel@kevin-desktop>  <482D49CF.4030902@ladisch.de>
- <1210929270.11912.3.camel@kevin-desktop>  <4831A678.5070208@ladisch.de>
- <1211274219.8718.7.camel@kevin-desktop>  <Pine.LNX.4.55.0805201631010.31790@cliff.in.clinika.pl>
-  <4833DD38.2010702@ladisch.de>  <Pine.LNX.4.55.0805220105560.4894@cliff.in.clinika.pl>
-  <1211441231.7323.10.camel@kevin-desktop>  <Pine.LNX.4.55.0805221609280.13339@cliff.in.clinika.pl>
-  <1211971330.6085.33.camel@kevin-desktop>  <Pine.LNX.4.55.0805290348350.29522@cliff.in.clinika.pl>
- <1212057664.8343.29.camel@kevin-desktop>
+	Thu, 29 May 2008 10:35:18 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:43208 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755814AbYE2OfK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 10:35:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JtNAdtF99LTwm8lR6hGKcBCM5sDAVdEhLCunWFJOpJ4WMVh++MO9k5LCz5DqEdBoRhiGXXE4Jyg7WxXURd+Qi87fdWrC/3ZzqtqmaX8z/4S4BWvvm+6cUFYtsFHA+e3hn2rqZ6rdN8KnC7fw2kyhiwrAkRmv9o0CJKfO5tzjlZA=
+Message-ID: <75b57c110805290735i493eca0fp882f4a38901a416c@mail.gmail.com>
+Date: Thu, 29 May 2008 10:35:08 -0400
+From: "Gerb Stralko" <gerb.stralko@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] scsi: remove CDROM not ready printk
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <1212069932.3428.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.10.0805271502370.3985@localhost.localdomain>
+	 <20080529004154.bbc7b1d4.akpm@linux-foundation.org>
+	 <1212069932.3428.1.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Kevin Hao wrote:
+On Thu, May 29, 2008 at 10:05 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> On Thu, 2008-05-29 at 00:41 -0700, Andrew Morton wrote:
+>> On Tue, 27 May 2008 15:02:43 -0400 (EDT) Jerry Stralko <gerb.stralko@gmail.com> wrote:
+>>
+>> > Hello,
+>>
+>> let's cc a scsi list which exists ;)
+>>
+>> >    This printk was spamming my dmesg and /var/log/message.  Is there a
+>> > reason we have this printk?  Can we simply remove it?
+>> >
+>> >
+>> > Signed-off-by: Jerry Stralko <gerb.stralko@gmail.com>
+>> > ---
+>> >
+>> >
+>> > diff --git a/drivers/scsi/sr_ioctl.c b/drivers/scsi/sr_ioctl.c
+>> > index ae87d08..c37fb1c 100644
+>> > --- a/drivers/scsi/sr_ioctl.c
+>> > +++ b/drivers/scsi/sr_ioctl.c
+>> > @@ -238,8 +238,6 @@ int sr_do_ioctl(Scsi_CD *cd, struct packet_command *cgc)
+>> >                                     break;
+>> >                             }
+>> >                     }
+>> > -                   if (!cgc->quiet)
+>> > -                           printk(KERN_INFO "%s: CDROM not ready.  Make sure there is a disc in the drive.\n", cd->cdi.name);
+>> >   #ifdef DEBUG
+>> >                     scsi_print_sense_hdr("sr", &sshdr);
+>> >   #endif
+>>
+>> The answer may be that you need to enable cgc->quiet.  If that is
+>> user-enableable - I can't work out how from a quick grep.
+>
+> That's correct.  cgc is the data from the packet command that was sent
+> in from the ioctl.  The user application is actually the one that
+> decides whether you get to see the message or not.  Modern apps like hal
+> set it because they take care of all state updates and notifications
+> themselves.  Which is the application that's doing this (because it
+> probably needs updating).
+>
+> James
 
-> The IRQ trigger mode is set to level by acpi_register_gsi in PIC mode.
-> And I have tested it on a host using legacy PIC. It works well.
+So is that printk really needed?  Should the kernel even need to print
+a message like that, esp. if user-space is handling state updates and
+notifications.  Or do i need to configure hald to be quietier?   FWIW
+I'm using fedora core 9 and hald version:
+-bash-3.2$ /usr/sbin/hald --version
+HAL package version: 0.5.11
 
- It may work by chance.  All what the code in question guarantees is:
+thanks,
 
-int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
-{
-	*irq = gsi;
-	return 0;
-}
-
-int acpi_register_gsi(u32 gsi, int triggering, int polarity)
-{
-	unsigned int irq;
-	unsigned int plat_gsi = gsi;
-
-	acpi_gsi_to_irq(plat_gsi, &irq);
-	return irq;
-}
-
-CONFIG_PCI is optional for the x86 platform.  You could argue this is a
-bug in acpi_register_gsi() and I tend to agree -- I think the existence of
-the ELCR is implied for ACPI-compliant systems, though I am happy to be
-corrected.  The ACPI spec does not mention the register, but quotes:  
-"Existing industry standard register interfaces to: CMOS, PIC, PITs, ..."
-
- Anyway, blindly attaching to an IRQ line is not a terribly good idea as
-there may be an edge-triggered line from a device wired there after all.  
-For example many LPC SuperIO chips have configurable IRQ resources -- the
-parallel port can use either IRQ5 or IRQ7 (but not both at a time).  OTOH
-IRQ6 may be free after all as floppy drives become rare.  Only IRQ10 and
-IRQ11 are probably safe to be assumed free in systems with no ISA slots,
-but then again, I may have missed something.  Hopefully there are no true
-PCI-ISA bridges with the HPET implemented -- I have checked a couple of 
-datasheets for ACPI-compliant PCI-ISA bridges (such as the PIIX4) that I 
-have handy and none of them implements the HPET.
-
-> >  I am assuming you have verified ACPI_ACTIVE_LOW works here, contrary to 
-> > the HPET spec.
-> 
-> Yes, It can work with other PCI device in ACPI_ACTIVE_LOW polarity.
-
- Good to know.  Thanks for verifying this.
-
-  Maciej
+Jerry
