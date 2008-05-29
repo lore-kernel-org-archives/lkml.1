@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYE3DVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbYE3DWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbYE3DVm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 23:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYE3DVe
+	id S1754896AbYE3DWW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 23:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYE3DWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 23:21:34 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45894 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752394AbYE3DVd (ORCPT
+	Thu, 29 May 2008 23:22:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54085 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752581AbYE3DWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 23:21:33 -0400
-X-Sasl-enc: ondAJgOQKSDKr4dtiskd9a22Ljkma/ICzIk1PpRrI8zD 1212117692
-Date: Fri, 30 May 2008 00:21:30 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH] acpi: fix sparse const errors
-Message-ID: <20080530032130.GA3428@khazad-dum.debian.net>
-References: <1212108717.28403.165.camel@brick>
+	Thu, 29 May 2008 23:22:10 -0400
+Message-ID: <483F3EC4.5050700@zytor.com>
+Date: Thu, 29 May 2008 16:39:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212108717.28403.165.camel@brick>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Jeff Garzik <jeff@garzik.org>, David Woodhouse <dwmw2@infradead.org>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+ kernel.
+References: <1211995212.3445.52.camel@localhost.localdomain>	 <20080528.225826.40264516.davem@davemloft.net>	 <1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu>	 <1212077700.26088.83.camel@shinybook.infradead.org>	 <483F002E.5060002@garzik.org> <1212095864.24826.2.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1212095864.24826.2.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Harvey Harrison wrote:
-> In this case we want a constant pointer to constant chars:
-> drivers/misc/thinkpad_acpi.c:3824:19: error: Just how const do you want this type to be?
+Peter Zijlstra wrote:
 > 
-> Like the error says.
-> drivers/misc/thinkpad_acpi.c:3863:19: error: Just how const do you want this type to be?
-> drivers/misc/thinkpad_acpi.c:3864:19: error: Just how const do you want this type to be?
-> drivers/misc/thinkpad_acpi.c:3865:19: error: Just how const do you want this type to be?
-> drivers/misc/thinkpad_acpi.c:3866:19: error: Just how const do you want this type to be?
+> I certainly agree, pushing more and more into initrd just annoys the
+> hell out of me.
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> I'd argue to include everything needed to build (and esp cross build) an
+> initrd into the kernel - up until that point initrds are useless.
+> 
 
-Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+I tried to push for that two years ago.  I'd be more than happy to pull 
+that out of the freezer.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+	-hpa
