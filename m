@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbYE2V31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbYE2V3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbYE2V31 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbYE2V3T
+	id S1760261AbYE2V3n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYE2V3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:29:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41063 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751932AbYE2V3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:29:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
-Date: Thu, 29 May 2008 23:29:48 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Machek <pavel@suse.cz>
-References: <200805291333.42057.david-b@pacbell.net> <200805292301.42244.rjw@sisk.pl> <200805291426.18404.david-b@pacbell.net>
-In-Reply-To: <200805291426.18404.david-b@pacbell.net>
+	Thu, 29 May 2008 17:29:32 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:56803 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753998AbYE2V3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 17:29:31 -0400
+Date: Thu, 29 May 2008 14:29:24 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+cc: David Howells <dhowells@redhat.com>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>, mpm@selenic.com,
+       lethal@linux-sh.org, linux-kernel@vger.kernel.org,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
+In-Reply-To: <8bd0f97a0805291351t43ea6d2eue1cdde531aa2fc2c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805291428240.7562@schroedinger.engr.sgi.com>
+References: <2874.1211980355@redhat.com>  <Pine.LNX.4.64.0805221907250.4056@sbz-30.cs.Helsinki.FI>
+  <24762.1211983758@redhat.com>  <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com>
+  <7613.1211996335@redhat.com>  <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com>
+  <29553.1212066208@redhat.com>  <8bd0f97a0805291325w7d435e89h4de614547fb1bc7f@mail.gmail.com>
+  <Pine.LNX.4.64.0805291329270.7207@schroedinger.engr.sgi.com>
+ <8bd0f97a0805291351t43ea6d2eue1cdde531aa2fc2c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805292329.48896.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 29 of May 2008, David Brownell wrote:
-> On Thursday 29 May 2008, Rafael J. Wysocki wrote:
-> > Two questions:
-> > 
-> > 1) How is it related to the analogous patch in the Ingo's tree?
-> 
-> AFAIK -- just that it's an updated version.  Comments, some
-> code flow, but mostly having the "test_suspend=mode" parameter
-> default to "safe -- no testing" and allows the choice of modes.
-> 
-> 
-> > 2) Does it apply to the current linux-next?
-> 
-> No idea.
+On Thu, 29 May 2008, Mike Frysinger wrote:
 
-Could you check, please?  The previous version didn't.
+> > You should not have to do this. This is the default alignment that also
+> > SLOB needs to follow. We need to align structures correctly for access to
+> > long long's.
+> 
+> are you saying that slob is broken ?  i see in mm/slob.c:
+> #ifndef ARCH_KMALLOC_MINALIGN
+> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long)
+> #endif
+> -mike
 
-Thanks,
-Rafael
+It should be long long instead.
+
+SLUB:
+
+#ifndef ARCH_KMALLOC_MINALIGN
+#define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
+#endif
+
+SLAB:
+
+#define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
+ 
