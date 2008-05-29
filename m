@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYE2VyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbYE2V5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbYE2VyY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYE2VyQ
+	id S1758933AbYE2V5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbYE2V5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:54:16 -0400
-Received: from outbound-mail-127.bluehost.com ([67.222.38.27]:32892 "HELO
-	outbound-mail-127.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754611AbYE2VyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:54:15 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: benh@kernel.crashing.org
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Thu, 29 May 2008 14:53:38 -0700
-User-Agent: KMail/1.9.9
-Cc: Jes Sorensen <jes@sgi.com>, Roland Dreier <rdreier@cisco.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-References: <1211852026.3286.36.camel@pasglop> <yq0iqwxrwuh.fsf@jaguar.mkp.net> <1212097223.8888.55.camel@pasglop>
-In-Reply-To: <1212097223.8888.55.camel@pasglop>
+	Thu, 29 May 2008 17:57:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54690 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752599AbYE2V5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 17:57:06 -0400
+Message-ID: <483F26B0.8010006@garzik.org>
+Date: Thu, 29 May 2008 17:57:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [RFC PATCH] libata-sff: Fix oops reported in kerneloops.org for
+ pnp devices with no ctl
+References: <20080529161453.24735.805.stgit@core>	<alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>	<20080529190235.258d304e@core>	<483EF536.90801@garzik.org>	<20080529194238.36458a46@core>	<483F049E.2090809@garzik.org>	<20080529221058.1169e140@core> <20080529223755.12610b87@core>
+In-Reply-To: <20080529223755.12610b87@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805291453.38492.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 29, 2008 2:40 pm Benjamin Herrenschmidt wrote:
-> On Thu, 2008-05-29 at 10:47 -0400, Jes Sorensen wrote:
-> > The only way to guarantee ordering in the above setup, is to either
-> > make writel() fully ordered or adding the mmiowb()'s inbetween the two
-> > writel's. On Altix you have to go and read from the PCI brige to
-> > ensure all writes to it have been flushed, which is also what mmiowb()
-> > is doing. If writel() was to guarantee this ordering, it would make
-> > every writel() call extremely expensive :-(
->
-> Interesting. I've always been taught by ia64 people that mmiowb() was
-> intended to be used solely between writel() and spin_unlock().
+Alan Cox wrote:
+> The Linusified version:
+> 
+> - Make ata_sff_altstatus private so nobody uses it by mistake
+> - Drop the 400nS delay from it
+> 
+> Add
+> 
+> ata_sff_irq_status	-	encapsulates the IRQ check logic
+> 
+> This function keeps the existing behaviour for altstatus using devices. I
+> actually suspect the logic was wrong before the changes but -rc isn't the
+> time to play with that
+> 
+> ata_sff_sync		-	ensure writes hit the device
+> 
+> Really we want an io* operation for 'is posted' eg ioisposted(ioaddr) so
+> that we can fix the nasty delay this causes on most systems.
+> 
+> - ata_sff_pause		-	400nS delay
+> 
+> Ensure the command hit the device and delay 400nS
+> 
+> - ata_sff_dma_pause
+>  
+> Ensure the I/O hit the device and enforce an HDMA1:0 transition delay.
+> Requires altstatus register exists, BUG if not so we don't risk
+> corruption in MWDMA modes. (UDMA the checksum will save your backside in
+> theory)
+> 
+> The only other complication then is devices with their own handlers.
+> rb532 can use dma_pause but scc needs to access its own altstatus
+> register for internal errata workarounds so directly call the drivers own
+> altstatus function.
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
 
-Well, that *was* true, afaik, but maybe these days multipath isn't just for 
-fail-over.  If that's true, then yeah making every single writeX ordered 
-would be the only way to go...
+Honestly I think your first RFC PATCH (dated Thu, 29 May 2008 22:10:58 
++0100) turned out better than this.
 
-> If this is a performance problem, then provide relaxed variants and
-> use them in selected drivers.
+NO_ALTSTATUS is a bit ugly, don't you think?
 
-Sounds reasonable.  That way drivers "just work" and important drivers can be 
-optimized.
+In any case, based on a quick review I would certainly ack the first RFC 
+PATCH.
 
-Jesse
+	Jeff
+
+
+
+
