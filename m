@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbYE2Vs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758067AbYE2Vur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbYE2Vs6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbYE2Vsq
+	id S1758067AbYE2Vur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYE2Vuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:48:46 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:29136 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751843AbYE2Vsp (ORCPT
+	Thu, 29 May 2008 17:50:39 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:43784 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbYE2Vui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:48:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tLZczGNw9axoB+nRXpB++AjJAbd26vQcxYY211ARbUja03wPRlC/PvU1SjuKFnYIme4bqQcPvUymSI7JERXWeZvFgTBzTPuCM0w+fgSrLP4zO8rcscf91ur/sWFPBpmymJHU3m0gzMFsFRo3YpVQZNq5j7Z3M3jaXeuXfJGpLco=  ;
-X-YMail-OSG: T4Q3nR4VM1lP2WBWjBbtn96pKhsaB4tcyegtL5xZXfkN6YEH3cW27_YU9Fx2Hv8JvpG5bPtQ8fcqN1xQVMVJ8MzNyYdbww4GegM9oPzA1A--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [GIT PATCH] USB fixes for 2.6.26-rc4
-Date: Thu, 29 May 2008 14:48:39 -0700
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-References: <20080529212110.GA2870@suse.de>
-In-Reply-To: <20080529212110.GA2870@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 29 May 2008 17:50:38 -0400
+Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       CaseySchaufler <casey@schaufler-ca.com>
+In-Reply-To: <20080528203013.5a927d30.akpm@linux-foundation.org>
+References: <1211555145.16195.18.camel@new-host>
+	 <20080528012242.a0e98d87.akpm@linux-foundation.org>
+	 <1212031046.4747.57.camel@new-host.home>
+	 <20080528203013.5a927d30.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 17:50:34 -0400
+Message-Id: <1212097834.15923.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805291448.40075.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 May 2008, Greg KH wrote:
->       USB: EHCI: fix performance regression
 
-That's not a regresssion at all!  Plus, this patch shouldn't
-have included the timeout change.  The timeout change is why
-I didn't ACK this patch...
+On Wed, 2008-05-28 at 20:30 -0700, Andrew Morton wrote:
+
+> > ...
+> >
+> > > - All the games with mtimes should be described in the changelog too.
+> > 
+> > Ok. The timespec_recent and mtime issues are part of the same problem
+> > of detecting when a file has been modified.
+> 
+> Can't use inode.i_version?
+
+i_version is now working on my system.  It looks good. Is
+there anything that I need to be concerned about, such as
+limited filesystem support or the i_version is not updated 
+by file_close for mmaped files?
+
+Thanks!
+
+Mimi
 
