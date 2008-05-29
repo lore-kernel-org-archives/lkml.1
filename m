@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYE2SSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYE2ST2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbYE2SSF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 14:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbYE2SRT
+	id S1756670AbYE2ST2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 14:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYE2STR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 14:17:19 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45453 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755536AbYE2SRS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 14:17:18 -0400
-Date: Thu, 29 May 2008 19:02:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jeff@garzik.org
-Subject: Re: RESEND: [PATCH] libata-sff: Fix oops reported in kerneloops.org
- for pnp devices with no ctl
-Message-ID: <20080529190235.258d304e@core>
-In-Reply-To: <alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
-References: <20080529161453.24735.805.stgit@core>
-	<alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 May 2008 14:19:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43444 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752828AbYE2STQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 14:19:16 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/6] Werror: Fix casting wrong size integer to pointer
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: dhowells@redhat.com, bunk@kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 29 May 2008 19:17:26 +0100
+Message-ID: <20080529181726.5396.79336.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why the *hell* doesn't it just fix "ata_sff_altstatus()" instead? Why does 
-> it introduce a ludicrously named stupid "maybe" version of it that doesn't 
-> oops?
+Fix casting wrong size integer to pointer.  Smaller integers must be cast to
+unsigned long then cast to a pointer.
 
-Ok the problem is we have three cases to distinguish
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-- altstatus must be used - in which case we want to blow up anyway if we
-touch it (the usual case)
-- altstatus should be used if available - shared IRQ check
-- altstatus being used for flushing - altstatus irrelevant, it just has
-to flush somehow.
+ drivers/char/drm/sis_mm.c        |    2 +-
+ drivers/message/i2o/i2o_config.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-So the _maybe naming sucks, but the reasoning I think is sound. The other
-way to do it would be to replace it and the bit of irq handler logic with
-an ata_sff_busy() that did the status checks correctly for both ctl and
-non-ctl capable devices.
 
-> It may be that you meant to make it an "else if" case, ie if there was no 
-> IO-read, then you do a ndelay(400) as a last desperate case, but that's 
-> not how your ata_sdd_sync() is actually written.
-
-The ndelay(400) is correct. The IO-read is Jeff being paranoid and
-actually hurts us materially for the usual PIO case (bus PIO not disk
-PIO) to the tune of about 1mS a command in many cases, but is needed for
-MMIO (which we almost never do for any SFF hardware). That itself is a
-different problem that can be fixed later (and not in -rc5). It wants
-fixing as its a key reason that old IDE is still faster for PATA.
-
-maybe_altstatus is crap naming but simply making ata_sff_altstatus fake a
-reply in arbitary cases risks not catching mistakes and could mean we
-don't catch corrupting mistakes which would be very bad indeed.
+diff --git a/drivers/char/drm/sis_mm.c b/drivers/char/drm/sis_mm.c
+index b387877..378b275 100644
+--- a/drivers/char/drm/sis_mm.c
++++ b/drivers/char/drm/sis_mm.c
+@@ -57,7 +57,7 @@ static void *sis_sman_mm_allocate(void *private, unsigned long size,
+ 	if (req.size == 0)
+ 		return NULL;
+ 	else
+-		return (void *)~req.offset;
++		return (void *)(unsigned long)~req.offset;
+ }
+ 
+ static void sis_sman_mm_free(void *private, void *ref)
+diff --git a/drivers/message/i2o/i2o_config.c b/drivers/message/i2o/i2o_config.c
+index c0fb77d..a1c83af 100644
+--- a/drivers/message/i2o/i2o_config.c
++++ b/drivers/message/i2o/i2o_config.c
+@@ -886,7 +886,7 @@ static int i2o_cfg_passthru(unsigned long arg)
+ 			    flag_count & 0x04000000 /*I2O_SGL_FLAGS_DIR */ ) {
+ 				// TODO 64bit fix
+ 				if (copy_from_user
+-				    (p, (void __user *)sg[i].addr_bus,
++				    (p, (void __user *)(unsigned long)sg[i].addr_bus,
+ 				     sg_size)) {
+ 					printk(KERN_DEBUG
+ 					       "%s: Could not copy SG buf %d FROM user\n",
+@@ -942,7 +942,7 @@ static int i2o_cfg_passthru(unsigned long arg)
+ 				sg_size = sg[j].flag_count & 0xffffff;
+ 				// TODO 64bit fix
+ 				if (copy_to_user
+-				    ((void __user *)sg[j].addr_bus, sg_list[j],
++				    ((void __user *)(unsigned long)sg[j].addr_bus, sg_list[j],
+ 				     sg_size)) {
+ 					printk(KERN_WARNING
+ 					       "%s: Could not copy %p TO user %x\n",
 
