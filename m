@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYE2DtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYE2D7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbYE2DtQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 23:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYE2DtF
+	id S1755369AbYE2D7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 23:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbYE2D7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 23:49:05 -0400
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1276 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1753220AbYE2DtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 23:49:04 -0400
-Subject: Re: optimizing out inline functions
-From: Joe Perches <joe@perches.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: James Kosin <jkosin@beta.intcomgrp.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <87lk1trdr8.fsf@saeurebad.de>
-References: <ayzYV-7mv-5@gated-at.bofh.it> <ayA8E-89e-29@gated-at.bofh.it>
-	 <483DC28B.4060001@support.intcomgrp.com>  <87lk1trdr8.fsf@saeurebad.de>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 20:04:22 -0700
-Message-Id: <1212030262.27103.20.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 May 2008 23:59:36 -0400
+Received: from saeurebad.de ([85.214.36.134]:39794 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753711AbYE2D7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 23:59:35 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: [BUG ?] kmalloc() with GFP_KERNEL while holding spinlock ?
+References: <483E2156.9020108@cn.fujitsu.com>
+Date: Thu, 29 May 2008 05:59:03 +0200
+In-Reply-To: <483E2156.9020108@cn.fujitsu.com> (Li Zefan's message of "Thu, 29
+	May 2008 11:21:58 +0800")
+Message-ID: <87fxs1rcag.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-29 at 05:27 +0200, Johannes Weiner wrote:
-> James Kosin <jkosin@beta.intcomgrp.com> writes:
-> >> But we do not have KCONFIG_DEBUG_SOMETHING available
-> >> so the second best is to use an empty function
-> >> to keep the typechecking in place.
-> >> IIRC gcc optimize both away.
-> > Another way would be to have:
-> > static inline void some_debug_function(var1)
-> > {
-> >    #ifdef KCONFIG_DEBUG_SOMETHING
-> >       something = var1;
-> >       printk(some debug text);
-> >    #endif
-> > }
+Hi,
 
-A potential issue is a possible unnecessary call of any
-function used as an argument to some_debug_function.
+Li Zefan <lizf@cn.fujitsu.com> writes:
 
-int unnecessary_debug_test(void)
-{
-	int foo;
-	[]
-	return foo;
-}
+> I noticed the following issue in the code:
+>
+> in drivers/ata/libata-acpi.c:
+>
+> static void ata_acpi_handle_hotplug(struct ata_port *ap, struct ata_device *dev,
+> 				    u32 event)
+> {
+> 	...
+> 	spin_lock_irqsave(ap->lock, flags);
+> 	...
+>
+> 	if (dev) {
+> 		if (dev->sdev)
+> 			kobj = &dev->sdev->sdev_gendev.kobj;
+> 	} else
+> 		kobj = &ap->dev->kobj;
+>
+> 	if (kobj) {
+> 		sprintf(event_string, "BAY_EVENT=%d", event);
+> 		kobject_uevent_env(kobj, KOBJ_CHANGE, envp);
+> 	}
+>
+> 	spin_unlock_irqrestore(ap->lock, flags);
+> 	...
+> }
+>
+> and kobject_uevent_env() calls kzalloc(..., GFP_KERNEL);
 
-static inline void some_debug_function(int bar)
-{
-}
+Fixed by commit ae6c23c4e1ec9720b99e1e6850fe47c6c7fddbb3 "Fixups to ATA
+ACPI hotplug" by Matthew Garrett.
 
-some_debug_function(unnecessary_debug_test())
-
-unnecessary_debug_test will still get called
-
-Macro wrappers/statement expressions can be used to avoid
-the function call.  see kernel.h/pr_debug for an example.
-
-#ifdef DEBUG
-/* If you are writing a driver, please use dev_dbg instead */
-#define pr_debug(fmt, arg...) \
-	printk(KERN_DEBUG fmt, ##arg)
-#else
-#define pr_debug(fmt, arg...) \
-	({ if (0) printk(KERN_DEBUG fmt, ##arg); 0; })
-#endif
-
-
+	Hannes
