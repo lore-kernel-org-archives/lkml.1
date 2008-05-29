@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbYE2AKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYE2AMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755064AbYE2AKL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 20:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYE2AJ7
+	id S1755346AbYE2AMP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 20:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYE2AMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 20:09:59 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:45334 "EHLO
-	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbYE2AJ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 20:09:59 -0400
-Date: Wed, 28 May 2008 18:11:57 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: libata - DMA problems ICH7 rev 02
-In-reply-to: <8dacd7b30805280636p34097a84t6f7e5c7ebe98747a@mail.gmail.com>
-To: Jan Niklas Hasse <jhasse@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Message-id: <483DF4CD.3020107@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.6VoLd5Q2gfHHZZfYneNkQcGjXKk@ifi.uio.no>
- <fa.kzdMLVO0bqLAbXEBqWrKyBntgxc@ifi.uio.no>
- <fa.h4D6h2c4Yz08K7snVTVtewbsziM@ifi.uio.no> <481BD00E.7050302@shaw.ca>
- <8dacd7b30805120855q406f566ma187142719bf5bd4@mail.gmail.com>
- <4828DEE1.1070905@shaw.ca>
- <8dacd7b30805280634s77492f0ag15ee65150f8bedad@mail.gmail.com>
- <8dacd7b30805280636p34097a84t6f7e5c7ebe98747a@mail.gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 28 May 2008 20:12:00 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61007 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751750AbYE2AL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 20:11:59 -0400
+Date: Thu, 29 May 2008 01:10:53 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Jan Engelhardt <jengelh@medozas.de>, Dave Jones <davej@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [X86] Fix up silly i1586 boot message.
+In-Reply-To: <483DB2D5.8050502@zytor.com>
+Message-ID: <Pine.LNX.4.55.0805290102340.29522@cliff.in.clinika.pl>
+References: <20080528165713.GA412@redhat.com>
+ <alpine.LNX.1.10.0805281943330.19264@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.55.0805281850540.29522@cliff.in.clinika.pl>
+ <alpine.LNX.1.10.0805282001180.19264@fbirervta.pbzchgretzou.qr>
+ <Pine.LNX.4.55.0805281916480.29522@cliff.in.clinika.pl> <483DB2D5.8050502@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Niklas Hasse wrote:
-> On Wed, May 28, 2008 at 3:34 PM, Jan Niklas Hasse <jhasse@gmail.com> wrote:
->>> It looks like you have the hard drive and the burner on the same IDE channel? Such problems are unavoidable in this setup since commands to one device on the channel can't execute while the other device is busy (especially for long commands like finalizing the disc). It would be better to move the drives onto separate channels.
-> 
-> As I have a notebook, I think I can't do that, can I?
+On Wed, 28 May 2008, H. Peter Anvin wrote:
 
-Likely not, no. That is pretty poor design by the manufacturer, to set 
-things up that way..
+> >  Hmm, 801586 should be fine as with Intel 80 used to stand for
+> > microprocessors and 81586 would be confusing as I think 81 was used for
+> > RAM devices (82 stood for peripherals, BTW).  My vote is for 80F86 though,
+> > with "F" standing for "fast" as in the 74 TTL series. ;)
+> > 
+> 
+> uname reports i686 on these chips.  The rest is ridiculous.
+
+ Intel started it first with picking up a ridiculous number for the family
+ID for the P4 line.  There is no technical justification for not keeping
+these numbers consecutive.  Or keeping it at 6 actually if the P4 is meant
+to be seen by software as the Pentium Pro and the rest of the P6 gang.
+
+  Maciej
