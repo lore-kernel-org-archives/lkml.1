@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYE2UQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYE2USU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbYE2UQE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 16:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYE2UPy
+	id S1757496AbYE2USU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 16:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYE2USA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 16:15:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40819 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbYE2UPx (ORCPT
+	Thu, 29 May 2008 16:18:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37493 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752766AbYE2UR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 16:15:53 -0400
-Date: Thu, 29 May 2008 09:47:45 -0700
-From: Greg KH <greg@kroah.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Theodore Tso <tytso@mit.edu>, James.Bottomley@HansenPartnership.com,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
-	kernel.
-Message-ID: <20080529164745.GA21763@kroah.com>
-References: <1211995212.3445.52.camel@localhost.localdomain> <20080528.225826.40264516.davem@davemloft.net> <1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu> <1212077700.26088.83.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212077700.26088.83.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 29 May 2008 16:17:56 -0400
+Date: Thu, 29 May 2008 13:16:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Cc: linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
+       eric.whitney@hp.com, linux-mm@kvack.org, npiggin@suse.de,
+       riel@redhat.com
+Subject: Re: [PATCH 00/25] Vm Pageout Scalability Improvements (V8) -
+ continued
+Message-Id: <20080529131624.60772eb6.akpm@linux-foundation.org>
+In-Reply-To: <20080529195030.27159.66161.sendpatchset@lts-notebook>
+References: <20080529195030.27159.66161.sendpatchset@lts-notebook>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 07:15:00PM +0300, David Woodhouse wrote:
-> On Thu, 2008-05-29 at 08:45 -0400, Theodore Tso wrote:
-> >  there is always the chance the topic will resolve itself via e-mail. 
+On Thu, 29 May 2008 15:50:30 -0400
+Lee Schermerhorn <lee.schermerhorn@hp.com> wrote:
+
 > 
-> I'm kind of hoping that this is going to be one of those topics that
-> resolves itself -- but just in case it isn't, I'd like to discuss it at
-> the kernel summit:
+> The patches to follow are a continuation of the V8 "VM pageout scalability
+> improvements" series that Rik van Riel posted to LKML on 23May08.  These
+> patches apply atop Rik's series with the following overlap:
 > 
-> I'd like to remove all firmware blobs from the kernel source tree.
+> Patches 13 through 16 replace the corresponding patches in Rik's posting.
 > 
-> With the intention of making that less contentious, I've done the
-> following: 
+> Patch 13, the noreclaim lru infrastructure, now includes Kosaki Motohiro's
+> memcontrol enhancements to track nonreclaimable pages.
 > 
-> I've added support to the firmware loader for finding firmware in a
-> special section of the static kernel, so that using request_firmware()
-> no longer forces you to use an initrd or udev. You can build _arbitrary_
-> firmware files into your kernel, if you want to. Whether you're allowed
-> to distribute the resulting vmlinux or not is still a question you ought
-> to ask your lawyer.
+> Patches 14 and 15 are largely unchanged, except for refresh.  Includes
+> some minor statistics formatting cleanup.
 > 
-> I'm working on converting drivers over to use request_firmware(), and
-> shifting their firmware blobs into .ihex files in a firmware/ directory
-> of the source tree. For each one, I'm giving the option of continuing to
-> build it in statically, using the above mechanism.
+> Patch 16 includes a fix for an potential [unobserved] race condition during
+> SHM_UNLOCK.
 > 
-> I've implemented a 'make firmware_install' Kbuild target, which takes
-> all those firmware blobs and installs them somewhere where udev can load
-> them on request.
 
-I like and agree with all of this.
+<head spins a bit>
 
-> By the time the kernel summit comes around, we should have made decent
-> progress on moving _all_ the firmware blobs to the firmware/ directory.
+> 
+> Additional patches in this series:
+> 
+> Patches 17 through 20 keep mlocked pages off the normal [in]active LRU
+> lists using the noreclaim lru infrastructure.   These patches represent
+> a fairly significant rework of an RFC patch originally posted by Nick Piggin.
+> 
+> Patches 21 and 22 are optional, but recommended, enhancements to the overall
+> noreclaim series.  
+> 
+> Patches 23 and 24 are optional enhancements useful during debug and testing.
+> 
+> Patch 25 is a rather verbose document describing the noreclaim lru
+> infrastructure and the use thereof to keep ramfs, SHM_LOCKED and mlocked
+> pages off the normal LRU lists.
+> 
+> ---
+> 
+> The entire stack, including Rik's split lru patches, are holding up very
+> well under stress loads.  E.g., ran for over 90+ hours over the weekend on
+> both x86_64 [32GB, 8core] and ia64 [32GB, 16cpu] platforms without error
+> over last weekend.  
+> 
+> I think these are ready for a spin in -mm atop Rik's patches.
 
-That's good too.
-
-> And at that point I'd like to remove them completely, to a separate git
-> tree and tarball. Those who really want to build them in to their static
-> kernel would still be able to, but it wouldn't be the default behaviour.
-
-This I disagree with.  Leaving it in a single directory makes it easier
-for some distros to patch it away to apease their feelings about the
-issue.  But for some of use, we like the firmware in our kernels, it
-makes it easier to boot for one, and we don't have to deal with
-different firmware packages.  So I say leave them in, with the option to
-get them elsewhere, like you are doing.
-
-thanks,
-
-greg k-h
+I was >this< close to getting onto Rik's patches (honest) but a few
+other people have been kicking the tyres and seem to have caused some
+punctures so I'm expecting V9?
