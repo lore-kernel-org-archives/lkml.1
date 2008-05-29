@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYE2GjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYE2GmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbYE2GjR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 02:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYE2GjG
+	id S1753291AbYE2GmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 02:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYE2GmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 02:39:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35573 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751154AbYE2GjF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 02:39:05 -0400
-Date: Wed, 28 May 2008 23:38:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: block: make blktrace use per-cpu buffers for message notes
-Message-Id: <20080528233801.e9e55eeb.akpm@linux-foundation.org>
-In-Reply-To: <20080529062214.GG25504@kernel.dk>
-References: <200805281559.m4SFx7b9022392@hera.kernel.org>
-	<20080528231351.a35001bc.akpm@linux-foundation.org>
-	<20080529062214.GG25504@kernel.dk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 02:42:06 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:6575 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751168AbYE2GmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 02:42:05 -0400
+Date: Thu, 29 May 2008 08:42:02 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
+Message-ID: <20080529064202.GI25504@kernel.dk>
+References: <20080510103719.GA4967@martell.zuzino.mipt.ru> <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk> <20080528103026.GE8255@linux.vnet.ibm.com> <20080528124423.GV25504@kernel.dk> <20080528132012.GF8255@linux.vnet.ibm.com> <20080529043852.GA15489@linux.vnet.ibm.com> <20080529062617.GH25504@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529062617.GH25504@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 08:22:15 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Wed, May 28 2008, Andrew Morton wrote:
-> > On Wed, 28 May 2008 15:59:07 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
+On Thu, May 29 2008, Jens Axboe wrote:
+> > But one additional question...
 > > 
-> > > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=64565911cdb57c2f512a9715b985b5617402cc67
-> > > Commit:     64565911cdb57c2f512a9715b985b5617402cc67
-> > > Parent:     4722dc52a891ab6cb2d637ddb87233e0ce277827
-> > > Author:     Jens Axboe <jens.axboe@oracle.com>
-> > > AuthorDate: Wed May 28 14:45:33 2008 +0200
-> > > Committer:  Jens Axboe <jens.axboe@oracle.com>
-> > > CommitDate: Wed May 28 14:49:27 2008 +0200
+> > 	static void cfq_cic_free_rcu(struct rcu_head *head)
+> > 	{
+> > 		struct cfq_io_context *cic;
 > > 
-> > please try to avoid merging unreviewed changes.
-> 
-> Just because you didn't review it doesn't mean it's unreviewed :-)
-> 
-> It's not unreviewed, it was posted on lkml and a few version were
-> bounced back and forth.
-
-OK.  The Subject: swizzling confounded me.
-
-> > >  		if (unlikely(bt))					\
-> > >  			__trace_note_message(bt, fmt, ##__VA_ARGS__);	\
-> > >  	} while (0)
-> > > -#define BLK_TN_MAX_MSG		1024
-> > > +#define BLK_TN_MAX_MSG		128
+> > 		cic = container_of(head, struct cfq_io_context, rcu_head);
 > > 
-> > It seems a bit strange to do this right when we've taken this _off_ the
-> > stack.  But I suppose nothing will break.
+> > 		kmem_cache_free(cfq_ioc_pool, cic);
+> > 		elv_ioc_count_dec(ioc_count);
+> > 
+> > 		if (ioc_gone && !elv_ioc_count_read(ioc_count))
+> > 			complete(ioc_gone);
+> > 	}
+> > 
+> > Suppose that a pair of tasks both execute the elv_ioc_count_dec()
+> > at the same time, so that all counters are now zero.  Both then
+> > find that there is still an ioc_gone, and that the count is
+> > now zero.  One of the tasks invokes complete(ioc_gone).  This
+> > awakens the corresponding cfq_exit(), which now returns, getting
+> > rid of its stack frame -- and corrupting the all_gone auto variable
+> > that ioc_gone references.
+> > 
+> > Now the second task gets a big surprise when it tries to invoke
+> > complete(ioc_gone).
+> > 
+> > Or is there something else that I am missing here?
 > 
-> It was never on the stack, it was a global static char array. We are
-> still allocating memory for this, per-cpu. So I think it still makes
-> sense to shrink the size. It's really meant for small trace messages,
-> 128 bytes is plenty. It's an in-kernel property, the userland app
-> doesn't care. So we could easily grow this in the future, should the
-> need arise.
+> No, I think that's a problem spot as well. To my knowledge, nobody has
+> ever hit that. The anticipatory scheduler has the same code.
+> 
+> What we want to avoid here is making cfq_cic_free_rcu() a lot more
+> expensive, which is why the elv_ioc_count_read() is behind that
+> ioc_gone check. I'll need to think a bit on how to handle that
+> better :-)
 
-yup.
+So how about this? Add a spinlock for checking and clearing ioc_gone
+back to NULL. It doesn't matter if we make the ioc_gone != NULL
+case a little more expensive, as it will only happen on cfq-iosched
+module unload. And it seems the clearest way of making this safe.
+The last hunk should really not be necessary, as ioc_gone wont be
+set back to NULL before wait_for_completion() is entered.
 
-It's a bit sad to stage the data in a local per-cpu buffer and then
-copy it into relay's per-cpu buffer.  I guess this is because the
-length of the output isn't known beforehand.  Could be fixed by doing
-what kvasprintf() does, but that might well be slower.
+An identical patch is needed in AS as well.
+
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index d01b411..32aa367 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -48,6 +48,7 @@ static struct kmem_cache *cfq_ioc_pool;
+ 
+ static DEFINE_PER_CPU(unsigned long, ioc_count);
+ static struct completion *ioc_gone;
++static DEFINE_SPINLOCK(ioc_gone_lock);
+ 
+ #define CFQ_PRIO_LISTS		IOPRIO_BE_NR
+ #define cfq_class_idle(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_IDLE)
+@@ -1177,8 +1178,19 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
+ 	kmem_cache_free(cfq_ioc_pool, cic);
+ 	elv_ioc_count_dec(ioc_count);
+ 
+-	if (ioc_gone && !elv_ioc_count_read(ioc_count))
+-		complete(ioc_gone);
++	if (ioc_gone) {
++		/*
++		 * CFQ scheduler is exiting, grab exit lock and check
++		 * the pending io context count. If it hits zero,
++		 * complete ioc_gone and set it back to NULL
++		 */
++		spin_lock(&ioc_gone_lock);
++		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
++			complete(ioc_gone);
++			ioc_gone = NULL;
++		}
++		spin_unlock(&ioc_gone_lock);
++	}
+ }
+ 
+ static void cfq_cic_free(struct cfq_io_context *cic)
+@@ -2317,7 +2329,7 @@ static void __exit cfq_exit(void)
+ 	 * pending RCU callbacks
+ 	 */
+ 	if (elv_ioc_count_read(ioc_count))
+-		wait_for_completion(ioc_gone);
++		wait_for_completion(&all_gone);
+ 	cfq_slab_kill();
+ }
+ 
+
+-- 
+Jens Axboe
+
