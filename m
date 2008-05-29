@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYE2HK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752760AbYE2HVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYE2HK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 03:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYE2HKp
+	id S1752760AbYE2HVJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 03:21:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbYE2HU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 03:10:45 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:56074 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754580AbYE2HKn (ORCPT
+	Thu, 29 May 2008 03:20:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53305 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750780AbYE2HU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 03:10:43 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: benh@kernel.crashing.org
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Thu, 29 May 2008 09:10:06 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-References: <1211852026.3286.36.camel@pasglop> <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org> <1211926779.3286.104.camel@pasglop>
-In-Reply-To: <1211926779.3286.104.camel@pasglop>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 29 May 2008 03:20:57 -0400
+Date: Thu, 29 May 2008 00:20:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: block: make blktrace use per-cpu buffers for message notes
+Message-Id: <20080529002016.df6cd8c8.akpm@linux-foundation.org>
+In-Reply-To: <20080529070915.GK25504@kernel.dk>
+References: <200805281559.m4SFx7b9022392@hera.kernel.org>
+	<20080528231351.a35001bc.akpm@linux-foundation.org>
+	<20080529062214.GG25504@kernel.dk>
+	<20080528233801.e9e55eeb.akpm@linux-foundation.org>
+	<20080529064520.GJ25504@kernel.dk>
+	<20080529070915.GK25504@kernel.dk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805290910.07207.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18ZB+ffE2+GuY6hAwJ+Y4xbjsvL6YP/A/ACoOm
- ByU/kElgs4Lvyrzo/pdB9SkyGPr515X0QuzCKcsH5Q3t1+9lj5
- o8sqNvedICqUdQMnzLJvQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 May 2008, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-05-27 at 14:55 -0700, Linus Torvalds wrote:
-> > 
-> > On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
-> > > 
-> > > A problem with __raw_ though is that they -also- don't do byteswap,
-> > 
-> > Well, that's why there is __readl() and __raw_readl(), no?
-> 
-> As I replied to somebody else, __readl() is news to me :-) we dont' have
-> those on powerpc.
-> 
+On Thu, 29 May 2008 09:09:15 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 
-It's not exactly a well-established interface. Only five architectures
-define these functions, and there is not a single user in the kernel
-source outside of these architecture's io.h files.
+> So I dug back into the old archives, and the patch was actually done
+> by me back in feb 2006. Not sure I particularly like it or if it
+> even works in this forward ported version, but it should get the
+> point across. blktrace is the sole user of relay_reserve(), so I
+> think it would be OK to change the interface.
+> 
+> This is clearly NOT 2.6.26 material though, but it's food for
+> thought (I hope).
 
-	Arnd <><
+hm, it's not pretty, is it.  I think I prefer the existing code unless
+there are other users of this.
