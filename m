@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYE2Rqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbYE2Rqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbYE2Rqd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 13:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYE2RqW
+	id S1758458AbYE2Rqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 13:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbYE2Rq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 13:46:22 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52743 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751968AbYE2RqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 13:46:22 -0400
-Message-ID: <483EEBE5.5030708@garzik.org>
-Date: Thu, 29 May 2008 13:46:13 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 29 May 2008 13:46:26 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59731 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754212AbYE2RqY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 13:46:24 -0400
+X-Sasl-enc: DiqKLJeJU2YVtuEWA269CviABgtbvhG2c/zDynclQHRa 1212083182
+Date: Thu, 29 May 2008 14:46:21 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: [PATCH 15/15] rfkill: document rw rfkill switches and clarify
+	input subsystem interactions (v2)
+Message-ID: <20080529174620.GD3375@khazad-dum.debian.net>
+References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <200805291919.04384.IvDoorn@gmail.com> <20080529172252.GB3375@khazad-dum.debian.net> <200805291940.09563.IvDoorn@gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: RESEND: [PATCH] libata-sff: Fix oops reported in kerneloops.org
- for pnp devices with no ctl
-References: <20080529161453.24735.805.stgit@core> <alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805291940.09563.IvDoorn@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Thu, 29 May 2008, Ivo van Doorn wrote:
+> On Thursday 29 May 2008, Henrique de Moraes Holschuh wrote:
+> > On Thu, 29 May 2008, Ivo van Doorn wrote:
+> > > On Thursday 29 May 2008, Henrique de Moraes Holschuh wrote:
+> > > > On Thu, 29 May 2008, Ivo van Doorn wrote:
+> > > > > > This version better documents *_RFKILL_ALL.  Is it good enough for an
+> > > > > > ACK for patch 14 of 15?
+> > > > > 
+> > > > > Yes, you can put my ack on patch 14.
+> > > > > Thanks for the documentation update. :)
+> > > > 
+> > > > Then, this entire batch is ready for merging.  Now, if only Len would
+> > > > come back from wherever he disappeared to, in order to merge the two
+> > > > thinkpad-acpi patches, I could send it to netdev for merge.
+> > > 
+> > > Actually,  I believe the correct merge order would through wireless-dev,
+> > > which means the patches should go to John Linville and linux-wireless in the CC.
+> > 
+> > Noted.  At merge time (which will be as soon as the thinkpad-acpi
+> > changes hit mainline), I will send them to you, John, and
+> > linux-wireless.
+> > 
+> > Unless you want me to send them all right now to linux-wireless to see
+> > if there are any comments?
 > 
-> On Thu, 29 May 2008, Alan Cox wrote:
->> (Jeff would you please take a look at this: Its #4 or #5 top OOPS on Arjan's
->>  oops tracker, and it generally causes the boot to fail. First sent 20th May)
-> 
-> Quite frankly, if I was Jeff, I'd have refused to apply this patch as "too 
-> damn ugly to live".
-> 
-> Why the *hell* doesn't it just fix "ata_sff_altstatus()" instead? Why does 
-> it introduce a ludicrously named stupid "maybe" version of it that doesn't 
-> oops?
-> 
-> In other words: in *any* case where the old "ata_sff_altstatus()" function 
-> worked correctly, the new "ata_sff_maybe_altstatus()" function does THE 
-> EXACT SAME THING. And in any case where the old "ata_sff_altstatus()" 
-> function oopsed, the new "maybe" version at least is _better_.
-> 
-> In other words: there is absolutely no excuse for keeping the old (and 
-> known-to-be-broken) "ata_sff_altstatus()" function at all. It should be 
-> removed, not left around with an alternate function that works.
+> Well why wait with merging it into wireless-dev until thinkpad-acpi is merged?
+> I don't think there are real dependencies other then the SW_RFKILL_ALL define.
+> Perhaps you could send the rfkill patches with SW_RADIO instead of SW_RFKILL_ALL
+> and make the rename after the thinkpad and rfkill series have both been merged.
+> That would probably be the fastest route for this patch series.
 
-That's my general feeling on the issue.  It was ugly and seemed to 
-needlessly avoid the existing one, which we would probably have to 
-bugfix later on...
+Yeah, but it would be bad for the documentation, and SW_RADIO was
+renamed because it was an error-inducer, so I *really* don't want to
+attract any more eyes to rfkill WITHOUT getting that error-inducing
+define renamed first.
 
+OTOH, I don't want the clashes thinkpad-acpi init changes to cause a
+mess for whomever is going to merge rfkill, as even if I submit them
+now, the rfkill changes are next- material, while the thinkpad-acpi
+changes are merge-them-ASAP material.
 
-> I also think your "ata_sff_sync()" thing is buggy. It has a "ndelay(400)" 
-> that is almost certainly buggy (it's the one that is already in 
-> ata_sff_pause()).
-> 
-> It may be that you meant to make it an "else if" case, ie if there was no 
-> IO-read, then you do a ndelay(400) as a last desperate case, but that's 
-> not how your ata_sdd_sync() is actually written.
+I will talk to Andrew Morton and see if he accepts to push the two
+thinkpad-acpi changes to Linus ASAP.  Or maybe we will luck out and Len
+will show up in 72h, I think he is bound to come back really soon now.
 
-The double-ndelay is definitely wrong, but we do need one.  Technically 
-it should -only- be a 400ns delay, but we also have a register read in 
-there to make sure any posted writes are flushed.
-
-	Jeff
-
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
