@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYE2NFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbYE2NFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbYE2NFr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbYE2NFX
+	id S1756296AbYE2NFY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbYE2NEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:05:23 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:47640 "EHLO mgw1.diku.dk"
+	Thu, 29 May 2008 09:04:55 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:51574 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755732AbYE2NFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:05:21 -0400
-Date: Thu, 29 May 2008 15:05:07 +0200 (CEST)
+	id S1755690AbYE2NEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 09:04:53 -0400
+Date: Thu, 29 May 2008 15:04:38 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
+To: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] Eliminate double kfree
-Message-ID: <Pine.LNX.4.64.0805291504400.26229@ask.diku.dk>
+Subject: [PATCH 1/2] Eliminate double kfree
+Message-ID: <Pine.LNX.4.64.0805291504030.26229@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,9 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The variable report is only non-NULL and non-freed in a small region of
-code, so it should only be freed in error handling code that comes from
-that region.
+The destination of goto error also does a kfree(g_iommus), so it is not
+correct to do one here.
 
 This was found using the following semantic match.
 (http://www.emn.fr/x-info/coccinelle/)
@@ -80,31 +79,14 @@ expression E,E1,E2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
 
-diff -u -p a/drivers/input/tablet/gtco.c b/drivers/input/tablet/gtco.c
---- a/drivers/input/tablet/gtco.c	2008-05-09 16:46:57.000000000 +0200
-+++ b/drivers/input/tablet/gtco.c	2008-05-29 14:12:31.000000000 +0200
-@@ -926,7 +926,7 @@ static int gtco_probe(struct usb_interfa
- 		err("Failed to get HID Report Descriptor of size: %d",
- 		    hid_desc->wDescriptorLength);
- 		error = -EIO;
--		goto err_free_urb;
-+		goto err_free_report;
+diff -u -p a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+--- a/drivers/pci/intel-iommu.c	2008-05-15 18:11:35.000000000 +0200
++++ b/drivers/pci/intel-iommu.c	2008-05-24 21:20:24.000000000 +0200
+@@ -1725,7 +1725,6 @@ int __init init_dmars(void)
+ 	deferred_flush = kzalloc(g_num_of_iommus *
+ 		sizeof(struct deferred_flush_tables), GFP_KERNEL);
+ 	if (!deferred_flush) {
+-		kfree(g_iommus);
+ 		ret = -ENOMEM;
+ 		goto error;
  	}
- 
- 	/* Now we parse the report */
-@@ -982,13 +982,14 @@ static int gtco_probe(struct usb_interfa
- 
- 	return 0;
- 
-+ err_free_report:
-+	kfree(report);
-  err_free_urb:
- 	usb_free_urb(gtco->urbinfo);
-  err_free_buf:
- 	usb_buffer_free(gtco->usbdev, REPORT_MAX_SIZE,
- 			gtco->buffer, gtco->buf_dma);
-  err_free_devs:
--	kfree(report);
- 	input_free_device(input_dev);
- 	kfree(gtco);
- 	return error;
