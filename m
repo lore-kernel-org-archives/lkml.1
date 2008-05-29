@@ -1,155 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752013AbYE2MOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbYE2MRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752013AbYE2MOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 08:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYE2MN5
+	id S1754212AbYE2MRS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 08:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYE2MRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 08:13:57 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27166 "EHLO kernel.dk"
+	Thu, 29 May 2008 08:17:08 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:27178 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbYE2MN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 08:13:56 -0400
-Date: Thu, 29 May 2008 14:13:53 +0200
+	id S1750768AbYE2MRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 08:17:07 -0400
+Date: Thu, 29 May 2008 14:17:05 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
-Message-ID: <20080529121352.GC25504@kernel.dk>
-References: <20080528124423.GV25504@kernel.dk> <20080528132012.GF8255@linux.vnet.ibm.com> <20080529043852.GA15489@linux.vnet.ibm.com> <20080529062617.GH25504@kernel.dk> <20080529064202.GI25504@kernel.dk> <20080529091706.GB31816@linux.vnet.ibm.com> <20080529101354.GU25504@kernel.dk> <20080529112553.GE31816@linux.vnet.ibm.com> <20080529114431.GZ25504@kernel.dk> <20080529121141.GH31816@linux.vnet.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/10] x86: convert to generic helpers for IPI function  calls
+Message-ID: <20080529121704.GD25504@kernel.dk>
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-3-git-send-email-jens.axboe@oracle.com> <483E9D9B.9030202@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080529121141.GH31816@linux.vnet.ibm.com>
+In-Reply-To: <483E9D9B.9030202@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29 2008, Paul E. McKenney wrote:
-> On Thu, May 29, 2008 at 01:44:31PM +0200, Jens Axboe wrote:
-> > On Thu, May 29 2008, Paul E. McKenney wrote:
-> > > On Thu, May 29, 2008 at 12:13:54PM +0200, Jens Axboe wrote:
-> > > > On Thu, May 29 2008, Paul E. McKenney wrote:
-> > > > > On Thu, May 29, 2008 at 08:42:02AM +0200, Jens Axboe wrote:
-> > > > > > On Thu, May 29 2008, Jens Axboe wrote:
-> > > > > > > > But one additional question...
-> > > > > > > > 
-> > > > > > > > 	static void cfq_cic_free_rcu(struct rcu_head *head)
-> > > > > > > > 	{
-> > > > > > > > 		struct cfq_io_context *cic;
-> > > > > > > > 
-> > > > > > > > 		cic = container_of(head, struct cfq_io_context, rcu_head);
-> > > > > > > > 
-> > > > > > > > 		kmem_cache_free(cfq_ioc_pool, cic);
-> > > > > > > > 		elv_ioc_count_dec(ioc_count);
-> > > > > > > > 
-> > > > > > > > 		if (ioc_gone && !elv_ioc_count_read(ioc_count))
-> > > > > > > > 			complete(ioc_gone);
-> > > > > > > > 	}
-> > > > > > > > 
-> > > > > > > > Suppose that a pair of tasks both execute the elv_ioc_count_dec()
-> > > > > > > > at the same time, so that all counters are now zero.  Both then
-> > > > > > > > find that there is still an ioc_gone, and that the count is
-> > > > > > > > now zero.  One of the tasks invokes complete(ioc_gone).  This
-> > > > > > > > awakens the corresponding cfq_exit(), which now returns, getting
-> > > > > > > > rid of its stack frame -- and corrupting the all_gone auto variable
-> > > > > > > > that ioc_gone references.
-> > > > > > > > 
-> > > > > > > > Now the second task gets a big surprise when it tries to invoke
-> > > > > > > > complete(ioc_gone).
-> > > > > > > > 
-> > > > > > > > Or is there something else that I am missing here?
-> > > > > > > 
-> > > > > > > No, I think that's a problem spot as well. To my knowledge, nobody has
-> > > > > > > ever hit that. The anticipatory scheduler has the same code.
-> > > > > > > 
-> > > > > > > What we want to avoid here is making cfq_cic_free_rcu() a lot more
-> > > > > > > expensive, which is why the elv_ioc_count_read() is behind that
-> > > > > > > ioc_gone check. I'll need to think a bit on how to handle that
-> > > > > > > better :-)
-> > > > > > 
-> > > > > > So how about this? Add a spinlock for checking and clearing ioc_gone
-> > > > > > back to NULL. It doesn't matter if we make the ioc_gone != NULL
-> > > > > > case a little more expensive, as it will only happen on cfq-iosched
-> > > > > > module unload. And it seems the clearest way of making this safe.
-> > > > > > The last hunk should really not be necessary, as ioc_gone wont be
-> > > > > > set back to NULL before wait_for_completion() is entered.
-> > > > > 
-> > > > > Looks better!  I do have one scenario that seems troublesome, but
-> > > > > it should be easy to fix, see below.  (Assuming it really is a
-> > > > > problem, that is...)
-> > > > > 
-> > > > > 						Thanx, Paul
-> > > > > 
-> > > > > > An identical patch is needed in AS as well.
-> > > > > > 
-> > > > > > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > > > > > index d01b411..32aa367 100644
-> > > > > > --- a/block/cfq-iosched.c
-> > > > > > +++ b/block/cfq-iosched.c
-> > > > > > @@ -48,6 +48,7 @@ static struct kmem_cache *cfq_ioc_pool;
-> > > > > > 
-> > > > > >  static DEFINE_PER_CPU(unsigned long, ioc_count);
-> > > > > >  static struct completion *ioc_gone;
-> > > > > > +static DEFINE_SPINLOCK(ioc_gone_lock);
-> > > > > > 
-> > > > > >  #define CFQ_PRIO_LISTS		IOPRIO_BE_NR
-> > > > > >  #define cfq_class_idle(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_IDLE)
-> > > > > > @@ -1177,8 +1178,19 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
-> > > > > >  	kmem_cache_free(cfq_ioc_pool, cic);
-> > > > > >  	elv_ioc_count_dec(ioc_count);
-> > > > > > 
-> > > > > > -	if (ioc_gone && !elv_ioc_count_read(ioc_count))
-> > > > > > -		complete(ioc_gone);
-> > > > > > +	if (ioc_gone) {
-> > > > > > +		/*
-> > > > > > +		 * CFQ scheduler is exiting, grab exit lock and check
-> > > > > > +		 * the pending io context count. If it hits zero,
-> > > > > > +		 * complete ioc_gone and set it back to NULL
-> > > > > > +		 */
-> > > > > 
-> > > > > Suppose that at this point some other CPU does the last complete().
-> > > > > They have set ioc_gone to NULL, so everything is fine.  But suppose
-> > > > > that in the meantime, some other CPU sets up a cfq and then starts
-> > > > > tearing it down.  Then ioc_gone would be non-NULL, and we would cause
-> > > > > this new teardown to end prematurely.
-> > > > > 
-> > > > > If this is a real problem, one way to get around it is to have a
-> > > > > generation number.  We capture this before doing the elv_ioc_count_dec()
-> > > > > (alas, with a memory barrier between the capture and the elv_ioc_count_dec()),
-> > > > > and then check it under the lock.  If it has changed, we know someone else
-> > > > > has already done the awakening for us.  Increment the generation number
-> > > > > in the same place that ioc_gone is set to NULL.
-> > > > > 
-> > > > > Seem reasonable?
-> > > > 
-> > > > This isn't a problem, since cfq_exit() cannot be called before
-> > > > all block queues in the system have been detached from CFQ.
-> > > 
-> > > And once all block queues have been detached, no future block queues
-> > > can ever be attached again?  Or perhaps a better way of putting it,
-> > > once CFQ has been shut down, can it be restarted without rebooting
-> > > the system?  If it can be restarted without reboot, then I do not
-> > > yet see how the scenario above is avoided.
+On Thu, May 29 2008, Jeremy Fitzhardinge wrote:
+> Jens Axboe wrote:
+> >@@ -122,6 +109,17 @@ static int xen_smp_intr_init(unsigned int cpu)
+> > 		goto fail;
+> > 	per_cpu(debug_irq, cpu) = rc;
 > > 
-> > Certainly, you can modprobe cfq-iosched and switch any device to cfq
-> > again. But I really don't see the problem in this case. Once CFQ
-> > has exited, all tasks are detached from CFQ. They have to be, or
-> > we could not unload the module.
+> >+	callfunc_name = kasprintf(GFP_KERNEL, "callfuncsingle%d", 
+> >cpu);
+> >+	rc = bind_ipi_to_irqhandler(XEN_CALL_FUNCTION_SINGLE_VECTOR,
+> >+				    cpu,
+> >+				    
+> >xen_call_function_single_interrupt,
+> >+				    
+> >IRQF_DISABLED|IRQF_PERCPU|IRQF_NOBALANCING,
+> >+				    callfunc_name,
+> >+				    NULL);
+> >+	if (rc < 0)
+> >+		goto fail;
+> >+	per_cpu(callfuncsingle_irq, cpu) = rc;
+> >  
 > 
-> Ah, OK -- so we cannot reload the module until the earlier
-> instantiation has been unloaded, which cannot happen until everyone
-> has returned from any code in the CFQ module.  If it is linked
-> directly into the kernel, it can only be "unloaded" by bringing the
-> system down.
+> Tiny nit: could you shift this up below the other callfunc 
+> registration, so they appear next to each other in /proc?
 
-Right!
+Certainly, will do.
 
-> Sorry for my confusion!
+> >+void xen_smp_send_call_function_ipi(cpumask_t mask)
+> >+{
+> >+	int cpu;
+> >+
+> >+	xen_send_IPI_mask(mask, XEN_CALL_FUNCTION_VECTOR);
+> >+
+> >+	/* Make sure other vcpus get a chance to run if they need to. 
+> >*/
+> >+	for_each_cpu_mask(cpu, mask) {
+> >+		if (xen_vcpu_stolen(cpu)) {
+> >+			HYPERVISOR_sched_op(SCHEDOP_yield, 0);
+> >+			break;
+> >+		}
+> >+	}
+> >  
 > 
-> This approach looks good to me.
+> I think you should just drop this loop for now; I want to do some 
+> measurements before putting it in.
 
-Pheew good, I was starting to have a brain melt down as well :-)
+If you don't mind, I'd like to keep it as-is. Then the patch should
+not have a functional change (there, at least), which I think is
+important. I can add a later patch removing this stolen bit, it would
+be even better if you send me such a patch :-)
 
 -- 
 Jens Axboe
