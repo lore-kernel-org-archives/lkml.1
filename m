@@ -1,88 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYE2Cxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbYE2DDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbYE2Cxb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 22:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYE2CxW
+	id S1754993AbYE2DDY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 23:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYE2DDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 22:53:22 -0400
-Received: from hs-out-0708.google.com ([64.233.178.251]:54256 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750926AbYE2CxV (ORCPT
+	Wed, 28 May 2008 23:03:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751119AbYE2DDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 22:53:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WdxUlfX8T66EFeITOOxqBiwyC+TMqXbYWeAC2Z/YzpJEDhjt5BoOOjBntvmO9eDv7lR2J17AuT3O6wge7VvvxzPRQcFvJZ9Uj9CUTeKU/bTODoq2iQnHE2csC4glWpjF3tmT5qVCfL5YcS+SNJxkGLX+bGCoLMIv8Ngf2Ck8npE=
-Message-ID: <514e099a0805281953y53f1e1f5wf900c1d9249a7e56@mail.gmail.com>
-Date: Wed, 28 May 2008 19:53:19 -0700
-From: "S K" <nospamnoham@gmail.com>
-To: "Dave Jones" <davej@redhat.com>, "Jiri Slaby" <jirislaby@gmail.com>,
-       "S K" <nospamnoham@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Problem activating multiple cores ONLY if I press any key before kernel is loaded
-In-Reply-To: <20080528183510.GA10543@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 May 2008 23:03:10 -0400
+Date: Wed, 28 May 2008 20:02:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Holger Macht <hmacht@suse.de>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-acpi@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] libata: Handle bay devices in dock stations
+Message-Id: <20080528200227.80f708cd.akpm@linux-foundation.org>
+In-Reply-To: <20080528143857.GB5585@homac.suse.de>
+References: <20080528143857.GB5585@homac.suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <514e099a0805252039r68f88ac1wbdd1b4de77a9af94@mail.gmail.com>
-	 <483A6F94.5070901@gmail.com> <20080528183510.GA10543@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ah! I see you are from Redhat. So who, if any, would be likely to fix this?
+On Wed, 28 May 2008 16:38:57 +0200 Holger Macht <hmacht@suse.de> wrote:
 
-This might not be the right list to ask this question, but since I
-already started a thread -- how do I make sure the same config options
-as the Fedora 9 kernel are turned on when I make a vanilla kernel
-build? Well other than checking each one individually in menuconfig.
+> * Differentiate between bay devices in dock stations and others:
+> 
+>  - When an ACPI_NOTIFY_EJECT_REQUEST appears, just signal uevent to
+>    userspace (that is when the optional eject button on a bay device is
+>    pressed/pulled) giving the possibility to unmount file systems and to
+>    clean up. Also, only send uevent in case we get an EJECT_REQUEST
+>    without doing anything else. In other cases, you'll get an add/remove
+>    event because libata attaches/detaches the device.
+> 
+>  - In case of a dock event, which in turn signals an
+>    ACPI_NOTIFY_EJECT_REQUEST, immediately detach the device, because it
+>    may already have been gone
+> 
+> * In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
+>   the device has been plugged or unplugged. If plugged, hotplug it, if
+>   unplugged, just signal event to userspace
+>   (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
+> 
+> * Call ACPI _EJ0 for detached devices
+> 
+> ...
+> 
+> +static void ata_acpi_eject_device(acpi_handle handle)
+> +{
+> +	struct acpi_object_list arg_list;
+> +	union acpi_object arg;
+> +
+> +	arg_list.count = 1;
+> +	arg_list.pointer = &arg;
+> +	arg.type = ACPI_TYPE_INTEGER;
+> +	arg.integer.value = 1;
 
-Thanks,
-SK
+This might look nicer (and safer) if it used the
 
-On Wed, May 28, 2008 at 11:35 AM, Dave Jones <davej@redhat.com> wrote:
-> On Mon, May 26, 2008 at 10:06:44AM +0200, Jiri Slaby wrote:
->  > On 05/26/2008 05:39 AM, S K wrote:
->  > > and Fedora 9 with kernel 2.6.25.3-18.fc9.i686.
->  > [...]
->  > > I see this in dmesg:
->  > > CPU 1 irqstacks, hard=c07ba000 soft=c079a000
->  > > Not responding.
->  > > Inquiring remote APIC #1...
->  > > ... APIC #1 ID: failed
->  > > ... APIC #1 VERSION: failed
->  > > ... APIC #1 SPIV: failed
->  > > CPU #1 not responding - cannot use it.
->  > > Booting processor 1/2 ip 4000
->  > > Not responding.
->  > > Inquiring remote APIC #2...
->  > > ... APIC #2 ID: failed
->  > > ... APIC #2 VERSION: failed
->  > > ... APIC #2 SPIV: failed
->  > > CPU #2 not responding - cannot use it.
->  > > Booting processor 1/3 ip 4000
->  > > Not responding.
->  > > Inquiring remote APIC #3...
->  > > ... APIC #3 ID: failed
->  > > ... APIC #3 VERSION: failed
->  > > ... APIC #3 SPIV: failed
->  > > CPU #3 not responding - cannot use it.
->  > > Total of 1 processors activated (5015.39 BogoMIPS).
->  > > ENABLING IO-APIC IRQs
->  > > ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
->  > > Brought up 1 CPUs
->  >
->  > Does it work with vanilla? If yes, contact your kernel provider (redhat bugzilla).
->
-> Incredibly high chance that the answer is yes.
-> I don't recall any patches that could affect this, and in honesty filing
-> this at rh bugzilla is going to make me scratch my head, and then
-> ask people here like tglx & ingo to take a look, so other than for tracking
-> purposes, it's not likely to improve chances of it getting fixed.
->
->        Dave
->
-> --
-> http://www.codemonkey.org.uk
->
+	union acpi_object arg = {
+		.foo = bar,
+		...
+	};
+
+form.  However this can cause gcc to emit poor code.
+
+> +	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_EJ0",
+> +					      &arg_list, NULL)))
+> +		printk(KERN_ERR "Failed to evaluate _EJ0!\n");
+> +}
+
+It would be better if the printk were to self-identify where it is
+coming from.  If your kernel just blurts "Failed to evaluate _EJ0!"
+it's a bit of a head-scratcher.
+
+"libata-acpi: failed to evaluate _EJ0", perhaps?
+
+
+> +static void ata_acpi_detach_device(struct ata_port *ap, struct ata_device *dev)
+> +{
+> +	if (dev)
+> +		dev->flags |= ATA_DFLAG_DETACH;
+> +	else {
+> +		struct ata_link *tlink;
+> +		struct ata_device *tdev;
+> +
+> +		ata_port_for_each_link(tlink, ap)
+> +			ata_link_for_each_dev(tdev, tlink)
+> +				tdev->flags |= ATA_DFLAG_DETACH;
+> +	}
+> +
+> +	ata_port_freeze(ap);
+> +	ata_port_schedule_eh(ap);
+> +}
+
+I guess the significance of `dev==0' is known to those who are steeped
+in ata_acpi_handle_hotplug() knowledge, but it's pretty inscrutable to
+the occasional visitor.  Some comments would help.
+
+
