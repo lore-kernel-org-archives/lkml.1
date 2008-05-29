@@ -1,94 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbYE2JO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYE2JSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbYE2JO5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 05:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYE2JOt
+	id S1755326AbYE2JSi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 05:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYE2JSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 05:14:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:32052 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbYE2JOs (ORCPT
+	Thu, 29 May 2008 05:18:30 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:50232 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbYE2JS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 05:14:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=jI7UtPTBGclK7j6URU2TzfH8MsvVw/zi2sEAiF0XupwH4gcp58FkjJ6N6Nie7eat19KDlQ2rnuaALu3lXq7L4SEvlqK3AS0WNsrZWqZg0lM4mTnUPVk1CCUwmHfxkDhB7meOW/4/5EDyvpfSkvL+x8L+S8o+tK9omCq9EyY6X74=
-Message-ID: <483E73EF.6010901@googlemail.com>
-Date: Thu, 29 May 2008 11:14:23 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Thu, 29 May 2008 05:18:29 -0400
+Date: Thu, 29 May 2008 02:17:06 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, torvalds@osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc4: RIP __call_for_each_cic+0x20/0x50
+Message-ID: <20080529091706.GB31816@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080527052740.GB28301@martell.zuzino.mipt.ru> <20080527133510.GV7712@kernel.dk> <20080527151809.GA14296@linux.vnet.ibm.com> <20080528100721.GQ25504@kernel.dk> <20080528103026.GE8255@linux.vnet.ibm.com> <20080528124423.GV25504@kernel.dk> <20080528132012.GF8255@linux.vnet.ibm.com> <20080529043852.GA15489@linux.vnet.ibm.com> <20080529062617.GH25504@kernel.dk> <20080529064202.GI25504@kernel.dk>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: alejandro.riveira@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: two different oopses with 2.6.26-rc4
-References: <1211968234.9895.7.camel@Varda> <20080529012652.6b9027a3.akpm@linux-foundation.org>
-In-Reply-To: <20080529012652.6b9027a3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529064202.GI25504@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-
-> On Wed, 28 May 2008 11:50:34 +0200 Alejandro Riveira Fern__ndez  <alejandro.riveira@gmail.com> wrote:
+On Thu, May 29, 2008 at 08:42:02AM +0200, Jens Axboe wrote:
+> On Thu, May 29 2008, Jens Axboe wrote:
+> > > But one additional question...
+> > > 
+> > > 	static void cfq_cic_free_rcu(struct rcu_head *head)
+> > > 	{
+> > > 		struct cfq_io_context *cic;
+> > > 
+> > > 		cic = container_of(head, struct cfq_io_context, rcu_head);
+> > > 
+> > > 		kmem_cache_free(cfq_ioc_pool, cic);
+> > > 		elv_ioc_count_dec(ioc_count);
+> > > 
+> > > 		if (ioc_gone && !elv_ioc_count_read(ioc_count))
+> > > 			complete(ioc_gone);
+> > > 	}
+> > > 
+> > > Suppose that a pair of tasks both execute the elv_ioc_count_dec()
+> > > at the same time, so that all counters are now zero.  Both then
+> > > find that there is still an ioc_gone, and that the count is
+> > > now zero.  One of the tasks invokes complete(ioc_gone).  This
+> > > awakens the corresponding cfq_exit(), which now returns, getting
+> > > rid of its stack frame -- and corrupting the all_gone auto variable
+> > > that ioc_gone references.
+> > > 
+> > > Now the second task gets a big surprise when it tries to invoke
+> > > complete(ioc_gone).
+> > > 
+> > > Or is there something else that I am missing here?
+> > 
+> > No, I think that's a problem spot as well. To my knowledge, nobody has
+> > ever hit that. The anticipatory scheduler has the same code.
+> > 
+> > What we want to avoid here is making cfq_cic_free_rcu() a lot more
+> > expensive, which is why the elv_ioc_count_read() is behind that
+> > ioc_gone check. I'll need to think a bit on how to handle that
+> > better :-)
 > 
->> I sent this to the list with other mail address and it didn't reach it
->> afaics. apologies if someone sees this twice
->>
->> i cced wireless becouse of the first oops
->>
->> First boot into 2.6.26-rc4 
->>
->>   Compiled and booting into 2.6.26-rc4
->>
->>  1) With splash quiet on grub line it doesn't boot (or i didin't wait long
->>     enough)
->>  2) without quiet and splash I get into VT X filas becouse i use the evil
->>     nvidia driver that's expected. But ubuntu failsafe mode (xserver with vesa
->>     in low res) doesn't show up either *regression*
->>  3) i get an oops with network manager
->>  4) if i try to run some sudo command it gets stuck (Crtl +C doesnt' help)
->>     "ip route" gets stuck too. User programs i tried wrok fine (only ls and
->>     htop). Network realted problem?
->>
->>  5) printk times on dmesg go crazy
->>
->> But the second time a boot into it i got a working system (i even compiled the
->> *famous* nvidia driver) with only a bluetooth related oops ...
->>
->> Both dmesg follow. This is on a hardy 8.04 64 bits system. If more info is needed
->> just ask
->>
->> No working first one
->>
->> ...
->>
->> [    0.000000] Using ACPI (MADT) for SMP configuration information
->> [    0.000000] Allocating PCI resources starting at c4000000 (gap: c0000000:3f380000)
->> [    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
->> [    0.000000] PERCPU: Allocating 33860 bytes of per cpu data
->> [    0.000000] NR_CPUS: 2, nr_cpu_ids: 2
->> [4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 774451
->> [4294014.506571] Kernel command line: BOOT_IMAGE=(hd0,2)/vmlinuz-2.6.26-rc4 root=UUID=ee465ea1-394d-4dd2-a5f9-a35567176c40 ro
->> [4294014.506571] Initializing CPU#0
+> So how about this? Add a spinlock for checking and clearing ioc_gone
+> back to NULL. It doesn't matter if we make the ioc_gone != NULL
+> case a little more expensive, as it will only happen on cfq-iosched
+> module unload. And it seems the clearest way of making this safe.
+> The last hunk should really not be necessary, as ioc_gone wont be
+> set back to NULL before wait_for_completion() is entered.
+
+Looks better!  I do have one scenario that seems troublesome, but
+it should be easy to fix, see below.  (Assuming it really is a
+problem, that is...)
+
+						Thanx, Paul
+
+> An identical patch is needed in AS as well.
 > 
-> whee, time warp.
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index d01b411..32aa367 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -48,6 +48,7 @@ static struct kmem_cache *cfq_ioc_pool;
 > 
-> Ingo, Thomas: what's the story here?  There've been zillions of reports
-> and I thought we'd already fixed it?
+>  static DEFINE_PER_CPU(unsigned long, ioc_count);
+>  static struct completion *ioc_gone;
+> +static DEFINE_SPINLOCK(ioc_gone_lock);
+> 
+>  #define CFQ_PRIO_LISTS		IOPRIO_BE_NR
+>  #define cfq_class_idle(cfqq)	((cfqq)->ioprio_class == IOPRIO_CLASS_IDLE)
+> @@ -1177,8 +1178,19 @@ static void cfq_cic_free_rcu(struct rcu_head *head)
+>  	kmem_cache_free(cfq_ioc_pool, cic);
+>  	elv_ioc_count_dec(ioc_count);
+> 
+> -	if (ioc_gone && !elv_ioc_count_read(ioc_count))
+> -		complete(ioc_gone);
+> +	if (ioc_gone) {
+> +		/*
+> +		 * CFQ scheduler is exiting, grab exit lock and check
+> +		 * the pending io context count. If it hits zero,
+> +		 * complete ioc_gone and set it back to NULL
+> +		 */
 
+Suppose that at this point some other CPU does the last complete().
+They have set ioc_gone to NULL, so everything is fine.  But suppose
+that in the meantime, some other CPU sets up a cfq and then starts
+tearing it down.  Then ioc_gone would be non-NULL, and we would cause
+this new teardown to end prematurely.
 
-There is an patch[1] for this issue but I get rejects against current git.
+If this is a real problem, one way to get around it is to have a
+generation number.  We capture this before doing the elv_ioc_count_dec()
+(alas, with a memory barrier between the capture and the elv_ioc_count_dec()),
+and then check it under the lock.  If it has changed, we know someone else
+has already done the awakening for us.  Increment the generation number
+in the same place that ioc_gone is set to NULL.
 
-Peter Zijlstra asked to test his v2.6.26-rc2-group-load-balance branch[2] which fixes the problem at least for me.
+Seem reasonable?
 
-[1] http://bugzilla.kernel.org/show_bug.cgi?id=10648#c3
-[2] http://lkml.org/lkml/2008/5/20/683
-
-Regards,
-
-Gabriel
+> +		spin_lock(&ioc_gone_lock);
+> +		if (ioc_gone && !elv_ioc_count_read(ioc_count)) {
+> +			complete(ioc_gone);
+> +			ioc_gone = NULL;
+> +		}
+> +		spin_unlock(&ioc_gone_lock);
+> +	}
+>  }
+> 
+>  static void cfq_cic_free(struct cfq_io_context *cic)
+> @@ -2317,7 +2329,7 @@ static void __exit cfq_exit(void)
+>  	 * pending RCU callbacks
+>  	 */
+>  	if (elv_ioc_count_read(ioc_count))
+> -		wait_for_completion(ioc_gone);
+> +		wait_for_completion(&all_gone);
+>  	cfq_slab_kill();
+>  }
+> 
+> 
+> -- 
+> Jens Axboe
+> 
