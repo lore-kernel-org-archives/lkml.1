@@ -1,97 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbYE2Upb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbYE2Upv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbYE2Upb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 16:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYE2UpW
+	id S1758634AbYE2Upv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 16:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757408AbYE2Upk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 16:45:22 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:16116 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065AbYE2UpV (ORCPT
+	Thu, 29 May 2008 16:45:40 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:9584 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757405AbYE2Upj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 16:45:21 -0400
+	Thu, 29 May 2008 16:45:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=McGW+gdZ52FGhexQ+L75ersZxXUWG/am3De2IEKuNFcQvFDZVIY94sm7wjT0WqMWotY37UZCz6Kwi0As7KMX8g/DeG0aq1xh4qnE/iB98JmxIt4u2f4A/+GZD/X9h5o7w/wLJ01UovGRAuidEixq36gT6iB+upON9GqpSuqYtMM=
-Message-ID: <9d95d80e0805291345t6123fe83sde5f1e1a85f9ec43@mail.gmail.com>
-Date: Thu, 29 May 2008 16:45:20 -0400
-From: "Carlo Nyto" <carlonyto@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Did the kernel cause this weird bash coredump?
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=OPan/3J3UlOHkB5+ec1FZHcMh/g78rpO+AMQ3X+DrvafmwiOMjFxvlpa+iXvds0YDj7IqGR3yOAHsbafOP8AHyraMlqZijq9HZvmLnrtQqjabCSJnHkLzuutBEUDJ528KsysvntndgSTbSoFXf7mN4UwpQqCXr0IMr94+4hoaEI=
+Message-ID: <12c511ca0805291345u4885bd1ycc83bbaa75acfc47@mail.gmail.com>
+Date: Thu, 29 May 2008 13:45:37 -0700
+From: "Tony Luck" <tony.luck@intel.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Remove BKL from FAT/VFAT/MSDOS (v1) (was Re: Fw: Regression caused by bf726e "semaphore: fix,")
+Cc: "OGAWA Hirofumi" <hirofumi@mail.parknet.co.jp>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       corbet@lwn.net
+In-Reply-To: <alpine.LFD.1.10.0805161812170.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20080510121020.f33c83f7.akpm@linux-foundation.org>
+	 <alpine.LFD.1.10.0805120723440.3188@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0805121659470.3514@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0805121324410.3019@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0805161025510.3255@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0805160906580.2941@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0805160950180.2941@woody.linux-foundation.org>
+	 <alpine.LFD.1.10.0805161514570.3020@woody.linux-foundation.org>
+	 <87abip7p4l.fsf@duaron.myhome.or.jp>
+	 <alpine.LFD.1.10.0805161812170.3020@woody.linux-foundation.org>
+X-Google-Sender-Auth: 56061c03200273f2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got a weird coredump from bash on a system running 2.6.25.3. Stack
-trace is below.
+I'm seeing a process hang running a kernel built from the linux-next tree
+with tag next-20080529 The problem commit looks to be:
+35e447fc2fa408df8af2c8735f83a90cafe651ff
 
-Someone was tail -f'ing a log file that was being written to at a very
-high rate, and hit ctrl-c many times until the flood stopped (not tens
-of thousands of times however).
+"Replace BKL with superblock lock in fat/msdos/vfat"
 
-This resulted in their login bash shell coredumping, when the stack
-filled up due to some kind of signal (or handler) misbehavior.
-Obviously this could be a bug in bash. But out of hundreds of
-identical 64-bit CentOS 4.4 systems running Redhat's 2.6.9-67 kernel,
-none have ever exhibited this behavior.
+This causes a lockup when overwriting an existing file
+on a vfat filesystem.  E.g. for me (where there already
+exists a vmlinux.gz file in the target directory):
 
-Is it plausible that this could be caused by a kernel bug, or a change
-in signal behavior that could be surprising to bash or other
-applications?
+# cp --force vmlinux.gz /boot/efi/efi/redhat/
 
-# rpm -q bash
-bash-3.0-19.3.x86_64
-# uname -r
-2.6.25.3
+Stack trace looks like this:
+Call Trace:
+ [<a000000100712550>] schedule+0x11f0/0x1380
+                                sp=e0000001bd55fc30 bsp=e0000001bd5510b8
+ [<a000000100714cb0>] __mutex_lock_slowpath+0x2d0/0x520
+                                sp=e0000001bd55fc50 bsp=e0000001bd551060
+ [<a000000100714f20>] mutex_lock+0x20/0x40
+                                sp=e0000001bd55fc80 bsp=e0000001bd551040
+ [<a0000001001367d0>] lock_super+0x30/0x60
+                                sp=e0000001bd55fc80 bsp=e0000001bd551020
+ [<a00000010028ca30>] fat_truncate+0xb0/0x640^M
+                                sp=e0000001bd55fc80 bsp=e0000001bd550fa0
+ [<a0000001000fd930>] vmtruncate+0x1f0/0x260
+                                sp=e0000001bd55fce0 bsp=e0000001bd550f70
+ [<a000000100164250>] inode_setattr+0x50/0x320
+                                sp=e0000001bd55fcf0 bsp=e0000001bd550f38
+ [<a00000010028d520>] fat_setattr+0x4c0/0x580
+                                sp=e0000001bd55fcf0 bsp=e0000001bd550ed0
+ [<a0000001001648e0>] notify_change+0x3c0/0x620
+                                sp=e0000001bd55fd10 bsp=e0000001bd550e70
+ [<a00000010012fe00>] do_truncate+0xc0/0x120
+                                sp=e0000001bd55fd30 bsp=e0000001bd550e30
+ [<a0000001001494c0>] may_open+0x340/0x3a0
+                                sp=e0000001bd55fd80 bsp=e0000001bd550de0
+ [<a000000100149c60>] do_filp_open+0x740/0x11c0
+                                sp=e0000001bd55fd80 bsp=e0000001bd550d18
+ [<a000000100132470>] do_sys_open+0x90/0x1c0
+                                sp=e0000001bd55fe30 bsp=e0000001bd550cc8
+ [<a0000001001325f0>] sys_open+0x50/0x80
+                                sp=e0000001bd55fe30 bsp=e0000001bd550c70
 
-Core was generated by `-bash'.
-Program terminated with signal 11, Segmentation fault.
-[...]
-#0  0x0000003fd4a76200 in mbrtowc
-    () from /lib64/tls/libc.so.6
-(gdb) bt
-#0  0x0000003fd4a76200 in mbrtowc () from /lib64/tls/libc.so.6
-#1  0x0000000000473888 in rl_redisplay ()
-#2  0x0000000000471968 in rl_clear_message ()
-#3  0x0000000000474505 in rl_free_line_state ()
-#4  0x00000000004745c1 in rl_free_line_state ()
-#5  <signal handler called>
-#6  0x0000003fd4a2e743 in sigprocmask () from /lib64/tls/libc.so.6
-#7  0x0000000000474582 in rl_free_line_state ()
-#8  <signal handler called>
-#9  0x0000003fd4a2e743 in sigprocmask () from /lib64/tls/libc.so.6
-#10 0x0000000000474582 in rl_free_line_state ()
-#11 <signal handler called>
-#12 0x0000003fd4a2e743 in sigprocmask () from /lib64/tls/libc.so.6
-#13 0x0000000000474582 in rl_free_line_state ()
-[...repeat many times...]
-#33417 0x0000003fd4a2e743 in sigprocmask () from /lib64/tls/libc.so.6
-#33418 0x0000000000474582 in rl_free_line_state ()
-#33419 <signal handler called>
-#33420 0x0000003fd4a2e743 in sigprocmask () from /lib64/tls/libc.so.6
-#33421 0x0000000000474582 in rl_free_line_state ()
-#33422 <signal handler called>
-#33423 0x0000003fd4a2e5ed in sigaction () from /lib64/tls/libc.so.6
-#33424 0x000000000047417d in _rl_current_display_line ()
-#33425 0x000000000047421c in _rl_current_display_line ()
-#33426 0x00000000004742dc in rl_set_signals ()
-#33427 0x0000000000466e75 in readline ()
-#33428 0x000000000041a3ea in yy_input_name ()
-#33429 0x000000000041c1c5 in execute_prompt_command ()
-#33430 0x000000000041d291 in execute_prompt_command ()
-#33431 0x000000000041fd0d in yyparse ()
-#33432 0x0000000000419e42 in parse_command ()
-#33433 0x0000000000419ee8 in read_command ()
-#33434 0x000000000041a05d in reader_loop ()
-#33435 0x00000000004192a0 in main ()
+Looking at fat_setattr() I see it calls lock_super() at the start and releases
+it at the end.  In between is the call to inode_setattr() ... which calls
+down through inode_setattr() and vmtruncate() to fat_truncate() ...
+which calls lock_super() again. Deadlock.
 
-
-Also seen in syslog:
-kernel: bash[9443]: segfault at 7ffff65ddff8 ip 3fd4a76200 sp
-7ffff65ddfe0 error 6 in libc-2.3.4.so[3fd4a00000+12b000]
-kernel: bash used greatest stack depth: 3096 bytes left
+-Tony
