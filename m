@@ -1,47 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752493AbYE2MtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbYE2MvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752493AbYE2MtJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 08:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYE2Mss
+	id S1755162AbYE2MvR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 08:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYE2MvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 08:48:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:57204 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752823AbYE2Msq (ORCPT
+	Thu, 29 May 2008 08:51:01 -0400
+Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:28720 "EHLO
+	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751751AbYE2Mu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 08:48:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=GErHze+g2SPRRgszbIo+CziEZNWTQQlwjZjmdlJ5zzmNWG9psRzzukFPCAdoHbGLnZgvyUPVdbBQakb2mQZfMGueGIj3vKJ9rIuvvw3mYX4QtXL8yVIRAh69lDMxLsvcmD3yVlED7F2UM4VGeRJKvfPsaPO4Y5TQXPmcBv54lU8=
-Date: Thu, 29 May 2008 09:51:51 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/2] on_each_cpu(): kill unused 'retry' parameter
-Message-ID: <20080529125151.GA25124@Pilar.ictp.trieste.it>
-References: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com> <1212051661-12733-3-git-send-email-jens.axboe@oracle.com>
+	Thu, 29 May 2008 08:50:59 -0400
+X-Greylist: delayed 585 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 May 2008 08:50:59 EDT
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:Received:Message-ID:Date:From:Organization:
+   User-Agent:MIME-Version:To:Subject:References:In-Reply-To:
+   Content-Type:Content-Transfer-Encoding;
+  b=CCWyYNDXtCsa2OBvhaIXI2v874m3DfuI2JfeEM9VN/HHpZo9dk8F8ToD
+   /Q4sMkjiq09YIE71yF0HT1vTVfrZudayPi1ddDtS3FIWRE0E78IdvLQXV
+   roeCkX5HPkhJcn7;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.27,561,1204498800"; 
+   d="scan'208";a="13891525"
+X-IronPort-AV: E=Sophos;i="4.27,560,1204498800"; 
+   d="scan'208";a="31058875"
+Message-ID: <483EA46C.7040508@fujitsu-siemens.com>
+Date: Thu, 29 May 2008 14:41:16 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212051661-12733-3-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] [resend] drivers/net: remove network drivers' last few
+ uses  of IRQF_SAMPLE_RANDOM
+References: <ayJOq-3EJ-15@gated-at.bofh.it>
+In-Reply-To: <ayJOq-3EJ-15@gated-at.bofh.it>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Chris Peterson wrote:
 
-Just a naive comment/question:
+> Remove network drivers' last few uses of theoretically-exploitable network 
+> entropy. Only 12 net drivers are affected. Headless boxes should use a 
+> more secure source of entropy, such as the userspace daemons rngd, clrngd, 
+> egd, audio_entropyd, and/or video_entroyd.
 
-> -	if (on_each_cpu(ipi_imb, NULL, 1, 1))
-> +	if (on_each_cpu(ipi_imb, NULL, 1))
+I don't think that consensus has been reached on this subject yet. 
+Re-reading this thread, it's obvious that there are two camps with 
+conflicting opinions all the way through the community. Very little has 
+changed since the debate in 2006.
 
-A few weeks ago I though about removing the second argument
-from on_each_cpu, which is NULL more or less 70% of the time.
+Those who are in favor of this patch argue that random data from 
+/dev/random must be absolutely, truly cryptographically reliable. That's 
+fine as a concept, but it is not even remotely realistic in many 
+real-world systems.
 
-Do you think it is possible?
-Have you already thought about it? 
+Think about disk randomness in times where more and more disks don't 
+have mechanical heads. Think about caching RAID controllers, solid state 
+disks, virtual disks, even iSCSI volumes! In general, modern "disks" are 
+no more reliable as entropy source than network interfaces.
+
+Either the low-level driver (knowing the actual hardware) must decide 
+whether or not a device is a suitable source of randomness, or better 
+even, the admin must judge that from his knowledge of the actual situation.
+
+To make /dev/random truly solid, all devices that currently contribute 
+entropy must be re-scrutinized. Whether or not they really generate 
+entropy should be made configurable for administrators, this is a matter 
+of policy, not an a-priory property of a device class. It should be an 
+individual device property - some SCSI disks in a system may be 
+considered reliable and others not, and the same would hold for network 
+devices.
+
+In the meantime, while /dev/random isn't what it's supposed to be, I 
+pledge to keep IRQF_SAMPLE_RANDOM for network devices, or at least, make 
+at a configurable option for headless systems.
+
+egd, etc. are not an adequate replacement for network-generated 
+randomness. They either use /dev/hw_random, which is only available on a 
+few machines, or system statistics which can hardly count as "random 
+noise". On the contrary, the statistics are 100% deterministic if the 
+initial system state is known. The only way such data can become 
+non-deterministic is through user or network input. User input is not 
+available in the scenario we're talking about, and well - network input 
+should't count, should it? It's not a proof if such data passes the FIPE 
+or diehard tests. These tests are statistical and would be passed by 
+totally deterministic data such as the sequence of digits of Pi.
+
+Whatever comes out of this discussion, it's most important that some 
+sort of consensus is reached that user space can rely on. The current 
+situation is just inconsistent and confusing. I that sense, Chris' patch 
+is good because it at least removes the inconsistency between network 
+drivers. But I'd only find it acceptable as the first part of a patch 
+series that tackles the complete entropy-generation infrastructure.
+
+Regards
+Martin
 
