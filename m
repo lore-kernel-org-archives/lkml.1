@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbYE2VeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYE2Vhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759217AbYE2VeT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbYE2VeF
+	id S1758753AbYE2Vhw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYE2Vhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:34:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49614 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754611AbYE2VeE (ORCPT
+	Thu, 29 May 2008 17:37:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33224 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753998AbYE2Vhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:34:04 -0400
-Date: Thu, 29 May 2008 22:19:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: RESEND: [PATCH] libata-sff: Fix oops reported in kerneloops.org
- for pnp devices with no ctl
-Message-ID: <20080529221922.48c9fcb8@core>
-In-Reply-To: <alpine.LFD.1.10.0805291403030.3873@woody.linux-foundation.org>
-References: <20080529161453.24735.805.stgit@core>
-	<alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
-	<483EEBE5.5030708@garzik.org>
-	<20080529191920.12609c32@core>
-	<alpine.LFD.1.10.0805291403030.3873@woody.linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 17:37:42 -0400
+Date: Thu, 29 May 2008 14:37:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Tony Luck <tony.luck@intel.com>
+cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       corbet@lwn.net
+Subject: Re: Remove BKL from FAT/VFAT/MSDOS (v1) (was Re: Fw: Regression
+ caused by bf726e "semaphore: fix,")
+In-Reply-To: <12c511ca0805291345u4885bd1ycc83bbaa75acfc47@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0805291413490.3873@woody.linux-foundation.org>
+References: <20080510121020.f33c83f7.akpm@linux-foundation.org>  <alpine.LFD.1.10.0805120723440.3188@woody.linux-foundation.org>  <alpine.LFD.1.10.0805121659470.3514@apollo.tec.linutronix.de>  <alpine.LFD.1.10.0805121324410.3019@woody.linux-foundation.org>
+  <alpine.LFD.1.10.0805161025510.3255@apollo.tec.linutronix.de>  <alpine.LFD.1.10.0805160906580.2941@woody.linux-foundation.org>  <alpine.LFD.1.10.0805160950180.2941@woody.linux-foundation.org>  <alpine.LFD.1.10.0805161514570.3020@woody.linux-foundation.org>
+  <87abip7p4l.fsf@duaron.myhome.or.jp>  <alpine.LFD.1.10.0805161812170.3020@woody.linux-foundation.org> <12c511ca0805291345u4885bd1ycc83bbaa75acfc47@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 	void ata_sff_pause(struct ata_port *ap)
-> 	{
-> 		ata_sff_altstatus();
-> 		ndelay(400);
-> 	}
+
+
+On Thu, 29 May 2008, Tony Luck wrote:
 > 
-> and again, if there is no altstatus register, that's a low-level driver 
-> issue.
+> This causes a lockup when overwriting an existing file
+> on a vfat filesystem.  E.g. for me (where there already
+> exists a vmlinux.gz file in the target directory):
 
-This takes away the ability to shoot yourself directly in the foot and
-replaces it with the ability to shoot yourself in the foot in a more
-abstract way. The dma_pause case still needs to check as that is the one
-where you can make an actual mess but yes it certainly cleans up the
-others.
+Thanks, that was something I didn't test. I just tested various simple 
+file create/delete/read/write.
 
-(Next rev brewing ;))
+> Looking at fat_setattr() I see it calls lock_super() at the start and releases
+> it at the end.  In between is the call to inode_setattr() ... which calls
+> down through inode_setattr() and vmtruncate() to fat_truncate() ...
+> which calls lock_super() again. Deadlock.
+
+Yup.
+
+And as far as I can tell there is absolutely nothing in fat_setattr() that 
+we actually want to protect - it calls things like fat_cont_expand(), but 
+that just calls down to the generic VFS layer that uses the pagecache 
+functions, and those need to handle the locking correctly for other 
+reasons (totally unrelated to setattr - they get called without locking 
+for regular writes, after all).
+
+So it looks like the correct fix is to just remove the lock_super() in 
+fat_setattr() entirely (along with the "sb" variable that is then no 
+longer used).
+
+It *also* turns out that we should remove the lock_super() from 
+fat_truncate: all the truncate paths already hold the inode mutex from the 
+VFS layer, so the inode data structures themselves would be serialized for 
+other reasons. And it only protects the call to "fat_free()", which in 
+turn calls the FAT cluster routines ("fatent") that already are protected 
+by the fatent spinlock.
+
+More importantly, if it's a filesystem marked DIRSYNC, it will call 
+"fat_sync_inode()", which takes the superblock lock (and needs it, because 
+it's called frm the VFS layer too) and would deadlock there.
+
+So the end result of that is all the "lock_kernel()" calls in 
+fs/fat/file.c should actually just go away - not be replaced by 
+lock_super() at alL!
+
+Jonathan, do you want an updated replacement patch, or an incremental one, 
+or will you just do that trivial fix yourself?
+
+			Linus
