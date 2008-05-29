@@ -1,58 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbYE2V3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759519AbYE2Va7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760261AbYE2V3n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYE2V3c
+	id S1759519AbYE2Va7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbYE2Vaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:29:32 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:56803 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753998AbYE2V3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:29:31 -0400
-Date: Thu, 29 May 2008 14:29:24 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mike Frysinger <vapier.adi@gmail.com>
-cc: David Howells <dhowells@redhat.com>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, mpm@selenic.com,
-       lethal@linux-sh.org, linux-kernel@vger.kernel.org,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-In-Reply-To: <8bd0f97a0805291351t43ea6d2eue1cdde531aa2fc2c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0805291428240.7562@schroedinger.engr.sgi.com>
-References: <2874.1211980355@redhat.com>  <Pine.LNX.4.64.0805221907250.4056@sbz-30.cs.Helsinki.FI>
-  <24762.1211983758@redhat.com>  <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com>
-  <7613.1211996335@redhat.com>  <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com>
-  <29553.1212066208@redhat.com>  <8bd0f97a0805291325w7d435e89h4de614547fb1bc7f@mail.gmail.com>
-  <Pine.LNX.4.64.0805291329270.7207@schroedinger.engr.sgi.com>
- <8bd0f97a0805291351t43ea6d2eue1cdde531aa2fc2c@mail.gmail.com>
+	Thu, 29 May 2008 17:30:52 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:57861 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756087AbYE2Vav (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 17:30:51 -0400
+Message-ID: <483F207D.4010908@nortel.com>
+Date: Thu, 29 May 2008 15:30:37 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: vatsa@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       pj@sgi.com, Balbir Singh <balbir@in.ibm.com>,
+       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
+Subject: Re: fair group scheduler not so fair?
+References: <4834B75A.40900@nortel.com> <20080527171528.GD30285@linux.vnet.ibm.com> <483C4F5A.2010104@nortel.com> <20080528163318.GG30285@linux.vnet.ibm.com> <483DA5E7.5050600@nortel.com> <20080529164607.GC12836@linux.vnet.ibm.com>
+In-Reply-To: <20080529164607.GC12836@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 May 2008 21:30:45.0322 (UTC) FILETIME=[4105D2A0:01C8C1D3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Mike Frysinger wrote:
+Srivatsa Vaddagiri wrote:
 
-> > You should not have to do this. This is the default alignment that also
-> > SLOB needs to follow. We need to align structures correctly for access to
-> > long long's.
+> In summary, can you do this before running your tests:
 > 
-> are you saying that slob is broken ?  i see in mm/slob.c:
-> #ifndef ARCH_KMALLOC_MINALIGN
-> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long)
-> #endif
-> -mike
+> 1. Apply updated patch below on top of 2.6.26-rc3 + Peter's patches
+> (http://programming.kicks-ass.net/kernel-patches/sched-smp-group-fixes/)
 
-It should be long long instead.
+I updated with the old set of patches you sent me, plus your patch.
 
-SLUB:
+> 2. Setup test env as below:
 
-#ifndef ARCH_KMALLOC_MINALIGN
-#define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
-#endif
+Done.
 
-SLAB:
+Overall the group scheduler results look better, but I'm seeing an odd 
+scenario within a single group where sometimes I get a 67/67/66 
+breakdown but sometimes it gives 100/50/50.
 
-#define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
- 
+Also, although the long-term results are good, the shorter-term fairness 
+isn't great.  Is there a tuneable that would allow for a tradeoff 
+between performance and fairness?  I have people that are looking for 
+within 4% fairness over a 1sec interval.
+
+
+Initially I tried a simple setup with three hogs all in the default 
+"sys" group.  Over multiple retries using 10-sec intervals, sometimes it 
+gave roughly 67% for each task, other times it settled into a 100/50/50 
+split that remained stable over time.
+
+3 tasks in sys
+  2471 cfriesen  20   0  3800  392  336 R 99.9  0.0   0:29.97 cat
+  2470 cfriesen  20   0  3800  392  336 R 50.3  0.0   0:17.83 cat
+  2469 cfriesen  20   0  3800  392  336 R 49.6  0.0   0:17.96 cat
+
+retry
+  2475 cfriesen  20   0  3800  392  336 R 68.3  0.0   0:28.46 cat
+  2476 cfriesen  20   0  3800  392  336 R 67.3  0.0   0:28.24 cat
+  2474 cfriesen  20   0  3800  392  336 R 64.3  0.0   0:28.73 cat
+
+  2476 cfriesen  20   0  3800  392  336 R 67.1  0.0   0:41.79 cat
+  2474 cfriesen  20   0  3800  392  336 R 66.6  0.0   0:41.96 cat
+  2475 cfriesen  20   0  3800  392  336 R 66.1  0.0   0:41.67 cat
+
+retry
+  2490 cfriesen  20   0  3800  392  336 R 99.7  0.0   0:22.23 cat
+  2489 cfriesen  20   0  3800  392  336 R 49.9  0.0   0:21.02 cat
+  2491 cfriesen  20   0  3800  392  336 R 49.9  0.0   0:13.94 cat
+
+
+With three groups, one task in each, I tried both 10 and 60 second 
+intervals.  The longer interval looked better but was still up to 0.8% off:
+10-sec
+  2490 cfriesen  20   0  3800  392  336 R 68.9  0.0   1:35.13 cat
+  2491 cfriesen  20   0  3800  392  336 R 65.8  0.0   1:04.65 cat
+  2489 cfriesen  20   0  3800  392  336 R 64.5  0.0   1:26.48 cat
+
+60-sec
+  2490 cfriesen  20   0  3800  392  336 R 67.5  0.0   3:19.85 cat
+  2491 cfriesen  20   0  3800  392  336 R 66.3  0.0   2:48.93 cat
+  2489 cfriesen  20   0  3800  392  336 R 66.2  0.0   3:10.86 cat
+
+
+Finally, a more complicated scenario.  three tasks in A, two in B, and 
+one in C.  The 60-sec trial was up to 0.8 off, while a 3-second trial 
+(just for fun) was 8.5% off.
+
+60-sec
+2491 cfriesen  20   0  3800  392  336 R 65.9  0.0   5:06.69 cat
+  2499 cfriesen  20   0  3800  392  336 R 33.6  0.0   0:55.35 cat
+  2490 cfriesen  20   0  3800  392  336 R 33.5  0.0   4:47.94 cat
+  2497 cfriesen  20   0  3800  392  336 R 22.6  0.0   0:38.76 cat
+  2489 cfriesen  20   0  3800  392  336 R 22.2  0.0   4:28.03 cat
+  2498 cfriesen  20   0  3800  392  336 R 22.2  0.0   0:35.13 cat
+
+3-sec
+2491 cfriesen  20   0  3800  392  336 R 58.2  0.0  13:29.60 cat
+  2490 cfriesen  20   0  3800  392  336 R 34.8  0.0   9:07.73 cat
+  2499 cfriesen  20   0  3800  392  336 R 31.0  0.0   5:15.69 cat
+  2497 cfriesen  20   0  3800  392  336 R 29.4  0.0   3:37.25 cat
+  2489 cfriesen  20   0  3800  392  336 R 23.3  0.0   7:26.25 cat
+  2498 cfriesen  20   0  3800  392  336 R 23.0  0.0   3:33.24 cat
+
+
+Chris
