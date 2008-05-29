@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbYE2Vjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYE2VlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758828AbYE2Vjd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYE2Vj0
+	id S1759338AbYE2VlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYE2VlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:39:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59112
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752511AbYE2VjZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:39:25 -0400
-Date: Thu, 29 May 2008 14:39:21 -0700 (PDT)
-Message-Id: <20080529.143921.34376298.davem@davemloft.net>
-To: tytso@mit.edu
-Cc: benh@kernel.crashing.org, James.Bottomley@HansenPartnership.com,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080529211404.GH8065@mit.edu>
-References: <20080529124548.GC8065@mit.edu>
-	<20080529.135431.235149338.davem@davemloft.net>
-	<20080529211404.GH8065@mit.edu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 29 May 2008 17:41:10 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33591 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbYE2VlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 17:41:09 -0400
+Subject: Re: MMIO and gcc re-ordering issue
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Jes Sorensen <jes@sgi.com>
+Cc: Roland Dreier <rdreier@cisco.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <yq0iqwxrwuh.fsf@jaguar.mkp.net>
+References: <1211852026.3286.36.camel@pasglop>
+	 <20080526.184047.88207142.davem@davemloft.net>
+	 <1211854540.3286.42.camel@pasglop>
+	 <20080526.192812.184590464.davem@davemloft.net>
+	 <20080526204233.75b71bb8@infradead.org> <1211872130.3286.64.camel@pasglop>
+	 <adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>
+	 <adaiqwzsa83.fsf@cisco.com>  <yq0iqwxrwuh.fsf@jaguar.mkp.net>
+Content-Type: text/plain
+Date: Fri, 30 May 2008 07:40:23 +1000
+Message-Id: <1212097223.8888.55.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Theodore Tso <tytso@mit.edu>
-Date: Thu, 29 May 2008 17:14:04 -0400
-
-> On Thu, May 29, 2008 at 01:54:31PM -0700, David Miller wrote:
-> > Yes, process is important, but I'd say it deserved 1/3 of the summit
-> > time, but not one minute more.
+On Thu, 2008-05-29 at 10:47 -0400, Jes Sorensen wrote:
 > 
-> We were about 50-50 last time, roughly.  So let's see if there is
-> consensus to dial it back this year, based on topics that people
-> suggest.
+> The only way to guarantee ordering in the above setup, is to either
+> make writel() fully ordered or adding the mmiowb()'s inbetween the two
+> writel's. On Altix you have to go and read from the PCI brige to
+> ensure all writes to it have been flushed, which is also what mmiowb()
+> is doing. If writel() was to guarantee this ordering, it would make
+> every writel() call extremely expensive :-(
 
-Today at LinuxTAG, Thomas Gleixner and I tossed around the idea
-that (assuming a 3 day event) we do tech stuff on day 1, process
-stuff on day 2, and back to tech stuff on day 3.
+Interesting. I've always been taught by ia64 people that mmiowb() was
+intended to be used solely between writel() and spin_unlock().
 
-The idea is that you hash out the initial impressions of your
-ideas on day 1, your mind works on the problem in the background
-on day 2, and they everyone has the answers on day 3 :-)
+I think in the above case, you really should make writel() ordered.
+Anything else is asking for trouble, for the exact same reasons that I
+made it fully ordered on powerpc at least vs. previous stores. I only
+kept it relaxed vs. subsequent cacheable stores (ie, spin_unlock), for
+which I use the trick mentioned before.
 
-Another idea we discussed briefly was some kind of organized run
-over the bugzilla entries.  And just to make it interesting we could
-award some silly prize to whoever fixed the most interesting or
-amusing bug during the bug-run, as voted by the attendees.
+Yes, this has some cost (can be fairly significant on powerpc too) but
+I think it's a very basic assumption from drivers that consecutive
+writel's, especially issued by the same CPU, will get to the device
+in order.
+
+If this is a performance problem, then provide relaxed variants and
+use them in selected drivers.
+
+Cheers,
+Ben.
+
+
