@@ -1,146 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757465AbYE2N4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbYE2OB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757465AbYE2N4H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbYE2NvW
+	id S1756683AbYE2OB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 10:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYE2OBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:51:22 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46162 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757110AbYE2NvK (ORCPT
+	Thu, 29 May 2008 10:01:19 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:6982 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbYE2OBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:51:10 -0400
-Message-Id: <20080529135012.283939708@szeredi.hu>
-References: <20080529134903.615127628@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Thu, 29 May 2008 15:49:14 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
-       casey@schaufler-ca.com, agruen@suse.de, jjohansen@suse.de,
-       penguin-kernel@I-love.SAKURA.ne.jp, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: [patch 11/15] security: pass path to inode_listxattr
-Content-Disposition: inline; filename=security_listxattr_path.patch
+	Thu, 29 May 2008 10:01:17 -0400
+Subject: [PATCH] Optimize page_remove_rmap for anon pages
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 29 May 2008 15:56:32 +0200
+Message-Id: <1212069392.16984.25.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Greetings,
+with a recent performance analysis we discovered something interesting
+in regard to the physical dirty bits found on s390. The page_remove_rmap
+function stands out when areas of anonymous memory gets unmapped. The
+reason is the transfer of the dirty bit from the page storage key to the
+struct page when the last mapper of a page is removed. For anonymous
+pages that cease to exist this is superfluous. Without the storage key
+operations process termination is noticable faster, e.g. for a gcc test
+case we got a speedup of 2%.
+To get this done page_remove_rmap needs to know if the page dirty bit
+can be ignored. The page_test_dirty / page_clear_dirty call can only be
+avoided if page_remove_rmap is called from zap_pte_range or do_wp_page.
+If it is called from any other place - in particular try_to_unmap_one -
+the page dirty bit may not be ignored.
+The patch below introduces a new function to do that, in lack of a
+better name I called it page_zap_rmap. Comments ?
 
-In the inode_listxattr() security operation and related functions pass
-the path (vfsmount + dentry) instead of the dentry.  AppArmor will need
-this.
+-- 
+blue skies,
+  Martin.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+"Reality continues to ruin my life." - Calvin.
+
+--- 
+Subject: [PATCH] Optimize page_remove_rmap for anon pages
+
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+For anonymous pages the check for the physical dirty bit in page_remove_rmap
+is unnecessary if page_remove_rmap is called from zap_pte_range or do_wp_page.
+The instruction that are used to check and reset the dirty bit are expensive.
+Removing the check noticably speeds up process exit. The micro benchmark which
+repeatedly executes an empty shell script gets about 4% faster.
+
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- fs/xattr.c               |    2 +-
- include/linux/security.h |    8 ++++----
- security/dummy.c         |    2 +-
- security/security.c      |    6 +++---
- security/selinux/hooks.c |    4 ++--
- 5 files changed, 11 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/fs/xattr.c
-===================================================================
---- linux-2.6.orig/fs/xattr.c	2008-05-29 12:20:57.000000000 +0200
-+++ linux-2.6/fs/xattr.c	2008-05-29 12:20:58.000000000 +0200
-@@ -189,7 +189,7 @@ path_listxattr(struct path *path, char *
- 	struct dentry *d = path->dentry;
- 	ssize_t error;
- 
--	error = security_inode_listxattr(d);
-+	error = security_inode_listxattr(path);
- 	if (error)
- 		return error;
- 	error = -EOPNOTSUPP;
-Index: linux-2.6/include/linux/security.h
-===================================================================
---- linux-2.6.orig/include/linux/security.h	2008-05-29 12:20:57.000000000 +0200
-+++ linux-2.6/include/linux/security.h	2008-05-29 12:20:58.000000000 +0200
-@@ -439,7 +439,7 @@ static inline void security_free_mnt_opt
-  *	Return 0 if permission is granted.
-  * @inode_listxattr:
-  *	Check permission before obtaining the list of extended attribute
-- *	names for @dentry.
-+ *	names for @path.
-  *	Return 0 if permission is granted.
-  * @inode_removexattr:
-  *	Check permission before removing the extended attribute
-@@ -1376,7 +1376,7 @@ struct security_operations {
- 	void (*inode_post_setxattr) (struct dentry *dentry, const char *name,
- 				     const void *value, size_t size, int flags);
- 	int (*inode_getxattr) (struct path *path, const char *name);
--	int (*inode_listxattr) (struct dentry *dentry);
-+	int (*inode_listxattr) (struct path *path);
- 	int (*inode_removexattr) (struct dentry *dentry, const char *name);
- 	int (*inode_need_killpriv) (struct dentry *dentry);
- 	int (*inode_killpriv) (struct dentry *dentry);
-@@ -1648,7 +1648,7 @@ int security_inode_setxattr(struct dentr
- void security_inode_post_setxattr(struct dentry *dentry, const char *name,
- 				  const void *value, size_t size, int flags);
- int security_inode_getxattr(struct path *path, const char *name);
--int security_inode_listxattr(struct dentry *dentry);
-+int security_inode_listxattr(struct path *path);
- int security_inode_removexattr(struct dentry *dentry, const char *name);
- int security_inode_need_killpriv(struct dentry *dentry);
- int security_inode_killpriv(struct dentry *dentry);
-@@ -2063,7 +2063,7 @@ static inline int security_inode_getxatt
- 	return 0;
- }
- 
--static inline int security_inode_listxattr(struct dentry *dentry)
-+static inline int security_inode_listxattr(struct path *path)
- {
- 	return 0;
- }
-Index: linux-2.6/security/dummy.c
-===================================================================
---- linux-2.6.orig/security/dummy.c	2008-05-29 12:20:57.000000000 +0200
-+++ linux-2.6/security/dummy.c	2008-05-29 12:20:58.000000000 +0200
-@@ -384,7 +384,7 @@ static int dummy_inode_getxattr(struct p
- 	return 0;
- }
- 
--static int dummy_inode_listxattr (struct dentry *dentry)
-+static int dummy_inode_listxattr(struct path *path)
- {
- 	return 0;
- }
-Index: linux-2.6/security/security.c
-===================================================================
---- linux-2.6.orig/security/security.c	2008-05-29 12:20:57.000000000 +0200
-+++ linux-2.6/security/security.c	2008-05-29 12:20:58.000000000 +0200
-@@ -516,11 +516,11 @@ int security_inode_getxattr(struct path 
- 	return security_ops->inode_getxattr(path, name);
- }
- 
--int security_inode_listxattr(struct dentry *dentry)
-+int security_inode_listxattr(struct path *path)
- {
--	if (unlikely(IS_PRIVATE(dentry->d_inode)))
-+	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_listxattr(dentry);
-+	return security_ops->inode_listxattr(path);
- }
- 
- int security_inode_removexattr(struct dentry *dentry, const char *name)
-Index: linux-2.6/security/selinux/hooks.c
-===================================================================
---- linux-2.6.orig/security/selinux/hooks.c	2008-05-29 12:20:57.000000000 +0200
-+++ linux-2.6/security/selinux/hooks.c	2008-05-29 12:20:58.000000000 +0200
-@@ -2702,9 +2702,9 @@ static int selinux_inode_getxattr(struct
- 	return dentry_has_perm(current, NULL, path->dentry, FILE__GETATTR);
- }
- 
--static int selinux_inode_listxattr(struct dentry *dentry)
-+static int selinux_inode_listxattr(struct path *path)
- {
--	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
-+	return dentry_has_perm(current, NULL, path->dentry, FILE__GETATTR);
- }
- 
- static int selinux_inode_removexattr(struct dentry *dentry, const char *name)
+ include/linux/rmap.h |    5 +++
+ mm/memory.c          |    9 +++---
+ mm/rmap.c            |   73 ++++++++++++++++++++++++++++++++++++++++-----------
+ 3 files changed, 68 insertions(+), 19 deletions(-)
 
---
+diff -urpN linux-2.6/include/linux/rmap.h linux-2.6-patched/include/linux/rmap.h
+--- linux-2.6/include/linux/rmap.h	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6-patched/include/linux/rmap.h	2008-05-29 14:17:06.000000000 +0200
+@@ -74,6 +74,11 @@ void page_add_anon_rmap(struct page *, s
+ void page_add_new_anon_rmap(struct page *, struct vm_area_struct *, unsigned long);
+ void page_add_file_rmap(struct page *);
+ void page_remove_rmap(struct page *, struct vm_area_struct *);
++#ifdef __HAVE_ARCH_PAGE_TEST_DIRTY
++void page_zap_rmap(struct page *, struct vm_area_struct *);
++#else
++#define page_zap_rmap page_remove_rmap
++#endif
+ 
+ #ifdef CONFIG_DEBUG_VM
+ void page_dup_rmap(struct page *page, struct vm_area_struct *vma, unsigned long address);
+diff -urpN linux-2.6/mm/memory.c linux-2.6-patched/mm/memory.c
+--- linux-2.6/mm/memory.c	2008-05-29 14:16:48.000000000 +0200
++++ linux-2.6-patched/mm/memory.c	2008-05-29 14:17:06.000000000 +0200
+@@ -731,16 +731,17 @@ static unsigned long zap_pte_range(struc
+ 						addr) != page->index)
+ 				set_pte_at(mm, addr, pte,
+ 					   pgoff_to_pte(page->index));
+-			if (PageAnon(page))
++			if (PageAnon(page)) {
+ 				anon_rss--;
+-			else {
++				page_zap_rmap(page, vma);
++			} else {
+ 				if (pte_dirty(ptent))
+ 					set_page_dirty(page);
+ 				if (pte_young(ptent))
+ 					SetPageReferenced(page);
+ 				file_rss--;
++				page_remove_rmap(page, vma);
+ 			}
+-			page_remove_rmap(page, vma);
+ 			tlb_remove_page(tlb, page);
+ 			continue;
+ 		}
+@@ -1757,7 +1758,7 @@ gotten:
+ 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+ 	if (likely(pte_same(*page_table, orig_pte))) {
+ 		if (old_page) {
+-			page_remove_rmap(old_page, vma);
++			page_zap_rmap(old_page, vma);
+ 			if (!PageAnon(old_page)) {
+ 				dec_mm_counter(mm, file_rss);
+ 				inc_mm_counter(mm, anon_rss);
+diff -urpN linux-2.6/mm/rmap.c linux-2.6-patched/mm/rmap.c
+--- linux-2.6/mm/rmap.c	2008-05-29 14:16:48.000000000 +0200
++++ linux-2.6-patched/mm/rmap.c	2008-05-29 14:17:06.000000000 +0200
+@@ -645,6 +645,33 @@ void page_dup_rmap(struct page *page, st
+ #endif
+ 
+ /**
++ * page_check_mapcount - check for negative number of page mappers
++ * @page: page to check mapping count
++ * @vma: the vm area in which the mapping is removed
++ */
++static void page_check_mapcount(struct page *page, struct vm_area_struct *vma)
++{
++	if (likely(page_mapcount(page) >= 0))
++		return;
++	printk (KERN_EMERG "Eeek! page_mapcount(page) went negative! (%d)\n",
++		page_mapcount(page));
++	printk (KERN_EMERG "  page pfn = %lx\n", page_to_pfn(page));
++	printk (KERN_EMERG "  page->flags = %lx\n", page->flags);
++	printk (KERN_EMERG "  page->count = %x\n", page_count(page));
++	printk (KERN_EMERG "  page->mapping = %p\n", page->mapping);
++	print_symbol (KERN_EMERG "  vma->vm_ops = %s\n",
++		      (unsigned long)vma->vm_ops);
++	if (vma->vm_ops) {
++		print_symbol (KERN_EMERG "  vma->vm_ops->fault = %s\n",
++			      (unsigned long)vma->vm_ops->fault);
++	}
++	if (vma->vm_file && vma->vm_file->f_op)
++		print_symbol (KERN_EMERG "  vma->vm_file->f_op->mmap = %s\n",
++			      (unsigned long)vma->vm_file->f_op->mmap);
++	BUG();
++}
++
++/**
+  * page_remove_rmap - take down pte mapping from a page
+  * @page: page to remove mapping from
+  * @vma: the vm area in which the mapping is removed
+@@ -654,21 +681,7 @@ void page_dup_rmap(struct page *page, st
+ void page_remove_rmap(struct page *page, struct vm_area_struct *vma)
+ {
+ 	if (atomic_add_negative(-1, &page->_mapcount)) {
+-		if (unlikely(page_mapcount(page) < 0)) {
+-			printk (KERN_EMERG "Eeek! page_mapcount(page) went negative! (%d)\n", page_mapcount(page));
+-			printk (KERN_EMERG "  page pfn = %lx\n", page_to_pfn(page));
+-			printk (KERN_EMERG "  page->flags = %lx\n", page->flags);
+-			printk (KERN_EMERG "  page->count = %x\n", page_count(page));
+-			printk (KERN_EMERG "  page->mapping = %p\n", page->mapping);
+-			print_symbol (KERN_EMERG "  vma->vm_ops = %s\n", (unsigned long)vma->vm_ops);
+-			if (vma->vm_ops) {
+-				print_symbol (KERN_EMERG "  vma->vm_ops->fault = %s\n", (unsigned long)vma->vm_ops->fault);
+-			}
+-			if (vma->vm_file && vma->vm_file->f_op)
+-				print_symbol (KERN_EMERG "  vma->vm_file->f_op->mmap = %s\n", (unsigned long)vma->vm_file->f_op->mmap);
+-			BUG();
+-		}
+-
++		page_check_mapcount(page, vma);
+ 		/*
+ 		 * It would be tidy to reset the PageAnon mapping here,
+ 		 * but that might overwrite a racing page_add_anon_rmap
+@@ -689,6 +702,36 @@ void page_remove_rmap(struct page *page,
+ 	}
+ }
+ 
++#ifdef __HAVE_ARCH_PAGE_TEST_DIRTY
++/**
++ * page_zap_rmap - take down pte mapping from a page without dirty bit check
++ * @page: page to remove mapping from
++ * @vma: the vm area in which the mapping is removed
++ *
++ * The caller needs to hold the pte lock. For s390 page_zap_rmap differs
++ * from page_remove_rmap, it will not check the physical page dirty bit.
++ */
++void page_zap_rmap(struct page *page, struct vm_area_struct *vma)
++{
++	if (atomic_add_negative(-1, &page->_mapcount)) {
++		page_check_mapcount(page, vma);
++		/*
++		 * It would be tidy to reset the PageAnon mapping here,
++		 * but that might overwrite a racing page_add_anon_rmap
++		 * which increments mapcount after us but sets mapping
++		 * before us: so leave the reset to free_hot_cold_page,
++		 * and remember that it's only reliable while mapped.
++		 * Leaving it set also helps swapoff to reinstate ptes
++		 * faster for those pages still in swapcache.
++		 */
++		mem_cgroup_uncharge_page(page);
++
++		__dec_zone_page_state(page,
++				PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
++	}
++}
++#endif
++
+ /*
+  * Subfunctions of try_to_unmap: try_to_unmap_one called
+  * repeatedly from either try_to_unmap_anon or try_to_unmap_file.
+
+
