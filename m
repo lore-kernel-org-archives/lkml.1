@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYE2Ot1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbYE2OuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbYE2Ot1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 10:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbYE2OtU
+	id S1756682AbYE2OuK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 10:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbYE2Ot5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 10:49:20 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:48848 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754084AbYE2OtT (ORCPT
+	Thu, 29 May 2008 10:49:57 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:58939 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754659AbYE2Ot4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 10:49:19 -0400
-Message-ID: <483EC257.60009@nortel.com>
-Date: Thu, 29 May 2008 08:48:55 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 29 May 2008 10:49:56 -0400
+Date: Thu, 29 May 2008 15:49:34 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-acpi@vger.kernel.org,
+       akpm@linux-foundation.org
+Message-ID: <20080529144934.GA24382@srcf.ucam.org>
+References: <20080528143857.GB5585@homac.suse.de> <20080529132253.GA22309@srcf.ucam.org> <483EB33D.6010101@gmail.com> <20080529140213.GA23373@srcf.ucam.org> <20080529141421.GC9268@homac.suse.de> <20080529143541.GA24013@srcf.ucam.org> <483EBFC5.7020406@gmail.com>
 MIME-Version: 1.0
-To: James Cammarata <jimi@sngx.net>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
-References: <482DA5B6.1020606@sngx.net>	<482DB46A.8020103@cosmosbay.com> <482EF192.4070707@sngx.net>	<482F5113.5090703@cosmosbay.com> <482F610D.2080108@sngx.net>	<20080518003104.GK28241@solarflare.com> <482FBA09.80201@sngx.net>	<483E0AAE.2020107@sngx.net> <20080528221118.63da4092.akpm@linux-foundation.org> <483EA2D1.8050603@sngx.net>
-In-Reply-To: <483EA2D1.8050603@sngx.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 May 2008 14:49:00.0195 (UTC) FILETIME=[213F5730:01C8C19B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483EBFC5.7020406@gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] libata: Handle bay devices in dock stations
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Cammarata wrote:
->> You didn't provide a reason from adding this feature to the kernel.
+Got it. It works if I lose the ata_port_freeze() from 
+ata_acpi_detach_device. 
 
-> Sorry, my reasoning was in my original patch only.  The ability to reset 
-> network counters is, in my experience, one of the first things you do 
-> when trying to troubleshoot networking issues - especially when you have 
-> incrementing errors.
-
-The ability to reset counters does make it easier to detect changes 
-manually, as any non-zero value is something of interest.  However, if 
-you're gathering data via a script there is no functional gain.
-
->> Many of the kernel's accounting accumulators cannot be reset.  We
->> handle that in userspace tools by using subtraction.
-
-> I don't think that should preclude the ability to reset these, unless it is
-> shown that it would break something very badly.
-
-You're trying to add new functionality to the kernel, increasing its 
-size and adding more work for maintainers.  Also, you're implicitly 
-asking that all of the network drivers be updated to add support for 
-this feature.  The burden of proof is on you to show why the feature is 
-useful enough that the others involved should take on this additional work.
-
-Chris
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
