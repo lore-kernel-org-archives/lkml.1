@@ -1,88 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYE2PYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYE2P3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbYE2PYt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 11:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbYE2PYl
+	id S1756879AbYE2P3z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 11:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbYE2P3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 11:24:41 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:36241 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbYE2PYk (ORCPT
+	Thu, 29 May 2008 11:29:47 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:53076 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbYE2P3r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 11:24:40 -0400
-Date: Thu, 29 May 2008 20:56:32 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH] sched: Print the sd->level in sched_domain_debug code
-Message-ID: <20080529152632.GB28006@in.ibm.com>
-Reply-To: ego@in.ibm.com
+	Thu, 29 May 2008 11:29:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=YHlvUJ3erwmgiMJqR4PkyRIpA8QBvh9M8HBegvVCjpU3pvkj/MRA2vdNeYRkGLSsO/wOSj2ThDbXhLubFWDBDclgQVXnMWKsWObJzTwOflfvZfh/uFs/dd4fAZBmStF5V/RMX54fYhC6gSwT5lpwxWGY7vGkWZsix+plFhtmyJc=
+Message-ID: <fb7befa20805290829n5bf70832wc8c4129a8433d802@mail.gmail.com>
+Date: Thu, 29 May 2008 11:29:44 -0400
+From: "Adayadil Thomas" <adayadil.thomas@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Question regarding TCP behavior
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Print the sd->level in sched_domain_debug code
+Greetings.
 
-From: Gautham R Shenoy <ego@in.ibm.com>
+I have a question about how linux's TCP stack behaves.
+I apologize if this is not the right place to ask this question and
+please redirect me.
 
-While printing out the visual representation of the sched-domains, print
-the level (MC, SMT, CPU, NODE, ... ) of each of the sched_domains.
-
-Credit: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
-
- kernel/sched.c |   25 ++++++++++++++++++++++++-
- 1 files changed, 24 insertions(+), 1 deletions(-)
+When a TCP end point (A) sends x bytes of data to the other end point (B),
+does B immediately ACK the received bytes or will it do so only when the data
+is passed to the upper layer ?
 
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 1846451..7b81114 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6638,6 +6638,28 @@ void __init migration_init(void)
- 
- #ifdef CONFIG_SCHED_DEBUG
- 
-+static inline const char *sd_level_to_string(enum sched_domain_level lvl)
-+{
-+	switch (lvl) {
-+	case SD_LV_NONE:
-+			return "NONE";
-+	case SD_LV_SIBLING:
-+			return "SIBLING";
-+	case SD_LV_MC:
-+			return "MC";
-+	case SD_LV_CPU:
-+			return "CPU";
-+	case SD_LV_NODE:
-+			return "NODE";
-+	case SD_LV_ALLNODES:
-+			return "ALLNODES";
-+	case SD_LV_MAX:
-+			return "MAX";
-+
-+	}
-+	return "MAX";
-+}
-+
- static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 				  cpumask_t *groupmask)
- {
-@@ -6657,7 +6679,8 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
- 		return -1;
- 	}
- 
--	printk(KERN_CONT "span %s\n", str);
-+	printk(KERN_CONT "span %s level %s\n",
-+		str, sd_level_to_string(sd->level));
- 
- 	if (!cpu_isset(cpu, sd->span)) {
- 		printk(KERN_ERR "ERROR: domain->span does not contain "
--- 
-Thanks and Regards
-gautham
+Thanks
+Thomas
