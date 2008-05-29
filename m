@@ -1,111 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYE1X7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbYE2ACR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974AbYE1X7G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 19:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYE1X6z
+	id S1755070AbYE2ACR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 20:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYE2ACG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 19:58:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53069 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751367AbYE1X6y (ORCPT
+	Wed, 28 May 2008 20:02:06 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:45727 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbYE2ACF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 19:58:54 -0400
-Date: Wed, 28 May 2008 16:58:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: hans-christoph.rohland@sap.com, leg@google.com, pbadari@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tmpfs: support aio
-Message-Id: <20080528165815.f4e4982c.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
-References: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 May 2008 20:02:05 -0400
+Message-ID: <483DF32B.40508@keyaccess.nl>
+Date: Thu, 29 May 2008 02:04:59 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Tim Waugh <tim@cyberelk.net>, Tim Waugh <twaugh@redhat.com>
+CC: linux-parport@lists.infradead.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PARIDE] Datastor EP-2000 problem
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -0.5 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 00:13:35 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
+Good day.
 
-> +	struct file *filp = iocb->ki_filp;
-> +	ssize_t retval;
-> +	unsigned long seg;
-> +	size_t count;
-> +	loff_t *ppos = &iocb->ki_pos;
-> +
-> +	count = 0;
-> +	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
-> +	if (retval)
-> +		return retval;
-> +
-> +	retval = 0;
-> +	if (count) {
-> +		for (seg = 0; seg < nr_segs; seg++) {
-> +			read_descriptor_t desc;
-> +
-> +			desc.written = 0;
-> +			desc.arg.buf = iov[seg].iov_base;
-> +			desc.count = iov[seg].iov_len;
-> +			if (desc.count == 0)
-> +				continue;
-> +			desc.error = 0;
-> +			do_shmem_file_read(filp, ppos, &desc, file_read_actor);
-> +			retval += desc.written;
-> +			if (desc.error) {
-> +				retval = retval ?: desc.error;
-> +				break;
-> +			}
-> +			if (desc.count > 0)
-> +				break;
-> +		}
-> +	}
-> +	return retval;
->  }
+Dug up a parallel port CD-RW consisting of a Philips CDD3801 24x/2x/2x 
+ATAPI CD-RW hooked up to a Datastor EP-2000 parallel interface chip.
 
-hm.  This version:
+The drive has been verified to work correctly when used directly as IDE 
+and the parallel interface has been verified to work correctly with some 
+random other CD-ROM drive. The combination bombs out though.
 
-static ssize_t shmem_file_aio_read(struct kiocb *iocb,
-		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
-{
-	struct file *filp = iocb->ki_filp;
-	ssize_t retval;
-	unsigned long seg;
-	size_t count;
-	loff_t *ppos = &iocb->ki_pos;
+The drive is found:
 
-	count = 0;
-	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
-	if (retval)
-		return retval;
-	if (count == 0)
-		return 0;
+root@ax6bc:~# modprobe dstr
+root@ax6bc:~# modprobe pcd
+root@ax6bc:~# dmesg | tail -6
+pcd: pcd version 1.07, major 46, nice 0
+pcd0: Sharing parport0 at 0x378
+pcd0: dstr 1.01, DataStor EP2000 at 0x378, mode 4 (EPP-32), delay 1
+pcd0: Master: R/RW 2x2x24
+pcd0: mode sense capabilities completion: alt=0x51 stat=0x51 err=0x60 
+loop=0 phase=3
+pcd0: mode sense capabilities: Sense key: 6, ASC: 29, ASQ: 0
 
-	retval = 0;
-	for (seg = 0; seg < nr_segs; seg++) {
-		if (iov[seg].iov_len) {
-			read_descriptor_t desc = {
-				.arg.buf = iov[seg].iov_base,
-				.count = iov[seg].iov_len;
-			};
+trying to extract any data from it fails though:
 
-			do_shmem_file_read(filp, ppos, &desc, file_read_actor);
-			retval += desc.written;
-			if (desc.error) {
-				retval = retval ?: desc.error;
-				break;
-			}
-			if (desc.count > 0)
-				break;
-		}
-	}
-	return retval;
-}
+root@ax6bc:~# dd if=/dev/pcd0 of=/dev/null bs=2048 count=1
+0+0 records in
+0+0 records out
+0 bytes (0 B) copied, 12.5765 s, 0.0 kB/s
 
-is neater but generates 21 bytes more code.  Stupid gcc.
+root@ax6bc:~# dmesg | tail -14
+pcd: pcd version 1.07, major 46, nice 0
+pcd0: Sharing parport0 at 0x378
+pcd0: dstr 1.01, DataStor EP2000 at 0x378, mode 4 (EPP-32), delay 1
+pcd0: Master: R/RW 2x2x24
+pcd0: mode sense capabilities completion: alt=0x51 stat=0x51 err=0x60 
+loop=0 phase=3
+pcd0: mode sense capabilities: Sense key: 6, ASC: 29, ASQ: 0
+pcd0: WARNING: ATAPI phase errors
+pcd0: Stuck DRQ
+pcd0: lock door before command: alt=0x58 stat=0x58 err=0x100 loop=64001 
+phase=2
+pcd0: Request sense before command: alt=0x58 stat=0x58 err=0x100 
+loop=64001 phase=2
+pcd0: generic packet before command: alt=0x58 stat=0x58 err=0x100 
+loop=64001 phase=2
+pcd0: Request sense before command: alt=0x58 stat=0x58 err=0x100 
+loop=64001 phase=2
+pcd0: unlock door before command: alt=0x58 stat=0x58 err=0x100 
+loop=64001 phase=2
+pcd0: Request sense before command: alt=0x58 stat=0x58 err=0x100 
+loop=64001 phase=2
 
-I don't believe we needed to check for count == 0?  We'd just loop around
-N times doing nothing.
+and at this point the drive's stuck and needs a power cycle. I've tried 
+all modes available (4-bit, 8-bit, EPP-8, EPP-16 and EPP-32) and delays 
+  from 0 to 10 and nothing changes behaviour.
+
+Changing the parallel port type in my BIOS from Normal to EPP to ECP to 
+ECP+EPP, no change.
+
+Behaviour was also the same with the drive's original firmware (which I 
+can sort of guarentee was the one it originally came with) and its 
+current most recent 1.7e firmware.
+
+I even tested a prehistoric 2.2.6 kernel where things were/are the same 
+again.
+
+As said, interface works with a different (CD-ROM) drive and drive works 
+fine as plain IDE. I haven't been able to test if it works correctly 
+under DOS or Windows with its own drivers as I don't have the drivers 
+and can't find them online. If anyone has DOS or Windows EP-2000 
+drivers; a pointer would be mightely appreciated.
+
+Anyone any idea what this could be? Can patch/debug...
+
+Rene.
 
