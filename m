@@ -1,92 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYE2Ora@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbYE2Osn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbYE2Ora (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 10:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYE2OrU
+	id S1756482AbYE2Osn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 10:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYE2Osf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 10:47:20 -0400
-Received: from jaguar.mkp.net ([192.139.46.146]:59308 "EHLO jaguar.mkp.net"
+	Thu, 29 May 2008 10:48:35 -0400
+Received: from vena.lwn.net ([206.168.112.25]:41348 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752259AbYE2OrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 10:47:19 -0400
-To: Roland Dreier <rdreier@cisco.com>
-Cc: benh@kernel.crashing.org, Arjan van de Ven <arjan@infradead.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<20080526204233.75b71bb8@infradead.org>
-	<1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com>
-	<1211922696.3286.82.camel@pasglop> <adaiqwzsa83.fsf@cisco.com>
-From: Jes Sorensen <jes@sgi.com>
-Date: 29 May 2008 10:47:18 -0400
-In-Reply-To: <adaiqwzsa83.fsf@cisco.com>
-Message-ID: <yq0iqwxrwuh.fsf@jaguar.mkp.net>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753823AbYE2Ose (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 10:48:34 -0400
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bug #10708] V4L2-based build error 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Sat, 24 May 2008 22:31:39 +0200."
+             <TW_YzGo9TFP.A.rcE.9eIOIB@albercik> 
+Date: Thu, 29 May 2008 08:48:34 -0600
+Message-ID: <17813.1212072514@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Roland" == Roland Dreier <rdreier@cisco.com> writes:
+Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
->> This is a different issue. We deal with it on powerpc by having
->> writel set a per-cpu flag and spin_unlock() test it, and do the
->> barrier if needed there.
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10708
+> Subject		: V4L2-based build error
+> Submitter	: Jonathan Corbet <corbet@lwn.net>
+> Date		: 2008-05-12 22:14 (13 days old)
+> References	: http://marc.info/?l=linux-kernel&amp;m=121063048408534&amp;w=4
+> Handled-By	: Mauro Carvalho Chehab <mchehab@infradead.org>
 
-Roland> Cool... I assume you do this for mutex_unlock() etc?
+I just tried with 2.6.26-rc4 and was no longer able to reproduce the
+problem; I think this one can be removed from the list.
 
-Roland> Is there any reason why ia64 can't do this too so we can kill
-Roland> mmiowb and save everyone a lot of hassle?  (mips, sh and frv
-Roland> have non-empty mmiowb() definitions too but I'd guess that
-Roland> these are all bugs based on misunderstandings of the mmiowb()
-Roland> semantics...)
-
-Hi Roland,
-
-Thats not going to solve the problem on Altix. On Altix the issue is
-that there can be multiple paths through the NUMA fabric from cpuX to
-PCI bridge Y. 
-
-Consider this uber-cool<tm> ascii art - NR is my abbrevation for NUMA
-router:
-
-        -------         -------
-        |cpu X|         |cpu Y|
-        -------         -------
-         |   \____  ____/    |
-         |        \/         |
-         |    ____/\____     |
-         |   /          \    |
-         -----          ------
-         |NR 1|         |NR 2|
-         ------         ------
-              \         /
-               \       /
-                -------
-                | PCI |
-                -------
-
-The problem is that your two writel's, despite being both issued on
-cpu X, due to the spin lock, in your example, can end up with the
-first one going through NR 1 and the second one going through NR 2. If
-there's contention on NR 1, the write going via NR 2 may hit the PCI
-bridge prior to the one going via NR 1.
-
-Of course, the bigger the system, the worse the problem....
-
-The only way to guarantee ordering in the above setup, is to either
-make writel() fully ordered or adding the mmiowb()'s inbetween the two
-writel's. On Altix you have to go and read from the PCI brige to
-ensure all writes to it have been flushed, which is also what mmiowb()
-is doing. If writel() was to guarantee this ordering, it would make
-every writel() call extremely expensive :-(
-
-Cheers,
-Jes
+jon
