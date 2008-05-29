@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbYE2JA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbYE2JAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756624AbYE2JA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 05:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbYE2I6k
+	id S1756719AbYE2JAr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 05:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYE2I6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 04:58:40 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15868 "EHLO kernel.dk"
+	Thu, 29 May 2008 04:58:43 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:15861 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756178AbYE2I6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 04:58:34 -0400
+	id S1756173AbYE2I6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 04:58:35 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: peterz@infradead.org, npiggin@suse.de, linux-arch@vger.kernel.org,
        jeremy@goop.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 2/2] on_each_cpu(): kill unused 'retry' parameter
-Date: Thu, 29 May 2008 11:01:01 +0200
-Message-Id: <1212051661-12733-3-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 1/2] smp_call_function: get rid of the unused nonatomic/retry argument
+Date: Thu, 29 May 2008 11:01:00 +0200
+Message-Id: <1212051661-12733-2-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.6.rc0.40.gd683
 In-Reply-To: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com>
 References: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com>
@@ -24,994 +24,1120 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's not even passed on to smp_call_function() anymore, since that
-was removed. So kill it.
+It's never used and the comments refer to nonatomic and retry
+interchangably. So get rid of it.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- arch/alpha/kernel/process.c            |    2 +-
- arch/alpha/kernel/smp.c                |    4 ++--
- arch/arm/kernel/smp.c                  |    6 +++---
- arch/ia64/kernel/mca.c                 |    4 ++--
- arch/ia64/kernel/perfmon.c             |    4 ++--
- arch/ia64/kernel/smp.c                 |    4 ++--
- arch/mips/kernel/irq-rm9000.c          |    4 ++--
- arch/mips/kernel/smp.c                 |    4 ++--
- arch/mips/oprofile/common.c            |    6 +++---
- arch/parisc/kernel/cache.c             |    6 +++---
- arch/parisc/kernel/smp.c               |    2 +-
- arch/parisc/mm/init.c                  |    2 +-
- arch/powerpc/kernel/rtas.c             |    2 +-
- arch/powerpc/kernel/tau_6xx.c          |    4 ++--
- arch/powerpc/kernel/time.c             |    2 +-
- arch/powerpc/mm/slice.c                |    2 +-
- arch/powerpc/oprofile/common.c         |    6 +++---
- arch/s390/kernel/smp.c                 |    6 +++---
- arch/s390/kernel/time.c                |    2 +-
- arch/sh/kernel/smp.c                   |    4 ++--
- arch/sparc64/mm/hugetlbpage.c          |    2 +-
- arch/x86/kernel/cpu/mcheck/mce_64.c    |    6 +++---
- arch/x86/kernel/cpu/mcheck/non-fatal.c |    2 +-
- arch/x86/kernel/cpu/perfctr-watchdog.c |    4 ++--
- arch/x86/kernel/io_apic_32.c           |    2 +-
- arch/x86/kernel/io_apic_64.c           |    2 +-
- arch/x86/kernel/nmi_32.c               |    4 ++--
- arch/x86/kernel/nmi_64.c               |    4 ++--
- arch/x86/kernel/tlb_32.c               |    2 +-
- arch/x86/kernel/tlb_64.c               |    2 +-
- arch/x86/kernel/vsyscall_64.c          |    2 +-
- arch/x86/kvm/vmx.c                     |    2 +-
- arch/x86/mach-voyager/voyager_smp.c    |    2 +-
- arch/x86/mm/pageattr.c                 |    4 ++--
- arch/x86/oprofile/nmi_int.c            |   10 +++++-----
- drivers/char/agp/generic.c             |    2 +-
- drivers/lguest/x86/core.c              |    4 ++--
- fs/buffer.c                            |    2 +-
- include/linux/smp.h                    |    4 ++--
- kernel/hrtimer.c                       |    2 +-
- kernel/profile.c                       |    6 +++---
- kernel/rcupdate.c                      |    2 +-
- kernel/softirq.c                       |    2 +-
- mm/page_alloc.c                        |    2 +-
- mm/slab.c                              |    4 ++--
- mm/slub.c                              |    2 +-
- net/iucv/iucv.c                        |    2 +-
- virt/kvm/kvm_main.c                    |    8 ++++----
- 48 files changed, 84 insertions(+), 84 deletions(-)
+ arch/alpha/kernel/core_marvel.c      |    2 +-
+ arch/alpha/kernel/smp.c              |    6 +++---
+ arch/alpha/oprofile/common.c         |    6 +++---
+ arch/arm/oprofile/op_model_mpcore.c  |    2 +-
+ arch/arm/vfp/vfpmodule.c             |    2 +-
+ arch/cris/arch-v32/kernel/smp.c      |    5 ++---
+ arch/ia64/kernel/mca.c               |    2 +-
+ arch/ia64/kernel/palinfo.c           |    2 +-
+ arch/ia64/kernel/perfmon.c           |    2 +-
+ arch/ia64/kernel/process.c           |    2 +-
+ arch/ia64/kernel/smpboot.c           |    2 +-
+ arch/ia64/kernel/uncached.c          |    5 ++---
+ arch/ia64/sn/kernel/sn2/sn_hwperf.c  |    2 +-
+ arch/m32r/kernel/smp.c               |    4 ++--
+ arch/mips/kernel/smp.c               |    4 ++--
+ arch/mips/mm/c-r4k.c                 |   18 +++++++++---------
+ arch/mips/pmc-sierra/yosemite/prom.c |    2 +-
+ arch/mips/sibyte/cfe/setup.c         |    2 +-
+ arch/mips/sibyte/sb1250/prom.c       |    2 +-
+ arch/powerpc/kernel/smp.c            |    2 +-
+ arch/s390/appldata/appldata_base.c   |    4 ++--
+ arch/s390/kernel/smp.c               |   16 ++++++----------
+ arch/s390/kernel/time.c              |    4 ++--
+ arch/sh/kernel/smp.c                 |   10 +++++-----
+ arch/sparc64/kernel/smp.c            |   12 ++++--------
+ arch/um/kernel/smp.c                 |    3 +--
+ arch/x86/kernel/cpu/mtrr/main.c      |    4 ++--
+ arch/x86/kernel/cpuid.c              |    2 +-
+ arch/x86/kernel/ldt.c                |    2 +-
+ arch/x86/kernel/nmi_32.c             |    2 +-
+ arch/x86/kernel/nmi_64.c             |    2 +-
+ arch/x86/kernel/smp.c                |    2 +-
+ arch/x86/kernel/vsyscall_64.c        |    2 +-
+ arch/x86/kvm/vmx.c                   |    2 +-
+ arch/x86/kvm/x86.c                   |    2 +-
+ arch/x86/lib/msr-on-cpu.c            |    8 ++++----
+ arch/x86/mach-voyager/voyager_smp.c  |    2 +-
+ arch/x86/xen/smp.c                   |    2 +-
+ drivers/acpi/processor_idle.c        |    2 +-
+ drivers/cpuidle/cpuidle.c            |    2 +-
+ include/asm-alpha/smp.h              |    2 +-
+ include/asm-sparc/smp.h              |    2 +-
+ include/linux/smp.h                  |    8 ++++----
+ kernel/smp.c                         |    6 ++----
+ kernel/softirq.c                     |    2 +-
+ kernel/time/tick-broadcast.c         |    2 +-
+ net/core/flow.c                      |    2 +-
+ net/iucv/iucv.c                      |   14 +++++++-------
+ virt/kvm/kvm_main.c                  |    6 +++---
+ 49 files changed, 95 insertions(+), 108 deletions(-)
 
-diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
-index 96ed82f..351407e 100644
---- a/arch/alpha/kernel/process.c
-+++ b/arch/alpha/kernel/process.c
-@@ -160,7 +160,7 @@ common_shutdown(int mode, char *restart_cmd)
- 	struct halt_info args;
- 	args.mode = mode;
- 	args.restart_cmd = restart_cmd;
--	on_each_cpu(common_shutdown_1, &args, 1, 0);
-+	on_each_cpu(common_shutdown_1, &args, 0);
- }
- 
- void
+diff --git a/arch/alpha/kernel/core_marvel.c b/arch/alpha/kernel/core_marvel.c
+index ced4aae..04dcc5e 100644
+--- a/arch/alpha/kernel/core_marvel.c
++++ b/arch/alpha/kernel/core_marvel.c
+@@ -662,7 +662,7 @@ __marvel_rtc_io(u8 b, unsigned long addr, int write)
+ 		if (smp_processor_id() != boot_cpuid)
+ 			smp_call_function_single(boot_cpuid,
+ 						 __marvel_access_rtc,
+-						 &rtc_access, 1, 1);
++						 &rtc_access, 1);
+ 		else
+ 			__marvel_access_rtc(&rtc_access);
+ #else
 diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
-index 44114c8..83df541 100644
+index 95c905b..44114c8 100644
 --- a/arch/alpha/kernel/smp.c
 +++ b/arch/alpha/kernel/smp.c
-@@ -657,7 +657,7 @@ void
- smp_imb(void)
- {
- 	/* Must wait other processors to flush their icache before continue. */
--	if (on_each_cpu(ipi_imb, NULL, 1, 1))
-+	if (on_each_cpu(ipi_imb, NULL, 1))
- 		printk(KERN_CRIT "smp_imb: timed out\n");
- }
- EXPORT_SYMBOL(smp_imb);
-@@ -673,7 +673,7 @@ flush_tlb_all(void)
- {
- 	/* Although we don't have any data to pass, we do want to
- 	   synchronize with the other processors.  */
--	if (on_each_cpu(ipi_flush_tlb_all, NULL, 1, 1)) {
-+	if (on_each_cpu(ipi_flush_tlb_all, NULL, 1)) {
- 		printk(KERN_CRIT "flush_tlb_all: timed out\n");
- 	}
- }
-diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-index 6344466..5a7c095 100644
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@ -604,7 +604,7 @@ static inline void ipi_flush_tlb_kernel_range(void *arg)
- 
- void flush_tlb_all(void)
- {
--	on_each_cpu(ipi_flush_tlb_all, NULL, 1, 1);
-+	on_each_cpu(ipi_flush_tlb_all, NULL, 1);
- }
- 
- void flush_tlb_mm(struct mm_struct *mm)
-@@ -631,7 +631,7 @@ void flush_tlb_kernel_page(unsigned long kaddr)
- 
- 	ta.ta_start = kaddr;
- 
--	on_each_cpu(ipi_flush_tlb_kernel_page, &ta, 1, 1);
-+	on_each_cpu(ipi_flush_tlb_kernel_page, &ta, 1);
- }
- 
- void flush_tlb_range(struct vm_area_struct *vma,
-@@ -654,5 +654,5 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
- 	ta.ta_start = start;
- 	ta.ta_end = end;
- 
--	on_each_cpu(ipi_flush_tlb_kernel_range, &ta, 1, 1);
-+	on_each_cpu(ipi_flush_tlb_kernel_range, &ta, 1);
- }
-diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
-index 9cd818c..7dd96c1 100644
---- a/arch/ia64/kernel/mca.c
-+++ b/arch/ia64/kernel/mca.c
-@@ -707,7 +707,7 @@ ia64_mca_cmc_vector_enable (void *dummy)
- static void
- ia64_mca_cmc_vector_disable_keventd(struct work_struct *unused)
- {
--	on_each_cpu(ia64_mca_cmc_vector_disable, NULL, 1, 0);
-+	on_each_cpu(ia64_mca_cmc_vector_disable, NULL, 0);
- }
- 
- /*
-@@ -719,7 +719,7 @@ ia64_mca_cmc_vector_disable_keventd(struct work_struct *unused)
- static void
- ia64_mca_cmc_vector_enable_keventd(struct work_struct *unused)
- {
--	on_each_cpu(ia64_mca_cmc_vector_enable, NULL, 1, 0);
-+	on_each_cpu(ia64_mca_cmc_vector_enable, NULL, 0);
- }
- 
- /*
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index 080f41c..f560660 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -6508,7 +6508,7 @@ pfm_install_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
+@@ -710,7 +710,7 @@ flush_tlb_mm(struct mm_struct *mm)
+ 		}
  	}
  
- 	/* save the current system wide pmu states */
--	ret = on_each_cpu(pfm_alt_save_pmu_state, NULL, 0, 1);
-+	ret = on_each_cpu(pfm_alt_save_pmu_state, NULL, 1);
- 	if (ret) {
- 		DPRINT(("on_each_cpu() failed: %d\n", ret));
- 		goto cleanup_reserve;
-@@ -6553,7 +6553,7 @@ pfm_remove_alt_pmu_interrupt(pfm_intr_handler_desc_t *hdl)
- 
- 	pfm_alt_intr_handler = NULL;
- 
--	ret = on_each_cpu(pfm_alt_restore_pmu_state, NULL, 0, 1);
-+	ret = on_each_cpu(pfm_alt_restore_pmu_state, NULL, 1);
- 	if (ret) {
- 		DPRINT(("on_each_cpu() failed: %d\n", ret));
+-	if (smp_call_function(ipi_flush_tlb_mm, mm, 1, 1)) {
++	if (smp_call_function(ipi_flush_tlb_mm, mm, 1)) {
+ 		printk(KERN_CRIT "flush_tlb_mm: timed out\n");
  	}
-diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
-index 70b7b35..8079d1f 100644
---- a/arch/ia64/kernel/smp.c
-+++ b/arch/ia64/kernel/smp.c
-@@ -297,7 +297,7 @@ smp_flush_tlb_cpumask(cpumask_t xcpumask)
- void
- smp_flush_tlb_all (void)
- {
--	on_each_cpu((void (*)(void *))local_flush_tlb_all, NULL, 1, 1);
-+	on_each_cpu((void (*)(void *))local_flush_tlb_all, NULL, 1);
- }
  
- void
-@@ -320,7 +320,7 @@ smp_flush_tlb_mm (struct mm_struct *mm)
- 	 * anyhow, and once a CPU is interrupted, the cost of local_flush_tlb_all() is
- 	 * rather trivial.
- 	 */
--	on_each_cpu((void (*)(void *))local_finish_flush_tlb_mm, mm, 1, 1);
-+	on_each_cpu((void (*)(void *))local_finish_flush_tlb_mm, mm, 1);
- }
+@@ -763,7 +763,7 @@ flush_tlb_page(struct vm_area_struct *vma, unsigned long addr)
+ 	data.mm = mm;
+ 	data.addr = addr;
  
- void arch_send_call_function_single_ipi(int cpu)
-diff --git a/arch/mips/kernel/irq-rm9000.c b/arch/mips/kernel/irq-rm9000.c
-index ed9febe..b47e461 100644
---- a/arch/mips/kernel/irq-rm9000.c
-+++ b/arch/mips/kernel/irq-rm9000.c
-@@ -49,7 +49,7 @@ static void local_rm9k_perfcounter_irq_startup(void *args)
+-	if (smp_call_function(ipi_flush_tlb_page, &data, 1, 1)) {
++	if (smp_call_function(ipi_flush_tlb_page, &data, 1)) {
+ 		printk(KERN_CRIT "flush_tlb_page: timed out\n");
+ 	}
  
- static unsigned int rm9k_perfcounter_irq_startup(unsigned int irq)
- {
--	on_each_cpu(local_rm9k_perfcounter_irq_startup, (void *) irq, 0, 1);
-+	on_each_cpu(local_rm9k_perfcounter_irq_startup, (void *) irq, 1);
+@@ -815,7 +815,7 @@ flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
+ 		}
+ 	}
  
- 	return 0;
- }
-@@ -66,7 +66,7 @@ static void local_rm9k_perfcounter_irq_shutdown(void *args)
+-	if (smp_call_function(ipi_flush_icache_page, mm, 1, 1)) {
++	if (smp_call_function(ipi_flush_icache_page, mm, 1)) {
+ 		printk(KERN_CRIT "flush_icache_page: timed out\n");
+ 	}
  
- static void rm9k_perfcounter_irq_shutdown(unsigned int irq)
- {
--	on_each_cpu(local_rm9k_perfcounter_irq_shutdown, (void *) irq, 0, 1);
-+	on_each_cpu(local_rm9k_perfcounter_irq_shutdown, (void *) irq, 1);
- }
- 
- static struct irq_chip rm9k_irq_controller = {
-diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
-index 7a9ae83..4410f17 100644
---- a/arch/mips/kernel/smp.c
-+++ b/arch/mips/kernel/smp.c
-@@ -246,7 +246,7 @@ static void flush_tlb_all_ipi(void *info)
- 
- void flush_tlb_all(void)
- {
--	on_each_cpu(flush_tlb_all_ipi, NULL, 1, 1);
-+	on_each_cpu(flush_tlb_all_ipi, NULL, 1);
- }
- 
- static void flush_tlb_mm_ipi(void *mm)
-@@ -366,7 +366,7 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
- 		.addr2 = end,
- 	};
- 
--	on_each_cpu(flush_tlb_kernel_range_ipi, &fd, 1, 1);
-+	on_each_cpu(flush_tlb_kernel_range_ipi, &fd, 1);
- }
- 
- static void flush_tlb_page_ipi(void *info)
-diff --git a/arch/mips/oprofile/common.c b/arch/mips/oprofile/common.c
-index b5f6f71..dd2fbd6 100644
---- a/arch/mips/oprofile/common.c
-+++ b/arch/mips/oprofile/common.c
-@@ -27,7 +27,7 @@ static int op_mips_setup(void)
- 	model->reg_setup(ctr);
+diff --git a/arch/alpha/oprofile/common.c b/arch/alpha/oprofile/common.c
+index 9fc0eeb..7c3d5ec 100644
+--- a/arch/alpha/oprofile/common.c
++++ b/arch/alpha/oprofile/common.c
+@@ -65,7 +65,7 @@ op_axp_setup(void)
+ 	model->reg_setup(&reg, ctr, &sys);
  
  	/* Configure the registers on all cpus.  */
--	on_each_cpu(model->cpu_setup, NULL, 0, 1);
-+	on_each_cpu(model->cpu_setup, NULL, 1);
- 
-         return 0;
- }
-@@ -58,7 +58,7 @@ static int op_mips_create_files(struct super_block * sb, struct dentry * root)
- 
- static int op_mips_start(void)
- {
--	on_each_cpu(model->cpu_start, NULL, 0, 1);
-+	on_each_cpu(model->cpu_start, NULL, 1);
- 
+-	(void)smp_call_function(model->cpu_setup, &reg, 0, 1);
++	(void)smp_call_function(model->cpu_setup, &reg, 1);
+ 	model->cpu_setup(&reg);
  	return 0;
  }
-@@ -66,7 +66,7 @@ static int op_mips_start(void)
- static void op_mips_stop(void)
+@@ -86,7 +86,7 @@ op_axp_cpu_start(void *dummy)
+ static int
+ op_axp_start(void)
  {
- 	/* Disable performance monitoring for all counters.  */
--	on_each_cpu(model->cpu_stop, NULL, 0, 1);
-+	on_each_cpu(model->cpu_stop, NULL, 1);
- }
- 
- int __init oprofile_arch_init(struct oprofile_operations *ops)
-diff --git a/arch/parisc/kernel/cache.c b/arch/parisc/kernel/cache.c
-index e10d25d..5259d8c 100644
---- a/arch/parisc/kernel/cache.c
-+++ b/arch/parisc/kernel/cache.c
-@@ -51,12 +51,12 @@ static struct pdc_btlb_info btlb_info __read_mostly;
- void
- flush_data_cache(void)
- {
--	on_each_cpu(flush_data_cache_local, NULL, 1, 1);
-+	on_each_cpu(flush_data_cache_local, NULL, 1);
- }
- void 
- flush_instruction_cache(void)
- {
--	on_each_cpu(flush_instruction_cache_local, NULL, 1, 1);
-+	on_each_cpu(flush_instruction_cache_local, NULL, 1);
- }
- #endif
- 
-@@ -515,7 +515,7 @@ static void cacheflush_h_tmp_function(void *dummy)
- 
- void flush_cache_all(void)
- {
--	on_each_cpu(cacheflush_h_tmp_function, NULL, 1, 1);
-+	on_each_cpu(cacheflush_h_tmp_function, NULL, 1);
- }
- 
- void flush_cache_mm(struct mm_struct *mm)
-diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
-index 126105c..d47f397 100644
---- a/arch/parisc/kernel/smp.c
-+++ b/arch/parisc/kernel/smp.c
-@@ -292,7 +292,7 @@ void arch_send_call_function_single_ipi(int cpu)
- void
- smp_flush_tlb_all(void)
- {
--	on_each_cpu(flush_tlb_all_local, NULL, 1, 1);
-+	on_each_cpu(flush_tlb_all_local, NULL, 1);
- }
- 
- /*
-diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-index 78fe252..7044481 100644
---- a/arch/parisc/mm/init.c
-+++ b/arch/parisc/mm/init.c
-@@ -1052,7 +1052,7 @@ void flush_tlb_all(void)
- 	    do_recycle++;
- 	}
- 	spin_unlock(&sid_lock);
--	on_each_cpu(flush_tlb_all_local, NULL, 1, 1);
-+	on_each_cpu(flush_tlb_all_local, NULL, 1);
- 	if (do_recycle) {
- 	    spin_lock(&sid_lock);
- 	    recycle_sids(recycle_ndirty,recycle_dirty_array);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 34843c3..647f3e8 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -747,7 +747,7 @@ static int rtas_ibm_suspend_me(struct rtas_args *args)
- 	/* Call function on all CPUs.  One of us will make the
- 	 * rtas call
- 	 */
--	if (on_each_cpu(rtas_percpu_suspend_me, &data, 1, 0))
-+	if (on_each_cpu(rtas_percpu_suspend_me, &data, 0))
- 		data.error = -EINVAL;
- 
- 	wait_for_completion(&done);
-diff --git a/arch/powerpc/kernel/tau_6xx.c b/arch/powerpc/kernel/tau_6xx.c
-index 368a493..c3a56d6 100644
---- a/arch/powerpc/kernel/tau_6xx.c
-+++ b/arch/powerpc/kernel/tau_6xx.c
-@@ -192,7 +192,7 @@ static void tau_timeout_smp(unsigned long unused)
- 
- 	/* schedule ourselves to be run again */
- 	mod_timer(&tau_timer, jiffies + shrink_timer) ;
--	on_each_cpu(tau_timeout, NULL, 1, 0);
-+	on_each_cpu(tau_timeout, NULL, 0);
- }
- 
- /*
-@@ -234,7 +234,7 @@ int __init TAU_init(void)
- 	tau_timer.expires = jiffies + shrink_timer;
- 	add_timer(&tau_timer);
- 
--	on_each_cpu(TAU_init_smp, NULL, 1, 0);
-+	on_each_cpu(TAU_init_smp, NULL, 0);
- 
- 	printk("Thermal assist unit ");
- #ifdef CONFIG_TAU_INT
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 73401e8..f1a38a6 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -322,7 +322,7 @@ void snapshot_timebases(void)
- {
- 	if (!cpu_has_feature(CPU_FTR_PURR))
- 		return;
--	on_each_cpu(snapshot_tb_and_purr, NULL, 0, 1);
-+	on_each_cpu(snapshot_tb_and_purr, NULL, 1);
- }
- 
- /*
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index ad928ed..2bd12d9 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -218,7 +218,7 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
- 	mb();
- 
- 	/* XXX this is sub-optimal but will do for now */
--	on_each_cpu(slice_flush_segments, mm, 0, 1);
-+	on_each_cpu(slice_flush_segments, mm, 1);
- #ifdef CONFIG_SPU_BASE
- 	spu_flush_all_slbs(mm);
- #endif
-diff --git a/arch/powerpc/oprofile/common.c b/arch/powerpc/oprofile/common.c
-index 4908dc9..17807ac 100644
---- a/arch/powerpc/oprofile/common.c
-+++ b/arch/powerpc/oprofile/common.c
-@@ -65,7 +65,7 @@ static int op_powerpc_setup(void)
- 
- 	/* Configure the registers on all cpus.	 If an error occurs on one
- 	 * of the cpus, op_per_cpu_rc will be set to the error */
--	on_each_cpu(op_powerpc_cpu_setup, NULL, 0, 1);
-+	on_each_cpu(op_powerpc_cpu_setup, NULL, 1);
- 
- out:	if (op_per_cpu_rc) {
- 		/* error on setup release the performance counter hardware */
-@@ -100,7 +100,7 @@ static int op_powerpc_start(void)
- 	if (model->global_start)
- 		return model->global_start(ctr);
- 	if (model->start) {
--		on_each_cpu(op_powerpc_cpu_start, NULL, 0, 1);
-+		on_each_cpu(op_powerpc_cpu_start, NULL, 1);
- 		return op_per_cpu_rc;
- 	}
- 	return -EIO; /* No start function is defined for this
-@@ -115,7 +115,7 @@ static inline void op_powerpc_cpu_stop(void *dummy)
- static void op_powerpc_stop(void)
- {
- 	if (model->stop)
--		on_each_cpu(op_powerpc_cpu_stop, NULL, 0, 1);
-+		on_each_cpu(op_powerpc_cpu_stop, NULL, 1);
-         if (model->global_stop)
-                 model->global_stop();
- }
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index 60e5195..1c3b6cc 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -299,7 +299,7 @@ static void smp_ptlb_callback(void *info)
- 
- void smp_ptlb_all(void)
- {
--	on_each_cpu(smp_ptlb_callback, NULL, 0, 1);
-+	on_each_cpu(smp_ptlb_callback, NULL, 1);
- }
- EXPORT_SYMBOL(smp_ptlb_all);
- #endif /* ! CONFIG_64BIT */
-@@ -347,7 +347,7 @@ void smp_ctl_set_bit(int cr, int bit)
- 	memset(&parms.orvals, 0, sizeof(parms.orvals));
- 	memset(&parms.andvals, 0xff, sizeof(parms.andvals));
- 	parms.orvals[cr] = 1 << bit;
--	on_each_cpu(smp_ctl_bit_callback, &parms, 0, 1);
-+	on_each_cpu(smp_ctl_bit_callback, &parms, 1);
- }
- EXPORT_SYMBOL(smp_ctl_set_bit);
- 
-@@ -361,7 +361,7 @@ void smp_ctl_clear_bit(int cr, int bit)
- 	memset(&parms.orvals, 0, sizeof(parms.orvals));
- 	memset(&parms.andvals, 0xff, sizeof(parms.andvals));
- 	parms.andvals[cr] = ~(1L << bit);
--	on_each_cpu(smp_ctl_bit_callback, &parms, 0, 1);
-+	on_each_cpu(smp_ctl_bit_callback, &parms, 1);
- }
- EXPORT_SYMBOL(smp_ctl_clear_bit);
- 
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index bf7bf2c..6037ed2 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -909,7 +909,7 @@ static void etr_work_fn(struct work_struct *work)
- 	if (!eacr.ea) {
- 		/* Both ports offline. Reset everything. */
- 		eacr.dp = eacr.es = eacr.sl = 0;
--		on_each_cpu(etr_disable_sync_clock, NULL, 0, 1);
-+		on_each_cpu(etr_disable_sync_clock, NULL, 1);
- 		del_timer_sync(&etr_timer);
- 		etr_update_eacr(eacr);
- 		set_bit(ETR_FLAG_EACCES, &etr_flags);
-diff --git a/arch/sh/kernel/smp.c b/arch/sh/kernel/smp.c
-index 71781ba..60c5084 100644
---- a/arch/sh/kernel/smp.c
-+++ b/arch/sh/kernel/smp.c
-@@ -197,7 +197,7 @@ static void flush_tlb_all_ipi(void *info)
- 
- void flush_tlb_all(void)
- {
--	on_each_cpu(flush_tlb_all_ipi, 0, 1, 1);
-+	on_each_cpu(flush_tlb_all_ipi, 0, 1);
- }
- 
- static void flush_tlb_mm_ipi(void *mm)
-@@ -284,7 +284,7 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end)
- 
- 	fd.addr1 = start;
- 	fd.addr2 = end;
--	on_each_cpu(flush_tlb_kernel_range_ipi, (void *)&fd, 1, 1);
-+	on_each_cpu(flush_tlb_kernel_range_ipi, (void *)&fd, 1);
- }
- 
- static void flush_tlb_page_ipi(void *info)
-diff --git a/arch/sparc64/mm/hugetlbpage.c b/arch/sparc64/mm/hugetlbpage.c
-index 6cfab2e..ebefd2a 100644
---- a/arch/sparc64/mm/hugetlbpage.c
-+++ b/arch/sparc64/mm/hugetlbpage.c
-@@ -344,7 +344,7 @@ void hugetlb_prefault_arch_hook(struct mm_struct *mm)
- 			 * also executing in this address space.
- 			 */
- 			mm->context.sparc64_ctx_val = ctx;
--			on_each_cpu(context_reload, mm, 0, 0);
-+			on_each_cpu(context_reload, mm, 0);
- 		}
- 		spin_unlock(&ctx_alloc_lock);
- 	}
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index e07e8c0..43b7cb5 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -363,7 +363,7 @@ static void mcheck_check_cpu(void *info)
- 
- static void mcheck_timer(struct work_struct *work)
- {
--	on_each_cpu(mcheck_check_cpu, NULL, 1, 1);
-+	on_each_cpu(mcheck_check_cpu, NULL, 1);
- 
- 	/*
- 	 * Alert userspace if needed.  If we logged an MCE, reduce the
-@@ -612,7 +612,7 @@ static ssize_t mce_read(struct file *filp, char __user *ubuf, size_t usize,
- 	 * Collect entries that were still getting written before the
- 	 * synchronize.
- 	 */
--	on_each_cpu(collect_tscs, cpu_tsc, 1, 1);
-+	on_each_cpu(collect_tscs, cpu_tsc, 1);
- 	for (i = next; i < MCE_LOG_LEN; i++) {
- 		if (mcelog.entry[i].finished &&
- 		    mcelog.entry[i].tsc < cpu_tsc[mcelog.entry[i].cpu]) {
-@@ -737,7 +737,7 @@ static void mce_restart(void)
- 	if (next_interval)
- 		cancel_delayed_work(&mcheck_work);
- 	/* Timer race is harmless here */
--	on_each_cpu(mce_init, NULL, 1, 1);
-+	on_each_cpu(mce_init, NULL, 1);
- 	next_interval = check_interval * HZ;
- 	if (next_interval)
- 		schedule_delayed_work(&mcheck_work,
-diff --git a/arch/x86/kernel/cpu/mcheck/non-fatal.c b/arch/x86/kernel/cpu/mcheck/non-fatal.c
-index 00ccb6c..cc1fccd 100644
---- a/arch/x86/kernel/cpu/mcheck/non-fatal.c
-+++ b/arch/x86/kernel/cpu/mcheck/non-fatal.c
-@@ -59,7 +59,7 @@ static DECLARE_DELAYED_WORK(mce_work, mce_work_fn);
- 
- static void mce_work_fn(struct work_struct *work)
- {
--	on_each_cpu(mce_checkregs, NULL, 1, 1);
-+	on_each_cpu(mce_checkregs, NULL, 1);
- 	schedule_delayed_work(&mce_work, round_jiffies_relative(MCE_RATE));
- }
- 
-diff --git a/arch/x86/kernel/cpu/perfctr-watchdog.c b/arch/x86/kernel/cpu/perfctr-watchdog.c
-index f9ae93a..58043f0 100644
---- a/arch/x86/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
-@@ -180,7 +180,7 @@ void disable_lapic_nmi_watchdog(void)
- 	if (atomic_read(&nmi_active) <= 0)
- 		return;
- 
--	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
-+	on_each_cpu(stop_apic_nmi_watchdog, NULL, 1);
- 	wd_ops->unreserve();
- 
- 	BUG_ON(atomic_read(&nmi_active) != 0);
-@@ -202,7 +202,7 @@ void enable_lapic_nmi_watchdog(void)
- 		return;
- 	}
- 
--	on_each_cpu(setup_apic_nmi_watchdog, NULL, 0, 1);
-+	on_each_cpu(setup_apic_nmi_watchdog, NULL, 1);
- 	touch_nmi_watchdog();
- }
- 
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index a40d54f..595f4e0 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -1565,7 +1565,7 @@ void /*__init*/ print_local_APIC(void * dummy)
- 
- void print_all_local_APICs (void)
- {
--	on_each_cpu(print_local_APIC, NULL, 1, 1);
-+	on_each_cpu(print_local_APIC, NULL, 1);
- }
- 
- void /*__init*/ print_PIC(void)
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index ef1a8df..4504c7f 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -1146,7 +1146,7 @@ void __apicdebuginit print_local_APIC(void * dummy)
- 
- void print_all_local_APICs (void)
- {
--	on_each_cpu(print_local_APIC, NULL, 1, 1);
-+	on_each_cpu(print_local_APIC, NULL, 1);
- }
- 
- void __apicdebuginit print_PIC(void)
-diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
-index a40abc6..3036dc9 100644
---- a/arch/x86/kernel/nmi_32.c
-+++ b/arch/x86/kernel/nmi_32.c
-@@ -223,7 +223,7 @@ static void __acpi_nmi_enable(void *__unused)
- void acpi_nmi_enable(void)
- {
- 	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
--		on_each_cpu(__acpi_nmi_enable, NULL, 0, 1);
-+		on_each_cpu(__acpi_nmi_enable, NULL, 1);
- }
- 
- static void __acpi_nmi_disable(void *__unused)
-@@ -237,7 +237,7 @@ static void __acpi_nmi_disable(void *__unused)
- void acpi_nmi_disable(void)
- {
- 	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
--		on_each_cpu(__acpi_nmi_disable, NULL, 0, 1);
-+		on_each_cpu(__acpi_nmi_disable, NULL, 1);
- }
- 
- void setup_apic_nmi_watchdog(void *unused)
-diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
-index 2f1e4f5..bbdcb17 100644
---- a/arch/x86/kernel/nmi_64.c
-+++ b/arch/x86/kernel/nmi_64.c
-@@ -225,7 +225,7 @@ static void __acpi_nmi_enable(void *__unused)
- void acpi_nmi_enable(void)
- {
- 	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
--		on_each_cpu(__acpi_nmi_enable, NULL, 0, 1);
-+		on_each_cpu(__acpi_nmi_enable, NULL, 1);
- }
- 
- static void __acpi_nmi_disable(void *__unused)
-@@ -239,7 +239,7 @@ static void __acpi_nmi_disable(void *__unused)
- void acpi_nmi_disable(void)
- {
- 	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
--		on_each_cpu(__acpi_nmi_disable, NULL, 0, 1);
-+		on_each_cpu(__acpi_nmi_disable, NULL, 1);
- }
- 
- void setup_apic_nmi_watchdog(void *unused)
-diff --git a/arch/x86/kernel/tlb_32.c b/arch/x86/kernel/tlb_32.c
-index 9bb2363..fec1ece 100644
---- a/arch/x86/kernel/tlb_32.c
-+++ b/arch/x86/kernel/tlb_32.c
-@@ -238,6 +238,6 @@ static void do_flush_tlb_all(void *info)
- 
- void flush_tlb_all(void)
- {
--	on_each_cpu(do_flush_tlb_all, NULL, 1, 1);
-+	on_each_cpu(do_flush_tlb_all, NULL, 1);
- }
- 
-diff --git a/arch/x86/kernel/tlb_64.c b/arch/x86/kernel/tlb_64.c
-index a1f07d7..184a367 100644
---- a/arch/x86/kernel/tlb_64.c
-+++ b/arch/x86/kernel/tlb_64.c
-@@ -270,5 +270,5 @@ static void do_flush_tlb_all(void *info)
- 
- void flush_tlb_all(void)
- {
--	on_each_cpu(do_flush_tlb_all, NULL, 1, 1);
-+	on_each_cpu(do_flush_tlb_all, NULL, 1);
- }
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index 0a03d57..0dcae19 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -301,7 +301,7 @@ static int __init vsyscall_init(void)
- #ifdef CONFIG_SYSCTL
- 	register_sysctl_table(kernel_root_table2);
- #endif
--	on_each_cpu(cpu_vsyscall_init, NULL, 0, 1);
-+	on_each_cpu(cpu_vsyscall_init, NULL, 1);
- 	hotcpu_notifier(cpu_vsyscall_notifier, 0);
+-	(void)smp_call_function(op_axp_cpu_start, NULL, 0, 1);
++	(void)smp_call_function(op_axp_cpu_start, NULL, 1);
+ 	op_axp_cpu_start(NULL);
  	return 0;
  }
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index bb6e010..b2d6ae7 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -2964,7 +2964,7 @@ static void vmx_free_vmcs(struct kvm_vcpu *vcpu)
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 
- 	if (vmx->vmcs) {
--		on_each_cpu(__vcpu_clear, vmx, 0, 1);
-+		on_each_cpu(__vcpu_clear, vmx, 1);
- 		free_vmcs(vmx->vmcs);
- 		vmx->vmcs = NULL;
- 	}
-diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-index 04f596e..abea084 100644
---- a/arch/x86/mach-voyager/voyager_smp.c
-+++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -1072,7 +1072,7 @@ static void do_flush_tlb_all(void *info)
- /* flush the TLB of every active CPU in the system */
- void flush_tlb_all(void)
+@@ -101,7 +101,7 @@ op_axp_cpu_stop(void *dummy)
+ static void
+ op_axp_stop(void)
  {
--	on_each_cpu(do_flush_tlb_all, 0, 1, 1);
-+	on_each_cpu(do_flush_tlb_all, 0, 1);
+-	(void)smp_call_function(op_axp_cpu_stop, NULL, 0, 1);
++	(void)smp_call_function(op_axp_cpu_stop, NULL, 1);
+ 	op_axp_cpu_stop(NULL);
  }
  
- /* used to set up the trampoline for other CPUs when the memory manager
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 60bcb5b..9b836ba 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -106,7 +106,7 @@ static void cpa_flush_all(unsigned long cache)
+diff --git a/arch/arm/oprofile/op_model_mpcore.c b/arch/arm/oprofile/op_model_mpcore.c
+index 74fae60..4458705 100644
+--- a/arch/arm/oprofile/op_model_mpcore.c
++++ b/arch/arm/oprofile/op_model_mpcore.c
+@@ -201,7 +201,7 @@ static int em_call_function(int (*fn)(void))
+ 	data.ret = 0;
+ 
+ 	preempt_disable();
+-	smp_call_function(em_func, &data, 1, 1);
++	smp_call_function(em_func, &data, 1);
+ 	em_func(&data);
+ 	preempt_enable();
+ 
+diff --git a/arch/arm/vfp/vfpmodule.c b/arch/arm/vfp/vfpmodule.c
+index 32455c6..c0d2c9b 100644
+--- a/arch/arm/vfp/vfpmodule.c
++++ b/arch/arm/vfp/vfpmodule.c
+@@ -352,7 +352,7 @@ static int __init vfp_init(void)
+ 	else if (vfpsid & FPSID_NODOUBLE) {
+ 		printk("no double precision support\n");
+ 	} else {
+-		smp_call_function(vfp_enable, NULL, 1, 1);
++		smp_call_function(vfp_enable, NULL, 1);
+ 
+ 		VFP_arch = (vfpsid & FPSID_ARCH_MASK) >> FPSID_ARCH_BIT;  /* Extract the architecture version */
+ 		printk("implementor %02x architecture %d part %02x variant %x rev %x\n",
+diff --git a/arch/cris/arch-v32/kernel/smp.c b/arch/cris/arch-v32/kernel/smp.c
+index a9c3334..952a24b 100644
+--- a/arch/cris/arch-v32/kernel/smp.c
++++ b/arch/cris/arch-v32/kernel/smp.c
+@@ -194,7 +194,7 @@ void stop_this_cpu(void* dummy)
+ /* Other calls */
+ void smp_send_stop(void)
  {
- 	BUG_ON(irqs_disabled());
- 
--	on_each_cpu(__cpa_flush_all, (void *) cache, 1, 1);
-+	on_each_cpu(__cpa_flush_all, (void *) cache, 1);
+-	smp_call_function(stop_this_cpu, NULL, 1, 0);
++	smp_call_function(stop_this_cpu, NULL, 0);
  }
  
- static void __cpa_flush_range(void *arg)
-@@ -127,7 +127,7 @@ static void cpa_flush_range(unsigned long start, int numpages, int cache)
- 	BUG_ON(irqs_disabled());
- 	WARN_ON(PAGE_ALIGN(start) != start);
- 
--	on_each_cpu(__cpa_flush_range, NULL, 1, 1);
-+	on_each_cpu(__cpa_flush_range, NULL, 1);
- 
- 	if (!cache)
- 		return;
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index cc48d3f..3238ad3 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -218,8 +218,8 @@ static int nmi_setup(void)
- 		}
- 
- 	}
--	on_each_cpu(nmi_save_registers, NULL, 0, 1);
--	on_each_cpu(nmi_cpu_setup, NULL, 0, 1);
-+	on_each_cpu(nmi_save_registers, NULL, 1);
-+	on_each_cpu(nmi_cpu_setup, NULL, 1);
- 	nmi_enabled = 1;
- 	return 0;
- }
-@@ -271,7 +271,7 @@ static void nmi_shutdown(void)
- {
- 	struct op_msrs *msrs = &__get_cpu_var(cpu_msrs);
- 	nmi_enabled = 0;
--	on_each_cpu(nmi_cpu_shutdown, NULL, 0, 1);
-+	on_each_cpu(nmi_cpu_shutdown, NULL, 1);
- 	unregister_die_notifier(&profile_exceptions_nb);
- 	model->shutdown(msrs);
- 	free_msrs();
-@@ -285,7 +285,7 @@ static void nmi_cpu_start(void *dummy)
- 
- static int nmi_start(void)
- {
--	on_each_cpu(nmi_cpu_start, NULL, 0, 1);
-+	on_each_cpu(nmi_cpu_start, NULL, 1);
- 	return 0;
- }
- 
-@@ -297,7 +297,7 @@ static void nmi_cpu_stop(void *dummy)
- 
- static void nmi_stop(void)
- {
--	on_each_cpu(nmi_cpu_stop, NULL, 0, 1);
-+	on_each_cpu(nmi_cpu_stop, NULL, 1);
- }
- 
- struct op_counter_config counter_config[OP_MAX_COUNTER];
-diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
-index 7fc0c99..270f49a 100644
---- a/drivers/char/agp/generic.c
-+++ b/drivers/char/agp/generic.c
-@@ -1246,7 +1246,7 @@ static void ipi_handler(void *null)
- 
- void global_cache_flush(void)
- {
--	if (on_each_cpu(ipi_handler, NULL, 1, 1) != 0)
-+	if (on_each_cpu(ipi_handler, NULL, 1) != 0)
- 		panic(PFX "timed out waiting for the other CPUs!\n");
- }
- EXPORT_SYMBOL(global_cache_flush);
-diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
-index 5126d5d..44a4d65 100644
---- a/drivers/lguest/x86/core.c
-+++ b/drivers/lguest/x86/core.c
-@@ -475,7 +475,7 @@ void __init lguest_arch_host_init(void)
- 		cpu_had_pge = 1;
- 		/* adjust_pge is a helper function which sets or unsets the PGE
- 		 * bit on its CPU, depending on the argument (0 == unset). */
--		on_each_cpu(adjust_pge, (void *)0, 0, 1);
-+		on_each_cpu(adjust_pge, (void *)0, 1);
- 		/* Turn off the feature in the global feature set. */
- 		clear_bit(X86_FEATURE_PGE, boot_cpu_data.x86_capability);
- 	}
-@@ -490,7 +490,7 @@ void __exit lguest_arch_host_fini(void)
- 	if (cpu_had_pge) {
- 		set_bit(X86_FEATURE_PGE, boot_cpu_data.x86_capability);
- 		/* adjust_pge's argument "1" means set PGE. */
--		on_each_cpu(adjust_pge, (void *)1, 0, 1);
-+		on_each_cpu(adjust_pge, (void *)1, 1);
- 	}
- 	put_online_cpus();
- }
-diff --git a/fs/buffer.c b/fs/buffer.c
-index a073f3f..5c23ef5 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1464,7 +1464,7 @@ static void invalidate_bh_lru(void *arg)
- 	
- void invalidate_bh_lrus(void)
- {
--	on_each_cpu(invalidate_bh_lru, NULL, 1, 1);
-+	on_each_cpu(invalidate_bh_lru, NULL, 1);
- }
- EXPORT_SYMBOL_GPL(invalidate_bh_lrus);
- 
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index 392579e..54a0ed6 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -88,7 +88,7 @@ static inline void init_call_single_data(void)
- /*
-  * Call a function on all processors
+ int setup_profiling_timer(unsigned int multiplier)
+@@ -316,8 +316,7 @@ int send_ipi(int vector, int wait, cpumask_t cpu_mask)
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
   */
--int on_each_cpu(void (*func) (void *info), void *info, int retry, int wait);
-+int on_each_cpu(void (*func) (void *info), void *info, int wait);
- 
- #define MSG_ALL_BUT_SELF	0x8000	/* Assume <32768 CPU's */
- #define MSG_ALL			0x8001
-@@ -120,7 +120,7 @@ static inline int up_smp_call_function(void (*func)(void *), void *info)
- }
- #define smp_call_function(func, info, wait) \
- 			(up_smp_call_function(func, info))
--#define on_each_cpu(func,info,retry,wait)	\
-+#define on_each_cpu(func,info,wait)		\
- 	({					\
- 		local_irq_disable();		\
- 		func(info);			\
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 421be5f..50e8616 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -623,7 +623,7 @@ static void retrigger_next_event(void *arg)
- void clock_was_set(void)
+-int smp_call_function(void (*func)(void *info), void *info,
+-		      int nonatomic, int wait)
++int smp_call_function(void (*func)(void *info), void *info, int wait)
  {
- 	/* Retrigger the CPU local events everywhere */
--	on_each_cpu(retrigger_next_event, NULL, 0, 1);
-+	on_each_cpu(retrigger_next_event, NULL, 1);
- }
- 
- /*
-diff --git a/kernel/profile.c b/kernel/profile.c
-index ae7ead8..5892641 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -252,7 +252,7 @@ static void profile_flip_buffers(void)
- 	mutex_lock(&profile_flip_mutex);
- 	j = per_cpu(cpu_profile_flip, get_cpu());
- 	put_cpu();
--	on_each_cpu(__profile_flip_buffers, NULL, 0, 1);
-+	on_each_cpu(__profile_flip_buffers, NULL, 1);
- 	for_each_online_cpu(cpu) {
- 		struct profile_hit *hits = per_cpu(cpu_profile_hits, cpu)[j];
- 		for (i = 0; i < NR_PROFILE_HIT; ++i) {
-@@ -275,7 +275,7 @@ static void profile_discard_flip_buffers(void)
- 	mutex_lock(&profile_flip_mutex);
- 	i = per_cpu(cpu_profile_flip, get_cpu());
- 	put_cpu();
--	on_each_cpu(__profile_flip_buffers, NULL, 0, 1);
-+	on_each_cpu(__profile_flip_buffers, NULL, 1);
- 	for_each_online_cpu(cpu) {
- 		struct profile_hit *hits = per_cpu(cpu_profile_hits, cpu)[i];
- 		memset(hits, 0, NR_PROFILE_HIT*sizeof(struct profile_hit));
-@@ -558,7 +558,7 @@ static int __init create_hash_tables(void)
- out_cleanup:
- 	prof_on = 0;
- 	smp_mb();
--	on_each_cpu(profile_nop, NULL, 0, 1);
-+	on_each_cpu(profile_nop, NULL, 1);
- 	for_each_online_cpu(cpu) {
- 		struct page *page;
- 
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index c09605f..6addab5 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -127,7 +127,7 @@ void rcu_barrier(void)
- 	 * until all the callbacks are queued.
- 	 */
- 	rcu_read_lock();
--	on_each_cpu(rcu_barrier_func, NULL, 0, 1);
-+	on_each_cpu(rcu_barrier_func, NULL, 1);
- 	rcu_read_unlock();
- 	wait_for_completion(&rcu_barrier_completion);
- 	mutex_unlock(&rcu_barrier_mutex);
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index d73afb4..c159fd0 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -674,7 +674,7 @@ __init int spawn_ksoftirqd(void)
- /*
-  * Call a function on all processors
-  */
--int on_each_cpu(void (*func) (void *info), void *info, int retry, int wait)
-+int on_each_cpu(void (*func) (void *info), void *info, int wait)
- {
- 	int ret = 0;
- 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 8e83f02..26b7e47 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -946,7 +946,7 @@ void drain_local_pages(void *arg)
-  */
- void drain_all_pages(void)
- {
--	on_each_cpu(drain_local_pages, NULL, 0, 1);
-+	on_each_cpu(drain_local_pages, NULL, 1);
- }
- 
- #ifdef CONFIG_HIBERNATION
-diff --git a/mm/slab.c b/mm/slab.c
-index 06236e4..2cdaf56 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2454,7 +2454,7 @@ static void drain_cpu_caches(struct kmem_cache *cachep)
- 	struct kmem_list3 *l3;
- 	int node;
- 
--	on_each_cpu(do_drain, cachep, 1, 1);
-+	on_each_cpu(do_drain, cachep, 1);
- 	check_irq_on();
- 	for_each_online_node(node) {
- 		l3 = cachep->nodelists[node];
-@@ -3936,7 +3936,7 @@ static int do_tune_cpucache(struct kmem_cache *cachep, int limit,
- 	}
- 	new->cachep = cachep;
- 
--	on_each_cpu(do_ccupdate_local, (void *)new, 1, 1);
-+	on_each_cpu(do_ccupdate_local, (void *)new, 1);
- 
- 	check_irq_on();
- 	cachep->batchcount = batchcount;
-diff --git a/mm/slub.c b/mm/slub.c
-index 0987d1c..44715eb 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1497,7 +1497,7 @@ static void flush_cpu_slab(void *d)
- static void flush_all(struct kmem_cache *s)
- {
- #ifdef CONFIG_SMP
--	on_each_cpu(flush_cpu_slab, s, 1, 1);
-+	on_each_cpu(flush_cpu_slab, s, 1);
- #else
- 	unsigned long flags;
- 
-diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
-index 94d5a45..a178e27 100644
---- a/net/iucv/iucv.c
-+++ b/net/iucv/iucv.c
-@@ -545,7 +545,7 @@ out:
-  */
- static void iucv_disable(void)
- {
--	on_each_cpu(iucv_retrieve_cpu, NULL, 0, 1);
-+	on_each_cpu(iucv_retrieve_cpu, NULL, 1);
- 	kfree(iucv_path_table);
- }
- 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index ea1f595..d4eae6a 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1286,7 +1286,7 @@ static int kvm_reboot(struct notifier_block *notifier, unsigned long val,
- 		 * in vmx root mode.
- 		 */
- 		printk(KERN_INFO "kvm: exiting hardware virtualization\n");
--		on_each_cpu(hardware_disable, NULL, 0, 1);
-+		on_each_cpu(hardware_disable, NULL, 1);
+ 	cpumask_t cpu_mask = CPU_MASK_ALL;
+ 	struct call_data_struct data;
+diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
+index 705176b..9cd818c 100644
+--- a/arch/ia64/kernel/mca.c
++++ b/arch/ia64/kernel/mca.c
+@@ -1881,7 +1881,7 @@ static int __cpuinit mca_cpu_callback(struct notifier_block *nfb,
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+ 		smp_call_function_single(hotcpu, ia64_mca_cmc_vector_adjust,
+-					 NULL, 1, 0);
++					 NULL, 0);
+ 		break;
  	}
  	return NOTIFY_OK;
+diff --git a/arch/ia64/kernel/palinfo.c b/arch/ia64/kernel/palinfo.c
+index 9dc00f7..e5c57f4 100644
+--- a/arch/ia64/kernel/palinfo.c
++++ b/arch/ia64/kernel/palinfo.c
+@@ -921,7 +921,7 @@ int palinfo_handle_smp(pal_func_cpu_u_t *f, char *page)
+ 
+ 
+ 	/* will send IPI to other CPU and wait for completion of remote call */
+-	if ((ret=smp_call_function_single(f->req_cpu, palinfo_smp_call, &ptr, 0, 1))) {
++	if ((ret=smp_call_function_single(f->req_cpu, palinfo_smp_call, &ptr, 1))) {
+ 		printk(KERN_ERR "palinfo: remote CPU call from %d to %d on function %d: "
+ 		       "error %d\n", smp_processor_id(), f->req_cpu, f->func_id, ret);
+ 		return 0;
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index 71d0513..080f41c 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -1820,7 +1820,7 @@ pfm_syswide_cleanup_other_cpu(pfm_context_t *ctx)
+ 	int ret;
+ 
+ 	DPRINT(("calling CPU%d for cleanup\n", ctx->ctx_cpu));
+-	ret = smp_call_function_single(ctx->ctx_cpu, pfm_syswide_force_stop, ctx, 0, 1);
++	ret = smp_call_function_single(ctx->ctx_cpu, pfm_syswide_force_stop, ctx, 1);
+ 	DPRINT(("called CPU%d for cleanup ret=%d\n", ctx->ctx_cpu, ret));
  }
-@@ -1479,7 +1479,7 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
- 			goto out_free_1;
+ #endif /* CONFIG_SMP */
+diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
+index a3a34b4..fabaf08 100644
+--- a/arch/ia64/kernel/process.c
++++ b/arch/ia64/kernel/process.c
+@@ -286,7 +286,7 @@ void cpu_idle_wait(void)
+ {
+ 	smp_mb();
+ 	/* kick all the CPUs so that they exit out of pm_idle */
+-	smp_call_function(do_nothing, NULL, 0, 1);
++	smp_call_function(do_nothing, NULL, 1);
+ }
+ EXPORT_SYMBOL_GPL(cpu_idle_wait);
+ 
+diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+index d7ad42b..99032f9 100644
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -317,7 +317,7 @@ ia64_sync_itc (unsigned int master)
+ 
+ 	go[MASTER] = 1;
+ 
+-	if (smp_call_function_single(master, sync_master, NULL, 1, 0) < 0) {
++	if (smp_call_function_single(master, sync_master, NULL, 0) < 0) {
+ 		printk(KERN_ERR "sync_itc: failed to get attention of CPU %u!\n", master);
+ 		return;
+ 	}
+diff --git a/arch/ia64/kernel/uncached.c b/arch/ia64/kernel/uncached.c
+index e77995a..8eff8c1 100644
+--- a/arch/ia64/kernel/uncached.c
++++ b/arch/ia64/kernel/uncached.c
+@@ -123,8 +123,7 @@ static int uncached_add_chunk(struct uncached_pool *uc_pool, int nid)
+ 	status = ia64_pal_prefetch_visibility(PAL_VISIBILITY_PHYSICAL);
+ 	if (status == PAL_VISIBILITY_OK_REMOTE_NEEDED) {
+ 		atomic_set(&uc_pool->status, 0);
+-		status = smp_call_function(uncached_ipi_visibility, uc_pool,
+-					   0, 1);
++		status = smp_call_function(uncached_ipi_visibility, uc_pool, 1);
+ 		if (status || atomic_read(&uc_pool->status))
+ 			goto failed;
+ 	} else if (status != PAL_VISIBILITY_OK)
+@@ -146,7 +145,7 @@ static int uncached_add_chunk(struct uncached_pool *uc_pool, int nid)
+ 	if (status != PAL_STATUS_SUCCESS)
+ 		goto failed;
+ 	atomic_set(&uc_pool->status, 0);
+-	status = smp_call_function(uncached_ipi_mc_drain, uc_pool, 0, 1);
++	status = smp_call_function(uncached_ipi_mc_drain, uc_pool, 1);
+ 	if (status || atomic_read(&uc_pool->status))
+ 		goto failed;
+ 
+diff --git a/arch/ia64/sn/kernel/sn2/sn_hwperf.c b/arch/ia64/sn/kernel/sn2/sn_hwperf.c
+index 8cc0c47..636588e 100644
+--- a/arch/ia64/sn/kernel/sn2/sn_hwperf.c
++++ b/arch/ia64/sn/kernel/sn2/sn_hwperf.c
+@@ -629,7 +629,7 @@ static int sn_hwperf_op_cpu(struct sn_hwperf_op_info *op_info)
+ 		if (use_ipi) {
+ 			/* use an interprocessor interrupt to call SAL */
+ 			smp_call_function_single(cpu, sn_hwperf_call_sal,
+-				op_info, 1, 1);
++				op_info, 1);
+ 		}
+ 		else {
+ 			/* migrate the task before calling SAL */ 
+diff --git a/arch/m32r/kernel/smp.c b/arch/m32r/kernel/smp.c
+index 74eb7bc..7577f97 100644
+--- a/arch/m32r/kernel/smp.c
++++ b/arch/m32r/kernel/smp.c
+@@ -212,7 +212,7 @@ void smp_flush_tlb_all(void)
+ 	local_irq_save(flags);
+ 	__flush_tlb_all();
+ 	local_irq_restore(flags);
+-	smp_call_function(flush_tlb_all_ipi, NULL, 1, 1);
++	smp_call_function(flush_tlb_all_ipi, NULL, 1);
+ 	preempt_enable();
+ }
+ 
+@@ -505,7 +505,7 @@ void smp_invalidate_interrupt(void)
+  *==========================================================================*/
+ void smp_send_stop(void)
+ {
+-	smp_call_function(stop_this_cpu, NULL, 1, 0);
++	smp_call_function(stop_this_cpu, NULL, 0);
+ }
+ 
+ /*==========================================================================*
+diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
+index c75b26c..7a9ae83 100644
+--- a/arch/mips/kernel/smp.c
++++ b/arch/mips/kernel/smp.c
+@@ -167,7 +167,7 @@ static void stop_this_cpu(void *dummy)
+ 
+ void smp_send_stop(void)
+ {
+-	smp_call_function(stop_this_cpu, NULL, 1, 0);
++	smp_call_function(stop_this_cpu, NULL, 0);
+ }
+ 
+ void __init smp_cpus_done(unsigned int max_cpus)
+@@ -266,7 +266,7 @@ static void flush_tlb_mm_ipi(void *mm)
+ static inline void smp_on_other_tlbs(void (*func) (void *info), void *info)
+ {
+ #ifndef CONFIG_MIPS_MT_SMTC
+-	smp_call_function(func, info, 1, 1);
++	smp_call_function(func, info, 1);
+ #endif
+ }
+ 
+diff --git a/arch/mips/mm/c-r4k.c b/arch/mips/mm/c-r4k.c
+index 643c8bc..8d55bd9 100644
+--- a/arch/mips/mm/c-r4k.c
++++ b/arch/mips/mm/c-r4k.c
+@@ -43,12 +43,12 @@
+  *    primary cache.
+  */
+ static inline void r4k_on_each_cpu(void (*func) (void *info), void *info,
+-                                   int retry, int wait)
++                                   int wait)
+ {
+ 	preempt_disable();
+ 
+ #if !defined(CONFIG_MIPS_MT_SMP) && !defined(CONFIG_MIPS_MT_SMTC)
+-	smp_call_function(func, info, retry, wait);
++	smp_call_function(func, info, wait);
+ #endif
+ 	func(info);
+ 	preempt_enable();
+@@ -350,7 +350,7 @@ static inline void local_r4k___flush_cache_all(void * args)
+ 
+ static void r4k___flush_cache_all(void)
+ {
+-	r4k_on_each_cpu(local_r4k___flush_cache_all, NULL, 1, 1);
++	r4k_on_each_cpu(local_r4k___flush_cache_all, NULL, 1);
+ }
+ 
+ static inline int has_valid_asid(const struct mm_struct *mm)
+@@ -397,7 +397,7 @@ static void r4k_flush_cache_range(struct vm_area_struct *vma,
+ 	int exec = vma->vm_flags & VM_EXEC;
+ 
+ 	if (cpu_has_dc_aliases || (exec && !cpu_has_ic_fills_f_dc))
+-		r4k_on_each_cpu(local_r4k_flush_cache_range, vma, 1, 1);
++		r4k_on_each_cpu(local_r4k_flush_cache_range, vma, 1);
+ }
+ 
+ static inline void local_r4k_flush_cache_mm(void * args)
+@@ -429,7 +429,7 @@ static void r4k_flush_cache_mm(struct mm_struct *mm)
+ 	if (!cpu_has_dc_aliases)
+ 		return;
+ 
+-	r4k_on_each_cpu(local_r4k_flush_cache_mm, mm, 1, 1);
++	r4k_on_each_cpu(local_r4k_flush_cache_mm, mm, 1);
+ }
+ 
+ struct flush_cache_page_args {
+@@ -518,7 +518,7 @@ static void r4k_flush_cache_page(struct vm_area_struct *vma,
+ 	args.addr = addr;
+ 	args.pfn = pfn;
+ 
+-	r4k_on_each_cpu(local_r4k_flush_cache_page, &args, 1, 1);
++	r4k_on_each_cpu(local_r4k_flush_cache_page, &args, 1);
+ }
+ 
+ static inline void local_r4k_flush_data_cache_page(void * addr)
+@@ -532,7 +532,7 @@ static void r4k_flush_data_cache_page(unsigned long addr)
+ 		local_r4k_flush_data_cache_page((void *)addr);
+ 	else
+ 		r4k_on_each_cpu(local_r4k_flush_data_cache_page, (void *) addr,
+-			        1, 1);
++			        1);
+ }
+ 
+ struct flush_icache_range_args {
+@@ -568,7 +568,7 @@ static void r4k_flush_icache_range(unsigned long start, unsigned long end)
+ 	args.start = start;
+ 	args.end = end;
+ 
+-	r4k_on_each_cpu(local_r4k_flush_icache_range, &args, 1, 1);
++	r4k_on_each_cpu(local_r4k_flush_icache_range, &args, 1);
+ 	instruction_hazard();
+ }
+ 
+@@ -669,7 +669,7 @@ static void local_r4k_flush_cache_sigtramp(void * arg)
+ 
+ static void r4k_flush_cache_sigtramp(unsigned long addr)
+ {
+-	r4k_on_each_cpu(local_r4k_flush_cache_sigtramp, (void *) addr, 1, 1);
++	r4k_on_each_cpu(local_r4k_flush_cache_sigtramp, (void *) addr, 1);
+ }
+ 
+ static void r4k_flush_icache_all(void)
+diff --git a/arch/mips/pmc-sierra/yosemite/prom.c b/arch/mips/pmc-sierra/yosemite/prom.c
+index 35dc435..cf4c868 100644
+--- a/arch/mips/pmc-sierra/yosemite/prom.c
++++ b/arch/mips/pmc-sierra/yosemite/prom.c
+@@ -64,7 +64,7 @@ static void prom_exit(void)
+ #ifdef CONFIG_SMP
+ 	if (smp_processor_id())
+ 		/* CPU 1 */
+-		smp_call_function(prom_cpu0_exit, NULL, 1, 1);
++		smp_call_function(prom_cpu0_exit, NULL, 1);
+ #endif
+ 	prom_cpu0_exit(NULL);
+ }
+diff --git a/arch/mips/sibyte/cfe/setup.c b/arch/mips/sibyte/cfe/setup.c
+index 33fce82..fd9604d 100644
+--- a/arch/mips/sibyte/cfe/setup.c
++++ b/arch/mips/sibyte/cfe/setup.c
+@@ -74,7 +74,7 @@ static void __noreturn cfe_linux_exit(void *arg)
+ 		if (!reboot_smp) {
+ 			/* Get CPU 0 to do the cfe_exit */
+ 			reboot_smp = 1;
+-			smp_call_function(cfe_linux_exit, arg, 1, 0);
++			smp_call_function(cfe_linux_exit, arg, 0);
+ 		}
+ 	} else {
+ 		printk("Passing control back to CFE...\n");
+diff --git a/arch/mips/sibyte/sb1250/prom.c b/arch/mips/sibyte/sb1250/prom.c
+index cf8f6b3..65b1af6 100644
+--- a/arch/mips/sibyte/sb1250/prom.c
++++ b/arch/mips/sibyte/sb1250/prom.c
+@@ -66,7 +66,7 @@ static void prom_linux_exit(void)
+ {
+ #ifdef CONFIG_SMP
+ 	if (smp_processor_id()) {
+-		smp_call_function(prom_cpu0_exit, NULL, 1, 1);
++		smp_call_function(prom_cpu0_exit, NULL, 1);
+ 	}
+ #endif
+ 	while(1);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index cfdb21e..ff7c60f 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -168,7 +168,7 @@ void arch_send_call_function_ipi(cpumask_t mask)
+ 
+ void smp_send_stop(void)
+ {
+-	smp_call_function(stop_this_cpu, NULL, 0, 0);
++	smp_call_function(stop_this_cpu, NULL, 0);
+ }
+ 
+ extern struct gettimeofday_struct do_gtod;
+diff --git a/arch/s390/appldata/appldata_base.c b/arch/s390/appldata/appldata_base.c
+index 655d525..f920656 100644
+--- a/arch/s390/appldata/appldata_base.c
++++ b/arch/s390/appldata/appldata_base.c
+@@ -207,7 +207,7 @@ __appldata_vtimer_setup(int cmd)
+ 			per_cpu(appldata_timer, i).expires = per_cpu_interval;
+ 			smp_call_function_single(i, add_virt_timer_periodic,
+ 						 &per_cpu(appldata_timer, i),
+-						 0, 1);
++						 1);
+ 		}
+ 		appldata_timer_active = 1;
+ 		P_INFO("Monitoring timer started.\n");
+@@ -234,7 +234,7 @@ __appldata_vtimer_setup(int cmd)
+ 			args.timer = &per_cpu(appldata_timer, i);
+ 			args.expires = per_cpu_interval;
+ 			smp_call_function_single(i, __appldata_mod_vtimer_wrap,
+-						 &args, 0, 1);
++						 &args, 1);
+ 		}
+ 	}
+ }
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index 1f42289..60e5195 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -109,7 +109,7 @@ static void do_call_function(void)
+ }
+ 
+ static void __smp_call_function_map(void (*func) (void *info), void *info,
+-				    int nonatomic, int wait, cpumask_t map)
++				    int wait, cpumask_t map)
+ {
+ 	struct call_data_struct data;
+ 	int cpu, local = 0;
+@@ -162,7 +162,6 @@ out:
+  * smp_call_function:
+  * @func: the function to run; this must be fast and non-blocking
+  * @info: an arbitrary pointer to pass to the function
+- * @nonatomic: unused
+  * @wait: if true, wait (atomically) until function has completed on other CPUs
+  *
+  * Run a function on all other CPUs.
+@@ -170,15 +169,14 @@ out:
+  * You must not call this function with disabled interrupts, from a
+  * hardware interrupt handler or from a bottom half.
+  */
+-int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+-		      int wait)
++int smp_call_function(void (*func) (void *info), void *info, int wait)
+ {
+ 	cpumask_t map;
+ 
+ 	spin_lock(&call_lock);
+ 	map = cpu_online_map;
+ 	cpu_clear(smp_processor_id(), map);
+-	__smp_call_function_map(func, info, nonatomic, wait, map);
++	__smp_call_function_map(func, info, wait, map);
+ 	spin_unlock(&call_lock);
+ 	return 0;
+ }
+@@ -189,7 +187,6 @@ EXPORT_SYMBOL(smp_call_function);
+  * @cpu: the CPU where func should run
+  * @func: the function to run; this must be fast and non-blocking
+  * @info: an arbitrary pointer to pass to the function
+- * @nonatomic: unused
+  * @wait: if true, wait (atomically) until function has completed on other CPUs
+  *
+  * Run a function on one processor.
+@@ -198,11 +195,10 @@ EXPORT_SYMBOL(smp_call_function);
+  * hardware interrupt handler or from a bottom half.
+  */
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+-			     int nonatomic, int wait)
++			     int wait)
+ {
+ 	spin_lock(&call_lock);
+-	__smp_call_function_map(func, info, nonatomic, wait,
+-				cpumask_of_cpu(cpu));
++	__smp_call_function_map(func, info, wait, cpumask_of_cpu(cpu));
+ 	spin_unlock(&call_lock);
+ 	return 0;
+ }
+@@ -228,7 +224,7 @@ int smp_call_function_mask(cpumask_t mask, void (*func)(void *), void *info,
+ {
+ 	spin_lock(&call_lock);
+ 	cpu_clear(smp_processor_id(), mask);
+-	__smp_call_function_map(func, info, 0, wait, mask);
++	__smp_call_function_map(func, info, wait, mask);
+ 	spin_unlock(&call_lock);
+ 	return 0;
+ }
+diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
+index 7aec676..bf7bf2c 100644
+--- a/arch/s390/kernel/time.c
++++ b/arch/s390/kernel/time.c
+@@ -690,7 +690,7 @@ static int etr_sync_clock(struct etr_aib *aib, int port)
+ 	 */
+ 	memset(&etr_sync, 0, sizeof(etr_sync));
+ 	preempt_disable();
+-	smp_call_function(etr_sync_cpu_start, NULL, 0, 0);
++	smp_call_function(etr_sync_cpu_start, NULL, 0);
+ 	local_irq_disable();
+ 	etr_enable_sync_clock();
+ 
+@@ -729,7 +729,7 @@ static int etr_sync_clock(struct etr_aib *aib, int port)
+ 		rc = -EAGAIN;
+ 	}
+ 	local_irq_enable();
+-	smp_call_function(etr_sync_cpu_end,NULL,0,0);
++	smp_call_function(etr_sync_cpu_end,NULL,0);
+ 	preempt_enable();
+ 	return rc;
+ }
+diff --git a/arch/sh/kernel/smp.c b/arch/sh/kernel/smp.c
+index 2ed8dce..71781ba 100644
+--- a/arch/sh/kernel/smp.c
++++ b/arch/sh/kernel/smp.c
+@@ -168,7 +168,7 @@ static void stop_this_cpu(void *unused)
+ 
+ void smp_send_stop(void)
+ {
+-	smp_call_function(stop_this_cpu, 0, 1, 0);
++	smp_call_function(stop_this_cpu, 0, 0);
+ }
+ 
+ void arch_send_call_function_ipi(cpumask_t mask)
+@@ -223,7 +223,7 @@ void flush_tlb_mm(struct mm_struct *mm)
+ 	preempt_disable();
+ 
+ 	if ((atomic_read(&mm->mm_users) != 1) || (current->mm != mm)) {
+-		smp_call_function(flush_tlb_mm_ipi, (void *)mm, 1, 1);
++		smp_call_function(flush_tlb_mm_ipi, (void *)mm, 1);
+ 	} else {
+ 		int i;
+ 		for (i = 0; i < num_online_cpus(); i++)
+@@ -260,7 +260,7 @@ void flush_tlb_range(struct vm_area_struct *vma,
+ 		fd.vma = vma;
+ 		fd.addr1 = start;
+ 		fd.addr2 = end;
+-		smp_call_function(flush_tlb_range_ipi, (void *)&fd, 1, 1);
++		smp_call_function(flush_tlb_range_ipi, (void *)&fd, 1);
+ 	} else {
+ 		int i;
+ 		for (i = 0; i < num_online_cpus(); i++)
+@@ -303,7 +303,7 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long page)
+ 
+ 		fd.vma = vma;
+ 		fd.addr1 = page;
+-		smp_call_function(flush_tlb_page_ipi, (void *)&fd, 1, 1);
++		smp_call_function(flush_tlb_page_ipi, (void *)&fd, 1);
+ 	} else {
+ 		int i;
+ 		for (i = 0; i < num_online_cpus(); i++)
+@@ -327,6 +327,6 @@ void flush_tlb_one(unsigned long asid, unsigned long vaddr)
+ 	fd.addr1 = asid;
+ 	fd.addr2 = vaddr;
+ 
+-	smp_call_function(flush_tlb_one_ipi, (void *)&fd, 1, 1);
++	smp_call_function(flush_tlb_one_ipi, (void *)&fd, 1);
+ 	local_flush_tlb_one(asid, vaddr);
+ }
+diff --git a/arch/sparc64/kernel/smp.c b/arch/sparc64/kernel/smp.c
+index b82d017..c099d96 100644
+--- a/arch/sparc64/kernel/smp.c
++++ b/arch/sparc64/kernel/smp.c
+@@ -807,7 +807,6 @@ extern unsigned long xcall_call_function;
+  * smp_call_function(): Run a function on all other CPUs.
+  * @func: The function to run. This must be fast and non-blocking.
+  * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: currently unused.
+  * @wait: If true, wait (atomically) until function has completed on other CPUs.
+  *
+  * Returns 0 on success, else a negative status code. Does not return until
+@@ -817,8 +816,7 @@ extern unsigned long xcall_call_function;
+  * hardware interrupt handler or from a bottom half handler.
+  */
+ static int sparc64_smp_call_function_mask(void (*func)(void *info), void *info,
+-					  int nonatomic, int wait,
+-					  cpumask_t mask)
++					  int wait, cpumask_t mask)
+ {
+ 	struct call_data_struct data;
+ 	int cpus;
+@@ -853,11 +851,9 @@ out_unlock:
+ 	return 0;
+ }
+ 
+-int smp_call_function(void (*func)(void *info), void *info,
+-		      int nonatomic, int wait)
++int smp_call_function(void (*func)(void *info), void *info, int wait)
+ {
+-	return sparc64_smp_call_function_mask(func, info, nonatomic, wait,
+-						cpu_online_map);
++	return sparc64_smp_call_function_mask(func, info, wait, cpu_online_map);
+ }
+ 
+ void smp_call_function_client(int irq, struct pt_regs *regs)
+@@ -894,7 +890,7 @@ static void tsb_sync(void *info)
+ 
+ void smp_tsb_sync(struct mm_struct *mm)
+ {
+-	sparc64_smp_call_function_mask(tsb_sync, mm, 0, 1, mm->cpu_vm_mask);
++	sparc64_smp_call_function_mask(tsb_sync, mm, 1, mm->cpu_vm_mask);
+ }
+ 
+ extern unsigned long xcall_flush_tlb_mm;
+diff --git a/arch/um/kernel/smp.c b/arch/um/kernel/smp.c
+index e1062ec..be2d50c 100644
+--- a/arch/um/kernel/smp.c
++++ b/arch/um/kernel/smp.c
+@@ -214,8 +214,7 @@ void smp_call_function_slave(int cpu)
+ 	atomic_inc(&scf_finished);
+ }
+ 
+-int smp_call_function(void (*_func)(void *info), void *_info, int nonatomic,
+-		      int wait)
++int smp_call_function(void (*_func)(void *info), void *_info, int wait)
+ {
+ 	int cpus = num_online_cpus() - 1;
+ 	int i;
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 6a1e278..290652c 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -222,7 +222,7 @@ static void set_mtrr(unsigned int reg, unsigned long base,
+ 	atomic_set(&data.gate,0);
+ 
+ 	/*  Start the ball rolling on other CPUs  */
+-	if (smp_call_function(ipi_handler, &data, 1, 0) != 0)
++	if (smp_call_function(ipi_handler, &data, 0) != 0)
+ 		panic("mtrr: timed out waiting for other CPUs\n");
+ 
+ 	local_irq_save(flags);
+@@ -822,7 +822,7 @@ void mtrr_ap_init(void)
+  */
+ void mtrr_save_state(void)
+ {
+-	smp_call_function_single(0, mtrr_save_fixed_ranges, NULL, 1, 1);
++	smp_call_function_single(0, mtrr_save_fixed_ranges, NULL, 1);
+ }
+ 
+ static int __init mtrr_init_finialize(void)
+diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
+index daff52a..336dd43 100644
+--- a/arch/x86/kernel/cpuid.c
++++ b/arch/x86/kernel/cpuid.c
+@@ -95,7 +95,7 @@ static ssize_t cpuid_read(struct file *file, char __user *buf,
+ 	for (; count; count -= 16) {
+ 		cmd.eax = pos;
+ 		cmd.ecx = pos >> 32;
+-		smp_call_function_single(cpu, cpuid_smp_cpuid, &cmd, 1, 1);
++		smp_call_function_single(cpu, cpuid_smp_cpuid, &cmd, 1);
+ 		if (copy_to_user(tmp, &cmd, 16))
+ 			return -EFAULT;
+ 		tmp += 16;
+diff --git a/arch/x86/kernel/ldt.c b/arch/x86/kernel/ldt.c
+index 0224c36..cb0a639 100644
+--- a/arch/x86/kernel/ldt.c
++++ b/arch/x86/kernel/ldt.c
+@@ -68,7 +68,7 @@ static int alloc_ldt(mm_context_t *pc, int mincount, int reload)
+ 		load_LDT(pc);
+ 		mask = cpumask_of_cpu(smp_processor_id());
+ 		if (!cpus_equal(current->mm->cpu_vm_mask, mask))
+-			smp_call_function(flush_ldt, NULL, 1, 1);
++			smp_call_function(flush_ldt, NULL, 1);
+ 		preempt_enable();
+ #else
+ 		load_LDT(pc);
+diff --git a/arch/x86/kernel/nmi_32.c b/arch/x86/kernel/nmi_32.c
+index 11b14bb..a40abc6 100644
+--- a/arch/x86/kernel/nmi_32.c
++++ b/arch/x86/kernel/nmi_32.c
+@@ -88,7 +88,7 @@ int __init check_nmi_watchdog(void)
+ 
+ #ifdef CONFIG_SMP
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+-		smp_call_function(nmi_cpu_busy, (void *)&endflag, 0, 0);
++		smp_call_function(nmi_cpu_busy, (void *)&endflag, 0);
+ #endif
+ 
+ 	for_each_possible_cpu(cpu)
+diff --git a/arch/x86/kernel/nmi_64.c b/arch/x86/kernel/nmi_64.c
+index 5a29ded..2f1e4f5 100644
+--- a/arch/x86/kernel/nmi_64.c
++++ b/arch/x86/kernel/nmi_64.c
+@@ -96,7 +96,7 @@ int __init check_nmi_watchdog(void)
+ 
+ #ifdef CONFIG_SMP
+ 	if (nmi_watchdog == NMI_LOCAL_APIC)
+-		smp_call_function(nmi_cpu_busy, (void *)&endflag, 0, 0);
++		smp_call_function(nmi_cpu_busy, (void *)&endflag, 0);
+ #endif
+ 
+ 	for (cpu = 0; cpu < NR_CPUS; cpu++)
+diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+index 3e051ae..7f0a10d 100644
+--- a/arch/x86/kernel/smp.c
++++ b/arch/x86/kernel/smp.c
+@@ -174,7 +174,7 @@ static void native_smp_send_stop(void)
+ 	if (reboot_force)
+ 		return;
+ 
+-	smp_call_function(stop_this_cpu, NULL, 0, 0);
++	smp_call_function(stop_this_cpu, NULL, 0);
+ 	local_irq_save(flags);
+ 	disable_local_APIC();
+ 	local_irq_restore(flags);
+diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
+index 61efa2f..0a03d57 100644
+--- a/arch/x86/kernel/vsyscall_64.c
++++ b/arch/x86/kernel/vsyscall_64.c
+@@ -278,7 +278,7 @@ cpu_vsyscall_notifier(struct notifier_block *n, unsigned long action, void *arg)
+ {
+ 	long cpu = (long)arg;
+ 	if (action == CPU_ONLINE || action == CPU_ONLINE_FROZEN)
+-		smp_call_function_single(cpu, cpu_vsyscall_init, NULL, 0, 1);
++		smp_call_function_single(cpu, cpu_vsyscall_init, NULL, 1);
+ 	return NOTIFY_DONE;
+ }
+ 
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index bfe4db1..bb6e010 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -335,7 +335,7 @@ static void vcpu_clear(struct vcpu_vmx *vmx)
+ {
+ 	if (vmx->vcpu.cpu == -1)
+ 		return;
+-	smp_call_function_single(vmx->vcpu.cpu, __vcpu_clear, vmx, 0, 1);
++	smp_call_function_single(vmx->vcpu.cpu, __vcpu_clear, vmx, 1);
+ 	vmx->launched = 0;
+ }
+ 
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 21338bd..7335231 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4003,6 +4003,6 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
+ 	 * So need not to call smp_call_function_single() in that case.
+ 	 */
+ 	if (vcpu->guest_mode && vcpu->cpu != cpu)
+-		smp_call_function_single(ipi_pcpu, vcpu_kick_intr, vcpu, 0, 0);
++		smp_call_function_single(ipi_pcpu, vcpu_kick_intr, vcpu, 0);
+ 	put_cpu();
+ }
+diff --git a/arch/x86/lib/msr-on-cpu.c b/arch/x86/lib/msr-on-cpu.c
+index 57d043f..d5a2b39 100644
+--- a/arch/x86/lib/msr-on-cpu.c
++++ b/arch/x86/lib/msr-on-cpu.c
+@@ -30,10 +30,10 @@ static int _rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h, int safe)
+ 
+ 	rv.msr_no = msr_no;
+ 	if (safe) {
+-		smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 0, 1);
++		smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
+ 		err = rv.err;
+ 	} else {
+-		smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 0, 1);
++		smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
+ 	}
+ 	*l = rv.l;
+ 	*h = rv.h;
+@@ -64,10 +64,10 @@ static int _wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h, int safe)
+ 	rv.l = l;
+ 	rv.h = h;
+ 	if (safe) {
+-		smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 0, 1);
++		smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
+ 		err = rv.err;
+ 	} else {
+-		smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 0, 1);
++		smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
  	}
  
--	on_each_cpu(hardware_enable, NULL, 0, 1);
-+	on_each_cpu(hardware_enable, NULL, 1);
- 	r = register_cpu_notifier(&kvm_cpu_notifier);
- 	if (r)
- 		goto out_free_2;
-@@ -1525,7 +1525,7 @@ out_free_3:
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	unregister_cpu_notifier(&kvm_cpu_notifier);
- out_free_2:
--	on_each_cpu(hardware_disable, NULL, 0, 1);
-+	on_each_cpu(hardware_disable, NULL, 1);
- out_free_1:
- 	kvm_arch_hardware_unsetup();
- out_free_0:
-@@ -1547,7 +1547,7 @@ void kvm_exit(void)
- 	sysdev_class_unregister(&kvm_sysdev_class);
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	unregister_cpu_notifier(&kvm_cpu_notifier);
--	on_each_cpu(hardware_disable, NULL, 0, 1);
-+	on_each_cpu(hardware_disable, NULL, 1);
- 	kvm_arch_hardware_unsetup();
- 	kvm_arch_exit();
- 	kvm_exit_debug();
+ 	return err;
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+index cb34407..04f596e 100644
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -1113,7 +1113,7 @@ int safe_smp_processor_id(void)
+ /* broadcast a halt to all other CPUs */
+ static void voyager_smp_send_stop(void)
+ {
+-	smp_call_function(smp_stop_cpu_function, NULL, 1, 1);
++	smp_call_function(smp_stop_cpu_function, NULL, 1);
+ }
+ 
+ /* this function is triggered in time.c when a clock tick fires
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+index b3786e7..a1651d0 100644
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -331,7 +331,7 @@ static void stop_self(void *v)
+ 
+ void xen_smp_send_stop(void)
+ {
+-	smp_call_function(stop_self, NULL, 0, 0);
++	smp_call_function(stop_self, NULL, 0);
+ }
+ 
+ void xen_smp_send_reschedule(int cpu)
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 2dd2c1f..3831a3b 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1339,7 +1339,7 @@ static void smp_callback(void *v)
+ static int acpi_processor_latency_notify(struct notifier_block *b,
+ 		unsigned long l, void *v)
+ {
+-	smp_call_function(smp_callback, NULL, 0, 1);
++	smp_call_function(smp_callback, NULL, 1);
+ 	return NOTIFY_OK;
+ }
+ 
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index fc555a9..87b32b5 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -310,7 +310,7 @@ static void smp_callback(void *v)
+ static int cpuidle_latency_notify(struct notifier_block *b,
+ 		unsigned long l, void *v)
+ {
+-	smp_call_function(smp_callback, NULL, 0, 1);
++	smp_call_function(smp_callback, NULL, 1);
+ 	return NOTIFY_OK;
+ }
+ 
+diff --git a/include/asm-alpha/smp.h b/include/asm-alpha/smp.h
+index a9090b6..743403c 100644
+--- a/include/asm-alpha/smp.h
++++ b/include/asm-alpha/smp.h
+@@ -50,7 +50,7 @@ extern int smp_num_cpus;
+ #else /* CONFIG_SMP */
+ 
+ #define hard_smp_processor_id()		0
+-#define smp_call_function_on_cpu(func,info,retry,wait,cpu)    ({ 0; })
++#define smp_call_function_on_cpu(func,info,wait,cpu)    ({ 0; })
+ 
+ #endif /* CONFIG_SMP */
+ 
+diff --git a/include/asm-sparc/smp.h b/include/asm-sparc/smp.h
+index e6d5615..b61e74b 100644
+--- a/include/asm-sparc/smp.h
++++ b/include/asm-sparc/smp.h
+@@ -72,7 +72,7 @@ static inline void xc5(smpfunc_t func, unsigned long arg1, unsigned long arg2,
+ 			   unsigned long arg3, unsigned long arg4, unsigned long arg5)
+ { smp_cross_call(func, arg1, arg2, arg3, arg4, arg5); }
+ 
+-static inline int smp_call_function(void (*func)(void *info), void *info, int nonatomic, int wait)
++static inline int smp_call_function(void (*func)(void *info), void *info, int wait)
+ {
+ 	xc1((smpfunc_t)func, (unsigned long)info);
+ 	return 0;
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index 2691bad..392579e 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -62,11 +62,11 @@ extern void smp_cpus_done(unsigned int max_cpus);
+ /*
+  * Call a function on all other processors
+  */
+-int smp_call_function(void(*func)(void *info), void *info, int retry, int wait);
++int smp_call_function(void(*func)(void *info), void *info, int wait);
+ int smp_call_function_mask(cpumask_t mask, void(*func)(void *info), void *info,
+ 				int wait);
+ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
+-				int retry, int wait);
++				int wait);
+ void __smp_call_function_single(int cpuid, struct call_single_data *data);
+ 
+ /*
+@@ -118,7 +118,7 @@ static inline int up_smp_call_function(void (*func)(void *), void *info)
+ {
+ 	return 0;
+ }
+-#define smp_call_function(func, info, retry, wait) \
++#define smp_call_function(func, info, wait) \
+ 			(up_smp_call_function(func, info))
+ #define on_each_cpu(func,info,retry,wait)	\
+ 	({					\
+@@ -130,7 +130,7 @@ static inline int up_smp_call_function(void (*func)(void *), void *info)
+ static inline void smp_send_reschedule(int cpu) { }
+ #define num_booting_cpus()			1
+ #define smp_prepare_boot_cpu()			do {} while (0)
+-#define smp_call_function_single(cpuid, func, info, retry, wait) \
++#define smp_call_function_single(cpuid, func, info, wait) \
+ ({ \
+ 	WARN_ON(cpuid != 0);	\
+ 	local_irq_disable();	\
+diff --git a/kernel/smp.c b/kernel/smp.c
+index ef6de3d..024ca9e 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -195,13 +195,12 @@ void generic_smp_call_function_single_interrupt(void)
+  * smp_call_function_single - Run a function on a specific CPU
+  * @func: The function to run. This must be fast and non-blocking.
+  * @info: An arbitrary pointer to pass to the function.
+- * @retry: Unused
+  * @wait: If true, wait until function has completed on other CPUs.
+  *
+  * Returns 0 on success, else a negative status code.
+  */
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+-			     int retry, int wait)
++			     int wait)
+ {
+ 	struct call_single_data d;
+ 	unsigned long flags;
+@@ -339,7 +338,6 @@ EXPORT_SYMBOL(smp_call_function_mask);
+  * smp_call_function(): Run a function on all other CPUs.
+  * @func: The function to run. This must be fast and non-blocking.
+  * @info: An arbitrary pointer to pass to the function.
+- * @natomic: Unused
+  * @wait: If true, wait (atomically) until function has completed on other CPUs.
+  *
+  * Returns 0 on success, else a negative status code.
+@@ -350,7 +348,7 @@ EXPORT_SYMBOL(smp_call_function_mask);
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+  */
+-int smp_call_function(void (*func)(void *), void *info, int natomic, int wait)
++int smp_call_function(void (*func)(void *), void *info, int wait)
+ {
+ 	int ret;
+ 
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 36e0617..d73afb4 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -679,7 +679,7 @@ int on_each_cpu(void (*func) (void *info), void *info, int retry, int wait)
+ 	int ret = 0;
+ 
+ 	preempt_disable();
+-	ret = smp_call_function(func, info, retry, wait);
++	ret = smp_call_function(func, info, wait);
+ 	local_irq_disable();
+ 	func(info);
+ 	local_irq_enable();
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index 57a1f02..75e7185 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -266,7 +266,7 @@ void tick_broadcast_on_off(unsigned long reason, int *oncpu)
+ 		       "offline CPU #%d\n", *oncpu);
+ 	else
+ 		smp_call_function_single(*oncpu, tick_do_broadcast_on_off,
+-					 &reason, 1, 1);
++					 &reason, 1);
+ }
+ 
+ /*
+diff --git a/net/core/flow.c b/net/core/flow.c
+index 1999117..5cf8105 100644
+--- a/net/core/flow.c
++++ b/net/core/flow.c
+@@ -298,7 +298,7 @@ void flow_cache_flush(void)
+ 	init_completion(&info.completion);
+ 
+ 	local_bh_disable();
+-	smp_call_function(flow_cache_flush_per_cpu, &info, 1, 0);
++	smp_call_function(flow_cache_flush_per_cpu, &info, 0);
+ 	flow_cache_flush_tasklet((unsigned long)&info);
+ 	local_bh_enable();
+ 
+diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
+index 9189707..94d5a45 100644
+--- a/net/iucv/iucv.c
++++ b/net/iucv/iucv.c
+@@ -480,7 +480,7 @@ static void iucv_setmask_mp(void)
+ 		if (cpu_isset(cpu, iucv_buffer_cpumask) &&
+ 		    !cpu_isset(cpu, iucv_irq_cpumask))
+ 			smp_call_function_single(cpu, iucv_allow_cpu,
+-						 NULL, 0, 1);
++						 NULL, 1);
+ 	preempt_enable();
+ }
+ 
+@@ -498,7 +498,7 @@ static void iucv_setmask_up(void)
+ 	cpumask = iucv_irq_cpumask;
+ 	cpu_clear(first_cpu(iucv_irq_cpumask), cpumask);
+ 	for_each_cpu_mask(cpu, cpumask)
+-		smp_call_function_single(cpu, iucv_block_cpu, NULL, 0, 1);
++		smp_call_function_single(cpu, iucv_block_cpu, NULL, 1);
+ }
+ 
+ /**
+@@ -523,7 +523,7 @@ static int iucv_enable(void)
+ 	rc = -EIO;
+ 	preempt_disable();
+ 	for_each_online_cpu(cpu)
+-		smp_call_function_single(cpu, iucv_declare_cpu, NULL, 0, 1);
++		smp_call_function_single(cpu, iucv_declare_cpu, NULL, 1);
+ 	preempt_enable();
+ 	if (cpus_empty(iucv_buffer_cpumask))
+ 		/* No cpu could declare an iucv buffer. */
+@@ -580,7 +580,7 @@ static int __cpuinit iucv_cpu_notify(struct notifier_block *self,
+ 	case CPU_ONLINE_FROZEN:
+ 	case CPU_DOWN_FAILED:
+ 	case CPU_DOWN_FAILED_FROZEN:
+-		smp_call_function_single(cpu, iucv_declare_cpu, NULL, 0, 1);
++		smp_call_function_single(cpu, iucv_declare_cpu, NULL, 1);
+ 		break;
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
+@@ -589,10 +589,10 @@ static int __cpuinit iucv_cpu_notify(struct notifier_block *self,
+ 		if (cpus_empty(cpumask))
+ 			/* Can't offline last IUCV enabled cpu. */
+ 			return NOTIFY_BAD;
+-		smp_call_function_single(cpu, iucv_retrieve_cpu, NULL, 0, 1);
++		smp_call_function_single(cpu, iucv_retrieve_cpu, NULL, 1);
+ 		if (cpus_empty(iucv_irq_cpumask))
+ 			smp_call_function_single(first_cpu(iucv_buffer_cpumask),
+-						 iucv_allow_cpu, NULL, 0, 1);
++						 iucv_allow_cpu, NULL, 1);
+ 		break;
+ 	}
+ 	return NOTIFY_OK;
+@@ -652,7 +652,7 @@ static void iucv_cleanup_queue(void)
+ 	 * pending interrupts force them to the work queue by calling
+ 	 * an empty function on all cpus.
+ 	 */
+-	smp_call_function(__iucv_cleanup_queue, NULL, 0, 1);
++	smp_call_function(__iucv_cleanup_queue, NULL, 1);
+ 	spin_lock_irq(&iucv_queue_lock);
+ 	list_for_each_entry_safe(p, n, &iucv_task_queue, list) {
+ 		/* Remove stale work items from the task queue. */
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 2d29e26..ea1f595 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1266,12 +1266,12 @@ static int kvm_cpu_hotplug(struct notifier_block *notifier, unsigned long val,
+ 	case CPU_UP_CANCELED:
+ 		printk(KERN_INFO "kvm: disabling virtualization on CPU%d\n",
+ 		       cpu);
+-		smp_call_function_single(cpu, hardware_disable, NULL, 0, 1);
++		smp_call_function_single(cpu, hardware_disable, NULL, 1);
+ 		break;
+ 	case CPU_ONLINE:
+ 		printk(KERN_INFO "kvm: enabling virtualization on CPU%d\n",
+ 		       cpu);
+-		smp_call_function_single(cpu, hardware_enable, NULL, 0, 1);
++		smp_call_function_single(cpu, hardware_enable, NULL, 1);
+ 		break;
+ 	}
+ 	return NOTIFY_OK;
+@@ -1474,7 +1474,7 @@ int kvm_init(void *opaque, unsigned int vcpu_size,
+ 	for_each_online_cpu(cpu) {
+ 		smp_call_function_single(cpu,
+ 				kvm_arch_check_processor_compat,
+-				&r, 0, 1);
++				&r, 1);
+ 		if (r < 0)
+ 			goto out_free_1;
+ 	}
 -- 
 1.5.6.rc0.40.gd683
 
