@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYE2U3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760518AbYE2Uay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbYE2U3o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 16:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYE2U3F
+	id S1760518AbYE2Uay (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 16:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759449AbYE2UaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 16:29:05 -0400
-Received: from web36605.mail.mud.yahoo.com ([209.191.85.22]:36802 "HELO
-	web36605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758620AbYE2U3D (ORCPT
+	Thu, 29 May 2008 16:30:07 -0400
+Received: from mga07.intel.com ([143.182.124.22]:32473 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753757AbYE2UaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 16:29:03 -0400
-X-YMail-OSG: CcwzblkVM1nvnzKH47JKGsl9Wx9zbXt7NLdTr2RPPeVaocccbVgA6p8t1eCVzhEY6vfgHTvlp86VeVy7juPEn7a79tDs4DruaAsRGQrDLer6sNJxqaWpKEWtTeY-
-X-RocketYMMF: rancidfat
-Date: Thu, 29 May 2008 13:29:01 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: 2.6.24-rc4: mount.ntfs-3g hangs when smack is enabled
-To: Miklos Szeredi <miklos@szeredi.hu>, lcapitulino@mandriva.com.br
-Cc: casey@schaufler-ca.com, miklos@szeredi.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <E1K1l3b-0008Rx-4i@pomaz-ex.szeredi.hu>
+	Thu, 29 May 2008 16:30:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,562,1204531200"; 
+   d="scan'208";a="254247041"
+Message-ID: <483F1232.4010003@linux.intel.com>
+Date: Thu, 29 May 2008 13:29:38 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <733291.96800.qm@web36605.mail.mud.yahoo.com>
+To: Greg KH <greg@kroah.com>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       James.Bottomley@HansenPartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of	the
+ kernel.
+References: <1211995212.3445.52.camel@localhost.localdomain>	<20080528.225826.40264516.davem@davemloft.net>	<1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu>	<1212077700.26088.83.camel@shinybook.infradead.org> <20080529164745.GA21763@kroah.com>
+In-Reply-To: <20080529164745.GA21763@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---- Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> >  I'm not sure whether this is a smack problem, but Mandriva users are
-> > reporting that mount.ntfs-3g (ntfs driver, uses FUSE) hangs when
-> > they try to mount their NTFS partition.
+Greg KH wrote:
+>> And at that point I'd like to remove them completely, to a separate git
+>> tree and tarball. Those who really want to build them in to their static
+>> kernel would still be able to, but it wouldn't be the default behaviour.
 > 
-> Yes, this is a smack/fuse interaction problem.  Also see this thread:
+> This I disagree with.  Leaving it in a single directory makes it easier
+> for some distros to patch it away to apease their feelings about the
+> issue.  But for some of use, we like the firmware in our kernels, it
+> makes it easier to boot for one, and we don't have to deal with
+> different firmware packages.  So I say leave them in, with the option to
+> get them elsewhere, like you are doing.
 > 
->   http://marc.info/?l=fuse-devel&m=120931855107469&w=2
-> 
-> Casey, you were CC-d on the last mail in that thread.  Did you miss
-> that?
 
-Yup. Whiffed completely. Thank you for pointing it out.
- 
+I very much would like to see a kernel-firmware or something tarbal that contains
+a copy of all relevant "freely distributable" firmware, that users can just install
+independent of the actual kernel version (and that kbuild would just pick up somehow).
+That way we can deal with a lot more firmware without having to pollute the kernel / kernel release process
+(after all, the timing is different in terms of releasing) while making it easy
+to get the lot of it.
 
-Casey Schaufler
-casey@schaufler-ca.com
+Now.. of course what "freely distributable" means is a huge debate. I don't care ;)
