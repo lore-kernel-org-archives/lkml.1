@@ -1,42 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbYE2Nr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbYE2Nsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbYE2Nr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755645AbYE2Nrq
+	id S1756825AbYE2Nsl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbYE2Ns0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:47:46 -0400
-Received: from gw.goop.org ([64.81.55.164]:41550 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755631AbYE2Nrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:47:45 -0400
-Message-ID: <483EB3DD.2090908@goop.org>
-Date: Thu, 29 May 2008 14:47:09 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 2/10] x86: convert to generic helpers for IPI function
-  calls
-References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-3-git-send-email-jens.axboe@oracle.com> <483E9D9B.9030202@goop.org> <20080529121704.GD25504@kernel.dk>
-In-Reply-To: <20080529121704.GD25504@kernel.dk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 29 May 2008 09:48:26 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44327 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753112AbYE2NsY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 09:48:24 -0400
+Date: Thu, 29 May 2008 16:48:22 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <20080529130823.GA8364@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805291612150.16829@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <20080529084524.GA24892@elte.hu>
+ <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> <20080529112257.GA18130@elte.hu>
+ <20080529130823.GA8364@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> If you don't mind, I'd like to keep it as-is. Then the patch should
-> not have a functional change (there, at least), which I think is
-> important. I can add a later patch removing this stolen bit, it would
-> be even better if you send me such a patch :-)
->   
+On Thu, 29 May 2008, Ingo Molnar wrote:
 
-Sure. BTW, I got it to mush on top of x86.git, and it seems OK.  There 
-were lots of fairly trivial conflicts with things moving between unified 
-files, and a few missing smp_call_function and on_each_cpu calls.
+> btw., i now also have a hung socket over real network:
+> 
+> titan:~> netstat -nt
+> Active Internet connections (w/o servers)
+> Proto Recv-Q Send-Q Local Address               Foreign Address             State
+> tcp        0  86752 10.0.1.14:49921             10.0.1.16:3632              ESTABLISHED
+> 
+> (the scenario is similar to the incident i've analyzed before, so i wont 
+> repeat the tcpdump, etc.)
 
-    J
+...Yes, also the previous one you quoted was already over the network.
+But I think the key is in the receiving end rather than in the sending 
+end. Could try to extract any information about these I mentioned earlier,
+to me there are mainly two weird things:
+
+1) Why we see orphaning with data in the first place. I think distcc would 
+be interested to read everything, unless some worker crashed in early...
+Though some timeout in distcc could explain it as well but I don't know 
+too well how distcc does everything...
+
+2) Why the receiving end of the connection is still in ESTABLISHED 
+without an owner... If it had some unread data, should be in CLOSE or in 
+FIN_WAIT1 otherwise. Ie., tcp_close() would change the state of the flow.
+
+These both basically happen at the receiving end, though if there was 
+unread data the RST would also reflected state change to the sending side 
+and since there's window, also FIN would be sent right away and 
+cause sender to leave ESTABLISHED rather than that FIN would get stuck 
+into the tail of the TCP queue.
+
+How to collect the information, I'm not too sure, tcp_close might well 
+work as a plain printk because I think it shouldn't be that noisy. But 
+that would likely just show that it wasn't called for a stuck receiver
+at all, so it would probably end up being a dead-end anyway.
+
+-- 
+ i.
