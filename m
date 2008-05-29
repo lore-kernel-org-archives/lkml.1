@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYE2Q0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757195AbYE2Q3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbYE2Q0j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 12:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYE2Q03
+	id S1757195AbYE2Q3Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 12:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbYE2Q3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 12:26:29 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47784 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752141AbYE2Q02 (ORCPT
+	Thu, 29 May 2008 12:29:14 -0400
+Received: from web36604.mail.mud.yahoo.com ([209.191.85.21]:41558 "HELO
+	web36604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753323AbYE2Q3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 12:26:28 -0400
-X-Sasl-enc: +enocVSJz/sgO019eB1FWT9c3C2Uzy/JKiOp76KyS6NS 1212078386
-Date: Thu, 29 May 2008 13:26:25 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [PATCH 15/15] rfkill: document rw rfkill switches and clarify
-	input subsystem interactions (v2)
-Message-ID: <20080529162625.GA3375@khazad-dum.debian.net>
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <20080521014458.GB26427@khazad-dum.debian.net> <20080529004555.GA3872@khazad-dum.debian.net> <200805291502.23726.IvDoorn@gmail.com>
+	Thu, 29 May 2008 12:29:13 -0400
+X-YMail-OSG: _mkx8nQVM1mkNuqKGiENNDuUQGEBV2lD11.QSSl1.zzoUzhYHEWVreMPILsr.ijqst16bZbhn2ZPr_gW8R6kk4Bsc8vLfd2vRjLYkg--
+X-RocketYMMF: rancidfat
+Date: Thu, 29 May 2008 09:29:08 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: 2.6.24-rc4: mount.ntfs-3g hangs when smack is enabled
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       casey@schaufler-ca.com
+Cc: miklos@szeredi.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20080529131401.7429568d@mandriva.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805291502.23726.IvDoorn@gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <886653.90862.qm@web36604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Ivo van Doorn wrote:
-> > This version better documents *_RFKILL_ALL.  Is it good enough for an
-> > ACK for patch 14 of 15?
+
+--- "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br> wrote:
+
 > 
-> Yes, you can put my ack on patch 14.
-> Thanks for the documentation update. :)
+>  Hi Casey,
+> 
+>  I'm not sure whether this is a smack problem, but Mandriva users are
+> reporting that mount.ntfs-3g (ntfs driver, uses FUSE) hangs when
+> they try to mount their NTFS partition.
+> 
+>  I could reproduce the problem with a vanilla 2.6.24-rc4 kernel, and it
+> only happens when Smack is enabled.
 
-Then, this entire batch is ready for merging.  Now, if only Len would
-come back from wherever he disappeared to, in order to merge the two
-thinkpad-acpi patches, I could send it to netdev for merge.
+Thank you for the report. I will look into it. 
 
-I will at least publish the entire stack as a thinkpad-acpi pre-release
-version, to get some testing on the real world with some power users.
+>  Besides that, I've been told that a similar problem happens with unionfs,
+> but I haven't tried to reproduce it yet.
+> 
+>  What follows is the output of SysRq+D:
+> 
+> """
+> Showing all locks held in the system:
+> 1 lock held by mingetty/4193:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> 1 lock held by mingetty/4194:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> 1 lock held by mingetty/4195:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> 1 lock held by mingetty/4196:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> 1 lock held by mingetty/4197:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> 2 locks held by mount.ntfs-3g/4667:
+>  #0:  (&type->s_umount_key#19){--..}, at: [<c01726f0>] sget+0x202/0x350
+>  #1:  (&isp->smk_lock){--..}, at: [<c01c7f87>] smack_d_instantiate+0x39/0x129
+> 1 lock held by bash/4844:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> 1 lock held by bash/5389:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> 1 lock held by bash/5498:
+>  #0:  (&tty->atomic_read_lock){--..}, at: [<c0229650>] read_chan+0x1e5/0x605
+> """
+> 
+>  Let me know if you need more information.
+> 
+>  Best regards.
+> 
+> -- 
+> Luiz Fernando N. Capitulino
+> 
+> 
 
-I am thinking about how to best handle the global states.  Doing it
-through the rfkill class is ready, but the result was *UGLY*.  More on
-this later.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Casey Schaufler
+casey@schaufler-ca.com
