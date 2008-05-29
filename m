@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYE2NUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbYE2NVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYE2NUI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYE2NT5
+	id S1755801AbYE2NVS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYE2NVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:19:57 -0400
-Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:4788 "EHLO
-	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbYE2NT5 (ORCPT
+	Thu, 29 May 2008 09:21:08 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47374 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbYE2NVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:19:57 -0400
-Subject: Re: Pipe buffers' limit of 16 * 4K
-From: Miquel van Smoorenburg <miquels@cistron.nl>
-To: Fausto Richetti Blanco <fausto.blanco@gmail.com>
-Cc: linux-kernel@vger.kernel.org, riel@redhat.com, jengelh@medozas.de
-In-Reply-To: <d8d698ae0805290600s782e16b4pe70d725f55826cf0@mail.gmail.com>
-References: <d8d698ae0805231255i4d0da724p68cb2b9376134797@mail.gmail.com>
-	 <d8d698ae0805231719g4202edf2k947bba4128385ab6@mail.gmail.com>
-	 <20080523205630.444fe2b9@bree.surriel.com>
-	 <d8d698ae0805261043u125b653ve73d067cd92caa16@mail.gmail.com>
-	 <d8d698ae0805281422i21  <d8d698ae0805290600s782e16b4pe70d725f55826cf0@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 29 May 2008 15:19:24 +0200
-Message-Id: <1212067164.8621.3.camel@localhost.localdomain>
+	Thu, 29 May 2008 09:21:08 -0400
+Date: Thu, 29 May 2008 16:21:05 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: David Howells <dhowells@redhat.com>
+cc: Christoph Lameter <clameter@sgi.com>, Paul Mundt <lethal@linux-sh.org>,
+       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+       akpm@linux-foundation.org, mpm@selenic.com
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
+In-Reply-To: <29611.1212066517@redhat.com>
+Message-ID: <Pine.LNX.4.64.0805291620250.5415@sbz-30.cs.helsinki.fi>
+References: <Pine.LNX.4.64.0805281328310.982@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0805281646470.27125@sbz-30.cs.Helsinki.FI>
+ <20080528153648.GA27783@linux-sh.org> <483DBA85.2060502@cs.helsinki.fi>
+ <Pine.LNX.4.64.0805281325260.932@schroedinger.engr.sgi.com>
+ <483DBFC3.1070108@cs.helsinki.fi> <29611.1212066517@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-29 at 10:00 -0300, Fausto Richetti Blanco wrote:
-> Yes, I need an unspecified amount (it is the data content of a HTTP POST).
+On Thu, 29 May 2008, David Howells wrote:
+> ELF-FDPIC is currently using kobjsize() so that it can expand the heap/stack
+> segment to fill up the entirety of its allocation.  It's probably worth
+> dropping that, though.
 > 
-> The tee system call appeared in the 2.6.17 (I'm using 2.6.9). That's
-> because I did my implementation using a buffer and copying it using
-> write. Unfortunately, both solutions suffer from the kernel buffer
-> limitation.
+> NOMMU mmap() is using kobjsize()/ksize() to keep track of the number of bytes
+> allocated and the amount of dead space.  We can probably ditch that too.
 > 
-> As I said, there's a lot of other solutions to my specific problem.
-> I'll problably move my solution inside the lib =/ But I decided to
-> write to this list to ask for dynamically adjustable sizes for the
-> pipes' buffers. Is there any good reason for this not to be pushed to
-> the kernel head ?
+> However, fs/proc/task_nommu.c uses kobjsize() quite a bit to determine how
+> much metadata space a process is carrying around.  We could just use sizeof(),
+> I suppose, and not bother calculating the slack.
 
-Why not use a socketpair() instead of a pipe(). You can adjust the size
-with setsockopt SO_SNDBUF/SO_RCVBUF (see man socket(7))
-
-Mike.
-
+For short term, we should merge my two nommu patches as-is, no?
