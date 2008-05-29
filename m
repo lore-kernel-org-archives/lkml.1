@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYE2L06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYE2L2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYE2L06 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 07:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbYE2L0s
+	id S1753304AbYE2L2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 07:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYE2L21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 07:26:48 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59018 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751021AbYE2L0r (ORCPT
+	Thu, 29 May 2008 07:28:27 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:57216 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbYE2L20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 07:26:47 -0400
-Date: Thu, 29 May 2008 11:41:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/2] Kill unused parameter to smp_call_function and
- friends
-Message-ID: <20080529114132.663eff4b@core>
-In-Reply-To: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com>
-References: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 07:28:26 -0400
+Date: Thu, 29 May 2008 13:28:23 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jiri Kosina <jkosina@suse.cz>
+cc: Ingo Molnar <mingo@elte.hu>, Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k libc5 regression
+In-Reply-To: <Pine.LNX.4.64.0805291303030.6718@jikos.suse.cz>
+Message-ID: <Pine.LNX.4.64.0805291328070.2696@anakin>
+References: <Pine.LNX.4.64.0805262226280.11902@anakin>
+ <Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz> <Pine.LNX.4.64.0805291303030.6718@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 11:00:59 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> Hi,
+On Thu, 29 May 2008, Jiri Kosina wrote:
+> On Tue, 27 May 2008, Jiri Kosina wrote:
+> > > So I bisected it to:
+> > > commit 4cc6028d4040f95cdb590a87db478b42b8be0508
+> > > Author: Jiri Kosina <jkosina@suse.cz>
+> > > Date:   Wed Feb 6 22:39:44 2008 +0100
+> > >     brk: check the lower bound properly
+> > Indeed, this should take CONFIG_COMPAT_BRK into account. Does the patch 
+> > below fix it? (assuming that you have CONFIG_COMPAT_BRK=y):
+> > From: Jiri Kosina <jkosina@suse.cz>
+> > brk: check lower bound properly
+> [ ... ]
 > 
-> It bothers me how the smp call functions accept a 'nonatomic' or 'retry'
-> parameter (depending on who you ask), but don't do anything with it.
-> So kill that silly thing.
-> 
-> Two patches here, one for smp_call_function*() and one for on_each_cpu().
-> This patchset applies on top of the generic-ipi patchset just sent out.
+> Geert, did you have time to verify that the patch fixes the problem for 
+> you please?
 
-Which leads to notice that we seem to have acquired a bug somewhere on
-the way. smp_call_function on x86 is it seems to me implemented as
-"smp_call_function and occasionally run it multiple times"
+Not yet. I will definitely let you know.
 
-One of the joys of the older x86 APIC setups is the APIC messaging bus.
-This can get checksum errors in which case the message is retransmitted:
+Gr{oetje,eeting}s,
 
-In the specific case a message is retransmitted and there are at least
-three parties on the bus (2 CPU APICs and an IOAPIC is enough) you can
-get a situation where one receiver gets the message the second receiver
-errors it and the retransmit causes the IPI to be repeated which causes
-the IPI to be redelivered.
+						Geert
 
-This used to turn up now and then - particularly on 440BX boards.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Alan
-Gnome #331: Early SMP Implementation Archive Office
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
