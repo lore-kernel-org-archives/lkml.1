@@ -1,123 +1,586 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYE2IWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbYE2IY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYE2IWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 04:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYE2IWW
+	id S1751783AbYE2IY3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 04:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYE2IYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 04:22:22 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:58837 "EHLO
+	Thu, 29 May 2008 04:24:19 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:41268 "EHLO
 	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbYE2IWU (ORCPT
+	with ESMTP id S1751565AbYE2IYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 04:22:20 -0400
-Date: Thu, 29 May 2008 09:22:02 +0100
+	Thu, 29 May 2008 04:24:16 -0400
+Date: Thu, 29 May 2008 09:23:56 +0100
 From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: linux-input@vger.kernel.org
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kristen.c.accardi@intel.com
-Message-ID: <20080529082202.GD16444@srcf.ucam.org>
-References: <20080528130621.GA32646@srcf.ucam.org> <20080528132152.GB32646@srcf.ucam.org>
+       carlos@strangeworlds.co.uk
+Message-ID: <20080529082356.GE16444@srcf.ucam.org>
+References: <20080528132152.GB32646@srcf.ucam.org> <20080528132900.GC32646@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080528132152.GB32646@srcf.ucam.org>
+In-Reply-To: <20080528132900.GC32646@srcf.ucam.org>
 User-Agent: Mutt/1.5.12-2006-07-14
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Version 2: [PATCH 2/3] ACPI: Send switch event on dock events
+Subject: Re: RESEND: [PATCH 3/3] Misc: Add HP WMI laptop extras driver
 X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
 X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Send a switch event on docking for consistency with docks that don't 
-present as a separate device.
+This driver adds support for reading and configuring certain information 
+on modern HP laptops with WMI BIOS interfaces. It supports enabling and 
+disabling the ambient light sensor, querying attached displays and hard 
+drive temperature, sending events on docking and querying the state of 
+the dock and toggling the state of the wifi, bluetooth and wwan hardware 
+via rfkill. It also makes the little "(i)" button work on machines that 
+send that via WMI rather than via the keyboard controller.
 
 Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
 ---
 
-Added a dependency on CONFIG_INPUT for the dock driver. This is 
-consistent with the other ACPI modules that send input events.
+Contains cleanups suggested by Andrew, along with the missing Kconfig 
+and makefile hunks.
 
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index c52fca8..df8de04 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -160,6 +160,7 @@ config ACPI_FAN
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 636af28..290c245 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -200,6 +200,18 @@ config TC1100_WMI
+ 	  This is a driver for the WMI extensions (wireless and bluetooth power
+ 	  control) of the HP Compaq TC1100 tablet.
  
- config ACPI_DOCK
- 	tristate "Dock"
-+	depends on INPUT
- 	depends on EXPERIMENTAL
- 	help
- 	  This driver adds support for ACPI controlled docking stations
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index fa44fb9..a67e74c 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -25,6 +25,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
++config HP_WMI
++       tristate "HP WMI extras"
++       depends on ACPI_WMI
++       depends on INPUT
++       depends on RFKILL
++       help
++         Say Y here if you want to support WMI-based hotkeys on HP laptops and
++	 to read data from WMI such as docking or ambient light sensor state.
++
++         To compile this driver as a module, choose M here: the module will
++         be called hp-wmi.
++
+ config MSI_LAPTOP
+         tristate "MSI Laptop Extras"
+         depends on X86
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 1952875..bb4945d 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -13,6 +13,7 @@ obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
+ obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
+ obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
+ obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
++obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
+ obj-$(CONFIG_LKDTM)		+= lkdtm.o
+ obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
+ obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
+diff --git a/drivers/misc/hp-wmi.c b/drivers/misc/hp-wmi.c
+new file mode 100644
+index 0000000..1dbcbcb
+--- /dev/null
++++ b/drivers/misc/hp-wmi.c
+@@ -0,0 +1,494 @@
++/*
++ * HP WMI hotkeys
++ *
++ * Copyright (C) 2008 Red Hat <mjg@redhat.com>
++ *
++ * Portions based on wistron_btns.c:
++ * Copyright (C) 2005 Miloslav Trmac <mitr@volny.cz>
++ * Copyright (C) 2005 Bernhard Rosenkraenzer <bero@arklinux.org>
++ * Copyright (C) 2005 Dmitry Torokhov <dtor@mail.ru>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/types.h>
 +#include <linux/input.h>
- #include <linux/types.h>
- #include <linux/notifier.h>
- #include <linux/platform_device.h>
-@@ -65,6 +66,7 @@ struct dock_station {
- 	struct mutex hp_lock;
- 	struct list_head dependent_devices;
- 	struct list_head hotplug_devices;
-+	struct input_dev *dock_input;
- };
- 
- struct dock_dependent_device {
-@@ -345,10 +347,13 @@ static void dock_event(struct dock_station *ds, u32 event, int num)
- 	char event_string[13];
- 	char *envp[] = { event_string, NULL };
- 
--	if (num == UNDOCK_EVENT)
-+	if (num == UNDOCK_EVENT) {
-+		input_report_switch(dock_station->dock_input, SW_DOCK, 0);
- 		sprintf(event_string, "EVENT=undock");
--	else
-+	} else {
-+		input_report_switch(dock_station->dock_input, SW_DOCK, 1);
- 		sprintf(event_string, "EVENT=dock");
++#include <acpi/acpi_drivers.h>
++#include <linux/platform_device.h>
++#include <linux/acpi.h>
++#include <linux/rfkill.h>
++#include <linux/string.h>
++
++MODULE_AUTHOR("Matthew Garrett <mjg59@srcf.ucam.org>");
++MODULE_DESCRIPTION("HP laptop WMI hotkeys driver");
++MODULE_LICENSE("GPL");
++
++MODULE_ALIAS("wmi:95F24279-4D7B-4334-9387-ACCDC67EF61C");
++MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
++
++#define HPWMI_EVENT_GUID "95F24279-4D7B-4334-9387-ACCDC67EF61C"
++#define HPWMI_BIOS_GUID "5FB7F034-2C63-45e9-BE91-3D44E2C707E4"
++
++#define HPWMI_DISPLAY_QUERY 0x1
++#define HPWMI_HDDTEMP_QUERY 0x2
++#define HPWMI_ALS_QUERY 0x3
++#define HPWMI_DOCK_QUERY 0x4
++#define HPWMI_WIRELESS_QUERY 0x5
++
++static int __init hp_wmi_bios_setup(struct platform_device *device);
++static int __exit hp_wmi_bios_remove(struct platform_device *device);
++
++struct bios_args {
++	u32 signature;
++	u32 command;
++	u32 commandtype;
++	u32 datasize;
++	u32 data;
++};
++
++struct bios_return {
++	u32 sigpass;
++	u32 return_code;
++	u32 value;
++};
++
++struct key_entry {
++	char type;		/* See KE_* below */
++	u8 code;
++	u16 keycode;
++};
++
++enum { KE_KEY, KE_SW, KE_END };
++
++static struct key_entry hp_wmi_keymap[] = {
++	{KE_SW, 0x01, SW_DOCK},
++	{KE_KEY, 0x02, KEY_BRIGHTNESSUP},
++	{KE_KEY, 0x03, KEY_BRIGHTNESSDOWN},
++	{KE_KEY, 0x04, KEY_HELP},
++	{KE_END, 0}
++};
++
++static struct input_dev *hp_wmi_input_dev;
++static struct platform_device *hp_wmi_platform_dev;
++
++static struct rfkill *wifi_rfkill;
++static struct rfkill *bluetooth_rfkill;
++static struct rfkill *wwan_rfkill;
++
++static struct platform_driver hp_wmi_driver = {
++	.driver = {
++		   .name = "hp-wmi",
++		   .owner = THIS_MODULE,
++	},
++	.probe = hp_wmi_bios_setup,
++	.remove = hp_wmi_bios_remove,
++};
++
++static int hp_wmi_perform_query(int query, int write, int value)
++{
++	struct bios_return bios_return;
++	acpi_status status;
++	union acpi_object *obj;
++	struct bios_args args = {
++		.signature = 0x55434553,
++		.command = write ? 0x2 : 0x1,
++		.commandtype = query,
++		.datasize = write ? 0x4 : 0,
++		.data = value,
++	};
++	struct acpi_buffer input = { sizeof(struct bios_args), &args };
++	struct acpi_buffer output = { ACPI_ALLOCATE_BUFFER, NULL };
++
++	status = wmi_evaluate_method(HPWMI_BIOS_GUID, 0, 0x3, &input, &output);
++
++	obj = output.pointer;
++
++	if (!obj || obj->type != ACPI_TYPE_BUFFER)
++		return -EINVAL;
++
++	bios_return = *((struct bios_return *)obj->buffer.pointer);
++	if (bios_return.return_code > 0)
++		return bios_return.return_code * -1;
++	else
++		return bios_return.value;
++}
++
++static int hp_wmi_display_state(void)
++{
++	return hp_wmi_perform_query(HPWMI_DISPLAY_QUERY, 0, 0);
++}
++
++static int hp_wmi_hddtemp_state(void)
++{
++	return hp_wmi_perform_query(HPWMI_HDDTEMP_QUERY, 0, 0);
++}
++
++static int hp_wmi_als_state(void)
++{
++	return hp_wmi_perform_query(HPWMI_ALS_QUERY, 0, 0);
++}
++
++static int hp_wmi_dock_state(void)
++{
++	return hp_wmi_perform_query(HPWMI_DOCK_QUERY, 0, 0);
++}
++
++static int hp_wmi_wifi_set(void *data, enum rfkill_state state)
++{
++	if (state)
++		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x101);
++	else
++		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x100);
++}
++
++static int hp_wmi_bluetooth_set(void *data, enum rfkill_state state)
++{
++	if (state)
++		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x202);
++	else
++		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x200);
++}
++
++static int hp_wmi_wwan_set(void *data, enum rfkill_state state)
++{
++	if (state)
++		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x404);
++	else
++		return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, 0x400);
++}
++
++static int hp_wmi_wifi_state(void)
++{
++	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
++
++	if (wireless & 0x100)
++		return 1;
++	else
++		return 0;
++}
++
++static int hp_wmi_bluetooth_state(void)
++{
++	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
++
++	if (wireless & 0x10000)
++		return 1;
++	else
++		return 0;
++}
++
++static int hp_wmi_wwan_state(void)
++{
++	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
++
++	if (wireless & 0x1000000)
++		return 1;
++	else
++		return 0;
++}
++
++static ssize_t show_display(struct device *dev, struct device_attribute *attr,
++			    char *buf)
++{
++	int value = hp_wmi_display_state();
++	if (value < 0)
++		return -EINVAL;
++	return sprintf(buf, "%d\n", value);
++}
++
++static ssize_t show_hddtemp(struct device *dev, struct device_attribute *attr,
++			    char *buf)
++{
++	int value = hp_wmi_hddtemp_state();
++	if (value < 0)
++		return -EINVAL;
++	return sprintf(buf, "%d\n", value);
++}
++
++static ssize_t show_als(struct device *dev, struct device_attribute *attr,
++			char *buf)
++{
++	int value = hp_wmi_als_state();
++	if (value < 0)
++		return -EINVAL;
++	return sprintf(buf, "%d\n", value);
++}
++
++static ssize_t show_dock(struct device *dev, struct device_attribute *attr,
++			 char *buf)
++{
++	int value = hp_wmi_dock_state();
++	if (value < 0)
++		return -EINVAL;
++	return sprintf(buf, "%d\n", value);
++}
++
++static ssize_t set_als(struct device *dev, struct device_attribute *attr,
++		       const char *buf, size_t count)
++{
++	u32 tmp = simple_strtoul(buf, NULL, 10);
++	hp_wmi_perform_query(HPWMI_ALS_QUERY, 1, tmp);
++	return count;
++}
++
++static DEVICE_ATTR(display, S_IRUGO, show_display, NULL);
++static DEVICE_ATTR(hddtemp, S_IRUGO, show_hddtemp, NULL);
++static DEVICE_ATTR(als, S_IRUGO | S_IWUSR, show_als, set_als);
++static DEVICE_ATTR(dock, S_IRUGO, show_dock, NULL);
++
++static struct key_entry *hp_wmi_get_entry_by_scancode(int code)
++{
++	struct key_entry *key;
++
++	for (key = hp_wmi_keymap; key->type != KE_END; key++)
++		if (code == key->code)
++			return key;
++
++	return NULL;
++}
++
++static struct key_entry *hp_wmi_get_entry_by_keycode(int keycode)
++{
++	struct key_entry *key;
++
++	for (key = hp_wmi_keymap; key->type != KE_END; key++)
++		if (key->type == KE_KEY && keycode == key->keycode)
++			return key;
++
++	return NULL;
++}
++
++static int hp_wmi_getkeycode(struct input_dev *dev, int scancode, int *keycode)
++{
++	struct key_entry *key = hp_wmi_get_entry_by_scancode(scancode);
++
++	if (key && key->type == KE_KEY) {
++		*keycode = key->keycode;
++		return 0;
 +	}
- 
- 	/*
- 	 * Indicate that the status of the dock station has
-@@ -834,6 +839,19 @@ static int dock_add(acpi_handle handle)
- 		goto dock_add_err;
- 	}
- 
-+	/* Set up input device */
-+	dock_station->dock_input = input_allocate_device();
-+	dock_station->dock_input->name = "ACPI dock";
-+	dock_station->dock_input->phys = "dock/input0";
-+	dock_station->dock_input->id.bustype = BUS_HOST;
-+	dock_station->dock_input->dev.parent = &dock_device->dev;
-+	set_bit(EV_SW, dock_station->dock_input->evbit);
-+	set_bit(SW_DOCK, dock_station->dock_input->swbit);
-+	ret = input_register_device(dock_station->dock_input);
 +
-+	if (ret)
-+		input_free_device(dock_station->dock_input);
++	return -EINVAL;
++}
 +
- 	printk(KERN_INFO PREFIX "%s \n", ACPI_DOCK_DRIVER_DESCRIPTION);
- 
- 	return 0;
-@@ -881,6 +899,8 @@ static int dock_remove(void)
- 	device_remove_file(&dock_device->dev, &dev_attr_flags);
- 	platform_device_unregister(dock_device);
- 
-+	input_unregister_device(dock_station->dock_input);
++static int hp_wmi_setkeycode(struct input_dev *dev, int scancode, int keycode)
++{
++	struct key_entry *key;
++	int old_keycode;
 +
- 	/* free dock station memory */
- 	kfree(dock_station);
- 	dock_station = NULL;
++	if (keycode < 0 || keycode > KEY_MAX)
++		return -EINVAL;
++
++	key = hp_wmi_get_entry_by_scancode(scancode);
++	if (key && key->type == KE_KEY) {
++		old_keycode = key->keycode;
++		key->keycode = keycode;
++		set_bit(keycode, dev->keybit);
++		if (!hp_wmi_get_entry_by_keycode(old_keycode))
++			clear_bit(old_keycode, dev->keybit);
++		return 0;
++	}
++
++	return -EINVAL;
++}
++
++void hp_wmi_notify(u32 value, void *context)
++{
++	struct acpi_buffer response = { ACPI_ALLOCATE_BUFFER, NULL };
++	static struct key_entry *key;
++	union acpi_object *obj;
++
++	wmi_get_event_data(value, &response);
++
++	obj = (union acpi_object *)response.pointer;
++
++	if (obj && obj->type == ACPI_TYPE_BUFFER && obj->buffer.length == 8) {
++		int eventcode = *((u8 *) obj->buffer.pointer);
++		key = hp_wmi_get_entry_by_scancode(eventcode);
++		if (key) {
++			switch (key->type) {
++			case KE_KEY:
++				input_report_key(hp_wmi_input_dev,
++						 key->keycode, 1);
++				input_sync(hp_wmi_input_dev);
++				input_report_key(hp_wmi_input_dev,
++						 key->keycode, 0);
++				input_sync(hp_wmi_input_dev);
++				break;
++			case KE_SW:
++				input_report_switch(hp_wmi_input_dev,
++						    key->keycode,
++						    hp_wmi_dock_state());
++				input_sync(hp_wmi_input_dev);
++				break;
++			}
++		} else if (eventcode == 0x5) {
++			if (wifi_rfkill)
++				wifi_rfkill->state = hp_wmi_wifi_state();
++			if (bluetooth_rfkill)
++				bluetooth_rfkill->state =
++				    hp_wmi_bluetooth_state();
++			if (wwan_rfkill)
++				wwan_rfkill->state = hp_wmi_wwan_state();
++		} else
++			printk(KERN_INFO "HP WMI: Unknown key pressed - %x\n",
++			       eventcode);
++	} else
++		printk(KERN_INFO "HP WMI: Unknown response received\n");
++}
++
++static int __init hp_wmi_input_setup(void)
++{
++	struct key_entry *key;
++	int err;
++
++	hp_wmi_input_dev = input_allocate_device();
++
++	hp_wmi_input_dev->name = "HP WMI hotkeys";
++	hp_wmi_input_dev->phys = "wmi/input0";
++	hp_wmi_input_dev->id.bustype = BUS_HOST;
++	hp_wmi_input_dev->getkeycode = hp_wmi_getkeycode;
++	hp_wmi_input_dev->setkeycode = hp_wmi_setkeycode;
++
++	for (key = hp_wmi_keymap; key->type != KE_END; key++) {
++		switch (key->type) {
++		case KE_KEY:
++			set_bit(EV_KEY, hp_wmi_input_dev->evbit);
++			set_bit(key->keycode, hp_wmi_input_dev->keybit);
++			break;
++		case KE_SW:
++			set_bit(EV_SW, hp_wmi_input_dev->evbit);
++			set_bit(key->keycode, hp_wmi_input_dev->swbit);
++			break;
++		}
++	}
++
++	err = input_register_device(hp_wmi_input_dev);
++
++	if (err) {
++		input_free_device(hp_wmi_input_dev);
++		return err;
++	}
++
++	return 0;
++}
++
++static void cleanup_sysfs(struct platform_device *device)
++{
++	device_remove_file(&device->dev, &dev_attr_display);
++	device_remove_file(&device->dev, &dev_attr_hddtemp);
++	device_remove_file(&device->dev, &dev_attr_als);
++	device_remove_file(&device->dev, &dev_attr_dock);
++}
++
++static int __init hp_wmi_bios_setup(struct platform_device *device)
++{
++	int err;
++
++	err = device_create_file(&device->dev, &dev_attr_display);
++	if (err)
++		goto add_sysfs_error;
++	err = device_create_file(&device->dev, &dev_attr_hddtemp);
++	if (err)
++		goto add_sysfs_error;
++	err = device_create_file(&device->dev, &dev_attr_als);
++	if (err)
++		goto add_sysfs_error;
++	err = device_create_file(&device->dev, &dev_attr_dock);
++	if (err)
++		goto add_sysfs_error;
++
++	wifi_rfkill = rfkill_allocate(&device->dev, RFKILL_TYPE_WLAN);
++	wifi_rfkill->name = "hp-wifi";
++	wifi_rfkill->state = hp_wmi_wifi_state();
++	wifi_rfkill->toggle_radio = hp_wmi_wifi_set;
++	wifi_rfkill->user_claim_unsupported = 1;
++
++	bluetooth_rfkill = rfkill_allocate(&device->dev,
++					   RFKILL_TYPE_BLUETOOTH);
++	bluetooth_rfkill->name = "hp-bluetooth";
++	bluetooth_rfkill->state = hp_wmi_bluetooth_state();
++	bluetooth_rfkill->toggle_radio = hp_wmi_bluetooth_set;
++	bluetooth_rfkill->user_claim_unsupported = 1;
++
++	wwan_rfkill = rfkill_allocate(&device->dev, RFKILL_TYPE_WIMAX);
++	wwan_rfkill->name = "hp-wwan";
++	wwan_rfkill->state = hp_wmi_wwan_state();
++	wwan_rfkill->toggle_radio = hp_wmi_wwan_set;
++	wwan_rfkill->user_claim_unsupported = 1;
++
++	rfkill_register(wifi_rfkill);
++	rfkill_register(bluetooth_rfkill);
++	rfkill_register(wwan_rfkill);
++
++	return 0;
++add_sysfs_error:
++	cleanup_sysfs(device);
++	return err;
++}
++
++static int __exit hp_wmi_bios_remove(struct platform_device *device)
++{
++	cleanup_sysfs(device);
++
++	rfkill_unregister(wifi_rfkill);
++	rfkill_unregister(bluetooth_rfkill);
++	rfkill_unregister(wwan_rfkill);
++
++	return 0;
++}
++
++static int __init hp_wmi_init(void)
++{
++	int err;
++
++	if (wmi_has_guid(HPWMI_EVENT_GUID)) {
++		err = wmi_install_notify_handler(HPWMI_EVENT_GUID,
++						 hp_wmi_notify, NULL);
++		if (!err)
++			hp_wmi_input_setup();
++	}
++
++	if (wmi_has_guid(HPWMI_BIOS_GUID)) {
++		err = platform_driver_register(&hp_wmi_driver);
++		if (err)
++			return 0;
++		hp_wmi_platform_dev = platform_device_alloc("hp-wmi", -1);
++		if (!hp_wmi_platform_dev) {
++			platform_driver_unregister(&hp_wmi_driver);
++			return 0;
++		}
++		platform_device_add(hp_wmi_platform_dev);
++	}
++
++	return 0;
++}
++
++static void __exit hp_wmi_exit(void)
++{
++	if (wmi_has_guid(HPWMI_EVENT_GUID)) {
++		wmi_remove_notify_handler(HPWMI_EVENT_GUID);
++		input_unregister_device(hp_wmi_input_dev);
++	}
++	if (hp_wmi_platform_dev) {
++		platform_device_del(hp_wmi_platform_dev);
++		platform_driver_unregister(&hp_wmi_driver);
++	}
++}
++
++module_init(hp_wmi_init);
++module_exit(hp_wmi_exit);
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
