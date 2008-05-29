@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbYE2Xdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759344AbYE2Xfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757983AbYE2Xdy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 19:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYE2Xdm
+	id S1759344AbYE2Xfs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 19:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYE2Xfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 19:33:42 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:35612 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbYE2Xdl (ORCPT
+	Thu, 29 May 2008 19:35:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36514 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754584AbYE2Xfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 19:33:41 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>,
-       Sverre Rabbelier <alturin@gmail.com>, Joe Perches <joe@perches.com>,
-       git@vger.kernel.org
-Subject: Re: whomto.pl -- finding out whom to send patches to
-References: <20080529210018.GA5508@damson.getinternet.no>
-Date: Thu, 29 May 2008 16:33:22 -0700
-In-Reply-To: <20080529210018.GA5508@damson.getinternet.no> (Vegard Nossum's
- message of "Thu, 29 May 2008 23:00:18 +0200")
-Message-ID: <7vr6bkofct.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: A9980516-2DD7-11DD-BF84-80001473D85F-77302942!a-sasl-fastnet.pobox.com
+	Thu, 29 May 2008 19:35:39 -0400
+Date: Thu, 29 May 2008 16:35:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, safford@watson.ibm.com,
+       serue@linux.vnet.ibm.com, sailer@watson.ibm.com, zohar@us.ibm.com,
+       sds@tycho.nsa.gov, casey@schaufler-ca.com
+Subject: Re: [RFC][Patch 5/5]integrity: IMA as an integrity service provider
+Message-Id: <20080529163501.5a672b8f.akpm@linux-foundation.org>
+In-Reply-To: <1212097834.15923.7.camel@localhost.localdomain>
+References: <1211555145.16195.18.camel@new-host>
+	<20080528012242.a0e98d87.akpm@linux-foundation.org>
+	<1212031046.4747.57.camel@new-host.home>
+	<20080528203013.5a927d30.akpm@linux-foundation.org>
+	<1212097834.15923.7.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum <vegard.nossum@gmail.com> writes:
+On Thu, 29 May 2008 17:50:34 -0400
+Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
 
-> I've written this perl script that takes a patch as input and prints the
-> authors/committers of the affected lines, using git-blame as the back end.
->
-> (The purpose of this is of course to find out whom to send patches to.)
->
-> There are some caveats:
->
-> - If I've understood correctly, git-blame incremental output doesn't split
->   commits when a newer one is found, so we currently possibly take into
->   account more than just the last patch to touch a line. This might not be
->   a disadvantage, however...
+> 
+> On Wed, 2008-05-28 at 20:30 -0700, Andrew Morton wrote:
+> 
+> > > ...
+> > >
+> > > > - All the games with mtimes should be described in the changelog too.
+> > > 
+> > > Ok. The timespec_recent and mtime issues are part of the same problem
+> > > of detecting when a file has been modified.
+> > 
+> > Can't use inode.i_version?
+> 
+> i_version is now working on my system.
 
-"git blame" does not give irrelevant commits in its output, with or
-without --incremental.  Perhaps you were thinking about the "oops, earlier
-one was wrong, here are the corrections" behaviour of "git log
---early-output", which is an unrelated mechanism in a different command.
+Oh good.
 
-But I have to wonder why you used --incremental and not --porcelain
-format, the latter of which is more compact and is designed for parsing by
-tools.
+>  It looks good. Is
+> there anything that I need to be concerned about, such as
+> limited filesystem support or the i_version is not updated 
+> by file_close for mmaped files?
 
-I also have to wonder why you did not use -M, -C, and/or -w, if you used
-blame to find the true origin of lines that are involved.
+erk, I'm not an i_version person.  It seems that it's only used on
+directories (to patch up readdir coherency problems) so I guess I
+misled you there.
 
-Unless the patch is truly about a narrow region of a handful files
-(e.g. micro-optimizing the implementation of a single function without
-changing its external interface at all, or fixing an off-by-one error in a
-group of functions that do similar things), I suspect that it would make
-more sense to use "git shortlog --no-merges -- paths" to get the list of
-people who are involved in the general area, even though they may not have
-been involved in particular _lines_ that the patch touches.  For example,
-if a patch changes the lines in a function's implementation, you would
-want input not only from the people who improved the implementation of the
-function over the years, but more from the people who care about the
-calling sites of that function the patch is touching.
+There's file_struct.f_version, which is no good.
 
+i_generation is no good either.
+
+We've documented these things so wonderfully!
+
+i_writecount looks good?
