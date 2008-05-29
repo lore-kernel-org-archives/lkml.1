@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbYE2EwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbYE2Ew6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbYE2EwL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 00:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbYE2Ev7
+	id S1755103AbYE2Ew6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 00:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYE2Ewt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 00:51:59 -0400
-Received: from namei.org ([69.55.235.186]:56789 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750709AbYE2Ev6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 00:51:58 -0400
-Date: Thu, 29 May 2008 14:46:13 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       safford@watson.ibm.com, serue@linux.vnet.ibm.com, sailer@watson.ibm.com,
-       zohar@us.ibm.com, Stephen Smalley <sds@tycho.nsa.gov>,
-       CaseySchaufler <casey@schaufler-ca.com>
-Subject: Re: [RFC][PATCH 4/5]integrity: Linux Integrity Module(LIM)
-In-Reply-To: <1212029162.4747.27.camel@new-host.home>
-Message-ID: <Xine.LNX.4.64.0805291443400.7754@us.intercode.com.au>
-References: <1211555133.16195.17.camel@new-host> 
- <20080528004610.fde47571.akpm@linux-foundation.org> <1212029162.4747.27.camel@new-host.home>
+	Thu, 29 May 2008 00:52:49 -0400
+Received: from smtp08.mtu.ru ([62.5.255.55]:59960 "EHLO smtp08.mtu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbYE2Ews (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 00:52:48 -0400
+Message-ID: <483E36A3.3020308@aknet.ru>
+Date: Thu, 29 May 2008 08:52:51 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: ambx1@neo.rr.com, bjorn.helgaas@hp.com, david-b@pacbell.net, mingo@elte.hu,
+       tglx@linutronix.de, dbrownell@users.sourceforge.net,
+       rmk+lkml@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [patch][resend] provide rtc_cmos platform device, take 2
+References: <200805212334.m4LNY42M006425@imap1.linux-foundation.org>	<483BEF1A.3080808@aknet.ru> <20080528163600.b4c3c12c.akpm@linux-foundation.org>
+In-Reply-To: <20080528163600.b4c3c12c.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-DCC-STREAM-Metrics: smtp08.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008, Mimi Zohar wrote:
+Hello.
 
-> > Can we put the integrity_inode_init_integrity() call into
-> > security_inode_init_security() thus avoiding having to change lots of
-> > filesystems?
-> 
-> That is fine by me, not sure how others feel.
-
-I agree it makes sense to do this.
-
-
--- 
-James Morris
-<jmorris@namei.org>
+Andrew Morton wrote:
+> It got lost from the changelog but IIRC this fixes a small sort-of regression
+> which was added in 2.6.25(?) because Stas switched drivers.
+The switch was behind my will (kconfig
+changed), here's what David says:
+http://uwsg.ucs.indiana.edu/hypermail/linux/kernel/0805.2/3467.html
+http://uwsg.ucs.indiana.edu/hypermail/linux/kernel/0805.2/3060.html
