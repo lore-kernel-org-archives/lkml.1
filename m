@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYE2CcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYE2Cls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbYE2CcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 22:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYE2CcI
+	id S1754733AbYE2Cls (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 22:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbYE2Cli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 22:32:08 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:47126 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbYE2CcH (ORCPT
+	Wed, 28 May 2008 22:41:38 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:38110 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750838AbYE2Clh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 22:32:07 -0400
-Message-ID: <483E155E.9050300@linux.vnet.ibm.com>
-Date: Thu, 29 May 2008 08:00:54 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 28 May 2008 22:41:37 -0400
+Date: Thu, 29 May 2008 08:20:39 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: "Chris Friesen" <cfriesen@nortel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       pj@sgi.com, Balbir Singh <balbir@in.ibm.com>,
+       aneesh.kumar@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com
+Subject: Re: fair group scheduler not so fair?
+Message-ID: <20080529025039.GA12836@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <4834B75A.40900@nortel.com> <20080527171528.GD30285@linux.vnet.ibm.com> <483C4F5A.2010104@nortel.com> <20080528163318.GG30285@linux.vnet.ibm.com> <483DA5E7.5050600@nortel.com>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH] No Reclaim LRU Infrastructure enhancement for memcgroup
-References: <1211903642.7283.16.camel@lts-notebook> <20080528101229.f14e0f09.kamezawa.hiroyu@jp.fujitsu.com> <20080528155809.9CD0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080528155809.9CD0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483DA5E7.5050600@nortel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Hi
-> 
->> In my understanding, 2 checks we have to do.
->>
->> 1. When memcg finds PG_noreclaim page in its LRU, move it to noreclaim list of
->>    memcg.
->> 2. When PG_noreclaim page is moved back to generic LRU, memcg should move
->>    it on its list. (we have to add a hook somewhere.)
->>
->> But this may break current 'loose' synchronization between global LRU and
->> memcg's LRU. When PG_noreclaim page is put back into active/inactive LRU ?
->>
->> concerns are
->> A. how to implement '2'
-> 
-> I tried to implement it today.
-> this patch is made against "[PATCH -mm 13/16] No Reclaim LRU Infrastructure"
-> 
-> 
->> B. race condtions.
-> 
-> don't worry :)
-> it isn't big problem.
-> 
-> global lru is reclaimbale and memcg lru is noreclaimable
-> 	-> we can repair at move lru of shrink_[in]active_page().
-> 
-> global lru is noreclaimbale and memcg lru is reclaimable
-> 	-> we can repair mem_cgroup_isolate_pages()
-> 
-> 
+On Wed, May 28, 2008 at 12:35:19PM -0600, Chris Friesen wrote:
+> Srivatsa Vaddagiri wrote:
+>
+>> We seem to be skipping the last element in the task list always. In your
+>> case, the lone task in Group a/b is always skipped because of this.
+>
+>> Updated patch (on top of 2.6.26-rc3 +
+>> http://programming.kicks-ass.net/kernel-patches/sched-smp-group-fixes/)
+>> below.  Pls let me know how it fares!
+>
+> Looking much better, but still some fairness issues with more complex 
+> setups.
+>
+[snip]
 
-I've tried these patches and I still get OOM killed. I'll investigate a bit more.
+> A 10-sec average was better, but we still see errors of 6%:
+> 2478	72.8%
+> 2477	64.0%
+> 2479	63.2%
 
+Yes I have observed that the delta from ideal fairness is much more than
+desirable (although I used to get much better fairness with
+2.6.25-rc1. Let me verify and get back).
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Regards,
+vatsa
