@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYE2PFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757646AbYE2PGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbYE2PFY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 11:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYE2PFF
+	id S1757646AbYE2PGZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 11:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbYE2PGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 11:05:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57351 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751751AbYE2PFE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 11:05:04 -0400
-Date: Thu, 29 May 2008 15:45:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Cammarata <jimi@sngx.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool -
- e1000/pcnet32
-Message-ID: <20080529154525.3916c7b5@core>
-In-Reply-To: <483EA2D1.8050603@sngx.net>
-References: <482DA5B6.1020606@sngx.net>
-	<482DB46A.8020103@cosmosbay.com>
-	<482EF192.4070707@sngx.net>
-	<482F5113.5090703@cosmosbay.com>
-	<482F610D.2080108@sngx.net>
-	<20080518003104.GK28241@solarflare.com>
-	<482FBA09.80201@sngx.net>
-	<483E0AAE.2020107@sngx.net>
-	<20080528221118.63da4092.akpm@linux-foundation.org>
-	<483EA2D1.8050603@sngx.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 11:06:18 -0400
+Received: from styx.suse.cz ([82.119.242.94]:58314 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753290AbYE2PGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 11:06:17 -0400
+Date: Thu, 29 May 2008 17:06:15 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: David Miller <davem@davemloft.net>,
+       ksummit-2008-discuss@lists.linux-foundation.org, penberg@cs.helsinki.fi,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+In-Reply-To: <1212071813.3428.22.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0805291656000.6718@jikos.suse.cz>
+References: <1212010931.3445.103.camel@localhost.localdomain>
+ <1212013125.2236.58.camel@shinybook.infradead.org>
+ <1212014127.3445.115.camel@localhost.localdomain> <20080528.230934.131215087.davem@davemloft.net>
+ <1212071813.3428.22.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Many of the kernel's accounting accumulators cannot be reset.  We
-> > handle that in userspace tools by using subtraction.
-> 
-> I don't think that should preclude the ability to reset these, unless it is
-> shown that it would break something very badly.
+On Thu, 29 May 2008, James Bottomley wrote:
 
-For one quite a few of the network cards keep the stats in hardware and
-don't neccessarily have a way to reset them. In other cases there is a
-mix of OS accumulated stats bulk updated by overflow events on the device
-itself.
+> Really, I think that's what our mistake is in the recruitment program 
+> is: we need to start people out on useful tasks that they can do rather 
+> than on tasks we find annoying and useless in the hope they move on to 
+> something better.
 
-Its a lot of complexity, and changes all over the places for the sake of
-a trivial userspace change. I would suggest you instead write a quick bit
-of perl or python that fetches the stats and then updates every second
-with the changes.
+I fully agree, but my impression is that this really is not going to be 
+easy. Fixing bugs definitely is a good way to start kernel coding -- it 
+forces you to understand the internals of the source, get used to the 
+coding style by reading the code, etc. Unfortunately, it's simply not very 
+attractive for newcomers.
 
-Alan
+For example -- I am leading a seminar at university, oriented at linux 
+kernel internals. I provide the possibility to students either to
+
+- write some stand-alone interesting kernel project
+- fix a few non-trivial bugs in kernel bugzilla
+- chose any part of a kernel, learn how it works, and present this to 
+  other seminar attendees
+
+The feedback I often get from students (and these guys are studying 
+computer science) is
+
+- writing some wholy new interesting kernel project is usually too 
+  complicated (both coming with an interesting idea for a project, and 
+  doing the coding itself)
+- fixing random bugs from kernel bugzilla is boring (spending 10 hours 
+  looking for missing '=' doesn't really attract them)
+
+So in overwhelming majority of cases, they just chose the presentation.
+
+
+All I want to say is that I could very well imagine that a lot of 
+newcomers will find "hey, feel free to crawl through bugzilla and fix 
+whatever you are able to fix" very non-attractive.
+Not that I have any better idea right now, though.
+
+-- 
+Jiri Kosina
+SUSE Labs
