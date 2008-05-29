@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbYE2NKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYE2NLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbYE2NKX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 09:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbYE2NKH
+	id S1755993AbYE2NLd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 09:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbYE2NLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 09:10:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37994 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752577AbYE2NKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 09:10:05 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com>
-References: <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com> <2874.1211980355@redhat.com> <Pine.LNX.4.64.0805221907250.4056@sbz-30.cs.Helsinki.FI> <24762.1211983758@redhat.com> <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com> <7613.1211996335@redhat.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: dhowells@redhat.com, "Christoph Lameter" <clameter@sgi.com>,
-       "Pekka J Enberg" <penberg@cs.helsinki.fi>, mpm@selenic.com,
-       lethal@linux-sh.org, linux-kernel@vger.kernel.org,
-       "Bryan Wu" <cooloney@kernel.org>
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 29 May 2008 14:03:28 +0100
-Message-ID: <29553.1212066208@redhat.com>
+	Thu, 29 May 2008 09:11:22 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:22609 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbYE2NLV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 09:11:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=F4DpUd2QXjfDnhArTlrOh0WZ5iBmNpMTCC+hdBPZh+IG6KOlMziyhBG2sWBbM9ACfwxqJx8XV6O9giZgGK9vkKDAuRk/pEkcnseiSYYi/wtf507y3vpmzyRYCcGBALY1cfUEEJrJxJnaJsPUpVVsBNC8icD3O9c5kC7NaOwftEg=
+Date: Thu, 29 May 2008 10:14:32 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 2/2] on_each_cpu(): kill unused 'retry' parameter
+Message-ID: <20080529131432.GA25627@Pilar.ictp.trieste.it>
+References: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com> <1212051661-12733-3-git-send-email-jens.axboe@oracle.com> <20080529125151.GA25124@Pilar.ictp.trieste.it> <20080529125429.GE25504@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529125429.GE25504@kernel.dk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier.adi@gmail.com> wrote:
-
-> > I fixed it by setting ARCH_KMALLOC_MINALIGN and ARCH_SLAB_MINALIGN.
+On Thu 29.May'08 at 14:54:29 +0200, Jens Axboe wrote:
+> On Thu, May 29 2008, Carlos R. Mafra wrote:
+> > Hi,
+> > 
+> > Just a naive comment/question:
+> > 
+> > > -	if (on_each_cpu(ipi_imb, NULL, 1, 1))
+> > > +	if (on_each_cpu(ipi_imb, NULL, 1))
+> > 
+> > A few weeks ago I though about removing the second argument
+> > from on_each_cpu, which is NULL more or less 70% of the time.
+> > 
+> > Do you think it is possible?
+> > Have you already thought about it? 
 > 
-> what was the change exactly ?
+> It's the data argument to the function, I highly doubt you can get
+> rid of that I'm afraid. on_each_cpu() is just a thin wrapper on
+> top of smp_call_function() so that the caller doesn't have to
+> care about manually calling on the local CPU. So as long as
+> smp_call_function() has a data argument, on_each_cpu() should
+> carry it as well.
+> 
+> So nope, I don't think that's feasible (or even desired).
 
-The attached patch.
-
-David
----
-[PATCH] FRV: Specify the minimum slab/kmalloc alignment
-
-From: David Howells <dhowells@redhat.com>
-
-Specify the minimum slab/kmalloc alignment to be 8 bytes.  This fixes a crash
-when SLOB is selected as the memory allocator.  The FRV arch needs this so
-that it can use the load- and store-double instructions without faulting.  By
-default SLOB sets the minimum to be 4 bytes.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- include/asm-frv/mem-layout.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-
-diff --git a/include/asm-frv/mem-layout.h b/include/asm-frv/mem-layout.h
-index 734a1d0..2947764 100644
---- a/include/asm-frv/mem-layout.h
-+++ b/include/asm-frv/mem-layout.h
-@@ -31,6 +31,13 @@
- 
- #define PAGE_MASK			(~(PAGE_SIZE-1))
- 
-+/*
-+ * the slab must be aligned such that load- and store-double instructions don't
-+ * fault if used
-+ */
-+#define	ARCH_KMALLOC_MINALIGN		8
-+#define	ARCH_SLAB_MINALIGN		8
-+
- /*****************************************************************************/
- /*
-  * virtual memory layout from kernel's point of view
+Ok, thanks for the reply!
