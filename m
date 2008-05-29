@@ -1,651 +1,843 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751349AbYE2Tyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbYE2Tzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751349AbYE2Tyu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 15:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759400AbYE2Tv5
+	id S1760072AbYE2Tzy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 15:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbYE2Tzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 15:51:57 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:35761 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759207AbYE2Tvy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 15:51:54 -0400
-From: Lee Schermerhorn <lee.schermerhorn@hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, Eric Whitney <eric.whitney@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 29 May 2008 15:51:54 -0400
-Message-Id: <20080529195154.27159.5465.sendpatchset@lts-notebook>
-In-Reply-To: <20080529195030.27159.66161.sendpatchset@lts-notebook>
-References: <20080529195030.27159.66161.sendpatchset@lts-notebook>
-Subject: [PATCH 25/25] Noreclaim LRU and Mlocked Pages Documentation
+	Thu, 29 May 2008 15:55:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40601 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759668AbYE2Tzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 15:55:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: De Martino Pasquale <paco.dmp@gmail.com>
+Subject: Re: acpi problem
+Date: Thu, 29 May 2008 21:56:08 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080529173315.GA7420@guevara.dmp>
+In-Reply-To: <20080529173315.GA7420@guevara.dmp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805292156.08963.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Added a couple of CCs]
 
-From: Lee Schermerhorn <lee.schermerhorn@hp.com>
+On Thursday, 29 of May 2008, De Martino Pasquale wrote:
+> summary of the problem: 
+> with kernel 2.6.25 my acpi does not work whereas with version <= 2.6.24 all works fine.
+> 
+> Full description:
+> when i run acpi -a this is my output:
+> No support for device type: battery
+> No support for device type: ac_adapter
+> 
+> "lsmod | grep acpi" says that the acpi module is not loaded so i've tried
+> "modprobe acpi" but the output is:
+> FATAL: Error inserting acpi_cpufreq
+> (/lib/modules/2.6.25-2-amd64/kernel/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.ko):
+> Device or resource busy
+> 
+> I've also tried to pass acpi=on option when kernel boots
+> 
+> ------------------------------------------------------------------------
+> 
+> ver_linux output:
+> Linux guevara 2.6.25-2-amd64 #1 SMP Tue May 27 12:45:24 UTC 2008 x86_64
+> GNU/Linux
+>  
+>  Gnu C                  4.2.4
+>  Gnu make               3.81
+>  binutils               2.18.0.20080103
+>  util-linux             2.13.1.1
+>  mount                  2.13.1.1
+>  module-init-tools      3.4
+>  e2fsprogs              1.40.8
+>  Linux C Library        2.7
+>  Dynamic linker (ldd)   2.7
+>  Procps                 3.2.7
+>  Net-tools              1.60
+>  Console-tools          0.2.3
+>  Sh-utils               6.10
+>  udev                   114
+>  wireless-tools         29
+>  Modules Loaded         ipv6 rfcomm l2cap bluetooth ppdev parport_pc lp
+>  parport container sbs sbshc powernow_k8 cpufreq_stats cpufreq_conservative
+>  cpufreq_ondemand cpufreq_powersave cpufreq_userspace dm_snapshot dm_mirror
+>  dm_mod ndiswrapper firewire_sbp2 loop freq_table joydev psmouse k8temp
+>  snd_hda_intel serio_raw pcspkr snd_pcm_oss snd_mixer_oss snd_pcm snd_timer
+>  ricoh_mmc snd sdhci mmc_core soundcore snd_page_alloc i2c_nforce2 i2c_core
+>  video output wmi battery ac button evdev ext3 jbd mbcache sd_mod ide_cd_mod
+>  cdrom sata_nv ata_generic libata scsi_mod dock firewire_ohci firewire_core
+>  crc_itu_t ide_pci_generic forcedeth amd74xx ide_core ehci_hcd ohci_hcd
+>  thermal processor fan
+> 
+> -------------------------------------------------------------------------
+> 
+> /proc/cpuinfo:
+> processor	: 0
+> vendor_id	: AuthenticAMD
+> cpu family	: 15
+> model		: 72
+> model name	: AMD Turion(tm) 64 X2 Mobile Technology TL-50
+> stepping	: 2
+> cpu MHz		: 800.000
+> cache size	: 256 KB
+> physical id	: 0
+> siblings	: 2
+> core id		: 0
+> cpu cores	: 2
+> fpu		: yes
+> fpu_exception	: yes
+> cpuid level	: 1
+> wp		: yes
+> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+> pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm
+> 3dnowext 3dnow rep_good pni cx16 lahf_lm cmp_legacy svm extapic cr8_legacy
+> bogomips	: 1608.88
+> TLB size	: 1024 4K pages
+> clflush size	: 64
+> cache_alignment	: 64
+> address sizes	: 40 bits physical, 48 bits virtual
+> power management: ts fid vid ttp tm stc
+> 
+> processor	: 1
+> vendor_id	: AuthenticAMD
+> cpu family	: 15
+> model		: 72
+> model name	: AMD Turion(tm) 64 X2 Mobile Technology TL-50
+> stepping	: 2
+> cpu MHz		: 800.000
+> cache size	: 256 KB
+> physical id	: 0
+> siblings	: 2
+> core id		: 1
+> cpu cores	: 2
+> fpu		: yes
+> fpu_exception	: yes
+> cpuid level	: 1
+> wp		: yes
+> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+> pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm
+> 3dnowext 3dnow rep_good pni cx16 lahf_lm cmp_legacy svm extapic cr8_legacy
+> bogomips	: 1608.88
+> TLB size	: 1024 4K pages
+> clflush size	: 64
+> cache_alignment	: 64
+> address sizes	: 40 bits physical, 48 bits virtual
+> power management: ts fid vid ttp tm stc
+> 
+> ----------------------------------------------------------------------
+> 
+> /proc/modules:
+> ipv6 294120 10 - Live 0xffffffff88349000
+> rfcomm 46112 0 - Live 0xffffffff8833c000
+> l2cap 29696 5 rfcomm, Live 0xffffffff88333000
+> bluetooth 65444 4 rfcomm,l2cap, Live 0xffffffff88322000
+> ppdev 13832 0 - Live 0xffffffff8831d000
+> parport_pc 34344 0 - Live 0xffffffff88313000
+> lp 17540 0 - Live 0xffffffff8830d000
+> parport 44848 3 ppdev,parport_pc,lp, Live 0xffffffff88301000
+> container 9600 0 - Live 0xffffffff882fd000
+> sbs 14336 0 - Live 0xffffffff882f8000
+> sbshc 11904 1 sbs, Live 0xffffffff882f4000
+> powernow_k8 19076 1 - Live 0xffffffff882ee000
+> cpufreq_stats 10528 0 - Live 0xffffffff882ea000
+> cpufreq_conservative 13320 0 - Live 0xffffffff882e5000
+> cpufreq_ondemand 13712 1 - Live 0xffffffff882e0000
+> cpufreq_powersave 6272 0 - Live 0xffffffff882dd000
+> cpufreq_userspace 9092 0 - Live 0xffffffff882d9000
+> dm_snapshot 22472 0 - Live 0xffffffff882d2000
+> dm_mirror 31748 0 - Live 0xffffffff882c9000
+> dm_mod 68536 2 dm_snapshot,dm_mirror, Live 0xffffffff882b7000
+> ndiswrapper 226944 0 - Live 0xffffffff8827e000
+> firewire_sbp2 22808 0 - Live 0xffffffff88277000
+> loop 23044 0 - Live 0xffffffff88270000
+> freq_table 9728 3 powernow_k8,cpufreq_stats,cpufreq_ondemand, Live
+> 0xffffffff8826c000
+> joydev 17664 0 - Live 0xffffffff88266000
+> psmouse 45724 0 - Live 0xffffffff88259000
+> k8temp 10624 0 - Live 0xffffffff88255000
+> snd_hda_intel 414296 1 - Live 0xffffffff881ee000
+> serio_raw 11652 0 - Live 0xffffffff881ea000
+> pcspkr 7808 0 - Live 0xffffffff881e7000
+> snd_pcm_oss 46752 0 - Live 0xffffffff881da000
+> snd_mixer_oss 21376 1 snd_pcm_oss, Live 0xffffffff881d3000
+> snd_pcm 88072 2 snd_hda_intel,snd_pcm_oss, Live 0xffffffff881bc000
+> snd_timer 29328 1 snd_pcm, Live 0xffffffff881b3000
+> ricoh_mmc 8960 0 - Live 0xffffffff881af000
+> snd 66888 7 snd_hda_intel,snd_pcm_oss,snd_mixer_oss,snd_pcm,snd_timer, Live
+> 0xffffffff8819d000
+> sdhci 22796 0 - Live 0xffffffff88196000
+> mmc_core 56416 1 sdhci, Live 0xffffffff88187000
+> soundcore 13088 1 snd, Live 0xffffffff88182000
+> snd_page_alloc 15120 2 snd_hda_intel,snd_pcm, Live 0xffffffff8817d000
+> i2c_nforce2 11392 0 - Live 0xffffffff88179000
+> i2c_core 30752 1 i2c_nforce2, Live 0xffffffff88170000
+> video 27412 0 - Live 0xffffffff88168000
+> output 8704 1 video, Live 0xffffffff88164000
+> wmi 13120 0 - Live 0xffffffff8815f000
+> battery 14208 0 - Live 0xffffffff8815a000
+> ac 9344 0 - Live 0xffffffff88156000
+> button 13856 0 - Live 0xffffffff88151000
+> evdev 17408 8 - Live 0xffffffff8814b000
+> ext3 139280 2 - Live 0xffffffff88127000
+> jbd 55336 1 ext3, Live 0xffffffff88118000
+> mbcache 13956 1 ext3, Live 0xffffffff88113000
+> sd_mod 33728 4 - Live 0xffffffff88109000
+> ide_cd_mod 41504 0 - Live 0xffffffff880fd000
+> cdrom 39464 1 ide_cd_mod, Live 0xffffffff880f2000
+> sata_nv 32520 3 - Live 0xffffffff880e9000
+> ata_generic 13572 0 - Live 0xffffffff880e4000
+> libata 165808 2 sata_nv,ata_generic, Live 0xffffffff880ba000
+> scsi_mod 170360 3 firewire_sbp2,sd_mod,libata, Live 0xffffffff8808f000
+> dock 16288 1 libata, Live 0xffffffff8808a000
+> firewire_ohci 27908 0 - Live 0xffffffff88082000
+> firewire_core 45920 2 firewire_sbp2,firewire_ohci, Live 0xffffffff88075000
+> crc_itu_t 6656 1 firewire_core, Live 0xffffffff88072000
+> ide_pci_generic 9476 0 [permanent], Live 0xffffffff8806c000
+> forcedeth 55692 0 - Live 0xffffffff8805b000
+> amd74xx 13576 0 [permanent], Live 0xffffffff88054000
+> ide_core 138160 3 ide_cd_mod,ide_pci_generic,amd74xx, Live 0xffffffff88031000
+> ehci_hcd 40076 0 - Live 0xffffffff88024000
+> ohci_hcd 28292 0 - Live 0xffffffff8801a000
+> thermal 26656 0 - Live 0xffffffff88012000
+> processor 49388 4 powernow_k8,thermal, Live 0xffffffff88004000
+> fan 10760 0 - Live 0xffffffff88000000
+> 
+> -----------------------------------------------------------------------
+> 
+> /proc/ioports:
+> 0000-001f : dma1
+> 0020-0021 : pic1
+> 0040-0043 : timer0
+> 0050-0053 : timer1
+> 0060-006f : keyboard
+> 0070-0077 : rtc
+> 0080-008f : dma page reg
+> 00a0-00a1 : pic2
+> 00c0-00df : dma2
+> 00f0-00ff : fpu
+> 0170-0177 : 0000:00:0d.0
+> 01f0-01f7 : 0000:00:0d.0
+>   01f0-01f7 : ide0
+> 0360-0361 : pnp 00:05
+> 0376-0376 : 0000:00:0d.0
+> 0380-0383 : pnp 00:05
+> 03c0-03df : vesafb
+> 03f6-03f6 : 0000:00:0d.0
+>   03f6-03f6 : ide0
+> 04d0-04d1 : pnp 00:05
+> 0cf8-0cff : PCI conf1
+> 1000-107f : pnp 00:04
+>   1000-1003 : ACPI PM1a_EVT_BLK
+>   1004-1005 : ACPI PM1a_CNT_BLK
+>   1008-100b : ACPI PM_TMR
+>   1010-1015 : ACPI CPU throttle
+>   1020-1027 : ACPI GPE0_BLK
+> 1080-10ff : pnp 00:04
+> 1400-147f : pnp 00:04
+> 1480-14ff : pnp 00:04
+>   1484-1484 : ACPI PM2_CNT_BLK
+> 1800-187f : pnp 00:04
+> 1880-18ff : pnp 00:04
+> 1d00-1d7f : 0000:00:0a.0
+> 2000-203f : pnp 00:04
+> 3000-303f : 0000:00:0a.1
+>   3000-303f : nForce2_smbus
+> 3040-307f : 0000:00:0a.1
+>   3040-307f : nForce2_smbus
+> 3080-308f : 0000:00:0d.0
+>   3080-3087 : ide0
+> 3090-309f : 0000:00:0e.0
+>   3090-309f : sata_nv
+> 30b0-30b3 : 0000:00:0e.0
+>   30b0-30b3 : sata_nv
+> 30b4-30b7 : 0000:00:0e.0
+>   30b4-30b7 : sata_nv
+> 30b8-30bf : 0000:00:0e.0
+>   30b8-30bf : sata_nv
+> 30c0-30c7 : 0000:00:0e.0
+>   30c0-30c7 : sata_nv
+> 30e0-30e7 : 0000:00:14.0
+>   30e0-30e7 : forcedeth
+> 4000-4fff : PCI Bus #01
+> 
+> -----------------------------------------------------------------------
+> 
+> /proc/iomem:
+> 00000000-0009dbff : System RAM
+> 0009dc00-0009ffff : reserved
+> 000d2000-000fffff : reserved
+> 00100000-3fefffff : System RAM
+>   00200000-00421ffe : Kernel code
+>   00421fff-0051f4f7 : Kernel data
+>   005bf000-0063d2f7 : Kernel bss
+> 3ff00000-3ff14fff : ACPI Tables
+> 3ff15000-3ff7ffff : ACPI Non-volatile Storage
+> 3ff80000-3fffffff : reserved
+> c0000000-c0003fff : 0000:00:10.1
+>   c0000000-c0003fff : ICH HD audio
+> c0004000-c0004fff : 0000:00:0b.0
+>   c0004000-c0004fff : ohci_hcd
+> c0005000-c00050ff : 0000:00:0b.1
+>   c0005000-c00050ff : ehci_hcd
+> c0006000-c0006fff : 0000:00:0e.0
+>   c0006000-c0006fff : sata_nv
+> c0008000-c0008fff : 0000:00:14.0
+>   c0008000-c0008fff : forcedeth
+> c0040000-c007ffff : 0000:00:0a.3
+> c2000000-c3ffffff : PCI Bus #01
+> c4000000-c5ffffff : PCI Bus #03
+>   c4000000-c4003fff : 0000:03:00.0
+>     c4000000-c4003fff : ndiswrapper
+> c6000000-c7ffffff : PCI Bus #05
+>   c6000000-c6ffffff : 0000:05:00.0
+>   c7000000-c7ffffff : 0000:05:00.0
+> c8000000-c80fffff : PCI Bus #07
+>   c8000000-c80007ff : 0000:07:05.0
+>     c8000000-c80007ff : firewire_ohci
+>   c8000800-c80008ff : 0000:07:05.1
+>     c8000800-c80008ff : sdhc0:slot0
+>   c8000c00-c8000cff : 0000:07:05.2
+>   c8001000-c80010ff : 0000:07:05.3
+>   c8001400-c80014ff : 0000:07:05.4
+> c8200000-c83fffff : PCI Bus #01
+> d0000000-dfffffff : PCI Bus #05
+>   d0000000-dfffffff : 0000:05:00.0
+>     d0000000-d3ffffff : vesafb
+> e0000000-efffffff : reserved
+>   e0000000-e06fffff : PCI MMCONFIG 0
+> fec00000-fec0ffff : reserved
+>   fec00000-fec00fff : IOAPIC 0
+> fed00000-fed00fff : pnp 00:01
+>   fed00000-fed003ff : HPET 0
+> fee00000-fee00fff : Local APIC
+> fff80000-ffffffff : reserved
+> 
+> -----------------------------------------------------------------------
+> 
+> lspci -vvv:
+> 00:00.0 RAM memory: nVidia Corporation C51 Host Bridge (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Capabilities: [44] HyperTransport: Slave or Primary Interface
+> 		Command: BaseUnitID=0 UnitCnt=15 MastHost- DefDir- DUL-
+> 		Link Control 0: CFlE+ CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0 IsocEn- LSEn+ ExtCTL- 64b-
+> 		Link Config 0: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut- LWI=16bit DwFcInEn- LWO=16bit DwFcOutEn-
+> 		Link Control 1: CFlE+ CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0 IsocEn- LSEn+ ExtCTL- 64b-
+> 		Link Config 1: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut- LWI=8bit DwFcInEn- LWO=8bit DwFcOutEn-
+> 		Revision ID: 1.03
+> 		Link Frequency 0: 400MHz
+> 		Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
+> 		Link Frequency Capability 0: 200MHz+ 300MHz+ 400MHz+ 500MHz+ 600MHz+ 800MHz+ 1.0GHz+ 1.2GHz- 1.4GHz- 1.6GHz- Vend-
+> 		Feature Capability: IsocFC+ LDTSTOP+ CRCTM- ECTLT- 64bA- UIDRD-
+> 		Link Frequency 1: 400MHz
+> 		Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
+> 		Link Frequency Capability 1: 200MHz+ 300MHz+ 400MHz+ 500MHz+ 600MHz+ 800MHz+ 1.0GHz+ 1.2GHz- 1.4GHz- 1.6GHz- Vend-
+> 		Error Handling: PFlE+ OFlE+ PFE- OFE- EOCFE- RFE- CRCFE- SERRFE- CF- RE- PNFE- ONFE- EOCNFE- RNFE- CRCNFE- SERRNFE-
+> 		Prefetchable memory behind bridge Upper: 00-00
+> 		Bus Number: 00
+> 	Capabilities: [e0] HyperTransport: MSI Mapping Enable+ Fixed-
+> 		Mapping Address Base: 00000000fee00000
+> 
+> 00:00.1 RAM memory: nVidia Corporation C51 Memory Controller 0 (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 
+> 00:00.2 RAM memory: nVidia Corporation C51 Memory Controller 1 (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 
+> 00:00.3 RAM memory: nVidia Corporation C51 Memory Controller 5 (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 
+> 00:00.4 RAM memory: nVidia Corporation C51 Memory Controller 4 (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 
+> 00:00.5 RAM memory: nVidia Corporation C51 Host Bridge (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Capabilities: [44] #00 [00fe]
+> 	Capabilities: [fc] #00 [0000]
+> 
+> 00:00.6 RAM memory: nVidia Corporation C51 Memory Controller 3 (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 
+> 00:00.7 RAM memory: nVidia Corporation C51 Memory Controller 2 (rev a2)
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 
+> 00:02.0 PCI bridge: nVidia Corporation C51 PCI Express Bridge (rev a1)
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 64 bytes
+> 	Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+> 	I/O behind bridge: 00004000-00004fff
+> 	Memory behind bridge: c2000000-c3ffffff
+> 	Prefetchable memory behind bridge: 00000000c8200000-00000000c83fffff
+> 	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: [40] Subsystem: nVidia Corporation Device 0000
+> 	Capabilities: [48] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+> 		Address: 00000000fee0300c  Data: 4149
+> 	Capabilities: [60] HyperTransport: MSI Mapping Enable+ Fixed-
+> 		Mapping Address Base: 00000000fee00000
+> 	Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
+> 		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <4us
+> 			ExtTag- RBE- FLReset-
+> 		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+> 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+> 			MaxPayload 128 bytes, MaxReadReq 512 bytes
+> 		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+> 		LnkCap:	Port #2, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <4us
+> 			ClockPM- Suprise- LLActRep+ BwNot-
+> 		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
+> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+> 		SltCap:	AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- Surpise-
+> 			Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
+> 		SltCtl:	Enable: AttnBtn+ PwrFlt+ MRL- PresDet- CmdCplt- HPIrq+ LinkChg+
+> 			Control: AttnInd Off, PwrInd On, Power- Interlock-
+> 		SltSta:	Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet- Interlock-
+> 			Changed: MRL- PresDet- LinkState+
+> 		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+> 		RootCap: CRSVisible-
+> 		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+> 	Capabilities: [100] Virtual Channel <?>
+> 	Kernel driver in use: pcieport-driver
+> 	Kernel modules: shpchp
+> 
+> 00:03.0 PCI bridge: nVidia Corporation C51 PCI Express Bridge (rev a1)
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 64 bytes
+> 	Bus: primary=00, secondary=03, subordinate=03, sec-latency=0
+> 	I/O behind bridge: 0000f000-00000fff
+> 	Memory behind bridge: c4000000-c5ffffff
+> 	Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
+> 	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: [40] Subsystem: nVidia Corporation Device 0000
+> 	Capabilities: [48] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+> 		Address: 00000000fee0300c  Data: 4151
+> 	Capabilities: [60] HyperTransport: MSI Mapping Enable+ Fixed-
+> 		Mapping Address Base: 00000000fee00000
+> 	Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
+> 		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <4us
+> 			ExtTag- RBE- FLReset-
+> 		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+> 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+> 			MaxPayload 128 bytes, MaxReadReq 512 bytes
+> 		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+> 		LnkCap:	Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <4us
+> 			ClockPM- Suprise- LLActRep+ BwNot-
+> 		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
+> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive+ BWMgmt- ABWMgmt-
+> 		SltCap:	AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- Surpise-
+> 			Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
+> 		SltCtl:	Enable: AttnBtn+ PwrFlt+ MRL- PresDet- CmdCplt- HPIrq+ LinkChg+
+> 			Control: AttnInd Off, PwrInd On, Power- Interlock-
+> 		SltSta:	Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet+ Interlock-
+> 			Changed: MRL- PresDet- LinkState+
+> 		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+> 		RootCap: CRSVisible-
+> 		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+> 	Capabilities: [100] Virtual Channel <?>
+> 	Kernel driver in use: pcieport-driver
+> 	Kernel modules: shpchp
+> 
+> 00:04.0 PCI bridge: nVidia Corporation C51 PCI Express Bridge (rev a1)
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 64 bytes
+> 	Bus: primary=00, secondary=05, subordinate=05, sec-latency=0
+> 	I/O behind bridge: 0000f000-00000fff
+> 	Memory behind bridge: c6000000-c7ffffff
+> 	Prefetchable memory behind bridge: 00000000d0000000-00000000dfffffff
+> 	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+> 	BridgeCtl: Parity- SERR- NoISA+ VGA+ MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: [40] Subsystem: nVidia Corporation Device 0000
+> 	Capabilities: [48] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable+
+> 		Address: 00000000fee0300c  Data: 4159
+> 	Capabilities: [60] HyperTransport: MSI Mapping Enable+ Fixed-
+> 		Mapping Address Base: 00000000fee00000
+> 	Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
+> 		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <4us
+> 			ExtTag- RBE- FLReset-
+> 		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+> 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+> 			MaxPayload 128 bytes, MaxReadReq 512 bytes
+> 		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+> 		LnkCap:	Port #0, Speed 2.5GT/s, Width x16, ASPM L0s L1, Latency L0 <512ns, L1 <4us
+> 			ClockPM- Suprise- LLActRep+ BwNot-
+> 		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
+> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 		LnkSta:	Speed 2.5GT/s, Width x16, TrErr- Train- SlotClk+ DLActive+ BWMgmt- ABWMgmt-
+> 		SltCap:	AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- Surpise-
+> 			Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
+> 		SltCtl:	Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq- LinkChg-
+> 			Control: AttnInd Off, PwrInd On, Power- Interlock-
+> 		SltSta:	Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet+ Interlock-
+> 			Changed: MRL- PresDet+ LinkState+
+> 		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+> 		RootCap: CRSVisible-
+> 		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+> 	Capabilities: [100] Virtual Channel <?>
+> 	Kernel driver in use: pcieport-driver
+> 	Kernel modules: shpchp
+> 
+> 00:09.0 RAM memory: nVidia Corporation MCP51 Host Bridge (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Capabilities: [44] HyperTransport: Slave or Primary Interface
+> 		Command: BaseUnitID=9 UnitCnt=15 MastHost- DefDir- DUL-
+> 		Link Control 0: CFlE+ CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0 IsocEn- LSEn+ ExtCTL- 64b-
+> 		Link Config 0: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut- LWI=8bit DwFcInEn- LWO=8bit DwFcOutEn-
+> 		Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+ TXO+ <CRCErr=0 IsocEn- LSEn- ExtCTL- 64b-
+> 		Link Config 1: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut- LWI=8bit DwFcInEn- LWO=8bit DwFcOutEn-
+> 		Revision ID: 1.03
+> 		Link Frequency 0: 800MHz
+> 		Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
+> 		Link Frequency Capability 0: 200MHz+ 300MHz+ 400MHz+ 500MHz+ 600MHz+ 800MHz+ 1.0GHz+ 1.2GHz- 1.4GHz- 1.6GHz- Vend-
+> 		Feature Capability: IsocFC+ LDTSTOP+ CRCTM- ECTLT- 64bA- UIDRD-
+> 		Link Frequency 1: 200MHz
+> 		Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
+> 		Link Frequency Capability 1: 200MHz- 300MHz- 400MHz- 500MHz- 600MHz- 800MHz- 1.0GHz- 1.2GHz- 1.4GHz- 1.6GHz- Vend-
+> 		Error Handling: PFlE+ OFlE+ PFE- OFE- EOCFE- RFE- CRCFE- SERRFE- CF- RE- PNFE- ONFE- EOCNFE- RNFE- CRCNFE- SERRNFE-
+> 		Prefetchable memory behind bridge Upper: 00-00
+> 		Bus Number: 00
+> 	Capabilities: [e0] HyperTransport: MSI Mapping Enable+ Fixed-
+> 		Mapping Address Base: 00000000fee00000
+> 
+> 00:0a.0 ISA bridge: nVidia Corporation MCP51 LPC Bridge (rev a3)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Region 0: I/O ports at 1d00 [size=128]
+> 
+> 00:0a.1 SMBus: nVidia Corporation MCP51 SMBus (rev a3)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Interrupt: pin A routed to IRQ 10
+> 	Region 4: I/O ports at 3040 [size=64]
+> 	Region 5: I/O ports at 3000 [size=64]
+> 	Capabilities: [44] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Kernel driver in use: nForce2_smbus
+> 	Kernel modules: i2c-nforce2
+> 
+> 00:0a.3 Co-processor: nVidia Corporation MCP51 PMU (rev a3)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0 (750ns min, 250ns max)
+> 	Interrupt: pin B routed to IRQ 10
+> 	Region 0: Memory at c0040000 (32-bit, non-prefetchable) [size=256K]
+> 
+> 00:0b.0 USB Controller: nVidia Corporation MCP51 USB Controller (rev a3) (prog-if 10)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0 (750ns min, 250ns max)
+> 	Interrupt: pin A routed to IRQ 22
+> 	Region 0: Memory at c0004000 (32-bit, non-prefetchable) [size=4K]
+> 	Capabilities: [44] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Kernel driver in use: ohci_hcd
+> 	Kernel modules: ohci-hcd
+> 
+> 00:0b.1 USB Controller: nVidia Corporation MCP51 USB Controller (rev a3) (prog-if 20)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0 (750ns min, 250ns max)
+> 	Interrupt: pin B routed to IRQ 22
+> 	Region 0: Memory at c0005000 (32-bit, non-prefetchable) [size=256]
+> 	Capabilities: [44] Debug port: BAR=1 offset=0098
+> 	Capabilities: [80] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Kernel driver in use: ehci_hcd
+> 	Kernel modules: ehci-hcd
+> 
+> 00:0d.0 IDE interface: nVidia Corporation MCP51 IDE (rev f1) (prog-if 8a [Master SecP PriP])
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0 (750ns min, 250ns max)
+> 	Region 0: [virtual] Memory at 000001f0 (32-bit, non-prefetchable) [disabled] [size=8]
+> 	Region 1: [virtual] Memory at 000003f0 (type 3, non-prefetchable) [disabled] [size=1]
+> 	Region 2: [virtual] Memory at 00000170 (32-bit, non-prefetchable) [disabled] [size=8]
+> 	Region 3: [virtual] Memory at 00000370 (type 3, non-prefetchable) [disabled] [size=1]
+> 	Region 4: I/O ports at 3080 [size=16]
+> 	Capabilities: [44] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Kernel driver in use: AMD_IDE
+> 	Kernel modules: amd74xx, ide-pci-generic, ata_generic
+> 
+> 00:0e.0 IDE interface: nVidia Corporation MCP51 Serial ATA Controller (rev f1) (prog-if 85 [Master SecO PriO])
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0 (750ns min, 250ns max)
+> 	Interrupt: pin A routed to IRQ 23
+> 	Region 0: I/O ports at 30c0 [size=8]
+> 	Region 1: I/O ports at 30b4 [size=4]
+> 	Region 2: I/O ports at 30b8 [size=8]
+> 	Region 3: I/O ports at 30b0 [size=4]
+> 	Region 4: I/O ports at 3090 [size=16]
+> 	Region 5: Memory at c0006000 (32-bit, non-prefetchable) [size=4K]
+> 	Capabilities: [44] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [b0] Message Signalled Interrupts: Mask- 64bit+ Queue=0/2 Enable-
+> 		Address: 0000000000000000  Data: 0000
+> 	Capabilities: [cc] HyperTransport: MSI Mapping Enable+ Fixed+
+> 	Kernel driver in use: sata_nv
+> 	Kernel modules: ide-pci-generic, sata_nv, ata_generic
+> 
+> 00:10.0 PCI bridge: nVidia Corporation MCP51 PCI Bridge (rev a2) (prog-if 01)
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0
+> 	Bus: primary=00, secondary=07, subordinate=07, sec-latency=64
+> 	I/O behind bridge: 0000f000-00000fff
+> 	Memory behind bridge: c8000000-c80fffff
+> 	Prefetchable memory behind bridge: fff00000-000fffff
+> 	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR+
+> 	BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+> 		PriDiscTmr- SecDiscTmr+ DiscTmrStat- DiscTmrSERREn-
+> 	Capabilities: [b8] Subsystem: Gammagraphx, Inc. Device 0000
+> 	Capabilities: [8c] HyperTransport: MSI Mapping Enable+ Fixed-
+> 		Mapping Address Base: 00000000fee00000
+> 
+> 00:10.1 Audio device: nVidia Corporation MCP51 High Definition Audio (rev a2)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0 (500ns min, 1250ns max)
+> 	Interrupt: pin B routed to IRQ 21
+> 	Region 0: Memory at c0000000 (32-bit, non-prefetchable) [size=16K]
+> 	Capabilities: [44] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [50] Message Signalled Interrupts: Mask+ 64bit+ Queue=0/0 Enable-
+> 		Address: 0000000000000000  Data: 0000
+> 		Masking: 00000000  Pending: 00000000
+> 	Capabilities: [6c] HyperTransport: MSI Mapping Enable+ Fixed+
+> 	Kernel driver in use: HDA Intel
+> 	Kernel modules: snd-hda-intel
+> 
+> 00:14.0 Bridge: nVidia Corporation MCP51 Ethernet Controller (rev a3)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0 (250ns min, 5000ns max)
+> 	Interrupt: pin A routed to IRQ 20
+> 	Region 0: Memory at c0008000 (32-bit, non-prefetchable) [size=4K]
+> 	Region 1: I/O ports at 30e0 [size=8]
+> 	Capabilities: [44] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable+ DSel=0 DScale=0 PME-
+> 	Kernel driver in use: forcedeth
+> 	Kernel modules: forcedeth
+> 
+> 00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Capabilities: [80] HyperTransport: Host or Secondary Interface
+> 		!!! Possibly incomplete decoding
+> 		Command: WarmRst+ DblEnd-
+> 		Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=8
+> 		Link Config: MLWI=16bit MLWO=16bit LWI=16bit LWO=16bit
+> 		Revision ID: 1.02
+> 
+> 00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 
+> 00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 
+> 00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
+> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Capabilities: [f0] Secure device <?>
+> 	Kernel driver in use: k8temp
+> 	Kernel modules: k8temp
+> 
+> 03:00.0 Network controller: Broadcom Corporation BCM4312 802.11a/b/g (rev 01)
+> 	Subsystem: Hewlett-Packard Company Device 1361
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 64 bytes
+> 	Interrupt: pin A routed to IRQ 19
+> 	Region 0: Memory at c4000000 (32-bit, non-prefetchable) [size=16K]
+> 	Capabilities: [40] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> 		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+> 	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable-
+> 		Address: 00000000  Data: 0000
+> 	Capabilities: [d0] Express (v1) Legacy Endpoint, MSI 00
+> 		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <4us, L1 unlimited
+> 			ExtTag+ AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+> 		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+> 			RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+> 			MaxPayload 128 bytes, MaxReadReq 128 bytes
+> 		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+> 		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s, Latency L0 <4us, L1 <64us
+> 			ClockPM- Suprise- LLActRep- BwNot-
+> 		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk-
+> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+> 	Capabilities: [100] Advanced Error Reporting <?>
+> 	Capabilities: [13c] Virtual Channel <?>
+> 	Kernel driver in use: ndiswrapper
+> 	Kernel modules: ssb
+> 
+> 05:00.0 VGA compatible controller: nVidia Corporation GeForce Go 7200 (rev a1)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 0, Cache Line Size: 64 bytes
+> 	Interrupt: pin A routed to IRQ 11
+> 	Region 0: Memory at c7000000 (32-bit, non-prefetchable) [size=16M]
+> 	Region 1: Memory at d0000000 (64-bit, prefetchable) [size=256M]
+> 	Region 3: Memory at c6000000 (64-bit, non-prefetchable) [size=16M]
+> 	Capabilities: [60] Power Management version 2
+> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+> 	Capabilities: [68] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+> 		Address: 0000000000000000  Data: 0000
+> 	Capabilities: [78] Express (v1) Endpoint, MSI 00
+> 		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <1us, L1 <4us
+> 			ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+> 		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+> 			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+> 			MaxPayload 128 bytes, MaxReadReq 512 bytes
+> 		DevSta:	CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr- TransPend-
+> 		LnkCap:	Port #0, Speed 2.5GT/s, Width x16, ASPM L0s L1, Latency L0 <1us, L1 <4us
+> 			ClockPM- Suprise- LLActRep- BwNot-
+> 		LnkCtl:	ASPM Disabled; RCB 128 bytes Disabled- Retrain- CommClk-
+> 			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 		LnkSta:	Speed 2.5GT/s, Width x16, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+> 	Capabilities: [100] Virtual Channel <?>
+> 	Capabilities: [128] Power Budgeting <?>
+> 	Kernel modules: nvidiafb
+> 
+> 07:05.0 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (prog-if 10)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 64 (500ns min, 1000ns max)
+> 	Interrupt: pin A routed to IRQ 5
+> 	Region 0: Memory at c8000000 (32-bit, non-prefetchable) [size=2K]
+> 	Capabilities: [dc] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=2 PME+
+> 	Kernel driver in use: firewire_ohci
+> 	Kernel modules: firewire-ohci
+> 
+> 07:05.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 19)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Latency: 64
+> 	Interrupt: pin B routed to IRQ 7
+> 	Region 0: Memory at c8000800 (32-bit, non-prefetchable) [size=256]
+> 	Capabilities: [80] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+> 	Kernel driver in use: sdhci
+> 	Kernel modules: sdhci
+> 
+> 07:05.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 0a)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Interrupt: pin B routed to IRQ 11
+> 	Region 0: Memory at c8000c00 (32-bit, non-prefetchable) [size=256]
+> 	Capabilities: [80] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+> 	Kernel driver in use: ricoh-mmc
+> 	Kernel modules: ricoh_mmc
+> 
+> 07:05.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 05)
+> 	Subsystem: Hewlett-Packard Company Device 30b7
+> 	Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+> 	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> 	Interrupt: pin B routed to IRQ 11
+> 	Region 0: Memory at c8001000 (32-bit, non-prefetchable) [size=256]
+> 	Capabilities: [80] Power Management version 2
+> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> 		Status: D0 PME-Enable- DSel=0 DScale=2 PME-
+> 
+> 07:05.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev ff) (prog-if ff)
+> 	!!! Unknown header type 7f
+> 
+> --------------------------------------------------------------------------
+> 
+> /proc/scsi/scsi:
+> Attached devices:
+> Host: scsi0 Channel: 00 Id: 00 Lun: 00
+>   Vendor: ATA      Model: TOSHIBA MK1234GS Rev: AH00
+>   Type:   Direct-Access                    ANSI  SCSI revision: 05
+> 
+> 
+> PS: Sorry for my english!
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-Documentation for noreclaim lru list and its usage.
 
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
 
- Documentation/vm/noreclaim-lru.txt |  609 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 609 insertions(+)
-
-Index: linux-2.6.26-rc2-mm1/Documentation/vm/noreclaim-lru.txt
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc2-mm1/Documentation/vm/noreclaim-lru.txt	2008-05-28 14:01:32.000000000 -0400
-@@ -0,0 +1,609 @@
-+
-+This document describes the Linux memory management "Noreclaim LRU"
-+infrastructure and the use of this infrastructure to manage several types
-+of "non-reclaimable" pages.  The document attempts to provide the overall
-+rationale behind this mechanism and the rationale for some of the design
-+decisions that drove the implementation.  The latter design rationale is
-+discussed in the context of an implementation description.  Admittedly, one
-+can obtain the implementation details--the "what does it do?"--by reading the
-+code.  One hopes that the descriptions below add value by provide the answer
-+to "why does it do that?".
-+
-+Noreclaim LRU Infrastructure:
-+
-+The Noreclaim LRU adds an additional LRU list to track non-reclaimable pages
-+and to hide these pages from vmscan.  This mechanism is based on a patch by
-+Larry Woodman of Red Hat to address several scalability problems with page
-+reclaim in Linux.  The problems have been observed at customer sites on large
-+memory x86_64 systems.  For example, a non-numal x86_64 platform with 128GB
-+of main memory will have over 32 million 4k pages in a single zone.  When a
-+large fraction of these pages are not reclaimable for any reason [see below],
-+vmscan will spend a lot of time scanning the LRU lists looking for the small
-+fraction of pages that are reclaimable.  This can result in a situation where
-+all cpus are spending 100% of their time in vmscan for hours or days on end,
-+with the system completely unresponsive.
-+
-+The Noreclaim LRU infrastructure addresses the following classes of
-+non-reclaimable pages:
-+
-++ page owned by ram disks or ramfs
-++ page mapped into SHM_LOCKed shared memory regions
-++ page mapped into VM_LOCKED [mlock()ed] vmas
-+
-+The infrastructure might be able to handle other conditions that make pages
-+nonreclaimable, either by definition or by circumstance, in the future.
-+
-+
-+The Noreclaim LRU List
-+
-+The Noreclaim LRU infrastructure consists of an additional, per-zone, LRU list
-+called the "noreclaim" list and an associated page flag, PG_noreclaim, to
-+indicate that the page is being managed on the noreclaim list.  The PG_noreclaim
-+flag is analogous to, and mutually exclusive with, the PG_active flag in that
-+it indicates on which LRU list a page resides when PG_lru is set.  The
-+noreclaim LRU list is source configurable based on the NORECLAIM_LRU Kconfig
-+option.
-+
-+Why maintain nonreclaimable pages on an additional LRU list?  The Linux memory
-+management subsystem has well established protocols for managing pages on the
-+LRU.  Vmscan is based on LRU lists.  LRU list exist per zone, and we want to
-+maintain pages relative to their "home zone".  All of these make the use of
-+an additional list, parallel to the LRU active and inactive lists, a natural
-+mechanism to employ.  Note, however, that the noreclaim list does not
-+differentiate between file backed and swap backed [anon] pages.  This
-+differentiation is only important while the pages are, in fact, reclaimable.
-+
-+The noreclaim LRU list benefits from the "arrayification" of the per-zone
-+LRU lists and statistics originally proposed and posted by Christoph Lameter.
-+
-+Note that the noreclaim list does not use the lru pagevec mechanism. Rather,
-+nonreclaimable pages are placed directly on the page's zone's noreclaim
-+list under the zone lru_lock.  The reason for this is to prevent stranding
-+of pages on the noreclaim list when one task has the page isolated from the
-+lru and other tasks are changing the "reclaimability" state of the page.
-+
-+
-+Noreclaim LRU and Memory Controller Interaction
-+
-+The memory controller data structure automatically gets a per zone noreclaim
-+lru list as a result of the "arrayification" of the per-zone LRU lists.  The
-+memory controller tracks the movement of pages to and from the noreclaim list.
-+When a memory control group comes under memory pressure, the controller will
-+not attempt to reclaim pages on the noreclaim list.  This has a couple of
-+effects.  Because the pages are "hidden" from reclaim on the noreclaim list,
-+the reclaim process can be more efficient, dealing only with pages that have
-+a chance of being reclaimed.  On the other hand, if too many of the pages
-+charged to the control group are non-reclaimable, the reclaimable portion of the
-+working set of the tasks in the control group may not fit into the available
-+memory.  This can cause the control group to thrash or to oom-kill tasks.
-+
-+
-+Noreclaim LRU:  Detecting Non-reclaimable Pages
-+
-+The function page_reclaimable(page, vma) in vmscan.c determines whether a
-+page is reclaimable or not.  For ramfs and ram disk [brd] pages and pages in
-+SHM_LOCKed regions, page_reclaimable() tests a new address space flag,
-+AS_NORECLAIM, in the page's address space using a wrapper function.
-+Wrapper functions are used to set, clear and test the flag to reduce the
-+requirement for #ifdef's throughout the source code.  AS_NORECLAIM is set on
-+ramfs inode/mapping when it is created and on ram disk inode/mappings at open
-+time.   This flag remains for the life of the inode.
-+
-+For shared memory regions, AS_NORECLAIM is set when an application successfully
-+SHM_LOCKs the region and is removed when the region is SHM_UNLOCKed.  Note that
-+shmctl(SHM_LOCK, ...) does not populate the page tables for the region as does,
-+for example, mlock().   So, we make no special effort to push any pages in the
-+SHM_LOCKed region to the noreclaim list.  Vmscan will do this when/if it
-+encounters the pages during reclaim.  On SHM_UNLOCK, shmctl() scans the pages
-+in the region and "rescues" them from the noreclaim list if no other condition
-+keeps them non-reclaimable.  If a SHM_LOCKed region is destroyed, the pages
-+are also "rescued" from the noreclaim list in the process of freeing them.
-+
-+page_reclaimable() detects mlock()ed pages by testing an additional page flag,
-+PG_mlocked via the PageMlocked() wrapper.  If the page is NOT mlocked, and a
-+non-NULL vma is supplied, page_reclaimable() will check whether the vma is
-+VM_LOCKED via is_mlocked_vma().  is_mlocked_vma() will SetPageMlocked() and
-+update the appropriate statistics if the vma is VM_LOCKED.  This method allows
-+efficient "culling" of pages in the fault path that are being faulted in to
-+VM_LOCKED vmas.
-+
-+
-+Non-reclaimable Pages and Vmscan [shrink_*_list()]
-+
-+If non-reclaimable pages are culled in the fault path, or moved to the
-+noreclaim list at mlock() or mmap() time, vmscan will never encounter the pages
-+until they have become reclaimable again, for example, via munlock() and have
-+been "rescued" from the noreclaim list.  However, there may be situations where
-+we decide, for the sake of expediency, to leave a non-reclaimable page on one of
-+the regular active/inactive LRU lists for vmscan to deal with.  Vmscan checks
-+for such pages in all of the shrink_{active|inactive|page}_list() functions and
-+will "cull" such pages that it encounters--that is, it diverts those pages to
-+the noreclaim list for the zone being scanned.
-+
-+There may be situations where a page is mapped into a VM_LOCKED vma, but the
-+page is not marked as PageMlocked.  Such pages will make it all the way to
-+shrink_page_list() where they will be detected when vmscan walks the reverse
-+map in try_to_unmap().  If try_to_unmap() returns SWAP_MLOCK, shrink_page_list()
-+will cull the page at that point.
-+
-+Note that for anonymous pages, shrink_page_list() attempts to add the page to
-+the swap cache before it tries to unmap the page.  To avoid this unnecessary
-+consumption of swap space, shrink_page_list() calls try_to_unlock() to check
-+whether any VM_LOCKED vmas map the page without attempting to unmap the page.
-+If try_to_unlock() returns SWAP_MLOCK, shrink_page_list() will cull the page
-+without consuming swap space.  try_to_unlock() will be described below.
-+
-+
-+Mlocked Page:  Prior Work
-+
-+The "Noreclaim Mlocked Pages" infrastructure is based on work originally posted
-+by Nick Piggin in an RFC patch entitled "mm: mlocked pages off LRU".  Nick's
-+posted his patch as an alternative to a patch posted by Christoph Lameter to
-+achieve the same objective--hiding mlocked pages from vmscan.  In Nick's patch,
-+he used one of the struct page lru list link fields as a count of VM_LOCKED
-+vmas that map the page.  This use of the link field for a count prevent the
-+management of the pages on an LRU list.  When Nick's patch was integrated with
-+the Noreclaim LRU work, the count was replaced by walking the reverse map to
-+determine whether any VM_LOCKED vmas mapped the page.  More on this below.
-+The primary reason for wanting to keep mlocked pages on an LRU list is that
-+mlocked pages are migratable, and the LRU list is used to arbitrate tasks
-+attempting to migrate the same page.  Whichever task succeeds in "isolating"
-+the page from the LRU performs the migration.
-+
-+
-+Mlocked Pages:  Basic Management
-+
-+Mlocked pages--pages mapped into a VM_LOCKED vma--represent one class of
-+nonreclaimable pages.  When such a page has been "noticed" by the memory
-+management subsystem, the page is marked with the PG_mlocked [PageMlocked()]
-+flag.  A PageMlocked() page will be placed on the noreclaim LRU list when
-+it is added to the LRU.   Pages can be "noticed" by memory management in
-+several places:
-+
-+1) in the mlock()/mlockall() system call handlers.
-+2) in the mmap() system call handler when mmap()ing a region with the
-+   MAP_LOCKED flag, or mmap()ing a region in a task that has called
-+   mlockall() with the MCL_FUTURE flag.  Both of these conditions result
-+   in the VM_LOCKED flag being set for the vma.
-+3) in the fault path, if mlocked pages are "culled" in the fault path,
-+   and when a VM_LOCKED stack segment is expanded.
-+4) as mentioned above, in vmscan:shrink_page_list() with attempting to
-+   reclaim a page in a VM_LOCKED vma--via try_to_unmap() or try_to_unlock().
-+
-+Mlocked pages become unlocked and rescued from the noreclaim list when:
-+
-+1) mapped in a range unlocked via the munlock()/munlockall() system calls.
-+2) munmapped() out of the last VM_LOCKED vma that maps the page, including
-+   unmapping at task exit.
-+3) when the page is truncated from the last VM_LOCKED vma of an mmap()ed file.
-+4) before a page is COWed in a VM_LOCKED vma.
-+
-+
-+Mlocked Pages:  mlock()/mlockall() System Call Handling
-+
-+Both [do_]mlock() and [do_]mlockall() system call handlers call mlock_fixup()
-+for each vma in the range specified by the call.  In the case of mlockall(),
-+this is the entire active address space of the task.  Note that mlock_fixup()
-+is used for both mlock()ing and munlock()ing a range of memory.  A call to
-+mlock() an already VM_LOCKED vma, or to munlock() a vma that is not VM_LOCKED
-+is treated as a no-op--mlock_fixup() simply returns.
-+
-+If the vma passes some filtering described in "Mlocked Pages:  Filtering Vmas"
-+below, mlock_fixup() will attempt to merge the vma with its neighbors or split
-+off a subset of the vma if the range does not cover the entire vma.  Once the
-+vma has been merged or split or neither, mlock_fixup() will call
-+__mlock_vma_pages_range() to fault in the pages via get_user_pages() and
-+to mark the pages as mlocked via mlock_vma_page().
-+
-+Note that the vma being mlocked might be mapped with PROT_NONE.  In this case,
-+get_user_pages() will be unable to fault in the pages.  That's OK.  If pages
-+do end up getting faulted into this VM_LOCKED vma, we'll handle them in the
-+fault path or in vmscan.
-+
-+Also note that a page returned by get_user_pages() could be truncated or
-+migrated out from under us, while we're trying to mlock it.  To detect
-+this, __mlock_vma_pages_range() tests the page_mapping after acquiring
-+the page lock.  If the page is still associated with its mapping, we'll
-+go ahead and call mlock_vma_page().  If the mapping is gone, we just
-+unlock the page and move on.  Worse case, this results in page mapped
-+in a VM_LOCKED vma remaining on a normal LRU list without being
-+PageMlocked().  Again, vmscan will detect and cull such pages.
-+
-+mlock_vma_page(), called with the page locked [N.B., not "mlocked"] will
-+TestSetPageMlocked() for each page returned by get_user_pages().  We use
-+TestSetPageMlocked() because the page might already be mlocked by another
-+task/vma and we don't want to do extra work.  We especially do not want to
-+count an mlocked page more than once in the statistics.  If the page was
-+already mlocked, mlock_vma_page() is done.
-+
-+If the page was NOT already mlocked, mlock_vma_page() attempts to isolate the
-+page from the LRU, as it is likely on the appropriate active or inactive list
-+at that time.  If the isolate_lru_page() succeeds, mlock_vma_page() will
-+putback the page--putback_lru_page()--which will notice that the page is now
-+mlocked and divert the page to the zone's noreclaim LRU list.  If
-+mlock_vma_page() is unable to isolate the page from the LRU, vmscan will handle
-+it later if/when it attempts to reclaim the page.
-+
-+
-+Mlocked Pages:  Filtering Vmas
-+
-+mlock_fixup() filters several classes of "special" vmas:
-+
-+1) vmas with VM_IO|VM_PFNMAP set are skipped entirely.  The pages behind
-+   these mappings are inherently pinned, so we don't need to mark them as
-+   mlocked.  In any case, most of the pages have no struct page in which to
-+   so mark the page.  Because of this, get_user_pages() will fail for these
-+   vmas, so there is no sense in attempting to visit them.
-+
-+2) vmas mapping hugetlbfs page are already effectively pinned into memory.
-+   We don't need nor want to mlock() these pages.  However, to preserve the
-+   prior behavior of mlock()--before the noreclaim/mlock changes--mlock_fixup()
-+   will call make_pages_present() in the hugetlbfs vma range to allocate the
-+   huge pages and populate the ptes.
-+
-+3) vmas with VM_DONTEXPAND|VM_RESERVED are generally user space mappings of
-+   kernel pages, such as the vdso page, relay channel pages, etc.  These pages
-+   are inherently non-reclaimable and are not managed on the LRU lists.
-+   mlock_fixup() treats these vmas the same as hugetlbfs vmas.  It calls
-+   make_pages_present() to populate the ptes.
-+
-+Note that for all of these special vmas, mlock_fixup() does not set the
-+VM_LOCKED flag.  Therefore, we won't have to deal with them later during
-+munlock() or munmap()--for example, at task exit.  Neither does mlock_fixup()
-+account these vmas against the task's "locked_vm".
-+
-+Mlocked Pages:  Downgrading the Mmap Semaphore.
-+
-+mlock_fixup() must be called with the mmap semaphore held for write, because
-+it may have to merge or split vmas.  However, mlocking a large region of
-+memory can take a long time--especially if vmscan must reclaim pages to
-+satisfy the regions requirements.  Faulting in a large region with the mmap
-+semaphore held for write can hold off other faults on the address space, in
-+the case of a multi-threaded task.  It can also hold off scans of the task's
-+address space via /proc.  While testing under heavy load, it was observed that
-+the ps(1) command could be held off for many minutes while a large segment was
-+mlock()ed down.
-+
-+To address this issue, and to make the system more responsive during mlock()ing
-+of large segments, mlock_fixup() downgrades the mmap semaphore to read mode
-+during the call to __mlock_vma_pages_range().  This works fine.  However, the
-+callers of mlock_fixup() expect the semaphore to be returned in write mode.
-+So, mlock_fixup() "upgrades" the semphore to write mode.  Linux does not
-+support an atomic upgrade_sem() call, so mlock_fixup() must drop the semaphore
-+and reacquire it in write mode.  In a multi-threaded task, it is possible for
-+the task memory map to change while the semaphore is dropped.  Therefore,
-+mlock_fixup() looks up the vma at the range start address after reacquiring
-+the semaphore in write mode and verifies that it still covers the original
-+range.  If not, mlock_fixup() returns an error [-EAGAIN].  All callers of
-+mlock_fixup() have been changed to deal with this new error condition.
-+
-+Note:  when munlocking a region, all of the pages should already be resident--
-+unless we have racing threads mlocking() and munlocking() regions.  So,
-+unlocking should not have to wait for page allocations nor faults  of any kind.
-+Therefore mlock_fixup() does not downgrade the semaphore for munlock().
-+
-+
-+Mlocked Pages:  munlock()/munlockall() System Call Handling
-+
-+The munlock() and munlockall() system calls are handled by the same functions--
-+do_mlock[all]()--as the mlock() and mlockall() system calls with the unlock
-+vs lock operation indicated by an argument.  So, these system calls are also
-+handled by mlock_fixup().  Again, if called for an already munlock()ed vma,
-+mlock_fixup() simply returns.  Because of the vma filtering discussed above,
-+VM_LOCKED will not be set in any "special" vmas.  So, these vmas will be
-+ignored for munlock.
-+
-+If the vma is VM_LOCKED, mlock_fixup() again attempts to merge or split off
-+the specified range.  The range is then munlocked via the function
-+__munlock_vma_pages_range().  Because the vma access protections could have
-+been changed to PROT_NONE after faulting in and mlocking some pages,
-+get_user_pages() is unreliable for visiting these pages for munlocking.  We
-+don't want to leave pages mlocked(), so __munlock_vma_pages_range() uses a
-+custom page table walker to find all pages mapped into the specified range.
-+Note that this again assumes that all pages in the mlocked() range are resident
-+and mapped by the task's page table.
-+
-+As with __mlock_vma_pages_range(), unlocking can race with truncation and
-+migration.  It is very important that munlock of a page succeeds, lest we
-+leak pages by stranding them in the mlocked state on the noreclaim list.
-+The munlock page walk pte handler resolves the race with page migration
-+by checking the pte for a special swap pte indicating that the page is
-+being migrated.  If this is the case, the pte handler will wait for the
-+migration entry to be replaced and then refetch the pte for the new page.
-+Once the pte handler has locked the page, it checks the page_mapping to
-+ensure that it still exists.  If not, the handler unlocks the page and
-+retries the entire process after refetching the pte.
-+
-+The munlock page walk pte handler unlocks individual pages by calling
-+munlock_vma_page().  munlock_vma_page() unconditionally clears the PG_mlocked
-+flag using TestClearPageMlocked().  As with mlock_vma_page(), munlock_vma_page()
-+use the Test*PageMlocked() function to handle the case where the page might
-+have already been unlocked by another task.  If the page was mlocked,
-+munlock_vma_page() updates that zone statistics for the number of mlocked
-+pages.  Note, however, that at this point we haven't checked whether the page
-+is mapped by other VM_LOCKED vmas.
-+
-+We can't call try_to_unlock(), the function that walks the reverse map to check
-+for other VM_LOCKED vmas, without first isolating the page from the LRU.
-+try_to_unlock() is a variant of try_to_unmap() and thus requires that the page
-+not be on an lru list.  [More on these below.]  However, the call to
-+isolate_lru_page() could fail, in which case we couldn't try_to_unlock().
-+So, we go ahead and clear PG_mlocked up front, as this might be the only chance
-+we have.  If we can successfully isolate the page, we go ahead and
-+try_to_unlock(), which will restore the PG_mlocked flag and update the zone
-+page statistics if it finds another vma holding the page mlocked.  If we fail
-+to isolate the page, we'll have left a potentially mlocked page on the LRU.
-+This is fine, because we'll catch it later when/if vmscan tries to reclaim the
-+page.  This should be relatively rare.
-+
-+Mlocked Pages:  Migrating Them...
-+
-+A page that is being migrated has been isolated from the lru lists and is
-+held locked across unmapping of the page, updating the page's mapping
-+[address_space] entry and copying the contents and state, until the
-+page table entry has been replaced with an entry that refers to the new
-+page.  Linux supports migration of mlocked pages and other non-reclaimable
-+pages.  This involves simply moving the PageMlocked and PageNoreclaim states
-+from the old page to the new page.
-+
-+Note that page migration can race with mlocking or munlocking of the same
-+page.  This has been discussed from the mlock/munlock perspective in the
-+respective sections above.  Both processes [migration, m[un]locking], hold
-+the page locked.  This provides the first level of synchronization.  Page
-+migration zeros out the page_mapping of the old page before unlocking it,
-+so m[un]lock can skip these pages.  However, as discussed above, munlock
-+must wait for a migrating page to be replaced with the new page to prevent
-+the new page from remaining mlocked outside of any VM_LOCKED vma.
-+
-+To ensure that we don't strand pages on the noreclaim list because of a
-+race between munlock and migration, we must also prevent the munlock pte
-+handler from acquiring the old or new page lock from the time that the
-+migration subsystem acquires the old page lock, until either migration
-+succeeds and the new page is added to the lru or migration fails and
-+the old page is putback to the lru.  The achieve this coordination,
-+the migration subsystem places the new page on success, or the old
-+page on failure, back on the lru lists before dropping the respective
-+page's lock.  It uses the putback_lru_page() function to accomplish this,
-+which rechecks the page's overall reclaimability and adjusts the page
-+flags accordingly.  To free the old page on success or the new page on
-+failure, the migration subsystem just drops what it knows to be the last
-+page reference via put_page().
-+
-+
-+Mlocked Pages:  mmap(MAP_LOCKED) System Call Handling
-+
-+In addition the the mlock()/mlockall() system calls, an application can request
-+that a region of memory be mlocked using the MAP_LOCKED flag with the mmap()
-+call.  Furthermore, any mmap() call or brk() call that expands the heap by a
-+task that has previously called mlockall() with the MCL_FUTURE flag will result
-+in the newly mapped memory being mlocked.  Before the noreclaim/mlock changes,
-+the kernel simply called make_pages_present() to allocate pages and populate
-+the page table.
-+
-+To mlock a range of memory under the noreclaim/mlock infrastructure, the
-+mmap() handler and task address space expansion functions call
-+mlock_vma_pages_range() specifying the vma and the address range to mlock.
-+mlock_vma_pages_range() filters vmas like mlock_fixup(), as described above in
-+"Mlocked Pages:  Filtering Vmas".  It will clear the VM_LOCKED flag, which will
-+have already been set by the caller, in filtered vmas.  Thus these vma's need
-+not be visited for munlock when the region is unmapped.
-+
-+For "normal" vmas, mlock_vma_pages_range() calls __mlock_vma_pages_range() to
-+fault/allocate the pages and mlock them.  Again, like mlock_fixup(),
-+mlock_vma_pages_range() downgrades the mmap semaphore to read mode before
-+attempting to fault/allocate and mlock the pages; and "upgrades" the semaphore
-+back to write mode before returning.
-+
-+The callers of mlock_vma_pages_range() will have already added the memory
-+range to be mlocked to the task's "locked_vm".  To account for filtered vmas,
-+mlock_vma_pages_range() returns the number of pages NOT mlocked.  All of the
-+callers then subtract a non-negative return value from the task's locked_vm.
-+A negative return value represent an error--for example, from get_user_pages()
-+attempting to fault in a vma with PROT_NONE access.  In this case, we leave
-+the memory range accounted as locked_vm, as the protections could be changed
-+later and pages allocated into that region.
-+
-+
-+Mlocked Pages:  munmap()/exit()/exec() System Call Handling
-+
-+When unmapping an mlocked region of memory, whether by an explicit call to
-+munmap() or via an internal unmap from exit() or exec() processing, we must
-+munlock the pages if we're removing the last VM_LOCKED vma that maps the pages.
-+Before the noreclaim/mlock changes, mlocking did not mark the pages in any way,
-+so unmapping them required no processing.
-+
-+To munlock a range of memory under the noreclaim/mlock infrastructure, the
-+munmap() hander and task address space tear down function call
-+munlock_vma_pages_all().  The name reflects the observation that one always
-+specifies the entire vma range when munlock()ing during unmap of a region.
-+Because of the vma filtering when mlocking() regions, only "normal" vmas that
-+actually contain mlocked pages will be passed to munlock_vma_pages_all().
-+
-+munlock_vma_pages_all() clears the VM_LOCKED vma flag and, like mlock_fixup()
-+for the munlock case, calls __munlock_vma_pages_range() to walk the page table
-+for the vma's memory range and munlock_vma_page() each resident page mapped by
-+the vma.  This effectively munlocks the page, only if this is the last
-+VM_LOCKED vma that maps the page.
-+
-+
-+Mlocked Page:  try_to_unmap()
-+
-+[Note:  the code changes represented by this section are really quite small
-+compared to the text to describe what happening and why, and to discuss the
-+implications.]
-+
-+Pages can, of course, be mapped into multiple vmas.  Some of these vmas may
-+have VM_LOCKED flag set.  It is possible for a page mapped into one or more
-+VM_LOCKED vmas not to have the PG_mlocked flag set and therefore reside on one
-+of the active or inactive LRU lists.  This could happen if, for example, a
-+task in the process of munlock()ing the page could not isolate the page from
-+the LRU.  As a result, vmscan/shrink_page_list() might encounter such a page
-+as described in "Non-reclaimable Pages and Vmscan [shrink_*_list()]".  To
-+handle this situation, try_to_unmap() has been enhanced to check for VM_LOCKED
-+vmas while it is walking a page's reverse map.
-+
-+try_to_unmap() is always called, by either vmscan for reclaim or for page
-+migration, with the argument page locked and isolated from the LRU.  BUG_ON()
-+assertions enforce this requirement.  Separate functions handle anonymous and
-+mapped file pages, as these types of pages have different reverse map
-+mechanisms.
-+
-+	try_to_unmap_anon()
-+
-+To unmap anonymous pages, each vma in the list anchored in the anon_vma must be
-+visited--at least until a VM_LOCKED vma is encountered.  If the page is being
-+unmapped for migration, VM_LOCKED vmas do not stop the process because mlocked
-+pages are migratable.  However, for reclaim, if the page is mapped into a
-+VM_LOCKED vma, the scan stops.  try_to_unmap() attempts to acquire the mmap
-+semphore of the mm_struct to which the vma belongs in read mode.  If this is
-+successful, try_to_unmap() will mlock the page via mlock_vma_page()--we
-+wouldn't have gotten to try_to_unmap() if the page were already mlocked--and
-+will return SWAP_MLOCK, indicating that the page is nonreclaimable.  If the
-+mmap semaphore cannot be acquired, we are not sure whether the page is really
-+nonreclaimable or not.  In this case, try_to_unmap() will return SWAP_AGAIN.
-+
-+	try_to_unmap_file() -- linear mappings
-+
-+Unmapping of a mapped file page works the same, except that the scan visits
-+all vmas that maps the page's index/page offset in the page's mapping's
-+reverse map priority search tree.  It must also visit each vma in the page's
-+mapping's non-linear list, if the list is non-empty.  As for anonymous pages,
-+on encountering a VM_LOCKED vma for a mapped file page, try_to_unmap() will
-+attempt to acquire the associated mm_struct's mmap semaphore to mlock the page,
-+returning SWAP_MLOCK if this is successful, and SWAP_AGAIN, if not.
-+
-+	try_to_unmap_file() -- non-linear mappings
-+
-+If a page's mapping contains a non-empty non-linear mapping vma list, then
-+try_to_un{map|lock}() must also visit each vma in that list to determine
-+whether the page is mapped in a VM_LOCKED vma.  Again, the scan must visit
-+all vmas in the non-linear list to ensure that the pages is not/should not be
-+mlocked.  If a VM_LOCKED vma is found in the list, the scan could terminate.
-+However, there is no easy way to determine whether the page is actually mapped
-+in a given vma--either for unmapping or testing whether the VM_LOCKED vma
-+actually pins the page.
-+
-+So, try_to_unmap_file() handles non-linear mappings by scanning a certain
-+number of pages--a "cluster"--in each non-linear vma associated with the page's
-+mapping, for each file mapped page that vmscan tries to unmap.  If this happens
-+to unmap the page we're trying to unmap, try_to_unmap() will notice this on
-+return--(page_mapcount(page) == 0)--and return SWAP_SUCCESS.  Otherwise, it
-+will return SWAP_AGAIN, causing vmscan to recirculate this page.  We take
-+advantage of the cluster scan in try_to_unmap_cluster() as follows:
-+
-+For each non-linear vma, try_to_unmap_cluster() attempts to acquire the mmap
-+semaphore of the associated mm_struct for read without blocking.  If this
-+attempt is successful and the vma is VM_LOCKED, try_to_unmap_cluster() will
-+retain the mmap semaphore for the scan; otherwise it drops it here.  Then,
-+for each page in the cluster, if we're holding the mmap semaphore for a locked
-+vma, try_to_unmap_cluster() calls mlock_vma_page() to mlock the page.  This
-+call is a no-op if the page is already locked, but will mlock any pages in
-+the non-linear mapping that happen to be unlocked.  If one of the pages so
-+mlocked is the page passed in to try_to_unmap(), try_to_unmap_cluster() will
-+return SWAP_MLOCK, rather than the default SWAP_AGAIN.  This will allow vmscan
-+to cull the page, rather than recirculating it on the inactive list.  Again,
-+if try_to_unmap_cluster() cannot acquire the vma's mmap sem, it returns
-+SWAP_AGAIN, indicating that the page is mapped by a VM_LOCKED vma, but
-+couldn't be mlocked.
-+
-+
-+Mlocked pages:  try_to_unlock() Reverse Map Scan
-+
-+TODO/FIXME:  a better name might be page_mlocked()--analogous to the
-+page_referenced() reverse map walker--especially if we continue to call this
-+from shrink_page_list().  See related TODO/FIXME below.
-+
-+When munlock_vma_page()--see "Mlocked Pages:  munlock()/munlockall() System
-+Call Handling" above--tries to munlock a page, or when shrink_page_list()
-+encounters an anonymous page that is not yet in the swap cache, they need to
-+determine whether or not the page is mapped by any VM_LOCKED vma, without
-+actually attempting to unmap all ptes from the page.  For this purpose, the
-+noreclaim/mlock infrastructure introduced a variant of try_to_unmap() called
-+try_to_unlock().
-+
-+try_to_unlock() calls the same functions as try_to_unmap() for anonymous and
-+mapped file pages with an additional argument specifing unlock versus unmap
-+processing.  Again, these functions walk the respective reverse maps looking
-+for VM_LOCKED vmas.  When such a vma is found for anonymous pages and file
-+pages mapped in linear VMAs, as in the try_to_unmap() case, the functions
-+attempt to acquire the associated mmap semphore, mlock the page via
-+mlock_vma_page() and return SWAP_MLOCK.  This effectively undoes the
-+pre-clearing of the page's PG_mlocked done by munlock_vma_page() and informs
-+shrink_page_list() that the anonymous page should be culled rather than added
-+to the swap cache in preparation for a try_to_unmap() that will almost
-+certainly fail.
-+
-+If try_to_unmap() is unable to acquire a VM_LOCKED vma's associated mmap
-+semaphore, it will return SWAP_AGAIN.  This will allow shrink_page_list()
-+to recycle the page on the inactive list and hope that it has better luck
-+with the page next time.
-+
-+For file pages mapped into non-linear vmas, the try_to_unlock() logic works
-+slightly differently.  On encountering a VM_LOCKED non-linear vma that might
-+map the page, try_to_unlock() returns SWAP_AGAIN without actually mlocking
-+the page.  munlock_vma_page() will just leave the page unlocked and let
-+vmscan deal with it--the usual fallback position.
-+
-+Note that try_to_unlock()'s reverse map walk must visit every vma in a pages'
-+reverse map to determine that a page is NOT mapped into any VM_LOCKED vma.
-+However, the scan can terminate when it encounters a VM_LOCKED vma and can
-+successfully acquire the vma's mmap semphore for read and mlock the page.
-+Although try_to_unlock() can be called many [very many!] times when
-+munlock()ing a large region or tearing down a large address space that has been
-+mlocked via mlockall(), overall this is a fairly rare event.  In addition,
-+although shrink_page_list() calls try_to_unlock() for every anonymous page that
-+it handles that is not yet in the swap cache, on average anonymous pages will
-+have very short reverse map lists.
-+
-+Mlocked Page:  Page Reclaim in shrink_*_list()
-+
-+shrink_active_list() culls any obviously nonreclaimable pages--i.e.,
-+!page_reclaimable(page, NULL)--diverting these to the noreclaim lru
-+list.  However, shrink_active_list() only sees nonreclaimable pages that
-+made it onto the active/inactive lru lists.  Note that these pages do not
-+have PageNoreclaim set--otherwise, they would be on the noreclaim list and
-+shrink_active_list would never see them.
-+
-+Some examples of these nonreclaimable pages on the LRU lists are:
-+
-+1) ramfs and ram disk pages that have been placed on the lru lists when
-+   first allocated.
-+
-+2) SHM_LOCKed shared memory pages.  shmctl(SHM_LOCK) does not attempt to
-+   allocate or fault in the pages in the shared memory region.  This happens
-+   when an application accesses the page the first time after SHM_LOCKing
-+   the segment.
-+
-+3) Mlocked pages that could not be isolated from the lru and moved to the
-+   noreclaim list in mlock_vma_page().
-+
-+3) Pages mapped into multiple VM_LOCKED vmas, but try_to_unlock() couldn't
-+   acquire the vma's mmap semaphore to test the flags and set PageMlocked.
-+   munlock_vma_page() was forced to let the page back on to the normal
-+   LRU list for vmscan to handle.
-+
-+shrink_inactive_list() also culls any nonreclaimable pages that it finds
-+on the inactive lists, again diverting them to the appropriate zone's noreclaim
-+lru list.  shrink_inactive_list() should only see SHM_LOCKed pages that became
-+SHM_LOCKed after shrink_active_list() had moved them to the inactive list, or
-+pages mapped into VM_LOCKED vmas that munlock_vma_page() couldn't isolate from
-+the lru to recheck via try_to_unlock().  shrink_inactive_list() won't notice
-+the latter, but will pass on to shrink_page_list().
-+
-+shrink_page_list() again culls obviously nonreclaimable pages that it could
-+encounter for similar reason to shrink_inactive_list().  As already discussed,
-+shrink_page_list() proactively looks for anonymous pages that should have
-+PG_mlocked set but don't--these would not be detected by page_reclaimable()--to
-+avoid adding them to the swap cache unnecessarily.  File pages mapped into
-+VM_LOCKED vmas but without PG_mlocked set will make it all the way to
-+try_to_unmap().  shrink_page_list() will divert them to the noreclaim list when
-+try_to_unmap() returns SWAP_MLOCK, as discussed above.
-+
-+TODO/FIXME:  If we can enhance the swap cache to reliably remove entries
-+with page_count(page) > 2, as long as all ptes are mapped to the page and
-+not the swap entry, we can probably remove the call to try_to_unlock() in
-+shrink_page_list() and just remove the page from the swap cache when
-+try_to_unmap() returns SWAP_MLOCK.   Currently, remove_exclusive_swap_page()
-+doesn't seem to allow that.
-+
-+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
