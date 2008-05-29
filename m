@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbYE2XE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbYE2XHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759007AbYE2XE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 19:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbYE2XEr
+	id S1758650AbYE2XHM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 19:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYE2XHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 19:04:47 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:5583 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753989AbYE2XEq (ORCPT
+	Thu, 29 May 2008 19:07:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47192 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753868AbYE2XHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 19:04:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnkKAKzQPkh5LFOM/2dsb2JhbACDH60F
-X-IronPort-AV: E=Sophos;i="4.27,563,1204464600"; 
-   d="scan'208";a="122822133"
-Date: Fri, 30 May 2008 09:04:41 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Xiaoming Li <forrubm2@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [help]How to block new write in a "Thin Provisioning" logical
-	volume manager as a virtual device driver when physical spaces run
-	out?
-Message-ID: <20080529230441.GB5134@disturbed>
-Mail-Followup-To: Rik van Riel <riel@redhat.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Xiaoming Li <forrubm2@gmail.com>, linux-kernel@vger.kernel.org
-References: <5f7c1d2c0805290212i45aece46j7fae2dcf9c158b92@mail.gmail.com> <20080529113159.113a7f06@core> <20080529120815.177bd456@bree.surriel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080529120815.177bd456@bree.surriel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 29 May 2008 19:07:00 -0400
+Date: Thu, 29 May 2008 16:06:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: david-b@pacbell.net, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, mingo@elte.hu, pavel@suse.cz
+Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
+Message-Id: <20080529160632.816e1720.akpm@linux-foundation.org>
+In-Reply-To: <200805292329.48896.rjw@sisk.pl>
+References: <200805291333.42057.david-b@pacbell.net>
+	<200805292301.42244.rjw@sisk.pl>
+	<200805291426.18404.david-b@pacbell.net>
+	<200805292329.48896.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 12:08:15PM -0400, Rik van Riel wrote:
-> On Thu, 29 May 2008 11:31:59 +0100
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
-> > > Does anyone have some ideas for a better solution?
+On Thu, 29 May 2008 23:29:48 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Thursday, 29 of May 2008, David Brownell wrote:
+> > On Thursday 29 May 2008, Rafael J. Wysocki wrote:
+> > > Two questions:
+> > > 
+> > > 1) How is it related to the analogous patch in the Ingo's tree?
 > > 
-> > Take one file system such as ext3, or even a cluster file system like
-> > GFS2 or OCFS. Create top level subdirectories in it for each machine.
-> > Either export the subdirectory via NFS.
+> > AFAIK -- just that it's an updated version.  Comments, some
+> > code flow, but mostly having the "test_suspend=mode" parameter
+> > default to "safe -- no testing" and allows the choice of modes.
+> > 
+> > 
+> > > 2) Does it apply to the current linux-next?
+> > 
+> > No idea.
 > 
-> Xiaoming, let me point out another advantage of Alan's approach.
+> Could you check, please?  The previous version didn't.
 > 
-> In a block based thin provisioning system, like you proposed, there
-> is no way to free up space.  Once a user's filesystem has written a
-> block, it is allocated - when the user deletes a file inside the
-> filesystem, the space will not be freed again...
 
-That's where we've been discussing bio hints to help communicate
-space being allocated and freed by the filesystem to the lower layers.
+There's just one trivial reject against the PCI tree's
+pm-introduce-new-top-level-suspend-and-hibernation-callbacks:
 
-See here:
+***************
+*** 293,299 ****
+  	if (suspend_ops->finish)
+  		suspend_ops->finish();
+   Resume_devices:
+  	device_resume();
+   Resume_console:
+  	resume_console();
+   Close:
+--- 342,350 ----
+  	if (suspend_ops->finish)
+  		suspend_ops->finish();
+   Resume_devices:
++ 	suspend_test_start();
+  	device_resume();
++ 	suspend_test_finish("resume devices");
+   Resume_console:
+  	resume_console();
+   Close:
 
-http://marc.info/?l=linux-fsdevel&m=119370585902974&w=2
-
-Alternatively, forget about block based thin provisioning and
-just use XFS directory quotas....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
