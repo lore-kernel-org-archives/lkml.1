@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYE2Wux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbYE2W7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758048AbYE2Wux (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 18:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYE2Wup
+	id S1757062AbYE2W7w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 18:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYE2W7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 18:50:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50607 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409AbYE2Wuo (ORCPT
+	Thu, 29 May 2008 18:59:42 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:17975 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbYE2W7l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 18:50:44 -0400
-Date: Thu, 29 May 2008 15:50:36 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: youquan_song@linux.intel.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com
-Subject: Re: [PATCH 2.6.26-rc3 : schedule] remove unlikely macros in 
- workqueue.c/queue_delayed_work_on
-Message-ID: <20080529155036.2b37958b@infradead.org>
-In-Reply-To: <20080529132915.8caeb501.akpm@linux-foundation.org>
-References: <1740.172.16.180.81.1212044570.squirrel@linux.intel.com>
-	<20080529132915.8caeb501.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 May 2008 18:59:41 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5306"; a="3336081"
+Message-ID: <483F3559.1030806@qualcomm.com>
+Date: Thu, 29 May 2008 15:59:37 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com, rostedt@goodmis.org
+Subject: Re: [PATCH] sched: Give cpusets exclusive control over sched domains
+ (ie remove cpu_isolated_map)
+References: <1212085023-22284-1-git-send-email-maxk@qualcomm.com>	<1212085023-22284-2-git-send-email-maxk@qualcomm.com>	<1212085023-22284-3-git-send-email-maxk@qualcomm.com> <20080529173759.ccbaf8ef.pj@sgi.com>
+In-Reply-To: <20080529173759.ccbaf8ef.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 13:29:15 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Paul Jackson wrote:
+> Well .. if you can just resent patches for no apparent reason, with
+> no apparent change, I guess I can just resent my reply, similarly.
+Sorry I just updated and resent all my outstanding sched fixes.
 
-> On Thu, 29 May 2008 00:02:50 -0700 (PDT)
-> youquan_song@linux.intel.com wrote:
+btw I suppose you missed my reply. Where I provided the reasoning. Also Ingo 
+at some point accepted a patch from Peter that partially removed the isolated 
+map. This is just more complete version.
+
+Anyway, I do not really care that much for this particular patch. But I do 
+care about cpu hotplug / domain handling issues. Can you please look at that 
+instead of resending your replies ;-).
+I'm talking about
+[PATCH] sched: CPU hotplug events must not destroy scheduler domains created 
+
+by the cpusets
+
+Also please ack (take 3) version of the default irq affinity patch that 
+includes your latest comments.
+
+Thanx
+Max
+
 > 
-> > cpufreq_ondemand governor call queue_delayed_work_on with entry
-> > parameter "cpu" every sample rate(every logical cpu during
-> > 20ms).check the value of "cpu","cpu>=0" condition meeting rate is
-> > over than 90%.
-> > 
-> > This patch remove the unlikely macros to benefit kernel schedule and
-> > reader comprehension.
-> > 
-> > Signed-off-by: Youquan Song <youquan.song@intel.com>
-> > ---
-> >  workqueue.c    |    2++++++
-> >  1 file changed,     1 insertions(+), 1 deletions(-)
-> > 
-> > --- linux-2.6/kernel/workqueue.c	2008-05-13
-> > 10:10:11.000000000 -0400 +++
-> > linux-2.6-new/kernel/workqueue.c	2008-05-29
-> > 09:46:16.000000000 -0400 @@ -230,7 +230,7 @@ timer->data =
-> > (unsigned long)dwork; timer->function = delayed_work_timer_fn;
-> > 
-> > -		if (unlikely(cpu >= 0))
-> > +		if (cpu >= 0)
-> > 			add_timer_on(timer, cpu);
-> > 		else
-> > 			add_timer(timer);
-> > 
+> Max wrote:
+>> -marked isolated using the kernel boot time "isolcpus=" argument.
 > 
-> This is very much dependent on what workload the machine is running.
+> Yeah ... a hack ... but I suspect some folks use it.
 > 
-> There are 189 queue_delayed_work() callsites and they all want the
-> unlikely() to be there.
+> I'm reluctant to discard features visible to users, unless
+> they are getting in the way of more serious stuff.
 > 
-> There are six queue_delayed_work_on() callsites and they don't want
-> the unlikely().
-> 
-> Don't know what to do here.  Fortunately it doesn't matter much ;)
-> 
-> -mm has profile-likely-unlikely-macros.patch which can be used to
-> instrument these things (that feature seems to get broken regularly
-> though).
-> 
-> But the instrumentation should be performed across a broad range of
-> workloads.
+> I'd have figured that this hack was not all that much of
+> a pain to the kernel code.
 
 
-and on x86 it barely makes any difference at all, at best you can
-handwave a little about icache footprint. 
 
-/me ponders checking if we get a code size reduction by defining these
-animals to be empty passthrough
