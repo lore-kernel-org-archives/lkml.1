@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758619AbYE2RiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYE2Rqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758619AbYE2RiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 13:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbYE2RiG
+	id S1753577AbYE2Rqd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 13:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYE2RqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 13:38:06 -0400
-Received: from mail9.dslextreme.com ([66.51.199.94]:41173 "HELO
-	mail9.dslextreme.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752128AbYE2RiE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 13:38:04 -0400
-Message-ID: <483EE9F9.7020808@gawab.com>
-Date: Thu, 29 May 2008 10:38:01 -0700
-From: Justin Madru <jdm64@gawab.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080522)
+	Thu, 29 May 2008 13:46:22 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52743 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751968AbYE2RqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 13:46:22 -0400
+Message-ID: <483EEBE5.5030708@garzik.org>
+Date: Thu, 29 May 2008 13:46:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Oops in mac80211 with 2.6.26-rc3 triggered playing a video
-References: <483A3F91.6020403@gawab.com>	 <19f34abd0805260049j621c882r970444b65e384355@mail.gmail.com>	 <483AECEF.9030509@gawab.com> <19f34abd0805261052v38345716i3e6837ebe5d4a710@mail.gmail.com>
-In-Reply-To: <19f34abd0805261052v38345716i3e6837ebe5d4a710@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: RESEND: [PATCH] libata-sff: Fix oops reported in kerneloops.org
+ for pnp devices with no ctl
+References: <20080529161453.24735.805.stgit@core> <alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805290950230.2958@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been testing .26-rc4 and I haven't had it lock up - yet. It seems 
-like rc4 is more stable than rc3. It seems to fix some other problems I 
-was having.
-
-Vegard Nossum wrote:
-> Btw, I don't really see what access point association has to do with
-> playing a movie, so I'm inclined to believe the patch actually won't
-> fix your problem. But that's what the oops was. Perhaps you were
-> unlucky and hit a combination of two different issues... We'll see.
->   
-Yeah, I thought the same thing. Why would a network related oops be 
-triggered by video playback. It was probably just a coincidence - 
-hitting two bugs at once! And I think the video playback lockup was due 
-to something that got fixed in rc4 that Linus mentioned.
-
 Linus Torvalds wrote:
-> But most of the changes, as usual, are in drivers, at 60%, with some DRI 
-> changes leading the way (fixing a number of other regressions, mainly by 
-> reverting the under-cooked vblank update).
+> 
+> On Thu, 29 May 2008, Alan Cox wrote:
+>> (Jeff would you please take a look at this: Its #4 or #5 top OOPS on Arjan's
+>>  oops tracker, and it generally causes the boot to fail. First sent 20th May)
+> 
+> Quite frankly, if I was Jeff, I'd have refused to apply this patch as "too 
+> damn ugly to live".
+> 
+> Why the *hell* doesn't it just fix "ata_sff_altstatus()" instead? Why does 
+> it introduce a ludicrously named stupid "maybe" version of it that doesn't 
+> oops?
+> 
+> In other words: in *any* case where the old "ata_sff_altstatus()" function 
+> worked correctly, the new "ata_sff_maybe_altstatus()" function does THE 
+> EXACT SAME THING. And in any case where the old "ata_sff_altstatus()" 
+> function oopsed, the new "maybe" version at least is _better_.
+> 
+> In other words: there is absolutely no excuse for keeping the old (and 
+> known-to-be-broken) "ata_sff_altstatus()" function at all. It should be 
+> removed, not left around with an alternate function that works.
 
-Justin Madru
+That's my general feeling on the issue.  It was ugly and seemed to 
+needlessly avoid the existing one, which we would probably have to 
+bugfix later on...
+
+
+> I also think your "ata_sff_sync()" thing is buggy. It has a "ndelay(400)" 
+> that is almost certainly buggy (it's the one that is already in 
+> ata_sff_pause()).
+> 
+> It may be that you meant to make it an "else if" case, ie if there was no 
+> IO-read, then you do a ndelay(400) as a last desperate case, but that's 
+> not how your ata_sdd_sync() is actually written.
+
+The double-ndelay is definitely wrong, but we do need one.  Technically 
+it should -only- be a 400ns delay, but we also have a register read in 
+there to make sure any posted writes are flushed.
+
+	Jeff
 
 
 
