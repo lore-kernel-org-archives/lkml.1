@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbYE2DI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYE2DJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbYE2DI4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 23:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbYE2DIp
+	id S1755495AbYE2DJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 23:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYE2DIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 23:08:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41599 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751710AbYE2DIo (ORCPT
+	Wed, 28 May 2008 23:08:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:10219 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754127AbYE2DIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 23:08:44 -0400
-Date: Wed, 28 May 2008 20:08:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>, Paul Mundt <lethal@linux-sh.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 1/3] make page-aligned data and bss less fragile
-Message-Id: <20080528200800.3af52ca6.akpm@linux-foundation.org>
-In-Reply-To: <483D8292.40808@goop.org>
-References: <483D8292.40808@goop.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 May 2008 23:08:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KEU4IwaGCyM/hfenO/KC8Hj11Y987SkMpDLIMIpbVL+qS6KAs58eQGv5ykYBaIk7GRqmqGVpL3uNZuOi5R27UozoSTRGjDS/qDLPZ2lhxoenxu051EiX6Dd67Hn+UYFUbifMLShR+5myRAm8gMFOxIvLJsG7bGGcTGPIxta1QKE=
+Message-ID: <483E1E3C.8070307@gmail.com>
+Date: Thu, 29 May 2008 12:08:44 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Holger Macht <hmacht@suse.de>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       linux-acpi@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] libata: Handle bay devices in dock stations
+References: <20080528143857.GB5585@homac.suse.de> <20080528200227.80f708cd.akpm@linux-foundation.org>
+In-Reply-To: <20080528200227.80f708cd.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 May 2008 17:04:34 +0100 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Making a variable page-aligned by using
-> __attribute__((section(".data.page_aligned"))) is fragile because if
-> sizeof(variable) is not also a multiple of page size, it leaves
-> variables in the remainder of the section unaligned.
+Andrew Morton wrote:
+>> +	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_EJ0",
+>> +					      &arg_list, NULL)))
+>> +		printk(KERN_ERR "Failed to evaluate _EJ0!\n");
+>> +}
 > 
-> This patch introduces two new qualifiers, __page_aligned_data and
-> __page_aligned_bss to set the section *and* the alignment of
-> variables.  This makes page-aligned variables more robust because the
-> linker will make sure they're aligned properly.  Unfortunately it
-> requires *all* page-aligned data to use these macros...
+> It would be better if the printk were to self-identify where it is
+> coming from.  If your kernel just blurts "Failed to evaluate _EJ0!"
+> it's a bit of a head-scratcher.
 > 
-> It also updates arch/x86's use of page-aligned variables, since its
-> the heaviest user of them in the kernel.  The change to
-> arch/x86/xen/mmu.c fixes an actual bug, but the rest are cleanups
-> and to set a precident.
-> 
-> [ I don't know if this would be easier to manage by splitting the
->   x86 part out from the common part. Two following patches apply to
->   powerpc and sh; they're purely decorative. ]
+> "libata-acpi: failed to evaluate _EJ0", perhaps?
 
-If the arch people like these patches then we could merge this bit:
+ata_port_printk() would be better.
 
-> --- a/include/linux/linkage.h
-> +++ b/include/linux/linkage.h
-> @@ -1,6 +1,7 @@
->  #ifndef _LINUX_LINKAGE_H
->  #define _LINUX_LINKAGE_H
->  
-> +#include <linux/compiler.h>
->  #include <asm/linkage.h>
->  
->  #define notrace __attribute__((no_instrument_function))
-> @@ -18,6 +19,13 @@
->  #ifndef asmregparm
->  # define asmregparm
->  #endif
-> +
-> +/*
-> + * Mark a variable page aligned, and put it in an appropriate page
-> + * aligned section.
-> + */
-> +#define __page_aligned_data	__section(.data.page_aligned) __aligned(PAGE_SIZE)
-> +#define __page_aligned_bss	__section(.bss.page_aligned) __aligned(PAGE_SIZE)
->  
->  /*
->   * This is used by architectures to keep arguments on the stack
-> 
+Thanks.
 
-Into mainline now, so we can trickle the other three patches into the
-architecture trees.
+-- 
+tejun
