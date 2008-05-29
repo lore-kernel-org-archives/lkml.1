@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759107AbYE2WTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYE2WZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759107AbYE2WTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 18:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756089AbYE2WT0
+	id S1758126AbYE2WZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 18:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbYE2WZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 18:19:26 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:19116 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755892AbYE2WTZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 18:19:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SUMWzbVRFouHw0ihnbsEvBqUVXMr6Jphh/6AmPtMCVemYsz+oaNqpY4YmJ4MnqyPKiNJKOlGCEmTeZk+WDl/42g+zwxTMGPSyLe1KZCAPEAqJ02Pp7mmUbT4Ns277LRrG8KJfixSCPHZi7n5Vs1i534dQKhBfkdifYPaymtdjxE=
-Message-ID: <9a8748490805291519l18a88d1bj6d5ffa2b88c19b1d@mail.gmail.com>
-Date: Fri, 30 May 2008 00:19:23 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: whomto.pl -- finding out whom to send patches to
-Cc: linux-kernel@vger.kernel.org, "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Sverre Rabbelier" <alturin@gmail.com>, "Joe Perches" <joe@perches.com>,
-       git@vger.kernel.org
-In-Reply-To: <20080529210018.GA5508@damson.getinternet.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080529210018.GA5508@damson.getinternet.no>
+	Thu, 29 May 2008 18:25:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58250 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755732AbYE2WZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 18:25:13 -0400
+Subject: Re: [PATCH 2/2] Honor 'quiet' command line option in real
+	mode	boot decompressor.
+From: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <483F1276.30902@zytor.com>
+References: <1212082032-6167-1-git-send-email-krh@redhat.com>
+	 <1212082032-6167-2-git-send-email-krh@redhat.com>
+	 <483EF94F.7040403@zytor.com> <1212090939.6189.9.camel@gaara.bos.redhat.com>
+	  <483F1276.30902@zytor.com>
+Content-Type: text/plain; charset=utf8
+Date: Thu, 29 May 2008 18:25:06 -0400
+Message-Id: <1212099906.5422.0.camel@gaara.bos.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 (2.22.0-4.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/29 Vegard Nossum <vegard.nossum@gmail.com>:
-> Hi,
->
-> I've written this perl script that takes a patch as input and prints the
-> authors/committers of the affected lines, using git-blame as the back end.
->
-> (The purpose of this is of course to find out whom to send patches to.)
->
-<snip>
+On Thu, 2008-05-29 at 13:30 -0700, H. Peter Anvin wrote:
+> Kristian Høgsberg wrote:
+> >> You know... we already have a command-line parser in the real-mode part 
+> >> of the boot code, and it already extracts the "quiet" option: we should 
+> >> be able to do this by passing a bit in "loadflags" (bit 5 suggested.)
+> > 
+> > Hmm, as far as I understand the boot code, the decompressor consists of
+> > just head_32/64.S and misc.c plus the #included inflate.c and the
+> > compressed image in piggy.o.  In this environment there is no command
+> > line parser, it's only available once the image has been decompressed.
+> 
+> > Or are you suggesting parsing the "quiet" option in the bootloader and
+> > then setting the loadflags bit from there?  That's certainly doable, and
+> > I can update grub accordingly, but just parsing the command line seems
+> > like a simple, more local fix.  I don't have a strong preference,
+> > though.
+> 
+> I think you're missing something: the decompressor is the *second stage* 
+> of the boot code; the first stage is the real-mode code (arch/x86/boot). 
+>   I'm suggesting passing the flag from the real-mode code to the 
+> decompressor, not from the boot loader (in the common case.)
 
-The script is nice, but I'd wish it looked at a few other things as well.
+Indeed, I had it the wrong way around.  I like the bootflag approach,
+updated patches coming up.
 
-When I personally need to determine who to send patches to I do use
-'git blame' for some of the addresses, but in addition to that I also
-check;
+thanks,
+Kristian
 
-- The comments at the top of the file.  Sometimes there are email
-addresses there for relevant people (sometimes just names, but
-addresses can then usually be found for those people in CREDITS or
-MAINTAINERS).
 
-- Entries in MAINTAINERS that are relevant to the subsystem and/or
-file I'm modifying.
-
-- Entries in CREDITS that look relevant to the subsystem and/or file
-I'm modifying.
-
-- Names/email addresses in files in Documentation/ that are relevant
-to the subsystem/file I'm modifying.
-
-If the script could be made to check all (or just some) of those
-sources as well it would be really great.
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please http://www.expita.com/nomime.html
