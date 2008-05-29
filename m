@@ -1,110 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbYE2VHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757291AbYE2VJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758939AbYE2VHx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYE2VHp
+	id S1757291AbYE2VJV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYE2VJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:07:45 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:38380 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbYE2VHo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:07:44 -0400
-Date: Thu, 29 May 2008 21:54:50 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: hans-christoph.rohland@sap.com, leg@google.com, pbadari@us.ibm.com,
-       harvey.harrison@gmail.com, zach.brown@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] generic_file_aio_read cleanups
-In-Reply-To: <Pine.LNX.4.64.0805291912490.553@blonde.site>
-Message-ID: <Pine.LNX.4.64.0805292148220.29474@blonde.site>
-References: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
- <20080528165815.f4e4982c.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0805291912490.553@blonde.site>
+	Thu, 29 May 2008 17:09:04 -0400
+Received: from lucidpixels.com ([75.144.35.66]:50835 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751591AbYE2VJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 17:09:02 -0400
+Date: Thu, 29 May 2008 17:08:59 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Kasper Sandberg <lkml@metanurb.dk>
+cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs
+ (mdadm/bonnie++)
+In-Reply-To: <1212055050.25169.33.camel@localhost>
+Message-ID: <alpine.DEB.1.10.0805291708370.23633@p34.internal.lan>
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan>  <483D7CE8.4000600@redhat.com>  <alpine.DEB.1.10.0805281329450.29755@p34.internal.lan>  <483DB0EC.3090403@redhat.com>  <alpine.DEB.1.10.0805281523560.29755@p34.internal.lan>
+ <1212055050.25169.33.camel@localhost>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As akpm points out, there's really no need for generic_file_aio_read to
-make a special case of count 0: just loop through nr_segs doing nothing.
-And as Harvey Harrison points out, there's no need to reset retval to 0
-where it's already 0.
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-Setting count (or ocount) to 0 before calling generic_segment_checks is
-unnecessary too; but reluctantly I'll leave that removal to someone with
-a wider range of gcc versions to hand - 4.1.2 and 4.2.1 don't warn about
-it, but perhaps others do - I forget which are the warniest versions.
 
- mm/filemap.c |   44 ++++++++++++++++++++------------------------
- 1 file changed, 20 insertions(+), 24 deletions(-)
+On Thu, 29 May 2008, Kasper Sandberg wrote:
 
---- 2.6.26-rc4/mm/filemap.c	2008-05-19 11:19:03.000000000 +0100
-+++ linux/mm/filemap.c	2008-05-29 21:31:55.000000000 +0100
-@@ -1199,7 +1199,6 @@ generic_file_aio_read(struct kiocb *iocb
- 
- 		mapping = filp->f_mapping;
- 		inode = mapping->host;
--		retval = 0;
- 		if (!count)
- 			goto out; /* skip atime */
- 		size = i_size_read(inode);
-@@ -1208,33 +1207,30 @@ generic_file_aio_read(struct kiocb *iocb
- 						iov, pos, nr_segs);
- 			if (retval > 0)
- 				*ppos = pos + retval;
--		}
--		if (likely(retval != 0)) {
--			file_accessed(filp);
--			goto out;
-+			if (retval) {
-+				file_accessed(filp);
-+				goto out;
-+			}
- 		}
- 	}
- 
--	retval = 0;
--	if (count) {
--		for (seg = 0; seg < nr_segs; seg++) {
--			read_descriptor_t desc;
--
--			desc.written = 0;
--			desc.arg.buf = iov[seg].iov_base;
--			desc.count = iov[seg].iov_len;
--			if (desc.count == 0)
--				continue;
--			desc.error = 0;
--			do_generic_file_read(filp,ppos,&desc,file_read_actor);
--			retval += desc.written;
--			if (desc.error) {
--				retval = retval ?: desc.error;
--				break;
--			}
--			if (desc.count > 0)
--				break;
-+	for (seg = 0; seg < nr_segs; seg++) {
-+		read_descriptor_t desc;
-+
-+		desc.written = 0;
-+		desc.arg.buf = iov[seg].iov_base;
-+		desc.count = iov[seg].iov_len;
-+		if (desc.count == 0)
-+			continue;
-+		desc.error = 0;
-+		do_generic_file_read(filp, ppos, &desc, file_read_actor);
-+		retval += desc.written;
-+		if (desc.error) {
-+			retval = retval ?: desc.error;
-+			break;
- 		}
-+		if (desc.count > 0)
-+			break;
- 	}
- out:
- 	return retval;
+> On Wed, 2008-05-28 at 15:27 -0400, Justin Piszcz wrote:
+>>
+>> On Wed, 28 May 2008, Chris Snook wrote:
+>>
+>>> Justin Piszcz wrote:
+>>>>
+>>>>
+>>>> On Wed, 28 May 2008, Chris Snook wrote:
+>>>>
+>>>>> Justin Piszcz wrote:
+>>>>>> Hardware:
+>>>>>>
+>>>>> Given that one of the greatest benefits of NCQ/TCQ is with parity RAID,
+>>>>> I'd be fascinated to see how enabling NCQ changes your results.  Of
+>>>>> course, you'd want to use a single SATA controller with a known good NCQ
+>>>>> implementation, and hard drives known to not do stupid things like disable
+>>>>> readahead when NCQ is enabled.
+>>>> Only/usually on multi-threaded jobs/tasks, yes?
+>>>
+>>> Generally, yes, but there's caching and readahead at various layers in
+>>> software that can expose the benefit on certain single-threaded workloads as
+>>> well.
+>>>
+>>>> Also, I turn off NCQ on all of my hosts that has it enabled by default
+>>>> because
+>>>> there are many bugs that occur when NCQ is on, they are working on it in
+>>>> the
+>>>> libata layer but IMO it is not safe at all for running SATA disks w/NCQ as
+>>>> with it on I have seen drives drop out of the array (with it off, no
+>>>> problems).
+>>>>
+>>>
+>>> Are you using SATA drives with RAID-optimized firmware?  Most SATA
+>>> manufacturers have variants of their drives for a few dollars more that have
+>>> firmware that provides bounded latency for error recovery operations, for
+>>> precisely this reason.
+>> I see--however, as I understood it there were bugs utilizing NCQ in libata?
+> You wouldnt happen to have some more information about this? i havent
+> personally had problems yet, but i havent used it for very long - but
+> since it comes activated by DEFAULT, i would assume it to be relatively
+> stable?
+Not off-hand, check LKML and my email address from early this year or last 
+year and/or the ide-list.
+
+Justin.
+
