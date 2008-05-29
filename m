@@ -1,42 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYE2IwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbYE2Iwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbYE2IwW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 04:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbYE2IwH
+	id S1755253AbYE2Iwi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 04:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbYE2IwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 04:52:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52770
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751384AbYE2IwE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 04:52:04 -0400
-Date: Thu, 29 May 2008 01:52:00 -0700 (PDT)
-Message-Id: <20080529.015200.136186180.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-05-28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080528213831.GA3133@tuxdriver.com>
-References: <20080528213831.GA3133@tuxdriver.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 29 May 2008 04:52:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34967 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753684AbYE2IwQ (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 04:52:16 -0400
+Date: Thu, 29 May 2008 01:51:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: pomac@vapor.com
+Cc: Linux-kernel <Linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [ipv6] Odd behaviour...
+Message-Id: <20080529015131.da6bdcfb.akpm@linux-foundation.org>
+In-Reply-To: <20080529084157.GD11812@pomac.netswarm.net>
+References: <1211842711.8367.11.camel@localhost>
+	<20080529002729.d87fed29.akpm@linux-foundation.org>
+	<20080529084157.GD11812@pomac.netswarm.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 28 May 2008 17:38:31 -0400
+On Thu, 29 May 2008 10:41:57 +0200 pomac@vapor.com wrote:
 
-> Another round of fixes for 2.6.26 follows...
+> On Thu, May 29, 2008 at 12:27:29AM -0700, Andrew Morton wrote:
+> > On Tue, 27 May 2008 00:58:30 +0200 Ian Kumlien <pomac@vapor.com> wrote:
+> > 
+> > > Hi, 
+> > > 
+> > > I just recently acquired a new ipv6 tunnel since my two previous brokers
+> > > has gone out of business. I now use hurricane electrics tunnel since i
+> > > have really good ping times to it's node in Amsterdam.
+> > > 
+> > > Anyways, i have setup a local network tunnel and enabled forwarding.
+> > > 
+> > > After about 300 seconds, it all stops working. I have to disable and
+> > > re-enable it on the firewall/router to get it working again.
+> > > 
+> > > tcpdump shows the router/firewall doing odd things like:
+> > > (i renamed my host to piv6)
+> > > 
+> > > 00:48:14.294173 IP6 piv6 > igloo.stacken.kth.se: ICMP6, echo request,
+> > > seq 321, length 64
+> > > 
+> > > 00:48:14.341288 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
+> > > 321, length 64
+> > > 
+> > > 00:48:14.341317 IP6 fe80::55e4:1b90 > igloo.stacken.kth.se: ICMP6,
+> > > redirect, piv6 to piv6, length 160
+> > > 
+> > > 00:48:14.341332 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
+> > > 321, length 64
+> > > ---
+> > > 
+> > > fe80::55e4::1b90 is the local ip of the ipv6 tunnel.
+> > > (note: the packet never arrives at it's destination)
+> > > 
+> > > Any ideas of what could be going wrong?			
+> > 
+> > (cc netdev - afaik linux-net is kind of dead)
 > 
-> Please let me know if there are problems!
+> Thanks, i knew i missed something, -net was the one that was already in
+> my email client so... =)
 
-Pulled, and I'll push out to net-2.6 after some build tests.
+Yeah.  linux-net _might_ be a hive of activity, dunno.  I haven't been
+there in years.  Perhaps it should be retired.
 
-I'll deal with the merge issues with net-next-2.6 a few hours
-from now.
+> > What kernel version are you running?
+> 
+> The router/fw is running 2.6.25.1, the client is running 2.6.25.4
+> 
+> Any additional information i should provide?
 
-Thanks again!
+It would be interesting if you know of any earlier kernel version which
+works OK?
+
