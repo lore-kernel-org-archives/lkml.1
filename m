@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYE2U71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbYE2U7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758048AbYE2U71 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 16:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbYE2U7U
+	id S1759007AbYE2U7z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 16:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYE2U7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 16:59:20 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:46800 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbYE2U7T (ORCPT
+	Thu, 29 May 2008 16:59:47 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:39605 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753007AbYE2U7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 16:59:19 -0400
-Date: Thu, 29 May 2008 14:59:18 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: David Miller <davem@davemloft.net>
-Cc: tytso@mit.edu, James.Bottomley@hansenpartnership.com,
+	Thu, 29 May 2008 16:59:46 -0400
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+	kernel.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Arjan van de Ven <arjan@linux.intel.com>,
+       Greg KH <greg@kroah.com>,
        ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-Message-ID: <20080529205917.GA22636@parisc-linux.org>
-References: <20080528.225826.40264516.davem@davemloft.net> <1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu> <20080529.135431.235149338.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080529.135431.235149338.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       David Woodhouse <dwmw2@infradead.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440805291355p5697c775k5f0beb8163688058@mail.gmail.com>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+	 <20080528.225826.40264516.davem@davemloft.net>
+	 <1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu>
+	 <1212077700.26088.83.camel@shinybook.infradead.org>
+	 <20080529164745.GA21763@kroah.com> <483F1232.4010003@linux.intel.com>
+	 <20080529204736.GZ22636@parisc-linux.org>
+	 <86802c440805291355p5697c775k5f0beb8163688058@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 15:59:42 -0500
+Message-Id: <1212094782.3428.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 01:54:31PM -0700, David Miller wrote:
-> Ted, we are adults and professional kernel hackers.
-> 
-> If you put us in a room together, we know what the heck to talk
-> about and what is relevant.  So saying we need to plan the topics and
-> invite the right people, that's pure hogwash, just invite the same
-> kind of people we've always been inviting and it will be fine.
+On Thu, 2008-05-29 at 13:55 -0700, Yinghai Lu wrote:
+> On Thu, May 29, 2008 at 1:47 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> > On Thu, May 29, 2008 at 01:29:38PM -0700, Arjan van de Ven wrote:
+> >> I very much would like to see a kernel-firmware or something tarbal that contains
+> >> a copy of all relevant "freely distributable" firmware, that users can just install
+> >> independent of the actual kernel version (and that kbuild would just pick up somehow).
+> >> That way we can deal with a lot more firmware without having to pollute the kernel / kernel release process
+> >> (after all, the timing is different in terms of releasing) while making it easy
+> >> to get the lot of it.
+> >
+> > There's definitely two schools of thought on this.  Sometimes firmware
+> > changes (or adds) an interface.  If the kernel driver has to accommodate
+> > new and old firmware, that adds complexity, and we all know that added
+> > complexity means more bugs.  So I can definitely see some vendors
+> > wanting to distribute their firmware with the kernel.
+> >
+> driver should check fw version...
 
-Ooh, do I hear a supporter for my idea from a few years ago of having
-half the time in sessions and half the time in the hallway track?
+Drivers with built in firmware usually don't.  Most don't actually have
+even a version string they could check.  Why would they: the firmware
+with the driver is the right one.   When I converted the aic94xx driver
+to go from built in firmware to externally loaded, the first thing I had
+to do was to give it a firmware version string in the binary.  It's this
+type of problem that makes the conversion such a pain.
 
-(I always felt the presentations were more or less useless.  Maybe that
-was different last year.)
+James
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
