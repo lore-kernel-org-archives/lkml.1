@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbYE2AGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbYE2AKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbYE2AGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 20:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYE2AGm
+	id S1755064AbYE2AKL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 20:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYE2AJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 20:06:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:7844 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751565AbYE2AGm (ORCPT
+	Wed, 28 May 2008 20:09:59 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:45334 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbYE2AJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 20:06:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=LWAYZmWeNPDa5J0mHvCclSAz+COKbdrAblQaTq0gv1cIr10dj4vvh3wu1xcfCO3l/x+c3PEpFOJK4oFmQ6EhBwLwwgJdVKjOGnfcu5bP77CZs1a1KC/gRHe5tmlbSGX8dUIVnb4tGXdzqELaFOlp8aIr4f8Y/ZtBrwqfBfF0iDI=
-Subject: Re: [PATCH] tmpfs: support aio
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, hans-christoph.rohland@sap.com,
-       leg@google.com, pbadari@us.ibm.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080528165815.f4e4982c.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
-	 <20080528165815.f4e4982c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 28 May 2008 17:06:38 -0700
-Message-Id: <1212019598.20781.11.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 May 2008 20:09:59 -0400
+Date: Wed, 28 May 2008 18:11:57 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: libata - DMA problems ICH7 rev 02
+In-reply-to: <8dacd7b30805280636p34097a84t6f7e5c7ebe98747a@mail.gmail.com>
+To: Jan Niklas Hasse <jhasse@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Message-id: <483DF4CD.3020107@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.6VoLd5Q2gfHHZZfYneNkQcGjXKk@ifi.uio.no>
+ <fa.kzdMLVO0bqLAbXEBqWrKyBntgxc@ifi.uio.no>
+ <fa.h4D6h2c4Yz08K7snVTVtewbsziM@ifi.uio.no> <481BD00E.7050302@shaw.ca>
+ <8dacd7b30805120855q406f566ma187142719bf5bd4@mail.gmail.com>
+ <4828DEE1.1070905@shaw.ca>
+ <8dacd7b30805280634s77492f0ag15ee65150f8bedad@mail.gmail.com>
+ <8dacd7b30805280636p34097a84t6f7e5c7ebe98747a@mail.gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-28 at 16:58 -0700, Andrew Morton wrote:
-> On Thu, 29 May 2008 00:13:35 +0100 (BST)
-> Hugh Dickins <hugh@veritas.com> wrote:
-> hm.  This version:
+Jan Niklas Hasse wrote:
+> On Wed, May 28, 2008 at 3:34 PM, Jan Niklas Hasse <jhasse@gmail.com> wrote:
+>>> It looks like you have the hard drive and the burner on the same IDE channel? Such problems are unavoidable in this setup since commands to one device on the channel can't execute while the other device is busy (especially for long commands like finalizing the disc). It would be better to move the drives onto separate channels.
 > 
-> static ssize_t shmem_file_aio_read(struct kiocb *iocb,
-> 		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
-> {
-> 	struct file *filp = iocb->ki_filp;
-> 	ssize_t retval;
-> 	unsigned long seg;
-> 	size_t count;
-> 	loff_t *ppos = &iocb->ki_pos;
-> 
-> 	count = 0;
-> 	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
-> 	if (retval)
-> 		return retval;
-> 	if (count == 0)
-> 		return 0;
-> 
-> 	retval = 0;
+> As I have a notebook, I think I can't do that, can I?
 
-retval has to be 0 here, no need to assign it again?
-
-Harvey
-
+Likely not, no. That is pretty poor design by the manufacturer, to set 
+things up that way..
