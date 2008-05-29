@@ -1,74 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYE2CHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYE2CPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbYE2CHB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 22:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYE2CGu
+	id S1754497AbYE2CPv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 22:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbYE2CPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 22:06:50 -0400
-Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:54276
-	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751342AbYE2CGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 22:06:49 -0400
-Message-ID: <483E1005.3080804@sngx.net>
-Date: Wed, 28 May 2008 21:08:05 -0500
-From: James Cammarata <jimi@sngx.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Wed, 28 May 2008 22:15:41 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57706 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbYE2CPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 May 2008 22:15:40 -0400
+Message-ID: <483E111E.9050804@cn.fujitsu.com>
+Date: Thu, 29 May 2008 10:12:46 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
-References: <482DA5B6.1020606@sngx.net> <482DB46A.8020103@cosmosbay.com> <482EF192.4070707@sngx.net> <482F5113.5090703@cosmosbay.com> <482F610D.2080108@sngx.net> <20080518003104.GK28241@solarflare.com> <482FBA09.80201@sngx.net> <483E0AAE.2020107@sngx.net>
-In-Reply-To: <483E0AAE.2020107@sngx.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Theodore Ts'o" <tytso@mit.edu>
+CC: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Call for nominations
+References: <E1K1TIQ-0000l8-9d@closure.thunk.org>
+In-Reply-To: <E1K1TIQ-0000l8-9d@closure.thunk.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Missed an errant define in some copied code (from the get_stats function in e1000_main.c).
+Theodore Ts'o said the following on 2008-5-29 5:34:
+> This year, we're starting a bit late (mea culpa), so I'd like to start
+> this process going sooner rather than later.  I've assembled a list of
+> people who have contributed significantly to the kernel in recent months
+> (since September 2007), as measured by Signed-off-by's and Acked-by's.
 
-Signed-off-by: James Cammarata <jimi@sngx.net>
----
+Ted, No suspicion about the list, just curious.
 
---- linux-2.6.25.4/drivers/net/e1000/e1000_main.c	2008-05-15 10:00:12.000000000 -0500
-+++ linux-2.6.25.4-jcammara/drivers/net/e1000/e1000_main.c	2008-05-28 21:06:19.000000000 -0500
-@@ -141,6 +141,7 @@ static void e1000_free_tx_resources(stru
- static void e1000_free_rx_resources(struct e1000_adapter *adapter,
-                              struct e1000_rx_ring *rx_ring);
- void e1000_update_stats(struct e1000_adapter *adapter);
-+void e1000_clear_stats(struct e1000_adapter *adapter);
- 
- static int e1000_init_module(void);
- static void e1000_exit_module(void);
-@@ -3819,6 +3820,29 @@ e1000_update_stats(struct e1000_adapter 
- 	spin_unlock_irqrestore(&adapter->stats_lock, flags);
- }
- 
-+void
-+e1000_clear_stats(struct e1000_adapter *adapter)
-+{
-+	struct pci_dev *pdev = adapter->pdev;
-+	unsigned long flags;
-+
-+	/*
-+	 * Prevent stats update while adapter is being reset, or if the pci
-+	 * connection is down.
-+	 */
-+	if (adapter->link_speed == 0)
-+		return;
-+	if (pci_channel_offline(pdev))
-+		return;
-+
-+	spin_lock_irqsave(&adapter->stats_lock, flags);
-+
-+	memset(&adapter->stats, 0, sizeof(struct e1000_hw_stats));
-+	memset(&adapter->net_stats, 0, sizeof(struct net_device_stats));
-+
-+	spin_unlock_irqrestore(&adapter->stats_lock, flags);
-+}
-+
- /**
-  * e1000_intr_msi - Interrupt Handler
-  * @irq: interrupt number
+By SOF and AB we can collect people who contributed most changesets to kernel.
+But, how about those who contributed most lines and not so many changesets?
+
+For example:
+---- Contributed most changesets TOP30 in 2.6.25
+No.1	 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+No.2	 Adrian Bunk <adrian.bunk@movial.fi>
+No.3	 Patrick McHardy <kaber@trash.net>
+No.4	 Ingo Molnar <mingo@elte.hu>
+No.5	 Paul Mundt <lethal@linux-sh.org>
+No.6	 Greg Kroah-Hartman <gregkh@suse.de>
+No.7	 Jesper Nilsson <jesper.nilsson@axis.com>
+No.7	 Thomas Gleixner <tglx@linutronix.de>
+No.9	 Pavel Emelyanov <xemul@openvz.org>
+No.10	 Harvey Harrison <harvey.harrison@gmail.com>
+No.11	 Herbert Xu <herbert@gondor.apana.org.au>
+No.12	 Mauro Carvalho Chehab <mchehab@infradead.org>
+No.12	 Roland McGrath <roland@redhat.com>
+No.14	 David Woodhouse <dwmw2@infradead.org>
+No.15	 Al Viro <viro@ftp.linux.org.uk>
+No.16	 Michael Krufky <mkrufky@linuxtv.org>
+No.17	 Glauber Costa <gcosta@redhat.com>
+No.18	 David S. Miller <davem@davemloft.net>
+No.19	 Andrew Morton <akpm@linux-foundation.org>
+No.20	 Takashi Iwai <tiwai@suse.de>	
+No.21	 Joe Perches <joe@perches.com>
+No.22	 Avi Kivity <avi@qumranet.com>	
+No.23	 Jean Delvare <khali@linux-fr.org>	
+No.24	 Sam Ravnborg <sam@ravnborg.org>	
+No.25	 Randy Dunlap <rdunlap@xenotime.net>	
+No.26	 Denis V. Lunev <den@openvz.org>	
+No.27	 Andi Kleen <ak@suse.de>	
+No.27	 Jan Engelhardt <jengelh@gmx.de>	
+No.29	 Tejun Heo <htejun@gmail.com>	
+No.29	 Chuck Lever <chuck.lever@oracle.com>	
+
+---- Contributed most lines TOP30 in 2.6.25
+No.1	 Paul Mundt <lethal@linux-sh.org>	
+No.2	 Jesper Nilsson <jesper.nilsson@axis.com>	
+No.3	 Avi Kivity <avi@qumranet.com>	
+No.4	 Kumar Gala <galak@kernel.crashing.org>	 
+No.5	 Adrian Bunk <adrian.bunk@movial.fi>	
+No.6	 David Howells <dhowells@redhat.com>	 
+No.7	 Eliezer Tamir <eliezert@broadcom.com>	 
+No.8	 Christoph Hellwig <hch@lst.de>	
+No.9	 Jiri Slaby <jirislaby@gmail.com>	
+No.10	 Ingo Molnar <mingo@elte.hu>	
+No.11	 Michael Chan <mchan@broadcom.com>	
+No.12	 Thomas Gleixner <tglx@linutronix.de>	
+No.13	 Glenn Streiff <gstreiff@neteffect.com>	 
+No.14	 Jens Axboe <jens.axboe@oracle.com>	 
+No.15	 Roland McGrath <roland@redhat.com>	 
+No.16	 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>	 
+No.17	 Mauro Carvalho Chehab <mchehab@infradead.org>	 
+No.18	 Patrick McHardy <kaber@trash.net>	
+No.19	 Auke Kok <auke-jan.h.kok@intel.com>	
+No.20	 James Bottomley <James.Bottomley@HansenPartnership.com>	
+No.21	 David Gibson <dwg@au1.ibm.com>	 
+No.22	 Michael Krufky <mkrufky@linuxtv.org>	
+No.23	 Takashi Iwai <tiwai@suse.de>	
+No.24	 Greg Kroah-Hartman <gregkh@suse.de>	
+No.25	 Benjamin Herrenschmidt <benh@kernel.crashing.org>	
+No.26	 Geert Uytterhoeven <geert@linux-m68k.org>	
+No.27	 Herbert Xu <herbert@gondor.apana.org.au>	
+No.28	 Harvey Harrison <harvey.harrison@gmail.com>	
+No.29	 Glauber Costa <gcosta@redhat.com>	
+No.30	 David Woodhouse <dwmw2@infradead.org>	
+
+Obviously, some people contributed a lot of lines to kernel, but their
+patch number is not so remarkable.
 
