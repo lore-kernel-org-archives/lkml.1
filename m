@@ -1,104 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbYE2ACR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbYE2AGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbYE2ACR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 20:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYE2ACG
+	id S1755070AbYE2AGu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 20:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYE2AGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 20:02:06 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:45727 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198AbYE2ACF (ORCPT
+	Wed, 28 May 2008 20:06:42 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:7844 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbYE2AGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 20:02:05 -0400
-Message-ID: <483DF32B.40508@keyaccess.nl>
-Date: Thu, 29 May 2008 02:04:59 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Tim Waugh <tim@cyberelk.net>, Tim Waugh <twaugh@redhat.com>
-CC: linux-parport@lists.infradead.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PARIDE] Datastor EP-2000 problem
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 28 May 2008 20:06:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=LWAYZmWeNPDa5J0mHvCclSAz+COKbdrAblQaTq0gv1cIr10dj4vvh3wu1xcfCO3l/x+c3PEpFOJK4oFmQ6EhBwLwwgJdVKjOGnfcu5bP77CZs1a1KC/gRHe5tmlbSGX8dUIVnb4tGXdzqELaFOlp8aIr4f8Y/ZtBrwqfBfF0iDI=
+Subject: Re: [PATCH] tmpfs: support aio
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>, hans-christoph.rohland@sap.com,
+       leg@google.com, pbadari@us.ibm.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080528165815.f4e4982c.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0805290007320.7969@blonde.site>
+	 <20080528165815.f4e4982c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 28 May 2008 17:06:38 -0700
+Message-Id: <1212019598.20781.11.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.5 (/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good day.
+On Wed, 2008-05-28 at 16:58 -0700, Andrew Morton wrote:
+> On Thu, 29 May 2008 00:13:35 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> hm.  This version:
+> 
+> static ssize_t shmem_file_aio_read(struct kiocb *iocb,
+> 		const struct iovec *iov, unsigned long nr_segs, loff_t pos)
+> {
+> 	struct file *filp = iocb->ki_filp;
+> 	ssize_t retval;
+> 	unsigned long seg;
+> 	size_t count;
+> 	loff_t *ppos = &iocb->ki_pos;
+> 
+> 	count = 0;
+> 	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
+> 	if (retval)
+> 		return retval;
+> 	if (count == 0)
+> 		return 0;
+> 
+> 	retval = 0;
 
-Dug up a parallel port CD-RW consisting of a Philips CDD3801 24x/2x/2x 
-ATAPI CD-RW hooked up to a Datastor EP-2000 parallel interface chip.
+retval has to be 0 here, no need to assign it again?
 
-The drive has been verified to work correctly when used directly as IDE 
-and the parallel interface has been verified to work correctly with some 
-random other CD-ROM drive. The combination bombs out though.
-
-The drive is found:
-
-root@ax6bc:~# modprobe dstr
-root@ax6bc:~# modprobe pcd
-root@ax6bc:~# dmesg | tail -6
-pcd: pcd version 1.07, major 46, nice 0
-pcd0: Sharing parport0 at 0x378
-pcd0: dstr 1.01, DataStor EP2000 at 0x378, mode 4 (EPP-32), delay 1
-pcd0: Master: R/RW 2x2x24
-pcd0: mode sense capabilities completion: alt=0x51 stat=0x51 err=0x60 
-loop=0 phase=3
-pcd0: mode sense capabilities: Sense key: 6, ASC: 29, ASQ: 0
-
-trying to extract any data from it fails though:
-
-root@ax6bc:~# dd if=/dev/pcd0 of=/dev/null bs=2048 count=1
-0+0 records in
-0+0 records out
-0 bytes (0 B) copied, 12.5765 s, 0.0 kB/s
-
-root@ax6bc:~# dmesg | tail -14
-pcd: pcd version 1.07, major 46, nice 0
-pcd0: Sharing parport0 at 0x378
-pcd0: dstr 1.01, DataStor EP2000 at 0x378, mode 4 (EPP-32), delay 1
-pcd0: Master: R/RW 2x2x24
-pcd0: mode sense capabilities completion: alt=0x51 stat=0x51 err=0x60 
-loop=0 phase=3
-pcd0: mode sense capabilities: Sense key: 6, ASC: 29, ASQ: 0
-pcd0: WARNING: ATAPI phase errors
-pcd0: Stuck DRQ
-pcd0: lock door before command: alt=0x58 stat=0x58 err=0x100 loop=64001 
-phase=2
-pcd0: Request sense before command: alt=0x58 stat=0x58 err=0x100 
-loop=64001 phase=2
-pcd0: generic packet before command: alt=0x58 stat=0x58 err=0x100 
-loop=64001 phase=2
-pcd0: Request sense before command: alt=0x58 stat=0x58 err=0x100 
-loop=64001 phase=2
-pcd0: unlock door before command: alt=0x58 stat=0x58 err=0x100 
-loop=64001 phase=2
-pcd0: Request sense before command: alt=0x58 stat=0x58 err=0x100 
-loop=64001 phase=2
-
-and at this point the drive's stuck and needs a power cycle. I've tried 
-all modes available (4-bit, 8-bit, EPP-8, EPP-16 and EPP-32) and delays 
-  from 0 to 10 and nothing changes behaviour.
-
-Changing the parallel port type in my BIOS from Normal to EPP to ECP to 
-ECP+EPP, no change.
-
-Behaviour was also the same with the drive's original firmware (which I 
-can sort of guarentee was the one it originally came with) and its 
-current most recent 1.7e firmware.
-
-I even tested a prehistoric 2.2.6 kernel where things were/are the same 
-again.
-
-As said, interface works with a different (CD-ROM) drive and drive works 
-fine as plain IDE. I haven't been able to test if it works correctly 
-under DOS or Windows with its own drivers as I don't have the drivers 
-and can't find them online. If anyone has DOS or Windows EP-2000 
-drivers; a pointer would be mightely appreciated.
-
-Anyone any idea what this could be? Can patch/debug...
-
-Rene.
+Harvey
 
