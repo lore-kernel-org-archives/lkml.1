@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYE2SX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbYE2SYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbYE2SX7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 14:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbYE2SXs
+	id S1758803AbYE2SYj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 14:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYE2SYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 14:23:48 -0400
-Received: from tesla.selinc.com ([12.110.71.2]:52487 "EHLO tesla.selinc.com"
+	Thu, 29 May 2008 14:24:30 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60284 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbYE2SXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 14:23:48 -0400
-In-Reply-To: <200805291104.30779.david-b@pacbell.net>
-To: Li Yang <leoli@freescale.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] fsl_usb2_udc: fix recursive lock
-MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OFE47F9BEE.971C92BB-ON88257458.0064D160-88257458.00650986@selinc.com>
-From: Eugene_Bordenkircher@selinc.com
-Date: Thu, 29 May 2008 11:23:34 -0700
-X-MIMETrack: Serialize by Router on Edison2/SEL(Release 7.0.3|September 26, 2007) at 05/29/2008
- 11:23:37 AM,
-	Serialize complete at 05/29/2008 11:23:37 AM
-Content-Type: text/plain; charset="US-ASCII"
+	id S1750854AbYE2SY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 14:24:29 -0400
+Date: Thu, 29 May 2008 20:25:10 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Philipp Marek <philipp@marek.priv.at>
+Cc: linux-trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] removes casting of (void*) private structure members
+Message-ID: <20080529182510.GA15712@uranus.ravnborg.org>
+References: <200805291933.54529@marek.priv.at>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805291933.54529@marek.priv.at>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ... clearly, 2.6.26 material; the same locking problem also
-> shows up on non-RT kernels.
+On Thu, May 29, 2008 at 07:33:54PM +0200, Philipp Marek wrote:
+> Hello everybody,
 > 
+> here's another trivial patch, against v2.6.26-rc3-243-gd40ace0.
 
-I agree.  I just happened to be working with an RT patched kernel when the 
-BUG was generated.
+Sample from your patch:
+ static int geode_rng_data_read(struct hwrng *rng, u32 *data)
+ {
+-       void __iomem *mem = (void __iomem *)rng->priv;
++       void __iomem *mem = rng->priv;
 
-The patch appears to be working correctly.
+And from hw_random.h:
+struct hwrng {
+        const char *name;
+        int (*init)(struct hwrng *rng);
+        void (*cleanup)(struct hwrng *rng);
+        int (*data_present)(struct hwrng *rng, int wait);
+        int (*data_read)(struct hwrng *rng, u32 *data);
+        unsigned long priv;
 
-Thanks,
+        /* internal. */
+        struct list_head list;
+};
 
-Eugene
+
+So rng->priv is unsigend long.
+Therefore the cast is legitimate.
+
+And I expect gcc to emit:
+warning: assignment makes pointer from integer without a cast
+
+
+	Sam
