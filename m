@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbYE2JEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbYE2JF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbYE2JEZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 05:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYE2JEK
+	id S1755961AbYE2JF1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 05:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYE2JFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 05:04:10 -0400
-Received: from mail.vapor.com ([85.114.133.49]:49148 "EHLO mail.vapor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbYE2JEJ (ORCPT <rfc822;Linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 05:04:09 -0400
-Date: Thu, 29 May 2008 10:41:57 +0200
-From: pomac@vapor.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux-kernel <Linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: Re: [ipv6] Odd behaviour...
-Message-ID: <20080529084157.GD11812@pomac.netswarm.net>
-References: <1211842711.8367.11.camel@localhost> <20080529002729.d87fed29.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 29 May 2008 05:05:11 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47773 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752972AbYE2JFJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 05:05:09 -0400
+Message-Id: <1212051908.8215.1255644495@webmail.messagingengine.com>
+X-Sasl-Enc: JkYl3Vk4+dq3QaNAcvbnxGLyyZG8GQi0yflelNK1VGah 1212051908
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Dave Airlie" <airlied@gmail.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       "dri-devel" <dri-devel@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <20080529002729.d87fed29.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com>
+Subject: Re: in-kernel DRM tree move around....
+In-Reply-To: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com>
+Date: Thu, 29 May 2008 11:05:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 12:27:29AM -0700, Andrew Morton wrote:
-> On Tue, 27 May 2008 00:58:30 +0200 Ian Kumlien <pomac@vapor.com> wrote:
+On Thu, 29 May 2008 10:46:22 +1000, "Dave Airlie" <airlied@gmail.com>
+said:
+> Hi,
 > 
-> > Hi, 
-> > 
-> > I just recently acquired a new ipv6 tunnel since my two previous brokers
-> > has gone out of business. I now use hurricane electrics tunnel since i
-> > have really good ping times to it's node in Amsterdam.
-> > 
-> > Anyways, i have setup a local network tunnel and enabled forwarding.
-> > 
-> > After about 300 seconds, it all stops working. I have to disable and
-> > re-enable it on the firewall/router to get it working again.
-> > 
-> > tcpdump shows the router/firewall doing odd things like:
-> > (i renamed my host to piv6)
-> > 
-> > 00:48:14.294173 IP6 piv6 > igloo.stacken.kth.se: ICMP6, echo request,
-> > seq 321, length 64
-> > 
-> > 00:48:14.341288 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
-> > 321, length 64
-> > 
-> > 00:48:14.341317 IP6 fe80::55e4:1b90 > igloo.stacken.kth.se: ICMP6,
-> > redirect, piv6 to piv6, length 160
-> > 
-> > 00:48:14.341332 IP6 igloo.stacken.kth.se > piv6: ICMP6, echo reply, seq
-> > 321, length 64
-> > ---
-> > 
-> > fe80::55e4::1b90 is the local ip of the ipv6 tunnel.
-> > (note: the packet never arrives at it's destination)
-> > 
-> > Any ideas of what could be going wrong?			
+> So I've been growing more annoyed with the current layout of the drm
+> tree in the kernel,
 > 
-> (cc netdev - afaik linux-net is kind of dead)
+> a) it lives under char.
+> b) everything in one directory.
+> c) header files in one directory.
+> d) no header files exposed to userspace.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=commitdiff;h=7df9a948d0f849466e3de259cccb49bc54cbad68
+> 
+> is a proposal to create drivers/gpu/drm, (I may move AGP in there as
+> well later). It also creates per-driver subdirs.
 
-Thanks, i knew i missed something, -net was the one that was already in
-my email client so... =)
+Looks like a lot more suitable place! I just wonder if drivers/video/drm
+would be even more logical?
 
-> What kernel version are you running?
+Greetings,
+    Alexander
 
-The router/fw is running 2.6.25.1, the client is running 2.6.25.4
+> This to me solves the a-d problems.
+> 
+> There is also an out-of-tree kernel drm which I'll probably give some
+> more thought later.
+> 
+> Dave.
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
-Any additional information i should provide?
+-- 
+http://www.fastmail.fm - Does exactly what it says on the tin
 
