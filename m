@@ -1,84 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYE2Sod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYE2SqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbYE2Sod (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 14:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYE2SoG
+	id S1757711AbYE2SqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 14:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYE2SqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 14:44:06 -0400
-Received: from smtp-02.datacomm.ch ([212.40.2.27]:39442 "EHLO
-	smtp-02.datacomm.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbYE2SoE (ORCPT
+	Thu, 29 May 2008 14:46:11 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:1148 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbYE2SqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 14:44:04 -0400
-Subject: Re: >3G => iommu => suspend problems -- was Re: SB600 AHCI: Hard
-	Disk Corruption
-From: Patrick <ragamuffin@datacomm.ch>
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080527112236.GA13957@elf.ucw.cz>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	 <20080525173825.GA4132@ucw.cz>
-	 <1211746106.6188.57.camel@localhost.localdomain>
-	 <20080525203921.GB18781@elf.ucw.cz> <20080525211016.GA32478@elf.ucw.cz>
-	 <1211815881.6140.19.camel@localhost.localdomain>
-	 <20080527112236.GA13957@elf.ucw.cz>
-Content-Type: text/plain
-Date: Thu, 29 May 2008 20:44:01 +0200
-Message-Id: <1212086641.4625.56.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 14:46:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=eoKVVa2vbyLaQkmEJsYwUhG9L+gI2TaN9uAMRDpmYA8gKM05020JuWJNCuGrttD5YgTQTYrs50eo4xnfxyCGiDaw9Vz6U5yGZWSBd/Z5NlQDzECsfWsNoUJ1DkAAZGZbLPFamZGJlyOzdxxA32zK23ExH39prBefUZ8AUTwzqDc=
+Date: Thu, 29 May 2008 14:46:06 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>, jkosina@suse.cz
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH linux-next] serio: add ifdef for i8042 build fix
+Message-ID: <20080529184606.GA17728@anvil.corenet.prv>
+References: <20080529182556.2994310a.sfr@canb.auug.org.au> <20080529094454.3605aa5c.randy.dunlap@oracle.com> <20080529095633.8893b4ec.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529095633.8893b4ec.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi Randy,
 
-> This goes on top of the second patch... it makes it work.
+On Thu, May 29, 2008 at 09:56:33AM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> 								Pavel
+> Restrict variable usage by bounding it with ifdef/endif CONFIG_PNP.
+> 
+> linux-next-20080529/drivers/input/serio/i8042-x86ia64io.h:590: error: 'i8042_nopnp' undeclared (first use in this function)
 > 
 
-All right. It works! :-) Thank you very much!
+Thank you for the report. I'd rahther changed it as in the patch below.
+What do you think?
 
-I'll describe how I tested:
-So far you sent 3 Patches to the list. As I couldn't apply the second
-one to my v2.6.26-rc4 tree i had to get git and then your tree. Now I
-have a git working tree with two branches *master* and *pavel*,
-corresponding to torvalds/linux-2.6 and pavel/work respectively.
-I made *pavel* the current branch and issued the following command:
+If everyone agrees then I will fold it in Jiri's original patch to keep
+the trees bisectable.
 
-git diff v2.6.26-rc4 	arch/x86/kernel/aperture_64.c \
-			arch/x86/kernel/k8.c \
-			arch/x86/kernel/pci-gart_64.c \
-			drivers/char/agp/generic.c \
-			include/asm-x86/gart.h \
-	> /home/pat/suspend-vs-iommu.patch
+-- 
+Dmitry
 
-The result is on http://zefir.890m.com/dmesg/
-
-I applied this patch to my old v2.6.26-rc4 tree and recompiled a new
-kernel there *, put it in place and rebooted. I suspended several times
-since then and put a kernel log of one normal boot process with suspend
-from console while X is running (radeonhd) on the site mentioned before.
-
-I'm running debian testing / ubuntu hardy mixed system and used
-kernel .config from linux-headers-2.6.25-2-amd64.deb (debian unstable)
-with "make oldconfig" and defaults on new options.
-
-The diff is nearly 500 lines long, but i it could be narrowed, I guess.
-For me it works perfectly like this though. If you want me to do any
-further tests, just say so. I'm trying to get to know git a bit better
-and hope to be able to help again sometime. It's great fun!  :-)
-
-Cheers
-
-
-
-* I get 
-"ACPI: Unable to turn cooling device [ffff81012fa5cdd0] 'off'" every two
-seconds and "fancontrol" isn't working any more... going to send a
-acpidump to the acpi group. Maybe i'll find out myself as well...
-investigating. Not sure if it's caused by the patch.
-
-
+diff --git a/drivers/input/serio/i8042-x86ia64io.h b/drivers/input/serio/i8042-x86ia64io.h
+index 709c9d9..2289e3a 100644
+--- a/drivers/input/serio/i8042-x86ia64io.h
++++ b/drivers/input/serio/i8042-x86ia64io.h
+@@ -63,7 +63,7 @@ static inline void i8042_write_command(int val)
+ 	outb(val, I8042_COMMAND_REG);
+ }
+ 
+-#if defined(__i386__) || defined(__x86_64__)
++#ifdef CONFIG_X86
+ 
+ #include <linux/dmi.h>
+ 
+@@ -287,6 +287,7 @@ static struct dmi_system_id __initdata i8042_dmi_nomux_table[] = {
+ 	{ }
+ };
+ 
++#ifdef CONFIG_PNP
+ static struct dmi_system_id __initdata i8042_dmi_nopnp_table[] = {
+ 	{
+ 		.ident = "Intel MBO Desktop D845PESV",
+@@ -297,13 +298,8 @@ static struct dmi_system_id __initdata i8042_dmi_nopnp_table[] = {
+ 	},
+ 	{ }
+ };
+-
+ #endif
+ 
+-#ifdef CONFIG_X86
+-
+-#include <linux/dmi.h>
+-
+ /*
+  * Some Wistron based laptops need us to explicitly enable the 'Dritek
+  * keyboard extension' to make their extra keys start generating scancodes.
+@@ -351,7 +347,6 @@ static struct dmi_system_id __initdata i8042_dmi_dritek_table[] = {
+ 
+ #endif /* CONFIG_X86 */
+ 
+-
+ #ifdef CONFIG_PNP
+ #include <linux/pnp.h>
+ 
+@@ -461,6 +456,11 @@ static int __init i8042_pnp_init(void)
+ 	int pnp_data_busted = 0;
+ 	int err;
+ 
++#ifdef CONFIG_X86
++	if (dmi_check_system(i8042_dmi_nopnp_table))
++		i8042_nopnp = 1;
++#endif
++
+ 	if (i8042_nopnp) {
+ 		printk(KERN_INFO "i8042: PNP detection disabled\n");
+ 		return 0;
+@@ -578,10 +578,6 @@ static int __init i8042_platform_init(void)
+ 	i8042_kbd_irq = I8042_MAP_IRQ(1);
+ 	i8042_aux_irq = I8042_MAP_IRQ(12);
+ 
+-#if defined(__i386__) || defined(__x86_64__)
+-	if (dmi_check_system(i8042_dmi_nopnp_table))
+-		i8042_nopnp = 1;
+-#endif
+ 	retval = i8042_pnp_init();
+ 	if (retval)
+ 		return retval;
+@@ -590,15 +586,13 @@ static int __init i8042_platform_init(void)
+         i8042_reset = 1;
+ #endif
+ 
+-#if defined(__i386__) || defined(__x86_64__)
++#ifdef CONFIG_X86
+ 	if (dmi_check_system(i8042_dmi_noloop_table))
+ 		i8042_noloop = 1;
+ 
+ 	if (dmi_check_system(i8042_dmi_nomux_table))
+ 		i8042_nomux = 1;
+-#endif
+ 
+-#ifdef CONFIG_X86
+ 	if (dmi_check_system(i8042_dmi_dritek_table))
+ 		i8042_dritek = 1;
+ #endif /* CONFIG_X86 */
