@@ -1,173 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbYE2PVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbYE2PXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbYE2PVP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 11:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbYE2PVA
+	id S1757304AbYE2PXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 11:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYE2PW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 11:21:00 -0400
-Received: from ozlabs.org ([203.10.76.45]:57210 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751971AbYE2PU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 11:20:59 -0400
-From: Michael Neuling <mikey@neuling.org>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>, venkatesh.pallipadi@intel.com,
-       suresh.b.siddha@intel.com, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 2/3] Make calls to account_scaled_stats 
-In-reply-to: <20080526143146.24680.36724.stgit@drishya.in.ibm.com> 
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526143146.24680.36724.stgit@drishya.in.ibm.com>
-Comments: In-reply-to Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-   message dated "Mon, 26 May 2008 20:01:46 +0530."
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.1.1
-Date: Thu, 29 May 2008 10:18:56 -0500
-Message-ID: <19576.1212074336@neuling.org>
+	Thu, 29 May 2008 11:22:59 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:49079 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750807AbYE2PW6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 11:22:58 -0400
+Subject: Re: [PATCH] scsi: remove CDROM not ready printk
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Gerb Stralko <gerb.stralko@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <75b57c110805290804p2280a6ffwf68174754db59e9c@mail.gmail.com>
+References: <alpine.LFD.1.10.0805271502370.3985@localhost.localdomain>
+	 <20080529004154.bbc7b1d4.akpm@linux-foundation.org>
+	 <1212069932.3428.1.camel@localhost.localdomain>
+	 <75b57c110805290735i493eca0fp882f4a38901a416c@mail.gmail.com>
+	 <1212072912.3428.28.camel@localhost.localdomain>
+	 <75b57c110805290804p2280a6ffwf68174754db59e9c@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 10:22:53 -0500
+Message-Id: <1212074573.3428.32.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20080526143146.24680.36724.stgit@drishya.in.ibm.com> you wrote:
-> Hook various accounting functions to call scaled stats
+On Thu, 2008-05-29 at 11:04 -0400, Gerb Stralko wrote:
+> On Thu, May 29, 2008 at 10:55 AM, James Bottomley
+> <James.Bottomley@hansenpartnership.com> wrote:
+> > On Thu, 2008-05-29 at 10:35 -0400, Gerb Stralko wrote:
+> >> So is that printk really needed?  Should the kernel even need to print
+> >> a message like that, esp. if user-space is handling state updates and
+> >> notifications.  Or do i need to configure hald to be quietier?   FWIW
+> >> I'm using fedora core 9 and hald version:
+> >> -bash-3.2$ /usr/sbin/hald --version
+> >> HAL package version: 0.5.11
+> >
+> > Actually, I misspoke; it's set internally via sets of ioctls.  However,
+> > it's designed only to show on ioctls that do medium requiring things.
+> >
+> > I'm also using FC9 and I see no such messages (and for noisy cgc,
+> > they're printed out for every action on the CD).  You have some
+> > application that's poking the CD wrongly (probably not hal), so you
+> > really need to find out what it is.  It may be pointing to some other
+> > error in the kernel that needs fixing, but simply removing the message
+> > is covering up the issue.
+> >
+> > To help track the application, you could update the printk to print out
+> > current->comm and current->pid.  That would tell you who is responsible
+> >
+> > James
+> >
+> >
+> >
+> Okay, i'll do some investigation and see if I can track this down,
+> I'll let you know.   Thanks for the info.
 > 
-> * Hook porcess contect switch: __switch_to()
-> * Hook IRQ handling account_system_vtime() in hardirq.hA
-> * Update __delayacct_add_tsk() to take care of scaling by 1000
-> * Update bacct_add_tsk() to take care of scaling by 1000
-> 
-> Signed-off-by: Amit K. Arora <aarora@linux.vnet.ibm.com>
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> ---
-> 
->  arch/x86/kernel/process_32.c |    8 ++++++++
->  include/linux/hardirq.h      |    4 ++++
->  kernel/delayacct.c           |    7 ++++++-
->  kernel/timer.c               |    2 --
->  kernel/tsacct.c              |   10 ++++++++--
->  5 files changed, 26 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-> index f8476df..c81a783 100644
-> --- a/arch/x86/kernel/process_32.c
-> +++ b/arch/x86/kernel/process_32.c
-> @@ -56,6 +56,9 @@
->  #include <asm/cpu.h>
->  #include <asm/kdebug.h>
->  
-> +extern void account_scaled_stats(struct task_struct *tsk);
-> +extern void reset_for_scaled_stats(struct task_struct *tsk);
-> +
->  asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
->  
->  static int hlt_counter;
-> @@ -660,6 +663,11 @@ struct task_struct * __switch_to(struct task_struct *pre
-v_p, struct task_struct
->  		loadsegment(gs, next->gs);
->  
->  	x86_write_percpu(current_task, next_p);
-> +	/* Account scaled statistics for the task leaving CPU */
-> +	account_scaled_stats(prev_p);
-> +	barrier();
-> +	/* Initialise stats counter for new task */
-> +	reset_for_scaled_stats(next_p);
->  
->  	return prev_p;
->  }
-> diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-> index 181006c..4458736 100644
-> --- a/include/linux/hardirq.h
-> +++ b/include/linux/hardirq.h
-> @@ -7,6 +7,9 @@
->  #include <asm/hardirq.h>
->  #include <asm/system.h>
->  
-> +/* TBD: Add config option */
-> +extern void account_scaled_stats(struct task_struct *tsk);
-> +
->  /*
->   * We put the hardirq and softirq counter into the preemption
->   * counter. The bitmask has the following meaning:
-> @@ -115,6 +118,7 @@ struct task_struct;
->  #ifndef CONFIG_VIRT_CPU_ACCOUNTING
->  static inline void account_system_vtime(struct task_struct *tsk)
->  {
-> +	account_scaled_stats(tsk);
->  }
->  #endif
->  
-> diff --git a/kernel/delayacct.c b/kernel/delayacct.c
-> index 10e43fd..3e2938f 100644
-> --- a/kernel/delayacct.c
-> +++ b/kernel/delayacct.c
-> @@ -117,7 +117,12 @@ int __delayacct_add_tsk(struct taskstats *d, struct task
-_struct *tsk)
->  
->  	tmp = (s64)d->cpu_scaled_run_real_total;
->  	cputime_to_timespec(tsk->utimescaled + tsk->stimescaled, &ts);
-> -	tmp += timespec_to_ns(&ts);
-> +	/* HACK: Remember, we multipled the cputime_t by 1000 to include
-> +	 * fraction.  Now it is time to scale it back to correct 'ns' value.
-> +	 * Perhaps, we should use nano second unit (u64 type) for utimescaled 
-> +	 * and stimescaled?
-> +	 */
-> +	tmp += div_s64(timespec_to_ns(&ts),1000);
+> Are you using GNOME or KDE?  I'm currently using KDE.
 
-This is going to break other archs (specifically powerpc) which doesn't
-do this magical scale by 1000.
+I'm using gnome ... there are intermittent reports of kde problems
+mainly with k3b though (the burner program), but if you put the printk
+in it should identify the application.
 
-How often is this function called as the divide is going to slow things
-down?  
-
->  	d->cpu_scaled_run_real_total =
->  		(tmp < (s64)d->cpu_scaled_run_real_total) ? 0 : tmp;
->  
-> diff --git a/kernel/timer.c b/kernel/timer.c
-> index ceacc66..de8a615 100644
-> --- a/kernel/timer.c
-> +++ b/kernel/timer.c
-> @@ -964,10 +964,8 @@ void account_process_tick(struct task_struct *p, int use
-r_tick)
->  
->  	if (user_tick) {
->  		account_user_time(p, one_jiffy);
-> -		account_user_time_scaled(p, cputime_to_scaled(one_jiffy));
->  	} else {
->  		account_system_time(p, HARDIRQ_OFFSET, one_jiffy);
-> -		account_system_time_scaled(p, cputime_to_scaled(one_jiffy));
->  	}
->  }
-
-Why did you remove this?
-
->  #endif
-> diff --git a/kernel/tsacct.c b/kernel/tsacct.c
-> index 4ab1b58..ee0d93b 100644
-> --- a/kernel/tsacct.c
-> +++ b/kernel/tsacct.c
-> @@ -62,10 +62,16 @@ void bacct_add_tsk(struct taskstats *stats, struct task_s
-truct *tsk)
->  	rcu_read_unlock();
->  	stats->ac_utime	 = cputime_to_msecs(tsk->utime) * USEC_PER_MSEC;
->  	stats->ac_stime	 = cputime_to_msecs(tsk->stime) * USEC_PER_MSEC;
-> +	/* HACK: cputime unit is jiffies on x86 and not good for fractional 
-> +	 * additional.  cputime_t type {u,s}timescaled is multiplied by 
-> +	 * 1000 for scaled accounting.  Hence, cputime_to_msecs will actually 
-> +	 * give the required micro second value.  The multiplier 
-> +	 * USEC_PER_MSEC has been dropped.
-> +	 */
->  	stats->ac_utimescaled =
-> -		cputime_to_msecs(tsk->utimescaled) * USEC_PER_MSEC;
-> +		cputime_to_msecs(tsk->utimescaled);
->  	stats->ac_stimescaled =
-> -		cputime_to_msecs(tsk->stimescaled) * USEC_PER_MSEC;
-> +		cputime_to_msecs(tsk->stimescaled);
-
-Again, isn't this going to effect other archs?  
-
-Mikey
-
->  	stats->ac_minflt = tsk->min_flt;
->  	stats->ac_majflt = tsk->maj_flt;
->  
-> 
+James
 
 
