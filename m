@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbYE2VFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759460AbYE2VGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758589AbYE2VFy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 17:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYE2VFr
+	id S1759460AbYE2VGW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 17:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYE2VGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 17:05:47 -0400
-Received: from smtp-01.datacomm.ch ([212.40.2.26]:38796 "EHLO
-	smtp-01.datacomm.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbYE2VFq (ORCPT
+	Thu, 29 May 2008 17:06:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39325 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYE2VGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 17:05:46 -0400
-Subject: Re: >3G => iommu => suspend problems -- was Re: SB600 AHCI: Hard
-	Disk Corruption
-From: Patrick <ragamuffin@datacomm.ch>
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1212086641.4625.56.camel@localhost.localdomain>
-References: <1211717435.6038.53.camel@localhost.localdomain>
-	 <20080525173825.GA4132@ucw.cz>
-	 <1211746106.6188.57.camel@localhost.localdomain>
-	 <20080525203921.GB18781@elf.ucw.cz> <20080525211016.GA32478@elf.ucw.cz>
-	 <1211815881.6140.19.camel@localhost.localdomain>
-	 <20080527112236.GA13957@elf.ucw.cz>
-	 <1212086641.4625.56.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 29 May 2008 23:05:44 +0200
-Message-Id: <1212095144.7328.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 17:06:11 -0400
+Date: Thu, 29 May 2008 14:03:04 -0700
+From: Greg KH <greg@kroah.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Arjan van de Ven <arjan@linux.intel.com>,
+       James.Bottomley@hansenpartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+	kernel.
+Message-ID: <20080529210304.GA8866@kroah.com>
+References: <1211995212.3445.52.camel@localhost.localdomain> <20080528.225826.40264516.davem@davemloft.net> <1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu> <1212077700.26088.83.camel@shinybook.infradead.org> <20080529164745.GA21763@kroah.com> <483F1232.4010003@linux.intel.com> <20080529204736.GZ22636@parisc-linux.org> <86802c440805291355p5697c775k5f0beb8163688058@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440805291355p5697c775k5f0beb8163688058@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * I get 
-> "ACPI: Unable to turn cooling device [ffff81012fa5cdd0] 'off'" every two
-> seconds and "fancontrol" isn't working any more... going to send a
-> acpidump to the acpi group. Maybe i'll find out myself as well...
-> investigating. Not sure if it's caused by the patch.
+On Thu, May 29, 2008 at 01:55:16PM -0700, Yinghai Lu wrote:
+> On Thu, May 29, 2008 at 1:47 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> > On Thu, May 29, 2008 at 01:29:38PM -0700, Arjan van de Ven wrote:
+> >> I very much would like to see a kernel-firmware or something tarbal that contains
+> >> a copy of all relevant "freely distributable" firmware, that users can just install
+> >> independent of the actual kernel version (and that kbuild would just pick up somehow).
+> >> That way we can deal with a lot more firmware without having to pollute the kernel / kernel release process
+> >> (after all, the timing is different in terms of releasing) while making it easy
+> >> to get the lot of it.
+> >
+> > There's definitely two schools of thought on this.  Sometimes firmware
+> > changes (or adds) an interface.  If the kernel driver has to accommodate
+> > new and old firmware, that adds complexity, and we all know that added
+> > complexity means more bugs.  So I can definitely see some vendors
+> > wanting to distribute their firmware with the kernel.
+> >
+> driver should check fw version...
 
-It's caused by the suspend/resume process, not the patch - it happens
-with the unpatched -rc4 kernel and mem=4G as well after resume.
+Not all firmware has the ability to check the version :(
 
-"fancontrol" needed a config file update only (new device, hwmon0).
+So while Arjan's goal would be nice, Matthew is right, this can't happen
+for all types of firmware.
 
+thanks,
+
+greg k-h
