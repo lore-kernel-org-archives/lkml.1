@@ -1,36 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYE2EUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbYE2EXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbYE2EUd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 00:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbYE2EUZ
+	id S1754390AbYE2EXH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 00:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYE2EWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 00:20:25 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:44575 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750853AbYE2EUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 00:20:24 -0400
-Date: Thu, 29 May 2008 13:18:41 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sh: module.c use kernel unaligned helpers
-Message-ID: <20080529041841.GC12619@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1212017897.20781.6.camel@brick>
-MIME-Version: 1.0
+	Thu, 29 May 2008 00:22:55 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:46050 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750938AbYE2EWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 00:22:55 -0400
+Date: Thu, 29 May 2008 06:23:35 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       dri-devel <dri-devel@lists.sourceforge.net>
+Subject: Re: in-kernel DRM tree move around....
+Message-ID: <20080529042335.GA10636@uranus.ravnborg.org>
+References: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1212017897.20781.6.camel@brick>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 28, 2008 at 04:38:17PM -0700, Harvey Harrison wrote:
-> Replace the COPY_UNALIGNED_WORD helper.
+On Thu, May 29, 2008 at 10:46:22AM +1000, Dave Airlie wrote:
+> Hi,
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> So I've been growing more annoyed with the current layout of the drm
+> tree in the kernel,
+> 
+> a) it lives under char.
+> b) everything in one directory.
+> c) header files in one directory.
+> d) no header files exposed to userspace.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=commitdiff;h=7df9a948d0f849466e3de259cccb49bc54cbad68
+> 
+> is a proposal to create drivers/gpu/drm, (I may move AGP in there as
+> well later). It also creates per-driver subdirs.
 
-Looks good, I'll add it to my queue, thanks.
+Like it.
+> 
+> This to me solves the a-d problems.
+> 
+> There is also an out-of-tree kernel drm which I'll probably give some
+> more thought later.
+
+Makefie bits:
+5 EXTRA_CFLAGS = -Iinclude/drm
+Use ccflags-y :=  -Iinclude/drm
+I assume this is a temporary workaround and you plan to fix
+up all includes to use "#include <drm/fo.h>"
+
+6 drm-objs    :=  drm_auth.o drm_bufs.o drm_context.o drm_dma.o drm_drawable.o \
+7                 drm_drv.o drm_fops.o drm_ioctl.o drm_irq.o \
+8                 drm_lock.o drm_memory.o drm_proc.o drm_stub.o drm_vm.o \
+9                 drm_agpsupport.o drm_scatter.o ati_pcigart.o drm_pci.o \
+10                 drm_sysfs.o drm_hashtab.o drm_sman.o drm_mm.o
+
+Use drm-y := ....
+
+11
+12 ifeq ($(CONFIG_COMPAT),y)
+13 drm-objs    += drm_ioc32.o
+14 endif
+So you can do:
+drm-$(CONFIG_COMPAT) += drm_ioc32.o
+
+Take the above as general input for all your Makefiles.
+
