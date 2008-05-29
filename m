@@ -1,135 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYE2BoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbYE2Boj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYE2BoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 May 2008 21:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbYE2BoF
+	id S1754456AbYE2Boj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 May 2008 21:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYE2BoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 May 2008 21:44:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46664 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753653AbYE2BoD (ORCPT
+	Wed, 28 May 2008 21:44:08 -0400
+Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:61779
+	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753666AbYE2BoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 May 2008 21:44:03 -0400
-Date: Wed, 28 May 2008 18:42:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: dean@arctic.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       dwg@au1.ibm.com, apw@shadowen.org, linux-mm@kvack.org,
-       andi@firstfloor.org, kenchen@google.com, agl@us.ibm.com, abh@cray.com
-Subject: Re: [PATCH 3/3] Guarantee that COW faults for a process that called
- mmap(MAP_PRIVATE) on hugetlbfs will succeed
-Message-Id: <20080528184246.4753a78b.akpm@linux-foundation.org>
-In-Reply-To: <20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
-References: <20080527185028.16194.57978.sendpatchset@skynet.skynet.ie>
-	<20080527185128.16194.87380.sendpatchset@skynet.skynet.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 May 2008 21:44:04 -0400
+Message-ID: <483E0AAE.2020107@sngx.net>
+Date: Wed, 28 May 2008 20:45:18 -0500
+From: James Cammarata <jimi@sngx.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Linux Netdev List <netdev@vger.kernel.org>
+Subject: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
+References: <482DA5B6.1020606@sngx.net> <482DB46A.8020103@cosmosbay.com> <482EF192.4070707@sngx.net> <482F5113.5090703@cosmosbay.com> <482F610D.2080108@sngx.net> <20080518003104.GK28241@solarflare.com> <482FBA09.80201@sngx.net>
+In-Reply-To: <482FBA09.80201@sngx.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 19:51:28 +0100 (IST) Mel Gorman <mel@csn.ul.ie> wrote:
+I had originally submitted this ability as a patch to procfs, and
+general consensus was that it seemed "hackish" to do it that way.  It
+was suggested that it be implemented as a feature of ethtool, so I 
+thought I'd take on the challenge and add it that way.
 
-> 
-> After patch 2 in this series, a process that successfully calls mmap()
-> for a MAP_PRIVATE mapping will be guaranteed to successfully fault until a
-> process calls fork().  At that point, the next write fault from the parent
-> could fail due to COW if the child still has a reference.
-> 
-> We only reserve pages for the parent but a copy must be made to avoid leaking
-> data from the parent to the child after fork(). Reserves could be taken for
-> both parent and child at fork time to guarantee faults but if the mapping
-> is large it is highly likely we will not have sufficient pages for the
-> reservation, and it is common to fork only to exec() immediatly after. A
-> failure here would be very undesirable.
-> 
-> Note that the current behaviour of mainline with MAP_PRIVATE pages is
-> pretty bad.  The following situation is allowed to occur today.
-> 
-> 1. Process calls mmap(MAP_PRIVATE)
-> 2. Process calls mlock() to fault all pages and makes sure it succeeds
-> 3. Process forks()
-> 4. Process writes to MAP_PRIVATE mapping while child still exists
-> 5. If the COW fails at this point, the process gets SIGKILLed even though it
->    had taken care to ensure the pages existed
-> 
-> This patch improves the situation by guaranteeing the reliability of the
-> process that successfully calls mmap(). When the parent performs COW, it
-> will try to satisfy the allocation without using reserves. If that fails the
-> parent will steal the page leaving any children without a page. Faults from
-> the child after that point will result in failure. If the child COW happens
-> first, an attempt will be made to allocate the page without reserves and
-> the child will get SIGKILLed on failure.
-> 
-> To summarise the new behaviour:
-> 
-> 1. If the original mapper performs COW on a private mapping with multiple
->    references, it will attempt to allocate a hugepage from the pool or
->    the buddy allocator without using the existing reserves. On fail, VMAs
->    mapping the same area are traversed and the page being COW'd is unmapped
->    where found. It will then steal the original page as the last mapper in
->    the normal way.
-> 
-> 2. The VMAs the pages were unmapped from are flagged to note that pages
->    with data no longer exist. Future no-page faults on those VMAs will
->    terminate the process as otherwise it would appear that data was corrupted.
->    A warning is printed to the console that this situation occured.
-> 
-> 2. If the child performs COW first, it will attempt to satisfy the COW
->    from the pool if there are enough pages or via the buddy allocator if
->    overcommit is allowed and the buddy allocator can satisfy the request. If
->    it fails, the child will be killed.
-> 
-> If the pool is large enough, existing applications will not notice that the
-> reserves were a factor. Existing applications depending on the no-reserves
-> been set are unlikely to exist as for much of the history of hugetlbfs,
-> pages were prefaulted at mmap(), allocating the pages at that point or failing
-> the mmap().
-> 
+I've laid the groundwork here, and added the ability to two of the 
+drivers for which I have hardware to test on (e1000 and pcnet32).  I 
+also added the code required to call this functionality to the ethtool 
+code base, and have been using that to test my changes (using -z as the 
+flag to ethtool for clearing stats for now).
 
-Implementation nitlets:
+If this is an acceptable start, I will gladly start working on adding 
+this to as many drivers as possible (we do have some bnx2 hardware, 
+though I'm not sure if it's available for testing).
 
-> +#define HPAGE_RESV_OWNER    (1UL << (BITS_PER_LONG - 1))
-> +#define HPAGE_RESV_UNMAPPED (1UL << (BITS_PER_LONG - 2))
-> +#define HPAGE_RESV_MASK (HPAGE_RESV_OWNER | HPAGE_RESV_UNMAPPED)
->  /*
->   * These helpers are used to track how many pages are reserved for
->   * faults in a MAP_PRIVATE mapping. Only the process that called mmap()
-> @@ -54,17 +57,32 @@ static unsigned long vma_resv_huge_pages
->  {
->  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
->  	if (!(vma->vm_flags & VM_SHARED))
-> -		return (unsigned long)vma->vm_private_data;
-> +		return (unsigned long)vma->vm_private_data & ~HPAGE_RESV_MASK;
->  	return 0;
->  }
+Some other sys-admins have mentioned to me that ethtool doesn't work 
+sometimes and they fall back to using mii-tool to configure interfaces,
+so I'd still like to have the procfs change implemented to accommodate 
+that hardware, but I agree, this is a better way forward.
 
-It might be better to have
 
-unsigned long get_vma_private_data(struct vm_area_struct);
-unsigned long set_vma_private_data(struct vm_area_struct);
+Signed-off-by: James Cammarata <jimi@sngx.net>
+---
 
-(or even get_private & set_private)
-
-to do away with all the funky casting.
-
-Or it might not be, too.
-
-> +	pgoff_t pgoff = ((address - vma->vm_start) >> HPAGE_SHIFT)
-> +		+ (vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
->
-> ...
->
-> +	unsigned long idx;
-> +
-> +	mapping = vma->vm_file->f_mapping;
-> +	idx = ((address - vma->vm_start) >> HPAGE_SHIFT)
-> +		+ (vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
-
-It would be clearer to have a little helper function for the above two
-snippets.
-
-And the first uses pgoff_t whereas the second uses bare ulong.
-
+--- linux-2.6.25.4/include/linux/ethtool.h	2008-05-15 10:00:12.000000000 -0500
++++ linux-2.6.25.4-jcammara/include/linux/ethtool.h	2008-05-28 17:45:56.000000000 -0500
+@@ -325,6 +325,7 @@ int ethtool_op_set_flags(struct net_devi
+  * get_strings: Return a set of strings that describe the requested objects 
+  * phys_id: Identify the device
+  * get_stats: Return statistics about the device
++ * clear_ethtool_stats: Clear device statistics
+  * get_flags: get 32-bit flags bitmap
+  * set_flags: set 32-bit flags bitmap
+  * 
+@@ -383,6 +384,7 @@ struct ethtool_ops {
+ 	void	(*get_strings)(struct net_device *, u32 stringset, u8 *);
+ 	int	(*phys_id)(struct net_device *, u32);
+ 	void	(*get_ethtool_stats)(struct net_device *, struct ethtool_stats *, u64 *);
++	int	(*clear_ethtool_stats)(struct net_device *);
+ 	int	(*begin)(struct net_device *);
+ 	void	(*complete)(struct net_device *);
+ 	u32     (*get_ufo)(struct net_device *);
+@@ -441,6 +443,7 @@ struct ethtool_ops {
+ #define ETHTOOL_SFLAGS		0x00000026 /* Set flags bitmap(ethtool_value) */
+ #define ETHTOOL_GPFLAGS		0x00000027 /* Get driver-private flags bitmap */
+ #define ETHTOOL_SPFLAGS		0x00000028 /* Set driver-private flags bitmap */
++#define ETHTOOL_CSTATS		0x00000029 /* Clear NIC statistics */
+ 
+ /* compatibility with older code */
+ #define SPARC_ETH_GSET		ETHTOOL_GSET
+--- linux-2.6.25.4/net/core/ethtool.c	2008-05-15 10:00:12.000000000 -0500
++++ linux-2.6.25.4-jcammara/net/core/ethtool.c	2008-05-28 17:48:51.000000000 -0500
+@@ -714,6 +714,16 @@ static int ethtool_get_stats(struct net_
+ 	return ret;
+ }
+ 
++static int ethtool_clear_stats(struct net_device *dev, void __user *useraddr)
++{
++	const struct ethtool_ops *ops = dev->ethtool_ops;
++
++	if (!ops->clear_ethtool_stats)
++		return -EOPNOTSUPP;
++
++	return ops->clear_ethtool_stats(dev);
++}
++
+ static int ethtool_get_perm_addr(struct net_device *dev, void __user *useraddr)
+ {
+ 	struct ethtool_perm_addr epaddr;
+@@ -964,6 +974,9 @@ int dev_ethtool(struct net *net, struct 
+ 		rc = ethtool_set_value(dev, useraddr,
+ 				       dev->ethtool_ops->set_priv_flags);
+ 		break;
++	case ETHTOOL_CSTATS:
++		rc = ethtool_clear_stats(dev, useraddr);
++		break;
+ 	default:
+ 		rc = -EOPNOTSUPP;
+ 	}
+--- linux-2.6.25.4/drivers/net/e1000/e1000_main.c	2008-05-15 10:00:12.000000000 -0500
++++ linux-2.6.25.4-jcammara/drivers/net/e1000/e1000_main.c	2008-05-28 17:51:07.000000000 -0500
+@@ -141,6 +141,7 @@ static void e1000_free_tx_resources(stru
+ static void e1000_free_rx_resources(struct e1000_adapter *adapter,
+                              struct e1000_rx_ring *rx_ring);
+ void e1000_update_stats(struct e1000_adapter *adapter);
++void e1000_clear_stats(struct e1000_adapter *adapter);
+ 
+ static int e1000_init_module(void);
+ static void e1000_exit_module(void);
+@@ -3819,6 +3820,31 @@ e1000_update_stats(struct e1000_adapter 
+ 	spin_unlock_irqrestore(&adapter->stats_lock, flags);
+ }
+ 
++void
++e1000_clear_stats(struct e1000_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	unsigned long flags;
++
++	#define PHY_IDLE_ERROR_COUNT_MASK 0x00FF
++
++	/*
++	 * Prevent stats update while adapter is being reset, or if the pci
++	 * connection is down.
++	 */
++	if (adapter->link_speed == 0)
++		return;
++	if (pci_channel_offline(pdev))
++		return;
++
++	spin_lock_irqsave(&adapter->stats_lock, flags);
++
++	memset(&adapter->stats, 0, sizeof(struct e1000_hw_stats));
++	memset(&adapter->net_stats, 0, sizeof(struct net_device_stats));
++
++	spin_unlock_irqrestore(&adapter->stats_lock, flags);
++}
++
+ /**
+  * e1000_intr_msi - Interrupt Handler
+  * @irq: interrupt number
+--- linux-2.6.25.4/drivers/net/e1000/e1000_ethtool.c	2008-05-15 10:00:12.000000000 -0500
++++ linux-2.6.25.4-jcammara/drivers/net/e1000/e1000_ethtool.c	2008-05-28 17:53:28.000000000 -0500
+@@ -42,7 +42,7 @@ extern int e1000_setup_all_tx_resources(
+ extern void e1000_free_all_rx_resources(struct e1000_adapter *adapter);
+ extern void e1000_free_all_tx_resources(struct e1000_adapter *adapter);
+ extern void e1000_update_stats(struct e1000_adapter *adapter);
+-
++extern void e1000_clear_stats(struct e1000_adapter *adapter);
+ 
+ struct e1000_stats {
+ 	char stat_string[ETH_GSTRING_LEN];
+@@ -1940,6 +1940,14 @@ e1000_get_ethtool_stats(struct net_devic
+ /*	BUG_ON(i != E1000_STATS_LEN); */
+ }
+ 
++static int
++e1000_clear_ethtool_stats(struct net_device *netdev)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	e1000_clear_stats(adapter);
++	return 0;
++}
++
+ static void
+ e1000_get_strings(struct net_device *netdev, uint32_t stringset, uint8_t *data)
+ {
+@@ -1991,6 +1999,7 @@ static const struct ethtool_ops e1000_et
+ 	.get_strings            = e1000_get_strings,
+ 	.phys_id                = e1000_phys_id,
+ 	.get_ethtool_stats      = e1000_get_ethtool_stats,
++	.clear_ethtool_stats	= e1000_clear_ethtool_stats,
+ 	.get_sset_count		= e1000_get_sset_count,
+ };
+ 
+--- linux-2.6.25.4/drivers/net/pcnet32.c	2008-05-15 10:00:12.000000000 -0500
++++ linux-2.6.25.4-jcammara/drivers/net/pcnet32.c	2008-05-28 17:59:42.000000000 -0500
+@@ -312,6 +312,7 @@ static void pcnet32_tx_timeout(struct ne
+ static irqreturn_t pcnet32_interrupt(int, void *);
+ static int pcnet32_close(struct net_device *);
+ static struct net_device_stats *pcnet32_get_stats(struct net_device *);
++static int pcnet32_clear_stats(struct net_device *);
+ static void pcnet32_load_multicast(struct net_device *dev);
+ static void pcnet32_set_multicast_list(struct net_device *);
+ static int pcnet32_ioctl(struct net_device *, struct ifreq *, int);
+@@ -1532,6 +1533,7 @@ static const struct ethtool_ops pcnet32_
+ 	.get_regs_len		= pcnet32_get_regs_len,
+ 	.get_regs		= pcnet32_get_regs,
+ 	.get_sset_count		= pcnet32_get_sset_count,
++	.clear_ethtool_stats	= pcnet32_clear_stats,
+ };
+ 
+ /* only probes for non-PCI devices, the rest are handled by
+@@ -2719,6 +2721,17 @@ static struct net_device_stats *pcnet32_
+ 	return &dev->stats;
+ }
+ 
++static int pcnet32_clear_stats(struct net_device *dev)
++{
++	struct pcnet32_private *lp = netdev_priv(dev);
++	unsigned long flags;
++
++	spin_lock_irqsave(&lp->lock, flags);
++	memset(&dev->stats, 0, sizeof(struct net_device_stats));
++	spin_unlock_irqrestore(&lp->lock, flags);
++	return 0;
++}
++
+ /* taken from the sunlance driver, which it took from the depca driver */
+ static void pcnet32_load_multicast(struct net_device *dev)
+ {
