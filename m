@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYE3NzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbYE3N5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbYE3NzZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 09:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYE3NzP
+	id S1754750AbYE3N5c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 09:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbYE3N5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 09:55:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:55462 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751951AbYE3NzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 09:55:14 -0400
-Date: Fri, 30 May 2008 15:54:06 +0200
-From: Hugh Blemings <hugh@blemings.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org, hugh@misc.nu, greg@kroah.com
-Subject: Re: [PATCH] keyspan: use request_firmware()
-Message-Id: <20080530155406.b0f2a505.hugh@blemings.org>
-In-Reply-To: <1212147933.7948.8.camel@shinybook.infradead.org>
-References: <1211708969@pmac.infradead.org>
-	<1212147933.7948.8.camel@shinybook.infradead.org>
-X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	Fri, 30 May 2008 09:57:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49966 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbYE3N5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 09:57:23 -0400
+Date: Fri, 30 May 2008 06:57:17 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Guntsche Michael <mike@it-loops.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.x: Wrong CPU frequency (cpufreq table) with p4-clockmod
+Message-ID: <20080530065717.44cf7414@infradead.org>
+In-Reply-To: <12C649C0-4BEF-41F1-B738-8C8CEF8AEBB8@it-loops.com>
+References: <12C649C0-4BEF-41F1-B738-8C8CEF8AEBB8@it-loops.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 May 2008 14:45:33 +0300
-David Woodhouse <dwmw2@infradead.org> wrote:
+On Fri, 30 May 2008 15:44:55 +0200
+Guntsche Michael <mike@it-loops.com> wrote:
 
-[...]
+> Since the server is idling most of the time I enabled the ondemand  
+> governor and installed p4-clockmod. I read that this is not the best  
+> solution but acpi-cpufreq is not working for me.
 
-ACK
+... and it's not the best solution because it's not saving you any
+energy...
+(in fact it may cost you some)
 
-Seems reasonable to me, though I wouldn't claim to be particularly authoritative on such matters these days :)
-
-Cheers,
-Hugh
+p4-clockmod should go away.
+(at least as cpufreq driver)
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
