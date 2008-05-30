@@ -1,123 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYE3FKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYE3FK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbYE3FKe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYE3FKS
+	id S1759428AbYE3FK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756259AbYE3FK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:10:18 -0400
-Received: from pxy2nd.nifty.com ([202.248.175.14]:8899 "HELO pxy2nd.nifty.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751819AbYE3FKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:10:16 -0400
-X-Nifty-SrcIP: [202.219.140.221]
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=pxy2nd-default; d=mbf.nifty.com;
-  b=DzpufhQ76b5Lydx/N8sCs1v5KxCkQnKKWHGlYbcninpGhGdyV4+27vF0QElQaexg3/AIVhFw6BKweiFXIDUwCQ==  ;
-Date: Fri, 30 May 2008 14:01:40 +0900 (JST)
-Message-Id: <20080530.140140.193692749.takada@mbf.nifty.com>
-To: bzolnier@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-From: TAKADA Yoshihito <takada@mbf.nifty.com>
-In-Reply-To: <200805150028.04625.bzolnier@gmail.com>
-References: <20080509.215601.208967867.takada@mbf.nifty.com>
-	<200805142244.48548.bzolnier@gmail.com>
-	<200805150028.04625.bzolnier@gmail.com>
-X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 30 May 2008 01:10:27 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:34209 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755968AbYE3FK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 01:10:26 -0400
+Date: Thu, 29 May 2008 22:10:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [patch 02/41] cpu alloc: The allocator
+In-Reply-To: <20080529215833.469c3cbe.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805292203240.12107@schroedinger.engr.sgi.com>
+References: <20080530035620.587204923@sgi.com> <20080530040011.084909898@sgi.com>
+ <20080529215833.469c3cbe.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-Date: Thu, 15 May 2008 00:28:04 +0200
+On Thu, 29 May 2008, Andrew Morton wrote:
 
-Hi. sorry, I'm too late.
-I tested the patch to re-enable DMA. But, this patch has no effect. It cannot boot.
-printk() message disappeared.
+> > +config CPU_ALLOC_SIZE
+> > +	int "Size of cpu alloc area"
+> > +	default "30000"
+> 
+> strange choice of a default?  I guess it makes it clear that there's no
+> particular advantage in making it a power-of-two or anything like that.
 
-> On Wednesday 14 May 2008, Bartlomiej Zolnierkiewicz wrote:
-> > On Friday 09 May 2008, TAKADA Yoshihito wrote:
-> > > Hi.
-> > > 
-> > > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-> > > Date: Fri, 9 May 2008 11:27:53 +0200
-> > > 
-> > > > On Friday 09 May 2008, TAKADA Yoshihito wrote:
-> > > > > Thanks for quick reply.
-> > > > > 
-> > > > > I tried 2.6.26rc1. It hangs same as 2.6.25.
-> > > > > kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
-> > > > > It seems 2nd port DMA base issue was solved.
-> > > > 
-> > > > [...]
-> > > > 
-> > > > Thanks.
-> > > > 
-> > > > The following patch for 2.6.26-rc1 disables VDMA, please give it a try
-> > > > (I haven't time to fully audit VDMA support yet but lets see if it is
-> > > > the main source of the problems).
-> > > 
-> > > I applied the patch. But kernel was hung.
-> > > And I attempt to kill IDE_HFLAG_CS5520. It cannot boot, oo.
-> > > 
-> > >   kill IDE_HFLAG_VDMA  : hang  
-> > >   kill IDE_HFLAG_CS5520: hang
-> > >   kill both flags      : boot
-> > 
-> > Thanks for investigating this - I forgot that currently VDMA and CS5520
-> > host flags use the same bit (so it also needs to be fixed).
-> > 
-> > I'm going to send the following patch to Linus (please verify it):
-> > 
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] cs5520: disable VDMA
+The cpu alloc has a cpu_bytes field in vmstat that shows how much memory 
+is being used. 30000 seemed to be reasonable after staring at these 
+numbers for awhile.
+
+> > +static int size_to_units(unsigned long size)
+> > +{
+> > +	return DIV_ROUND_UP(size, UNIT_SIZE);
+> > +}
 > 
-> [...]
+> Perhaps it should return UNIT_TYPE? (ugh).
+
+No. The UNIT_TYPE is the basic allocation unit. This returns the number of 
+allocation units.
+ 
+> I guess there's no need to ever change that type, so no?
+
+We could go to finer or coarser grained someday? Maybe if the area becomes 
+1M of size of so we could go to 8 bytes?
+
+> > +static DEFINE_SPINLOCK(cpu_alloc_map_lock);
+> > +static DECLARE_BITMAP(cpu_alloc_map, UNITS);
+> > +static int first_free;		/* First known free unit */
 > 
-> Please also try 2.6.26-rc2 without the above patch but with the following
-> patch applied instead - according to comments in OpenFirmware & pata_cs5520
-> code 0x60 register contains bus-master enable bit, it could be that it was
-> left disabled by BIOS and we need to explicitely enable it (if somebody has
-> CX5510 or CX5520 datasheet please verify this + send me a copy if possible).
+> Would be nicer to move these above size_to_units(), IMO.
+
+size_to_units is fairly basic for most of the logic. These are variaables 
+that manage the allocator state.
+
+> > +static void set_map(int start, int length)
+> > +{
+> > +	while (length-- > 0)
+> > +		__set_bit(start++, cpu_alloc_map);
+> > +}
 > 
-> ---
->  drivers/ide/pci/cs5520.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
+> bitmap_fill()?
+
+Good idea.
+
+> > + */
+> > +static void clear_map(int start, int length)
+> > +{
+> > +	while (length-- > 0)
+> > +		__clear_bit(start++, cpu_alloc_map);
+> > +}
 > 
-> Index: b/drivers/ide/pci/cs5520.c
-> ===================================================================
-> --- a/drivers/ide/pci/cs5520.c
-> +++ b/drivers/ide/pci/cs5520.c
-> @@ -147,6 +147,7 @@ static int __devinit cs5520_init_one(str
->  {
->  	const struct ide_port_info *d = &cyrix_chipsets[id->driver_data];
->  	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
-> +	u8 pcicfg;
->  
->  	ide_setup_pci_noise(dev, d);
->  
-> @@ -163,6 +164,13 @@ static int __devinit cs5520_init_one(str
->  		return -ENODEV;
->  	}
->  
-> +	pci_read_config_byte(dev, 0x60, &pcicfg);
-> +
-> +	if ((pcicfg & 0x40) == 0) {
-> +		printk(KERN_WARNING "cs5520: DMA mode disabled. Enabling.\n");
-> +		pci_write_config_byte(dev, 0x60, pcicfg | 0x40);
-> +	}
-> +
->  	/*
->  	 *	Now the chipset is configured we can let the core
->  	 *	do all the device setup for us
+> bitmap_zero()?
+
+Ditto.
+
+> > +	if (!size)
+> > +		return ZERO_SIZE_PTR;
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> OK, so we reuse ZERO_SIZE_PTR from kmalloc.
+
+Well yes slab convention...
+
+> > +		start++;
+> > +		first = 0;
+> > +	}
+> 
+> This is kinda bitmap_find_free_region(), only bitmap_find_free_region()
+> isn't quite strong enough.
+> 
+> Generally I think it would have been better if you had added new
+> primitives to the bitmap library (or enhanced existing ones) and used
+> them here, rather than implementing private functionality.
+
+The scope of the patchset is already fairly large. The search here is 
+different and not performance critical. Not sure if this is useful for 
+other purposes.
+
+> > +
+> > +	BUG_ON(index >= UNITS ||
+> > +		!test_bit(index, cpu_alloc_map) ||
+> > +		!test_bit(index + units - 1, cpu_alloc_map));
+> 
+> If this assertion triggers for someone, you'll wish like hell that it
+> had been implemented as three separate BUG_ONs.
+
+Ok. But in all cases we have an invalid index.
+
+> > + */
+> > +
+> > +/* Return a pointer to the instance of a object for a particular processor */
+> > +#define CPU_PTR(__p, __cpu)	SHIFT_PERCPU_PTR((__p), per_cpu_offset(__cpu))
+> 
+> eek, a major interface function which is ALL IN CAPS!
+> 
+> can we do this in lower-case?  In a C function?
+
+No. This is a macro and therefore uppercase (there is macro magic going on 
+that ppl need to be aware of). AFAICR you wanted it this way last year. C 
+function not possible because of the type checking.
+
