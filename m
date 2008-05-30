@@ -1,232 +1,1050 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYE3IT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYE3IWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbYE3IT2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 04:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYE3ITN
+	id S1754548AbYE3IWz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 04:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbYE3IWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 04:19:13 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39985 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592AbYE3ITJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 04:19:09 -0400
-Date: Fri, 30 May 2008 18:19:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 30
-Message-Id: <20080530181901.8268f317.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U"
+	Fri, 30 May 2008 04:22:38 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:34690 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbYE3IWd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 04:22:33 -0400
+Date: Fri, 30 May 2008 01:22:14 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nadia.Derbey@bull.net
+Cc: manfred@colorfullife.com, lnxninja@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, efault@gmx.de, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/9] Scalability requirements for sysv ipc - v3
+Message-ID: <20080530082214.GD4943@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080507113553.395937000@bull.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080507113553.395937000@bull.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, May 07, 2008 at 01:35:53PM +0200, Nadia.Derbey@bull.net wrote:
+> 
+> After scalability problems have been detected when using the sysV ipcs, I
+> have proposed to use an RCU based implementation of the IDR api instead (see
+> threads http://lkml.org/lkml/2008/4/11/212 and
+> http://lkml.org/lkml/2008/4/29/295).
+> 
+> This resulted in many people asking to convert the idr API and make it
+> rcu safe (because most of the code was duplicated and thus unmaintanable
+> and unreviewable).
+> 
+> So here is a first attempt.
+> 
+> The important change wrt to the idr API itself is during idr removes:
+> idr layers are freed after a grace period, instead of being moved to the
+> free list.
+> 
+> The important change wrt to ipcs, is that idr_find() can now be called
+> locklessly inside a rcu read critical section.
+> 
+> Here are the results I've got for the pmsg test sent by Manfred: 
+> 
+>    2.6.25-rc3-mm1   2.6.25-rc3-mm1+   2.6.25-mm1   Patched 2.6.25-mm1
+> 1         1168441           1064021       876000               947488
+> 2         1094264            921059      1549592              1730685
+> 3         2082520           1738165      1694370              2324880
+> 4         2079929           1695521       404553              2400408
+> 5         2898758            406566       391283              3246580
+> 6         2921417            261275       263249              3752148
+> 7         3308761            126056       191742              4243142
+> 8         3329456            100129       141722              4275780
+> 
+> 1st column: stock 2.6.25-rc3-mm1
+> 2nd column: 2.6.25-rc3-mm1 + ipc patches (store ipcs into idrs)
+> 3nd column: stock 2.6.25-mm1
+> 4th column: 2.6.25-mm1 + this pacth series.
+> 
+> I'll send a chart as an answer to this mail: don't know how to do that
+> with quilt :-(
+> 
+> 
+> Reviewers are more than ever welcome!
+> 
+> Patches should be applied on linux-2.6.25-mm1, in the following order:
+> 
+> [ PATCH 01/09 ] : idr_add_rcu_head.patch
+> [ PATCH 02/09 ] : idr_rename_routines.patch
+> [ PATCH 03/09 ] : idr_fix_printk.patch
+> [ PATCH 04/09 ] : idr_rc_to_errno.patch
+> [ PATCH 05/09 ] : idr_get_new_rcu_safe.patch
+> [ PATCH 06/09 ] : idr_find_rcu_safe.patch
+> [ PATCH 07/09 ] : idr_remove_rcu_safe.patch
+> [ PATCH 08/09 ] : ipc_fix_ipc_lock.patch
+> [ PATCH 09/09 ] : remove_ipc_lock_down.patch
+> 
+> Patches 2, 3 and 4 do not introduce actual changes.
+> 
+> I won't be available before next Tuesday, so, please, don't be mad at me if
+> I'm not answering fast enough.
 
-Hi all,
+I guess in my case, next Tuesday was not an issue.  :-/
 
-Changes since next-20080529:
+Anyway, the idr.c changes look good to me.  Not sure why you are using
+INIT_RCU_HEAD() given that call_rcu() completely initializes the fields.
+Using INIT_RCU_HEAD() doesn't cause any problems, but does add needless
+code.
 
-The ide tree got a build failure that required several newly out of lined
-routines to be exported.
+Commentary below, looks good from an RCU viewpoint.
 
-The rr tree picked up another conflict with the driver-core tree.
+							Thanx, Paul
 
-The semaphore-removal tree still needed three patches reverted because simi=
-lar
-patches were merged into upstream and the scsi-rc-fixes trees.
+> /*
+>  * 2002-10-18  written by Jim Houston jim.houston@ccur.com
+>  *	Copyright (C) 2002 by Concurrent Computer Corporation
+>  *	Distributed under the GNU GPL license version 2.
+>  *
+>  * Modified by George Anzinger to reuse immediately and to use
+>  * find bit instructions.  Also removed _irq on spinlocks.
+>  *
+>  * Modified by Nadia Derbey to make it RCU safe.
+>  *
+>  * Small id to pointer translation service.
+>  *
+>  * It uses a radix tree like structure as a sparse array indexed
+>  * by the id to obtain the pointer.  The bitmap makes allocating
+>  * a new id quick.
+>  *
+>  * You call it to allocate an id (an int) an associate with that id a
+>  * pointer or what ever, we treat it as a (void *).  You can pass this
+>  * id to a user for him to pass back at a later time.  You then pass
+>  * that id to this code and it returns your pointer.
+> 
+>  * You can release ids at any time. When all ids are released, most of
+>  * the memory is returned (we keep IDR_FREE_MAX) in a local pool so we
+>  * don't need to go to the memory "store" during an id allocate, just
+>  * so you don't need to be too concerned about locking and conflicts
+>  * with the slab allocator.
+>  */
+> 
+> #ifndef TEST                        // to test in user space...
+> #include <linux/slab.h>
+> #include <linux/init.h>
+> #include <linux/module.h>
+> #endif
+> #include <linux/err.h>
+> #include <linux/string.h>
+> #include <linux/idr.h>
+> 
+> static struct kmem_cache *idr_layer_cache;
+> 
+> static struct idr_layer *get_from_free_list(struct idr *idp)
+> {
+> 	struct idr_layer *p;
+> 	unsigned long flags;
+> 
+> 	spin_lock_irqsave(&idp->lock, flags);
+> 	if ((p = idp->id_free)) {
+> 		idp->id_free = p->ary[0];
+> 		idp->id_free_cnt--;
+> 		p->ary[0] = NULL;
 
-I have applied the following temporary patch for known build problems:
+OK, this is the freelist which is inaccessible to readers.
 
-	"Fix various 8390 builds" - the net tree broke builds on various
-architectures - hopefully this patch will go into the net tree shortly.
-	"hil_kbd: restore pci_ids.h" - this is to fix a patch in the
-semaphore tree and hopefully will be fixed there shortly.
+> 	}
+> 	spin_unlock_irqrestore(&idp->lock, flags);
+> 	return(p);
+> }
+> 
+> static void idr_layer_rcu_free(struct rcu_head *head)
+> {
+> 	struct idr_layer *layer;
+> 
+> 	layer = container_of(head, struct idr_layer, rcu_head);
+> 	kmem_cache_free(idr_layer_cache, layer);
+> }
+> 
+> static inline void free_layer(struct idr_layer *p)
+> {
+> 	call_rcu(&p->rcu_head, idr_layer_rcu_free);
+> }
+> 
+> /* only called when idp->lock is held */
+> static void __move_to_free_list(struct idr *idp, struct idr_layer *p)
+> {
+> 	p->ary[0] = idp->id_free;
 
-The "sparc: fallout from pci_name() constifying" patch is no longer needed.
+OK, this is the freelist which is inaccessible to readers.
 
-----------------------------------------------------------------------------
+> 	idp->id_free = p;
+> 	idp->id_free_cnt++;
+> }
+> 
+> static void move_to_free_list(struct idr *idp, struct idr_layer *p)
+> {
+> 	unsigned long flags;
+> 
+> 	/*
+> 	 * Depends on the return element being zeroed.
+> 	 */
+> 	spin_lock_irqsave(&idp->lock, flags);
+> 	__move_to_free_list(idp, p);
+> 	spin_unlock_irqrestore(&idp->lock, flags);
+> }
+> 
+> static void idr_mark_full(struct idr_layer **pa, int id)
+> {
+> 	struct idr_layer *p = pa[0];
+> 	int l = 0;
+> 
+> 	__set_bit(id & IDR_MASK, &p->bitmap);
+> 	/*
+> 	 * If this layer is full mark the bit in the layer above to
+> 	 * show that this part of the radix tree is full.  This may
+> 	 * complete the layer above and require walking up the radix
+> 	 * tree.
+> 	 */
+> 	while (p->bitmap == IDR_FULL) {
+> 		if (!(p = pa[++l]))
+> 			break;
+> 		id = id >> IDR_BITS;
+> 		__set_bit((id & IDR_MASK), &p->bitmap);
+> 	}
+> }
+> 
+> /**
+>  * idr_pre_get - reserver resources for idr allocation
+>  * @idp:	idr handle
+>  * @gfp_mask:	memory allocation flags
+>  *
+>  * This function should be called prior to locking and calling the
+>  * idr_get_new* functions. It preallocates enough memory to satisfy
+>  * the worst possible allocation.
+>  *
+>  * If the system is REALLY out of memory this function returns 0,
+>  * otherwise 1.
+>  */
+> int idr_pre_get(struct idr *idp, gfp_t gfp_mask)
+> {
+> 	while (idp->id_free_cnt < IDR_FREE_MAX) {
+> 		struct idr_layer *new;
+> 		new = kmem_cache_alloc(idr_layer_cache, gfp_mask);
+> 		if (new == NULL)
+> 			return (0);
+> 		move_to_free_list(idp, new);
+> 	}
+> 	return 1;
+> }
+> EXPORT_SYMBOL(idr_pre_get);
+> 
+> static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
+> {
+> 	int n, m, sh;
+> 	struct idr_layer *p, *new;
+> 	int l, id, oid;
+> 	unsigned long bm;
+> 
+> 	id = *starting_id;
+>  restart:
+> 	p = idp->top;
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+OK, the caller presumably holds an update-side lock.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+> 	l = idp->layers;
+> 	pa[l--] = NULL;
+> 	while (1) {
+> 		/*
+> 		 * We run around this while until we reach the leaf node...
+> 		 */
+> 		n = (id >> (IDR_BITS*l)) & IDR_MASK;
+> 		bm = ~p->bitmap;
+> 		m = find_next_bit(&bm, IDR_SIZE, n);
+> 		if (m == IDR_SIZE) {
+> 			/* no space available go back to previous layer. */
+> 			l++;
+> 			oid = id;
+> 			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
+> 
+> 			/* if already at the top layer, we need to grow */
+> 			if (!(p = pa[l])) {
+> 				*starting_id = id;
+> 				return IDR_NEED_TO_GROW;
+> 			}
+> 
+> 			/* If we need to go up one layer, continue the
+> 			 * loop; otherwise, restart from the top.
+> 			 */
+> 			sh = IDR_BITS * (l + 1);
+> 			if (oid >> sh == id >> sh)
+> 				continue;
+> 			else
+> 				goto restart;
+> 		}
+> 		if (m != n) {
+> 			sh = IDR_BITS*l;
+> 			id = ((id >> sh) ^ n ^ m) << sh;
+> 		}
+> 		if ((id >= MAX_ID_BIT) || (id < 0))
+> 			return IDR_NOMORE_SPACE;
+> 		if (l == 0)
+> 			break;
+> 		/*
+> 		 * Create the layer below if it is missing.
+> 		 */
+> 		if (!p->ary[m]) {
 
-Below is a summary of the state of the merge.
+OK, we aren't dereferencing.  Besides, we should hold the update-side
+lock at this point.
 
-We are up to 81 trees (counting Linus' and 13 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+> 			new = get_from_free_list(idp);
+> 			if (!new)
+> 				return -1;
+> 			INIT_RCU_HEAD(&new->rcu_head);
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
+Not needed, unless you want this zeroed for debug purposes.
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
+> 			rcu_assign_pointer(p->ary[m], new);
+> 			p->count++;
+> 		}
+> 		pa[l--] = p;
+> 		p = p->ary[m];
 
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+Holding update-side lock.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> 	}
+> 
+> 	pa[l] = p;
+> 	return id;
+> }
+> 
+> static int idr_get_empty_slot(struct idr *idp, int starting_id,
+> 			      struct idr_layer **pa)
+> {
+> 	struct idr_layer *p, *new;
+> 	int layers, v, id;
+> 	unsigned long flags;
+> 
+> 	id = starting_id;
+> build_up:
+> 	p = idp->top;
 
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging quilt/driver-core
-Merging quilt/usb
-Merging x86/auto-x86-next
-Merging sched/auto-sched-next
-Merging ftrace/auto-ftrace-next
-Applying ftrace: fix rculist split fallout
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in drivers/base/power/main.c
-CONFLICT (content): Merge conflict in include/linux/device.h
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/i2c-core.c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_eckd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_fba.c
-CONFLICT (content): Merge conflict in drivers/s390/char/tape_core.c
-CONFLICT (content): Merge conflict in drivers/s390/cio/device_fsm.c
-CONFLICT (content): Merge conflict in drivers/s390/net/claw.c
-CONFLICT (content): Merge conflict in drivers/s390/net/ctcm_main.c
-CONFLICT (content): Merge conflict in drivers/s390/net/lcs.c
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Applying ide: ide-timing.h fallout
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging hrt/mm
-Merging lblnet/master
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/main.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2x00dev=
-.c
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-Merging sound/master
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/s390/kvm/kvm_virtio.c
-CONFLICT (content): Merge conflict in drivers/virtio/virtio.c
-CONFLICT (content): Merge conflict in drivers/virtio/virtio_pci.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging rcu/core/rcu
-Merging locking/core/locking
-Merging safe-poison-pointers/safe-poison-pointers
-Merging stackprotector/stackprotector
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
-CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
-$ git reset --hard
-$ git checkout -b tmp semaphore-removal/semaphore-removal
-Created commit 50e0404: Revert "Convert qla_os to use mutex instead of sema=
-phore"
-Created commit cde17a2: Revert "9p: Convert from semaphore to spinlock"
-Created commit 18b7168: Revert "qla2xxx: Turn vport_sem into vport_mutex"
-$ git checkout master
-CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
-Merging quilt/ldp.next
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-Merging ubifs/for_andrew
-Applying Fix various 8390 builds
-Applying hil_kbd: restore pci_ids.h
+OK, the caller presumably holds an update-side lock.
 
---Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U
-Content-Type: application/pgp-signature
+> 	layers = idp->layers;
+> 	if (unlikely(!p)) {
+> 		if (!(p = get_from_free_list(idp)))
+> 			return -1;
+> 		INIT_RCU_HEAD(&p->rcu_head);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Not needed, unless you want this zeroed for debug purposes.
 
-iD8DBQFIP7h5TgG2atn1QN8RAocbAKCBhomxF8/n3Qne6WcfTd8/B4ijSwCfTsxl
-MSvXAXmLbsAAlSicgJEcbWE=
-=CJIo
------END PGP SIGNATURE-----
+> 		layers = 1;
+> 	}
+> 	/*
+> 	 * Add a new layer to the top of the tree if the requested
+> 	 * id is larger than the currently allocated space.
+> 	 */
+> 	while ((layers < (MAX_LEVEL - 1)) && (id >= (1 << (layers*IDR_BITS)))) {
+> 		layers++;
+> 		if (!p->count)
+> 			continue;
+> 		if (!(new = get_from_free_list(idp))) {
+> 			/*
+> 			 * The allocation failed.  If we built part of
+> 			 * the structure tear it down.
+> 			 */
+> 			spin_lock_irqsave(&idp->lock, flags);
+> 			for (new = p; p && p != idp->top; new = p) {
+> 				p = p->ary[0];
+> 				new->ary[0] = NULL;
 
---Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U--
+OK, this presumably has not yet been made accessible to readers.
+
+> 				new->bitmap = new->count = 0;
+> 				__move_to_free_list(idp, new);
+> 			}
+> 			spin_unlock_irqrestore(&idp->lock, flags);
+> 			return -1;
+> 		}
+> 		new->ary[0] = p;
+
+OK, this presumably has not yet been made accessible to readers.
+
+> 		new->count = 1;
+> 		INIT_RCU_HEAD(&new->rcu_head);
+
+Not needed, unless you want this zeroed for debug purposes.
+
+> 		if (p->bitmap == IDR_FULL)
+> 			__set_bit(0, &new->bitmap);
+> 		p = new;
+> 	}
+> 	rcu_assign_pointer(idp->top, p);
+> 	idp->layers = layers;
+> 	v = sub_alloc(idp, &id, pa);
+> 	if (v == IDR_NEED_TO_GROW)
+> 		goto build_up;
+> 	return(v);
+> }
+> 
+> static int idr_get_new_above_int(struct idr *idp, void *ptr, int starting_id)
+> {
+> 	struct idr_layer *pa[MAX_LEVEL];
+> 	int id;
+> 
+> 	id = idr_get_empty_slot(idp, starting_id, pa);
+> 	if (id >= 0) {
+> 		/*
+> 		 * Successfully found an empty slot.  Install the user
+> 		 * pointer and mark the slot full.
+> 		 */
+> 		rcu_assign_pointer(pa[0]->ary[id & IDR_MASK],
+> 				(struct idr_layer *)ptr);
+> 		pa[0]->count++;
+> 		idr_mark_full(pa, id);
+> 	}
+> 
+> 	return id;
+> }
+> 
+> /**
+>  * idr_get_new_above - allocate new idr entry above or equal to a start id
+>  * @idp: idr handle
+>  * @ptr: pointer you want associated with the ide
+>  * @start_id: id to start search at
+>  * @id: pointer to the allocated handle
+>  *
+>  * This is the allocate id function.  It should be called with any
+>  * required locks.
+>  *
+>  * If memory is required, it will return -EAGAIN, you should unlock
+>  * and go back to the idr_pre_get() call.  If the idr is full, it will
+>  * return -ENOSPC.
+>  *
+>  * @id returns a value in the range 0 ... 0x7fffffff
+>  */
+> int idr_get_new_above(struct idr *idp, void *ptr, int starting_id, int *id)
+> {
+> 	int rv;
+> 
+> 	rv = idr_get_new_above_int(idp, ptr, starting_id);
+> 	/*
+> 	 * This is a cheap hack until the IDR code can be fixed to
+> 	 * return proper error values.
+> 	 */
+> 	if (rv < 0)
+> 		return _idr_rc_to_errno(rv);
+> 	*id = rv;
+> 	return 0;
+> }
+> EXPORT_SYMBOL(idr_get_new_above);
+> 
+> /**
+>  * idr_get_new - allocate new idr entry
+>  * @idp: idr handle
+>  * @ptr: pointer you want associated with the ide
+>  * @id: pointer to the allocated handle
+>  *
+>  * This is the allocate id function.  It should be called with any
+>  * required locks.
+>  *
+>  * If memory is required, it will return -EAGAIN, you should unlock
+>  * and go back to the idr_pre_get() call.  If the idr is full, it will
+>  * return -ENOSPC.
+>  *
+>  * @id returns a value in the range 0 ... 0x7fffffff
+>  */
+> int idr_get_new(struct idr *idp, void *ptr, int *id)
+> {
+> 	int rv;
+> 
+> 	rv = idr_get_new_above_int(idp, ptr, 0);
+> 	/*
+> 	 * This is a cheap hack until the IDR code can be fixed to
+> 	 * return proper error values.
+> 	 */
+> 	if (rv < 0)
+> 		return _idr_rc_to_errno(rv);
+> 	*id = rv;
+> 	return 0;
+> }
+> EXPORT_SYMBOL(idr_get_new);
+> 
+> static void idr_remove_warning(int id)
+> {
+> 	printk(KERN_WARNING
+> 		"idr_remove called for id=%d which is not allocated.\n", id);
+> 	dump_stack();
+> }
+> 
+> static void sub_remove(struct idr *idp, int shift, int id)
+> {
+> 	struct idr_layer *p = idp->top;
+
+OK, the caller presumably holds an update-side lock.
+
+> 	struct idr_layer **pa[MAX_LEVEL];
+> 	struct idr_layer ***paa = &pa[0];
+> 	struct idr_layer *to_free;
+> 	int n;
+> 
+> 	*paa = NULL;
+> 	*++paa = &idp->top;
+> 
+> 	while ((shift > 0) && p) {
+> 		n = (id >> shift) & IDR_MASK;
+> 		__clear_bit(n, &p->bitmap);
+> 		*++paa = &p->ary[n];
+
+OK, the caller presumably holds an update-side lock.
+
+> 		p = p->ary[n];
+> 		shift -= IDR_BITS;
+> 	}
+> 	n = id & IDR_MASK;
+> 	if (likely(p != NULL && test_bit(n, &p->bitmap))){
+> 		__clear_bit(n, &p->bitmap);
+> 		rcu_assign_pointer(p->ary[n], NULL);
+> 		to_free = NULL;
+> 		while(*paa && ! --((**paa)->count)){
+> 			if (to_free)
+> 				free_layer(to_free);
+> 			to_free = **paa;
+> 			**paa-- = NULL;
+> 		}
+> 		if (!*paa)
+> 			idp->layers = 0;
+> 		if (to_free)
+> 			free_layer(to_free);
+> 	} else
+> 		idr_remove_warning(id);
+> }
+> 
+> /**
+>  * idr_remove - remove the given id and free it's slot
+>  * @idp: idr handle
+>  * @id: unique key
+>  */
+> void idr_remove(struct idr *idp, int id)
+> {
+> 	struct idr_layer *p;
+> 	struct idr_layer *to_free;
+> 
+> 	/* Mask off upper bits we don't use for the search. */
+> 	id &= MAX_ID_MASK;
+> 
+> 	sub_remove(idp, (idp->layers - 1) * IDR_BITS, id);
+> 	if (idp->top && idp->top->count == 1 && (idp->layers > 1) &&
+> 	    idp->top->ary[0]) {
+
+OK, the caller presumably holds the update-side lock.
+
+> 		/*
+> 		 * Single child at leftmost slot: we can shrink the tree.
+> 		 * This level is not needed anymore since when layers are
+> 		 * inserted, they are inserted at the top of the existing
+> 		 * tree.
+> 		 */
+> 		to_free = idp->top;
+> 		p = idp->top->ary[0];
+
+OK, the caller presumably holds the update-side lock.
+
+> 		rcu_assign_pointer(idp->top, p);
+> 		--idp->layers;
+> 		to_free->bitmap = to_free->count = 0;
+> 		free_layer(to_free);
+> 	}
+> 	while (idp->id_free_cnt >= IDR_FREE_MAX) {
+> 		p = get_from_free_list(idp);
+> 		/*
+> 		 * Note: we don't call the rcu callback here, since the only
+> 		 * layers that fall into the freelist are those that have been
+> 		 * preallocated.
+> 		 */
+> 		kmem_cache_free(idr_layer_cache, p);
+> 	}
+> 	return;
+> }
+> EXPORT_SYMBOL(idr_remove);
+> 
+> /**
+>  * idr_remove_all - remove all ids from the given idr tree
+>  * @idp: idr handle
+>  *
+>  * idr_destroy() only frees up unused, cached idp_layers, but this
+>  * function will remove all id mappings and leave all idp_layers
+>  * unused.
+>  *
+>  * A typical clean-up sequence for objects stored in an idr tree, will
+>  * use idr_for_each() to free all objects, if necessay, then
+>  * idr_remove_all() to remove all ids, and idr_destroy() to free
+>  * up the cached idr_layers.
+>  */
+> void idr_remove_all(struct idr *idp)
+> {
+> 	int n, id, max;
+> 	struct idr_layer *p;
+> 	struct idr_layer *pa[MAX_LEVEL];
+> 	struct idr_layer **paa = &pa[0];
+> 
+> 	n = idp->layers * IDR_BITS;
+> 	p = idp->top;
+
+OK, the caller presumably holds an update-side lock.
+
+> 	max = 1 << n;
+> 
+> 	id = 0;
+> 	while (id < max) {
+> 		while (n > IDR_BITS && p) {
+> 			n -= IDR_BITS;
+> 			*paa++ = p;
+> 			p = p->ary[(id >> n) & IDR_MASK];
+
+OK, the caller presumably holds the update-side lock.
+
+> 		}
+> 
+> 		id += 1 << n;
+> 		while (n < fls(id)) {
+> 			if (p)
+> 				free_layer(p);
+> 			n += IDR_BITS;
+> 			p = *--paa;
+> 		}
+> 	}
+> 	rcu_assign_pointer(idp->top, NULL);
+> 	idp->layers = 0;
+> }
+> EXPORT_SYMBOL(idr_remove_all);
+> 
+> /**
+>  * idr_destroy - release all cached layers within an idr tree
+>  * idp: idr handle
+>  */
+> void idr_destroy(struct idr *idp)
+> {
+> 	while (idp->id_free_cnt) {
+> 		struct idr_layer *p = get_from_free_list(idp);
+> 		kmem_cache_free(idr_layer_cache, p);
+> 	}
+> }
+> EXPORT_SYMBOL(idr_destroy);
+> 
+> /**
+>  * idr_find - return pointer for given id
+>  * @idp: idr handle
+>  * @id: lookup key
+>  *
+>  * Return the pointer given the id it has been registered with.  A %NULL
+>  * return indicates that @id is not valid or you passed %NULL in
+>  * idr_get_new().
+>  *
+>  * This function can be called under rcu_read_lock(), given that the leaf
+>  * pointers lifetimes are correctly managed.
+>  */
+> void *idr_find(struct idr *idp, int id)
+> {
+> 	int n;
+> 	struct idr_layer *p;
+> 
+> 	n = idp->layers * IDR_BITS;
+> 	p = rcu_dereference(idp->top);
+> 
+> 	/* Mask off upper bits we don't use for the search. */
+> 	id &= MAX_ID_MASK;
+> 
+> 	if (id >= (1 << n))
+> 		return NULL;
+> 
+> 	while (n > 0 && p) {
+> 		n -= IDR_BITS;
+> 		p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+> 	}
+> 	return((void *)p);
+> }
+> EXPORT_SYMBOL(idr_find);
+> 
+> /**
+>  * idr_for_each - iterate through all stored pointers
+>  * @idp: idr handle
+>  * @fn: function to be called for each pointer
+>  * @data: data passed back to callback function
+>  *
+>  * Iterate over the pointers registered with the given idr.  The
+>  * callback function will be called for each pointer currently
+>  * registered, passing the id, the pointer and the data pointer passed
+>  * to this function.  It is not safe to modify the idr tree while in
+>  * the callback, so functions such as idr_get_new and idr_remove are
+>  * not allowed.
+>  *
+>  * We check the return of @fn each time. If it returns anything other
+>  * than 0, we break out and return that value.
+>  *
+>  * The caller must serialize idr_for_each() vs idr_get_new() and idr_remove().
+>  */
+> int idr_for_each(struct idr *idp,
+> 		 int (*fn)(int id, void *p, void *data), void *data)
+> {
+> 	int n, id, max, error = 0;
+> 	struct idr_layer *p;
+> 	struct idr_layer *pa[MAX_LEVEL];
+> 	struct idr_layer **paa = &pa[0];
+> 
+> 	n = idp->layers * IDR_BITS;
+> 	p = rcu_dereference(idp->top);
+> 	max = 1 << n;
+> 
+> 	id = 0;
+> 	while (id < max) {
+> 		while (n > 0 && p) {
+> 			n -= IDR_BITS;
+> 			*paa++ = p;
+> 			p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+> 		}
+> 
+> 		if (p) {
+> 			error = fn(id, (void *)p, data);
+> 			if (error)
+> 				break;
+> 		}
+> 
+> 		id += 1 << n;
+> 		while (n < fls(id)) {
+> 			n += IDR_BITS;
+> 			p = *--paa;
+> 		}
+> 	}
+> 
+> 	return error;
+> }
+> EXPORT_SYMBOL(idr_for_each);
+> 
+> /**
+>  * idr_replace - replace pointer for given id
+>  * @idp: idr handle
+>  * @ptr: pointer you want associated with the id
+>  * @id: lookup key
+>  *
+>  * Replace the pointer registered with an id and return the old value.
+>  * A -ENOENT return indicates that @id was not found.
+>  * A -EINVAL return indicates that @id was not within valid constraints.
+>  *
+>  * The caller must serialize with writers.
+>  */
+> void *idr_replace(struct idr *idp, void *ptr, int id)
+> {
+> 	int n;
+> 	struct idr_layer *p, *old_p;
+> 
+> 	n = idp->layers * IDR_BITS;
+> 	p = idp->top;
+
+OK, the caller presumably holds an update-side lock.
+
+> 
+> 	id &= MAX_ID_MASK;
+> 
+> 	if (id >= (1 << n))
+> 		return ERR_PTR(-EINVAL);
+> 
+> 	n -= IDR_BITS;
+> 	while ((n > 0) && p) {
+> 		p = p->ary[(id >> n) & IDR_MASK];
+
+OK, the caller presumably holds the update-side lock.
+
+> 		n -= IDR_BITS;
+> 	}
+> 
+> 	n = id & IDR_MASK;
+> 	if (unlikely(p == NULL || !test_bit(n, &p->bitmap)))
+> 		return ERR_PTR(-ENOENT);
+> 
+> 	old_p = p->ary[n];
+
+OK, the caller presumably holds the update-side lock.
+
+> 	rcu_assign_pointer(p->ary[n], ptr);
+> 
+> 	return old_p;
+> }
+> EXPORT_SYMBOL(idr_replace);
+> 
+> static void idr_cache_ctor(struct kmem_cache *idr_layer_cache, void *idr_layer)
+> {
+> 	memset(idr_layer, 0, sizeof(struct idr_layer));
+> }
+> 
+> void __init idr_init_cache(void)
+> {
+> 	idr_layer_cache = kmem_cache_create("idr_layer_cache",
+> 				sizeof(struct idr_layer), 0, SLAB_PANIC,
+> 				idr_cache_ctor);
+> }
+> 
+> /**
+>  * idr_init - initialize idr handle
+>  * @idp:	idr handle
+>  *
+>  * This function is use to set up the handle (@idp) that you will pass
+>  * to the rest of the functions.
+>  */
+> void idr_init(struct idr *idp)
+> {
+> 	memset(idp, 0, sizeof(struct idr));
+> 	spin_lock_init(&idp->lock);
+> }
+> EXPORT_SYMBOL(idr_init);
+> 
+> 
+> /*
+>  * IDA - IDR based ID allocator
+>  *
+>  * this is id allocator without id -> pointer translation.  Memory
+>  * usage is much lower than full blown idr because each id only
+>  * occupies a bit.  ida uses a custom leaf node which contains
+>  * IDA_BITMAP_BITS slots.
+>  *
+>  * 2007-04-25  written by Tejun Heo <htejun@gmail.com>
+>  */
+> 
+> static void free_bitmap(struct ida *ida, struct ida_bitmap *bitmap)
+> {
+> 	unsigned long flags;
+> 
+> 	if (!ida->free_bitmap) {
+> 		spin_lock_irqsave(&ida->idr.lock, flags);
+> 		if (!ida->free_bitmap) {
+> 			ida->free_bitmap = bitmap;
+> 			bitmap = NULL;
+> 		}
+> 		spin_unlock_irqrestore(&ida->idr.lock, flags);
+> 	}
+> 
+> 	kfree(bitmap);
+> }
+> 
+> /**
+>  * ida_pre_get - reserve resources for ida allocation
+>  * @ida:	ida handle
+>  * @gfp_mask:	memory allocation flag
+>  *
+>  * This function should be called prior to locking and calling the
+>  * following function.  It preallocates enough memory to satisfy the
+>  * worst possible allocation.
+>  *
+>  * If the system is REALLY out of memory this function returns 0,
+>  * otherwise 1.
+>  */
+> int ida_pre_get(struct ida *ida, gfp_t gfp_mask)
+> {
+> 	/* allocate idr_layers */
+> 	if (!idr_pre_get(&ida->idr, gfp_mask))
+> 		return 0;
+> 
+> 	/* allocate free_bitmap */
+> 	if (!ida->free_bitmap) {
+> 		struct ida_bitmap *bitmap;
+> 
+> 		bitmap = kmalloc(sizeof(struct ida_bitmap), gfp_mask);
+> 		if (!bitmap)
+> 			return 0;
+> 
+> 		free_bitmap(ida, bitmap);
+> 	}
+> 
+> 	return 1;
+> }
+> EXPORT_SYMBOL(ida_pre_get);
+> 
+> /**
+>  * ida_get_new_above - allocate new ID above or equal to a start id
+>  * @ida:	ida handle
+>  * @staring_id:	id to start search at
+>  * @p_id:	pointer to the allocated handle
+>  *
+>  * Allocate new ID above or equal to @ida.  It should be called with
+>  * any required locks.
+>  *
+>  * If memory is required, it will return -EAGAIN, you should unlock
+>  * and go back to the ida_pre_get() call.  If the ida is full, it will
+>  * return -ENOSPC.
+>  *
+>  * @p_id returns a value in the range 0 ... 0x7fffffff.
+>  */
+> int ida_get_new_above(struct ida *ida, int starting_id, int *p_id)
+> {
+> 	struct idr_layer *pa[MAX_LEVEL];
+> 	struct ida_bitmap *bitmap;
+> 	unsigned long flags;
+> 	int idr_id = starting_id / IDA_BITMAP_BITS;
+> 	int offset = starting_id % IDA_BITMAP_BITS;
+> 	int t, id;
+> 
+>  restart:
+> 	/* get vacant slot */
+> 	t = idr_get_empty_slot(&ida->idr, idr_id, pa);
+> 	if (t < 0)
+> 		return _idr_rc_to_errno(t);
+> 
+> 	if (t * IDA_BITMAP_BITS >= MAX_ID_BIT)
+> 		return -ENOSPC;
+> 
+> 	if (t != idr_id)
+> 		offset = 0;
+> 	idr_id = t;
+> 
+> 	/* if bitmap isn't there, create a new one */
+> 	bitmap = (void *)pa[0]->ary[idr_id & IDR_MASK];
+
+OK, the caller presumably holds the update-side lock.
+
+> 	if (!bitmap) {
+> 		spin_lock_irqsave(&ida->idr.lock, flags);
+> 		bitmap = ida->free_bitmap;
+> 		ida->free_bitmap = NULL;
+> 		spin_unlock_irqrestore(&ida->idr.lock, flags);
+> 
+> 		if (!bitmap)
+> 			return -EAGAIN;
+> 
+> 		memset(bitmap, 0, sizeof(struct ida_bitmap));
+> 		rcu_assign_pointer(pa[0]->ary[idr_id & IDR_MASK],
+> 				(void *)bitmap);
+> 		pa[0]->count++;
+> 	}
+> 
+> 	/* lookup for empty slot */
+> 	t = find_next_zero_bit(bitmap->bitmap, IDA_BITMAP_BITS, offset);
+> 	if (t == IDA_BITMAP_BITS) {
+> 		/* no empty slot after offset, continue to the next chunk */
+> 		idr_id++;
+> 		offset = 0;
+> 		goto restart;
+> 	}
+> 
+> 	id = idr_id * IDA_BITMAP_BITS + t;
+> 	if (id >= MAX_ID_BIT)
+> 		return -ENOSPC;
+> 
+> 	__set_bit(t, bitmap->bitmap);
+> 	if (++bitmap->nr_busy == IDA_BITMAP_BITS)
+> 		idr_mark_full(pa, idr_id);
+> 
+> 	*p_id = id;
+> 
+> 	/* Each leaf node can handle nearly a thousand slots and the
+> 	 * whole idea of ida is to have small memory foot print.
+> 	 * Throw away extra resources one by one after each successful
+> 	 * allocation.
+> 	 */
+> 	if (ida->idr.id_free_cnt || ida->free_bitmap) {
+> 		struct idr_layer *p = get_from_free_list(&ida->idr);
+> 		if (p)
+> 			kmem_cache_free(idr_layer_cache, p);
+> 	}
+> 
+> 	return 0;
+> }
+> EXPORT_SYMBOL(ida_get_new_above);
+> 
+> /**
+>  * ida_get_new - allocate new ID
+>  * @ida:	idr handle
+>  * @p_id:	pointer to the allocated handle
+>  *
+>  * Allocate new ID.  It should be called with any required locks.
+>  *
+>  * If memory is required, it will return -EAGAIN, you should unlock
+>  * and go back to the idr_pre_get() call.  If the idr is full, it will
+>  * return -ENOSPC.
+>  *
+>  * @id returns a value in the range 0 ... 0x7fffffff.
+>  */
+> int ida_get_new(struct ida *ida, int *p_id)
+> {
+> 	return ida_get_new_above(ida, 0, p_id);
+> }
+> EXPORT_SYMBOL(ida_get_new);
+> 
+> /**
+>  * ida_remove - remove the given ID
+>  * @ida:	ida handle
+>  * @id:		ID to free
+>  */
+> void ida_remove(struct ida *ida, int id)
+> {
+> 	struct idr_layer *p = ida->idr.top;
+> 	int shift = (ida->idr.layers - 1) * IDR_BITS;
+> 	int idr_id = id / IDA_BITMAP_BITS;
+> 	int offset = id % IDA_BITMAP_BITS;
+> 	int n;
+> 	struct ida_bitmap *bitmap;
+> 
+> 	/* clear full bits while looking up the leaf idr_layer */
+> 	while ((shift > 0) && p) {
+> 		n = (idr_id >> shift) & IDR_MASK;
+> 		__clear_bit(n, &p->bitmap);
+> 		p = p->ary[n];
+
+OK, the caller presumably holds the update-side lock.
+
+> 		shift -= IDR_BITS;
+> 	}
+> 
+> 	if (p == NULL)
+> 		goto err;
+> 
+> 	n = idr_id & IDR_MASK;
+> 	__clear_bit(n, &p->bitmap);
+> 
+> 	bitmap = (void *)p->ary[n];
+
+OK, the caller presumably holds the update-side lock.
+
+> 	if (!test_bit(offset, bitmap->bitmap))
+> 		goto err;
+> 
+> 	/* update bitmap and remove it if empty */
+> 	__clear_bit(offset, bitmap->bitmap);
+> 	if (--bitmap->nr_busy == 0) {
+> 		__set_bit(n, &p->bitmap);	/* to please idr_remove() */
+> 		idr_remove(&ida->idr, idr_id);
+> 		free_bitmap(ida, bitmap);
+> 	}
+> 
+> 	return;
+> 
+>  err:
+> 	printk(KERN_WARNING
+> 	       "ida_remove called for id=%d which is not allocated.\n", id);
+> }
+> EXPORT_SYMBOL(ida_remove);
+> 
+> /**
+>  * ida_destroy - release all cached layers within an ida tree
+>  * ida:		ida handle
+>  */
+> void ida_destroy(struct ida *ida)
+> {
+> 	idr_destroy(&ida->idr);
+> 	kfree(ida->free_bitmap);
+> }
+> EXPORT_SYMBOL(ida_destroy);
+> 
+> /**
+>  * ida_init - initialize ida handle
+>  * @ida:	ida handle
+>  *
+>  * This function is use to set up the handle (@ida) that you will pass
+>  * to the rest of the functions.
+>  */
+> void ida_init(struct ida *ida)
+> {
+> 	memset(ida, 0, sizeof(struct ida));
+> 	idr_init(&ida->idr);
+> 
+> }
+> EXPORT_SYMBOL(ida_init);
