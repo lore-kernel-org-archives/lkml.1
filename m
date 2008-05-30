@@ -1,147 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYE3UEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYE3Un2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbYE3UEv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 16:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbYE3UDF
+	id S1754116AbYE3Un2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 16:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYE3UnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 16:03:05 -0400
-Received: from saeurebad.de ([85.214.36.134]:60881 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753294AbYE3UDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 16:03:04 -0400
-Message-Id: <20080530194738.582992063@saeurebad.de>
-References: <20080530194220.286976884@saeurebad.de>
-User-Agent: quilt/0.46-1
-Date: Fri, 30 May 2008 21:42:27 +0200
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH -mm 07/14] bootmem: clean up free_all_bootmem_core
-Content-Disposition: inline; filename=bootmem-cleanup-free_all_bootmem.patch
+	Fri, 30 May 2008 16:43:18 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1032 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752879AbYE3UnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 16:43:17 -0400
+Date: Fri, 30 May 2008 22:43:08 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+Message-ID: <20080530204307.GA4978@ucw.cz>
+References: <20080530102619.GA2468@elf.ucw.cz> <Pine.LNX.4.64.0805301451020.19914@blonde.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805301451020.19914@blonde.site>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rewrite the code in a more concise way using less variables.
+Hi!
 
-Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Andi Kleen <andi@firstfloor.org>
----
+> > sync_file_range(SYNC_FILE_RANGE_WRITE) blocks ... which makes problem
+> > for s2disk: there we want to start writeout as early as possible
+> > (system is going to shut down after write, and we need the data on
+> > disk).
+> > 
+> > Unfortuantely, sync_file_range(SYNC_FILE_RANGE_WRITE) blocks, which
+> > does not work for us. Is there non-blocking variant? "Start writeout
+> > on this fd, but don't block me"?
+> 
+> I guess there are lots of reasons why it may block (get rescheduled)
+> briefly, but why would that matter to you?  Are you saying that its
+> whole design has got broken somehow, and now SYNC_FILE_RANGE_WRITE
+> is behaving as if SYNC_FILE_RANGE_WAIT_AFTER had been supplied too?
 
- mm/bootmem.c |   83 +++++++++++++++++++++++++++--------------------------------
- 1 file changed, 38 insertions(+), 45 deletions(-)
+It appears to me like it includes WAIT_AFTER, yes.
 
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -144,66 +144,59 @@ unsigned long __init init_bootmem(unsign
- 
- static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
- {
-+	int aligned;
- 	struct page *page;
--	unsigned long pfn;
--	unsigned long i, count;
--	unsigned long idx, pages;
--	unsigned long *map;
--	int gofast = 0;
--
--	BUG_ON(!bdata->node_bootmem_map);
--
--	count = 0;
--	/* first extant page of the node */
--	pfn = PFN_DOWN(bdata->node_boot_start);
--	idx = bdata->node_low_pfn - pfn;
--	map = bdata->node_bootmem_map;
-+	unsigned long start, end, pages, count = 0;
-+
-+	if (!bdata->node_bootmem_map)
-+		return 0;
-+
-+	start = PFN_DOWN(bdata->node_boot_start);
-+	end = bdata->node_low_pfn;
-+
- 	/*
--	 * Check if we are aligned to BITS_PER_LONG pages.  If so, we might
--	 * be able to free page orders of that size at once.
-+	 * If the start is aligned to the machines wordsize, we might
-+	 * be able to free pages in bulks of that order.
- 	 */
--	if (!(pfn & (BITS_PER_LONG-1)))
--		gofast = 1;
-+	aligned = !(start & (BITS_PER_LONG - 1));
-+
-+	bdebug("nid=%d start=%lx end=%lx aligned=%d\n",
-+		bdata - bootmem_node_data, start, end, aligned);
-+
-+	while (start < end) {
-+		unsigned long *map, idx, vec;
- 
--	for (i = 0; i < idx; ) {
--		unsigned long v = ~map[i / BITS_PER_LONG];
-+		map = bdata->node_bootmem_map;
-+		idx = start - PFN_DOWN(bdata->node_boot_start);
-+		vec = ~map[idx / BITS_PER_LONG];
- 
--		if (gofast && v == ~0UL) {
--			int order;
-+		if (aligned && vec == ~0UL && start + BITS_PER_LONG < end) {
-+			int order = ilog2(BITS_PER_LONG);
- 
--			page = pfn_to_page(pfn);
-+			__free_pages_bootmem(pfn_to_page(start), order);
- 			count += BITS_PER_LONG;
--			order = ffs(BITS_PER_LONG) - 1;
--			__free_pages_bootmem(page, order);
--			i += BITS_PER_LONG;
--			page += BITS_PER_LONG;
--		} else if (v) {
--			unsigned long m;
--
--			page = pfn_to_page(pfn);
--			for (m = 1; m && i < idx; m<<=1, page++, i++) {
--				if (v & m) {
--					count++;
-+		} else {
-+			unsigned long off = 0;
-+
-+			while (vec && off < BITS_PER_LONG) {
-+				if (vec & 1) {
-+					page = pfn_to_page(start + off);
- 					__free_pages_bootmem(page, 0);
-+					count++;
- 				}
-+				vec >>= 1;
-+				off++;
- 			}
--		} else {
--			i += BITS_PER_LONG;
- 		}
--		pfn += BITS_PER_LONG;
-+		start += BITS_PER_LONG;
- 	}
- 
--	/*
--	 * Now free the allocator bitmap itself, it's not
--	 * needed anymore:
--	 */
- 	page = virt_to_page(bdata->node_bootmem_map);
- 	pages = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
--	idx = bootmem_bootmap_pages(pages);
--	for (i = 0; i < idx; i++, page++)
--		__free_pages_bootmem(page, 0);
--	count += i;
--	bdata->node_bootmem_map = NULL;
-+	pages = bootmem_bootmap_pages(pages);
-+	count += pages;
-+	while (pages--)
-+		__free_pages_bootmem(page++, 0);
- 
- 	bdebug("nid=%d released=%ld\n", bdata - bootmem_node_data, count);
- 
+I was not sure what the expected behaviour was... lets say we have a
+lot of dirty data (like 40MB) and system with enough free memory. Is
+it reasonable to expect SYNC_FILE_RANGE_WRITE to return pretty much
+immediately? (like in less than 10msec)? Because it seems to take more
+like a second here...
 
+(Underlying 'file' is actually /dev/sda1 -- aka my swap partition, but
+that should not matter --right?)
+							Pavel
 -- 
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
