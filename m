@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbYE3MqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbYE3MqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753747AbYE3MqD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 08:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYE3Mpw
+	id S1755201AbYE3MqV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 08:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbYE3MqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 08:45:52 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:61157 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbYE3Mpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 08:45:51 -0400
-Message-ID: <483FF6F4.80406@atmel.com>
-Date: Fri, 30 May 2008 14:45:40 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 30 May 2008 08:46:05 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:52605 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbYE3MqD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 08:46:03 -0400
+Date: Fri, 30 May 2008 05:45:54 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: dhowells@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Confused by smp_read_barrier_depends() in rxrpc_rotate_tx_window()
+Message-ID: <20080530124554.GA14312@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-CC: =?ISO-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>,
-       =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/7] mmc: at91_mci: add multiwrite switch
-References: <483FE9E7.7020707@atmel.com>
-In-Reply-To: <483FE9E7.7020707@atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-at91_mci is capable of multiwrite. Enable it before it disappears.
+Hello, Dave!
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-drivers/mmc/host/at91_mci.c |    1 +
-1 files changed, 1 insertions(+), 0 deletions(-)
+I confess to being confused by the smp_read_barrier_depends() in
+rxrpc_rotate_tx_window().  It looks like it is ordering the prior
+fetch of tail from call->acks_tail with the subsequent use of
+tail as an index into the call->acks_window[] array, but then the
+code does an assignment to call->acks_tail a few lines later.
 
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index 6b9662e..df975e0 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -923,6 +923,7 @@ static int __init at91_mci_probe(struct 
-platform_device *pdev)
-	mmc->f_min = 375000;
-	mmc->f_max = 25000000;
-	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
-+	mmc->caps = MMC_CAP_MULTIWRITE;
+If we hold a lock protecting call->acks_tail, why do we need the
+smp_read_barrier_depends()?  If we don't hold such a lock, why
+is the assignment to call->acks_tail safe?
 
-	mmc->max_blk_size = 4095;
-	mmc->max_blk_count = mmc->max_req_size;
--- 
-1.5.3.7
+Help?
 
-
-
+						Thanx, Paul
