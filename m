@@ -1,243 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYE3No6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbYE3NsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718AbYE3No6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 09:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYE3Nos
+	id S1753687AbYE3NsO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 09:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbYE3Nr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 09:44:48 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:56650 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751968AbYE3Nor (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 09:44:47 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsgEAH+hP0hMQWqh/2dsb2JhbACBVa1C
-Date: Fri, 30 May 2008 09:44:44 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, maneesh@linux.vnet.ibm.com,
-       jkennisto@us.ibm.com
-Subject: Re: Question about smp_read_barrier_depends() in kernel/marker.c
-Message-ID: <20080530134444.GA19720@Krystal>
-References: <20080530122206.GA23396@linux.vnet.ibm.com>
-Mime-Version: 1.0
+	Fri, 30 May 2008 09:47:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44168 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751689AbYE3Nr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 09:47:58 -0400
+Date: Fri, 30 May 2008 10:47:15 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       James.Bottomley@HansenPartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+	kernel.
+Message-ID: <20080530134715.GC5476@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	James.Bottomley@HansenPartnership.com,
+	ksummit-2008-discuss@lists.linux-foundation.org,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+References: <1212077700.26088.83.camel@shinybook.infradead.org> <20080529164745.GA21763@kroah.com> <483F1232.4010003@linux.intel.com> <20080529.140919.160813310.davem@davemloft.net> <483F1C17.8040207@linux.intel.com> <1212102258.20303.6.camel@shinybook.infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080530122206.GA23396@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:07:50 up 91 days,  9:18,  5 users,  load average: 2.94, 2.78,
-	2.54
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1212102258.20303.6.camel@shinybook.infradead.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> Hello, Mathieu,
+Em Fri, May 30, 2008 at 02:04:18AM +0300, David Woodhouse escreveu:
+> It's not as if it's hard to set CONFIG_BUILTIN_FIRMWARE_DIR to point to
+> your checkout of the linux-firmware repository, and build your kernel
+> with _whatever_ firmware you choose. You end up with _more_ choice, not
+> less.
 > 
-> I am a bit confused by the smp_read_barrier_depends() in kernel/markers.c.
-> My (probably naive) view is that they need to move as shown in the patch
-> below.  Help?
-> 
+> And on the rare occasion that we really do have an incompatible change
+> of firmware/kernel interaction from one kernel to the next, it really
+> isn't difficult to add a version number to the name of the firmware
+> file, and ship both old and new firmwares in the firmware tree for a
+> while. That's a bogus argument, even if people _do_ manage to come up
+> with a better example for it, where their firmware has actually changed
+> in the last couple of years.
 
-Hi Paul,
+While updating the bnx2 driver on a 2.6.24.7 based rpm and after reading
+some of your messages...
 
-I think it's good to clarify some details about the markers data
-structures.
+commit df7f1ed6b85b936a4dd341c48e30aa207697997c
+Author: Michael Chan <mchan@broadcom.com>
+Date:   Tue Jan 29 21:38:06 2008 -0800
 
-First, the struct marker_entry is a data structure that holds
-information about activated markers in a hash table. All its updates are
-done when the markers_mutex is held, so there is no memory ordering
-issues related to its updates.
+    [BNX2]: Update firmware.
+    
+    Update firmware to support programmable flow control.
+    
+    Signed-off-by: Michael Chan <mchan@broadcom.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-This structure is used as an information source when we update the
-markers sites with correct memory ordering by set_marker() and
-disable_marker().
+After this bnx2.c would be updated to have a:
 
+MODULE_FIRMWARE_DEFAULT("df7f1ed6b85b936a4dd341c48e30aa207697997c");
 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> 
->  marker.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff -urpNa -X dontdiff linux-2.6.26-rc4/kernel/marker.c linux-2.6.26-rc4-marker-srbd/kernel/marker.c
-> --- linux-2.6.26-rc4/kernel/marker.c	2008-05-30 04:39:01.000000000 -0700
-> +++ linux-2.6.26-rc4-marker-srbd/kernel/marker.c	2008-05-30 05:05:55.000000000 -0700
-> @@ -133,8 +133,8 @@ void marker_probe_cb(const struct marker
->  		 * data. Same as rcu_dereference, but we need a full smp_rmb()
->  		 * in the fast path, so put the explicit barrier here.
->  		 */
-> -		smp_read_barrier_depends();
+to be obtained from firmware.git, and if some chip revisions needed
+something different we could have a MODULE_FIRMWARE_PCI(vendor, product,
+older-git-object) or something along these lines.
 
-Actually, this barrier should make sure mdata->ptype is read before
-mdata->multi. This should be changed to a smp_rmb(), given they are not
-dependant. The comment about this barrier should be changed.
+Some drivers could well prefer a more loose keying scheme, like
+"foo-firmware-v2" and get the latest version of this from firmware.git.
 
->  		multi = mdata->multi;
-> +		smp_read_barrier_depends();
-
-Yes. This should be added. mdata->multi must be read before the multi[i]
-elements. The comment which applied to the previous
-smp_read_barrier_depends() should be moved down here.
-
->  		for (i = 0; multi[i].func; i++) {
->  			va_start(args, fmt);
->  			multi[i].func(multi[i].probe_private, call_private, fmt,
-> @@ -183,8 +183,8 @@ void marker_probe_cb_noarg(const struct 
->  		 * data. Same as rcu_dereference, but we need a full smp_rmb()
->  		 * in the fast path, so put the explicit barrier here.
->  		 */
-
-Same as above here.
-
-> -		smp_read_barrier_depends();
->  		multi = mdata->multi;
-> +		smp_read_barrier_depends();
->  		for (i = 0; multi[i].func; i++)
->  			multi[i].func(multi[i].probe_private, call_private, fmt,
->  				&args);
-> @@ -271,6 +271,7 @@ marker_entry_add_probe(struct marker_ent
->  	new[nr_probes].func = probe;
->  	new[nr_probes].probe_private = probe_private;
->  	entry->refcount = nr_probes + 1;
-> +	smp_wmb(); /* Ensure struct is initialized before publication. *
-
-This function only updates the struct marker_entry, protected by the
-markers_mutex. The memory ordering constraints comes when we later call
-
-marker_update_probes
-  marker_update_probe_range
-    set_marker
-    or
-    disable_marker
-
-If we look at set_marker and disable_marker, they have smp_wmb() to
-order each memory write. See the ----> arrow for the wmb which makes
-sure the array data is written before the array pointer.
-This wmb is in rcu_assign_pointer.
-
-Snippet from set_marker :
-
-        elem->call = (*entry)->call;
-        /*
-         * Sanity check :
-         * We only update the single probe private data when the ptr is
-         * set to a _non_ single probe! (0 -> 1 and N -> 1, N != 1)
-         */
-        WARN_ON(elem->single.func != __mark_empty_function
-                && elem->single.probe_private
-                != (*entry)->single.probe_private &&
-                !elem->ptype);
-        elem->single.probe_private = (*entry)->single.probe_private;
-        /*
-         * Make sure the private data is valid when we update the
-         * single probe ptr.
-         */
-        smp_wmb();
-        elem->single.func = (*entry)->single.func;
-        /*
------>   * We also make sure that the new probe callbacks array is consistent
-         * before setting a pointer to it.
-         */
-        rcu_assign_pointer(elem->multi, (*entry)->multi);
-        /*
-         * Update the function or multi probe array pointer before setting the
-         * ptype.
-         */
-        smp_wmb();
-        elem->ptype = (*entry)->ptype;
-        elem->state = active;
-
-Snippet from disable_marker :
-        /* leave "call" as is. It is known statically. */
-        elem->state = 0;
-        elem->single.func = __mark_empty_function;
-        /* Update the function before setting the ptype */
-        smp_wmb();
-        elem->ptype = 0;        /* single probe */
-        /*
-         * Leave the private data and id there, because removal is racy and
-         * should be done only after an RCU period. These are never used until
-         * the next initialization anyway.
-         */
-
-Does it clarify things a bit ?
-
-Here is the updated patch :
-
-Fix marker barriers
-
-Paul pointed out two incorrect read barriers in the marker handler code in the
-path where multiple probes are connected. Those are ordering reads of "ptype"
-(single or multi probe marker), "multi" array pointer, and "multi" array data
-access.
-
-It should be ordered like this :
-
-read ptype
-smp_wmb()
-read multi array pointer
-smp_read_barrier_depends()
-access data referenced by multi array pointer
-
-The code with a single probe connected (optimized case, does not have to
-allocate an array) has correct memory ordering.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
----
- kernel/marker.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-Index: linux-2.6-lttng/kernel/marker.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/marker.c	2008-05-30 06:08:53.000000000 -0400
-+++ linux-2.6-lttng/kernel/marker.c	2008-05-30 06:10:43.000000000 -0400
-@@ -127,6 +127,11 @@
- 		struct marker_probe_closure *multi;
- 		int i;
- 		/*
-+		 * Read mdata->ptype before mdata->multi.
-+		 */
-+		smp_wmb();
-+		multi = mdata->multi;
-+		/*
- 		 * multi points to an array, therefore accessing the array
- 		 * depends on reading multi. However, even in this case,
- 		 * we must insure that the pointer is read _before_ the array
-@@ -134,7 +139,6 @@
- 		 * in the fast path, so put the explicit barrier here.
- 		 */
- 		smp_read_barrier_depends();
--		multi = mdata->multi;
- 		for (i = 0; multi[i].func; i++) {
- 			va_start(args, fmt);
- 			multi[i].func(multi[i].probe_private, call_private, fmt,
-@@ -177,6 +181,11 @@
- 		struct marker_probe_closure *multi;
- 		int i;
- 		/*
-+		 * Read mdata->ptype before mdata->multi.
-+		 */
-+		smp_wmb();
-+		multi = mdata->multi;
-+		/*
- 		 * multi points to an array, therefore accessing the array
- 		 * depends on reading multi. However, even in this case,
- 		 * we must insure that the pointer is read _before_ the array
-@@ -184,7 +193,6 @@
- 		 * in the fast path, so put the explicit barrier here.
- 		 */
- 		smp_read_barrier_depends();
--		multi = mdata->multi;
- 		for (i = 0; multi[i].func; i++)
- 			multi[i].func(multi[i].probe_private, call_private, fmt,
- 				&args);
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+- Arnaldo
