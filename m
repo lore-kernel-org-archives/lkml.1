@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbYE3XTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbYE3XZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbYE3XTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 19:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbYE3XTK
+	id S1754951AbYE3XZd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 19:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbYE3XZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 19:19:10 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57041 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755585AbYE3XTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 19:19:09 -0400
-X-Authenticated: #329476
-X-Provags-ID: V01U2FsdGVkX19Ipodbhk5Itv7yyQG2ib+unqKNXl52tckZyua875
-	AO8nOwf9JMhEoA
-Date: Sat, 31 May 2008 01:18:55 +0200
-From: Bertram Felgenhauer <int-e@gmx.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bertram Felgenhauer <int-e@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Add workaround for bug in ASUS A7V600 BIOS (rev
-	1005)
-Message-ID: <20080530231854.GA4287@zombie.inf.tu-dresden.de>
-References: <20080530012005.GA9514@zombie.inf.tu-dresden.de> <20080530103605.1e56fac1@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080530103605.1e56fac1@core>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+	Fri, 30 May 2008 19:25:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44047 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751958AbYE3XZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 19:25:18 -0400
+Date: Fri, 30 May 2008 16:25:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: casey@schaufler-ca.com, paul.moore@hp.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH BUGFIX -v2 -rc4] Smack: Respect 'unlabeled' netlabel
+ mode
+Message-Id: <20080530162500.1411f14d.akpm@linux-foundation.org>
+In-Reply-To: <20080530235751.GA6888@ubuntu>
+References: <20080530233603.GA2994@ubuntu>
+	<20080530235751.GA6888@ubuntu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Fri, 30 May 2008 03:20:05 +0200
-> Bertram Felgenhauer <int-e@gmx.de> wrote:
-> > Amazingly I have a 2.6.23.8 kernel that somehow works fine ... I'll
-> > never understand why.
-> 
-> Probably because it has ACPI enabled and is picking ACPI IRQ routing in
-> preference ?
+On Sat, 31 May 2008 02:57:51 +0300
+"Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
 
-No.
+> +		mutex_lock(&smack_ambient_lock);
+> +		nlsp->domain = kstrdup(smack_net_ambient, GFP_ATOMIC);
+> +		mutex_unlock(&smack_ambient_lock);
 
-The "only" difference between the working 2.6.23.8 kernel and the
-non-working one is a switch from gcc 3.4.6 to 4.1.2. I've collected
-some information about this issue, comparing the 'working' 2.6.23.8
-kernel with a newly compiled, patched one. (The unpatched one compiled
-with 4.1.2 fails to boot.) So if anybody is interested, have a look at
+no no no no no.  And no.
 
-    http://int-e.home.tlink.de/linux/irq/
+GFP_ATOMIC is *unreliable*.  Using it in a "security" feature is a bug
+- if it fails, the feature isn't secure any more.
 
-But it's probably not worthwhile to spend a lot of time on this.
+Failing to check the kmalloc() return value might be a bug.
 
-Bertram
+If we _need_ GFP_ATOMIC here then taking a mutex in a cannot-sleep
+context is a bug.
+
+The patch adds a kmalloc but doesn't add a kfree.  Is it leaky?
+
+Finally, why is there a need to take a lock around a single store
+instruction?
