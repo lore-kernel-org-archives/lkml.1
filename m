@@ -1,156 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYE3RAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbYE3RDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbYE3RAY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 13:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYE3RAK
+	id S1753752AbYE3RDZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 13:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYE3RDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 13:00:10 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4998 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbYE3RAJ (ORCPT
+	Fri, 30 May 2008 13:03:16 -0400
+Received: from bromo.msbb.uc.edu ([129.137.3.146]:38683 "HELO
+	bromo.msbb.uc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752564AbYE3RDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 13:00:09 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, agl@us.ibm.com,
-       wli@holomorphy.com, kenchen@google.com, dwg@au1.ibm.com,
-       andi@firstfloor.org, Mel Gorman <mel@csn.ul.ie>, dean@arctic.org,
-       abh@cray.com, Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 1/2] huge page private reservation review cleanups
-References: <exportbomb.1212166524@pinky>
-InReply-To: <exportbomb.1212166524@pinky>
-Date: Fri, 30 May 2008 17:58:24 +0100
-Message-Id: <1212166704.0@pinky>
+	Fri, 30 May 2008 13:03:15 -0400
+X-Greylist: delayed 444 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 May 2008 13:03:15 EDT
+Date: Fri, 30 May 2008 12:55:50 -0400
+From: Jack Howarth <howarth@bromo.msbb.uc.edu>
+To: linux-kernel@vger.kernel.org
+Subject: EDAC i5000 MC0: NON-FATAL ERRORS
+Message-ID: <20080530165550.GA23698@bromo.msbb.uc.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+   I am seeing the following errors on a Fedora 7 x86_64 linux box,
+running on a Tyan Tempest i5000XL motherboard, after upgrading from
+kernel-2.6.25-14.fc9.x86_64 to kernel-2.6.25.3-18.fc9.x86_64...
 
-Create some new accessors for vma private data to cut down on and contain
-the casts.  Encapsulates the huge and small page offset calculations.  Also
-adds a couple of VM_BUG_ONs for consistency.
+May 25 04:30:56 fourier kernel: EDAC i5000 MC0: NON-FATAL ERRORS Found!!! 1st NON-FATAL Err Reg= 0x10000
+May 25 04:30:56 fourier kernel: EDAC MC0: CE row 1, channel 0, label "": (Branch=0 DRAM-Bank=3 RDWR=Read RAS=14339 CAS=672, CE Err=0x10000)
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- mm/hugetlb.c |   56 +++++++++++++++++++++++++++++++++++++++++++-------------
- 1 files changed, 43 insertions(+), 13 deletions(-)
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 729a830..7a5ac81 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -40,6 +40,26 @@ static int hugetlb_next_nid;
-  */
- static DEFINE_SPINLOCK(hugetlb_lock);
- 
-+/*
-+ * Convert the address within this vma to the page offset within
-+ * the mapping, in base page units.
-+ */
-+pgoff_t vma_page_offset(struct vm_area_struct *vma, unsigned long address)
-+{
-+	return ((address - vma->vm_start) >> PAGE_SHIFT) +
-+					(vma->vm_pgoff >> PAGE_SHIFT);
-+}
-+
-+/*
-+ * Convert the address within this vma to the page offset within
-+ * the mapping, in pagecache page units; huge pages here.
-+ */
-+pgoff_t vma_pagecache_offset(struct vm_area_struct *vma, unsigned long address)
-+{
-+	return ((address - vma->vm_start) >> HPAGE_SHIFT) +
-+			(vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
-+}
-+
- #define HPAGE_RESV_OWNER    (1UL << (BITS_PER_LONG - 1))
- #define HPAGE_RESV_UNMAPPED (1UL << (BITS_PER_LONG - 2))
- #define HPAGE_RESV_MASK (HPAGE_RESV_OWNER | HPAGE_RESV_UNMAPPED)
-@@ -53,36 +73,48 @@ static DEFINE_SPINLOCK(hugetlb_lock);
-  * to reset the VMA at fork() time as it is not in use yet and there is no
-  * chance of the global counters getting corrupted as a result of the values.
-  */
-+static unsigned long get_vma_private_data(struct vm_area_struct *vma)
-+{
-+	return (unsigned long)vma->vm_private_data;
-+}
-+
-+static void set_vma_private_data(struct vm_area_struct *vma,
-+							unsigned long value)
-+{
-+	vma->vm_private_data = (void *)value;
-+}
-+
- static unsigned long vma_resv_huge_pages(struct vm_area_struct *vma)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
- 	if (!(vma->vm_flags & VM_SHARED))
--		return (unsigned long)vma->vm_private_data & ~HPAGE_RESV_MASK;
-+		return get_vma_private_data(vma) & ~HPAGE_RESV_MASK;
- 	return 0;
- }
- 
- static void set_vma_resv_huge_pages(struct vm_area_struct *vma,
- 							unsigned long reserve)
- {
--	unsigned long flags;
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
- 	VM_BUG_ON(vma->vm_flags & VM_SHARED);
- 
--	flags = (unsigned long)vma->vm_private_data & HPAGE_RESV_MASK;
--	vma->vm_private_data = (void *)(reserve | flags);
-+	set_vma_private_data(vma,
-+		(get_vma_private_data(vma) & HPAGE_RESV_MASK) | reserve);
- }
- 
- static void set_vma_resv_flags(struct vm_area_struct *vma, unsigned long flags)
- {
--	unsigned long reserveflags = (unsigned long)vma->vm_private_data;
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	vma->vm_private_data = (void *)(reserveflags | flags);
-+	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-+
-+	set_vma_private_data(vma, get_vma_private_data(vma) | flags);
- }
- 
- static int is_vma_resv_set(struct vm_area_struct *vma, unsigned long flag)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	return ((unsigned long)vma->vm_private_data & flag) != 0;
-+
-+	return (get_vma_private_data(vma) & flag) != 0;
- }
- 
- /* Decrement the reserved pages in the hugepage pool by one */
-@@ -1150,11 +1182,10 @@ static struct page *hugetlbfs_pagecache_page(struct vm_area_struct *vma,
- 			unsigned long address)
- {
- 	struct address_space *mapping;
--	unsigned long idx;
-+	pgoff_t idx;
- 
- 	mapping = vma->vm_file->f_mapping;
--	idx = ((address - vma->vm_start) >> HPAGE_SHIFT)
--		+ (vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
-+	idx = vma_pagecache_offset(vma, address);
- 
- 	return find_lock_page(mapping, idx);
- }
-@@ -1163,7 +1194,7 @@ static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 			unsigned long address, pte_t *ptep, int write_access)
- {
- 	int ret = VM_FAULT_SIGBUS;
--	unsigned long idx;
-+	pgoff_t idx;
- 	unsigned long size;
- 	struct page *page;
- 	struct address_space *mapping;
-@@ -1182,8 +1213,7 @@ static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	}
- 
- 	mapping = vma->vm_file->f_mapping;
--	idx = ((address - vma->vm_start) >> HPAGE_SHIFT)
--		+ (vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
-+	idx = vma_pagecache_offset(vma, address);
- 
- 	/*
- 	 * Use page lock to guard against racing truncation
+These messages occur about once an hour and are always for the same DRAM-Bank.
+I've not been able to find any memory errors when running memtest86 with or
+without ECC checking being enabled. Are there any known issues with the
+EDAC support in the kernel that might cause false positives like this?
+The errors are always marked as non-fatal and are for reads. Also, does
+anyone know how this code numbers ram banks? Is the first ram bank considered
+0 or 1 by this code? Thanks in advance for any clarifications.
+                    Jack
