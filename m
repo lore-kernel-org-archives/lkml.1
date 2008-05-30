@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757258AbYE3Fiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbYE3FqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757258AbYE3Fiu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYE3Fil
+	id S1756966AbYE3FqG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbYE3Fpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:38:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34725 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752510AbYE3Fil (ORCPT
+	Fri, 30 May 2008 01:45:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49493 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753069AbYE3Fpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:38:41 -0400
-Date: Thu, 29 May 2008 22:38:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
- operations
-Message-Id: <20080529223825.bf744d37.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805292214280.12107@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com>
-	<20080530040011.727424512@sgi.com>
-	<20080529215844.609a3ac8.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0805292214280.12107@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 30 May 2008 01:45:53 -0400
+Subject: Re: linux/a.out.h is not exported to userspace
+From: David Woodhouse <dwmw2@infradead.org>
+To: Khem Raj <raj.khem@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, k.shutemov@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1212122144.32524.8.camel@isis>
+References: <1210983237.8550.28.camel@isis>
+	 <20080523003256.3ff82660.akpm@linux-foundation.org>
+	 <1212122144.32524.8.camel@isis>
+Content-Type: text/plain
+Date: Fri, 30 May 2008 08:45:47 +0300
+Message-Id: <1212126347.20303.11.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 22:17:55 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
-
-> > > local_t is also very specific to the x86 processor.
+On Thu, 2008-05-29 at 21:35 -0700, Khem Raj wrote:
+> On Fri, 2008-05-23 at 00:32 -0700, Andrew Morton wrote:
+> > On Fri, 16 May 2008 17:13:57 -0700 Khem Raj <raj.khem@gmail.com> wrote:
+> 
 > > 
-> > And alpha, m32r, mips and powerpc, methinks.  Probably others, but
-> > people just haven't got around to it.
-> 
-> No local_t does not do the relocation of the address to the correct percpu 
-> area. It requies disabling of interrupts etc.
-
-No it doesn't.  Look:
-
-static inline void local_inc(local_t *l)
-{
-	asm volatile(_ASM_INC "%0"
-		     : "+m" (l->a.counter));
-}
-
-> Its not atomic (wrt 
-> interrupts) because of that.
->
-
-Yes it is.
-
-> > I think I'll need to come back another time to understand all that ;)
+> > This breaks `make headerscheck' on s390:
 > > 
-> > Thanks for writing it up carefully.
-> 
-> Well this stuff is so large in scope that I have difficulties keeping 
-> everything straight.
-> 
-> > I wonder if all this stuff should be in a new header file.
+> > /usr/src/devel/usr/include/linux/a.out.h requires asm/a.out.h, which does not exist in exported headers
 > > 
-> > We could get lazy and include that header from percpu.h if needed.
+> > which might be an s390 problem.
 > 
-> But then its related to percpu operations and relies extensively on the 
-> various percpu.h files in asm-generic and asm-arch and include/linux
+> The attached patch from David is a replacement patch. I have tested this
+> patch by running make headers_install on every architecture under arch/
+> It works for all (except 'um' and 'ppc' which do not export headers)
 
-Well that should be fixed.  We should never have mixed the
-alloc_percpu() and DEFINE_PER_CPU things inthe same header.  They're
-different.
+We also need to remove the instance of #ifdef CONFIG_something which
+David sneaked in to <linux/a.out.h>.
 
-otoh as you propose removing the old alloc_percpu() I guess the end
-result is no worse than what we presently have.
+And make a 'headers_check' test for it :)
+
+-- 
+dwmw2
 
