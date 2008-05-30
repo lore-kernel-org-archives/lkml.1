@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYE3BOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYE3BUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYE3BOS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 21:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYE3BN6
+	id S1756027AbYE3BUY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 21:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYE3BUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 21:13:58 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49071 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752728AbYE3BN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 21:13:58 -0400
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-In-Reply-To: <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-References: <1211852026.3286.36.camel@pasglop>
-	 <20080526.184047.88207142.davem@davemloft.net>
-	 <1211854540.3286.42.camel@pasglop>
-	 <20080526.192812.184590464.davem@davemloft.net>
-	 <1211859542.3286.46.camel@pasglop>
-	 <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	 <1211922621.3286.80.camel@pasglop>
-	 <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	 <1211924335.3286.89.camel@pasglop>
-	 <20080527214241.GA22636@parisc-linux.org>
-	 <1211926636.3286.100.camel@pasglop>
-	 <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain
-Date: Fri, 30 May 2008 11:13:23 +1000
-Message-Id: <1212110003.15633.0.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 21:20:11 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33199 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751183AbYE3BUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 21:20:10 -0400
+X-Authenticated: #329476
+X-Provags-ID: V01U2FsdGVkX1/Tr7oSEkzT36lfvlrVzHltnvDxJz6C13MgSPM0id
+	6E+VFEy4ukjWry
+Date: Fri, 30 May 2008 03:20:05 +0200
+From: Bertram Felgenhauer <int-e@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: Add workaround for bug in ASUS A7V600 BIOS (rev 1005)
+Message-ID: <20080530012005.GA9514@zombie.inf.tu-dresden.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This BIOS claims the VIA 8237 south bridge to be compatible with VIA 586,
+which it is not.
 
-> I do -- in all the drivers for on-chip peripherals that are shared
-> between AT91 ARM (LE) and AVR32 (BE). Since everything goes on inside
-> the chip, we must use LE accesses on ARM and BE accesses on AVR32.
-> 
-> Currently, this is the only interface I know that can do native-endian
-> accesses, so if you take it away, I'm gonna need an alternative
-> interface that doesn't do byteswapping.
+Signed-off-by: Bertram Felgenhauer <int-e@gmx.de>
+---
+Without this patch, I get the following warning while booting,
+among others,
 
-Are you aware that these also don't provide any ordering guarantee ?
+| PCI: Using IRQ router VIA [1106/3227] at 0000:00:11.0
+| ------------[ cut here ]------------
+| WARNING: at arch/x86/pci/irq.c:265 pirq_via586_get+0x4a/0x60()
+| Modules linked in:
+| Pid: 1, comm: swapper Not tainted 2.6.26-rc4-00015-g1ec7d99 #1
+|  [<c0119fd4>] warn_on_slowpath+0x54/0x70
+|  [<c02246e0>] ? vt_console_print+0x210/0x2b0
+|  [<c02244d0>] ? vt_console_print+0x0/0x2b0
+|  [<c011a413>] ? __call_console_drivers+0x43/0x60
+|  [<c011a482>] ? _call_console_drivers+0x52/0x80
+|  [<c011aa89>] ? release_console_sem+0x1c9/0x200
+|  [<c0291d21>] ? raw_pci_read+0x41/0x70
+|  [<c0291e8f>] ? pci_read+0x2f/0x40
+|  [<c029151a>] pirq_via586_get+0x4a/0x60
+|  [<c02914d0>] ? pirq_via586_get+0x0/0x60
+|  [<c029178d>] pcibios_lookup_irq+0x15d/0x430
+|  [<c03b895a>] pcibios_irq_init+0x17a/0x3e0
+|  [<c03a66f0>] ? kernel_init+0x0/0x250
+|  [<c03a6763>] kernel_init+0x73/0x250
+|  [<c03b87e0>] ? pcibios_irq_init+0x0/0x3e0
+|  [<c0114d00>] ? schedule_tail+0x10/0x40
+|  [<c0102dee>] ? ret_from_fork+0x6/0x1c
+|  [<c03a66f0>] ? kernel_init+0x0/0x250
+|  [<c03a66f0>] ? kernel_init+0x0/0x250
+|  [<c010324b>] kernel_thread_helper+0x7/0x1c
+|  =======================
+| ---[ end trace 4eaa2a86a8e2da22 ]---
 
-Ben.
+and IRQ trouble later,
 
+| irq 10: nobody cared (try booting with the "irqpoll" option)
+
+Now that's an VIA 8237 chip, so pirq_via586_get shouldn't be called
+at all; adding this workaround to via_router_probe() fixes the
+problem for me.
+
+Amazingly I have a 2.6.23.8 kernel that somehow works fine ... I'll
+never understand why.
+
+The patch is against Linus' tree.
+
+Please CC me in replies.
+
+Thanks,
+
+Bertram
+
+ arch/x86/pci/irq.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/pci/irq.c b/arch/x86/pci/irq.c
+index 0908fca..ca8df9c 100644
+--- a/arch/x86/pci/irq.c
++++ b/arch/x86/pci/irq.c
+@@ -621,6 +621,13 @@ static __init int via_router_probe(struct irq_router *r,
+ 			 */
+ 			device = PCI_DEVICE_ID_VIA_8235;
+ 			break;
++		case PCI_DEVICE_ID_VIA_8237:
++			/**
++			 * Asus a7v600 bios wrongly reports 8237
++			 * as 586-compatible
++			 */
++			device = PCI_DEVICE_ID_VIA_8237;
++			break;
+ 		}
+ 	}
+ 
+-- 
+1.5.3
 
