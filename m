@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYE3AO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbYE3APg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755084AbYE3AO5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 20:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYE3AOr
+	id S1759057AbYE3APg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 20:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYE3APZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 20:14:47 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:28197 "EHLO
+	Thu, 29 May 2008 20:15:25 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:29645 "EHLO
 	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757571AbYE3AOq (ORCPT
+	with ESMTP id S1754270AbYE3APY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 20:14:46 -0400
+	Thu, 29 May 2008 20:15:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=eEL3Z2XYDWwUoAwdRZGAJBR0nc2yiPhEAB77wr3WG4U4fEGePJWY0iXGZdVrxMXgy9mwplwho6zUBCaUo10zK/7wte8wCgM1Fp4pyWR4xDurILOZkCRW747fEJBNYLhA6Ja0bEjgdoiFqLzHPv6Wqnvrb0ZJATqK0MlPkHI6PBw=
-From: Kevin Winchester <kjwinchester@gmail.com>
-To: mingo@elte.hu
-Cc: Kevin Winchester <kjwinchester@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: fix pointer type warning in arch/x86/mm/init_64.c:early_memtest
-Date: Thu, 29 May 2008 21:14:35 -0300
-Message-Id: <1212106475-3297-1-git-send-email-kjwinchester@gmail.com>
-X-Mailer: git-send-email 1.5.5.40.g4cdda
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ItFM5gdNoAzWi1ohQrb4vD04w4Q5bh7uyMQKye8JyXwwRgcgPDScuoX5F8GCIhufOy1lYZl5Bx1Ci7bZOmY9UgmnHLK/0gtAHc0Dx77VF/iWGQOH+jXbMRwPnqWuSIbUePjmA8dBHK7vuwsywX2bVjKsAVzAyGdMz2/+/Q1rxtI=
+Message-ID: <efc7ee340805291715h8a22d32jad191be9650bbfeb@mail.gmail.com>
+Date: Thu, 29 May 2008 17:15:18 -0700
+From: Leonid <leonidv11@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [GIT PATCH] USB fixes for 2.6.26-rc4
+Cc: "Greg KH" <gregkh@suse.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+In-Reply-To: <200805291448.40075.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080529212110.GA2870@suse.de>
+	 <200805291448.40075.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changed the call to find_e820_area_size to pass u64 instead of unsigned long.
+Hi Dave,
 
-Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
----
- arch/x86/mm/init_64.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Sure, I somewhat understand your concerns about the timeout change,
+but we responded to an email form you over a week ago and never
+received a reply regarding our viewpoint.  It was sent to your
+personal email address as well as to the public linux-usb list.
+Please refer to the email titled "[PATCH 5/5] EHCI: fix performance
+regression" dated Wed, May 21, 2008 at 12:02 PM.  In that email, we
+state that it doesn't make sense to reduce the timeout to 3ms and we
+still don't have a full understanding of why increasing it to 10 ms is
+such a bad idea.
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 83ab7f9..94f73c2 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -515,7 +515,7 @@ early_param("memtest", parse_memtest);
- 
- static void __init early_memtest(unsigned long start, unsigned long end)
- {
--	unsigned long t_start, t_size;
-+	u64 t_start, t_size;
- 	unsigned pattern;
- 
- 	if (!memtest_pattern)
-@@ -534,7 +534,7 @@ static void __init early_memtest(unsigned long start, unsigned long end)
- 			if (t_start + t_size > end)
- 				t_size = end - t_start;
- 
--			printk(KERN_CONT "\n  %016lx - %016lx pattern %d",
-+			printk(KERN_CONT "\n  %016llx - %016llx pattern %d",
- 				t_start, t_start + t_size, pattern);
- 
- 			memtest(t_start, t_size, pattern);
--- 
-1.5.5.40.g4cdda
+While we had initially been discussing this bug with you over private
+emails, once we lost touch with you, we resolved it in close
+collaboration with Alan.  We have spent many tens of hours working on
+this bug with Alan.  We'd appreciate the ability to stay in the loop
+with any technical issues pertaining to and arising from the patch,
+and to have our concerns properly responded to.
 
+-Leonid
+
+
+On Thu, May 29, 2008 at 2:48 PM, David Brownell <david-b@pacbell.net> wrote:
+> On Thursday 29 May 2008, Greg KH wrote:
+>>       USB: EHCI: fix performance regression
+>
+> That's not a regresssion at all!  Plus, this patch shouldn't
+> have included the timeout change.  The timeout change is why
+> I didn't ACK this patch...
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
