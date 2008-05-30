@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbYE3DRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbYE3DVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753929AbYE3DRT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 23:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYE3DRD
+	id S1754206AbYE3DVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 23:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbYE3DVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 23:17:03 -0400
-Received: from xenotime.net ([66.160.160.81]:59457 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752104AbYE3DRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 23:17:01 -0400
-Date: Thu, 29 May 2008 20:30:42 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Paul Jackson <pj@sgi.com>
-Cc: miaox@cn.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, menage@google.com
-Subject: Re: [RFC] [PATCH 1/2] cpusets: restructure the function
- update_cpumask() and update_nodemask()
-Message-Id: <20080529203042.19f76f09.rdunlap@xenotime.net>
-In-Reply-To: <20080529212211.0e794c81.pj@sgi.com>
-References: <483E564A.5050807@cn.fujitsu.com>
-	<20080529031656.cdc38001.pj@sgi.com>
-	<483F5DAA.5060004@cn.fujitsu.com>
-	<20080529205344.4ba1efdb.pj@sgi.com>
-	<483F6367.1040701@cn.fujitsu.com>
-	<20080529212211.0e794c81.pj@sgi.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 May 2008 23:21:34 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45894 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752394AbYE3DVd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 23:21:33 -0400
+X-Sasl-enc: ondAJgOQKSDKr4dtiskd9a22Ljkma/ICzIk1PpRrI8zD 1212117692
+Date: Fri, 30 May 2008 00:21:30 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH] acpi: fix sparse const errors
+Message-ID: <20080530032130.GA3428@khazad-dum.debian.net>
+References: <1212108717.28403.165.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212108717.28403.165.camel@brick>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 21:22:11 -0500 Paul Jackson wrote:
-
-> Miao wrote:
-> > I check kernel/cpuset.c and find many static functions with "/**" comment.
-> > So I want to remove the special commenting convention for them.
+On Thu, 29 May 2008, Harvey Harrison wrote:
+> In this case we want a constant pointer to constant chars:
+> drivers/misc/thinkpad_acpi.c:3824:19: error: Just how const do you want this type to be?
 > 
-> Right you are.  Offhand, in kernel/cpuset.c, I see:
+> Like the error says.
+> drivers/misc/thinkpad_acpi.c:3863:19: error: Just how const do you want this type to be?
+> drivers/misc/thinkpad_acpi.c:3864:19: error: Just how const do you want this type to be?
+> drivers/misc/thinkpad_acpi.c:3865:19: error: Just how const do you want this type to be?
+> drivers/misc/thinkpad_acpi.c:3866:19: error: Just how const do you want this type to be?
 > 
->     static int cpuset_test_cpumask(struct task_struct *tsk,
->     static void cpuset_change_cpumask(struct task_struct *tsk,
->     static int update_cpumask(struct cpuset *cs, char *buf)
->     static void cpuset_do_move_task(struct task_struct *tsk,
->     static void move_member_tasks_to_cpuset(struct cpuset *from, struct cpuset *to)
-> 
-> all having "/**" header comments.  I would be glad to Ack a patch
-> from you to fix such comments.  Thank-you.
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-Uh.. We strongly want non-static functions to be documented via kernel-doc.
-For static functions, it's up to the maintainer/developer whether to do that
-or not.  But if the functions already have kernel-doc, there's no strong
-reason to remove it.  And these look good currently, so I see no
-good reason to change them.
-
-
-
----
-~Randy
-"He closes his eyes and drops the goggles.  You can't get hurt
-by looking at a bitmap.  Or can you?"
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
