@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYE3Box@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYE3Bs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbYE3Box (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 21:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYE3Boo
+	id S1756110AbYE3Bs7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 21:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYE3Bsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 21:44:44 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:1901 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752708AbYE3Boo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 21:44:44 -0400
-Date: Thu, 29 May 2008 21:44:42 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Greg KH <gregkh@suse.de>
-cc: David Brownell <david-b@pacbell.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Subject: Re: [GIT PATCH] USB fixes for 2.6.26-rc4
-In-Reply-To: <20080529215808.GA3759@suse.de>
-Message-ID: <Pine.LNX.4.44L0.0805292143001.26334-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 May 2008 21:48:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58905 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751914AbYE3Bsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 21:48:50 -0400
+Date: Thu, 29 May 2008 21:46:26 -0400
+From: Rik van Riel <riel@redhat.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "menage@google.com" <menage@google.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Subject: Re: [RFC][PATCH 0/2] memcg: simple hierarchy (v2)
+Message-ID: <20080529214626.00da9bda@bree.surriel.com>
+In-Reply-To: <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Greg KH wrote:
+On Fri, 30 May 2008 10:43:12 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> On Thu, May 29, 2008 at 02:48:39PM -0700, David Brownell wrote:
-> > On Thursday 29 May 2008, Greg KH wrote:
-> > >       USB: EHCI: fix performance regression
-> > 
-> > That's not a regresssion at all!  Plus, this patch shouldn't
-> > have included the timeout change.  The timeout change is why
-> > I didn't ACK this patch...
-> 
-> Well, I was misinformed by Alan Stern about this then, sorry for missing
-> that you didn't ack this one (you acked the other patches in this series
-> though.)
+> Implemented Policy:
+>   - parent overcommits all children
+>      parent->usage = resource used by itself + resource moved to children.
+>      Of course, parent->limit > parent->usage. 
+>   - when child's limit is set, the resouce moves.
+>   - no automatic resource moving between parent <-> child
 
-The notion that this was a regression came about by mistake.  It was 
-stated that 2.6.24 worked better than 2.6.25; apparently that remark 
-was wrong.
+> Why this is enough ?
+>   - A middleware can do various kind of resource balancing only by reseting "limit"
+>     in userland.
 
-> Alan, care to make up a patch to fix this?  Or should I just revert it
-> in the tree as-is?
+I like this idea.  The alternative could mean having a page live
+on multiple cgroup LRU lists, not just the zone LRU and the one
+cgroup LRU, and drastically increasing run time overhead.
 
-Given that the issues are not yet resolved among the developers, I 
-think reverting the patch for now is the best course.
+Swapping memory in and out is horrendously slow anyway, so the
+idea of having a daemon adjust the limits on the fly should work
+just fine.
 
-Alan Stern
-
+-- 
+All rights reversed.
