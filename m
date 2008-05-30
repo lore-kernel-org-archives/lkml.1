@@ -1,37 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYE3F0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbYE3F2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbYE3F0v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbYE3F0n
+	id S1759747AbYE3F2P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYE3F17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:26:43 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42231 "EHLO
+	Fri, 30 May 2008 01:27:59 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42252 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751958AbYE3F0n (ORCPT
+	with ESMTP id S1753271AbYE3F16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:26:43 -0400
-Date: Fri, 30 May 2008 00:26:41 -0500
-From: Paul Jackson <pj@sgi.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: jmseyas@dit.upm.es, rdunlap@xenotime.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] doc: Update to URL and status of kernel-docs.txt entry
-Message-Id: <20080530002641.ef0dd1e1.pj@sgi.com>
-In-Reply-To: <20080530050317.124929.95587.sendpatchset@jackhammer.engr.sgi.com>
-References: <20080530050317.124929.95587.sendpatchset@jackhammer.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 May 2008 01:27:58 -0400
+Date: Thu, 29 May 2008 22:27:53 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
+In-Reply-To: <20080529222143.5d7aa1e5.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805292224540.12329@schroedinger.engr.sgi.com>
+References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com>
+ <20080529222143.5d7aa1e5.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops -- Andrew -- send this so called PATCH to /dev/null.
+On Thu, 29 May 2008, Andrew Morton wrote:
 
-I sent the wrong file.
+> > The per cpu memory use by subsystems is typically quite small. We already 
+> > have an 8k limitation for percpu space for modules. And that does not seem 
+> > to be a problem.
+> 
+> eh?  That's DEFINE_PERCPU memory, not alloc_pecpu() memory?
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+No. The module subsystem has its own alloc_percpu subsystem that the 
+cpu_alloc replaces.
+
+> > We could do that yes.
+> 
+> Phew.
+
+But its going to be even more complicated and I have a hard time managing 
+the complexity here. Could someone take pieces off my hand?
+
+> > But then per cpu data is not frequently allocated and freed.
+> 
+> I think it is, in the TCP case.  And that's the only one I looked at.
+
+Which tcp case?
+
+> Plus who knows what lies ahead of us?
+
+Well invariably we will end up with cpu area defragmentation.... Sigh.
+
+> I don't think there is presently any upper limit on alloc_percpu()?  It
+> uses kmalloc() and kmalloc_node()?
+> 
+> Even if there is some limit, is it an unfixable one?
+
+No there is no limit. It just wastes lots of space (pointer arrays, 
+alignment etc) that we could use to configure sufficiently large per cpu 
+areas.
+
