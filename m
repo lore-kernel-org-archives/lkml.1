@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbYE3WgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbYE3WlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbYE3WgP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 18:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYE3Wf7
+	id S1754110AbYE3WlP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 18:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYE3Wky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 18:35:59 -0400
-Received: from mga06.intel.com ([134.134.136.21]:43907 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751869AbYE3Wf7 (ORCPT
+	Fri, 30 May 2008 18:40:54 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:20535 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbYE3Wkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 18:35:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,568,1204531200"; 
-   d="scan'208";a="388822411"
-Message-ID: <48408150.5030501@linux.intel.com>
-Date: Fri, 30 May 2008 15:36:00 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Fri, 30 May 2008 18:40:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=tlQUw6TiR/I4FvMjVzhtPe7EOArL29YIoI4FzxIWQEIlMV5uenETQcTmtRlyaMy5HyQVguCMSXsABXE7VV1R/IOaSuuLgeuA+VWHrwptRYVZXqRsd3XQzHLZEXxrNayBD+I9F7/AJs/OSab76/Ba7zLoUfH7O/sQb9VMqUiWWBY=
+Date: Sat, 31 May 2008 02:36:03 +0300
+To: Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul.moore@hp.com>
+Cc: linux-security-module@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH BUGFIX -rc4] Smack: Respect 'unlabeled' netlabel mode
+Message-ID: <20080530233603.GA2994@ubuntu>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Jochen_Vo=DF?= <jochen.voss@googlemail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
-References: <48402DAA.60202@linux.intel.com> <ef1cd66f0805301534t2dca0f4eh97dac71e10d3d683@mail.gmail.com>
-In-Reply-To: <ef1cd66f0805301534t2dca0f4eh97dac71e10d3d683@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jochen Voß wrote:
-> Hi Arjan,
-> 
-> 2008/5/30 Arjan van de Ven <arjan@linux.intel.com>:
->> Rank 2: sysfs_add_one (warning)
->>        Reported 243 times (759 total reports)
-> [...]
->> Rank 3: mark_buffer_dirty (warning)
->>        Reported 222 times (759 total reports)
-> 
-> It seems like a strange coincidence that the first two entries have
-> the same number of total reports.  Is this really the case or is there
-> something mixed up?
+Hi all,
 
-coincidence; I just recreated a new version of the report (so several hours later) and they're 1 appart now.
+In case of Smack 'unlabeled' netlabel option, Smack passes a _zero_
+initialized 'secattr' to label a packet/sock. This causes an 
+[unfound domain label error]/-ENOENT by netlbl_sock_setattr().
+Above Netlabel failure leads to Smack socket hooks failure causing 
+an always-on socket() -EPERM error.
+
+Such packets should have a netlabel domain agreed with netlabel to 
+represent unlabeled packets. Fortunately Smack net ambient label 
+packets are agreed with netlabel to be treated as unlabeled packets. 
+
+Treat all packets coming out from a 'unlabeled' Smack system as
+coming from the smack net ambient label.
+
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
+
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index b5c8f92..03735f4 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -1292,6 +1292,8 @@ static void smack_to_secattr(char *smack, struct netlbl_lsm_secattr *nlsp)
+ 		}
+ 		break;
+ 	default:
++		nlsp->domain = kstrdup(smack_net_ambient, GFP_ATOMIC);
++		nlsp->flags = NETLBL_SECATTR_DOMAIN;
+ 		break;
+ 	}
+ }
+
+-- 
+
+"Better to light a candle, than curse the darkness"
+
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
