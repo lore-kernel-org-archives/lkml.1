@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757058AbYE3Jaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYE3Jf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757058AbYE3Jaa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 05:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYE3JaO
+	id S1755965AbYE3Jf1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 05:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYE3JfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 05:30:14 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:43805 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752751AbYE3JaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 05:30:13 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Florian Attenberger <valdyn@valdyn.org>
-Subject: Re: [Solved][BUG] Barely understandeable sound with snd_hda_intel and 2.6.26-rc4
-Date: Fri, 30 May 2008 11:29:58 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, perex@perex.cz, tiwai@suse.de,
-       pshou@realtek.com.tw, Jeff Garzik <jgarzik@redhat.com>
-References: <200805300004.16169.andres@anarazel.de> <20080530072049.e260432c.valdyn@valdyn.org>
-In-Reply-To: <20080530072049.e260432c.valdyn@valdyn.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2298652.LyVu6HzR5T";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 30 May 2008 05:35:15 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45757 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752078AbYE3JfO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 05:35:14 -0400
+Date: Fri, 30 May 2008 10:20:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Matthew Wilcox <matthew@wil.cx>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       James.Bottomley@hansenpartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+ kernel.
+Message-ID: <20080530102008.6645a0ad@core>
+In-Reply-To: <20080529210304.GA8866@kroah.com>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+	<20080528.225826.40264516.davem@davemloft.net>
+	<1212041839.8888.38.camel@pasglop>
+	<20080529124548.GC8065@mit.edu>
+	<1212077700.26088.83.camel@shinybook.infradead.org>
+	<20080529164745.GA21763@kroah.com>
+	<483F1232.4010003@linux.intel.com>
+	<20080529204736.GZ22636@parisc-linux.org>
+	<86802c440805291355p5697c775k5f0beb8163688058@mail.gmail.com>
+	<20080529210304.GA8866@kroah.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200805301130.03417.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2298652.LyVu6HzR5T
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> Not all firmware has the ability to check the version :(
+> 
+> So while Arjan's goal would be nice, Matthew is right, this can't happen
+> for all types of firmware.
 
-Hi,
+Well for loaded or packaged firmware it can happen. Just stick a revision
+number on the start of the firmware file and check it rather than load it
+into the hardware in that specific driver.
 
-On Friday 30 May 2008, Florian Attenberger wrote in "Re: [BUG] Barely=20
-understandeable sound with snd_hda_intel and 2.6.26-rc4":
-> > CONFIG_SND_PCSP=3Dm
-> ^^ is making your pc speaker your default sound device, i guess. Module
-> is 'snd_pcsp'.
-Ah. Sorry for not having noticed that myself...
-I tried manually reinserting snd_pcsp after snd_hda_intel but obviously hda=
- is=20
-the first device in this case...
-
-Thanks,
-
-Andres
-
---nextPart2298652.LyVu6HzR5T
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIP8kbporPraT14igRAlrDAJ9hZA5Tr53sZMqcof3kP9MvTvQKTQCeMZHx
-/a2O1ybk5Y1t0cv0DM3/zuQ=
-=TIX2
------END PGP SIGNATURE-----
-
---nextPart2298652.LyVu6HzR5T--
+Alan
