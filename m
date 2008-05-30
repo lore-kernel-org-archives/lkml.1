@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYE3WWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbYE3Wao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbYE3WWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 18:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYE3WWM
+	id S1754642AbYE3Wao (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 18:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYE3Waf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 18:22:12 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:39792 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751480AbYE3WWL (ORCPT
+	Fri, 30 May 2008 18:30:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51615 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751160AbYE3Wae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 18:22:11 -0400
-Message-ID: <48407DC3.8060001@linux.vnet.ibm.com>
-Date: Sat, 31 May 2008 03:50:51 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 30 May 2008 18:30:34 -0400
+Date: Fri, 30 May 2008 15:30:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+In-Reply-To: <48407909.5090608@linux.intel.com>
+Message-ID: <alpine.LFD.1.10.0805301517500.3141@woody.linux-foundation.org>
+References: <48402DAA.60202@linux.intel.com> <Pine.LNX.4.64.0805302017580.16427@blonde.site> <alpine.LFD.1.10.0805301403540.3141@woody.linux-foundation.org> <48407909.5090608@linux.intel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "menage@google.com" <menage@google.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
-References: <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> This patch tries to implements _simple_ 'hierarchy policy' in res_counter.
+
+
+On Fri, 30 May 2008, Arjan van de Ven wrote:
 > 
-> While several policy of hierarchy can be considered, this patch implements
-> simple one 
->    - the parent includes, over-commits the child
->    - there are no shared resource
-
-I am not sure if this is desirable. The concept of a hierarchy applies really
-well when there are shared resources.
-
->    - dynamic hierarchy resource usage management in the kernel is not necessary
+> ok for some it did gather this information, and it is
 > 
+> kernel BUG at mm/highmem.c:319!
 
-Could you please elaborate as to why? I am not sure I understand your point
+That's just _odd_. The call chain actually has kmap() in it, and kmap 
+does:
 
-> works as following.
-> 
->  1. create a child. set default child limits to be 0.
->  2. set limit to child.
->     2-a. before setting limit to child, prepare enough room in parent.
->     2-b. increase 'usage' of parent by child's limit.
+	if (!PageHighMem(page))
+		return page_address(page);
+	return kmap_high(page);
 
-The problem with this is that you are forcing the parent will run into a reclaim
-loop even if the child is not using the assigned limit to it.
+so if it's the one at line 319, which says
 
->  3. the child sets its limit to the val moved from the parent.
->     the parent remembers what amount of resource is to the children.
-> 
+	BUG_ON(!PageHighMem(page));
 
-All of this needs to be dynamic
+then I wonder what happened to that PageHighMem() test of the page in 
+between..
 
->  Above means that
-> 	- a directory's usage implies the sum of all sub directories +
->           own usage.
-> 	- there are no shared resource between parent <-> child.
-> 
->  Pros.
->   - simple and easy policy.
->   - no hierarchy overhead.
->   - no resource share among child <-> parent. very suitable for multilevel
->     resource isolation.
+Ahh.. Not the same "page". It looks like it's in the 
+flush_all_zero_pkmaps() path, and it's clearing some _other_ page in the 
+pkmap table in order to make room for the new one. So the page that causes 
+problems is from here:
 
-Sharing is an important aspect of hierachies. I am not convinced of this
-approach. Did you look at the patches I sent out? Was there something
-fundamentally broken in them?
+	 page = pte_page(pkmap_page_table[i]);
 
-[snip]
+rather than the one we're trying to map.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Not that it explains the BUG_ON(). We should only insert page table 
+entries into the pkmap_page_table[] array in map_new_virtual(), which in 
+turn is only called from kmap_high(), which in turn means that *those* 
+pages have also gine through the PageHighMem() test.
+
+So it sounds like we either
+ - have corruption in pkmap_page_table[]
+ - or pte_page() doesn't reverse mk_pte(page) propely, and one or the 
+   other is broken.
+
+Does anybody know if the fc9 x86-32 kernel is built with PAE enabled? 
+Might this be another PAE bit-masking bug and thus possibly fixed by the 
+PTE_MASK changes?
+
+		Linus
+
