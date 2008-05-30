@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761877AbYE3ETP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbYE3ETx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761877AbYE3ETP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760400AbYE3ESR
+	id S1761532AbYE3ETx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759002AbYE3ETk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:18:17 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:36277 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761137AbYE3ESP (ORCPT
+	Fri, 30 May 2008 00:19:40 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:17710 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758527AbYE3ETj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:18:15 -0400
+	Fri, 30 May 2008 00:19:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V7P1S7Hv+i054fxqvtftkTi2DQ1T/AgGbieJI0zR63MSpP3KaSMjh2KNZk8W8UAgDxDtkkB4VZASq+p+VEuDqovDnVS3KCqkiE0Tmegy/Vn8YzjkTdU02ASi0N+BUebUj03fbM84T1YH/PLkGtdUfJ5ePoB3k4CyKnwDQRua3MA=
-Message-ID: <8bd0f97a0805292118g40a3f88fmd929f1c39c839190@mail.gmail.com>
-Date: Fri, 30 May 2008 00:18:14 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-Cc: "David Howells" <dhowells@redhat.com>,
-       "Pekka J Enberg" <penberg@cs.helsinki.fi>, mpm@selenic.com,
-       lethal@linux-sh.org, linux-kernel@vger.kernel.org,
-       "Bryan Wu" <cooloney@kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0805291428240.7562@schroedinger.engr.sgi.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=ssu54htZmWyc12KXsQa/MVV/5Unc6LJtFWakGP5Ap4cr3FLAMu2wBD8AqYtIylnXUqqTrDFrT5lfMRxexBgoDqeJHx6oayJcO8ecAf6niCmhW+hRpq8cPF8a2XNkuspBk+lwh9tM2y/BTvJtiDwaM09Ik/iWkFSDHnmTRux2JRE=
+Message-ID: <483F804F.1@gmail.com>
+Date: Fri, 30 May 2008 13:19:27 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
+To: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
+CC: Peer Chen <pchen@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Kuan Luo <kluo@nvidia.com>
+Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
+References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804221444.55483.volker.armin.hemmann@tu-clausthal.de> <480DF1F5.3060208@gmail.com> <200805291654.03617.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <200805291654.03617.volker.armin.hemmann@tu-clausthal.de>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2874.1211980355@redhat.com> <24762.1211983758@redhat.com>
-	 <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com>
-	 <7613.1211996335@redhat.com>
-	 <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com>
-	 <29553.1212066208@redhat.com>
-	 <8bd0f97a0805291325w7d435e89h4de614547fb1bc7f@mail.gmail.com>
-	 <Pine.LNX.4.64.0805291329270.7207@schroedinger.engr.sgi.com>
-	 <8bd0f97a0805291351t43ea6d2eue1cdde531aa2fc2c@mail.gmail.com>
-	 <Pine.LNX.4.64.0805291428240.7562@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 5:29 PM, Christoph Lameter wrote:
-> On Thu, 29 May 2008, Mike Frysinger wrote:
->> > You should not have to do this. This is the default alignment that also
->> > SLOB needs to follow. We need to align structures correctly for access to
->> > long long's.
->>
->> are you saying that slob is broken ?  i see in mm/slob.c:
->> #ifndef ARCH_KMALLOC_MINALIGN
->> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long)
->> #endif
->
-> It should be long long instead.
->
-> SLUB:
->
-> #ifndef ARCH_KMALLOC_MINALIGN
-> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
-> #endif
->
-> SLAB:
->
-> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
+Hello,
 
-will you post a patch to do that (and ideally delete all of the
-occurrences in asm-*/ where the minalign is defined to 8) ?
--mike
+Hemmann, Volker Armin wrote:
+> -AHCI+nomsi: boots fine. Works fine. But: I still can not enable ncq
+> -AHCI+msi: the usual. No harddisks found, waiting for the timeouts, then 
+> kernel panic because of missing root.
+> 
+> -NON-RAID/IDE+msi: works fine. No delays. No NCQ (not surprising since mobos 
+> handbook says that AHCI mode is required).
+> -NON-RAID/IDE+nomsi: see above.
+
+So, sans NCQ, the only remaining issue is MSI, right?  Peer Chen, please
+lemme know which controllers are affected by this MSI problem and where
+the problem lies.
+
+> but:
+> [14315325.624510] ahci 0000:00:0a.0: AHCI 0001.0100 32 slots 4 ports 3 Gbps 
+> 0xf impl SATA mode
+> [14315325.624559] ahci 0000:00:0a.0: flags: 64bit sntf led clo pmp pio
+> 
+> shouldn't controller and harddisks support turning on NCQ? The handbooks says 
+> that NCQ is supported in AHCI mode and the harddisks doesn't seem to be 
+> blacklisted.
+
+The controller is not reporting NCQ capability in its cap register
+(flags: line contains ncq if the controller is), so NCQ is not enabled.
+
+Thanks.
+
+-- 
+tejun
