@@ -1,94 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYE3WeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbYE3Weg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbYE3WeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 18:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYE3WeD
+	id S1753217AbYE3Weg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 18:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYE3WeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 18:34:03 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:53251 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbYE3WeB (ORCPT
+	Fri, 30 May 2008 18:34:20 -0400
+Received: from mga06.intel.com ([134.134.136.21]:64920 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754886AbYE3WeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 18:34:01 -0400
-Message-ID: <48408191.6030104@keyaccess.nl>
-Date: Sat, 31 May 2008 00:37:05 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 30 May 2008 18:34:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,568,1204531200"; 
+   d="scan'208";a="286572223"
+Message-ID: <484080EC.9090707@linux.intel.com>
+Date: Fri, 30 May 2008 15:34:20 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, Takashi Iwai <tiwai@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: [PATCH] ISA: set 24-bit dma_mask for ISA devices.
-References: <4823AAF2.7070102@keyaccess.nl> <482B38D6.5030804@keyaccess.nl> <48406E8D.8050408@keyaccess.nl> <200805301543.42208.bjorn.helgaas@hp.com> <48407B99.4080209@keyaccess.nl>
-In-Reply-To: <48407B99.4080209@keyaccess.nl>
-Content-Type: multipart/mixed;
- boundary="------------050209050208090004020909"
-X-Spam-Score: -1.0 (-)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+References: <48402DAA.60202@linux.intel.com> <Pine.LNX.4.64.0805302017580.16427@blonde.site> <alpine.LFD.1.10.0805301403540.3141@woody.linux-foundation.org> <48407909.5090608@linux.intel.com> <alpine.LFD.1.10.0805301517500.3141@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805301517500.3141@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050209050208090004020909
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Linus Torvalds wrote:
+> 
+> On Fri, 30 May 2008, Arjan van de Ven wrote:
+>> ok for some it did gather this information, and it is
+>>
+>> kernel BUG at mm/highmem.c:319!
+> 
+> That's just _odd_. The call chain actually has kmap() in it, and kmap 
+> does:
+> 
+> 	if (!PageHighMem(page))
+> 		return page_address(page);
+> 	return kmap_high(page);
+> 
+> so if it's the one at line 319, which says
+> 
+> 	BUG_ON(!PageHighMem(page));
+> 
+> then I wonder what happened to that PageHighMem() test of the page in 
+> between..
+> 
+> Ahh.. Not the same "page". It looks like it's in the 
+> flush_all_zero_pkmaps() path, and it's clearing some _other_ page in the 
+> pkmap table in order to make room for the new one. So the page that causes 
+> problems is from here:
+> 
+> 	 page = pte_page(pkmap_page_table[i]);
+> 
+> rather than the one we're trying to map.
+> 
+> Not that it explains the BUG_ON(). We should only insert page table 
+> entries into the pkmap_page_table[] array in map_new_virtual(), which in 
+> turn is only called from kmap_high(), which in turn means that *those* 
+> pages have also gine through the PageHighMem() test.
+> 
+> So it sounds like we either
+>  - have corruption in pkmap_page_table[]
+>  - or pte_page() doesn't reverse mk_pte(page) propely, and one or the 
+>    other is broken.
+> 
+> Does anybody know if the fc9 x86-32 kernel is built with PAE enabled? 
 
-On 31-05-08 00:11, Rene Herman wrote:
-
-[ PNP: set the pnp_card dma_mask for use by ISAPnP cards. ]
-
-> Thanks. I'll assume Andrew picks it up from the CC...
-
-And here's the ISA one...
-
-Rene.
-
---------------050209050208090004020909
-Content-Type: text/plain;
- name="0001-ISA-set-24-bit-dma_mask-for-ISA-devices.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-ISA-set-24-bit-dma_mask-for-ISA-devices.patch"
-
->From 35f30388ad8536860719b3b44ea1f232b95ba42b Mon Sep 17 00:00:00 2001
-From: Rene Herman <rene.herman@gmail.com>
-Date: Sat, 31 May 2008 00:31:40 +0200
-Subject: [PATCH] ISA: set 24-bit dma_mask for ISA devices.
-
-Set the ISA device dma_mask in preparation for using the actual device
-with the DMA API.
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
----
- drivers/base/isa.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/base/isa.c b/drivers/base/isa.c
-index d222239..efd5775 100644
---- a/drivers/base/isa.c
-+++ b/drivers/base/isa.c
-@@ -7,6 +7,7 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/dma-mapping.h>
- #include <linux/isa.h>
- 
- static struct device isa_bus = {
-@@ -141,6 +142,9 @@ int isa_register_driver(struct isa_driver *isa_driver, unsigned int ndev)
- 		isa_dev->dev.release		= isa_dev_release;
- 		isa_dev->id			= id;
- 
-+		isa_dev->dev.coherent_dma_mask = DMA_24BIT_MASK;
-+		isa_dev->dev.dma_mask = &isa_dev->dev.coherent_dma_mask;
-+
- 		error = device_register(&isa_dev->dev);
- 		if (error) {
- 			put_device(&isa_dev->dev);
--- 
-1.5.2.2
-
-
---------------050209050208090004020909--
+versions that do identify themselves as "2.6.25-14.fc9.i686.PAE", and these ones didn't,
+(they're all in the "2.6.25-14.fc9.i686" form) so this is a kernel without PAE.
