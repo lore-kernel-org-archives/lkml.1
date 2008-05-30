@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYE3XKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYE3XKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbYE3XKO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 19:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYE3XJ7
+	id S1754839AbYE3XKv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 19:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbYE3XKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 19:09:59 -0400
-Received: from phoenix.clifford.at ([88.198.7.52]:56265 "EHLO
-	phoenix.clifford.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753519AbYE3XJ7 (ORCPT
+	Fri, 30 May 2008 19:10:39 -0400
+Received: from web36603.mail.mud.yahoo.com ([209.191.85.20]:43424 "HELO
+	web36603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754109AbYE3XKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 19:09:59 -0400
-Date: Sat, 31 May 2008 00:50:32 +0200
-From: Clifford Wolf <clifford@clifford.at>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add rlimits to /proc/<PID>/status
-Message-ID: <20080530225032.GH1369@clifford.at>
-References: <20080530201104.GG1369@clifford.at> <Pine.LNX.4.64.0805302232430.31527@blonde.site>
+	Fri, 30 May 2008 19:10:38 -0400
+X-YMail-OSG: tP9O2FkVM1kbYccOU1qAufdyRnGBqAc6sJHEJSER5hTuwhLVy_MB.qTqeyq6LJxuN1rFZvlU3RPilb0UGXuK9dkC49_fpeb4QQ--
+X-RocketYMMF: rancidfat
+Date: Fri, 30 May 2008 16:10:37 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH BUGFIX -rc4] Smack: Respect 'unlabeled' netlabel mode
+To: "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Paul Moore <paul.moore@hp.com>
+Cc: linux-security-module@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080530233603.GA2994@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805302232430.31527@blonde.site>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <538684.41302.qm@web36603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Fri, May 30, 2008 at 10:35:27PM +0100, Hugh Dickins wrote:
-> Aren't they better staying in /proc/<PID>/limits?
+--- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
 
-this was a cleanup of a patch I've sent to lkml about 6 months ago
-when there was no yet-released (non-rc) kernel with /proc/<PID>/limits ...
+> Hi all,
+> 
+> In case of Smack 'unlabeled' netlabel option, Smack passes a _zero_
+> initialized 'secattr' to label a packet/sock. This causes an 
+> [unfound domain label error]/-ENOENT by netlbl_sock_setattr().
+> Above Netlabel failure leads to Smack socket hooks failure causing 
+> an always-on socket() -EPERM error.
+> 
+> Such packets should have a netlabel domain agreed with netlabel to 
+> represent unlabeled packets. Fortunately Smack net ambient label 
+> packets are agreed with netlabel to be treated as unlabeled packets. 
+> 
+> Treat all packets coming out from a 'unlabeled' Smack system as
+> coming from the smack net ambient label.
 
-my patch is a more or less duplicate of commit d85f50d5. oops.
-please simply ignore it..  ;-)
+To date the behavior of a Smack system running with nltype
+unlabeled has been carefully undefined. The way you're defining
+it will result in a system in which only processes running with
+the ambient label will be able to use sockets, unless I'm reading
+the code incorrectly. This seems like "correct" behavior, but
+I don't think it is what those who've tried it would expect.
 
-yours,
- - clifford
 
--- 
-A byte walks into a bar and orders a pint. Bartender asks him "What's wrong?"
-Byte says "Parity error." Bartender nods and says "Yeah, I thought you looked
-a bit off."
+Casey Schaufler
+casey@schaufler-ca.com
