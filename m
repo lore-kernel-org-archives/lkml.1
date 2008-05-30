@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbYE3R3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYE3R3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbYE3R3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 13:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYE3R3D
+	id S1754789AbYE3R3f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 13:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYE3R3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 13:29:03 -0400
-Received: from elasmtp-junco.atl.sa.earthlink.net ([209.86.89.63]:41070 "EHLO
-	elasmtp-junco.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751905AbYE3R3B (ORCPT
+	Fri, 30 May 2008 13:29:24 -0400
+Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:47433
+	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754267AbYE3R3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 13:29:01 -0400
-Message-ID: <4840395A.108@tampabay.rr.com>
-Date: Fri, 30 May 2008 13:28:58 -0400
-From: Marco <marco@tampabay.rr.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
-MIME-Version: 1.0
+	Fri, 30 May 2008 13:29:23 -0400
+Message-Id: <E8739999-A8AE-4C10-AF7A-43387DBD8B10@it-loops.com>
+From: Guntsche Michael <mike@it-loops.com>
 To: linux-kernel@vger.kernel.org
-Subject: New Kernel headers vs old Kernel headers
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: a69c0ff6d203d3d794f5150ab1c16ac08868399773331e30fb1f01059939acb910029d55878c30ec350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 24.144.91.161
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Fwd: 2.6.25.x: Wrong CPU frequency (cpufreq table) with p4-clockmod
+Date: Fri, 30 May 2008 19:29:20 +0200
+References: <22164834-E7AA-4161-916C-F3D95E3BEA10@it-loops.com>
+X-Mailer: Apple Mail (2.924)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello All,
 
-I've come across a little discrepancy between the glibc docs and linux
-kernel docs when I was trying to figure out what kernel headers I should
-being using for my cross compiling.  The docs seem to say almost exactly
-the opposite thing.
+Now to the correct list.
 
-For a quick summary: linux docs(headers_install.txt) seem to indicate,
-running glibc compiled against new kernel headers, on an older kernel
-will possibly cause problems.  Where as glib docs(FAQ) indicate glibc
-compiled against new kernel headers, will run fine on an older kernel.
-
-Can someone shed some light on this (i.e. which is right)?
-
-Thank you in advance
-
-Marco Fonseca
-
-(p.s. I've included the sections from both docs below for easy reference)
-
-
-In linux-2.6.24/Documentation/make/headers_install.txt:
-...
-Kernel headers are backwards compatible, but not forwards compatible.  This
-means that a program built against a C library using older kernel headers
-should run on a newer kernel (although it may not have access to new
-features), but a program built against newer kernel headers may not work
-on an
-older kernel.
-...
-------------------
-In glibc-2.7/FAQ
-...
-1.8.    What version of the Linux kernel headers should be used?
-
-{AJ,UD} The headers from the most recent Linux kernel should be used.  The
-headers used while compiling the GNU C library and the kernel binary used
-when using the library do not need to match.  The GNU C library runs without
-problems on kernels that are older than the kernel headers used.  The other
-way round (compiling the GNU C library with old kernel headers and running
-on a recent kernel) does not necessarily work.  For example you can't use
-new kernel features if you used old kernel headers to compile the GNU C
-library.
-...
+> From: Guntsche Michael <mike@it-loops.com>
+> Date: May 30, 2008 19:21:14 GMT+02:00
+> To: Arjan van de Ven <arjan@infradead.org>
+> Cc: linux-raid@vger.kernel.org
+> Subject: Re: 2.6.25.x: Wrong CPU frequency (cpufreq table) with p4- 
+> clockmod
+>
+> Ok,
+>
+> I enabled debugging and here is the output of the boot-up
+>
+> cpufreq-core: trying to register driver p4-clockmod
+> cpufreq-core: adding CPU 0
+> p4-clockmod: has errata -- disabling low frequencies
+> speedstep-lib: x86: f, model: 1
+> speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0x8a01fe00 0x0
+> speedstep-lib: P4 - FSB 100000 kHz; Multiplier 138; Speed 13800000 kHz
+> freq-table: setting show_table for cpu 0 to e2950d60
+> freq-table: table entry 0 is invalid, skipping
+> freq-table: table entry 1 is invalid, skipping
+> freq-table: table entry 2: 3450000 kHz, 2 index
+> freq-table: table entry 3: 5175000 kHz, 3 index
+> freq-table: table entry 4: 6900000 kHz, 4 index
+> freq-table: table entry 5: 8625000 kHz, 5 index
+> freq-table: table entry 6: 10350000 kHz, 6 index
+> freq-table: table entry 7: 12075000 kHz, 7 index
+> freq-table: table entry 8: 13800000 kHz, 8 index
+> cpufreq-core: setting new policy for CPU 0: 3450000 - 13800000 kHz
+> freq-table: request for verification of policy (3450000 - 13800000  
+> kHz) for cpu 0
+> freq-table: verification lead to (3450000 - 13800000 kHz) for cpu 0
+> freq-table: request for verification of policy (3450000 - 13800000  
+> kHz) for cpu 0
+> freq-table: verification lead to (3450000 - 13800000 kHz) for cpu 0
+> cpufreq-core: new min and max freqs are 3450000 - 13800000 kHz
+> cpufreq-core: governor switch
+> cpufreq-core: __cpufreq_governor for CPU 0, event 1
+> cpufreq-core: governor: change or update limits
+> cpufreq-core: __cpufreq_governor for CPU 0, event 3
+> cpufreq-core: initialization complete
+> cpufreq-core: driver p4-clockmod up and running
+> p4-clockmod: P4/Xeon(TM) CPU On-Demand Clock Modulation available
+>
+> FSB and the multiplier look a litte bit off to me.
+>
+> /Michael
+>
 
