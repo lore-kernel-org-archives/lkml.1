@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYE3HZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbYE3H1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbYE3HZu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 03:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbYE3HZm
+	id S1754711AbYE3H1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 03:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbYE3H1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 03:25:42 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37022 "EHLO gate.crashing.org"
+	Fri, 30 May 2008 03:27:37 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43851 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750747AbYE3HZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 03:25:41 -0400
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-In-Reply-To: <20080530080700.773a82cc@siona.local>
-References: <1211852026.3286.36.camel@pasglop>
-	 <20080526.184047.88207142.davem@davemloft.net>
-	 <1211854540.3286.42.camel@pasglop>
-	 <20080526.192812.184590464.davem@davemloft.net>
-	 <1211859542.3286.46.camel@pasglop>
-	 <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	 <1211922621.3286.80.camel@pasglop>
-	 <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	 <1211924335.3286.89.camel@pasglop>
-	 <20080527214241.GA22636@parisc-linux.org>
-	 <1211926636.3286.100.camel@pasglop>
-	 <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-	 <1212110003.15633.0.camel@pasglop>  <20080530080700.773a82cc@siona.local>
-Content-Type: text/plain
-Date: Fri, 30 May 2008 17:24:27 +1000
-Message-Id: <1212132267.15633.69.camel@pasglop>
+	id S1750726AbYE3H1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 03:27:36 -0400
+Date: Fri, 30 May 2008 09:28:16 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Section mismatch on latest git
+Message-ID: <20080530072816.GA26169@uranus.ravnborg.org>
+References: <b637ec0b0805260103w62c03d07ic7bcd0ed0d9c9941@mail.gmail.com> <20080529000128.a106a7b1.akpm@linux-foundation.org> <20080529213845.d013a65e.randy.dunlap@oracle.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529213845.d013a65e.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-30 at 08:07 +0200, Haavard Skinnemoen wrote:
-> On Fri, 30 May 2008 11:13:23 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Thu, May 29, 2008 at 09:38:45PM -0700, Randy Dunlap wrote:
+> On Thu, 29 May 2008 00:01:28 -0700 Andrew Morton wrote:
 > 
-> > > Currently, this is the only interface I know that can do native-endian
-> > > accesses, so if you take it away, I'm gonna need an alternative
-> > > interface that doesn't do byteswapping.  
+> > On Mon, 26 May 2008 10:03:21 +0200 "Fabio Comolli" <fabio.comolli@gmail.com> wrote:
 > > 
-> > Are you aware that these also don't provide any ordering guarantee ?
+> > > Hi.
+> > > I don't know it it has been reported already:
+> > > 
+> > > WARNING: vmlinux.o(.text+0x114bb): Section mismatch in reference from
+> > > the function nopat() to the function .cpuinit.text:pat_disable()
+> > > The function nopat() references
+> > > the function __cpuinit pat_disable().
+> > > This is often because nopat lacks a __cpuinit
+> > > annotation or the annotation of pat_disable is wrong.
+> > > 
+> > > Config is in attachment.
+> > > 
+> > 
+> > This should fix it:
+> > 
+> > --- a/arch/x86/mm/pat.c~arch-x86-mm-patc-nopat-should-be-__init
+> > +++ a/arch/x86/mm/pat.c
+> > @@ -34,7 +34,7 @@ void __cpuinit pat_disable(char *reason)
+> >  	printk(KERN_INFO "%s\n", reason);
+> >  }
+> >  
+> > -static int nopat(char *str)
+> > +static int __init nopat(char *str)
+> >  {
+> >  	pat_disable("PAT support disabled.");
+> >  	return 0;
+> > _
+> > 
+> > 
+> > It turns out that this was harmless.  However it might not have been -
+> > I think that adding the ability to suppress all these warnings was a
+> > mistake.  
 > 
-> Yes, but I am not aware of any alternative.
-> 
-> I think the drivers I've written have the necessary barriers (or dma
-> ops with implicit barriers) that they don't actually depend on any
-> DMA vs. MMIO ordering guarantees. I hope MMIO vs. MMIO ordering is
-> guaranteed though?
+> It certainly has caused me to stop looking for/at them.
+> More a sin of omission than one of commission.
 
-Only to the same address I'd say.
+My plan in this area is:
+- Get my dev box operational again (awaiting spare parts from Intel)
+- Get usual configs warning free (or almost warning free)
+- Enable the warning in kbuild-next.git right after -rc1
 
-Ben.
+As my dev box is down atm I have prioritized what I conviniently
+can do on my mail-box (no defconfig/all*config builds).
 
-
+	Sam
