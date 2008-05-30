@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbYE3GOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbYE3GQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759194AbYE3GOY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 02:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYE3GOQ
+	id S1759601AbYE3GQV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 02:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbYE3GQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 02:14:16 -0400
-Received: from saeurebad.de ([85.214.36.134]:45980 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186AbYE3GOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 02:14:15 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Subject: Re: [patch 06/11] showmem: Only walk spanned pages.
-References: <20080529125501.196123527@de.ibm.com>
-	<20080529125729.607377419@de.ibm.com> <8763sxowli.fsf@saeurebad.de>
-	<20080530055049.GA6475@osiris.boeblingen.de.ibm.com>
-Date: Fri, 30 May 2008 08:13:41 +0200
-In-Reply-To: <20080530055049.GA6475@osiris.boeblingen.de.ibm.com> (Heiko
-	Carstens's message of "Fri, 30 May 2008 07:50:49 +0200")
-Message-ID: <87abi8nwtm.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 30 May 2008 02:16:13 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:33378 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752230AbYE3GQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 02:16:12 -0400
+Date: Thu, 29 May 2008 23:16:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
+In-Reply-To: <20080529224959.3297a4f1.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805292313240.12457@schroedinger.engr.sgi.com>
+References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com>
+ <20080529222143.5d7aa1e5.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0805292224540.12329@schroedinger.engr.sgi.com>
+ <20080529224959.3297a4f1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 29 May 2008, Andrew Morton wrote:
 
-Heiko Carstens <heiko.carstens@de.ibm.com> writes:
+> > No. The module subsystem has its own alloc_percpu subsystem that the 
+> > cpu_alloc replaces.
+> 
+> That is to support DEFINE_PER_CPU, not alloc_percpu().
 
-> On Thu, May 29, 2008 at 07:20:57PM +0200, Johannes Weiner wrote:
->> >  	printk("%lu pages dirty\n", global_page_state(NR_FILE_DIRTY));
->> >  	printk("%lu pages writeback\n", global_page_state(NR_WRITEBACK));
->> >  	printk("%lu pages mapped\n", global_page_state(NR_FILE_MAPPED));
->> 
->> These are redundant, check show_free_areas().
->
-> Indeed. Removed them. Thanks!
->
-> Btw. what's up with your show_mem() cleanup patch series? I thought it
-> would be merged before 2.6.26 and now it isn't even in -mm?
+Right but it needs to have its own section of the percpu space from which 
+it allocates the percpu segments for the modules. So it effectively 
+implements an allocator.
 
-It interfered with my stupid `remove free swap space display' series
-which is not yet completely in mainline (and no more in -mm).  I wanted
-to wait until it trickled in but I think I will include the remaining
-patches into the generic show_mem series and send them out soon,
-obsoleting the old series...
+> If we were to merge all this code and then run into the problems which
+> I fear then we are tremendously screwed.  We must examine this
+> exhaustively, in the most paranoid fashion.
 
-Remaining unpatched show_mem()s in mainline are are um, sparc, sh, m32r,
-alpha, sparc64 and xtensa.
+Well V2 virtually mapped the cpu alloc area which allowed extending it 
+arbitrarily. But that made things very complicated.
 
-	Hannes
+The number of per cpu resources needed is mostly fixed. The number of 
+zones, nodes, slab caches, network interfaces etc etc does not change much 
+during typical operations.
+ 
