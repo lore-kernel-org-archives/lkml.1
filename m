@@ -1,107 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbYE3BUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYE3BUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbYE3BUY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 21:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYE3BUL
+	id S1756853AbYE3BUw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 21:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYE3BUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 21:20:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33199 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751183AbYE3BUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 21:20:10 -0400
-X-Authenticated: #329476
-X-Provags-ID: V01U2FsdGVkX1/Tr7oSEkzT36lfvlrVzHltnvDxJz6C13MgSPM0id
-	6E+VFEy4ukjWry
-Date: Fri, 30 May 2008 03:20:05 +0200
-From: Bertram Felgenhauer <int-e@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Add workaround for bug in ASUS A7V600 BIOS (rev 1005)
-Message-ID: <20080530012005.GA9514@zombie.inf.tu-dresden.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
+	Thu, 29 May 2008 21:20:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47112 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751740AbYE3BUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 21:20:41 -0400
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Theodore Tso <tytso@mit.edu>
+Cc: David Miller <davem@davemloft.net>, James.Bottomley@HansenPartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080529124548.GC8065@mit.edu>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+	 <20080528.225826.40264516.davem@davemloft.net>
+	 <1212041839.8888.38.camel@pasglop>  <20080529124548.GC8065@mit.edu>
+Content-Type: text/plain
+Date: Fri, 30 May 2008 11:20:06 +1000
+Message-Id: <1212110406.15633.8.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This BIOS claims the VIA 8237 south bridge to be compatible with VIA 586,
-which it is not.
+On Thu, 2008-05-29 at 08:45 -0400, Theodore Tso wrote:
+> On Thu, May 29, 2008 at 04:17:19PM +1000, Benjamin Herrenschmidt wrote:
+> > Having been stopped a couple of times last year when trying to bring
+> > some technical subjects for the reason that they were "off topic, KS is
+> > for process" I tend to agree :-)
+> 
+> We did have some technical topics last year.  So I don't think the KS
+> will ever be purely for process.
 
-Signed-off-by: Bertram Felgenhauer <int-e@gmx.de>
----
-Without this patch, I get the following warning while booting,
-among others,
+Amen :-)
 
-| PCI: Using IRQ router VIA [1106/3227] at 0000:00:11.0
-| ------------[ cut here ]------------
-| WARNING: at arch/x86/pci/irq.c:265 pirq_via586_get+0x4a/0x60()
-| Modules linked in:
-| Pid: 1, comm: swapper Not tainted 2.6.26-rc4-00015-g1ec7d99 #1
-|  [<c0119fd4>] warn_on_slowpath+0x54/0x70
-|  [<c02246e0>] ? vt_console_print+0x210/0x2b0
-|  [<c02244d0>] ? vt_console_print+0x0/0x2b0
-|  [<c011a413>] ? __call_console_drivers+0x43/0x60
-|  [<c011a482>] ? _call_console_drivers+0x52/0x80
-|  [<c011aa89>] ? release_console_sem+0x1c9/0x200
-|  [<c0291d21>] ? raw_pci_read+0x41/0x70
-|  [<c0291e8f>] ? pci_read+0x2f/0x40
-|  [<c029151a>] pirq_via586_get+0x4a/0x60
-|  [<c02914d0>] ? pirq_via586_get+0x0/0x60
-|  [<c029178d>] pcibios_lookup_irq+0x15d/0x430
-|  [<c03b895a>] pcibios_irq_init+0x17a/0x3e0
-|  [<c03a66f0>] ? kernel_init+0x0/0x250
-|  [<c03a6763>] kernel_init+0x73/0x250
-|  [<c03b87e0>] ? pcibios_irq_init+0x0/0x3e0
-|  [<c0114d00>] ? schedule_tail+0x10/0x40
-|  [<c0102dee>] ? ret_from_fork+0x6/0x1c
-|  [<c03a66f0>] ? kernel_init+0x0/0x250
-|  [<c03a66f0>] ? kernel_init+0x0/0x250
-|  [<c010324b>] kernel_thread_helper+0x7/0x1c
-|  =======================
-| ---[ end trace 4eaa2a86a8e2da22 ]---
+> I agree that sometimes face-to-face discussions are crucial to
+> resolving technical issues.  The problem is that we try to nail down
+> the agenda a 3-4 weeks ahead of time, and realistically if a
+> particular topic requires certain stakeholders to be invited, we need
+> to decide that we're going to do that topic at least 8-9 weeks in
+> advance, maybe more, so those people can make travel plans and/or get
+> travel approvals.  And there is always the chance the topic will
+> resolve itself via e-mail.  So the trick is being able to identifying
+> the topics where a face-to-face discussion really will be useful.
 
-and IRQ trouble later,
+It's a bit hard, as sometimes, the topics will just show up before hand,
+or don't necessarily need special invite list when it's purely something
+that needs to be discussed with a good enough panel of arch maintainers.
 
-| irq 10: nobody cared (try booting with the "irqpoll" option)
+> First of all, if there is interest in holding some topic-area specific
+> mini-summits on Sunday before the Kernel Summit, we may be able to
+> scare up some space.  So if there is interest, please let me know.
 
-Now that's an VIA 8237 chip, so pirq_via586_get shouldn't be called
-at all; adding this workaround to via_router_probe() fixes the
-problem for me.
+Ok, if something comes to mind I will :-) The only thing at this stage
+would possibly be page table walking (ie, some old work I did on
+that to generalize the batch interface to all more-than-one-page
+operations such as fork, and to get rid of the per-cpu structures, and
+that I never fully finished, along with the mmu notifier stuff and
+the various needs around that area such as sleeping during some parts
+of page table updates etc...).
 
-Amazingly I have a 2.6.23.8 kernel that somehow works fine ... I'll
-never understand why.
+We might finally be able to put the whole thing on a table and decide
+on a nice / clean solution that I'd be happy to help implement then :-)
 
-The patch is against Linus' tree.
+Among others, I have had a hard time getting enough input from the
+various archs as to get to a design that would fit everybody fine.
 
-Please CC me in replies.
+We don't -have- to spend time on that, it's just an example, but typically
+I think a good one of something that would benefit from a face to face
+brainwashing with the arch maintainers & MM people.
 
-Thanks,
+> Secondly, one of the things which has been suggested in the past is
+> that we move the BOF's into an afternoon session slot, and maybe push
+> the last session to run until 7pm, perhaps.  That might make it easier
+> for people to attend BOF's on the spur of the moment --- which might
+> be useful in some cases where there is only 10 or so people you need
+> to hash our some issue.
+> 
+> And, of course, we try to schedule plenty of break time so that some
+> of these discussions can happy in the hallway.
+> 
+> Do any of these possibilities sound particularly attractive or likely
+> to address your concerns?  If so, which ones do you think we should
+> try this year, as an experiment?
 
-Bertram
+To be honest, I don't know for sure. A bit like David, I'm not even
+certain planning for those things is -that- useful and I must admit
+I'm not too fan of long days mostly because I end up always getting
+there totally jet lagged :-)
 
- arch/x86/pci/irq.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+But we can definitely try.
 
-diff --git a/arch/x86/pci/irq.c b/arch/x86/pci/irq.c
-index 0908fca..ca8df9c 100644
---- a/arch/x86/pci/irq.c
-+++ b/arch/x86/pci/irq.c
-@@ -621,6 +621,13 @@ static __init int via_router_probe(struct irq_router *r,
- 			 */
- 			device = PCI_DEVICE_ID_VIA_8235;
- 			break;
-+		case PCI_DEVICE_ID_VIA_8237:
-+			/**
-+			 * Asus a7v600 bios wrongly reports 8237
-+			 * as 586-compatible
-+			 */
-+			device = PCI_DEVICE_ID_VIA_8237;
-+			break;
- 		}
- 	}
- 
--- 
-1.5.3
+Cheers,
+Ben.
+
 
