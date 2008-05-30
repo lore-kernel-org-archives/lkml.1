@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYE3Ogo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYE3Oip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbYE3Ogo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 10:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYE3Ogh
+	id S1755039AbYE3Oip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 10:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYE3Oih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 10:36:37 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:47236 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbYE3Ogg (ORCPT
+	Fri, 30 May 2008 10:38:37 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54256 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752007AbYE3Oig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 10:36:36 -0400
+	Fri, 30 May 2008 10:38:36 -0400
+Message-ID: <48401169.3050706@sgi.com>
+Date: Fri, 30 May 2008 07:38:33 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Christoph Lameter <clameter@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
+References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org> <Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com> <20080529222143.5d7aa1e5.akpm@linux-foundation.org> <Pine.LNX.4.64.0805292224540.12329@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0805292224540.12329@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18496.4309.393775.511382@stoffel.org>
-Date: Fri, 30 May 2008 10:36:05 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: "John Stoffel" <john@stoffel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-       eric.whitney@hp.com, linux-mm@kvack.org, npiggin@suse.de
-Subject: Re: [PATCH 00/25] Vm Pageout Scalability Improvements (V8) -
- continued
-In-Reply-To: <20080530102917.45cbca64@bree.surriel.com>
-References: <20080529195030.27159.66161.sendpatchset@lts-notebook>
-	<20080529131624.60772eb6.akpm@linux-foundation.org>
-	<20080529162029.7b942a97@bree.surriel.com>
-	<18496.1712.236440.420038@stoffel.org>
-	<20080530102917.45cbca64@bree.surriel.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Lameter wrote:
+> On Thu, 29 May 2008, Andrew Morton wrote:
+...
+>> Plus who knows what lies ahead of us?
+> 
+> Well invariably we will end up with cpu area defragmentation.... Sigh.
+> 
+>> I don't think there is presently any upper limit on alloc_percpu()?  It
+>> uses kmalloc() and kmalloc_node()?
+>>
+>> Even if there is some limit, is it an unfixable one?
+> 
+> No there is no limit. It just wastes lots of space (pointer arrays, 
+> alignment etc) that we could use to configure sufficiently large per cpu 
+> areas.
 
-
-Rik> On Fri, 30 May 2008 09:52:48 -0400
-Rik> "John Stoffel" <john@stoffel.org> wrote:
-
->> I haven't seen any performance numbers talking about how well this
->> stuff works on single or dual CPU machines with smaller amounts of
->> memory, or whether it's worth using on these machines at all?
->> 
->> The big machines with lots of memory and lots of CPUs are certainly
->> becoming more prevalent, but for my home machine with 4Gb RAM and dual
->> core, what's the advantage?  
->> 
->> Let's not slow down the common case for the sake of the bigger guys if
->> possible.
-
-Rik> I wouldn't call your home system with 4GB RAM "small".
-
-*grin* me either in some ways.  But my other main linux box, which
-acts as an NFS server has 2Gb of RAM, but a pair of PIII Xeons at
-550mhz.  This is the box I'd be worried about in some ways, since it
-handles a bunch of stuff like backups, mysql, apache, NFS server,
-etc.  
-
-Rik> After all, the VM that Linux currently has was developed mostly
-Rik> on machines with less than 1GB of RAM and later encrusted in
-Rik> bandaids to make sure the large systems did not fail too badly.
-
-Sure, I understand.  
-
-Rik> As for small system performance, I believe that my patch series
-Rik> should cause no performance regressions on those systems and has
-Rik> a framework that allows us to improve performance on those
-Rik> systems too.
-
-Great!  It would be nice to just be able to track this nicely.
-
-Rik> If you manage to break performance with my patch set somehow,
-Rik> please let me know so I can fix it.  Something like the VM is
-Rik> very subtle and any change is pretty much guaranteed to break
-Rik> something, so I am very interested in feedback.
-
-What are you using to test/benchmark your changes as you develop this
-patchset?  What would you suggest as a test load to help check
-performance?
-
-John
+Is there any reason why the per_cpu area couldn't be made extensible?  Maybe
+a simple linked list of available areas?  (And use a config variable and/or
+boot param for initial size and increment size?)  [Ignoring the problem of
+reclaiming the space...]
