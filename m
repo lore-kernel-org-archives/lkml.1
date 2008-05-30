@@ -1,94 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYE3RFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYE3RRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbYE3RFi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 13:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYE3RF1
+	id S1753371AbYE3RRr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 13:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYE3RRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 13:05:27 -0400
-Received: from tapsys.com ([72.36.178.242]:54203 "EHLO tapsys.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751603AbYE3RF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 13:05:26 -0400
-X-Greylist: delayed 2044 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 May 2008 13:05:26 EDT
-Message-ID: <48402BD7.2080705@madrabbit.org>
-Date: Fri, 30 May 2008 09:31:19 -0700
-From: Ray Lee <ray-lk@madrabbit.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 30 May 2008 13:17:34 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:36920 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbYE3RRd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 13:17:33 -0400
+To: penguin-kernel@I-love.SAKURA.ne.jp
+CC: miklos@szeredi.hu, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <200805302237.BCH78170.FFMFSOOOJHQtLV@I-love.SAKURA.ne.jp>
+	(message from Tetsuo Handa on Fri, 30 May 2008 22:37:43 +0900)
+Subject: Re: [patch 00/15] security: pass path instead of inode to security ops
+References: <20080529134903.615127628@szeredi.hu> <200805302237.BCH78170.FFMFSOOOJHQtLV@I-love.SAKURA.ne.jp>
+Message-Id: <E1K28EM-0002L0-RT@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 30 May 2008 19:17:30 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Oy, resending. Freakin' gmail; sorry for the base64 encoded noise.)
+> > This is based on the vfs-cleanups(*) tree + the 8 patches posted
+> > recently (which will be added to this tree shortly).
+> 
+> Patching these 15 patches fails. I think this is because the 8
+> patches are missing.  Can I see the 8 patches?
 
-On Mon, May 26, 2008 at 6:28 AM, Ilpo <ilpo.jarvinen@helsinki.fi> wrote:
-> On Mon, 26 May 2008, Ingo Molnar wrote:
->
->> in an overnight -tip testruns that is based on recent -git i got two
->> stuck TCP connections:
->>
->> Active Internet connections (w/o servers)
->> Proto Recv-Q Send-Q Local Address               Foreign Address             State
->> tcp        0 174592 10.0.1.14:58015             10.0.1.14:3632              ESTABLISHED
->> tcp    72134      0 10.0.1.14:3632              10.0.1.14:58015             ESTABLISHED
->>
->> on a previously reliable machine. That connection has been stuck for 9
->> hours so it does not time out, etc. - and the distcc run that goes over
->> that connection is stuck as well.
->>
->> kernel config is attached.
->>
->> in terms of debugging there's not much i can do i'm afraid. It's not
->> possible to get a tcpdump of this incident, given the extreme amount of
->> load these testboxes handle.
->
-> ...but you can still tcpdump that particular flow once the situation is
-> discovered to see if TCP still tries to do something, no? One needs to
-> tcpdump couple of minutes at minimum. Also please get /proc/net/tcp for
-> that flow around the same time.
->
->> This problem started sometime around rc3
->> and it occured on two boxes (on a laptop and on a desktop), both are SMP
->> Core2Duo based systems. I never saw this problem before on thousands of
->> similar bootups, so i'm 99.9% sure the bug is either new or became
->> easier to trigger.
->>
->> It's not possible to bisect it as it needs up to 12 hours of heavy
->> workload to trigger. The incident happened about 5 times since the first
->> incident a couple of days ago - 4 times on one box and once on another
->> box. The first failing head i became aware of was 78b58e549a3098. (-tip
->> has other changes beyond -git but changes nothing in networking.)
+I've now committed those to the vfs-cleanups tree.
 
-Okay, but in some sense you've already bisected this somewhat. I'm
-assuming that your testing uses the latest tip and is refreshed daily.
-
-If that's the case, then I would (possibly naively) expect the culprit
-to show up in a:
-  git log -p v2.6.26-rc1..78b58e549a3098 net/{compat.c,core,ipv4,netfilter,packet,sched,socket.c}
-
-There are only a few commits in there that appear to touch network behavior:
-
-  79d44516b4b178ffb6e2159c75584cfcfc097914
-  a1c1f281b84a751fdb5ff919da3b09df7297619f
-  62ab22278308a40bcb7f4079e9719ab8b7fe11b5
-
-Reverting just those three and running overnight might provide a clue.
-OTOH, I'm in no way a net/ expert, so if you are already working a
-debugging strategy then feel free to ignore this. I'm only piping up
-as it appears that the troubleshooting has stalled.
-
-> (but there were
-> some recent fixes to FRTO and retrans_stamp change could have some
-> significance here)?
->
-> Other than that, nothing since -rc1 seems suspicious to me (though
-> I hardly understand every part of networking).
+Thanks,
+Miklos
