@@ -1,124 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbYE3IYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYE3IZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbYE3IYw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 04:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbYE3IY3
+	id S1757584AbYE3IZV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 04:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757464AbYE3IY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 04:24:29 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:34663 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753176AbYE3IY1 (ORCPT
+	Fri, 30 May 2008 04:24:57 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:46012 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756560AbYE3IYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 04:24:27 -0400
-Date: Fri, 30 May 2008 01:24:21 -0700
+	Fri, 30 May 2008 04:24:54 -0400
+Date: Fri, 30 May 2008 01:24:49 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Nadia.Derbey@bull.net
 Cc: manfred@colorfullife.com, lnxninja@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, efault@gmx.de, akpm@linux-foundation.org
-Subject: Re: [PATCH 6/9] Make idr_find rcu-safe
-Message-ID: <20080530082421.GI4943@linux.vnet.ibm.com>
+Subject: Re: [PATCH 7/9] Make idr_remove rcu-safe
+Message-ID: <20080530082449.GJ4943@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080507113553.395937000@bull.net> <20080507113737.158241000@bull.net>
+References: <20080507113553.395937000@bull.net> <20080507113737.562143000@bull.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080507113737.158241000@bull.net>
+In-Reply-To: <20080507113737.562143000@bull.net>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 01:35:59PM +0200, Nadia.Derbey@bull.net wrote:
-> [PATCH 06/09]
+On Wed, May 07, 2008 at 01:36:00PM +0200, Nadia.Derbey@bull.net wrote:
+> [PATCH 07/09]
 > 
-> This is a patch that makes idr_find rcu-safe: it can now be called inside an
-> rcu_read critical section.
+> This patch introduces the free_layer() routine: it is the one that actually
+> frees memory after a grace period has elapsed.
 
 Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
 > Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 > 
 > ---
->  include/linux/idr.h |   16 ++++++++++++++++
->  lib/idr.c           |   11 ++++++-----
->  2 files changed, 22 insertions(+), 5 deletions(-)
+>  lib/idr.c |   59 ++++++++++++++++++++++++++++++++++++++++++++---------------
+>  1 file changed, 44 insertions(+), 15 deletions(-)
 > 
 > Index: linux-2.6.25-mm1/lib/idr.c
 > ===================================================================
-> --- linux-2.6.25-mm1.orig/lib/idr.c	2008-05-06 18:06:58.000000000 +0200
-> +++ linux-2.6.25-mm1/lib/idr.c	2008-05-07 10:38:15.000000000 +0200
-> @@ -459,7 +459,8 @@ EXPORT_SYMBOL(idr_destroy);
->   * return indicates that @id is not valid or you passed %NULL in
->   * idr_get_new().
->   *
-> - * The caller must serialize idr_find() vs idr_get_new() and idr_remove().
-> + * This function can be called under rcu_read_lock(), given that the leaf
-> + * pointers lifetimes are correctly managed.
->   */
->  void *idr_find(struct idr *idp, int id)
->  {
-> @@ -467,7 +468,7 @@ void *idr_find(struct idr *idp, int id)
->  	struct idr_layer *p;
+> --- linux-2.6.25-mm1.orig/lib/idr.c	2008-05-06 18:06:43.000000000 +0200
+> +++ linux-2.6.25-mm1/lib/idr.c	2008-05-07 09:07:31.000000000 +0200
+> @@ -52,6 +52,19 @@ static struct idr_layer *get_from_free_l
+>  	return(p);
+>  }
 > 
->  	n = idp->layers * IDR_BITS;
-> -	p = idp->top;
-> +	p = rcu_dereference(idp->top);
+> +static void idr_layer_rcu_free(struct rcu_head *head)
+> +{
+> +	struct idr_layer *layer;
+> +
+> +	layer = container_of(head, struct idr_layer, rcu_head);
+> +	kmem_cache_free(idr_layer_cache, layer);
+> +}
+> +
+> +static inline void free_layer(struct idr_layer *p)
+> +{
+> +	call_rcu(&p->rcu_head, idr_layer_rcu_free);
+> +}
+> +
+>  /* only called when idp->lock is held */
+>  static void __move_to_free_list(struct idr *idp, struct idr_layer *p)
+>  {
+> @@ -334,6 +347,7 @@ static void sub_remove(struct idr *idp, 
+>  	struct idr_layer *p = idp->top;
+>  	struct idr_layer **pa[MAX_LEVEL];
+>  	struct idr_layer ***paa = &pa[0];
+> +	struct idr_layer *to_free;
+>  	int n;
+> 
+>  	*paa = NULL;
+> @@ -349,13 +363,18 @@ static void sub_remove(struct idr *idp, 
+>  	n = id & IDR_MASK;
+>  	if (likely(p != NULL && test_bit(n, &p->bitmap))){
+>  		__clear_bit(n, &p->bitmap);
+> -		p->ary[n] = NULL;
+> +		rcu_assign_pointer(p->ary[n], NULL);
+> +		to_free = NULL;
+>  		while(*paa && ! --((**paa)->count)){
+> -			move_to_free_list(idp, **paa);
+> +			if (to_free)
+> +				free_layer(to_free);
+> +			to_free = **paa;
+>  			**paa-- = NULL;
+>  		}
+>  		if (!*paa)
+>  			idp->layers = 0;
+> +		if (to_free)
+> +			free_layer(to_free);
+>  	} else
+>  		idr_remove_warning(id);
+>  }
+> @@ -368,25 +387,37 @@ static void sub_remove(struct idr *idp, 
+>  void idr_remove(struct idr *idp, int id)
+>  {
+>  	struct idr_layer *p;
+> +	struct idr_layer *to_free;
 > 
 >  	/* Mask off upper bits we don't use for the search. */
 >  	id &= MAX_ID_MASK;
-> @@ -477,7 +478,7 @@ void *idr_find(struct idr *idp, int id)
 > 
->  	while (n > 0 && p) {
->  		n -= IDR_BITS;
-> -		p = p->ary[(id >> n) & IDR_MASK];
-> +		p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+>  	sub_remove(idp, (idp->layers - 1) * IDR_BITS, id);
+>  	if (idp->top && idp->top->count == 1 && (idp->layers > 1) &&
+> -	    idp->top->ary[0]) {  // We can drop a layer
+> -
+> +	    idp->top->ary[0]) {
+> +		/*
+> +		 * Single child at leftmost slot: we can shrink the tree.
+> +		 * This level is not needed anymore since when layers are
+> +		 * inserted, they are inserted at the top of the existing
+> +		 * tree.
+> +		 */
+> +		to_free = idp->top;
+>  		p = idp->top->ary[0];
+> -		idp->top->bitmap = idp->top->count = 0;
+> -		move_to_free_list(idp, idp->top);
+> -		idp->top = p;
+> +		rcu_assign_pointer(idp->top, p);
+>  		--idp->layers;
+> +		to_free->bitmap = to_free->count = 0;
+> +		free_layer(to_free);
 >  	}
->  	return((void *)p);
+>  	while (idp->id_free_cnt >= IDR_FREE_MAX) {
+>  		p = get_from_free_list(idp);
+> +		/*
+> +		 * Note: we don't call the rcu callback here, since the only
+> +		 * layers that fall into the freelist are those that have been
+> +		 * preallocated.
+> +		 */
+>  		kmem_cache_free(idr_layer_cache, p);
+> -		return;
+>  	}
+> +	return;
 >  }
-> @@ -510,7 +511,7 @@ int idr_for_each(struct idr *idp,
->  	struct idr_layer **paa = &pa[0];
+>  EXPORT_SYMBOL(idr_remove);
 > 
->  	n = idp->layers * IDR_BITS;
-> -	p = idp->top;
-> +	p = rcu_dereference(idp->top);
->  	max = 1 << n;
+> @@ -424,15 +455,13 @@ void idr_remove_all(struct idr *idp)
 > 
->  	id = 0;
-> @@ -518,7 +519,7 @@ int idr_for_each(struct idr *idp,
->  		while (n > 0 && p) {
->  			n -= IDR_BITS;
->  			*paa++ = p;
-> -			p = p->ary[(id >> n) & IDR_MASK];
-> +			p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
+>  		id += 1 << n;
+>  		while (n < fls(id)) {
+> -			if (p) {
+> -				memset(p, 0, sizeof *p);
+> -				move_to_free_list(idp, p);
+> -			}
+> +			if (p)
+> +				free_layer(p);
+>  			n += IDR_BITS;
+>  			p = *--paa;
 >  		}
-> 
->  		if (p) {
-> Index: linux-2.6.25-mm1/include/linux/idr.h
-> ===================================================================
-> --- linux-2.6.25-mm1.orig/include/linux/idr.h	2008-05-06 17:38:42.000000000 +0200
-> +++ linux-2.6.25-mm1/include/linux/idr.h	2008-05-07 10:41:22.000000000 +0200
-> @@ -79,6 +79,22 @@ struct idr {
-> 
->  #define _idr_rc_to_errno(rc) ((rc) == -1 ? -EAGAIN : -ENOSPC)
-> 
-> +/**
-> + * idr synchronization (stolen from radix-tree.h)
-> + *
-> + * idr_find() is able to be called locklessly, using RCU. The caller must
-> + * ensure calls to this function are made within rcu_read_lock() regions.
-> + * Other readers (lock-free or otherwise) and modifications may be running
-> + * concurrently.
-> + *
-> + * It is still required that the caller manage the synchronization and
-> + * lifetimes of the items. So if RCU lock-free lookups are used, typically
-> + * this would mean that the items have their own locks, or are amenable to
-> + * lock-free access; and that the items are freed by RCU (or only freed after
-> + * having been deleted from the idr tree *and* a synchronize_rcu() grace
-> + * period).
-> + */
-> +
->  /*
->   * This is what we export.
+>  	}
+> -	idp->top = NULL;
+> +	rcu_assign_pointer(idp->top, NULL);
+>  	idp->layers = 0;
+>  }
+>  EXPORT_SYMBOL(idr_remove_all);
+> @@ -549,7 +578,7 @@ EXPORT_SYMBOL(idr_for_each);
+>   * A -ENOENT return indicates that @id was not found.
+>   * A -EINVAL return indicates that @id was not within valid constraints.
+>   *
+> - * The caller must serialize vs idr_find(), idr_get_new(), and idr_remove().
+> + * The caller must serialize with writers.
 >   */
+>  void *idr_replace(struct idr *idp, void *ptr, int id)
+>  {
+> @@ -575,7 +604,7 @@ void *idr_replace(struct idr *idp, void 
+>  		return ERR_PTR(-ENOENT);
+> 
+>  	old_p = p->ary[n];
+> -	p->ary[n] = ptr;
+> +	rcu_assign_pointer(p->ary[n], ptr);
+> 
+>  	return old_p;
+>  }
 > 
 > --
