@@ -1,103 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYE3W51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbYE3XCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYE3W51 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 18:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYE3W5S
+	id S1753607AbYE3XCy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 19:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYE3XCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 18:57:18 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:35980 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753211AbYE3W5R (ORCPT
+	Fri, 30 May 2008 19:02:42 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:32758 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412AbYE3XCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 18:57:17 -0400
-Date: Fri, 30 May 2008 18:53:20 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss] How many contributors are we losing
-Message-ID: <20080530225320.GA3380@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Luck, Tony" <tony.luck@intel.com>, Hugh Dickins <hugh@veritas.com>,
-	Greg KH <greg@kroah.com>, Dave Jones <davej@redhat.com>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>,
-	ksummit-2008-discuss@lists.linux-foundation.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	David Woodhouse <dwmw2@infradead.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080528225136.GA29014@kroah.com> <1FE6DD409037234FAB833C420AA843EC016FFF69@orsmsx424.amr.corp.intel.com> <20080529003657.GA17505@kroah.com> <20080529010055.GA31952@redhat.com> <20080529022632.GB5180@kroah.com> <1FE6DD409037234FAB833C420AA843EC017405EB@orsmsx424.amr.corp.intel.com> <Pine.LNX.4.64.0805302205160.28487@blonde.site> <1FE6DD409037234FAB833C420AA843EC01740760@orsmsx424.amr.corp.intel.com>
+	Fri, 30 May 2008 19:02:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=fiAK/V1MhS5l3hERf6rxw1T0wjOn7yBAomvSCA7BZWm4UAOvUYam7rn6a97DnUv+V2XLizlEi3e/Lw6mtkyMMQaqR83hPIAeWTfx59E1vvtrpy8ryB/mdvd6aoZguCtqOqOO62Yx1nK7XyF8EOnII2rsILYrlDMiYkNe+0AvfDs=
+Date: Sat, 31 May 2008 02:57:51 +0300
+To: Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul.moore@hp.com>
+Cc: linux-security-module@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH BUGFIX -v2 -rc4] Smack: Respect 'unlabeled' netlabel mode
+Message-ID: <20080530235751.GA6888@ubuntu>
+References: <20080530233603.GA2994@ubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC01740760@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080530233603.GA2994@ubuntu>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 30, 2008 at 03:05:12PM -0700, Luck, Tony wrote:
-> 
-> Probably some of them moved on to do different things (or were
-> promoted to manage people who still work on Linux).
+Hi!,
 
-There's an interesting unspoken assumption here that people who stop
-contributing patches which end up in the Linux kernel mailing "no
-longer working on the kernel", or "no longer working in Linux", or
-"left the community", or (even more of a stretch) people that we have
-somehow driven away or that we have failed because they didnt come
-back.
+[ Sorry, Fix: Acquire smack_ambient_lock before reading smack_net_ambient ]
 
-Looking at the list.....
+-->
 
-> Werner Almesberger
+In case of Smack 'unlabeled' netlabel option, Smack passes a _zero_
+initialized 'secattr' to label a packet/sock. This causes an 
+[unfound domain label error]/-ENOENT by netlbl_sock_setattr().
+Above Netlabel failure leads to Smack socket hooks failure causing 
+an always-on socket() -EPERM error.
 
-	Original author of LILO, does networking research using the
-	Linux kernel.  (Has shown up and presented papers at various
-	conferences such as FISL and Linux.conf.au.)
+Such packets should have a netlabel domain agreed with netlabel to 
+represent unlabeled packets. Fortunately Smack net ambient label 
+packets are agreed with netlabel to be treated as unlabeled packets. 
 
-> Stephen Tweedie
+Treat all packets coming out from a 'unlabeled' Smack system as
+coming from the smack net ambient label.
 
-	Still working at Red Hat, my last knowledge was that he was in
-	Xen hell.....
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
 
-> Kylene Jo Hall
+diff --git a/security/smack/smack.h b/security/smack/smack.h
+index 4a4477f..81b94ba 100644
+--- a/security/smack/smack.h
++++ b/security/smack/smack.h
+@@ -16,6 +16,7 @@
+ #include <linux/capability.h>
+ #include <linux/spinlock.h>
+ #include <linux/security.h>
++#include <linux/mutex.h>
+ #include <net/netlabel.h>
+ 
+ /*
+@@ -178,6 +179,7 @@ u32 smack_to_secid(const char *);
+ extern int smack_cipso_direct;
+ extern int smack_net_nltype;
+ extern char *smack_net_ambient;
++extern struct mutex smack_ambient_lock;
+ 
+ extern struct smack_known *smack_known;
+ extern struct smack_known smack_known_floor;
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index b5c8f92..0d9c7dc 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -1292,6 +1292,11 @@ static void smack_to_secattr(char *smack, struct netlbl_lsm_secattr *nlsp)
+ 		}
+ 		break;
+ 	default:
++		mutex_lock(&smack_ambient_lock);
++		nlsp->domain = kstrdup(smack_net_ambient, GFP_ATOMIC);
++		mutex_unlock(&smack_ambient_lock);
++
++		nlsp->flags = NETLBL_SECATTR_DOMAIN;
+ 		break;
+ 	}
+ }
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 271a835..cc357dc 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -46,7 +46,7 @@ enum smk_inos {
+  */
+ static DEFINE_MUTEX(smack_list_lock);
+ static DEFINE_MUTEX(smack_cipso_lock);
+-static DEFINE_MUTEX(smack_ambient_lock);
++DEFINE_MUTEX(smack_ambient_lock);
+ 
+ /*
+  * This is the "ambient" label for network traffic.
 
-	Member of IBM Linux Technology Center, Security Team.
-	The security team does a lot more than kernel work....
+-- 
 
-> Dustin Kirkland
+"Better to light a candle, than curse the darkness"
 
-	Was a member of the IBM Linux Technology Center, now working
-	for Canonical on Ubuntu's Enterprise Server Team
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
 
-> Suparna Bhattacharya
-
-	Member of the IBM Linux Technology Center, on leave to get an
-	advanced degree.
-
-> Junio C Hamano
-
-	Git maintainer.  :-)
-
-So lots of stories, and there are plenty of people who are still
-working at a company doing Linux work; they're just not happening to
-contribute to a kernel.  They might be fixing bugs for customers, or
-forward porting Xen for an enterprise distro, or many other things
-that are intimately related to the Linux kernel --- just not in ways
-that result in patches into mainline.
-
-So if we really want some hard numbers on how many kernel developers
-we are "losing", we would probably have to try to contact some of
-these people and see if they are willing to answer a survey.  But
-given your numbers, I really don't think it's as big a problem as some
-people make it out to be....
-
-						- Ted
