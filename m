@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbYE3TYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYE3Tcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbYE3TYV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 15:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYE3TYO
+	id S1754069AbYE3Tcf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 15:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYE3TcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 15:24:14 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:6403 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbYE3TYN (ORCPT
+	Fri, 30 May 2008 15:32:24 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:45135 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752284AbYE3TcX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 15:24:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=L7h4TkeEGXO6IQBd+VWLcIFu8TL1RWjA9HBl3t4m2GVWclG4RQIUNFzaebafRW4gSCmX6YHQFC5aZfOFHscdjAkoOCXysGwxPu7FjfAKm9fqs1NUdsErAu1a4cQbiRbejGUsCsCB378Y2eUJNIPO0hplFPWNs9APUwZoXY+0uVg=
-Message-ID: <6934efce0805301224t5e5d7a01n3b652c4df5324d58@mail.gmail.com>
-Date: Fri, 30 May 2008 12:24:11 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Alexey Korolev" <akorolev@infradead.org>
-Subject: Re: [BUG] JFFS2 power loss recovery issues in 2.6.25, 2.6.26-rc
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0805291205480.22130@pentafluge.infradead.org>
+	Fri, 30 May 2008 15:32:23 -0400
+Date: Fri, 30 May 2008 13:32:07 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mtk.manpages@googlemail.com, drepper@redhat.com, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-man@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
+Message-ID: <20080530193207.GB28074@parisc-linux.org>
+References: <482D4665.4050401@gmail.com> <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <E1K27bZ-0002Gk-3b@pomaz-ex.szeredi.hu> <cfd18e0f0805301124o5f217dden10726b268d05d81a@mail.gmail.com> <E1K2ABK-0002ck-UT@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.1.10.0805291205480.22130@pentafluge.infradead.org>
+In-Reply-To: <E1K2ABK-0002ck-UT@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We made some investigations for this issue and found commit number which
-> breaks JFFS2 power loss recoverability.
-> It is:  [JFFS2] Improve getdents vs. f_pos handling on NOR flash.
->        http://git.infradead.org/mtd-2.6.git?a=commitdiff;h=15953580e79b58caefb107e77f218e009b9992e6
->
-> Currently we don't know why it breaks JFFS2 and how it could be fixed
-> except roll back.
+On Fri, May 30, 2008 at 09:22:30PM +0200, Miklos Szeredi wrote:
+> For 2) you can just use permission() instead of vfs_permission() which
+> is exactly the same in this case (and consolidated into a common
+> function later in the vfs-cleanups tree).
 
-Does everything work when you unmerge this one commit?
+Miklos, don't delude people into thinking the vfs-cleanups tree is ever
+going to get merged in its current state.  Al's NAKed the path_* stuff,
+Christoph's NAKed it too.  Ignoring them and putting up a VFS tree of
+your own is not going to help matters.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
