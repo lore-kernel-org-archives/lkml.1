@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbYE3Jjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYE3Jpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbYE3Jjl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 05:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYE3Jjb
+	id S1754856AbYE3Jpq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 05:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYE3Jpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 05:39:31 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47072 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751689AbYE3Jja (ORCPT
+	Fri, 30 May 2008 05:45:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33819 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751725AbYE3Jpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 05:39:30 -0400
-Message-ID: <483FCB4E.8090104@sgi.com>
-Date: Fri, 30 May 2008 11:39:26 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: benh@kernel.crashing.org, Roland Dreier <rdreier@cisco.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop> <yq0iqwxrwuh.fsf@jaguar.mkp.net> <1212097223.8888.55.camel@pasglop> <200805291453.38492.jbarnes@virtuousgeek.org>
-In-Reply-To: <200805291453.38492.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 30 May 2008 05:45:35 -0400
+Date: Fri, 30 May 2008 10:31:07 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Jeff Garzik <jeff@garzik.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+ kernel.
+Message-ID: <20080530103107.4f71cfe3@core>
+In-Reply-To: <483F3EC4.5050700@zytor.com>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+	<20080528.225826.40264516.davem@davemloft.net>
+	<1212041839.8888.38.camel@pasglop>
+	<20080529124548.GC8065@mit.edu>
+	<1212077700.26088.83.camel@shinybook.infradead.org>
+	<483F002E.5060002@garzik.org>
+	<1212095864.24826.2.camel@lappy.programming.kicks-ass.net>
+	<483F3EC4.5050700@zytor.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Thursday, May 29, 2008 2:40 pm Benjamin Herrenschmidt wrote:
->> On Thu, 2008-05-29 at 10:47 -0400, Jes Sorensen wrote:
->>> The only way to guarantee ordering in the above setup, is to either
->>> make writel() fully ordered or adding the mmiowb()'s inbetween the two
->>> writel's. On Altix you have to go and read from the PCI brige to
->>> ensure all writes to it have been flushed, which is also what mmiowb()
->>> is doing. If writel() was to guarantee this ordering, it would make
->>> every writel() call extremely expensive :-(
->> Interesting. I've always been taught by ia64 people that mmiowb() was
->> intended to be used solely between writel() and spin_unlock().
+On Thu, 29 May 2008 16:39:48 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
+
+> Peter Zijlstra wrote:
+> > 
+> > I certainly agree, pushing more and more into initrd just annoys the
+> > hell out of me.
+> > 
+> > I'd argue to include everything needed to build (and esp cross build) an
+> > initrd into the kernel - up until that point initrds are useless.
+> > 
 > 
-> Well, that *was* true, afaik, but maybe these days multipath isn't just for 
-> fail-over.  If that's true, then yeah making every single writeX ordered 
-> would be the only way to go...
+> I tried to push for that two years ago.  I'd be more than happy to pull 
+> that out of the freezer.
 
-I could be getting bits wrong, but multi-path here is in the NUMA
-routing, not at the device level.
+Its kind of irrelevant if you need an initrd or not. The only question of
+relevance is "does it get built when I type make all". Almost all Linux
+users are using initrd without problem - because their distro ensures
+"make install" and the packaged kernels do the right thing.
 
->> If this is a performance problem, then provide relaxed variants and
->> use them in selected drivers.
-> 
-> Sounds reasonable.  That way drivers "just work" and important drivers can be 
-> optimized.
-
-That would kill all levels of performance in all drivers, resulting in
-attempts to try and modify a fair bit of drivers to get the performance
-back.
-
-In reality this problem really only exists for devices where ordering of
-consecutive writel's is a big issue. In my experience it really isn't
-the case very frequently - and the number of mmiowb's that have put in
-shows that too :-)
-
-Cheers,
-Jes
+Alan
