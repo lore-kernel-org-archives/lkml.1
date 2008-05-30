@@ -1,94 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYEaAFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbYEaAFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbYEaAFN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbYEaADS
+	id S1757516AbYEaAFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYEaADg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 20:03:18 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:2348 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754185AbYEaADQ (ORCPT
+	Fri, 30 May 2008 20:03:36 -0400
+Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:59053
+	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756607AbYEaADf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 20:03:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=hHaBvdRBDyw8wm0TNtM3mzUk78nSfNShzq+iQFwgKbUVU6wp1FdQtiYz4Gdn7kNIsK3IV6OYmnE63Y2S0gt+vgE4GQXBAOvFMHXcTFfxuRTsaZFj4wcDB1Q2O1T9Oe5ffGKqyA8fwB7b1XPHpvWT3iJMDhU6VqmlSpCJ+fW2Cms=
-Date: Sat, 31 May 2008 03:58:26 +0300
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: Paul Moore <paul.moore@hp.com>, linux-security-module@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH BUGFIX -rc4] Smack: Respect 'unlabeled' netlabel mode
-Message-ID: <20080531005826.GA6945@ubuntu>
-References: <20080530233603.GA2994@ubuntu> <538684.41302.qm@web36603.mail.mud.yahoo.com>
+	Fri, 30 May 2008 20:03:35 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <538684.41302.qm@web36603.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH 5 of 5] xen: Avoid allocations causing swap activity on the
+	resume path
+X-Mercurial-Node: c692f3a12da1e99a4a435faba6794e56674ed26f
+Message-Id: <c692f3a12da1e99a4a43.1212191405@localhost>
+In-Reply-To: <patchbomb.1212191400@localhost>
+Date: Sat, 31 May 2008 00:50:05 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Jeff Garzik <jgarzik.pobox.com@goop.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Casey,
+From: Ian Campbell <ian.campbell@citrix.com>
 
-On Fri, May 30, 2008 at 04:10:37PM -0700, Casey Schaufler wrote:
-> 
-> 
-> To date the behavior of a Smack system running with nltype
-> unlabeled has been carefully undefined. 
->
+Avoid allocations causing swap activity on the resume path by allowing
+such allocations to access the emergency pools otherwise a
+save/restore/migration of a guest which is low on memory can
+deadlock.
 
-In the early days (before the 'Smack: unlabeled outgoing ambient packets'
-patch - 4bc87e62), I used '$ echo unlabeled > /smack/nltype' in my startup 
-scripts to avoid sending cipso-affected packets. When I upgraded this 
-machine's kernel, I faced the -EPERM problem mentiond above. 
+[ linux-2.6.18-xen changesets e8b49cfbdac, fdb998e79aba ]
 
-> The way you're defining
-> it will result in a system in which only processes running with
-> the ambient label will be able to use sockets, unless I'm reading
-> the code incorrectly. 
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-I've tried to see the relation but failed, any help?
+---
+ drivers/block/xen-blkfront.c       |    5 +++--
+ drivers/net/xen-netfront.c         |    4 ++--
+ drivers/xen/xenbus/xenbus_client.c |    2 +-
+ drivers/xen/xenbus/xenbus_xs.c     |   10 +++++-----
+ 4 files changed, 11 insertions(+), 10 deletions(-)
 
-I'm noticing the opposite though, without defining nltype=unlabeled, 
-we're forcing every smack-labeled process to send cipso-affected 
-packets (and usually no machine around understands cipso).
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -584,7 +584,7 @@
+ 
+ 	info->ring_ref = GRANT_INVALID_REF;
+ 
+-	sring = (struct blkif_sring *)__get_free_page(GFP_KERNEL);
++	sring = (struct blkif_sring *)__get_free_page(GFP_KERNEL | __GFP_HIGH);
+ 	if (!sring) {
+ 		xenbus_dev_fatal(dev, -ENOMEM, "allocating shared ring");
+ 		return -ENOMEM;
+@@ -741,7 +741,8 @@
+ 	int j;
+ 
+ 	/* Stage 1: Make a safe copy of the shadow state. */
+-	copy = kmalloc(sizeof(info->shadow), GFP_KERNEL);
++	copy = kmalloc(sizeof(info->shadow),
++		       GFP_KERNEL | __GFP_NOFAIL | __GFP_HIGH);
+ 	if (!copy)
+ 		return -ENOMEM;
+ 	memcpy(copy, info->shadow, sizeof(info->shadow));
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1324,7 +1324,7 @@
+ 		goto fail;
+ 	}
+ 
+-	txs = (struct xen_netif_tx_sring *)get_zeroed_page(GFP_KERNEL);
++	txs = (struct xen_netif_tx_sring *)get_zeroed_page(GFP_KERNEL | __GFP_HIGH);
+ 	if (!txs) {
+ 		err = -ENOMEM;
+ 		xenbus_dev_fatal(dev, err, "allocating tx ring page");
+@@ -1340,7 +1340,7 @@
+ 	}
+ 
+ 	info->tx_ring_ref = err;
+-	rxs = (struct xen_netif_rx_sring *)get_zeroed_page(GFP_KERNEL);
++	rxs = (struct xen_netif_rx_sring *)get_zeroed_page(GFP_KERNEL | __GFP_HIGH);
+ 	if (!rxs) {
+ 		err = -ENOMEM;
+ 		xenbus_dev_fatal(dev, err, "allocating rx ring page");
+diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
+--- a/drivers/xen/xenbus/xenbus_client.c
++++ b/drivers/xen/xenbus/xenbus_client.c
+@@ -117,7 +117,7 @@
+ 	char *path;
+ 
+ 	va_start(ap, pathfmt);
+-	path = kvasprintf(GFP_KERNEL, pathfmt, ap);
++	path = kvasprintf(GFP_KERNEL | __GFP_HIGH, pathfmt, ap);
+ 	va_end(ap);
+ 
+ 	if (!path) {
+diff --git a/drivers/xen/xenbus/xenbus_xs.c b/drivers/xen/xenbus/xenbus_xs.c
+--- a/drivers/xen/xenbus/xenbus_xs.c
++++ b/drivers/xen/xenbus/xenbus_xs.c
+@@ -283,9 +283,9 @@
+ 	char *buffer;
+ 
+ 	if (strlen(name) == 0)
+-		buffer = kasprintf(GFP_KERNEL, "%s", dir);
++		buffer = kasprintf(GFP_KERNEL | __GFP_HIGH, "%s", dir);
+ 	else
+-		buffer = kasprintf(GFP_KERNEL, "%s/%s", dir, name);
++		buffer = kasprintf(GFP_KERNEL | __GFP_HIGH, "%s/%s", dir, name);
+ 	return (!buffer) ? ERR_PTR(-ENOMEM) : buffer;
+ }
+ 
+@@ -297,7 +297,7 @@
+ 	*num = count_strings(strings, len);
+ 
+ 	/* Transfer to one big alloc for easy freeing. */
+-	ret = kmalloc(*num * sizeof(char *) + len, GFP_KERNEL);
++	ret = kmalloc(*num * sizeof(char *) + len, GFP_KERNEL | __GFP_HIGH);
+ 	if (!ret) {
+ 		kfree(strings);
+ 		return ERR_PTR(-ENOMEM);
+@@ -751,7 +751,7 @@
+ 	}
+ 
+ 
+-	msg = kmalloc(sizeof(*msg), GFP_KERNEL);
++	msg = kmalloc(sizeof(*msg), GFP_KERNEL | __GFP_HIGH);
+ 	if (msg == NULL) {
+ 		err = -ENOMEM;
+ 		goto out;
+@@ -763,7 +763,7 @@
+ 		goto out;
+ 	}
+ 
+-	body = kmalloc(msg->hdr.len + 1, GFP_KERNEL);
++	body = kmalloc(msg->hdr.len + 1, GFP_KERNEL | __GFP_HIGH);
+ 	if (body == NULL) {
+ 		kfree(msg);
+ 		err = -ENOMEM;
 
-_Assuming_ the concept is accepted, depending on the ambient label
-may actually lead to a race condition though:
-
-- A packet is set with the ambient label domain
-- Ambient label changes
-  - old ambient-label netlabel domain is deleted
-  - new ambient-label is set
-  - new ambient-label netlabel domain is created
-- call netlabel_sock_setattr(), uses the old ambient label, leads
-  to the -EPERM problem.
-  -- Rare, but can happen
-
-There are two possible solutions in my mind:
-
-- Using a predefined netlabel domain to denote to unlabeled packets.
-  Defect: May collide with a user chosen label and used to break security.
-  Solution: Use a domain name that can't become a label (Hackery ?)
-
-- I've tried first to use what was done before the 'Smack: unlabeled outgoing 
-  ambient packets' patch, which honored nltype=unlabeled, but ignored netlabel
-  completely:
-  i.e.
-
-  int rc = 0;
-  if (secattr.flags != NETLBL_SECATTR_NONE)
-       rc = netlbl_sock_setattr(sk, &secattr);
-  return rc
-
-  Paul, would this be right from a netlabel perspective ?
-
--- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
 
