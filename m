@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbYE3Pw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYE3P5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687AbYE3Pw0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 11:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYE3PwR
+	id S1756141AbYE3P5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 11:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYE3P5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 11:52:17 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:39340 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752060AbYE3PwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 11:52:16 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Stas Sergeev <stsp@aknet.ru>
-Subject: Re: [patch][resend] provide rtc_cmos platform device, take 2
-Date: Fri, 30 May 2008 09:52:14 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, ambx1@neo.rr.com,
-       david-b@pacbell.net, mingo@elte.hu, tglx@linutronix.de,
-       dbrownell@users.sourceforge.net, rmk+lkml@arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-References: <200805212334.m4LNY42M006425@imap1.linux-foundation.org> <200805290854.54577.bjorn.helgaas@hp.com> <483F7EBA.1040708@aknet.ru>
-In-Reply-To: <483F7EBA.1040708@aknet.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 30 May 2008 11:57:04 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:34802 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752084AbYE3P5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 11:57:02 -0400
+Date: Fri, 30 May 2008 10:56:58 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: miaox@cn.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [PATCH 2/3] cpusets: restructure the function update_cpumask()
+ and update_nodemask()
+Message-Id: <20080530105658.1b2f4839.pj@sgi.com>
+In-Reply-To: <20080530105302.0f447003@core>
+References: <483FAE13.5080101@cn.fujitsu.com>
+	<20080530105302.0f447003@core>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805300952.15969.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 May 2008 10:12:42 pm Stas Sergeev wrote:
-> Hello.
-> 
-> Bjorn Helgaas wrote:
-> > As far as I'm concerned, "pnpacpi=off" should only be used to work
-> > around defects, so I'd like to fix the defect you're seeing with
-> > parport_pc.  Is there a bug report for it?
-> Certainly, and you've seen it many
-> times. :)
-> http://bugzilla.kernel.org/show_bug.cgi?id=7491
-> Its that the module parameters are overriden
-> by PNP and are ignored, so you can't do
-> "dma=none" etc.
-> Your patch is not for that, AFAICS.
-> Or let me know if it is.
+Alan wrote:
+> Trivial only: The kernel-doc bits should be /**, 3 of them.
 
-Oh, yeah, that one :-)  No, my patch does nothing for that.
+It took me a minute to parse this comment (pre-coffee morning fog ;).
 
-I can't remember why it's so hard to fix that bug.  Maybe now that
-we fixed the *other* reason for using "pnpacpi=off", I can take
-another look at it and make some progress.  It doesn't *sound* like
-it should be hard to fix.
+I take it that you're noticing, Alan, that the header comments for
+the functions update_tasks_cpumask() and update_tasks_nodemask(), and
+perhaps one other function, are already in kernel-doc format, except
+for one detail -- they currently open with '/*' instead of '/**',
+and you're recommending the trivial change '/*' ==> '/**' for these
+cases.
 
-Bjorn
+Yes - Miao commented these new functions in kernel-doc format, all but
+the '/**', by my request, which now stands NAQ'd.
 
+So, yes, '/**' should be used on any kernel/cpuset.c function comment
+that is otherwise already in kernel-doc format.
+
+Again, thank-you.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
