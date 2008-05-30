@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbYE3GWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbYE3GY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760196AbYE3GWr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 02:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbYE3GWi
+	id S1760265AbYE3GY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 02:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYE3GYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 02:22:38 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:36091 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752893AbYE3GWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 02:22:37 -0400
-Date: Thu, 29 May 2008 23:22:31 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Eric Dumazet <dada1@cosmosbay.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
-In-Reply-To: <20080529231618.56e4028b.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0805292321240.12457@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com>
- <20080529222143.5d7aa1e5.akpm@linux-foundation.org> <483F981E.3040004@cosmosbay.com>
- <20080529231618.56e4028b.akpm@linux-foundation.org>
+	Fri, 30 May 2008 02:24:47 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:34072 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753507AbYE3GYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 02:24:46 -0400
+Date: Fri, 30 May 2008 11:54:20 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][take 5] JBD2: Fix race between free buffer and commit
+	trasanction
+Message-ID: <20080530062420.GA7450@skywalker>
+References: <20080519132553.de9b78b0.akpm@linux-foundation.org> <1211234829.3663.39.camel@localhost.localdomain> <1211306575.3664.19.camel@localhost.localdomain> <20080520235303.GB23521@atrey.karlin.mff.cuni.cz> <1211390093.5571.16.camel@BVR-FS.beaverton.ibm.com> <20080524224447.GE20563@atrey.karlin.mff.cuni.cz> <1211998739.3791.20.camel@localhost.localdomain> <20080528185554.GA16018@duck.suse.cz> <1212020216.3791.54.camel@localhost.localdomain> <1212020299.3791.57.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212020299.3791.57.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Andrew Morton wrote:
+On Wed, May 28, 2008 at 05:18:19PM -0700, Mingming Cao wrote:
+> Index: linux-2.6.26-rc3/fs/jbd2/transaction.c
+> ===================================================================
+> --- linux-2.6.26-rc3.orig/fs/jbd2/transaction.c	2008-05-28 16:10:41.000000000 -0700
+> +++ linux-2.6.26-rc3/fs/jbd2/transaction.c	2008-05-28 16:13:16.000000000 -0700
+> @@ -1656,12 +1656,42 @@ out:
+>  	return;
+>  }
+> 
+> +/*
+> + * jbd2_journal_try_to_free_buffers() could race with jbd2_journal_commit_transaction()
+> + * The later might still hold the reference count to the buffers when inspecting
+> + * them on t_syncdata_list or t_locked_list.
+> + *
+> + * jbd2_journal_try_to_free_buffers() will call this function to
+> + * wait for the current transaction to finish syncing data buffers, before
+> + * try to free that buffer.
+> + *
+> + * Called with journal->j_state_lock hold.
+> + */
 
-> ext3 maintains three percpu_counters per mount.  Each percpu_counter
-> does one percpu_alloc.  People can mount an arbitrary number of ext3
-> filesystems!
+We are taking the spin_lock again in the function ??
 
-But its 4 bytes per alloc right?
 
-> Another: there are two percpu_counters (and hence two percpu_alloc()s)
-> per backing_dev_info.  One backing_dev_info per disk and people have
-> been known to have thousands (iirc ~10,000) disks online.
 
-8 bytes per backing device. 80000 bytes for 10000 disks.
+> +static void jbd2_journal_wait_for_transaction_sync_data(journal_t *journal)
+> +{
+> +	transaction_t *transaction = NULL;
+> +	tid_t tid;
+> +
+> +	spin_lock(&journal->j_state_lock);
+> +	transaction = journal->j_committing_transaction;
+> +
+> +	if (!transaction) {
+> +		spin_unlock(&journal->j_state_lock);
+> +		return;
+> +	}
+> +
+> +	tid = transaction->t_tid;
+> +	spin_unlock(&journal->j_state_lock);
+> +	jbd2_log_wait_commit(journal, tid);
+> +}
 
-> And those examples were plucked only from today's kernel.  Who knows
-> what other problems will be in 2.6.45?
 
-We can always increase the sizes.
- 
+[.... snip.... ]
+
+
+> +	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
+> +        	spin_lock(&journal->j_state_lock);
+> +		jbd2_journal_wait_for_transaction_sync_data(journal);
+> +		ret = try_to_free_buffers(page);
+> +		spin_unlock(&journal->j_state_lock);
+> +	}
+> +
+>  busy:
+>  	return ret;
+>  }
+> 
+> 
+
+-aneesh
