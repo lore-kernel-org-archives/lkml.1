@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbYE3Ehl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYE3Ehy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756282AbYE3Ehl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYE3Eh3
+	id S1753151AbYE3Ehy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYE3Eha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:37:29 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46583 "HELO
+	Fri, 30 May 2008 00:37:30 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46592 "HELO
 	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752457AbYE3Eh2 (ORCPT
+	by vger.kernel.org with SMTP id S1752506AbYE3Eh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:37:28 -0400
+	Fri, 30 May 2008 00:37:29 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=KTPRQieYRZaEKmt8UHHP2ZNIBST73lPcXgR3q/ELb3lDGFWJySNrWWaP+PaIph6+tb2w8u0jxcAC9LED1IG3E4fdhTK18ha6nn+EDML3/0roCOOItafuRf9KPjgYC1gwv7NPfU2g8UM/QmvCA7an7gXjyt8cSmU2Cu7HwQ8OvqE=  ;
+  b=PWFn/T+sJcH5d4GSVOGe95t7gHiDuEsK7BiEdWlbrDbx7AmfCBRY+DZeMLjwUcuSfgqC+53qHjvaGBJrb0nxNhOi96b0iC8hikgAuwYfGJVlC5aJD1Ia2HaypdmYUPC5QxZfGjuXqX4AoA3gcXQQI6g+vjIVIwC4wU9hbp6hcAk=  ;
 X-YMail-OSG: ZUbCHB8VM1nz5XA1pMNuUbZ9nnfxHgv1vp054fu3t5GQmWdUFc9WTdU_yX0EQFNytOKtO.eorwTAu4OVXsBRuDQBA7FGN6zXryClEjywGGKo_qxNTqGB9c_FikJE1EeMnRM-
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: Latest gpio gumph
-Date: Thu, 29 May 2008 20:18:49 -0700
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] gpio: fix build errors for drivers not strictly requiring GPIOs
+Date: Thu, 29 May 2008 20:28:10 -0700
 User-Agent: KMail/1.9.9
-Cc: Ben Nizette <bn@niasdigital.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
-References: <1211942475.27810.37.camel@moss.renham> <200805280201.24256.david-b@pacbell.net> <20080528112109.47747cb5@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080528112109.47747cb5@hskinnemo-gx745.norway.atmel.com>
+Cc: linux-kernel@vger.kernel.org
+References: <20080527142029.GA31778@polina.dev.rtsoft.ru>
+In-Reply-To: <20080527142029.GA31778@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805292018.50051.david-b@pacbell.net>
+Message-Id: <200805292028.10906.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Re that one avr32 patch: ]
+On Tuesday 27 May 2008, Anton Vorontsov wrote:
+> Since commit 7560fa60fcdcdb0da662f6a9fad9064b554ef46c (gpio: <linux/gpio.h>
+> and "no GPIO support here" stubs) drivers can use GPIOs if they're available,
+> but don't require them.
+> 
+> This patch actually enables this feature, otherwise drivers will stumble
+> against this:
+> 
+> include/asm-generic/gpio.h:111: error: redefinition of 'gpio_is_valid'
+> include/linux/gpio.h:21: error: previous definition of 'gpio_is_valid' was here
 
-On Wednesday 28 May 2008, Haavard Skinnemoen wrote:
-> I'm not really opposed to the second change; I would have applied it if
-> it came separately. But I think the first change is wrong.
+This looks to me like pure user error ... what was anyone doing
+including <asm-generic/gpio.h> in that way?  There are a *lot* of
+bogus include combinations, and we don't try to "fix" them.
 
-OK, then feel free to strip out the first chunk and just take that.
+It should suffice to #include <linux/gpio.h> ... that causes the
+definition of either (a) stubs in that file, *OR* else (b) the
+platform-specific implementation of the GPIO calls, which may
+(if that platform chooses) use <asm-generic/gpio.h> utilities.
 
-- Dave
+NAK on this patch.
 
+- dave
