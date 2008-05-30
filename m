@@ -1,347 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbYE3FFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYE3FJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbYE3FFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbYE3FFc
+	id S1757551AbYE3FJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYE3FJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:05:32 -0400
-Received: from smtp27.orange.fr ([80.12.242.94]:55153 "EHLO smtp27.orange.fr"
+	Fri, 30 May 2008 01:09:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:41330 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468AbYE3FFa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:05:30 -0400
-X-ME-UUID: 20080530050527852.D007B1C0008F@mwinf2728.orange.fr
-Message-ID: <483F8AF7.9000309@cosmosbay.com>
-Date: Fri, 30 May 2008 07:04:55 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	id S1752225AbYE3FJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 01:09:01 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCHv2 26/28] firmware: allow firmware files to be built into kernel image
+Date: Fri, 30 May 2008 15:08:34 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org
+References: <1211708969@pmac.infradead.org> <E1K0DOO-0007ES-DU@shinybook.infradead.org>
+In-Reply-To: <E1K0DOO-0007ES-DU@shinybook.infradead.org>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 02/41] cpu alloc: The allocator
-References: <20080530035620.587204923@sgi.com> <20080530040011.084909898@sgi.com>
-In-Reply-To: <20080530040011.084909898@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805301508.34635.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> The per cpu allocator allows dynamic allocation of memory on all
-> processors simultaneously. A bitmap is used to track used areas.
-> The allocator implements tight packing to reduce the cache footprint
-> and increase speed since cacheline contention is typically not a concern
-> for memory mainly used by a single cpu. Small objects will fill up gaps
-> left by larger allocations that required alignments.
+On Sunday 25 May 2008 20:23:56 David Woodhouse wrote:
+> Some drivers have their own hacks to bypass the kernel's firmware loader
+> and build their firmware into the kernel; this renders those unnecessary.
 >
-> The size of the cpu_alloc area can be changed via make menuconfig.
+> Other drivers don't use the firmware loader at all, because they always
+> want the firmware to be available. This allows them to start using the
+> firmware loader.
 >
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+> A third set of drivers already use the firmware loader, but can't be
+> used without help from userspace, which sometimes requires an initrd.
+> This allows them to work in a static kernel.
+>
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 > ---
->  include/linux/percpu.h |   46 +++++++++++++
->  include/linux/vmstat.h |    2 
->  mm/Kconfig             |    6 +
->  mm/Makefile            |    2 
->  mm/cpu_alloc.c         |  167 +++++++++++++++++++++++++++++++++++++++++++++++++
->  mm/vmstat.c            |    1 
->  6 files changed, 222 insertions(+), 2 deletions(-)
+>  drivers/base/firmware_class.c     |   33 +++++++++++++++++++++++++++++++--
+>  include/asm-generic/vmlinux.lds.h |    7 +++++++
+>  include/linux/firmware.h          |   21 +++++++++++++++++++++
+>  3 files changed, 59 insertions(+), 2 deletions(-)
 >
-> Index: linux-2.6/include/linux/vmstat.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/vmstat.h	2008-05-29 19:41:21.000000000 -0700
-> +++ linux-2.6/include/linux/vmstat.h	2008-05-29 20:15:37.000000000 -0700
-> @@ -37,7 +37,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
->  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
->  		FOR_ALL_ZONES(PGSCAN_DIRECT),
->  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
-> -		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-> +		PAGEOUTRUN, ALLOCSTALL, PGROTATED, CPU_BYTES,
->  #ifdef CONFIG_HUGETLB_PAGE
->  		HTLB_BUDDY_PGALLOC, HTLB_BUDDY_PGALLOC_FAIL,
->  #endif
-> Index: linux-2.6/mm/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/mm/Kconfig	2008-05-29 19:41:21.000000000 -0700
-> +++ linux-2.6/mm/Kconfig	2008-05-29 20:13:39.000000000 -0700
-> @@ -205,3 +205,9 @@ config NR_QUICK
->  config VIRT_TO_BUS
->  	def_bool y
->  	depends on !ARCH_NO_VIRT_TO_BUS
+> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> index 264b3a2..c09f060 100644
+> --- a/drivers/base/firmware_class.c
+> +++ b/drivers/base/firmware_class.c
+> @@ -49,6 +49,14 @@ struct firmware_priv {
+>  	struct timer_list timeout;
+>  };
+>
+> +#ifdef CONFIG_FW_LOADER
+> +extern struct builtin_fw __start_builtin_fw[];
+> +extern struct builtin_fw __end_builtin_fw[];
+> +#else /* Module case. Avoid ifdefs later; it'll all optimise out */
+> +static struct builtin_fw *__start_builtin_fw = NULL;
+> +static struct builtin_fw *__end_builtin_fw = NULL;
+> +#endif
 > +
-> +config CPU_ALLOC_SIZE
-> +	int "Size of cpu alloc area"
-> +	default "30000"
-> +	help
-> +	  Sets the maximum amount of memory that can be allocated via cpu_alloc
-> Index: linux-2.6/mm/Makefile
-> ===================================================================
-> --- linux-2.6.orig/mm/Makefile	2008-05-29 19:41:21.000000000 -0700
-> +++ linux-2.6/mm/Makefile	2008-05-29 20:15:41.000000000 -0700
-> @@ -11,7 +11,7 @@ obj-y			:= bootmem.o filemap.o mempool.o
->  			   maccess.o page_alloc.o page-writeback.o pdflush.o \
->  			   readahead.o swap.o truncate.o vmscan.o \
->  			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
-> -			   page_isolation.o $(mmu-y)
-> +			   page_isolation.o cpu_alloc.o $(mmu-y)
->  
->  obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
->  obj-$(CONFIG_BOUNCE)	+= bounce.o
-> Index: linux-2.6/mm/cpu_alloc.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6/mm/cpu_alloc.c	2008-05-29 20:13:39.000000000 -0700
-> @@ -0,0 +1,167 @@
-> +/*
-> + * Cpu allocator - Manage objects allocated for each processor
-> + *
-> + * (C) 2008 SGI, Christoph Lameter <clameter@sgi.com>
-> + * 	Basic implementation with allocation and free from a dedicated per
-> + * 	cpu area.
-> + *
-> + * The per cpu allocator allows dynamic allocation of memory on all
-> + * processor simultaneously. A bitmap is used to track used areas.
-> + * The allocator implements tight packing to reduce the cache footprint
-> + * and increase speed since cacheline contention is typically not a concern
-> + * for memory mainly used by a single cpu. Small objects will fill up gaps
-> + * left by larger allocations that required alignments.
-> + */
-> +#include <linux/mm.h>
-> +#include <linux/mmzone.h>
-> +#include <linux/module.h>
-> +#include <linux/percpu.h>
-> +#include <linux/bitmap.h>
-> +#include <asm/sections.h>
-> +
-> +/*
-> + * Basic allocation unit. A bit map is created to track the use of each
-> + * UNIT_SIZE element in the cpu area.
-> + */
-> +#define UNIT_TYPE int
-> +#define UNIT_SIZE sizeof(UNIT_TYPE)
-> +#define UNITS (CONFIG_CPU_ALLOC_SIZE / UNIT_SIZE)
-> +
-> +static DEFINE_PER_CPU(UNIT_TYPE, area[UNITS]);
->   
-area[] is not guaranteed to be aligned on anything but 4 bytes.
-
-If someone then needs to call cpu_alloc(8, GFP_KERNEL, 8), it might get 
-an non aligned result.
-
-Either you should add an __attribute__((__aligned__(PAGE_SIZE))),
-or take into account the real address of area[] in cpu_alloc() to avoid 
-waste of up to PAGE_SIZE bytes
-per cpu.
-> +
-> +/*
-> + * How many units are needed for an object of a given size
-> + */
-> +static int size_to_units(unsigned long size)
-> +{
-> +	return DIV_ROUND_UP(size, UNIT_SIZE);
-> +}
-> +
-> +/*
-> + * Lock to protect the bitmap and the meta data for the cpu allocator.
-> + */
-> +static DEFINE_SPINLOCK(cpu_alloc_map_lock);
-> +static DECLARE_BITMAP(cpu_alloc_map, UNITS);
-> +static int first_free;		/* First known free unit */
-> +
-> +/*
-> + * Mark an object as used in the cpu_alloc_map
-> + *
-> + * Must hold cpu_alloc_map_lock
-> + */
-> +static void set_map(int start, int length)
-> +{
-> +	while (length-- > 0)
-> +		__set_bit(start++, cpu_alloc_map);
-> +}
-> +
-> +/*
-> + * Mark an area as freed.
-> + *
-> + * Must hold cpu_alloc_map_lock
-> + */
-> +static void clear_map(int start, int length)
-> +{
-> +	while (length-- > 0)
-> +		__clear_bit(start++, cpu_alloc_map);
-> +}
-> +
-> +/*
-> + * Allocate an object of a certain size
-> + *
-> + * Returns a special pointer that can be used with CPU_PTR to find the
-> + * address of the object for a certain cpu.
-> + */
-> +void *cpu_alloc(unsigned long size, gfp_t gfpflags, unsigned long align)
-> +{
-> +	unsigned long start;
-> +	int units = size_to_units(size);
-> +	void *ptr;
-> +	int first;
-> +	unsigned long flags;
-> +
-> +	if (!size)
-> +		return ZERO_SIZE_PTR;
-> +
-> +	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-> +
-> +	first = 1;
-> +	start = first_free;
-> +
-> +	for ( ; ; ) {
-> +
-> +		start = find_next_zero_bit(cpu_alloc_map, UNITS, start);
-> +		if (start >= UNITS)
-> +			goto out_of_memory;
-> +
-> +		if (first)
-> +			first_free = start;
-> +
-> +		/*
-> +		 * Check alignment and that there is enough space after
-> +		 * the starting unit.
-> +		 */
-> +		if (start % (align / UNIT_SIZE) == 0 &&
-> +			find_next_bit(cpu_alloc_map, UNITS, start + 1)
-> +							>= start + units)
-> +				break;
-> +		start++;
-> +		first = 0;
+>  static void
+>  fw_load_abort(struct firmware_priv *fw_priv)
+>  {
+> @@ -391,13 +399,12 @@ _request_firmware(const struct firmware **firmware_p,
+> const char *name, struct device *f_dev;
+>  	struct firmware_priv *fw_priv;
+>  	struct firmware *firmware;
+> +	struct builtin_fw *builtin;
+>  	int retval;
+>
+>  	if (!firmware_p)
+>  		return -EINVAL;
+>
+> -	printk(KERN_INFO "firmware: requesting %s\n", name);
+> -
+>  	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
+>  	if (!firmware) {
+>  		printk(KERN_ERR "%s: kmalloc(struct firmware) failed\n",
+> @@ -406,6 +413,20 @@ _request_firmware(const struct firmware **firmware_p,
+> const char *name, goto out;
+>  	}
+>
+> +	for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
+> +	     builtin++) {
+> +		if (strcmp(name, builtin->name))
+> +			continue;
+> +		printk(KERN_INFO "firmware: using built-in firmware %s\n",
+> +		       name);
+> +		firmware->size = builtin->size;
+> +		firmware->data = builtin->data;
+> +		return 0;
 > +	}
 > +
-> +	if (first)
-> +		first_free = start + units;
+> +	if (uevent)
+> +		printk(KERN_INFO "firmware: requesting %s\n", name);
 > +
-> +	if (start + units > UNITS)
-> +		goto out_of_memory;
+>  	retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
+>  	if (retval)
+>  		goto error_kfree_fw;
+> @@ -473,8 +494,16 @@ request_firmware(const struct firmware **firmware_p,
+> const char *name, void
+>  release_firmware(const struct firmware *fw)
+>  {
+> +	struct builtin_fw *builtin;
 > +
-> +	set_map(start, units);
-> +	__count_vm_events(CPU_BYTES, units * UNIT_SIZE);
+>  	if (fw) {
+> +		for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
+> +		     builtin++) {
+> +			if (fw->data == builtin->data)
+> +				goto free_fw;
+> +		}
+>  		vfree(fw->data);
+> +	free_fw:
+>  		kfree(fw);
+>  	}
+>  }
+> diff --git a/include/asm-generic/vmlinux.lds.h
+> b/include/asm-generic/vmlinux.lds.h index f054778..8d71a40 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -86,6 +86,13 @@
+>  		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
+>  	}								\
+>  									\
+> +	/* Built-in firmware blobs */					\
+> +	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
+> +		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
+> +		*(.builtin_fw)						\
+> +		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
+> +	}								\
+> +									\
+>  	/* RapidIO route ops */						\
+>  	.rio_route        : AT(ADDR(.rio_route) - LOAD_OFFSET) {	\
+>  		VMLINUX_SYMBOL(__start_rio_route_ops) = .;		\
+> diff --git a/include/linux/firmware.h b/include/linux/firmware.h
+> index 5e73f3f..279eaad 100644
+> --- a/include/linux/firmware.h
+> +++ b/include/linux/firmware.h
+> @@ -1,7 +1,10 @@
+>  #ifndef _LINUX_FIRMWARE_H
+>  #define _LINUX_FIRMWARE_H
 > +
-> +	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
+>  #include <linux/module.h>
+>  #include <linux/types.h>
+> +#include <linux/compiler.h>
 > +
-> +	ptr = per_cpu_var(area) + start;
-> +
-> +	if (gfpflags & __GFP_ZERO) {
-> +		int cpu;
-> +
-> +		for_each_possible_cpu(cpu)
-> +			memset(CPU_PTR(ptr, cpu), 0, size);
-> +	}
-> +
-> +	return ptr;
-> +
-> +out_of_memory:
-> +	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-> +	return NULL;
-> +}
-> +EXPORT_SYMBOL(cpu_alloc);
-> +
-> +/*
-> + * Free an object. The pointer must be a cpu pointer allocated
-> + * via cpu_alloc.
-> + */
-> +void cpu_free(void *start, unsigned long size)
-> +{
-> +	unsigned long units = size_to_units(size);
-> +	unsigned long index = (int *)start - per_cpu_var(area);
-> +	unsigned long flags;
-> +
-> +	if (!start || start == ZERO_SIZE_PTR)
-> +		return;
-> +
-> +	BUG_ON(index >= UNITS ||
-> +		!test_bit(index, cpu_alloc_map) ||
-> +		!test_bit(index + units - 1, cpu_alloc_map));
-> +
-> +	spin_lock_irqsave(&cpu_alloc_map_lock, flags);
-> +
-> +	clear_map(index, units);
-> +	__count_vm_events(CPU_BYTES, -units * UNIT_SIZE);
-> +
-> +	if (index < first_free)
-> +		first_free = index;
-> +
-> +	spin_unlock_irqrestore(&cpu_alloc_map_lock, flags);
-> +}
-> +EXPORT_SYMBOL(cpu_free);
-> Index: linux-2.6/mm/vmstat.c
-> ===================================================================
-> --- linux-2.6.orig/mm/vmstat.c	2008-05-29 19:41:21.000000000 -0700
-> +++ linux-2.6/mm/vmstat.c	2008-05-29 20:13:39.000000000 -0700
-> @@ -653,6 +653,7 @@ static const char * const vmstat_text[] 
->  	"allocstall",
->  
->  	"pgrotated",
-> +	"cpu_bytes",
->  #ifdef CONFIG_HUGETLB_PAGE
->  	"htlb_buddy_alloc_success",
->  	"htlb_buddy_alloc_fail",
-> Index: linux-2.6/include/linux/percpu.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/percpu.h	2008-05-29 19:41:21.000000000 -0700
-> +++ linux-2.6/include/linux/percpu.h	2008-05-29 20:29:12.000000000 -0700
-> @@ -135,4 +135,50 @@ static inline void percpu_free(void *__p
->  #define free_percpu(ptr)	percpu_free((ptr))
->  #define per_cpu_ptr(ptr, cpu)	percpu_ptr((ptr), (cpu))
->  
-> +
-> +/*
-> + * cpu allocator definitions
-> + *
-> + * The cpu allocator allows allocating an instance of an object for each
-> + * processor and the use of a single pointer to access all instances
-> + * of the object. cpu_alloc provides optimized means for accessing the
-> + * instance of the object belonging to the currently executing processor
-> + * as well as special atomic operations on fields of objects of the
-> + * currently executing processor.
-> + *
-> + * Cpu objects are typically small. The allocator packs them tightly
-> + * to increase the chance on each access that a per cpu object is already
-> + * cached. Alignments may be specified but the intent is to align the data
-> + * properly due to cpu alignment constraints and not to avoid cacheline
-> + * contention. Any holes left by aligning objects are filled up with smaller
-> + * objects that are allocated later.
-> + *
-> + * Cpu data can be allocated using CPU_ALLOC. The resulting pointer is
-> + * pointing to the instance of the variable in the per cpu area provided
-> + * by the loader. It is generally an error to use the pointer directly
-> + * unless we are booting the system.
-> + *
-> + * __GFP_ZERO may be passed as a flag to zero the allocated memory.
-> + */
-> +
-> +/* Return a pointer to the instance of a object for a particular processor */
-> +#define CPU_PTR(__p, __cpu)	SHIFT_PERCPU_PTR((__p), per_cpu_offset(__cpu))
-> +
-> +/*
-> + * Return a pointer to the instance of the object belonging to the processor
-> + * running the current code.
-> + */
-> +#define THIS_CPU(__p)	SHIFT_PERCPU_PTR((__p), my_cpu_offset)
-> +#define __THIS_CPU(__p)	SHIFT_PERCPU_PTR((__p), __my_cpu_offset)
-> +
-> +#define CPU_ALLOC(type, flags)	((typeof(type) *)cpu_alloc(sizeof(type), \
-> +					(flags), __alignof__(type)))
-> +#define CPU_FREE(pointer)	cpu_free((pointer), sizeof(*(pointer)))
-> +
-> +/*
-> + * Raw calls
-> + */
-> +void *cpu_alloc(unsigned long size, gfp_t flags, unsigned long align);
-> +void cpu_free(void *cpu_pointer, unsigned long size);
-> +
->  #endif /* __LINUX_PERCPU_H */
+>  #define FIRMWARE_NAME_MAX 30
+>  #define FW_ACTION_NOHOTPLUG 0
+>  #define FW_ACTION_HOTPLUG 1
+> @@ -13,6 +16,24 @@ struct firmware {
 >
->   
+>  struct device;
+>
+> +struct builtin_fw {
+> +	char *name;
+> +	void *data;
+> +	unsigned long size;
+> +};
+> +
+> +/* We have to play tricks here much like stringify() to get the
+> +   __COUNTER__ macro to be expanded as we want it */
+> +#define __fw_concat1(x,y) x##y
+> +#define __fw_concat(x,y) __fw_concat1(x,y)
 
+Hmm, linux/module.h does this too, perhaps some enthusiast can implement 
+__concat() and use it everywhere.
 
-
-
+Cheers,
+Rusty.
