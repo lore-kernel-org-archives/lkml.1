@@ -1,77 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYE3R3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYE3RaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbYE3R3f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 13:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYE3R3Y
+	id S1754646AbYE3RaS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 13:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYE3RaC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 13:29:24 -0400
-Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:47433
-	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754267AbYE3R3X (ORCPT
+	Fri, 30 May 2008 13:30:02 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:40109 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752545AbYE3RaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 13:29:23 -0400
-Message-Id: <E8739999-A8AE-4C10-AF7A-43387DBD8B10@it-loops.com>
-From: Guntsche Michael <mike@it-loops.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Fri, 30 May 2008 13:30:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=qWYtoj4G6XDcs0jhbmT3CTbuSADK1aCiVtFs9JRWf7Luwo/kCIeGp4I9qsknYE4yHD4r3PkPvkDb6AvsGhskhwBurQrd2yyhozQhqgDGkyIbyKwZYXMS1fsZXr4/bN3p2HJwAwbSe7A9X+qdRAXSYF3lyH+02p+Ny59E2xF8pOE=
+Subject: [PATCH] usb: cp2101.c fix sparse signedness mismatch warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 30 May 2008 10:29:55 -0700
+Message-Id: <1212168595.28403.198.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Fwd: 2.6.25.x: Wrong CPU frequency (cpufreq table) with p4-clockmod
-Date: Fri, 30 May 2008 19:29:20 +0200
-References: <22164834-E7AA-4161-916C-F3D95E3BEA10@it-loops.com>
-X-Mailer: Apple Mail (2.924)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The get/set 2101_config helpers take an unsigned int rather than an
+int.  It is safe to change these in each case and may even produce
+better code as it will be an unsigned divide rather than a signed
+divide in places.  All other manipulation was setting/masking bits
+which will not be affected by the sign change.
 
-Now to the correct list.
+Fixes the following sparse warnings:
+drivers/usb/serial/cp2101.c:378:44: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:378:44:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:378:44:    got int *<noident>
+drivers/usb/serial/cp2101.c:388:40: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:388:40:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:388:40:    got int *<noident>
+drivers/usb/serial/cp2101.c:413:42: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:413:42:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:413:42:    got int *<noident>
+drivers/usb/serial/cp2101.c:421:42: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:421:42:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:421:42:    got int *<noident>
+drivers/usb/serial/cp2101.c:444:42: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:444:42:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:444:42:    got int *<noident>
+drivers/usb/serial/cp2101.c:451:42: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:451:42:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:451:42:    got int *<noident>
+drivers/usb/serial/cp2101.c:458:42: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:458:42:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:458:42:    got int *<noident>
+drivers/usb/serial/cp2101.c:471:42: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:471:42:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:471:42:    got int *<noident>
+drivers/usb/serial/cp2101.c:481:42: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:481:42:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:481:42:    got int *<noident>
+drivers/usb/serial/cp2101.c:561:41: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:561:41:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:561:41:    got int *<noident>
+drivers/usb/serial/cp2101.c:591:45: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:591:45:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:591:45:    got int *<noident>
+drivers/usb/serial/cp2101.c:597:41: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:597:41:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:597:41:    got int *<noident>
+drivers/usb/serial/cp2101.c:608:45: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:608:45:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:608:45:    got int *<noident>
+drivers/usb/serial/cp2101.c:614:41: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:614:41:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:614:41:    got int *<noident>
+drivers/usb/serial/cp2101.c:623:45: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:623:45:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:623:45:    got int *<noident>
+drivers/usb/serial/cp2101.c:680:50: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:680:50:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:680:50:    got int *<noident>
+drivers/usb/serial/cp2101.c:690:43: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:690:43:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:690:43:    got int *<noident>
+drivers/usb/serial/cp2101.c:715:41: warning: incorrect type in argument 3 (different signedness)
+drivers/usb/serial/cp2101.c:715:41:    expected unsigned int *data
+drivers/usb/serial/cp2101.c:715:41:    got int *<noident>
 
-> From: Guntsche Michael <mike@it-loops.com>
-> Date: May 30, 2008 19:21:14 GMT+02:00
-> To: Arjan van de Ven <arjan@infradead.org>
-> Cc: linux-raid@vger.kernel.org
-> Subject: Re: 2.6.25.x: Wrong CPU frequency (cpufreq table) with p4- 
-> clockmod
->
-> Ok,
->
-> I enabled debugging and here is the output of the boot-up
->
-> cpufreq-core: trying to register driver p4-clockmod
-> cpufreq-core: adding CPU 0
-> p4-clockmod: has errata -- disabling low frequencies
-> speedstep-lib: x86: f, model: 1
-> speedstep-lib: P4 - MSR_EBC_FREQUENCY_ID: 0x8a01fe00 0x0
-> speedstep-lib: P4 - FSB 100000 kHz; Multiplier 138; Speed 13800000 kHz
-> freq-table: setting show_table for cpu 0 to e2950d60
-> freq-table: table entry 0 is invalid, skipping
-> freq-table: table entry 1 is invalid, skipping
-> freq-table: table entry 2: 3450000 kHz, 2 index
-> freq-table: table entry 3: 5175000 kHz, 3 index
-> freq-table: table entry 4: 6900000 kHz, 4 index
-> freq-table: table entry 5: 8625000 kHz, 5 index
-> freq-table: table entry 6: 10350000 kHz, 6 index
-> freq-table: table entry 7: 12075000 kHz, 7 index
-> freq-table: table entry 8: 13800000 kHz, 8 index
-> cpufreq-core: setting new policy for CPU 0: 3450000 - 13800000 kHz
-> freq-table: request for verification of policy (3450000 - 13800000  
-> kHz) for cpu 0
-> freq-table: verification lead to (3450000 - 13800000 kHz) for cpu 0
-> freq-table: request for verification of policy (3450000 - 13800000  
-> kHz) for cpu 0
-> freq-table: verification lead to (3450000 - 13800000 kHz) for cpu 0
-> cpufreq-core: new min and max freqs are 3450000 - 13800000 kHz
-> cpufreq-core: governor switch
-> cpufreq-core: __cpufreq_governor for CPU 0, event 1
-> cpufreq-core: governor: change or update limits
-> cpufreq-core: __cpufreq_governor for CPU 0, event 3
-> cpufreq-core: initialization complete
-> cpufreq-core: driver p4-clockmod up and running
-> p4-clockmod: P4/Xeon(TM) CPU On-Demand Clock Modulation available
->
-> FSB and the multiplier look a litte bit off to me.
->
-> /Michael
->
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/usb/serial/cp2101.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/usb/serial/cp2101.c b/drivers/usb/serial/cp2101.c
+index f5b57b1..2bc5576 100644
+--- a/drivers/usb/serial/cp2101.c
++++ b/drivers/usb/serial/cp2101.c
+@@ -365,8 +365,8 @@ static void cp2101_close (struct usb_serial_port *port, struct file * filp)
+ static void cp2101_get_termios (struct usb_serial_port *port)
+ {
+ 	unsigned int cflag, modem_ctl[4];
+-	int baud;
+-	int bits;
++	unsigned int baud;
++	unsigned int bits;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+@@ -498,7 +498,7 @@ static void cp2101_set_termios (struct usb_serial_port *port,
+ 		struct ktermios *old_termios)
+ {
+ 	unsigned int cflag, old_cflag;
+-	int baud=0, bits;
++	unsigned int baud = 0, bits;
+ 	unsigned int modem_ctl[4];
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+@@ -654,7 +654,7 @@ static void cp2101_set_termios (struct usb_serial_port *port,
+ static int cp2101_tiocmset (struct usb_serial_port *port, struct file *file,
+ 		unsigned int set, unsigned int clear)
+ {
+-	int control = 0;
++	unsigned int control = 0;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+@@ -683,7 +683,8 @@ static int cp2101_tiocmset (struct usb_serial_port *port, struct file *file,
+ 
+ static int cp2101_tiocmget (struct usb_serial_port *port, struct file *file)
+ {
+-	int control, result;
++	unsigned int control;
++	int result;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+@@ -703,7 +704,7 @@ static int cp2101_tiocmget (struct usb_serial_port *port, struct file *file)
+ 
+ static void cp2101_break_ctl (struct usb_serial_port *port, int break_state)
+ {
+-	int state;
++	unsigned int state;
+ 
+ 	dbg("%s - port %d", __func__, port->number);
+ 	if (break_state == 0)
+-- 
+1.5.6.rc0.277.g804cf
+
+
 
