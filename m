@@ -1,174 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYE3FJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYE3FKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbYE3FJS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYE3FJE
+	id S1758701AbYE3FKe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYE3FKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:09:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:41330 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbYE3FJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:09:01 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCHv2 26/28] firmware: allow firmware files to be built into kernel image
-Date: Fri, 30 May 2008 15:08:34 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org
-References: <1211708969@pmac.infradead.org> <E1K0DOO-0007ES-DU@shinybook.infradead.org>
-In-Reply-To: <E1K0DOO-0007ES-DU@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 30 May 2008 01:10:18 -0400
+Received: from pxy2nd.nifty.com ([202.248.175.14]:8899 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751819AbYE3FKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 01:10:16 -0400
+X-Nifty-SrcIP: [202.219.140.221]
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=DzpufhQ76b5Lydx/N8sCs1v5KxCkQnKKWHGlYbcninpGhGdyV4+27vF0QElQaexg3/AIVhFw6BKweiFXIDUwCQ==  ;
+Date: Fri, 30 May 2008 14:01:40 +0900 (JST)
+Message-Id: <20080530.140140.193692749.takada@mbf.nifty.com>
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+In-Reply-To: <200805150028.04625.bzolnier@gmail.com>
+References: <20080509.215601.208967867.takada@mbf.nifty.com>
+	<200805142244.48548.bzolnier@gmail.com>
+	<200805150028.04625.bzolnier@gmail.com>
+X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805301508.34635.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 May 2008 20:23:56 David Woodhouse wrote:
-> Some drivers have their own hacks to bypass the kernel's firmware loader
-> and build their firmware into the kernel; this renders those unnecessary.
->
-> Other drivers don't use the firmware loader at all, because they always
-> want the firmware to be available. This allows them to start using the
-> firmware loader.
->
-> A third set of drivers already use the firmware loader, but can't be
-> used without help from userspace, which sometimes requires an initrd.
-> This allows them to work in a static kernel.
->
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+Date: Thu, 15 May 2008 00:28:04 +0200
+
+Hi. sorry, I'm too late.
+I tested the patch to re-enable DMA. But, this patch has no effect. It cannot boot.
+printk() message disappeared.
+
+> On Wednesday 14 May 2008, Bartlomiej Zolnierkiewicz wrote:
+> > On Friday 09 May 2008, TAKADA Yoshihito wrote:
+> > > Hi.
+> > > 
+> > > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > > Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+> > > Date: Fri, 9 May 2008 11:27:53 +0200
+> > > 
+> > > > On Friday 09 May 2008, TAKADA Yoshihito wrote:
+> > > > > Thanks for quick reply.
+> > > > > 
+> > > > > I tried 2.6.26rc1. It hangs same as 2.6.25.
+> > > > > kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
+> > > > > It seems 2nd port DMA base issue was solved.
+> > > > 
+> > > > [...]
+> > > > 
+> > > > Thanks.
+> > > > 
+> > > > The following patch for 2.6.26-rc1 disables VDMA, please give it a try
+> > > > (I haven't time to fully audit VDMA support yet but lets see if it is
+> > > > the main source of the problems).
+> > > 
+> > > I applied the patch. But kernel was hung.
+> > > And I attempt to kill IDE_HFLAG_CS5520. It cannot boot, oo.
+> > > 
+> > >   kill IDE_HFLAG_VDMA  : hang  
+> > >   kill IDE_HFLAG_CS5520: hang
+> > >   kill both flags      : boot
+> > 
+> > Thanks for investigating this - I forgot that currently VDMA and CS5520
+> > host flags use the same bit (so it also needs to be fixed).
+> > 
+> > I'm going to send the following patch to Linus (please verify it):
+> > 
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] cs5520: disable VDMA
+> 
+> [...]
+> 
+> Please also try 2.6.26-rc2 without the above patch but with the following
+> patch applied instead - according to comments in OpenFirmware & pata_cs5520
+> code 0x60 register contains bus-master enable bit, it could be that it was
+> left disabled by BIOS and we need to explicitely enable it (if somebody has
+> CX5510 or CX5520 datasheet please verify this + send me a copy if possible).
+> 
 > ---
->  drivers/base/firmware_class.c     |   33 +++++++++++++++++++++++++++++++--
->  include/asm-generic/vmlinux.lds.h |    7 +++++++
->  include/linux/firmware.h          |   21 +++++++++++++++++++++
->  3 files changed, 59 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-> index 264b3a2..c09f060 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -49,6 +49,14 @@ struct firmware_priv {
->  	struct timer_list timeout;
->  };
->
-> +#ifdef CONFIG_FW_LOADER
-> +extern struct builtin_fw __start_builtin_fw[];
-> +extern struct builtin_fw __end_builtin_fw[];
-> +#else /* Module case. Avoid ifdefs later; it'll all optimise out */
-> +static struct builtin_fw *__start_builtin_fw = NULL;
-> +static struct builtin_fw *__end_builtin_fw = NULL;
-> +#endif
-> +
->  static void
->  fw_load_abort(struct firmware_priv *fw_priv)
+>  drivers/ide/pci/cs5520.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> Index: b/drivers/ide/pci/cs5520.c
+> ===================================================================
+> --- a/drivers/ide/pci/cs5520.c
+> +++ b/drivers/ide/pci/cs5520.c
+> @@ -147,6 +147,7 @@ static int __devinit cs5520_init_one(str
 >  {
-> @@ -391,13 +399,12 @@ _request_firmware(const struct firmware **firmware_p,
-> const char *name, struct device *f_dev;
->  	struct firmware_priv *fw_priv;
->  	struct firmware *firmware;
-> +	struct builtin_fw *builtin;
->  	int retval;
->
->  	if (!firmware_p)
->  		return -EINVAL;
->
-> -	printk(KERN_INFO "firmware: requesting %s\n", name);
-> -
->  	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
->  	if (!firmware) {
->  		printk(KERN_ERR "%s: kmalloc(struct firmware) failed\n",
-> @@ -406,6 +413,20 @@ _request_firmware(const struct firmware **firmware_p,
-> const char *name, goto out;
+>  	const struct ide_port_info *d = &cyrix_chipsets[id->driver_data];
+>  	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
+> +	u8 pcicfg;
+>  
+>  	ide_setup_pci_noise(dev, d);
+>  
+> @@ -163,6 +164,13 @@ static int __devinit cs5520_init_one(str
+>  		return -ENODEV;
 >  	}
->
-> +	for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
-> +	     builtin++) {
-> +		if (strcmp(name, builtin->name))
-> +			continue;
-> +		printk(KERN_INFO "firmware: using built-in firmware %s\n",
-> +		       name);
-> +		firmware->size = builtin->size;
-> +		firmware->data = builtin->data;
-> +		return 0;
+>  
+> +	pci_read_config_byte(dev, 0x60, &pcicfg);
+> +
+> +	if ((pcicfg & 0x40) == 0) {
+> +		printk(KERN_WARNING "cs5520: DMA mode disabled. Enabling.\n");
+> +		pci_write_config_byte(dev, 0x60, pcicfg | 0x40);
 > +	}
 > +
-> +	if (uevent)
-> +		printk(KERN_INFO "firmware: requesting %s\n", name);
-> +
->  	retval = fw_setup_device(firmware, &f_dev, name, device, uevent);
->  	if (retval)
->  		goto error_kfree_fw;
-> @@ -473,8 +494,16 @@ request_firmware(const struct firmware **firmware_p,
-> const char *name, void
->  release_firmware(const struct firmware *fw)
->  {
-> +	struct builtin_fw *builtin;
-> +
->  	if (fw) {
-> +		for (builtin = __start_builtin_fw; builtin != __end_builtin_fw;
-> +		     builtin++) {
-> +			if (fw->data == builtin->data)
-> +				goto free_fw;
-> +		}
->  		vfree(fw->data);
-> +	free_fw:
->  		kfree(fw);
->  	}
->  }
-> diff --git a/include/asm-generic/vmlinux.lds.h
-> b/include/asm-generic/vmlinux.lds.h index f054778..8d71a40 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -86,6 +86,13 @@
->  		VMLINUX_SYMBOL(__end_pci_fixups_resume) = .;		\
->  	}								\
->  									\
-> +	/* Built-in firmware blobs */					\
-> +	.builtin_fw        : AT(ADDR(.builtin_fw) - LOAD_OFFSET) {	\
-> +		VMLINUX_SYMBOL(__start_builtin_fw) = .;			\
-> +		*(.builtin_fw)						\
-> +		VMLINUX_SYMBOL(__end_builtin_fw) = .;			\
-> +	}								\
-> +									\
->  	/* RapidIO route ops */						\
->  	.rio_route        : AT(ADDR(.rio_route) - LOAD_OFFSET) {	\
->  		VMLINUX_SYMBOL(__start_rio_route_ops) = .;		\
-> diff --git a/include/linux/firmware.h b/include/linux/firmware.h
-> index 5e73f3f..279eaad 100644
-> --- a/include/linux/firmware.h
-> +++ b/include/linux/firmware.h
-> @@ -1,7 +1,10 @@
->  #ifndef _LINUX_FIRMWARE_H
->  #define _LINUX_FIRMWARE_H
-> +
->  #include <linux/module.h>
->  #include <linux/types.h>
-> +#include <linux/compiler.h>
-> +
->  #define FIRMWARE_NAME_MAX 30
->  #define FW_ACTION_NOHOTPLUG 0
->  #define FW_ACTION_HOTPLUG 1
-> @@ -13,6 +16,24 @@ struct firmware {
->
->  struct device;
->
-> +struct builtin_fw {
-> +	char *name;
-> +	void *data;
-> +	unsigned long size;
-> +};
-> +
-> +/* We have to play tricks here much like stringify() to get the
-> +   __COUNTER__ macro to be expanded as we want it */
-> +#define __fw_concat1(x,y) x##y
-> +#define __fw_concat(x,y) __fw_concat1(x,y)
-
-Hmm, linux/module.h does this too, perhaps some enthusiast can implement 
-__concat() and use it everywhere.
-
-Cheers,
-Rusty.
+>  	/*
+>  	 *	Now the chipset is configured we can let the core
+>  	 *	do all the device setup for us
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
