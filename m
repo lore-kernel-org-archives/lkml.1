@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbYE3ETx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758319AbYE3EYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761532AbYE3ETx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759002AbYE3ETk
+	id S1758319AbYE3EYW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYE3EYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:19:40 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:17710 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758527AbYE3ETj (ORCPT
+	Fri, 30 May 2008 00:24:13 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:49330 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbYE3EYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:19:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=ssu54htZmWyc12KXsQa/MVV/5Unc6LJtFWakGP5Ap4cr3FLAMu2wBD8AqYtIylnXUqqTrDFrT5lfMRxexBgoDqeJHx6oayJcO8ecAf6niCmhW+hRpq8cPF8a2XNkuspBk+lwh9tM2y/BTvJtiDwaM09Ik/iWkFSDHnmTRux2JRE=
-Message-ID: <483F804F.1@gmail.com>
-Date: Fri, 30 May 2008 13:19:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Fri, 30 May 2008 00:24:12 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5306"; a="3516027"
+Message-ID: <483F8178.7040300@qualcomm.com>
+Date: Thu, 29 May 2008 21:24:24 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: "Hemmann, Volker Armin" <volker.armin.hemmann@tu-clausthal.de>
-CC: Peer Chen <pchen@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Kuan Luo <kluo@nvidia.com>
-Subject: Re: 2.6.24.X: SATA/AHCI related boot delay. - not with 2.6.24.3
-References: <200803091922.33083.volker.armin.hemmann@tu-clausthal.de> <200804221444.55483.volker.armin.hemmann@tu-clausthal.de> <480DF1F5.3060208@gmail.com> <200805291654.03617.volker.armin.hemmann@tu-clausthal.de>
-In-Reply-To: <200805291654.03617.volker.armin.hemmann@tu-clausthal.de>
-X-Enigmail-Version: 0.95.6
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com, rostedt@goodmis.org
+Subject: Re: [PATCH] sched: Give cpusets exclusive control over sched domains
+ (ie remove cpu_isolated_map)
+References: <1212085023-22284-1-git-send-email-maxk@qualcomm.com>	<1212085023-22284-2-git-send-email-maxk@qualcomm.com>	<1212085023-22284-3-git-send-email-maxk@qualcomm.com>	<20080529173759.ccbaf8ef.pj@sgi.com>	<483F3559.1030806@qualcomm.com> <20080529191211.080ec5cf.pj@sgi.com>
+In-Reply-To: <20080529191211.080ec5cf.pj@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Hemmann, Volker Armin wrote:
-> -AHCI+nomsi: boots fine. Works fine. But: I still can not enable ncq
-> -AHCI+msi: the usual. No harddisks found, waiting for the timeouts, then 
-> kernel panic because of missing root.
+
+Paul Jackson wrote:
+> Max wrote:
+>> btw I suppose you missed my reply.
 > 
-> -NON-RAID/IDE+msi: works fine. No delays. No NCQ (not surprising since mobos 
-> handbook says that AHCI mode is required).
-> -NON-RAID/IDE+nomsi: see above.
+> I did not see your reply.  Did you send it to me or lkml?
+http://marc.info/?l=linux-kernel&m=121207910616332&w=2
 
-So, sans NCQ, the only remaining issue is MSI, right?  Peer Chen, please
-lemme know which controllers are affected by this MSI problem and where
-the problem lies.
-
-> but:
-> [14315325.624510] ahci 0000:00:0a.0: AHCI 0001.0100 32 slots 4 ports 3 Gbps 
-> 0xf impl SATA mode
-> [14315325.624559] ahci 0000:00:0a.0: flags: 64bit sntf led clo pmp pio
+>> Also Ingo at some point accepted a patch from Peter
+>> that partially removed the isolated map.
 > 
-> shouldn't controller and harddisks support turning on NCQ? The handbooks says 
-> that NCQ is supported in AHCI mode and the harddisks doesn't seem to be 
-> blacklisted.
+> Reference?  Did it remove the boot parameter isolcpus= ?
+Yes it removed boot param. I cannot seem to come up with the right search
+string. And the sched-devel git tree is gone.
 
-The controller is not reporting NCQ capability in its cap register
-(flags: line contains ncq if the controller is), so NCQ is not enabled.
+> My concern is removing user visible features, without
+> good reason and careful consideration and some planning.
+I understand. How would you plan for this ?
+----
 
-Thanks.
 
--- 
-tejun
+Did you get a chance to look at patch that addresses hotplug/domain issues ?
+
+Max
