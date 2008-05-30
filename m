@@ -1,114 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbYE3EQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761126AbYE3EQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760772AbYE3EQP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYE3EBo
+	id S1761126AbYE3EQc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbYE3EI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:01:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40495 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751558AbYE3EAS (ORCPT
+	Fri, 30 May 2008 00:08:26 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:42202 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760564AbYE3EIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:00:18 -0400
-Message-Id: <20080530040013.755304857@sgi.com>
-References: <20080530035620.587204923@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 29 May 2008 20:56:31 -0700
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: David Miller <davem@davemloft.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>
-Subject: [patch 11/41] cpu alloc: SRCU cpu alloc conversion
-Content-Disposition: inline; filename=cpu_alloc_srcu_conversion
+	Fri, 30 May 2008 00:08:24 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5306"; a="3341885"
+Message-ID: <483F7DC3.9080705@qualcomm.com>
+Date: Thu, 29 May 2008 21:08:35 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com, rostedt@goodmis.org
+Subject: Re: [PATCH] sched: Move cpu masks from kernel/sched.c into kernel/cpu.c
+References: <1212085023-22284-1-git-send-email-maxk@qualcomm.com>	<1212085023-22284-2-git-send-email-maxk@qualcomm.com> <20080529182634.e9146033.pj@sgi.com>
+In-Reply-To: <20080529182634.e9146033.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
----
- kernel/rcutorture.c |    4 ++--
- kernel/srcu.c       |   20 ++++++++------------
- 2 files changed, 10 insertions(+), 14 deletions(-)
 
-Index: linux-2.6/kernel/rcutorture.c
-===================================================================
---- linux-2.6.orig/kernel/rcutorture.c	2008-04-29 14:55:55.000000000 -0700
-+++ linux-2.6/kernel/rcutorture.c	2008-05-21 21:46:19.000000000 -0700
-@@ -442,8 +442,8 @@
- 		       torture_type, TORTURE_FLAG, idx);
- 	for_each_possible_cpu(cpu) {
- 		cnt += sprintf(&page[cnt], " %d(%d,%d)", cpu,
--			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[!idx],
--			       per_cpu_ptr(srcu_ctl.per_cpu_ref, cpu)->c[idx]);
-+			       CPU_PTR(srcu_ctl.per_cpu_ref, cpu)->c[!idx],
-+			       CPU_PTR(srcu_ctl.per_cpu_ref, cpu)->c[idx]);
- 	}
- 	cnt += sprintf(&page[cnt], "\n");
- 	return cnt;
-Index: linux-2.6/kernel/srcu.c
-===================================================================
---- linux-2.6.orig/kernel/srcu.c	2008-02-16 20:28:44.000000000 -0800
-+++ linux-2.6/kernel/srcu.c	2008-05-21 21:46:19.000000000 -0700
-@@ -46,7 +46,8 @@
- {
- 	sp->completed = 0;
- 	mutex_init(&sp->mutex);
--	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
-+	sp->per_cpu_ref = CPU_ALLOC(struct srcu_struct_array,
-+						GFP_KERNEL|__GFP_ZERO);
- 	return (sp->per_cpu_ref ? 0 : -ENOMEM);
- }
- 
-@@ -62,7 +63,7 @@
- 
- 	sum = 0;
- 	for_each_possible_cpu(cpu)
--		sum += per_cpu_ptr(sp->per_cpu_ref, cpu)->c[idx];
-+		sum += CPU_PTR(sp->per_cpu_ref, cpu)->c[idx];
- 	return sum;
- }
- 
-@@ -94,7 +95,7 @@
- 	WARN_ON(sum);  /* Leakage unless caller handles error. */
- 	if (sum != 0)
- 		return;
--	free_percpu(sp->per_cpu_ref);
-+	CPU_FREE(sp->per_cpu_ref);
- 	sp->per_cpu_ref = NULL;
- }
- 
-@@ -110,12 +111,9 @@
- {
- 	int idx;
- 
--	preempt_disable();
- 	idx = sp->completed & 0x1;
--	barrier();  /* ensure compiler looks -once- at sp->completed. */
--	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]++;
--	srcu_barrier();  /* ensure compiler won't misorder critical section. */
--	preempt_enable();
-+	srcu_barrier();
-+	_CPU_INC(sp->per_cpu_ref->c[idx]);
- 	return idx;
- }
- 
-@@ -131,10 +129,8 @@
-  */
- void srcu_read_unlock(struct srcu_struct *sp, int idx)
- {
--	preempt_disable();
--	srcu_barrier();  /* ensure compiler won't misorder critical section. */
--	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]--;
--	preempt_enable();
-+	srcu_barrier();
-+	_CPU_DEC(sp->per_cpu_ref->c[idx]);
- }
- 
- /**
 
--- 
+Paul Jackson wrote:
+> Max wrote:
+>> kernel/cpu.c is now built for the UP kernel too, but it does not
+>> affect the size the kernel sections.
+> 
+> I don't think this is possible.  It must affect the size.
+> 
+> The patch moves kernel/cpu.o from being included only if CONFIG_SMP,
+> to being included always:
+> 
+>      obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
+>     -	    exit.o itimer.o time.o softirq.o resource.o \
+>     +	    cpu.o exit.o itimer.o time.o softirq.o resource.o \
+> 		sysctl.o capability.o ptrace.o timer.o user.o \
+> 		signal.o sys.o kmod.o workqueue.o pid.o \
+> 		rcupdate.o extable.o params.o posix-timers.o \
+>     @@ -27,7 +27,7 @@ obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
+>      obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
+>      obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
+>      obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
+>     -obj-$(CONFIG_SMP) += cpu.o spinlock.o
+>     +obj-$(CONFIG_SMP) += spinlock.o
+> 
+> The kernel/cpu.o object file is non-empty; it has size,
+> perhaps 1 or 2 kbytes of text, and a little bit of data.
+> 
+> So adding it to builds which disabled SMP must add to the
+> size of the resultant kernel, by my thinking anyway.
+
+All the code is ifdefed under CONFIG_SMP. So there is no code in the !SMP
+case, just three masks. When you mentioned it first time I went back and
+rebuilt the !SMP kernel with and without the patch. Luckily I have a
+ridiculously fast 8way box here so I went ahead and verified it again.
+
+Before:
+size vmlinux
+   text	   data	    bss	    dec	    hex	filename
+3305622	 306420	 310352	3922393	 3bd9d9	vmlinux
+
+size kernel/cpu.o
+size: 'kernel/cpu.o': No such file
+
+After:
+size vmlinux
+   text	   data	    bss	    dec	    hex	filename
+3305621	 306420	 310352	3922393	 3bd9d9	vmlinux
+
+size kernel/cpu.o
+   text	   data	    bss	    dec	    hex	filename
+     96	     24	      0	    120	     78	kernel/cpu.o
+
+Max
