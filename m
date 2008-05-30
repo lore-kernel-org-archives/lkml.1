@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbYE3WMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbYE3WMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbYE3WMJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 18:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYE3WL4
+	id S1755372AbYE3WMf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 18:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYE3WMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 18:11:56 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44963 "EHLO mail.dvmed.net"
+	Fri, 30 May 2008 18:12:22 -0400
+Received: from saeurebad.de ([85.214.36.134]:34276 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbYE3WLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 18:11:55 -0400
-Message-ID: <48407BAA.6030106@garzik.org>
-Date: Fri, 30 May 2008 18:11:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1751550AbYE3WMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 18:12:21 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mm 08/14] bootmem: clean up alloc_bootmem_core
+References: <20080530194220.286976884@saeurebad.de>
+	<20080530194738.789921715@saeurebad.de>
+Date: Sat, 31 May 2008 00:11:43 +0200
+In-Reply-To: <20080530194738.789921715@saeurebad.de> (Johannes Weiner's
+	message of "Fri, 30 May 2008 21:42:28 +0200")
+Message-ID: <87ej7jmogw.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: peerchen <peerchen@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ahci: change the Device IDs of nvidia MCP7B AHCI controller
- in ahci.c
-References: <200805191444539981741@gmail.com>
-In-Reply-To: <200805191444539981741@gmail.com>
-Content-Type: text/plain; charset=Big5
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-peerchen wrote:
-> Change the partial Device IDs of nvidia MCP7B AHCI controller in ahci.c
-> 
-> Signed-off-by: Peer Chen <peerchen@gmail.com>
-> ---
-> --- linux-2.6.26-rc3/drivers/ata/ahci.c.orig	2008-05-07 13:24:19.000000000 -0400
-> +++ linux-2.6.26-rc3/drivers/ata/ahci.c	2008-05-07 13:25:17.000000000 -0400
-> @@ -502,10 +502,10 @@ static const struct pci_device_id ahci_p
->  	{ PCI_VDEVICE(NVIDIA, 0x0bcd), board_ahci },		/* MCP7B */
->  	{ PCI_VDEVICE(NVIDIA, 0x0bce), board_ahci },		/* MCP7B */
->  	{ PCI_VDEVICE(NVIDIA, 0x0bcf), board_ahci },		/* MCP7B */
-> -	{ PCI_VDEVICE(NVIDIA, 0x0bd0), board_ahci },		/* MCP7B */
-> -	{ PCI_VDEVICE(NVIDIA, 0x0bd1), board_ahci },		/* MCP7B */
-> -	{ PCI_VDEVICE(NVIDIA, 0x0bd2), board_ahci },		/* MCP7B */
-> -	{ PCI_VDEVICE(NVIDIA, 0x0bd3), board_ahci },		/* MCP7B */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0bc4), board_ahci },		/* MCP7B */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0bc5), board_ahci },		/* MCP7B */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0bc6), board_ahci },		/* MCP7B */
-> +	{ PCI_VDEVICE(NVIDIA, 0x0bc7), board_ahci },		/* MCP7B */
+Hi,
 
-applied
+Johannes Weiner <hannes@saeurebad.de> writes:
 
+> alloc_bootmem_core has become quite nasty to read over time.  This is
+> a clean rewrite that keeps the semantics.
 
+Another ->last_success error (missed updating it).
+
+I already have a fixed up series here, will wait a bit for sending it
+out to incorporate feedback as well.
+
+	Hannes
