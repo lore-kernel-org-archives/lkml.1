@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbYE3GHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbYE3GI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757655AbYE3GHy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 02:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYE3GHn
+	id S1755743AbYE3GI3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 02:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbYE3GIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 02:07:43 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:37193 "EHLO bagnes.atmel.com"
+	Fri, 30 May 2008 02:08:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:42288 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186AbYE3GHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 02:07:42 -0400
-Date: Fri, 30 May 2008 08:07:00 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: benh@kernel.crashing.org
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080530080700.773a82cc@siona.local>
-In-Reply-To: <1212110003.15633.0.camel@pasglop>
-References: <1211852026.3286.36.camel@pasglop>
-	<20080526.184047.88207142.davem@davemloft.net>
-	<1211854540.3286.42.camel@pasglop>
-	<20080526.192812.184590464.davem@davemloft.net>
-	<1211859542.3286.46.camel@pasglop>
-	<alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
-	<1211922621.3286.80.camel@pasglop>
-	<alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
-	<1211924335.3286.89.camel@pasglop>
-	<20080527214241.GA22636@parisc-linux.org>
-	<1211926636.3286.100.camel@pasglop>
-	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-	<1212110003.15633.0.camel@pasglop>
-Organization: Atmel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1758418AbYE3GII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 02:08:08 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch 03/41] cpu alloc: Use cpu allocator instead of the builtin modules per cpu allocator
+Date: Fri, 30 May 2008 16:08:01 +1000
+User-Agent: KMail/1.9.9
+Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
+References: <20080530035620.587204923@sgi.com> <20080530040011.451400376@sgi.com>
+In-Reply-To: <20080530040011.451400376@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 May 2008 06:07:00.0425 (UTC) FILETIME=[5F9F7390:01C8C21B]
+Content-Disposition: inline
+Message-Id: <200805301608.01584.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 May 2008 11:13:23 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Friday 30 May 2008 13:56:23 Christoph Lameter wrote:
+> --- linux-2.6.orig/kernel/module.c	2008-05-29 17:57:39.825214766 -0700
+> +++ linux-2.6/kernel/module.c	2008-05-29 18:00:50.496815514 -0700
+> @@ -314,121 +314,6 @@ static struct module *find_module(const
+>  	return NULL;
+>  }
 
-> > Currently, this is the only interface I know that can do native-endian
-> > accesses, so if you take it away, I'm gonna need an alternative
-> > interface that doesn't do byteswapping.  
-> 
-> Are you aware that these also don't provide any ordering guarantee ?
+115 lines removed... This is my favourite part of the series so far :)
 
-Yes, but I am not aware of any alternative.
+>  	if (mod->percpu)
+> -		percpu_modfree(mod->percpu);
+> +		cpu_free(mod->percpu, mod->percpu_size);
 
-I think the drivers I've written have the necessary barriers (or dma
-ops with implicit barriers) that they don't actually depend on any
-DMA vs. MMIO ordering guarantees. I hope MMIO vs. MMIO ordering is
-guaranteed though?
+Hmm, does cpu_free(NULL, 0) do something?  Seems like it shouldn't, for 
+symmetry with free().
 
-Haavard
+> +		if (align > PAGE_SIZE) {
+> +			printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
+> +			mod->name, align, PAGE_SIZE);
+> +			align = PAGE_SIZE;
+> +		}
+> +		percpu = cpu_alloc(size, GFP_KERNEL|__GFP_ZERO, align);
+> +		if (!percpu)
+> +			printk(KERN_WARNING "Could not allocate %lu bytes percpu data\n",
+> +										size);
+>  		if (!percpu) {
+>  			err = -ENOMEM;
+>  			goto free_mod;
+
+OK, we've *never* had a report of the per-cpu alignment message, so I'd be 
+happy to pass that through to cpu_alloc() and have it fail.  Also, the if 
+(!percpu) cases should be combined.
+
+>   free_percpu:
+>  	if (percpu)
+> -		percpu_modfree(percpu);
+> +		cpu_free(percpu, percpu_size);
+
+As above.
+
+> +	goal = __per_cpu_size;
+
+Where did __per_cpu_size come from?  I missed it in the earlier patches...
+
+Thanks,
+Rusty.
