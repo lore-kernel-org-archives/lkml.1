@@ -1,86 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYE3ILT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYE3IT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754536AbYE3ILT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 04:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYE3ILE
+	id S1753584AbYE3IT2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 04:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYE3ITN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 04:11:04 -0400
-Received: from as4.cineca.com ([130.186.84.251]:47434 "EHLO as4.cineca.com"
+	Fri, 30 May 2008 04:19:13 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39985 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751324AbYE3IK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 04:10:59 -0400
-X-Greylist: delayed 524 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 May 2008 04:10:59 EDT
-Message-ID: <483FB39A.4070104@gmail.com>
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>,
-       Sverre Rabbelier <alturin@gmail.com>, Joe Perches <joe@perches.com>,
-       git@vger.kernel.org
-Subject: Re: whomto.pl -- finding out whom to send patches to
-References: <20080529210018.GA5508@damson.getinternet.no>
-In-Reply-To: <20080529210018.GA5508@damson.getinternet.no>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-Date: Fri, 30 May 2008 09:58:19 +0200 (MEST)
+	id S1751592AbYE3ITJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 04:19:09 -0400
+Date: Fri, 30 May 2008 18:19:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for May 30
+Message-Id: <20080530181901.8268f317.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> Hi,
-> 
-> I've written this perl script that takes a patch as input and prints the
-> authors/committers of the affected lines, using git-blame as the back end.
-> 
-> (The purpose of this is of course to find out whom to send patches to.)
-> 
-> There are some caveats:
-> 
-> - If I've understood correctly, git-blame incremental output doesn't split
->   commits when a newer one is found, so we currently possibly take into
->   account more than just the last patch to touch a line. This might not be
->   a disadvantage, however...
-> 
-> - The patch must apply to the current working tree. I suppose there is
->   some way to use the index information in the patch to determine what to
->   run git-blame against, but this is currently beyond my git knowledge.
-> 
-> - It's a bit slow, particularly for large files. But doing the same thing
->   by hand would be slower, so I suppose it's an overall improvement.
-> 
-> Running this on a random -mm patch, for example
-> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc2/2.6.26-rc2-mm1/broken-out/acpi-fix-fadt-parsing.patch
-> gives the following output:
-> 
->   $ perl whomto2.pl acpi-fix-fadt-parsing.patch
->   Running git-blame on drivers/acpi/tables/tbfadt.c...
-> 
->   To: (Committers)
->       48 Len Brown <len.brown@intel.com>
->   Cc: (Authors)
->       44 Bob Moore <robert.moore@intel.com>
->        2 Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
->        2 Len Brown <len.brown@intel.com>
-> 
-> Maybe this tool can be useful? :-)
-> 
-> (Improvements are of course also welcome.)
+--Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Minor fix: do not git-blame /dev/null in patches that add new files.
+Hi all,
 
--Andrea
+Changes since next-20080529:
 
-diff -urpN linux/whomto.orig.pl linux/whomto.pl
---- linux/whomto.orig.pl	2008-05-30 09:43:08.000000000 +0200
-+++ linux/whomto.pl	2008-05-30 09:49:26.000000000 +0200
-@@ -101,6 +101,7 @@ sub parse_patch {
- 
- 	for (@p) {
- 		if (m/^--- .*?\/([^\s~]*)/) {
-+			next if ($1 eq 'dev/null');
- 			$file = $files{$1} = {
- 				chunks => [],
- 			};
+The ide tree got a build failure that required several newly out of lined
+routines to be exported.
+
+The rr tree picked up another conflict with the driver-core tree.
+
+The semaphore-removal tree still needed three patches reverted because simi=
+lar
+patches were merged into upstream and the scsi-rc-fixes trees.
+
+I have applied the following temporary patch for known build problems:
+
+	"Fix various 8390 builds" - the net tree broke builds on various
+architectures - hopefully this patch will go into the net tree shortly.
+	"hil_kbd: restore pci_ids.h" - this is to fix a patch in the
+semaphore tree and hopefully will be fixed there shortly.
+
+The "sparc: fallout from pci_name() constifying" patch is no longer needed.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 81 trees (counting Linus' and 13 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging quilt/driver-core
+Merging quilt/usb
+Merging x86/auto-x86-next
+Merging sched/auto-sched-next
+Merging ftrace/auto-ftrace-next
+Applying ftrace: fix rculist split fallout
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/base/power/main.c
+CONFLICT (content): Merge conflict in include/linux/device.h
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in drivers/i2c/i2c-core.c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd.c
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd_eckd.c
+CONFLICT (content): Merge conflict in drivers/s390/block/dasd_fba.c
+CONFLICT (content): Merge conflict in drivers/s390/char/tape_core.c
+CONFLICT (content): Merge conflict in drivers/s390/cio/device_fsm.c
+CONFLICT (content): Merge conflict in drivers/s390/net/claw.c
+CONFLICT (content): Merge conflict in drivers/s390/net/ctcm_main.c
+CONFLICT (content): Merge conflict in drivers/s390/net/lcs.c
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Applying ide: ide-timing.h fallout
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging hrt/mm
+Merging lblnet/master
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/main.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2x00dev=
+.c
+Merging crypto/master
+Merging vfs/vfs-2.6.25
+Merging sound/master
+Merging arm/devel
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in drivers/s390/kvm/kvm_virtio.c
+CONFLICT (content): Merge conflict in drivers/virtio/virtio.c
+CONFLICT (content): Merge conflict in drivers/virtio/virtio_pci.c
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging rcu/core/rcu
+Merging locking/core/locking
+Merging safe-poison-pointers/safe-poison-pointers
+Merging stackprotector/stackprotector
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
+CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
+$ git reset --hard
+$ git checkout -b tmp semaphore-removal/semaphore-removal
+Created commit 50e0404: Revert "Convert qla_os to use mutex instead of sema=
+phore"
+Created commit cde17a2: Revert "9p: Convert from semaphore to spinlock"
+Created commit 18b7168: Revert "qla2xxx: Turn vport_sem into vport_mutex"
+$ git checkout master
+CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
+Merging quilt/ldp.next
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+Merging ubifs/for_andrew
+Applying Fix various 8390 builds
+Applying hil_kbd: restore pci_ids.h
+
+--Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIP7h5TgG2atn1QN8RAocbAKCBhomxF8/n3Qne6WcfTd8/B4ijSwCfTsxl
+MSvXAXmLbsAAlSicgJEcbWE=
+=CJIo
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__30_May_2008_18_19_01_+1000_y7=4XFKlFNsoAv=U--
