@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbYE3F2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYE3F23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759747AbYE3F2P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYE3F17
+	id S1760009AbYE3F23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYE3F2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:27:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42252 "EHLO
+	Fri, 30 May 2008 01:28:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42258 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753271AbYE3F16 (ORCPT
+	with ESMTP id S1755541AbYE3F2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:27:58 -0400
-Date: Thu, 29 May 2008 22:27:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
-In-Reply-To: <20080529222143.5d7aa1e5.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0805292224540.12329@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com>
- <20080529222143.5d7aa1e5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 May 2008 01:28:07 -0400
+From: Paul Jackson <pj@sgi.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Juan-Mariano de Goyeneche" <jmseyas@dit.upm.es>,
+       "Randy Dunlap" <rdunlap@xenotime.net>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 29 May 2008 22:28:06 -0700
+Message-Id: <20080530052806.125355.58257.sendpatchset@jackhammer.engr.sgi.com>
+Subject: [PATCH - right file this time] doc: Update to URL and status of kernel-docs.txt entry
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Andrew Morton wrote:
+From: Paul Jackson <pj@sgi.com>
 
-> > The per cpu memory use by subsystems is typically quite small. We already 
-> > have an 8k limitation for percpu space for modules. And that does not seem 
-> > to be a problem.
-> 
-> eh?  That's DEFINE_PERCPU memory, not alloc_pecpu() memory?
+Update status and URL for the "Gary's Encyclopedia" entry.
 
-No. The module subsystem has its own alloc_percpu subsystem that the 
-cpu_alloc replaces.
+Signed-off-by: Paul Jackson <pj@sgi.com>
 
-> > We could do that yes.
-> 
-> Phew.
+---
+ Documentation/kernel-docs.txt |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-But its going to be even more complicated and I have a hard time managing 
-the complexity here. Could someone take pieces off my hand?
+--- linux-2.6.orig/Documentation/kernel-docs.txt	2007-12-18 20:38:50.000000000 -0800
++++ linux-2.6/Documentation/kernel-docs.txt	2008-05-29 21:55:28.488134402 -0700
+@@ -715,14 +715,14 @@
+ 
+      * Name: "Gary's Encyclopedia - The Linux Kernel"
+        Author: Gary (I suppose...).
+-       URL: http://www.lisoleg.net/cgi-bin/lisoleg.pl?view=kernel.htm
+-       Keywords: links, not found here?.
++       URL: http://slencyclopedia.berlios.de/index.html
++       Keywords: linux, community, everything!
+        Description: Gary's Encyclopedia exists to allow the rapid finding
+        of documentation and other information of interest to GNU/Linux
+        users. It has about 4000 links to external pages in 150 major
+        categories. This link is for kernel-specific links, documents,
+-       sites... Look there if you could not find here what you were
+-       looking for.
++       sites...  This list is now hosted by developer.Berlios.de,
++       but seems not to have been updated since sometime in 1999.
+ 
+      * Name: "The home page of Linux-MM"
+        Author: The Linux-MM team.
 
-> > But then per cpu data is not frequently allocated and freed.
-> 
-> I think it is, in the TCP case.  And that's the only one I looked at.
-
-Which tcp case?
-
-> Plus who knows what lies ahead of us?
-
-Well invariably we will end up with cpu area defragmentation.... Sigh.
-
-> I don't think there is presently any upper limit on alloc_percpu()?  It
-> uses kmalloc() and kmalloc_node()?
-> 
-> Even if there is some limit, is it an unfixable one?
-
-No there is no limit. It just wastes lots of space (pointer arrays, 
-alignment etc) that we could use to configure sufficiently large per cpu 
-areas.
-
+-- 
+                          I won't rest till it's the best ...
+                          Programmer, Linux Scalability
+                          Paul Jackson <pj@sgi.com> 1.650.933.1373
