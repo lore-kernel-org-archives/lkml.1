@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbYE3Jxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYE3KBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754280AbYE3Jxw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 05:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYE3Jxm
+	id S1755421AbYE3KBl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 06:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYE3KBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 05:53:42 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52129 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbYE3Jxl (ORCPT
+	Fri, 30 May 2008 06:01:32 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40777 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752998AbYE3KBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 05:53:41 -0400
-To: hch@infradead.org
-CC: bfields@fieldses.org, miklos@szeredi.hu, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, neilb@suse.de
-In-reply-to: <E1K20aX-0001NV-Vu@pomaz-ex.szeredi.hu> (message from Miklos
-	Szeredi on Fri, 30 May 2008 11:07:53 +0200)
-Subject: Re: [patch 4/8] nfsd: rename MAY_ flags
-References: <20080529113245.450308367@szeredi.hu> <20080529113312.288347247@szeredi.hu> <20080529124701.GA13147@infradead.org> <E1K1iiF-00086t-Ve@pomaz-ex.szeredi.hu> <20080529204002.GC24018@fieldses.org> <20080530073607.GB7758@infradead.org> <E1K20aX-0001NV-Vu@pomaz-ex.szeredi.hu>
-Message-Id: <E1K21If-0001Sa-Ex@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 30 May 2008 11:53:29 +0200
+	Fri, 30 May 2008 06:01:31 -0400
+Date: Fri, 30 May 2008 10:46:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Paul Jackson <pj@sgi.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, miaox@cn.fujitsu.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       menage@google.com
+Subject: Re: [RFC] [PATCH 1/2] cpusets: restructure the function
+ update_cpumask() and update_nodemask()
+Message-ID: <20080530104658.26a3783f@core>
+In-Reply-To: <20080530012537.87454a8d.pj@sgi.com>
+References: <483E564A.5050807@cn.fujitsu.com>
+	<20080529031656.cdc38001.pj@sgi.com>
+	<483F5DAA.5060004@cn.fujitsu.com>
+	<20080529205344.4ba1efdb.pj@sgi.com>
+	<483F6367.1040701@cn.fujitsu.com>
+	<20080529212211.0e794c81.pj@sgi.com>
+	<20080529203042.19f76f09.rdunlap@xenotime.net>
+	<20080529225708.74f65654.pj@sgi.com>
+	<20080529212746.2d9cae24.rdunlap@xenotime.net>
+	<20080530012537.87454a8d.pj@sgi.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> These three constants are very much ingrained in the UNIX tradition,
-> and it's no accident that the MAY_ flags correspond exactly to the
-> i_mode bits, which is something often exploited by permission checking
-> code.
+> I have never seen or heard of a document using the "/**" kernel-doc
+> entries of kernel/cpuset.c, and I have no idea who actually has (in
+> the past or present, not just hypothetically) read such or why.
 
-Funny example of naming confusion:
+People wanting to generate things like function lists.
 
-> asmlinkage long sys_faccessat(int dfd, const char __user *filename, int mode)
-> {
-> 	...
-> 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
-> 		return -EINVAL;
+> being a stubborn retard, I continue to prefer that file static routines
+> in kernel/cpuset.c not have "/**" kernel-doc markers on their comments,
+> and I would still welcome a patch from Miao removing the ones already
+> there.
 
-The MAY_* namespace is never mentioned, even though that's the one
-most relevant here :)
+And I'll join that by stubbonly NAKing such an approach. We want
+consistent clear formats for documentation extraction. Simply getting
+people to use the kerneldoc format materially improves the documentation
+quality, so please don't set bad examples ;)
 
-Miklos
+Alan
+
