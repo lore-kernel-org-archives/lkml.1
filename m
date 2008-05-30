@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbYE3PZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYE3P0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755648AbYE3PZy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 11:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYE3PZq
+	id S1756588AbYE3P0h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 11:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYE3P0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 11:25:46 -0400
-Received: from xenotime.net ([66.160.160.81]:38366 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751480AbYE3PZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 11:25:45 -0400
-Date: Fri, 30 May 2008 08:39:20 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Paul Jackson <pj@sgi.com>
-Cc: miaox@cn.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, menage@google.com
-Subject: Re: [RFC] [PATCH 1/2] cpusets: restructure the function
- update_cpumask() and update_nodemask()
-Message-Id: <20080530083920.cc7a029f.rdunlap@xenotime.net>
-In-Reply-To: <20080530012537.87454a8d.pj@sgi.com>
-References: <483E564A.5050807@cn.fujitsu.com>
-	<20080529031656.cdc38001.pj@sgi.com>
-	<483F5DAA.5060004@cn.fujitsu.com>
-	<20080529205344.4ba1efdb.pj@sgi.com>
-	<483F6367.1040701@cn.fujitsu.com>
-	<20080529212211.0e794c81.pj@sgi.com>
-	<20080529203042.19f76f09.rdunlap@xenotime.net>
-	<20080529225708.74f65654.pj@sgi.com>
-	<20080529212746.2d9cae24.rdunlap@xenotime.net>
-	<20080530012537.87454a8d.pj@sgi.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 May 2008 11:26:30 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:59224 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752057AbYE3P03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 11:26:29 -0400
+Cc: Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       Michael Zappe <zapman@interlan.net>,
+       Stephane Alnet <stephane@u-picardie.fr>,
+       Brad Hards <bhards@bigpond.net.au>
+Message-Id: <FD896A2C-277F-45CF-AE26-E2E29DA8093F@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1212160598.8199.6.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] kaweth: use request_firmware()
+Date: Fri, 30 May 2008 17:26:17 +0200
+References: <1211708969@pmac.infradead.org> <1212070841.26088.28.camel@shinybook.infradead.org> <200805301555.59327.oliver@neukum.org> <1212160598.8199.6.camel@shinybook.infradead.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 May 2008 01:25:37 -0500 Paul Jackson wrote:
+Hi David,
 
-> Randy wrote:
-> > Does that help?  your understanding of kernel-doc or your decision?
-> 
-> Well, I get the difference between E (exported) and I (non-exported)
-> now.  And I see that one could prepare documents using SGML templates
-> that contained one, or the other of these, for any kernel source files
-> of interest.
-> 
-> I'm stuck on the next step of this decision.
-> 
-> Usually, when I am preparing documens, I know what document I am
-> preparing and have an idea who is in its audience.
-> 
-> I have never seen or heard of a document using the "/**" kernel-doc
-> entries of kernel/cpuset.c, and I have no idea who actually has (in
-> the past or present, not just hypothetically) read such or why.
-> 
-> So I'm kinda shootin in the dark here.
-> 
-> So, mostly just to be consistent with my previous call, because I enjoy
-> being a stubborn retard, I continue to prefer that file static routines
-> in kernel/cpuset.c not have "/**" kernel-doc markers on their comments,
-> and I would still welcome a patch from Miao removing the ones already
-> there.
+>>>                if ((result = kaweth_download_firmware(kaweth,
+>>> -                                                      
+>>> kaweth_trigger_code_fix,
+>>> -                                                      
+>>> len_kaweth_trigger_code_fix,
+>>> +                                                     "kaweth/ 
+>>> trigger_code_fix.bin",
+>>
+>> We don't put hirarchy policy into drivers.
+>
+> Not a strictly accurate observation; we've been doing so for some  
+> time.
 
-Well, that's some reason for your decision.  At least you aren't just being
-arbitrary.  I agree with Alan, of course.  I don't think that you have stated
-a Good reason for removing the kernel-doc on the static functions, but it is
-your call AFAICT.
+we tried to not put that policy into the drivers and I was looking  
+over this, but in the meantime driver slipped past me and made it in.  
+We should not do this at all and if people wanna have this, then they  
+should solve this within udev.
 
-> Enough of this discussion, from me at least.
+Regards
 
+Marcel
 
----
-~Randy
-"He closes his eyes and drops the goggles.  You can't get hurt
-by looking at a bitmap.  Or can you?"
