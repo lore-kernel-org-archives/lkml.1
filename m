@@ -1,85 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbYE3ENg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbYE3ENx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbYE3ENg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbYE3EB2
+	id S1760705AbYE3ENx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756662AbYE3EBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:01:28 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:42741 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756159AbYE3EBS (ORCPT
+	Fri, 30 May 2008 00:01:35 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40527 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752750AbYE3EAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:01:18 -0400
-Date: Thu, 29 May 2008 21:08:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Chris Frey <cdfrey@foursquare.net>
+	Fri, 30 May 2008 00:00:21 -0400
+Message-Id: <20080530040018.840731414@sgi.com>
+References: <20080530035620.587204923@sgi.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 29 May 2008 20:56:43 -0700
+From: Christoph Lameter <clameter@sgi.com>
+To: akpm@linux-foundation.org
+Cc: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [next-20080529] build error: missing ieee80211_tx_control?
-Message-Id: <20080529210841.f3e8c4a8.randy.dunlap@oracle.com>
-In-Reply-To: <20080530034225.GA5238@foursquare.net>
-References: <20080530001525.GA29604@foursquare.net>
-	<20080529194506.336077d8.randy.dunlap@oracle.com>
-	<20080530034225.GA5238@foursquare.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Cc: David Miller <davem@davemloft.net>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Travis <travis@sgi.com>
+Subject: [patch 23/41] cpu alloc: Use it for infiniband
+Content-Disposition: inline; filename=cpu_alloc_infiniband_conversion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 23:42:25 -0400 Chris Frey wrote:
+Use cpu alloc for infiniband.
 
-> On Thu, May 29, 2008 at 07:45:06PM -0700, Randy Dunlap wrote:
-> > On Thu, 29 May 2008 20:15:25 -0400 Chris Frey wrote:
-> > >   CC      drivers/input/serio/serio.o
-> > >   CC      drivers/input/serio/i8042.o
-> > > In file included from drivers/input/serio/i8042.h:28,
-> > >                  from drivers/input/serio/i8042.c:85:
-> > > drivers/input/serio/i8042-x86ia64io.h: In function 'i8042_platform_init':
-> > > drivers/input/serio/i8042-x86ia64io.h:590: error: 'i8042_nopnp' undeclared (first use in this function)
-> > > drivers/input/serio/i8042-x86ia64io.h:590: error: (Each undeclared identifier is reported only once
-> > > drivers/input/serio/i8042-x86ia64io.h:590: error: for each function it appears in.)
-> > > make[2]: *** [drivers/input/serio/i8042.o] Error 1
-> > > make[1]: *** [drivers/input/serio] Error 2
-> > > make: *** [drivers] Error 2
-> > 
-> > Please see this thread for patches:
-> >   http://lkml.org/lkml/2008/5/29/299
-> 
-> Thanks.  I applied the second patch in that thread, and it gets past
-> the serio.o module.
-> 
-> I realize this is not related to serio anymore, but now it stops here,
-> using the same config as in my previous email.  This is just a general
-> build report... I don't expect you to fix it personally. :-)
-> 
-> I can't seem to find ieee80211_tx_control anywhere in the tree, except in
-> pio.h.
-> 
-> 
->   CC      drivers/net/wireless/airo.o
->   CC      drivers/net/wireless/b43legacy/main.o
-> In file included from drivers/net/wireless/b43legacy/main.c:51:
-> drivers/net/wireless/b43legacy/pio.h:134: warning: 'struct ieee80211_tx_control' declared inside parameter list
-> drivers/net/wireless/b43legacy/pio.h:134: warning: its scope is only this definition or declaration, which is probably not what you want
-> drivers/net/wireless/b43legacy/main.c: In function 'b43legacy_op_tx':
-> drivers/net/wireless/b43legacy/main.c:2375: error: too few arguments to function 'b43legacy_pio_tx'
-> make[4]: *** [drivers/net/wireless/b43legacy/main.o] Error 1
-> make[3]: *** [drivers/net/wireless/b43legacy] Error 2
-> make[2]: *** [drivers/net/wireless] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
-
-Patch is here:  http://marc.info/?l=linux-next&m=121165255717756&w=2
-
-
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
-~Randy
-"He closes his eyes and drops the goggles.  You can't get hurt
-by looking at a bitmap.  Or can you?"
+ drivers/infiniband/hw/ehca/ehca_irq.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+Index: linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c
+===================================================================
+--- linux-2.6.orig/drivers/infiniband/hw/ehca/ehca_irq.c	2008-05-14 19:40:32.000000000 -0700
++++ linux-2.6/drivers/infiniband/hw/ehca/ehca_irq.c	2008-05-21 22:01:32.000000000 -0700
+@@ -680,7 +680,7 @@
+ 	cpu_id = find_next_online_cpu(pool);
+ 	BUG_ON(!cpu_online(cpu_id));
+ 
+-	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
++	cct = CPU_PTR(pool->cpu_comp_tasks, cpu_id);
+ 	BUG_ON(!cct);
+ 
+ 	spin_lock_irqsave(&cct->task_lock, flags);
+@@ -688,7 +688,7 @@
+ 	spin_unlock_irqrestore(&cct->task_lock, flags);
+ 	if (cq_jobs > 0) {
+ 		cpu_id = find_next_online_cpu(pool);
+-		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
++		cct = CPU_PTR(pool->cpu_comp_tasks, cpu_id);
+ 		BUG_ON(!cct);
+ 	}
+ 
+@@ -761,7 +761,7 @@
+ {
+ 	struct ehca_cpu_comp_task *cct;
+ 
+-	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
++	cct = CPU_PTR(pool->cpu_comp_tasks, cpu);
+ 	spin_lock_init(&cct->task_lock);
+ 	INIT_LIST_HEAD(&cct->cq_list);
+ 	init_waitqueue_head(&cct->wait_queue);
+@@ -777,7 +777,7 @@
+ 	struct task_struct *task;
+ 	unsigned long flags_cct;
+ 
+-	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
++	cct = CPU_PTR(pool->cpu_comp_tasks, cpu);
+ 
+ 	spin_lock_irqsave(&cct->task_lock, flags_cct);
+ 
+@@ -793,7 +793,7 @@
+ 
+ static void __cpuinit take_over_work(struct ehca_comp_pool *pool, int cpu)
+ {
+-	struct ehca_cpu_comp_task *cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
++	struct ehca_cpu_comp_task *cct = CPU_PTR(pool->cpu_comp_tasks, cpu);
+ 	LIST_HEAD(list);
+ 	struct ehca_cq *cq;
+ 	unsigned long flags_cct;
+@@ -806,8 +806,7 @@
+ 		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
+ 
+ 		list_del(&cq->entry);
+-		__queue_comp_task(cq, per_cpu_ptr(pool->cpu_comp_tasks,
+-						  smp_processor_id()));
++		__queue_comp_task(cq, THIS_CPU(pool->cpu_comp_tasks));
+ 	}
+ 
+ 	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
+@@ -833,14 +832,14 @@
+ 	case CPU_UP_CANCELED:
+ 	case CPU_UP_CANCELED_FROZEN:
+ 		ehca_gen_dbg("CPU: %x (CPU_CANCELED)", cpu);
+-		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
++		cct = CPU_PTR(pool->cpu_comp_tasks, cpu);
+ 		kthread_bind(cct->task, any_online_cpu(cpu_online_map));
+ 		destroy_comp_task(pool, cpu);
+ 		break;
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+ 		ehca_gen_dbg("CPU: %x (CPU_ONLINE)", cpu);
+-		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
++		cct = CPU_PTR(pool->cpu_comp_tasks, cpu);
+ 		kthread_bind(cct->task, cpu);
+ 		wake_up_process(cct->task);
+ 		break;
+@@ -883,7 +882,8 @@
+ 	spin_lock_init(&pool->last_cpu_lock);
+ 	pool->last_cpu = any_online_cpu(cpu_online_map);
+ 
+-	pool->cpu_comp_tasks = alloc_percpu(struct ehca_cpu_comp_task);
++	pool->cpu_comp_tasks = CPU_ALLOC(struct ehca_cpu_comp_task,
++						GFP_KERNEL | __GFP_ZERO);
+ 	if (pool->cpu_comp_tasks == NULL) {
+ 		kfree(pool);
+ 		return -EINVAL;
+@@ -917,6 +917,6 @@
+ 		if (cpu_online(i))
+ 			destroy_comp_task(pool, i);
+ 	}
+-	free_percpu(pool->cpu_comp_tasks);
++	CPU_FREE(pool->cpu_comp_tasks);
+ 	kfree(pool);
+ }
+
+-- 
