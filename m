@@ -1,95 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbYE3MnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbYE3MoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752619AbYE3MnP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 08:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYE3Mm5
+	id S1753275AbYE3MoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 08:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYE3MoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 08:42:57 -0400
-Received: from mail.tmr.com ([64.65.253.246]:50455 "EHLO gaimboi.tmr.com"
+	Fri, 30 May 2008 08:44:04 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:58742 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbYE3Mm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 08:42:56 -0400
-Message-ID: <483FF92F.6060309@tmr.com>
-Date: Fri, 30 May 2008 08:55:11 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1750885AbYE3MoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 08:44:02 -0400
+Message-ID: <483FF687.4060404@atmel.com>
+Date: Fri, 30 May 2008 14:43:51 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: Holger Kiehl <Holger.Kiehl@dwd.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <Pine.LNX.4.64.0805290636020.20192@diagnostix.dwd.de> <alpine.DEB.1.10.0805291302190.23633@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0805291302190.23633@p34.internal.lan>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+CC: =?ISO-8859-1?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>,
+       =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/7] mmc: at91_mci: support for block size not modulo 4
+References: <483FE9E7.7020707@atmel.com>
+In-Reply-To: <483FE9E7.7020707@atmel.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
->
->
-> On Thu, 29 May 2008, Holger Kiehl wrote:
->
->> On Wed, 28 May 2008, Justin Piszcz wrote:
->>
->>> Hardware:
->>>
->>> 1. Utilized (6) 400 gigabyte sata hard drives.
->>> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
->>>
->>> Used the following 'optimizations' for all tests.
->>>
->>> # Set read-ahead.
->>> echo "Setting read-ahead to 64 MiB for /dev/md3"
->>> blockdev --setra 65536 /dev/md3
->>>
->>> # Set stripe-cache_size for RAID5.
->>> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
->>> echo 16384 > /sys/block/md3/md/stripe_cache_size
->>>
->>> # Disable NCQ on all disks.
->>> echo "Disabling NCQ on all disks..."
->>> for i in $DISKS
->>> do
->>>  echo "Disabling NCQ on $i"
->>>  echo 1 > /sys/block/"$i"/device/queue_depth
->>> done
->>>
->>> Software:
->>>
->>> Kernel: 2.6.23.1 x86_64
->>> Filesystem: XFS
->>> Mount options: defaults,noatime
->>>
->>> Results:
->>>
->>> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
->>> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
->>>
->> Why is the Sequential Output (Block) for raid6 165719 and for raid5 only
->> 86797? I would have thought that raid6 was always a bit slower in 
->> writting
->> due to having to write double amount of parity data.
->>
->> Holger
->>
->
-> RAID5 (2nd test of 3 averaged runs) & Single disk added:
-> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html 
+From: Marc Pignat <marc.pignat@hevs.ch>
 
-Other than repeating my (possibly lost) comment that this would be 
-vastly easier to read if the number were aligned and all had the same 
-number of decimal places in a single column, good stuff. For sequential 
-i/o the winners and losers are clear, and you can set cost and 
-performance to pick the winners. Seems obvious that raid-1 is the loser 
-for single threaded load, I suspect that it would be poor against other 
-levels in multithread loads, but not so much for read.
+Implement transfer with size not modulo 4 for at91sam9*. Please note 
+that the
+at91rm9200 simply can't handle this.
 
+Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+drivers/mmc/host/at91_mci.c |   15 ++++++++++-----
+1 files changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
+index 8979ad3..543b64b 100644
+--- a/drivers/mmc/host/at91_mci.c
++++ b/drivers/mmc/host/at91_mci.c
+@@ -233,11 +233,11 @@ static void at91_mci_pre_dma_read(struct 
+at91mci_host *host)
+
+		if (i == 0) {
+			at91_mci_write(host, ATMEL_PDC_RPR, sg->dma_address);
+-			at91_mci_write(host, ATMEL_PDC_RCR, sg->length / 4);
++			at91_mci_write(host, ATMEL_PDC_RCR, (data->blksz & 0x3) ? sg->length 
+: sg->length / 4);
+		}
+		else {
+			at91_mci_write(host, ATMEL_PDC_RNPR, sg->dma_address);
+-			at91_mci_write(host, ATMEL_PDC_RNCR, sg->length / 4);
++			at91_mci_write(host, ATMEL_PDC_RNCR, (data->blksz & 0x3) ? 
+sg->length : sg->length / 4);
+		}
+	}
+
+@@ -430,7 +430,7 @@ static void at91_mci_send_command(struct 
+at91mci_host *host, struct mmc_command
+
+	if (data) {
+
+-		if ( data->blksz & 0x3 ) {
++		if ( cpu_is_at91rm9200() && (data->blksz & 0x3) ) {
+			pr_debug("Unsupported block size\n");
+			cmd->error = -EINVAL;
+			mmc_request_done(host->mmc, host->request);
+@@ -482,7 +482,10 @@ static void at91_mci_send_command(struct 
+at91mci_host *host, struct mmc_command
+	} else {
+		/* zero block length and PDC mode */
+		mr = at91_mci_read(host, AT91_MCI_MR) & 0x7fff;
+-		at91_mci_write(host, AT91_MCI_MR, mr | (block_length << 16) | 
+AT91_MCI_PDCMODE);
++		mr |= (data->blksz & 0x3) ? AT91_MCI_PDCFBYTE : 0;
++		mr |= (block_length << 16);
++		mr |= AT91_MCI_PDCMODE;
++		at91_mci_write(host, AT91_MCI_MR, mr);
+
+		/*
+		 * Disable the PDC controller
+@@ -517,7 +520,9 @@ static void at91_mci_send_command(struct 
+at91mci_host *host, struct mmc_command
+				pr_debug("Transmitting %d bytes\n", host->total_length);
+
+				at91_mci_write(host, ATMEL_PDC_TPR, host->physical_address);
+-				at91_mci_write(host, ATMEL_PDC_TCR, host->total_length / 4);
++				at91_mci_write(host, ATMEL_PDC_TCR, (data->blksz & 0x3) ?
++						host->total_length : host->total_length / 4);
++
+				ier = AT91_MCI_CMDRDY;
+			}
+		}
 -- 
-Bill Davidsen <davidsen@tmr.com>
-  "Woe unto the statesman who makes war without a reason that will still
-  be valid when the war is over..." Otto von Bismark 
+1.5.3.7
+
 
 
