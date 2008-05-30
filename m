@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYE3Q5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbYE3Q7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbYE3Q5u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 12:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYE3Q5n
+	id S1753816AbYE3Q7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 12:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbYE3Q7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 12:57:43 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4970 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752434AbYE3Q5m (ORCPT
+	Fri, 30 May 2008 12:59:01 -0400
+Received: from outbound-mail-33.bluehost.com ([69.89.18.153]:33411 "HELO
+	outbound-mail-33.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752314AbYE3Q7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 12:57:42 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, agl@us.ibm.com,
-       wli@holomorphy.com, kenchen@google.com, dwg@au1.ibm.com,
-       andi@firstfloor.org, Mel Gorman <mel@csn.ul.ie>, dean@arctic.org,
-       abh@cray.com, Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 0/2] hugetlb reservations v4/MAP_NORESERVE V3 cleanups
-References: <20080528184246.4753a78b.akpm@linux-foundation.org>
-InReply-To: <20080528184246.4753a78b.akpm@linux-foundation.org>
-Message-ID: <exportbomb.1212166524@pinky>
-Date: Fri, 30 May 2008 17:57:21 +0100
+	Fri, 30 May 2008 12:59:00 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: dri-devel@lists.sourceforge.net
+Subject: Re: in-kernel DRM tree move around....
+Date: Fri, 30 May 2008 09:58:53 -0700
+User-Agent: KMail/1.9.9
+Cc: "Dave Airlie" <airlied@gmail.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com> <1212058935.26088.11.camel@shinybook.infradead.org> <21d7e9970805292326m1a238aa1id8b6733351ba15d3@mail.gmail.com>
+In-Reply-To: <21d7e9970805292326m1a238aa1id8b6733351ba15d3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805300958.53361.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following on from Andrew's feedback here are a couple of update patches
-for hugetlb reservations v4 and MAP_NORESERVE V3.  These introduce a number
-of new helpers and use those throughout.
+On Thursday, May 29, 2008 11:26 pm Dave Airlie wrote:
+> On Thu, May 29, 2008 at 9:02 PM, David Woodhouse <dwmw2@infradead.org> 
+wrote:
+> > On Thu, 2008-05-29 at 10:46 +1000, Dave Airlie wrote:
+> >> Hi,
+> >>
+> >> So I've been growing more annoyed with the current layout of the drm
+> >> tree in the kernel,
+> >>
+> >> a) it lives under char.
+> >> b) everything in one directory.
+> >> c) header files in one directory.
+> >> d) no header files exposed to userspace.
+> >>
+> >> http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=commitdi
+> >>ff;h=7df9a948d0f849466e3de259cccb49bc54cbad68
+> >>
+> >> is a proposal to create drivers/gpu/drm, (I may move AGP in there as
+> >> well later). It also creates per-driver subdirs.
+> >
+> > Looks sane from the header export POV. Passes headers_check and doesn't
+> > add any more instances of CONFIG_xxx visible to userspace (I'm coming
+> > after those, soon).
+>
+> So assuming I fixed up the kbuild issues, any ideas on when it would
+> be a good plan to upstream this sorta major movement.
+>
+> Not many DRM patches don't come via me, and I can fix up the ones that
+> do before I merge them.
+>
+> Linus? any ideas on when you would prefer to take a tree like this?
+> start of rc1?
 
-This stack consists of two patches to allow them to be merged into the
-appropriate stacks.
+Yes please, as soon as the merge window opens.  Now if we could just convince 
+you to host a full kernel tree for DRM development, with a separate, 
+symlinked BSD dir at the top level, we'd be all set. :)
 
-huge-page-private-reservation-review-cleanups -- adds the helpers and
-  utilises them in the base reservations stack, and
-
-huge-page-MAP_NORESERVE-review-cleanups -- uses the same helpers in the
-  MAP_NORESERVE stack.
-
--apw
+Jesse
