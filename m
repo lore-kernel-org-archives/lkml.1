@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYE3VP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbYE3VR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbYE3VP5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 17:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYE3VPt
+	id S1755262AbYE3VR7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 17:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYE3VRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 17:15:49 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53014 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753339AbYE3VPs (ORCPT
+	Fri, 30 May 2008 17:17:47 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53199 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752989AbYE3VRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 17:15:48 -0400
-Date: Fri, 30 May 2008 22:13:01 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: "Luck, Tony" <tony.luck@intel.com>
-cc: Greg KH <greg@kroah.com>, Dave Jones <davej@redhat.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Ksummit-2008-discuss] How many contributors are we losing
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC017405EB@orsmsx424.amr.corp.intel.com>
-Message-ID: <Pine.LNX.4.64.0805302205160.28487@blonde.site>
-References: <20080528225136.GA29014@kroah.com>
- <1FE6DD409037234FAB833C420AA843EC016FFF69@orsmsx424.amr.corp.intel.com>
- <20080529003657.GA17505@kroah.com> <20080529010055.GA31952@redhat.com>
- <20080529022632.GB5180@kroah.com> <1FE6DD409037234FAB833C420AA843EC017405EB@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 May 2008 17:17:46 -0400
+Date: Sat, 31 May 2008 00:12:23 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <20080530110904.GA14184@elte.hu>
+Message-ID: <Pine.LNX.4.64.0805301436260.16829@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <20080529084524.GA24892@elte.hu>
+ <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> <20080529112257.GA18130@elte.hu>
+ <20080529130823.GA8364@elte.hu> <20080530110904.GA14184@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 May 2008, Luck, Tony wrote:
+On Fri, 30 May 2008, Ingo Molnar wrote:
+
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> I took those cleaned up log files (which run from 2.6.11 to 2.6.22) and
-> created some new ones (raw, I didn't try to clean them) for 2.6.23, 2.6.24,
-> 2.6.25 and 2.6.26-sofar.  Then I skimmed through looking for drive-by
-> contributors (defined as someone who contributes to just one release and
-> is then never heard from again).
+> > btw., i now also have a hung socket over real network:
+> 
+> last night i turned off distcc support, and got about 200 successful 
+> bootups and zero TCP hangs (as expected - there's not much TCP traffic 
+> if the distcc cluster is not utilized).
+> 
+> but that's 200 overnight tests instead of the expected 600, so this is a 
+> major and rather crippling bug to me.
+> 
+> There's no good way to detect these hung sockets by me from userspace 
+> and get rid of them. Has anyone before thought of the obvious: to write 
+> a kernel-space "TCP socket watchdog" kernel feature that detects them 
+> and tries to free them so that people can become aware of it?
+>
+> Hung sockets is a re-occuring bug in the TCP stack after all. (and it's 
+> a natural property of it: state machine designs are always vulnerable to 
+> lost event problems.)
 
-We've had some great contributions from drive-bys down the years, 
-and I see that as a gain rather than a loss.  I suppose it's a
-half-full versus half-empty perception.
+...It is quite easy to kill a TCP flow with enough information (seqnos 
+which one could collect e.g., from a tcpdump), just a RST is necessary,
+so user-space could do that too.
 
-Interesting list, but as you admit, yes, there are a lot of false
-positives in there.  Just to pick on one ...
-
-> ==== Scanning 2.6.11
-> Theodore Y. Ts'o
-
-... anyone know what happened to that guy?
-
-Hugh
+-- 
+ i.
