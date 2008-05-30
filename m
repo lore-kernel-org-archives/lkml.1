@@ -1,62 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbYE3UJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbYE3UDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbYE3UJR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 16:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYE3UI7
+	id S1755617AbYE3UDx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 16:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbYE3UCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 16:08:59 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:42520 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbYE3UI6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 16:08:58 -0400
-To: matthew@wil.cx
-CC: miklos@szeredi.hu, mtk.manpages@googlemail.com, drepper@redhat.com,
-       viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-reply-to: <20080530193207.GB28074@parisc-linux.org> (message from Matthew
-	Wilcox on Fri, 30 May 2008 13:32:07 -0600)
-Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
-References: <482D4665.4050401@gmail.com> <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <E1K27bZ-0002Gk-3b@pomaz-ex.szeredi.hu> <cfd18e0f0805301124o5f217dden10726b268d05d81a@mail.gmail.com> <E1K2ABK-0002ck-UT@pomaz-ex.szeredi.hu> <20080530193207.GB28074@parisc-linux.org>
-Message-Id: <E1K2Atg-0002io-0v@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 30 May 2008 22:08:20 +0200
+	Fri, 30 May 2008 16:02:46 -0400
+Received: from saeurebad.de ([85.214.36.134]:60856 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754146AbYE3UCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 16:02:45 -0400
+Message-Id: <20080530194737.961788044@saeurebad.de>
+References: <20080530194220.286976884@saeurebad.de>
+User-Agent: quilt/0.46-1
+Date: Fri, 30 May 2008 21:42:24 +0200
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH -mm 04/14] bootmem: add debugging framework
+Content-Disposition: inline; filename=bootmem-debugging.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > For 2) you can just use permission() instead of vfs_permission() which
-> > is exactly the same in this case (and consolidated into a common
-> > function later in the vfs-cleanups tree).
-> 
-> Miklos, don't delude people into thinking the vfs-cleanups tree is ever
-> going to get merged in its current state.  Al's NAKed the path_* stuff,
-> Christoph's NAKed it too.
+Introduce the bootmem_debug kernel parameter that enables very verbose
+diagnostics regarding all range operations of bootmem as well as the
+initialization and release of nodes.
 
-Actually, the cleanup patches which I'm asking Michael to base his
-patches on were not NAKed.
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
 
-And Michael is not even working against the vfs-cleanups tree, but
-rather just a couple of these utimes cleanup patches, none of which
-are controversial like the path_* stuff.  But even if he was working
-against the vfs-cleanups tree it wouldn't matter, since porting
-patches to/from the path_* API is trivial.
+ mm/bootmem.c |   51 ++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 44 insertions(+), 7 deletions(-)
 
->  Ignoring them and putting up a VFS tree of your own is not going to
-> help matters.
+--- a/mm/bootmem.c
++++ b/mm/bootmem.c
+@@ -34,6 +34,22 @@ unsigned long saved_max_pfn;
+ 
+ bootmem_data_t bootmem_node_data[MAX_NUMNODES] __initdata;
+ 
++static int bootmem_debug;
++
++static int __init bootmem_debug_setup(char *buf)
++{
++	bootmem_debug = 1;
++	return 0;
++}
++early_param("bootmem_debug", bootmem_debug_setup);
++
++#define bdebug(fmt, args...) ({				\
++	if (unlikely(bootmem_debug))			\
++		printk(KERN_INFO			\
++			"bootmem::%s " fmt,		\
++			__FUNCTION__, ## args);		\
++})
++
+ /*
+  * Given an initialised bdata, it returns the size of the boot bitmap
+  */
+@@ -104,6 +120,9 @@ static unsigned long __init init_bootmem
+ 	mapsize = get_mapsize(bdata);
+ 	memset(bdata->node_bootmem_map, 0xff, mapsize);
+ 
++	bdebug("nid=%d start=%lx map=%lx end=%lx mapsize=%ld\n",
++		bdata - bootmem_node_data, start, mapstart, end, mapsize);
++
+ 	return mapsize;
+ }
+ 
+@@ -198,6 +217,8 @@ static unsigned long __init free_all_boo
+ 	count += i;
+ 	bdata->node_bootmem_map = NULL;
+ 
++	bdebug("nid=%d released=%ld\n", bdata - bootmem_node_data, count);
++
+ 	return count;
+ }
+ 
+@@ -255,6 +276,10 @@ static void __init free_bootmem_core(boo
+ 	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
+ 		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
+ 
++	bdebug("nid=%d start=%lx end=%lx\n", bdata - bootmem_node_data,
++		sidx + PFN_DOWN(bdata->node_boot_start),
++		eidx + PFN_DOWN(bdata->node_boot_start));
++
+ 	for (i = sidx; i < eidx; i++) {
+ 		if (unlikely(!test_and_clear_bit(i, bdata->node_bootmem_map)))
+ 			BUG();
+@@ -360,13 +385,16 @@ static void __init reserve_bootmem_core(
+ 	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
+ 		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
+ 
+-	for (i = sidx; i < eidx; i++) {
+-		if (test_and_set_bit(i, bdata->node_bootmem_map)) {
+-#ifdef CONFIG_DEBUG_BOOTMEM
+-			printk("hm, page %08lx reserved twice.\n", i*PAGE_SIZE);
+-#endif
+-		}
+-	}
++	bdebug("nid=%d start=%lx end=%lx flags=%x\n",
++		bdata - bootmem_node_data,
++		sidx + PFN_DOWN(bdata->node_boot_start),
++		eidx + PFN_DOWN(bdata->node_boot_start),
++		flags);
++
++	for (i = sidx; i < eidx; i++)
++		if (test_and_set_bit(i, bdata->node_bootmem_map))
++			bdebug("hm, page %lx reserved twice.\n",
++				PFN_DOWN(bdata->node_boot_start) + i);
+ }
+ 
+ /**
+@@ -451,6 +479,10 @@ alloc_bootmem_core(struct bootmem_data *
+ 	if (!bdata->node_bootmem_map)
+ 		return NULL;
+ 
++	bdebug("nid=%d size=%lx [%lu pages] align=%lx goal=%lx limit=%lx\n",
++		bdata - bootmem_node_data, size, PAGE_ALIGN(size) >> PAGE_SHIFT,
++		align, goal, limit);
++
+ 	/* bdata->node_boot_start is supposed to be (12+6)bits alignment on x86_64 ? */
+ 	node_boot_start = bdata->node_boot_start;
+ 	node_bootmem_map = bdata->node_bootmem_map;
+@@ -558,6 +590,11 @@ found:
+ 		ret = phys_to_virt(start * PAGE_SIZE + node_boot_start);
+ 	}
+ 
++	bdebug("nid=%d start=%lx end=%lx\n",
++		bdata - bootmem_node_data,
++		start + PFN_DOWN(bdata->node_boot_start),
++		start + areasize + PFN_DOWN(bdata->node_boot_start));
++
+ 	/*
+ 	 * Reserve the area now:
+ 	 */
 
-Do please tell me how else should I work?  I post patches for review,
-gradually, not as a 100 patch series, when we manage to submit
-apparmor.  That far easier for people to handle, and sure enough I get
-comments are testing for this stuff.
+-- 
 
-As for Al's NAK: the only alternative suggestion he has been able to
-come up is to move the security hooks into callers.  And that has been
-NAKed (not surprisingly) by the selinux folks.  And there's nothing
-actually _wrong_ with those patches, they don't add complexity
-(actually they remove complexity), they don't slow down the kernel,
-and they even fix some bugs.  Now what the hell more do we need?
-
-Thanks,
-Miklos
