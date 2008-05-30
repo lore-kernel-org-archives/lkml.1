@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYE3Jpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbYE3Js0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYE3Jpq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 05:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYE3Jpg
+	id S1755780AbYE3Js0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 05:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbYE3JsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 05:45:36 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33819 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751725AbYE3Jpf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 05:45:35 -0400
-Date: Fri, 30 May 2008 10:31:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Jeff Garzik <jeff@garzik.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
-       David Miller <davem@davemloft.net>
-Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
- kernel.
-Message-ID: <20080530103107.4f71cfe3@core>
-In-Reply-To: <483F3EC4.5050700@zytor.com>
-References: <1211995212.3445.52.camel@localhost.localdomain>
-	<20080528.225826.40264516.davem@davemloft.net>
-	<1212041839.8888.38.camel@pasglop>
-	<20080529124548.GC8065@mit.edu>
-	<1212077700.26088.83.camel@shinybook.infradead.org>
-	<483F002E.5060002@garzik.org>
-	<1212095864.24826.2.camel@lappy.programming.kicks-ass.net>
-	<483F3EC4.5050700@zytor.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 May 2008 05:48:17 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:41821 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752432AbYE3JsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 05:48:16 -0400
+Message-ID: <483FCD5C.208@sgi.com>
+Date: Fri, 30 May 2008 11:48:12 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+CC: Roland Dreier <rdreier@cisco.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com, linuxppc-dev@ozlabs.org, scottwood@freescale.com,
+       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Jeremy Higdon <jeremy@sgi.com>
+Subject: Re: MMIO and gcc re-ordering issue
+References: <1211852026.3286.36.camel@pasglop>	 <20080526.184047.88207142.davem@davemloft.net>	 <1211854540.3286.42.camel@pasglop>	 <20080526.192812.184590464.davem@davemloft.net>	 <20080526204233.75b71bb8@infradead.org> <1211872130.3286.64.camel@pasglop>	 <adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop>	 <adaiqwzsa83.fsf@cisco.com>  <yq0iqwxrwuh.fsf@jaguar.mkp.net> <1212097223.8888.55.camel@pasglop>
+In-Reply-To: <1212097223.8888.55.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 16:39:48 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Peter Zijlstra wrote:
-> > 
-> > I certainly agree, pushing more and more into initrd just annoys the
-> > hell out of me.
-> > 
-> > I'd argue to include everything needed to build (and esp cross build) an
-> > initrd into the kernel - up until that point initrds are useless.
-> > 
+Benjamin Herrenschmidt wrote:
+> On Thu, 2008-05-29 at 10:47 -0400, Jes Sorensen wrote:
+>> The only way to guarantee ordering in the above setup, is to either
+>> make writel() fully ordered or adding the mmiowb()'s inbetween the two
+>> writel's. On Altix you have to go and read from the PCI brige to
+>> ensure all writes to it have been flushed, which is also what mmiowb()
+>> is doing. If writel() was to guarantee this ordering, it would make
+>> every writel() call extremely expensive :-(
 > 
-> I tried to push for that two years ago.  I'd be more than happy to pull 
-> that out of the freezer.
+> Interesting. I've always been taught by ia64 people that mmiowb() was
+> intended to be used solely between writel() and spin_unlock().
+> 
+> I think in the above case, you really should make writel() ordered.
+> Anything else is asking for trouble, for the exact same reasons that I
+> made it fully ordered on powerpc at least vs. previous stores. I only
+> kept it relaxed vs. subsequent cacheable stores (ie, spin_unlock), for
+> which I use the trick mentioned before.
 
-Its kind of irrelevant if you need an initrd or not. The only question of
-relevance is "does it get built when I type make all". Almost all Linux
-users are using initrd without problem - because their distro ensures
-"make install" and the packaged kernels do the right thing.
+Hmmm I hope I didn't mess up the description of this and added to the
+confusion.
 
-Alan
+The net result of that would be to kill performance completely, I really
+don't like that idea.... Having each writel() go out and poll the PCI
+bridge is going to make every driver used on Altix slow as a dog.
+
+In addition it's still not going to solve the problem for userland
+mapped stuff such as infinibug.
+
+> Yes, this has some cost (can be fairly significant on powerpc too) but
+> I think it's a very basic assumption from drivers that consecutive
+> writel's, especially issued by the same CPU, will get to the device
+> in order.
+
+In this case the cost is more than just significant, it's pretty
+crippling.
+
+> If this is a performance problem, then provide relaxed variants and
+> use them in selected drivers.
+
+We'd have to make major changes to drivers like e1000, tg3, mptsas, the
+qla2/3/4xxx and a bunch of others to get performance back. I really
+think the code maintenance issue there will get far worse than what we
+have today :(
+
+Cheers,
+Jes
