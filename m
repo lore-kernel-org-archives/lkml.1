@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYE3Wey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbYE3WgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbYE3Wey (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 18:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbYE3Wem
+	id S1755920AbYE3WgP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 18:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYE3Wf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 18:34:42 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:49049 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755936AbYE3Wel (ORCPT
+	Fri, 30 May 2008 18:35:59 -0400
+Received: from mga06.intel.com ([134.134.136.21]:43907 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751869AbYE3Wf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 18:34:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=x7riIYGbgn2jmd5PIP33oh+Jo5/aoAS4iSCyJ8C8aWBEcOaX4zXwRCvxv9Ov9Ic4FJNOIu0m7HnjEMoGI+5jjE9jxma7LImo2WY0iDKez48PbyUIqNb5u9Bi0GDKdcdFdW9NZEb8Z9DDrRAQGDdjscxrSEWoiKDwCQRaitDiX5g=
-Message-ID: <ef1cd66f0805301534t2dca0f4eh97dac71e10d3d683@mail.gmail.com>
-Date: Fri, 30 May 2008 23:34:40 +0100
-From: "=?ISO-8859-1?Q?Jochen_Vo=DF?=" <jochen.voss@googlemail.com>
-To: "Arjan van de Ven" <arjan@linux.intel.com>
-Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48402DAA.60202@linux.intel.com>
+	Fri, 30 May 2008 18:35:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,568,1204531200"; 
+   d="scan'208";a="388822411"
+Message-ID: <48408150.5030501@linux.intel.com>
+Date: Fri, 30 May 2008 15:36:00 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48402DAA.60202@linux.intel.com>
+To: =?ISO-8859-1?Q?Jochen_Vo=DF?= <jochen.voss@googlemail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+References: <48402DAA.60202@linux.intel.com> <ef1cd66f0805301534t2dca0f4eh97dac71e10d3d683@mail.gmail.com>
+In-Reply-To: <ef1cd66f0805301534t2dca0f4eh97dac71e10d3d683@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arjan,
+Jochen Voß wrote:
+> Hi Arjan,
+> 
+> 2008/5/30 Arjan van de Ven <arjan@linux.intel.com>:
+>> Rank 2: sysfs_add_one (warning)
+>>        Reported 243 times (759 total reports)
+> [...]
+>> Rank 3: mark_buffer_dirty (warning)
+>>        Reported 222 times (759 total reports)
+> 
+> It seems like a strange coincidence that the first two entries have
+> the same number of total reports.  Is this really the case or is there
+> something mixed up?
 
-2008/5/30 Arjan van de Ven <arjan@linux.intel.com>:
-> Rank 2: sysfs_add_one (warning)
->        Reported 243 times (759 total reports)
-[...]
-> Rank 3: mark_buffer_dirty (warning)
->        Reported 222 times (759 total reports)
-
-It seems like a strange coincidence that the first two entries have
-the same number of total reports.  Is this really the case or is there
-something mixed up?
-
-All the best,
-Jochen
--- 
-http://seehuhn.de/
+coincidence; I just recreated a new version of the report (so several hours later) and they're 1 appart now.
