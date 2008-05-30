@@ -1,26 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbYE3B2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYE3B24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757313AbYE3B2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 21:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYE3B1y
+	id S1757584AbYE3B24 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 21:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYE3B2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 21:27:54 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:27604 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbYE3B1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 21:27:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=uuMUwQ1f7ifgMq46gL5TCPNxK8DCDHNN6oBEvpAh+yfUa+ZizsWfpsi7smACL3aD7VE/vTXRwOdWwWIr8LGcFZQs3s6Xt2qmlENytay9B/gNbRi5c/rTsx2HqPhkJmu1eMAoA7epb0yWemoFBFX5wzeDmvzYxH3GGZz8+tYnrvE=
-Subject: [PATCH] gfs2: trivial sparse lock annotations
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
+	Thu, 29 May 2008 21:28:48 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60928 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753240AbYE3B2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 21:28:47 -0400
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+	kernel.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jeff Garzik <jeff@garzik.org>, David Woodhouse <dwmw2@infradead.org>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <1212095864.24826.2.camel@lappy.programming.kicks-ass.net>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+	 <20080528.225826.40264516.davem@davemloft.net>
+	 <1212041839.8888.38.camel@pasglop> <20080529124548.GC8065@mit.edu>
+	 <1212077700.26088.83.camel@shinybook.infradead.org>
+	 <483F002E.5060002@garzik.org>
+	 <1212095864.24826.2.camel@lappy.programming.kicks-ass.net>
 Content-Type: text/plain
-Date: Thu, 29 May 2008 18:27:51 -0700
-Message-Id: <1212110871.28403.167.camel@brick>
+Date: Fri, 30 May 2008 11:27:50 +1000
+Message-Id: <1212110870.15633.17.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -28,49 +35,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Annotate the &sdp->sd_log_lock.
+On Thu, 2008-05-29 at 23:17 +0200, Peter Zijlstra wrote:
+> > If the firmware has a compatible license and is required for critical 
+> > operations like booting the machine, built-in firmware should remain an 
+> > option.  For certain embedded cases, I could certainly see that 
+> > in-kernel firmware being the best method for firmware distribution, for 
+> > both $Platform's users and $Platform's developers.
+> 
+> I certainly agree, pushing more and more into initrd just annoys the
+> hell out of me.
+> 
+> I'd argue to include everything needed to build (and esp cross build) an
+> initrd into the kernel - up until that point initrds are useless.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/gfs2/log.c |    2 ++
- fs/gfs2/log.h |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+Us kernel hackers tend to like self-contained netbootable kernels
+that have everything needed to boot a machine all the way to a shell
+prompt :-)
 
-diff --git a/fs/gfs2/log.c b/fs/gfs2/log.c
-index 548264b..6c6af9f 100644
---- a/fs/gfs2/log.c
-+++ b/fs/gfs2/log.c
-@@ -87,6 +87,8 @@ void gfs2_remove_from_ail(struct gfs2_bufdata *bd)
-  */
- 
- static void gfs2_ail1_start_one(struct gfs2_sbd *sdp, struct gfs2_ail *ai)
-+__releases(&sdp->sd_log_lock)
-+__acquires(&sdp->sd_log_lock)
- {
- 	struct gfs2_bufdata *bd, *s;
- 	struct buffer_head *bh;
-diff --git a/fs/gfs2/log.h b/fs/gfs2/log.h
-index 7711528..7c64510 100644
---- a/fs/gfs2/log.h
-+++ b/fs/gfs2/log.h
-@@ -21,6 +21,7 @@
-  */
- 
- static inline void gfs2_log_lock(struct gfs2_sbd *sdp)
-+__acquires(&sdp->sd_log_lock)
- {
- 	spin_lock(&sdp->sd_log_lock);
- }
-@@ -32,6 +33,7 @@ static inline void gfs2_log_lock(struct gfs2_sbd *sdp)
-  */
- 
- static inline void gfs2_log_unlock(struct gfs2_sbd *sdp)
-+__releases(&sdp->sd_log_lock)
- {
- 	spin_unlock(&sdp->sd_log_lock);
- }
--- 
-1.5.6.rc0.277.g804cf
+David's proposal however do provides for storing the firmwares in
+the kernel image, so I have no objection there.
 
+Ben.
 
 
