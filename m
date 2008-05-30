@@ -1,105 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYE3OY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYE3OXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYE3OY0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 10:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYE3OYJ
+	id S1754016AbYE3OXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 10:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYE3OXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 10:24:09 -0400
-Received: from 213.237.47.228.adsl.vbr.worldonline.dk ([213.237.47.228]:15022
-	"EHLO rap.rap.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623AbYE3OXv (ORCPT
+	Fri, 30 May 2008 10:23:39 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:40879 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbYE3OXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 10:23:51 -0400
-Date: Fri, 30 May 2008 16:23:46 +0200
-From: Keld =?iso-8859-1?Q?J=F8rn?= Simonsen <keld@dkuug.dk>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Holger Kiehl <Holger.Kiehl@dwd.de>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
-Message-ID: <20080530142346.GA17831@rap.rap.dk>
-References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <Pine.LNX.4.64.0805290636020.20192@diagnostix.dwd.de> <alpine.DEB.1.10.0805291302190.23633@p34.internal.lan> <483FF92F.6060309@tmr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 30 May 2008 10:23:38 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] kaweth: use request_firmware()
+Date: Fri, 30 May 2008 15:55:57 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, Michael Zappe <zapman@interlan.net>,
+       Stephane Alnet <stephane@u-picardie.fr>,
+       Brad Hards <bhards@bigpond.net.au>
+References: <1211708969@pmac.infradead.org> <1212070841.26088.28.camel@shinybook.infradead.org>
+In-Reply-To: <1212070841.26088.28.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Disposition: inline
-In-Reply-To: <483FF92F.6060309@tmr.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200805301555.59327.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4UEP7Hl031174
 
-On Fri, May 30, 2008 at 08:55:11AM -0400, Bill Davidsen wrote:
-> Justin Piszcz wrote:
-> >
-> >
-> >On Thu, 29 May 2008, Holger Kiehl wrote:
-> >
-> >>On Wed, 28 May 2008, Justin Piszcz wrote:
-> >>
-> >>>Hardware:
-> >>>
-> >>>1. Utilized (6) 400 gigabyte sata hard drives.
-> >>>2. Everything is on PCI-e (965 chipset & a 2port sata card)
-> >>>
-> >>>Used the following 'optimizations' for all tests.
-> >>>
-> >>># Set read-ahead.
-> >>>echo "Setting read-ahead to 64 MiB for /dev/md3"
-> >>>blockdev --setra 65536 /dev/md3
-> >>>
-> >>># Set stripe-cache_size for RAID5.
-> >>>echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
-> >>>echo 16384 > /sys/block/md3/md/stripe_cache_size
-> >>>
-> >>># Disable NCQ on all disks.
-> >>>echo "Disabling NCQ on all disks..."
-> >>>for i in $DISKS
-> >>>do
-> >>> echo "Disabling NCQ on $i"
-> >>> echo 1 > /sys/block/"$i"/device/queue_depth
-> >>>done
-> >>>
-> >>>Software:
-> >>>
-> >>>Kernel: 2.6.23.1 x86_64
-> >>>Filesystem: XFS
-> >>>Mount options: defaults,noatime
-> >>>
-> >>>Results:
-> >>>
-> >>>http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
-> >>>http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
-> >>>
-> >>Why is the Sequential Output (Block) for raid6 165719 and for raid5 only
-> >>86797? I would have thought that raid6 was always a bit slower in 
-> >>writting
-> >>due to having to write double amount of parity data.
-> >>
-> >>Holger
-> >>
-> >
-> >RAID5 (2nd test of 3 averaged runs) & Single disk added:
-> >http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html 
-> 
-> Other than repeating my (possibly lost) comment that this would be 
-> vastly easier to read if the number were aligned and all had the same 
-> number of decimal places in a single column, good stuff. For sequential 
-> i/o the winners and losers are clear, and you can set cost and 
-> performance to pick the winners. Seems obvious that raid-1 is the loser 
-> for single threaded load, I suspect that it would be poor against other 
-> levels in multithread loads, but not so much for read.
-
-On my wishlist to Justin is also what is the performance of the raid10's
-in degraded mode.
-
-And then I note that raid1 performs well on random seeks 702/s
-while the raid10,f2 (my pet) only performs 520/s - but this is on a
-2.6.23 kernel without the seek performance patch for raid10,f2.
-
-I wonder if the random seeks are related to random read (and write) - it
-probably is, but there seems to be a difference between the results
-found with bonnie++ and my tests as reported on the
-http://linux-raid.osdl.org/index.php/Performance page.
-
-Best regards
-keld
+Am Donnerstag, 29. Mai 2008 16:20:41 schrieb David Woodhouse:> Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â if ((result = kaweth_download_firmware(kaweth,> -Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  Â  Â  Â kaweth_trigger_code_fix,> -Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  Â  Â  Â len_kaweth_trigger_code_fix,> +Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â  Â  Â  Â "kaweth/trigger_code_fix.bin",
+We don't put hirarchy policy into drivers.
+	Regards		Oliver
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
