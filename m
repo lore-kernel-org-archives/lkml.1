@@ -1,113 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbYE3XCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYE3XKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753607AbYE3XCy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 19:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYE3XCm
+	id S1755270AbYE3XKO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 19:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYE3XJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 19:02:42 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:32758 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752412AbYE3XCl (ORCPT
+	Fri, 30 May 2008 19:09:59 -0400
+Received: from phoenix.clifford.at ([88.198.7.52]:56265 "EHLO
+	phoenix.clifford.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753519AbYE3XJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 19:02:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=fiAK/V1MhS5l3hERf6rxw1T0wjOn7yBAomvSCA7BZWm4UAOvUYam7rn6a97DnUv+V2XLizlEi3e/Lw6mtkyMMQaqR83hPIAeWTfx59E1vvtrpy8ryB/mdvd6aoZguCtqOqOO62Yx1nK7XyF8EOnII2rsILYrlDMiYkNe+0AvfDs=
-Date: Sat, 31 May 2008 02:57:51 +0300
-To: Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul.moore@hp.com>
-Cc: linux-security-module@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH BUGFIX -v2 -rc4] Smack: Respect 'unlabeled' netlabel mode
-Message-ID: <20080530235751.GA6888@ubuntu>
-References: <20080530233603.GA2994@ubuntu>
+	Fri, 30 May 2008 19:09:59 -0400
+Date: Sat, 31 May 2008 00:50:32 +0200
+From: Clifford Wolf <clifford@clifford.at>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add rlimits to /proc/<PID>/status
+Message-ID: <20080530225032.GH1369@clifford.at>
+References: <20080530201104.GG1369@clifford.at> <Pine.LNX.4.64.0805302232430.31527@blonde.site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080530233603.GA2994@ubuntu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0805302232430.31527@blonde.site>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!,
+Hi,
 
-[ Sorry, Fix: Acquire smack_ambient_lock before reading smack_net_ambient ]
+On Fri, May 30, 2008 at 10:35:27PM +0100, Hugh Dickins wrote:
+> Aren't they better staying in /proc/<PID>/limits?
 
--->
+this was a cleanup of a patch I've sent to lkml about 6 months ago
+when there was no yet-released (non-rc) kernel with /proc/<PID>/limits ...
 
-In case of Smack 'unlabeled' netlabel option, Smack passes a _zero_
-initialized 'secattr' to label a packet/sock. This causes an 
-[unfound domain label error]/-ENOENT by netlbl_sock_setattr().
-Above Netlabel failure leads to Smack socket hooks failure causing 
-an always-on socket() -EPERM error.
+my patch is a more or less duplicate of commit d85f50d5. oops.
+please simply ignore it..  ;-)
 
-Such packets should have a netlabel domain agreed with netlabel to 
-represent unlabeled packets. Fortunately Smack net ambient label 
-packets are agreed with netlabel to be treated as unlabeled packets. 
-
-Treat all packets coming out from a 'unlabeled' Smack system as
-coming from the smack net ambient label.
-
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-
-diff --git a/security/smack/smack.h b/security/smack/smack.h
-index 4a4477f..81b94ba 100644
---- a/security/smack/smack.h
-+++ b/security/smack/smack.h
-@@ -16,6 +16,7 @@
- #include <linux/capability.h>
- #include <linux/spinlock.h>
- #include <linux/security.h>
-+#include <linux/mutex.h>
- #include <net/netlabel.h>
- 
- /*
-@@ -178,6 +179,7 @@ u32 smack_to_secid(const char *);
- extern int smack_cipso_direct;
- extern int smack_net_nltype;
- extern char *smack_net_ambient;
-+extern struct mutex smack_ambient_lock;
- 
- extern struct smack_known *smack_known;
- extern struct smack_known smack_known_floor;
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index b5c8f92..0d9c7dc 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -1292,6 +1292,11 @@ static void smack_to_secattr(char *smack, struct netlbl_lsm_secattr *nlsp)
- 		}
- 		break;
- 	default:
-+		mutex_lock(&smack_ambient_lock);
-+		nlsp->domain = kstrdup(smack_net_ambient, GFP_ATOMIC);
-+		mutex_unlock(&smack_ambient_lock);
-+
-+		nlsp->flags = NETLBL_SECATTR_DOMAIN;
- 		break;
- 	}
- }
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index 271a835..cc357dc 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -46,7 +46,7 @@ enum smk_inos {
-  */
- static DEFINE_MUTEX(smack_list_lock);
- static DEFINE_MUTEX(smack_cipso_lock);
--static DEFINE_MUTEX(smack_ambient_lock);
-+DEFINE_MUTEX(smack_ambient_lock);
- 
- /*
-  * This is the "ambient" label for network traffic.
+yours,
+ - clifford
 
 -- 
-
-"Better to light a candle, than curse the darkness"
-
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
-
+A byte walks into a bar and orders a pint. Bartender asks him "What's wrong?"
+Byte says "Parity error." Bartender nods and says "Yeah, I thought you looked
+a bit off."
