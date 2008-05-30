@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbYE3HKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbYE3HYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758289AbYE3HKP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 03:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbYE3HKE
+	id S1755940AbYE3HYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 03:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYE3HXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 03:10:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:48590 "EHLO ozlabs.org"
+	Fri, 30 May 2008 03:23:49 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:10617 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752738AbYE3HKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 03:10:02 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
-Date: Fri, 30 May 2008 17:08:50 +1000
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
-References: <20080530035620.587204923@sgi.com> <20080529223825.bf744d37.akpm@linux-foundation.org> <Pine.LNX.4.64.0805292309520.12457@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0805292309520.12457@schroedinger.engr.sgi.com>
+	id S1751347AbYE3HXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 03:23:48 -0400
+Date: Fri, 30 May 2008 09:23:46 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 8/10] mips: convert to generic helpers for IPI function  calls
+Message-ID: <20080530072346.GH25504@kernel.dk>
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-9-git-send-email-jens.axboe@oracle.com> <20080529142054.GA8320@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805301708.51284.rusty@rustcorp.com.au>
+In-Reply-To: <20080529142054.GA8320@linux-mips.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 May 2008 16:12:59 Christoph Lameter wrote:
-> On Thu, 29 May 2008, Andrew Morton wrote:
-> > > area. It requies disabling of interrupts etc.
-> >
-> > No it doesn't.  Look:
-> >
-> > static inline void local_inc(local_t *l)
-> > {
-> > 	asm volatile(_ASM_INC "%0"
-> >
-> > 		     : "+m" (l->a.counter));
-> >
-> > }
-> >
-> > > Its not atomic (wrt
-> > > interrupts) because of that.
-> >
-> > Yes it is.
->
-> No its not! In order to increment a per cpu value you need to calculate
-> the per cpu pointer address in the current per cpu segment.
+On Thu, May 29 2008, Ralf Baechle wrote:
+> On Thu, May 29, 2008 at 10:58:22AM +0200, Jens Axboe wrote:
+> 
+> > This converts mips to use the new helpers for smp_call_function() and
+> > friends, and adds support for smp_call_function_single(). Not tested,
+> > but it compiles.
+> > 
+> > mips shares the same IPI for smp_call_function() and
+> > smp_call_function_single(), since not all hardware has enough available
+> > IPIs available to support seperate setups.
+> 
+> FYI, the comment isn't quite accurate.  The machanisms for IPIs on MIPS
+> are platform-specific.  The change which I recently objected to was
+> specific to a code model called VSMP.
 
-Christoph, you just missed it, that's all.  Look at cpu_local_read et al in 
-include/asm-i386/local.h (ie. before the x86 mergers chose the lowest common 
-denominator one).
+So s/hardware/platform and you are happy?
 
-Cheers,
-Rusty.
+-- 
+Jens Axboe
+
