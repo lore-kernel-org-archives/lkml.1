@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbYE3FAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYE3FAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758914AbYE3FAf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYE3E7F
+	id S1759338AbYE3FAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756620AbYE3E7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:59:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53064 "EHLO
+	Fri, 30 May 2008 00:59:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51326 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753713AbYE3E7A (ORCPT
+	by vger.kernel.org with ESMTP id S1754428AbYE3E7H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:59:00 -0400
-Date: Thu, 29 May 2008 21:58:44 -0700
+	Fri, 30 May 2008 00:59:07 -0400
+Date: Thu, 29 May 2008 21:58:50 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Christoph Lameter <clameter@sgi.com>
 Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
        David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
- operations
-Message-Id: <20080529215844.609a3ac8.akpm@linux-foundation.org>
-In-Reply-To: <20080530040011.727424512@sgi.com>
+Subject: Re: [patch 27/41] cpu alloc: Remove the allocpercpu functionality
+Message-Id: <20080529215850.7c95356e.akpm@linux-foundation.org>
+In-Reply-To: <20080530040020.139375468@sgi.com>
 References: <20080530035620.587204923@sgi.com>
-	<20080530040011.727424512@sgi.com>
+	<20080530040020.139375468@sgi.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,300 +30,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 20:56:24 -0700 Christoph Lameter <clameter@sgi.com> wrote:
+On Thu, 29 May 2008 20:56:47 -0700 Christoph Lameter <clameter@sgi.com> wrote:
 
-> Currently the per cpu subsystem is not able to use the atomic capabilities
-> that are provided by many of the available processors.
-> 
-> This patch adds new functionality that allows the optimizing of per cpu
-> variable handling. In particular it provides a simple way to exploit
-> atomic operations in order to avoid having to disable interrupts or
-> performing address calculation to access per cpu data.
-> 
-> F.e. Using our current methods we may do
-> 
-> 	unsigned long flags;
-> 	struct stat_struct *p;
-> 
-> 	local_irq_save(flags);
-> 	/* Calculate address of per processor area */
-> 	p = CPU_PTR(stat, smp_processor_id());
-> 	p->counter++;
-> 	local_irq_restore(flags);
+> There is no user of allocpercpu left after all the earlier patches were
+> applied. Remove the allocpercpu code.
 
-eh?  That's what local_t is for?
+Wow.
 
-> The segment can be replaced by a single atomic CPU operation:
-> 
-> 	CPU_INC(stat->counter);
+y:/usr/src/25> grep alloc_percpu patches/*.patch
+y:/usr/src/25> 
 
-hm, I guess this _has_ to be implemented as a macro.  ho hum.  But
-please: "cpu_inc"?
+we might just be able to get away with doing this.
 
-> Most processors have instructions to perform the increment using a
-> a single atomic instruction. Processors may have segment registers,
-> global registers or per cpu mappings of per cpu areas that can be used
-> to generate atomic instructions that combine the following in a single
-> operation:
-> 
-> 1. Adding of an offset / register to a base address
-> 2. Read modify write operation on the address calculated by
->    the instruction.
-> 
-> If 1+2 are combined in an instruction then the instruction is atomic
-> vs interrupts. This means that percpu atomic operations do not need
-> to disable interrupts to increments counters etc.
-> 
-> The existing methods in use in the kernel cannot utilize the power of
-> these atomic instructions. local_t is not really addressing the issue
-> since the offset calculation performed before the atomic operation. The
-> operation is therefor not atomic. Disabling interrupt or preemption is
-> required in order to use local_t.
-
-Your terminology is totally confusing here.
-
-To me, an "atomic operation" is one which is atomic wrt other CPUs:
-atomic_t, for example.
-
-Here we're talking about atomic-wrt-this-cpu-only, yes?
-
-If so, we should invent a new term for that different concept and stick
-to it like glue.  How about "self-atomic"?  Or "locally-atomic" in
-deference to the existing local_t?
-
-> local_t is also very specific to the x86 processor.
-
-And alpha, m32r, mips and powerpc, methinks.  Probably others, but
-people just haven't got around to it.
-
-> The solution here can
-> utilize other methods than just those provided by the x86 instruction set.
-> 
-> 
-> 
-> On x86 the above CPU_INC translated into a single instruction:
-> 
-> 	inc %%gs:(&stat->counter)
-> 
-> This instruction is interrupt safe since it can either be completed
-> or not. Both adding of the offset and the read modify write are combined
-> in one instruction.
-> 
-> The determination of the correct per cpu area for the current processor
-> does not require access to smp_processor_id() (expensive...). The gs
-> register is used to provide a processor specific offset to the respective
-> per cpu area where the per cpu variable resides.
-> 
-> Note that the counter offset into the struct was added *before* the segment
-> selector was added. This is necessary to avoid calculations.  In the past
-> we first determine the address of the stats structure on the respective
-> processor and then added the field offset. However, the offset may as
-> well be added earlier. The adding of the per cpu offset (here through the
-> gs register) must be done by the instruction used for atomic per cpu
-> access.
-> 
-> 
-> 
-> If "stat" was declared via DECLARE_PER_CPU then this patchset is capable of
-> convincing the linker to provide the proper base address. In that case
-> no calculations are necessary.
-> 
-> Should the stat structure be reachable via a register then the address
-> calculation capabilities can be leveraged to avoid calculations.
-> 
-> On IA64 we can get the same combination of operations in a single instruction
-> by using the virtual address that always maps to the local per cpu area:
-> 
-> 	fetchadd &stat->counter + (VCPU_BASE - __per_cpu_start)
-> 
-> The access is forced into the per cpu address reachable via the virtualized
-> address. IA64 allows the embedding of an offset into the instruction. So the
-> fetchadd can perform both the relocation of the pointer into the per cpu
-> area as well as the atomic read modify write cycle.
-> 
-> 
-> 
-> In order to be able to exploit the atomicity of these instructions we
-> introduce a series of new functions that take either:
-> 
-> 1. A per cpu pointer as returned by cpu_alloc() or CPU_ALLOC().
-> 
-> 2. A per cpu variable address as returned by per_cpu_var(<percpuvarname>).
-> 
-> CPU_READ()
-> CPU_WRITE()
-> CPU_INC
-> CPU_DEC
-> CPU_ADD
-> CPU_SUB
-> CPU_XCHG
-> CPU_CMPXCHG
-> 
-
-I think I'll need to come back another time to understand all that ;)
-
-Thanks for writing it up carefully.
-
-> 
-> ---
->  include/linux/percpu.h |  135 +++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 135 insertions(+)
-> 
-> Index: linux-2.6/include/linux/percpu.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/percpu.h	2008-05-28 22:31:43.000000000 -0700
-> +++ linux-2.6/include/linux/percpu.h	2008-05-28 23:38:17.000000000 -0700
-
-I wonder if all this stuff should be in a new header file.
-
-We could get lazy and include that header from percpu.h if needed.
-
-> @@ -179,4 +179,139 @@
->  void *cpu_alloc(unsigned long size, gfp_t flags, unsigned long align);
->  void cpu_free(void *cpu_pointer, unsigned long size);
->  
-> +/*
-> + * Fast atomic per cpu operations.
-> + *
-> + * The following operations can be overridden by arches to implement fast
-> + * and efficient operations. The operations are atomic meaning that the
-> + * determination of the processor, the calculation of the address and the
-> + * operation on the data is an atomic operation.
-> + *
-> + * The parameter passed to the atomic per cpu operations is an lvalue not a
-> + * pointer to the object.
-> + */
-> +#ifndef CONFIG_HAVE_CPU_OPS
-
-If you move this functionality into a new cpu_alloc.h then the below
-code goes into include/asm-generic/cpu_alloc.h and most architectures'
-include/asm/cpu_alloc.h will include asm-generic/cpu_alloc.h.
-
-include/linux/percpu.h can still include linux/cpu_alloc.h (which
-includes asm/cpu_alloc.h) if needed.  But it would be better to just
-teach the .c files to include <linux/cpu_alloc.h>
-
-> +/*
-> + * Fallback in case the arch does not provide for atomic per cpu operations.
-> + *
-> + * The first group of macros is used when it is safe to update the per
-> + * cpu variable because preemption is off (per cpu variables that are not
-> + * updated from interrupt context) or because interrupts are already off.
-> + */
-> +#define __CPU_READ(var)				\
-> +({						\
-> +	(*THIS_CPU(&(var)));			\
-> +})
-> +
-> +#define __CPU_WRITE(var, value)			\
-> +({						\
-> +	*THIS_CPU(&(var)) = (value);		\
-> +})
-> +
-> +#define __CPU_ADD(var, value)			\
-> +({						\
-> +	*THIS_CPU(&(var)) += (value);		\
-> +})
-> +
-> +#define __CPU_INC(var) __CPU_ADD((var), 1)
-> +#define __CPU_DEC(var) __CPU_ADD((var), -1)
-> +#define __CPU_SUB(var, value) __CPU_ADD((var), -(value))
-> +
-> +#define __CPU_CMPXCHG(var, old, new)		\
-> +({						\
-> +	typeof(obj) x;				\
-> +	typeof(obj) *p = THIS_CPU(&(obj));	\
-> +	x = *p;					\
-> +	if (x == (old))				\
-> +		*p = (new);			\
-> +	(x);					\
-> +})
-> +
-> +#define __CPU_XCHG(obj, new)			\
-> +({						\
-> +	typeof(obj) x;				\
-> +	typeof(obj) *p = THIS_CPU(&(obj));	\
-> +	x = *p;					\
-> +	*p = (new);				\
-> +	(x);					\
-> +})
-> +
-> +/*
-> + * Second group used for per cpu variables that are not updated from an
-> + * interrupt context. In that case we can simply disable preemption which
-> + * may be free if the kernel is compiled without support for preemption.
-> + */
-> +#define _CPU_READ __CPU_READ
-> +#define _CPU_WRITE __CPU_WRITE
-> +
-> +#define _CPU_ADD(var, value)			\
-> +({						\
-> +	preempt_disable();			\
-> +	__CPU_ADD((var), (value));		\
-> +	preempt_enable();			\
-> +})
-> +
-> +#define _CPU_INC(var) _CPU_ADD((var), 1)
-> +#define _CPU_DEC(var) _CPU_ADD((var), -1)
-> +#define _CPU_SUB(var, value) _CPU_ADD((var), -(value))
-> +
-> +#define _CPU_CMPXCHG(var, old, new)		\
-> +({						\
-> +	typeof(addr) x;				\
-> +	preempt_disable();			\
-> +	x = __CPU_CMPXCHG((var), (old), (new));	\
-> +	preempt_enable();			\
-> +	(x);					\
-> +})
-> +
-> +#define _CPU_XCHG(var, new)			\
-> +({						\
-> +	typeof(var) x;				\
-> +	preempt_disable();			\
-> +	x = __CPU_XCHG((var), (new));		\
-> +	preempt_enable();			\
-> +	(x);					\
-> +})
-> +
-> +/*
-> + * Third group: Interrupt safe CPU functions
-> + */
-> +#define CPU_READ __CPU_READ
-> +#define CPU_WRITE __CPU_WRITE
-> +
-> +#define CPU_ADD(var, value)			\
-> +({						\
-> +	unsigned long flags;			\
-> +	local_irq_save(flags);			\
-> +	__CPU_ADD((var), (value));		\
-> +	local_irq_restore(flags);		\
-> +})
-> +
-> +#define CPU_INC(var) CPU_ADD((var), 1)
-> +#define CPU_DEC(var) CPU_ADD((var), -1)
-> +#define CPU_SUB(var, value) CPU_ADD((var), -(value))
-> +
-> +#define CPU_CMPXCHG(var, old, new)		\
-> +({						\
-> +	unsigned long flags;			\
-> +	typeof(var) x;				\
-> +	local_irq_save(flags);			\
-> +	x = __CPU_CMPXCHG((var), (old), (new));	\
-> +	local_irq_restore(flags);		\
-> +	(x);					\
-> +})
-> +
-> +#define CPU_XCHG(var, new)			\
-> +({						\
-> +	unsigned long flags;			\
-> +	typeof(var) x;				\
-> +	local_irq_save(flags);			\
-> +	x = __CPU_XCHG((var), (new));		\
-> +	local_irq_restore(flags);		\
-> +	(x);					\
-> +})
-> +
-> +#endif /* CONFIG_HAVE_CPU_OPS */
-> +
->  #endif /* __LINUX_PERCPU_H */
+But it might make life easier to defer the removal of the old stuff for
+a while.  This can be worked out later.
 
