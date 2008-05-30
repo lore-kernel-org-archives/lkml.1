@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYE3IGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbYE3ILT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbYE3IGY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 04:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYE3IGJ
+	id S1754536AbYE3ILT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 04:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYE3ILE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 04:06:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36832 "EHLO mx1.redhat.com"
+	Fri, 30 May 2008 04:11:04 -0400
+Received: from as4.cineca.com ([130.186.84.251]:47434 "EHLO as4.cineca.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbYE3IGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 04:06:07 -0400
+	id S1751324AbYE3IK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 04:10:59 -0400
+X-Greylist: delayed 524 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 May 2008 04:10:59 EDT
+Message-ID: <483FB39A.4070104@gmail.com>
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.12) Gecko/20070604 Thunderbird/1.5.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@computergmbh.de>,
+       Sverre Rabbelier <alturin@gmail.com>, Joe Perches <joe@perches.com>,
+       git@vger.kernel.org
+Subject: Re: whomto.pl -- finding out whom to send patches to
+References: <20080529210018.GA5508@damson.getinternet.no>
+In-Reply-To: <20080529210018.GA5508@damson.getinternet.no>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Luming Yu" <luming.yu@gmail.com>
-X-Fcc: ~/Mail/linus
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-In-Reply-To: Luming Yu's message of  Tuesday, 27 May 2008 16:48:54 +0800 <3877989d0805270148h1b9e7972w880e380c2c4c9b09@mail.gmail.com>
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	<3877989d0805222042p176da844k384ea512b1cfb0da@mail.gmail.com>
-	<20080523041940.39E8726FA24@magilla.localdomain>
-	<3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
-	<20080526001527.81E1126FA9E@magilla.localdomain>
-	<3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
-	<3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
-	<20080527040454.053C526FA9E@magilla.localdomain>
-	<3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
-	<20080527061209.9A24426FAA6@magilla.localdomain>
-	<3877989d0805270148h1b9e7972w880e380c2c4c9b09@mail.gmail.com>
-X-Shopping-List: (1) Cagey caves
-   (2) Androgynous brunch
-   (3) Erratic bum prescriptions
-Message-Id: <20080530080522.0546B26FA85@magilla.localdomain>
-Date: Fri, 30 May 2008 01:05:21 -0700 (PDT)
+Date: Fri, 30 May 2008 09:58:19 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd say the first thing to do is understand the sequence of ptrace calls,
-wait results seen by the ptracer, and the ptrace_stop() path, in your test
-case.  Compare that on x86 and ia64, where the behavior you see differs.
-When you pinpoint the difference in that sequence, we will have some sense
-of what it is that really matters to your test.
+Vegard Nossum wrote:
+> Hi,
+> 
+> I've written this perl script that takes a patch as input and prints the
+> authors/committers of the affected lines, using git-blame as the back end.
+> 
+> (The purpose of this is of course to find out whom to send patches to.)
+> 
+> There are some caveats:
+> 
+> - If I've understood correctly, git-blame incremental output doesn't split
+>   commits when a newer one is found, so we currently possibly take into
+>   account more than just the last patch to touch a line. This might not be
+>   a disadvantage, however...
+> 
+> - The patch must apply to the current working tree. I suppose there is
+>   some way to use the index information in the patch to determine what to
+>   run git-blame against, but this is currently beyond my git knowledge.
+> 
+> - It's a bit slow, particularly for large files. But doing the same thing
+>   by hand would be slower, so I suppose it's an overall improvement.
+> 
+> Running this on a random -mm patch, for example
+> http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc2/2.6.26-rc2-mm1/broken-out/acpi-fix-fadt-parsing.patch
+> gives the following output:
+> 
+>   $ perl whomto2.pl acpi-fix-fadt-parsing.patch
+>   Running git-blame on drivers/acpi/tables/tbfadt.c...
+> 
+>   To: (Committers)
+>       48 Len Brown <len.brown@intel.com>
+>   Cc: (Authors)
+>       44 Bob Moore <robert.moore@intel.com>
+>        2 Alexey Starikovskiy <alexey.y.starikovskiy@linux.intel.com>
+>        2 Len Brown <len.brown@intel.com>
+> 
+> Maybe this tool can be useful? :-)
+> 
+> (Improvements are of course also welcome.)
 
+Minor fix: do not git-blame /dev/null in patches that add new files.
 
-Thanks,
-Roland
+-Andrea
+
+diff -urpN linux/whomto.orig.pl linux/whomto.pl
+--- linux/whomto.orig.pl	2008-05-30 09:43:08.000000000 +0200
++++ linux/whomto.pl	2008-05-30 09:49:26.000000000 +0200
+@@ -101,6 +101,7 @@ sub parse_patch {
+ 
+ 	for (@p) {
+ 		if (m/^--- .*?\/([^\s~]*)/) {
++			next if ($1 eq 'dev/null');
+ 			$file = $files{$1} = {
+ 				chunks => [],
+ 			};
