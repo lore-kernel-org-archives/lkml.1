@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbYE3GZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760517AbYE3G0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760391AbYE3GZs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 02:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbYE3GZl
+	id S1760517AbYE3G0u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 02:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbYE3G0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 02:25:41 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:58653 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754735AbYE3GZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 02:25:40 -0400
-Date: Fri, 30 May 2008 01:25:37 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: miaox@cn.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, menage@google.com
-Subject: Re: [RFC] [PATCH 1/2] cpusets: restructure the function
- update_cpumask() and update_nodemask()
-Message-Id: <20080530012537.87454a8d.pj@sgi.com>
-In-Reply-To: <20080529212746.2d9cae24.rdunlap@xenotime.net>
-References: <483E564A.5050807@cn.fujitsu.com>
-	<20080529031656.cdc38001.pj@sgi.com>
-	<483F5DAA.5060004@cn.fujitsu.com>
-	<20080529205344.4ba1efdb.pj@sgi.com>
-	<483F6367.1040701@cn.fujitsu.com>
-	<20080529212211.0e794c81.pj@sgi.com>
-	<20080529203042.19f76f09.rdunlap@xenotime.net>
-	<20080529225708.74f65654.pj@sgi.com>
-	<20080529212746.2d9cae24.rdunlap@xenotime.net>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 May 2008 02:26:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:10682 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754944AbYE3G0m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 02:26:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YH85DjgWlReBitosZ0deg6X6xAf5JmJAbFbJNKEhGiIOUMTll8XtctP+pLirJ9FdX/dYKLjuTkeqBGw9L72Sruj0Trxm75C8N+cV0yJhVdIL4ssgmDId5Hubsfalr4fSXWOszUG9p8Pf3seXV2wxzzKzTjLrYFo/54cxCBX6QYQ=
+Message-ID: <21d7e9970805292326m1a238aa1id8b6733351ba15d3@mail.gmail.com>
+Date: Fri, 30 May 2008 16:26:38 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "kernel list" <linux-kernel@vger.kernel.org>
+Subject: Re: in-kernel DRM tree move around....
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       dri-devel <dri-devel@lists.sourceforge.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <1212058935.26088.11.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <21d7e9970805281746k71b47ed2i79c06288d2dca022@mail.gmail.com>
+	 <1212058935.26088.11.camel@shinybook.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy wrote:
-> Does that help?  your understanding of kernel-doc or your decision?
+On Thu, May 29, 2008 at 9:02 PM, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Thu, 2008-05-29 at 10:46 +1000, Dave Airlie wrote:
+>> Hi,
+>>
+>> So I've been growing more annoyed with the current layout of the drm
+>> tree in the kernel,
+>>
+>> a) it lives under char.
+>> b) everything in one directory.
+>> c) header files in one directory.
+>> d) no header files exposed to userspace.
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/airlied/drm-2.6.git;a=commitdiff;h=7df9a948d0f849466e3de259cccb49bc54cbad68
+>>
+>> is a proposal to create drivers/gpu/drm, (I may move AGP in there as
+>> well later). It also creates per-driver subdirs.
+>
+> Looks sane from the header export POV. Passes headers_check and doesn't
+> add any more instances of CONFIG_xxx visible to userspace (I'm coming
+> after those, soon).
+>
 
-Well, I get the difference between E (exported) and I (non-exported)
-now.  And I see that one could prepare documents using SGML templates
-that contained one, or the other of these, for any kernel source files
-of interest.
+So assuming I fixed up the kbuild issues, any ideas on when it would
+be a good plan to upstream this sorta major movement.
 
-I'm stuck on the next step of this decision.
+Not many DRM patches don't come via me, and I can fix up the ones that
+do before I merge them.
 
-Usually, when I am preparing documens, I know what document I am
-preparing and have an idea who is in its audience.
+Linus? any ideas on when you would prefer to take a tree like this?
+start of rc1?
 
-I have never seen or heard of a document using the "/**" kernel-doc
-entries of kernel/cpuset.c, and I have no idea who actually has (in
-the past or present, not just hypothetically) read such or why.
-
-So I'm kinda shootin in the dark here.
-
-So, mostly just to be consistent with my previous call, because I enjoy
-being a stubborn retard, I continue to prefer that file static routines
-in kernel/cpuset.c not have "/**" kernel-doc markers on their comments,
-and I would still welcome a patch from Miao removing the ones already
-there.
-
-Enough of this discussion, from me at least.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Dave.
