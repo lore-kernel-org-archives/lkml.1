@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYE3GiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYE3GoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbYE3GiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 02:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYE3GiO
+	id S1756133AbYE3GoV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 02:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYE3GoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 02:38:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36139 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751185AbYE3GiO (ORCPT
+	Fri, 30 May 2008 02:44:12 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:47978 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbYE3GoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 02:38:14 -0400
-Date: Thu, 29 May 2008 23:37:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
-Message-Id: <20080529233758.7bd2c977.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805292321240.12457@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com>
-	<20080529215827.b659d032.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com>
-	<20080529222143.5d7aa1e5.akpm@linux-foundation.org>
-	<483F981E.3040004@cosmosbay.com>
-	<20080529231618.56e4028b.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0805292321240.12457@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 May 2008 02:44:11 -0400
+Date: Fri, 30 May 2008 12:13:24 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, pj@sgi.com, Balbir Singh <balbir@in.ibm.com>,
+       aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: fair group scheduler not so fair?
+Message-ID: <20080530064324.GA29381@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <4834B75A.40900@nortel.com> <20080527171528.GD30285@linux.vnet.ibm.com> <483C4F5A.2010104@nortel.com> <20080528163318.GG30285@linux.vnet.ibm.com> <483DA5E7.5050600@nortel.com> <20080529164607.GC12836@linux.vnet.ibm.com> <483F207D.4010908@nortel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483F207D.4010908@nortel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 23:22:31 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> Also, although the long-term results are good, the shorter-term fairness 
+> isn't great.  Is there a tuneable that would allow for a tradeoff between 
+> performance and fairness?  I have people that are looking for within 4% 
+> fairness over a 1sec interval.
+>
 
-> On Thu, 29 May 2008, Andrew Morton wrote:
-> 
-> > ext3 maintains three percpu_counters per mount.  Each percpu_counter
-> > does one percpu_alloc.  People can mount an arbitrary number of ext3
-> > filesystems!
-> 
-> But its 4 bytes per alloc right?
+How fair does smp fairness look for a !group scenario? I don't expect
+group schould be able to do much better.
 
-It could be 4000.  The present alloc_percpu() would support that.
-
-And struct nfs_iostats is 264 bytes and nfs does an alloc_percpu() of
-one of those per server and mounting thousands of servers per client
-is, I believe, a real-world operation.
-
-Plus for the entyenth time: saying that this code will probably work
-acceptably for most people in 2.6.26 is not sufficient!
+-- 
+regards,
+Dhaval
