@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbYE3LBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYE3LA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbYE3LBX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 07:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbYE3LBN
+	id S1755929AbYE3LA1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 07:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYE3LAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 07:01:13 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:64936 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753613AbYE3LBM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 07:01:12 -0400
-Message-ID: <483FDDA9.4020401@nokia.com>
-Date: Fri, 30 May 2008 13:57:45 +0300
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Fri, 30 May 2008 07:00:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46365 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753089AbYE3LAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 07:00:15 -0400
+Date: Fri, 30 May 2008 12:59:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, pavel@suse.cz
+Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
+Message-ID: <20080530105948.GA12236@elte.hu>
+References: <200805291333.42057.david-b@pacbell.net> <20080529162257.03426e48.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: UBIFS seekdir()/telldir() issue
-References: <483AC0ED.5060805@nokia.com> <20080528154525.GA32634@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20080528154525.GA32634@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 May 2008 11:00:30.0523 (UTC) FILETIME=[600F28B0:01C8C244]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529162257.03426e48.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
->   The sequence you write above is actually incorrect I think. Noone
-> guarantees that the cookie returned by telldir() is valid after
-> closedir(). What is a bigger (and quite common) problem is, if somebody
-> uses readdir/telldir/seekdir while someone else creates/deletes files in
-> the directory. The standard implies in this case that subsequent
-> readdir should return all the files which were not touched (or all files
-> after position set by seekdir if used...).
 
-Not according to this:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-http://www.opengroup.org/onlinepubs/009695399/functions/readdir.html
+> > +	WARN_ON_ONCE(msec > (TEST_SUSPEND_SECONDS * 1000));
+> 
+> We should have a comment here explaining what we're warning about.  
+> Why would it take more that five seconds?
 
-	"If a file is removed from or added to the directory after the
-	most recent call to opendir() or rewinddir(), whether a
-	subsequent call to readdir() returns an entry for that file
-	is unspecified."
+i asked for that because we had regressions in the past in the form of 
+"it takes one minute to resume".
 
+> Better might be to just add a nice printk - I don't think we need the 
+> stack trace here.
 
+please keep the warn-on so that it can be detected automatically. Adding 
+yet another printk just complicates the automated answer to the "is this 
+kernel that just booted up fine or not" question.
+
+In fact i'd love to have the analogue to /proc/lockdep_debug's 
+"debug_locks: 0" output. I.e. the kernel should know it via one central 
+flag whether any bugs that need human review have been detected so far. 
+
+Say /proc/sys/kernel/kernel_is_buggy. This value could even be 
+multi-level: a WARN_ON() increases it by +1, a kernel crash increases it 
+by +1000. ( That way i could run overnight tests that will only stop on 
+a kernel_is_buggy >= 1000 condition, while it could ignore simpler 
+WARN_ON()s. )
+
+	Ingo
