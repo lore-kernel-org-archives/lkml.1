@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761804AbYE3ESt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761877AbYE3ETP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761804AbYE3ESt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761245AbYE3ERV
+	id S1761877AbYE3ETP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760400AbYE3ESR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:17:21 -0400
-Received: from mx1.suse.de ([195.135.220.2]:50777 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759010AbYE3ERS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:17:18 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: driver-core: prepare for 2.6.27 api change by adding dev_set_name
-Date: Thu, 29 May 2008 21:16:24 -0700
-Message-Id: <1212120984-15274-2-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <20080530041528.GA13743@suse.de>
-References: <20080530041528.GA13743@suse.de>
+	Fri, 30 May 2008 00:18:17 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:36277 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761137AbYE3ESP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 00:18:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V7P1S7Hv+i054fxqvtftkTi2DQ1T/AgGbieJI0zR63MSpP3KaSMjh2KNZk8W8UAgDxDtkkB4VZASq+p+VEuDqovDnVS3KCqkiE0Tmegy/Vn8YzjkTdU02ASi0N+BUebUj03fbM84T1YH/PLkGtdUfJ5ePoB3k4CyKnwDQRua3MA=
+Message-ID: <8bd0f97a0805292118g40a3f88fmd929f1c39c839190@mail.gmail.com>
+Date: Fri, 30 May 2008 00:18:14 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
+Cc: "David Howells" <dhowells@redhat.com>,
+       "Pekka J Enberg" <penberg@cs.helsinki.fi>, mpm@selenic.com,
+       lethal@linux-sh.org, linux-kernel@vger.kernel.org,
+       "Bryan Wu" <cooloney@kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0805291428240.7562@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2874.1211980355@redhat.com> <24762.1211983758@redhat.com>
+	 <Pine.LNX.4.64.0805281026210.22589@schroedinger.engr.sgi.com>
+	 <7613.1211996335@redhat.com>
+	 <8bd0f97a0805281335q7a26be97ie83feef6e7da2276@mail.gmail.com>
+	 <29553.1212066208@redhat.com>
+	 <8bd0f97a0805291325w7d435e89h4de614547fb1bc7f@mail.gmail.com>
+	 <Pine.LNX.4.64.0805291329270.7207@schroedinger.engr.sgi.com>
+	 <8bd0f97a0805291351t43ea6d2eue1cdde531aa2fc2c@mail.gmail.com>
+	 <Pine.LNX.4.64.0805291428240.7562@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+On Thu, May 29, 2008 at 5:29 PM, Christoph Lameter wrote:
+> On Thu, 29 May 2008, Mike Frysinger wrote:
+>> > You should not have to do this. This is the default alignment that also
+>> > SLOB needs to follow. We need to align structures correctly for access to
+>> > long long's.
+>>
+>> are you saying that slob is broken ?  i see in mm/slob.c:
+>> #ifndef ARCH_KMALLOC_MINALIGN
+>> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long)
+>> #endif
+>
+> It should be long long instead.
+>
+> SLUB:
+>
+> #ifndef ARCH_KMALLOC_MINALIGN
+> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
+> #endif
+>
+> SLAB:
+>
+> #define ARCH_KMALLOC_MINALIGN __alignof__(unsigned long long)
 
-Create the dev_set_name function now so that various subsystems can
-start changing over to it before other changes in 2.6.27 will make it
-compulsory.
-
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -760,6 +760,21 @@ static void device_remove_class_symlinks(struct device *dev)
- }
- 
- /**
-+ * dev_set_name - set a device name
-+ * @dev: device
-+ */
-+int dev_set_name(struct device *dev, const char *fmt, ...)
-+{
-+	va_list vargs;
-+
-+	va_start(vargs, fmt);
-+	vsnprintf(dev->bus_id, sizeof(dev->bus_id), fmt, vargs);
-+	va_end(vargs);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(dev_set_name);
-+
-+/**
-  * device_add - add device to device hierarchy.
-  * @dev: device.
-  *
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 14616e8..6a2d04c 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -385,6 +385,9 @@ static inline const char *dev_name(struct device *dev)
- 	return dev->bus_id;
- }
- 
-+extern int dev_set_name(struct device *dev, const char *name, ...)
-+			__attribute__((format(printf, 2, 3)));
-+
- #ifdef CONFIG_NUMA
- static inline int dev_to_node(struct device *dev)
- {
--- 
-1.5.5.2
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-next" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+will you post a patch to do that (and ideally delete all of the
+occurrences in asm-*/ where the minalign is defined to 8) ?
+-mike
