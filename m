@@ -1,134 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbYE3KEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbYE3KFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbYE3KEq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 06:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYE3KEg
+	id S1757138AbYE3KFA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 06:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbYE3KEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 06:04:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39539
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752211AbYE3KEe (ORCPT
+	Fri, 30 May 2008 06:04:42 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40784 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753507AbYE3KEl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 06:04:34 -0400
-Date: Fri, 30 May 2008 03:04:30 -0700 (PDT)
-Message-Id: <20080530.030430.20211983.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 30 May 2008 06:04:41 -0400
+Date: Fri, 30 May 2008 10:50:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: miaox@cn.fujitsu.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>, Paul Jackson <pj@sgi.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [PATCH 1/3] cpusets: cleanup kernel-doc
+Message-ID: <20080530105018.71dac558@core>
+In-Reply-To: <483FAD74.5040702@cn.fujitsu.com>
+References: <483FAD74.5040702@cn.fujitsu.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 30 May 2008 15:32:04 +0800
+Miao Xie <miaox@cn.fujitsu.com> wrote:
 
-Keeping the fixes rolling:
+> 1. Use '/*' instead of '/**' for static functions.
+> 2. Remove redundant blank line.
+> 
+> Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
 
-1) Two DCCP bug fixes from Gerrit and the DCCP crew.
+NAK. These are not redundant, they are used to pull documentation out of
+the tree using kernel-doc or other tools that know how to finish entries
+out for both inline and non-inlines.
 
-2) Merge in wireless fixes from John Linville and co.
-
-3) LLC double ref bug fix from Arnaldo.
-
-4) Netfilter conntrack expection fix from Alexey Dobriyan.
-
-Please pull, thanks a lot!
-
-The following changes since commit 289c79a4bd350e8a25065102563ad1a183d1b402:
-  Patrick McHardy (1):
-        vlan: Use bitmask of feature flags instead of seperate feature bits
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Abhijeet Kolekar (1):
-      mac80211 : Fixes the status message for iwconfig
-
-Alexey Dobriyan (1):
-      netfilter: nf_conntrack_expect: fix error path unwind in nf_conntrack_expect_init()
-
-Andrea Merello (3):
-      rtl8180: fix wrong parameter in sa2400_rf_set_channel
-      rtl8180: fix wrong parameter in max2820_rf_set_channel
-      rtl8180: fix wrong parameter in grf5101_rf_set_channel
-
-Arjan van de Ven (1):
-      bluetooth: fix locking bug in the rfcomm socket cleanup handling
-
-Arnaldo Carvalho de Melo (1):
-      llc: Fix double accounting of received packets
-
-David S. Miller (1):
-      Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
-
-Gerrit Renker (1):
-      dccp ccid-3: Fix "t_ipi explosion" bug
-
-Guy Cohen (2):
-      iwlwifi: fix exit from stay_in_table state
-      iwlwifi: fix rate scale TLC column selection bug
-
-Ivo van Doorn (4):
-      rt2x00: Fix memleak in tx() path
-      rt2x00: Don't count retries as failure
-      rt2x00: Reset antenna RSSI after switch
-      rt2x00: Use atomic interface iteration in irq context
-
-John W. Linville (1):
-      rtl8180: avoid NULL dereference in max2820_rf_set_channel
-
-Jussi Kivilinna (1):
-      rndis_wlan: add missing range check for power_output modparam
-
-Michael Buesch (2):
-      b43: Upload both beacon templates on initial load
-      b43: Fix controller restart crash
-
-Nicolas Kaiser (1):
-      net/mac80211: always true conditionals
-
-Scott Ashcroft (1):
-      rndis_wlan: Make connections to TKIP PSK networks work
-
-Senthil Balasubramanian (2):
-      mac80211: Fix for NULL pointer dereference in sta_info_get()
-      mac80211: fix alignment issue with compare_ether_addr()
-
-Tomas Winkler (2):
-      mac80211: fix ieee80211_rx_bss_put/get imbalance
-      mac80211: reorder channel and freq reporting in wext scan report
-
-Wei Yongjun (1):
-      dccp: Fix to handle short sequence numbers packet correctly
-
-Yi Zhu (1):
-      mac80211: fix a typo in ieee80211_handle_filtered_frame comment
-
- drivers/net/wireless/b43/b43.h             |    1 +
- drivers/net/wireless/b43/main.c            |   70 +++++++++++++++++++++------
- drivers/net/wireless/iwlwifi/iwl-4965-rs.c |    3 +-
- drivers/net/wireless/rndis_wlan.c          |   65 +++++++++++++++++++++++++-
- drivers/net/wireless/rt2x00/rt2x00.h       |    5 ++
- drivers/net/wireless/rt2x00/rt2x00config.c |    1 +
- drivers/net/wireless/rt2x00/rt2x00dev.c    |    8 ++--
- drivers/net/wireless/rt2x00/rt2x00mac.c    |    1 +
- drivers/net/wireless/rtl8180_grf5101.c     |    2 +-
- drivers/net/wireless/rtl8180_max2820.c     |    5 +-
- drivers/net/wireless/rtl8180_sa2400.c      |    2 +-
- net/bluetooth/rfcomm/core.c                |    2 +-
- net/dccp/ccids/ccid3.c                     |   13 ++----
- net/dccp/ipv4.c                            |    4 +-
- net/llc/llc_sap.c                          |   10 ++--
- net/mac80211/cfg.c                         |    4 +-
- net/mac80211/main.c                        |    2 +-
- net/mac80211/mlme.c                        |   29 ++++++-----
- net/mac80211/rx.c                          |    4 +-
- net/mac80211/util.c                        |    4 +-
- net/mac80211/wext.c                        |   11 +++-
- net/netfilter/nf_conntrack_expect.c        |    4 +-
- 22 files changed, 180 insertions(+), 70 deletions(-)
+Alan
