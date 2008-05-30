@@ -1,235 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbYE3ENU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYE3EMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbYE3ENU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbYE3EB1
+	id S1759974AbYE3EMx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756423AbYE3EBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:01:27 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56615 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752751AbYE3EAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:00:21 -0400
-Message-Id: <20080530040017.035773206@sgi.com>
+	Fri, 30 May 2008 00:01:24 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40517 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753289AbYE3EAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 00:00:25 -0400
+Message-Id: <20080530040023.099128332@sgi.com>
 References: <20080530035620.587204923@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 29 May 2008 20:56:37 -0700
+Date: Thu, 29 May 2008 20:56:56 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-arch@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Mike Travis <travis@sgi.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>
 Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>
-Subject: [patch 17/41] cpu alloc: Convert scratches to cpu alloc
-Content-Disposition: inline; filename=cpu_alloc_scratches_convert
+Subject: [patch 36/41] Zero based percpu: Infrastructure to rebase the per cpu area to zero
+Content-Disposition: inline; filename=zero_based_infrastructure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert scratch handling in the network stack to cpu alloc.
+    * Support an option
+
+	CONFIG_HAVE_ZERO_BASED_PER_CPU
+
+      to make offsets for per cpu variables to start at zero.
+
+      If a percpu area starts at zero then:
+
+	-  We do not need RELOC_HIDE anymore
+
+	-  Provides for the future capability of architectures providing
+	   a per cpu allocator that returns offsets instead of pointers.
+	   The offsets would be independent of the processor so that
+	   address calculations can be done in a processor independent way.
+	   Per cpu instructions can then add the processor specific offset
+	   at the last minute possibly in an atomic instruction.
+
+      The data the linker provides is different for zero based percpu segments:
+
+	__per_cpu_load	-> The address at which the percpu area was loaded
+	__per_cpu_size	-> The length of the per cpu area
+
+    * Removes the &__per_cpu_x in lockdep. The __per_cpu_x are already
+      pointers. There is no need to take the address.
+
+    * Updates kernel/module.c to be able to deal with a percpu area that
+      is loaded at __per_cpu_load but is accessed at __per_cpu_start.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- net/ipv4/ipcomp.c  |   26 +++++++++++++-------------
- net/ipv6/ipcomp6.c |   26 +++++++++++++-------------
- 2 files changed, 26 insertions(+), 26 deletions(-)
+ include/asm-generic/percpu.h      |    9 ++++++++-
+ include/asm-generic/sections.h    |   10 ++++++++++
+ include/asm-generic/vmlinux.lds.h |   16 ++++++++++++++++
+ include/linux/percpu.h            |    8 ++++++++
+ kernel/lockdep.c                  |    4 ++--
+ 5 files changed, 44 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/net/ipv4/ipcomp.c
+Index: linux-2.6/include/asm-generic/percpu.h
 ===================================================================
---- linux-2.6.orig/net/ipv4/ipcomp.c	2008-04-29 14:55:55.000000000 -0700
-+++ linux-2.6/net/ipv4/ipcomp.c	2008-05-21 21:48:14.000000000 -0700
-@@ -47,8 +47,8 @@
- 	int dlen = IPCOMP_SCRATCH_SIZE;
- 	const u8 *start = skb->data;
- 	const int cpu = get_cpu();
--	u8 *scratch = *per_cpu_ptr(ipcomp_scratches, cpu);
--	struct crypto_comp *tfm = *per_cpu_ptr(ipcd->tfms, cpu);
-+	u8 *scratch = *CPU_PTR(ipcomp_scratches, cpu);
-+	struct crypto_comp *tfm = *CPU_PTR(ipcd->tfms, cpu);
- 	int err = crypto_comp_decompress(tfm, start, plen, scratch, &dlen);
+--- linux-2.6.orig/include/asm-generic/percpu.h	2008-05-29 17:57:39.788714222 -0700
++++ linux-2.6/include/asm-generic/percpu.h	2008-05-29 18:03:12.432714383 -0700
+@@ -45,7 +45,12 @@ extern unsigned long __per_cpu_offset[NR
+  * Only S390 provides its own means of moving the pointer.
+  */
+ #ifndef SHIFT_PERCPU_PTR
+-#define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++# ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++#  define SHIFT_PERCPU_PTR(__p, __offset) \
++	((__typeof(__p))(((void *)(__p)) + (__offset)))
++# else
++#  define SHIFT_PERCPU_PTR(__p, __offset)	RELOC_HIDE((__p), (__offset))
++# endif /* CONFIG_HAVE_ZERO_BASED_PER_CPU */
+ #endif
  
- 	if (err)
-@@ -105,8 +105,8 @@
- 	int dlen = IPCOMP_SCRATCH_SIZE;
- 	u8 *start = skb->data;
- 	const int cpu = get_cpu();
--	u8 *scratch = *per_cpu_ptr(ipcomp_scratches, cpu);
--	struct crypto_comp *tfm = *per_cpu_ptr(ipcd->tfms, cpu);
-+	u8 *scratch = *CPU_PTR(ipcomp_scratches, cpu);
-+	struct crypto_comp *tfm = *CPU_PTR(ipcd->tfms, cpu);
- 	int err;
+ /*
+@@ -70,6 +75,8 @@ extern void setup_per_cpu_areas(void);
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
+ #define __get_cpu_var(var)			per_cpu_var(var)
+ #define __raw_get_cpu_var(var)			per_cpu_var(var)
++#define SHIFT_PERCPU_PTR(__p, __offset)		(__p)
++#define per_cpu_offset(x)			0L
  
- 	local_bh_disable();
-@@ -254,9 +254,9 @@
- 		return;
+ #endif	/* SMP */
  
- 	for_each_possible_cpu(i)
--		vfree(*per_cpu_ptr(scratches, i));
-+		vfree(*CPU_PTR(scratches, i));
- 
--	free_percpu(scratches);
-+	CPU_FREE(scratches);
- }
- 
- static void **ipcomp_alloc_scratches(void)
-@@ -267,7 +267,7 @@
- 	if (ipcomp_scratch_users++)
- 		return ipcomp_scratches;
- 
--	scratches = alloc_percpu(void *);
-+	scratches = CPU_ALLOC(void *, GFP_KERNEL);
- 	if (!scratches)
- 		return NULL;
- 
-@@ -277,7 +277,7 @@
- 		void *scratch = vmalloc(IPCOMP_SCRATCH_SIZE);
- 		if (!scratch)
- 			return NULL;
--		*per_cpu_ptr(scratches, i) = scratch;
-+		*CPU_PTR(scratches, i) = scratch;
- 	}
- 
- 	return scratches;
-@@ -305,10 +305,10 @@
- 		return;
- 
- 	for_each_possible_cpu(cpu) {
--		struct crypto_comp *tfm = *per_cpu_ptr(tfms, cpu);
-+		struct crypto_comp *tfm = *CPU_PTR(tfms, cpu);
- 		crypto_free_comp(tfm);
- 	}
--	free_percpu(tfms);
-+	CPU_FREE(tfms);
- }
- 
- static struct crypto_comp **ipcomp_alloc_tfms(const char *alg_name)
-@@ -324,7 +324,7 @@
- 		struct crypto_comp *tfm;
- 
- 		tfms = pos->tfms;
--		tfm = *per_cpu_ptr(tfms, cpu);
-+		tfm = *CPU_PTR(tfms, cpu);
- 
- 		if (!strcmp(crypto_comp_name(tfm), alg_name)) {
- 			pos->users++;
-@@ -340,7 +340,7 @@
- 	INIT_LIST_HEAD(&pos->list);
- 	list_add(&pos->list, &ipcomp_tfms_list);
- 
--	pos->tfms = tfms = alloc_percpu(struct crypto_comp *);
-+	pos->tfms = tfms = CPU_ALLOC(struct crypto_comp *, GFP_KERNEL);
- 	if (!tfms)
- 		goto error;
- 
-@@ -349,7 +349,7 @@
- 							    CRYPTO_ALG_ASYNC);
- 		if (IS_ERR(tfm))
- 			goto error;
--		*per_cpu_ptr(tfms, cpu) = tfm;
-+		*CPU_PTR(tfms, cpu) = tfm;
- 	}
- 
- 	return tfms;
-Index: linux-2.6/net/ipv6/ipcomp6.c
+Index: linux-2.6/include/asm-generic/sections.h
 ===================================================================
---- linux-2.6.orig/net/ipv6/ipcomp6.c	2008-04-29 14:55:55.000000000 -0700
-+++ linux-2.6/net/ipv6/ipcomp6.c	2008-05-21 21:47:09.000000000 -0700
-@@ -90,8 +90,8 @@
- 	start = skb->data;
+--- linux-2.6.orig/include/asm-generic/sections.h	2008-05-29 17:57:39.792714337 -0700
++++ linux-2.6/include/asm-generic/sections.h	2008-05-29 18:03:12.432714383 -0700
+@@ -9,7 +9,17 @@ extern char __bss_start[], __bss_stop[];
+ extern char __init_begin[], __init_end[];
+ extern char _sinittext[], _einittext[];
+ extern char _end[];
++#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++extern char __per_cpu_load[];
++extern char ____per_cpu_size[];
++#define __per_cpu_size ((unsigned long)&____per_cpu_size)
++#define __per_cpu_start ((char *)0)
++#define __per_cpu_end ((char *)__per_cpu_size)
++#else
+ extern char __per_cpu_start[], __per_cpu_end[];
++#define __per_cpu_load __per_cpu_start
++#define __per_cpu_size (__per_cpu_end - __per_cpu_start)
++#endif
+ extern char __kprobes_text_start[], __kprobes_text_end[];
+ extern char __initdata_begin[], __initdata_end[];
+ extern char __start_rodata[], __end_rodata[];
+Index: linux-2.6/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/vmlinux.lds.h	2008-05-29 17:57:39.800714018 -0700
++++ linux-2.6/include/asm-generic/vmlinux.lds.h	2008-05-29 18:03:12.432714383 -0700
+@@ -344,6 +344,21 @@
+   	*(.initcall7.init)						\
+   	*(.initcall7s.init)
  
- 	cpu = get_cpu();
--	scratch = *per_cpu_ptr(ipcomp6_scratches, cpu);
--	tfm = *per_cpu_ptr(ipcd->tfms, cpu);
-+	scratch = *CPU_PTR(ipcomp6_scratches, cpu);
-+	tfm = *CPU_PTR(ipcd->tfms, cpu);
- 
- 	err = crypto_comp_decompress(tfm, start, plen, scratch, &dlen);
- 	if (err)
-@@ -142,8 +142,8 @@
- 	start = skb->data;
- 
- 	cpu = get_cpu();
--	scratch = *per_cpu_ptr(ipcomp6_scratches, cpu);
--	tfm = *per_cpu_ptr(ipcd->tfms, cpu);
-+	scratch = *CPU_PTR(ipcomp6_scratches, cpu);
-+	tfm = *CPU_PTR(ipcd->tfms, cpu);
- 
- 	local_bh_disable();
- 	err = crypto_comp_compress(tfm, start, plen, scratch, &dlen);
-@@ -264,12 +264,12 @@
- 		return;
- 
++#ifdef CONFIG_HAVE_ZERO_BASED_PER_CPU
++#define PERCPU(align)							\
++	. = ALIGN(align);						\
++	percpu : { } :percpu						\
++	__per_cpu_load = .;						\
++	.data.percpu 0 : AT(__per_cpu_load - LOAD_OFFSET) {		\
++		*(.data.percpu.first)					\
++		*(.data.percpu.shared_aligned)				\
++		*(.data.percpu)						\
++		*(.data.percpu.page_aligned)				\
++		____per_cpu_size = .;					\
++	}								\
++	. = __per_cpu_load + ____per_cpu_size;				\
++	data : { } :data
++#else
+ #define PERCPU(align)							\
+ 	. = ALIGN(align);						\
+ 	__per_cpu_start = .;						\
+@@ -352,3 +367,4 @@
+ 		*(.data.percpu.shared_aligned)				\
+ 	}								\
+ 	__per_cpu_end = .;
++#endif
+Index: linux-2.6/kernel/lockdep.c
+===================================================================
+--- linux-2.6.orig/kernel/lockdep.c	2008-05-29 17:59:22.697422432 -0700
++++ linux-2.6/kernel/lockdep.c	2008-05-29 18:03:33.013702733 -0700
+@@ -609,8 +609,8 @@ static int static_obj(void *obj)
+ 	 * percpu var?
+ 	 */
  	for_each_possible_cpu(i) {
--		void *scratch = *per_cpu_ptr(scratches, i);
-+		void *scratch = *CPU_PTR(scratches, i);
+-		start = (unsigned long) &__per_cpu_start + per_cpu_offset(i);
+-		end   = (unsigned long) &__per_cpu_start + __per_cpu_size
++		start = (unsigned long) __per_cpu_start + per_cpu_offset(i);
++		end   = (unsigned long) __per_cpu_start + __per_cpu_size
+ 					+ per_cpu_offset(i);
  
- 		vfree(scratch);
- 	}
+ 		if ((addr >= start) && (addr < end))
+Index: linux-2.6/include/linux/percpu.h
+===================================================================
+--- linux-2.6.orig/include/linux/percpu.h	2008-05-29 18:01:22.260714623 -0700
++++ linux-2.6/include/linux/percpu.h	2008-05-29 18:03:12.436714003 -0700
+@@ -23,12 +23,20 @@
+ 	__attribute__((__section__(SHARED_ALIGNED_SECTION)))		\
+ 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
+ 	____cacheline_aligned_in_smp
++
++#define DEFINE_PER_CPU_FIRST(type, name)				\
++	__attribute__((__section__(".data.percpu.first")))		\
++	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
++
+ #else
+ #define DEFINE_PER_CPU(type, name)					\
+ 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
  
--	free_percpu(scratches);
-+	CPU_FREE(scratches);
- }
+ #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
+ 	DEFINE_PER_CPU(type, name)
++
++#define DEFINE_PER_CPU_FIRST(type, name)			      \
++	DEFINE_PER_CPU(type, name)
+ #endif
  
- static void **ipcomp6_alloc_scratches(void)
-@@ -280,7 +280,7 @@
- 	if (ipcomp6_scratch_users++)
- 		return ipcomp6_scratches;
- 
--	scratches = alloc_percpu(void *);
-+	scratches = CPU_ALLOC(void *, GFP_KERNEL);
- 	if (!scratches)
- 		return NULL;
- 
-@@ -290,7 +290,7 @@
- 		void *scratch = vmalloc(IPCOMP_SCRATCH_SIZE);
- 		if (!scratch)
- 			return NULL;
--		*per_cpu_ptr(scratches, i) = scratch;
-+		*CPU_PTR(scratches, i) = scratch;
- 	}
- 
- 	return scratches;
-@@ -318,10 +318,10 @@
- 		return;
- 
- 	for_each_possible_cpu(cpu) {
--		struct crypto_comp *tfm = *per_cpu_ptr(tfms, cpu);
-+		struct crypto_comp *tfm = *CPU_PTR(tfms, cpu);
- 		crypto_free_comp(tfm);
- 	}
--	free_percpu(tfms);
-+	CPU_FREE(tfms);
- }
- 
- static struct crypto_comp **ipcomp6_alloc_tfms(const char *alg_name)
-@@ -337,7 +337,7 @@
- 		struct crypto_comp *tfm;
- 
- 		tfms = pos->tfms;
--		tfm = *per_cpu_ptr(tfms, cpu);
-+		tfm = *CPU_PTR(tfms, cpu);
- 
- 		if (!strcmp(crypto_comp_name(tfm), alg_name)) {
- 			pos->users++;
-@@ -353,7 +353,7 @@
- 	INIT_LIST_HEAD(&pos->list);
- 	list_add(&pos->list, &ipcomp6_tfms_list);
- 
--	pos->tfms = tfms = alloc_percpu(struct crypto_comp *);
-+	pos->tfms = tfms = CPU_ALLOC(struct crypto_comp *, GFP_KERNEL);
- 	if (!tfms)
- 		goto error;
- 
-@@ -362,7 +362,7 @@
- 							    CRYPTO_ALG_ASYNC);
- 		if (IS_ERR(tfm))
- 			goto error;
--		*per_cpu_ptr(tfms, cpu) = tfm;
-+		*CPU_PTR(tfms, cpu) = tfm;
- 	}
- 
- 	return tfms;
+ #define EXPORT_PER_CPU_SYMBOL(var) EXPORT_SYMBOL(per_cpu__##var)
 
 -- 
