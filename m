@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYE3Add@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYE3AlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbYE3Add (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 20:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYE3AdX
+	id S1756770AbYE3AlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 20:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYE3AlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 20:33:23 -0400
-Received: from simmts12.bellnexxia.net ([206.47.199.141]:49973 "EHLO
-	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753067AbYE3AdW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 20:33:22 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuQAAKfjPkicIs9g/2dsb2JhbAAIixGkdQ
-Message-ID: <483F4B50.2030400@gmail.com>
-Date: Thu, 29 May 2008 21:33:20 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 29 May 2008 20:41:08 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34996 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751740AbYE3AlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 20:41:07 -0400
+From: Neil Brown <neilb@suse.de>
+To: corbet@lwn.net (Jonathan Corbet)
+Date: Fri, 30 May 2008 10:40:54 +1000
 MIME-Version: 1.0
-To: mingo@elte.hu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix pointer type warning in arch/x86/mm/init_64.c:early_memtest
-References: <1212106475-3297-1-git-send-email-kjwinchester@gmail.com>
-In-Reply-To: <1212106475-3297-1-git-send-email-kjwinchester@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18495.19734.809962.497265@notabene.brown>
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project 
+In-Reply-To: message from Jonathan Corbet on Thursday May 29
+References: <1212041839.8888.38.camel@pasglop>
+	<22351.1212077021@vena.lwn.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin Winchester wrote:
-> Changed the call to find_e820_area_size to pass u64 instead of unsigned long.
+On Thursday May 29, corbet@lwn.net wrote:
+> Ben H writes:
 > 
-> Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
-> ---
->  arch/x86/mm/init_64.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> > On Wed, 2008-05-28 at 22:58 -0700, David Miller wrote:
+> > > 
+> > > Not to distract from your points, but I think it's been a huge
+> > > mistake to not allow folks to work hard on technical issues
+> > > during the summit.
+> > 
+> > Having been stopped a couple of times last year when trying to bring
+> > some technical subjects for the reason that they were "off topic, KS is
+> > for process" I tend to agree :-)
 > 
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index 83ab7f9..94f73c2 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -515,7 +515,7 @@ early_param("memtest", parse_memtest);
->  
->  static void __init early_memtest(unsigned long start, unsigned long end)
->  {
-> -	unsigned long t_start, t_size;
-> +	u64 t_start, t_size;
->  	unsigned pattern;
->  
->  	if (!memtest_pattern)
-> @@ -534,7 +534,7 @@ static void __init early_memtest(unsigned long start, unsigned long end)
->  			if (t_start + t_size > end)
->  				t_size = end - t_start;
->  
-> -			printk(KERN_CONT "\n  %016lx - %016lx pattern %d",
-> +			printk(KERN_CONT "\n  %016llx - %016llx pattern %d",
->  				t_start, t_start + t_size, pattern);
->  
->  			memtest(t_start, t_size, pattern);
+> Here's an idea: the discussion list for the 2008 summit has opened up.
+> This seems like an ideal time to make suggestions for technical topics
+> which you think would be appropriate for this gathering.  Failing that,
+> you leave it up to the program committee to try to guess what's on
+> everybody's minds, and that seems certain to disappoint a lot of people.
+> 
 
+http://lwn.net/Articles/283161/
 
-I was so excited about finally figuring out how to create and send a 
-patch with git, that I forgot to mention that this was a warning seen in 
-linux-next, next-20080529.
+Barriers
 
-It was more an experiment in how to send git patches than to "get my 
-name in the kernel history", with which most experienced developers seem 
-to think us newbies are only concerned.  I keep hearing that testing 
-trees and fixing warnings and small bugs is the preferred way to make it 
-into development - so I'm giving it a try.
+What minimal semantics to Filesystem developers actually want?
+What can hardware really provide?
+What how can layered mutli-disk devices (md, dm, loop) mediate these?
 
-Let me know if there was anything wrong with this submission, or if it 
-is too trivial to bother with.
+What interface semantics can we come up with that are sufficiently
+general and powerful that everyone will actually implement them
+correctly?
 
--- 
-Kevin Winchester
+However I won't be coming this year, so I won't be able to participate
+directly in such a discussion.
+
+NeilBrown
