@@ -1,88 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbYE3M3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbYE3MnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752840AbYE3M3Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 08:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYE3M3B
+	id S1752619AbYE3MnP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 08:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbYE3Mm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 08:29:01 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:34926 "EHLO atmel-es2.atmel.fr"
+	Fri, 30 May 2008 08:42:57 -0400
+Received: from mail.tmr.com ([64.65.253.246]:50455 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751030AbYE3M3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 08:29:00 -0400
-Message-ID: <483FF2FD.7020609@atmel.com>
-Date: Fri, 30 May 2008 14:28:45 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	id S1751185AbYE3Mm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 08:42:56 -0400
+Message-ID: <483FF92F.6060309@tmr.com>
+Date: Fri, 30 May 2008 08:55:11 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       =?ISO-8859-1?Q?Hans-J=FCrgen?= =?ISO-8859-1?Q?_Koch?= 
-	<hjk@linutronix.de>,
-       =?ISO-8859-1?Q?Ville_Syrj=E4?= =?ISO-8859-1?Q?l=E4?= 
-	<syrjala@sci.fi>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Eric BENARD <ebenard@free.fr>, Andrew Victor <linux@maxim.org.za>
-Subject: [PATCH 7/7] mmc: at91_mci: do not read irq status twice as it will
- forget some errors
-References: <483FE9E7.7020707@atmel.com>
-In-Reply-To: <483FE9E7.7020707@atmel.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Holger Kiehl <Holger.Kiehl@dwd.de>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Performance Characteristics of All Linux RAIDs (mdadm/bonnie++)
+References: <alpine.DEB.1.10.0805280442330.4527@p34.internal.lan> <Pine.LNX.4.64.0805290636020.20192@diagnostix.dwd.de> <alpine.DEB.1.10.0805291302190.23633@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0805291302190.23633@p34.internal.lan>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reading AT91_MCI_SR again at the end of transfer can corrupt the
-error reporting. Some fields in the SR register are read-and-clear.
+Justin Piszcz wrote:
+>
+>
+> On Thu, 29 May 2008, Holger Kiehl wrote:
+>
+>> On Wed, 28 May 2008, Justin Piszcz wrote:
+>>
+>>> Hardware:
+>>>
+>>> 1. Utilized (6) 400 gigabyte sata hard drives.
+>>> 2. Everything is on PCI-e (965 chipset & a 2port sata card)
+>>>
+>>> Used the following 'optimizations' for all tests.
+>>>
+>>> # Set read-ahead.
+>>> echo "Setting read-ahead to 64 MiB for /dev/md3"
+>>> blockdev --setra 65536 /dev/md3
+>>>
+>>> # Set stripe-cache_size for RAID5.
+>>> echo "Setting stripe_cache_size to 16 MiB for /dev/md3"
+>>> echo 16384 > /sys/block/md3/md/stripe_cache_size
+>>>
+>>> # Disable NCQ on all disks.
+>>> echo "Disabling NCQ on all disks..."
+>>> for i in $DISKS
+>>> do
+>>>  echo "Disabling NCQ on $i"
+>>>  echo 1 > /sys/block/"$i"/device/queue_depth
+>>> done
+>>>
+>>> Software:
+>>>
+>>> Kernel: 2.6.23.1 x86_64
+>>> Filesystem: XFS
+>>> Mount options: defaults,noatime
+>>>
+>>> Results:
+>>>
+>>> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html
+>>> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.txt
+>>>
+>> Why is the Sequential Output (Block) for raid6 165719 and for raid5 only
+>> 86797? I would have thought that raid6 was always a bit slower in 
+>> writting
+>> due to having to write double amount of parity data.
+>>
+>> Holger
+>>
+>
+> RAID5 (2nd test of 3 averaged runs) & Single disk added:
+> http://home.comcast.net/~jpiszcz/raid/20080528/raid-levels.html 
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- drivers/mmc/host/at91_mci.c |   12 +++++-------
- 1 files changed, 5 insertions(+), 7 deletions(-)
+Other than repeating my (possibly lost) comment that this would be 
+vastly easier to read if the number were aligned and all had the same 
+number of decimal places in a single column, good stuff. For sequential 
+i/o the winners and losers are clear, and you can set cost and 
+performance to pick the winners. Seems obvious that raid-1 is the loser 
+for single threaded load, I suspect that it would be poor against other 
+levels in multithread loads, but not so much for read.
 
-diff --git a/drivers/mmc/host/at91_mci.c b/drivers/mmc/host/at91_mci.c
-index 92a0200..9948fe1 100644
---- a/drivers/mmc/host/at91_mci.c
-+++ b/drivers/mmc/host/at91_mci.c
-@@ -660,10 +660,9 @@ static void at91_mci_process_next(struct at91mci_host *host)
- /*
-  * Handle a command that has been completed
-  */
--static void at91_mci_completed_command(struct at91mci_host *host)
-+static void at91_mci_completed_command(struct at91mci_host *host, unsigned int status)
- {
- 	struct mmc_command *cmd = host->cmd;
--	unsigned int status;
- 
- 	at91_mci_write(host, AT91_MCI_IDR, 0xffffffff & ~(AT91_MCI_SDIOIRQA | AT91_MCI_SDIOIRQB));
- 
-@@ -677,10 +676,9 @@ static void at91_mci_completed_command(struct at91mci_host *host)
- 		host->buffer = NULL;
- 	}
- 
--	status = at91_mci_read(host, AT91_MCI_SR);
--
--	pr_debug("Status = %08X [%08X %08X %08X %08X]\n",
--		 status, cmd->resp[0], cmd->resp[1], cmd->resp[2], cmd->resp[3]);
-+	pr_debug("Status = %08X/%08x [%08X %08X %08X %08X]\n",
-+		 status, at91_mci_read(host, AT91_MCI_SR),
-+		 cmd->resp[0], cmd->resp[1], cmd->resp[2], cmd->resp[3]);
- 
- 	if (status & AT91_MCI_ERRORS) {
- 		if ((status & AT91_MCI_RCRCE) && !(mmc_resp_type(cmd) & MMC_RSP_CRC)) {
-@@ -877,7 +875,7 @@ static irqreturn_t at91_mci_irq(int irq, void *devid)
- 	if (completed) {
- 		pr_debug("Completed command\n");
- 		at91_mci_write(host, AT91_MCI_IDR, 0xffffffff & ~(AT91_MCI_SDIOIRQA | AT91_MCI_SDIOIRQB));
--		at91_mci_completed_command(host);
-+		at91_mci_completed_command(host, int_status);
- 	} else
- 		at91_mci_write(host, AT91_MCI_IDR, int_status & ~(AT91_MCI_SDIOIRQA | AT91_MCI_SDIOIRQB));
- 
 -- 
-1.5.3.7
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
 
