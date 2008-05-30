@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbYE3HYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYE3HZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbYE3HYA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 03:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYE3HXt
+	id S1756178AbYE3HZu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 03:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbYE3HZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 03:23:49 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:10617 "EHLO kernel.dk"
+	Fri, 30 May 2008 03:25:42 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37022 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbYE3HXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 03:23:48 -0400
-Date: Fri, 30 May 2008 09:23:46 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 8/10] mips: convert to generic helpers for IPI function  calls
-Message-ID: <20080530072346.GH25504@kernel.dk>
-References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-9-git-send-email-jens.axboe@oracle.com> <20080529142054.GA8320@linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080529142054.GA8320@linux-mips.org>
+	id S1750747AbYE3HZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 03:25:41 -0400
+Subject: Re: MMIO and gcc re-ordering issue
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com
+In-Reply-To: <20080530080700.773a82cc@siona.local>
+References: <1211852026.3286.36.camel@pasglop>
+	 <20080526.184047.88207142.davem@davemloft.net>
+	 <1211854540.3286.42.camel@pasglop>
+	 <20080526.192812.184590464.davem@davemloft.net>
+	 <1211859542.3286.46.camel@pasglop>
+	 <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org>
+	 <1211922621.3286.80.camel@pasglop>
+	 <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org>
+	 <1211924335.3286.89.camel@pasglop>
+	 <20080527214241.GA22636@parisc-linux.org>
+	 <1211926636.3286.100.camel@pasglop>
+	 <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
+	 <1212110003.15633.0.camel@pasglop>  <20080530080700.773a82cc@siona.local>
+Content-Type: text/plain
+Date: Fri, 30 May 2008 17:24:27 +1000
+Message-Id: <1212132267.15633.69.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29 2008, Ralf Baechle wrote:
-> On Thu, May 29, 2008 at 10:58:22AM +0200, Jens Axboe wrote:
+On Fri, 2008-05-30 at 08:07 +0200, Haavard Skinnemoen wrote:
+> On Fri, 30 May 2008 11:13:23 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> > This converts mips to use the new helpers for smp_call_function() and
-> > friends, and adds support for smp_call_function_single(). Not tested,
-> > but it compiles.
+> > > Currently, this is the only interface I know that can do native-endian
+> > > accesses, so if you take it away, I'm gonna need an alternative
+> > > interface that doesn't do byteswapping.  
 > > 
-> > mips shares the same IPI for smp_call_function() and
-> > smp_call_function_single(), since not all hardware has enough available
-> > IPIs available to support seperate setups.
+> > Are you aware that these also don't provide any ordering guarantee ?
 > 
-> FYI, the comment isn't quite accurate.  The machanisms for IPIs on MIPS
-> are platform-specific.  The change which I recently objected to was
-> specific to a code model called VSMP.
+> Yes, but I am not aware of any alternative.
+> 
+> I think the drivers I've written have the necessary barriers (or dma
+> ops with implicit barriers) that they don't actually depend on any
+> DMA vs. MMIO ordering guarantees. I hope MMIO vs. MMIO ordering is
+> guaranteed though?
 
-So s/hardware/platform and you are happy?
+Only to the same address I'd say.
 
--- 
-Jens Axboe
+Ben.
+
 
