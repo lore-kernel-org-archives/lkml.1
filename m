@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760043AbYE3Fvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbYE3Fwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760043AbYE3Fvk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbYE3Fvb
+	id S1759905AbYE3Fwg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbYE3Fw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:51:31 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35794 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752491AbYE3Fva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:51:30 -0400
-Date: Fri, 30 May 2008 14:56:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 30 May 2008 01:52:27 -0400
+Received: from ozlabs.org ([203.10.76.45]:48336 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754184AbYE3Fw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 01:52:26 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
 To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
 Subject: Re: [patch 02/41] cpu alloc: The allocator
-Message-Id: <20080530145612.fd930335.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0805292203240.12107@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com>
-	<20080530040011.084909898@sgi.com>
-	<20080529215833.469c3cbe.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0805292203240.12107@schroedinger.engr.sgi.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Date: Fri, 30 May 2008 15:52:24 +1000
+User-Agent: KMail/1.9.9
+Cc: Eric Dumazet <dada1@cosmosbay.com>, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
+References: <20080530035620.587204923@sgi.com> <483F8AF7.9000309@cosmosbay.com> <Pine.LNX.4.64.0805292219220.12107@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0805292219220.12107@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805301552.25423.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 22:10:25 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+On Friday 30 May 2008 15:20:45 Christoph Lameter wrote:
+> On Fri, 30 May 2008, Eric Dumazet wrote:
+> > > +static DEFINE_PER_CPU(UNIT_TYPE, area[UNITS]);
+> >
+> > area[] is not guaranteed to be aligned on anything but 4 bytes.
+> >
+> > If someone then needs to call cpu_alloc(8, GFP_KERNEL, 8), it might get
+> > an non aligned result.
+> >
+> > Either you should add an __attribute__((__aligned__(PAGE_SIZE))),
+> > or take into account the real address of area[] in cpu_alloc() to avoid
+> > waste of up to PAGE_SIZE bytes
+> > per cpu.
+>
+> I think cacheline aligning should be sufficient. People should not
+> allocate large page aligned objects here.
 
-> On Thu, 29 May 2008, Andrew Morton wrote:
-> 
-> > > +config CPU_ALLOC_SIZE
-> > > +	int "Size of cpu alloc area"
-> > > +	default "30000"
-> > 
-> > strange choice of a default?  I guess it makes it clear that there's no
-> > particular advantage in making it a power-of-two or anything like that.
-> 
-> The cpu alloc has a cpu_bytes field in vmstat that shows how much memory 
-> is being used. 30000 seemed to be reasonable after staring at these 
-> numbers for awhile.
-> 
+I vaguely recall there were issues with this in the module code.  They might 
+be gone now, but failing to meet alignment contraints without a big warning 
+would suck.
 
-30000 is suitable for both of 32bits/64bits arch ?
+But modifying your code to consider the actual alignment is actually pretty 
+trivial, AFAICT.
 
-Thanks,
--kame
-
+Cheers,
+Rusty.
