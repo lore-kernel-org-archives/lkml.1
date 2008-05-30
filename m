@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbYE3Vti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYE3WAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbYE3Vti (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 17:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYE3Vt0
+	id S1754860AbYE3WAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 18:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYE3WAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 17:49:26 -0400
-Received: from mga06.intel.com ([134.134.136.21]:64795 "EHLO
+	Fri, 30 May 2008 18:00:40 -0400
+Received: from mga06.intel.com ([134.134.136.21]:42794 "EHLO
 	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751198AbYE3Vt0 (ORCPT
+	with ESMTP id S1753398AbYE3WAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 17:49:26 -0400
+	Fri, 30 May 2008 18:00:39 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.27,568,1204531200"; 
-   d="scan'208";a="286560570"
-Message-ID: <48407667.5040001@linux.intel.com>
-Date: Fri, 30 May 2008 14:49:27 -0700
+   d="scan'208";a="388814489"
+Message-ID: <48407909.5090608@linux.intel.com>
+Date: Fri, 30 May 2008 15:00:41 -0700
 From: Arjan van de Ven <arjan@linux.intel.com>
 User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
@@ -46,6 +46,7 @@ Linus Torvalds wrote:
 > part. You can see it from the code portion: the "<0f> 0b" gives it away 
 > (that's the ud2 opcode).
 
-I've seen it a few more times the last few weeks, I'll dig into how that is happening.
-Maybe we changed the bug_on text to miss my regexps ;(
-(it's only about 1000 lines of perl, so what can go wrong in that ;-)
+ok for some it did gather this information, and it is
+
+kernel BUG at mm/highmem.c:319!
+
