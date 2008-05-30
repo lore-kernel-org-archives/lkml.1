@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbYE3OCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbYE3OHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448AbYE3OCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 10:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbYE3OCH
+	id S1755536AbYE3OHT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 10:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYE3OHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 10:02:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:1079 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbYE3OCF (ORCPT
+	Fri, 30 May 2008 10:07:06 -0400
+Received: from lvps87-230-0-242.dedicated.hosteurope.de ([87.230.0.242]:43351
+	"EHLO lvps87-230-0-242.dedicated.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752451AbYE3OHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 10:02:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=s609OHnPh2WNi7d1w7Rtej/O28NvmkZXokY0N6xu3rbNgaaDgMOCZ8FFv/MxdMejHkBEFYOE1Y3sCydy95C+RcWi61ReuJQ1Y4QfNhr2Na7YBDdGo4+PE4aSqCIkchxNQYjVxhvGZDUH98g3WSWNjyKN3Upify1UT18ANSMIFag=
-Message-ID: <961aa3350805300702p23c3a7f0v4fcffcfe6d3ac9ca@mail.gmail.com>
-Date: Fri, 30 May 2008 23:02:05 +0900
-From: "Akinobu Mita" <akinobu.mita@gmail.com>
-To: devzero@web.de
-Subject: Re: [PATCH] edd: fix error paths in module_init
+	Fri, 30 May 2008 10:07:05 -0400
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <297064421@web.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <F2473A1D-E4F5-4B9D-9538-B122553E1011@it-loops.com>
+From: Guntsche Michael <mike@it-loops.com>
+To: Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20080530065717.44cf7414@infradead.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <297064421@web.de>
+Mime-Version: 1.0 (Apple Message framework v924)
+Subject: Re: 2.6.25.x: Wrong CPU frequency (cpufreq table) with p4-clockmod
+Date: Fri, 30 May 2008 16:07:01 +0200
+References: <12C649C0-4BEF-41F1-B738-8C8CEF8AEBB8@it-loops.com> <20080530065717.44cf7414@infradead.org>
+X-Mailer: Apple Mail (2.924)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> it looks that your patch is fixing this one :
->
-> https://bugzilla.novell.com/show_bug.cgi?id=394571
-> https://bugzilla.novell.com/attachment.cgi?id=218198
->
-> i didn`t yet try, but maybe you are able to take a look and confirm ?
->
-> if this is correct - how did you manage looking two days into the future ? ;)
 
-yep, the patch must fix this bug.
+On May 30, 2008, at 15:57, Arjan van de Ven wrote:
+
+> ... and it's not the best solution because it's not saving you any
+> energy...
+> (in fact it may cost you some)
+>
+
+I am most interested in keeping the temperature of my CPU down, which  
+means slower fans, which means less noise.
+The main "problem" I have is that I do not know if this is a simple  
+display issue or if I am having a more fundamental problem here.
+
+/Michael
