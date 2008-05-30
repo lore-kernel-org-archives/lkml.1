@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbYE3Cbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbYE3CoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbYE3Cbu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 22:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYE3Cbk
+	id S1756234AbYE3CoX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 22:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYE3CoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 22:31:40 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:28030 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752385AbYE3Cbk (ORCPT
+	Thu, 29 May 2008 22:44:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51169 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753217AbYE3CoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 22:31:40 -0400
-Date: Thu, 29 May 2008 19:45:06 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Chris Frey <cdfrey@foursquare.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [next-20080529] build error: function: i8042_platform_init
-Message-Id: <20080529194506.336077d8.randy.dunlap@oracle.com>
-In-Reply-To: <20080530001525.GA29604@foursquare.net>
-References: <20080530001525.GA29604@foursquare.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 29 May 2008 22:44:07 -0400
+Date: Thu, 29 May 2008 19:42:35 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <gregkh@suse.de>, David Brownell <david-b@pacbell.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [GIT PATCH] USB fixes for 2.6.26-rc4
+Message-ID: <20080530024235.GC5787@kroah.com>
+References: <20080529215808.GA3759@suse.de> <Pine.LNX.4.44L0.0805292143001.26334-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0805292143001.26334-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 20:15:25 -0400 Chris Frey wrote:
-
-> Hi,
+On Thu, May 29, 2008 at 09:44:42PM -0400, Alan Stern wrote:
+> On Thu, 29 May 2008, Greg KH wrote:
 > 
-> I haven't seen this on the list yet.
+> > On Thu, May 29, 2008 at 02:48:39PM -0700, David Brownell wrote:
+> > > On Thursday 29 May 2008, Greg KH wrote:
+> > > >       USB: EHCI: fix performance regression
+> > > 
+> > > That's not a regresssion at all!  Plus, this patch shouldn't
+> > > have included the timeout change.  The timeout change is why
+> > > I didn't ACK this patch...
+> > 
+> > Well, I was misinformed by Alan Stern about this then, sorry for missing
+> > that you didn't ack this one (you acked the other patches in this series
+> > though.)
 > 
->   CC      drivers/input/serio/serio.o
->   CC      drivers/input/serio/i8042.o
-> In file included from drivers/input/serio/i8042.h:28,
->                  from drivers/input/serio/i8042.c:85:
-> drivers/input/serio/i8042-x86ia64io.h: In function 'i8042_platform_init':
-> drivers/input/serio/i8042-x86ia64io.h:590: error: 'i8042_nopnp' undeclared (first use in this function)
-> drivers/input/serio/i8042-x86ia64io.h:590: error: (Each undeclared identifier is reported only once
-> drivers/input/serio/i8042-x86ia64io.h:590: error: for each function it appears in.)
-> make[2]: *** [drivers/input/serio/i8042.o] Error 1
-> make[1]: *** [drivers/input/serio] Error 2
-> make: *** [drivers] Error 2
+> The notion that this was a regression came about by mistake.  It was 
+> stated that 2.6.24 worked better than 2.6.25; apparently that remark 
+> was wrong.
+> 
+> > Alan, care to make up a patch to fix this?  Or should I just revert it
+> > in the tree as-is?
+> 
+> Given that the issues are not yet resolved among the developers, I 
+> think reverting the patch for now is the best course.
 
-Please see this thread for patches:
-  http://lkml.org/lkml/2008/5/29/299
+Ok, will go do so.
 
+thanks,
 
----
-~Randy
-"He closes his eyes and drops the goggles.  You can't get hurt
-by looking at a bitmap.  Or can you?"
+greg k-h
