@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbYE3EE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbYE3EEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753714AbYE3EE1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYE3EAe
+	id S1753313AbYE3EEr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYE3EAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:00:34 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:56584 "EHLO relay.sgi.com"
+	Fri, 30 May 2008 00:00:36 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:45446 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751592AbYE3EAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751672AbYE3EAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 May 2008 00:00:18 -0400
-Message-Id: <20080530040014.102721466@sgi.com>
+Message-Id: <20080530040014.715491933@sgi.com>
 References: <20080530035620.587204923@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 29 May 2008 20:56:32 -0700
+Date: Thu, 29 May 2008 20:56:34 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-arch@vger.kernel.org
@@ -22,110 +22,87 @@ Cc: Eric Dumazet <dada1@cosmosbay.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Mike Travis <travis@sgi.com>
-Subject: [patch 12/41] cpu alloc: XFS counter conversion.
-Content-Disposition: inline; filename=cpu_alloc_xfs_counter_conversion
+Subject: [patch 14/41] cpu alloc: Neigbour statistics
+Content-Disposition: inline; filename=cpu_alloc_neighbor_statistics_conversion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also remove the useless zeroing after allocation. Even allocpercpu() already
-zeroed the objects on alloc.
+Convert neighbor stats to cpu alloc.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/xfs/xfs_mount.c |   24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ include/net/neighbour.h |    6 +-----
+ net/core/neighbour.c    |   11 ++++++-----
+ 2 files changed, 7 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/fs/xfs/xfs_mount.c
+Index: linux-2.6/include/net/neighbour.h
 ===================================================================
---- linux-2.6.orig/fs/xfs/xfs_mount.c	2008-05-08 22:10:42.000000000 -0700
-+++ linux-2.6/fs/xfs/xfs_mount.c	2008-05-21 21:46:27.000000000 -0700
-@@ -2016,7 +2016,7 @@
+--- linux-2.6.orig/include/net/neighbour.h	2008-05-21 23:59:14.000000000 -0700
++++ linux-2.6/include/net/neighbour.h	2008-05-22 07:40:37.000000000 -0700
+@@ -87,12 +87,7 @@
+ 	unsigned long forced_gc_runs;	/* number of forced GC runs */
+ };
  
- 	mp = (xfs_mount_t *)container_of(nfb, xfs_mount_t, m_icsb_notifier);
- 	cntp = (xfs_icsb_cnts_t *)
--			per_cpu_ptr(mp->m_sb_cnts, (unsigned long)hcpu);
-+			CPU_PTR(mp->m_sb_cnts, (unsigned long)hcpu);
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
-@@ -2065,10 +2065,7 @@
- xfs_icsb_init_counters(
- 	xfs_mount_t	*mp)
+-#define NEIGH_CACHE_STAT_INC(tbl, field)				\
+-	do {								\
+-		preempt_disable();					\
+-		(per_cpu_ptr((tbl)->stats, smp_processor_id())->field)++; \
+-		preempt_enable();					\
+-	} while (0)
++#define NEIGH_CACHE_STAT_INC(tbl, field) _CPU_INC((tbl)->stats->field)
+ 
+ struct neighbour
  {
--	xfs_icsb_cnts_t *cntp;
--	int		i;
--
--	mp->m_sb_cnts = alloc_percpu(xfs_icsb_cnts_t);
-+	mp->m_sb_cnts = CPU_ALLOC(xfs_icsb_cnts_t, GFP_KERNEL | __GFP_ZERO);
- 	if (mp->m_sb_cnts == NULL)
- 		return -ENOMEM;
+Index: linux-2.6/net/core/neighbour.c
+===================================================================
+--- linux-2.6.orig/net/core/neighbour.c	2008-05-21 23:59:14.000000000 -0700
++++ linux-2.6/net/core/neighbour.c	2008-05-22 00:00:06.000000000 -0700
+@@ -1425,7 +1425,8 @@
+ 			kmem_cache_create(tbl->id, tbl->entry_size, 0,
+ 					  SLAB_HWCACHE_ALIGN|SLAB_PANIC,
+ 					  NULL);
+-	tbl->stats = alloc_percpu(struct neigh_statistics);
++	tbl->stats = CPU_ALLOC(struct neigh_statistics,
++					GFP_KERNEL | __GFP_ZERO);
+ 	if (!tbl->stats)
+ 		panic("cannot create neighbour cache statistics");
  
-@@ -2078,11 +2075,6 @@
- 	register_hotcpu_notifier(&mp->m_icsb_notifier);
- #endif /* CONFIG_HOTPLUG_CPU */
+@@ -1511,7 +1512,7 @@
  
--	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
--		memset(cntp, 0, sizeof(xfs_icsb_cnts_t));
--	}
--
- 	mutex_init(&mp->m_icsb_mutex);
+ 	remove_proc_entry(tbl->id, init_net.proc_net_stat);
  
- 	/*
-@@ -2115,7 +2107,7 @@
- {
- 	if (mp->m_sb_cnts) {
- 		unregister_hotcpu_notifier(&mp->m_icsb_notifier);
--		free_percpu(mp->m_sb_cnts);
-+		CPU_FREE(mp->m_sb_cnts);
+-	free_percpu(tbl->stats);
++	CPU_FREE(tbl->stats);
+ 	tbl->stats = NULL;
+ 
+ 	kmem_cache_destroy(tbl->kmem_cachep);
+@@ -1769,7 +1770,7 @@
+ 		for_each_possible_cpu(cpu) {
+ 			struct neigh_statistics	*st;
+ 
+-			st = per_cpu_ptr(tbl->stats, cpu);
++			st = CPU_PTR(tbl->stats, cpu);
+ 			ndst.ndts_allocs		+= st->allocs;
+ 			ndst.ndts_destroys		+= st->destroys;
+ 			ndst.ndts_hash_grows		+= st->hash_grows;
+@@ -2429,7 +2430,7 @@
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+-		return per_cpu_ptr(tbl->stats, cpu);
++		return CPU_PTR(tbl->stats, cpu);
  	}
- 	mutex_destroy(&mp->m_icsb_mutex);
+ 	return NULL;
  }
-@@ -2145,7 +2137,7 @@
- 	int		i;
- 
- 	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
- 		xfs_icsb_lock_cntr(cntp);
+@@ -2444,7 +2445,7 @@
+ 		if (!cpu_possible(cpu))
+ 			continue;
+ 		*pos = cpu+1;
+-		return per_cpu_ptr(tbl->stats, cpu);
++		return CPU_PTR(tbl->stats, cpu);
  	}
+ 	return NULL;
  }
-@@ -2158,7 +2150,7 @@
- 	int		i;
- 
- 	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
- 		xfs_icsb_unlock_cntr(cntp);
- 	}
- }
-@@ -2178,7 +2170,7 @@
- 		xfs_icsb_lock_all_counters(mp);
- 
- 	for_each_online_cpu(i) {
--		cntp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, i);
- 		cnt->icsb_icount += cntp->icsb_icount;
- 		cnt->icsb_ifree += cntp->icsb_ifree;
- 		cnt->icsb_fdblocks += cntp->icsb_fdblocks;
-@@ -2254,7 +2246,7 @@
- 
- 	xfs_icsb_lock_all_counters(mp);
- 	for_each_online_cpu(i) {
--		cntp = per_cpu_ptr(mp->m_sb_cnts, i);
-+		cntp = CPU_PTR(mp->m_sb_cnts, i);
- 		switch (field) {
- 		case XFS_SBS_ICOUNT:
- 			cntp->icsb_icount = count + resid;
-@@ -2391,7 +2383,7 @@
- 	might_sleep();
- again:
- 	cpu = get_cpu();
--	icsbp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, cpu);
-+	icsbp = (xfs_icsb_cnts_t *)CPU_PTR(mp->m_sb_cnts, cpu);
- 
- 	/*
- 	 * if the counter is disabled, go to slow path
 
 -- 
