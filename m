@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbYE3RWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbYE3RZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752019AbYE3RWK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 13:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbYE3RV5
+	id S1754084AbYE3RZd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 13:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYE3RZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 13:21:57 -0400
-Received: from outbound-mail-137.bluehost.com ([67.222.39.27]:56613 "HELO
-	outbound-mail-137.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751443AbYE3RV4 (ORCPT
+	Fri, 30 May 2008 13:25:25 -0400
+Received: from smtp7.server.rpi.edu ([128.113.2.227]:58545 "EHLO
+	smtp7.server.rpi.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335AbYE3RZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 13:21:56 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Jes Sorensen <jes@sgi.com>
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Fri, 30 May 2008 10:21:00 -0700
-User-Agent: KMail/1.9.9
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Roland Dreier <rdreier@cisco.com>, benh@kernel.crashing.org,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk, Jeremy Higdon <jeremy@sgi.com>
-References: <1211852026.3286.36.camel@pasglop> <1212073289.3428.30.camel@localhost.localdomain> <483FCA94.1060506@sgi.com>
-In-Reply-To: <483FCA94.1060506@sgi.com>
+	Fri, 30 May 2008 13:25:24 -0400
+X-Greylist: delayed 5386 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 May 2008 13:25:24 EDT
+Message-ID: <48402334.3000809@rpi.edu>
+Date: Fri, 30 May 2008 11:54:28 -0400
+From: David Brigada <brigad@rpi.edu>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jordan Crouse <jordan.crouse@amd.com>
+CC: Ingo Molnar <mingo@elte.hu>, Wim Van Sebroeck <wim@iguana.be>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Samuel Tardieu <sam@rfc1149.net>,
+       Mike Frysinger <vapier.adi@gmail.com>, Mingarelli@infomag
+Subject: Re: drivers/watchdog/geodewdt.c: build fix
+References: <20080525100944.GA4084@infomag.infomag.iguana.be> <20080530150250.GA21945@elte.hu> <20080530153919.GC12123@cosmic.amd.com> (sfid-20080530_164416_506376_742BDB7D)
+In-Reply-To: <20080530153919.GC12123@cosmic.amd.com> (sfid-20080530_164416_506376_742BDB7D)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805301021.00883.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+X-RPI-SA-Score: undef - spam scanning disabled
+X-CanItPRO-Stream: default
+X-Canit-Stats-ID: Bayes signature not available
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, May 30, 2008 2:36 am Jes Sorensen wrote:
-> James Bottomley wrote:
-> >> The only way to guarantee ordering in the above setup, is to either
-> >> make writel() fully ordered or adding the mmiowb()'s inbetween the two
-> >> writel's. On Altix you have to go and read from the PCI brige to
-> >> ensure all writes to it have been flushed, which is also what mmiowb()
-> >> is doing. If writel() was to guarantee this ordering, it would make
-> >> every writel() call extremely expensive :-(
-> >
-> > So if a read from the bridge achieves the same effect, can't we just put
-> > one after the writes within the spinlock (an unrelaxed one).  That way
-> > this whole sequence will look like a well understood PCI posting flush
-> > rather than have to muck around with little understood (at least by most
-> > driver writers) io barriers?
->
-> Hmmm,
->
-> I think mmiowb() does some sort of status read from the bridge, I am not
-> sure if it's enough to just do a regular readl().
->
-> I'm adding Jeremy to the list, he should know for sure.
+I was trying to compile a kernel with this support, and noticed this 
+bug, too.  The interface was changed in commit 
+fa28e067c3b8af96c79c060e163b1387c172ae75, with the message:
 
-I think a read from the target host bridge is enough.  What mmiowb() does 
-though is to read a *local* host bridge register, which contains a count of 
-the number of PIO ops still "in flight" on their way to their target bridge.  
-When it reaches 0, all PIOs have arrived at the target host bridge (they 
-still may be bufferd), so ordering is guaranteed.
+ > We had planned to use the 'owner' field for allowing re-allocation of
+ > MFGPTs; however, doing it by module owner name isn't flexible enough. 
+  > So, drop this for now.  If it turns out that we need timers in
+ > modules, we'll need to come up with a scheme that matches the
+ > write-once fields of the MFGPTx_SETUP register, and drops ponies from 
+ > the sky.
 
-Jesse
+I may be reading this incorrectly, but it seems that to do this 
+correctly, we would either need to drop module support for this driver 
+or rework the MFGPT code.  I'm not sure there's a kernel hook for 
+dropping ponies from the sky quite yet.
+
+Thanks,
+David Brigada
+
+Jordan Crouse wrote:
+> On 30/05/08 17:02 +0200, Ingo Molnar wrote:
+>> * Wim Van Sebroeck <wim@iguana.be> wrote:
+>>
+>>> Author: Jordan Crouse <jordan.crouse@amd.com>
+>>> Date:   Mon Jan 21 10:07:00 2008 -0700
+>>>
+>>>     [WATCHDOG] Add a watchdog driver based on the CS5535/CS5536 MFGPT timers
+>> -tip testing found the following build failure on latest -git:
+>>
+>>   drivers/watchdog/geodewdt.c: In function 'geodewdt_probe':
+>>   drivers/watchdog/geodewdt.c:225: error: too many arguments to function 'geode_mfgpt_alloc_timer'
+>>   make[1]: *** [drivers/watchdog/geodewdt.o] Error 1
+>>   make: *** [drivers/watchdog/geodewdt.o] Error 2
+>>
+>> with this config:
+>>
+>>   http://redhat.com/~mingo/misc/config-Fri_May_30_15_19_52_CEST_2008.bad
+>>
+>> find the fix below.
+>>
+>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Acked-by: Jordan Crouse <jordan.crouse@amd.com>
+> 
+>> ---
+>>  drivers/watchdog/geodewdt.c |    3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> Index: tip/drivers/watchdog/geodewdt.c
+>> ===================================================================
+>> --- tip.orig/drivers/watchdog/geodewdt.c
+>> +++ tip/drivers/watchdog/geodewdt.c
+>> @@ -221,8 +221,7 @@ geodewdt_probe(struct platform_device *d
+>>  {
+>>  	int ret, timer;
+>>  
+>> -	timer = geode_mfgpt_alloc_timer(MFGPT_TIMER_ANY,
+>> -					MFGPT_DOMAIN_WORKING, THIS_MODULE);
+>> +	timer = geode_mfgpt_alloc_timer(MFGPT_TIMER_ANY, MFGPT_DOMAIN_WORKING);
+>>  
+>>  	if (timer == -1) {
+>>  		printk(KERN_ERR "geodewdt:  No timers were available\n");
+>>
+> 
+
