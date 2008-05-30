@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYE3CrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbYE3C5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbYE3CrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 22:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYE3CrE
+	id S1757138AbYE3C5P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 22:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbYE3C5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 22:47:04 -0400
-Received: from ns.suse.de ([195.135.220.2]:44439 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752387AbYE3CrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 22:47:03 -0400
-Date: Thu, 29 May 2008 19:46:00 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [GIT PATCH] USB fixes for 2.6.26-rc4
-Message-ID: <20080530024600.GA5860@suse.de>
-References: <20080529212110.GA2870@suse.de>
+	Thu, 29 May 2008 22:57:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:28589 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbYE3C5C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 22:57:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=q0c2I5WIbewal7rtEdCvZZM+pJf00nXaVCqdypeUCM/C1ambUoF79sN5BdRq8Hwsyn1MFpdA+HHqK3tKhiiudKjYUESgG9zxbIi31XZ6ifmi4Qg1k0ZQBbFqEWnlyo26Mwl9AeXBjZulqTEHnpu+/jfeS6JV001B8/b7XwdVqSg=
+Message-ID: <b6c5339f0805291956j1d39b728n6482003d4b79141b@mail.gmail.com>
+Date: Thu, 29 May 2008 22:56:59 -0400
+From: "Bob Copeland" <me@bobcopeland.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>, oliver@neukum.org
+Subject: Re: 2.6.26-rc3 - appletouch resume "incomplete data package"
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+In-Reply-To: <1211800004.17151.51.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080529212110.GA2870@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <b6c5339f0805251324k70a3a56ci9cab5274acc2d01d@mail.gmail.com>
+	 <1211800004.17151.51.camel@johannes.berg>
+X-Google-Sender-Auth: 300a3df2298684d9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 02:21:10PM -0700, Greg KH wrote:
-> Here are some USB patches for your 2.6.25-git tree.
-> 
-> They include:
-> 	- bugfixes
-> 	- new driver for the isight webcam device to drop firmware into
-> 	  it to make it work.  It's very tiny and self-contained.
-> 	- new device ids.  Lots of them.  They overshadow the new
-> 	  driver, which is pretty funny.
-> 	- usb quirks
-> 	- usb-storage quirks
-> 
-> Please pull from:
-> 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
-> 
-> All of these patches have been in the -mm tree for a while, as well as
-> -next.
-> 
-> The full patches will be sent to the linux-usb mailing list, if anyone
-> wants to see them.
+On Mon, May 26, 2008 at 7:06 AM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+> On Sun, 2008-05-25 at 16:24 -0400, Bob Copeland wrote:
+>> This appears to be a regression since 2.6.25.  After resuming, I get:
+>>
+>>     appletouch: incomplete data package (first byte: 2, length: 4).
+>>     appletouch: incomplete data package (first byte: 2, length: 4).
+>>     appletouch: incomplete data package (first byte: 2, length: 4).
 
-Linus, I've now reverted one of the usb patches in this tree and pushed
-it out, so the new diffstat is as follows:
+> I have intermittently seen this problem happen for quite a while, a
+> bisect will probably not help you.
 
- drivers/usb/core/generic.c         |    5 -
- drivers/usb/core/hcd.h             |    2 +
- drivers/usb/core/hub.c             |   15 ++-
- drivers/usb/core/quirks.c          |    4 +
- drivers/usb/core/sysfs.c           |   44 +++---
- drivers/usb/gadget/fsl_usb2_udc.c  |    2 +
- drivers/usb/host/ehci-au1xxx.c     |    1 +
- drivers/usb/host/ehci-fsl.c        |    7 +-
- drivers/usb/host/ehci-hub.c        |   16 ++-
- drivers/usb/host/ehci-ixp4xx.c     |    4 +-
- drivers/usb/host/ehci-orion.c      |    8 +-
- drivers/usb/host/ehci-pci.c        |    4 +-
- drivers/usb/host/ehci-ppc-of.c     |    2 +
- drivers/usb/host/ehci-ppc-soc.c    |    1 +
- drivers/usb/host/ehci-ps3.c        |    1 +
- drivers/usb/host/ehci-sched.c      |   67 ++++++---
- drivers/usb/host/ehci.h            |    5 +-
- drivers/usb/misc/Kconfig           |   11 ++
- drivers/usb/misc/Makefile          |    1 +
- drivers/usb/misc/isight_firmware.c |  131 ++++++++++++++++++
- drivers/usb/serial/ftdi_sio.c      |  264 +++++++++++++++++++++++++++++++++++-
- drivers/usb/serial/ftdi_sio.h      |  265 +++++++++++++++++++++++++++++++++++-
- drivers/usb/serial/option.c        |   34 +++---
- drivers/usb/serial/pl2303.c        |    1 +
- drivers/usb/serial/pl2303.h        |    1 +
- drivers/usb/storage/unusual_devs.h |   10 +-
- 26 files changed, 811 insertions(+), 95 deletions(-)
- create mode 100644 drivers/usb/misc/isight_firmware.c
+Hmm, well the console switch in suspend may be triggering it, but I
+didn't have the issue in 2.6.25 and it seems to be easily repeatable
+for me in .26 so far.  Doing ctrl-alt-f1 to switch to text mode and
+back a dozen times didn't break the mouse, but suspending once did.
 
+I tried a bisect anyway but didn't come up with any smoking gun.  Darn.
 
-thanks,
-
-greg k-h
+-- 
+Bob Copeland %% www.bobcopeland.com
