@@ -1,61 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYE3KBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbYE3KEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbYE3KBl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 06:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYE3KBc
+	id S1756009AbYE3KEq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 06:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbYE3KEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 06:01:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40777 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752998AbYE3KBb (ORCPT
+	Fri, 30 May 2008 06:04:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39539
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752211AbYE3KEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 06:01:31 -0400
-Date: Fri, 30 May 2008 10:46:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Paul Jackson <pj@sgi.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, miaox@cn.fujitsu.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       menage@google.com
-Subject: Re: [RFC] [PATCH 1/2] cpusets: restructure the function
- update_cpumask() and update_nodemask()
-Message-ID: <20080530104658.26a3783f@core>
-In-Reply-To: <20080530012537.87454a8d.pj@sgi.com>
-References: <483E564A.5050807@cn.fujitsu.com>
-	<20080529031656.cdc38001.pj@sgi.com>
-	<483F5DAA.5060004@cn.fujitsu.com>
-	<20080529205344.4ba1efdb.pj@sgi.com>
-	<483F6367.1040701@cn.fujitsu.com>
-	<20080529212211.0e794c81.pj@sgi.com>
-	<20080529203042.19f76f09.rdunlap@xenotime.net>
-	<20080529225708.74f65654.pj@sgi.com>
-	<20080529212746.2d9cae24.rdunlap@xenotime.net>
-	<20080530012537.87454a8d.pj@sgi.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 30 May 2008 06:04:34 -0400
+Date: Fri, 30 May 2008 03:04:30 -0700 (PDT)
+Message-Id: <20080530.030430.20211983.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have never seen or heard of a document using the "/**" kernel-doc
-> entries of kernel/cpuset.c, and I have no idea who actually has (in
-> the past or present, not just hypothetically) read such or why.
 
-People wanting to generate things like function lists.
+Keeping the fixes rolling:
 
-> being a stubborn retard, I continue to prefer that file static routines
-> in kernel/cpuset.c not have "/**" kernel-doc markers on their comments,
-> and I would still welcome a patch from Miao removing the ones already
-> there.
+1) Two DCCP bug fixes from Gerrit and the DCCP crew.
 
-And I'll join that by stubbonly NAKing such an approach. We want
-consistent clear formats for documentation extraction. Simply getting
-people to use the kerneldoc format materially improves the documentation
-quality, so please don't set bad examples ;)
+2) Merge in wireless fixes from John Linville and co.
 
-Alan
+3) LLC double ref bug fix from Arnaldo.
 
+4) Netfilter conntrack expection fix from Alexey Dobriyan.
+
+Please pull, thanks a lot!
+
+The following changes since commit 289c79a4bd350e8a25065102563ad1a183d1b402:
+  Patrick McHardy (1):
+        vlan: Use bitmask of feature flags instead of seperate feature bits
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Abhijeet Kolekar (1):
+      mac80211 : Fixes the status message for iwconfig
+
+Alexey Dobriyan (1):
+      netfilter: nf_conntrack_expect: fix error path unwind in nf_conntrack_expect_init()
+
+Andrea Merello (3):
+      rtl8180: fix wrong parameter in sa2400_rf_set_channel
+      rtl8180: fix wrong parameter in max2820_rf_set_channel
+      rtl8180: fix wrong parameter in grf5101_rf_set_channel
+
+Arjan van de Ven (1):
+      bluetooth: fix locking bug in the rfcomm socket cleanup handling
+
+Arnaldo Carvalho de Melo (1):
+      llc: Fix double accounting of received packets
+
+David S. Miller (1):
+      Merge branch 'master' of master.kernel.org:/.../linville/wireless-2.6
+
+Gerrit Renker (1):
+      dccp ccid-3: Fix "t_ipi explosion" bug
+
+Guy Cohen (2):
+      iwlwifi: fix exit from stay_in_table state
+      iwlwifi: fix rate scale TLC column selection bug
+
+Ivo van Doorn (4):
+      rt2x00: Fix memleak in tx() path
+      rt2x00: Don't count retries as failure
+      rt2x00: Reset antenna RSSI after switch
+      rt2x00: Use atomic interface iteration in irq context
+
+John W. Linville (1):
+      rtl8180: avoid NULL dereference in max2820_rf_set_channel
+
+Jussi Kivilinna (1):
+      rndis_wlan: add missing range check for power_output modparam
+
+Michael Buesch (2):
+      b43: Upload both beacon templates on initial load
+      b43: Fix controller restart crash
+
+Nicolas Kaiser (1):
+      net/mac80211: always true conditionals
+
+Scott Ashcroft (1):
+      rndis_wlan: Make connections to TKIP PSK networks work
+
+Senthil Balasubramanian (2):
+      mac80211: Fix for NULL pointer dereference in sta_info_get()
+      mac80211: fix alignment issue with compare_ether_addr()
+
+Tomas Winkler (2):
+      mac80211: fix ieee80211_rx_bss_put/get imbalance
+      mac80211: reorder channel and freq reporting in wext scan report
+
+Wei Yongjun (1):
+      dccp: Fix to handle short sequence numbers packet correctly
+
+Yi Zhu (1):
+      mac80211: fix a typo in ieee80211_handle_filtered_frame comment
+
+ drivers/net/wireless/b43/b43.h             |    1 +
+ drivers/net/wireless/b43/main.c            |   70 +++++++++++++++++++++------
+ drivers/net/wireless/iwlwifi/iwl-4965-rs.c |    3 +-
+ drivers/net/wireless/rndis_wlan.c          |   65 +++++++++++++++++++++++++-
+ drivers/net/wireless/rt2x00/rt2x00.h       |    5 ++
+ drivers/net/wireless/rt2x00/rt2x00config.c |    1 +
+ drivers/net/wireless/rt2x00/rt2x00dev.c    |    8 ++--
+ drivers/net/wireless/rt2x00/rt2x00mac.c    |    1 +
+ drivers/net/wireless/rtl8180_grf5101.c     |    2 +-
+ drivers/net/wireless/rtl8180_max2820.c     |    5 +-
+ drivers/net/wireless/rtl8180_sa2400.c      |    2 +-
+ net/bluetooth/rfcomm/core.c                |    2 +-
+ net/dccp/ccids/ccid3.c                     |   13 ++----
+ net/dccp/ipv4.c                            |    4 +-
+ net/llc/llc_sap.c                          |   10 ++--
+ net/mac80211/cfg.c                         |    4 +-
+ net/mac80211/main.c                        |    2 +-
+ net/mac80211/mlme.c                        |   29 ++++++-----
+ net/mac80211/rx.c                          |    4 +-
+ net/mac80211/util.c                        |    4 +-
+ net/mac80211/wext.c                        |   11 +++-
+ net/netfilter/nf_conntrack_expect.c        |    4 +-
+ 22 files changed, 180 insertions(+), 70 deletions(-)
