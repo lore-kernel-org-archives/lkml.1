@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYE3AlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbYE3AwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbYE3AlT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 May 2008 20:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYE3AlI
+	id S1756047AbYE3AwM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 May 2008 20:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYE3AwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 May 2008 20:41:08 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34996 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbYE3AlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 May 2008 20:41:07 -0400
-From: Neil Brown <neilb@suse.de>
-To: corbet@lwn.net (Jonathan Corbet)
-Date: Fri, 30 May 2008 10:40:54 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 29 May 2008 20:52:00 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:42859 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbYE3AwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 May 2008 20:52:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=iGgzm1fNFYj9zeoKihdgUHO1nRfZ3NaZG//SYzemm6ZjRWpu4VoMDMpID064N30XSyiueS3e9xrGT49bvoYwsojXa4CR9hzAR/9NBLNcG+6XLGICuKy1hArkrDiGjO2samRJnBXtnJWbv8AhxvjMoqz0oOds0dYO4GKjT5jdtpY=
+Subject: [PATCH] acpi: fix sparse const errors
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 29 May 2008 17:51:57 -0700
+Message-Id: <1212108717.28403.165.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18495.19734.809962.497265@notabene.brown>
-Cc: ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project 
-In-Reply-To: message from Jonathan Corbet on Thursday May 29
-References: <1212041839.8888.38.camel@pasglop>
-	<22351.1212077021@vena.lwn.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday May 29, corbet@lwn.net wrote:
-> Ben H writes:
-> 
-> > On Wed, 2008-05-28 at 22:58 -0700, David Miller wrote:
-> > > 
-> > > Not to distract from your points, but I think it's been a huge
-> > > mistake to not allow folks to work hard on technical issues
-> > > during the summit.
-> > 
-> > Having been stopped a couple of times last year when trying to bring
-> > some technical subjects for the reason that they were "off topic, KS is
-> > for process" I tend to agree :-)
-> 
-> Here's an idea: the discussion list for the 2008 summit has opened up.
-> This seems like an ideal time to make suggestions for technical topics
-> which you think would be appropriate for this gathering.  Failing that,
-> you leave it up to the program committee to try to guess what's on
-> everybody's minds, and that seems certain to disappoint a lot of people.
-> 
+In this case we want a constant pointer to constant chars:
+drivers/misc/thinkpad_acpi.c:3824:19: error: Just how const do you want this type to be?
 
-http://lwn.net/Articles/283161/
+Like the error says.
+drivers/misc/thinkpad_acpi.c:3863:19: error: Just how const do you want this type to be?
+drivers/misc/thinkpad_acpi.c:3864:19: error: Just how const do you want this type to be?
+drivers/misc/thinkpad_acpi.c:3865:19: error: Just how const do you want this type to be?
+drivers/misc/thinkpad_acpi.c:3866:19: error: Just how const do you want this type to be?
 
-Barriers
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/misc/thinkpad_acpi.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-What minimal semantics to Filesystem developers actually want?
-What can hardware really provide?
-What how can layered mutli-disk devices (md, dm, loop) mediate these?
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 3f28f6e..a0ce0b2 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -3821,7 +3821,7 @@ TPACPI_HANDLE(led, ec, "SLED",	/* 570 */
+ #define TPACPI_LED_NUMLEDS 8
+ static struct tpacpi_led_classdev *tpacpi_leds;
+ static enum led_status_t tpacpi_led_state_cache[TPACPI_LED_NUMLEDS];
+-static const char const *tpacpi_led_names[TPACPI_LED_NUMLEDS] = {
++static const char * const tpacpi_led_names[TPACPI_LED_NUMLEDS] = {
+ 	/* there's a limit of 19 chars + NULL before 2.6.26 */
+ 	"tpacpi::power",
+ 	"tpacpi:orange:batt",
+@@ -3860,10 +3860,10 @@ static int led_get_status(unsigned int led)
+ static int led_set_status(unsigned int led, enum led_status_t ledstatus)
+ {
+ 	/* off, on, blink. Index is led_status_t */
+-	static const int const led_sled_arg1[] = { 0, 1, 3 };
+-	static const int const led_exp_hlbl[] = { 0, 0, 1 };	/* led# * */
+-	static const int const led_exp_hlcl[] = { 0, 1, 1 };	/* led# * */
+-	static const int const led_led_arg1[] = { 0, 0x80, 0xc0 };
++	static const int led_sled_arg1[] = { 0, 1, 3 };
++	static const int led_exp_hlbl[] = { 0, 0, 1 };	/* led# * */
++	static const int led_exp_hlcl[] = { 0, 1, 1 };	/* led# * */
++	static const int led_led_arg1[] = { 0, 0x80, 0xc0 };
+ 
+ 	int rc = 0;
+ 
+-- 
+1.5.6.rc0.277.g804cf
 
-What interface semantics can we come up with that are sufficiently
-general and powerful that everyone will actually implement them
-correctly?
 
-However I won't be coming this year, so I won't be able to participate
-directly in such a discussion.
 
-NeilBrown
