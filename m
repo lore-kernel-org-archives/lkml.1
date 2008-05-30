@@ -1,287 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbYE3UFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYE3UF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756278AbYE3UFL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 16:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbYE3UDK
+	id S1754816AbYE3UF7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 16:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbYE3UDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 16:03:10 -0400
-Received: from saeurebad.de ([85.214.36.134]:60889 "EHLO saeurebad.de"
+	Fri, 30 May 2008 16:03:17 -0400
+Received: from saeurebad.de ([85.214.36.134]:60905 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753027AbYE3UDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 16:03:09 -0400
-Message-Id: <20080530194738.789921715@saeurebad.de>
+	id S1753456AbYE3UDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 16:03:16 -0400
+Message-Id: <20080530194739.209985293@saeurebad.de>
 References: <20080530194220.286976884@saeurebad.de>
 User-Agent: quilt/0.46-1
-Date: Fri, 30 May 2008 21:42:28 +0200
+Date: Fri, 30 May 2008 21:42:30 +0200
 From: Johannes Weiner <hannes@saeurebad.de>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
        Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Subject: [PATCH -mm 08/14] bootmem: clean up alloc_bootmem_core
-Content-Disposition: inline; filename=bootmem-cleanup-alloc_bootmem_core.patch
+Subject: [PATCH -mm 10/14] bootmem: factor out the marking of a PFN range
+Content-Disposition: inline; filename=bootmem-refactor-range-marking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alloc_bootmem_core has become quite nasty to read over time.  This is
-a clean rewrite that keeps the semantics.
+Introduce new helpers that mark a range that resides completely on a
+node or node-agnostic ranges that might also span node boundaries.
+
+The free/reserve API functions will then directly use these helpers.
+
+Note that the free/reserve semantics become more strict: while the
+prior code took basically arbitrary range arguments and marked the
+PFNs that happen to fall into that range, the new code requires
+node-specific ranges to be completely on the node.  The node-agnostic
+requests might span node boundaries as long as the nodes are
+contiguous.
+
+Passing ranges that do not satisfy these criteria is a bug.
 
 Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Andi Kleen <andi@firstfloor.org>
 ---
 
- include/linux/bootmem.h |    1 
- mm/bootmem.c            |  208 ++++++++++++++++--------------------------------
- 2 files changed, 72 insertions(+), 137 deletions(-)
+Sorry, this diff is still not really readable.  Any ideas how to split
+that stuff properly?
+
+ include/linux/bootmem.h |    2 
+ mm/bootmem.c            |  191 ++++++++++++++++++------------------------------
+ 2 files changed, 73 insertions(+), 120 deletions(-)
 
 --- a/mm/bootmem.c
 +++ b/mm/bootmem.c
-@@ -427,36 +427,16 @@ int __init reserve_bootmem(unsigned long
- }
- #endif /* !CONFIG_HAVE_ARCH_BOOTMEM_NODE */
- 
--/*
-- * We 'merge' subsequent allocations to save space. We might 'lose'
-- * some fraction of a page if allocations cannot be satisfied due to
-- * size constraints on boxes where there is physical RAM space
-- * fragmentation - in these cases (mostly large memory boxes) this
-- * is not a problem.
-- *
-- * On low memory boxes we get it right in 100% of the cases.
-- *
-- * alignment has to be a power of 2 value.
-- *
-- * NOTE:  This function is _not_ reentrant.
-- */
--static void * __init
--alloc_bootmem_core(struct bootmem_data *bdata, unsigned long size,
--		unsigned long align, unsigned long goal, unsigned long limit)
-+static void * __init alloc_bootmem_core(struct bootmem_data *bdata,
-+				unsigned long size, unsigned long align,
-+				unsigned long goal, unsigned long limit)
+@@ -228,12 +228,16 @@ unsigned long __init free_all_bootmem(vo
+ static void __init __free(bootmem_data_t *bdata,
+ 			unsigned long sidx, unsigned long eidx)
  {
--	unsigned long areasize, preferred;
--	unsigned long i, start = 0, incr, eidx, end_pfn;
--	void *ret;
--	unsigned long node_boot_start;
--	void *node_bootmem_map;
--
--	if (!size) {
--		printk("alloc_bootmem_core(): zero-sized request\n");
--		BUG();
--	}
--	BUG_ON(align & (align-1));
-+	unsigned long min, max, start, step;
+-	unsigned long idx;
++	unsigned long idx, start;
+ 
+ 	bdebug("nid=%d start=%lx end=%lx\n", bdata - bootmem_node_data,
+ 		sidx + PFN_DOWN(bdata->node_boot_start),
+ 		eidx + PFN_DOWN(bdata->node_boot_start));
+ 
++	start = bdata->node_boot_start + PFN_PHYS(sidx);
++	if (bdata->last_success > start)
++		bdata->last_success = start;
 +
-+	BUG_ON(!size);
-+	BUG_ON(align & (align - 1));
-+	BUG_ON(limit && goal + size > limit);
+ 	for (idx = sidx; idx < eidx; idx++)
+ 		if (!test_and_clear_bit(idx, bdata->node_bootmem_map))
+ 			BUG();
+@@ -263,39 +267,57 @@ static int __init __reserve(bootmem_data
+ 	return 0;
+ }
  
--	/* on nodes without memory - bootmem_map is NULL */
- 	if (!bdata->node_bootmem_map)
- 		return NULL;
+-static void __init free_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
+-				     unsigned long size)
++static int __init mark_bootmem_node(bootmem_data_t *bdata,
++				unsigned long start, unsigned long end,
++				int reserve, int flags)
+ {
+ 	unsigned long sidx, eidx;
+-	unsigned long i;
  
-@@ -464,126 +444,82 @@ alloc_bootmem_core(struct bootmem_data *
- 		bdata - bootmem_node_data, size, PAGE_ALIGN(size) >> PAGE_SHIFT,
- 		align, goal, limit);
+-	BUG_ON(!size);
++	bdebug("nid=%d start=%lx end=%lx reserve=%d flags=%x\n",
++		bdata - bootmem_node_data, start, end, reserve, flags);
  
--	/* bdata->node_boot_start is supposed to be (12+6)bits alignment on x86_64 ? */
--	node_boot_start = bdata->node_boot_start;
--	node_bootmem_map = bdata->node_bootmem_map;
--	if (align) {
--		node_boot_start = ALIGN(bdata->node_boot_start, align);
--		if (node_boot_start > bdata->node_boot_start)
--			node_bootmem_map = (unsigned long *)bdata->node_bootmem_map +
--			    PFN_DOWN(node_boot_start - bdata->node_boot_start)/BITS_PER_LONG;
--	}
-+	min = PFN_DOWN(bdata->node_boot_start);
-+	max = bdata->node_low_pfn;
+-	/* out range */
+-	if (addr + size < bdata->node_boot_start ||
+-		PFN_DOWN(addr) > bdata->node_low_pfn)
+-		return;
+-	/*
+-	 * round down end of usable mem, partially free pages are
+-	 * considered reserved.
+-	 */
++	BUG_ON(start < PFN_DOWN(bdata->node_boot_start));
++	BUG_ON(end > bdata->node_low_pfn);
  
--	if (limit && node_boot_start >= limit)
--		return NULL;
-+	goal >>= PAGE_SHIFT;
-+	limit >>= PAGE_SHIFT;
- 
--	end_pfn = bdata->node_low_pfn;
--	limit = PFN_DOWN(limit);
--	if (limit && end_pfn > limit)
--		end_pfn = limit;
-+	if (limit && max > limit)
-+		max = limit;
-+	if (max <= min)
-+		return NULL;
- 
--	eidx = end_pfn - PFN_DOWN(node_boot_start);
-+	step = max(align >> PAGE_SHIFT, 1UL);
+-	if (addr >= bdata->node_boot_start && addr < bdata->last_success)
+-		bdata->last_success = addr;
++	sidx = start - PFN_DOWN(bdata->node_boot_start);
++	eidx = end - PFN_DOWN(bdata->node_boot_start);
  
 -	/*
--	 * We try to allocate bootmem pages above 'goal'
--	 * first, then we try to allocate lower pages.
+-	 * Round up to index to the range.
 -	 */
--	preferred = 0;
--	if (goal && PFN_DOWN(goal) < end_pfn) {
--		if (goal > node_boot_start)
--			preferred = goal - node_boot_start;
--
--		if (bdata->last_success > node_boot_start &&
--			bdata->last_success - node_boot_start >= preferred)
--			if (!limit || (limit && limit > bdata->last_success))
--				preferred = bdata->last_success - node_boot_start;
-+	if (goal && goal < max)
-+		start = ALIGN(goal, step);
-+	else
-+		start = ALIGN(min, step);
+-	if (PFN_UP(addr) > PFN_DOWN(bdata->node_boot_start))
+-		sidx = PFN_UP(addr) - PFN_DOWN(bdata->node_boot_start);
++	if (reserve)
++		return __reserve(bdata, sidx, eidx, flags);
+ 	else
+-		sidx = 0;
++		__free(bdata, sidx, eidx);
++	return 0;
++}
 +
-+	if (bdata->last_success > start) {
-+		/* Set goal here to trigger a retry on failure */
-+		start = goal = ALIGN(bdata->last_success, step);
- 	}
++static int __init mark_bootmem(unsigned long start, unsigned long end,
++				int reserve, int flags)
++{
++	unsigned long pos;
++	bootmem_data_t *bdata;
  
--	preferred = PFN_DOWN(ALIGN(preferred, align));
--	areasize = (size + PAGE_SIZE-1) / PAGE_SIZE;
--	incr = align >> PAGE_SHIFT ? : 1;
--
--restart_scan:
--	for (i = preferred; i < eidx;) {
--		unsigned long j;
--
--		i = find_next_zero_bit(node_bootmem_map, eidx, i);
--		i = ALIGN(i, incr);
--		if (i >= eidx)
--			break;
--		if (test_bit(i, node_bootmem_map)) {
--			i += incr;
--			continue;
--		}
--		for (j = i + 1; j < i + areasize; ++j) {
--			if (j >= eidx)
--				goto fail_block;
--			if (test_bit(j, node_bootmem_map))
--				goto fail_block;
--		}
--		start = i;
--		goto found;
--	fail_block:
--		i = ALIGN(j, incr);
--		if (i == j)
--			i += incr;
--	}
-+	max -= PFN_DOWN(bdata->node_boot_start);
-+	start -= PFN_DOWN(bdata->node_boot_start);
+-	eidx = PFN_DOWN(addr + size - bdata->node_boot_start);
+-	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
+-		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
++	pos = start;
++	list_for_each_entry(bdata, &bdata_list, list) {
++		int err;
++		unsigned long max;
++
++		if (pos < PFN_DOWN(bdata->node_boot_start)) {
++			BUG_ON(pos != start);
++			continue;
++		}
  
--	if (preferred > 0) {
--		preferred = 0;
--		goto restart_scan;
--	}
--	return NULL;
-+	while (1) {
-+		int merge;
-+		void *region;
-+		unsigned long end, i, new_start, new_end;
-+find_block:
-+		start = find_next_zero_bit(bdata->node_bootmem_map, max, start);
-+		start = ALIGN(start, step);
-+		end = start + PFN_UP(size);
- 
--found:
--	bdata->last_success = PFN_PHYS(start) + node_boot_start;
--	BUG_ON(start >= eidx);
-+		if (start >= max || end > max)
-+			break;
- 
--	/*
--	 * Is the next page of the previous allocation-end the start
--	 * of this allocation's buffer? If yes then we can 'merge'
--	 * the previous partial page with this allocation.
--	 */
--	if (align < PAGE_SIZE &&
--	    bdata->last_offset && bdata->last_pos+1 == start) {
--		unsigned long offset, remaining_size;
--		offset = ALIGN(bdata->last_offset, align);
--		BUG_ON(offset > PAGE_SIZE);
--		remaining_size = PAGE_SIZE - offset;
--		if (size < remaining_size) {
--			areasize = 0;
--			/* last_pos unchanged */
--			bdata->last_offset = offset + size;
--			ret = phys_to_virt(bdata->last_pos * PAGE_SIZE +
--					   offset + node_boot_start);
--		} else {
--			remaining_size = size - remaining_size;
--			areasize = (remaining_size + PAGE_SIZE-1) / PAGE_SIZE;
--			ret = phys_to_virt(bdata->last_pos * PAGE_SIZE +
--					   offset + node_boot_start);
--			bdata->last_pos = start + areasize - 1;
--			bdata->last_offset = remaining_size;
--		}
--		bdata->last_offset &= ~PAGE_MASK;
--	} else {
--		bdata->last_pos = start + areasize - 1;
--		bdata->last_offset = size & ~PAGE_MASK;
--		ret = phys_to_virt(start * PAGE_SIZE + node_boot_start);
-+		for (i = start; i < end; i++)
-+			if (test_bit(i, bdata->node_bootmem_map)) {
-+				start = ALIGN(i, step);
-+				if (start == i)
-+					start += step;
-+				goto find_block;
-+			}
+-	__free(bdata, sidx, eidx);
++		max = min(bdata->node_low_pfn, end);
 +
-+		if (bdata->last_offset &&
-+				PFN_DOWN(bdata->last_offset) + 1 == start)
-+			new_start = ALIGN(bdata->last_offset, align);
-+		else
-+			new_start = PFN_PHYS(start);
++		err = mark_bootmem_node(bdata, pos, max, reserve, flags);
++		if (reserve && err) {
++			mark_bootmem(start, pos, 0, 0);
++			return err;
++		}
 +
-+		merge = PFN_DOWN(new_start) < start;
-+		new_end = new_start + size;
-+
-+		bdata->last_offset = new_end;
-+
-+		/*
-+		 * Reserve the area now:
-+		 */
-+		for (i = PFN_DOWN(new_start) + merge; i < PFN_UP(new_end); i++)
-+			if (test_and_set_bit(i, bdata->node_bootmem_map))
-+				BUG();
-+
-+		region = phys_to_virt(bdata->node_boot_start + new_start);
-+		memset(region, 0, size);
-+		return region;
- 	}
- 
--	bdebug("nid=%d start=%lx end=%lx\n",
--		bdata - bootmem_node_data,
--		start + PFN_DOWN(bdata->node_boot_start),
--		start + areasize + PFN_DOWN(bdata->node_boot_start));
-+	if (goal) {
-+		goal = 0;
-+		start = 0;
-+		goto find_block;
++		if (max == end)
++			return 0;
++		pos = bdata->node_low_pfn;
 +	}
- 
--	/*
--	 * Reserve the area now:
--	 */
--	for (i = start; i < start + areasize; i++)
--		if (unlikely(test_and_set_bit(i, node_bootmem_map)))
--			BUG();
--	memset(ret, 0, size);
--	return ret;
-+	return NULL;
++	BUG();
  }
  
  /**
+@@ -306,12 +328,17 @@ static void __init free_bootmem_core(boo
+  *
+  * Partial pages will be considered reserved and left as they are.
+  *
+- * Only physical pages that actually reside on @pgdat are marked.
++ * The range must reside completely on the specified node.
+  */
+ void __init free_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+ 			      unsigned long size)
+ {
+-	free_bootmem_core(pgdat->bdata, physaddr, size);
++	unsigned long start, end;
++
++	start = PFN_UP(physaddr);
++	end = PFN_DOWN(physaddr + size);
++
++	mark_bootmem_node(pgdat->bdata, start, end, 0, 0);
+ }
+ 
+ /**
+@@ -321,83 +348,16 @@ void __init free_bootmem_node(pg_data_t 
+  *
+  * Partial pages will be considered reserved and left as they are.
+  *
+- * All physical pages within the range are marked, no matter what
+- * node they reside on.
++ * The range must be contiguous but may span node boundaries.
+  */
+ void __init free_bootmem(unsigned long addr, unsigned long size)
+ {
+-	bootmem_data_t *bdata;
+-	list_for_each_entry(bdata, &bdata_list, list)
+-		free_bootmem_core(bdata, addr, size);
+-}
+-
+-/*
+- * Marks a particular physical memory range as unallocatable. Usable RAM
+- * might be used for boot-time allocations - or it might get added
+- * to the free page pool later on.
+- */
+-static int __init can_reserve_bootmem_core(bootmem_data_t *bdata,
+-			unsigned long addr, unsigned long size, int flags)
+-{
+-	unsigned long sidx, eidx;
+-	unsigned long i;
+-
+-	BUG_ON(!size);
++	unsigned long start, end;
+ 
+-	/* out of range, don't hold other */
+-	if (addr + size < bdata->node_boot_start ||
+-		PFN_DOWN(addr) > bdata->node_low_pfn)
+-		return 0;
++	start = PFN_UP(addr);
++	end = PFN_DOWN(addr + size);
+ 
+-	/*
+-	 * Round up to index to the range.
+-	 */
+-	if (addr > bdata->node_boot_start)
+-		sidx= PFN_DOWN(addr - bdata->node_boot_start);
+-	else
+-		sidx = 0;
+-
+-	eidx = PFN_UP(addr + size - bdata->node_boot_start);
+-	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
+-		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
+-
+-	for (i = sidx; i < eidx; i++) {
+-		if (test_bit(i, bdata->node_bootmem_map)) {
+-			if (flags & BOOTMEM_EXCLUSIVE)
+-				return -EBUSY;
+-		}
+-	}
+-
+-	return 0;
+-
+-}
+-
+-static void __init reserve_bootmem_core(bootmem_data_t *bdata,
+-			unsigned long addr, unsigned long size, int flags)
+-{
+-	unsigned long sidx, eidx;
+-	unsigned long i;
+-
+-	BUG_ON(!size);
+-
+-	/* out of range */
+-	if (addr + size < bdata->node_boot_start ||
+-		PFN_DOWN(addr) > bdata->node_low_pfn)
+-		return;
+-
+-	/*
+-	 * Round up to index to the range.
+-	 */
+-	if (addr > bdata->node_boot_start)
+-		sidx= PFN_DOWN(addr - bdata->node_boot_start);
+-	else
+-		sidx = 0;
+-
+-	eidx = PFN_UP(addr + size - bdata->node_boot_start);
+-	if (eidx > bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start))
+-		eidx = bdata->node_low_pfn - PFN_DOWN(bdata->node_boot_start);
+-
+-	return __reserve(bdata, sidx, eidx, flags);
++	mark_bootmem(start, end, 0, 0);
+ }
+ 
+ /**
+@@ -407,17 +367,17 @@ static void __init reserve_bootmem_core(
+  *
+  * Partial pages will be reserved.
+  *
+- * Only physical pages that actually reside on @pgdat are marked.
++ * The range must reside completely on the specified node.
+  */
+-void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
++int __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+ 				 unsigned long size, int flags)
+ {
+-	int ret;
++	unsigned long start, end;
+ 
+-	ret = can_reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
+-	if (ret < 0)
+-		return;
+-	reserve_bootmem_core(pgdat->bdata, physaddr, size, flags);
++	start = PFN_DOWN(physaddr);
++	end = PFN_UP(physaddr + size);
++
++	return mark_bootmem_node(pgdat->bdata, start, end, 1, flags);
+ }
+ 
+ #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+@@ -428,24 +388,17 @@ void __init reserve_bootmem_node(pg_data
+  *
+  * Partial pages will be reserved.
+  *
+- * All physical pages within the range are marked, no matter what
+- * node they reside on.
++ * The range must be contiguous but may span node boundaries.
+  */
+ int __init reserve_bootmem(unsigned long addr, unsigned long size,
+ 			    int flags)
+ {
+-	bootmem_data_t *bdata;
+-	int ret;
++	unsigned long start, end;
+ 
+-	list_for_each_entry(bdata, &bdata_list, list) {
+-		ret = can_reserve_bootmem_core(bdata, addr, size, flags);
+-		if (ret < 0)
+-			return ret;
+-	}
+-	list_for_each_entry(bdata, &bdata_list, list)
+-		reserve_bootmem_core(bdata, addr, size, flags);
++	start = PFN_DOWN(addr);
++	end = PFN_UP(addr + size);
+ 
+-	return 0;
++	return mark_bootmem(start, end, 1, flags);
+ }
+ #endif /* !CONFIG_HAVE_ARCH_BOOTMEM_NODE */
+ 
+@@ -716,7 +669,7 @@ void * __init alloc_bootmem_section(unsi
+ 	if (start_nr != section_nr || end_nr != section_nr) {
+ 		printk(KERN_WARNING "alloc_bootmem failed on section %ld.\n",
+ 		       section_nr);
+-		free_bootmem_core(pgdat->bdata, __pa(ptr), size);
++		free_bootmem_node(pgdat, __pa(ptr), size);
+ 		ptr = NULL;
+ 	}
+ 
 --- a/include/linux/bootmem.h
 +++ b/include/linux/bootmem.h
-@@ -32,7 +32,6 @@ typedef struct bootmem_data {
- 	unsigned long node_low_pfn;
- 	void *node_bootmem_map;
- 	unsigned long last_offset;
--	unsigned long last_pos;
- 	unsigned long last_success;	/* Previous allocation point.  To speed
- 					 * up searching */
- 	struct list_head list;
+@@ -66,7 +66,7 @@ extern void free_bootmem(unsigned long a
+ #define BOOTMEM_DEFAULT		0
+ #define BOOTMEM_EXCLUSIVE	(1<<0)
+ 
+-extern void reserve_bootmem_node(pg_data_t *pgdat,
++extern int reserve_bootmem_node(pg_data_t *pgdat,
+ 				 unsigned long physaddr,
+ 				 unsigned long size,
+ 				 int flags);
 
 -- 
 
