@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYE3UAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYE3UCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbYE3UAk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 16:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYE3UA3
+	id S1754002AbYE3UCn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 16:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYE3UCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 16:00:29 -0400
-Received: from 1wt.eu ([62.212.114.60]:1347 "EHLO 1wt.eu"
+	Fri, 30 May 2008 16:02:34 -0400
+Received: from saeurebad.de ([85.214.36.134]:60826 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752653AbYE3UA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 16:00:29 -0400
-Date: Fri, 30 May 2008 21:59:41 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Marco <marco@tampabay.rr.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: New Kernel headers vs old Kernel headers
-Message-ID: <20080530195941.GC5609@1wt.eu>
-References: <4840395A.108@tampabay.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4840395A.108@tampabay.rr.com>
-User-Agent: Mutt/1.5.11
+	id S1752465AbYE3UCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 16:02:34 -0400
+Message-Id: <20080530194220.286976884@saeurebad.de>
+User-Agent: quilt/0.46-1
+Date: Fri, 30 May 2008 21:42:20 +0200
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH -mm 00/14] bootmem rewrite v2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 30, 2008 at 01:28:58PM -0400, Marco wrote:
-> Hello All,
-> 
-> I've come across a little discrepancy between the glibc docs and linux
-> kernel docs when I was trying to figure out what kernel headers I should
-> being using for my cross compiling.  The docs seem to say almost exactly
-> the opposite thing.
-> 
-> For a quick summary: linux docs(headers_install.txt) seem to indicate,
-> running glibc compiled against new kernel headers, on an older kernel
-> will possibly cause problems.  Where as glib docs(FAQ) indicate glibc
-> compiled against new kernel headers, will run fine on an older kernel.
-> 
-> Can someone shed some light on this (i.e. which is right)?
-> 
-> Thank you in advance
-> 
-> Marco Fonseca
-> 
-> (p.s. I've included the sections from both docs below for easy reference)
+Hi Andrew,
 
-IMHO and from experience, the kernel's version is the right one. Also,
-it makes some sense, considering that even if you try to run an old
-binary on a recent kernel, it generally works while the other way around
-is not always true. Note however that what is said in glibc's doc mostly
-talks about missing features. They may consider that the glibc offers an
-abstraction between the application and the kernel, so that it should be
-transparent to the application.
+to your request I broke up this big diff into more reviewable smaller
+chunks.  They apply to -mmotm (modulo the conflicts I ran into, but
+they seemed unrelated).
 
-I think the right approach is to base your work on the oldest kernel you
-intend to support. That way you'll get most features with the maximum
-guarantee of backwards compatibility.
+So, here is another version of my attempt to cleanly rewrite the
+bootmem allocator.  More details in the respective patch changelogs.
 
-Willy
+Compile- and runtime tested on x86 32bit UMA.
 
+	Hannes
+
+ arch/alpha/mm/numa.c     |    2 +-
+ arch/arm/plat-omap/fb.c  |    4 +-
+ arch/avr32/mm/init.c     |    3 +-
+ arch/ia64/mm/discontig.c |   19 +-
+ arch/m32r/mm/discontig.c |    3 +-
+ arch/m32r/mm/init.c      |    4 +-
+ arch/mn10300/mm/init.c   |    6 +-
+ arch/sh/mm/init.c        |    2 +-
+ include/linux/bootmem.h  |   82 ++--
+ mm/bootmem.c             |  918 +++++++++++++++++++++++++---------------------
+ 10 files changed, 552 insertions(+), 491 deletions(-)
