@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbYE3Vrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbYE3Vti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469AbYE3Vrq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 17:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYE3Vrj
+	id S1755143AbYE3Vti (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 17:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYE3Vt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 17:47:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41514 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752003AbYE3Vri (ORCPT
+	Fri, 30 May 2008 17:49:26 -0400
+Received: from mga06.intel.com ([134.134.136.21]:64795 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751198AbYE3Vt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 17:47:38 -0400
-Subject: Re: [PATCH] Add rlimits to /proc/<PID>/status
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Clifford Wolf <clifford@clifford.at>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080530201104.GG1369@clifford.at>
-References: <20080530201104.GG1369@clifford.at>
-Content-Type: text/plain
-Date: Fri, 30 May 2008 23:46:22 +0200
-Message-Id: <1212183982.24826.55.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Fri, 30 May 2008 17:49:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,568,1204531200"; 
+   d="scan'208";a="286560570"
+Message-ID: <48407667.5040001@linux.intel.com>
+Date: Fri, 30 May 2008 14:49:27 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+References: <48402DAA.60202@linux.intel.com> <Pine.LNX.4.64.0805302017580.16427@blonde.site> <alpine.LFD.1.10.0805301403540.3141@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805301403540.3141@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-30 at 22:11 +0200, Clifford Wolf wrote:
-> Signed-off-by: Clifford Wolf <clifford@clifford.at>
-> ---
->  fs/proc/array.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 57 insertions(+), 0 deletions(-)
+Linus Torvalds wrote:
 > 
-> diff --git a/fs/proc/array.c b/fs/proc/array.c
-> index 9e3b8c3..3cb2ad3 100644
-> --- a/fs/proc/array.c
-> +++ b/fs/proc/array.c
-> @@ -242,6 +242,62 @@ static void collect_sigign_sigcatch(struct task_struct *p, sigset_t *ign,
->  	}
->  }
->  
-> +static const char *rlim_names[RLIM_NLIMITS] = {
-> +	[RLIMIT_CPU]        = "CPU",
-> +	[RLIMIT_FSIZE]      = "FSize",
-> +	[RLIMIT_DATA]       = "Data",
-> +	[RLIMIT_STACK]      = "Stack",
-> +	[RLIMIT_CORE]       = "Core",
-> +	[RLIMIT_RSS]        = "RSS",
-> +	[RLIMIT_NPROC]      = "NProc",
-> +	[RLIMIT_NOFILE]     = "NoFile",
-> +	[RLIMIT_MEMLOCK]    = "MemLock",
-> +	[RLIMIT_AS]         = "AddrSpace",
-> +	[RLIMIT_LOCKS]      = "Locks",
-> +	[RLIMIT_SIGPENDING] = "SigPending",
-> +	[RLIMIT_MSGQUEUE]   = "MsgQueue",
-> +	[RLIMIT_NICE]       = "Nice",
-> +	[RLIMIT_RTPRIO]     = "RTPrio",
-> +	[RLIMIT_RTTIME]     = "RTTime"
-> +};
+> On Fri, 30 May 2008, Hugh Dickins wrote:
+>> On Fri, 30 May 2008, Arjan van de Ven wrote:
+>>> Rank 7: set_page_address (oops)
+>>> 	Reported 53 times (65 total reports)
+>>> 	crash coming from flush_all_zero_pkmaps; was this fixed by Hugh the
+>>> 	other day?
+>> No, not at all.  But I'll have a little ponder over it.
+> 
+> It's a BUG_ON(), but sadly the oops gatherer doesn't seem to gather that 
+> part. You can see it from the code portion: the "<0f> 0b" gives it away 
+> (that's the ud2 opcode).
 
-fs/proc/base.c already has an array with strings in it
-
+I've seen it a few more times the last few weeks, I'll dig into how that is happening.
+Maybe we changed the bug_on text to miss my regexps ;(
+(it's only about 1000 lines of perl, so what can go wrong in that ;-)
