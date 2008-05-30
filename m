@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbYE3V2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYE3Vnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbYE3V2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 17:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYE3V2p
+	id S1754675AbYE3Vnw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 17:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYE3Vnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 17:28:45 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:52502 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753415AbYE3V2o (ORCPT
+	Fri, 30 May 2008 17:43:42 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:42004 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbYE3Vnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 17:28:44 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] kaweth: use request_firmware()
-Date: Fri, 30 May 2008 23:02:25 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Michael Zappe <zapman@interlan.net>,
-       Stephane Alnet <stephane@u-picardie.fr>,
-       Brad Hards <bhards@bigpond.net.au>
-References: <1211708969@pmac.infradead.org> <FD896A2C-277F-45CF-AE26-E2E29DA8093F@holtmann.org> <20080530164842.31b23848@core>
-In-Reply-To: <20080530164842.31b23848@core>
+	Fri, 30 May 2008 17:43:41 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [PATCH] Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
+Date: Fri, 30 May 2008 15:43:41 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Takashi Iwai <tiwai@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ALSA devel <alsa-devel@alsa-project.org>, Andrew Morton <akpm@osdl.org>
+References: <4823AAF2.7070102@keyaccess.nl> <482B38D6.5030804@keyaccess.nl> <48406E8D.8050408@keyaccess.nl>
+In-Reply-To: <48406E8D.8050408@keyaccess.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805302302.27890.oliver@neukum.org>
+Message-Id: <200805301543.42208.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, 30. Mai 2008 17:48:42 schrieb Alan Cox:
-> > we tried to not put that policy into the drivers and I was looking  
-> > over this, but in the meantime driver slipped past me and made it in.  
-> > We should not do this at all and if people wanna have this, then they  
-> > should solve this within udev.
+On Friday 30 May 2008 03:15:57 pm Rene Herman wrote:
+> On 14-05-08 21:09, Rene Herman wrote:
 > 
-> Then you arrived at the party a year too late. The format name/firmware
-> is commonly used all over the kernel. How that maps to a file or
-> directory is indeed a matter for udev, but there is already a
-> heirarchical namespace and pretending otherwise won't help.
+> > On 14-05-08 20:50, Bjorn Helgaas wrote:
+> 
+> >> I agree, it seems a bit of a hack to use a DMA mask from the card
+> >> instead of from the device, since the driver should be programming
+> >> the device to do the DMA.
+> >>
+> >> But I know very little about pnp_card in general, so don't attach too
+> >> much weight to my opinion.
+> > 
+> > Okay, I'll sit on this for a bit. Right now we're using a global device 
+> > even but this is exactly about cleaning that up so couldn't convince 
+> > myself. Will see what happens when I try to make it nice...
+> 
+> It gets uglier. ALSA ISA drivers (for cards that exist both as legacy 
+> and as ISAPnP at least) keep a merged legacy/isapnp model; PnP is used 
+> mostly for initializing global variables that the same old legacy probe 
+> routines then reference. This means that beyond that global resource 
+> init step the specific struct device is no longer available. Without 
+> restructuring too many things really only fixable through other hacks 
+> again such as a global dma_dev[] array or some such.
+> 
+>  From the viewpoint of PnP itself setting the dma_mask for a pnp_card (a 
+> pnp_dev collection) makes isolated sense so if no objections, I'll 
+> submit the attached after all. From the ALSA side we'd then pass the 
+> card dev (which we'd also do for isa_dev) and keep in mind that we might 
+> want to get more specific if over time structure permits it.
+> 
+> struct snd_pcm already has its own struct device * which would be the 
+> right one here but it's setting that which gets ugly...
 
-If that is supposed to be constructed from the driver/file pair,
-it is a good idea, but would argue against hardcoding it in the source.
+Looks good to me.  It does sound like a lot of work and possibly
+more risk than it's worth to fix up some of this stuff.
 
-	Regards
-		Oliver
+I do still wonder whether any non-x86 architectures need similar
+fixes in dma_alloc_coherent(), i.e., check for dev==NULL and fall
+back to a 24-bit DMA mask.
+
+Acked-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
