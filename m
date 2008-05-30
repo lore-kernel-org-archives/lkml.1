@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbYE3Ehy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbYE3EiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753151AbYE3Ehy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 00:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYE3Eha
+	id S1757055AbYE3EiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 00:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYE3Ehc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 00:37:30 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46592 "HELO
+	Fri, 30 May 2008 00:37:32 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:46627 "HELO
 	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752506AbYE3Eh3 (ORCPT
+	by vger.kernel.org with SMTP id S1753056AbYE3Ehb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 00:37:29 -0400
+	Fri, 30 May 2008 00:37:31 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=PWFn/T+sJcH5d4GSVOGe95t7gHiDuEsK7BiEdWlbrDbx7AmfCBRY+DZeMLjwUcuSfgqC+53qHjvaGBJrb0nxNhOi96b0iC8hikgAuwYfGJVlC5aJD1Ia2HaypdmYUPC5QxZfGjuXqX4AoA3gcXQQI6g+vjIVIwC4wU9hbp6hcAk=  ;
-X-YMail-OSG: ZUbCHB8VM1nz5XA1pMNuUbZ9nnfxHgv1vp054fu3t5GQmWdUFc9WTdU_yX0EQFNytOKtO.eorwTAu4OVXsBRuDQBA7FGN6zXryClEjywGGKo_qxNTqGB9c_FikJE1EeMnRM-
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=lXmcfNv93/AhgaLUM4RDL0m+pExCfiKa6ATCXlOlXW+DchC699cSQGvt4S9PDb9aEP/oNWnCk7oPb99ah+jn/3sX21uB04t5f2hQOyo4t9fLAPhEkVsC0nUS5IBXl7VY+ouEYivbvWE+LeMZy/3NqdV7yiWBNhBm/j7kTjJKNeY=  ;
+X-YMail-OSG: iGeutsAVM1nyD094vUdt4c77th5RhsSMi2l_3w7kakJ.w7grNzFK9Xf7KGJFmq813tTy.sTrL6Kyo5CUUd6T8.lrLw79wymOlzBDPvblCCfxYyZQdFMcoOTr2f4VI1BGTOQ-
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] gpio: fix build errors for drivers not strictly requiring GPIOs
-Date: Thu, 29 May 2008 20:28:10 -0700
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
+Date: Thu, 29 May 2008 21:34:19 -0700
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <20080527142029.GA31778@polina.dev.rtsoft.ru>
-In-Reply-To: <20080527142029.GA31778@polina.dev.rtsoft.ru>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, mingo@elte.hu, pavel@suse.cz
+References: <200805291333.42057.david-b@pacbell.net> <200805292329.48896.rjw@sisk.pl> <20080529160632.816e1720.akpm@linux-foundation.org>
+In-Reply-To: <20080529160632.816e1720.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805292028.10906.david-b@pacbell.net>
+Message-Id: <200805292134.19388.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 May 2008, Anton Vorontsov wrote:
-> Since commit 7560fa60fcdcdb0da662f6a9fad9064b554ef46c (gpio: <linux/gpio.h>
-> and "no GPIO support here" stubs) drivers can use GPIOs if they're available,
-> but don't require them.
+On Thursday 29 May 2008, Andrew Morton wrote:
 > 
-> This patch actually enables this feature, otherwise drivers will stumble
-> against this:
+> > Could you check, please?  The previous version didn't.
+> > 
 > 
-> include/asm-generic/gpio.h:111: error: redefinition of 'gpio_is_valid'
-> include/linux/gpio.h:21: error: previous definition of 'gpio_is_valid' was here
+> There's just one trivial reject against the PCI tree's
+> pm-introduce-new-top-level-suspend-and-hibernation-callbacks:
 
-This looks to me like pure user error ... what was anyone doing
-including <asm-generic/gpio.h> in that way?  There are a *lot* of
-bogus include combinations, and we don't try to "fix" them.
+Thanks Andrew ... in that case I'm not going to worry
+about any "-next" issues for now.
 
-It should suffice to #include <linux/gpio.h> ... that causes the
-definition of either (a) stubs in that file, *OR* else (b) the
-platform-specific implementation of the GPIO calls, which may
-(if that platform chooses) use <asm-generic/gpio.h> utilities.
+- Dave
 
-NAK on this patch.
 
-- dave
+> ***************
+> *** 293,299 ****
+>         if (suspend_ops->finish)
+>                 suspend_ops->finish();
+>    Resume_devices:
+>         device_resume();
+>    Resume_console:
+>         resume_console();
+>    Close:
+> --- 342,350 ----
+>         if (suspend_ops->finish)
+>                 suspend_ops->finish();
+>    Resume_devices:
+> +       suspend_test_start();
+>         device_resume();
+> +       suspend_test_finish("resume devices");
+>    Resume_console:
+>         resume_console();
+>    Close:
+
+
