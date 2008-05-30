@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbYE3F23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759399AbYE3Fbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760009AbYE3F23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYE3F2I
+	id S1759399AbYE3Fbh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbYE3Fb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:28:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42258 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755541AbYE3F2H (ORCPT
+	Fri, 30 May 2008 01:31:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33846 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753003AbYE3Fb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:28:07 -0400
-From: Paul Jackson <pj@sgi.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Juan-Mariano de Goyeneche" <jmseyas@dit.upm.es>,
-       "Randy Dunlap" <rdunlap@xenotime.net>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 29 May 2008 22:28:06 -0700
-Message-Id: <20080530052806.125355.58257.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH - right file this time] doc: Update to URL and status of kernel-docs.txt entry
+	Fri, 30 May 2008 01:31:28 -0400
+Date: Thu, 29 May 2008 22:31:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [patch 02/41] cpu alloc: The allocator
+Message-Id: <20080529223109.bbb7b0e0.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0805292203240.12107@schroedinger.engr.sgi.com>
+References: <20080530035620.587204923@sgi.com>
+	<20080530040011.084909898@sgi.com>
+	<20080529215833.469c3cbe.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0805292203240.12107@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
+On Thu, 29 May 2008 22:10:25 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-Update status and URL for the "Gary's Encyclopedia" entry.
+> > > +		start++;
+> > > +		first = 0;
+> > > +	}
+> > 
+> > This is kinda bitmap_find_free_region(), only bitmap_find_free_region()
+> > isn't quite strong enough.
+> > 
+> > Generally I think it would have been better if you had added new
+> > primitives to the bitmap library (or enhanced existing ones) and used
+> > them here, rather than implementing private functionality.
+> 
+> The scope of the patchset is already fairly large.
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
+It would be a relatively small incremental effort ;)
 
----
- Documentation/kernel-docs.txt |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+> The search here is 
+> different and not performance critical. Not sure if this is useful for 
+> other purposes.
 
---- linux-2.6.orig/Documentation/kernel-docs.txt	2007-12-18 20:38:50.000000000 -0800
-+++ linux-2.6/Documentation/kernel-docs.txt	2008-05-29 21:55:28.488134402 -0700
-@@ -715,14 +715,14 @@
- 
-      * Name: "Gary's Encyclopedia - The Linux Kernel"
-        Author: Gary (I suppose...).
--       URL: http://www.lisoleg.net/cgi-bin/lisoleg.pl?view=kernel.htm
--       Keywords: links, not found here?.
-+       URL: http://slencyclopedia.berlios.de/index.html
-+       Keywords: linux, community, everything!
-        Description: Gary's Encyclopedia exists to allow the rapid finding
-        of documentation and other information of interest to GNU/Linux
-        users. It has about 4000 links to external pages in 150 major
-        categories. This link is for kernel-specific links, documents,
--       sites... Look there if you could not find here what you were
--       looking for.
-+       sites...  This list is now hosted by developer.Berlios.de,
-+       but seems not to have been updated since sometime in 1999.
- 
-      * Name: "The home page of Linux-MM"
-        Author: The Linux-MM team.
+I think that strengthening bitmap_find_free_region() would end up
+giving us a better kernel than open-coding something similar here.
 
--- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
+> > > + */
+> > > +
+> > > +/* Return a pointer to the instance of a object for a particular processor */
+> > > +#define CPU_PTR(__p, __cpu)	SHIFT_PERCPU_PTR((__p), per_cpu_offset(__cpu))
+> > 
+> > eek, a major interface function which is ALL IN CAPS!
+> > 
+> > can we do this in lower-case?  In a C function?
+> 
+> No. This is a macro and therefore uppercase (there is macro magic going on 
+> that ppl need to be aware of). AFAICR you wanted it this way last year. C 
+> function not possible because of the type checking.
+
+urgh.  This is a C-convention versus kernel-convention thing.  The C
+convention exists for very good reasons.  But it sure does suck.
+
+What do others think?
