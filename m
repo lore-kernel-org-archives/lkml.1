@@ -1,178 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYE3PSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbYE3PTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYE3PSb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 11:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYE3PSV
+	id S1756388AbYE3PTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 11:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYE3PTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 11:18:21 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:58759 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbYE3PST (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 11:18:19 -0400
-Subject: Re: [PATCH][take 5] JBD2: Fix race between free buffer and commit
-	trasanction
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080530062420.GA7450@skywalker>
-References: <20080519132553.de9b78b0.akpm@linux-foundation.org>
-	 <1211234829.3663.39.camel@localhost.localdomain>
-	 <1211306575.3664.19.camel@localhost.localdomain>
-	 <20080520235303.GB23521@atrey.karlin.mff.cuni.cz>
-	 <1211390093.5571.16.camel@BVR-FS.beaverton.ibm.com>
-	 <20080524224447.GE20563@atrey.karlin.mff.cuni.cz>
-	 <1211998739.3791.20.camel@localhost.localdomain>
-	 <20080528185554.GA16018@duck.suse.cz>
-	 <1212020216.3791.54.camel@localhost.localdomain>
-	 <1212020299.3791.57.camel@localhost.localdomain>
-	 <20080530062420.GA7450@skywalker>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 30 May 2008 08:17:57 -0700
-Message-Id: <1212160677.3641.6.camel@localhost.localdomain>
+	Fri, 30 May 2008 11:19:10 -0400
+Received: from xenotime.net ([66.160.160.81]:36958 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752606AbYE3PTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 11:19:09 -0400
+Date: Fri, 30 May 2008 08:32:51 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Paul Jackson <pj@sgi.com>
+Cc: miaox@cn.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [RFC] [PATCH 1/2] cpusets: restructure the function
+ update_cpumask() and update_nodemask()
+Message-Id: <20080530083251.8f06e092.rdunlap@xenotime.net>
+In-Reply-To: <20080530012537.87454a8d.pj@sgi.com>
+References: <483E564A.5050807@cn.fujitsu.com>
+	<20080529031656.cdc38001.pj@sgi.com>
+	<483F5DAA.5060004@cn.fujitsu.com>
+	<20080529205344.4ba1efdb.pj@sgi.com>
+	<483F6367.1040701@cn.fujitsu.com>
+	<20080529212211.0e794c81.pj@sgi.com>
+	<20080529203042.19f76f09.rdunlap@xenotime.net>
+	<20080529225708.74f65654.pj@sgi.com>
+	<20080529212746.2d9cae24.rdunlap@xenotime.net>
+	<20080530012537.87454a8d.pj@sgi.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-30 at 11:54 +0530, Aneesh Kumar K.V wrote:
-> On Wed, May 28, 2008 at 05:18:19PM -0700, Mingming Cao wrote:
-> > Index: linux-2.6.26-rc3/fs/jbd2/transaction.c
-> > ===================================================================
-> > --- linux-2.6.26-rc3.orig/fs/jbd2/transaction.c	2008-05-28 16:10:41.000000000 -0700
-> > +++ linux-2.6.26-rc3/fs/jbd2/transaction.c	2008-05-28 16:13:16.000000000 -0700
-> > @@ -1656,12 +1656,42 @@ out:
-> >  	return;
-> >  }
-> > 
-> > +/*
-> > + * jbd2_journal_try_to_free_buffers() could race with jbd2_journal_commit_transaction()
-> > + * The later might still hold the reference count to the buffers when inspecting
-> > + * them on t_syncdata_list or t_locked_list.
-> > + *
-> > + * jbd2_journal_try_to_free_buffers() will call this function to
-> > + * wait for the current transaction to finish syncing data buffers, before
-> > + * try to free that buffer.
-> > + *
-> > + * Called with journal->j_state_lock hold.
-> > + */
-> 
-> We are taking the spin_lock again in the function ??
-> 
+On Fri, 30 May 2008 01:25:37 -0500 Paul Jackson wrote:
 
-Thanks.  I noticed this yesterday and have sent Andrew updated patch to 
-replace the one he just added to mm tree but forget to copy to the list. Here is the updated patch,
+> Randy wrote:
+> > Does that help?  your understanding of kernel-doc or your decision?
+> 
+> Well, I get the difference between E (exported) and I (non-exported)
+> now.  And I see that one could prepare documents using SGML templates
+> that contained one, or the other of these, for any kernel source files
+> of interest.
+> 
+> I'm stuck on the next step of this decision.
+> 
+> Usually, when I am preparing documens, I know what document I am
+> preparing and have an idea who is in its audience.
+> 
+> I have never seen or heard of a document using the "/**" kernel-doc
+> entries of kernel/cpuset.c, and I have no idea who actually has (in
+> the past or present, not just hypothetically) read such or why.
 
-Mingming
+You are certainly welcome to add kernel/cpuset.c to kernel-api.tmpl or any other
+appropriate docbook file.  I have been known to do things like that as well.  :)
+
+> So I'm kinda shootin in the dark here.
+> 
+> So, mostly just to be consistent with my previous call, because I enjoy
+> being a stubborn retard, I continue to prefer that file static routines
+> in kernel/cpuset.c not have "/**" kernel-doc markers on their comments,
+> and I would still welcome a patch from Miao removing the ones already
+> there.
+> 
+> Enough of this discussion, from me at least.
+
 
 ---
- fs/jbd2/transaction.c |   61 +++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 58 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.26-rc4/fs/jbd2/transaction.c
-===================================================================
---- linux-2.6.26-rc4.orig/fs/jbd2/transaction.c	2008-05-29 12:21:40.000000000 -0700
-+++ linux-2.6.26-rc4/fs/jbd2/transaction.c	2008-05-29 12:38:30.000000000 -0700
-@@ -1656,12 +1656,43 @@ out:
- 	return;
- }
- 
-+/*
-+ * jbd2_journal_try_to_free_buffers() could race with
-+ * jbd2_journal_commit_transaction(). The later might still hold the
-+ * reference count to the buffers when inspecting them on
-+ * t_syncdata_list or t_locked_list.
-+ *
-+ * jbd2_journal_try_to_free_buffers() will call this function to
-+ * wait for the current transaction to finish syncing data buffers, before
-+ * try to free that buffer.
-+ *
-+ */
-+static void jbd2_journal_wait_for_transaction_sync_data(journal_t *journal)
-+{
-+	transaction_t *transaction = NULL;
-+	tid_t tid;
-+
-+	spin_lock(&journal->j_state_lock);
-+	transaction = journal->j_committing_transaction;
-+
-+	if (!transaction) {
-+		spin_unlock(&journal->j_state_lock);
-+		return;
-+	}
-+
-+	tid = transaction->t_tid;
-+	spin_unlock(&journal->j_state_lock);
-+	jbd2_log_wait_commit(journal, tid);
-+}
- 
- /**
-  * int jbd2_journal_try_to_free_buffers() - try to free page buffers.
-  * @journal: journal for operation
-  * @page: to try and free
-- * @unused_gfp_mask: unused
-+ * @gfp_mask: we use the mask to detect how hard should we try to release
-+ * buffers. If __GFP_WAIT and __GFP_FS is set, we wait for commit code to
-+ * release the buffers.
-  *
-  *
-  * For all the buffers on this page,
-@@ -1690,9 +1721,11 @@ out:
-  * journal_try_to_free_buffer() is changing its state.  But that
-  * cannot happen because we never reallocate freed data as metadata
-  * while the data is part of a transaction.  Yes?
-+ *
-+ * Return 0 on failure, 1 on success
-  */
- int jbd2_journal_try_to_free_buffers(journal_t *journal,
--				struct page *page, gfp_t unused_gfp_mask)
-+				struct page *page, gfp_t gfp_mask)
- {
- 	struct buffer_head *head;
- 	struct buffer_head *bh;
-@@ -1708,7 +1741,8 @@ int jbd2_journal_try_to_free_buffers(jou
- 		/*
- 		 * We take our own ref against the journal_head here to avoid
- 		 * having to add tons of locking around each instance of
--		 * jbd2_journal_remove_journal_head() and jbd2_journal_put_journal_head().
-+		 * jbd2_journal_remove_journal_head() and
-+		 * jbd2_journal_put_journal_head().
- 		 */
- 		jh = jbd2_journal_grab_journal_head(bh);
- 		if (!jh)
-@@ -1721,7 +1755,28 @@ int jbd2_journal_try_to_free_buffers(jou
- 		if (buffer_jbd(bh))
- 			goto busy;
- 	} while ((bh = bh->b_this_page) != head);
-+
- 	ret = try_to_free_buffers(page);
-+
-+	/*
-+	 * There are a number of places where jbd2_journal_try_to_free_buffers()
-+	 * could race with jbd2_journal_commit_transaction(), the later still
-+	 * holds the reference to the buffers to free while processing them.
-+	 * try_to_free_buffers() failed to free those buffers. Some of the
-+	 * caller of releasepage() request page buffers to be dropped, otherwise
-+	 * treat the fail-to-free as errors (such as generic_file_direct_IO())
-+	 *
-+	 * So, if the caller of try_to_release_page() wants the synchronous
-+	 * behaviour(i.e make sure buffers are dropped upon return),
-+	 * let's wait for the current transaction to finish flush of
-+	 * dirty data buffers, then try to free those buffers again,
-+	 * with the journal locked.
-+	 */
-+	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
-+		jbd2_journal_wait_for_transaction_sync_data(journal);
-+		ret = try_to_free_buffers(page);
-+	}
-+
- busy:
- 	return ret;
- }
-
-
+~Randy
+"He closes his eyes and drops the goggles.  You can't get hurt
+by looking at a bitmap.  Or can you?"
