@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbYE3Ur6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbYE3Utt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbYE3Ur6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 16:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYE3Urt
+	id S1754821AbYE3Utt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 16:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYE3Utl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 16:47:49 -0400
-Received: from 1wt.eu ([62.212.114.60]:1355 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752009AbYE3Urt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 16:47:49 -0400
-Date: Fri, 30 May 2008 22:46:21 +0200
-From: Willy Tarreau <w@1wt.eu>
+	Fri, 30 May 2008 16:49:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53736 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753113AbYE3Utl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 16:49:41 -0400
+Date: Fri, 30 May 2008 13:47:00 -0700
+From: Greg KH <greg@kroah.com>
 To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Greg KH <greg@kroah.com>, Dave Jones <davej@redhat.com>,
+Cc: Dave Jones <davej@redhat.com>,
        James Bottomley <James.Bottomley@hansenpartnership.com>,
        ksummit-2008-discuss@lists.linux-foundation.org,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        David Woodhouse <dwmw2@infradead.org>,
        linux-kernel <linux-kernel@vger.kernel.org>
 Subject: Re: How many contributors are we losing
-Message-ID: <20080530204621.GD5609@1wt.eu>
+Message-ID: <20080530204700.GA3807@kroah.com>
 References: <20080528225136.GA29014@kroah.com> <1FE6DD409037234FAB833C420AA843EC016FFF69@orsmsx424.amr.corp.intel.com> <20080529003657.GA17505@kroah.com> <20080529010055.GA31952@redhat.com> <20080529022632.GB5180@kroah.com> <1FE6DD409037234FAB833C420AA843EC017405EB@orsmsx424.amr.corp.intel.com>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <1FE6DD409037234FAB833C420AA843EC017405EB@orsmsx424.amr.corp.intel.com>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -43,48 +44,31 @@ On Fri, May 30, 2008 at 01:23:44PM -0700, Luck, Tony wrote:
 > 2.6.25 and 2.6.26-sofar.  Then I skimmed through looking for drive-by
 > contributors (defined as someone who contributes to just one release and
 > is then never heard from again).
-> 
-> The summary looks like this:
-> 63 in version 2.6.11 never seen again
-> 148 in version 2.6.12 never seen again
-> 128 in version 2.6.13 never seen again
-> 92 in version 2.6.14 never seen again
-> 96 in version 2.6.15 never seen again
-> 122 in version 2.6.16 never seen again
-> 137 in version 2.6.17 never seen again
-> 140 in version 2.6.18 never seen again
-> 135 in version 2.6.19 never seen again
-> 95 in version 2.6.20 never seen again
-> 136 in version 2.6.21 never seen again
-> 153 in version 2.6.22 never seen again
-> 179 in version 2.6.23 never seen again
-> 179 in version 2.6.24 never seen again
-> 304 in version 2.6.25 never seen again
-> 
-> These numbers are somewhat exaggerated by typos (the "cleaned up" files
-> still have some problems in the "Author:" entry (which is the only one
-> I looked at).  People add or drop middle initials, or sometimes switch
-> between "Firstname Lastname" and "Lastname, Firstname", and there are
-> plenty of obviously garbled entries.
-> 
-> The numbers for the more recent releases may also include
-> people who are still in the community, but just don't contribute to
-> every release.
-> 
-> My script didn't look for people that contributed for two or more
-> releases and then disappeared.
-> 
-> You can skim through the full list at the bottom of this message
-> and make your own guesses at how much of this data is garbage.
-> Even if 3/4 of the names here can be discounted, that still leaves
-> over 500 people who came to us at one point with a patch that was
-> good enough to be applied and then they left.
 
-It depends how we see this. Having a lot of external contributors is
-very good, as it implies that more and more people are getting used
-to read and modify the code. What would be interesting would be to
-check for people who where there on a regular basis then went away,
-even though I admit is harder to find out.
+Well, you do know that the distribution of all of our users are:
+	50% only contributed 1 patch
+	25% contributed 2
+	12% contributed 3
+	6% contributed 4
+and so on?
 
-Willy
+Our curve is leveling out much better now though.  For the whole 2.5
+release, the top 30 people did over 80% of the work.  Now, the top 30
+people are doing 30% of the work.
 
+So it is getting much better, as long as we still continue to keep our
+massive rate of change[1] that we have going, and huge number of
+developers[2], we should be fine.
+
+So this list doesn't necessarily mean anything is wrong, only that 50%
+are one-time contributors.  And I think that shows we are easy to get a
+change into our tree from just about anyone, not that we are driving
+people away.
+
+thanks,
+
+greg k-h
+
+[1] 7,000 lines added, 2,500 lines removed, 2,400 lines modified, per
+day for all of the 2.6.25 release cycle.  That's insane.
+[2] 2,598 unique developers from 2.6.20 to 2.6.25
