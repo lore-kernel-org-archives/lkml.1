@@ -1,29 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758989AbYE3FWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYE3FZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758989AbYE3FWi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 01:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbYE3FWa
+	id S1758205AbYE3FZG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 01:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbYE3FY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 01:22:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54088 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751132AbYE3FW3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 01:22:29 -0400
-Date: Thu, 29 May 2008 22:21:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
-Message-Id: <20080529222143.5d7aa1e5.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com>
-References: <20080530035620.587204923@sgi.com>
-	<20080529215827.b659d032.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0805292159360.12107@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 30 May 2008 01:24:56 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49997 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753011AbYE3FYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 01:24:55 -0400
+Date: Fri, 30 May 2008 00:24:52 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: miaox@cn.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [RFC] [PATCH 1/2] cpusets: restructure the function
+ update_cpumask() and update_nodemask()
+Message-Id: <20080530002452.e63983a1.pj@sgi.com>
+In-Reply-To: <20080529212746.2d9cae24.rdunlap@xenotime.net>
+References: <483E564A.5050807@cn.fujitsu.com>
+	<20080529031656.cdc38001.pj@sgi.com>
+	<483F5DAA.5060004@cn.fujitsu.com>
+	<20080529205344.4ba1efdb.pj@sgi.com>
+	<483F6367.1040701@cn.fujitsu.com>
+	<20080529212211.0e794c81.pj@sgi.com>
+	<20080529203042.19f76f09.rdunlap@xenotime.net>
+	<20080529225708.74f65654.pj@sgi.com>
+	<20080529212746.2d9cae24.rdunlap@xenotime.net>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,58 +36,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008 22:03:14 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+Randy wrote:
+> The nuance here is the difference in exported/non-exported vs. non-static/static.
 
-> On Thu, 29 May 2008, Andrew Morton wrote:
-> 
-> > All seems reasonable to me.  The obvious question is "how do we size
-> > the arena".  We either waste memory or, much worse, run out.
-> 
-> The per cpu memory use by subsystems is typically quite small. We already 
-> have an 8k limitation for percpu space for modules. And that does not seem 
-> to be a problem.
+Ok ... hmmm ... how to say this...
 
-eh?  That's DEFINE_PERCPU memory, not alloc_pecpu() memory?
+The documentation in Documentation/kernel-doc-nano-HOWTO.txt of
+kernel-doc is mostly focused on the details of the apparatus that
+converts the "/**" comments into various documenation formats, and has
+only somewhat buried and non-inviting documentation for kernel hackers
+wanting the "Kernel-Doc for Dummies" summary of how and when and where
+to create such "/**" comments.
 
-> > And running out is a real possibility, I think.  Most people will only
-> > mount a handful of XFS filesystems.  But some customer will come along
-> > who wants to mount 5,000, and distributors will need to cater for that,
-> > but how can they?
-> 
-> Typically these are fairly small 8 bytes * 5000 is only 20k.
+For example, the distinction you note between:
+  !E<filename> external (EXPORT_SYMBOL), and
+  !I<filename> internal (not exported)
+is buried in the "How to make new SGML template files" section, which I
+would hope that I never had to read.
 
-It was just an example.  There will be others.
+However ... in accordance with the usual rule that he who complains
+gets to fix it, I find this kernel-doc documentation to be PERFECT! ;).
 
-	tcp_v4_md5_do_add
-	->tcp_alloc_md5sig_pool
-	  ->__tcp_alloc_md5sig_pool
-
-does an alloc_percpu for each md5-capable TCP connection.  I think - it
-doesn't matter really, because something _could_.  And if something
-_does_, we're screwed.
-
-> > I wonder if we can arrange for the default to be overridden via a
-> > kernel boot option?
-> 
-> We could do that yes.
-
-Phew.
-
-> > Another obvious question is "how much of a problem will we have with
-> > internal fragmentation"?  This might be a drop-dead showstopper.
-> 
-> But then per cpu data is not frequently allocated and freed.
-
-I think it is, in the TCP case.  And that's the only one I looked at.
-
-Plus who knows what lies ahead of us?
-
-> Going away from allocpercpu saves a lot of memory. We could make this 
-> 128k or so to be safe?
-
-("alloc_percpu" - please be careful about getting this stuff right)
-
-I don't think there is presently any upper limit on alloc_percpu()?  It
-uses kmalloc() and kmalloc_node()?
-
-Even if there is some limit, is it an unfixable one?
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
