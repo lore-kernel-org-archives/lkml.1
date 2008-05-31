@@ -1,117 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYEaKeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYEaKjC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbYEaKeT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 06:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYEaKeB
+	id S1754134AbYEaKjC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 06:39:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYEaKiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 06:34:01 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:36071 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbYEaKd7 (ORCPT
+	Sat, 31 May 2008 06:38:52 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:34248 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbYEaKiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 06:33:59 -0400
+	Sat, 31 May 2008 06:38:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=swnPJG5+fMErEwNfQEn8DIkpsix3uDG1kkA+BFYR+1XPtYTpZ2LoZvGSosevFpICo/GQ1G4JXMgG4lMLw22Clv9KxYPt2uWxU9CPrL3xXC1LNmvmji1qvIasmRJ57v4jCVCyM9ShL1XccLld3u8tnEx4a4QRl22hS8D+q4EGnTs=
-Message-ID: <19f34abd0805310333s270ab8e5pec3396a4539fd797@mail.gmail.com>
-Date: Sat, 31 May 2008 12:33:58 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Junio C Hamano" <gitster@pobox.com>
-Subject: Re: whomto.pl -- finding out whom to send patches to
-Cc: linux-kernel@vger.kernel.org, "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Sverre Rabbelier" <alturin@gmail.com>, "Joe Perches" <joe@perches.com>,
-       git@vger.kernel.org
-In-Reply-To: <7vr6bkofct.fsf@gitster.siamese.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080529210018.GA5508@damson.getinternet.no>
-	 <7vr6bkofct.fsf@gitster.siamese.dyndns.org>
+        h=from:to:cc:subject:date:message-id:x-mailer:sender;
+        b=X2bJlg75BPT6zGyD8k7Btgnfy+GvYdmSlY30j/3lcetIEbMAuUkaxVgtI2IV91msqUCl/7cZo5x6yEPV6pP2wshj2310NOmsi13p3PH9DJ46YBb0G8yutrslcIbtkT1GNV1LSobzrSbiNxE8iqhBZlaQrOfTIA0p95se7csse0s=
+From: Bryan Wu <cooloney@kernel.org>
+To: linux@maxim.org.za, dbrownell@users.sourceforge.net
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] MTD DataFlash: fix bug - ATMEL AT45DF321D spi flash card fails to be copied to
+Date: Sat, 31 May 2008 18:38:44 +0800
+Message-Id: <1212230324-22201-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-On 5/30/08, Junio C Hamano <gitster@pobox.com> wrote:
-> Vegard Nossum <vegard.nossum@gmail.com> writes:
->
->  > I've written this perl script that takes a patch as input and prints the
->  > authors/committers of the affected lines, using git-blame as the back end.
->  >
->  > (The purpose of this is of course to find out whom to send patches to.)
->  >
->  > There are some caveats:
->  >
->  > - If I've understood correctly, git-blame incremental output doesn't split
->  >   commits when a newer one is found, so we currently possibly take into
->  >   account more than just the last patch to touch a line. This might not be
->  >   a disadvantage, however...
->
->
-> "git blame" does not give irrelevant commits in its output, with or
->  without --incremental.  Perhaps you were thinking about the "oops, earlier
->  one was wrong, here are the corrections" behaviour of "git log
->  --early-output", which is an unrelated mechanism in a different command.
->
+ - Add support for binary page size DataFlashes.
+ - The driver now prints out pagesize and erasesize.
+   Printout valuable information for creating flash filesystems.
 
-This comment was based on my observation that several (sometimes
-different) commits would span the same line numbers. Though it seems
-to also happen that no line is spanned by any commit at all. I
-probably misunderstood the output format of the incremental mode.
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/mtd/devices/mtd_dataflash.c |   38 ++++++++++++++++++++++++++--------
+ 1 files changed, 29 insertions(+), 9 deletions(-)
 
->  But I have to wonder why you used --incremental and not --porcelain
->  format, the latter of which is more compact and is designed for parsing by
->  tools.
->
-
-There were some different reasons. I found --incremental easier to
-parse, and I didn't really want the actual lines of the file. Maybe I
-should rewrite to use porcelain instead :-)
-
->  I also have to wonder why you did not use -M, -C, and/or -w, if you used
->  blame to find the true origin of lines that are involved.
->
-
-I haven't used these options before and didn't know if it would really
-make sense to use them in this context. I guess I could allow them to
-pass through from the command line to git-blame...
-
->  Unless the patch is truly about a narrow region of a handful files
->  (e.g. micro-optimizing the implementation of a single function without
->  changing its external interface at all, or fixing an off-by-one error in a
->  group of functions that do similar things), I suspect that it would make
->  more sense to use "git shortlog --no-merges -- paths" to get the list of
->  people who are involved in the general area, even though they may not have
->  been involved in particular _lines_ that the patch touches.  For example,
->  if a patch changes the lines in a function's implementation, you would
->  want input not only from the people who improved the implementation of the
->  function over the years, but more from the people who care about the
->  calling sites of that function the patch is touching.
-
-Yes, it seems that log/shortlog is the most common (and probably
-faster) way of doing what I'm trying to do, based on all the feedback
-I had :-) However, I use git-blame myself and so I wanted to automate
-that task in particular.
-
-I did not intend for the tool to be fully automatic, however; it
-outputs a ranked list of names and e-mails. The user (well, me ;-)) is
-still expected to pick the sensible entries and leave out the rest.
-For instance, I bet half the patches run through the script on the
-linux kernel sources would turn Linus up, even though you don't want
-to send patches directly there in most of the cases. And this is
-simply because he did the initial commit and a lot of code may not
-have changed since that...
-
-Thanks for the comments.
-
-
-Vegard
-
+diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+index b35e481..a47fe58 100644
+--- a/drivers/mtd/devices/mtd_dataflash.c
++++ b/drivers/mtd/devices/mtd_dataflash.c
+@@ -487,7 +487,9 @@ add_dataflash(struct spi_device *spi, char *name,
+ 	device->write = dataflash_write;
+ 	device->priv = priv;
+ 
+-	dev_info(&spi->dev, "%s (%d KBytes)\n", name, device->size/1024);
++	dev_info(&spi->dev, "%s (%d KBytes) pagesize %d bytes, "
++		"erasesize %d bytes\n", name, device->size/1024,
++		 pagesize, pagesize * 8);	/* 8 pages = 1 block */
+ 	dev_set_drvdata(&spi->dev, priv);
+ 
+ 	if (mtd_has_partitions()) {
+@@ -524,10 +526,13 @@ add_dataflash(struct spi_device *spi, char *name,
+  *   AT45DB021B  2Mbit   (256K)  xx0101xx (0x14)   1025    264      9
+  *   AT45DB041B  4Mbit   (512K)  xx0111xx (0x1c)   2048    264      9
+  *   AT45DB081B  8Mbit   (1M)    xx1001xx (0x24)   4096    264      9
+- *   AT45DB0161B 16Mbit  (2M)    xx1011xx (0x2c)   4096    528     10
+- *   AT45DB0321B 32Mbit  (4M)    xx1101xx (0x34)   8192    528     10
+- *   AT45DB0642  64Mbit  (8M)    xx111xxx (0x3c)   8192   1056     11
+- *   AT45DB1282  128Mbit (16M)   xx0100xx (0x10)  16384   1056     11
++ *   AT45DB0161B 16Mbit  (2M)    xx1011x0 (0x2c)   4096    528     10
++ *   AT45DB0161B 16Mbit  (2M)    xx1011x1 (0x2d)   4096    512      9
++ *   AT45DB0321B 32Mbit  (4M)    xx1101x0 (0x34)   8192    528     10
++ *   AT45DB0321B 32Mbit  (4M)    xx1101x1 (0x35)   8192    512      9
++ *   AT45DB0642  64Mbit  (8M)    xx111xx0 (0x3c)   8192   1056     11
++ *   AT45DB0642  64Mbit  (8M)    xx111xx1 (0x3d)   8192   1024     10
++ *   AT45DB1282  128Mbit (16M)   xx0100x0 (0x10)  16384   1056     11
+  */
+ static int __devinit dataflash_probe(struct spi_device *spi)
+ {
+@@ -546,29 +551,44 @@ static int __devinit dataflash_probe(struct spi_device *spi)
+ 	 * board setup should have set spi->max_speed_max to
+ 	 * match f(car) for continuous reads, mode 0 or 3.
+ 	 */
+-	switch (status & 0x3c) {
++	switch (status & 0x3d) {
+ 	case 0x0c:	/* 0 0 1 1 x x */
++	case 0x0d:
+ 		status = add_dataflash(spi, "AT45DB011B", 512, 264, 9);
+ 		break;
+ 	case 0x14:	/* 0 1 0 1 x x */
++	case 0x15:
+ 		status = add_dataflash(spi, "AT45DB021B", 1025, 264, 9);
+ 		break;
+ 	case 0x1c:	/* 0 1 1 1 x x */
++	case 0x1d:
+ 		status = add_dataflash(spi, "AT45DB041x", 2048, 264, 9);
+ 		break;
+ 	case 0x24:	/* 1 0 0 1 x x */
++	case 0x25:
+ 		status = add_dataflash(spi, "AT45DB081B", 4096, 264, 9);
+ 		break;
+-	case 0x2c:	/* 1 0 1 1 x x */
++	case 0x2c:	/* 1 0 1 1 x 0 */
+ 		status = add_dataflash(spi, "AT45DB161x", 4096, 528, 10);
+ 		break;
+-	case 0x34:	/* 1 1 0 1 x x */
++	case 0x34:	/* 1 1 0 1 x 0 */
+ 		status = add_dataflash(spi, "AT45DB321x", 8192, 528, 10);
+ 		break;
+-	case 0x38:	/* 1 1 1 x x x */
++	case 0x38:	/* 1 1 1 x x 0 */
+ 	case 0x3c:
+ 		status = add_dataflash(spi, "AT45DB642x", 8192, 1056, 11);
+ 		break;
++	/* Binary page size factory preset / user set */
++	case 0x2d:	/* 1 0 1 1 x 1 */
++		status = add_dataflash(spi, "AT45DB161x", 4096, 512, 9);
++		break;
++	case 0x35:	/* 1 1 0 1 x 1 */
++		status = add_dataflash(spi, "AT45DB321x", 8192, 512, 9);
++		break;
++	case 0x39:	/* 1 1 1 x x 1 */
++	case 0x3d:
++		status = add_dataflash(spi, "AT45DB642x", 8192, 1024, 10);
++		break;
+ 	/* obsolete AT45DB1282 not (yet?) supported */
+ 	default:
+ 		DEBUG(MTD_DEBUG_LEVEL1, "%s: unsupported device (%x)\n",
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.5
+
