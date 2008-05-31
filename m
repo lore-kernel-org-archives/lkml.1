@@ -1,110 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYEaEZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYEaEcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbYEaEZp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 00:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYEaEZh
+	id S1753381AbYEaEcd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 00:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYEaEcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 00:25:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49048 "EHLO mx1.redhat.com"
+	Sat, 31 May 2008 00:32:22 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:37649 "EHLO mo10.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750801AbYEaEZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 00:25:36 -0400
-Message-ID: <4840D335.6040406@redhat.com>
-Date: Fri, 30 May 2008 21:25:25 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [PATCH 3/3] 64-bit futexes: x86 support
-References: <200805310127.m4V1RLdP013819@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301923020.3141@woody.linux-foundation.org> <4840C394.2080807@redhat.com> <alpine.LFD.1.10.0805302056170.3141@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805302056170.3141@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	id S1750749AbYEaEcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 00:32:20 -0400
+Date: Sat, 31 May 2008 13:31:33 +0900
+To: linux-kernel@vger.kernel.org
+Cc: alexisb@us.ibm.com, muli@il.ibm.com, mingo@elte.hu,
+       akpm@linux-foundation.org
+Subject: [PATCH -mm] x86 calgary: fix handling of devces that aren't behind
+ the Calgary
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080531133114P.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+The calgary code can give drivers addresses above 4GB which is very
+bad for hardware that is only 32bit DMA addressable:
 
-Linus Torvalds wrote:
-> I'm suggesting that there are better approaches than forcing yet another 
-> new interface onto this thing. As mentioned, the kernel has had 32-bit 
-> rwsemaphores for a long time. Yes, there is "extra information" outside 
-> the 32-bit field, but I suspect you simply haven't looked hard enough at 
-> just using the existing futex code.
+http://lkml.org/lkml/2008/5/8/423
 
-I guess have to expect to expect to be insulted by you.  What else is
-new?  I think it's safe to say that nobody has looked more deeply at the
-implementation possibilities with futexes.  I don't know how many
-different primitives I've written over the years.  If you think you can
-do it better, well, that's then a challenge to you.  Come up with
-something better.
+This patch tries to fix the problem by using per-device
+dma_mapping_ops support. This fixes the calgary code to use swiotlb or
+nommu properly for devices which are not behind the Calgary/CalIOC2.
 
-  The rwlocks cannot be handled as efficiently with 32-bit futexes.
+With this patch, the calgary code sets the global dma_ops to swiotlb
+or nommu, and the dma_ops of devices behind the Calgary/CalIOC2 to
+calgary_dma_ops. So the calgary code can handle devices safely that
+aren't behind the Calgary/CalIOC2.
 
-I stand by that.  Proof me wrong.  You don't have to write code, just
-describe it.  But don't publish it if
+I think that bus_register_notifier works nicely for hotplugging (the
+calgary code can register a hook to set the device-per ops to
+calgary_dma_ops) though I don't know the calgary code needs it.
 
-- - the uncontended reader *unconditionally* uses more than one memory
-  access (atomic of course)
+This patch is against -mm (depends on the per-device dma_mapping_ops
+patchset in -mm).
 
-- - the contended readers uses the one access above plus one or two
-  compare-and-exchange depending on the rwlock preferring readers or
-  writers.  The last compare-and-exchange has to be repeated for
-  spurious wakeups which are highly unlikely since we only wake what
-  is ready to use.
+This is only compile tested.
 
-- - the uncontended writer needs more than one single compare-and-exchange
-  plus one memory read plus one write (both not atomic)
+Thanks,
 
-- - the contended writer needs more than the above plus one additional
-  compare-and-exchange for every time we delay in futex_wait (again,
-  highly unlikely to have spurious wakeups)
+==
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] x86 calgary: fix handling of devces that aren't behind the Calgary
 
-- - the unlock operation needs more than one read plus either one
-  (repeated) compare-and-exchange or another atomic operation plus one
-  memory write for writer locks
+The calgary code can give drivers addresses above 4GB which is very
+bad for hardware that is only 32bit DMA addressable.
 
-- - you can handle timedlock variants which don't manage to get the lock
-  efficiently without waking up anyone else
+With this patch, the calgary code sets the global dma_ops to swiotlb
+or nommu properly, and the dma_ops of devices behind the
+Calgary/CalIOC2 to calgary_dma_ops. So the calgary code can handle
+devices safely that aren't behind the Calgary/CalIOC2.
 
-That's it.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/pci-calgary_64.c |   63 +++++++++++---------------------------
+ include/asm-x86/iommu.h          |    1 +
+ 2 files changed, 19 insertions(+), 45 deletions(-)
 
-And just to point out some more fun: in a highly contended case this is
-a performance killer (MESI protocol states):
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index dca9a82..1839968 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -36,6 +36,7 @@
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+ #include <linux/iommu-helper.h>
++#include <asm/iommu.h>
+ #include <asm/gart.h>
+ #include <asm/calgary.h>
+ #include <asm/tce.h>
+@@ -410,22 +411,6 @@ static void calgary_unmap_sg(struct device *dev,
+ 	}
+ }
+ 
+-static int calgary_nontranslate_map_sg(struct device* dev,
+-	struct scatterlist *sg, int nelems, int direction)
+-{
+-	struct scatterlist *s;
+-	int i;
+-
+-	for_each_sg(sg, s, nelems, i) {
+-		struct page *p = sg_page(s);
+-
+-		BUG_ON(!p);
+-		s->dma_address = virt_to_bus(sg_virt(s));
+-		s->dma_length = s->length;
+-	}
+-	return nelems;
+-}
+-
+ static int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 	int nelems, int direction)
+ {
+@@ -436,9 +421,6 @@ static int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 	unsigned long entry;
+ 	int i;
+ 
+-	if (!translation_enabled(tbl))
+-		return calgary_nontranslate_map_sg(dev, sg, nelems, direction);
+-
+ 	for_each_sg(sg, s, nelems, i) {
+ 		BUG_ON(!sg_page(s));
+ 
+@@ -474,7 +456,6 @@ error:
+ static dma_addr_t calgary_map_single(struct device *dev, phys_addr_t paddr,
+ 	size_t size, int direction)
+ {
+-	dma_addr_t dma_handle = bad_dma_address;
+ 	void *vaddr = phys_to_virt(paddr);
+ 	unsigned long uaddr;
+ 	unsigned int npages;
+@@ -483,12 +464,7 @@ static dma_addr_t calgary_map_single(struct device *dev, phys_addr_t paddr,
+ 	uaddr = (unsigned long)vaddr;
+ 	npages = num_dma_pages(uaddr, size);
+ 
+-	if (translation_enabled(tbl))
+-		dma_handle = iommu_alloc(dev, tbl, vaddr, npages, direction);
+-	else
+-		dma_handle = virt_to_bus(vaddr);
+-
+-	return dma_handle;
++	return iommu_alloc(dev, tbl, vaddr, npages, direction);
+ }
+ 
+ static void calgary_unmap_single(struct device *dev, dma_addr_t dma_handle,
+@@ -497,9 +473,6 @@ static void calgary_unmap_single(struct device *dev, dma_addr_t dma_handle,
+ 	struct iommu_table *tbl = find_iommu_table(dev);
+ 	unsigned int npages;
+ 
+-	if (!translation_enabled(tbl))
+-		return;
+-
+ 	npages = num_dma_pages(dma_handle, size);
+ 	iommu_free(tbl, dma_handle, npages);
+ }
+@@ -522,18 +495,12 @@ static void* calgary_alloc_coherent(struct device *dev, size_t size,
+ 		goto error;
+ 	memset(ret, 0, size);
+ 
+-	if (translation_enabled(tbl)) {
+-		/* set up tces to cover the allocated range */
+-		mapping = iommu_alloc(dev, tbl, ret, npages, DMA_BIDIRECTIONAL);
+-		if (mapping == bad_dma_address)
+-			goto free;
+-
+-		*dma_handle = mapping;
+-	} else /* non translated slot */
+-		*dma_handle = virt_to_bus(ret);
+-
++	/* set up tces to cover the allocated range */
++	mapping = iommu_alloc(dev, tbl, ret, npages, DMA_BIDIRECTIONAL);
++	if (mapping == bad_dma_address)
++		goto free;
++	*dma_handle = mapping;
+ 	return ret;
+-
+ free:
+ 	free_pages((unsigned long)ret, get_order(size));
+ 	ret = NULL;
+@@ -1138,6 +1105,7 @@ static int __init calgary_init_one(struct pci_dev *dev)
+ 	tbl->chip_ops->handle_quirks(tbl, dev);
+ 
+ 	calgary_enable_translation(dev);
++	dev->dev.archdata.dma_ops = &calgary_dma_ops;
+ 
+ 	return 0;
+ 
+@@ -1251,6 +1219,7 @@ error:
+ 		calgary_disable_translation(dev);
+ 		calgary_free_bus(dev);
+ 		pci_dev_put(dev); /* Undo calgary_init_one()'s pci_dev_get() */
++		dev->dev.archdata.dma_ops = NULL;
+ 	} while (1);
+ 
+ 	return ret;
+@@ -1430,6 +1399,10 @@ void __init detect_calgary(void)
+ 		printk(KERN_INFO "PCI-DMA: Calgary TCE table spec is %d, "
+ 		       "CONFIG_IOMMU_DEBUG is %s.\n", specified_table_size,
+ 		       debugging ? "enabled" : "disabled");
++
++		/* swiotlb for devices that aren't behind the Calgary. */
++		if (end_pfn > MAX_DMA32_PFN)
++			swiotlb = 1;
+ 	}
+ 	return;
+ 
+@@ -1446,7 +1419,7 @@ int __init calgary_iommu_init(void)
+ {
+ 	int ret;
+ 
+-	if (no_iommu || swiotlb)
++	if (no_iommu || (swiotlb && !calgary_detected))
+ 		return -ENODEV;
+ 
+ 	if (!calgary_detected)
+@@ -1459,15 +1432,15 @@ int __init calgary_iommu_init(void)
+ 	if (ret) {
+ 		printk(KERN_ERR "PCI-DMA: Calgary init failed %d, "
+ 		       "falling back to no_iommu\n", ret);
+-		if (end_pfn > MAX_DMA32_PFN)
+-			printk(KERN_ERR "WARNING more than 4GB of memory, "
+-					"32bit PCI may malfunction.\n");
+ 		return ret;
+ 	}
+ 
+ 	force_iommu = 1;
+ 	bad_dma_address = 0x0;
+-	dma_ops = &calgary_dma_ops;
++
++	/* dma_ops is set to swiotlb or nommu */
++	if (!dma_ops)
++		dma_ops = &nommu_dma_ops;
+ 
+ 	return 0;
+ }
+diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
+index 07862fd..1a5e7df 100644
+--- a/include/asm-x86/iommu.h
++++ b/include/asm-x86/iommu.h
+@@ -3,6 +3,7 @@
+ 
+ extern void pci_iommu_shutdown(void);
+ extern void no_iommu_init(void);
++extern struct dma_mapping_ops nommu_dma_ops;
+ extern int force_iommu, no_iommu;
+ extern int iommu_detected;
+ #ifdef CONFIG_IOMMU
+-- 
+1.5.4.2
 
-               core #1                           core #2
-
-         instr     cache state               instr    cache state
-
-         load      -> S
-
-         store     -> M
-
-                   -> S                       load    -> S
-
-                                              store   -> M
-
-
-I.e., of the cache line with the rwlock is in one core's cache and you
-first load a value from that cache line just to modify it right after
-that, you're paying a terrible price.
-
-
-Have fun coming up with something which is as good or better.  But shall
-we say there is a deadline?  Otherwise we'd wait too long.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhA0zUACgkQ2ijCOnn/RHRI2QCbBGCcjES6qMJYay1WRVLdSAAk
-lHEAnA754SGDsjuzvCYg2ZBrEUIktxYV
-=NYYc
------END PGP SIGNATURE-----
