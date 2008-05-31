@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYEaXrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYEaXuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbYEaXrr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 19:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYEaXrj
+	id S1755877AbYEaXuw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 19:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbYEaXup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 19:47:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44876 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751593AbYEaXrj (ORCPT
+	Sat, 31 May 2008 19:50:45 -0400
+Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:37844 "EHLO
+	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754463AbYEaXuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 19:47:39 -0400
-Date: Sat, 31 May 2008 16:47:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH 5 of 5] xen: Avoid allocations causing swap activity on
- the resume path
-Message-Id: <20080531164712.2788baf2.akpm@linux-foundation.org>
-In-Reply-To: <4841240A.1000008@goop.org>
-References: <c692f3a12da1e99a4a43.1212192095@localhost>
-	<4840B0C5.4020606@pobox.com>
-	<48411F70.5020100@goop.org>
-	<20080531025949.7c8b17bc.akpm@linux-foundation.org>
-	<4841240A.1000008@goop.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sat, 31 May 2008 19:50:44 -0400
+Date: Sun, 1 Jun 2008 00:50:33 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Use <asm-generic/bitops/le.h> in <asm-powerpc/bitops.h>
+Message-ID: <20080531235032.GF30769@solarflare.com>
+References: <f12db478511ce4ff462d1b236724e4fc46470a4d.1212272760.git.bhutchings@solarflare.com> <20080531223419.GA30769@solarflare.com> <20080531223832.GC30769@solarflare.com> <19f34abd0805311552q342cdc9fp9e08fe1e73696a1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0805311552q342cdc9fp9e08fe1e73696a1@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008 11:10:18 +0100 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> > Whether you should also add __GFP_HIGH to cause the page allocation to
-> > bite harder into the page reserves is unclear to me, sorry.
-> >   
+Vegard Nossum wrote:
+> Hi,
 > 
-> Well, if the allocation fails the machine is dead in the water, because 
-> it probably can't go on without its devices.  I think it's worth eating 
-> to the reserves to avoid that.  (I'll have a close look to only add it 
-> to allocations which are really unrecoverable if they fail.)
+> On Sun, Jun 1, 2008 at 12:38 AM, Ben Hutchings
+> <bhutchings@solarflare.com> wrote:
+> > The powerpc little-endian bitops have no arch-specific optimisations.
+> >
+> > Remove clashing macros from these headers.
+> >
+> > Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
+> > ---
+> >  include/asm-generic/bitops/le.h |    1 -
+> >  include/asm-powerpc/bitops.h    |   34 +---------------------------------
+> >  2 files changed, 1 insertions(+), 34 deletions(-)
+> >
+> > diff --git a/include/asm-generic/bitops/le.h b/include/asm-generic/bitops/le.h
+> > index a51c4ca..08c5df3 100644
+> > --- a/include/asm-generic/bitops/le.h
+> > +++ b/include/asm-generic/bitops/le.h
+> > @@ -4,7 +4,6 @@
+> >  #include <asm/types.h>
+> >  #include <asm/byteorder.h>
+> >
+> > -#define BITOP_WORD(nr)         ((nr) / BITS_PER_LONG)
+> >  #define BITOP_LE_SWIZZLE       ((BITS_PER_LONG-1) & ~0x7)
+> >
+> >  #if defined(__LITTLE_ENDIAN)
+> > diff --git a/include/asm-powerpc/bitops.h b/include/asm-powerpc/bitops.h
+> > index dcbf9a8..afe2fa3 100644
+> > --- a/include/asm-powerpc/bitops.h
+> > +++ b/include/asm-powerpc/bitops.h
+> > @@ -54,7 +54,6 @@
+> >
+> >  #define BITOP_MASK(nr)         (1UL << ((nr) % BITS_PER_LONG))
+> >  #define BITOP_WORD(nr)         ((nr) / BITS_PER_LONG)
+> > -#define BITOP_LE_SWIZZLE       ((BITS_PER_LONG-1) & ~0x7)
+> >
+> >  static __inline__ void set_bit(int nr, volatile unsigned long *addr)
+> >  {
+> > @@ -340,39 +339,8 @@ static __inline__ int fls64(__u64 x)
+> >
+> >  /* Little-endian versions */
+> >
+> > -static __inline__ int test_le_bit(unsigned long nr,
+> > -                                 __const__ unsigned long *addr)
+> > -{
+> > -       __const__ unsigned char *tmp = (__const__ unsigned char *) addr;
+> > -       return (tmp[nr >> 3] >> (nr & 7)) & 1;
+> > -}
+> > +#include <asm-generic/bitops/le.h>
+> 
+> Is it completely impossible to move this #include to the top of the file?
 
-OK.
+It's probably entirely possible.
 
-I don't actually have a clue what you're doing here.  Restoring a
-virtual machine from disk/network or something like that?
+> I know that a lot of the current headers don't do this, and I don't
+> think it's a written rule with the kernel sources, BUT it's a nice
+> convention IMHO, and makes headers generally more maintainable. What
+> do you think?
 
-It might be appropriate to do a big memory-reclaim before starting the
-operation, along the lines of suspend-to-disk - go off and allocate
-(and possible pin) sufficient memroy for the entire operation before
-actually starting it?
+If you look at the current version of this header you'll see it
+includes several other bitops headers at around this point.  I tend
+to follow the conventions I see.
 
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
