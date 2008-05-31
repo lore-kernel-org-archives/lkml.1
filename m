@@ -1,99 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYEaXUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbYEaXVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbYEaXUO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 19:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbYEaXUB
+	id S1756744AbYEaXVR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 19:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbYEaXUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 19:20:01 -0400
-Received: from linode.ducksong.com ([64.22.125.164]:44084 "EHLO
-	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753759AbYEaXUA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 19:20:00 -0400
-X-Greylist: delayed 2046 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 May 2008 19:20:00 EDT
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-From: Patrick McManus <mcmanus@ducksong.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-In-Reply-To: <20080531163501.GB22607@elte.hu>
-References: <20080526115628.GA31316@elte.hu>
-	 <20080529084524.GA24892@elte.hu>
-	 <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi>
-	 <20080529112257.GA18130@elte.hu> <20080530181839.GA31915@elte.hu>
-	 <20080531060947.GA26441@elte.hu>
-	 <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi>
-	 <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi>
-	 <20080531125428.GA22111@elte.hu>
-	 <Pine.LNX.4.64.0805311555570.2329@wrl-59.cs.helsinki.fi>
-	 <20080531163501.GB22607@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Sat, 31 May 2008 18:46:14 -0400
-Message-Id: <1212273974.28319.107.camel@tng>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 8bit
+	Sat, 31 May 2008 19:20:55 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:36313 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756574AbYEaXUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 19:20:39 -0400
+Date: Sun, 1 Jun 2008 01:20:05 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH 6/4] Fix forcedeth hibernate/wake-on-lan problems
+Message-ID: <20080531232005.GA2613@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ayaz Abdulla <aabdulla@nvidia.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
+	linux-pm@lists.linux-foundation.org
+References: <20080518125715.GA19229@yamamaya.is-a-geek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080518125715.GA19229@yamamaya.is-a-geek.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-05-31 at 18:35 +0200, Ingo Molnar wrote:
-> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> 
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
 
-> > ...setsockopt(listenfd, SOL_TCP, TCP_DEFER_ACCEPT, &val, sizeof(val)) 
-> > seems to be the magic trick that is interestion here.
-> 
-> seems to be used:
-> 
->  22003 write(3, "distccd[22003] (dcc_listen_by_ad"..., 62) = 62
->  22003 listen(4, 10)                     = 0
->  22003 setsockopt(4, SOL_TCP, TCP_DEFER_ACCEPT, [1], 4) = 0
-> 
-> i'll queue up your reverts for testing in -tip.
+This patch is the minimal amount of code needed to support
+wake-on-lan in platform mode properly (i.e. "ethtool -s eth0 wol g"
+is sufficient, no additional magic needed) for me.
 
+This is derived from David Brownells patch
+(http://lists.laptop.org/pipermail/devel/2007-April/004691.html).
+However I decided to move the hook into pci-acpi.c since the other
+two pci hooks also live there and pci and acpi are the only users of
+the platform_enable_wakeup-hook.
 
-So the code you will revert came from my fingers. The circumstances here
-make me nervous; while I'm at a loss to explain what might be going on
-in particular, let me offer an apology in advance should the revert help
-resolve the issue.
+As a 'side-effect' this also makes wake on usb activity work for me
+and I had to disable usb wakeup (which is enabled by default) using
+the power/wakeup sysfs functionality ("echo disabled >
+${sysfs_path_to_device}/power/wakeup").
 
-Here's what makes me nervous:
+(BTW I first thought the 'immediate reboot because of usb wake' effect is
+caused by the optical mouse generating a wake event, but it rather
+seems to be a problem with a flaky secondary usb host controller,
+which sees a connected device where nothing is attached)
 
- * not a lot of code uses DEFER_ACCEPT.. frankly it was pretty broken
-before 26 - but not broken this way .. the correlation of your bug using
-it is significant. 
+Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
 
- * in 26, a server TCP socket (with DA) goes to ESTABLISHED when the 3rd
-part of the handshake is received (as normal without DA), but the socket
-isn't put on the accept queue until a real data packet arrives. (That's
-the point of DA). In <= 25 this socket would have syn-recv until the
-data packet arrived.
-
-  - I did run tests where the server died in between the handshake being
-completed and first data packet arriving - the client should see RST and
-the server socket should disappear. But maybe something was missed?
-
-Do I understand this correctly, the server process is gone but the
-socket is still in the table? And the client process is still there
-waiting for the server to do something - having sent a bunch of data?
-
-Do we know if any data bytes (not handshake bytes) have been consumed by
-the server side? If they were, that would seem to vindicate DA.
-
-Also pointing away from DA is that you started seeing this with rc3 -
-that code was included in rc1.Is that a firm observation, or maybe there
-weren't enough datapoints to conclude that rc1 and rc2 were clean?
-
-The most interesting patch is ec3c0982a2dd1e671bad8e9d26c28dcba0039d87
-if anyone wants to eyeball it.
-
-
-
+Index: linux-2.6.26-rc4.forcedwol/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.26-rc4.forcedwol.orig/drivers/pci/pci-acpi.c	2008-06-01 00:40:23.000000000 +0200
++++ linux-2.6.26-rc4.forcedwol/drivers/pci/pci-acpi.c	2008-06-01 00:46:55.000000000 +0200
+@@ -315,6 +315,25 @@
+ 	}
+ 	return PCI_POWER_ERROR;
+ }
++
++static int acpi_platform_enable_wakeup(struct device *dev, int is_on)
++{
++	struct acpi_device	*adev;
++	int			status;
++
++	if (!device_can_wakeup(dev))
++		return -EINVAL;
++
++	if (is_on && !device_may_wakeup(dev))
++		return -EINVAL;
++
++	status = acpi_bus_get_device(DEVICE_ACPI_HANDLE(dev), &adev);
++	if (status < 0)
++		return status;
++
++	adev->wakeup.state.enabled = !!is_on;
++	return 0;
++}
+ #endif
  
-
+ static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+@@ -399,6 +418,7 @@
+ 		return 0;
+ #ifdef	CONFIG_ACPI_SLEEP
+ 	platform_pci_choose_state = acpi_pci_choose_state;
++	platform_enable_wakeup = acpi_platform_enable_wakeup;
+ #endif
+ 	platform_pci_set_power_state = acpi_pci_set_power_state;
+ 	return 0;
