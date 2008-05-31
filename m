@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbYEaKLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYEaKTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbYEaKLQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 06:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYEaKLA
+	id S1753457AbYEaKTR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 06:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbYEaKS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 06:11:00 -0400
-Received: from gw.goop.org ([64.81.55.164]:40026 "EHLO mail.goop.org"
+	Sat, 31 May 2008 06:18:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37958 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751628AbYEaKK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 06:10:59 -0400
-Message-ID: <4841240A.1000008@goop.org>
-Date: Sat, 31 May 2008 11:10:18 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1751716AbYEaKS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 06:18:58 -0400
+Date: Sat, 31 May 2008 12:18:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 8/8] x86: I/O APIC: Timer through 8259A second-chance
+Message-ID: <20080531101832.GA15170@elte.hu>
+References: <Pine.LNX.4.55.0805271950010.18833@cliff.in.clinika.pl>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH 5 of 5] xen: Avoid allocations causing swap activity on
- the resume path
-References: <c692f3a12da1e99a4a43.1212192095@localhost>	<4840B0C5.4020606@pobox.com>	<48411F70.5020100@goop.org> <20080531025949.7c8b17bc.akpm@linux-foundation.org>
-In-Reply-To: <20080531025949.7c8b17bc.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.55.0805271950010.18833@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0050]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 31 May 2008 10:50:40 +0100 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->   
->> Does __GFP_HIGH necessarily mean that it won't try to 
->> do IO to push pages out?
->>     
->
-> Nope.
->
-> __GFP_FS: may enter filesystems
-> __GFP_IO: may perform IO
->
-> __GFP_IO also means "may do swapout".  Even when swap is on a regular
-> file.  This is because we do all the fs-related operations up-front
-> during swapon.  So at alloc_pages()-time we can go direct-to-disk-blocks.
->
-> So I assume for this application you'll need GFP_NOIO.  That's still
-> heaps better than GFP_ATOMIC, because it can sleep and wait for kswapd
-> to do stuff, and it can reclaim clean pagecache and clean swapcache.
->   
 
-OK, I'll respin with GFP_NOIO.
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
-> Whether you should also add __GFP_HIGH to cause the page allocation to
-> bite harder into the page reserves is unclear to me, sorry.
->   
+>  Despite looking quite innocent, this is the most intrusive 
+> modification in the series.  I tested this change (on top of all the 
+> other 14 ones) with as many variations of interrupt wiring 
+> configuration as I could imagine and simulate with my system.  Of 
+> course my machine is perfectly unbroken, :) so chances are more exotic 
+> convolutions may have escaped my attention.  Also I tested the 32-bit 
+> variation only.  So again, I recommend a good amount of testing in the 
+> field before this patch is propagated upstream.
 
-Well, if the allocation fails the machine is dead in the water, because 
-it probably can't go on without its devices.  I think it's worth eating 
-to the reserves to avoid that.  (I'll have a close look to only add it 
-to allocations which are really unrecoverable if they fail.)
+applied all 15 APIC patches of yours to tip/x86/apic, thanks Maciej!
 
-Thanks,
-    J
+	Ingo
