@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYEaUKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbYEaUQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYEaUKA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 16:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbYEaUJ3
+	id S1755147AbYEaUQT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 16:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYEaUQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 16:09:29 -0400
-Received: from smtp.movial.fi ([62.236.91.34]:47432 "EHLO smtp.movial.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754547AbYEaUJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 16:09:20 -0400
-Date: Sat, 31 May 2008 23:09:19 +0300
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #10841] asm-m32r/uaccess.h must #include &lt;asm/setup.h&gt;
-Message-ID: <20080531200919.GH24468@movial.fi>
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <UJSav77TyUB.A.2dC.PqZQIB@albercik>
+	Sat, 31 May 2008 16:16:08 -0400
+Received: from mail01.fortunecookiestudios.com ([209.208.125.101]:53866 "EHLO
+	mail01.fortunecookiestudios.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751812AbYEaUQH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 16:16:07 -0400
+From: Andras Mantia <amantia@kde.org>
+Subject: Re: libata (pata_via) timeouts causing unusable device: the famous DRDY issue?
+To: linux-kernel@vger.kernel.org
+Date: Sat, 31 May 2008 23:16:04 +0300
+References: <200805232201.51701.amantia@kde.org> <48372989.3000700@garzik.org> <200805241612.29985.amantia@kde.org> <483835DD.3060304@garzik.org>
+User-Agent: KNode/0.99.01
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <UJSav77TyUB.A.2dC.PqZQIB@albercik>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Message-Id: <20080531201607.DFFA64E90014@mail01.fortunecookiestudios.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 31, 2008 at 07:48:06PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Jeff Garzik wrote:
+
+>> I will try noapic only as well and report.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+> Generally you only want to use one of those...
+>
 
-yes
+I don't know too much of the kernel's internals... Anyway, I tried and noapic only fixes the problem. It seems the issue is the same that was reported in another thread as well meantime.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10841
-> Subject		: asm-m32r/uaccess.h must #include &lt;asm/setup.h&gt;
-> Submitter	: Adrian Bunk <adrian.bunk@movial.fi>
-> Date		: 2008-05-31 07:29 (1 days old)
-> References	: http://lkml.org/lkml/2008/5/31/87
-> Handled-By	: Adrian Bunk <adrian.bunk@movial.fi>
-> Patch		: http://lkml.org/lkml/2008/5/31/87
+Andras
+
+-- 
+Quanta Plus developer - http://quanta.kdewebdev.org
+K Desktop Environment - http://www.kde.org
