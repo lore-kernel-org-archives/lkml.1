@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbYEaH5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbYEaIBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753950AbYEaH5b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 03:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYEaH5W
+	id S1754160AbYEaIBw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 04:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYEaIBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 03:57:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52589 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751375AbYEaH5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 03:57:21 -0400
-Date: Sat, 31 May 2008 00:57:18 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jes Sorensen <jes@sgi.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Roland Dreier <rdreier@cisco.com>, benh@kernel.crashing.org,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080531075718.GD108600@sgi.com>
-References: <1211852026.3286.36.camel@pasglop> <1212073289.3428.30.camel@localhost.localdomain> <483FCA94.1060506@sgi.com> <200805301021.00883.jbarnes@virtuousgeek.org>
-Mime-Version: 1.0
+	Sat, 31 May 2008 04:01:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55392 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751473AbYEaIBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 04:01:43 -0400
+Date: Sat, 31 May 2008 10:01:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: 32bit numa srat fix early_ioremap leak
+Message-ID: <20080531080129.GA30343@elte.hu>
+References: <200805110030.15510.yhlu.kernel@gmail.com> <200805211840.18619.yhlu.kernel@gmail.com> <200805251000.10205.yhlu.kernel@gmail.com> <200805291625.56942.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805301021.00883.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <200805291625.56942.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 30, 2008 at 10:21:00AM -0700, Jesse Barnes wrote:
-> On Friday, May 30, 2008 2:36 am Jes Sorensen wrote:
-> > James Bottomley wrote:
-> > >> The only way to guarantee ordering in the above setup, is to either
-> > >> make writel() fully ordered or adding the mmiowb()'s inbetween the two
-> > >> writel's. On Altix you have to go and read from the PCI brige to
-> > >> ensure all writes to it have been flushed, which is also what mmiowb()
-> > >> is doing. If writel() was to guarantee this ordering, it would make
-> > >> every writel() call extremely expensive :-(
-> > >
-> > > So if a read from the bridge achieves the same effect, can't we just put
-> > > one after the writes within the spinlock (an unrelaxed one).  That way
 
-A relaxed readX would be sufficient.  It's the next lowest cost way (after
-mmiowb) of ensuring write ordering between CPUs.  Regular readX is the
-most expensive method (well, we could probably come up with something worse,
-but we'd have to work at it  :).
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> > > this whole sequence will look like a well understood PCI posting flush
-> > > rather than have to muck around with little understood (at least by most
-> > > driver writers) io barriers?
-> >
-> > Hmmm,
-> >
-> > I think mmiowb() does some sort of status read from the bridge, I am not
-> > sure if it's enough to just do a regular readl().
-> >
-> > I'm adding Jeremy to the list, he should know for sure.
+> Pid: 0, comm: swapper Not tainted 2.6.26-rc4 #4
+>  [<80b41289>] hlt_loop+0x0/0x3
+>  [<8011efa0>] ? alloc_remap+0x50/0x70
+>  [<8079e32e>] alloc_node_mem_map+0x5e/0xa0
+>  [<8012e77b>] ? printk+0x1b/0x20
+>  [<80b590f6>] free_area_init_node+0xc6/0x470
+>  [<80b588fc>] ? __alloc_bootmem_node+0x2c/0x50
+>  [<80b58ad8>] ? find_min_pfn_for_node+0x38/0x70
+>  [<8012e77b>] ? printk+0x1b/0x20
+>  [<80b597c4>] free_area_init_nodes+0x254/0x2d0
+>  [<80b544d7>] zone_sizes_init+0x97/0xa0
+>  [<80b48a03>] setup_arch+0x383/0x530
+>  [<8012e77b>] ? printk+0x1b/0x20
+>  [<80b41aa4>] start_kernel+0x64/0x350
+>  [<80b412d8>] i386_start_kernel+0x8/0x10
+>  =======================
 > 
-> I think a read from the target host bridge is enough.  What mmiowb() does 
-> though is to read a *local* host bridge register, which contains a count of 
-> the number of PIO ops still "in flight" on their way to their target bridge.  
-> When it reaches 0, all PIOs have arrived at the target host bridge (they 
-> still may be bufferd), so ordering is guaranteed.
+> this patch increase the acpi table limit to 32
+> match early_ioremap with early_iounmap
 
+applied all 4 early-reserve related fixes from you - thanks Yinghai!
 
-Note that is the main advantage over a read.  There is no round trip across
-the NUMA fabric.
-
-jeremy
+	Ingo
