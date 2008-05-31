@@ -1,124 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757509AbYEaAiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYEaAnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757509AbYEaAiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbYEaAhw
+	id S1755945AbYEaAnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYEaAnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 20:37:52 -0400
-Received: from web36606.mail.mud.yahoo.com ([209.191.85.23]:42634 "HELO
-	web36606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756763AbYEaAhu (ORCPT
+	Fri, 30 May 2008 20:43:12 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:51392 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbYEaAnL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 20:37:50 -0400
-X-YMail-OSG: 6aaNiIgVM1kyzOnwHdpv1zyAYW5R_LUygYGqEizQjX8UGb8ke.CpiiZnPDzz9RKdiR8mGfTJF_xMdEODCvEiqFtJE6B4a1bZ.Q--
-X-RocketYMMF: rancidfat
-Date: Fri, 30 May 2008 17:37:48 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH BUGFIX -rc4] Smack: Respect 'unlabeled' netlabel mode
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Cc: Paul Moore <paul.moore@hp.com>, linux-security-module@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080531005826.GA6945@ubuntu>
+	Fri, 30 May 2008 20:43:11 -0400
+Date: Sat, 31 May 2008 02:43:09 +0200
+Message-Id: <298760125@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <806671.48689.qm@web36606.mail.mud.yahoo.com>
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] fix Kconfig after ip2/ip2main merge
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+o2vhEi2RRMQLtZl2TkpV7KomVnzWi3rda2i4xothSVhvBb
+ 4JsgD+4Igozi7a8PvbJuPT61gB20QxxrOl79oA1i0TxLZShiAA=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+as commit  6089093e588ee3f6aed99d08b1cf5ea37c52cf97  is fixing ip2 crashes on 
+load/unload and making ip2/ip2main one module (ip2),  Kconfig shouldn`t mention
+non existing module. I seldom posting patches and only have webmailer here, so 
+please indulge if there is something wrong with formatting or style.
 
---- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
+Signed-off-by: Roland.Kletzing <devzero@web.de>
+---
+ drivers/char/Kconfig |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Hi Casey,
-> 
-> On Fri, May 30, 2008 at 04:10:37PM -0700, Casey Schaufler wrote:
-> > 
-> > 
-> > To date the behavior of a Smack system running with nltype
-> > unlabeled has been carefully undefined. 
-> >
-> 
-> In the early days (before the 'Smack: unlabeled outgoing ambient packets'
-> patch - 4bc87e62), I used '$ echo unlabeled > /smack/nltype' in my startup 
-> scripts to avoid sending cipso-affected packets. When I upgraded this 
-> machine's kernel, I faced the -EPERM problem mentiond above. 
+===================================================================
+--- a/drivers/char/Kconfig.orig     2008-05-31 02:14:42.000000000 +0200
++++ b/drivers/char/Kconfig  2008-05-31 02:15:15.000000000 +0200
+@@ -118,8 +118,8 @@
+          order to become a dial-in server. If you have a card like that, say
+          Y here and read <file:Documentation/computone.txt>.
 
-Ok. I haven't done much work with nltype != CIPSO since that change.
-Since that change the behavior with nltype == CIPSO appears to meet
-most people's needs because:
-   - there's a way to talk to non-cipso systems (use the ambient label)
-   - you can talk multi-label to cipso aware systems (including yourself)
+-         To compile this driver as modules, choose M here: the
+-         modules will be called ip2 and ip2main.
++         To compile this driver as module, choose M here: the
++         module will be called ip2.
 
-> > The way you're defining
-> > it will result in a system in which only processes running with
-> > the ambient label will be able to use sockets, unless I'm reading
-> > the code incorrectly. 
-> 
-> I've tried to see the relation but failed, any help?
+ config ROCKETPORT
+        tristate "Comtrol RocketPort support"
+_______________________________________________________________________
+EINE FÜR ALLE: die kostenlose WEB.DE-Plattform für Freunde und Deine
+Homepage mit eigenem Namen. Jetzt starten! http://unddu.de/?kid=kid@mf2
 
-Unlabeled packets have to all be treated as having the same label.
-That's what the ambient label is for. If you turn off cipso all
-packets must be treated as if they came from ambient labeled processes.
-If a process is running at some other label, and there is no rule
-to allow the ambient label subject to write to that process' label
-the packet can't be delivered. Thus, only ambient label processes
-will be able to use sockets.
-
-> I'm noticing the opposite though, without defining nltype=unlabeled, 
-> we're forcing every smack-labeled process to send cipso-affected 
-> packets (and usually no machine around understands cipso).
-
-Except at the ambient label, which sends packets unlabeled.
-Unlabeled packets get the ambient label and are delivered only
-to sockets that an ambient label subject can write to.
-This is the desired behavior. We don't want to deliver unlabeled
-packets to sockets that can't be writen to by ambient labeled subjects.
-
-> _Assuming_ the concept is accepted, depending on the ambient label
-> may actually lead to a race condition though:
-> 
-> - A packet is set with the ambient label domain
-> - Ambient label changes
->   - old ambient-label netlabel domain is deleted
->   - new ambient-label is set
->   - new ambient-label netlabel domain is created
-> - call netlabel_sock_setattr(), uses the old ambient label, leads
->   to the -EPERM problem.
->   -- Rare, but can happen
-
-I would consider additional restrictions on changing the
-ambient label and nltype. They should not be changing on
-a running system once it gets going.
-
-
-> There are two possible solutions in my mind:
-> 
-> - Using a predefined netlabel domain to denote to unlabeled packets.
->   Defect: May collide with a user chosen label and used to break security.
->   Solution: Use a domain name that can't become a label (Hackery ?)
-> 
-> - I've tried first to use what was done before the 'Smack: unlabeled outgoing
-> 
->   ambient packets' patch, which honored nltype=unlabeled, but ignored
-> netlabel
->   completely:
->   i.e.
-> 
->   int rc = 0;
->   if (secattr.flags != NETLBL_SECATTR_NONE)
->        rc = netlbl_sock_setattr(sk, &secattr);
->   return rc
-> 
->   Paul, would this be right from a netlabel perspective ?
-
-It might be that the right thing to do is remove nltype unlabeled.
-It's pretty pointless with the cipso nltype dealing with unlabeled
-packets by treating them as ambient.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
