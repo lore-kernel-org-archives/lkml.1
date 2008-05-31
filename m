@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754120AbYEaNf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYEaNtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754120AbYEaNf1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 09:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYEaNfT
+	id S1754011AbYEaNtV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 09:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbYEaNtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 09:35:19 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:58830 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbYEaNfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 09:35:18 -0400
-Date: Sat, 31 May 2008 15:35:11 +0200
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch 1/2] MTD: use list_for_each_entry() in add_mtd_device()
-Message-ID: <20080531133511.GA8734@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20080531132808.644758754@kaehlcke.net> <20080531132808.984625508@kaehlcke.net>
+	Sat, 31 May 2008 09:49:06 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:63461 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752529AbYEaNtE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 09:49:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=thOBdqpcTYv9xbkINDzB2YDa2Ueq+zvq6SMtsyLZo99lw4p7awMZVm5uL1yZGjWIzaJUpslQjbmxtxZVdKOHUYsgmeZgOT3UxLibStzCg5JrC5WRXv2zTnm8krwUhA+a5K5ldy/TkLOEZhvXZ80Kgogz4NhHxJlG7fYUBGm2wYA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] ide-generic: add missing hwif->chipset setup
+Date: Sat, 31 May 2008 15:43:30 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-ide@vger.kernel.org, "John Keller" <jpk@sgi.com>,
+       Dmitri Vorobiev <dmitri.vorobiev@gmail.com>, Mel Gorman <mel@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080531132808.984625508@kaehlcke.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805311543.30501.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sorry, i forgot to tell quilt to refresh the patch, here comes the
-good one
+hwif->chipset need to be set properly or ide-generic driver will break once
+we make a final step in fixing host drivers' dependence on ide_hwifs[].
 
---
+Problem was catched early thanks to IDE tree exposure in -mm / -next trees
+and reported by people listed people (thank you guys!).
 
-MTD: use list_for_each_entry() instead of list_for_each() in add_mtd_device()
+Reported-by: "John Keller" <jpk@sgi.com>
+Reported-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Reported-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+With this patch applied we can bring "ide: fix hwif-s initialization"
+and "ide: make ide_hwifs[] static" patches back into IDE tree! :)
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+ drivers/ide/ide-generic.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux-2.6/drivers/mtd/mtdcore.c
+Index: b/drivers/ide/ide-generic.c
 ===================================================================
---- linux-2.6.orig/drivers/mtd/mtdcore.c        2008-05-31
-15:31:17.000000000 +0200
-+++ linux-2.6/drivers/mtd/mtdcore.c     2008-05-31 15:32:19.000000000
-+0200
-@@ -53,7 +53,7 @@
-
-        for (i=0; i < MAX_MTD_DEVICES; i++)
-                if (!mtd_table[i]) {
--                       struct list_head *this;
-+                       struct mtd_notifier *not;
-
-                        mtd_table[i] = mtd;
-                        mtd->index = i;
-@@ -72,8 +72,7 @@
-                        DEBUG(0, "mtd: Giving out device %d to
-												%s\n",i, mtd->name);
-                        /* No need to get a refcount on the module
-												containing
-                           the notifier, since we hold the
-													 mtd_table_mutex */
--                       list_for_each(this, &mtd_notifiers) {
--                               struct mtd_notifier *not =
-list_entry(this, struct mtd_notifier, list);
-+                       list_for_each_entry(not, &mtd_notifiers, list)
-{
-                                not->add(mtd);
-                        }
-
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
-
-    I am incapable of conceiving infinity, and yet I do not accept finity
-                          (Simone de Beauvoir)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+--- a/drivers/ide/ide-generic.c
++++ b/drivers/ide/ide-generic.c
+@@ -125,6 +125,7 @@ static int __init ide_generic_init(void)
+ 			memset(&hw, 0, sizeof(hw));
+ 			ide_std_init_ports(&hw, io_addr, io_addr + 0x206);
+ 			hw.irq = ide_default_irq(io_addr);
++			hw.chipset = ide_generic;
+ 			ide_init_port_hw(hwif, &hw);
+ 
+ 			idx[i] = i;
