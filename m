@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753009AbYEaE6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbYEaF3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753009AbYEaE6y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 00:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYEaE6p
+	id S1753505AbYEaF3L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 01:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbYEaF24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 00:58:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38975 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750749AbYEaE6o (ORCPT
+	Sat, 31 May 2008 01:28:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:9307 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbYEaF2z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 00:58:44 -0400
-Date: Fri, 30 May 2008 21:58:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-In-Reply-To: <4840D63F.2090407@redhat.com>
-Message-ID: <alpine.LFD.1.10.0805302144170.3141@woody.linux-foundation.org>
-References: <200805310127.m4V1RLR4013808@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com> <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org> <4840CE51.9060109@redhat.com>
- <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 31 May 2008 01:28:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O+RXhEsx3IWNSSdMbkfe/iKZzLhbAzSSO/EeJXmtIa4BwKv4tZgOPHj8/wN6AJOBHN4JZw8u6vRdHeeWW8A8p8kfk+VAcRIOCzPa5zlinx048IWiTeGI+blZyf+cdzDDPhH1Gh8TQUiho5KE+9vR5FMrfk1BoBfuoppcGbQjZwQ=
+Message-ID: <cfd18e0f0805302228n63cbf0d6l6e7606690ded2315@mail.gmail.com>
+Date: Sat, 31 May 2008 07:28:54 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
+Cc: drepper@redhat.com, viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <E1K2B2k-0002kS-Cz@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <482D4665.4050401@gmail.com>
+	 <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com>
+	 <E1K27bZ-0002Gk-3b@pomaz-ex.szeredi.hu>
+	 <cfd18e0f0805301124o5f217dden10726b268d05d81a@mail.gmail.com>
+	 <cfd18e0f0805301243h7d862963o8320a2c1f48942ce@mail.gmail.com>
+	 <E1K2B2k-0002kS-Cz@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 30, 2008 at 10:17 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> Michael,
+>
+>> You omitted to answer my question, the last sentence below:
+>
+> Oh, come on.  Where in my last mail did I say that these fixes
+> shouldn't be applied?
 
+I didn't say you did.  However, while saying "I understand your
+frustration", you simply ignored this question, which I would say was
+fairly important in the context, and asked me to write another version
+of the patch against your tree.  My takeaway from this is that you
+attach a higher priority to seeing that your tree isn't broken, than
+to seeing that these bugs get fixed.
 
-On Fri, 30 May 2008, Ulrich Drepper wrote:
-> 
-> Linus Torvalds wrote:
-> > Is it possible? I dunno.
-> 
-> Once again not without limitations which are too low.  The main problem
-> is that there is far more information needed on the reader side.  There
-> are two counters and a number of bits for state information.  Which
-> means the counters can be at most 14 bits in size.
+Cheers,
 
-Uli, you're NOT EVEN READING!
+Michael
 
-Go back and read it, dammit! How many times have I said that you can even 
-have more than 32 bits of data? 
-
-There's nothing wrong with using 64-bit atomics to update the words. All 
-I've *ever* questioned is whether you need more than 32 bits for the 
-FUTEX part.
-
-For example, let's say that you need 4 bits of "state" information (ie 
-"next woken-up one is a reader"). And yes, you need counts for readers and 
-writers. Maybe we can make those counts be 30 bits each. 64 bits total 
-space. But does the FUTEX_OP things actually need to access all 64 bits?
-
-So imagine that you bave a 64-bit atomic op, and bits 0-1 are the reader 
-state bits, with bits 2-31 being the reader count. Bits 32-33 are the 
-writer state bits, and bits 34-63 are the writer count.
-
-Now you can use 64-bit atomic ops to update them, but perhaps just use a 
-32-bit FUTEX op to actually wait as a reader on the low 32 bits that are 
-the reader state bits. See?
-
-THIS is what I've been trying to tell you. It's quite possible that the 
-algorithm you already have could work with just moving the bits around so 
-that each FUTEX op can be done on just one of the words.
-
-And notice my use of the word "possible". 
-
-The kernel uses a 32-bit count word, but has various other state too that 
-it maintains under a separate locking setup. Same basic idea: the 32-bit 
-word is "special" (because it's the one that has to have the right format 
-for the 'xadd' op that we use for the fast path), but it's not the _only_ 
-data in the thing. The other data is also accessed, it's just accessed 
-according to different principles.
-
-			Linus
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
