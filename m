@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYEaUZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYEaU3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbYEaUZe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 16:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYEaUZY
+	id S1755575AbYEaU3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 16:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYEaU3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 16:25:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:41783 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752324AbYEaUZW (ORCPT
+	Sat, 31 May 2008 16:29:15 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:60549 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324AbYEaU3O convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 16:25:22 -0400
+	Sat, 31 May 2008 16:29:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RPmNDXpi9PQI6iq5MhiFuWBQasJCEX7QQOzb5DkjfRJzTms/j7hDtE9AaNMolbDR0qIux5Jz1jk9aotpYYery3xLU9jy7US8UIgTcLWJd1o2fJ3UeDlAOBIu0rFzvCBVhperr0r3WTD3FJeXQP7LVNE2E4H8qzW0YsNGBqj65/k=
-Message-ID: <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com>
-Date: Sat, 31 May 2008 22:25:22 +0200
-From: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
-To: "=?UTF-8?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
+        b=sNY8HWjTJMEr9Yw5ZY7VCFj/ZC2hXFpJq2utjErFOoovDzouytwNXyMBPHcnvpE00agFLUNLKvD29hjUnOz8/c3trH6fgoYrefJOMreCHlINOPxuK2W7HZOvruIiGFTdSqdldoqkUXRL8hFIPXqXOm3zel2qNeRScHMrZ0S686A=
+Message-ID: <69e28c910805311329v8f29c42mbb97ab553cc6e96c@mail.gmail.com>
+Date: Sat, 31 May 2008 22:29:13 +0200
+From: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: Wireless-testing's b43 panics in b43_generate_txhdr on packet transmit
+Cc: "Michael Buesch" <mb@bu3sch.de>, "Pavel Roskin" <proski@gnu.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "bcm43xx-dev@lists.berlios.de" <bcm43xx-dev@lists.berlios.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1212265322.7672.2.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
-	 <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com>
-	 <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>
-	 <484191BD.8000904@gmail.com>
-	 <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
+References: <69e28c910805310723j2b721030x2609cc9e866abafa@mail.gmail.com>
+	 <200805311841.46740.mb@bu3sch.de> <1212252636.2766.10.camel@rd>
+	 <200805311954.46639.mb@bu3sch.de>
+	 <1212265322.7672.2.camel@johannes.berg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4VKPoHl032423
 
-2008/5/31 Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>:> Ok, like you said, this is not exactly the same, though it might be due to> the same bug. In Ingo's case both endpoints were doing pretty healtily,> with periodic window probes as expected. In your case TCP is not doing> window probes but got that interesting RTO value.>> So you had that '-' earlier and you checked at that time but the> connection is now already dead?
-This is only from checking after the connection was dead. By the way,I just had to remotely reboot the new machine because the windowmanager locked up, however the old PC are still listing the defunctconnections after this.
+On Sat, May 31, 2008 at 10:22 PM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+> On Sat, 2008-05-31 at 19:54 +0200, Michael Buesch wrote:
+>> On Saturday 31 May 2008 18:50:36 Pavel Roskin wrote:
+>> > On Sat, 2008-05-31 at 18:41 +0200, Michael Buesch wrote:
+>> > > On Saturday 31 May 2008 18:34:29 Stefanik Gábor wrote:
+>> > > > "BUG: unable to handle kernel NULL pointer dereference at 00000004
+>> > > > IP: [<f8dd3a99>] :b43:b43_generate_txhdr+0x6a9/0x790
+>> > >
+>> > > So can you put a few printks into the function to see where it dereferences
+>> > > a NULL pointer? (or use gdb to lookup the offset).
+>> >
+>> > u8 key_idx = info->control.hw_key->hw_key_idx;
+>> >
+>> > info->control.hw_key is NULL.
+>>
+>> Is a NULL pointer supposed to tell "do not encrypt", or is this a mac80211 bug?
+>
+> It's probably a bug.
+>
+> johannes
+>
 
-> :-(, I would some much liked to see what they were doing.
-I can of course keep on copying for testing purposes, but then I would like tobe able to dump only that single tcp connection, any tips of how to do that?I found nothing specific in the manuals of wireshark and tcpdump. Of courseit is possible to capture everything and filter afterwards, but since I will betransferring lots of data the logs will get huge and I would not like to haveeven additional traffic inside...
-
-> These 7C/D... certainly seem strange values. Which TCP variant you have in> use (cat /proc/sys/net/ipv4/tcp_congestion_control)? It seems that vegas,> veno and yeah at least contain 0x7fffffff there for some rtt, which could> perhaps somehow leak.
-I have not done any specific selection myself. On old_pc: bic, new_pc: cubic.
-BR HÃ¥kon LÃ¸vdalÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Should we assume that it's the first key if it happens?
