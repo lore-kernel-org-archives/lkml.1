@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753712AbYEaFo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYEaGEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753712AbYEaFo5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 01:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbYEaFor
+	id S1754007AbYEaGEA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 02:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbYEaGDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 01:44:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:19036 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962AbYEaFop (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 01:44:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uNHvZI9Sbm79dXnYpRzOe1/DliTWn57STojfhTCqn1ahhnPP0WrztqErPT5JNVldBqxL8WCK0tBdR4yVqlsq5mIQL1Cej1PRT6Jg1w49LNxnNQ5W1J1FtBGoppvtmYgjw0gl5TMxLxP4abjnLHCVZR6PhTa4UHi6515AQFQ1V40=
-Message-ID: <cfd18e0f0805302244lc25315fm11ff316c7a115861@mail.gmail.com>
-Date: Sat, 31 May 2008 07:44:45 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
-Cc: miklos@szeredi.hu, drepper@redhat.com, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080530131722.07f9723b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 31 May 2008 02:03:49 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:60415 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751098AbYEaGDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 02:03:48 -0400
+Date: Sat, 31 May 2008 10:03:15 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@helsinki.fi>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+Message-ID: <20080531060315.GA2692@2ka.mipt.ru>
+References: <48402BD7.2080705@madrabbit.org> <Pine.LNX.4.64.0805302105170.1761@wrl-59.cs.helsinki.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <482D4665.4050401@gmail.com>
-	 <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com>
-	 <E1K27bZ-0002Gk-3b@pomaz-ex.szeredi.hu>
-	 <cfd18e0f0805301124o5f217dden10726b268d05d81a@mail.gmail.com>
-	 <20080530131722.07f9723b.akpm@linux-foundation.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0805302105170.1761@wrl-59.cs.helsinki.fi>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+On Sat, May 31, 2008 at 12:11:32AM +0300, Ilpo Järvinen (ilpo.jarvinen@helsinki.fi) wrote:
+> > > > Active Internet connections (w/o servers)
+> > > > Proto Recv-Q Send-Q Local Address               Foreign Address
+> > > > State
+> > > > tcp        0 174592 10.0.1.14:58015             10.0.1.14:3632  ESTABLISHED
+> > > > tcp    72134      0 10.0.1.14:3632              10.0.1.14:58015 ESTABLISHED
+> 
+>              ^^^^^
+> 
+> Can you perhaps find/guess/think some explanation for this _receiver 
+> queue_...? This was a trick question :-), as we already know that the 
+> receiving process is no longer there and therefore obviously won't be 
+> reading anything anymore. But that opened another question, why TCP is 
+> then still in ESTABLISHED as orphaned TCP shouldn't be in establised state 
+> anymore, tcp_close should have changed the state (either at close or at 
+> process exit). I guess once it becomes known why tcp_close either wasn't 
+> called at all or it didn't change the state of the flow (it's quite 
+> simple, see for yourself), the cause of the bug is found (it might even be 
+> that the process went away when it shouldn't have, either a bookkeeping 
+> bug somewhere or real death, or something along those lines).
 
-On Fri, May 30, 2008 at 10:17 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 30 May 2008 20:24:22 +0200
-> "Michael Kerrisk" <mtk.manpages@googlemail.com> wrote:
->
->> > After we fixed the original issue, we can still think about this other
->> > thing :)
->>
->> Okay, by now quite a bit of my time has been wasted, and my patience
->> is starting to get a little thin.
->
-> Well yeah.  This has been dragging on for ages.  I was going to just
-> apply this patch and stomp off again but this:
->
->  "against 2.6.26rc2, with the 2008-05-19 git changes you sent me
->   applied"
->
-> stymied me.
->
-> Please, if poss, just send a standalone, fully-changelogged,
-> not-referential-to-some-random-email-discussion patch and let's get
-> going.
-
-Yes, I'll send it to you by Tuesday latest.  Sorry I probably can't
-manage sooner.  Am travelling part of Monday, and trying to spend
-(most of) the weekend with my baby daughter.
-
-> (Where's Ulrich, btw?)
-
-That's what I'd like to know....
-
-Cheers,
-
-Michael
+In that case pid Ingo straced was still valid and existed (ans stuck
+probably in tcp_sendpage() - sysrq-t dump was messy), so process still
+exist, but sock somewhat lost its reference to socket. AFICS all (three)
+calls for sk_orphan() can not happen without state change to something
+closing (like fin wait or close), except some linger things and
+listening socket, which frees its connection requests.
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+	Evgeniy Polyakov
