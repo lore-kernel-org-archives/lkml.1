@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbYFAOTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbYFAOpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbYFAOTb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 10:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYFAOR1
+	id S1752912AbYFAOpG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 10:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYFAOoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 10:17:27 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4393 "EHLO spitz.ucw.cz"
+	Sun, 1 Jun 2008 10:44:55 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2201 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753183AbYFAORW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 10:17:22 -0400
-Date: Sat, 31 May 2008 09:25:35 +0200
+	id S1751003AbYFAOoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 10:44:54 -0400
+Date: Sat, 31 May 2008 23:27:10 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: S K <nospamnoham@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem activating multiple cores ONLY if I press any key before kernel is loaded
-Message-ID: <20080531072535.GD5405@ucw.cz>
-References: <514e099a0805252039r68f88ac1wbdd1b4de77a9af94@mail.gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       Michael Neuling <mikey@neuling.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
+Message-ID: <20080531212709.GA6757@ucw.cz>
+References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526085000.33787eac@infradead.org> <483AF25B.6090806@linux.vnet.ibm.com> <20080526110040.5ddc4656@infradead.org> <483B0348.2000204@linux.vnet.ibm.com> <20080526115108.6a19e2c0@infradead.org> <483C059B.9040301@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <514e099a0805252039r68f88ac1wbdd1b4de77a9af94@mail.gmail.com>
+In-Reply-To: <483C059B.9040301@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-05-25 20:39:10, S K wrote:
-> Hi,
-> 
-> This is 100% reproducible. I'm using a Shuttle SG33G5, Q9300 (45nm)
-> and Fedora 9 with kernel 2.6.25.3-18.fc9.i686.
-> 
-> When the PC boots up, if I don't press any key till I see "Redhat nash
-> version..." everything works fine (well, good enough).
-> 
-> But if I press a key during the boot and end up inside GRUB boot menu
-> and choose Linux (Linux is the default), the boot hangs after the line
-> "Booting the kernel." and before "Redhat nash..." is displayed.
+Hi!
 
-USB keyboard? Try disabling usb legacy emulation in bios. If it helps,
-make them fix their bios.
+> > without knowing anything else than this, then yes that would be a
+> > logical conclusion: the most likely cause would be because your cpu is
+> > memory bound. In fact, you could then scale down your cpu
+> > frequency/voltage to be lower, and save some power without losing
+> > performance. 
+> > It's a weird workload though, its probably a time based thing where you
+> > alternate between idle and fully memory bound loads.
+> > 
+> > (which is another case where your patches would then expose idle time
+> > even though your cpu is fully utilized for the 50% of the time it's
+> > running)
+> 
+> We expect the end user to see 50% as scaled utilization and 100% as normal
+> utilization. We don't intend to remove tsk->utime and tsk->stime. Our patches
+> intend to provide the data and not impose what control action should be taken.
 
+Aha, ok, forget about my regression comments.
+
+Still, what you want to do seems hard. What if cpu is running at max
+frequency but memory is not? What if cpu and memory is running at max
+frequency but frontside bus is not?
+
+You want some give_me_bogomips( cpu freq, mem freq, fsb freq ) function,
+but that depends on workload, so it is impossible to do...
+
+							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
