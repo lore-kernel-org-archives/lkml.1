@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYEaTye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYEaT71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbYEaTye (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 15:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYEaTyS
+	id S1755530AbYEaT71 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 15:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYEaT7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 15:54:18 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:39910 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755744AbYEaTyR (ORCPT
+	Sat, 31 May 2008 15:59:20 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33117 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752335AbYEaT7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 15:54:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kAYbDjTCo5sv6BdknINTCQ6vACykVca5M6uEcmFNKOT4ETQP/bfItnHK55b8+JIZuvdlHXBIuafd6v7fhmh9b/3tom+e3JqGu2Re0RmWRzrmKCBkL+/lVaWt6SHh88lufZeMQmFBEPJv/vOZADE+SktxTRvUJxb4lts+ATRz9cQ=
-Message-ID: <dd18b0c30805311254l2a0cd133je9882e497711cb8e@mail.gmail.com>
-Date: Sat, 31 May 2008 19:54:17 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10724] ACPI : EC: GPE
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <UJSav77TyUB.A.A5E.JsZQIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 31 May 2008 15:59:19 -0400
+Date: Sat, 31 May 2008 20:44:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: via agp patches
+Message-ID: <20080531204452.342163c3@core>
+In-Reply-To: <20080531174357.GA18858@suse.de>
+References: <20080531003214.GA6208@suse.de>
+	<20080531003354.GC6208@suse.de>
+	<20080531132532.668f6520@core>
+	<20080531174357.GA18858@suse.de>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
-	 <UJSav77TyUB.A.A5E.JsZQIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 31, 2008 at 5:48 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10724
-> Subject         : ACPI : EC: GPE
-> Submitter       : Justin Mattock <justinmattock@gmail.com>
-> Date            : 2008-05-16 6:17 (16 days old)
-> References      : http://marc.info/?l=linux-kernel&amp;m=121091875711824&amp;w=4
->                  http://lkml.org/lkml/2008/5/18/168
->                  http://lkml.org/lkml/2008/5/25/195
->                  http://lkml.org/lkml/2008/5/25/195
->
->
->
 
-I'm still seeing this message with 2.6.26-rc4. or latest git pulled on thursday.
-regards;
+> As Via states in this patch later on:
+> 	MODULE_LICENSE("GPL and additional rights");
+> 
+> Yes, I think it is fair to say it is GPL compatible.  Isn't this just a
+> variant of the BSD license?
 
--- 
-Justin P. Mattock
+Well VIA said in the LICENCSE GPL and .. so that is fine.
