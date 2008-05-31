@@ -1,65 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbYEaUtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYEaVjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbYEaUtq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 16:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbYEaUtf
+	id S1755279AbYEaVjT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 17:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbYEaVjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 16:49:35 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:55689 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbYEaUte convert rfc822-to-8bit (ORCPT
+	Sat, 31 May 2008 17:39:10 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40169 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753894AbYEaVjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 16:49:34 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: "Stefanik =?iso-8859-1?q?G=E1bor?=" <netrolller.3d@gmail.com>
-Subject: Re: Wireless-testing's b43 panics in b43_generate_txhdr on packet transmit
-Date: Sat, 31 May 2008 22:48:55 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       "Pavel Roskin" <proski@gnu.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "bcm43xx-dev@lists.berlios.de" <bcm43xx-dev@lists.berlios.de>,
-       linux-kernel@vger.kernel.org
-References: <69e28c910805310723j2b721030x2609cc9e866abafa@mail.gmail.com> <1212265322.7672.2.camel@johannes.berg> <69e28c910805311329v8f29c42mbb97ab553cc6e96c@mail.gmail.com>
-In-Reply-To: <69e28c910805311329v8f29c42mbb97ab553cc6e96c@mail.gmail.com>
+	Sat, 31 May 2008 17:39:08 -0400
+Date: Sun, 1 Jun 2008 00:39:05 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805312332270.2760@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
+  <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com> 
+ <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>  <484191BD.8000904@gmail.com>
+  <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
+ <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200805312248.55551.mb@bu3sch.de>
+Content-Type: MULTIPART/MIXED; boundary="-696208474-1879758402-1212267869=:2760"
+Content-ID: <Pine.LNX.4.64.0806010014220.2760@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 May 2008 22:29:13 Stefanik Gábor wrote:
-> On Sat, May 31, 2008 at 10:22 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
-> > On Sat, 2008-05-31 at 19:54 +0200, Michael Buesch wrote:
-> >> On Saturday 31 May 2008 18:50:36 Pavel Roskin wrote:
-> >> > On Sat, 2008-05-31 at 18:41 +0200, Michael Buesch wrote:
-> >> > > On Saturday 31 May 2008 18:34:29 Stefanik Gábor wrote:
-> >> > > > "BUG: unable to handle kernel NULL pointer dereference at 00000004
-> >> > > > IP: [<f8dd3a99>] :b43:b43_generate_txhdr+0x6a9/0x790
-> >> > >
-> >> > > So can you put a few printks into the function to see where it dereferences
-> >> > > a NULL pointer? (or use gdb to lookup the offset).
-> >> >
-> >> > u8 key_idx = info->control.hw_key->hw_key_idx;
-> >> >
-> >> > info->control.hw_key is NULL.
-> >>
-> >> Is a NULL pointer supposed to tell "do not encrypt", or is this a mac80211 bug?
-> >
-> > It's probably a bug.
-> >
-> > johannes
-> >
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-1879758402-1212267869=:2760
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0806010009281.2760@wrl-59.cs.helsinki.fi>
+
+On Sat, 31 May 2008, Håkon Løvdal wrote:
+
+> 2008/5/31 Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>:
+>
+> > So you had that '-' earlier and you checked at that time but the
+> > connection is now already dead?
+>
+> This is only from checking after the connection was dead.
+
+Could you please rephrase the answer, I failed to understand it... :-)
+...You said earlier that you had '-' owned connections like Ingo, when did 
+that happen (now the connections won't exists anymore, so at what point of 
+time you saw those non-owned connections)?
+
+> By the way,
+> I just had to remotely reboot the new machine because the window
+> manager locked up, however the old PC are still listing the defunct
+> connections after this.
+
+Ok.
+
+> > :-(, I would some much liked to see what they were doing.
+>
+> I can of course keep on copying for testing purposes, but then I would 
+> like to be able to dump only that single tcp connection, any tips of how 
+> to do that?
+> I found nothing specific in the manuals of wireshark and tcpdump. Of 
+> cours it is possible to capture everything and filter afterwards, but 
+> since I will be transferring lots of data the logs will get huge and I 
+> would not like to have even additional traffic inside...
+
+I didn't really mean tcpdump, I was more thinking of syscall what is the 
+syscall where the process is waiting. Though tcpdump might reveal 
+something as well about the behavior when nearing the problem,
+
+tcpdump -n -i <iface> host <blahblah> and port <portno> and ...
+
+Host & port as written above matches for either src and dst, I don't 
+remember how one could specify just one of them but it's not usually 
+necessary (won't be here either).
+
+> > These 7C/D... certainly seem strange values. Which TCP variant you 
+> > have in use (cat /proc/sys/net/ipv4/tcp_congestion_control)? It seems 
+> > that vegas, veno and yeah at least contain 0x7fffffff there for some 
+> > rtt, which could perhaps somehow leak.
 > 
-> Should we assume that it's the first key if it happens?
+> I have not done any specific selection myself. On old_pc: bic, new_pc: 
+> cubic.
 
-No. It looks like it should not happen at all.
+Ok, after some searching it also seems that it was a dead-end anyway:
+  - icsk_retransmit_timer is only set to icsk->icsk_timeout or
+    jiffies + (HZ / 20)
+  - icsk_timeout is only set after if (when > max_when) limiting (in 
+    unsigned quantities)
+  - max_when is always given TCP_RTO_MAX by TCP... 
 
+...I'm currently out of ideas with this one then, I think I checked all 
+types too and nothing came up :-(.
+
+Hmm, perhaps periodically checking /proc/net/tcp (e.g., once per 10s) if 
+the timeout is larger than TCP_RTO_MAX might allow some script to 
+immediately notice when things broke while reproducing it. Storing all 
+those once per 10s values shouldn't be a too big either, it could even be 
+done in both ends for a single flow (but I'll leave a script to do that on 
+Monday).
 
 -- 
-Greetings Michael.
+ i.
+---696208474-1879758402-1212267869=:2760--
