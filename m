@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbYEaEqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYEaErV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbYEaEqW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 00:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbYEaEqL
+	id S1755342AbYEaErV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 00:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbYEaErK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 00:46:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41713 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753678AbYEaEqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 00:46:10 -0400
-Message-ID: <4840D807.2030406@redhat.com>
-Date: Fri, 30 May 2008 21:45:59 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [PATCH 3/3] 64-bit futexes: x86 support
-References: <200805310127.m4V1RLdP013819@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301923020.3141@woody.linux-foundation.org> <4840C394.2080807@redhat.com> <alpine.LFD.1.10.0805302056170.3141@woody.linux-foundation.org> <4840D335.6040406@redhat.com> <alpine.LFD.1.10.0805302129240.3141@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805302129240.3141@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sat, 31 May 2008 00:47:10 -0400
+Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:40964 "EHLO
+	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750889AbYEaErJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 00:47:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=cSE6cCm9PVjWiIo+1do7fO8xWr3SLURaiCpvirXqF3WUzll2yU4R/J9cjZjZholj;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Sat, 31 May 2008 00:47:03 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: add ability to clear stats via ethtool -
+ e1000/pcnet32
+Message-Id: <20080531004703.a081c18f.billfink@mindspring.com>
+In-Reply-To: <20080530194113.25b77988@extreme>
+References: <482DA5B6.1020606@sngx.net>
+	<482DB46A.8020103@cosmosbay.com>
+	<482EF192.4070707@sngx.net>
+	<482F5113.5090703@cosmosbay.com>
+	<482F610D.2080108@sngx.net>
+	<20080518003104.GK28241@solarflare.com>
+	<482FBA09.80201@sngx.net>
+	<483E0AAE.2020107@sngx.net>
+	<20080528221118.63da4092.akpm@linux-foundation.org>
+	<483EA2D1.8050603@sngx.net>
+	<20080529154525.3916c7b5@core>
+	<20080530151250.b44a119a.billfink@mindspring.com>
+	<48407C51.7090405@hp.com>
+	<20080530210931.5970c975.billfink@mindspring.com>
+	<20080530194113.25b77988@extreme>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4db6a4afc500d00fc244c0080c999f83b4350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.248
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Fri, 30 May 2008, Stephen Hemminger wrote:
 
-Linus Torvalds wrote:
-> You just blindly 
-> claim that you're the only one who can know things like this and can do 
-> serialization, and that your way is the only approach.
+> On Fri, 30 May 2008 21:09:31 -0400
+> Bill Fink <billfink@mindspring.com> wrote:
+> 
+> > On Fri, 30 May 2008, Rick Jones wrote:
+> > 
+> > > > Saving stats output and running beforeafter on a number of systems is
+> > > > a royal pain when troubleshooting.
+> > > 
+> > > Well, with that ringing endorsement :) I would like to state that 
+> > > Yoshihiro Ishijima has fixed some bugs in beforeafter and it will now 
+> > > deal with /proc/interrupts output better than before.
+> > > 
+> > > ftp://ftp.cup.hp.com/dist/networking/tools/
+> > 
+> > Nothing against beforefter.  It's a very useful tool, especially
+> > given Linux's lack of a method to clear interface counters.  But
+> > it still is very cumbersome to use in the scenario I mentioned,
+> > having to save the stats before and after a test on each of several
+> > systems, and then having to run beforeafter on each of those systems.
+> > Then you need to do this all again for every test run.  It's just
+> > not very efficient.
+> > 
+> > I don't know why the major objection to adding a small amount of
+> > code to the kernel that would make life a lot easier for hundreds
+> > (or more) of Linux network adminstrators.  And the snapshot/diff
+> > idea would not be complex to maintain and would also address the
+> > issue of some hardware not having a clear hw stats capability.
+> > 
+> > 						-Bill
+> 
+> ifstat from iproute2 tools also keeps state to compute number
+> of packets since last update as well. Come on, it isn't that
+> hard.
 
-Nonsense.  As you wrote yourself, you're only guessing about your
-approaches.  You didn't check what we currently do (which is the extra
-data stored protected by locks) and you suggest this scheme.
+Thanks for the pointer.  I wasn't aware of ifstat (it's not installed
+by default on any of my systems).  I will check out ifstat and see what
+it can do.
 
-Then you suggest hand-wavingly other schemes and I explain why they
-cannot work as efficiently.  I never doubted that they cannot work at
-all.  If performance wouldn't be important I would not have to change
-the current implementation which works semantically just fine.
+						-Thanks
 
-
-> Sure, futex use and user space is not the same as the kernel code. It's 
-> possible that you really do need 64-bit futexes. But quite frankly, the 
-> only thing you have proven so far is that you're an ass.
-
-Well, I don't know what you're reading into what I wrote.  I've only
-explained what is wrong with each of your proposals and arguments.  If
-pointing out the flaws makes me an ass then so be it.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhA2AcACgkQ2ijCOnn/RHTiPQCgzWqXP1EW8HID9FuzbgQa70fL
-THsAoLJvUKJO+hqFM3Hd3cHlOCIKhRoF
-=ab2b
------END PGP SIGNATURE-----
+						-Bill
