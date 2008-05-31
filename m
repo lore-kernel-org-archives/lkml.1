@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYEaTmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbYEaTxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbYEaTmW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 15:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbYEaTmM
+	id S1755078AbYEaTxa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 15:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYEaTxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 15:42:12 -0400
-Received: from lazybastard.de ([212.112.238.170]:56024 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752940AbYEaTmL (ORCPT
+	Sat, 31 May 2008 15:53:20 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:38782 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbYEaTxT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 15:42:11 -0400
-Date: Sat, 31 May 2008 21:41:55 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Chris Malley <mail@chrismalley.co.uk>
-Subject: Re: [patch 1/2] MTD: use list_for_each_entry() in add_mtd_device()
-Message-ID: <20080531194154.GA7055@logfs.org>
-References: <20080531132808.644758754@kaehlcke.net> <20080531132808.984625508@kaehlcke.net> <20080531133511.GA8734@traven>
+	Sat, 31 May 2008 15:53:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KVCsX214Vk2Ph30s1oTaad1eZ6h850cIDs26uTKtF8NKgnO7uoIzHiaty4uqf87g7lybFf5ld8rZ6aGgZNHbg0IePQ/uQSGKsCw/kJ9JD7gMQW/Lwi3bSeHM/z1wEeeybikM3GHkyL/o4gLBxoluibGc8UCVOXFNy9ge4ZwLSs0=
+Message-ID: <dd18b0c30805311253q687bdc50j41f6c4fd93c5695c@mail.gmail.com>
+Date: Sat, 31 May 2008 19:53:16 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: [Bug #10825] appletouch after wakeup
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200805312030.57213.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080531133511.GA8734@traven>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
+	 <UJSav77TyUB.A.-AD.pqZQIB@albercik>
+	 <200805312030.57213.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008 15:35:11 +0200, Matthias Kaehlcke wrote:
-> 
-> MTD: use list_for_each_entry() instead of list_for_each() in add_mtd_device()
-> 
-> Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+On Sat, May 31, 2008 at 6:30 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> Am Samstag, 31. Mai 2008 19:48:06 schrieb Rafael J. Wysocki:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.25.  Please verify if it still should be listed.
+>
+> AFAIK it is current and should be listed.
+>
+>        Regards
+>                Oliver
+>
+>
 
-Chris Malley (added to Cc:) sent a patch converting all of drivers/mtd/
-in a similar fashion.  It should be on its way in, if dwmw2 hasn't
-missed it.
-
-You might also want to check your mailer.  This patch looks like bouquet
-of flowers that got stuck in an elevator door. ;)
-
-> Index: linux-2.6/drivers/mtd/mtdcore.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/mtd/mtdcore.c        2008-05-31
-> 15:31:17.000000000 +0200
-> +++ linux-2.6/drivers/mtd/mtdcore.c     2008-05-31 15:32:19.000000000
-> +0200
-> @@ -53,7 +53,7 @@
-> 
->         for (i=0; i < MAX_MTD_DEVICES; i++)
->                 if (!mtd_table[i]) {
-> -                       struct list_head *this;
-> +                       struct mtd_notifier *not;
-> 
->                         mtd_table[i] = mtd;
->                         mtd->index = i;
-> @@ -72,8 +72,7 @@
->                         DEBUG(0, "mtd: Giving out device %d to
-> 												%s\n",i, mtd->name);
->                         /* No need to get a refcount on the module
-> 												containing
->                            the notifier, since we hold the
-> 													 mtd_table_mutex */
-> -                       list_for_each(this, &mtd_notifiers) {
-> -                               struct mtd_notifier *not =
-> list_entry(this, struct mtd_notifier, list);
-> +                       list_for_each_entry(not, &mtd_notifiers, list)
-> {
->                                 not->add(mtd);
->                         }
-
-Jörn
+I agree, right now I upgraded to the latest git on thursday, and
+performed a suspend to see if it would appear, but nothing.
+I did notice the same error while doing a reboot, and noticed
+appletouch was motionless until I removed and inserted the module back
+in.
+regards;
 
 -- 
-You ain't got no problem, Jules. I'm on the motherfucker. Go back in
-there, chill them niggers out and wait for the Wolf, who should be
-coming directly.
--- Marsellus Wallace
+Justin P. Mattock
