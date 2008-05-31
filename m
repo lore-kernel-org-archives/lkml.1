@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYEaAnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYEaAse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYEaAnU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYEaAnM
+	id S1755376AbYEaAse (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYEaAs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 20:43:12 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:51392 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbYEaAnL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 20:43:11 -0400
-Date: Sat, 31 May 2008 02:43:09 +0200
-Message-Id: <298760125@web.de>
+	Fri, 30 May 2008 20:48:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49177 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752219AbYEaAs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 20:48:26 -0400
+Date: Fri, 30 May 2008 20:41:11 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+Message-ID: <20080531004110.GA24795@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Hugh Dickins <hugh@veritas.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
+	Jeff Garzik <jeff@garzik.org>
+References: <48402DAA.60202@linux.intel.com> <Pine.LNX.4.64.0805302017580.16427@blonde.site> <alpine.LFD.1.10.0805301403540.3141@woody.linux-foundation.org> <48407909.5090608@linux.intel.com> <alpine.LFD.1.10.0805301517500.3141@woody.linux-foundation.org> <484080EC.9090707@linux.intel.com> <alpine.LFD.1.10.0805301547040.3141@woody.linux-foundation.org>
 MIME-Version: 1.0
-From: devzero@web.de
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] fix Kconfig after ip2/ip2main merge
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+o2vhEi2RRMQLtZl2TkpV7KomVnzWi3rda2i4xothSVhvBb
- 4JsgD+4Igozi7a8PvbJuPT61gB20QxxrOl79oA1i0TxLZShiAA=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805301547040.3141@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-as commit  6089093e588ee3f6aed99d08b1cf5ea37c52cf97  is fixing ip2 crashes on 
-load/unload and making ip2/ip2main one module (ip2),  Kconfig shouldn`t mention
-non existing module. I seldom posting patches and only have webmailer here, so 
-please indulge if there is something wrong with formatting or style.
+On Fri, May 30, 2008 at 03:55:25PM -0700, Linus Torvalds wrote:
+ > 
+ > 
+ > On Fri, 30 May 2008, Arjan van de Ven wrote:
+ > > 
+ > > versions that do identify themselves as "2.6.25-14.fc9.i686.PAE", and 
+ > > these ones didn't, (they're all in the "2.6.25-14.fc9.i686" form) so 
+ > > this is a kernel without PAE.
+ > 
+ > Hmm. Every single one is that one kernel version or 2.6.25.3-18.fc9.i686, 
+ > and with that many reports I'd have expected it from other kernels too. 
+ > What was the previous popular fc9 kernel (I assume it was 2.6.25-based 
+ > too?), and what changed?
 
-Signed-off-by: Roland.Kletzing <devzero@web.de>
----
- drivers/char/Kconfig |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+-14 is the version that we released F9 with, which explains its popularity.
+-18 was the first update we pushed out within the first few days..
 
-===================================================================
---- a/drivers/char/Kconfig.orig     2008-05-31 02:14:42.000000000 +0200
-+++ b/drivers/char/Kconfig  2008-05-31 02:15:15.000000000 +0200
-@@ -118,8 +118,8 @@
-          order to become a dial-in server. If you have a card like that, say
-          Y here and read <file:Documentation/computone.txt>.
+The earlier f9 builds were only beaten on by people testing our development
+tree, which is nowhere near as many as what jump on a proper release.
 
--         To compile this driver as modules, choose M here: the
--         modules will be called ip2 and ip2main.
-+         To compile this driver as module, choose M here: the
-+         module will be called ip2.
+	Dave
 
- config ROCKETPORT
-        tristate "Comtrol RocketPort support"
-_______________________________________________________________________
-EINE FÜR ALLE: die kostenlose WEB.DE-Plattform für Freunde und Deine
-Homepage mit eigenem Namen. Jetzt starten! http://unddu.de/?kid=kid@mf2
-
+-- 
+http://www.codemonkey.org.uk
