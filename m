@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYEaK2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYEaK3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbYEaK2T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 06:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYEaK2J
+	id S1754529AbYEaK3V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 06:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYEaK3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 06:28:09 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49136 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751582AbYEaK2I (ORCPT
+	Sat, 31 May 2008 06:29:12 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:36771 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbYEaK3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 06:28:08 -0400
-X-Originating-Ip: 216.16.235.2
-Date: Sat, 31 May 2008 06:27:52 -0400
-From: Chris Frey <cdfrey@foursquare.net>
+	Sat, 31 May 2008 06:29:10 -0400
+Message-ID: <48412835.2010801@web.de>
+Date: Sat, 31 May 2008 12:28:05 +0200
+From: =?UTF-8?B?UGFzY2FsIEJyw7xja25lcg==?= <pascal_2001@web.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Subject: OOM policy, overcommit control, and soft limits
-Message-ID: <20080531102752.GA25244@foursquare.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam (whitelisted),
-	SpamAssassin (not cached, score=-16.8, required 5,
-	autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -15.00)
-X-Net-Direct-Inc-MailScanner-From: <cdfrey@netdirect.ca>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] libata: Handle bay devices in dock stations
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18y32o0eWRB259wGm9Lg26p9Di2uEt+rkltqLQ/
+	6X5xGCZfiUU/qArl5wWAaVduHDwoV/inKdanfljTH5oatXU9HN
+	Gt85/+9yc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I'm using a ThinkPad X31 with the Ultrabase X3, containing an Ultrabay,
+which sends events on removal or undocking thanks to the "dock" and
+"bay" modules. Unfortunately, hibernate/suspend to disk doesn't work
+with any patch to libata seen here (i'm using the ata_piix module), if
+the cd drive in my Ultrabay was removed before suspending.
 
-The kernel provides things like ulimit, overcommit_memory, and the OOM
-killer notifications, so in theory memory management should not be a
-problem, but from time to time, I have a real need to regain control of
-my system when it runs away on me.
+Ejecting and reinserting during the running system works great, when the
+bay module is loaded before ata_piix (via initrd) or with
+"libata.noacpi=1" boot parameter. For these tasks i'm using the example
+scripts listed on thinkwiki [1] and udev.
 
-I like how mode 2 of overcommit_memory uses the ratio as a boundary limit.
-Ideally I would like something like this as a soft limit, so once the
-system gets that full, I get a warning.
+For example, removing looks like the following in syslog (on 2.6.24):
+  ACPI: \_SB_.PCI0.IDE0.SCND.MSTR: Bay event
+  ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2
+  ata2.00: waking up from sleep
+  ata2: soft resetting link
+  ata2.00: configured for UDMA/33
+  ata2: EH complete
+  ata2.00: disabled
+  ACPI: \_SB_.PCI0.IDE0.SCND.MSTR: Ejecting device
 
-Here's my ideal OOM flow:
+After this, undocking works by pressing the "undock" button on my Ultrabase:
+  ACPI: \_SB_.GDCK - undocking
 
-	1) set my soft limit to 90% of RAM
+Reinserting the ThinkPad into the docking station just sends a dock event:
+  ACPI: \_SB_.GDCK - docking
 
-	2) any malloc that hits this limit first runs through a notification
-		hook, that talks to a userspace daemon if present,
-		or just denies the malloc if not
+So i need to trigger the cd device recognition via udev (and the switch
+on the Ultrabay):
+  ACPI: \_SB_.PCI0.IDE0.SCND.MSTR: Bay event
+  ata2: soft resetting link
+  ata2.00: ATAPI: MATSHITADVD-ROM SR-8177, NB21, max UDMA/33
+  ata2.00: configured for UDMA/33
+  ata2: EH complete
+  scsi 1:0:0:0: CD-ROM            MATSHITA DVD-ROM SR-8177  NB21 PQ: 0
+ANSI: 5
+  sr0: scsi3-mmc drive: 24x/24x cd/rw xa/form2 cdda tray
+  sr 1:0:0:0: Attached scsi CD-ROM sr0
+  sr 1:0:0:0: Attached scsi generic sg1 type 5
 
-	3) the daemon can decide whether to allow the allocation, going
-		beyond the soft limit
+So ejecting and reinserting of the bay devices and docking/undocking
+works, as long as - to come to my problem - i don't try to hibernate.
+Hibernating (tried plain echo disk > /sys/power/state, too) just freezes
+the entire system without leaving a message anywhere. When using
+tuxonice/suspend2, it hangs at "Doing atomic copy".
+I discovered a new strange behaviour with recent 2.6.26 kernel and your
+attached patch, too: If i remove the Ultrabay device via script, leaving
+the device plugged in, it is discovered and spinning up again
+automatically on hibernation (which works in this case, because the
+device is present).
 
-	4) the daemon can make these decisions automatically based on
-		policy (i.e. X always gets the green light), or if we
-		want to get fancy it can talk to some pre-allocated
-		GUI to present the decision to the user...
-		(i.e. Allocate / Deny / Stop / Kill)
+Seems like the device isn't completely removed in the driver (/dev/*
+block device not present and hald not running) and on hibernation
+something tries to access the nonexistent device and locks up the
+system. I tried stable 2.6.24, 2.6.25 and plain 2.6.26, 2.6.26 from
+zen-sources git, 2.6.26 patched with the patches in this thread and in [2].
 
-	5) if the user foolishly keeps allocating, then the current
-		OOM killer comes into play
+Hope this helps,
+Pascal
 
-I'm sure someone has thought of this before me.  Does anything remotely
-similar to this already exist?  I've googled for OOM policy, but so far
-all I've seen is Rusty Lynch's patch from 2003, and really, I want this
-behaviour to happen when there is still a bit of memory left, so things
-can be dealt with before they are OOM-level dire.
+[1] http://www.thinkwiki.org/wiki/How_to_hotswap_UltraBay_devices
+[2] http://lkml.org/lkml/2008/2/14/123
 
-Thanks in advance,
-- Chris
 
