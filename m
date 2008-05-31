@@ -1,119 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYEaOrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbYEaOx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754579AbYEaOrr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 10:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYEaOrk
+	id S1754255AbYEaOx6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 10:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbYEaOxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 10:47:40 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56616 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752718AbYEaOrj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 10:47:39 -0400
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 31 May 2008 23:47:00 +0900 (JST)
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
-       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
-In-Reply-To: <48413482.5080409@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <48413482.5080409@linux.vnet.ibm.com>
- <48407DC3.8060001@linux.vnet.ibm.com> <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com> <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com>
+	Sat, 31 May 2008 10:53:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50211 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752713AbYEaOxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 10:53:51 -0400
+Date: Sat, 31 May 2008 10:47:15 -0400
+From: Dave Jones <davej@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: via agp patches
+Message-ID: <20080531144715.GA22616@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org
+References: <20080531003214.GA6208@suse.de> <20080531003250.GB6208@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080531003250.GB6208@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message -----
+On Fri, May 30, 2008 at 05:32:50PM -0700, Greg KH wrote:
+ > 
+ > Looks like this adds a new device id, I have no idea why they remove
+ > another one at the same time...
 
->> One more problem is that it's hard to implement various kinds of hierarchy
->> policy. I believe there are other hierarhcy policies rather than OpenVZ
->> want to use. Kicking out functions to middleware AMAP is what I'm thinking
->> now.
->
->One way to manage hierarchies other than via limits is to use shares (please 
-see
->the shares used by the cpu controller). Basically, what you've done with limi
-ts
->is done with shares
->
-Yes, I like _share_ rather than limits.
+I sent a patch adding the missing ident to airlied a few weeks back.
+I think it's currently in -mm.
 
->If a parent has 100 shares, then it can decide how many to pass on to it's  c
-hildren
->based on the shares of the child and your logic would work well. I propose
->assigning top level (high resolution) shares to the root of the cgroup and in
- a
->hierarchy passing them down to children and sharing it with them. Based on th
-e
->shares, deduce the limit of each node in the hierarchy.
->
->What do you think?
->
-As you wrote, a middleware can do controls based on share by limits.
-And it seems much easier to implement it in userland rather than in the kernel
-.
+The removal of the other id is a mystery to me.
 
-Here is an example. (just an example...)
-Please point out if I'm misunderstanding "share".
+	Dave
 
-root_level/                   = limit 1G.
-          /child_A = share=30
-          /child_B = share=15
-          /child_C = share=5
-(and assume there is no process under root_level for make explanation easy..)
-
-0. At first, before starting to use memory, set all kernel_memory_limit.
-root_level.limit = 1G
-  child_A.limit=64M,usage=0
-  child_B.limit=64M,usage=0
-  child_C.limit=64M,usage=0
-  free_resource=808M 
-
-1. next, a process in child_C start to run and use memory of 600M.
-root_level.limit = 1G
-  child_A.limit=64M
-  child_B.limit=64M
-  child_C.limit=600M,usage=600M
-  free_resource=272M
-
-2. now, a process in child_A start tu run and use memory of 800M.
-  child_A.limit=800M,usage=800M
-  child_B.limit=64M,usage=0M
-  child_C.limit=136M,usage=136M
-  free_resouce=0,A:C=6:1
-
-3.Finally, a process in child_B start. and use memory of 500M.
-  child_A.limit=600M,usage=600M
-  child_B.limit=300M,usage=300M
-  child_C.limit=100M,usage=100M
-  free_resouce=0, A:B:C=6:3:1
-
-4. one more, a process in A exits.
-  child_A.limit=64M, usage=0M
-  child_B.limit=500M, usage=500M
-  child_C.limit=436M, usage=436M
-  free_resouce=0, B:C=3:1 (but B just want to use 500M)
-
-This is only an example and the middleware can more pricise "limit"
-contols by checking statistics of memory controller hierarchy based on
-their own policy.
-
-What I think now is what kind of statistics/notifier/controls are
-necessary to implement shares in middleware. How pricise/quick work the
-middleware can do is based on interfaces.
-Maybe the middleware should know "how fast the application runs now" by
-some kind of check or co-operative interface with the application.
-But I'm not sure how the kernel can help it.
-
-Thanks,
--Kame
-
-
+-- 
+http://www.codemonkey.org.uk
