@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbYFAOSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbYFAOTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbYFAOSv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 10:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbYFAORZ
+	id S1754442AbYFAOTp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 10:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYFAORb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 10:17:25 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4374 "EHLO spitz.ucw.cz"
+	Sun, 1 Jun 2008 10:17:31 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4403 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752035AbYFAORF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 10:17:05 -0400
-Date: Sat, 31 May 2008 09:18:18 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
+	id S1753186AbYFAOR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 10:17:29 -0400
+Date: Sat, 31 May 2008 22:58:56 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
        Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>, Andi Kleen <ak@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] x86: enable preemption in delay
-Message-ID: <20080531071817.GB5405@ucw.cz>
-References: <Pine.LNX.4.58.0805242306280.3977@gandalf.stny.rr.com> <alpine.LFD.1.10.0805251406260.3295@apollo.tec.linutronix.de> <20080525180122.GA4247@ucw.cz> <Pine.LNX.4.58.0805280855250.25179@gandalf.stny.rr.com>
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [patch 02/41] cpu alloc: The allocator
+Message-ID: <20080531205856.GL5405@ucw.cz>
+References: <20080530035620.587204923@sgi.com> <20080530040011.084909898@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0805280855250.25179@gandalf.stny.rr.com>
+In-Reply-To: <20080530040011.084909898@sgi.com>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-05-28 09:01:06, Steven Rostedt wrote:
-> 
-> 
-> On Sun, 25 May 2008, Pavel Machek wrote:
-> > > +		if (unlikely(cpu != smp_processor_id())) {
-> > > +			if (loops <= TSC_MIGRATE_COUNT)
-> > > +				break;
-> > > +			cpu = smp_processor_id();
-> > > +			rdtscl(bclock);
-> > > +			loops -= TSC_MIGRATE_COUNT;
-> > > +		} else {
-> > > +			rdtscl(now);
-> > > +			if ((now - bclock) >= loops)
-> > > +				break;
-> > > +			loops -= (now - bclock);
-> > > +			bclock = now;
-> >
-> > What happens with different cpus running on different frequencies...?
-> > Cpufreq?
-> 
-> It's not even protected with the old code.
+Hi!
 
-Maybe, but it is simple to fix as long as preemption is disabled. When
-you enable it, it becomes much harder.
+> Index: linux-2.6/mm/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/mm/Kconfig	2008-05-29 19:41:21.000000000 -0700
+> +++ linux-2.6/mm/Kconfig	2008-05-29 20:13:39.000000000 -0700
+> @@ -205,3 +205,9 @@ config NR_QUICK
+>  config VIRT_TO_BUS
+>  	def_bool y
+>  	depends on !ARCH_NO_VIRT_TO_BUS
+> +
+> +config CPU_ALLOC_SIZE
+> +	int "Size of cpu alloc area"
+> +	default "30000"
+> +	help
+> +	  Sets the maximum amount of memory that can be allocated via cpu_alloc
 
-Lets get that fixed.
-							Pavel
+Missing . at end of line, but more important:
+
+How do you expect user to answer this?!
+
+I mean, can they put 0 there and expect kernel to work? If not, you
+should disallow that config. And you shoudl really explain how much
+memory is needed... and perhaps mention that size is in bytes?
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
