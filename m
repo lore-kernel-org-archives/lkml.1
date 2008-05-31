@@ -1,152 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYEaRU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYEaRWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbYEaRU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 13:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYEaRUJ
+	id S1755095AbYEaRWg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 13:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYEaRWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 13:20:09 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:58106 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754663AbYEaRTz (ORCPT
+	Sat, 31 May 2008 13:22:25 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47995 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752768AbYEaRWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 13:19:55 -0400
-Message-ID: <4841886A.1000901@linux.vnet.ibm.com>
-Date: Sat, 31 May 2008 22:48:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 31 May 2008 13:22:25 -0400
+Date: Sat, 31 May 2008 20:22:23 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: "=?ISO-8859-1?Q?H=E5kon_L=F8vdal?=" <hlovdal@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0805312020520.2672@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
+ <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com>
+ <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-To: kamezawa.hiroyu@jp.fujitsu.com
-CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
-       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
-Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
-References: <48413482.5080409@linux.vnet.ibm.com> <48407DC3.8060001@linux.vnet.ibm.com> <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com> <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com> <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/Mixed; boundary="-696208474-1647873004-1212250192=:2657"
+Content-ID: <Pine.LNX.4.64.0805312020521.2672@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kamezawa.hiroyu@jp.fujitsu.com wrote:
-> ----- Original Message -----
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-1647873004-1212250192=:2657
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0805312020522.2672@wrl-59.cs.helsinki.fi>
+
+On Sat, 31 May 2008, Ilpo Järvinen wrote:
+
+> On Sat, 31 May 2008, Håkon Løvdal wrote:
 > 
->>> One more problem is that it's hard to implement various kinds of hierarchy
->>> policy. I believe there are other hierarhcy policies rather than OpenVZ
->>> want to use. Kicking out functions to middleware AMAP is what I'm thinking
->>> now.
->> One way to manage hierarchies other than via limits is to use shares (please 
-> see
->> the shares used by the cpu controller). Basically, what you've done with limi
-> ts
->> is done with shares
->>
-> Yes, I like _share_ rather than limits.
+> > posted a few days ago are somewhat different from mine, however I believe
+> > this is the same problem or at least related. Just as Ingo experienced,
+> > netstat -p only shows PID/program as '-' for the hung connections while
+> > for other connections it shows the expected results.
 > 
->> If a parent has 100 shares, then it can decide how many to pass on to it's  c
-> hildren
->> based on the shares of the child and your logic would work well. I propose
->> assigning top level (high resolution) shares to the root of the cgroup and in
->  a
->> hierarchy passing them down to children and sharing it with them. Based on th
-> e
->> shares, deduce the limit of each node in the hierarchy.
->>
->> What do you think?
->>
-> As you wrote, a middleware can do controls based on share by limits.
-> And it seems much easier to implement it in userland rather than in the kernel
-> .
+> Hmm, are the other end's processes still there? ...I'd be interested to 
+> know what they're doing at the moment...
 
-The good thing about user space is that moves unnecessary code outside the
-kernel, but the hard thing is standardization. If every middleware is going to
-implement what you say, imagine the code duplication, unless we standardize this
-into a library component. More comments below. I am not sure about the
-difference between user_memory_limit and kernel_memory_limit. Could you please
-elaborate.
-
-> 
-> Here is an example. (just an example...)
-> Please point out if I'm misunderstanding "share".
-> 
-> root_level/                   = limit 1G.
->           /child_A = share=30
->           /child_B = share=15
->           /child_C = share=5
-> (and assume there is no process under root_level for make explanation easy..)
-> 
-> 0. At first, before starting to use memory, set all kernel_memory_limit.
-> root_level.limit = 1G
->   child_A.limit=64M,usage=0
->   child_B.limit=64M,usage=0
->   child_C.limit=64M,usage=0
->   free_resource=808M 
-> 
-
-This sounds incorrect, since the limits should be proportional to shares. If the
-maximum shares in the root were 100 (*ideally we want higher resolution than that)
-Then
-
-child_A.limit = .3 * 1G
-child_B.limit = .15 * 1G
-
-and so on
-
-
-> 1. next, a process in child_C start to run and use memory of 600M.
-> root_level.limit = 1G
->   child_A.limit=64M
->   child_B.limit=64M
->   child_C.limit=600M,usage=600M
->   free_resource=272M
-> 
-
-How is that feasible, it's limit was 64M, how did it bump up to 600M? If you
-want something like that, child_C should have no limits.
-
-> 2. now, a process in child_A start tu run and use memory of 800M.
->   child_A.limit=800M,usage=800M
->   child_B.limit=64M,usage=0M
->   child_C.limit=136M,usage=136M
->   free_resouce=0,A:C=6:1
-> 
-
-Not sure I understand this step
-
-> 3.Finally, a process in child_B start. and use memory of 500M.
->   child_A.limit=600M,usage=600M
->   child_B.limit=300M,usage=300M
->   child_C.limit=100M,usage=100M
->   free_resouce=0, A:B:C=6:3:1
-> 
-
-Not sure I understand this step
-
-> 4. one more, a process in A exits.
->   child_A.limit=64M, usage=0M
->   child_B.limit=500M, usage=500M
->   child_C.limit=436M, usage=436M
->   free_resouce=0, B:C=3:1 (but B just want to use 500M)
-> 
-
-Not sure I understand this step
-
-> This is only an example and the middleware can more pricise "limit"
-> contols by checking statistics of memory controller hierarchy based on
-> their own policy.
-> 
-> What I think now is what kind of statistics/notifier/controls are
-> necessary to implement shares in middleware. How pricise/quick work the
-> middleware can do is based on interfaces.
-> Maybe the middleware should know "how fast the application runs now" by
-> some kind of check or co-operative interface with the application.
-> But I'm not sure how the kernel can help it.
-
-I am not sure if I understand your proposal at this point.
+I meant that end where you see this '-'. I suppose it's easy for you to 
+figure out which process is the right one, something that wouldn't be so 
+easy with the Ingo's test case which forks/exits numerous times.
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+ i.
+---696208474-1647873004-1212250192=:2657--
