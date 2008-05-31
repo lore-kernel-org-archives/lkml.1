@@ -1,78 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbYEaKkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYEaKmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754681AbYEaKkN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 06:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYEaKkB
+	id S1754765AbYEaKmE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 06:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYEaKly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 06:40:01 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:36370 "EHLO
+	Sat, 31 May 2008 06:41:54 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:38327 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751762AbYEaKkA (ORCPT
+	with ESMTP id S1751906AbYEaKlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 06:40:00 -0400
+	Sat, 31 May 2008 06:41:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=qxyLbxj7yUHIFyGxvNQ/ato1dqn0/sZIEtk0Po0PfZ3SO7/Z/jfCaZ+b9a9qFzoK0QIZ33WtBK6sgX3xqzOqEnXCzuIjdsypmIVfahznEdlkzaKTxhh80GWq3ZBMbtrQBmIyDA1KuXVfQ49VtY2DUWKR1auRny/8y6iq9URN+5o=
+        b=ERts1IpzKcWVnE+/IGRYSFJXgYGsB8/BoMyIVhXGvAY2X6Z7zGn80uTNCSitMJvqyGiFfWyyZL9vZj6HWNTLRasg3tLHaevjkn/zfYv26wWopHOU8RIs/VHRQjssCQuEwiB8MmHOGHVc2cBq/PXJOFj+PachWrySgjk5l/IVNFs=
 From: Bryan Wu <cooloney@kernel.org>
-To: apw@uk.ibm.com, linux-kernel@vger.kernel.org
-Cc: Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] checkpatch script: add Blackfin checks for HI/LO and SSYNC/CSYNC macros
-Date: Sat, 31 May 2008 18:39:54 +0800
-Message-Id: <1212230394-22384-1-git-send-email-cooloney@kernel.org>
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Cc: Michael Hennerich <michael.hennerich@analog.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] PCMCIA : add support the CF PCMCIA driver for Blackfin fixing (-mm)
+Date: Sat, 31 May 2008 18:41:47 +0800
+Message-Id: <1212230507-22833-1-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+ - Use MODULE_AUTHOR
+ - Use __devinit
+ - Fix printk message
+ - Use device prints
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- scripts/checkpatch.pl |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ drivers/pcmcia/bfin_cf_pcmcia.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index b6bbbcd..44ef399 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1126,6 +1126,18 @@ sub process {
- 			WARN("adding a line without newline at end of file\n" . $herecurr);
- 		}
+diff --git a/drivers/pcmcia/bfin_cf_pcmcia.c b/drivers/pcmcia/bfin_cf_pcmcia.c
+index de517cb..b836e1f 100644
+--- a/drivers/pcmcia/bfin_cf_pcmcia.c
++++ b/drivers/pcmcia/bfin_cf_pcmcia.c
+@@ -1,6 +1,5 @@
+ /*
+  * file: drivers/pcmcia/bfin_cf.c
+- * author: Michael Hennerich (hennerich@blackfin.uclinux.org)
+  *
+  * based on: drivers/pcmcia/omap_cf.c
+  * omap_cf.c -- OMAP 16xx CompactFlash controller driver
+@@ -93,7 +92,7 @@ static void bfin_cf_timer(unsigned long _cf)
  
-+# Blackfin: use hi/lo macros
-+		if ($realfile =~ m@arch/blackfin/.*\.S$@) {
-+			if ($line =~ /\.[lL][[:space:]]*=.*&[[:space:]]*0x[fF][fF][fF][fF]/) {
-+				my $herevet = "$here\n" . cat_vet($line) . "\n";
-+				ERROR("use the LO() macro, not (... & 0xFFFF)\n" . $herevet);
-+			}
-+			if ($line =~ /\.[hH][[:space:]]*=.*>>[[:space:]]*16/) {
-+				my $herevet = "$here\n" . cat_vet($line) . "\n";
-+				ERROR("use the HI() macro, not (... >> 16)\n" . $herevet);
-+			}
-+		}
-+
- # check we are in a valid source file *.[hc] if not then ignore this hunk
- 		next if ($realfile !~ /\.[hc]$/);
+ 	if (present != cf->present) {
+ 		cf->present = present;
+-		pr_debug("%s: card %s\n", driver_name,
++		dev_dbg(&cf->pdev->dev, ": card %s\n",
+ 			 present ? "present" : "gone");
+ 		pcmcia_parse_events(&cf->socket, SS_DETECT);
+ 	}
+@@ -144,15 +143,14 @@ bfin_cf_set_socket(struct pcmcia_socket *sock, struct socket_state_t *s)
+ 		enable_irq(cf->irq);
+ 	}
  
-@@ -1142,6 +1154,16 @@ sub process {
- 			WARN("CVS style keyword markers, these will _not_ be updated\n". $herecurr);
- 		}
+-	pr_debug("%s: Vcc %d, io_irq %d, flags %04x csc %04x\n",
+-		 driver_name, s->Vcc, s->io_irq, s->flags, s->csc_mask);
++	dev_dbg(&cf->pdev->dev, ": Vcc %d, io_irq %d, flags %04x csc %04x\n",
++		 s->Vcc, s->io_irq, s->flags, s->csc_mask);
  
-+# Blackfin: don't use __builtin_bfin_[cs]sync
-+		if ($line =~ /__builtin_bfin_csync/) {
-+			my $herevet = "$here\n" . cat_vet($line) . "\n";
-+			ERROR("use the CSYNC() macro in asm/blackfin.h\n" . $herevet);
-+		}
-+		if ($line =~ /__builtin_bfin_ssync/) {
-+			my $herevet = "$here\n" . cat_vet($line) . "\n";
-+			ERROR("use the SSYNC() macro in asm/blackfin.h\n" . $herevet);
-+		}
-+
- # Check for potential 'bare' types
- 		my ($stat, $cond);
- 		if ($realcnt && $line =~ /.\s*\S/) {
+ 	return 0;
+ }
+ 
+ static int bfin_cf_ss_suspend(struct pcmcia_socket *s)
+ {
+-	pr_debug("%s: %s\n", driver_name, __func__);
+ 	return bfin_cf_set_socket(s, &dead_socket);
+ }
+ 
+@@ -196,7 +194,7 @@ static struct pccard_operations bfin_cf_ops = {
+ 
+ /*--------------------------------------------------------------------------*/
+ 
+-static int __init bfin_cf_probe(struct platform_device *pdev)
++static int __devinit bfin_cf_probe(struct platform_device *pdev)
+ {
+ 	struct bfin_cf_socket *cf;
+ 	struct resource *io_mem, *attr_mem;
+@@ -204,27 +202,27 @@ static int __init bfin_cf_probe(struct platform_device *pdev)
+ 	unsigned short cd_pfx;
+ 	int status = 0;
+ 
+-	printk(KERN_INFO "Blackfin CompactFlash/PCMCIA Socket Driver\n");
++	dev_info(&pdev->dev, "Blackfin CompactFlash/PCMCIA Socket Driver\n");
+ 
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (!irq)
+ 		return -EINVAL;
+ 
+ 	cd_pfx = platform_get_irq(pdev, 1);	/*Card Detect GPIO PIN */
+-	if (cd_pfx > MAX_BLACKFIN_GPIOS)
+-		return -EINVAL;
+ 
+ 	if (gpio_request(cd_pfx, "pcmcia: CD")) {
+-		printk(KERN_ERR
+-		       "BF5xx flash: Failed ro request Card Detect GPIO_%d\n",
++		dev_err(&pdev->dev, 
++		       "Failed ro request Card Detect GPIO_%d\n",
+ 		       cd_pfx);
+ 		return -EBUSY;
+ 	}
+ 	gpio_direction_input(cd_pfx);
+ 
+ 	cf = kzalloc(sizeof *cf, GFP_KERNEL);
+-	if (!cf)
++	if (!cf) {
++		gpio_free(cd_pfx);
+ 		return -ENOMEM;
++	}
+ 
+ 	cf->cd_pfx = cd_pfx;
+ 
+@@ -254,9 +252,9 @@ static int __init bfin_cf_probe(struct platform_device *pdev)
+ 	if (!cf->socket.io_offset)
+ 		goto fail0;
+ 
+-	pr_info("%s: on irq %d\n", driver_name, irq);
++	dev_err(&pdev->dev, ": on irq %d\n", irq);
+ 
+-	pr_debug("%s: %s\n", driver_name,
++	dev_dbg(&pdev->dev, ": %s\n",
+ 		 bfin_cf_present(cf->cd_pfx) ? "present" : "(not present)");
+ 
+ 	cf->socket.owner = THIS_MODULE;
+@@ -280,6 +278,7 @@ fail2:
+ 	release_mem_region(cf->phys_cf_io, SZ_8K);
+ 
+ fail0:
++	gpio_free(cf->cd_pfx);
+ 	kfree(cf);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+@@ -335,5 +334,6 @@ static void __exit bfin_cf_exit(void)
+ module_init(bfin_cf_init);
+ module_exit(bfin_cf_exit);
+ 
++MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>")
+ MODULE_DESCRIPTION("BFIN CF/PCMCIA Driver");
+ MODULE_LICENSE("GPL");
 -- 
 1.5.5
 
