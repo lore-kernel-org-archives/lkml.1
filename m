@@ -1,117 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbYEaAPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYEaAPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbYEaAPO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbYEaANi
+	id S1757448AbYEaAPi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYEaAOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 20:13:38 -0400
-Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:34077
+	Fri, 30 May 2008 20:14:09 -0400
+Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:34114
 	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753584AbYEaANd (ORCPT
+	with ESMTP id S1753738AbYEaANf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 20:13:33 -0400
+	Fri, 30 May 2008 20:13:35 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 0 of 4] mm+paravirt+xen: add pte read-modify-write abstraction
-	(take 2)
-Message-Id: <patchbomb.1212192268@localhost>
-Date: Sat, 31 May 2008 01:04:28 +0100
+Subject: [PATCH 4 of 4] xen: add mechanism to extend existing multicalls
+X-Mercurial-Node: b3926110c03ab4f93367f31b10a81b5c6589eaf6
+Message-Id: <b3926110c03ab4f93367.1212192272@localhost>
+In-Reply-To: <patchbomb.1212192268@localhost>
+Date: Sat, 31 May 2008 01:04:32 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
        xen-devel <xen-devel@lists.xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
-       Zachary Amsden <zach@vmware.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+       Thomas Gleixner <tglx@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Some Xen hypercalls accept an array of operations to work on.  In
+general this is because its more efficient for the hypercall to the
+work all at once rather than as separate hypercalls (even batched as a
+multicall).
 
-[ Change since last post: change name to ptep_modify_prot_, on the
-  grounds that it isn't really a general pte-modification interface. ]
+This patch adds a mechanism (xen_mc_extend_args()) to allocate more
+argument space to the last-issued multicall, in order to extend its
+argument list.
 
-This little series adds a new transaction-like abstraction for doing
-RMW updates to a pte, hooks it into paravirt_ops, and then makes use
-of it in Xen.
+The user of this mechanism is xen/mmu.c, which uses it to extend the
+args array of mmu_update.  This is particularly valuable when doing
+the update for a large mprotect, which goes via
+ptep_modify_prot_commit(), but it also manages to batch updates to
+pgd/pmds as well.
 
-The basic problem is that mprotect is very slow under Xen (up to 50x
-slower than native), primarily because of the
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/xen/mmu.c        |   56 ++++++++++++++++++++++++++++-----------------
+ arch/x86/xen/multicalls.c |   40 +++++++++++++++++++++++++++-----
+ arch/x86/xen/multicalls.h |   12 +++++++++
+ 3 files changed, 81 insertions(+), 27 deletions(-)
 
-	ptent = ptep_get_and_clear(mm, addr, pte);
-	ptent = pte_modify(ptent, newprot);
-	/* ... */
-	set_pte_at(mm, addr, pte, ptent);
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -218,19 +218,35 @@
+ 		BUG();
+ }
+ 
+-
+-void xen_set_pmd(pmd_t *ptr, pmd_t val)
++static void extend_mmu_update(const struct mmu_update *update)
+ {
+ 	struct multicall_space mcs;
+ 	struct mmu_update *u;
+ 
++	mcs = xen_mc_extend_args(__HYPERVISOR_mmu_update, sizeof(*u));
++
++	if (mcs.mc != NULL)
++		mcs.mc->args[1]++;
++	else {
++		mcs = __xen_mc_entry(sizeof(*u));
++		MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_SELF);
++	}
++
++	u = mcs.args;
++	*u = *update;
++}
++
++void xen_set_pmd(pmd_t *ptr, pmd_t val)
++{
++	struct mmu_update u;
++
+ 	preempt_disable();
+ 
+-	mcs = xen_mc_entry(sizeof(*u));
+-	u = mcs.args;
+-	u->ptr = virt_to_machine(ptr).maddr;
+-	u->val = pmd_val_ma(val);
+-	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++	xen_mc_batch();
++
++	u.ptr = virt_to_machine(ptr).maddr;
++	u.val = pmd_val_ma(val);
++	extend_mmu_update(&u);
+ 
+ 	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ 
+@@ -309,14 +325,13 @@
+ void xen_ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
+ 				 pte_t *ptep, pte_t pte)
+ {
+-	struct multicall_space mcs;
+-	struct mmu_update *u;
++	struct mmu_update u;
+ 
+-	mcs = xen_mc_entry(sizeof(*u));
+-	u = mcs.args;
+-	u->ptr = virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
+-	u->val = pte_val_ma(pte);
+-	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++	xen_mc_batch();
++
++	u.ptr = virt_to_machine(ptep).maddr | MMU_PT_UPDATE_PRESERVE_AD;
++	u.val = pte_val_ma(pte);
++	extend_mmu_update(&u);
+ 
+ 	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
+@@ -367,16 +382,15 @@
+ 
+ void xen_set_pud(pud_t *ptr, pud_t val)
+ {
+-	struct multicall_space mcs;
+-	struct mmu_update *u;
++	struct mmu_update u;
+ 
+ 	preempt_disable();
+ 
+-	mcs = xen_mc_entry(sizeof(*u));
+-	u = mcs.args;
+-	u->ptr = virt_to_machine(ptr).maddr;
+-	u->val = pud_val_ma(val);
+-	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++	xen_mc_batch();
++
++	u.ptr = virt_to_machine(ptr).maddr;
++	u.val = pud_val_ma(val);
++	extend_mmu_update(&u);
+ 
+ 	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ 
+diff --git a/arch/x86/xen/multicalls.c b/arch/x86/xen/multicalls.c
+--- a/arch/x86/xen/multicalls.c
++++ b/arch/x86/xen/multicalls.c
+@@ -29,14 +29,14 @@
+ #define MC_DEBUG	1
+ 
+ #define MC_BATCH	32
+-#define MC_ARGS		(MC_BATCH * 16 / sizeof(u64))
++#define MC_ARGS		(MC_BATCH * 16)
+ 
+ struct mc_buffer {
+ 	struct multicall_entry entries[MC_BATCH];
+ #if MC_DEBUG
+ 	struct multicall_entry debug[MC_BATCH];
+ #endif
+-	u64 args[MC_ARGS];
++	unsigned char args[MC_ARGS];
+ 	struct callback {
+ 		void (*fn)(void *);
+ 		void *data;
+@@ -107,20 +107,48 @@
+ {
+ 	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
+ 	struct multicall_space ret;
+-	unsigned argspace = (args + sizeof(u64) - 1) / sizeof(u64);
++	unsigned argidx = roundup(b->argidx, sizeof(u64));
+ 
+ 	BUG_ON(preemptible());
+-	BUG_ON(argspace > MC_ARGS);
++	BUG_ON(b->argidx > MC_ARGS);
+ 
+ 	if (b->mcidx == MC_BATCH ||
+-	    (b->argidx + argspace) > MC_ARGS)
++	    (argidx + args) > MC_ARGS) {
+ 		xen_mc_flush();
++		argidx = roundup(b->argidx, sizeof(u64));
++	}
+ 
+ 	ret.mc = &b->entries[b->mcidx];
+ 	b->mcidx++;
++	ret.args = &b->args[argidx];
++	b->argidx = argidx + args;
++
++	BUG_ON(b->argidx > MC_ARGS);
++	return ret;
++}
++
++struct multicall_space xen_mc_extend_args(unsigned long op, size_t size)
++{
++	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
++	struct multicall_space ret = { NULL, NULL };
++
++	BUG_ON(preemptible());
++	BUG_ON(b->argidx > MC_ARGS);
++
++	if (b->mcidx == 0)
++		return ret;
++
++	if (b->entries[b->mcidx - 1].op != op)
++		return ret;
++
++	if ((b->argidx + size) > MC_ARGS)
++		return ret;
++
++	ret.mc = &b->entries[b->mcidx - 1];
+ 	ret.args = &b->args[b->argidx];
+-	b->argidx += argspace;
++	b->argidx += size;
+ 
++	BUG_ON(b->argidx > MC_ARGS);
+ 	return ret;
+ }
+ 
+diff --git a/arch/x86/xen/multicalls.h b/arch/x86/xen/multicalls.h
+--- a/arch/x86/xen/multicalls.h
++++ b/arch/x86/xen/multicalls.h
+@@ -45,4 +45,16 @@
+ /* Set up a callback to be called when the current batch is flushed */
+ void xen_mc_callback(void (*fn)(void *), void *data);
+ 
++/*
++ * Try to extend the arguments of the previous multicall command.  The
++ * previous command's op must match.  If it does, then it attempts to
++ * extend the argument space allocated to the multicall entry by
++ * arg_size bytes.
++ *
++ * The returned multicall_space will return with mc pointing to the
++ * command on success, or NULL on failure, and args pointing to the
++ * newly allocated space.
++ */
++struct multicall_space xen_mc_extend_args(unsigned long op, size_t arg_size);
++
+ #endif /* _XEN_MULTICALLS_H */
 
-sequence in mm/mprotect.c:change_pte_range().
-
-This is bad for Xen for two reasons:
-
-  1: ptep_get_and_clear() ends up being a xchg on the pte.  Since the
-     pte page is read-only (as it must be, because Xen needs to
-     control all pte updates), this traps into Xen, which then
-     emulates the instruction.  Trapping into the instruction emulator
-     is inherently expensive.  And,
-
-  2: because ptep_get_and_clear has atomic-fetch-and-update semantics,
-     it's impossible to implement in a way which can be batched to
-     amortize the cost of trapping into the hypervisor.
-
-This series adds the ptep_modify_prot_start() and
-ptep_modify_prot_commit() operations, which change this sequence to:
-
-	ptent = ptep_modify_prot_start(mm, addr, pte);
-	ptent = pte_modify(ptent, newprot);
-	/* ... */
-	ptep_modify_prot_commit(mm, addr, pte, ptent);
-
-Which looks very familiar.  And, indeed, when compiled without
-CONFIG_PARAVIRT (or on a non-x86 architecture), it will end up doing
-precisely the same thing as before.
-
-However, the effective semantics are a bit different.
-ptep_modify_prot_start() means "I'm reading this pte with the
-intention of updating it; please don't lose any hardware pte changes
-in the meantime".  And ptep_modify_prot_commit() means "Here's a new
-value for the pte, but make sure you don't lose any hardware changes".
-
-The default implementation achieves these semantics by making
-ptep_modify_prot_start() set the pte to non-present, which prevents
-any async hardware changes to the pte.  The ptep_modify_prot_commit()
-can then just write the new value into place without having to worry
-about preserving any changes, because it knows there are none.
-
-Xen implements ptep_modify_prot_start() as a simple read of the pte.
-This leaves the pte unchanged in memory, and the hardware may make
-asynchronous changes to it.  It implements ptep_modify_prot_commit()
-using a batched hypercall which preserves the state of the
-Access/Dirty bits when updating the pte.  This allows the whole
-change_pte_range() loop to be run without any synchronous unbatched
-traps into the hypervisor.  With this change in place, an mprotect
-microbenchmark goes from being 50x worse than native to around 7x,
-which is acceptible.
-
-I believe that other virtualization systems, whether they use direct
-paging like Xen, or a shadow pagetable scheme (vmi, kvm, lguest), can
-make use of this interface to improve the performance.
-
-Unfortunately (or fortunately) there aren't very many other areas of
-the kernel which can really take advantage of this.  There's only a
-couple of other instances of ptep_get_and_clear() in mm/, and they're
-being used in a similar way; but I don't think they're very
-performance critical (though zap_pte_range might be interesting).
-
-In general, mprotect is rarely a performance bottleneck.  But some
-debugging libraries (such as electric fence) and garbage collectors
-can be very heavy users of mprotect, and this change could materially
-benefit them.
-
-Thanks,
-	J
 
