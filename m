@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbYEaSbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYEaSiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755036AbYEaSbV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 14:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYEaSbJ
+	id S1755038AbYEaSiY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 14:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYEaSiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 14:31:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51235 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753434AbYEaSbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 14:31:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred until reload of ehci-hcd
-Date: Sat, 31 May 2008 20:31:44 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Greg KH <greg@kroah.com>, Oliver Neukum <oliver@neukum.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>
-References: <Pine.LNX.4.44L0.0805311227090.6625-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0805311227090.6625-100000@netrider.rowland.org>
+	Sat, 31 May 2008 14:38:07 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48570 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753338AbYEaSiG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 14:38:06 -0400
+Date: Sat, 31 May 2008 21:37:44 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: "=?UTF-8?B?SMOla29uIEzDuHZkYWw=?=" <hlovdal@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <484191BD.8000904@gmail.com>
+Message-ID: <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
+ <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com>
+ <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi> <484191BD.8000904@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805312031.45521.rjw@sisk.pl>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1135271880-1212259064=:2672"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 31 of May 2008, Alan Stern wrote:
-> On Sat, 31 May 2008, Greg KH wrote:
-> 
-> > On Thu, May 29, 2008 at 11:17:14PM +0200, Rafael J. Wysocki wrote:
-> > > On Sunday, 25 of May 2008, Oliver Neukum wrote:
-> > > > Am Samstag 24 Mai 2008 22:31:39 schrieb Rafael J. Wysocki:
-> > > > > This message has been generated automatically as a part of a report
-> > > > > of recent regressions.
-> > > > > 
-> > > > > The following bug entry is on the current list of known regressions
-> > > > > from 2.6.25.  Please verify if it still should be listed.
-> > > > 
-> > > > Alan's patch fixes the issue. It has been tested and submitted.
-> > > 
-> > > Has it reached the Linus' tree already?
-> > 
-> > Yes, it should now be in there, as of last night.
-> > 
-> > Alan, is this correct?
-> 
-> Confirmed; the patch is now in Linus's tree:
-> 
-> 	Commit d1f114d12bb4db3147e1b1342ae31083c5a79c84
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks, closed.
+---696208474-1135271880-1212259064=:2672
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Rafael
+On Sat, 31 May 2008, Håkon Løvdal wrote:
+
+> Ilpo Järvinen wrote:
+> > Hmm, are the other end's processes still there? ...I'd be interested to know
+> > what they're doing at the moment...
+> 
+> > I meant that end where you see this '-'. I suppose it's easy for you to
+> > figure out which process is the right one, something that wouldn't be so
+> > easy with the Ingo's test case which forks/exits numerous times.
+> 
+> > Died? Do you mean that they don't exist all at the other end anymore?
+
+Ok, like you said, this is not exactly the same, though it might be due to 
+the same bug. In Ingo's case both endpoints were doing pretty healtily, 
+with periodic window probes as expected. In your case TCP is not doing 
+window probes but got that interesting RTO value.
+
+So you had that '-' earlier and you checked at that time but the 
+connection is now already dead?
+
+> The ssh connection used for copying (using the command <ssh old_pc "cd
+> /directory; tar cvf - *" | pv | tar xvf ->) died in the following way:
+>   ...
+>   Read from remote host old_pc: Connection timed out
+>   51.4GB 4:26:19 [3.29MB/s] [<=>                                   ]
+>   tar: Unexpected EOF in archive
+>   tar: Unexpected EOF in archive
+>   tar: Error is not recoverable: exiting now
+> 
+> and there are currently no traces of those ssh processes any longer on
+> the new PC, only these two active ssh interactive connections are present:
+
+:-(, I would some much liked to see what they were doing.
+
+> old_pc>sed -n '1p; /:0016/p' /proc/net/tcp
+> sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt
+> uid  timeout inode
+> 12: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000
+> 0        0 7627 1 f384b080 3000 0 0 2 -1
+> 17: 111111AC:0016 480111AC:CDBB 01 00000000:00000000 02:0001AA7B 00000000
+> 0        0 1110320 2 f02e6580 201 53 7 3 -1
+> 20: 111111AC:0016 480111AC:AB31 01 00000000:00000000 02:000A18F1 00000000
+> 0        0 583506 4 f71a8080 201 40 29 3 -1
+> 21: 111111AC:0016 480111AC:E4E9 01 00000B50:00000000 01:7D1F8746 00000000
+> 0        0 398713 5 f71a8580 205 40 1 36 -1
+> 23: 111111AC:0016 480111AC:D359 01 000010F8:00000000 01:7D19A035 00000000
+> 0        0 396426 5 f71a8a80 202 42 1 144 -1
+> 25: 111111AC:0016 480111AC:8565 01 00000B50:00000000 01:7CEBA7D1 00000000
+> 0        0 349113 5 eeeaf580 204 40 1 26 -1
+> old_pc>
+
+These 7C/D... certainly seem strange values. Which TCP variant you have in 
+use (cat /proc/sys/net/ipv4/tcp_congestion_control)? It seems that vegas, 
+veno and yeah at least contain 0x7fffffff there for some rtt, which could 
+perhaps somehow leak.
+
+-- 
+ i.
+---696208474-1135271880-1212259064=:2672--
