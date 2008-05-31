@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYEaIbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYEaIjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbYEaIbM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 04:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYEaIa4
+	id S1754518AbYEaIjg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 04:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbYEaIj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 04:30:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46994 "EHLO
+	Sat, 31 May 2008 04:39:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51337 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbYEaIaz (ORCPT
+	with ESMTP id S1751290AbYEaIj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 04:30:55 -0400
-Date: Sat, 31 May 2008 04:30:52 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
-       casey@schaufler-ca.com, agruen@suse.de, jjohansen@suse.de,
-       penguin-kernel@I-love.SAKURA.ne.jp, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/15] security: pass path to inode_create
-Message-ID: <20080531083052.GH24135@infradead.org>
-References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080529134958.655985182@szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	Sat, 31 May 2008 04:39:26 -0400
+Subject: Re: [PATCHv2 26/28] firmware: allow firmware files to be built
+	into kernel image
+From: David Woodhouse <dwmw2@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org
+In-Reply-To: <200805301508.34635.rusty@rustcorp.com.au>
+References: <1211708969@pmac.infradead.org>
+	 <E1K0DOO-0007ES-DU@shinybook.infradead.org>
+	 <200805301508.34635.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Sat, 31 May 2008 11:39:23 +0300
+Message-Id: <1212223163.8199.77.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 03:49:04PM +0200, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
+On Fri, 2008-05-30 at 15:08 +1000, Rusty Russell wrote:
 > 
-> In the inode_create() security operation and related functions pass
-> the path (vfsmount + dentry) to the parent directory instead of the
-> inode.  AppArmor will need this.
+> > +/* We have to play tricks here much like stringify() to get the
+> > +   __COUNTER__ macro to be expanded as we want it */
+> > +#define __fw_concat1(x,y) x##y
+> > +#define __fw_concat(x,y) __fw_concat1(x,y)
+> 
+> Hmm, linux/module.h does this too, perhaps some enthusiast can implement 
+> __concat() and use it everywhere.
 
-So you're once again switching vfs_ to a pass a vfsmount argument, this
-time hidden under struct path.  It's really hard to grasp a "no"
-sometimes, isn't it? :)
+Took me a while to find that... in moduleparam.h :)
+
+Yeah, it probably makes sense to split it out, and probably add a
+'uniquify' macro which properly appends __COUNTER__ to some string; PCI
+fixup declarations could do with that too. I'll probably just add them
+to stringify.h -- I don't think they each justify separate files of
+their own. It's all just CPP magic.
+
+Although I was actually going to drop DECLARE_BUILTIN_FIRMWARE. I'm not
+doing that from C code at all any more -- it's all in asm. At this
+point, it only really serves as documentation for that one patch in the
+series (and yes, it's scary that such a construct really does give
+people more of a clue what's going on).
+
+-- 
+dwmw2
 
