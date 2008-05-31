@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314AbYEaDlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYEaDp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314AbYEaDlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 23:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYEaDlb
+	id S1754229AbYEaDp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 23:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbYEaDpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 23:41:31 -0400
-Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:32623 "HELO
-	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750801AbYEaDla (ORCPT
+	Fri, 30 May 2008 23:45:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51643 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750914AbYEaDpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 23:41:30 -0400
-X-YMail-OSG: t63ljuEVM1lIHnHV2GnYiHg7FtMd.OlQz4MRbWJ8n4YqusQFuqDpea4nigPy0AJpICpcTBpJne63LRhbzNGmC4vd.UDCd3kQHbIGUBDRFIZmc7O9xwKRAqKrwUo-
-X-RocketYMMF: rancidfat
-Date: Fri, 30 May 2008 20:41:26 -0700 (PDT)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: 2.6.24-rc4: mount.ntfs-3g hangs when smack is enabled
-To: Miklos Szeredi <miklos@szeredi.hu>, lcapitulino@mandriva.com.br
-Cc: casey@schaufler-ca.com, miklos@szeredi.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <E1K1l3b-0008Rx-4i@pomaz-ex.szeredi.hu>
+	Fri, 30 May 2008 23:45:15 -0400
+Date: Fri, 30 May 2008 20:44:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
+In-Reply-To: <4840C29B.6030507@redhat.com>
+Message-ID: <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org>
+References: <200805310127.m4V1RLR4013808@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <848198.48297.qm@web36608.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-> >  I'm not sure whether this is a smack problem, but Mandriva users are
-> > reporting that mount.ntfs-3g (ntfs driver, uses FUSE) hangs when
-> > they try to mount their NTFS partition.
+On Fri, 30 May 2008, Ulrich Drepper wrote:
+
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> Yes, this is a smack/fuse interaction problem.  Also see this thread:
+> Linus Torvalds wrote:
+> > We've had a 32-bit rwsemaphore in the kernel for a *long* time.
 > 
->   http://marc.info/?l=fuse-devel&m=120931855107469&w=2
-> 
-> Casey, you were CC-d on the last mail in that thread.  Did you miss
-> that?
+> You misread what I wrote.
 
-Ok. I just set my a machine to try this on and with today's
-Linus git tree as the base I'm able to mount an NTFS file system
-just fine. Just to be perverse, the machine I'm working with
-has Oracle Enterprize 5 installed, with ntfsprogs-2.0.0. 
+No, you do.
 
-How about a .config, lsmod, etc?
+The kernel calls reader-writer locks rwsemaphores.
 
-Thank you.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+		Linus
