@@ -1,98 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYEaSiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYEaSje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbYEaSiY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 14:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYEaSiH
+	id S1755390AbYEaSje (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 14:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYEaSj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 14:38:07 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48570 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbYEaSiG (ORCPT
+	Sat, 31 May 2008 14:39:27 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:15649 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753434AbYEaSj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 14:38:06 -0400
-Date: Sat, 31 May 2008 21:37:44 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "=?UTF-8?B?SMOla29uIEzDuHZkYWw=?=" <hlovdal@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <484191BD.8000904@gmail.com>
-Message-ID: <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
- <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com>
- <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi> <484191BD.8000904@gmail.com>
+	Sat, 31 May 2008 14:39:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=nk6/QwMOY+Y6VKyaqPMNjIsqlBZiGE3QSFfDXusZnYD8YCmE92GZ+URnr+eKgdstI3mgG45itM8+G7ol4WvxUZVXIpeqYy+pv7MI8y6SEo4d6t0czxo7zLC6Ye4MWq7HVbZdTHkp3DkVQRXDYenKVTcf+qYTEDF+mra4xoI5EO0=
+Message-ID: <5a8e970805311139r1355cfccy6933605f7b6441b6@mail.gmail.com>
+Date: Sat, 31 May 2008 20:39:25 +0200
+From: "Martin Samuelsson" <sam.linux.kernel@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Multiple Zoran MJPEG cards and i2c misattachments
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1135271880-1212259064=:2672"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hello,
 
----696208474-1135271880-1212259064=:2672
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+I'm working on avs6eyes improvements in the current kernel. As I've
+equipped my machine with no less than three MJPEG-cards; Buz, 6 Eyes
+and DC10+, I happened to run into a bit of a snag:
 
-On Sat, 31 May 2008, Håkon Løvdal wrote:
+saa7185, the video encoder of the Buz, and bt866, video encoder of the
+6 Eyes, share the same i2c address, 0x88. This should not be a
+problem, because they are connected to different i2c buses, and are
+initialized separately. However, zoran_card.c, via i2c_bit_add_bus(),
+creates one i2c bus for each card in the detection loop, and makes
+them available system-wide. This means that the saa7185 driver, as the
+cards are detected in Buz, 6 Eyes, DC10+ order in my computer, is
+being requested by the zoran driver and initializes itself (not very
+much to do, as there is not yet any i2c bus). The zoran driver then
+creates bus 0, and initializes the saa7185 driver once again, it finds
+bus 0 and a chip at 0x88, which it attaches to.
 
-> Ilpo Järvinen wrote:
-> > Hmm, are the other end's processes still there? ...I'd be interested to know
-> > what they're doing at the moment...
-> 
-> > I meant that end where you see this '-'. I suppose it's easy for you to
-> > figure out which process is the right one, something that wouldn't be so
-> > easy with the Ingo's test case which forks/exits numerous times.
-> 
-> > Died? Do you mean that they don't exist all at the other end anymore?
+Now, that bus is visible to the system. The 6 Eyes is being
+initialized, the bt866 driver loaded, and it initializes itself.
+Here's the problem: At load, the drivers automatically searches the
+system for available buses. bt866 finds bus 0, belonging to Buz, and a
+chip at 0x88, which it promptly attaches to, marking itself as in use.
 
-Ok, like you said, this is not exactly the same, though it might be due to 
-the same bug. In Ingo's case both endpoints were doing pretty healtily, 
-with periodic window probes as expected. In your case TCP is not doing 
-window probes but got that interesting RTO value.
+The zoran driver then creates i2c bus 1, managed by the 6 Eyes, and
+initializes the bt866 driver again. It, in turn, looks for i2c buses,
+finds bus 0 and address 0x88, notices in i2c_probe_address() that it's
+marked as in use, refuses to attach to the chip, proceeds to bus 1 and
+the chip at 0x88, notices once again that it's marked as in use, and
+refuses to attach to the chip it's supposed to attach to.
 
-So you had that '-' earlier and you checked at that time but the 
-connection is now already dead?
+The zoran driver has code that determine if a particular chip indeed
+is supposed to go with the card it's trying to attach to, but when
+i2c_probe_address() says the driver is in use, that code is never
+reached.
 
-> The ssh connection used for copying (using the command <ssh old_pc "cd
-> /directory; tar cvf - *" | pv | tar xvf ->) died in the following way:
->   ...
->   Read from remote host old_pc: Connection timed out
->   51.4GB 4:26:19 [3.29MB/s] [<=>                                   ]
->   tar: Unexpected EOF in archive
->   tar: Unexpected EOF in archive
->   tar: Error is not recoverable: exiting now
-> 
-> and there are currently no traces of those ssh processes any longer on
-> the new PC, only these two active ssh interactive connections are present:
+The 6 Eyes is left with no video encoder and a bt866 driver that think
+it's managed to attach successfully, while it in fact is clinging to
+the wrong bus.
 
-:-(, I would some much liked to see what they were doing.
+So far the background...
 
-> old_pc>sed -n '1p; /:0016/p' /proc/net/tcp
-> sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt
-> uid  timeout inode
-> 12: 00000000:0016 00000000:0000 0A 00000000:00000000 00:00000000 00000000
-> 0        0 7627 1 f384b080 3000 0 0 2 -1
-> 17: 111111AC:0016 480111AC:CDBB 01 00000000:00000000 02:0001AA7B 00000000
-> 0        0 1110320 2 f02e6580 201 53 7 3 -1
-> 20: 111111AC:0016 480111AC:AB31 01 00000000:00000000 02:000A18F1 00000000
-> 0        0 583506 4 f71a8080 201 40 29 3 -1
-> 21: 111111AC:0016 480111AC:E4E9 01 00000B50:00000000 01:7D1F8746 00000000
-> 0        0 398713 5 f71a8580 205 40 1 36 -1
-> 23: 111111AC:0016 480111AC:D359 01 000010F8:00000000 01:7D19A035 00000000
-> 0        0 396426 5 f71a8a80 202 42 1 144 -1
-> 25: 111111AC:0016 480111AC:8565 01 00000B50:00000000 01:7CEBA7D1 00000000
-> 0        0 349113 5 eeeaf580 204 40 1 26 -1
-> old_pc>
+What would be a working approach to fix this situation? I'm woefully
+unaware of the i2c intricacies in the kernel, and know no immediate
+fix.
 
-These 7C/D... certainly seem strange values. Which TCP variant you have in 
-use (cat /proc/sys/net/ipv4/tcp_congestion_control)? It seems that vegas, 
-veno and yeah at least contain 0x7fffffff there for some rtt, which could 
-perhaps somehow leak.
+Is it possible to register i2c buses that are not visible to drivers
+you modprobe? That would prevent the initial scan of the buses, and
+the misattachments. zoran_card.c explicitly initialize the correct
+drivers after bus creation anyway.
 
--- 
- i.
----696208474-1135271880-1212259064=:2672--
+Is it possible to request_module() a module in a way that will not
+make it initialize itself, but just load? The same motivation there,
+with the exception that regular modprobes still would mess things up.
+
+Is it possible to detach a wrongly attached driver, while still
+technically in i2c_probe(), given only the info in a i2c_driver struct
+? That way, zoran_i2c_client_register() in zoran_card.c could gently
+rectify the over-optimistic attachments to the wrong buses when
+i2c_probe_address() hands over the initialization work to the chip
+driver.
+
+Is there an even better way to do this?
+
+/Sam
