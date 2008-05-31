@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbYEaLqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbYEaLuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753618AbYEaLqh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 07:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYEaLqZ
+	id S1754071AbYEaLuJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 07:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYEaLt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 07:46:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58884 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752094AbYEaLqY (ORCPT
+	Sat, 31 May 2008 07:49:58 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:17746 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbYEaLt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 07:46:24 -0400
-Date: Sat, 31 May 2008 14:46:21 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <20080531060947.GA26441@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <20080529084524.GA24892@elte.hu>
- <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> <20080529112257.GA18130@elte.hu>
- <20080530181839.GA31915@elte.hu> <20080531060947.GA26441@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 31 May 2008 07:49:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=cB5y5KU0H/YYLMvFvdDaZyzcLriv31Zb+cY5XZ3yz12koE6u+r5NJXoy6gJNNtfN0jCUiMTFI939g9xAlitajr2eRx+9IihcGLEulDm3fMq/WUEvzVY6wMPy+hpvq/NhDEOXrswYH/lo7ygwQ3UDtqig7boGn2KOC/unJNimF80=
+Message-ID: <48413B6E.3050202@gmail.com>
+Date: Sat, 31 May 2008 13:50:06 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, Paul Fulghum <paulkf@microgate.com>
+Subject: Re: [PATCH 1/1] Char: tty_io, fix closecount counting
+References: <1211810923-3122-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1211810923-3122-1-git-send-email-jirislaby@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008, Ingo Molnar wrote:
+Jiri Slaby napsal(a):
+> This is probably a fix for an issue first reported in 2.6.18.1:
+> http://lkml.org/lkml/2006/10/20/301
+> and
+> http://marc.info/?l=linux-mips&m=118797256328587
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > ah, in retrospect i realized that this test had one flaw: some of the 
-> > systems i the build cluster already ran a newer kernel and hence were 
-> > targets for this bug.
-> > 
-> > so i turned off CONFIG_TCP_CONG_CUBIC on all the testboxes and 
-> > rebooted the cluster boxes into 2.6.25, and the hung sockets are now 
-> > gone. (about 150 successful iterations)
-> > 
-> > i did another change as well: i removed the localhost distcc 
-> > component. I'll reinstate that now to make sure it's really related to 
-> > TCP_CONG_CUBIC and not to localhost networking.
-> 
-> ok, once i added back the localhost distcc component and the hung kernel 
-> build + stuck TCP socket bug happened again overnight:
-> 
->  Active Internet connections (w/o servers)
->  Proto Recv-Q Send-Q Local Address               Foreign Address             State
->  tcp    72187      0 10.0.1.14:3632              10.0.1.14:47910             ESTABLISHED
->  tcp        0 174464 10.0.1.14:47910             10.0.1.14:3632              ESTABLISHED
-> 
-> so it seems distcc over localhost was the aspect that made it fail.
-> 
-> _Perhaps_ what matters is to have the new post-rc3 TCP code on _both_ 
-> sides of the connection. But that is just a theory - it could be timing, 
-> etc.
+Alan, I know, you already stated some time ago, that you don't have a clue 
+what could have caused this. Haven't you found anything since that time as I 
+think the hangup path is the only possible cause of this problem?
 
-Btw, does your distcc perhaps happen enable TCP_DEFER_ACCEPT (there were
-some post 2.6.25 changes into it)?
+I've found an other one from 2.6.17-rc4:
+http://readlist.com/lists/vger.kernel.org/linux-kernel/44/220050.html
+and from 2.6.22+suse_stuff:
+http://lists.opensuse.org/opensuse-bugs/2008-04/msg05628.html
 
--- 
- i.
+It is ever vcs1, which is /dev/console and it is the only treated separately 
+(otherwise I think we would have more (and distinct) reports like this). 
+When the console is HUPped? And what should happen with openers? The 
+2.6.22+suse happened when sulogin /dev/console was invoked. Any ideas how to 
+track this down?
+
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+> @@ -1434,9 +1434,9 @@ static void do_tty_hangup(struct work_struct *work)
+>  	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
+>  		if (filp->f_op->write == redirected_tty_write)
+>  			cons_filp = filp;
+> +		closecount++;
+>  		if (filp->f_op->write != tty_write)
+>  			continue;
+> -		closecount++;
+>  		tty_fasync(-1, filp, 0);	/* can't block */
+>  		filp->f_op = &hung_up_tty_fops;
+>  	}
