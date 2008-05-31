@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYEaMut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYEaMz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbYEaMut (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 08:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYEaMul
+	id S1753956AbYEaMz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 08:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYEaMzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 08:50:41 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49063 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752219AbYEaMul (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 08:50:41 -0400
-Date: Sat, 31 May 2008 13:35:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Oliver Neukum <oliver@neukum.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Michael Zappe <zapman@interlan.net>,
-       Stephane Alnet <stephane@u-picardie.fr>,
-       Brad Hards <bhards@bigpond.net.au>
-Subject: Re: [PATCH] kaweth: use request_firmware()
-Message-ID: <20080531133547.10b5d7f6@core>
-In-Reply-To: <7D3DC891-CC9A-4CBD-8DCF-E684A2FB36B2@holtmann.org>
-References: <1211708969@pmac.infradead.org>
-	<1212070841.26088.28.camel@shinybook.infradead.org>
-	<200805301555.59327.oliver@neukum.org>
-	<1212160598.8199.6.camel@shinybook.infradead.org>
-	<FD896A2C-277F-45CF-AE26-E2E29DA8093F@holtmann.org>
-	<20080530164842.31b23848@core>
-	<7D3DC891-CC9A-4CBD-8DCF-E684A2FB36B2@holtmann.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 31 May 2008 08:55:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35077 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751869AbYEaMzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 08:55:11 -0400
+Date: Sat, 31 May 2008 14:54:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+Message-ID: <20080531125428.GA22111@elte.hu>
+References: <20080526115628.GA31316@elte.hu> <20080529084524.GA24892@elte.hu> <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> <20080529112257.GA18130@elte.hu> <20080530181839.GA31915@elte.hu> <20080531060947.GA26441@elte.hu> <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi> <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I was not late to the party. I was the first one using  
-> request_firmware() and always keeping an eye on drivers using it and  
-> making sure using it correctly. However drivers sneaked in without  
-> that I realized it. Mainly because I don't have that hardware and  
-> reviewing every single driver obviously never happened.
 
-Nothing in the documentation says that it can't have a heirarchical name,
-so naturally lots of people did it. They didn't sneak in - they improved
-on the interface and evolved it. They did it in a way that didn't upset
-anything else (which is why you didn't notice).
+* Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
 
-No sneaking involved.
+> > Btw, does your distcc perhaps happen enable TCP_DEFER_ACCEPT (there 
+> > were some post 2.6.25 changes into it)?
+> 
+> Hmm, if so, please try this revert below (I hope I got everything that 
+> is related there, gitk is currently broken for me so that viewing many 
+> commits quickly is a pain, so I might have accidently missed 
+> something)...
 
-> I repeatedly said that no hierarchical namespace should be used (and  
-> this was a couple of years ago) and now since some developers misuse  
-> it, it makes it right. 
+what is the easiest way to figure out whether my version of distcc 
+enables TCP_DEFER_ACCEPT?
 
-It means by consensus the developer community decided that a heirarchical
-namespace was useful. And that is the party you've arrived late for.
-
-Alan
+	Ingo
