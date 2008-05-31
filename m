@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYEaXIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbYEaXLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbYEaXIj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 19:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbYEaXIa
+	id S1756522AbYEaXLR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 19:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbYEaXLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 19:08:30 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50251 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbYEaXIa (ORCPT
+	Sat, 31 May 2008 19:11:05 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:59378 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753759AbYEaXLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 19:08:30 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 1 Jun 2008 01:08:22 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-ohci: clear LinkControl register when enabling
- the chip
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.1dfeb5ce5dd30360@s5r6.in-berlin.de>
+	Sat, 31 May 2008 19:11:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pZFIqnsdRZpytKYZNOTFzbtT+B3/T5NfV+Jb+RbvzBFydNPAvHTPO5m19HrBw1C/67Kysn0NNpBr+OS2+F4/rmjfAhKSPamjOKkS9TijmleDG3ZigTuFVSUnSZqvTPl1MO3m+SdsvQ65FEu7XGjeSDNOMo+okIQOzNq/+9hJ1WY=
+Message-ID: <19f34abd0805311611x29b6a4aas572ee180ef7eb2c7@mail.gmail.com>
+Date: Sun, 1 Jun 2008 01:11:02 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ben Hutchings" <bhutchings@solarflare.com>
+Subject: Re: [PATCH] cputopology: Add default CPU topology information [3rd try]
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20080531214429.GQ1743@solarflare.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080531214429.GQ1743@solarflare.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We want the rcvPhyPkt bit in LinkControl off before we start using the
-chip.  However, the spec says that the reset value of it is undefined.
-Hence switch it (and all other bits while we are at it) explicitly off.
+On Sat, May 31, 2008 at 11:44 PM, Ben Hutchings
+<bhutchings@solarflare.com> wrote:
+> Define the macros topology_{physical_package,core}_id() and
+> topology_{thread,core}_siblings() in <asm-generic/topology.h> if they are not
+> already defined.
+>
+> Move inclusion of <asm-generic/topology.h> after definitions of these
+> macros in <asm-powerpc/topology.h> and <asm-x86/topology.h>.
 
-https://bugzilla.redhat.com/show_bug.cgi?id=244576#c48 shows that for
-example the nForce2 integrated FireWire controller seems to have it on
-by default.
+Hi again :)
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |    1 +
- 1 file changed, 1 insertion(+)
+As I said in my previous e-mail, having #includes in the middle of
+headers is nasty. This kind of dependency is really subtle and makes
+later modification much harder. (Actually, it hurts readability as
+well.)
 
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -1473,6 +1473,7 @@ static int ohci_enable(struct fw_card *c
- 	reg_write(ohci, OHCI1394_HCControlClear,
- 		  OHCI1394_HCControl_noByteSwapData);
- 
-+	reg_write(ohci, OHCI1394_LinkControlClear, ~0);
- 	reg_write(ohci, OHCI1394_LinkControlSet,
- 		  OHCI1394_LinkControl_rcvSelfID |
- 		  OHCI1394_LinkControl_cycleTimerEnable |
+The standard way to do this seems to be:
+
+asm/topology.h should define ARCH_HAS_* macros if it wishes to
+override the defaults
+linux/topology.h should #include asm/topology.h at the top of the file
+linux/topology.h should define the generic functions/macros only if
+the ARCH_HAS_* macros are undefined
+
+Other files wishing to use these definitions should then include
+linux/topology.h.
+
+Or is that unfeasible in this case?
+
+
+Vegard
 
 -- 
-Stefan Richter
--=====-==--- -==- ----=
-http://arcgraph.de/sr/
-
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
