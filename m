@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYEaT71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbYEaUJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYEaT71 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 15:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbYEaT7U
+	id S1754847AbYEaUJV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 16:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYEaUJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 15:59:20 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33117 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752335AbYEaT7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 15:59:19 -0400
-Date: Sat, 31 May 2008 20:44:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: via agp patches
-Message-ID: <20080531204452.342163c3@core>
-In-Reply-To: <20080531174357.GA18858@suse.de>
-References: <20080531003214.GA6208@suse.de>
-	<20080531003354.GC6208@suse.de>
-	<20080531132532.668f6520@core>
-	<20080531174357.GA18858@suse.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 31 May 2008 16:09:11 -0400
+Received: from smtp.movial.fi ([62.236.91.34]:47427 "EHLO smtp.movial.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752141AbYEaUJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 16:09:10 -0400
+Date: Sat, 31 May 2008 23:09:07 +0300
+From: Adrian Bunk <adrian.bunk@movial.fi>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10493] mips BCM47XX compile error
+Message-ID: <20080531200907.GG24468@movial.fi>
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <UJSav77TyUB.A.WhG.cuZQIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <UJSav77TyUB.A.WhG.cuZQIB@albercik>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> As Via states in this patch later on:
-> 	MODULE_LICENSE("GPL and additional rights");
+On Sat, May 31, 2008 at 07:44:39PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Yes, I think it is fair to say it is GPL compatible.  Isn't this just a
-> variant of the BSD license?
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 
-Well VIA said in the LICENCSE GPL and .. so that is fine.
+yes
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10493
+> Subject		: mips BCM47XX compile error
+> Submitter	: Adrian Bunk <adrian.bunk@movial.fi>
+> Date		: 2008-04-20 17:07 (42 days old)
+> References	: http://lkml.org/lkml/2008/4/20/34
+> 		  http://lkml.org/lkml/2008/5/12/30
+> 		  http://lkml.org/lkml/2008/5/18/131
