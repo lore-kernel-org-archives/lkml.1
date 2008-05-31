@@ -1,68 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYEaM7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYEaNGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbYEaM7S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 08:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYEaM7A
+	id S1753584AbYEaNGU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 09:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYEaNGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 08:59:00 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37464 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750867AbYEaM7A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 08:59:00 -0400
-Date: Sat, 31 May 2008 15:58:56 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <20080531125428.GA22111@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805311555570.2329@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <20080529084524.GA24892@elte.hu>
- <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> <20080529112257.GA18130@elte.hu>
- <20080530181839.GA31915@elte.hu> <20080531060947.GA26441@elte.hu>
- <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi>
- <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi> <20080531125428.GA22111@elte.hu>
+	Sat, 31 May 2008 09:06:07 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:32847 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752262AbYEaNGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 09:06:06 -0400
+Date: Sat, 31 May 2008 14:06:03 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, agl@us.ibm.com, wli@holomorphy.com,
+       kenchen@google.com, dwg@au1.ibm.com, andi@firstfloor.org,
+       dean@arctic.org, abh@cray.com
+Subject: Re: [PATCH 1/2] huge page private reservation review cleanups
+Message-ID: <20080531130603.GD423@csn.ul.ie>
+References: <exportbomb.1212166524@pinky> <1212166704.0@pinky> <20080530132903.5d6717b0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-2033938252-1212238736=:2329"
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080530132903.5d6717b0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----696208474-2033938252-1212238736=:2329
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Sat, 31 May 2008, Ingo Molnar wrote:
-
+On (30/05/08 13:29), Andrew Morton didst pronounce:
+> On Fri, 30 May 2008 17:58:24 +0100
+> Andy Whitcroft <apw@shadowen.org> wrote:
 > 
-> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> 
-> > > Btw, does your distcc perhaps happen enable TCP_DEFER_ACCEPT (there 
-> > > were some post 2.6.25 changes into it)?
 > > 
-> > Hmm, if so, please try this revert below (I hope I got everything that 
-> > is related there, gitk is currently broken for me so that viewing many 
-> > commits quickly is a pain, so I might have accidently missed 
-> > something)...
+> > Create some new accessors for vma private data to cut down on and contain
+> > the casts.  Encapsulates the huge and small page offset calculations.  Also
+> > adds a couple of VM_BUG_ONs for consistency.
+> > 
 > 
-> what is the easiest way to figure out whether my version of distcc 
-> enables TCP_DEFER_ACCEPT?
+> I'll stage this after Mel's
+> hugetlb-guarantee-that-cow-faults-for-a-process-that-called-mmapmap_private-on-hugetlbfs-will-succeed.patch
+> 
 
-strace distccd (the listening party is the interesting one here, not the 
-distcc)?
+Sounds good, thanks.
 
-...setsockopt(listenfd, SOL_TCP, TCP_DEFER_ACCEPT, &val, sizeof(val)) 
-seems to be the magic trick that is interestion here.
+> > ---
+> >  mm/hugetlb.c |   56 +++++++++++++++++++++++++++++++++++++++++++-------------
+> >  1 files changed, 43 insertions(+), 13 deletions(-)
+> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> > index 729a830..7a5ac81 100644
+> > --- a/mm/hugetlb.c
+> > +++ b/mm/hugetlb.c
+> > @@ -40,6 +40,26 @@ static int hugetlb_next_nid;
+> >   */
+> >  static DEFINE_SPINLOCK(hugetlb_lock);
+> >  
+> > +/*
+> > + * Convert the address within this vma to the page offset within
+> > + * the mapping, in base page units.
+> > + */
+> > +pgoff_t vma_page_offset(struct vm_area_struct *vma, unsigned long address)
+> > +{
+> > +	return ((address - vma->vm_start) >> PAGE_SHIFT) +
+> > +					(vma->vm_pgoff >> PAGE_SHIFT);
+> > +}
+> > +
+> > +/*
+> > + * Convert the address within this vma to the page offset within
+> > + * the mapping, in pagecache page units; huge pages here.
+> > + */
+> > +pgoff_t vma_pagecache_offset(struct vm_area_struct *vma, unsigned long address)
+> > +{
+> > +	return ((address - vma->vm_start) >> HPAGE_SHIFT) +
+> > +			(vma->vm_pgoff >> (HPAGE_SHIFT - PAGE_SHIFT));
+> > +}
+> 
+> I'll make these static.
+> 
+> >  #define HPAGE_RESV_OWNER    (1UL << (BITS_PER_LONG - 1))
+> >  #define HPAGE_RESV_UNMAPPED (1UL << (BITS_PER_LONG - 2))
+> >  #define HPAGE_RESV_MASK (HPAGE_RESV_OWNER | HPAGE_RESV_UNMAPPED)
+> > @@ -53,36 +73,48 @@ static DEFINE_SPINLOCK(hugetlb_lock);
+> >   * to reset the VMA at fork() time as it is not in use yet and there is no
+> >   * chance of the global counters getting corrupted as a result of the values.
+> >   */
+> > +static unsigned long get_vma_private_data(struct vm_area_struct *vma)
+> > +{
+> > +	return (unsigned long)vma->vm_private_data;
+> > +}
+> > +
+> > +static void set_vma_private_data(struct vm_area_struct *vma,
+> > +							unsigned long value)
+> > +{
+> > +	vma->vm_private_data = (void *)value;
+> > +}
+> 
+> Better.
+> 
+> >  static unsigned long vma_resv_huge_pages(struct vm_area_struct *vma)
+> >  {
+> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+> >  	if (!(vma->vm_flags & VM_SHARED))
+> > -		return (unsigned long)vma->vm_private_data & ~HPAGE_RESV_MASK;
+> > +		return get_vma_private_data(vma) & ~HPAGE_RESV_MASK;
+> >  	return 0;
+> >  }
+> 
+> But I wonder if helpers which manipulate a vma's HPAGE_RESV_MASK
+> flag(s) rather than the whole vm_provate_data would have been better.
+> 
+
+There are helpers that do that below. It was suggested that I define a
+struct with bit-fields instead but I didn't feel it was much easier to
+understand than masks which are already pretty common.
+
+> >  static void set_vma_resv_huge_pages(struct vm_area_struct *vma,
+> >  							unsigned long reserve)
+> >  {
+> > -	unsigned long flags;
+> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+> >  	VM_BUG_ON(vma->vm_flags & VM_SHARED);
+> >  
+> > -	flags = (unsigned long)vma->vm_private_data & HPAGE_RESV_MASK;
+> > -	vma->vm_private_data = (void *)(reserve | flags);
+> > +	set_vma_private_data(vma,
+> > +		(get_vma_private_data(vma) & HPAGE_RESV_MASK) | reserve);
+> >  }
+> >  
+> >  static void set_vma_resv_flags(struct vm_area_struct *vma, unsigned long flags)
+> >  {
+> > -	unsigned long reserveflags = (unsigned long)vma->vm_private_data;
+> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+> > -	vma->vm_private_data = (void *)(reserveflags | flags);
+> > +	VM_BUG_ON(vma->vm_flags & VM_SHARED);
+> > +
+> > +	set_vma_private_data(vma, get_vma_private_data(vma) | flags);
+> >  }
+> >  
+> >  static int is_vma_resv_set(struct vm_area_struct *vma, unsigned long flag)
+> >  {
+> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
+> > -	return ((unsigned long)vma->vm_private_data & flag) != 0;
+> > +
+> > +	return (get_vma_private_data(vma) & flag) != 0;
+> >  }
+> 
+> Oh.  We already kinda have it.  Perhaps vma_resv_huge_pages() should
+> have called set_vma_resv_flags().  I guess the assertions would have
+> busted that.
+> 
+
+The assertions as-is would have made that hard all right, but the checks
+(particularly the SHARED ones) that are there are really defensive in nature
+rather than set in stone.  A VM_SHARED mapping could use the flags as well
+if there was a good reason for it but I didn't want the helpers to be used
+by accident.
+
+> Oh well, whatever.
+> 
+
+I am currently under the belief that the helpers as-is are
+fairly easy to understand, should not interfere badly with the
+1GB-and-multi-large-page-support being worked on and are reasonably difficult
+to use incorrectly but I'm open to being corrected on it.
+
+Thanks
 
 -- 
- i.
----696208474-2033938252-1212238736=:2329--
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
