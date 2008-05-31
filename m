@@ -1,83 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYEaOnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbYEaOrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbYEaOnH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 10:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYEaOm7
+	id S1754579AbYEaOrr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 10:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYEaOrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 10:42:59 -0400
-Received: from fmailhost04.isp.att.net ([204.127.217.104]:55457 "EHLO
-	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752552AbYEaOm6 (ORCPT
+	Sat, 31 May 2008 10:47:40 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56616 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752718AbYEaOrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 10:42:58 -0400
-X-Originating-IP: [74.251.4.135]
-Date: Sat, 31 May 2008 09:42:53 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Paul Jackson <pj@sgi.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Randy Dunlap" <rdunlap@xenotime.net>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] doc: document the kernel-doc conventions for kernel
- hackers
-Message-ID: <20080531094253.30ae975e@osprey.hogchain.net>
-In-Reply-To: <20080530221941.28920.30102.sendpatchset@polaris-admin.engr.sgi.com>
-References: <20080530221941.28920.30102.sendpatchset@polaris-admin.engr.sgi.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+	Sat, 31 May 2008 10:47:39 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sat, 31 May 2008 23:47:00 +0900 (JST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
+       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
+In-Reply-To: <48413482.5080409@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <48413482.5080409@linux.vnet.ibm.com>
+ <48407DC3.8060001@linux.vnet.ibm.com> <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com> <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 May 2008 15:19:41 -0700
-Paul Jackson <pj@sgi.com> wrote:
+----- Original Message -----
 
-> From: Paul Jackson <pj@sgi.com>
-> 
-> Provide documentation of the kernel-doc documentation conventions
-> oriented to kernel hackers.
-> 
-> Since I figure that there will be more people reading this
-> kernel-doc-nano-HOWTO.txt file who are kernel developers focused
-> on the rest of the kernel, than there will be readers of this
-> file who are documentation developers extracting that embedded
-> kernel-doc documentation, I have taken the liberty of making
-> the new section added here:
-> 
->   How to format kernel-doc comments
-> 
-> the first section of the kernel-doc-nano-HOWTO.txt file.
-> 
-> This first section is intended to introduce, motivate and
-> provide basic usage of the kernel-doc mechanism for kernel
-> hackers developing other portions of the kernel.
-> 
-> Signed-off-by: Paul Jackson <pj@sgi.com>
-> Acked-by: Randy Dunlap <rdunlap@xenotime.net>
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> 
-> ---
->  Documentation/kernel-doc-nano-HOWTO.txt |   99
-> ++++++++++++++++++++++++++++++++ 1 file changed, 99 insertions(+)
-> 
-> --- linux-2.6.orig/Documentation/kernel-doc-nano-HOWTO.txt
-> 2008-05-30 08:47:13.000000000 -0700 +++
-> linux-2.6/Documentation/kernel-doc-nano-HOWTO.txt	2008-05-30
-> 15:14:33.281447922 -0700 @@ -1,6 +1,105 @@ kernel-doc nano-HOWTO
->  =====================
->  
-> +How to format kernel-doc comments
-> +---------------------------------
-> +
-> +In order to provide an embedded, 'C' friendly, easy to maintain,
-> +but consistent and extractable documentation of the functions and
-> +data structures in the Linux kernel, the Linux kernel has adopted
-> +a consistent style for documenting functions and their parameters,
-> +and structures and their members.
-> +
-> +The format for this documentation is called the kernel-doc format.
-> +It as documented in this Documentation/kernel-doc-nano-HOWTO.txt
+>> One more problem is that it's hard to implement various kinds of hierarchy
+>> policy. I believe there are other hierarhcy policies rather than OpenVZ
+>> want to use. Kicking out functions to middleware AMAP is what I'm thinking
+>> now.
+>
+>One way to manage hierarchies other than via limits is to use shares (please 
+see
+>the shares used by the cpu controller). Basically, what you've done with limi
+ts
+>is done with shares
+>
+Yes, I like _share_ rather than limits.
 
-s/as/is
+>If a parent has 100 shares, then it can decide how many to pass on to it's  c
+hildren
+>based on the shares of the child and your logic would work well. I propose
+>assigning top level (high resolution) shares to the root of the cgroup and in
+ a
+>hierarchy passing them down to children and sharing it with them. Based on th
+e
+>shares, deduce the limit of each node in the hierarchy.
+>
+>What do you think?
+>
+As you wrote, a middleware can do controls based on share by limits.
+And it seems much easier to implement it in userland rather than in the kernel
+.
+
+Here is an example. (just an example...)
+Please point out if I'm misunderstanding "share".
+
+root_level/                   = limit 1G.
+          /child_A = share=30
+          /child_B = share=15
+          /child_C = share=5
+(and assume there is no process under root_level for make explanation easy..)
+
+0. At first, before starting to use memory, set all kernel_memory_limit.
+root_level.limit = 1G
+  child_A.limit=64M,usage=0
+  child_B.limit=64M,usage=0
+  child_C.limit=64M,usage=0
+  free_resource=808M 
+
+1. next, a process in child_C start to run and use memory of 600M.
+root_level.limit = 1G
+  child_A.limit=64M
+  child_B.limit=64M
+  child_C.limit=600M,usage=600M
+  free_resource=272M
+
+2. now, a process in child_A start tu run and use memory of 800M.
+  child_A.limit=800M,usage=800M
+  child_B.limit=64M,usage=0M
+  child_C.limit=136M,usage=136M
+  free_resouce=0,A:C=6:1
+
+3.Finally, a process in child_B start. and use memory of 500M.
+  child_A.limit=600M,usage=600M
+  child_B.limit=300M,usage=300M
+  child_C.limit=100M,usage=100M
+  free_resouce=0, A:B:C=6:3:1
+
+4. one more, a process in A exits.
+  child_A.limit=64M, usage=0M
+  child_B.limit=500M, usage=500M
+  child_C.limit=436M, usage=436M
+  free_resouce=0, B:C=3:1 (but B just want to use 500M)
+
+This is only an example and the middleware can more pricise "limit"
+contols by checking statistics of memory controller hierarchy based on
+their own policy.
+
+What I think now is what kind of statistics/notifier/controls are
+necessary to implement shares in middleware. How pricise/quick work the
+middleware can do is based on interfaces.
+Maybe the middleware should know "how fast the application runs now" by
+some kind of check or co-operative interface with the application.
+But I'm not sure how the kernel can help it.
+
+Thanks,
+-Kame
+
+
