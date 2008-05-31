@@ -1,105 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYEaMsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYEaMut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbYEaMsW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 08:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYEaMsM
+	id S1754015AbYEaMut (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 08:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYEaMul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 08:48:12 -0400
-Received: from wr-out-0708.google.com ([64.233.184.250]:50126 "EHLO
-	wr-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752172AbYEaMsL (ORCPT
+	Sat, 31 May 2008 08:50:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49063 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752219AbYEaMul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 08:48:11 -0400
-MIME-Version: 1.0
-Date: Sat, 31 May 2008 05:48:07 -0700 (PDT)
-In-Reply-To: <azwvH-5QW-5@gated-at.bofh.it>
-X-IP: 144.32.126.11
-References: <azwvH-5QW-5@gated-at.bofh.it>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.9 
-	(like Gecko) (Kubuntu),gzip(gfe),gzip(gfe)
-X-HTTP-Via: 1.1 wc5.york.ac.uk:3128 (squid)
-Message-ID: <3849b91c-cfca-4126-b14b-aa6d2b4b10b3@m45g2000hsb.googlegroups.com>
-Subject: Re: OOM policy, overcommit control, and soft limits
-From: Alan Jenkins <aj504@cs.york.ac.uk>
-To: Chris Frey <cdfrey@foursquare.net>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 31 May 2008 08:50:41 -0400
+Date: Sat, 31 May 2008 13:35:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Oliver Neukum <oliver@neukum.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Michael Zappe <zapman@interlan.net>,
+       Stephane Alnet <stephane@u-picardie.fr>,
+       Brad Hards <bhards@bigpond.net.au>
+Subject: Re: [PATCH] kaweth: use request_firmware()
+Message-ID: <20080531133547.10b5d7f6@core>
+In-Reply-To: <7D3DC891-CC9A-4CBD-8DCF-E684A2FB36B2@holtmann.org>
+References: <1211708969@pmac.infradead.org>
+	<1212070841.26088.28.camel@shinybook.infradead.org>
+	<200805301555.59327.oliver@neukum.org>
+	<1212160598.8199.6.camel@shinybook.infradead.org>
+	<FD896A2C-277F-45CF-AE26-E2E29DA8093F@holtmann.org>
+	<20080530164842.31b23848@core>
+	<7D3DC891-CC9A-4CBD-8DCF-E684A2FB36B2@holtmann.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Frey wrote:
-> Hi,
->
-> The kernel provides things like ulimit, overcommit_memory, and the OOM
-> killer notifications, so in theory memory management should not be a
-> problem, but from time to time, I have a real need to regain control of
-> my system when it runs away on me.
->
-> I like how mode 2 of overcommit_memory uses the ratio as a boundary limit.
-> Ideally I would like something like this as a soft limit, so once the
-> system gets that full, I get a warning.
->
-> Here's my ideal OOM flow:
->
-> 	1) set my soft limit to 90% of RAM
->
-> 	2) any malloc that hits this limit first runs through a notification
-> 		hook, that talks to a userspace daemon if present,
-> 		or just denies the malloc if not
->
-> 	3) the daemon can decide whether to allow the allocation, going
-> 		beyond the soft limit
->
-> 	4) the daemon can make these decisions automatically based on
-> 		policy (i.e. X always gets the green light), or if we
-> 		want to get fancy it can talk to some pre-allocated
-> 		GUI to present the decision to the user...
-> 		(i.e. Allocate / Deny / Stop / Kill)
->
-> 	5) if the user foolishly keeps allocating, then the current
-> 		OOM killer comes into play
->
-> I'm sure someone has thought of this before me.  Does anything remotely
-> similar to this already exist?  I've googled for OOM policy, but so far
-> all I've seen is Rusty Lynch's patch from 2003, and really, I want this
-> behaviour to happen when there is still a bit of memory left, so things
-> can be dealt with before they are OOM-level dire.
->
-> Thanks in advance,
-> - Chris
+> I was not late to the party. I was the first one using  
+> request_firmware() and always keeping an eye on drivers using it and  
+> making sure using it correctly. However drivers sneaked in without  
+> that I realized it. Mainly because I don't have that hardware and  
+> reviewing every single driver obviously never happened.
 
-I'm not sure how helpful this is.  It sounds like you may be missing
-something, but I'm not competent to explain it.  But here are some of
-my thoughts.
+Nothing in the documentation says that it can't have a heirarchical name,
+so naturally lots of people did it. They didn't sneak in - they improved
+on the interface and evolved it. They did it in a way that didn't upset
+anything else (which is why you didn't notice).
 
-1. If your system is really running away, maybe killing the processes
-responsible is a good idea.
+No sneaking involved.
 
-2. Why do you want to set an _overcommit_ soft-limit at 90% of RAM?
-Even without swap, that sounds very restrictrive.
+> I repeatedly said that no hierarchical namespace should be used (and  
+> this was a couple of years ago) and now since some developers misuse  
+> it, it makes it right. 
 
-If I naively add up the top 10 memory hogs on my 512M system, they're
-using a total of over 4G of virtual memory.  (And I have less than
-512M swap).  Some of that will be shared memory or backed by disk
-files - but I don't think that it can account for all 3G of the
-overcommit.  Shared memory tends to be code only, and my entire "disk"
-is only 4G.
+It means by consensus the developer community decided that a heirarchical
+namespace was useful. And that is the party you've arrived late for.
 
-In other words, I reckon I have on the order of a gigabyte of virtual
-address space, which has been malloc'ed or equivalent, but is not used
-and therefore requires no memory resource (ram or swap).
-
-3. Personally, without knowing whether it's already done, I think a
-significant solution for the desktop is for browsers, mail clients and
-similar to place strict limits on their anonymous memory consumption,
-and use mmaped files for the caches / object stores which can grow so
-large.  Similarly, the GIMP uses a "tile cache" file (which perhaps
-shows its age).  If applications are storing caches on disk, they
-should make this clear to the kernel - using mmapped files for cache
-effectively turns them into swap files, letting the kernel page them
-out to disk without using up the kernel swap file.  Exposing the cache
-memory usage on disk also makes it slightly more accessible, e.g. to
-disk quotas, or users with "du".
+Alan
