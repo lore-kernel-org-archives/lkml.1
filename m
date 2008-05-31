@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbYEaRgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYEaRqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663AbYEaRgZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 13:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYEaRgQ
+	id S1754637AbYEaRqE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 13:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYEaRpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 13:36:16 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48074 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751455AbYEaRgP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 13:36:15 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 31 May 2008 19:36:06 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: fw-ohci: use of uninitialized data in AR handler
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.b906081cc9520c69@s5r6.in-berlin.de>
+	Sat, 31 May 2008 13:45:53 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36100 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751455AbYEaRpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 13:45:53 -0400
+Date: Sat, 31 May 2008 10:41:13 -0700
+From: Greg KH <gregkh@suse.de>
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: via agp patches
+Message-ID: <20080531174113.GA18996@suse.de>
+References: <20080531003214.GA6208@suse.de> <20080531003250.GB6208@suse.de> <20080531144715.GA22616@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080531144715.GA22616@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-header_length and payload_length are filled with random data if an
-unknown tcode was read from the AR buffer (i.e. if the AR buffer
-contained invalid data).
+On Sat, May 31, 2008 at 10:47:15AM -0400, Dave Jones wrote:
+> On Fri, May 30, 2008 at 05:32:50PM -0700, Greg KH wrote:
+>  > 
+>  > Looks like this adds a new device id, I have no idea why they remove
+>  > another one at the same time...
+> 
+> I sent a patch adding the missing ident to airlied a few weeks back.
+> I think it's currently in -mm.
 
-We still need a better strategy to recover from this, but at least
-handle_ar_packet now doesn't return out of bound buffer addresses
-anymore.
+Great.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-ohci.c |    5 +++++
- 1 file changed, 5 insertions(+)
+> The removal of the other id is a mystery to me.
 
-Index: linux/drivers/firewire/fw-ohci.c
-===================================================================
---- linux.orig/drivers/firewire/fw-ohci.c
-+++ linux/drivers/firewire/fw-ohci.c
-@@ -548,6 +548,11 @@ static __le32 *handle_ar_packet(struct a
- 		p.header_length = 12;
- 		p.payload_length = 0;
- 		break;
-+
-+	default:
-+		/* FIXME: Stop context, discard everything, and restart? */
-+		p.header_length = 0;
-+		p.payload_length = 0;
- 	}
- 
- 	p.payload = (void *) buffer + p.header_length;
+Here's what I got back from Via about this:
+	VT3336 is a chipset for AMD Athlon/K8 CPU. Due to K8's unique
+	architecture, the AGP resource and behavior are different from
+	the traditional AGP which resides only in chipset. AGP is used
+	by 3D driver which wasn't available for the VT3336 and VT3364
+	generation until now.  Unfortunately, by testing, VT3364 works
+	but VT3336 doesn't. That is why the subtraction. I think other
+	options are leaving it in the AGP, but removing it from our DRI
+	driver. Or, just leave it in both but warn people for issues in
+	the release note.
 
--- 
-Stefan Richter
--=====-==--- -=-= =====
-http://arcgraph.de/sr/
 
+So it sounds like it would be good to remove that id.
+
+thanks,
+
+greg k-h
