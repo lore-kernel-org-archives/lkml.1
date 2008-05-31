@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755718AbYEaUXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYEaUZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755718AbYEaUXB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 16:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbYEaUWw
+	id S1755578AbYEaUZe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 16:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYEaUZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 16:22:52 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:44780 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751917AbYEaUWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 16:22:50 -0400
-Date: Sat, 31 May 2008 23:22:39 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: sam@ravnborg.org, hjl.tools@gmail.com, lethal@linux-sh.org
-Cc: linux-kbuild@vger.kernel.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: sh64 build error - sh, kbuild or binutils problem?
-Message-ID: <20080531202239.GB7347@cs181133002.pp.htv.fi>
+	Sat, 31 May 2008 16:25:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:41783 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324AbYEaUZW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 16:25:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RPmNDXpi9PQI6iq5MhiFuWBQasJCEX7QQOzb5DkjfRJzTms/j7hDtE9AaNMolbDR0qIux5Jz1jk9aotpYYery3xLU9jy7US8UIgTcLWJd1o2fJ3UeDlAOBIu0rFzvCBVhperr0r3WTD3FJeXQP7LVNE2E4H8qzW0YsNGBqj65/k=
+Message-ID: <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com>
+Date: Sat, 31 May 2008 22:25:22 +0200
+From: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
+To: "=?UTF-8?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+Cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
+	 <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com>
+	 <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>
+	 <484191BD.8000904@gmail.com>
+	 <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4VKPoHl032423
 
-cayman_defconfig fails to build with the following error
-(using binutils 2.18.50.0.7):
+2008/5/31 Ilpo JÃ¤rvinen <ilpo.jarvinen@helsinki.fi>:> Ok, like you said, this is not exactly the same, though it might be due to> the same bug. In Ingo's case both endpoints were doing pretty healtily,> with periodic window probes as expected. In your case TCP is not doing> window probes but got that interesting RTO value.>> So you had that '-' earlier and you checked at that time but the> connection is now already dead?
+This is only from checking after the connection was dead. By the way,I just had to remotely reboot the new machine because the windowmanager locked up, however the old PC are still listing the defunctconnections after this.
 
-<--  snip  -->
+> :-(, I would some much liked to see what they were doing.
+I can of course keep on copying for testing purposes, but then I would like tobe able to dump only that single tcp connection, any tips of how to do that?I found nothing specific in the manuals of wireshark and tcpdump. Of courseit is possible to capture everything and filter afterwards, but since I will betransferring lots of data the logs will get huge and I would not like to haveeven additional traffic inside...
 
-...
-  LD      drivers/macintosh/built-in.o
-  LD      drivers/media/common/tuners/built-in.o
-  CC [M]  drivers/media/common/tuners/tuner-xc2028.o
-  CC [M]  drivers/media/common/tuners/tuner-simple.o
-  CC [M]  drivers/media/common/tuners/tuner-types.o
-  CC [M]  drivers/media/common/tuners/mt20xx.o
-  CC [M]  drivers/media/common/tuners/tda8290.o
-  CC [M]  drivers/media/common/tuners/tea5767.o
-  CC [M]  drivers/media/common/tuners/tea5761.o
-  CC [M]  drivers/media/common/tuners/tda9887.o
-  CC [M]  drivers/media/common/tuners/xc5000.o
-  LD      drivers/media/common/built-in.o
-...
-  LD      drivers/media/built-in.o
-sh64-linux-ld: sh3 architecture of input file `drivers/media/common/built-in.o' is incompatible with sh5 outputmake[3]: *** [drivers/media/built-in.o] Error 1
-
-<--  snip  -->
-
-
-Minimal example demonstrating the problem:
-
-$ sh64-linux-ar rcs tmp.o
-$ sh64-linux-ld -EL -r -o tmp2.o tmp.o
-$ sh64-linux-ld -EL -r -o out.o tmp2.o 
-sh64-linux-ld: sh3 architecture of input file `tmp2.o' is incompatible with sh5 output
-$ 
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> These 7C/D... certainly seem strange values. Which TCP variant you have in> use (cat /proc/sys/net/ipv4/tcp_congestion_control)? It seems that vegas,> veno and yeah at least contain 0x7fffffff there for some rtt, which could> perhaps somehow leak.
+I have not done any specific selection myself. On old_pc: bic, new_pc: cubic.
+BR HÃ¥kon LÃ¸vdalÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
