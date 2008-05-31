@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbYFAOqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbYFAOqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbYFAOqX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 10:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYFAOpK
+	id S1755388AbYFAOqz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 10:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYFAOpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 10:45:10 -0400
+	Sun, 1 Jun 2008 10:45:14 -0400
 Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4289 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752721AbYFAOpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 10:45:08 -0400
-Date: Sat, 31 May 2008 23:17:50 +0200
+	id S1752721AbYFAOpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 10:45:11 -0400
+Date: Sat, 31 May 2008 22:45:42 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       Michael Neuling <mikey@neuling.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
-Message-ID: <20080531211749.GN5405@ucw.cz>
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526085000.33787eac@infradead.org> <20080527140440.GD5181@dirshya.in.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, npiggin@suse.de, linux-arch@vger.kernel.org,
+       jeremy@goop.org, mingo@elte.hu, paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/2] Kill unused parameter to smp_call_function and friends
+Message-ID: <20080531204541.GK5405@ucw.cz>
+References: <1212051661-12733-1-git-send-email-jens.axboe@oracle.com> <20080529114132.663eff4b@core>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080527140440.GD5181@dirshya.in.ibm.com>
+In-Reply-To: <20080529114132.663eff4b@core>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,54 +29,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > > The following RFC patch tries to implement scaled CPU utilisation
-> > > statistics using APERF and MPERF MSR registers in an x86 platform.
-> > > 
-> > > The CPU capacity is significantly changed when the CPU's frequency is
-> > > reduced for the purpose of power savings.  The applications that run
-> > > at such lower CPU frequencies are also accounted for real CPU time by
-> > > default.  If the applications have been run at full CPU frequency,
-> > > they would have finished the work faster and not get charged for
-> > > excessive CPU time.
-> > > 
-> > > One of the solution to this problem it so scale the utime and stime
-> > > entitlement for the process as per the current CPU frequency.  This
-> > > technique is used in powerpc architecture with the help of hardware
-> > > registers that accurately capture the entitlement.
-> > > 
+> > It bothers me how the smp call functions accept a 'nonatomic' or 'retry'
+> > parameter (depending on who you ask), but don't do anything with it.
+> > So kill that silly thing.
 > > 
-> > there are some issues with this unfortunately, and these make it
-> > a very complex thing to do. 
-> > Just to mention a few:
-> > 1) What if the BIOS no longer allows us to go to the max frequency for
-> > a period (for example as a result of overheating); with the approach
-> > above, the admin would THINK he can go faster, but he cannot in reality,
-> > so there's misleading information (the system looks half busy, while in
-> > reality it's actually the opposite, it's overloaded). Management tools
-> > will take the wrong decisions (such as moving MORE work to the box, not
-> > less)
-> > 2) On systems with Intel Dynamic Acceleration technology, you can get
-> > over 100% of cycles this way. (For those who don't know what IDA is;
-> > IDA is basically a case where if your Penryn based dual core laptop is
-> > only using 1 core, the other core can go faster than 100% as long as
-> > thermals etc allow it). How do you want to deal with this?
+> > Two patches here, one for smp_call_function*() and one for on_each_cpu().
+> > This patchset applies on top of the generic-ipi patchset just sent out.
 > 
-> Hi Arjan,
+> Which leads to notice that we seem to have acquired a bug somewhere on
+> the way. smp_call_function on x86 is it seems to me implemented as
+> "smp_call_function and occasionally run it multiple times"
 > 
-> Thanks you for the inputs.  The above issues are very valid and our
-> solution should be able to react appropriately to the above situation.
+> One of the joys of the older x86 APIC setups is the APIC messaging bus.
+> This can get checksum errors in which case the message is retransmitted:
 > 
-> What we are proposing is a scaled time value that is scaled to the
-> current CPU capacity.  If the scaled utilisation is 50% when the CPU
-> is at 100% capacity, it is expected to remain at 50% even if the CPU's
-> capacity is dropped to 50%, while the traditional utilisation value
-> will be 100%.
+> In the specific case a message is retransmitted and there are at least
+> three parties on the bus (2 CPU APICs and an IOAPIC is enough) you can
+> get a situation where one receiver gets the message the second receiver
+> errors it and the retransmit causes the IPI to be repeated which causes
+> the IPI to be redelivered.
 
-time one-second-busy-loop should return close to one second. That's
-current behaviour. You don't like it, but it is useful.
+Does that mean smp_call_function on i386 should have a bitmap of cpus
+the message was already delivered to, and drop the duplicates?
 
-If you change it, that's called 'regression'.
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
