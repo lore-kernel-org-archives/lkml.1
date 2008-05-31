@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbYEaEpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbYEaEqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbYEaEpW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 00:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbYEaEpK
+	id S1755515AbYEaEqW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 00:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbYEaEqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 00:45:10 -0400
-Received: from main.gmane.org ([80.91.229.2]:57056 "EHLO ciao.gmane.org"
+	Sat, 31 May 2008 00:46:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41713 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbYEaEpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 00:45:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Anthony Green <green@spindazzle.org>
-Subject: Re: =?utf-8?b?dHJhY2VfbWFyaw==?= ugliness
-Date: Sat, 31 May 2008 01:06:00 +0000 (UTC)
-Message-ID: <loom.20080531T005930-231@post.gmane.org>
-References: <Pine.LNX.4.58.0805220949560.14724@gandalf.stny.rr.com>  <20080522171602.GB22806@Krystal>  <1211714403.6463.294.camel@lappy.programming.kicks-ass.net>  <20080527133651.GA9428@Krystal> <1211987977.12349.91.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 74.15.54.82 (Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14)
+	id S1753678AbYEaEqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 00:46:10 -0400
+Message-ID: <4840D807.2030406@redhat.com>
+Date: Fri, 30 May 2008 21:45:59 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: Re: [PATCH 3/3] 64-bit futexes: x86 support
+References: <200805310127.m4V1RLdP013819@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301923020.3141@woody.linux-foundation.org> <4840C394.2080807@redhat.com> <alpine.LFD.1.10.0805302056170.3141@woody.linux-foundation.org> <4840D335.6040406@redhat.com> <alpine.LFD.1.10.0805302129240.3141@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805302129240.3141@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz <at> infradead.org> writes:
-> The sad truth is that gcc is taking out most of the function forwarding
-> helpers in favour of libffi, and libffi is far from self hosting and
-> quite horrible to look at - so importing that into the kernel isn't
-> going to work either :-/
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Peter,
+Linus Torvalds wrote:
+> You just blindly 
+> claim that you're the only one who can know things like this and can do 
+> serialization, and that your way is the only approach.
 
-Either you're using the term "self hosting" in some way I don't understand, or
-you meant to say that it doesn't build outside of the GCC tree.  Actually, it
-does, if you use the upstream version here: http://sourceware.org/libffi.
+Nonsense.  As you wrote yourself, you're only guessing about your
+approaches.  You didn't check what we currently do (which is the extra
+data stored protected by locks) and you suggest this scheme.
 
-Anthony Green
+Then you suggest hand-wavingly other schemes and I explain why they
+cannot work as efficiently.  I never doubted that they cannot work at
+all.  If performance wouldn't be important I would not have to change
+the current implementation which works semantically just fine.
 
 
+> Sure, futex use and user space is not the same as the kernel code. It's 
+> possible that you really do need 64-bit futexes. But quite frankly, the 
+> only thing you have proven so far is that you're an ass.
+
+Well, I don't know what you're reading into what I wrote.  I've only
+explained what is wrong with each of your proposals and arguments.  If
+pointing out the flaws makes me an ass then so be it.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkhA2AcACgkQ2ijCOnn/RHTiPQCgzWqXP1EW8HID9FuzbgQa70fL
+THsAoLJvUKJO+hqFM3Hd3cHlOCIKhRoF
+=ab2b
+-----END PGP SIGNATURE-----
