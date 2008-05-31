@@ -1,122 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbYEaCd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbYEaCpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756320AbYEaCd3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 22:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYEaCdW
+	id S1754229AbYEaCpU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 22:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYEaCpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 22:33:22 -0400
-Received: from fgwmail2.fujitsu.co.jp ([164.71.1.135]:42361 "EHLO
-	fgwmail2.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbYEaCdV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 22:33:21 -0400
-X-Greylist: delayed 2034 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 May 2008 22:33:20 EDT
-From: kamezawa.hiroyu@jp.fujitsu.com
-Message-ID: <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 31 May 2008 10:59:16 +0900 (JST)
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
-       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
-In-Reply-To: <48407DC3.8060001@linux.vnet.ibm.com>
+	Fri, 30 May 2008 22:45:05 -0400
+Received: from main.gmane.org ([80.91.229.2]:37626 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751098AbYEaCpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 22:45:03 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH] net: add ability to clear stats via ethtool -
+ e1000/pcnet32
+Date: Fri, 30 May 2008 19:41:13 -0700
+Organization: Linux Foundation
+Message-ID: <20080530194113.25b77988@extreme>
+References: <482DA5B6.1020606@sngx.net>
+	<482DB46A.8020103@cosmosbay.com>
+	<482EF192.4070707@sngx.net>
+	<482F5113.5090703@cosmosbay.com>
+	<482F610D.2080108@sngx.net>
+	<20080518003104.GK28241@solarflare.com>
+	<482FBA09.80201@sngx.net>
+	<483E0AAE.2020107@sngx.net>
+	<20080528221118.63da4092.akpm@linux-foundation.org>
+	<483EA2D1.8050603@sngx.net>
+	<20080529154525.3916c7b5@core>
+	<20080530151250.b44a119a.billfink@mindspring.com>
+	<48407C51.7090405@hp.com>
+	<20080530210931.5970c975.billfink@mindspring.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: @nifty Webmail 2.0
-References: <48407DC3.8060001@linux.vnet.ibm.com>
- <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-71-245-98-107.ptldor.fios.verizon.net
+In-Reply-To: <20080530210931.5970c975.billfink@mindspring.com>
+X-Newsreader: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Cc: netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->KAMEZAWA Hiroyuki wrote:
->> This patch tries to implements _simple_ 'hierarchy policy' in res_counter.
->> 
->> While several policy of hierarchy can be considered, this patch implements
->> simple one 
->>    - the parent includes, over-commits the child
->>    - there are no shared resource
->
->I am not sure if this is desirable. The concept of a hierarchy applies really
->well when there are shared resources.
->
->>    - dynamic hierarchy resource usage management in the kernel is not neces
-sary
->> 
->
->Could you please elaborate as to why? I am not sure I understand your point
->
+On Fri, 30 May 2008 21:09:31 -0400
+Bill Fink <billfink@mindspring.com> wrote:
 
-ok, let's consider a _miiddleware_ wchich has following paramater.
+> On Fri, 30 May 2008, Rick Jones wrote:
+> 
+> > > Saving stats output and running beforeafter on a number of systems is
+> > > a royal pain when troubleshooting.
+> > 
+> > Well, with that ringing endorsement :) I would like to state that 
+> > Yoshihiro Ishijima has fixed some bugs in beforeafter and it will now 
+> > deal with /proc/interrupts output better than before.
+> > 
+> > ftp://ftp.cup.hp.com/dist/networking/tools/
+> 
+> Nothing against beforefter.  It's a very useful tool, especially
+> given Linux's lack of a method to clear interface counters.  But
+> it still is very cumbersome to use in the scenario I mentioned,
+> having to save the stats before and after a test on each of several
+> systems, and then having to run beforeafter on each of those systems.
+> Then you need to do this all again for every test run.  It's just
+> not very efficient.
+> 
+> I don't know why the major objection to adding a small amount of
+> code to the kernel that would make life a lot easier for hundreds
+> (or more) of Linux network adminstrators.  And the snapshot/diff
+> idea would not be complex to maintain and would also address the
+> issue of some hardware not having a clear hw stats capability.
+> 
+> 						-Bill
 
-An expoterd param to the user.
-   - user_memory_limit
-parameters for co-operation with the kernel
-   - kernel_memory_limit
-
-And here,
-   user_memory_limit >= kernel_memory_limit == cgroup's memory.limits_in_bytes
-
-When a user ask the miidleware to set limit to 1Gbytes
-   user_memory_limit = 1G
-   kernel_memory_limit = 0-1G.
-It moves kernel_memory_limit dynamically 0 to 1Gbytes and reset limits_in_byte
-s in dynamic way with checking memory cgroup's statistics.
-Of course, we can add some kind of interdace , as following
-  - failure_notifier - triggered at failcnt increment.
-  - threshhold_notifier - triggered as usage > threshold.
-
->> works as following.
->> 
->>  1. create a child. set default child limits to be 0.
->>  2. set limit to child.
->>     2-a. before setting limit to child, prepare enough room in parent.
->>     2-b. increase 'usage' of parent by child's limit.
->
->The problem with this is that you are forcing the parent will run into a recl
-aim
->loop even if the child is not using the assigned limit to it.
->
-That's not problem because it's avoildable by users.
-But it's ok to limit the sum of child's limit to be below XX % ot the parent.
-
->>  3. the child sets its limit to the val moved from the parent.
->>     the parent remembers what amount of resource is to the children.
->> 
->
->All of this needs to be dynamic
->
-As explained, this can be dynamic by middleware.
-
->>  Above means that
->> 	- a directory's usage implies the sum of all sub directories +
->>           own usage.
->> 	- there are no shared resource between parent <-> child.
->> 
->>  Pros.
->>   - simple and easy policy.
->>   - no hierarchy overhead.
->>   - no resource share among child <-> parent. very suitable for multilevel
->>     resource isolation.
->
->Sharing is an important aspect of hierachies. I am not convinced of this
->approach. Did you look at the patches I sent out? Was there something
->fundamentally broken in them?
->
-
-Yes, I read. And tried to make it faster and found it will be complicated.
-One problem is overhead of counter itself.
-Another problem is overhead of shrinking multi-level LRU with feedback.
-One more problem is that it's hard to implement various kinds of hierarchy
-policy. I believe there are other hierarhcy policies rather than OpenVZ
-want to use. Kicking out functions to middleware AMAP is what I'm thinking
-now.
-
-Thanks,
--Kame
-
-
+ifstat from iproute2 tools also keeps state to compute number
+of packets since last update as well. Come on, it isn't that
+hard.
 
