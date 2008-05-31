@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbYEaXYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYEaXpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbYEaXYi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 19:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbYEaXYa
+	id S1756117AbYEaXpH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 19:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYEaXox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 19:24:30 -0400
-Received: from sous-sol.org ([216.99.217.87]:47528 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753759AbYEaXYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 19:24:30 -0400
-Date: Sat, 31 May 2008 16:24:03 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: Chris Wright <chrisw@sous-sol.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: Redzone overwritten with CONFIG_SECURITY
-Message-ID: <20080531232352.GV30402@sequoia.sous-sol.org>
-References: <20080526143422.GA3203@alice> <84144f020805270800l5911ed02ia7a92d96a8aa32a7@mail.gmail.com> <20080527174738.GZ30402@sequoia.sous-sol.org> <20080528100357.GA2510@alice> <20080528215107.GJ30402@sequoia.sous-sol.org>
-MIME-Version: 1.0
+	Sat, 31 May 2008 19:44:53 -0400
+Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:37832 "EHLO
+	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754904AbYEaXox (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 19:44:53 -0400
+Date: Sun, 1 Jun 2008 00:44:27 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] cputopology: Add default CPU topology information [3rd try]
+Message-ID: <20080531234426.GE30769@solarflare.com>
+References: <20080531214429.GQ1743@solarflare.com> <19f34abd0805311611x29b6a4aas572ee180ef7eb2c7@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080528215107.GJ30402@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <19f34abd0805311611x29b6a4aas572ee180ef7eb2c7@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Chris Wright (chrisw@sous-sol.org) wrote:
-> * Eric Sesterhenn (snakebyte@gmx.de) wrote:
-> > Is it possible that this was caused because a file didnt
-> > get rebuild correctly? I can still reproduce it with the
-> > old checkout. Sorry if this causes unessecary noise :(
+Vegard Nossum wrote:
+> On Sat, May 31, 2008 at 11:44 PM, Ben Hutchings
+> <bhutchings@solarflare.com> wrote:
+> > Define the macros topology_{physical_package,core}_id() and
+> > topology_{thread,core}_siblings() in <asm-generic/topology.h> if they are not
+> > already defined.
+> >
+> > Move inclusion of <asm-generic/topology.h> after definitions of these
+> > macros in <asm-powerpc/topology.h> and <asm-x86/topology.h>.
 > 
-> I had wondered that, since data structures will grow w/ CONFIG_SECURITY
-> set (like inode, for example).  I haven't encountered a Kbuild dependency
-> bug in quite a while though.
+> Hi again :)
+> 
+> As I said in my previous e-mail, having #includes in the middle of
+> headers is nasty. This kind of dependency is really subtle and makes
+> later modification much harder. (Actually, it hurts readability as
+> well.)
 
-Yeah, this thing is miscompiled (thanks for the vmlinux).
+It is a bit nasty, but it seems to be reasonably common to include
+<asm-generic/foo.h> toward the end of <asm-bar/foo.h>.  So I think
+anyone working with an asm header should expect that.
 
-$ cd /tmp/CONFIG_SECURITY-mem-corruption
-$ gdb -q vmlinux
-(gdb) p sizeof(struct inode)
-$1 = 596
-(gdb) p sizeof(struct hugetlbfs_inode_info)
-$2 = 592
+> The standard way to do this seems to be:
+> 
+> asm/topology.h should define ARCH_HAS_* macros if it wishes to
+> override the defaults
+> linux/topology.h should #include asm/topology.h at the top of the file
+> linux/topology.h should define the generic functions/macros only if
+> the ARCH_HAS_* macros are undefined
+> 
+> Other files wishing to use these definitions should then include
+> linux/topology.h.
+> 
+> Or is that unfeasible in this case?
 
-struct hugetlbfs_inode_info {
-	struct shared_policy policy;
-	struct inode vfs_inode;
-};
- 
-The hugetlbfs_inode_info structure isn't updated with the 4 extra bytes
-added from CONFIG_SECURITY to struct inode.
+It seem feasible, though there is no need for ARCH_HAS_* macros given that
+the features being described are themselves macros.  I would be happy to
+move the defaults to <linux/topology.h>.  Actually, everything in
+<asm-generic/topology.h> could probably be moved to <linux/topology.h>.
 
-If you're interested in more gory details, you can look at:
-$ eu-readelf -winfo vmlinux > readelf-info.out
+Ben.
 
-thanks,
--chris
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
