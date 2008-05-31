@@ -1,95 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbYEaOYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYEaO0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448AbYEaOYS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 10:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYEaOYA
+	id S1754643AbYEaO0A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 10:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYEaOZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 10:24:00 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:11491 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752552AbYEaOX7 convert rfc822-to-8bit (ORCPT
+	Sat, 31 May 2008 10:25:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:12249 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752586AbYEaOZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 10:23:59 -0400
+	Sat, 31 May 2008 10:25:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kOUC6wChB9jnx4l6i3Orci8uYzlev18XCpU7R0YjeLwmXv8NcvhdWfxhbSTwVaP9l+uL91FsQ2hEklKz1lgeWQBxCH91+Fx/iUoRgu4EvQqiswqvw33pl9NuNRn33i+QRsf0FgDbH3GQ45FVk7ZZhvkFDqUXiiCt3EvecdoESJI=
-Message-ID: <69e28c910805310723j2b721030x2609cc9e866abafa@mail.gmail.com>
-Date: Sat, 31 May 2008 16:23:58 +0200
-From: "=?ISO-8859-1?Q?Stefanik_G=E1bor?=" <netrolller.3d@gmail.com>
-To: "bcm43xx-dev@lists.berlios.de" <bcm43xx-dev@lists.berlios.de>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Wireless-testing's b43 panics in b43_generate_txhdr on packet transmit
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MJbuYCBAv+9BpFUs51O9Kynald/Rf+7DCFLsXG30aC7LCP9yIjv1hR3k1iq3hq4ML/Wsp0czgjAHHDBajcy4wkacKunGxuPNZC8+Jtqjo09ZyR+9Nk5KzzxEbrco7nsEgEWzrvE06DI91irFnyjoEFDMTsiKW1UzVrIUJ60NyDI=
+Message-ID: <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com>
+Date: Sat, 31 May 2008 16:25:47 +0200
+From: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+Cc: "Ingo Molnar" <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "=?UTF-8?Q?Ilpo_J=C3=A4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+In-Reply-To: <1211966834.12349.62.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
+References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4VEQ6Hl024685
 
-In the latest wireless-testing kernel, I get a panic when I try to
-connect to a network or inject a packet in monitor mode using b43
-(stack obtained using kdump and crash):
-
-crash> bt -l
-PID: 0      TASK: c0431340  CPU: 0   COMMAND: "swapper"
- #0 [c04617bc] crash_kexec at c015ce2a
-    /usr/src/wl-hack/wireless-testing/kernel/kexec.c: 1077
- #1 [c046180c] die at c01054ba
-    /usr/src/wl-hack/wireless-testing/arch/x86/kernel/traps_32.c: 476
- #2 [c0461828] do_page_fault at c034ef1f
-    /usr/src/wl-hack/wireless-testing/arch/x86/mm/fault.c: 858
- #3 [c0461994] error_code (via page_fault) at c034d2e8
-    /usr/src/wl-hack/wireless-testing/arch/i386/kernel/entry.S
-    EAX: 00000000  EBX: 00000000  ECX: f6103000  EDX: f75ed4a0  EBP: c0461a58
-    DS:  007b      ESI: 00000002  ES:  007b      EDI: 00000074
-    CS:  0060      EIP: f8dd3a99  ERR: ffffffff  EFLAGS: 00010046
- #4 [c04619c8] b43_generate_txhdr at f8dd3a99
- #5 [c0461a5c] b43_dma_tx at f8dd83d7
- #6 [c0461ae4] b43_op_tx at f8dc4d32
- #7 [c0461afc] __ieee80211_tx at f89c3ed4
- #8 [c0461b14] ieee80211_master_start_xmit at f89c4b6d
- #9 [c0461b74] dev_hard_start_xmit at c02d4cb5
-    /usr/src/wl-hack/wireless-testing/net/core/dev.c: 1558
-#10 [c0461ba0] __qdisc_run at c02e678d
-    /usr/src/wl-hack/wireless-testing/net/sched/sch_generic.c: 155
-#11 [c0461bd8] dev_queue_xmit at c02d5172
-    include/net/pkt_sched.h: 89
-#12 [c0461c04] ieee80211_subif_start_xmit at f89c45db
-#13 [c0461cc0] dev_hard_start_xmit at c02d4cb5
-    /usr/src/wl-hack/wireless-testing/net/core/dev.c: 1558
-#14 [c0461cec] __qdisc_run at c02e678d
-    /usr/src/wl-hack/wireless-testing/net/sched/sch_generic.c: 155
-#15 [c0461d24] dev_queue_xmit at c02d5172
-    include/net/pkt_sched.h: 89
-#16 [c0461d50] neigh_resolve_output at c02dac3e
-    /usr/src/wl-hack/wireless-testing/net/core/neighbour.c: 1215
-#17 [c0461d90] ip6_output_finish at f8d55c9e
-#18 [c0461db0] ip6_output2 at f8d57e63
-#19 [c0461dd4] ip6_output at f8d58418
-#20 [c0461e50] mld_sendpack at f8d70d8d
-#21 [c0461ebc] mld_ifc_timer_expire at f8d71a94
-#22 [c0461ef0] run_timer_softirq at c0138547
-    /usr/src/wl-hack/wireless-testing/kernel/timer.c: 798
-#23 [c0461f34] __do_softirq at c0134230
-    /usr/src/wl-hack/wireless-testing/kernel/softirq.c: 234
-#24 [c0461f50] do_softirq at c0134318
-    /usr/src/wl-hack/wireless-testing/kernel/softirq.c: 271
-#25 [c0461f5c] irq_exit at c01344b0
-    /usr/src/wl-hack/wireless-testing/kernel/softirq.c: 310
-#26 [c0461f64] smp_apic_timer_interrupt at c0113583
-    /usr/src/wl-hack/wireless-testing/arch/x86/kernel/apic_32.c: 619
-#27 [c0461f7c] apic_timer_interrupt at c0104963
-    include/linux/kdev_t.h: 52
-#28 [c0461fbc] cpu_idle at c0102d69
-    /usr/src/wl-hack/wireless-testing/arch/x86/kernel/process_32.c: 188
-
-No out-of-tree patches applied on b43. (I used to have a patch
-applied, but I removed it to test reproducibility of this crash.)
-
-Any ideas why this happens?
-
-Thanks,
-G·bor
+2008/5/28 Peter Zijlstra <peterz@infradead.org>:> Just a quick note to say, me too!!>> same scenario: distcc on localhost.
+Me too, however with a completely different scenario; my hung connectionsare not related to distcc at all. The output from /proc/net/tcp that Ingoposted a few days ago are somewhat different from mine, however I believethis is the same problem or at least related. Just as Ingo experienced,netstat -p only shows PID/program as '-' for the hung connections whilefor other connections it shows the expected results.
+I have recently bought a new PC and have started the process of copyingstuff from my old PC to the new PC. During this I have experienced thishang several times. I started copying by using tar on both ends over a sshpipe but in order to eliminate possible ssh problems I also have tried tarover a ttcp connection which also fails. There is no obvious pattern ofwhen this happens, I have experienced failures after transferring 1.15GB,51.4GB and 23.6GB.
+Here is the output from netstat -n -o filtered for port 22 and slightlyedited. All the lines started with Proto == tcp and Recv-Q == 0.
+Send-Q Local Addr Foreign Addr  State       Timer     0 old_pc:22  new_pc:52667  ESTABLISHED keepalive (3513.93/0/0)     0 old_pc:22  new_pc:43825  ESTABLISHED keepalive (5467.38/0/0)  2896 old_pc:22  new_pc:58601  ESTABLISHED on (21020884.65/0/0)  4344 old_pc:22  new_pc:54105  ESTABLISHED on (21017016.33/0/0)  2896 old_pc:22  new_pc:34149  ESTABLISHED on (20986889.24/0/0)
+The first two connections are ongoing, working, interactive sshconnections. The other three connections died days ago on my new PC.
+One thing that caught my eyes was these very high timer values.Checking the netstat source reveals that the value printed is "(double)time_len / HZ" and that time_len is extracted from /proc/net/tcp. Whilemy CONFIG_HZ is 1000, I assume netstat has picked up HZ as 100 from/usr/include/asm/param.h, and then things really seems to imply thatthere is some integer overflow since 2^31 = 2147483648.
+Looking into get_tcp4_sock in net/ipv4/tcp_ipv4.c I see that timer_expiresis initialized with icsk->icsk_timeout for the troublesome cases. Buthere my competence to trace this further stops, so I have no idea ofhow icsk->icsk_timeout gets such high values.
+My old PC is currently still running with these stalled connectionspresent so let me know if there is something I should try to investigatefurther. I can post output from /proc/net/tcp and my .config if you wantto have a look. My old PC is 32 bit/Celeron single core, kernel 2.6.24,while my new is 64 bit/Q9300 quad core, kernel 2.6.25.3. The ethernetcards are the following:
+02:0d.0 Ethernet controller: Realtek Semiconductor Co., Ltd.RTL-8139/8139C/8139C+ (rev 10)02:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056PCI-E Gigabit Ethernet Controller (rev 12)
+BR H√•kon L√∏vdalˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
