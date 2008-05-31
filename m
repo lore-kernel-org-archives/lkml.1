@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYEaRWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbYEaRgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755095AbYEaRWg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 13:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYEaRWZ
+	id S1754663AbYEaRgZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 13:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYEaRgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 13:22:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:47995 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbYEaRWZ (ORCPT
+	Sat, 31 May 2008 13:36:16 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48074 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751455AbYEaRgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 13:22:25 -0400
-Date: Sat, 31 May 2008 20:22:23 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "=?ISO-8859-1?Q?H=E5kon_L=F8vdal?=" <hlovdal@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0805312020520.2672@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
- <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com>
- <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>
+	Sat, 31 May 2008 13:36:15 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 31 May 2008 19:36:06 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-ohci: use of uninitialized data in AR handler
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.b906081cc9520c69@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; boundary="-696208474-1647873004-1212250192=:2657"
-Content-ID: <Pine.LNX.4.64.0805312020521.2672@wrl-59.cs.helsinki.fi>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+header_length and payload_length are filled with random data if an
+unknown tcode was read from the AR buffer (i.e. if the AR buffer
+contained invalid data).
 
----696208474-1647873004-1212250192=:2657
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0805312020522.2672@wrl-59.cs.helsinki.fi>
+We still need a better strategy to recover from this, but at least
+handle_ar_packet now doesn't return out of bound buffer addresses
+anymore.
 
-On Sat, 31 May 2008, Ilpo Järvinen wrote:
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-ohci.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-> On Sat, 31 May 2008, Håkon Løvdal wrote:
-> 
-> > posted a few days ago are somewhat different from mine, however I believe
-> > this is the same problem or at least related. Just as Ingo experienced,
-> > netstat -p only shows PID/program as '-' for the hung connections while
-> > for other connections it shows the expected results.
-> 
-> Hmm, are the other end's processes still there? ...I'd be interested to 
-> know what they're doing at the moment...
-
-I meant that end where you see this '-'. I suppose it's easy for you to 
-figure out which process is the right one, something that wouldn't be so 
-easy with the Ingo's test case which forks/exits numerous times.
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -548,6 +548,11 @@ static __le32 *handle_ar_packet(struct a
+ 		p.header_length = 12;
+ 		p.payload_length = 0;
+ 		break;
++
++	default:
++		/* FIXME: Stop context, discard everything, and restart? */
++		p.header_length = 0;
++		p.payload_length = 0;
+ 	}
+ 
+ 	p.payload = (void *) buffer + p.header_length;
 
 -- 
- i.
----696208474-1647873004-1212250192=:2657--
+Stefan Richter
+-=====-==--- -=-= =====
+http://arcgraph.de/sr/
+
