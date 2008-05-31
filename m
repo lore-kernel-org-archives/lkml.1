@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYEaAAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYEaADZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbYEaAAW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYE3X7I
+	id S1756132AbYEaADZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbYEaADM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 19:59:08 -0400
-Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:37131
+	Fri, 30 May 2008 20:03:12 -0400
+Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:59012
 	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753461AbYE3X6e (ORCPT
+	with ESMTP id S1753156AbYEaADM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 19:58:34 -0400
+	Fri, 30 May 2008 20:03:12 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: [PATCH 2 of 5] xn/blkfront: Add the CDROM_GET_CAPABILITY ioctl to
 	blkfront
 X-Mercurial-Node: 84dc2b8e1677cbc6f5ece6aa6a9be09291f2bbb5
-Message-Id: <84dc2b8e1677cbc6f5ec.1212191402@localhost>
-In-Reply-To: <patchbomb.1212191400@localhost>
-Date: Sat, 31 May 2008 00:50:02 +0100
+Message-Id: <84dc2b8e1677cbc6f5ec.1212192092@localhost>
+In-Reply-To: <patchbomb.1212192090@localhost>
+Date: Sat, 31 May 2008 01:01:32 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Jeff Garzik <jgarzik.pobox.com@goop.org>
+To: Jeff Garzik <jgarzik@pobox.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
