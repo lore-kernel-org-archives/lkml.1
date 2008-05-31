@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbYEaAEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYEaADv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbYEaAEM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbYEaADO
+	id S1755503AbYEaADv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYEaADN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 20:03:14 -0400
-Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:59014
+	Fri, 30 May 2008 20:03:13 -0400
+Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:59013
 	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753461AbYEaADM (ORCPT
+	with ESMTP id S1753381AbYEaADM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 May 2008 20:03:12 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 0 of 5] xen device driver updates [resend]
-Message-Id: <patchbomb.1212192090@localhost>
-Date: Sat, 31 May 2008 01:01:30 +0100
+Subject: [PATCH 3 of 5] xen/blkfront: Make sure that the device is fully ready
+	before allowing release
+X-Mercurial-Node: 6f8184a546bd5f9be417f407e9d29f040eda4453
+Message-Id: <6f8184a546bd5f9be417.1212192093@localhost>
+In-Reply-To: <patchbomb.1212192090@localhost>
+Date: Sat, 31 May 2008 01:01:33 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Jeff Garzik <jgarzik@pobox.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
@@ -23,21 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Wim Colgate <wim@xensource.com>
 
-[ Repost spelling Jeff's email addr properly. ]
+[ linux-2.6.18-xen changeset c1c57fea77e9 ]
 
-This is a series of cleanups to xen-blkfront, xen-netfront and xenbus.
-They're mostly changes imported from the linux-2.6.18-xen repo because
-they looked like they would be useful.
+Signed-off-by: Wim Colgate <wim@xensource.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Thanks,
-	J
+---
+ drivers/block/xen-blkfront.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/block/xen-blkfront.c       |   48 ++++++++++++++++++++++++++---
- drivers/net/xen-netfront.c         |    4 +-
- drivers/xen/xenbus/xenbus_client.c |    2 -
- drivers/xen/xenbus/xenbus_xs.c     |   10 +++---
- 4 files changed, 52 insertions(+), 12 deletions(-)
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -997,7 +997,7 @@
+ 		struct xenbus_device *dev = info->xbdev;
+ 		enum xenbus_state state = xenbus_read_driver_state(dev->otherend);
+ 
+-		if (state == XenbusStateClosing)
++		if (state == XenbusStateClosing && info->is_ready)
+ 			blkfront_closing(dev);
+ 	}
+ 	return 0;
 
 
