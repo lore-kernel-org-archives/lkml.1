@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYEaBDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbYEaBJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbYEaBDM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 21:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYEaBC7
+	id S1754901AbYEaBJx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 21:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbYEaBJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 21:02:59 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:23608 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbYEaBC5 (ORCPT
+	Fri, 30 May 2008 21:09:42 -0400
+Received: from elasmtp-galgo.atl.sa.earthlink.net ([209.86.89.61]:39089 "EHLO
+	elasmtp-galgo.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751367AbYEaBJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 21:02:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=pg0MZxdc0Fk5P2F/j56j1fcFbNXqjzVmKaZvBsAHTLuAY8NNBzLCgprIa/hUHTnH+e99WMWIU31beblJi7zcu/xoFvLSnFjYOw3i4ouMS3H2QQ4/6TMuFnRDBn9JrDPMkcpjBj6PWsJgxC7YTsAne6BCu0S+f4gx7X7A1qXfDf0=
-Date: Sat, 31 May 2008 04:58:44 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org, herbert@gondor.apana.org.au
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tcrypt: init test SG tables
-Message-ID: <20080531005844.GA6751@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 30 May 2008 21:09:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=huZiA2BdhBksE94N3K2SfklRXRY9kOuSDPpuhvphXkws7XFu5majbX0GBbiWtq5u;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Fri, 30 May 2008 21:09:31 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Rick Jones <rick.jones2@hp.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Cammarata <jimi@sngx.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] net: add ability to clear stats via ethtool -
+ e1000/pcnet32
+Message-Id: <20080530210931.5970c975.billfink@mindspring.com>
+In-Reply-To: <48407C51.7090405@hp.com>
+References: <482DA5B6.1020606@sngx.net>
+	<482DB46A.8020103@cosmosbay.com>
+	<482EF192.4070707@sngx.net>
+	<482F5113.5090703@cosmosbay.com>
+	<482F610D.2080108@sngx.net>
+	<20080518003104.GK28241@solarflare.com>
+	<482FBA09.80201@sngx.net>
+	<483E0AAE.2020107@sngx.net>
+	<20080528221118.63da4092.akpm@linux-foundation.org>
+	<483EA2D1.8050603@sngx.net>
+	<20080529154525.3916c7b5@core>
+	<20080530151250.b44a119a.billfink@mindspring.com>
+	<48407C51.7090405@hp.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d0ece6c3c1e2cd223c9fd3240335ac46c350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.248
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steps to reproduce:
+On Fri, 30 May 2008, Rick Jones wrote:
 
-	modprobe tcrypt		# with CONFIG_DEBUG_SG=y
+> > Saving stats output and running beforeafter on a number of systems is
+> > a royal pain when troubleshooting.
+> 
+> Well, with that ringing endorsement :) I would like to state that 
+> Yoshihiro Ishijima has fixed some bugs in beforeafter and it will now 
+> deal with /proc/interrupts output better than before.
+> 
+> ftp://ftp.cup.hp.com/dist/networking/tools/
 
-testing cts(cbc(aes)) encryption
-test 1 (128 bit key):
-------------[ cut here ]------------
-kernel BUG at include/linux/scatterlist.h:65!
-invalid opcode: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
-CPU 0 
-Modules linked in: tea xts twofish twofish_common tcrypt(+) [maaaany]
-Pid: 16151, comm: modprobe Not tainted 2.6.26-rc4-fat #7
-RIP: 0010:[<ffffffffa0bf032e>]  [<ffffffffa0bf032e>] :cts:cts_cbc_encrypt+0x151/0x355
-RSP: 0018:ffff81016f497a88  EFLAGS: 00010286
-RAX: ffffe20009535d58 RBX: ffff81016f497af0 RCX: 0000000087654321
-RDX: ffff8100010d4f28 RSI: ffff81016f497ee8 RDI: ffff81016f497ac0
-RBP: ffff81016f497c38 R08: 0000000000000000 R09: 0000000000000011
-R10: ffffffff00000008 R11: ffff8100010d4f28 R12: ffff81016f497ac0
-R13: ffff81016f497b30 R14: 0000000000000010 R15: 0000000000000010
-FS:  00007fac6fa276f0(0000) GS:ffffffff8060e000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00007f12ca7cc000 CR3: 000000016f441000 CR4: 00000000000026e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 0000000000000400
-Process modprobe (pid: 16151, threadinfo ffff81016f496000, task ffff8101755b4ae0)
-Stack:  0000000000000001 ffff81016f496000 ffffffff80719f78 0000000000000001
- 0000000000000001 ffffffff8020c87c ffff81016f99c918 20646c756f772049
- 65687420656b696c 0000000000000020 0000000000000000 0000000033341102
-Call Trace:
- [<ffffffff8020c87c>] ? restore_args+0x0/0x30
- [<ffffffffa04aa311>] ? :aes_generic:crypto_aes_expand_key+0x311/0x369
- [<ffffffff802ab453>] ? check_object+0x15a/0x213
- [<ffffffff802aad22>] ? init_object+0x6e/0x76
- [<ffffffff802ac3ae>] ? __slab_free+0xfc/0x371
- [<ffffffffa0bf05ed>] :cts:crypto_cts_encrypt+0xbb/0xca
- [<ffffffffa07108de>] ? :crypto_blkcipher:setkey+0xc7/0xec
- [<ffffffffa07110b8>] :crypto_blkcipher:async_encrypt+0x38/0x3a
- [<ffffffffa2ce9341>] :tcrypt:test_cipher+0x261/0x7c6
- [<ffffffffa2cfd9df>] :tcrypt:tcrypt_mod_init+0x9df/0x1b30
- [<ffffffff80261e35>] sys_init_module+0x9e/0x1b2
- [<ffffffff8020c15a>] system_call_after_swapgs+0x8a/0x8f
-Code: 45 c0 e8 aa 24 63 df 48 c1 e8 0c 48 b9 00 00 00 00 00 e2 ff ff 48 8b 55 88 48 6b c0 68 48 01 c8 b9 21 43 65 87 48 39 4d 80 74 04 <0f> 0b eb fe f6 c2 01 74 04 0f 0b eb fe 83 e2 03 4c 89 ef 44 89 
-RIP  [<ffffffffa0bf032e>] :cts:cts_cbc_encrypt+0x151/0x355
- RSP <ffff81016f497a88>
----[ end trace e8bahiarjand37fd ]---
+Nothing against beforefter.  It's a very useful tool, especially
+given Linux's lack of a method to clear interface counters.  But
+it still is very cumbersome to use in the scenario I mentioned,
+having to save the stats before and after a test on each of several
+systems, and then having to run beforeafter on each of those systems.
+Then you need to do this all again for every test run.  It's just
+not very efficient.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+I don't know why the major objection to adding a small amount of
+code to the kernel that would make life a lot easier for hundreds
+(or more) of Linux network adminstrators.  And the snapshot/diff
+idea would not be complex to maintain and would also address the
+issue of some hardware not having a clear hw stats capability.
 
- crypto/cts.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
---- a/crypto/cts.c
-+++ b/crypto/cts.c
-@@ -89,6 +89,9 @@ static int cts_cbc_encrypt(struct crypto_cts_ctx *ctx,
- 	if (lastn < 0)
- 		return -EINVAL;
- 
-+	sg_init_table(sgsrc, 1);
-+	sg_init_table(sgdst, 1);
-+
- 	memset(s, 0, sizeof(s));
- 	scatterwalk_map_and_copy(s, src, offset, nbytes, 0);
- 
-@@ -172,6 +175,9 @@ static int cts_cbc_decrypt(struct crypto_cts_ctx *ctx,
- 	if (lastn < 0)
- 		return -EINVAL;
- 
-+	sg_init_table(sgsrc, 1);
-+	sg_init_table(sgdst, 1);
-+
- 	scatterwalk_map_and_copy(s, src, offset, nbytes, 0);
- 
- 	lcldesc.tfm = ctx->child;
-
+						-Bill
