@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYEaOHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYEaOUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbYEaOHx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 10:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYEaOHp
+	id S1753988AbYEaOUS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 10:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbYEaOUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 10:07:45 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36519 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbYEaOHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 10:07:44 -0400
-Date: Sat, 31 May 2008 17:07:34 +0300
-From: Adrian Bunk <adrian.bunk@movial.fi>
-To: Michael Hennerich <Michael.Hennerich@analog.com>, takata@linux-m32r.org
-Cc: linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [2.6.26 patch] asm-m32r/uaccess.h must #include <asm/setup.h>
-Message-ID: <20080531140734.GA7347@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 31 May 2008 10:20:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39656 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752552AbYEaOUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 10:20:03 -0400
+Date: Sat, 31 May 2008 15:05:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Jeff Garzik <jeff@garzik.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the
+ kernel.
+Message-ID: <20080531150526.46cda105@core>
+In-Reply-To: <48408A67.4090006@zytor.com>
+References: <1211995212.3445.52.camel@localhost.localdomain>
+	<20080528.225826.40264516.davem@davemloft.net>
+	<1212041839.8888.38.camel@pasglop>
+	<20080529124548.GC8065@mit.edu>
+	<1212077700.26088.83.camel@shinybook.infradead.org>
+	<483F002E.5060002@garzik.org>
+	<1212095864.24826.2.camel@lappy.programming.kicks-ass.net>
+	<483F3EC4.5050700@zytor.com>
+	<20080530103107.4f71cfe3@core>
+	<48408A67.4090006@zytor.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error caused by
-commit 4016a1390d07f15b267eecb20e76a48fd5c524ef
-(mm/nommu.c: return 0 from kobjsize with invalid objects):
+> (*) Not saying that a klibc-based initramfs is necessarily smaller than 
+> the in-kernel code it replaces, but the total size is << than the size 
+> of the kernel proper, which isn't true when using a full-featured libc.
 
-<--  snip  -->
+True but with a vendor hat on thats not usually a problem on modern
+systems and using glibc means less code to maintain, less special cases,
+and more flexibility.
 
-...
-  CC      mm/nommu.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/nommu.c: In function 'kobjsize':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/nommu.c:112: error: 'memory_end' undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/nommu.c:112: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/git/linux-2.6/mm/nommu.c:112: error: for each function it appears in.)
-make[2]: *** [mm/nommu.o] Error 1
+For embedded klibc may well be interesting.
 
-<--  snip  -->
-
-The patch also removes now no longer required memory_{start,end} 
-declarations inside access_ok().
-
-Reported-by: Adrian Bunk <adrian.bunk@movial.fi>
-Signed-off-by: Adrian Bunk <adrian.bunk@movial.fi>
-
----
-
-There doesn't seem to be any fixed location for memory_{start,end} among 
-all architectures, but since mm/nommu.c already has an #include <asm/uaccess.h>
-and the non-MMU access_ok anyway needs them this seems to be the logical 
-way to fix this compile error.
-
- include/asm-m32r/uaccess.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-6bf3808a28c19a31ba73c0dad3798e95bddd0fbb diff --git a/include/asm-m32r/uaccess.h b/include/asm-m32r/uaccess.h
-index bd8c837..1c7047b 100644
---- a/include/asm-m32r/uaccess.h
-+++ b/include/asm-m32r/uaccess.h
-@@ -14,6 +14,7 @@
- #include <linux/errno.h>
- #include <linux/thread_info.h>
- #include <asm/page.h>
-+#include <asm/setup.h>
- 
- #define VERIFY_READ 0
- #define VERIFY_WRITE 1
-@@ -106,7 +107,6 @@ static inline void set_fs(mm_segment_t s)
- #else
- static inline int access_ok(int type, const void *addr, unsigned long size)
- {
--	extern unsigned long memory_start, memory_end;
- 	unsigned long val = (unsigned long)addr;
- 
- 	return ((val >= memory_start) && ((val + size) < memory_end));
-
+Alan
