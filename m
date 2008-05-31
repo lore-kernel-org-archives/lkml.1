@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYEaEin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbYEaEpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYEaEin (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 00:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYEaEif
+	id S1753412AbYEaEpW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 00:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbYEaEpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 00:38:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51659 "EHLO mx1.redhat.com"
+	Sat, 31 May 2008 00:45:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:57056 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750889AbYEaEie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 00:38:34 -0400
-Message-ID: <4840D63F.2090407@redhat.com>
-Date: Fri, 30 May 2008 21:38:23 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-References: <200805310127.m4V1RLR4013808@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com> <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org> <4840CE51.9060109@redhat.com> <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	id S1750749AbYEaEpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 00:45:09 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Anthony Green <green@spindazzle.org>
+Subject: Re: =?utf-8?b?dHJhY2VfbWFyaw==?= ugliness
+Date: Sat, 31 May 2008 01:06:00 +0000 (UTC)
+Message-ID: <loom.20080531T005930-231@post.gmane.org>
+References: <Pine.LNX.4.58.0805220949560.14724@gandalf.stny.rr.com>  <20080522171602.GB22806@Krystal>  <1211714403.6463.294.camel@lappy.programming.kicks-ass.net>  <20080527133651.GA9428@Krystal> <1211987977.12349.91.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 74.15.54.82 (Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Peter Zijlstra <peterz <at> infradead.org> writes:
+> The sad truth is that gcc is taking out most of the function forwarding
+> helpers in favour of libffi, and libffi is far from self hosting and
+> quite horrible to look at - so importing that into the kernel isn't
+> going to work either :-/
 
-Linus Torvalds wrote:
-> Is it possible? I dunno.
+Peter,
 
-Once again not without limitations which are too low.  The main problem
-is that there is far more information needed on the reader side.  There
-are two counters and a number of bits for state information.  Which
-means the counters can be at most 14 bits in size.
+Either you're using the term "self hosting" in some way I don't understand, or
+you meant to say that it doesn't build outside of the GCC tree.  Actually, it
+does, if you use the upstream version here: http://sourceware.org/libffi.
 
-A counter this low also means I cannot unconditionally increment them
-(since there can be more than 2^14 threads sharing one page).  This
-means you get in the cache line race I described in the last mail.  You
-first have to load a word and then perform a the write operation while
-at the same time other threads competing with you for the same cache line.
+Anthony Green
 
 
-> I personally suspect it is. I also suspect you 
-> didn't even try.
-
-I have to disappoint you.  I thought of that and had to reject it.
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkhA1j8ACgkQ2ijCOnn/RHTUXQCgnkUy6PNSuUI4O6BD4abxqqKr
-PzMAn2qcvrXGM4qrhOytk1Yie0BsMeVa
-=zvxZ
------END PGP SIGNATURE-----
