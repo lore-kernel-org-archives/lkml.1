@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbYEaB4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYEaB53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbYEaB4Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 21:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYEaBza
+	id S1755012AbYEaB53 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 21:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbYEaB5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 21:55:30 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36732 "EHLO mail.dvmed.net"
+	Fri, 30 May 2008 21:57:21 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36745 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752939AbYEaBzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 21:55:14 -0400
-Message-ID: <4840AFFD.1000606@pobox.com>
-Date: Fri, 30 May 2008 21:55:09 -0400
+	id S1750757AbYEaB5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 21:57:21 -0400
+Message-ID: <4840B077.70705@pobox.com>
+Date: Fri, 30 May 2008 21:57:11 -0400
 From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 CC: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1 of 5] xen/blkfront: Make sure we don't use bounce buffers,
- we don't need them
-References: <967afd96e8ece92cb863.1212192091@localhost>
-In-Reply-To: <967afd96e8ece92cb863.1212192091@localhost>
+Subject: Re: [PATCH 2 of 5] xn/blkfront: Add the CDROM_GET_CAPABILITY ioctl
+ to	blkfront
+References: <84dc2b8e1677cbc6f5ec.1212192092@localhost>
+In-Reply-To: <84dc2b8e1677cbc6f5ec.1212192092@localhost>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -30,28 +30,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Jeremy Fitzhardinge wrote:
-> From: Ian Campbell <ian.campbell@xensource.com>
-> 
-> [ linux-2.6.18-xen changeset 667228bf8fc5 ]
-> 
-> Signed-off-by: Ian Campbell <ian.campbell@xensource.com>
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  drivers/block/xen-blkfront.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-> --- a/drivers/block/xen-blkfront.c
-> +++ b/drivers/block/xen-blkfront.c
-> @@ -324,6 +324,9 @@
->  	/* Make sure buffer addresses are sector-aligned. */
->  	blk_queue_dma_alignment(rq, 511);
->  
-> +	/* Make sure we don't use bounce buffers. */
-> +	blk_queue_bounce_limit(rq, BLK_BOUNCE_ANY);
-> +
->  	gd->queue = rq;
+> +	case CDROM_GET_CAPABILITY: {
+> +		struct gendisk *gd = info->gd;
+> +		if (gd->flags & GENHD_FL_CD)
+> +			return 0;
+> +		return -EINVAL;
+> +	}
 
-ACK
+
+Surely you can come up with a better implementation than this?  It's 
+just a bitmask returned to userspace...
+
+	Jeff
 
 
