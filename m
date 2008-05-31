@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbYEaEf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYEaEin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754376AbYEaEf2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 00:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbYEaEfU
+	id S1754801AbYEaEin (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 00:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYEaEif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 00:35:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43695 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750749AbYEaEfU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 00:35:20 -0400
-Date: Fri, 30 May 2008 21:34:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Subject: Re: [PATCH 3/3] 64-bit futexes: x86 support
-In-Reply-To: <4840D335.6040406@redhat.com>
-Message-ID: <alpine.LFD.1.10.0805302129240.3141@woody.linux-foundation.org>
-References: <200805310127.m4V1RLdP013819@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301923020.3141@woody.linux-foundation.org> <4840C394.2080807@redhat.com> <alpine.LFD.1.10.0805302056170.3141@woody.linux-foundation.org> <4840D335.6040406@redhat.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 31 May 2008 00:38:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51659 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750889AbYEaEie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 00:38:34 -0400
+Message-ID: <4840D63F.2090407@redhat.com>
+Date: Fri, 30 May 2008 21:38:23 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
+References: <200805310127.m4V1RLR4013808@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com> <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org> <4840CE51.9060109@redhat.com> <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Linus Torvalds wrote:
+> Is it possible? I dunno.
+
+Once again not without limitations which are too low.  The main problem
+is that there is far more information needed on the reader side.  There
+are two counters and a number of bits for state information.  Which
+means the counters can be at most 14 bits in size.
+
+A counter this low also means I cannot unconditionally increment them
+(since there can be more than 2^14 threads sharing one page).  This
+means you get in the cache line race I described in the last mail.  You
+first have to load a word and then perform a the write operation while
+at the same time other threads competing with you for the same cache line.
 
 
-On Fri, 30 May 2008, Ulrich Drepper wrote:
-> 
-> I guess have to expect to expect to be insulted by you.
+> I personally suspect it is. I also suspect you 
+> didn't even try.
 
-Guess why? What comes around goes around. 
+I have to disappoint you.  I thought of that and had to reject it.
 
-You just dismissed (without apparently even understanding them) my 
-concerns about a patch that comes out of the blue, when I ask whether you 
-really looked into trying to do it other ways.
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-You didn't even post the code that would _use_ this. You just blindly 
-claim that you're the only one who can know things like this and can do 
-serialization, and that your way is the only approach.
-
-Color me not impressed. 
-
-I did not insult you until you didn't even understand my first email. We 
-have had an efficient 32-bit rwlock in the kernel for a long time. So I 
-(quite naturally) questioned your statement (that had no backing up 
-what-so-ever) that it cannot be done.
-
-Sure, futex use and user space is not the same as the kernel code. It's 
-possible that you really do need 64-bit futexes. But quite frankly, the 
-only thing you have proven so far is that you're an ass.
-
-			Linus
+iEYEARECAAYFAkhA1j8ACgkQ2ijCOnn/RHTUXQCgnkUy6PNSuUI4O6BD4abxqqKr
+PzMAn2qcvrXGM4qrhOytk1Yie0BsMeVa
+=zvxZ
+-----END PGP SIGNATURE-----
