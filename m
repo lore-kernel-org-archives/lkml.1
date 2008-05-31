@@ -1,58 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbYEaCbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbYEaCd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbYEaCbP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 22:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYEaCa5
+	id S1756320AbYEaCd3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 22:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYEaCdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 22:30:57 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:33521 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbYEaCa4 (ORCPT
+	Fri, 30 May 2008 22:33:22 -0400
+Received: from fgwmail2.fujitsu.co.jp ([164.71.1.135]:42361 "EHLO
+	fgwmail2.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbYEaCdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 22:30:56 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: akpm@linuxfoundation.org, Chris Wright <chrisw@sous-sol.org>,
-       stephen.hemminger@vyatta.com, adobriyan@gmail.com, morgan@kernel.org,
-       xemul@openvz.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <200805292349.m4TNneua029348@imap1.linux-foundation.org>
-	<20080530161857.25e3fbc5@extreme> <m1wslbcjy9.fsf@frodo.ebiederm.org>
-	<20080530191053.34182eaf@extreme>
-Date: Fri, 30 May 2008 19:29:03 -0700
-In-Reply-To: <20080530191053.34182eaf@extreme> (Stephen Hemminger's message of
-	"Fri, 30 May 2008 19:10:53 -0700")
-Message-ID: <m1hccfcikw.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Stephen Hemminger <shemminger@vyatta.com>
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
-	*      [score: 0.4447]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] sysctl: allow override of /proc/sys/net with CAP_NET_ADMIN
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Fri, 30 May 2008 22:33:21 -0400
+X-Greylist: delayed 2034 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 May 2008 22:33:20 EDT
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sat, 31 May 2008 10:59:16 +0900 (JST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
+       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
+In-Reply-To: <48407DC3.8060001@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <48407DC3.8060001@linux.vnet.ibm.com>
+ <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger <shemminger@vyatta.com> writes:
-> Unnecessary, it is a property of the root, and there is only one call to
-> register_sysctl_root
-> in the current code, and that registers the net_sysctl_root structure.
+>KAMEZAWA Hiroyuki wrote:
+>> This patch tries to implements _simple_ 'hierarchy policy' in res_counter.
+>> 
+>> While several policy of hierarchy can be considered, this patch implements
+>> simple one 
+>>    - the parent includes, over-commits the child
+>>    - there are no shared resource
+>
+>I am not sure if this is desirable. The concept of a hierarchy applies really
+>well when there are shared resources.
+>
+>>    - dynamic hierarchy resource usage management in the kernel is not neces
+sary
+>> 
+>
+>Could you please elaborate as to why? I am not sure I understand your point
+>
 
-Oh right.  I was thinking it was a property of the ctl_table_header.
-My mistake.
+ok, let's consider a _miiddleware_ wchich has following paramater.
 
-Then this is essentially the perfect place to put it.
+An expoterd param to the user.
+   - user_memory_limit
+parameters for co-operation with the kernel
+   - kernel_memory_limit
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+And here,
+   user_memory_limit >= kernel_memory_limit == cgroup's memory.limits_in_bytes
 
-Eric
+When a user ask the miidleware to set limit to 1Gbytes
+   user_memory_limit = 1G
+   kernel_memory_limit = 0-1G.
+It moves kernel_memory_limit dynamically 0 to 1Gbytes and reset limits_in_byte
+s in dynamic way with checking memory cgroup's statistics.
+Of course, we can add some kind of interdace , as following
+  - failure_notifier - triggered at failcnt increment.
+  - threshhold_notifier - triggered as usage > threshold.
+
+>> works as following.
+>> 
+>>  1. create a child. set default child limits to be 0.
+>>  2. set limit to child.
+>>     2-a. before setting limit to child, prepare enough room in parent.
+>>     2-b. increase 'usage' of parent by child's limit.
+>
+>The problem with this is that you are forcing the parent will run into a recl
+aim
+>loop even if the child is not using the assigned limit to it.
+>
+That's not problem because it's avoildable by users.
+But it's ok to limit the sum of child's limit to be below XX % ot the parent.
+
+>>  3. the child sets its limit to the val moved from the parent.
+>>     the parent remembers what amount of resource is to the children.
+>> 
+>
+>All of this needs to be dynamic
+>
+As explained, this can be dynamic by middleware.
+
+>>  Above means that
+>> 	- a directory's usage implies the sum of all sub directories +
+>>           own usage.
+>> 	- there are no shared resource between parent <-> child.
+>> 
+>>  Pros.
+>>   - simple and easy policy.
+>>   - no hierarchy overhead.
+>>   - no resource share among child <-> parent. very suitable for multilevel
+>>     resource isolation.
+>
+>Sharing is an important aspect of hierachies. I am not convinced of this
+>approach. Did you look at the patches I sent out? Was there something
+>fundamentally broken in them?
+>
+
+Yes, I read. And tried to make it faster and found it will be complicated.
+One problem is overhead of counter itself.
+Another problem is overhead of shrinking multi-level LRU with feedback.
+One more problem is that it's hard to implement various kinds of hierarchy
+policy. I believe there are other hierarhcy policies rather than OpenVZ
+want to use. Kicking out functions to middleware AMAP is what I'm thinking
+now.
+
+Thanks,
+-Kame
+
+
+
