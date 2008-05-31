@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbYEaNJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753667AbYEaNaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbYEaNJV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 09:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYEaNJG
+	id S1753667AbYEaNaQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 09:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYEaNaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 09:09:06 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:15357 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbYEaNJE convert rfc822-to-8bit (ORCPT
+	Sat, 31 May 2008 09:30:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58657 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752487AbYEaNaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 09:09:04 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Subject: Re: [PATCH BUGFIX -rc4] Smack: Respect 'unlabeled' netlabel mode
-Date: Sat, 31 May 2008 09:08:59 -0400
-User-Agent: KMail/1.9.7
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       linux-security-module@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080530233603.GA2994@ubuntu> <538684.41302.qm@web36603.mail.mud.yahoo.com> <20080531005826.GA6945@ubuntu>
-In-Reply-To: <20080531005826.GA6945@ubuntu>
-MIME-Version: 1.0
+	Sat, 31 May 2008 09:30:00 -0400
+Date: Sat, 31 May 2008 14:15:29 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Chris Frey <cdfrey@foursquare.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: OOM policy, overcommit control, and soft limits
+Message-ID: <20080531141529.2a5c085a@core>
+In-Reply-To: <20080531102752.GA25244@foursquare.net>
+References: <20080531102752.GA25244@foursquare.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-Disposition: inline
-Message-Id: <200805310909.00106.paul.moore@hp.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry I'm late to the party ...
+> I'm sure someone has thought of this before me.  Does anything remotely
+> similar to this already exist?  I've googled for OOM policy, but so far
+> all I've seen is Rusty Lynch's patch from 2003, and really, I want this
+> behaviour to happen when there is still a bit of memory left, so things
+> can be dealt with before they are OOM-level dire.
 
-On Friday 30 May 2008 8:58:26 pm Ahmed S. Darwish wrote:
-> There are two possible solutions in my mind:
->
-> - Using a predefined netlabel domain to denote to unlabeled packets.
->   Defect: May collide with a user chosen label and used to break
-> security. Solution: Use a domain name that can't become a label
-> (Hackery ?)
+Not that I am aware of. However you can set priorities on OOM killing
+order and there is a patch from the XO people which seems to have
+vanished into the darkness which added a nice memory pressure notifier so
+apps could respond to memory shortages intelligently (eg by cleaning up)
 
->From my understanding of Smack that is what the ambient label does 
-currently.  Does this not work correctly for you?
-
-> - I've tried first to use what was done before the 'Smack: unlabeled
-> outgoing ambient packets' patch, which honored nltype=unlabeled, but
-> ignored netlabel completely:
->   i.e.
->
->   int rc = 0;
->   if (secattr.flags != NETLBL_SECATTR_NONE)
->        rc = netlbl_sock_setattr(sk, &secattr);
->   return rc
->
->   Paul, would this be right from a netlabel perspective ?
-
-Well, what are you trying to do (it isn't clear to me from the code 
-snippet above)?  The netlbl_sock_setattr() function looks at the 
-secattr->domain field and uses the value their to lookup the desired 
-labeling protocol (currently either CIPSO or unlabeled) and then the 
-NetLabel subsystem passes the socket and the secattr information onto 
-the specific protocol handler where the secattr->attr information is 
-used to assign on-the-wire labels to the socket.
-
--- 
-paul moore
-linux @ hp
