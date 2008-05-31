@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbYEaWz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYEaXIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbYEaWz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 18:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYEaWzR
+	id S1756206AbYEaXIj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 19:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbYEaXIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 18:55:17 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:52297 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753759AbYEaWzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 18:55:15 -0400
-Date: Sun, 1 Jun 2008 00:54:42 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH 5/4] Fix forcedeth hibernate/wake-on-lan problems
-Message-ID: <20080531225442.GA2747@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ayaz Abdulla <aabdulla@nvidia.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Stephen Hemminger <shemminger@linux-foundation.org>
-References: <20080518125715.GA19229@yamamaya.is-a-geek.org>
+	Sat, 31 May 2008 19:08:30 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:50251 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754543AbYEaXIa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 19:08:30 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 1 Jun 2008 01:08:22 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-ohci: clear LinkControl register when enabling
+ the chip
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.1dfeb5ce5dd30360@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080518125715.GA19229@yamamaya.is-a-geek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+We want the rcvPhyPkt bit in LinkControl off before we start using the
+chip.  However, the spec says that the reset value of it is undefined.
+Hence switch it (and all other bits while we are at it) explicitly off.
 
-We currently don't signal the kernel we that this device can wake
-the system.  Call device_init_wakeup() to correct this.
-Without this device_can_wakeup and device_may_wakeup will return
-incorrect values.
-Together with the minimized acpi wakeup patch (6/4 ;)), which will
-follow in the next mail, this really makes wake-on-lan work for me
-as expected (i.e. "ethtool -s eth0 wol g" is sufficient, no
-additional magic needed).
+https://bugzilla.redhat.com/show_bug.cgi?id=244576#c48 shows that for
+example the nForce2 integrated FireWire controller seems to have it on
+by default.
 
-Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-ohci.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux-2.6.26-rc4.forcedwol/drivers/net/forcedeth.c
+Index: linux/drivers/firewire/fw-ohci.c
 ===================================================================
---- linux-2.6.26-rc4.forcedwol.orig/drivers/net/forcedeth.c	2008-06-01 00:29:58.000000000 +0200
-+++ linux-2.6.26-rc4.forcedwol/drivers/net/forcedeth.c	2008-06-01 00:30:48.000000000 +0200
-@@ -5539,6 +5539,11 @@
- 	/* set mac address */
- 	nv_copy_mac_to_hw(dev);
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -1473,6 +1473,7 @@ static int ohci_enable(struct fw_card *c
+ 	reg_write(ohci, OHCI1394_HCControlClear,
+ 		  OHCI1394_HCControl_noByteSwapData);
  
-+	/* Workaround current PCI init glitch:  wakeup bits aren't
-+	 * being set from PCI PM capability.
-+	 */
-+	device_init_wakeup(&pci_dev->dev, 1);
-+
- 	/* disable WOL */
- 	writel(0, base + NvRegWakeUpFlags);
- 	np->wolenabled = 0;
++	reg_write(ohci, OHCI1394_LinkControlClear, ~0);
+ 	reg_write(ohci, OHCI1394_LinkControlSet,
+ 		  OHCI1394_LinkControl_rcvSelfID |
+ 		  OHCI1394_LinkControl_cycleTimerEnable |
+
+-- 
+Stefan Richter
+-=====-==--- -==- ----=
+http://arcgraph.de/sr/
+
