@@ -1,41 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYEaRTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYEaRU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbYEaRTg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 13:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbYEaRT1
+	id S1753305AbYEaRU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 13:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYEaRUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 13:19:27 -0400
-Received: from mx1.math.uh.edu ([129.7.128.32]:38262 "EHLO mx1.math.uh.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751352AbYEaRT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 13:19:26 -0400
-X-Greylist: delayed 1822 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 May 2008 13:19:26 EDT
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: via agp patches
-References: <20080531003214.GA6208@suse.de> <20080531003354.GC6208@suse.de>
-	<20080531132532.668f6520@core>
-From: Jason L Tibbitts III <tibbs@math.uh.edu>
-Date: 31 May 2008 11:48:53 -0500
-In-Reply-To: <20080531132532.668f6520@core>
-Message-ID: <ufaskvy5si2.fsf@epithumia.math.uh.edu>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Sat, 31 May 2008 13:20:09 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:58106 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754663AbYEaRTz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 13:19:55 -0400
+Message-ID: <4841886A.1000901@linux.vnet.ibm.com>
+Date: Sat, 31 May 2008 22:48:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Spam-Score: -2.6 (--)
+To: kamezawa.hiroyu@jp.fujitsu.com
+CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
+       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
+Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+References: <48413482.5080409@linux.vnet.ibm.com> <48407DC3.8060001@linux.vnet.ibm.com> <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com> <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com> <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "AC" == Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+kamezawa.hiroyu@jp.fujitsu.com wrote:
+> ----- Original Message -----
+> 
+>>> One more problem is that it's hard to implement various kinds of hierarchy
+>>> policy. I believe there are other hierarhcy policies rather than OpenVZ
+>>> want to use. Kicking out functions to middleware AMAP is what I'm thinking
+>>> now.
+>> One way to manage hierarchies other than via limits is to use shares (please 
+> see
+>> the shares used by the cpu controller). Basically, what you've done with limi
+> ts
+>> is done with shares
+>>
+> Yes, I like _share_ rather than limits.
+> 
+>> If a parent has 100 shares, then it can decide how many to pass on to it's  c
+> hildren
+>> based on the shares of the child and your logic would work well. I propose
+>> assigning top level (high resolution) shares to the root of the cgroup and in
+>  a
+>> hierarchy passing them down to children and sharing it with them. Based on th
+> e
+>> shares, deduce the limit of each node in the hierarchy.
+>>
+>> What do you think?
+>>
+> As you wrote, a middleware can do controls based on share by limits.
+> And it seems much easier to implement it in userland rather than in the kernel
+> .
 
-AC> Do we think the above is GPL compatible, do VIA think so, do VIA
-AC> care to say in writing they consider it is if there are questions?
+The good thing about user space is that moves unnecessary code outside the
+kernel, but the hard thing is standardization. If every middleware is going to
+implement what you say, imagine the code duplication, unless we standardize this
+into a library component. More comments below. I am not sure about the
+difference between user_memory_limit and kernel_memory_limit. Could you please
+elaborate.
 
-It seems to me that's just an MIT variant, identical to what Fedora
-calls the "Modern Style with sublicense"
-http://fedoraproject.org/wiki/Licensing/MIT which is GPL compatible
-according to the FSF at least (although the FSF prefers that it not be
-called "the MIT license" for various reasons).
+> 
+> Here is an example. (just an example...)
+> Please point out if I'm misunderstanding "share".
+> 
+> root_level/                   = limit 1G.
+>           /child_A = share=30
+>           /child_B = share=15
+>           /child_C = share=5
+> (and assume there is no process under root_level for make explanation easy..)
+> 
+> 0. At first, before starting to use memory, set all kernel_memory_limit.
+> root_level.limit = 1G
+>   child_A.limit=64M,usage=0
+>   child_B.limit=64M,usage=0
+>   child_C.limit=64M,usage=0
+>   free_resource=808M 
+> 
 
- - J<
+This sounds incorrect, since the limits should be proportional to shares. If the
+maximum shares in the root were 100 (*ideally we want higher resolution than that)
+Then
+
+child_A.limit = .3 * 1G
+child_B.limit = .15 * 1G
+
+and so on
+
+
+> 1. next, a process in child_C start to run and use memory of 600M.
+> root_level.limit = 1G
+>   child_A.limit=64M
+>   child_B.limit=64M
+>   child_C.limit=600M,usage=600M
+>   free_resource=272M
+> 
+
+How is that feasible, it's limit was 64M, how did it bump up to 600M? If you
+want something like that, child_C should have no limits.
+
+> 2. now, a process in child_A start tu run and use memory of 800M.
+>   child_A.limit=800M,usage=800M
+>   child_B.limit=64M,usage=0M
+>   child_C.limit=136M,usage=136M
+>   free_resouce=0,A:C=6:1
+> 
+
+Not sure I understand this step
+
+> 3.Finally, a process in child_B start. and use memory of 500M.
+>   child_A.limit=600M,usage=600M
+>   child_B.limit=300M,usage=300M
+>   child_C.limit=100M,usage=100M
+>   free_resouce=0, A:B:C=6:3:1
+> 
+
+Not sure I understand this step
+
+> 4. one more, a process in A exits.
+>   child_A.limit=64M, usage=0M
+>   child_B.limit=500M, usage=500M
+>   child_C.limit=436M, usage=436M
+>   free_resouce=0, B:C=3:1 (but B just want to use 500M)
+> 
+
+Not sure I understand this step
+
+> This is only an example and the middleware can more pricise "limit"
+> contols by checking statistics of memory controller hierarchy based on
+> their own policy.
+> 
+> What I think now is what kind of statistics/notifier/controls are
+> necessary to implement shares in middleware. How pricise/quick work the
+> middleware can do is based on interfaces.
+> Maybe the middleware should know "how fast the application runs now" by
+> some kind of check or co-operative interface with the application.
+> But I'm not sure how the kernel can help it.
+
+I am not sure if I understand your proposal at this point.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
