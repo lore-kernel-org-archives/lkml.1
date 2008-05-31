@@ -1,43 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYEaI3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYEaIaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbYEaI3o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 04:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYEaI3f
+	id S1755359AbYEaIaK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 04:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbYEaI3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 04:29:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46928 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbYEaI3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 04:29:35 -0400
-Date: Sat, 31 May 2008 04:29:34 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 8/8] vfs: create file_remove_suid() helper
-Message-ID: <20080531082934.GG24135@infradead.org>
-References: <20080529113245.450308367@szeredi.hu> <20080529113318.257547449@szeredi.hu>
-MIME-Version: 1.0
+	Sat, 31 May 2008 04:29:55 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51974 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751640AbYEaI3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 04:29:54 -0400
+Date: Sat, 31 May 2008 10:30:34 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Clifford Wolf <clifford@clifford.at>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add 'make no2modconfig' config generation target
+Message-ID: <20080531083034.GA2569@uranus.ravnborg.org>
+References: <1212217507-32126-1-git-send-email-clifford@clifford.at>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080529113318.257547449@szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1212217507-32126-1-git-send-email-clifford@clifford.at>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 01:32:53PM +0200, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> All calls to remove_suid() are made with a file pointer.  This is not
-> accidental: similarly to file_update_time(), this function is called
-> when the file is written.
-> 
-> So simplify callers by passing the file pointer instead of the dentry.
+On Sat, May 31, 2008 at 09:05:07AM +0200, Clifford Wolf wrote:
+> The new 'make no2modconfig' make target creates a new kernel
+> config based on the current one, switching all tristate options
+> from 'n' to 'm'.
 
-It's not simplifying anything at all.  You just move the pointer
-derefence down one step the callchain without any need.
+Hi Clifford.
 
+In what situations do we need this functionality?
+
+	Sam
