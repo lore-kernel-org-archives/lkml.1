@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbYEaTJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759711AbYEaTJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbYEaTJW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 15:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbYEaS4V
+	id S1759711AbYEaTJl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 15:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbYEaS5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 14:56:21 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:41189 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757171AbYEaS4U (ORCPT
+	Sat, 31 May 2008 14:57:06 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:59204 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757330AbYEaS5E convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 14:56:20 -0400
-Message-ID: <48419F45.20908@davidnewall.com>
-Date: Sun, 01 Jun 2008 04:26:05 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Sat, 31 May 2008 14:57:04 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10825] appletouch after wakeup
+Date: Sat, 31 May 2008 20:30:56 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Justin Mattock" <justinmattock@gmail.com>
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <UJSav77TyUB.A.-AD.pqZQIB@albercik>
+In-Reply-To: <UJSav77TyUB.A.-AD.pqZQIB@albercik>
 MIME-Version: 1.0
-To: arnd@arndb.de
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, hch@lst.de
-Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
-References: <200805311737.58991.arnd@arndb.de>
-In-Reply-To: <200805311737.58991.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200805312030.57213.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arnd@arndb.de wrote:
-> Many existing systems currently use unionfs or aufs for this
-> purpose, by overlaying a tmpfs over a read-only file
-> system like cramfs, squashfs or iso9660. IMHO, it would
-> be a much nicer solution to not require unionfs for a simple
-> case like this, but rather have support for it in the file
-> system. If people find this useful, we can do the same in
-> other read-only file system.
->   
+Am Samstag, 31. Mai 2008 19:48:06 schrieb Rafael J. Wysocki:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 
-I don't agree that it is nicer to do this in cramfs.  I prefer the
-technique of union of a tmpfs over some other fs because a single
-solution that works with all filesystems is better than re-implementing
-the same idea in multiple filesystems.  Multiple implementations is a
-recipe for bugs and feature mismatch.
+AFAIK it is current and should be listed.
+
+	Regards
+		Oliver
+
