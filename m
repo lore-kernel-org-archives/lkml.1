@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYEaKKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbYEaKLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbYEaKKi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 06:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbYEaKKb
+	id S1754349AbYEaKLQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 06:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYEaKLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 06:10:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34851 "EHLO mx1.redhat.com"
+	Sat, 31 May 2008 06:11:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:40026 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbYEaKKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 06:10:30 -0400
-Date: Sat, 31 May 2008 06:09:56 -0400
-From: Alan Cox <alan@redhat.com>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@redhat.com>, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] fix Kconfig after ip2/ip2main merge
-Message-ID: <20080531100956.GA7615@devserv.devel.redhat.com>
-References: <298760125@web.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <298760125@web.de>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+	id S1751628AbYEaKK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 06:10:59 -0400
+Message-ID: <4841240A.1000008@goop.org>
+Date: Sat, 31 May 2008 11:10:18 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>
+Subject: Re: [PATCH 5 of 5] xen: Avoid allocations causing swap activity on
+ the resume path
+References: <c692f3a12da1e99a4a43.1212192095@localhost>	<4840B0C5.4020606@pobox.com>	<48411F70.5020100@goop.org> <20080531025949.7c8b17bc.akpm@linux-foundation.org>
+In-Reply-To: <20080531025949.7c8b17bc.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 31, 2008 at 02:43:09AM +0200, devzero@web.de wrote:
-> as commit  6089093e588ee3f6aed99d08b1cf5ea37c52cf97  is fixing ip2 crashes on 
-> load/unload and making ip2/ip2main one module (ip2),  Kconfig shouldn`t mention
-> non existing module. I seldom posting patches and only have webmailer here, so 
-> please indulge if there is something wrong with formatting or style.
-> 
-> Signed-off-by: Roland.Kletzing <devzero@web.de>
+Andrew Morton wrote:
+> On Sat, 31 May 2008 10:50:40 +0100 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>   
+>> Does __GFP_HIGH necessarily mean that it won't try to 
+>> do IO to push pages out?
+>>     
+>
+> Nope.
+>
+> __GFP_FS: may enter filesystems
+> __GFP_IO: may perform IO
+>
+> __GFP_IO also means "may do swapout".  Even when swap is on a regular
+> file.  This is because we do all the fs-related operations up-front
+> during swapon.  So at alloc_pages()-time we can go direct-to-disk-blocks.
+>
+> So I assume for this application you'll need GFP_NOIO.  That's still
+> heaps better than GFP_ATOMIC, because it can sleep and wait for kswapd
+> to do stuff, and it can reclaim clean pagecache and clean swapcache.
+>   
 
-Acked-by: Alan Cox <alan@redhat.com>
+OK, I'll respin with GFP_NOIO.
+
+> Whether you should also add __GFP_HIGH to cause the page allocation to
+> bite harder into the page reserves is unclear to me, sorry.
+>   
+
+Well, if the allocation fails the machine is dead in the water, because 
+it probably can't go on without its devices.  I think it's worth eating 
+to the reserves to avoid that.  (I'll have a close look to only add it 
+to allocations which are really unrecoverable if they fail.)
+
+Thanks,
+    J
