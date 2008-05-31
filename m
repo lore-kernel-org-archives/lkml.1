@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYEaADZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYEaADi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbYEaADZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbYEaADM
+	id S1754215AbYEaADi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYEaADN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 20:03:12 -0400
-Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:59012
+	Fri, 30 May 2008 20:03:13 -0400
+Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:59011
 	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753156AbYEaADM (ORCPT
+	with ESMTP id S1753364AbYEaADM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 May 2008 20:03:12 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 2 of 5] xn/blkfront: Add the CDROM_GET_CAPABILITY ioctl to
-	blkfront
-X-Mercurial-Node: 84dc2b8e1677cbc6f5ece6aa6a9be09291f2bbb5
-Message-Id: <84dc2b8e1677cbc6f5ec.1212192092@localhost>
+Subject: [PATCH 1 of 5] xen/blkfront: Make sure we don't use bounce buffers,
+	we don't need them
+X-Mercurial-Node: 967afd96e8ece92cb8636e62de9b0b14aab72047
+Message-Id: <967afd96e8ece92cb863.1212192091@localhost>
 In-Reply-To: <patchbomb.1212192090@localhost>
-Date: Sat, 31 May 2008 01:01:32 +0100
+Date: Sat, 31 May 2008 01:01:31 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Jeff Garzik <jgarzik@pobox.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
@@ -26,81 +26,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Limpach <Christian.Limpach@xensource.com>
+From: Ian Campbell <ian.campbell@xensource.com>
 
-Return 0 instead of -EINVAL if the blkfront device is a cdrom,
-i.e. had the VDISK_CDROM attribute.  This allows udev's cdrom_id
-to correctly detect the device as a cdrom device.
+[ linux-2.6.18-xen changeset 667228bf8fc5 ]
 
-[ Add blkif_ioctl, and CDROMMULTISESSION ]
-
-[ linux-2.6.18-xen changeset d2bd9af846b5 ]
-
-Signed-off-by: Christian Limpach <Christian.Limpach@xensource.com>
+Signed-off-by: Ian Campbell <ian.campbell@xensource.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/block/xen-blkfront.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ drivers/block/xen-blkfront.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
 --- a/drivers/block/xen-blkfront.c
 +++ b/drivers/block/xen-blkfront.c
-@@ -38,6 +38,7 @@
- #include <linux/interrupt.h>
- #include <linux/blkdev.h>
- #include <linux/hdreg.h>
-+#include <linux/cdrom.h>
- #include <linux/module.h>
+@@ -324,6 +324,9 @@
+ 	/* Make sure buffer addresses are sector-aligned. */
+ 	blk_queue_dma_alignment(rq, 511);
  
- #include <xen/xenbus.h>
-@@ -150,6 +151,40 @@
- 	hg->cylinders = cylinders;
- 	if ((sector_t)(hg->cylinders + 1) * hg->heads * hg->sectors < nsect)
- 		hg->cylinders = 0xffff;
-+	return 0;
-+}
++	/* Make sure we don't use bounce buffers. */
++	blk_queue_bounce_limit(rq, BLK_BOUNCE_ANY);
 +
-+int blkif_ioctl(struct inode *inode, struct file *filep,
-+		unsigned command, unsigned long argument)
-+{
-+	struct blkfront_info *info =
-+		inode->i_bdev->bd_disk->private_data;
-+	int i;
-+
-+	dev_dbg(&info->xbdev->dev, "command: 0x%x, argument: 0x%lx\n",
-+		command, (long)argument);
-+
-+	switch (command) {
-+	case CDROMMULTISESSION:
-+		dev_dbg(&info->xbdev->dev, "FIXME: support multisession CDs later\n");
-+		for (i = 0; i < sizeof(struct cdrom_multisession); i++)
-+			if (put_user(0, (char __user *)(argument + i)))
-+				return -EFAULT;
-+		return 0;
-+
-+	case CDROM_GET_CAPABILITY: {
-+		struct gendisk *gd = info->gd;
-+		if (gd->flags & GENHD_FL_CD)
-+			return 0;
-+		return -EINVAL;
-+	}
-+
-+	default:
-+		/*printk(KERN_ALERT "ioctl %08x not supported by Xen blkdev\n",
-+		  command);*/
-+		return -EINVAL; /* same return as native Linux */
-+	}
-+
+ 	gd->queue = rq;
+ 
  	return 0;
- }
- 
-@@ -974,6 +1009,7 @@
- 	.open = blkif_open,
- 	.release = blkif_release,
- 	.getgeo = blkif_getgeo,
-+	.ioctl = blkif_ioctl,
- };
- 
- 
 
 
