@@ -1,150 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYEaWNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYEaW02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790AbYEaWNO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 18:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYEaWNE
+	id S1755669AbYEaW02 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 18:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbYEaW0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 18:13:04 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:59611 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754259AbYEaWNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 18:13:00 -0400
-Date: Sun, 1 Jun 2008 00:12:24 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan problems
-Message-ID: <20080531221223.GA2630@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ayaz Abdulla <aabdulla@nvidia.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Stephen Hemminger <shemminger@linux-foundation.org>,
-	David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
-	linux-pm@lists.linux-foundation.org
-References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080518150908.GA4606@yamamaya.is-a-geek.org> <20080525150444.GA29739@yamamaya.is-a-geek.org> <20080525181329.GA5044@yamamaya.is-a-geek.org> <20080527062153.GA3651@yamamaya.is-a-geek.org>
+	Sat, 31 May 2008 18:26:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49994 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753790AbYEaW0T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 18:26:19 -0400
+Date: Sat, 31 May 2008 15:25:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
+In-Reply-To: <4840D63F.2090407@redhat.com>
+Message-ID: <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org>
+References: <200805310127.m4V1RLR4013808@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com> <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org> <4840CE51.9060109@redhat.com>
+ <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080527062153.GA3651@yamamaya.is-a-geek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tobias Diedrich wrote:
-> Tobias Diedrich wrote:
-> > Tobias Diedrich wrote:
-> > > So my BIOS is not as borked as I thought and it should be possible
-> > > to wake up the machine even with platform.  Further debugging will
-> > > have to wait until at least next weekend though (maybe longer)...
-> > 
-> > Or maybe it doesn't have to wait, I was just too curious:
-> > 
-> > Summary first: I got platform mode to work!
-> > 
-> > After grepping and reading through kernel/power/disk.c and
-> > (rather obfuscated) drivers/acpi/.* code, and reading up on
-> > ACPI _GPE (General Purpose Event?), and having a look at my DSDT I
-> > noticed two things:
-> > 
-> > 1) The network controllers are assigned to their own _GPE bits(pins?):
-> > |[...]
-> > |    Scope (\_GPE)
-> > |    {
-> > |[...]
-> > |        Method (_L0B, 0, NotSerialized)
-> > |        {
-> > |            Notify (\_SB.PCI0.MMAC, 0x02)
-> > |        }
-> > |
-> > |        Method (_L0A, 0, NotSerialized)
-> > |        {
-> > |            Notify (\_SB.PCI0.MAC1, 0x02)
-> > |        }
-> > |[...]
-> > 
-> > 2) drivers/acpi/sleep/proc.c registers a 'wakeup' file:
-> > |        proc_create("wakeup", S_IFREG | S_IRUGO | S_IWUSR,
-> > |                    acpi_root_dir, &acpi_system_wakeup_device_fops);
-> > 
-> > And I then remembered that someone said in
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8381
-> > it works for him if he writes $MAGICVALUE into a proc file.
-> > 
-> > And yes, if I write 'MMAC' and 'MAC1' into /proc/acpi/wakeup, then
-> > wake-on-lan works even in platform mode.
-> > 
-> > So...
-> > AFAICS this bit of setup magic should not be required, because:
-> > 
-> > 1) /proc/acpi/wakeup knows which pci device is associated to each GPE bit
-> > |ranma@melchior:~$ cat /proc/acpi/wakeup 
-> > |Device	S-state	  Status   Sysfs node
-> > |HUB0	  S5	 disabled  pci:0000:00:06.0
-> > |XVR0	  S5	 disabled  
-> > |XVR1	  S5	 disabled  pci:0000:00:0e.0
-> > |XVR2	  S5	 disabled  
-> > |XVR3	  S5	 disabled  
-> > |XVR4	  S5	 disabled  
-> > |XVR5	  S5	 disabled  pci:0000:00:0a.0
-> > |UAR1	  S5	 disabled  pnp:00:09
-> > |PS2K	  S4	 disabled  pnp:00:0b
-> > |USB0	  S4	 disabled  pci:0000:00:02.0
-> > |USB2	  S4	 disabled  pci:0000:00:02.1
-> > |AZAD	  S5	 disabled  pci:0000:00:06.1
-> > |MMAC	  S5	 enabled   pci:0000:00:08.0
-> > |MAC1	  S5	 enabled   pci:0000:00:09.0
-> > (values after manually enabling MMAC and MAC1)
-> > 
-> > 2) kernel/power/disk.c calls hibernation_ops->enter(), which is
-> > acpi_suspend_enter, which calls acpi_enable_wakeup_device, which
-> > sets up GPE wakup bits.  This _should_ take care of enabling MMAC
-> > and MAC1 automatically, but apparently does not work correctly at
-> > some point.
-> > 
-> > I guess someone more knowledgable in ACPI stuff should have a look
-> > at this.
+
+
+On Fri, 30 May 2008, Ulrich Drepper wrote:
 > 
-> Any reason this patch hasn't made it into the kernel so far?
-> http://lists.laptop.org/pipermail/devel/2007-April/004691.html
-> 
-> (Ok, I tried getting it to apply to a current kernel, but it
-> a splodes (reboots instead of powering off, last message on the
-> serial console is "ACPI handle has no context!", see below))
-> 
-> The platform_enable_wakeup() hook is still there, but unused.
-> AFAICS this patch should solve the "'ethtool -s eth0 wol g' doesn't
-> suffice, I also have to write magic values into /proc/acpi/wakeup"
-> issue.
+> Once again not without limitations which are too low.  The main problem
+> is that there is far more information needed on the reader side.  There
+> are two counters and a number of bits for state information.  Which
+> means the counters can be at most 14 bits in size.
 
-Ok, after another long debugging session I finally found out the
-reason for the immediate reboot (after finding the place that
-suspends the serial console (drivers/pnp) and disabling that suspend
-path):
-The system is woken up by USB activity! (Optical mouse, anyone?)
+Ok, so I obviously think you're simply wrong, and I've told you so both in 
+private after seeing the 64-bit code you propose (and which you want to 
+patent), and publicly.
 
-Lo and behold:
-drivers/usb/core/hcd-pci.c tries it's best to activate 'wake on
-usb', which I didn't know since it apparently also never worked.
-However, after applying the 'use platform_enable_wakeup'-patch,
-not only forcedeth wake starts working, also usb wake.
-If I prevent usb wake:
-|echo disabled > /sys/devices/pci0000\:00/0000\:00\:02.0/power/wakeup'
-|echo disabled > /sys/devices/pci0000\:00/0000\:00\:02.1/power/wakeup'
-And then hibernate in platform mode, the immediate reboot is gone
-and waking up using magic packets works fine even without setting up
-/proc/acpi/wakeup first.
+So let's have code talk. I'm going to give real code for the only case 
+that really matters, namely the uncontended case.
 
-Maybe I should try hooking mouse and keyboard onto different usb
-host controllers, so I can disable wakeup for the mouse host
-controller and enable wakeup for the keyboard host controller,
-then it should be possible to wake the system by pressing a key. :)
+Do you agree that once you get contention, and you actually have to do a 
+FUTEX system call to sort it out, the number of atomic instructions do not 
+really matter? Because the system call is going to dominate. Agreed?
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+So I'm not going to write out the slow contention case, because you have 
+already agreed that you can do a 32-bit rwlock _slowly_ with the existing 
+32-bit FUTEX support.
+
+IOW, I'm faking it, but I'm making a point. Namely that you can 
+efficiently do read-write lock using *only* 32-bit ops, and without any 
+real kind of limitations on the number of readers and writers.
+
+So here goes the explanation and the pseudo-code.
+
+ - have two levels of locking: the contended case, and the uncontended case
+
+ - these are two *separate* locks.  I'm going to describe the only case
+   that mattes for performance, namely the non-contention one.  We just
+   make sure that the non-contention lock "gates" things to the slow case.
+
+ - in other words, here's a pretty optimal fast-case that we write in
+   assembly language, and all it does is to handle the non-contention 
+   case, with any waiting happening on *another* lock entirely.
+
+ - on that first-level lock, the setup is as follows:
+	- the low bit (bit#0) is "writer holds"
+	- the next bit (bit#1) is "contended", and all it does is that it 
+	  guarantees that when set, everybody will go to the slow-path.
+	- bits 2-31 are "reader count"
+
+ - the second-level lock is another 32-bit lock that is *adjacent* in
+   memory, and they are 64-bit aligned, so that you can do an atomic 
+   initialization and more importantly a 64-bit "it is now no longer
+   contended" assignment in one atomic op.  That's going to be relevant
+   only for the slow-path, and all it means is that we can basically do
+   an atomic "sync" of the two locks even on 32-bit x86 with a single
+   "cmpxchg8b" (no other "full" 64-bit operations necessary).
+
+And before I actually give the fast-path code, let me describe the 
+requirements for the slow-path code:
+
+ - it needs to work with 32-bit futexes. This code obviously does exist, 
+   because you already have something like that in glibc. Performance is 
+   not important, the only thing that matters is really "queueing 
+   behaviour", ie this code needs to wake things up in the right order.
+
+ - it needs to be able to *notice* when things are no longer contended. 
+   IOW, it doesn't need to have a fast-path case per se, but the unlock 
+   sequences do need to notice when they are the last unlocker, and when 
+   that happens, they need to be able to do that magic "lock cmpxchg8b" 
+   that tests-and-clears the contention bit in the primary lock at the 
+   same time as it does the secondary lock.
+
+That second constraint is actually fairly obvious when you think about it: 
+it's effectively the thing that makes us re-enter the non-contention case 
+after the contention has been handled.
+
+Ok, that's the setup. Now, let's look at the fast-path cases.
+
+First, write_lock():
+
+	/*
+	 * write_lock() can only succeed as a fast-path if the reader
+	 * count is zero and there are no pending or holding writers.
+	 * Ergo, the low 32 bits have to be 0, and should be 1 (for
+	 * "writer exists, no other pending writer" if it succeeds.
+	 *
+	 * Note that we don't need to update the high bits if we
+	 * succeed (because the writer count is the _pending_ writer
+	 * count, not the holding one)
+	 */
+	eax = 0
+	edx = 1
+	lock cmpxchgl %edx,(rwlock)
+	testl %eax,%eax
+	jne slowpath
+	ret
+  slowpath:
+	lock orl $2,(rwlock)
+	call slow_write_lock
+	ret
+
+And here's read_lock:
+
+	/*
+	 * read_lock() can only succeed if we increment the reader
+	 * count _and_ there were no pending or holding writers.
+	 * So we do a 32-bit xaddl with 4 (incrementing the readers  
+	 * by one), and were successful if the old value didn't
+	 * have any writer bits set
+	 */
+	eax = 4         /* Low two bits are writers - don't touch */
+	xaddl %eax,(rwlock)
+	testl $3,%eax   /* Did we have any holding or pending writers? */
+	jne slowpath
+	ret
+  slowpath:
+	lock orl $2,(rwlock)
+	lock subl $4,(rwlock)
+	call slow_read_lock
+	ret
+
+See? Fastpaths are fast - a single atomic op and a conditional. 
+
+Now, the unlock paths - they also need to be fast for the non-contention case:
+
+The write_unlock is just
+
+	/*
+	 * If there was no contention, then the low word must
+	 * still have the value "1" - this one writer, and
+	 * no other pending writers or any readers that tried   
+	 * to get the lock.
+	 */
+	eax = 1
+	edx = 0
+	cmpxchgl %edx,(rwlock)
+	cmpl $1,%eax
+	jne slowpath    /* contention - need to wake up a reader or a writer */
+	ret
+  slowpath:
+	lock orl $2,(rwlock)
+	lock andl $~1,(rwlock)
+	call slow_write_unlock
+	ret
+
+and the read_unlock is
+
+	eax = -4
+	xaddl %eax,(rwlock)
+	testl $3,%eax   	/* Do we have contention? */
+	jne slowpath
+	ret
+  slowpath:
+	lock orl $2,(rwlock)
+	call slow_read_unlock
+	ret
+
+Ok, so notice a couple of things here. The above is not only designed to 
+handle the uncontended case with just a single locked op on the lock, but 
+it also makes sure that each path basically enters the slow-path with all 
+of its fast-path actions *done*, and with any unlocks done. So by the time 
+the slow-path is entered, we know that
+
+ (a) bit#1 ("contention") is guaranteed to be set, and it will be _our_ 
+     job to clear it once everybody has unlocked
+ (b) nobody else will ever succeed on the fast-path and they'll all come 
+     to us (including any future unlockers that may need to wake things 
+     up)
+ (c) anybody who got a fastpath lock will do their unlock action before 
+     they then get trapped into the slow path.
+
+Now, (c) above, in particular, means that the slow path should start out 
+making sure that all fast-path locks have been released. That's easy 
+enough to do: the first thing each slow-path member needs to do is to wait 
+until the 32-bit fastpath variable gets the value "2". It *will* happen 
+eventually, and once it does, we are guaranteed that no fast-path code 
+will ever get the lock again (even if the fast-path read_lock() may 
+increment the higher bits and then decrement them again when it notices 
+the contention - so it can still change from "2", but nobody will actually 
+*acquire* the lock (and obviously, if it has hit "2", that also means 
+that all _previous_ lockers will have released their locks, whether they 
+were read- or write-lockers).
+
+So each slow-path thing needs to start out that way, but once it has done 
+that, it basically knows that the fast-path code is immaterial from a lock 
+acquire standpoint.
+
+So now you do your existing slow-path code on the second lock. And at each 
+unlock (or failed trylock, for that matter), remember to see if you can do 
+an atomic "release both fast-path _and_ slow-path locks" with cmpxchg8b 
+(with the fastpath lock word being a 2->0 transition - what the slowpath 
+rule for "all done" is will obviously depend on the algorithm in 
+question).
+
+See? I'm not guaranteeing that the above is "optimal" in the sense that I 
+suspect that there are probably clever ways to make the slow path faster 
+(including, I suspect, even for all 32-bit code), but I *am* claiming that 
+this is _obviously_ optimal for the non-contention case, and that the 
+actual contention case is almost certainly not going to care about a 
+couple of extra atomic ops.
+
+Agreed? The above isn't actually all that complicated. And it would mean 
+that the exact same algorithm works on both 32-bit an 64-bit CPU's, and on 
+both old and new kernels (because you only really need 32-bit futexes).
+
+			Linus
