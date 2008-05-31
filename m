@@ -1,146 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbYEaAFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbYEaAGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757516AbYEaAFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 May 2008 20:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYEaADg
+	id S1757356AbYEaAGX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 May 2008 20:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYEaAGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 May 2008 20:03:36 -0400
-Received: from host217-43-228-68.range217-43.btcentralplus.com ([217.43.228.68]:59053
-	"EHLO mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756607AbYEaADf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 May 2008 20:03:35 -0400
-Content-Type: text/plain; charset="us-ascii"
+	Fri, 30 May 2008 20:06:14 -0400
+Received: from lsd-gw.ic.unicamp.br ([143.106.7.165]:53040 "EHLO
+	boneca.lsd.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751303AbYEaAGN convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 May 2008 20:06:13 -0400
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Marcel Holtmann <marcel@holtmann.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Michael Zappe <zapman@interlan.net>,
+       Stephane Alnet <stephane@u-picardie.fr>,
+       Brad Hards <bhards@bigpond.net.au>
+Subject: Re: [PATCH] kaweth: use request_firmware()
+References: <1211708969@pmac.infradead.org>
+	<FD896A2C-277F-45CF-AE26-E2E29DA8093F@holtmann.org>
+	<20080530164842.31b23848@core> <200805302302.27890.oliver@neukum.org>
+From: Alexandre Oliva <oliva@lsd.ic.unicamp.br>
+Date: Fri, 30 May 2008 21:00:05 -0300
+In-Reply-To: <200805302302.27890.oliver@neukum.org> (Oliver Neukum's message of "Fri\, 30 May 2008 23\:02\:25 +0200")
+Message-ID: <or8wxre41m.fsf@oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Subject: [PATCH 5 of 5] xen: Avoid allocations causing swap activity on the
-	resume path
-X-Mercurial-Node: c692f3a12da1e99a4a435faba6794e56674ed26f
-Message-Id: <c692f3a12da1e99a4a43.1212191405@localhost>
-In-Reply-To: <patchbomb.1212191400@localhost>
-Date: Sat, 31 May 2008 00:50:05 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Jeff Garzik <jgarzik.pobox.com@goop.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+On May 30, 2008, Oliver Neukum <oliver@neukum.org> wrote:
 
-Avoid allocations causing swap activity on the resume path by allowing
-such allocations to access the emergency pools otherwise a
-save/restore/migration of a guest which is low on memory can
-deadlock.
+> If that is supposed to be constructed from the driver/file pair,
+> it is a good idea, but would argue against hardcoding it in the source.
 
-[ linux-2.6.18-xen changesets e8b49cfbdac, fdb998e79aba ]
+It's not.  It could be named dwmw2-rulez-new-fix or
+dwmw2/rulez/new/fix or anything else, it's just a key, a string, an
+identifier.  Any pathnames or relationship with driver names you're
+seeing there are just a figment of your imagination ;-) / 2
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
----
- drivers/block/xen-blkfront.c       |    5 +++--
- drivers/net/xen-netfront.c         |    4 ++--
- drivers/xen/xenbus/xenbus_client.c |    2 +-
- drivers/xen/xenbus/xenbus_xs.c     |   10 +++++-----
- 4 files changed, 11 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -584,7 +584,7 @@
- 
- 	info->ring_ref = GRANT_INVALID_REF;
- 
--	sring = (struct blkif_sring *)__get_free_page(GFP_KERNEL);
-+	sring = (struct blkif_sring *)__get_free_page(GFP_KERNEL | __GFP_HIGH);
- 	if (!sring) {
- 		xenbus_dev_fatal(dev, -ENOMEM, "allocating shared ring");
- 		return -ENOMEM;
-@@ -741,7 +741,8 @@
- 	int j;
- 
- 	/* Stage 1: Make a safe copy of the shadow state. */
--	copy = kmalloc(sizeof(info->shadow), GFP_KERNEL);
-+	copy = kmalloc(sizeof(info->shadow),
-+		       GFP_KERNEL | __GFP_NOFAIL | __GFP_HIGH);
- 	if (!copy)
- 		return -ENOMEM;
- 	memcpy(copy, info->shadow, sizeof(info->shadow));
-diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -1324,7 +1324,7 @@
- 		goto fail;
- 	}
- 
--	txs = (struct xen_netif_tx_sring *)get_zeroed_page(GFP_KERNEL);
-+	txs = (struct xen_netif_tx_sring *)get_zeroed_page(GFP_KERNEL | __GFP_HIGH);
- 	if (!txs) {
- 		err = -ENOMEM;
- 		xenbus_dev_fatal(dev, err, "allocating tx ring page");
-@@ -1340,7 +1340,7 @@
- 	}
- 
- 	info->tx_ring_ref = err;
--	rxs = (struct xen_netif_rx_sring *)get_zeroed_page(GFP_KERNEL);
-+	rxs = (struct xen_netif_rx_sring *)get_zeroed_page(GFP_KERNEL | __GFP_HIGH);
- 	if (!rxs) {
- 		err = -ENOMEM;
- 		xenbus_dev_fatal(dev, err, "allocating rx ring page");
-diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
---- a/drivers/xen/xenbus/xenbus_client.c
-+++ b/drivers/xen/xenbus/xenbus_client.c
-@@ -117,7 +117,7 @@
- 	char *path;
- 
- 	va_start(ap, pathfmt);
--	path = kvasprintf(GFP_KERNEL, pathfmt, ap);
-+	path = kvasprintf(GFP_KERNEL | __GFP_HIGH, pathfmt, ap);
- 	va_end(ap);
- 
- 	if (!path) {
-diff --git a/drivers/xen/xenbus/xenbus_xs.c b/drivers/xen/xenbus/xenbus_xs.c
---- a/drivers/xen/xenbus/xenbus_xs.c
-+++ b/drivers/xen/xenbus/xenbus_xs.c
-@@ -283,9 +283,9 @@
- 	char *buffer;
- 
- 	if (strlen(name) == 0)
--		buffer = kasprintf(GFP_KERNEL, "%s", dir);
-+		buffer = kasprintf(GFP_KERNEL | __GFP_HIGH, "%s", dir);
- 	else
--		buffer = kasprintf(GFP_KERNEL, "%s/%s", dir, name);
-+		buffer = kasprintf(GFP_KERNEL | __GFP_HIGH, "%s/%s", dir, name);
- 	return (!buffer) ? ERR_PTR(-ENOMEM) : buffer;
- }
- 
-@@ -297,7 +297,7 @@
- 	*num = count_strings(strings, len);
- 
- 	/* Transfer to one big alloc for easy freeing. */
--	ret = kmalloc(*num * sizeof(char *) + len, GFP_KERNEL);
-+	ret = kmalloc(*num * sizeof(char *) + len, GFP_KERNEL | __GFP_HIGH);
- 	if (!ret) {
- 		kfree(strings);
- 		return ERR_PTR(-ENOMEM);
-@@ -751,7 +751,7 @@
- 	}
- 
- 
--	msg = kmalloc(sizeof(*msg), GFP_KERNEL);
-+	msg = kmalloc(sizeof(*msg), GFP_KERNEL | __GFP_HIGH);
- 	if (msg == NULL) {
- 		err = -ENOMEM;
- 		goto out;
-@@ -763,7 +763,7 @@
- 		goto out;
- 	}
- 
--	body = kmalloc(msg->hdr.len + 1, GFP_KERNEL);
-+	body = kmalloc(msg->hdr.len + 1, GFP_KERNEL | __GFP_HIGH);
- 	if (body == NULL) {
- 		kfree(msg);
- 		err = -ENOMEM;
-
-
+-- 
+Alexandre Oliva         http://www.lsd.ic.unicamp.br/~oliva/
+Free Software Evangelist  oliva@{lsd.ic.unicamp.br, gnu.org}
+FSFLA Board Member       ¡Sé Libre! => http://www.fsfla.org/
+Red Hat Compiler Engineer   aoliva@{redhat.com, gcc.gnu.org}
