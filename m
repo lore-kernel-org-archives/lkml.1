@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYFAXbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbYFAXbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbYFAXbZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 19:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbYFAX2C
+	id S1757674AbYFAXbm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 19:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYFAX2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 19:28:02 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:6146 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756527AbYFAX17 (ORCPT
+	Sun, 1 Jun 2008 19:28:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:2864 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752887AbYFAX2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 19:27:59 -0400
+	Sun, 1 Jun 2008 19:28:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=NQAuIrenv2fclRJFJGvRbhY6j2LZss3qPbW+9XR+yckNuytd4Gm75yENCyPM6HSPRp4u6umUtiesR5MF1ylMEwGFt/xzFIMoVq3LaFT/LpTo8IL88UNKp8bszi3ZeCLjlx5IwWriCv1p/aZ9Direq64vevaKed0BJXk9BAQ94U8=
-Message-Id: <20080601231543.372911291@gmail.com>
+        b=mMzEJF4eOpVy8J21j7Saaj01sULLgV2ynECcuOIwJmO2nEF+0K6K5WPP/Uvk9jn9OxqgVBgeJBMTWZJZQRWNpmYNxpUiL2EcyPXgFro6gDfrMKE68hLZEZU1jbcGd6yY0CHtW+v92Vj045sX+vagATO0p6gEA31f6lNXIOJO6hM=
+Message-Id: <20080601231549.368333822@gmail.com>
 References: <20080601231329.223608711@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 02 Jun 2008 08:13:40 +0900
+Date: Mon, 02 Jun 2008 08:13:41 +0900
 From: akinobu.mita@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: "John W. Linville" <linville@tuxdriver.com>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Subject: [patch -v2 11/23] airo: use simple_read_from_buffer
-Content-Disposition: inline; filename=airo-use-simple-read-from-buffer.patch
+Cc: Mikael Starvik <starvik@axis.com>,
+       Jesper Nilsson <jesper.nilsson@axis.com>, dev-etrax@axis.com
+Subject: [patch -v2 12/23] cris: use simple_read_from_buffer
+Content-Disposition: inline; filename=cris-profile-use-simple-read-from-buffer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: John W. Linville <linville@tuxdriver.com>
-Cc: netdev@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org
+Cc: Mikael Starvik <starvik@axis.com>
+Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: dev-etrax@axis.com
 ---
- drivers/net/wireless/airo.c |   15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+ arch/cris/kernel/profile.c |   17 +++++++----------
+ 1 file changed, 7 insertions(+), 10 deletions(-)
 
-Index: 2.6-git/drivers/net/wireless/airo.c
+Index: 2.6-git/arch/cris/kernel/profile.c
 ===================================================================
---- 2.6-git.orig/drivers/net/wireless/airo.c
-+++ 2.6-git/drivers/net/wireless/airo.c
-@@ -4560,22 +4560,13 @@ static ssize_t proc_read( struct file *f
- 			  size_t len,
- 			  loff_t *offset )
+--- 2.6-git.orig/arch/cris/kernel/profile.c
++++ 2.6-git/arch/cris/kernel/profile.c
+@@ -35,19 +35,16 @@ read_cris_profile(struct file *file, cha
+ 		  size_t count, loff_t *ppos)
  {
--	loff_t pos = *offset;
--	struct proc_data *priv = (struct proc_data*)file->private_data;
-+	struct proc_data *priv = file->private_data;
+ 	unsigned long p = *ppos;
++	ssize_t ret;
  
- 	if (!priv->rbuffer)
- 		return -EINVAL;
- 
--	if (pos < 0)
--		return -EINVAL;
--	if (pos >= priv->readlen)
+-	if (p > SAMPLE_BUFFER_SIZE)
 -		return 0;
--	if (len > priv->readlen - pos)
--		len = priv->readlen - pos;
--	if (copy_to_user(buffer, priv->rbuffer + pos, len))
++	ret = simple_read_from_buffer(buf, count, ppos, sample_buffer,
++						SAMPLE_BUFFER_SIZE);
++	if (ret < 0)
++		return ret;
+ 
+-	if (p + count > SAMPLE_BUFFER_SIZE)
+-		count = SAMPLE_BUFFER_SIZE - p;
+-	if (copy_to_user(buf, sample_buffer + p,count))
 -		return -EFAULT;
--	*offset = pos + len;
--	return len;
-+	return simple_read_from_buffer(buffer, len, offset, priv->rbuffer,
-+					priv->readlen);
++	memset(sample_buffer + p, 0, ret);
+ 
+-	memset(sample_buffer + p, 0, count);
+-	*ppos += count;
+-
+-	return count;
++	return ret;
  }
  
- /*
+ static ssize_t
 
 -- 
