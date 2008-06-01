@@ -1,138 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYFAFvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbYFAF5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbYFAFvt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 01:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYFAFvi
+	id S1755657AbYFAF5S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 01:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbYFAF5C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 01:51:38 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55865 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbYFAFvh (ORCPT
+	Sun, 1 Jun 2008 01:57:02 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:9694 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbYFAF5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 01:51:37 -0400
-Date: Sun, 1 Jun 2008 08:51:34 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Patrick McManus <mcmanus@ducksong.com>
-cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <1212273974.28319.107.camel@tng>
-Message-ID: <Pine.LNX.4.64.0806010826040.18717@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu>  <20080529084524.GA24892@elte.hu>
-  <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> 
- <20080529112257.GA18130@elte.hu> <20080530181839.GA31915@elte.hu> 
- <20080531060947.GA26441@elte.hu>  <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi>
-  <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi> 
- <20080531125428.GA22111@elte.hu>  <Pine.LNX.4.64.0805311555570.2329@wrl-59.cs.helsinki.fi>
-  <20080531163501.GB22607@elte.hu> <1212273974.28319.107.camel@tng>
+	Sun, 1 Jun 2008 01:57:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=EJrT05fqQFzi0f+djGxeqQricL/ezarVDcfUgg56karPTONZ3CJ8FocWfavAgoc5kqWK98eLr6Zphawkx0YxFj9YskpAQLeuNg69nliO3zB58cz80w6MvuwvypeGTjb7VrV75k+z8IoMLb3Prht0vwkn7qaNBmNMBz5Xt42MbS8=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86: 32bit numa increase max_elements to 1024
+Date: Sat, 31 May 2008 22:51:51 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200805110030.15510.yhlu.kernel@gmail.com> <200805251000.10205.yhlu.kernel@gmail.com> <200805291625.56942.yhlu.kernel@gmail.com>
+In-Reply-To: <200805291625.56942.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1771556638-1212299494=:18717"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805312251.52297.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696208474-1771556638-1212299494=:18717
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+so every element will repsent to 64M instead of 256M.
 
-On Sat, 31 May 2008, Patrick McManus wrote:
+AMD opteron later based could have HW memory hole remapping. so could have
+[0, 8g + 64M) on node0. reduce element size to 64M could keep that on node 0
 
-> On Sat, 2008-05-31 at 18:35 +0200, Ingo Molnar wrote:
-> > * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> > 
-> 
-> > > ...setsockopt(listenfd, SOL_TCP, TCP_DEFER_ACCEPT, &val, sizeof(val)) 
-> > > seems to be the magic trick that is interestion here.
-> > 
-> > seems to be used:
-> > 
-> >  22003 write(3, "distccd[22003] (dcc_listen_by_ad"..., 62) = 62
-> >  22003 listen(4, 10)                     = 0
-> >  22003 setsockopt(4, SOL_TCP, TCP_DEFER_ACCEPT, [1], 4) = 0
-> > 
-> > i'll queue up your reverts for testing in -tip.
-> 
-> 
-> So the code you will revert came from my fingers. The circumstances here
-> make me nervous; while I'm at a loss to explain what might be going on
-> in particular, let me offer an apology in advance should the revert help
-> resolve the issue.
+later need to use find_e820_area to allocate memory_node_map like 64bit.
+but need to move memory_present out of populate_mem_map...
 
-Yes, don't worry just yet. It far from proven yet that this is the cause 
-(or contributes to easiness of reproducal in any way). The patch was just 
-for Ingo's testing in his -tip branch. I didn't even bother to cc you yet 
-because it's more or less a stab into dark, but it's definately worth of 
-testing still even though Ingo probably comes back soon and tells that it 
-didn't help any because it's clearly related :-).
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> Here's what makes me nervous:
-> 
->  * not a lot of code uses DEFER_ACCEPT.. frankly it was pretty broken
-> before 26 - but not broken this way .. the correlation of your bug using
-> it is significant. 
->
->  * in 26, a server TCP socket (with DA) goes to ESTABLISHED when the 3rd
-> part of the handshake is received (as normal without DA), but the socket
-> isn't put on the accept queue until a real data packet arrives. (That's
-> the point of DA). In <= 25 this socket would have syn-recv until the
-> data packet arrived.
-> 
->   - I did run tests where the server died in between the handshake being
-> completed and first data packet arriving - the client should see RST and
-> the server socket should disappear. But maybe something was missed?
-
-Also in this Ingo's case RST seems to be missing, ie., there's unread data 
-and both ends remain ESTABLISHED while the receiver is already gone (or 
-not referencing to the connection correctly).
-
-> Do I understand this correctly, the server process is gone but the
-> socket is still in the table? And the client process is still there
-> waiting for the server to do something - having sent a bunch of data?
-
-Yes, this seems to be the case, sender was doing window probes because 
-window became to zero.
-
-Because it's distcc, tracking a particular process is not that simple 
-task. Either the process is gone or it doesn't correctly reference to the 
-connection.
-
-> Do we know if any data bytes (not handshake bytes) have been consumed by
-> the server side? If they were, that would seem to vindicate DA.
-
-We don't know. We cannot currently track the particular process which 
-would definately be helpful here.
-
-> Also pointing away from DA is that you started seeing this with rc3 -
-> that code was included in rc1.Is that a firm observation, or maybe there
-> weren't enough datapoints to conclude that rc1 and rc2 were clean?
-
-Timeline won't match too well yes. I also find it quite unlikely, but 
-still worth of test because it's hard to know when this begun, luck might 
-have just played some role there because it's quite evasive in Ingo's 
-case anyway.
-
-Anything you find suspicious between rc1..rc3?
-
-...I suspected my rc3 FRTO fixes first but they have nothing to do with 
-window probing and orphan handling.
-
-> The most interesting patch is ec3c0982a2dd1e671bad8e9d26c28dcba0039d87
-> if anyone wants to eyeball it.
-
-I personally think it might as well be some other issue which just become 
-more visible after DA but lets wait until Ingo has some results which may 
-well result in that DA is not making it to become visible in his case. 
-...Also, I doubt Arjan's mua has nothing to do with DA.
-
-
--- 
- i.
----696208474-1771556638-1212299494=:18717--
+diff --git a/arch/x86/mm/discontig_32.c b/arch/x86/mm/discontig_32.c
+index 0c1a1bf..0ea4854 100644
+--- a/arch/x86/mm/discontig_32.c
++++ b/arch/x86/mm/discontig_32.c
+@@ -59,14 +59,14 @@ unsigned long node_end_pfn[MAX_NUMNODES] __read_mostly;
+ /*
+  * 4) physnode_map     - the mapping between a pfn and owning node
+  * physnode_map keeps track of the physical memory layout of a generic
+- * numa node on a 256Mb break (each element of the array will
+- * represent 256Mb of memory and will be marked by the node id.  so,
++ * numa node on a 64Mb break (each element of the array will
++ * represent 64Mb of memory and will be marked by the node id.  so,
+  * if the first gig is on node 0, and the second gig is on node 1
+  * physnode_map will contain:
+  *
+- *     physnode_map[0-3] = 0;
+- *     physnode_map[4-7] = 1;
+- *     physnode_map[8- ] = -1;
++ *     physnode_map[0-15] = 0;
++ *     physnode_map[16-31] = 1;
++ *     physnode_map[32- ] = -1;
+  */
+ s8 physnode_map[MAX_ELEMENTS] __read_mostly = { [0 ... (MAX_ELEMENTS - 1)] = -1};
+ EXPORT_SYMBOL(physnode_map);
+@@ -81,9 +81,9 @@ void memory_present(int nid, unsigned long start, unsigned long end)
+ 	printk(KERN_DEBUG "  ");
+ 	for (pfn = start; pfn < end; pfn += PAGES_PER_ELEMENT) {
+ 		physnode_map[pfn / PAGES_PER_ELEMENT] = nid;
+-		printk("%ld ", pfn);
++		printk(KERN_CONT "%ld ", pfn);
+ 	}
+-	printk("\n");
++	printk(KERN_CONT "\n");
+ }
+ 
+ unsigned long node_memmap_size_bytes(int nid, unsigned long start_pfn,
+diff --git a/include/asm-x86/mmzone_32.h b/include/asm-x86/mmzone_32.h
+index faef751..ab00128 100644
+--- a/include/asm-x86/mmzone_32.h
++++ b/include/asm-x86/mmzone_32.h
+@@ -51,14 +51,14 @@ extern int early_pfn_to_nid(unsigned long pfn);
+ /*
+  * generic node memory support, the following assumptions apply:
+  *
+- * 1) memory comes in 256Mb contigious chunks which are either present or not
++ * 1) memory comes in 64Mb contigious chunks which are either present or not
+  * 2) we will not have more than 64Gb in total
+  *
+  * for now assume that 64Gb is max amount of RAM for whole system
+  *    64Gb / 4096bytes/page = 16777216 pages
+  */
+ #define MAX_NR_PAGES 16777216
+-#define MAX_ELEMENTS 256
++#define MAX_ELEMENTS 1024
+ #define PAGES_PER_ELEMENT (MAX_NR_PAGES/MAX_ELEMENTS)
+ 
+ extern s8 physnode_map[];
