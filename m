@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYFAV2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbYFAV3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbYFAV2r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 17:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYFAV2k
+	id S1755648AbYFAV3T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 17:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYFAV3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 17:28:40 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:51867 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751474AbYFAV2j (ORCPT
+	Sun, 1 Jun 2008 17:29:07 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:51049 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbYFAV3F convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 17:28:39 -0400
-Date: Sun, 1 Jun 2008 22:28:37 +0100
-From: Ben Dooks <ben@fluff.org>
-To: Martin Samuelsson <sam.linux.kernel@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Multiple Zoran MJPEG cards and i2c misattachments
-Message-ID: <20080601212837.GA10699@fluff.org.uk>
-References: <5a8e970805311139r1355cfccy6933605f7b6441b6@mail.gmail.com>
+	Sun, 1 Jun 2008 17:29:05 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@logfs.org>
+Subject: Re: [RFC 3/7] cramfs: allow unlinking of files
+Date: Sun, 1 Jun 2008 23:28:57 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, hch@lst.de
+References: <20080531152013.031903990@arndb.de> <20080531153510.820446949@arndb.de> <20080601165439.GD13094@logfs.org>
+In-Reply-To: <20080601165439.GD13094@logfs.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <5a8e970805311139r1355cfccy6933605f7b6441b6@mail.gmail.com>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200806012328.57577.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/JScBazHwVpIjhbyRYYQVHDATLiPEnjOCSWH+
+ n4sIb9K7zTaELU8pzz2Dg69dsoh6XHug12RPdqRk8udvfo4VZb
+ Vuf29BwtBKCPREbJNcVng==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 31, 2008 at 08:39:25PM +0200, Martin Samuelsson wrote:
-> Hello,
+On Sunday 01 June 2008, Jörn Engel wrote:
+> On Sat, 31 May 2008 17:20:16 +0200, arnd@arndb.de wrote:
+> >  
+> > +int cramfs_unlink(struct inode *dir, struct dentry *dentry)
+> > +{
+> > +     struct inode *inode = dentry->d_inode;
+> > +     struct dentry *new;
+> > +
+> > +     inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+> > +     drop_nlink(inode);
+> > +     new = d_alloc(dentry->d_parent, &dentry->d_name);
+> > +     d_add(new, NULL);
+> > +
+> > +     dget(dentry);
 > 
-> I'm working on avs6eyes improvements in the current kernel. As I've
-> equipped my machine with no less than three MJPEG-cards; Buz, 6 Eyes
-> and DC10+, I happened to run into a bit of a snag:
-> 
-> saa7185, the video encoder of the Buz, and bt866, video encoder of the
-> 6 Eyes, share the same i2c address, 0x88. This should not be a
-> problem, because they are connected to different i2c buses, and are
-> initialized separately. However, zoran_card.c, via i2c_bit_add_bus(),
-> creates one i2c bus for each card in the detection loop, and makes
-> them available system-wide. This means that the saa7185 driver, as the
-> cards are detected in Buz, 6 Eyes, DC10+ order in my computer, is
-> being requested by the zoran driver and initializes itself (not very
-> much to do, as there is not yet any i2c bus). The zoran driver then
-> creates bus 0, and initializes the saa7185 driver once again, it finds
-> bus 0 and a chip at 0x88, which it attaches to.
-> 
-> Now, that bus is visible to the system. The 6 Eyes is being
-> initialized, the bt866 driver loaded, and it initializes itself.
-> Here's the problem: At load, the drivers automatically searches the
-> system for available buses. bt866 finds bus 0, belonging to Buz, and a
-> chip at 0x88, which it promptly attaches to, marking itself as in use.
+> How is the negative dentry dropped on umount?  Looks like we want a
+> per-sb list to put them on.  Then we can walk it and dput each one at
+> umount time.
 
-Do each of the devices creating the i2c busses know what devices are
-on the i2c bus at time of creation? If so then the use of the new
-style driver addition and device binding would be far more appropriate
-to this, as the i2c devices will be bound depending on the device list
-registered at bus creation time.
+Good point. I think ramfs does exactly that, using kill_litter_super.
+I haven't tested unmount so far, and should probably do something like
+that in cramfs_put_super.
 
-> What would be a working approach to fix this situation? I'm woefully
-> unaware of the i2c intricacies in the kernel, and know no immediate
-> fix.
-> 
-> Is it possible to register i2c buses that are not visible to drivers
-> you modprobe? That would prevent the initial scan of the buses, and
-> the misattachments. zoran_card.c explicitly initialize the correct
-> drivers after bus creation anyway.
-
-See above, i've not had time to go through and read all the drivers
-outside of drivers/i2c yet
-
-PS, this should have probably gone to the i2c list as well, and
-probably the linux-dvb list too.
-
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
-
-  'a smiley only costs 4 bytes'
+	Arnd <><
