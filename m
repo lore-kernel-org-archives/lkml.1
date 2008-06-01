@@ -1,138 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbYFAXfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYFAXoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbYFAXfk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 19:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbYFAX3K
+	id S1755969AbYFAXoA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 19:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYFAXnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 19:29:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:25723 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbYFAX3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 19:29:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=e5TP9n42G20TMzgJtVja18adcyEy6WblJ91CG1PYdgmwYlKYQVlJX397y7HTasRzWO0kEB3hk2FZGlypczc07A+ACG+UXPLlUt5U6eXXgjBG4R+aKjeJaHmlfkkprR+H3KO8crzuS6DctE5niZ8Wu1qNcxCvs8Y/ItFNdvwCP8g=
-Message-Id: <20080601231653.012518474@gmail.com>
-References: <20080601231329.223608711@gmail.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 02 Jun 2008 08:13:52 +0900
-From: akinobu.mita@gmail.com
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Vasquez <linux-driver@qlogic.com>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org
-Subject: [patch -v2 23/23] qla2xxx: use memory_read_from_buffer
-Content-Disposition: inline; filename=scsi-qla2xxx-use-memory-read-from-buffer.patch
+	Sun, 1 Jun 2008 19:43:52 -0400
+Received: from lucidpixels.com ([75.144.35.66]:50169 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752662AbYFAXnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 19:43:51 -0400
+Date: Sun, 1 Jun 2008 19:43:49 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s
+ peak for read, ~650MiB/s peak for write?
+In-Reply-To: <6278d2220806011423o22e98f27qfd72fbd152d19d9f@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0806011942580.11366@p34.internal.lan>
+References: <6278d2220806011423o22e98f27qfd72fbd152d19d9f@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Andrew Vasquez <linux-driver@qlogic.com>
-Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi@vger.kernel.org
----
- drivers/scsi/qla2xxx/qla_attr.c |   45 ++++++++--------------------------------
- 1 file changed, 10 insertions(+), 35 deletions(-)
 
-Index: 2.6-git/drivers/scsi/qla2xxx/qla_attr.c
-===================================================================
---- 2.6-git.orig/drivers/scsi/qla2xxx/qla_attr.c
-+++ 2.6-git/drivers/scsi/qla2xxx/qla_attr.c
-@@ -8,6 +8,7 @@
- 
- #include <linux/kthread.h>
- #include <linux/vmalloc.h>
-+#include <linux/fs.h>
- 
- static int qla24xx_vport_disable(struct fc_vport *, bool);
- 
-@@ -20,18 +21,12 @@ qla2x00_sysfs_read_fw_dump(struct kobjec
- {
- 	struct scsi_qla_host *ha = shost_priv(dev_to_shost(container_of(kobj,
- 	    struct device, kobj)));
--	char *rbuf = (char *)ha->fw_dump;
- 
- 	if (ha->fw_dump_reading == 0)
- 		return 0;
--	if (off > ha->fw_dump_len)
--                return 0;
--	if (off + count > ha->fw_dump_len)
--		count = ha->fw_dump_len - off;
- 
--	memcpy(buf, &rbuf[off], count);
--
--	return (count);
-+	return memory_read_from_buffer(buf, count, &off, ha->fw_dump,
-+					ha->fw_dump_len);
- }
- 
- static ssize_t
-@@ -91,20 +86,13 @@ qla2x00_sysfs_read_nvram(struct kobject 
- {
- 	struct scsi_qla_host *ha = shost_priv(dev_to_shost(container_of(kobj,
- 	    struct device, kobj)));
--	int		size = ha->nvram_size;
--	char		*nvram_cache = ha->nvram;
- 
--	if (!capable(CAP_SYS_ADMIN) || off > size || count == 0)
-+	if (!capable(CAP_SYS_ADMIN))
- 		return 0;
--	if (off + count > size) {
--		size -= off;
--		count = size;
--	}
- 
- 	/* Read NVRAM data from cache. */
--	memcpy(buf, &nvram_cache[off], count);
--
--	return count;
-+	return memory_read_from_buffer(buf, count, &off, ha->nvram,
-+					ha->nvram_size);
- }
- 
- static ssize_t
-@@ -172,14 +160,9 @@ qla2x00_sysfs_read_optrom(struct kobject
- 
- 	if (ha->optrom_state != QLA_SREADING)
- 		return 0;
--	if (off > ha->optrom_region_size)
--		return 0;
--	if (off + count > ha->optrom_region_size)
--		count = ha->optrom_region_size - off;
- 
--	memcpy(buf, &ha->optrom_buffer[off], count);
--
--	return count;
-+	return memory_read_from_buffer(buf, count, &off, ha->optrom_buffer,
-+					ha->optrom_region_size);
- }
- 
- static ssize_t
-@@ -371,20 +354,12 @@ qla2x00_sysfs_read_vpd(struct kobject *k
- {
- 	struct scsi_qla_host *ha = shost_priv(dev_to_shost(container_of(kobj,
- 	    struct device, kobj)));
--	int           size = ha->vpd_size;
--	char          *vpd_cache = ha->vpd;
- 
--	if (!capable(CAP_SYS_ADMIN) || off > size || count == 0)
-+	if (!capable(CAP_SYS_ADMIN))
- 		return 0;
--	if (off + count > size) {
--		size -= off;
--		count = size;
--	}
- 
- 	/* Read NVRAM data from cache. */
--	memcpy(buf, &vpd_cache[off], count);
--
--	return count;
-+	return memory_read_from_buffer(buf, count, &off, ha->vpd, ha->vpd_size);
- }
- 
- static ssize_t
 
--- 
+On Sun, 1 Jun 2008, Daniel J Blueman wrote:
+
+> On 1 Jun, 10:50, Justin Piszcz <jpis...@lucidpixels.com> wrote:
+>> I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and
+>> it appears I have hit the limit, if I were able to get the maximum speed
+>> of all drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774
+>> MiB/s (currently running badblocks on all drives)..
+>
+> Nice test. The Seagate 7200.11 drives deliver 120MB/s (outer zone,
+> raw) each, and there is an issue with CFQ dispatching requests; see:
+>
+> http://groups.google.co.uk/group/linux.kernel/browse_thread/thread/b88264b084a2dfe0/a1bc0f67837bad00
+>
+> A quick workaround tweak is:
+>
+> # echo 0 >/sys/block/sda/queue/iosched/slice_idle
+>
+> Does this help any? This gives the difference of ~68MB/s vs ~120MB/s
+> on my 7200.11 ;-) .
+>
+> That said, the i965 chipset is fairly contemporary, but if that 2GB/s
+> DMI connection is the bidirectional bandwidth (likely), then maybe
+> you're hitting that limit: Intel's DMI bus is based on PCIe, thus will
+> use 128 byte PCI-e Max Payload packets (as in the rest of the
+> chipset), which IIRC theoretically maxes you out near 800MB/s.
+>
+> The X48 chipset may allow you to crank the Max Payload to 256 (setpci
+> and the Intel chipset docs), if it doesn't default to 256, like in
+> 5400 server chipsets. This chipset is where the fun really starts eg
+> hdparm -T giving >10GB/s, like in Itanium2s ;-) .
+>
+> Thanks,
+>  Daniel
+> -- 
+> Daniel J Blueman
+>
+
+slice 0 does help a little with my 10-disk raid5 for sequential 
+read/writes:
+
+http://home.comcast.net/~jpiszcz/raid/20080601/raid5.html
