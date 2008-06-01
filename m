@@ -1,95 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbYFAUgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYFAUiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752210AbYFAUgm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 16:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYFAUg2
+	id S1754353AbYFAUiV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 16:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbYFAUiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 16:36:28 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:37459 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753201AbYFAUg0 (ORCPT
+	Sun, 1 Jun 2008 16:38:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40271 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751924AbYFAUiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 16:36:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=MjM1mACjyByO5lfEJ/U5Pybu/HOOR935wfdut/GY8W382UxQk/PegQ28w40dCWvFbR6S9pJ2dF+pnee1R0NBhq7pb2lShPZsY6np4Om2XhXqgBuRFUPmedZG4rZT+RL0tuC3MZLkMM4HjMO3mfbU+Bku7fFnKmkk8fe0w3qJ3ec=  ;
-X-YMail-OSG: xZCHl0kVM1kGiC.frbdcOh7jNoyegZQTM1M74Euy3bMEU1fELw100J5AY9AALtAtA6EMxM9XZ1eprqgQqYP38nS_9ZOLiyhZ2uQmSNQp9Zm6MFTXDWeWHMN9qCJnNW33.98-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Bryan Wu <cooloney@kernel.org>,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH 1/1] MTD DataFlash: fix bug - ATMEL AT45DF321D spi flash card fails to be copied to
-Date: Sun, 1 Jun 2008 13:28:58 -0700
-User-Agent: KMail/1.9.9
-Cc: linux@maxim.org.za, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-References: <1212230324-22201-1-git-send-email-cooloney@kernel.org>
-In-Reply-To: <1212230324-22201-1-git-send-email-cooloney@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 1 Jun 2008 16:38:11 -0400
+Date: Sun, 1 Jun 2008 13:37:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: mtk.manpages@gmail.com, Hugh Dickins <hugh@veritas.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+Message-Id: <20080601133727.4e62ae55.akpm@linux-foundation.org>
+In-Reply-To: <20080601114008.GC16843@elf.ucw.cz>
+References: <20080530102619.GA2468@elf.ucw.cz>
+	<Pine.LNX.4.64.0805301451020.19914@blonde.site>
+	<20080530204307.GA4978@ucw.cz>
+	<Pine.LNX.4.64.0805311925190.27293@blonde.site>
+	<20080531173950.c4f04028.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0806010752510.24919@blonde.site>
+	<20080601011501.199af80c.akpm@linux-foundation.org>
+	<20080601114008.GC16843@elf.ucw.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806011328.58594.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 May 2008, Bryan Wu wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+On Sun, 1 Jun 2008 13:40:09 +0200 Pavel Machek <pavel@suse.cz> wrote:
+
+> Hi!
 > 
->  - Add support for binary page size DataFlashes.
->  - The driver now prints out pagesize and erasesize.
->    Printout valuable information for creating flash filesystems.
+> > > > > All I can say so far is that I find the same as you do:
+> > > > > SYNC_FILE_RANGE_WRITE (after writing) takes a significant amount of time,
+> > > > > more than half as long as when you add in SYNC_FILE_RANGE_WAIT_AFTER too.
+> > > > > 
+> > > > > Which make the sync_file_range call pretty pointless: your usage seems
+> > > > > perfectly reasonable to me, but somehow we've broken its behaviour.
+> > > > > I'll be investigating ...
+> > > > 
+> > > > It will block on disk queue fullness - sysrq-W will tell.
+> > > 
+> > > Ah, thank you.  What a disappointment, though it's understandable.
+> > > Doesn't that very severely limit the usefulness of the system call?
+> > 
+> > A bit.  The request queue size is runtime tunable though.
+> 
+> Which /sys is that?
 
-I like the idea, but I'm afraid this approach isn't sufficient.
+/sys/block/sda/queue/nr_requests
 
-Thing is, the LSB of the status register is explicitly
-undefined for earlier chip revisions (e.g. see datasheets
-for AT45DB321B and AT45DB321C vs AT45DB321D), so you should
-use a different chip discovery algorithm.  Perhaps:
+> What happens if I set the queue size to pretty
+> much infinity, will memory management die horribly?
 
- * Try the original scheme (read status register);
+In theory, no - it's always caused problems when the VM/VFS/FS layer
+has relied upon request-queue exhaustion for throttling.  Hence all
+that code is supposed to work OK when there is no request-queue
+blocking.  Of course, (theory/practice != 1.0).
 
- * If it indicates a chip that has new versions with
-   binary page size options, use the 0x9F command to
-   read the JEDEC id (and chip revision);
+> > I expect major users of this system call will be applications which do
+> > small-sized overwrites into large files, mainly databases.  That is,
+> > once the application developers discover its existence.  I'm still
+> > getting expressions of wonder from people who I tell about the
+> > five-year-old fadvise().
+> 
+> Hey, you have one user now, its called s2disk. But for this call to be
+> useful, we'd need asynchronous variant... is there such thing?
 
- * If it's a sufficently new revision, *then* you can
-   interpret that LSB as indicating the page size
+Well if you're asking the syscall to shove more data into the block
+layer than it can concurrently handle, sure, the block layer will
+block.  It's tunable...
 
-Example, on the AT45DB321x chips, that JEDEC instruction was
-added for the 'C' revision (according to my copies of the
-datasheets) and wasn't there for the 'B' revision ... while
-it was the 'D' revision which introduced the binary page size.
+It can still block in places, of course - we might need to do
+synchronous reads to get at metadata and we'll need to allocate memory.
 
-Maybe the JEDEC code from the m25p80 driver can be reused.
+> Okay, I can fork and do the call from another process, but...
 
-Also, I'd like to see a pre-existing typo fixed (in case anyone
-uses a flash that small) ... see below.
+I sense a strangeness.  What are you actually trying to do with all of this?
 
-- Dave
+Bear in mind that sync_file_range() doesn't sync metadata (ie: indirect
+blocks).  So if they weren't already known to have been written, the
+data isn't safe.
 
+> - * range which are not presently under writeback.
+> + * range which are not presently under writeback. Notice that even this this
+> + *  may and will block if you attempt to write more than request queue size.
 
-> @@ -546,29 +551,44 @@ static int __devinit dataflash_probe(struct spi_device *spi)
->  	 * board setup should have set spi->max_speed_max to
->  	 * match f(car) for continuous reads, mode 0 or 3.
->  	 */
-> -	switch (status & 0x3c) {
-> +	switch (status & 0x3d) {
->  	case 0x0c:	/* 0 0 1 1 x x */
-> +	case 0x0d:
->  		status = add_dataflash(spi, "AT45DB011B", 512, 264, 9);
->  		break;
->  	case 0x14:	/* 0 1 0 1 x x */
-> +	case 0x15:
->  		status = add_dataflash(spi, "AT45DB021B", 1025, 264, 9);
-
-1024 pages (of 264 bytes), not 1025.  :)
-
-
->  		break;
->  	case 0x1c:	/* 0 1 1 1 x x */
-> +	case 0x1d:
->		...
+um, OK. I'll fix the grammar a bit there.
