@@ -1,44 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYFAFcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYFAFvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbYFAFcw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 01:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYFAFcm
+	id S1755323AbYFAFvt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 01:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbYFAFvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 01:32:42 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:45350 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751265AbYFAFcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 01:32:41 -0400
-Date: Sun, 1 Jun 2008 14:30:47 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: sam@ravnborg.org, hjl.tools@gmail.com, linux-kbuild@vger.kernel.org,
-       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sh64 build error - sh, kbuild or binutils problem?
-Message-ID: <20080601053047.GA25429@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian Bunk <bunk@kernel.org>, sam@ravnborg.org,
-	hjl.tools@gmail.com, linux-kbuild@vger.kernel.org,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080531202239.GB7347@cs181133002.pp.htv.fi>
+	Sun, 1 Jun 2008 01:51:38 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:55865 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbYFAFvh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 01:51:37 -0400
+Date: Sun, 1 Jun 2008 08:51:34 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Patrick McManus <mcmanus@ducksong.com>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <1212273974.28319.107.camel@tng>
+Message-ID: <Pine.LNX.4.64.0806010826040.18717@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu>  <20080529084524.GA24892@elte.hu>
+  <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi> 
+ <20080529112257.GA18130@elte.hu> <20080530181839.GA31915@elte.hu> 
+ <20080531060947.GA26441@elte.hu>  <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi>
+  <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi> 
+ <20080531125428.GA22111@elte.hu>  <Pine.LNX.4.64.0805311555570.2329@wrl-59.cs.helsinki.fi>
+  <20080531163501.GB22607@elte.hu> <1212273974.28319.107.camel@tng>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080531202239.GB7347@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1771556638-1212299494=:18717"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 31, 2008 at 11:22:39PM +0300, Adrian Bunk wrote:
-> Minimal example demonstrating the problem:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696208474-1771556638-1212299494=:18717
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Sat, 31 May 2008, Patrick McManus wrote:
+
+> On Sat, 2008-05-31 at 18:35 +0200, Ingo Molnar wrote:
+> > * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> > 
 > 
-> $ sh64-linux-ar rcs tmp.o
-> $ sh64-linux-ld -EL -r -o tmp2.o tmp.o
-> $ sh64-linux-ld -EL -r -o out.o tmp2.o 
-> sh64-linux-ld: sh3 architecture of input file `tmp2.o' is incompatible with sh5 output
-> $ 
+> > > ...setsockopt(listenfd, SOL_TCP, TCP_DEFER_ACCEPT, &val, sizeof(val)) 
+> > > seems to be the magic trick that is interestion here.
+> > 
+> > seems to be used:
+> > 
+> >  22003 write(3, "distccd[22003] (dcc_listen_by_ad"..., 62) = 62
+> >  22003 listen(4, 10)                     = 0
+> >  22003 setsockopt(4, SOL_TCP, TCP_DEFER_ACCEPT, [1], 4) = 0
+> > 
+> > i'll queue up your reverts for testing in -tip.
 > 
-Yes, it's a binutils bug. I've hit this on SH-2A zImage builds too, and
-hacked together a patch for it. I'll see about fixing it up fo sh64 too
-and then posting it to the list.
+> 
+> So the code you will revert came from my fingers. The circumstances here
+> make me nervous; while I'm at a loss to explain what might be going on
+> in particular, let me offer an apology in advance should the revert help
+> resolve the issue.
+
+Yes, don't worry just yet. It far from proven yet that this is the cause 
+(or contributes to easiness of reproducal in any way). The patch was just 
+for Ingo's testing in his -tip branch. I didn't even bother to cc you yet 
+because it's more or less a stab into dark, but it's definately worth of 
+testing still even though Ingo probably comes back soon and tells that it 
+didn't help any because it's clearly related :-).
+
+> Here's what makes me nervous:
+> 
+>  * not a lot of code uses DEFER_ACCEPT.. frankly it was pretty broken
+> before 26 - but not broken this way .. the correlation of your bug using
+> it is significant. 
+>
+>  * in 26, a server TCP socket (with DA) goes to ESTABLISHED when the 3rd
+> part of the handshake is received (as normal without DA), but the socket
+> isn't put on the accept queue until a real data packet arrives. (That's
+> the point of DA). In <= 25 this socket would have syn-recv until the
+> data packet arrived.
+> 
+>   - I did run tests where the server died in between the handshake being
+> completed and first data packet arriving - the client should see RST and
+> the server socket should disappear. But maybe something was missed?
+
+Also in this Ingo's case RST seems to be missing, ie., there's unread data 
+and both ends remain ESTABLISHED while the receiver is already gone (or 
+not referencing to the connection correctly).
+
+> Do I understand this correctly, the server process is gone but the
+> socket is still in the table? And the client process is still there
+> waiting for the server to do something - having sent a bunch of data?
+
+Yes, this seems to be the case, sender was doing window probes because 
+window became to zero.
+
+Because it's distcc, tracking a particular process is not that simple 
+task. Either the process is gone or it doesn't correctly reference to the 
+connection.
+
+> Do we know if any data bytes (not handshake bytes) have been consumed by
+> the server side? If they were, that would seem to vindicate DA.
+
+We don't know. We cannot currently track the particular process which 
+would definately be helpful here.
+
+> Also pointing away from DA is that you started seeing this with rc3 -
+> that code was included in rc1.Is that a firm observation, or maybe there
+> weren't enough datapoints to conclude that rc1 and rc2 were clean?
+
+Timeline won't match too well yes. I also find it quite unlikely, but 
+still worth of test because it's hard to know when this begun, luck might 
+have just played some role there because it's quite evasive in Ingo's 
+case anyway.
+
+Anything you find suspicious between rc1..rc3?
+
+...I suspected my rc3 FRTO fixes first but they have nothing to do with 
+window probing and orphan handling.
+
+> The most interesting patch is ec3c0982a2dd1e671bad8e9d26c28dcba0039d87
+> if anyone wants to eyeball it.
+
+I personally think it might as well be some other issue which just become 
+more visible after DA but lets wait until Ingo has some results which may 
+well result in that DA is not making it to become visible in his case. 
+...Also, I doubt Arjan's mua has nothing to do with DA.
+
+
+-- 
+ i.
+---696208474-1771556638-1212299494=:18717--
