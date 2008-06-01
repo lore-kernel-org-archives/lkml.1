@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYFAGAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYFAGDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884AbYFAGAO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 02:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYFAF75
+	id S1756740AbYFAGDS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 02:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYFAGDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 01:59:57 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:14230 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbYFAF74 (ORCPT
+	Sun, 1 Jun 2008 02:03:03 -0400
+Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:41234 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751670AbYFAGDB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 01:59:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WUt/8O2IKebLWyD6tZ+bmF6nhUPG9HbZAF3YVjLJf92URYlOAtSFdlDVRo9p08D0iLa+5Hq/fTFEI3dx00jYxSwSGwsQhQdaCS3NJcPVc2qVTDNmv7Nghm/TL1xI7yA3FQJCHOmS+qZuG5PUnDbOqN2MLCyvszfFZ51hHSc4PVQ=
-Message-ID: <ca0148c30805312259v4d6a9344le94050ea9295eed8@mail.gmail.com>
-Date: Sun, 1 Jun 2008 08:59:55 +0300
-From: "Matti Linnanvuori" <mattilinn@gmail.com>
-To: "Krzysztof Halasa" <khc@pm.waw.pl>
-Subject: Re: [PATCH v1.2.26] wan: new driver retina
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <m3lk1rhio4.fsf@maximus.localdomain>
+	Sun, 1 Jun 2008 02:03:01 -0400
+Message-ID: <48423B8A.20505@davidnewall.com>
+Date: Sun, 01 Jun 2008 15:32:50 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, hch@lst.de
+Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
+References: <200805311737.58991.arnd@arndb.de> <48419F45.20908@davidnewall.com> <200805312240.50720.arnd@arndb.de>
+In-Reply-To: <200805312240.50720.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ca0148c30805280342l39ffe387rf4c670b17804f99d@mail.gmail.com>
-	 <m3prr6obkz.fsf@maximus.localdomain>
-	 <ca0148c30805300552u7eb5da43tfc75127a2e819d1@mail.gmail.com>
-	 <m3lk1rhio4.fsf@maximus.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/30 Krzysztof Halasa <khc@pm.waw.pl>:
-> "Matti Linnanvuori" <mattilinn@gmail.com> writes:
->>>> +static int fepci_char_open(struct inode *inode, struct file *filp)
->>>> +{
->>>> +     unsigned int minor = MINOR(inode->i_rdev);
->>>> +     if (unlikely(minor >= find_cnt || card_privates[minor].pci_dev == NULL))
->>>> +             return -ENXIO;
->>>> +     filp->f_op = &fepci_char_fops;
->>>> +     if (unlikely(!try_module_get(THIS_MODULE)))
->>>> +             return -EBUSY;
->>>
->>> That won't work race-free, use owner field.
->>
->> You mean the f_op assignment? I have removed that.
+Arnd Bergmann wrote:
+> On Saturday 31 May 2008, David Newall wrote:
+>   
+>> I prefer the technique of union of a tmpfs over some other fs
+>>     
 >
-> Actually I meant try_module_get() from within the driver, for example
-> your module may get unloaded while in this function, before this
-> try_module_get(), and that would be fatal.
+> You're right in principle, but unfortunately there is to date no working
+> implementation of union mounts. Giving users the option of using an
+> existing file system with a few tweaks can only be better than than
+> forcing them to use hacks like unionfs.
 
-I don't think the module can finish getting unloaded while in that
-function because the module cleanup function unregisters the
-character device.
-
-> Yes, I thought stream mode = character device but now I see it's
-> another flavour of network device(?), which is never up and exists
-> only for the ability to receive netdev ioctls (though it also uses
-> char dev ioctls).
->
-> Did I get this right?
-
-Yeah.
-
-> Why not simply use a character device, with normal read, write etc?
-
-It would make more sense to use a character device. Read and write
-system calls consume more CPU time, though.
+I've not used unionfs (nor aufs) so I'm not aware of its foibles, but I
+can say that it's the right kind of solution.  Rather than spend effort
+implementing write support for read-only filesystems, why not put your
+time into fixing whatever you see wrong with one or both of those?
