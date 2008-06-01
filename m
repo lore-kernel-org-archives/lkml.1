@@ -1,93 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYFAHGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYFAHYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbYFAHGm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 03:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbYFAHGf
+	id S1755229AbYFAHYY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 03:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYFAHYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 03:06:35 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:47360 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbYFAHGe (ORCPT
+	Sun, 1 Jun 2008 03:24:15 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49791 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbYFAHYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 03:06:34 -0400
-Cc: davem@davemloft.net, arjan@linux.intel.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org
-Message-Id: <11DE897D-FD47-4F22-9F12-FE258B30D000@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-In-Reply-To: <20080601013410.GA3600@darkstar.domain.name>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH][resend] rfcomm deadlock fix
-Date: Sun, 1 Jun 2008 09:06:22 +0200
-References: <20080601013410.GA3600@darkstar.domain.name>
-X-Mailer: Apple Mail (2.919.2)
+	Sun, 1 Jun 2008 03:24:14 -0400
+Date: Sun, 1 Jun 2008 08:23:43 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+In-Reply-To: <20080531173950.c4f04028.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0806010752510.24919@blonde.site>
+References: <20080530102619.GA2468@elf.ucw.cz> <Pine.LNX.4.64.0805301451020.19914@blonde.site>
+ <20080530204307.GA4978@ucw.cz> <Pine.LNX.4.64.0805311925190.27293@blonde.site>
+ <20080531173950.c4f04028.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Sat, 31 May 2008, Andrew Morton wrote:
+> On Sat, 31 May 2008 19:44:49 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
+> > 
+> > All I can say so far is that I find the same as you do:
+> > SYNC_FILE_RANGE_WRITE (after writing) takes a significant amount of time,
+> > more than half as long as when you add in SYNC_FILE_RANGE_WAIT_AFTER too.
+> > 
+> > Which make the sync_file_range call pretty pointless: your usage seems
+> > perfectly reasonable to me, but somehow we've broken its behaviour.
+> > I'll be investigating ...
+> 
+> It will block on disk queue fullness - sysrq-W will tell.
 
-> There's logic in __rfcomm_dlc_close:
-> 	rfcomm_dlc_lock(d);
-> 	d->state = BT_CLOSED;
-> 	d->state_changed(d, err);
-> 	rfcomm_dlc_unlock(d);
->
-> In rfcomm_dev_state_change, it's possible that rfcomm_dev_put try to  
-> take the
-> dlc lock, then we will deadlock.
->
-> Here fixed it by unlock dlc before rfcomm_dev_get in  
-> rfcomm_dev_state_change.
->
-> why not unlock just before rfcomm_dev_put? it's because there's  
-> another problem.
-> rfcomm_dev_get/rfcomm_dev_del will take rfcomm_dev_lock, but in  
-> rfcomm_dev_add
-> the lock order is : rfcomm_dev_lock --> dlc lock
->
-> so I unlock dlc before the taken of rfcomm_dev_lock.
->
-> Actually it's a regression caused by commit
-> 1905f6c736cb618e07eca0c96e60e3c024023428, the dlc state_change could  
-> be two
-> callbacks : rfcomm_sk_state_change and rfcomm_dev_state_change. I  
-> missed the rfcomm_sk_state_change that time.
->
-> Thanks Arjan van de Ven <arjan@linux.intel.com> for the effort in  
-> commit
-> 4c8411f8c115def968820a4df6658ccfd55d7f1a
-> but he missed the rfcomm_dev_state_change lock issue.
->
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
->
-> ---
-> net/bluetooth/rfcomm/tty.c |   13 ++++++++++++-
-> 1 file changed, 12 insertions(+), 1 deletion(-)
->
-> diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/ 
-> rfcomm/tty.c
-> --- linux/net/bluetooth/rfcomm/tty.c	2008-05-30 15:46:33.000000000  
-> +0800
-> +++ linux.new/net/bluetooth/rfcomm/tty.c	2008-05-30  
-> 17:08:30.000000000 +0800
-> @@ -566,11 +566,22 @@ static void rfcomm_dev_state_change(stru
-> 	if (dlc->state == BT_CLOSED) {
-> 		if (!dev->tty) {
-> 			if (test_bit(RFCOMM_RELEASE_ONHUP, &dev->flags)) {
-> -				if (rfcomm_dev_get(dev->id) == NULL)
-> +				/* Drop DLC lock here to avoid deadlock
-> +				 * 1. rfcomm_dev_get will take rfcomm_dev_lock
-> +				 *    but in rfcomm_dev_add there's lock order:
-> +				 *    rfcomm_dev_lock -> dlc lock
-> +				 * 2. rfcomm_dev_put will deaklock if it's
-> +				 *    the last reference
+Ah, thank you.  What a disappointment, though it's understandable.
+Doesn't that very severely limit the usefulness of the system call?
 
-I meant this one :)  s/deaklock/deadlock/
+I admit the flag isn't called SYNC_FILE_RANGE_WRITE_WITHOUT_WAITING,
+but I don't suppose Pavel and I are the only ones misled by it.
 
-Regards
-
-Marcel
-
+Hugh
