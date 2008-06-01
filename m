@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbYFAN05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbYFANzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbYFAN05 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 09:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYFAN0s
+	id S1752630AbYFANzs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 09:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYFANzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 09:26:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37763 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751161AbYFAN0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 09:26:47 -0400
-Date: Sun, 1 Jun 2008 23:26:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: Diagnosing linux-next (Was: Re: m68k libc5 regression)
-Message-Id: <20080601232638.fda1f3ab.sfr@canb.auug.org.au>
-In-Reply-To: <20080601005338.3affe880.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0805262226280.11902@anakin>
-	<Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
-	<20080601005338.3affe880.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__1_Jun_2008_23_26_38_+1000_oDyS78.d0Qkr+iv7"
+	Sun, 1 Jun 2008 09:55:38 -0400
+Received: from server515i.exghost.com ([72.32.253.75]:2770 "EHLO
+	server515.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751265AbYFANzh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 09:55:37 -0400
+To: "Justin Piszcz" <jpiszcz@lucidpixels.com>, <linux-kernel@vger.kernel.org>,
+       <linux-raid@vger.kernel.org>, <xfs@oss.sgi.com>
+Reply-To: <David@santools.com>
+Message-ID: <13c501c8c3ee$c6a31318$330ef40a@exchange.rackspace.com>
+Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
+From: "David Lethe" <david@santools.com>
+Thread-Topic: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
+Thread-Index: AcjD7sai6rpNKVABQ6i5nGsqH2f0tA==
+Date: Sun, 1 Jun 2008 8:52:00 -0500
+MIME-Version: 1.0
+X-Mailer: VersaMail(R) v. 3.5.4, Copyright (c) 2001-2006 Palm, Inc.
+X-Priority: 3
+Importance: Normal
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-OriginalArrivalTime: 01 Jun 2008 13:55:35.0041 (UTC) FILETIME=[2A10E710:01C8C3EF]
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Policy: GLOBAL
+X-Primary: david@santools.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: david@santools.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: PRIVATE->PRIVATE->UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 72.32.49.5
+X-Note-Reverse-DNS: fe1.exchange.rackspace.com
+X-Note-WHTLIST: david@santools.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: 81 82 139 
+X-Note: Mail Class: ALLOWEDSENDER
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__1_Jun_2008_23_26_38_+1000_oDyS78.d0Qkr+iv7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Andrew,
 
-On Sun, 1 Jun 2008 00:53:38 -0700 Andrew Morton <akpm@linux-foundation.org>=
- wrote:
->
-> I do not know how to work out how this patch got into linux-next.
+-----Original Message-----
 
-I have been wondering for a while what I can do to make figuring this out
-(in general) easier.  Would adding the SHA1 of the head of each tree to
-the Trees file help?  I could publish all the branches in my linux-next
-repo - but they change daily.  I guess only the git users benefit from
-those suggestions.
+From:  "Justin Piszcz" <jpiszcz@lucidpixels.com>
+Subj:  Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
+Date:  Sun Jun 1, 2008 6:02 am
+Size:  793 bytes
+To:  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>; "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>; "xfs@oss.sgi.com" <xfs@oss.sgi.com>
 
-gitk can tell you pretty easily (just find the offending commit and work
-your way upward until you find a merge by me).
+ 
+On Sun, 1 Jun 2008, Justin Piszcz wrote: 
+ 
+> I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and it  
+> appears I have hit the limit, if I were able to get the maximum speed of all  
+> drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774 MiB/s  
+> (currently running badblocks on all drives).. 
+ 
+Small correction, they are 7200.11 Seagate Desktop Drives (ST31000340AS),  
+not enterprise drives: 
+ 
+http://www.seagate.com/ww/v/index.jsp?vgnextoid=0732f141e7f43110VgnVCM100000f5ee0a0aRCRD 
+http://www.newegg.com/Product/Product.aspx?Item=N82E16822148274 
+ 
+-- 
+To unsubscribe from this list: send the line "unsubscribe linux-raid" in 
+the body of a message to majordomo@vger.kernel.org 
+More majordomo info at  http://vger.kernel.org/majordomo-info.html 
+ 
 
-Other suggestions?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Sun__1_Jun_2008_23_26_38_+1000_oDyS78.d0Qkr+iv7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIQqOUTgG2atn1QN8RAstzAJ94xCYW+0coY4qtwb8UyMTcTcqzxwCgg+vE
-TWS4rv1Ti9+JxNK3+cyp524=
-=Mf7Y
------END PGP SIGNATURE-----
-
---Signature=_Sun__1_Jun_2008_23_26_38_+1000_oDyS78.d0Qkr+iv7--
