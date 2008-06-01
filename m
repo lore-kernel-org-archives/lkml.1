@@ -1,133 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbYFAQ2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbYFAQkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbYFAQ2T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 12:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbYFAQ2G
+	id S1752887AbYFAQkz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 12:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYFAQks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 12:28:06 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:53818 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751065AbYFAQ2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 12:28:03 -0400
-Date: Sun, 1 Jun 2008 20:29:42 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] kill_something_info: don't take tasklist_lock for pid==-1 case
-Message-ID: <20080601162942.GA8254@tv-sign.ru>
-References: <47E87F2A.2040303@bk.jp.nec.com> <20080325135645.GA96@tv-sign.ru> <m18wy45nej.fsf@frodo.ebiederm.org> <20080531165525.GA5575@tv-sign.ru> <m1hccexc4b.fsf@frodo.ebiederm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1hccexc4b.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.11
+	Sun, 1 Jun 2008 12:40:48 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:53642 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbYFAQkr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 12:40:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=nvxxAPV1dBOppoLGKXvEe8S9qiaU0y9gRZlSvnyRI7V46Nzh5ZJ47g3cYW4q7dRMmiLJmg3h8EfgNe0QgooBhTwv2GOd37RmcTVHQUWSSyUNprJoo3C3mL3OptDMvk/ql0pifRZPiIAaxKRkYs4ImO4C6TFCbXZEkKS3moDUS30=
+Message-ID: <cd73a99e0806010940g501f11b4jcb7caf6acfd5c49f@mail.gmail.com>
+Date: Sun, 1 Jun 2008 18:40:46 +0200
+From: "Andrew Victor" <avictor.za@gmail.com>
+To: akpm@linux-foundation.org, wim@iguana.be
+Subject: AT91SAM9/CAP9 watchdog driver
+Cc: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_31735_27902252.1212338446681"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/31, Eric W. Biederman wrote:
->
-> We can read old next values when walking the task list under the rcu
-> lock.  So I don't believe we are guaranteed to see additions that
-> happen while we hold the rcu lock.
->
-> If a new process spawns, passes the check for the parent having the
-> signal, the signal is delivered the signal, and then appends to the
-> task list.  We might miss it.  I'm not certain, but that feels right.
+------=_Part_31735_27902252.1212338446681
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I don't think we can miss it. To simplify, let's consider kill(-1, SIGKILL)
-and the forking process is P.
+Driver to support the internal watchdog peripheral found on Atmel's
+AT91SAM9 and AT91CAP9 processors (ARM).
 
-When P forks, copy_process() adds the child to the end of the init_task.tasks
-list under ->siglock.
+Signed-off-by: Renaud Cerrato <r.cerrato@til-technologies.fr>
+Signed-off-by: Andrew Victor <linux@maxim.org.za>
 
-When kill_something_info()->group_send_sig_info(P) suceeds, we must see the
-child, because we locked the same ->siglock and thus we have the necessary
-barrier. (more precisely, we must see the new next values once we locked
-->siglock). And P can't fork again.
+------=_Part_31735_27902252.1212338446681
+Content-Type: text/x-patch; name=sam9_watchdog.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fgxuppg50
+Content-Disposition: attachment; filename=sam9_watchdog.patch
 
-Yes, kill(-1, /*say*/ SIGCONT) is different, we can miss the child which was
-forked _after_ P has recieved/handled the signal, but probably this is OK,
-we can pretend it was forked after kill(-1) has returned.
-
-
-The more interesting case: P forks and exits _before_ we send the signal
-to it. Can we miss the child? I don't think so, but I'm not sure.
-fork() + exit() means list_add_rcu() + wmb() + list_del_rcu().
-
-If we see the result of list_del_rcu() (ie, we don't see P on list), we
-must see the result of list_add_rcu(), because of smp_read_barrier_depends()
-in next_task().
-
-But again, I'm not sure.
-
-> > However, I think this patch adds another subtle race which I missed before.
-> >
-> > Let's suppose that the task has two threads, A (== main thread) and B. A has
-> > already exited, B does exec.
-> >
-> > In that case it is possible that (without tasklist_lock) kill_something_info()
-> > sends the signal to the old leader (A), but before group_send_sig_info(A)
-> > takes ->siglock B switches the leader and does release_task(A). In that
-> > group_send_sig_info()->lock_task_sighand() fails and we miss the process.
->
-> Hmm.  Does that problem affect normal signal deliver.  I seem to recall
-> being careful and doing something to make that case work.
->
-> Does that fix only apply when we have a specific pid, not when we have
-> a task and are walking the task_list.  Because kill_pid_info can retry
-> if we receive -ESRCH?
-
-Yes, kill_pid_info() is fine, and other users call group_send_sig_info()
-under tasklist.
-
-> To fix the pid namespace case we need to start walking the list of
-> pids, not the task list for kill -1.
-
-Or, we can make somthing like
-
-	/* needs rcu lock */
-	int kill_group(int sig, struct siginfo *info, struct task_struct *g)
-	{
-		struct task_struct *p = g;
-
-		do {
-			ret = group_send_sig_info(sig, info, p);
-			if (ret != -ESRCH)
-				break;
-		} while_each_thread(g, p);
-
-		return ret;
-	}
-
-> > Note the (broken) "p->pid > 1" check, kill_something_info() skips init.
-> > Not that it matters though.
->
-> Oh right.  I had forgotten about that special case.  Grr Special cases
-> suck!
->
-> We have a hole with init spawning new children, during kill -1.
-
-Yes, I was wondering about this too.
-
-> Ugh.  Or are those tasks indistinguishable from children spawned by
-> init just after the signal was sent?
-
-Oh, I don't know what is supposed semantics. Perhaps this works in
-practice during shutdown? we can change the state of /sbin/init so
-that it won't spawn the new tasks, and then we can do kill(-1).
-I don't know.
-
-> A practical question.  I need to rework the signal delivery for
-> the case of kill -1 to be based on find_ge_pid.  So that it
-> works with pid namespaces.
-
-Hmm... not sure I understand why do we need find_ge_pid(). In fact,
-I can't see which problems we have with kill_something_info() wrt
-pid namespaces. I mean it should be changed of course, but these
-changes should be relatively simple/straightforward? However I didn't
-really think about this, may be wrong.
-
-Oleg.
-
+ZGlmZiAtdXJOIGxpbnV4LTIuNi4yNi1yYzMub3JpZy9kcml2ZXJzL3dhdGNoZG9nL0tjb25maWcg
+bGludXgtMi42LjI2LXJjMy9kcml2ZXJzL3dhdGNoZG9nL0tjb25maWcKLS0tIGxpbnV4LTIuNi4y
+Ni1yYzMub3JpZy9kcml2ZXJzL3dhdGNoZG9nL0tjb25maWcJMjAwOC0wNS0yNCAxNzoyNDoyMi4w
+MDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LTIuNi4yNi1yYzMvZHJpdmVycy93YXRjaGRvZy9LY29u
+ZmlnCTIwMDgtMDYtMDEgMTg6Mjg6MjcuMDAwMDAwMDAwICswMjAwCkBAIC02Niw2ICs2NiwxNCBA
+QAogCSAgV2F0Y2hkb2cgdGltZXIgZW1iZWRkZWQgaW50byBBVDkxUk05MjAwIGNoaXBzLiBUaGlz
+IHdpbGwgcmVib290IHlvdXIKIAkgIHN5c3RlbSB3aGVuIHRoZSB0aW1lb3V0IGlzIHJlYWNoZWQu
+CiAKK2NvbmZpZyBBVDkxU0FNOV9XQVRDSERPRworCXRyaXN0YXRlICJBVDkxU0FNOSAvIEFUOTFD
+QVA5IHdhdGNoZG9nIgorCWRlcGVuZHMgb24gQVJDSF9BVDkxICYmICFBUkNIX0FUOTFSTTkyMDAK
+KwlzZWxlY3QgV0FUQ0hET0dfTk9XQVlPVVQKKwloZWxwCisJICBXYXRjaGRvZyB0aW1lciBlbWJl
+ZGRlZCBpbnRvIEF0bWVsIEFUOTFTQU05IGFuZCBBVDkxQ0FQOSBwcm9jZXNzb3JzLgorCSAgVGhp
+cyB3aWxsIHJlYm9vdCB5b3VyIHN5c3RlbSB3aGVuIHRoZSB0aW1lb3V0IGlzIHJlYWNoZWQuCisK
+IGNvbmZpZyAyMTI4NV9XQVRDSERPRwogCXRyaXN0YXRlICJEQzIxMjg1IHdhdGNoZG9nIgogCWRl
+cGVuZHMgb24gRk9PVEJSSURHRQpkaWZmIC11ck4gbGludXgtMi42LjI2LXJjMy5vcmlnL2RyaXZl
+cnMvd2F0Y2hkb2cvTWFrZWZpbGUgbGludXgtMi42LjI2LXJjMy9kcml2ZXJzL3dhdGNoZG9nL01h
+a2VmaWxlCi0tLSBsaW51eC0yLjYuMjYtcmMzLm9yaWcvZHJpdmVycy93YXRjaGRvZy9NYWtlZmls
+ZQkyMDA4LTA1LTI0IDE3OjI0OjIyLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LXJj
+My9kcml2ZXJzL3dhdGNoZG9nL01ha2VmaWxlCTIwMDgtMDYtMDEgMTg6MDQ6NDAuMDAwMDAwMDAw
+ICswMjAwCkBAIC0yNiw2ICsyNiw3IEBACiAKICMgQVJNIEFyY2hpdGVjdHVyZQogb2JqLSQoQ09O
+RklHX0FUOTFSTTkyMDBfV0FUQ0hET0cpICs9IGF0OTFybTkyMDBfd2R0Lm8KK29iai0kKENPTkZJ
+R19BVDkxU0FNOV9XQVRDSERPRykgKz0gYXQ5MXNhbTlfd2R0Lm8KIG9iai0kKENPTkZJR19PTUFQ
+X1dBVENIRE9HKSArPSBvbWFwX3dkdC5vCiBvYmotJChDT05GSUdfMjEyODVfV0FUQ0hET0cpICs9
+IHdkdDI4NS5vCiBvYmotJChDT05GSUdfOTc3X1dBVENIRE9HKSArPSB3ZHQ5NzcubwpkaWZmIC11
+ck4gbGludXgtMi42LjI2LXJjMy5vcmlnL2RyaXZlcnMvd2F0Y2hkb2cvYXQ5MXNhbTlfd2R0LmMg
+bGludXgtMi42LjI2LXJjMy9kcml2ZXJzL3dhdGNoZG9nL2F0OTFzYW05X3dkdC5jCi0tLSBsaW51
+eC0yLjYuMjYtcmMzLm9yaWcvZHJpdmVycy93YXRjaGRvZy9hdDkxc2FtOV93ZHQuYwkxOTcwLTAx
+LTAxIDAyOjAwOjAwLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI2LXJjMy9kcml2ZXJz
+L3dhdGNoZG9nL2F0OTFzYW05X3dkdC5jCTIwMDgtMDYtMDEgMTg6MjY6MDguMDAwMDAwMDAwICsw
+MjAwCkBAIC0wLDAgKzEsMjYzIEBACisvKgorICogV2F0Y2hkb2cgZHJpdmVyIGZvciBBdG1lbCBB
+VDkxU0FNOXggcHJvY2Vzc29ycy4KKyAqCisgKiBDb3B5cmlnaHQgKEMpIDIwMDcgUmVuYXVkIENF
+UlJBVE8gci5jZXJyYXRvQHRpbC10ZWNobm9sb2dpZXMuZnIKKyAqCisgKiBUaGlzIHByb2dyYW0g
+aXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yCisgKiBtb2Rp
+ZnkgaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZQor
+ICogYXMgcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb247IGVpdGhlciB2
+ZXJzaW9uCisgKiAyIG9mIHRoZSBMaWNlbnNlLCBvciAoYXQgeW91ciBvcHRpb24pIGFueSBsYXRl
+ciB2ZXJzaW9uLgorICovCisKKy8qCisgKiBUaGUgV2F0Y2hkb2cgVGltZXIgTW9kZSBSZWdpc3Rl
+ciBjYW4gYmUgb25seSB3cml0dGVuIHRvIG9uY2UuIElmIHRoZQorICogdGltZW91dCBuZWVkIHRv
+IGJlIHNldCBmcm9tIExpbnV4LCBiZSBzdXJlIHRoYXQgdGhlIGJvb3RzdHJhcCBvciB0aGUKKyAq
+IGJvb3Rsb2FkZXIgZG9lc24ndCB3cml0ZSB0byB0aGlzIHJlZ2lzdGVyLgorICovCisKKyNpbmNs
+dWRlIDxsaW51eC9lcnJuby5oPgorI2luY2x1ZGUgPGxpbnV4L2ZzLmg+CisjaW5jbHVkZSA8bGlu
+dXgvaW5pdC5oPgorI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgorI2luY2x1ZGUgPGxpbnV4L21p
+c2NkZXZpY2UuaD4KKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4KKyNpbmNsdWRlIDxsaW51eC9t
+b2R1bGVwYXJhbS5oPgorI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPgorI2luY2x1
+ZGUgPGxpbnV4L3R5cGVzLmg+CisjaW5jbHVkZSA8bGludXgvd2F0Y2hkb2cuaD4KKyNpbmNsdWRl
+IDxsaW51eC9iaXRvcHMuaD4KKyNpbmNsdWRlIDxsaW51eC91YWNjZXNzLmg+CisKKyNpbmNsdWRl
+IDxhc20vYXJjaC9hdDkxX3dkdC5oPgorCisKKyNkZWZpbmUgV0RUX01BWF9USU1FCQkxNgkvKiBz
+ZWNvbmRzICovCisKK3N0YXRpYyBpbnQgd2R0X3RpbWVvdXQgPSAtMTsJCS8qIGludmFsaWQgKi8K
+KworbW9kdWxlX3BhcmFtKHdkdF90aW1lb3V0LCBpbnQsIDApOworTU9EVUxFX1BBUk1fREVTQyh3
+ZHRfdGltZW91dCwgIldhdGNoZG9nIHRpbWUgaW4gc2Vjb25kcy4gKGRlZmF1bHQgPSBkaXNhYmxl
+ZCkiKTsKKworCitzdGF0aWMgdW5zaWduZWQgbG9uZyBhdDkxd2R0X2J1c3k7CisKKy8qIC4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4gKi8KKworLyoKKyAqIFJlbG9hZCB0aGUgd2F0Y2hkb2cgdGltZXIuICAoaWUs
+IHBhdCB0aGUgd2F0Y2hkb2cpCisgKi8KK3N0YXRpYyBpbmxpbmUgdm9pZCBhdDkxX3dkdF9yZWxv
+YWQodm9pZCkKK3sKKwlhdDkxX3N5c193cml0ZShBVDkxX1dEVF9DUiwgQVQ5MV9XRFRfS0VZIHwg
+QVQ5MV9XRFRfV0RSU1RUKTsKK30KKworLyogLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLiAqLworCisvKgorICog
+V2F0Y2hkb2cgZGV2aWNlIGlzIG9wZW5lZCwgYW5kIHdhdGNoZG9nIHN0YXJ0cyBydW5uaW5nLgor
+ICovCitzdGF0aWMgaW50IGF0OTFfd2R0X29wZW4oc3RydWN0IGlub2RlICppbm9kZSwgc3RydWN0
+IGZpbGUgKmZpbGUpCit7CisJaWYgKHRlc3RfYW5kX3NldF9iaXQoMCwgJmF0OTF3ZHRfYnVzeSkp
+CisJCXJldHVybiAtRUJVU1k7CisKKwlyZXR1cm4gbm9uc2Vla2FibGVfb3Blbihpbm9kZSwgZmls
+ZSk7Cit9CisKKy8qCisgKiBDbG9zZSB0aGUgd2F0Y2hkb2cgZGV2aWNlLgorICovCitzdGF0aWMg
+aW50IGF0OTFfd2R0X2Nsb3NlKHN0cnVjdCBpbm9kZSAqaW5vZGUsIHN0cnVjdCBmaWxlICpmaWxl
+KQoreworCWNsZWFyX2JpdCgwLCAmYXQ5MXdkdF9idXN5KTsKKwlyZXR1cm4gMDsKK30KKworLyoK
+KyAqIENoYW5nZSB0aGUgd2F0Y2hkb2cgdGltZSBpbnRlcnZhbC4KKyAqLworc3RhdGljIGludCBh
+dDkxX3dkdF9zZXR0aW1lb3V0KGludCBuZXdfdGltZSkKK3sKKwl1bnNpZ25lZCBpbnQgcmVnLCBt
+cjsKKwkvKgorCSAqIEFsbCBjb3VudGluZyBvY2N1cnMgYXQgU0xPV19DTE9DSyAvIDEyOCA9IDI1
+NiBIegorCSAqCisJICogU2luY2UgV0RWIGlzIGEgMTItYml0IGNvdW50ZXIsIHRoZSBtYXhpbXVt
+IHBlcmlvZCBpcworCSAqIDQwOTYgLyAyNTYgPSAxNiBzZWNvbmRzLgorCSAqLworCWlmICgobmV3
+X3RpbWUgPD0gMCkgfHwgKG5ld190aW1lID4gV0RUX01BWF9USU1FKSkKKwkJcmV0dXJuIC1FSU5W
+QUw7CisKKwl3ZHRfdGltZW91dCA9IG5ld190aW1lOworCisJLyogUHJvZ3JhbSB0aGUgV2F0Y2hk
+b2cgKi8KKwlyZWcgPSBBVDkxX1dEVF9XRFJTVEVOCQkJLyogY2F1c2VzIHdhdGNoZG9nIHJlc2V0
+ICovCisJCXwgQVQ5MV9XRFRfV0RSUFJPQwkJLyogY2F1c2VzIHByb2Nlc3NvciByZXNldCAqLwor
+CQl8IEFUOTFfV0RUX1dEREJHSExUCQkvKiBkaXNhYmxlZCBpbiBkZWJ1ZyBtb2RlICovCisJCXwg
+QVQ5MV9XRFRfV0RECQkJLyogcmVzdGFydCBhdCBhbnkgdGltZSAqLworCQl8ICgoKHdkdF90aW1l
+b3V0ICogMjU2KSAtIDEpICYgQVQ5MV9XRFRfV0RWKTsKKwlhdDkxX3N5c193cml0ZShBVDkxX1dE
+VF9NUiwgcmVnKTsKKworCS8qIENoZWNrIGlmIHdhdGNoZG9nIGNvdWxkIGJlIHByb2dyYW1tZWQg
+Ki8KKwltciA9IGF0OTFfc3lzX3JlYWQoQVQ5MV9XRFRfTVIpOworCWlmIChtciAhPSByZWcpIHsK
+KwkJcHJpbnRrKEtFUk5fRVJSICJhdDkxc2FtOV93ZHQ6IFdhdGNoZG9nIGFscmVhZHkgcHJvZ3Jh
+bW1lZC5cbiIpOworCQlyZXR1cm4gLUVJTzsKKwl9CisKKwlhdDkxX3dkdF9yZWxvYWQoKTsKKwor
+CXByaW50ayhLRVJOX0lORk8gIkFUOTFTQU05IFdhdGNoZG9nIGVuYWJsZWQgKCVkIHNlY29uZHMs
+IG5vd2F5b3V0KVxuIiwKKwkJCXdkdF90aW1lb3V0KTsKKwlyZXR1cm4gMDsKK30KKworc3RhdGlj
+IHN0cnVjdCB3YXRjaGRvZ19pbmZvIGF0OTFfd2R0X2luZm8gPSB7CisJLmlkZW50aXR5CT0gImF0
+OTFzYW05IHdhdGNoZG9nIiwKKwkub3B0aW9ucwk9IFdESU9GX1NFVFRJTUVPVVQgfCBXRElPRl9L
+RUVQQUxJVkVQSU5HLAorfTsKKworLyoKKyAqIEhhbmRsZSBjb21tYW5kcyBmcm9tIHVzZXItc3Bh
+Y2UuCisgKi8KK3N0YXRpYyBsb25nIGF0OTFfd2R0X2lvY3RsKHN0cnVjdCBmaWxlICpmaWxlLCB1
+bnNpZ25lZCBpbnQgY21kLAorCQl1bnNpZ25lZCBsb25nIGFyZykKK3sKKwl2b2lkIF9fdXNlciAq
+YXJncCA9ICh2b2lkIF9fdXNlciAqKWFyZzsKKwlpbnQgX191c2VyICpwID0gYXJncDsKKwlpbnQg
+bmV3X3ZhbHVlLCBlcnI7CisKKwlzd2l0Y2ggKGNtZCkgeworCWNhc2UgV0RJT0NfS0VFUEFMSVZF
+OgorCQlhdDkxX3dkdF9yZWxvYWQoKTsJLyogcGF0IHRoZSB3YXRjaGRvZyAqLworCQlyZXR1cm4g
+MDsKKworCWNhc2UgV0RJT0NfR0VUU1VQUE9SVDoKKwkJcmV0dXJuIGNvcHlfdG9fdXNlcihhcmdw
+LCAmYXQ5MV93ZHRfaW5mbywKKwkJCQlzaXplb2YoYXQ5MV93ZHRfaW5mbykpID8gLUVGQVVMVCA6
+IDA7CisKKwljYXNlIFdESU9DX1NFVFRJTUVPVVQ6CisJCWlmIChnZXRfdXNlcihuZXdfdmFsdWUs
+IHApKQorCQkJcmV0dXJuIC1FRkFVTFQ7CisKKwkJZXJyID0gYXQ5MV93ZHRfc2V0dGltZW91dChu
+ZXdfdmFsdWUpOworCQlpZiAoZXJyKQorCQkJcmV0dXJuIGVycjsKKworCQlyZXR1cm4gcHV0X3Vz
+ZXIod2R0X3RpbWVvdXQsIHApOworCisJY2FzZSBXRElPQ19HRVRUSU1FT1VUOgorCQlyZXR1cm4g
+cHV0X3VzZXIod2R0X3RpbWVvdXQsIHApOworCisJY2FzZSBXRElPQ19HRVRTVEFUVVM6CisJY2Fz
+ZSBXRElPQ19HRVRCT09UU1RBVFVTOgorCQlyZXR1cm4gcHV0X3VzZXIoMCwgcCk7CisJfQorCXJl
+dHVybiAtRU5PVFRZOworfQorCisvKgorICogUGF0IHRoZSB3YXRjaGRvZyB3aGVuZXZlciBkZXZp
+Y2UgaXMgd3JpdHRlbiB0by4KKyAqLworc3RhdGljIHNzaXplX3QgYXQ5MV93ZHRfd3JpdGUoc3Ry
+dWN0IGZpbGUgKmZpbGUsIGNvbnN0IGNoYXIgKmRhdGEsCisJCXNpemVfdCBsZW4sIGxvZmZfdCAq
+cHBvcykKK3sKKwlhdDkxX3dkdF9yZWxvYWQoKTsJCS8qIHBhdCB0aGUgd2F0Y2hkb2cgKi8KKwly
+ZXR1cm4gbGVuOworfQorCisvKiAuLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uICovCisKK3N0YXRpYyBjb25zdCBz
+dHJ1Y3QgZmlsZV9vcGVyYXRpb25zIGF0OTF3ZHRfZm9wcyA9IHsKKwkub3duZXIJCT0gVEhJU19N
+T0RVTEUsCisJLmxsc2VlawkJPSBub19sbHNlZWssCisJLnVubG9ja2VkX2lvY3RsCT0gYXQ5MV93
+ZHRfaW9jdGwsCisJLm9wZW4JCT0gYXQ5MV93ZHRfb3BlbiwKKwkucmVsZWFzZQk9IGF0OTFfd2R0
+X2Nsb3NlLAorCS53cml0ZQkJPSBhdDkxX3dkdF93cml0ZSwKK307CisKK3N0YXRpYyBzdHJ1Y3Qg
+bWlzY2RldmljZSBhdDkxd2R0X21pc2NkZXYgPSB7CisJLm1pbm9yCQk9IFdBVENIRE9HX01JTk9S
+LAorCS5uYW1lCQk9ICJ3YXRjaGRvZyIsCisJLmZvcHMJCT0gJmF0OTF3ZHRfZm9wcywKK307CisK
+K3N0YXRpYyBpbnQgX19pbml0IGF0OTF3ZHRfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAq
+cGRldikKK3sKKwlpbnQgcmVzOworCisJaWYgKGF0OTF3ZHRfbWlzY2Rldi5wYXJlbnQpCisJCXJl
+dHVybiAtRUJVU1k7CisJYXQ5MXdkdF9taXNjZGV2LnBhcmVudCA9ICZwZGV2LT5kZXY7CisKKwly
+ZXMgPSBtaXNjX3JlZ2lzdGVyKCZhdDkxd2R0X21pc2NkZXYpOworCWlmIChyZXMpCisJCXJldHVy
+biByZXM7CisKKwkvKiBTZXQgd2F0Y2hkb2cgKi8KKwlpZiAoYXQ5MV93ZHRfc2V0dGltZW91dCh3
+ZHRfdGltZW91dCkgPT0gLUVJTlZBTCkgeworCQlwcl9pbmZvKCJhdDkxc2FtOV93ZHQ6IHRpbWVv
+dXQgbXVzdCBiZSBiZXR3ZWVuIDEgYW5kICVkLlxuIiwKKwkJCVdEVF9NQVhfVElNRSk7CisJCXJl
+dHVybiAwOworCX0KKworCXJldHVybiAwOworfQorCitzdGF0aWMgaW50IF9fZXhpdCBhdDkxd2R0
+X3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQoreworCWludCByZXM7CisKKwly
+ZXMgPSBtaXNjX2RlcmVnaXN0ZXIoJmF0OTF3ZHRfbWlzY2Rldik7CisJaWYgKCFyZXMpCisJCWF0
+OTF3ZHRfbWlzY2Rldi5wYXJlbnQgPSBOVUxMOworCisJcmV0dXJuIHJlczsKK30KKworI2lmZGVm
+IENPTkZJR19QTQorCitzdGF0aWMgaW50IGF0OTF3ZHRfc3VzcGVuZChzdHJ1Y3QgcGxhdGZvcm1f
+ZGV2aWNlICpwZGV2LCBwbV9tZXNzYWdlX3QgbWVzc2FnZSkKK3sKKwlyZXR1cm4gMDsKK30KKwor
+c3RhdGljIGludCBhdDkxd2R0X3Jlc3VtZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQor
+eworCXJldHVybiAwOworfQorCisjZWxzZQorI2RlZmluZSBhdDkxd2R0X3N1c3BlbmQJTlVMTAor
+I2RlZmluZSBhdDkxd2R0X3Jlc3VtZQlOVUxMCisjZW5kaWYKKworc3RhdGljIHN0cnVjdCBwbGF0
+Zm9ybV9kcml2ZXIgYXQ5MXdkdF9kcml2ZXIgPSB7CisJLnJlbW92ZQkJPSBfX2V4aXRfcChhdDkx
+d2R0X3JlbW92ZSksCisJLnN1c3BlbmQJPSBhdDkxd2R0X3N1c3BlbmQsCisJLnJlc3VtZQkJPSBh
+dDkxd2R0X3Jlc3VtZSwKKwkuZHJpdmVyCQk9IHsKKwkJLm5hbWUJPSAiYXQ5MV93ZHQiLAorCQku
+b3duZXIJPSBUSElTX01PRFVMRSwKKwl9LAorfTsKKworc3RhdGljIGludCBfX2luaXQgYXQ5MXNh
+bV93ZHRfaW5pdCh2b2lkKQoreworCXJldHVybiBwbGF0Zm9ybV9kcml2ZXJfcHJvYmUoJmF0OTF3
+ZHRfZHJpdmVyLCBhdDkxd2R0X3Byb2JlKTsKK30KKworc3RhdGljIHZvaWQgX19leGl0IGF0OTFz
+YW1fd2R0X2V4aXQodm9pZCkKK3sKKwlwbGF0Zm9ybV9kcml2ZXJfdW5yZWdpc3RlcigmYXQ5MXdk
+dF9kcml2ZXIpOworfQorCittb2R1bGVfaW5pdChhdDkxc2FtX3dkdF9pbml0KTsKK21vZHVsZV9l
+eGl0KGF0OTFzYW1fd2R0X2V4aXQpOworCitNT0RVTEVfQVVUSE9SKCJSZW5hdWQgQ0VSUkFUTyIp
+OworTU9EVUxFX0RFU0NSSVBUSU9OKCJXYXRjaGRvZyBkcml2ZXIgZm9yIEF0bWVsIEFUOTFTQU05
+eCBwcm9jZXNzb3JzIik7CitNT0RVTEVfTElDRU5TRSgiR1BMIik7CitNT0RVTEVfQUxJQVNfTUlT
+Q0RFVihXQVRDSERPR19NSU5PUik7CitNT0RVTEVfQUxJQVMoInBsYXRmb3JtOmF0OTFfd2R0Iik7
+Cg==
+------=_Part_31735_27902252.1212338446681--
