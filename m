@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYFAVJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYFAVMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbYFAVJD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 17:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYFAVIy
+	id S1754512AbYFAVMi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 17:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYFAVMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 17:08:54 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:49185 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbYFAVIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 17:08:53 -0400
-Date: Mon, 2 Jun 2008 00:08:29 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] coredump: binfmt_elf{,_fdpic}.c: don't abuse GFP_ATOMIC
-Message-ID: <20080601200829.GA154@tv-sign.ru>
-References: <20080601165506.GA8880@tv-sign.ru> <1212351678.6269.0.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
+	Sun, 1 Jun 2008 17:12:31 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:58489 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbYFAVMa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 17:12:30 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Rsync cannot copy to a vfat partition on kernel 2.6.25
+References: <bug-449080-176318@bugzilla.redhat.com>
+	<200805301659.m4UGx3AW001503@bz-web2.app.phx.redhat.com>
+	<20080530171432.GA32480@redhat.com>
+	<87prr36284.fsf@duaron.myhome.or.jp> <20080601203229.GA5615@ucw.cz>
+Date: Mon, 02 Jun 2008 06:12:23 +0900
+In-Reply-To: <20080601203229.GA5615@ucw.cz> (Pavel Machek's message of "Sun, 1
+	Jun 2008 22:32:29 +0200")
+Message-ID: <878wxouafc.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212351678.6269.0.camel@lappy.programming.kicks-ass.net>
-User-Agent: Mutt/1.5.11
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01, Peter Zijlstra wrote:
+Pavel Machek <pavel@ucw.cz> writes:
+
+> Hi!
+
+Hi,
+
+>> > We had a user report at https://bugzilla.redhat.com/show_bug.cgi?id=449080
+>> > that in 2.6.25, he can no longer rsync to a vfat partition, even as root.
+>> > I just reproduced this here. It gets -EPERM in the mkstemp call.
+>> > (full strace in the bug report).
+>> >
+>> > Did we change behaviour somehow in the vfat code?
+>> > 2.6.24.7 works fine apparently.
+>> 
+>> Yes, it was changed. New one allows only acceptable chmod(), and if not
+>> acceptable, it returns -EPERM. Old one allows even if it can't store the
+>> disk inode. But it may be too strict for users.
 >
-> On Sun, 2008-06-01 at 20:55 +0400, Oleg Nesterov wrote:
-> > kmalloc(GFP_ATOMIC) was needed because it was called under tasklist_lock.
-> > The code was changed to use rcu_read_lock(), we can use GFP_KERNEL.
-> 
-> Classic RCU - still frequently used - disables preemption and thus does
-> not allow us to use __GFP_WAIT.
+> Hmm... but I guess mkstemp is no longer safe with this?
+>
+> So we have choice between security hole and regression...?
 
-Ah, I'm stupid, thanks!
-
-please ignore this patch.
-
-Oleg.
-
+Maybe. But if users choose the group or world writable umask, I guess
+nobody would care the permission of temporary file, because all file is
+writable always. Um..
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
