@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbYFAHYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbYFAHbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbYFAHYY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 03:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYFAHYP
+	id S1753942AbYFAHbn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 03:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYFAHbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 03:24:15 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49791 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbYFAHYO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 03:24:14 -0400
-Date: Sun, 1 Jun 2008 08:23:43 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
-In-Reply-To: <20080531173950.c4f04028.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806010752510.24919@blonde.site>
-References: <20080530102619.GA2468@elf.ucw.cz> <Pine.LNX.4.64.0805301451020.19914@blonde.site>
- <20080530204307.GA4978@ucw.cz> <Pine.LNX.4.64.0805311925190.27293@blonde.site>
- <20080531173950.c4f04028.akpm@linux-foundation.org>
+	Sun, 1 Jun 2008 03:31:37 -0400
+Received: from aksay.ru ([80.254.111.40]:37364 "EHLO aksay.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYFAHbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 03:31:36 -0400
+Date: Sun, 1 Jun 2008 11:25:28 +0400
+From: Andrey Panin <pazke@pazke.donpac.ru>
+To: David Miller <davem@davemloft.net>
+Cc: jesper@krogh.cc, Matheos.Worku@Sun.COM, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+Message-ID: <20080601072528.GA786@pazke.donpac.ru>
+Mail-Followup-To: David Miller <davem@davemloft.net>, jesper@krogh.cc,
+	Matheos.Worku@Sun.COM, yhlu.kernel@gmail.com,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <4824D1E1.10007@sun.com> <20080509.154538.28321777.davem@davemloft.net> <4835A007.7020601@krogh.cc> <20080522.104145.193700531.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
+Content-Disposition: inline
+In-Reply-To: <20080522.104145.193700531.davem@davemloft.net>
+X-Uname: Linux 2.6.23-rc3 x86_64
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008, Andrew Morton wrote:
-> On Sat, 31 May 2008 19:44:49 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
-> > 
-> > All I can say so far is that I find the same as you do:
-> > SYNC_FILE_RANGE_WRITE (after writing) takes a significant amount of time,
-> > more than half as long as when you add in SYNC_FILE_RANGE_WAIT_AFTER too.
-> > 
-> > Which make the sync_file_range call pretty pointless: your usage seems
-> > perfectly reasonable to me, but somehow we've broken its behaviour.
-> > I'll be investigating ...
-> 
-> It will block on disk queue fullness - sysrq-W will tell.
 
-Ah, thank you.  What a disappointment, though it's understandable.
-Doesn't that very severely limit the usefulness of the system call?
+--ibTvN161/egqYuK8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I admit the flag isn't called SYNC_FILE_RANGE_WRITE_WITHOUT_WAITING,
-but I don't suppose Pavel and I are the only ones misled by it.
+On 143, 05 22, 2008 at 10:41:45 -0700, David Miller wrote:
+> From: Jesper Krogh <jesper@krogh.cc>
+> Date: Thu, 22 May 2008 18:32:07 +0200
+>=20
+> > Does this mean that I can expect every 10G card to have this limitation
+> > under Linux?
+>=20
+> For now, yes.  The transmit path itself in the generic network
+> device layer is where the serialization comes from.
 
-Hugh
+BTW does this problem affects bonded interfaces ?
+
+> I'm travelling now for 3 weeks so I won't be able to work on
+> this stuff until I get back.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
+
+--=20
+Andrey Panin		| Linux and UNIX system administrator
+pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
+
+--ibTvN161/egqYuK8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIQk7oIWZCBzwS8mkRAhDiAJ42bLiTUpsMP4qvh7l1FOupVYHKDwCgy+el
+KajYYDoPgUCb7jsYEX6vSNs=
+=CeWm
+-----END PGP SIGNATURE-----
+
+--ibTvN161/egqYuK8--
