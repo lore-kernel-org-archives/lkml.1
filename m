@@ -1,70 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751755AbYFATRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYFATZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751755AbYFATRe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 15:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYFATRY
+	id S1753390AbYFATZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 15:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYFATZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 15:17:24 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38518 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbYFATRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 15:17:23 -0400
-Message-ID: <4842F5A8.9020708@garzik.org>
-Date: Sun, 01 Jun 2008 15:16:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 1 Jun 2008 15:25:13 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:42985 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbYFATZL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 15:25:11 -0400
+Message-ID: <4842F857.9060309@keyaccess.nl>
+Date: Sun, 01 Jun 2008 21:28:23 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-References: <20080508161008.59361de5@appleyard> <20080527030854.GC7515@mit.edu> <20080527143202.4bab5bf0@appleyard> <20080527225926.GE6843@mit.edu> <20080527163251.04054a74@appleyard> <20080531080015.GG5405@ucw.cz>
-In-Reply-To: <20080531080015.GG5405@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [patch 00/15] PNP: convert resource options to unified dynamic
+ list, v1
+References: <20080530224853.976744229@ldl.fc.hp.com>
+In-Reply-To: <20080530224853.976744229@ldl.fc.hp.com>
+Content-Type: multipart/mixed;
+ boundary="------------020704090009030109060604"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
+This is a multi-part message in MIME format.
+--------------020704090009030109060604
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 31-05-08 00:48, Bjorn Helgaas wrote:
+
+> This patch series converts the PNP resource option structures
+> to a unified linked list.  This preserves resource order, which
+> is important for some devices.  There's more detail in the
+> comments for the last patch.
 > 
->>>> As far as I know the patch has gone nowhere.  I believe that 
->>>> Jeff wanted something more flexible than the module parameter that
->>>> I provided to override the BIOS options.  I am not working on this,
->>>> I figured he had a pretty firm idea what he wanted so he was better
->>>> equipped to write the patch.
->>> Thanks Kristen,
->>>
->>> Can you say which laptops you had tested this on where it saved power?
->>> (Did you test any Thinkpads, in particular?)  I'm wondering if it's
->>> worth trying to forward port your patch as a private mod to my kernel;
->>> 30 to 40 minutes of extra battery life is nothing to sneeze at!
->>>
->>> 						- Ted
->>>
->> I tested this on an Intel mobile software development platform 
->> with a newer mobile ICH - the power savings were measured at the actual 
->> component (via probes on the ICH), so I did not measure the power 
->> savings at the wall socket, although I would expect the power savings
->> to be even greater on the other side of the power supply.  So in short,
->> yes, I think it's worth it to give it a try - the patch is pretty
->> unintrusive, so it should be that difficult a port to do.
+> Any comments would be welcome.
 > 
-> Can you repost the patch? I believe we should push it and only add
-> complex enable/disable functionality if someone needs it...
+> This depends on some patches that are in -mm, but not yet
+> upstream.  In mmotm, these would probably go after
+> pnp-dont-sort-by-type-in-sys-resources.patch
 
-If you are talking about SATA -- incorrect.
+Will look at this in more detail but as first testing feedback -- I need 
+this on top.
 
-The patch deals with policy, and the user MUST have the ability to 
-control this stuff.  Otherwise you create a situation where the user 
-might be denied hotplug use in valid cases, or similar negative situations.
+Both ISAPnP and PnPBIOS for some or other reason set the priority to 
+0x100 | prio after which that 0x100 is immediately masked of again in 
+pnp_build_option() leaving just the prio. Your new scheme reserves 16 
+bits for the priority though meaning the 0x100 survives causing it to be 
+considered "invalid" by at least pnp_option_priority_name() for example.
 
-	Jeff
+There cannot be any currently valid reason for the 0x100 it seems given 
+that it's immediately masked of again in pnp_build_option() so let's 
+just get rid of it...
 
+--------------020704090009030109060604
+Content-Type: text/plain;
+ name="pnp_priority.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pnp_priority.diff"
 
+diff --git a/drivers/pnp/isapnp/core.c b/drivers/pnp/isapnp/core.c
+index d4c6b19..7556887 100644
+--- a/drivers/pnp/isapnp/core.c
++++ b/drivers/pnp/isapnp/core.c
+@@ -648,10 +648,10 @@ static int __init isapnp_create_device(struct pnp_card *card,
+ 		case _STAG_STARTDEP:
+ 			if (size > 1)
+ 				goto __skip;
+-			priority = 0x100 | PNP_RES_PRIORITY_ACCEPTABLE;
++			priority = PNP_RES_PRIORITY_ACCEPTABLE;
+ 			if (size > 0) {
+ 				isapnp_peek(tmp, size);
+-				priority = 0x100 | tmp[0];
++				priority = tmp[0];
+ 				size = 0;
+ 			}
+ 			option_flags = pnp_dependent_option(dev, priority);
+diff --git a/drivers/pnp/pnpbios/rsparser.c b/drivers/pnp/pnpbios/rsparser.c
+index e0bea09..a6c9539 100644
+--- a/drivers/pnp/pnpbios/rsparser.c
++++ b/drivers/pnp/pnpbios/rsparser.c
+@@ -393,9 +393,9 @@ pnpbios_parse_resource_option_data(unsigned char *p, unsigned char *end,
+ 		case SMALL_TAG_STARTDEP:
+ 			if (len > 1)
+ 				goto len_err;
+-			priority = 0x100 | PNP_RES_PRIORITY_ACCEPTABLE;
++			priority = PNP_RES_PRIORITY_ACCEPTABLE;
+ 			if (len > 0)
+-				priority = 0x100 | p[1];
++				priority = p[1];
+ 			option_flags = pnp_dependent_option(dev, priority);
+ 			break;
+ 
 
+--------------020704090009030109060604--
