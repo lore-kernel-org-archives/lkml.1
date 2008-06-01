@@ -1,111 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbYFAIhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbYFAIht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757083AbYFAIhW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 04:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYFAIgv
+	id S1757261AbYFAIht (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 04:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYFAIhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 04:36:51 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:38179 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbYFAIgu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 04:36:50 -0400
-Date: Sun, 1 Jun 2008 11:36:48 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: David Howells <dhowells@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       akpm@linux-foundation.org, mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-In-Reply-To: <20080601082427.GC25429@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0806011135350.11966@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0805281646470.27125@sbz-30.cs.Helsinki.FI>
- <20080528153648.GA27783@linux-sh.org> <483DBA85.2060502@cs.helsinki.fi>
- <Pine.LNX.4.64.0805281325260.932@schroedinger.engr.sgi.com>
- <483DBFC3.1070108@cs.helsinki.fi> <29611.1212066517@redhat.com>
- <Pine.LNX.4.64.0805291620250.5415@sbz-30.cs.helsinki.fi>
- <20080529211207.GB13663@linux-sh.org> <484256AA.3000709@cs.helsinki.fi>
- <Pine.LNX.4.64.0806011119420.11749@sbz-30.cs.Helsinki.FI>
- <20080601082427.GC25429@linux-sh.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 04:37:37 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:60264 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752464AbYFAIhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 04:37:35 -0400
+Date: Sun, 1 Jun 2008 10:37:01 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: forcedeth: lockdep warning on ethtool -s
+Message-ID: <20080601083700.GA3036@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ayaz Abdulla <aabdulla@nvidia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jun 2008, Paul Mundt wrote:
-> This still needs to be virt_to_head_page() I think.
-> 
-> I don't have my nommu boards at home, so I'll test at the office tomorow
-> morning and let you know.
+Hi,
 
-Yes, I messed that up. Thanks a lot for your help, Paul!
+After enabling CONFIG_LOCKDEP and CONFIG_PROVE_LOCKING I get the
+following warning when ethtool -s is first called on one of the
+forcedeth ports:
 
-		Pekka
+=================================
+[ INFO: inconsistent lock state ]
+2.6.26-rc4 #28
+---------------------------------
+inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+ethtool/1985 [HC0[0]:SC0[1]:HE1:SE0] takes:
+ (&np->lock){++..}, at: [<ffffffffa000c5fd>] nv_set_settings+0xc8/0x3de [forcedeth]
+{in-hardirq-W} state was registered at:
+  [<ffffffffffffffff>] 0xffffffffffffffff
+irq event stamp: 3606
+hardirqs last  enabled at (3605): [<ffffffff8068106f>] _spin_unlock_irqrestore+0x3f/0x68
+hardirqs last disabled at (3604): [<ffffffff80680d38>] _spin_lock_irqsave+0x13/0x46
+softirqs last  enabled at (3534): [<ffffffff80246ba5>] __do_softirq+0xbc/0xc5
+softirqs last disabled at (3606): [<ffffffff80680b33>] _spin_lock_bh+0x11/0x41
 
-[PATCH] nommu: kobjsize fix
-From: Christoph Lameter <clameter@sgi.com>
+other info that might help us debug this:
+2 locks held by ethtool/1985:
+ #0:  (rtnl_mutex){--..}, at: [<ffffffff80596072>] rtnl_lock+0x12/0x14
+ #1:  (_xmit_ETHER){-+..}, at: [<ffffffffa000c5e8>] nv_set_settings+0xb3/0x3de [forcedeth]
 
-The kobjsize() function is broken with SLOB and SLUB. As summarized by Paul
-Mundt:
+stack backtrace:
+Pid: 1985, comm: ethtool Not tainted 2.6.26-rc4 #28
 
-  The page->index bits look like they are being used for determining compound
-  order, which is _completely_ bogus, and only happens to "work" in a few
-  cases.  Christoph and I have repeatedly asked for someone to explain what the
-  hell those tests are there for, as right now they not only look completely
-  bogus, but they also stop us from booting on SLOB.  So far no one has
-  provided any input on why those page->index BUG_ON()'s have any right to
-  exist.
+Call Trace:
+ [<ffffffff8025f190>] print_usage_bug+0x162/0x173
+ [<ffffffff8025fa8b>] mark_lock+0x231/0x41f
+ [<ffffffff802607cf>] __lock_acquire+0x4e7/0xcac
+ [<ffffffff8025fe64>] ? trace_hardirqs_on+0xf1/0x115
+ [<ffffffff80272c3a>] ? disable_irq_nosync+0x6f/0x7b
+ [<ffffffff80261375>] lock_acquire+0x55/0x6e
+ [<ffffffffa000c5fd>] ? :forcedeth:nv_set_settings+0xc8/0x3de
+ [<ffffffff80680b15>] _spin_lock+0x2f/0x3c
+ [<ffffffffa000c5fd>] :forcedeth:nv_set_settings+0xc8/0x3de
+ [<ffffffff8058f8bb>] dev_ethtool+0x186/0xea3
+ [<ffffffff8067f446>] ? mutex_lock_nested+0x243/0x275
+ [<ffffffff8025df2b>] ? debug_mutex_free_waiter+0x46/0x4a
+ [<ffffffff8067f469>] ? mutex_lock_nested+0x266/0x275
+ [<ffffffff8058e1ce>] dev_ioctl+0x4eb/0x600
+ [<ffffffff8068106f>] ? _spin_unlock_irqrestore+0x3f/0x68
+ [<ffffffff80580f91>] sock_ioctl+0x1f5/0x202
+ [<ffffffff802a322e>] vfs_ioctl+0x2a/0x77
+ [<ffffffff802a34d6>] do_vfs_ioctl+0x25b/0x270
+ [<ffffffff806807b6>] ? trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff802a352d>] sys_ioctl+0x42/0x65
+ [<ffffffff8021fffb>] system_call_after_swapgs+0x7b/0x80
 
-  So while having 2 out of 3 SLAB allocators in a bootable state might seem
-  like progress, I'd rather see kobjsize() fixed correctly. Even my initial
-  patches worked for all 3.
 
-  If no one can speak up to defend those bits, they should be killed off before
-  2.6.26. Whether this is done in combination with your patch or Christoph's
-  patch or whatever else doesn't matter.
+I think this is caused by the following snippet in nv_set_settings:
 
-You can find the discussion here:
+	netif_carrier_off(dev);
+	if (netif_running(dev)) {
+		nv_disable_irq(dev);
+		netif_tx_lock_bh(dev);
+		spin_lock(&np->lock);
+		/* stop engines */
+		nv_stop_rxtx(dev);
+		spin_unlock(&np->lock);
+		netif_tx_unlock_bh(dev);
+	}
 
-  http://lkml.org/lkml/2008/5/22/223
 
-Reported-by: Paul Mundt <lethal@linux-sh.org>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
+Because of nv_disable_irq this is probably not really a problem
+though (I guess) and replacing the spin_lock with spin_lock_irqsave
+could keep interrupts disabled for a longer period of time because
+of delays in nv_stop_rx and nv_stop_tx.
 
-diff --git a/mm/nommu.c b/mm/nommu.c
-index dca93fc..935887b 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -109,16 +109,23 @@ unsigned int kobjsize(const void *objp)
- 	 * If the object we have should not have ksize performed on it,
- 	 * return size of 0
- 	 */
--	if (!objp || (unsigned long)objp >= memory_end || !((page = virt_to_page(objp))))
-+	if (!objp)
-+		return 0;
-+
-+	if ((unsigned long)objp >= memory_end)
-+		return 0;
-+
-+	page = virt_to_head_page(objp);
-+	if (!page)
- 		return 0;
- 
- 	if (PageSlab(page))
- 		return ksize(objp);
- 
--	BUG_ON(page->index < 0);
--	BUG_ON(page->index >= MAX_ORDER);
-+	if (WARN_ON(!PageCompound(page)))
-+		return 0;
- 
--	return (PAGE_SIZE << page->index);
-+	return PAGE_SIZE << compound_order(page);
- }
- 
- /*
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
