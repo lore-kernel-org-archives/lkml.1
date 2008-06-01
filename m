@@ -1,345 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbYFAJ45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYFAKGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756919AbYFAJ45 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 05:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYFAJ4s
+	id S1755916AbYFAKGT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 06:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYFAKGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 05:56:48 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:52509 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752225AbYFAJ4r (ORCPT
+	Sun, 1 Jun 2008 06:06:10 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:38132 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752213AbYFAKGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 05:56:47 -0400
-Date: Sun, 1 Jun 2008 11:56:40 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k libc5 regression
-In-Reply-To: <20080601014824.528173bb.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806011155080.5559@anakin>
-References: <Pine.LNX.4.64.0805262226280.11902@anakin>
- <Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
- <20080601005338.3affe880.akpm@linux-foundation.org> <Pine.LNX.4.64.0806011035420.5559@anakin>
- <20080601014824.528173bb.akpm@linux-foundation.org>
+	Sun, 1 Jun 2008 06:06:09 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: PATCH] net: b44.c fix sleeping-with-spinlock-helt during resume
+Date: Sun, 1 Jun 2008 12:03:40 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20080531201130.0244dc29@infradead.org>
+In-Reply-To: <20080531201130.0244dc29@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806011203.40437.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jun 2008, Andrew Morton wrote:
-> On Sun, 1 Jun 2008 10:37:59 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > I shall merge this fix into my tree (y'know - the one where memory
-> > > management patches are hosted) and I'll get it into 2.6.26 and shall
-> > > offer it to the -stable team.  This will cause me to get collisions
-> > > with the duplicated patch in linux-next but fortunately it is small. 
-> > > This time.
-> > 
-> > So what's the appropriate way to handle this?
+On Sunday 01 June 2008 05:11:30 Arjan van de Ven wrote:
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: [PATCH] net: b44.c fix sleeping-with-spinlock-helt during resume
+> CC: Michael Buesch <mb@bu3sch.de>
 > 
-> Well at least please reply letting people know what's happening with it.
+> The b44.c driver calls b44_chip_reset() from the resume path,
+> with the device spinlock held.
+> Unfortunately, b44_chip_reset() calls ssb_pcicore_dev_irqvecs_enable()
+> which is a sleeping function (and calls might_sleep), if and only if
+> the device hasn't been enabled yet.
 > 
-> Ask me to merge it and remind me that it's needed in -stable.  Or just
-> send the thing to Linus and -stable immediately.  Copy me and I'll do
-> the usual merge-it-in-case-linus-misses-it trick.
+> Not having this hardware, the safest solution seems to be to enable
+> the irqvec before taking the spinlock...
 > 
-> > I should have kept it in the m68k series after NEXT_PATCHES_END, so
-> > nobody sees it exists?
+> http://www.kerneloops.org/search.php?search=ssb_pcicore_dev_irqvecs_enable
 > 
-> That would work, as long as we know that the patch is firmly on the
-> mainline and -stable paths.
+> Reported-by: www.kerneloops.org
+> Signed-off-by: Arjan van de Ven
+> ---
+>  drivers/net/b44.c |   12 ++++++++++--
+>  1 files changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+> index 59dce6a..6028129 100644
+> --- a/drivers/net/b44.c
+> +++ b/drivers/net/b44.c
+> @@ -1278,6 +1278,7 @@ static void b44_chip_reset(struct b44 *bp, int reset_kind)
+>  		bw32(bp, B44_DMARX_CTRL, 0);
+>  		bp->rx_prod = bp->rx_cons = 0;
+>  	} else
+> +		/* this function sleeps! */
+>  		ssb_pcicore_dev_irqvecs_enable(&sdev->bus->pcicore, sdev);
+>  
+>  	ssb_device_enable(bp->sdev, 0);
+> @@ -1374,7 +1375,7 @@ static int b44_set_mac_addr(struct net_device *dev, void *p)
+>  }
+>  
+>  /* Called at device open time to get the chip ready for
+> - * packet processing.  Invoked with bp->lock held.
+> + * packet processing.  Sometimes invoked with bp->lock held.
+>   */
+>  static void __b44_set_rx_mode(struct net_device *);
+>  static void b44_init_hw(struct b44 *bp, int reset_kind)
+> @@ -2288,6 +2289,13 @@ static int b44_resume(struct ssb_device *sdev)
+>  		return rc;
+>  	}
+>  
+> +	/*
+> +	 * If the device isn't enabled yet, we need to do so before taking
+> +	 * the spinlock, since the enablinging function sleeps.
+> +	 */
+> +	if (!ssb_device_is_enabled(bp->sdev))
+> +		ssb_pcicore_dev_irqvecs_enable(&sdev->bus->pcicore, sdev);
+> +
+>  	spin_lock_irq(&bp->lock);
+>  
+>  	b44_init_rings(bp);
 
-OK.
+I'm not sure how this is supposed to fix the bug.
+I think you will call ssb_pcicore_dev_irqvecs_enable() twice this way.
+The call in b44_chip_reset() will still trigger.
 
-As you've been faster than me, I assume you will take care of it now anyway?
+Besides that, this only is a theoretical issue, as the function does
+only sleep on a PCI-E device. But as b44 PCI-E devices don't exist,
+it will never sleep. So I'd rather replace the might_sleep() with a
+might_sleep_if() call.
+Something like the following:
 
-Here's an additional one... Can you add this one too?
+Index: wireless-testing/drivers/ssb/driver_pcicore.c
+===================================================================
+--- wireless-testing.orig/drivers/ssb/driver_pcicore.c	2008-04-23 16:06:56.000000000 +0200
++++ wireless-testing/drivers/ssb/driver_pcicore.c	2008-06-01 12:02:33.000000000 +0200
+@@ -537,12 +537,12 @@ int ssb_pcicore_dev_irqvecs_enable(struc
+ 	int err = 0;
+ 	u32 tmp;
+ 
+-	might_sleep();
+-
+ 	if (!pdev)
+ 		goto out;
+ 	bus = pdev->bus;
+ 
++	might_sleep_if(pdev->id.coreid != SSB_DEV_PCI);
++
+ 	/* Enable interrupts for this device. */
+ 	if (bus->host_pci &&
+ 	    ((pdev->id.revision >= 6) || (pdev->id.coreid == SSB_DEV_PCIE))) {
 
-Thx!
 
-Subject: [PATCH] m68k: enable CONFIG_COMPAT_BRK by default
 
-As some m68k machines have plenty of libc5 binaries in active use, enable
-CONFIG_COMPAT_BRK by default.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/configs/amiga_defconfig    |    6 +++---
- arch/m68k/configs/apollo_defconfig   |    6 +++---
- arch/m68k/configs/atari_defconfig    |    6 +++---
- arch/m68k/configs/bvme6000_defconfig |    6 +++---
- arch/m68k/configs/hp300_defconfig    |    6 +++---
- arch/m68k/configs/mac_defconfig      |    6 +++---
- arch/m68k/configs/multi_defconfig    |    6 +++---
- arch/m68k/configs/mvme147_defconfig  |    6 +++---
- arch/m68k/configs/mvme16x_defconfig  |    6 +++---
- arch/m68k/configs/q40_defconfig      |    6 +++---
- arch/m68k/configs/sun3_defconfig     |    6 +++---
- arch/m68k/configs/sun3x_defconfig    |    6 +++---
- 12 files changed, 36 insertions(+), 36 deletions(-)
-
---- a/arch/m68k/configs/amiga_defconfig
-+++ b/arch/m68k/configs/amiga_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:41 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/apollo_defconfig
-+++ b/arch/m68k/configs/apollo_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:42 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/atari_defconfig
-+++ b/arch/m68k/configs/atari_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:43 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/bvme6000_defconfig
-+++ b/arch/m68k/configs/bvme6000_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:45 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/hp300_defconfig
-+++ b/arch/m68k/configs/hp300_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:46 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/mac_defconfig
-+++ b/arch/m68k/configs/mac_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:47 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/multi_defconfig
-+++ b/arch/m68k/configs/multi_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:42:31 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/mvme147_defconfig
-+++ b/arch/m68k/configs/mvme147_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:49 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/mvme16x_defconfig
-+++ b/arch/m68k/configs/mvme16x_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:50 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/q40_defconfig
-+++ b/arch/m68k/configs/q40_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:51 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/sun3_defconfig
-+++ b/arch/m68k/configs/sun3_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:53 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
---- a/arch/m68k/configs/sun3x_defconfig
-+++ b/arch/m68k/configs/sun3x_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.26-rc2
--# Sun May 18 14:44:54 2008
-+# Linux kernel version: 2.6.26-rc4
-+# Wed May 28 22:47:35 2008
- #
- CONFIG_M68K=y
- CONFIG_MMU=y
-@@ -59,7 +59,7 @@ CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
--# CONFIG_COMPAT_BRK is not set
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Greetings Michael.
