@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYFAVTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbYFAVV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbYFAVTy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 17:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbYFAVTr
+	id S1755162AbYFAVV5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 17:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYFAVVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 17:19:47 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:42388 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbYFAVTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 17:19:47 -0400
-Date: Sun, 1 Jun 2008 22:19:44 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: =?iso-8859-15?Q?Simon_Holm_Th=F8gersen?= <odie@cs.aau.dk>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock
- held
-In-Reply-To: <1212347789.2580.9.camel@odie.local>
-Message-ID: <alpine.DEB.0.82.0806012218560.5760@skynet.skynet.ie>
-References: <1212347789.2580.9.camel@odie.local>
+	Sun, 1 Jun 2008 17:21:49 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:39911 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbYFAVVs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 17:21:48 -0400
+Message-ID: <484313B1.7000701@keyaccess.nl>
+Date: Sun, 01 Jun 2008 23:25:05 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [patch 05/15] PNP: introduce pnp_irq_mask_t typedef
+References: <20080530224853.976744229@ldl.fc.hp.com> <20080530224932.360968516@ldl.fc.hp.com>
+In-Reply-To: <20080530224932.360968516@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 31-05-08 00:48, Bjorn Helgaas wrote:
 
-> I can easily trigger an endless stream of the following three lines
+> This adds a typedef for the IRQ bitmap, which should cause
+> no functional change, but will make it easier to pass a
+> pointer to a bitmap to pnp_register_irq_resource().
 > 
-> [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held,
-> held  0 owner eb0908c0 eb0908c0
-> [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held,
-> held  0 owner eb0908c0 eb0908c0
-> [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held,
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Its a userspace problem not a kernel side one, granted we might throttle 
-the messages. Are you running KDE compositing on radeon or something 
-likethat?
+Acked-by: Rene Herman <rene.herman@gmail.com>
 
-Dave.
+Rene.
