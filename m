@@ -1,60 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbYFAWnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbYFAWsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238AbYFAWnc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 18:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYFAWnW
+	id S1754147AbYFAWsr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 18:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYFAWsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 18:43:22 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:37704 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752462AbYFAWnW (ORCPT
+	Sun, 1 Jun 2008 18:48:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37684 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751961AbYFAWsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 18:43:22 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: =?iso-8859-1?Q?Ren=E9?= Scharfe <rene.scharfe@lsrfire.ath.cx>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       geert@linux-m68k.org
-Subject: Re: [PATCH] msdos fs: remove unsettable atari option
-References: <1211717062.5782.16.camel@ubuntu>
-	<87ve12s849.fsf@duaron.myhome.or.jp>
-	<20080601221035.GA9107@nineveh.local>
-Date: Mon, 02 Jun 2008 07:43:15 +0900
-In-Reply-To: <20080601221035.GA9107@nineveh.local> (Joseph Fannin's message of
-	"Sun, 1 Jun 2008 18:10:37 -0400")
-Message-ID: <87zlq4rd30.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Sun, 1 Jun 2008 18:48:36 -0400
+Date: Sun, 1 Jun 2008 15:47:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: mtk.manpages@gmail.com, Hugh Dickins <hugh@veritas.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+Message-Id: <20080601154736.2e9f5905.akpm@linux-foundation.org>
+In-Reply-To: <20080601222202.GA2255@elf.ucw.cz>
+References: <20080530102619.GA2468@elf.ucw.cz>
+	<Pine.LNX.4.64.0805301451020.19914@blonde.site>
+	<20080530204307.GA4978@ucw.cz>
+	<Pine.LNX.4.64.0805311925190.27293@blonde.site>
+	<20080531173950.c4f04028.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0806010752510.24919@blonde.site>
+	<20080601011501.199af80c.akpm@linux-foundation.org>
+	<20080601114008.GC16843@elf.ucw.cz>
+	<20080601133727.4e62ae55.akpm@linux-foundation.org>
+	<20080601222202.GA2255@elf.ucw.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joseph Fannin <jfannin@gmail.com> writes:
+On Mon, 2 Jun 2008 00:22:02 +0200 Pavel Machek <pavel@suse.cz> wrote:
 
-> On Mon, May 26, 2008 at 12:42:29AM +0900, OGAWA Hirofumi wrote:
->> René Scharfe <rene.scharfe@lsrfire.ath.cx> writes:
->>
->> > It has been impossible to set the option 'atari' of the MSDOS filesystem
->> > for several years.  Since nobody seems to have missed it, let's remove
->> > its remains.
->> >
->> > Signed-off-by: Rene Scharfe <rene.scharfe@lsrfire.ath.cx>
->> > ---
->>
->> Looks good to me. Thanks.
->>
->> Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
->
-> Geert Uytterhoeven has a patch in his POSTPONED queue that is supposed
-> to fix Atari FAT.  I can't speak to whether it works or why it's
-> postponed, but it seems to compile.
+> Hi!
+> 
+> > > > I expect major users of this system call will be applications which do
+> > > > small-sized overwrites into large files, mainly databases.  That is,
+> > > > once the application developers discover its existence.  I'm still
+> > > > getting expressions of wonder from people who I tell about the
+> > > > five-year-old fadvise().
+> > > 
+> > > Hey, you have one user now, its called s2disk. But for this call to be
+> > > useful, we'd need asynchronous variant... is there such thing?
+> > 
+> > Well if you're asking the syscall to shove more data into the block
+> > layer than it can concurrently handle, sure, the block layer will
+> > block.  It's tunable...
+> 
+> No, no, I don't want to overload block layer. All I want is ...
+> 
+> > > Okay, I can fork and do the call from another process, but...
+> > 
+> > I sense a strangeness.  What are you actually trying to do with all of this?
+> 
+> Okay, so I have around 400MB of data, I want it compressed, optionally
+> encrypted and written to partition.
+> 
+> Now, if I do it "naturally", I do writes, followed by fsync.
+> 
+> That's bad, because kernel does not start write out immediately, and
+> we waste time with idle disk. (If data compress really well, or
+> encryption is off, this is significant).
+> 
+> So we improve on this, by doing sync_file_range(SYNC_FILE_RANGE_WRITE)
+> periodically. That keeps the disk busy, but occassionaly blocks the
+> cpu... wasting time (which mostly hurts in compression+encryption
+> case).
 
-I see. Although I don't know the patch, I'd like to add this part to
-Geert's patch if possible. And when the patch can be posted, we can
-re-add this part again.
+yep.  That's another use of sync_file_range(): to allow smart userspace
+to optimise the kernel's IO scheduling decisions.
 
-Geert, what do you think?
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> So... how can I keep _both_ cpu and disk busy?
+
+pthread_create() ;)
+
+How about this:
+
+- Add a new SYNC_FILE_RANGE_NON_BLOCKING
+
+- If userspace set that flag, turn on writeback_control.nonblocking
+  in __filemap_fdatawrite_range().
+
+- test it a lot.
+
+It will be userspace's responsibility to avoid burning huge amounts of
+CPU repeatedly calling sync_file_range() and having it not actually write
+anything.
+
+
