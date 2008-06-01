@@ -1,156 +1,352 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYFAQQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755037AbYFAQQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546AbYFAQQj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 12:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYFAQQS
+	id S1755037AbYFAQQx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 12:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYFAQQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 12:16:18 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:55927 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbYFAQQQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 12:16:16 -0400
-Date: Sun, 1 Jun 2008 18:15:10 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20080601161510.GA26854@enneenne.com>
-MIME-Version: 1.0
+	Sun, 1 Jun 2008 12:16:27 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34256 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753830AbYFAQQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 12:16:25 -0400
+Date: Sun, 1 Jun 2008 09:16:23 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+       Joel Becker <joel.becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [git patches] Ocfs2 fixes
+Message-ID: <20080601161623.GC28100@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: LinuxPPS low-level IRQs timestamps & ldisc
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Here's a few Ocfs2 fixes that are ready for upstream. The 'user_stack'
+rename in particular fixes some compile errors which folks have hit, due to
+clashing symbols.
+	--Mark
 
-I write to both of you since my questions are related. :)
+Please pull from 'upstream-linus' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git upstream-linus
 
-My last modifications to LinuxPPS are focused on adding a PPS ldisc
-and a low-level IRQs timestamps recording.
+to receive the following updates:
 
-First I added a new dcd_change() ldisc method which can be used as
-follow:
+ fs/ocfs2/cluster/tcp.c          |   28 +++++++++-------------------
+ fs/ocfs2/cluster/tcp.h          |   12 ++++++------
+ fs/ocfs2/cluster/tcp_internal.h |   32 ++++++++++++++++++++++++++++++++
+ fs/ocfs2/dlm/dlmdebug.h         |   12 ++++++------
+ fs/ocfs2/stack_user.c           |   34 +++++++++++++++++-----------------
+ 5 files changed, 70 insertions(+), 48 deletions(-)
 
-static void pps_tty_dcd_change(struct tty_struct *tty, unsigned int status)
-{
-       int id = (int) tty->disc_data;
-       struct timespec __ts;
-       struct pps_ktime ts;
+Joel Becker (1):
+      ocfs2: Rename 'user_stack' plugin structure to 'ocfs2_user_plugin'
 
-       /* First of all we get the time stamp... */
-       getnstimeofday(&__ts);
+Sunil Mushran (3):
+      ocfs2/net: Silence build warnings
+      ocfs2/dlm: Silence build warnings
+      ocfs2/net: Silence build warnings
 
-       /* ... and translate it to PPS time data struct */
-       ts.sec = __ts.tv_sec;
-       ts.nsec = __ts.tv_nsec;
-
-       /* Now do the PPS event report */
-       pps_event(id, &ts,
-                       status ? PPS_CAPTUREASSERT : PPS_CAPTURECLEAR, tty);
-
-       pr_debug("[STDev] PPS %s at %lu on source #%d\n",
-                       status ? "assert" : "clear", jiffies, id);
-}
-
-However this solution gives very low precision timestamps so that's
-why I propose to add the following code to register IRQ timestamps as
-soon as possible (here the code for x86_32 architecture):
-
-diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
-index d3fde94..a3b8457 100644
---- a/arch/x86/kernel/irq_32.c
-+++ b/arch/x86/kernel/irq_32.c
-@@ -15,6 +15,7 @@
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
-+#include <linux/pps.h>
+diff --git a/fs/ocfs2/cluster/tcp.c b/fs/ocfs2/cluster/tcp.c
+index 1e44ad1..a27d615 100644
+--- a/fs/ocfs2/cluster/tcp.c
++++ b/fs/ocfs2/cluster/tcp.c
+@@ -142,53 +142,43 @@ static void o2net_idle_timer(unsigned long data);
+ static void o2net_sc_postpone_idle(struct o2net_sock_container *sc);
+ static void o2net_sc_reset_idle_timer(struct o2net_sock_container *sc);
  
- #include <asm/apic.h>
- #include <asm/uaccess.h>
-@@ -25,6 +26,11 @@ EXPORT_PER_CPU_SYMBOL(irq_stat);
- DEFINE_PER_CPU(struct pt_regs *, irq_regs);
- EXPORT_PER_CPU_SYMBOL(irq_regs);
+-static void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+-			   u32 msgkey, struct task_struct *task, u8 node)
+-{
+ #ifdef CONFIG_DEBUG_FS
++void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
++		    u32 msgkey, struct task_struct *task, u8 node)
++{
+ 	INIT_LIST_HEAD(&nst->st_net_debug_item);
+ 	nst->st_task = task;
+ 	nst->st_msg_type = msgtype;
+ 	nst->st_msg_key = msgkey;
+ 	nst->st_node = node;
+-#endif
+ }
  
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+struct pps_ktime pps_irq_ts[NR_IRQS];
-+EXPORT_SYMBOL(pps_irq_ts);
-+#endif
+-static void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
++void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
+ {
+-#ifdef CONFIG_DEBUG_FS
+ 	do_gettimeofday(&nst->st_sock_time);
+-#endif
+ }
+ 
+-static void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
++void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
+ {
+-#ifdef CONFIG_DEBUG_FS
+ 	do_gettimeofday(&nst->st_send_time);
+-#endif
+ }
+ 
+-static void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
++void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
+ {
+-#ifdef CONFIG_DEBUG_FS
+ 	do_gettimeofday(&nst->st_status_time);
+-#endif
+ }
+ 
+-static void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
++void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
+ 					 struct o2net_sock_container *sc)
+ {
+-#ifdef CONFIG_DEBUG_FS
+ 	nst->st_sc = sc;
+-#endif
+ }
+ 
+-static void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
++void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
+ {
+-#ifdef CONFIG_DEBUG_FS
+ 	nst->st_id = msg_id;
+-#endif
+ }
++#endif /* CONFIG_DEBUG_FS */
+ 
+ static inline int o2net_reconnect_delay(void)
+ {
+diff --git a/fs/ocfs2/cluster/tcp.h b/fs/ocfs2/cluster/tcp.h
+index a705d5d..fd6179e 100644
+--- a/fs/ocfs2/cluster/tcp.h
++++ b/fs/ocfs2/cluster/tcp.h
+@@ -128,23 +128,23 @@ void o2net_debug_del_nst(struct o2net_send_tracking *nst);
+ void o2net_debug_add_sc(struct o2net_sock_container *sc);
+ void o2net_debug_del_sc(struct o2net_sock_container *sc);
+ #else
+-static int o2net_debugfs_init(void)
++static inline int o2net_debugfs_init(void)
+ {
+ 	return 0;
+ }
+-static void o2net_debugfs_exit(void)
++static inline void o2net_debugfs_exit(void)
+ {
+ }
+-static void o2net_debug_add_nst(struct o2net_send_tracking *nst)
++static inline void o2net_debug_add_nst(struct o2net_send_tracking *nst)
+ {
+ }
+-static void o2net_debug_del_nst(struct o2net_send_tracking *nst)
++static inline void o2net_debug_del_nst(struct o2net_send_tracking *nst)
+ {
+ }
+-static void o2net_debug_add_sc(struct o2net_sock_container *sc)
++static inline void o2net_debug_add_sc(struct o2net_sock_container *sc)
+ {
+ }
+-static void o2net_debug_del_sc(struct o2net_sock_container *sc)
++static inline void o2net_debug_del_sc(struct o2net_sock_container *sc)
+ {
+ }
+ #endif	/* CONFIG_DEBUG_FS */
+diff --git a/fs/ocfs2/cluster/tcp_internal.h b/fs/ocfs2/cluster/tcp_internal.h
+index 8d58cfe..18307ff 100644
+--- a/fs/ocfs2/cluster/tcp_internal.h
++++ b/fs/ocfs2/cluster/tcp_internal.h
+@@ -224,10 +224,42 @@ struct o2net_send_tracking {
+ 	struct timeval			st_send_time;
+ 	struct timeval			st_status_time;
+ };
 +
- /*
-  * 'what should we do if we get a hw irq event on an illegal vector'.
-  * each architecture has to answer this themselves.
-@@ -76,6 +82,12 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
-        union irq_ctx *curctx, *irqctx;
-        u32 *isp;
- #endif
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+       struct timespec __ts;
++void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
++		    u32 msgkey, struct task_struct *task, u8 node);
++void o2net_set_nst_sock_time(struct o2net_send_tracking *nst);
++void o2net_set_nst_send_time(struct o2net_send_tracking *nst);
++void o2net_set_nst_status_time(struct o2net_send_tracking *nst);
++void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
++				  struct o2net_sock_container *sc);
++void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id);
 +
-+       /* Get IRQ timestamps as soon as possible for the PPS layer */
-+       getnstimeofday(&__ts);
-+#endif
- 
-        if (unlikely((unsigned)irq >= NR_IRQS)) {
-                printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
-@@ -83,6 +95,12 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
-                BUG();
-        }
- 
-+#ifdef CONFIG_PPS_IRQ_EVENTS
-+       /* Then, after sanity check, store the IRQ timestamp */
-+       pps_irq_ts[irq].sec = __ts.tv_sec;
-+       pps_irq_ts[irq].nsec = __ts.tv_nsec;
-+#endif
+ #else
+ struct o2net_send_tracking {
+ 	u32	dummy;
+ };
 +
-        old_regs = set_irq_regs(regs);
-        irq_enter();
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
-
-This allow the following modifications to the dcd_change() method:
-
-static void pps_tty_dcd_change(struct tty_struct *tty, unsigned int irq,
-                               unsigned int status)
-{
-       int id = (int) tty->disc_data;
-
-       pps_event(id, &pps_irq_ts[irq],
-                       status ? PPS_CAPTUREASSERT : PPS_CAPTURECLEAR, tty);
-
-       pr_debug("[IRQev] PPS %s at %lu on source #%d\n",
-                       status ? "assert" : "clear", jiffies, id);
-}
-
-Note that in this case I need also the "irq" parameter.
-
-This solution gives very high timestamps precision! Better that
-before! :D
-
-What do you think about this solution? More precisely:
-
-1) The low-level IRQ patch can be acceptable?
-
-2) The new dcd_change() method is well implemented? Can I add the
-"irq" parameter or I can find it somewhere?
-
-Thanks a lot for your suggestions,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
++static inline void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
++				  u32 msgkey, struct task_struct *task, u8 node)
++{
++}
++static inline void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
++{
++}
++static inline void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
++{
++}
++static inline void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
++{
++}
++static inline void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
++						struct o2net_sock_container *sc)
++{
++}
++static inline void o2net_set_nst_msg_id(struct o2net_send_tracking *nst,
++					u32 msg_id)
++{
++}
+ #endif	/* CONFIG_DEBUG_FS */
+ 
+ #endif /* O2CLUSTER_TCP_INTERNAL_H */
+diff --git a/fs/ocfs2/dlm/dlmdebug.h b/fs/ocfs2/dlm/dlmdebug.h
+index d34a62a..8c686d2 100644
+--- a/fs/ocfs2/dlm/dlmdebug.h
++++ b/fs/ocfs2/dlm/dlmdebug.h
+@@ -60,25 +60,25 @@ void dlm_destroy_debugfs_root(void);
+ 
+ #else
+ 
+-static int dlm_debug_init(struct dlm_ctxt *dlm)
++static inline int dlm_debug_init(struct dlm_ctxt *dlm)
+ {
+ 	return 0;
+ }
+-static void dlm_debug_shutdown(struct dlm_ctxt *dlm)
++static inline void dlm_debug_shutdown(struct dlm_ctxt *dlm)
+ {
+ }
+-static int dlm_create_debugfs_subroot(struct dlm_ctxt *dlm)
++static inline int dlm_create_debugfs_subroot(struct dlm_ctxt *dlm)
+ {
+ 	return 0;
+ }
+-static void dlm_destroy_debugfs_subroot(struct dlm_ctxt *dlm)
++static inline void dlm_destroy_debugfs_subroot(struct dlm_ctxt *dlm)
+ {
+ }
+-static int dlm_create_debugfs_root(void)
++static inline int dlm_create_debugfs_root(void)
+ {
+ 	return 0;
+ }
+-static void dlm_destroy_debugfs_root(void)
++static inline void dlm_destroy_debugfs_root(void)
+ {
+ }
+ 
+diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+index b503772..6b97d11 100644
+--- a/fs/ocfs2/stack_user.c
++++ b/fs/ocfs2/stack_user.c
+@@ -61,7 +61,7 @@
+  * negotiated by the client.  The client negotiates based on the maximum
+  * version advertised in /sys/fs/ocfs2/max_locking_protocol.  The major
+  * number from the "SETV" message must match
+- * user_stack.sp_proto->lp_max_version.pv_major, and the minor number
++ * ocfs2_user_plugin.sp_proto->lp_max_version.pv_major, and the minor number
+  * must be less than or equal to ...->lp_max_version.pv_minor.
+  *
+  * Once this information has been set, mounts will be allowed.  From this
+@@ -153,7 +153,7 @@ union ocfs2_control_message {
+ 	struct ocfs2_control_message_down	u_down;
+ };
+ 
+-static struct ocfs2_stack_plugin user_stack;
++static struct ocfs2_stack_plugin ocfs2_user_plugin;
+ 
+ static atomic_t ocfs2_control_opened;
+ static int ocfs2_control_this_node = -1;
+@@ -399,7 +399,7 @@ static int ocfs2_control_do_setversion_msg(struct file *file,
+ 	char *ptr = NULL;
+ 	struct ocfs2_control_private *p = file->private_data;
+ 	struct ocfs2_protocol_version *max =
+-		&user_stack.sp_proto->lp_max_version;
++		&ocfs2_user_plugin.sp_proto->lp_max_version;
+ 
+ 	if (ocfs2_control_get_handshake_state(file) !=
+ 	    OCFS2_CONTROL_HANDSHAKE_PROTOCOL)
+@@ -680,7 +680,7 @@ static void fsdlm_lock_ast_wrapper(void *astarg)
+ 	struct dlm_lksb *lksb = fsdlm_astarg_to_lksb(astarg);
+ 	int status = lksb->sb_status;
+ 
+-	BUG_ON(user_stack.sp_proto == NULL);
++	BUG_ON(ocfs2_user_plugin.sp_proto == NULL);
+ 
+ 	/*
+ 	 * For now we're punting on the issue of other non-standard errors
+@@ -693,16 +693,16 @@ static void fsdlm_lock_ast_wrapper(void *astarg)
+ 	 */
+ 
+ 	if (status == -DLM_EUNLOCK || status == -DLM_ECANCEL)
+-		user_stack.sp_proto->lp_unlock_ast(astarg, 0);
++		ocfs2_user_plugin.sp_proto->lp_unlock_ast(astarg, 0);
+ 	else
+-		user_stack.sp_proto->lp_lock_ast(astarg);
++		ocfs2_user_plugin.sp_proto->lp_lock_ast(astarg);
+ }
+ 
+ static void fsdlm_blocking_ast_wrapper(void *astarg, int level)
+ {
+-	BUG_ON(user_stack.sp_proto == NULL);
++	BUG_ON(ocfs2_user_plugin.sp_proto == NULL);
+ 
+-	user_stack.sp_proto->lp_blocking_ast(astarg, level);
++	ocfs2_user_plugin.sp_proto->lp_blocking_ast(astarg, level);
+ }
+ 
+ static int user_dlm_lock(struct ocfs2_cluster_connection *conn,
+@@ -838,7 +838,7 @@ static int user_cluster_this_node(unsigned int *this_node)
+ 	return 0;
+ }
+ 
+-static struct ocfs2_stack_operations user_stack_ops = {
++static struct ocfs2_stack_operations ocfs2_user_plugin_ops = {
+ 	.connect	= user_cluster_connect,
+ 	.disconnect	= user_cluster_disconnect,
+ 	.this_node	= user_cluster_this_node,
+@@ -849,20 +849,20 @@ static struct ocfs2_stack_operations user_stack_ops = {
+ 	.dump_lksb	= user_dlm_dump_lksb,
+ };
+ 
+-static struct ocfs2_stack_plugin user_stack = {
++static struct ocfs2_stack_plugin ocfs2_user_plugin = {
+ 	.sp_name	= "user",
+-	.sp_ops		= &user_stack_ops,
++	.sp_ops		= &ocfs2_user_plugin_ops,
+ 	.sp_owner	= THIS_MODULE,
+ };
+ 
+ 
+-static int __init user_stack_init(void)
++static int __init ocfs2_user_plugin_init(void)
+ {
+ 	int rc;
+ 
+ 	rc = ocfs2_control_init();
+ 	if (!rc) {
+-		rc = ocfs2_stack_glue_register(&user_stack);
++		rc = ocfs2_stack_glue_register(&ocfs2_user_plugin);
+ 		if (rc)
+ 			ocfs2_control_exit();
+ 	}
+@@ -870,14 +870,14 @@ static int __init user_stack_init(void)
+ 	return rc;
+ }
+ 
+-static void __exit user_stack_exit(void)
++static void __exit ocfs2_user_plugin_exit(void)
+ {
+-	ocfs2_stack_glue_unregister(&user_stack);
++	ocfs2_stack_glue_unregister(&ocfs2_user_plugin);
+ 	ocfs2_control_exit();
+ }
+ 
+ MODULE_AUTHOR("Oracle");
+ MODULE_DESCRIPTION("ocfs2 driver for userspace cluster stacks");
+ MODULE_LICENSE("GPL");
+-module_init(user_stack_init);
+-module_exit(user_stack_exit);
++module_init(ocfs2_user_plugin_init);
++module_exit(ocfs2_user_plugin_exit);
