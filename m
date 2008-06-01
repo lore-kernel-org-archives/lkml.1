@@ -1,153 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYFAT0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYFATho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYFAT0W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 15:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYFAT0P
+	id S1752792AbYFATho (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 15:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbYFAThf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 15:26:15 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56467 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751294AbYFAT0O (ORCPT
+	Sun, 1 Jun 2008 15:37:35 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:14541 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751294AbYFAThe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 15:26:14 -0400
-Date: Sun, 1 Jun 2008 15:26:13 -0400
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
-Message-ID: <20080601192613.GC16164@csclub.uwaterloo.ca>
-References: <20080601161510.GA26854@enneenne.com>
+	Sun, 1 Jun 2008 15:37:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Z12MhtPjOMIbLZDMQRPI6okBhVcRlJhWAKfxt/lIyYM0BYFyGrF6RxFOv8NAbaxLolkKI7KKY0RFRq3UvI+eIltyJNux1fiAD9ohP1EfSDlmizDz3ZRHx8UW88uDNlWWlhPjCY/h808w2N55RyJZJFwcIdmY75OpVdXB+ItAYSQ=
+Message-ID: <dd18b0c30806011237v129990ddud066b603bf66cfcd@mail.gmail.com>
+Date: Sun, 1 Jun 2008 19:37:33 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: [Bug #10825] appletouch after wakeup
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200806012029.09618.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080601161510.GA26854@enneenne.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
+	 <dd18b0c30806011020i5f878f77qff504ffbe351b835@mail.gmail.com>
+	 <dd18b0c30806011125o1053171aged053f9a35f0de5a@mail.gmail.com>
+	 <200806012029.09618.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 06:15:10PM +0200, Rodolfo Giometti wrote:
-> Hello,
-> 
-> I write to both of you since my questions are related. :)
-> 
-> My last modifications to LinuxPPS are focused on adding a PPS ldisc
-> and a low-level IRQs timestamps recording.
-> 
-> First I added a new dcd_change() ldisc method which can be used as
-> follow:
-> 
-> static void pps_tty_dcd_change(struct tty_struct *tty, unsigned int status)
-> {
->        int id = (int) tty->disc_data;
->        struct timespec __ts;
->        struct pps_ktime ts;
-> 
->        /* First of all we get the time stamp... */
->        getnstimeofday(&__ts);
-> 
->        /* ... and translate it to PPS time data struct */
->        ts.sec = __ts.tv_sec;
->        ts.nsec = __ts.tv_nsec;
-> 
->        /* Now do the PPS event report */
->        pps_event(id, &ts,
->                        status ? PPS_CAPTUREASSERT : PPS_CAPTURECLEAR, tty);
-> 
->        pr_debug("[STDev] PPS %s at %lu on source #%d\n",
->                        status ? "assert" : "clear", jiffies, id);
-> }
-> 
-> However this solution gives very low precision timestamps so that's
-> why I propose to add the following code to register IRQ timestamps as
-> soon as possible (here the code for x86_32 architecture):
-> 
-> diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
-> index d3fde94..a3b8457 100644
-> --- a/arch/x86/kernel/irq_32.c
-> +++ b/arch/x86/kernel/irq_32.c
-> @@ -15,6 +15,7 @@
->  #include <linux/notifier.h>
->  #include <linux/cpu.h>
->  #include <linux/delay.h>
-> +#include <linux/pps.h>
->  
->  #include <asm/apic.h>
->  #include <asm/uaccess.h>
-> @@ -25,6 +26,11 @@ EXPORT_PER_CPU_SYMBOL(irq_stat);
->  DEFINE_PER_CPU(struct pt_regs *, irq_regs);
->  EXPORT_PER_CPU_SYMBOL(irq_regs);
->  
-> +#ifdef CONFIG_PPS_IRQ_EVENTS
-> +struct pps_ktime pps_irq_ts[NR_IRQS];
-> +EXPORT_SYMBOL(pps_irq_ts);
-> +#endif
-> +
->  /*
->   * 'what should we do if we get a hw irq event on an illegal vector'.
->   * each architecture has to answer this themselves.
-> @@ -76,6 +82,12 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
->         union irq_ctx *curctx, *irqctx;
->         u32 *isp;
->  #endif
-> +#ifdef CONFIG_PPS_IRQ_EVENTS
-> +       struct timespec __ts;
-> +
-> +       /* Get IRQ timestamps as soon as possible for the PPS layer */
-> +       getnstimeofday(&__ts);
-> +#endif
+On Sun, Jun 1, 2008 at 6:29 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> Am Sonntag, 1. Juni 2008 20:25:03 schrieb Justin Mattock:
+>> On Sun, Jun 1, 2008 at 5:20 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+>> > On Sun, Jun 1, 2008 at 10:40 AM, Oliver Neukum <oliver@neukum.org> wrote:
+>> >> Am Sonntag, 1. Juni 2008 01:21:44 schrieb Justin Mattock:
+>> >>>  { USB_DEVICE(0x05ac, 0x021a), .driver_info = USB_QUIRK_RESET_RESUME },
+>> >>
+>> >> This one.
+>> >>
+>> >>        Regards
+>> >>                Oliver
+>> >>
+>> >
+>> > Cool, I'll give it a go.
+>> > regards;
+>> >
+>> > --
+>> > Justin P. Mattock
+>> >
+>>
+>> gripes; It seems appletouch is still tripping out upon wakeup.
+>> regards;
+>>
+>
+> Please also apply the patch from the following link:
+> https://bugzilla.novell.com/attachment.cgi?id=213908
+>
+>        Regards
+>                Oliver
+>
+>
 
-How expensive is this call?  Would it be cheaper to check whether this
-IRQ has anyone requesting the time info before doing it?  I suspect most
-systems will have at most one IRQ that actually needs this done, so does
-doing it for all IRQs make sense?
+Alright; I'll let you know what happens.
+regards;
 
->         if (unlikely((unsigned)irq >= NR_IRQS)) {
->                 printk(KERN_EMERG "%s: cannot handle IRQ %d\n",
-> @@ -83,6 +95,12 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
->                 BUG();
->         }
->  
-> +#ifdef CONFIG_PPS_IRQ_EVENTS
-> +       /* Then, after sanity check, store the IRQ timestamp */
-> +       pps_irq_ts[irq].sec = __ts.tv_sec;
-> +       pps_irq_ts[irq].nsec = __ts.tv_nsec;
-> +#endif
-> +
->         old_regs = set_irq_regs(regs);
->         irq_enter();
->  #ifdef CONFIG_DEBUG_STACKOVERFLOW
-> 
-> This allow the following modifications to the dcd_change() method:
-> 
-> static void pps_tty_dcd_change(struct tty_struct *tty, unsigned int irq,
->                                unsigned int status)
-> {
->        int id = (int) tty->disc_data;
-> 
->        pps_event(id, &pps_irq_ts[irq],
->                        status ? PPS_CAPTUREASSERT : PPS_CAPTURECLEAR, tty);
-> 
->        pr_debug("[IRQev] PPS %s at %lu on source #%d\n",
->                        status ? "assert" : "clear", jiffies, id);
-> }
-> 
-> Note that in this case I need also the "irq" parameter.
-> 
-> This solution gives very high timestamps precision! Better that
-> before! :D
-> 
-> What do you think about this solution? More precisely:
-> 
-> 1) The low-level IRQ patch can be acceptable?
-> 
-> 2) The new dcd_change() method is well implemented? Can I add the
-> "irq" parameter or I can find it somewhere?
-> 
-> Thanks a lot for your suggestions,
-
-I certainly like high precision time stamps.  Very useful for ntp.
 
 -- 
-Len Sorensen
+Justin P. Mattock
