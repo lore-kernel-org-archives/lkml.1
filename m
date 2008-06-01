@@ -1,169 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbYFAQEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbYFAQJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbYFAQEa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 12:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbYFAQEU
+	id S1753566AbYFAQJR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 12:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYFAQJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 12:04:20 -0400
-Received: from mail.issp.bas.bg ([195.96.236.10]:43825 "EHLO mail.issp.bas.bg"
+	Sun, 1 Jun 2008 12:09:03 -0400
+Received: from mx1.suse.de ([195.135.220.2]:33628 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752889AbYFAQEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 12:04:16 -0400
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH][resubmit] x86: enable preemption in delay
-Date: Sun, 1 Jun 2008 19:01:23 +0300
-User-Agent: KMail/1.9.9
-Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
-       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-References: <200805252108.25011.mitov@issp.bas.bg> <alpine.LFD.1.10.0805260006110.3295@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0805260006110.3295@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1751881AbYFAQJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 12:09:02 -0400
+Date: Sun, 1 Jun 2008 18:09:00 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Akinobu@suse.de, "Mita <akinobu.mita"@gmail.com
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 05/23] isdn: use simple_read_from_buffer
+Message-ID: <20080601160900.GA6831@pingi.kke.suse.de>
+Mail-Followup-To: Akinobu@suse.de, "Mita <akinobu.mita"@gmail.com,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20080601150017.176540188@gmail.com> <20080601150114.022504880@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806011901.23619.mitov@issp.bas.bg>
+In-Reply-To: <20080601150114.022504880@gmail.com>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Mon, Jun 02, 2008 at 12:00:22AM +0900, Akinobu@suse.de wrote:
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-This is a resubmit of the patch proposed by Ingo and me
-few month ago:
+Acked-by: Karsten Keil <kkeil@suse.de>
 
-http://lkml.org/lkml/2007/11/20/343
+> Cc: Karsten Keil <kkeil@suse.de>
+> ---
+>  drivers/isdn/hysdn/hysdn_procconf.c |   27 +++++++--------------------
+>  1 file changed, 7 insertions(+), 20 deletions(-)
+> 
+> Index: 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
+> ===================================================================
+> --- 2.6-git.orig/drivers/isdn/hysdn/hysdn_procconf.c
+> +++ 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
+> @@ -207,30 +207,17 @@ hysdn_conf_write(struct file *file, cons
+>  /* read conf file -> output card info data */
+>  /*******************************************/
+>  static ssize_t
+> -hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t * off)
+> +hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t *off)
+>  {
+>  	char *cp;
+> -	int i;
+>  
+> -	if (file->f_mode & FMODE_READ) {
+> -		if (!(cp = file->private_data))
+> -			return (-EFAULT);	/* should never happen */
+> -		i = strlen(cp);	/* get total string length */
+> -		if (*off < i) {
+> -			/* still bytes to transfer */
+> -			cp += *off;	/* point to desired data offset */
+> -			i -= *off;	/* remaining length */
+> -			if (i > count)
+> -				i = count;	/* limit length to transfer */
+> -			if (copy_to_user(buf, cp, i))
+> -				return (-EFAULT);	/* copy error */
+> -			*off += i;	/* adjust offset */
+> -		} else
+> -			return (0);
+> -	} else
+> -		return (-EPERM);	/* no permission to read */
+> +	if (!(file->f_mode & FMODE_READ))
+> +		return -EPERM;	/* no permission to read */
+>  
+> -	return (i);
+> +	if (!(cp = file->private_data))
+> +		return -EFAULT;	/* should never happen */
+> +
+> +	return simple_read_from_buffer(buf, count, off, cp, strlen(cp));
+>  }				/* hysdn_conf_read */
+>  
+>  /******************/
+> 
+> -- 
 
-It was in -mm for a while and then removed due to a move into
-the mainline, but it never appeared in it.
-
-As recently a new discussion started on the subject I decided
-to resubmit it again.
-
-Now it is against 2.6.25.4, but as far as there are no changes 
-in the modified files it should apply to 2.6.26-rc4 too.
-
-Comments/critics are wellcome.
-
-Marin Mitov
-
-
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-=========================================
---- a/arch/x86/lib/delay_32.c	2007-11-18 08:14:05.000000000 +0200
-+++ b/arch/x86/lib/delay_32.c	2007-11-20 19:03:52.000000000 +0200
-@@ -40,18 +40,42 @@
- 		:"0" (loops));
- }
- 
--/* TSC based delay: */
-+/* TSC based delay:
-+ *
-+ * We are careful about preemption as TSC's are per-CPU.
-+ */
- static void delay_tsc(unsigned long loops)
- {
--	unsigned long bclock, now;
-+	unsigned prev, prev_1, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
-+
-+	preempt_disable();
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--	preempt_disable();		/* TSC's are per-cpu */
--	rdtscl(bclock);
- 	do {
- 		rep_nop();
-+
-+		left -= now - prev;
-+		prev = now;
-+
-+		preempt_disable();
-+		rdtscl(prev_1);
-+		cpu = smp_processor_id();
- 		rdtscl(now);
--	} while ((now-bclock) < loops);
--	preempt_enable();
-+		preempt_enable();
-+
-+		if (prev_cpu != cpu) {
-+			/*
-+			 * We have migrated, forget prev_cpu's tsc reading
-+			 */
-+			prev = prev_1;
-+			prev_cpu = cpu;
-+		}
-+	} while ((now-prev) < left);
- }
- 
- /*
---- a/arch/x86/lib/delay_64.c	2007-11-18 08:14:40.000000000 +0200
-+++ b/arch/x86/lib/delay_64.c	2007-11-20 19:47:29.000000000 +0200
-@@ -28,18 +28,42 @@
- 	return 0;
- }
- 
-+/* TSC based delay:
-+ *
-+ * We are careful about preemption as TSC's are per-CPU.
-+ */
- void __delay(unsigned long loops)
- {
--	unsigned bclock, now;
-+	unsigned prev, prev_1, now;
-+	unsigned left = loops;
-+	unsigned prev_cpu, cpu;
-+
-+	preempt_disable();
-+	rdtscl(prev);
-+	prev_cpu = smp_processor_id();
-+	preempt_enable();
-+	now = prev;
- 
--	preempt_disable();		/* TSC's are pre-cpu */
--	rdtscl(bclock);
- 	do {
--		rep_nop(); 
-+		rep_nop();
-+
-+		left -= now - prev;
-+		prev = now;
-+
-+		preempt_disable();
-+		rdtscl(prev_1);
-+		cpu = smp_processor_id();
- 		rdtscl(now);
--	}
--	while ((now-bclock) < loops);
--	preempt_enable();
-+		preempt_enable();
-+
-+		if (prev_cpu != cpu) {
-+			/*
-+			 * We have migrated, forget prev_cpu's tsc reading
-+			 */
-+			 prev = prev_1;
-+			 prev_cpu = cpu;
-+		}
-+	} while ((now-prev) < left);
- }
- EXPORT_SYMBOL(__delay);
- 
--
-
-
-
+-- 
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
