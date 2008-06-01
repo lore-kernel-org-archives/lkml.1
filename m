@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYFAPHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbYFAPJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbYFAPHl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 11:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYFAPHb
+	id S1753849AbYFAPJS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 11:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYFAPJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 11:07:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35795 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbYFAPHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 11:07:30 -0400
-Date: Sun, 1 Jun 2008 17:07:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: linux-next: Tree for May 30
-Message-ID: <20080601150710.GB27843@elte.hu>
-References: <20080530181901.8268f317.sfr@canb.auug.org.au> <1212316424.3253.8.camel@dhcppc1>
+	Sun, 1 Jun 2008 11:09:08 -0400
+Received: from smtp-01.mandic.com.br ([200.225.81.132]:40816 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751703AbYFAPJH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 11:09:07 -0400
+Message-ID: <4842BB89.5090908@diamondcut.com.br>
+Date: Sun, 01 Jun 2008 12:08:57 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212316424.3253.8.camel@dhcppc1>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Pavel Machek <pavel@ucw.cz>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [Bug 10797] Something is consuming power after shutdown
+References: <483AB443.6020807@diamondcut.com.br> <20080531074433.GE5405@ucw.cz>
+In-Reply-To: <20080531074433.GE5405@ucw.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Thomas Meyer <thomas@m3y3r.de> wrote:
-
-> Am Freitag, den 30.05.2008, 18:19 +1000 schrieb Stephen Rothwell:
-> > Hi all,
-> > 
-> > Changes since next-20080529:
+Pavel Machek wrote:
+> Renato S. Yamane wrote:
+> ...
+>> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
+>> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
+>
+> Try to find out which component eats power, eg. by opening the machine
+> searching for heat.
 > 
-> Last next kernel booting for me is next-20080527. I didn't try 
-> next-20080528, but next-20080529 and next-20080530 fail to boot.
-> 
-> Git told me to revert a63ef28f149c113740c7e429072351078a8821c6 (x86: 
-> fix bootmem crash).
-> 
-> After reverting above commit, next-20080530 boots again.
-> 
-> Basicly I'm running Fedora 9 with the linux-next kernel.
-> 
-> See attached screenshot of boot error.
+> (And yes, your hw is broken; on pc it is traditionaly hw
+> responsibility to power machine down.)
 
-hm, that commit is gone in latest tip - does tip/master boot fine for 
-you? It's:
+OK, I try do this but I think this is very difficult because demand
+power is very low and is not enought to do hot some component. But I
+will try.
 
-   http://people.redhat.com/mingo/tip.git/README
+I don't think that my hardware is broked because I don't have this kind
+of problem on Kernel <=2.6.22 or in other OS.
 
-that commit was an interim fix that got removed meanwhile and replaced 
-with the real fixes.
+And other user have the same problem (cc'ed on Bug #10797)
 
-	Ingo
+Best regards,
+Renato S. Yamane
