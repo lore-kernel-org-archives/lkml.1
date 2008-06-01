@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYFAViS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYFAVld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755165AbYFAViS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 17:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYFAViF
+	id S1754889AbYFAVld (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 17:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYFAVlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 17:38:05 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:52273 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751367AbYFAViE (ORCPT
+	Sun, 1 Jun 2008 17:41:24 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:45132 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651AbYFAVlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 17:38:04 -0400
-Message-ID: <48431780.80603@keyaccess.nl>
-Date: Sun, 01 Jun 2008 23:41:20 +0200
+	Sun, 1 Jun 2008 17:41:23 -0400
+Message-ID: <48431848.6050102@keyaccess.nl>
+Date: Sun, 01 Jun 2008 23:44:40 +0200
 From: Rene Herman <rene.herman@keyaccess.nl>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
@@ -22,9 +22,9 @@ CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
        Matthieu Castet <castet.matthieu@free.fr>,
        Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
        Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [patch 07/15] PNP: improve resource assignment debug
-References: <20080530224853.976744229@ldl.fc.hp.com> <20080530224932.771945049@ldl.fc.hp.com>
-In-Reply-To: <20080530224932.771945049@ldl.fc.hp.com>
+Subject: Re: [patch 08/15] PNP: in debug resource dump, make empty list obvious
+References: <20080530224853.976744229@ldl.fc.hp.com> <20080530224932.974122201@ldl.fc.hp.com>
+In-Reply-To: <20080530224932.974122201@ldl.fc.hp.com>
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -1.0 (-)
@@ -34,12 +34,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 31-05-08 00:49, Bjorn Helgaas wrote:
 
-> When we fail to assign an I/O or MEM resource, include the min/max
-> in the debug output to help match it with the options.
+> If the resource list is empty, say that explicitly.  Previously,
+> it was confusing because often the heading was followed by zero
+> resource lines, then some "add resource" lines from auto-assignment,
+> so the "add" lines looked like current resources.
 > 
 > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
 Acked-by: Rene Herman <rene.herman@gmail.com>
 
 Rene.
-
