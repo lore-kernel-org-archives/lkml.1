@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbYFAX2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYFAX3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbYFAX2z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 19:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbYFAX11
+	id S1756985AbYFAX3W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 19:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbYFAX1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 19:27:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:2864 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756082AbYFAX10 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 19:27:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=lXpDI6I0mVklL0d5mciqIuf0Og1i2EYqMfqBWPFU3XY9S2lZAFFdrNRXyez3v+xzeuDqerziVkSI5XMwteDRmc+21YHIEdKmLjPN9fKYcMZ94wXK8Vx7tSEsjsvTkjsJEG5I4WpX2EudClU0wB06MGVOJTmgPLI2uFQ2Wo4WQtU=
-Message-Id: <20080601231511.232641309@gmail.com>
-References: <20080601231329.223608711@gmail.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 02 Jun 2008 08:13:34 +0900
-From: akinobu.mita@gmail.com
+	Sun, 1 Jun 2008 19:27:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43684 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756130AbYFAX12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 19:27:28 -0400
+Date: Sun, 1 Jun 2008 23:27:27 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
 To: linux-kernel@vger.kernel.org
-Cc: Karsten Keil <kkeil@suse.de>
-Subject: [patch -v2 05/23] isdn: use simple_read_from_buffer
-Content-Disposition: inline; filename=isdn-hysdn-use-simple-read-from-buffer.patch
+Subject: Linux 2.4.36.5
+Message-ID: <20080601232727.GA11427@hera.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Sun, 01 Jun 2008 23:27:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Acked-by: Karsten Keil <kkeil@suse.de>
----
- drivers/isdn/hysdn/hysdn_procconf.c |   27 +++++++--------------------
- 1 file changed, 7 insertions(+), 20 deletions(-)
 
-Index: 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
-===================================================================
---- 2.6-git.orig/drivers/isdn/hysdn/hysdn_procconf.c
-+++ 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
-@@ -207,30 +207,17 @@ hysdn_conf_write(struct file *file, cons
- /* read conf file -> output card info data */
- /*******************************************/
- static ssize_t
--hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t * off)
-+hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t *off)
- {
- 	char *cp;
--	int i;
- 
--	if (file->f_mode & FMODE_READ) {
--		if (!(cp = file->private_data))
--			return (-EFAULT);	/* should never happen */
--		i = strlen(cp);	/* get total string length */
--		if (*off < i) {
--			/* still bytes to transfer */
--			cp += *off;	/* point to desired data offset */
--			i -= *off;	/* remaining length */
--			if (i > count)
--				i = count;	/* limit length to transfer */
--			if (copy_to_user(buf, cp, i))
--				return (-EFAULT);	/* copy error */
--			*off += i;	/* adjust offset */
--		} else
--			return (0);
--	} else
--		return (-EPERM);	/* no permission to read */
-+	if (!(file->f_mode & FMODE_READ))
-+		return -EPERM;	/* no permission to read */
- 
--	return (i);
-+	if (!(cp = file->private_data))
-+		return -EFAULT;	/* should never happen */
-+
-+	return simple_read_from_buffer(buf, count, off, cp, strlen(cp));
- }				/* hysdn_conf_read */
- 
- /******************/
+I've just released Linux 2.4.36.5.
 
--- 
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.36.5.bz2
+  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.36.5
+
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.36.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.36.y.git
+
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.36.y.git
+
+It fixes 3 medium vulnerabilities :
+  - sit: Add missing kfree_skb() on pskb_may_pull() failure (CVE-2008-2136)
+  - sparc: Fix mmap VA span checking (CVE-2008-2137)
+  - old buffer overflow in moxa driver (CVE-2005-0504)
+
+The remaining patches are minor backports and fixes.
+Given the nature of the vulnerabilities, it is recommended to upgrade.
+
+Regards,
+Willy
+--
+
+Summary of changes from v2.4.36.4 to v2.4.36.5
+============================================
+
+David S. Miller (2):
+      sit: Add missing kfree_skb() on pskb_may_pull() failure (CVE-2008-2136)
+      sparc: Fix mmap VA span checking (CVE-2008-2137)
+
+Gunnar Larisch (1):
+      3c980-TX needs EXTRA_PREAMBLE
+
+Li Zefan (1):
+      ACPI: check a return value correctly in acpi_power_get_context()
+
+Roel Kluin (1):
+      wireless, airo: waitbusy() won't delay
+
+Steve Rosenbluth (2):
+      signal.h: use an explicit cast to silent compiler warnings
+      fix build error with some flavours of gcc 2.95.3
+
+Willy Tarreau (1):
+      Change VERSION to 2.4.36.5
+
+dann frazier (1):
+      old buffer overflow in moxa driver (CVE-2005-0504)
+
