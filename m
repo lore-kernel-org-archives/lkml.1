@@ -1,110 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbYFAHyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYFAIBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbYFAHyT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 03:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYFAHyH
+	id S1754926AbYFAIBH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 04:01:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbYFAIAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 03:54:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59228 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751323AbYFAHyF (ORCPT
+	Sun, 1 Jun 2008 04:00:55 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52493 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbYFAIAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 03:54:05 -0400
-Date: Sun, 1 Jun 2008 00:53:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k libc5 regression
-Message-Id: <20080601005338.3affe880.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
-References: <Pine.LNX.4.64.0805262226280.11902@anakin>
-	<Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 04:00:54 -0400
+Date: Sun, 1 Jun 2008 10:00:52 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.25.4-rt4
+In-Reply-To: <1212076754.24785.18.camel@localhost.localdomain>
+Message-ID: <alpine.LNX.1.10.0806010940040.4055@fbirervta.pbzchgretzou.qr>
+References: <1212076754.24785.18.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 May 2008 00:19:32 +0200 (CEST) Jiri Kosina <jkosina@suse.cz> wrote:
 
-> On Mon, 26 May 2008, Geert Uytterhoeven wrote:
-> 
-> > Recently I noticed a regression when running an old libc5 binary
-> > (amiga-lilo) on m68k. It fails with the error message:
-> 
-> Hmm, libc5 is known to make broken assumptions about brk location, that's 
-> why we introduced CONFIG_COMPAT_BRK, do you have that option turned on?
-> 
-> > So I bisected it to:
-> > commit 4cc6028d4040f95cdb590a87db478b42b8be0508
-> > Author: Jiri Kosina <jkosina@suse.cz>
-> > Date:   Wed Feb 6 22:39:44 2008 +0100
-> >     brk: check the lower bound properly
-> 
-> Indeed, this should take CONFIG_COMPAT_BRK into account. Does the patch 
-> below fix it? (assuming that you have CONFIG_COMPAT_BRK=y):
-> 
-> 
-> 
-> From: Jiri Kosina <jkosina@suse.cz>
-> 
-> brk: check lower bound properly
-> 
-> The check in sys_brk() on minimum value the brk might have must take 
-> CONFIG_COMPAT_BRK setting into account. When this option is turned on 
-> (i.e. we support ancient legacy binaries, e.g. libc5-linked stuff), the 
-> lower bound on brk value is mm->end_code, otherwise the brk start is 
-> allowed to be arbitrarily shifted.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index fac6633..834118b 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -245,10 +245,16 @@ asmlinkage unsigned long sys_brk(unsigned long brk)
->  	unsigned long rlim, retval;
->  	unsigned long newbrk, oldbrk;
->  	struct mm_struct *mm = current->mm;
-> +	unsigned long min_brk;
->  
->  	down_write(&mm->mmap_sem);
->  
-> -	if (brk < mm->start_brk)
-> +#ifdef CONFIG_COMPAT_BRK
-> +	min_brk = mm->end_code;
-> +#else
-> +	min_brk = mm->start_brk;
-> +#endif
-> +	if (brk < min_brk)
->  		goto out;
->  
+On Thursday 2008-05-29 17:59, Steven Rostedt wrote:
 
-OK, we have a problem here.
+>We are pleased to announce the 2.6.25.4-rt4 tree,[...]
 
-Somebody has gone and checked this patch into their tree and it now
-appears in linux-next.
+I am getting tons of the following two stack traces (see below)
+during normal operation. 2.6.25.4-rt4, compiled for i586+SMP,
+running on i686+UP. syslogd even gets so far as to say "suppressed 134
+messages", so it's really a lot. I am tempted to just disable
+CONFIG_DEBUG_PREEMPT because otherwise it seems to work.
 
-I do not know how to work out how this patch got into linux-next.
 
-It's not in any of the trees which I pull so I guess that person has
-been shuffling URLs without telling me.
+kernel: BUG: using smp_processor_id() in preemptible [00000000] code: xfssyncd/491
+l: caller is __rcu_preempt_unboost+0x20/0xd0
+l: Pid: 491, comm: xfssyncd Tainted: G        N 2.6.25.4-jen67-rt #1
+l:  [<c0214b4a>] debug_smp_processor_id+0xba/0xc0
+l:  [<c016a7b0>] __rcu_preempt_unboost+0x20/0xd0
+l:  [<c020dd3c>] ? radix_tree_lookup_slot+0x3c/0xf0
+l:  [<c0169e42>] __rcu_read_unlock+0x92/0xa0
+l:  [<c016e8d7>] find_get_page+0x87/0x120
+l:  [<c016ecae>] find_lock_page+0x1e/0x70
+l:  [<c01710d4>] find_or_create_page+0x34/0xc0
+l:  [<f0970352>] _xfs_buf_lookup_pages+0x142/0x290 [xfs]
+l:  [<c01411e5>] ? init_waitqueue_head+0x15/0x30
+l:  [<f097172a>] xfs_buf_get_flags+0x6a/0x140 [xfs]
+l:  [<f097181d>] xfs_buf_read_flags+0x1d/0x90 [xfs]
+l:  [<f0963f1b>] xfs_trans_read_buf+0x4b/0x340 [xfs]
+l:  [<f094b680>] xfs_itobp+0x70/0x1e0 [xfs]
+l:  [<f094e2d1>] xfs_iflush+0xe1/0x480 [xfs]
+l:  [<f0967801>] xfs_finish_reclaim+0x101/0x190 [xfs]
+l:  [<f0967949>] xfs_finish_reclaim_all+0xb9/0xd0 [xfs]
+l:  [<f0965aaf>] xfs_syncsub+0x5f/0x2f0 [xfs]
+l:  [<f0965d88>] xfs_sync+0x48/0x70 [xfs]
+l:  [<f0976ef7>] xfs_sync_worker+0x27/0x50 [xfs]
+l:  [<f0977bc9>] xfssyncd+0x129/0x1a0 [xfs]
+l:  [<f0977aa0>] ? xfssyncd+0x0/0x1a0 [xfs]
+l:  [<c0140ce2>] kthread+0x42/0x70
+l:  [<c0140ca0>] ? kthread+0x0/0x70
+l:  [<c0107257>] kernel_thread_helper+0x7/0x10
 
-One of the reasons this is bad is that, frankly, I trust almost nobody
-to remember to backport fixes into 2.6.25.x.  I'm not even at all
-confident that our mystery new part-time memory management maintainer
-will remember to merge this into 2.6.26.  The fact that this person
-failed to add a Cc:stable@kernel.org to the changelog doesn't inspire
-confidence.
 
-I shall merge this fix into my tree (y'know - the one where memory
-management patches are hosted) and I'll get it into 2.6.26 and shall
-offer it to the -stable team.  This will cause me to get collisions
-with the duplicated patch in linux-next but fortunately it is small. 
-This time.
+kernel: BUG: using smp_processor_id() in preemptible [00000000] code: IRQ-1/30
+l: caller is __rcu_preempt_unboost+0x20/0xd0
+l: Pid: 30, comm: IRQ-1 Tainted: G        N 2.6.25.4-jen67-rt #1
+l:  [<c0214b4a>] debug_smp_processor_id+0xba/0xc0
+l:  [<c016a7b0>] __rcu_preempt_unboost+0x20/0xd0
+l:  [<c0169e42>] __rcu_read_unlock+0x92/0xa0
+l:  [<c0294960>] ? evdev_event+0x0/0xc0
+l:  [<c029022e>] input_pass_event+0x3e/0xb0
+l:  [<c0295940>] ? atkbd_event+0x0/0x50
+l:  [<c0290a45>] input_handle_event+0x135/0x3f0
+l:  [<c0291fcc>] input_event+0x5c/0x70
+l:  [<c0296441>] atkbd_interrupt+0x151/0x5c0
+l:  [<c0330881>] ? add_preempt_count+0x11/0xa0
+l:  [<c032d9e5>] ? __rt_spin_lock+0x25/0x70
+l:  [<c028ddb8>] serio_interrupt+0x38/0x80
+l:  [<c028ea5a>] i8042_interrupt+0x10a/0x240
+l:  [<c0166b00>] handle_IRQ_event+0x60/0xf0
+l:  [<c0330881>] ? add_preempt_count+0x11/0xa0
+l:  [<c01678fb>] do_irqd+0x1cb/0x290
+l:  [<c0167730>] ? do_irqd+0x0/0x290
+l:  [<c0140ce2>] kthread+0x42/0x70
+l:  [<c0140ca0>] ? kthread+0x0/0x70
 
-And to whoever did this: please don't.
+
