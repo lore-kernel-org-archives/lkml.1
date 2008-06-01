@@ -1,104 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbYFAIht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYFAIiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757261AbYFAIht (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 04:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYFAIhh
+	id S1757311AbYFAIiV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 04:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYFAIiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 04:37:37 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:60264 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752464AbYFAIhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 04:37:35 -0400
-Date: Sun, 1 Jun 2008 10:37:01 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: forcedeth: lockdep warning on ethtool -s
-Message-ID: <20080601083700.GA3036@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ayaz Abdulla <aabdulla@nvidia.com>
+	Sun, 1 Jun 2008 04:38:06 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:56784 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752035AbYFAIiE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 04:38:04 -0400
+Date: Sun, 1 Jun 2008 10:37:59 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k libc5 regression
+In-Reply-To: <20080601005338.3affe880.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0806011035420.5559@anakin>
+References: <Pine.LNX.4.64.0805262226280.11902@anakin>
+ <Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
+ <20080601005338.3affe880.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 1 Jun 2008, Andrew Morton wrote:
+> On Tue, 27 May 2008 00:19:32 +0200 (CEST) Jiri Kosina <jkosina@suse.cz> wrote:
+> > From: Jiri Kosina <jkosina@suse.cz>
+> > 
+> > brk: check lower bound properly
+> > 
+> > The check in sys_brk() on minimum value the brk might have must take 
+> > CONFIG_COMPAT_BRK setting into account. When this option is turned on 
+> > (i.e. we support ancient legacy binaries, e.g. libc5-linked stuff), the 
+> > lower bound on brk value is mm->end_code, otherwise the brk start is 
+> > allowed to be arbitrarily shifted.
+> > 
+> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> OK, we have a problem here.
+> 
+> Somebody has gone and checked this patch into their tree and it now
+> appears in linux-next.
+> 
+> I do not know how to work out how this patch got into linux-next.
 
-After enabling CONFIG_LOCKDEP and CONFIG_PROVE_LOCKING I get the
-following warning when ethtool -s is first called on one of the
-forcedeth ports:
+Through quilt/m68k
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.26-rc4 #28
----------------------------------
-inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-ethtool/1985 [HC0[0]:SC0[1]:HE1:SE0] takes:
- (&np->lock){++..}, at: [<ffffffffa000c5fd>] nv_set_settings+0xc8/0x3de [forcedeth]
-{in-hardirq-W} state was registered at:
-  [<ffffffffffffffff>] 0xffffffffffffffff
-irq event stamp: 3606
-hardirqs last  enabled at (3605): [<ffffffff8068106f>] _spin_unlock_irqrestore+0x3f/0x68
-hardirqs last disabled at (3604): [<ffffffff80680d38>] _spin_lock_irqsave+0x13/0x46
-softirqs last  enabled at (3534): [<ffffffff80246ba5>] __do_softirq+0xbc/0xc5
-softirqs last disabled at (3606): [<ffffffff80680b33>] _spin_lock_bh+0x11/0x41
+> It's not in any of the trees which I pull so I guess that person has
+> been shuffling URLs without telling me.
 
-other info that might help us debug this:
-2 locks held by ethtool/1985:
- #0:  (rtnl_mutex){--..}, at: [<ffffffff80596072>] rtnl_lock+0x12/0x14
- #1:  (_xmit_ETHER){-+..}, at: [<ffffffffa000c5e8>] nv_set_settings+0xb3/0x3de [forcedeth]
+... which is not in your tree, AFAIK.
 
-stack backtrace:
-Pid: 1985, comm: ethtool Not tainted 2.6.26-rc4 #28
+> One of the reasons this is bad is that, frankly, I trust almost nobody
+> to remember to backport fixes into 2.6.25.x.  I'm not even at all
+> confident that our mystery new part-time memory management maintainer
+> will remember to merge this into 2.6.26.  The fact that this person
+> failed to add a Cc:stable@kernel.org to the changelog doesn't inspire
+> confidence.
 
-Call Trace:
- [<ffffffff8025f190>] print_usage_bug+0x162/0x173
- [<ffffffff8025fa8b>] mark_lock+0x231/0x41f
- [<ffffffff802607cf>] __lock_acquire+0x4e7/0xcac
- [<ffffffff8025fe64>] ? trace_hardirqs_on+0xf1/0x115
- [<ffffffff80272c3a>] ? disable_irq_nosync+0x6f/0x7b
- [<ffffffff80261375>] lock_acquire+0x55/0x6e
- [<ffffffffa000c5fd>] ? :forcedeth:nv_set_settings+0xc8/0x3de
- [<ffffffff80680b15>] _spin_lock+0x2f/0x3c
- [<ffffffffa000c5fd>] :forcedeth:nv_set_settings+0xc8/0x3de
- [<ffffffff8058f8bb>] dev_ethtool+0x186/0xea3
- [<ffffffff8067f446>] ? mutex_lock_nested+0x243/0x275
- [<ffffffff8025df2b>] ? debug_mutex_free_waiter+0x46/0x4a
- [<ffffffff8067f469>] ? mutex_lock_nested+0x266/0x275
- [<ffffffff8058e1ce>] dev_ioctl+0x4eb/0x600
- [<ffffffff8068106f>] ? _spin_unlock_irqrestore+0x3f/0x68
- [<ffffffff80580f91>] sock_ioctl+0x1f5/0x202
- [<ffffffff802a322e>] vfs_ioctl+0x2a/0x77
- [<ffffffff802a34d6>] do_vfs_ioctl+0x25b/0x270
- [<ffffffff806807b6>] ? trace_hardirqs_on_thunk+0x35/0x3a
- [<ffffffff802a352d>] sys_ioctl+0x42/0x65
- [<ffffffff8021fffb>] system_call_after_swapgs+0x7b/0x80
+It's on my (m68k) list for 2.6.26...
+And as soon as it's in, I was going to tell stable...
 
+> I shall merge this fix into my tree (y'know - the one where memory
+> management patches are hosted) and I'll get it into 2.6.26 and shall
+> offer it to the -stable team.  This will cause me to get collisions
+> with the duplicated patch in linux-next but fortunately it is small. 
+> This time.
 
-I think this is caused by the following snippet in nv_set_settings:
+So what's the appropriate way to handle this?
+I should have kept it in the m68k series after NEXT_PATCHES_END, so
+nobody sees it exists?
 
-	netif_carrier_off(dev);
-	if (netif_running(dev)) {
-		nv_disable_irq(dev);
-		netif_tx_lock_bh(dev);
-		spin_lock(&np->lock);
-		/* stop engines */
-		nv_stop_rxtx(dev);
-		spin_unlock(&np->lock);
-		netif_tx_unlock_bh(dev);
-	}
+Gr{oetje,eeting}s,
 
+						Geert
 
-Because of nv_disable_irq this is probably not really a problem
-though (I guess) and replacing the spin_lock with spin_lock_irqsave
-could keep interrupts disabled for a longer period of time because
-of delays in nv_stop_rx and nv_stop_tx.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
