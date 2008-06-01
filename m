@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYFAQPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753585AbYFAQQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYFAQPy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 12:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYFAQPq
+	id S1753585AbYFAQQY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 12:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbYFAQQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 12:15:46 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39469 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbYFAQPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 12:15:46 -0400
-Date: Sun, 1 Jun 2008 18:15:43 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 05/23] isdn: use simple_read_from_buffer
-Message-ID: <20080601161543.GC6831@pingi.kke.suse.de>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
+	Sun, 1 Jun 2008 12:16:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36475 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYFAQQJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 12:16:09 -0400
+Date: Sun, 1 Jun 2008 18:25:17 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Marin Mitov <mitov@issp.bas.bg>
+Cc: LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>, akpm@osdl.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <clark.williams@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: [PATCH][resubmit] x86: enable preemption in delay
+Message-ID: <20080601162517.GH20824@one.firstfloor.org>
+References: <200805252108.25011.mitov@issp.bas.bg> <alpine.LFD.1.10.0805260006110.3295@apollo.tec.linutronix.de> <200806011901.23619.mitov@issp.bas.bg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080601150114.022504880@gmail.com>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <200806011901.23619.mitov@issp.bas.bg>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 12:00:22AM +0900, Akinobu@suse.de wrote:
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-
-Acked-by: Karsten Keil <kkeil@suse.de>
-
-> Cc: Karsten Keil <kkeil@suse.de>
-> ---
->  drivers/isdn/hysdn/hysdn_procconf.c |   27 +++++++--------------------
->  1 file changed, 7 insertions(+), 20 deletions(-)
-> 
-> Index: 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
-> ===================================================================
-> --- 2.6-git.orig/drivers/isdn/hysdn/hysdn_procconf.c
-> +++ 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
-> @@ -207,30 +207,17 @@ hysdn_conf_write(struct file *file, cons
->  /* read conf file -> output card info data */
->  /*******************************************/
->  static ssize_t
-> -hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t * off)
-> +hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t *off)
+>  static void delay_tsc(unsigned long loops)
 >  {
->  	char *cp;
-> -	int i;
->  
-> -	if (file->f_mode & FMODE_READ) {
-> -		if (!(cp = file->private_data))
-> -			return (-EFAULT);	/* should never happen */
-> -		i = strlen(cp);	/* get total string length */
-> -		if (*off < i) {
-> -			/* still bytes to transfer */
-> -			cp += *off;	/* point to desired data offset */
-> -			i -= *off;	/* remaining length */
-> -			if (i > count)
-> -				i = count;	/* limit length to transfer */
-> -			if (copy_to_user(buf, cp, i))
-> -				return (-EFAULT);	/* copy error */
-> -			*off += i;	/* adjust offset */
-> -		} else
-> -			return (0);
-> -	} else
-> -		return (-EPERM);	/* no permission to read */
-> +	if (!(file->f_mode & FMODE_READ))
-> +		return -EPERM;	/* no permission to read */
->  
-> -	return (i);
-> +	if (!(cp = file->private_data))
-> +		return -EFAULT;	/* should never happen */
+> -	unsigned long bclock, now;
+> +	unsigned prev, prev_1, now;
+> +	unsigned left = loops;
+> +	unsigned prev_cpu, cpu;
 > +
-> +	return simple_read_from_buffer(buf, count, off, cp, strlen(cp));
->  }				/* hysdn_conf_read */
->  
->  /******************/
-> 
-> -- 
+> +	preempt_disable();
+> +	rdtscl(prev);
 
--- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+
+The unsigneds should be probably u64  and the rdtsc rdtscll.
+Otherwise this will all overflow for longer waits on a very
+fast systems (e.g. a 5Ghz system wraps 32bit in ~1.1 seconds)
+Normally such delays shouldn't be that long, but why risk
+overflow even in extreme cases?
+
+-Andi
