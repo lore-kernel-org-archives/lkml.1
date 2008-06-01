@@ -1,36 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYFAPaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYFAPcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbYFAPaX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 11:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYFAP3R
+	id S1754541AbYFAPcT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 11:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYFAPcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 11:29:17 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:58895 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455AbYFAP3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 11:29:15 -0400
-Date: Sun, 1 Jun 2008 19:30:41 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] s/PF_BORROWED_MM/PF_KTHREAD/
-Message-ID: <20080601153041.GA8235@tv-sign.ru>
-Mime-Version: 1.0
+	Sun, 1 Jun 2008 11:32:09 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49252 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbYFAPcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 11:32:08 -0400
+Date: Sun, 1 Jun 2008 16:32:05 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Tom Spink <tspink@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC PATCH 1/2] vfs: Introduce on-demand filesystem
+	initialisation
+Message-ID: <20080601153205.GM28946@ZenIV.linux.org.uk>
+References: <1212331915-22856-1-git-send-email-tspink@gmail.com> <1212331915-22856-2-git-send-email-tspink@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1212331915-22856-2-git-send-email-tspink@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The first 2 patches were silently ignored, resend. I don't really understand
-who should be cc'ed on this.
+On Sun, Jun 01, 2008 at 03:51:54PM +0100, Tom Spink wrote:
 
-The third one is an example. Obviously we can fix the problem without changing
-use_mm/PF_BORROWED_MM, but in that case we must do task_lock/unlock for each
-process in the system, not good and annoying.
 
-Oleg.
+Occam's Razor...
 
+You've just serialized ->kill_sb() for given fs type (and made sure that
+if one gets stuck, _everything_ gets stuck).  Moreover, you've serialized
+sget() against the same thing (i.e. pretty much each ->get_sb()).
+
+All of that (and a couple of new methods) is done for something that just
+plain does not belong to VFS.  It's trivially doable in filesystem *and*
+it's about the objects with lifetimes that make sense only for filesystem
+itself.
+
+Hell, just do
+
+int want_xfs_threads(void)
+{
+	int res = 0;
+	mutex_lock(&foo_lock);
+	if (!count++) {
+		start threads
+		if failed {
+			count--;
+			res = -Esomething;
+		}
+	}
+	mutex_unlock(&foo_lock);
+	return res;
+}
+
+void leave_xfs_threads(void)
+{
+	mutex_lock(&foo_lock);
+	if (!--count)
+		stop threads
+	mutex_unlock(&foo_lock);
+}
+
+Call want_xfs_threads() in xfs_fs_fill_super(); call leave_xfs_threads() in
+the end of xfs_put_super() and on failure exit from xfs_fs_fill_super().
+End of story...  Any other fs that wants such things can do the same.
