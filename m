@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYFAP3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbYFAP3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYFAP3Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 11:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYFAP3N
+	id S1754364AbYFAP3k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 11:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYFAP3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 1 Jun 2008 11:29:13 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:58890 "EHLO mail.screens.ru"
+Received: from x346.tv-sign.ru ([89.108.83.215]:58892 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752032AbYFAP3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752119AbYFAP3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 1 Jun 2008 11:29:12 -0400
-Date: Sun, 1 Jun 2008 19:30:45 +0400
+Date: Sun, 1 Jun 2008 19:30:42 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] coredump: zap_threads() must skip kernel threads
-Message-ID: <20080601153045.GA8244@tv-sign.ru>
+Subject: [PATCH 1/3] introduce PF_KTHREAD flag
+Message-ID: <20080601153042.GA8238@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,28 +25,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The main loop in zap_threads() must skip kthreads which may use the same mm.
-Otherwise we "kill" this thread erroneously (for example, it can not fork or
-exec after that), and the coredumping task stucks in the TASK_UNINTERRUPTIBLE
-state forever because of the wrong ->core_waiters count.
+Introduce the new PF_KTHREAD flag to mark the kernel threads. It is set by
+INIT_TASK() and copied to the forked childs (we could set it in kthreadd()
+along with PF_NOFREEZE instead).
+
+daemonize() was changed as well. In that case testing of PF_KTHREAD is racy,
+but daemonize() is hopeless anyway.
+
+This flag is cleared in do_execve(), before search_binary_handler(). Probably
+not the best place, we can do this in exec_mmap() or in start_thread(), or
+clear it along with PF_FORKNOEXEC. But I think this doesn't matter in practice,
+and if do_execve() fails kthread should die soon.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 26-rc2/fs/exec.c~3_CD_FIX_RACE_USE_MM	2008-05-31 20:05:21.000000000 +0400
-+++ 26-rc2/fs/exec.c	2008-06-01 19:04:39.000000000 +0400
-@@ -1568,11 +1568,13 @@ static inline int zap_threads(struct tas
- 	for_each_process(g) {
- 		if (g == tsk->group_leader)
- 			continue;
-+		if (g->flags & PF_KTHREAD)
-+			continue;
+ include/linux/sched.h     |    1 +
+ include/linux/init_task.h |    2 +-
+ kernel/exit.c             |    2 +-
+ fs/exec.c                 |    1 +
+ 4 files changed, 4 insertions(+), 2 deletions(-)
+
+--- 26-rc2/include/linux/sched.h~2_MAKE_PF_KTHREAD	2008-05-18 15:44:16.000000000 +0400
++++ 26-rc2/include/linux/sched.h	2008-05-18 20:08:13.000000000 +0400
+@@ -1508,6 +1508,7 @@ static inline void put_task_struct(struc
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
++#define PF_KTHREAD	0x80000000	/* I am a kernel thread */
  
- 		p = g;
- 		do {
- 			if (p->mm) {
--				if (p->mm == mm) {
-+				if (unlikely(p->mm == mm)) {
- 					lock_task_sighand(p, &flags);
- 					zap_process(p);
- 					unlock_task_sighand(p, &flags);
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
+--- 26-rc2/include/linux/init_task.h~2_MAKE_PF_KTHREAD	2008-05-18 15:44:15.000000000 +0400
++++ 26-rc2/include/linux/init_task.h	2008-05-18 20:14:30.000000000 +0400
+@@ -143,7 +143,7 @@ extern struct group_info init_groups;
+ 	.state		= 0,						\
+ 	.stack		= &init_thread_info,				\
+ 	.usage		= ATOMIC_INIT(2),				\
+-	.flags		= 0,						\
++	.flags		= PF_KTHREAD,					\
+ 	.lock_depth	= -1,						\
+ 	.prio		= MAX_PRIO-20,					\
+ 	.static_prio	= MAX_PRIO-20,					\
+--- 26-rc2/kernel/exit.c~2_MAKE_PF_KTHREAD	2008-05-18 15:44:18.000000000 +0400
++++ 26-rc2/kernel/exit.c	2008-05-18 18:11:13.000000000 +0400
+@@ -416,7 +416,7 @@ void daemonize(const char *name, ...)
+ 	 * We don't want to have TIF_FREEZE set if the system-wide hibernation
+ 	 * or suspend transition begins right now.
+ 	 */
+-	current->flags |= PF_NOFREEZE;
++	current->flags |= (PF_NOFREEZE | PF_KTHREAD);
+ 
+ 	if (current->nsproxy != &init_nsproxy) {
+ 		get_nsproxy(&init_nsproxy);
+--- 26-rc2/fs/exec.c~2_MAKE_PF_KTHREAD	2008-05-18 15:44:00.000000000 +0400
++++ 26-rc2/fs/exec.c	2008-05-18 18:36:30.000000000 +0400
+@@ -1317,6 +1317,7 @@ int do_execve(char * filename,
+ 	if (retval < 0)
+ 		goto out;
+ 
++	current->flags &= ~PF_KTHREAD;
+ 	retval = search_binary_handler(bprm,regs);
+ 	if (retval >= 0) {
+ 		/* execve success */
 
