@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbYFAQR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYFAQRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbYFAQR3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 12:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYFAQRS
+	id S1755323AbYFAQRp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 12:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbYFAQRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 12:17:18 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:60236 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753341AbYFAQRR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 12:17:17 -0400
-Message-ID: <4842CC50.4030406@keyaccess.nl>
-Date: Sun, 01 Jun 2008 18:20:32 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Avuton Olrich <avuton@gmail.com>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, Rene Herman <rene.herman@gmail.com>,
-       Len Brown <len.brown@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my
- ALSA intel8x0 sound card regression
-References: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com>
-In-Reply-To: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.8 (/)
+	Sun, 1 Jun 2008 12:17:31 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1766 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752344AbYFAQRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 12:17:30 -0400
+Date: Sun, 1 Jun 2008 18:17:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       David Miller <davem@davemloft.net>,
+       James.Bottomley@HansenPartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] RFC: Moving firmware blobs out of the kernel.
+Message-ID: <20080601161715.GB5555@ucw.cz>
+References: <1212077700.26088.83.camel@shinybook.infradead.org> <20080529164745.GA21763@kroah.com> <483F1232.4010003@linux.intel.com> <20080529.140919.160813310.davem@davemloft.net> <483F1C17.8040207@linux.intel.com> <1212102258.20303.6.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212102258.20303.6.camel@shinybook.infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01-06-08 16:42, Avuton Olrich wrote:
+Hi!
 
-> My intel8x0 card stops working due to a regression; bisection and
-> information below.
-> 
-> May have relationship to this thread
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/d5857287a36e71af/d7ae0a1490b7d142?lnk=st
-> 
-> http://avuton.googlepages.com/intel8x0-config.gz
-> http://avuton.googlepages.com/intel8x0-cpuinfo
-> http://avuton.googlepages.com/intel8x0-dmesg
+> The firmware is an independent and separate work in itself. Section 2 of
+> the GPL talks about such sections of the work, explicitly. The only way
+> to excuse what we're doing at the moment is to call it 'mere
+> aggregation' -- an exception which was intended to handle stuff like the
+> 'freeware' CDs on the covers of magazines, distributing a bunch of
+> unrelated software. Not a coherent work combining software from
+> different sources into a single entity which works closely together as
+> one, and where one part is useless without the other.
 
-This dmesg seems to be 6-byte file consisting of "dmesg\n" ...
+Wait a moment, haven't you just described linux distribution?
 
-> http://avuton.googlepages.com/intel8x0-ioports
-> http://avuton.googlepages.com/intel8x0-lspci-vvv
-> http://avuton.googlepages.com/intel8x0-modules
-> http://avuton.googlepages.com/intel8x0-ver-linux
-> http://avuton.googlepages.com/intel8x0-version
-> 
-> commit 53052feb6ddd05cb2b5c6e89fb489bf83bbb6803
-> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Date:   Mon Apr 28 16:34:15 2008 -0600
-> 
->     PNP: remove pnp_mem_flags() as an lvalue
-> 
->     A future change will change pnp_mem_flags() from a "#define that
->     simplifies to an lvalue" to "an inline function that returns the
->     flags value."
-> 
->     Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
->     Acked-By: Rene Herman <rene.herman@gmail.com>
->     Signed-off-by: Len Brown <len.brown@intel.com>
-> 
+I mean, if aggregation clause does not work for firmware in kernel,
+why would it work for packages in distro?
 
-I'm probably just really blind but I don't see how that specific commit 
-may have made any difference. It _is_ in the exact spot which would fix 
-that overlap problem of yours but this should be an identity change as 
-far as fuctionality goes. Are you _really_ sure it's this one?
+(Actually, seeing some distro EULAs, I wished GPL infected whole
+distro so that I'd not have to read the stupid EULA.)
 
-(Is this racing with anything?)
+> There are people who own copyright on firmware who refuse to put it into
+> the Linux source tree, because their lawyers don't believe the 'mere
+> aggregation' line, and believe that including it in the kernel source in
+> any form would require them to license it under the GPL.
 
-Rene.
+They can release the firmware under BSD 3-clause, and we can include
+it in kernel, then.... right? (Or into linux-firmware or into whatever
+package that comes handy).
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
