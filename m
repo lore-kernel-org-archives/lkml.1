@@ -1,104 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbYFALaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbYFALjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbYFALaj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 07:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbYFALab
+	id S1752792AbYFALjc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 07:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbYFALjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 07:30:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48332 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbYFALab (ORCPT
+	Sun, 1 Jun 2008 07:39:23 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51451 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbYFALjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 07:30:31 -0400
-Date: Sun, 1 Jun 2008 14:30:28 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: David Howells <dhowells@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       akpm@linux-foundation.org, mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-In-Reply-To: <20080601112137.GE25429@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0806011426150.17742@sbz-30.cs.Helsinki.FI>
-References: <483DBFC3.1070108@cs.helsinki.fi> <29611.1212066517@redhat.com>
- <Pine.LNX.4.64.0805291620250.5415@sbz-30.cs.helsinki.fi>
- <20080529211207.GB13663@linux-sh.org> <484256AA.3000709@cs.helsinki.fi>
- <Pine.LNX.4.64.0806011119420.11749@sbz-30.cs.Helsinki.FI>
- <20080601082427.GC25429@linux-sh.org> <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI>
- <20080601102401.GD25429@linux-sh.org> <48427A13.7050704@cs.helsinki.fi>
- <20080601112137.GE25429@linux-sh.org>
-Mime-Version: 1.0
+	Sun, 1 Jun 2008 07:39:22 -0400
+Date: Sun, 1 Jun 2008 13:40:09 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>, mtk.manpages@gmail.com
+Cc: Hugh Dickins <hugh@veritas.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+Message-ID: <20080601114008.GC16843@elf.ucw.cz>
+References: <20080530102619.GA2468@elf.ucw.cz> <Pine.LNX.4.64.0805301451020.19914@blonde.site> <20080530204307.GA4978@ucw.cz> <Pine.LNX.4.64.0805311925190.27293@blonde.site> <20080531173950.c4f04028.akpm@linux-foundation.org> <Pine.LNX.4.64.0806010752510.24919@blonde.site> <20080601011501.199af80c.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080601011501.199af80c.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 01:29:39PM +0300, Pekka Enberg wrote:
-> > Oh, almost, you had this bit in ksize() of SLAB:
+Hi!
+
+> > > > All I can say so far is that I find the same as you do:
+> > > > SYNC_FILE_RANGE_WRITE (after writing) takes a significant amount of time,
+> > > > more than half as long as when you add in SYNC_FILE_RANGE_WAIT_AFTER too.
+> > > > 
+> > > > Which make the sync_file_range call pretty pointless: your usage seems
+> > > > perfectly reasonable to me, but somehow we've broken its behaviour.
+> > > > I'll be investigating ...
+> > > 
+> > > It will block on disk queue fullness - sysrq-W will tell.
 > > 
-> > +	page = virt_to_head_page(objp);
-> > +	if (unlikely(!PageSlab(page)))
-> > +		return PAGE_SIZE << compound_order(page);
-> > 
-> > Did you actually need it for something?
- 
-On Sun, 1 Jun 2008, Paul Mundt wrote:
-> Not that I recall, it was just for consistency with SLUB. I'll have to
-> re-test though, as I'm not sure if it was necessary or not.
+> > Ah, thank you.  What a disappointment, though it's understandable.
+> > Doesn't that very severely limit the usefulness of the system call?
+> 
+> A bit.  The request queue size is runtime tunable though.
 
-OK. If we do need it, then something like this should work. But I don't 
-see how we could have these "arbitrary pointers" (meaning not returned 
-by kmalloc()) to compound pages; otherwise the BUG_ON would trigger with 
-SLAB as well. I also don't see any call-sites that do this (but I'm not an 
-expert on nommu).
+Which /sys is that? What happens if I set the queue size to pretty
+much infinity, will memory management die horribly?
 
-		Pekka
+> I expect major users of this system call will be applications which do
+> small-sized overwrites into large files, mainly databases.  That is,
+> once the application developers discover its existence.  I'm still
+> getting expressions of wonder from people who I tell about the
+> five-year-old fadvise().
 
-diff --git a/mm/nommu.c b/mm/nommu.c
-index dca93fc..604e7de 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -109,16 +109,39 @@ unsigned int kobjsize(const void *objp)
- 	 * If the object we have should not have ksize performed on it,
- 	 * return size of 0
- 	 */
--	if (!objp || (unsigned long)objp >= memory_end || !((page = virt_to_page(objp))))
-+	if (!objp)
- 		return 0;
- 
-+	if ((unsigned long)objp >= memory_end)
-+		return 0;
-+
-+	page = virt_to_head_page(objp);
-+	if (!page)
-+		return 0;
-+
-+	/*
-+	 * If the allocator sets PageSlab, we know the pointer came from
-+	 * kmalloc(). The allocator, however, is not guaranteed to set PageSlab
-+	 * so the pointer might still have come from kmalloc() (see the comments
-+	 * below).
-+	 */
- 	if (PageSlab(page))
- 		return ksize(objp);
- 
--	BUG_ON(page->index < 0);
--	BUG_ON(page->index >= MAX_ORDER);
-+	/*
-+	 * The ksize() function is only guaranteed to work for pointers
-+	 * returned by kmalloc(). So handle arbitrary pointers, that we expect
-+	 * always to be compound pages, here. Note: we also handle pointers to
-+	 * compound pages that came from kmalloc() here.
-+	 */
-+	if (PageCompound(page))
-+		return PAGE_SIZE << compound_order(page);
- 
--	return (PAGE_SIZE << page->index);
-+	/*
-+	 * Finally, handle pointers that came from kmalloc() that don't have
-+	 * PageSlab set.
-+	 */
-+	return ksize(objp);
- }
- 
- /*
+Hey, you have one user now, its called s2disk. But for this call to be
+useful, we'd need asynchronous variant... is there such thing?
+
+Okay, I can fork and do the call from another process, but...
+
+> > I admit the flag isn't called SYNC_FILE_RANGE_WRITE_WITHOUT_WAITING,
+> > but I don't suppose Pavel and I are the only ones misled by it.
+> 
+> Yup, this caveat/restriction should be in the manpage.
+
+Michael, this is something for you I guess?
+
+And andrew, something for you:
+
+--- 
+
+SYNC_FILE_RANGE_WRITE may and will block. Document that.
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+---
+commit 5db78da3d8e6fa527bfe384ded2ff7c835592fe2
+tree 4c405e07be12f0a2260492fb43d19802ff7ebab1
+parent 0ea376de01be797f9563c2c2464149f8f0af6329
+author Pavel <pavel@amd.ucw.cz> Sun, 01 Jun 2008 13:39:25 +0200
+committer Pavel <pavel@amd.ucw.cz> Sun, 01 Jun 2008 13:39:25 +0200
+
+ fs/sync.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/fs/sync.c b/fs/sync.c
+index 228e17b..54e9f20 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -139,7 +139,8 @@ asmlinkage long sys_fdatasync(unsigned i
+  * before performing the write.
+  *
+  * SYNC_FILE_RANGE_WRITE: initiate writeout of all those dirty pages in the
+- * range which are not presently under writeback.
++ * range which are not presently under writeback. Notice that even this this
++ *  may and will block if you attempt to write more than request queue size.
+  *
+  * SYNC_FILE_RANGE_WAIT_AFTER: wait upon writeout of all pages in the range
+  * after performing the write.
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
