@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYFAQvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbYFAQxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbYFAQvP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 12:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbYFAQu5
+	id S1753598AbYFAQxe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 12:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYFAQx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 12:50:57 -0400
-Received: from lazybastard.de ([212.112.238.170]:54026 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbYFAQu4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 12:50:56 -0400
-Date: Sun, 1 Jun 2008 18:50:48 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: arnd@arndb.de
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, hch@lst.de
-Subject: Re: [RFC 2/7] cramfs: create unique inode numbers
-Message-ID: <20080601165048.GC13094@logfs.org>
-References: <20080531152013.031903990@arndb.de> <20080531153510.692084580@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 1 Jun 2008 12:53:27 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:48868 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751101AbYFAQx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 12:53:27 -0400
+Date: Sun, 1 Jun 2008 20:55:06 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] coredump: binfmt_elf{,_fdpic}.c: don't abuse GFP_ATOMIC
+Message-ID: <20080601165506.GA8880@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080531153510.692084580@arndb.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008 17:20:15 +0200, arnd@arndb.de wrote:
-> 
-> This changes the inode number in cramfs to be based on
-> the location of the dentry instead of the file, in order
-> to make inodes unique.
+kmalloc(GFP_ATOMIC) was needed because it was called under tasklist_lock.
+The code was changed to use rcu_read_lock(), we can use GFP_KERNEL.
 
-Couldn't this cause problems for NFS?  The same inode no longer has a
-stable inode number across reboots.  Basing on dentry location can also
-be an information leak and cause problems on 64bit machines with old
-userspace.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-We could keep the original approach and use a static counter otherwise.
-Something roughly like this:
+ binfmt_elf.c       |    4 ++--
+ binfmt_elf_fdpic.c |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-static ino_t cramfs_get_ino(struct super_block *sb,
-			struct cramfs_inode *cramfs_inode)
-{
-	static ino_t counter;
-	struct inode *inode;
+--- 26-rc2/fs/binfmt_elf.c~NO_ATOMIC	2008-05-18 15:43:59.000000000 +0400
++++ 26-rc2/fs/binfmt_elf.c	2008-06-01 20:47:08.000000000 +0400
+@@ -1524,7 +1524,7 @@ static int fill_note_info(struct elfhdr 
+ 		if (p->mm == dump_task->mm) {
+ 			t = kzalloc(offsetof(struct elf_thread_core_info,
+ 					     notes[info->thread_notes]),
+-				    GFP_ATOMIC);
++				    GFP_KERNEL);
+ 			if (unlikely(!t)) {
+ 				rcu_read_unlock();
+ 				return 0;
+@@ -1726,7 +1726,7 @@ static int fill_note_info(struct elfhdr 
+ 		rcu_read_lock();
+ 		do_each_thread(g, p)
+ 			if (current->mm == p->mm && current != p) {
+-				ets = kzalloc(sizeof(*ets), GFP_ATOMIC);
++				ets = kzalloc(sizeof(*ets), GFP_KERNEL);
+ 				if (!ets) {
+ 					rcu_read_unlock();
+ 					return 0;
+--- 26-rc2/fs/binfmt_elf_fdpic.c~NO_ATOMIC	2008-05-18 15:43:59.000000000 +0400
++++ 26-rc2/fs/binfmt_elf_fdpic.c	2008-06-01 20:47:20.000000000 +0400
+@@ -1626,7 +1626,7 @@ static int elf_fdpic_core_dump(long sign
+ 		rcu_read_lock();
+ 		do_each_thread(g,p)
+ 			if (current->mm == p->mm && current != p) {
+-				tmp = kzalloc(sizeof(*tmp), GFP_ATOMIC);
++				tmp = kzalloc(sizeof(*tmp), GFP_KERNEL);
+ 				if (!tmp) {
+ 					rcu_read_unlock();
+ 					goto cleanup;
 
-	if (cramfs_inode->offset && cramfs_inode->size)
-		return cramfs_inode->offset << 2;
-
-	for (;;) {
-		counter++;
-		if (!counter & 3)
-			counter++; /* skip numbers that could be offsets */
-		inode = cramfs_iget(sb, counter);
-		if (!inode)
-			return counter; /* free to use */
-		iput(inode);
-	}
-}
-
-> This lets us change and unlink files in a later patch
-> without changing all other files that contain the same
-> data, and it fixes a user-visible bug with 'cp -a'
-> trying to hardlink empty directories when copying from
-> a cramfs source.
-> 
-> A slight disadvantage is that identical files no longer
-> share a common page cache, so the data has to be read
-> from disk for each file individually.
-
-That seems to be solved with above approach as well.
-
-Jörn
-
--- 
-You can take my soul, but not my lack of enthusiasm.
--- Wally
