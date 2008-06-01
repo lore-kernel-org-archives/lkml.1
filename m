@@ -1,85 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbYFAXek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbYFAXe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479AbYFAXek (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 19:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbYFAX3A
+	id S1758408AbYFAXe6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 19:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756303AbYFAX3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 19:29:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:26550 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756868AbYFAX26 (ORCPT
+	Sun, 1 Jun 2008 19:29:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:2864 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754508AbYFAX3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 19:28:58 -0400
+	Sun, 1 Jun 2008 19:29:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
-        b=nODVbgk5L6/SU/MiRwjZnGiiFRSlq6AmYPMqFsQh7ZX6EjeOVEVClALCwamHal01YaGL+9P1UkzqWWjQmhv2Hbz+ueJfe/FJOYZJS3pO0jza2QJq3hveCvTmiepV15g/n+kKRNFdJ1k5KsiY2RD3/gSCxk/UxnIcOffnptRdk7g=
-Message-Id: <20080601231643.286530029@gmail.com>
+        b=ascSlQ/UK38VAM9gKaOJeEpubew1HXk5siYd1uh0Co89Wl82sh1TOnK1r9QlGYo3zyTpJbuYOd91DsN2TR/EnBdrWXv8GYu2gXI81Y1Fin4WfIjJfmKzfRTCuXSoKB6ol/oDaxkInmZoUf+GbZ6CjiFSPvQphxs4nneDQA201RI=
+Message-Id: <20080601231648.183353549@gmail.com>
 References: <20080601231329.223608711@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 02 Jun 2008 08:13:50 +0900
+Date: Mon, 02 Jun 2008 08:13:51 +0900
 From: akinobu.mita@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: [patch -v2 21/23] s390: use memory_read_from_buffer
-Content-Disposition: inline; filename=s390-ipl-use-memory-read-from-buffer.patch
+Cc: Brian King <brking@us.ibm.com>,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org
+Subject: [patch -v2 22/23] ipr: use memory_read_from_buffer
+Content-Disposition: inline; filename=scsi-ipr-use-memory-read-from-buffer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux390@de.ibm.com
-Cc: linux-s390@vger.kernel.org
+Cc: Brian King <brking@us.ibm.com>
+Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi@vger.kernel.org
 ---
- arch/s390/kernel/ipl.c |   18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
+ drivers/scsi/ipr.c |   16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
 
-Index: 2.6-git/arch/s390/kernel/ipl.c
+Index: 2.6-git/drivers/scsi/ipr.c
 ===================================================================
---- 2.6-git.orig/arch/s390/kernel/ipl.c
-+++ 2.6-git/arch/s390/kernel/ipl.c
-@@ -14,6 +14,7 @@
- #include <linux/delay.h>
- #include <linux/reboot.h>
- #include <linux/ctype.h>
-+#include <linux/fs.h>
- #include <asm/ipl.h>
- #include <asm/smp.h>
- #include <asm/setup.h>
-@@ -285,14 +286,8 @@ static struct kobj_attribute sys_ipl_dev
- static ssize_t ipl_parameter_read(struct kobject *kobj, struct bin_attribute *attr,
- 				  char *buf, loff_t off, size_t count)
- {
--	unsigned int size = IPL_PARMBLOCK_SIZE;
+--- 2.6-git.orig/drivers/scsi/ipr.c
++++ 2.6-git/drivers/scsi/ipr.c
+@@ -2455,20 +2455,14 @@ static ssize_t ipr_read_trace(struct kob
+ 	struct Scsi_Host *shost = class_to_shost(dev);
+ 	struct ipr_ioa_cfg *ioa_cfg = (struct ipr_ioa_cfg *)shost->hostdata;
+ 	unsigned long lock_flags = 0;
+-	int size = IPR_TRACE_SIZE;
+-	char *src = (char *)ioa_cfg->trace;
 -
 -	if (off > size)
 -		return 0;
--	if (off + count > size)
--		count = size - off;
--	memcpy(buf, (void *)IPL_PARMBLOCK_START + off, count);
+-	if (off + count > size) {
+-		size -= off;
+-		count = size;
+-	}
++	ssize_t ret;
+ 
+ 	spin_lock_irqsave(ioa_cfg->host->host_lock, lock_flags);
+-	memcpy(buf, &src[off], count);
++	ret = memory_read_from_buffer(buf, count, &off, ioa_cfg->trace,
++				IPR_TRACE_SIZE);
+ 	spin_unlock_irqrestore(ioa_cfg->host->host_lock, lock_flags);
 -	return count;
-+	return memory_read_from_buffer(buf, count, &off, IPL_PARMBLOCK_START,
-+					IPL_PARMBLOCK_SIZE);
++
++	return ret;
  }
  
- static struct bin_attribute ipl_parameter_attr = {
-@@ -310,12 +305,7 @@ static ssize_t ipl_scp_data_read(struct 
- 	unsigned int size = IPL_PARMBLOCK_START->ipl_info.fcp.scp_data_len;
- 	void *scp_data = &IPL_PARMBLOCK_START->ipl_info.fcp.scp_data;
- 
--	if (off > size)
--		return 0;
--	if (off + count > size)
--		count = size - off;
--	memcpy(buf, scp_data + off, count);
--	return count;
-+	return memory_read_from_buffer(buf, count, &off, scp_data, size);
- }
- 
- static struct bin_attribute ipl_scp_data_attr = {
+ static struct bin_attribute ipr_trace_attr = {
 
 -- 
