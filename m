@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbYFALXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbYFAL0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784AbYFALXz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 07:23:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYFALXq
+	id S1753200AbYFAL0W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 07:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYFAL0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 07:23:46 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:42045 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750934AbYFALXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 07:23:46 -0400
-Date: Sun, 1 Jun 2008 20:21:37 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: David Howells <dhowells@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       akpm@linux-foundation.org, mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-Message-ID: <20080601112137.GE25429@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	David Howells <dhowells@redhat.com>,
-	Christoph Lameter <clameter@sgi.com>,
-	LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-	akpm@linux-foundation.org, mpm@selenic.com
-References: <483DBFC3.1070108@cs.helsinki.fi> <29611.1212066517@redhat.com> <Pine.LNX.4.64.0805291620250.5415@sbz-30.cs.helsinki.fi> <20080529211207.GB13663@linux-sh.org> <484256AA.3000709@cs.helsinki.fi> <Pine.LNX.4.64.0806011119420.11749@sbz-30.cs.Helsinki.FI> <20080601082427.GC25429@linux-sh.org> <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI> <20080601102401.GD25429@linux-sh.org> <48427A13.7050704@cs.helsinki.fi>
+	Sun, 1 Jun 2008 07:26:11 -0400
+Received: from lucidpixels.com ([75.144.35.66]:32786 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751722AbYFAL0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 07:26:10 -0400
+Date: Sun, 1 Jun 2008 07:26:09 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s
+ peak for read, ~650MiB/s peak for write?
+In-Reply-To: <alpine.DEB.1.10.0806010700170.10729@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0806010721230.10729@p34.internal.lan>
+References: <alpine.DEB.1.10.0806010539430.24757@p34.internal.lan> <alpine.DEB.1.10.0806010700170.10729@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48427A13.7050704@cs.helsinki.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 01:29:39PM +0300, Pekka Enberg wrote:
-> On Sun, Jun 01, 2008 at 12:13:02PM +0300, Pekka J Enberg wrote:
-> >>I mean, assuming the BUG_ON bits are bogus, then we should always pass 
-> >>the pointer to the allocator. I audited most of the callers and they all 
-> >>seem to be really just using kmalloc() for allocation anyway.
-> >>
-> >>What do you think?
-> 
-> Paul Mundt wrote:
-> >Isn't this what my original patch did? ;-)
-> 
-> Oh, almost, you had this bit in ksize() of SLAB:
-> 
-> +	page = virt_to_head_page(objp);
-> +	if (unlikely(!PageSlab(page)))
-> +		return PAGE_SIZE << compound_order(page);
-> 
-> Did you actually need it for something?
-> 
-Not that I recall, it was just for consistency with SLUB. I'll have to
-re-test though, as I'm not sure if it was necessary or not.
+
+
+On Sun, 1 Jun 2008, Justin Piszcz wrote:
+
+>
+> On Sun, 1 Jun 2008, Justin Piszcz wrote:
+>
+>> I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and it 
+>> appears I have hit the limit, if I were able to get the maximum speed of 
+>> all drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774 MiB/s 
+>> (currently running badblocks on all drives)..
+>
+> Small correction, they are 7200.11 Seagate Desktop Drives (ST31000340AS), not 
+> enterprise drives:
+>
+> http://www.seagate.com/ww/v/index.jsp?vgnextoid=0732f141e7f43110VgnVCM100000f5ee0a0aRCRD
+> http://www.newegg.com/Product/Product.aspx?Item=N82E16822148274
+>
+>
+
+http://www.intel.com/products/chipsets/g965/diagram.jpg
+
+Basically it appears I am hammering the southbridge as for this board the 
+PCI-e (x1) slots also traverse through the southbridge.
+
+  6_SATA -> G965 ICH8
+3_PCI-e -> G965 ICH8
+
+>From which has to ship that data across the DMI (2GB) link to the 
+northbridge.
+
+If one utilized a 12, 16 or 24 port raid card (but used SW RAID) on the 
+x16 slot on the northbridge itself, would this barrier exist as the:
+GMCH<->CPU is (8.5GB/s)..?
+
+Also on the X38 and X48 the speed increases slightly:
+http://www.intel.com/products/chipsets/X38/X38_Block_Diagram.jpg (10.6GB/s)
+http://www.intel.com/products/chipsets/x48/x48_block_diagram.jpg (12.8GB/s)
+
+If one asks why would one need such speed?
+
+Example:
+LTO-4 drives can write at 120 MiB/s each:
+http://en.wikipedia.org/wiki/Linear_Tape-Open
+
+It is then therefore imperative one could sustain this rate to possibly 
+multiple(!) tape drives on a single system.
+
+Justin.
