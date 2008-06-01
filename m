@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYFAX3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYFAX3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbYFAX3W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 19:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbYFAX1a
+	id S1756632AbYFAX3h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 19:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYFAX1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 19:27:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43684 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756130AbYFAX12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 19:27:28 -0400
-Date: Sun, 1 Jun 2008 23:27:27 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
+	Sun, 1 Jun 2008 19:27:33 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:2864 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756154AbYFAX1b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 19:27:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:references:user-agent:date:from:to:cc:subject:content-disposition;
+        b=U7DmK1YtBj/LeNnBePPh9LFnfznABg7dwWSLCeiEh8H2U2k5LCmmJoDOFjVhWCSEx7YHaZUsKjUN+xza88LQzc8EHDhyTS9t4EG3bsyHV06C0rLOwZMguAaM7GmfMqpkQiBb6D6b1td8hs8JoOU53XQiMiA8av3/KeUbGAr9Mr8=
+Message-Id: <20080601231515.779423991@gmail.com>
+References: <20080601231329.223608711@gmail.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 02 Jun 2008 08:13:35 +0900
+From: akinobu.mita@gmail.com
 To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.36.5
-Message-ID: <20080601232727.GA11427@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Sun, 01 Jun 2008 23:27:28 +0000 (UTC)
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org
+Subject: [patch -v2 06/23] s390/vmcp: use simple_read_from_buffer
+Content-Disposition: inline; filename=s390-vmcp-use-simple-read-from-buffer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: linux-s390@vger.kernel.org
+---
+ drivers/s390/char/vmcp.c |   20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
-I've just released Linux 2.4.36.5.
+Index: 2.6-git/drivers/s390/char/vmcp.c
+===================================================================
+--- 2.6-git.orig/drivers/s390/char/vmcp.c
++++ 2.6-git/drivers/s390/char/vmcp.c
+@@ -61,30 +61,22 @@ static int vmcp_release(struct inode *in
+ static ssize_t
+ vmcp_read(struct file *file, char __user *buff, size_t count, loff_t *ppos)
+ {
+-	size_t tocopy;
++	ssize_t ret;
+ 	struct vmcp_session *session;
+ 
+-	session = (struct vmcp_session *)file->private_data;
++	session = file->private_data;
+ 	if (mutex_lock_interruptible(&session->mutex))
+ 		return -ERESTARTSYS;
+ 	if (!session->response) {
+ 		mutex_unlock(&session->mutex);
+ 		return 0;
+ 	}
+-	if (*ppos > session->resp_size) {
+-		mutex_unlock(&session->mutex);
+-		return 0;
+-	}
+-	tocopy = min(session->resp_size - (size_t) (*ppos), count);
+-	tocopy = min(tocopy, session->bufsize - (size_t) (*ppos));
++	ret = simple_read_from_buffer(buff, count, ppos,
++				session->response, session->resp_size);
+ 
+-	if (copy_to_user(buff, session->response + (*ppos), tocopy)) {
+-		mutex_unlock(&session->mutex);
+-		return -EFAULT;
+-	}
+ 	mutex_unlock(&session->mutex);
+-	*ppos += tocopy;
+-	return tocopy;
++
++	return ret;
+ }
+ 
+ static ssize_t
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.36.5.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.36.5
-
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.36.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.36.y.git
-
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.36.y.git
-
-It fixes 3 medium vulnerabilities :
-  - sit: Add missing kfree_skb() on pskb_may_pull() failure (CVE-2008-2136)
-  - sparc: Fix mmap VA span checking (CVE-2008-2137)
-  - old buffer overflow in moxa driver (CVE-2005-0504)
-
-The remaining patches are minor backports and fixes.
-Given the nature of the vulnerabilities, it is recommended to upgrade.
-
-Regards,
-Willy
---
-
-Summary of changes from v2.4.36.4 to v2.4.36.5
-============================================
-
-David S. Miller (2):
-      sit: Add missing kfree_skb() on pskb_may_pull() failure (CVE-2008-2136)
-      sparc: Fix mmap VA span checking (CVE-2008-2137)
-
-Gunnar Larisch (1):
-      3c980-TX needs EXTRA_PREAMBLE
-
-Li Zefan (1):
-      ACPI: check a return value correctly in acpi_power_get_context()
-
-Roel Kluin (1):
-      wireless, airo: waitbusy() won't delay
-
-Steve Rosenbluth (2):
-      signal.h: use an explicit cast to silent compiler warnings
-      fix build error with some flavours of gcc 2.95.3
-
-Willy Tarreau (1):
-      Change VERSION to 2.4.36.5
-
-dann frazier (1):
-      old buffer overflow in moxa driver (CVE-2005-0504)
-
+-- 
