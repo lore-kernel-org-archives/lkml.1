@@ -1,46 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbYFAM2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbYFAMyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbYFAM2p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 08:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbYFAM2f
+	id S1752566AbYFAMyg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 08:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbYFAMy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 08:28:35 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:54108 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750705AbYFAM2e (ORCPT
+	Sun, 1 Jun 2008 08:54:27 -0400
+Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:47858 "EHLO
+	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750730AbYFAMy0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 08:28:34 -0400
-Date: Sun, 1 Jun 2008 13:28:18 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: Arnd Bergmann <arnd@arndb.de>, David Newall <davidn@davidnewall.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, hch@lst.de
-Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
-Message-ID: <20080601122818.GA3687@shareable.org>
-References: <200805311737.58991.arnd@arndb.de> <48419F45.20908@davidnewall.com> <200805312240.50720.arnd@arndb.de> <48421D65.8040301@lougher.demon.co.uk>
+	Sun, 1 Jun 2008 08:54:26 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-fbdev-devel@lists.sourceforge.net
+Subject: [VIDEO] vfb: only enable if explicitly requested when compiled in
+Date: Sun, 1 Jun 2008 14:54:22 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48421D65.8040301@lougher.demon.co.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200806011454.23123.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Jun 2008 12:54:23.0705 (UTC) FILETIME=[9DC77C90:01C8C3E6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Lougher wrote:
-> If I read the patches correctly, when a file page is written to, only 
-> that page gets copied into the page cache and locked, the other pages 
-> continue to be read off disk from cramfs?  With Unionfs a page write 
-> causes the entire file to be copied up to the r/w tmpfs and locked into 
-> the page cache causing unnecessary RAM overhead.
+From: Frans Pop <elendil@planet.nl>
 
-Ok, so why not fix that in unionfs?  An option so that holes in the
-overlay file let through data from the underlying file sounds like it
-would be generally useful, and quite easy to implement.
+The Kconfig help for the vfb driver says:
+   Do NOT enable it for normal systems! To protect the innocent, it
+   has to be enabled explicitly at boot time using the kernel option
+   `video=vfb:'.
+    
+This change lets the code match the description.
+    
+Support for vfb:disable is kept for backwards compatibility; vfb:off
+works because it is tested at a higher level.
+    
+Signed-off-by: Frans Pop <elendil@planet.nl>
+CC: Antonino A. Daplas <adaplas@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
 
-If not unionfs, a "union-tmpfs" combination would be good.  Many
-filesystems aren't well suited to being the overlay filesystem -
-adding to the implementation's complexity - but a modified tmpfs could
-be very well suited.
+---
+Note: any undefined option (e.g. vfb:enable) will also enable this driver.
 
--- Jamie
+The relevant code has been unchanged since before the migration to
+git (2.6.12).
+
+This patch fixes bugzilla #9310 and was the root cause behind
+http://lkml.org/lkml/2008/5/31/220.
+
+My confusion stemmed from the fact that I was still assuming that the
+Kconfig help would be correct (even though Antonino had already
+determined it was not: http://lkml.org/lkml/2007/10/14/25, but somehow
+my brain never parsed that).
+
+
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index 072638a..51e935f 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -443,19 +443,29 @@ static int vfb_mmap(struct fb_info *info,
+ }
+ 
+ #ifndef MODULE
++/*
++ * The virtual framebuffer driver is only enabled if explicitly
++ * requested by passing 'video=vfb:' (or any actual options).
++ */
+ static int __init vfb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+-	vfb_enable = 1;
++	vfb_enable = 0;
+ 
+-	if (!options || !*options)
++	if (!options)
++		return 1;
++
++	vfb_enable = 1;
++
++	if (!*options)
+ 		return 1;
+ 
+ 	while ((this_opt = strsep(&options, ",")) != NULL) {
+ 		if (!*this_opt)
+ 			continue;
+-		if (!strncmp(this_opt, "disable", 7))
++		/* Test disable for backwards compatibility */
++		if (!strcmp(this_opt, "disable"))
+ 			vfb_enable = 0;
+ 	}
+ 	return 1;
