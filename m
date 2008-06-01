@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYFAAjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYFAAkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYFAAjV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 20:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYFAAjN
+	id S1756695AbYFAAkY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 20:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbYFAAkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 20:39:13 -0400
-Received: from gw.goop.org ([64.81.55.164]:52492 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754948AbYFAAjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 20:39:12 -0400
-Message-ID: <4841EF8B.3060800@goop.org>
-Date: Sun, 01 Jun 2008 01:38:35 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH 5 of 5] xen: Avoid allocations causing swap activity on
- the resume path
-References: <c692f3a12da1e99a4a43.1212192095@localhost>	<4840B0C5.4020606@pobox.com>	<48411F70.5020100@goop.org>	<20080531025949.7c8b17bc.akpm@linux-foundation.org>	<4841240A.1000008@goop.org> <20080531164712.2788baf2.akpm@linux-foundation.org>
-In-Reply-To: <20080531164712.2788baf2.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 31 May 2008 20:40:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33758 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754680AbYFAAkL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 May 2008 20:40:11 -0400
+Date: Sat, 31 May 2008 17:39:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+Message-Id: <20080531173950.c4f04028.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0805311925190.27293@blonde.site>
+References: <20080530102619.GA2468@elf.ucw.cz>
+	<Pine.LNX.4.64.0805301451020.19914@blonde.site>
+	<20080530204307.GA4978@ucw.cz>
+	<Pine.LNX.4.64.0805311925190.27293@blonde.site>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 31 May 2008 11:10:18 +0100 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->>> Whether you should also add __GFP_HIGH to cause the page allocation to
->>> bite harder into the page reserves is unclear to me, sorry.
->>>   
->>>       
->> Well, if the allocation fails the machine is dead in the water, because 
->> it probably can't go on without its devices.  I think it's worth eating 
->> to the reserves to avoid that.  (I'll have a close look to only add it 
->> to allocations which are really unrecoverable if they fail.)
->>     
->
-> OK.
->
-> I don't actually have a clue what you're doing here.  Restoring a
-> virtual machine from disk/network or something like that?
->   
+On Sat, 31 May 2008 19:44:49 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
 
-More or less.  When you suspend the VM it gets disconnected from all its 
-virtual devices.  When you resume - which may be after a migration to 
-another machine - it reconnects to all its devices again.  These 
-allocations are happening on the reconnection path, and so may happen 
-before there's any underlying device to do IO to (in fact, they've been 
-triggered by something trying to do IO, and the driver notices it has 
-become disconnected and tries to reconnect itself).
+> On Fri, 30 May 2008, Pavel Machek wrote:
+> > > > sync_file_range(SYNC_FILE_RANGE_WRITE) blocks ... which makes problem
+> > > > for s2disk: there we want to start writeout as early as possible
+> > > > (system is going to shut down after write, and we need the data on
+> > > > disk).
+> > > > 
+> > > > Unfortuantely, sync_file_range(SYNC_FILE_RANGE_WRITE) blocks, which
+> > > > does not work for us. Is there non-blocking variant? "Start writeout
+> > > > on this fd, but don't block me"?
+> > > 
+> > > I guess there are lots of reasons why it may block (get rescheduled)
+> > > briefly, but why would that matter to you?  Are you saying that its
+> > > whole design has got broken somehow, and now SYNC_FILE_RANGE_WRITE
+> > > is behaving as if SYNC_FILE_RANGE_WAIT_AFTER had been supplied too?
+> > 
+> > It appears to me like it includes WAIT_AFTER, yes.
+> > 
+> > I was not sure what the expected behaviour was... lets say we have a
+> > lot of dirty data (like 40MB) and system with enough free memory. Is
+> > it reasonable to expect SYNC_FILE_RANGE_WRITE to return pretty much
+> > immediately? (like in less than 10msec)? Because it seems to take more
+> > like a second here...
+> > 
+> > (Underlying 'file' is actually /dev/sda1 -- aka my swap partition, but
+> > that should not matter --right?)
+> 
+> Right (so long as you're not swapping to it at the same time!).
+> And it seems to be behaving the same way on a regular file.
+> 
+> All I can say so far is that I find the same as you do:
+> SYNC_FILE_RANGE_WRITE (after writing) takes a significant amount of time,
+> more than half as long as when you add in SYNC_FILE_RANGE_WAIT_AFTER too.
+> 
+> Which make the sync_file_range call pretty pointless: your usage seems
+> perfectly reasonable to me, but somehow we've broken its behaviour.
+> I'll be investigating ...
+> 
 
-> It might be appropriate to do a big memory-reclaim before starting the
-> operation, along the lines of suspend-to-disk - go off and allocate
-> (and possible pin) sufficient memroy for the entire operation before
-> actually starting it?
->   
+It will block on disk queue fullness - sysrq-W will tell.
 
-Not really.  Live migration - which is one instance of when this comes 
-into play - is a very lightweight process from the guest VM's 
-perspective, and may cause only ~100ms service interruption.  Doing a 
-mass of reclaim/IO would be expensive by comparison.
-
-Also, in general the drivers have to be prepared to deal with a 
-disconnection from their devices at any moment (ie, they may 
-spontaneously disconnect for no apparent reason), so there's no 
-opportunity to prepare for it.
-
-Maybe it would be possible to scurry away some preallocated memory for 
-use if the main allocation fails, but that seems logically equivalent to 
-dipping into the global emergency pool.
-
-    J
