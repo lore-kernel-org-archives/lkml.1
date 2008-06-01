@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYFAMU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbYFAM2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbYFAMU7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 08:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYFAMUq
+	id S1752653AbYFAM2p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 08:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbYFAM2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 08:20:46 -0400
-Received: from 1wt.eu ([62.212.114.60]:1362 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750863AbYFAMUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 08:20:46 -0400
-Date: Sun, 1 Jun 2008 14:20:33 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
-Message-ID: <20080601122033.GE5609@1wt.eu>
-References: <alpine.DEB.1.10.0806010539430.24757@p34.internal.lan> <alpine.DEB.1.10.0806010700170.10729@p34.internal.lan> <alpine.DEB.1.10.0806010721230.10729@p34.internal.lan>
-Mime-Version: 1.0
+	Sun, 1 Jun 2008 08:28:35 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:54108 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbYFAM2e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 08:28:34 -0400
+Date: Sun, 1 Jun 2008 13:28:18 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>, David Newall <davidn@davidnewall.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, hch@lst.de
+Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
+Message-ID: <20080601122818.GA3687@shareable.org>
+References: <200805311737.58991.arnd@arndb.de> <48419F45.20908@davidnewall.com> <200805312240.50720.arnd@arndb.de> <48421D65.8040301@lougher.demon.co.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0806010721230.10729@p34.internal.lan>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <48421D65.8040301@lougher.demon.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 07:26:09AM -0400, Justin Piszcz wrote:
-> 
-> 
-> On Sun, 1 Jun 2008, Justin Piszcz wrote:
-> 
-> >
-> >On Sun, 1 Jun 2008, Justin Piszcz wrote:
-> >
-> >>I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and 
-> >>it appears I have hit the limit, if I were able to get the maximum speed 
-> >>of all drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774 
-> >>MiB/s (currently running badblocks on all drives)..
-> >
-> >Small correction, they are 7200.11 Seagate Desktop Drives (ST31000340AS), 
-> >not enterprise drives:
-> >
-> >http://www.seagate.com/ww/v/index.jsp?vgnextoid=0732f141e7f43110VgnVCM100000f5ee0a0aRCRD
-> >http://www.newegg.com/Product/Product.aspx?Item=N82E16822148274
-> >
-> >
-> 
-> http://www.intel.com/products/chipsets/g965/diagram.jpg
-> 
-> Basically it appears I am hammering the southbridge as for this board the 
-> PCI-e (x1) slots also traverse through the southbridge.
-> 
->  6_SATA -> G965 ICH8
-> 3_PCI-e -> G965 ICH8
-> 
-> >From which has to ship that data across the DMI (2GB) link to the 
-> northbridge.
-> 
-> If one utilized a 12, 16 or 24 port raid card (but used SW RAID) on the 
-> x16 slot on the northbridge itself, would this barrier exist as the:
-> GMCH<->CPU is (8.5GB/s)..?
-> 
-> Also on the X38 and X48 the speed increases slightly:
-> http://www.intel.com/products/chipsets/X38/X38_Block_Diagram.jpg (10.6GB/s)
-> http://www.intel.com/products/chipsets/x48/x48_block_diagram.jpg (12.8GB/s)
-> 
-> If one asks why would one need such speed?
+Phillip Lougher wrote:
+> If I read the patches correctly, when a file page is written to, only 
+> that page gets copied into the page cache and locked, the other pages 
+> continue to be read off disk from cramfs?  With Unionfs a page write 
+> causes the entire file to be copied up to the r/w tmpfs and locked into 
+> the page cache causing unnecessary RAM overhead.
 
-It looks like graphic games are pushing the technologies to their
-limits, which is good for us. I have bought X38 motherboards for
-10 Gbps experimentations, and this chipset is perfectly capable of
-feeding two Myri10GE NICs (20 Gbps total). This is 2.5 GB/s, not
-counting overhead. So I/O bandwidth is a premium requirement today.
+Ok, so why not fix that in unionfs?  An option so that holes in the
+overlay file let through data from the underlying file sounds like it
+would be generally useful, and quite easy to implement.
 
-Other chipsets I have tested (945 and 965) were very poor (about 4.7
-and 6.5 Gbps respectively if my memory serves me right).
+If not unionfs, a "union-tmpfs" combination would be good.  Many
+filesystems aren't well suited to being the overlay filesystem -
+adding to the implementation's complexity - but a modified tmpfs could
+be very well suited.
 
-Willy
-
+-- Jamie
