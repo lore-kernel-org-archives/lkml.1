@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYFAAkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbYFAAnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYFAAkY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 20:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbYFAAkN
+	id S1756737AbYFAAnS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 20:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYFAAnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 20:40:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33758 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754680AbYFAAkL (ORCPT
+	Sat, 31 May 2008 20:43:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56460 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755139AbYFAAnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 20:40:11 -0400
-Date: Sat, 31 May 2008 17:39:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
-Message-Id: <20080531173950.c4f04028.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805311925190.27293@blonde.site>
-References: <20080530102619.GA2468@elf.ucw.cz>
-	<Pine.LNX.4.64.0805301451020.19914@blonde.site>
-	<20080530204307.GA4978@ucw.cz>
-	<Pine.LNX.4.64.0805311925190.27293@blonde.site>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sat, 31 May 2008 20:43:06 -0400
+Date: Sat, 31 May 2008 17:23:22 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Mikael Pettersson" <mikpe@it.uu.se>,
+       "Stephen Hemminger" <shemminger@linux-foundation.org>
+Subject: Re: [Bug #10822] sky2 oops in 2.6.26-rc3
+Message-ID: <20080531172322.633ea573@infradead.org>
+In-Reply-To: <18497.59633.817344.933052@harpo.it.uu.se>
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
+	<UJSav77TyUB.A.WKD.vqZQIB@albercik>
+	<18497.59633.817344.933052@harpo.it.uu.se>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008 19:44:49 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
+On Sun, 1 Jun 2008 02:10:25 +0200
+Mikael Pettersson <mikpe@it.uu.se> wrote:
 
-> On Fri, 30 May 2008, Pavel Machek wrote:
-> > > > sync_file_range(SYNC_FILE_RANGE_WRITE) blocks ... which makes problem
-> > > > for s2disk: there we want to start writeout as early as possible
-> > > > (system is going to shut down after write, and we need the data on
-> > > > disk).
-> > > > 
-> > > > Unfortuantely, sync_file_range(SYNC_FILE_RANGE_WRITE) blocks, which
-> > > > does not work for us. Is there non-blocking variant? "Start writeout
-> > > > on this fd, but don't block me"?
-> > > 
-> > > I guess there are lots of reasons why it may block (get rescheduled)
-> > > briefly, but why would that matter to you?  Are you saying that its
-> > > whole design has got broken somehow, and now SYNC_FILE_RANGE_WRITE
-> > > is behaving as if SYNC_FILE_RANGE_WAIT_AFTER had been supplied too?
-> > 
-> > It appears to me like it includes WAIT_AFTER, yes.
-> > 
-> > I was not sure what the expected behaviour was... lets say we have a
-> > lot of dirty data (like 40MB) and system with enough free memory. Is
-> > it reasonable to expect SYNC_FILE_RANGE_WRITE to return pretty much
-> > immediately? (like in less than 10msec)? Because it seems to take more
-> > like a second here...
-> > 
-> > (Underlying 'file' is actually /dev/sda1 -- aka my swap partition, but
-> > that should not matter --right?)
+> On Sat, 31 May 2008 19:48:06 +0200 (CEST), Rafael J. Wysocki wrote:
+> >This message has been generated automatically as a part of a report
+> >of recent regressions.
+> >
+> >The following bug entry is on the current list of known regressions
+> >from 2.6.25.  Please verify if it still should be listed.
+> >
+> >
+> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D10822
+> >Subject		: sky2 oops in 2.6.26-rc3
+> >Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+> >Date		: 2008-05-25 17:27 (7 days old)
+> >References	:
+> >http://marc.info/?l=3Dlinux-netdev&amp;m=3D121173650915153&amp= ;w=3D4
+> >Handled-By	: Stephen Hemminger
+> ><shemminger@linux-foundation.org>
 > 
-> Right (so long as you're not swapping to it at the same time!).
-> And it seems to be behaving the same way on a regular file.
+> It's a one-off crash that hasn't happened since I reported it.
+> And the fact that it happended while I was running 2.6.26-rc3
+> may just be coincidental and/or caused by temperamental HW.
 > 
-> All I can say so far is that I find the same as you do:
-> SYNC_FILE_RANGE_WRITE (after writing) takes a significant amount of time,
-> more than half as long as when you add in SYNC_FILE_RANGE_WAIT_AFTER too.
-> 
-> Which make the sync_file_range call pretty pointless: your usage seems
-> perfectly reasonable to me, but somehow we've broken its behaviour.
-> I'll be investigating ...
-> 
+> My intention was never to classify this as a regression, I
+> just wanted to report a failure data point in case a pattern
+> emerges.
 
-It will block on disk queue fullness - sysrq-W will tell.
+http://www.kerneloops.org/search.php?search=sky2_mac_int
 
+shows that it happened around 2.6.23-rc1 era once as well...
+but not more than that.
+
+That almost makes it look like a hw issue, and very unlikely as a
+regression.
