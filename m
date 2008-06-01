@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbYFAJtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbYFAJxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbYFAJtt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 05:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYFAJtm
+	id S1757181AbYFAJxT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 05:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYFAJxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 05:49:42 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:53507 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752489AbYFAJtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 05:49:41 -0400
-Date: Sun, 1 Jun 2008 11:49:32 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       David Brownell <david-b@pacbell.net>
-Subject: [PATCH] mmc_spi: mmc_spi.h should include linux/interrupts.h
-Message-ID: <20080601114932.44694524@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 1 Jun 2008 05:53:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:35752 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753161AbYFAJxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 05:53:08 -0400
+Message-ID: <4842715D.9090304@goop.org>
+Date: Sun, 01 Jun 2008 10:52:29 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, npiggin@suse.de, linux-arch@vger.kernel.org,
+       mingo@elte.hu, paulmck@linux.vnet.ibm.com,
+       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org
+Subject: Re: [PATCH 0/10] Add generic helpers for arch IPI function calls
+ #4
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <20080601015708.917e11c9.akpm@linux-foundation.org>
+In-Reply-To: <20080601015708.917e11c9.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Andrew Morton wrote:
+> On Thu, 29 May 2008 10:58:14 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+>   
+>> Jeremy sent me a ping about this patchset, so here's an updated
+>> version against the current kernel (2.6.26-rc4'ish).
+>>     
+>
+> If we're having 2.6.27 thoughts about this work then we should get it
+> into linux-next pretty soon, please.
+>   
 
-Since mmc_spi.h uses irqreturn_t type, it should include appropriate
-header, otherwise build will break if users didn't include it (some of
-them do not use interrupts).
+The x86 parts clash fairly thoroughly with the tip.git x86 work.  
+Nothing deep; just that various files it tries to patch are now 
+unified.  From a purely selfish perspective, I'd like to see this series 
+end up as a topic branch in tip.git.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
----
- include/linux/spi/mmc_spi.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/spi/mmc_spi.h b/include/linux/spi/mmc_spi.h
-index e9bbe3e..d5ca78b 100644
---- a/include/linux/spi/mmc_spi.h
-+++ b/include/linux/spi/mmc_spi.h
-@@ -1,6 +1,8 @@
- #ifndef __LINUX_SPI_MMC_SPI_H
- #define __LINUX_SPI_MMC_SPI_H
- 
-+#include <linux/interrupt.h>
-+
- struct device;
- struct mmc_host;
- 
--- 
-1.5.5.1
-
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+    J
