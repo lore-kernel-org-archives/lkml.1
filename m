@@ -1,90 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYFAV7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYFAWJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbYFAV7h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 17:59:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYFAV73
+	id S1753510AbYFAWJV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 18:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYFAWJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 17:59:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56493 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751456AbYFAV73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 17:59:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
-Date: Mon, 2 Jun 2008 00:00:07 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@suse.cz>, mtk.manpages@gmail.com,
-       Hugh Dickins <hugh@veritas.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <20080530102619.GA2468@elf.ucw.cz> <20080601114008.GC16843@elf.ucw.cz> <20080601133727.4e62ae55.akpm@linux-foundation.org>
-In-Reply-To: <20080601133727.4e62ae55.akpm@linux-foundation.org>
+	Sun, 1 Jun 2008 18:09:11 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47388 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbYFAWJK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 18:09:10 -0400
+Date: Mon, 2 Jun 2008 00:09:56 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Rsync cannot copy to a vfat partition on kernel 2.6.25
+Message-ID: <20080601220956.GA2249@elf.ucw.cz>
+References: <bug-449080-176318@bugzilla.redhat.com> <200805301659.m4UGx3AW001503@bz-web2.app.phx.redhat.com> <20080530171432.GA32480@redhat.com> <87prr36284.fsf@duaron.myhome.or.jp> <20080601203229.GA5615@ucw.cz> <878wxouafc.fsf@duaron.myhome.or.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806020000.07708.rjw@sisk.pl>
+In-Reply-To: <878wxouafc.fsf@duaron.myhome.or.jp>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 1 of June 2008, Andrew Morton wrote:
-> On Sun, 1 Jun 2008 13:40:09 +0200 Pavel Machek <pavel@suse.cz> wrote:
+On Mon 2008-06-02 06:12:23, OGAWA Hirofumi wrote:
+> Pavel Machek <pavel@ucw.cz> writes:
 > 
 > > Hi!
-> > 
-> > > > > > All I can say so far is that I find the same as you do:
-> > > > > > SYNC_FILE_RANGE_WRITE (after writing) takes a significant amount of time,
-> > > > > > more than half as long as when you add in SYNC_FILE_RANGE_WAIT_AFTER too.
-> > > > > > 
-> > > > > > Which make the sync_file_range call pretty pointless: your usage seems
-> > > > > > perfectly reasonable to me, but somehow we've broken its behaviour.
-> > > > > > I'll be investigating ...
-> > > > > 
-> > > > > It will block on disk queue fullness - sysrq-W will tell.
-> > > > 
-> > > > Ah, thank you.  What a disappointment, though it's understandable.
-> > > > Doesn't that very severely limit the usefulness of the system call?
-> > > 
-> > > A bit.  The request queue size is runtime tunable though.
-> > 
-> > Which /sys is that?
 > 
-> /sys/block/sda/queue/nr_requests
+> Hi,
 > 
-> > What happens if I set the queue size to pretty
-> > much infinity, will memory management die horribly?
+> >> > We had a user report at https://bugzilla.redhat.com/show_bug.cgi?id=449080
+> >> > that in 2.6.25, he can no longer rsync to a vfat partition, even as root.
+> >> > I just reproduced this here. It gets -EPERM in the mkstemp call.
+> >> > (full strace in the bug report).
+> >> >
+> >> > Did we change behaviour somehow in the vfat code?
+> >> > 2.6.24.7 works fine apparently.
+> >> 
+> >> Yes, it was changed. New one allows only acceptable chmod(), and if not
+> >> acceptable, it returns -EPERM. Old one allows even if it can't store the
+> >> disk inode. But it may be too strict for users.
+> >
+> > Hmm... but I guess mkstemp is no longer safe with this?
+> >
+> > So we have choice between security hole and regression...?
 > 
-> In theory, no - it's always caused problems when the VM/VFS/FS layer
-> has relied upon request-queue exhaustion for throttling.  Hence all
-> that code is supposed to work OK when there is no request-queue
-> blocking.  Of course, (theory/practice != 1.0).
-> 
-> > > I expect major users of this system call will be applications which do
-> > > small-sized overwrites into large files, mainly databases.  That is,
-> > > once the application developers discover its existence.  I'm still
-> > > getting expressions of wonder from people who I tell about the
-> > > five-year-old fadvise().
-> > 
-> > Hey, you have one user now, its called s2disk. But for this call to be
-> > useful, we'd need asynchronous variant... is there such thing?
-> 
-> Well if you're asking the syscall to shove more data into the block
-> layer than it can concurrently handle, sure, the block layer will
-> block.  It's tunable...
-> 
-> It can still block in places, of course - we might need to do
-> synchronous reads to get at metadata and we'll need to allocate memory.
-> 
-> > Okay, I can fork and do the call from another process, but...
-> 
-> I sense a strangeness.  What are you actually trying to do with all of this?
+> Maybe. But if users choose the group or world writable umask, I guess
+> nobody would care the permission of temporary file, because all file is
+> writable always. Um..
 
-Pavel is trying to avoid me doing multithreaded s2disk, more or less. ;-)
-
-However, I have some numbers showing that multithreaded image saving actually
-helps a lot in case the image is compressed and encrypted.
-
-Thanks,
-Rafael
+Okay, if the user wants his vfat world-readable, it is hard to create
+security hole there.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
