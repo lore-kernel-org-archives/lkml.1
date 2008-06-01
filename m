@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbYFATtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYFATxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752719AbYFATtP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 15:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYFATtE
+	id S1753254AbYFATxk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 15:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYFATxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 15:49:04 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:46591 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751337AbYFATtB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 15:49:01 -0400
-Message-ID: <4842FDF1.8060602@keyaccess.nl>
-Date: Sun, 01 Jun 2008 21:52:17 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Sun, 1 Jun 2008 15:53:32 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:40570 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbYFATxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 15:53:31 -0400
+Date: Sun, 1 Jun 2008 22:53:06 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Paul Mundt <lethal@linux-sh.org>, sam@ravnborg.org, hjl.tools@gmail.com,
+       linux-kbuild@vger.kernel.org, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: sh64 build error - sh, kbuild or binutils problem?
+Message-ID: <20080601195306.GD7347@cs181133002.pp.htv.fi>
+References: <20080531202239.GB7347@cs181133002.pp.htv.fi> <20080601053047.GA25429@linux-sh.org>
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [patch 02/15] PNP: whitespace/coding style fixes
-References: <20080530224853.976744229@ldl.fc.hp.com> <20080530224931.775639142@ldl.fc.hp.com>
-In-Reply-To: <20080530224931.775639142@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080601053047.GA25429@linux-sh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31-05-08 00:48, Bjorn Helgaas wrote:
+On Sun, Jun 01, 2008 at 02:30:47PM +0900, Paul Mundt wrote:
+> On Sat, May 31, 2008 at 11:22:39PM +0300, Adrian Bunk wrote:
+> > Minimal example demonstrating the problem:
+> > 
+> > $ sh64-linux-ar rcs tmp.o
+> > $ sh64-linux-ld -EL -r -o tmp2.o tmp.o
+> > $ sh64-linux-ld -EL -r -o out.o tmp2.o 
+> > sh64-linux-ld: sh3 architecture of input file `tmp2.o' is incompatible with sh5 output
+> > $ 
+> > 
+> Yes, it's a binutils bug. I've hit this on SH-2A zImage builds too, and
+> hacked together a patch for it. I'll see about fixing it up fo sh64 too
+> and then posting it to the list.
 
-> No functional change; just make a couple declarations
-> consistent with the rest of the file.
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Thanks  :-)
+Adrian
 
-Acked-by: Rene Herman <rene.herman@gmail.com>
+-- 
 
-By the way, noticed recently that Acked-by might not be the right tag 
-given that I'm not in any formal acking path or anything; feel free to 
-translate them into any tag of your liking. They're meant as "looked at 
-this and agree".
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Rene.
