@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYFASvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510AbYFATAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYFASvQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 14:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbYFASu6
+	id S1752510AbYFATAY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 15:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYFATAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 14:50:58 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53428 "EHLO
+	Sun, 1 Jun 2008 15:00:13 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:33441 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752891AbYFASur (ORCPT
+	with ESMTP id S1750985AbYFATAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 14:50:47 -0400
-Date: Sun, 1 Jun 2008 20:50:46 +0200 (CEST)
+	Sun, 1 Jun 2008 15:00:12 -0400
+Date: Sun, 1 Jun 2008 21:00:11 +0200 (CEST)
 From: Jan Engelhardt <jengelh@medozas.de>
-To: David Schwartz <davids@webmaster.com>
-cc: linux-kernel@vger.kernel.org
-Subject: RE: Question regarding TCP behavior
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEFDNAAC.davids@webmaster.com>
-Message-ID: <alpine.LNX.1.10.0806012050230.4055@fbirervta.pbzchgretzou.qr>
-References: <MDEHLPKNGKAHNMBLJOLKGEFDNAAC.davids@webmaster.com>
+To: Gene Heskett <gene.heskett@gmail.com>
+cc: Phillip Susi <psusi@cfl.rr.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
+Subject: Re: floppy question of the hour
+In-Reply-To: <200805271826.18320.gene.heskett@gmail.com>
+Message-ID: <alpine.LNX.1.10.0806012053440.4055@fbirervta.pbzchgretzou.qr>
+References: <200805232114.20937.gene.heskett@gmail.com> <200805240852.58268.gene.heskett@gmail.com> <483C81DE.8060002@cfl.rr.com> <200805271826.18320.gene.heskett@gmail.com>
 User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,25 +28,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thursday 2008-05-29 18:56, David Schwartz wrote:
->> Greetings.
->>
->> I have a question about how linux's TCP stack behaves.
->> I apologize if this is not the right place to ask this question and
->> please redirect me.
->>
->> When a TCP end point (A) sends x bytes of data to the other end point (B),
->> does B immediately ACK the received bytes or will it do so only
->> when the data
->> is passed to the upper layer ?
->>
->>
->> Thanks
->> Thomas
+On Wednesday 2008-05-28 00:26, Gene Heskett wrote:
+>On Tuesday 27 May 2008, Phillip Susi wrote:
+>>Gene Heskett wrote:
 >
->If the TCP connection was idle and there is no unacknowledged data in either
->direction, the answer is neither.
->
->Acknowledging the data immediately is wasteful.[...]
+>Also, does anyone know how long after a floppy is inserted before it is 
+>recognized?  From observation today, it appears to be something in the 5 minute 
+>territory before a getfdprm returns data instead of "/dev/fd0: no such device".
 
-And for everything else, there is the PSH bit. (I assume?)
+I have a SONY USB floppy drive which used to get read within 2s
+after inserting a new floppy. Which means it somehow signalled
+the host, probably through an USB command.
+
+Just as I tried again now (with 2.6.23.17), this does not happen
+anymore so I suspect udev or the kernel changed in some way.
