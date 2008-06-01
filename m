@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbYFANzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbYFAOLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752630AbYFANzs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 09:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYFANzi
+	id S1752632AbYFAOLf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 10:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYFAOL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 09:55:38 -0400
-Received: from server515i.exghost.com ([72.32.253.75]:2770 "EHLO
-	server515.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751265AbYFANzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 09:55:37 -0400
-To: "Justin Piszcz" <jpiszcz@lucidpixels.com>, <linux-kernel@vger.kernel.org>,
-       <linux-raid@vger.kernel.org>, <xfs@oss.sgi.com>
-Reply-To: <David@santools.com>
-Message-ID: <13c501c8c3ee$c6a31318$330ef40a@exchange.rackspace.com>
-Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
-From: "David Lethe" <david@santools.com>
-Thread-Topic: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
-Thread-Index: AcjD7sai6rpNKVABQ6i5nGsqH2f0tA==
-Date: Sun, 1 Jun 2008 8:52:00 -0500
+	Sun, 1 Jun 2008 10:11:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:55435 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751369AbYFAOLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 10:11:25 -0400
+Date: Sun, 1 Jun 2008 16:11:01 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: David Miller <davem@davemloft.net>
+cc: tytso@mit.edu, benh@kernel.crashing.org,
+       James.Bottomley@HansenPartnership.com,
+       ksummit-2008-discuss@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+In-Reply-To: <20080529.143921.34376298.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0806011605590.3235@apollo.tec.linutronix.de>
+References: <20080529124548.GC8065@mit.edu> <20080529.135431.235149338.davem@davemloft.net> <20080529211404.GH8065@mit.edu> <20080529.143921.34376298.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-X-Mailer: VersaMail(R) v. 3.5.4, Copyright (c) 2001-2006 Palm, Inc.
-X-Priority: 3
-Importance: Normal
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-OriginalArrivalTime: 01 Jun 2008 13:55:35.0041 (UTC) FILETIME=[2A10E710:01C8C3EF]
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Policy: GLOBAL
-X-Primary: david@santools.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: david@santools.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: PRIVATE->PRIVATE->UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 72.32.49.5
-X-Note-Reverse-DNS: fe1.exchange.rackspace.com
-X-Note-WHTLIST: david@santools.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: 81 82 139 
-X-Note: Mail Class: ALLOWEDSENDER
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 May 2008, David Miller wrote:
+> From: Theodore Tso <tytso@mit.edu>
+> Date: Thu, 29 May 2008 17:14:04 -0400
+> 
+> > On Thu, May 29, 2008 at 01:54:31PM -0700, David Miller wrote:
+> > > Yes, process is important, but I'd say it deserved 1/3 of the summit
+> > > time, but not one minute more.
+> > 
+> > We were about 50-50 last time, roughly.  So let's see if there is
+> > consensus to dial it back this year, based on topics that people
+> > suggest.
+> 
+> Today at LinuxTAG, Thomas Gleixner and I tossed around the idea
+> that (assuming a 3 day event) we do tech stuff on day 1, process
+> stuff on day 2, and back to tech stuff on day 3.
+> 
+> The idea is that you hash out the initial impressions of your
+> ideas on day 1, your mind works on the problem in the background
+> on day 2, and they everyone has the answers on day 3 :-)
+> 
+> Another idea we discussed briefly was some kind of organized run
+> over the bugzilla entries.  And just to make it interesting we could
+> award some silly prize to whoever fixed the most interesting or
+> amusing bug during the bug-run, as voted by the attendees.
 
+I thought more about it and came up with an interesting challange for
+the top hackers crowd:
 
------Original Message-----
+Fix NOHZ/CPUIDLE along with suspend/resume on all participants
+laptops, which are probably 50+ different models. That'd be an odd
+enough mix of wreckaged hardware / BIOS / ACPI.
 
-From:  "Justin Piszcz" <jpiszcz@lucidpixels.com>
-Subj:  Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
-Date:  Sun Jun 1, 2008 6:02 am
-Size:  793 bytes
-To:  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>; "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>; "xfs@oss.sgi.com" <xfs@oss.sgi.com>
+Should be fun and solve a bunch of hard to grok bugs in the bugzillas
+along the way.
 
- 
-On Sun, 1 Jun 2008, Justin Piszcz wrote: 
- 
-> I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and it  
-> appears I have hit the limit, if I were able to get the maximum speed of all  
-> drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774 MiB/s  
-> (currently running badblocks on all drives).. 
- 
-Small correction, they are 7200.11 Seagate Desktop Drives (ST31000340AS),  
-not enterprise drives: 
- 
-http://www.seagate.com/ww/v/index.jsp?vgnextoid=0732f141e7f43110VgnVCM100000f5ee0a0aRCRD 
-http://www.newegg.com/Product/Product.aspx?Item=N82E16822148274 
- 
--- 
-To unsubscribe from this list: send the line "unsubscribe linux-raid" in 
-the body of a message to majordomo@vger.kernel.org 
-More majordomo info at  http://vger.kernel.org/majordomo-info.html 
- 
-
-
+Thanks,
+	tglx
