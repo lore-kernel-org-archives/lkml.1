@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYFAV0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYFAV1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbYFAV0v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 17:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYFAV0o
+	id S1755528AbYFAV1L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 17:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755397AbYFAV0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 17:26:44 -0400
-Received: from lucidpixels.com ([75.144.35.66]:58793 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751456AbYFAV0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 17:26:43 -0400
-Date: Sun, 1 Jun 2008 17:26:43 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s
- peak for read, ~650MiB/s peak for write?
-In-Reply-To: <6278d2220806011423o22e98f27qfd72fbd152d19d9f@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0806011723450.11366@p34.internal.lan>
-References: <6278d2220806011423o22e98f27qfd72fbd152d19d9f@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 1 Jun 2008 17:26:55 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:55774 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755382AbYFAV0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 17:26:54 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Rsync cannot copy to a vfat partition on kernel 2.6.25
+References: <bug-449080-176318@bugzilla.redhat.com>
+	<200805301659.m4UGx3AW001503@bz-web2.app.phx.redhat.com>
+	<20080530171432.GA32480@redhat.com>
+	<87prr36284.fsf@duaron.myhome.or.jp> <20080601203229.GA5615@ucw.cz>
+	<878wxouafc.fsf@duaron.myhome.or.jp>
+Date: Mon, 02 Jun 2008 06:26:49 +0900
+In-Reply-To: <878wxouafc.fsf@duaron.myhome.or.jp> (OGAWA Hirofumi's message of
+	"Mon, 02 Jun 2008 06:12:23 +0900")
+Message-ID: <87fxrwsv6u.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 
+>>> > We had a user report at https://bugzilla.redhat.com/show_bug.cgi?id=449080
+>>> > that in 2.6.25, he can no longer rsync to a vfat partition, even as root.
+>>> > I just reproduced this here. It gets -EPERM in the mkstemp call.
+>>> > (full strace in the bug report).
+>>> >
+>>> > Did we change behaviour somehow in the vfat code?
+>>> > 2.6.24.7 works fine apparently.
+>>> 
+>>> Yes, it was changed. New one allows only acceptable chmod(), and if not
+>>> acceptable, it returns -EPERM. Old one allows even if it can't store the
+>>> disk inode. But it may be too strict for users.
+>>
+>> Hmm... but I guess mkstemp is no longer safe with this?
+>>
+>> So we have choice between security hole and regression...?
+>
+> Maybe. But if users choose the group or world writable umask, I guess
+> nobody would care the permission of temporary file, because all file is
+> writable always. Um..
 
-On Sun, 1 Jun 2008, Daniel J Blueman wrote:
+BTW, if users specified "quiet" option, FAT driver will ignore some
+permission check (uid, gid, etc.).
 
-> On 1 Jun, 10:50, Justin Piszcz <jpis...@lucidpixels.com> wrote:
->> I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and
->> it appears I have hit the limit, if I were able to get the maximum speed
->> of all drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774
->> MiB/s (currently running badblocks on all drives)..
->
-> Nice test. The Seagate 7200.11 drives deliver 120MB/s (outer zone,
-> raw) each, and there is an issue with CFQ dispatching requests; see:
-Thanks, wow...!
-
->
-> http://groups.google.co.uk/group/linux.kernel/browse_thread/thread/b88264b084a2dfe0/a1bc0f67837bad00
->
-> A quick workaround tweak is:
->
-> # echo 0 >/sys/block/sda/queue/iosched/slice_idle
-Unfortunately the disks have been removed from the host, only to test
-to make sure all of them were good (1 was DOA).
-
->
-> Does this help any? This gives the difference of ~68MB/s vs ~120MB/s
-> on my 7200.11 ;-) .
->
-> That said, the i965 chipset is fairly contemporary, but if that 2GB/s
-> DMI connection is the bidirectional bandwidth (likely), then maybe
-> you're hitting that limit: Intel's DMI bus is based on PCIe, thus will
-> use 128 byte PCI-e Max Payload packets (as in the rest of the
-> chipset), which IIRC theoretically maxes you out near 800MB/s.
-Very interesting, do you know what AMD uses for their boards by any chance?
-I'll most likely stick with some type of Intel chipset but was curious
-regarding AMD/Nvidia.
-
->
-> The X48 chipset may allow you to crank the Max Payload to 256 (setpci
-> and the Intel chipset docs), if it doesn't default to 256, like in
-> 5400 server chipsets. This chipset is where the fun really starts eg
-> hdparm -T giving >10GB/s, like in Itanium2s ;-) .
-Thanks for this information.  What kind of HW are you seeing > 10 GB/s? ;)
-
->
-> Thanks,
->  Daniel
-> -- 
-> Daniel J Blueman
->
+So, another solution would be to specify this option, or change default
+of it.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
