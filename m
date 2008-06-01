@@ -1,178 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbYFAOw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbYFAOwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbYFAOw2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 10:52:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYFAOwD
+	id S1753150AbYFAOwn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 10:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYFAOwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 10:52:03 -0400
-Received: from atflat.net ([80.229.16.180]:40459 "EHLO holly.atflat.local"
+	Sun, 1 Jun 2008 10:52:04 -0400
+Received: from atflat.net ([80.229.16.180]:40460 "EHLO holly.atflat.local"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751463AbYFAOwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751600AbYFAOwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 1 Jun 2008 10:52:00 -0400
 From: Tom Spink <tspink@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Tom Spink <tspink@gmail.com>
-Subject: [RFC PATCH 1/2] vfs: Introduce on-demand filesystem initialisation
-Date: Sun,  1 Jun 2008 15:51:54 +0100
-Message-Id: <1212331915-22856-2-git-send-email-tspink@gmail.com>
+Subject: [RFC PATCH 2/2] xfs: Make XFS use the new file system init infrastructure
+Date: Sun,  1 Jun 2008 15:51:55 +0100
+Message-Id: <1212331915-22856-3-git-send-email-tspink@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1212331915-22856-1-git-send-email-tspink@gmail.com>
+In-Reply-To: <1212331915-22856-2-git-send-email-tspink@gmail.com>
 References: <>
  <1212331915-22856-1-git-send-email-tspink@gmail.com>
+ <1212331915-22856-2-git-send-email-tspink@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds on-demand filesystem initialisation capabilities to the VFS,
-whereby an init routine will be executed on first use of a particular
-filesystem type.  Also, an exit routine will be executed when the last
-superblock of a filesystem type is deactivated.
+This patch makes XFS use the file system type specific init and exit
+callbacks, so that XFS only initialises when it's used for the first
+time.
 
-This is useful for filesystems that share global resources between all
-instances of the filesystem, but only need those resources when there are
-any users of the filesystem.  This lets the filesystem initialise those
-resources (kernel threads or caches, say) when the first superblock is
-created.  It also lets the filesystem clean up those resources when the
-last superblock is deactivated.
+This is useful for when XFS is compiled into the kernel, but never
+actually used as it stops XFS from creating global threads, until
+they are needed.
 
 Signed-off-by: Tom Spink <tspink@gmail.com>
 ---
- fs/filesystems.c   |    2 ++
- fs/super.c         |   47 ++++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/fs.h |    3 +++
- 3 files changed, 51 insertions(+), 1 deletions(-)
+ fs/xfs/linux-2.6/xfs_super.c |   55 +++++++++++++++++++++++-------------------
+ 1 files changed, 30 insertions(+), 25 deletions(-)
 
-diff --git a/fs/filesystems.c b/fs/filesystems.c
-index f37f872..59b2eaa 100644
---- a/fs/filesystems.c
-+++ b/fs/filesystems.c
-@@ -79,6 +79,7 @@ int register_filesystem(struct file_system_type * fs)
- 		res = -EBUSY;
- 	else
- 		*p = fs;
-+	mutex_init(&fs->fs_supers_lock);
- 	write_unlock(&file_systems_lock);
- 	return res;
- }
-@@ -105,6 +106,7 @@ int unregister_filesystem(struct file_system_type * fs)
- 	tmp = &file_systems;
- 	while (*tmp) {
- 		if (fs == *tmp) {
-+			mutex_destroy(&fs->fs_supers_lock);
- 			*tmp = fs->next;
- 			fs->next = NULL;
- 			write_unlock(&file_systems_lock);
-diff --git a/fs/super.c b/fs/super.c
-index 453877c..af20175 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -181,7 +181,21 @@ void deactivate_super(struct super_block *s)
- 		spin_unlock(&sb_lock);
- 		DQUOT_OFF(s, 0);
- 		down_write(&s->s_umount);
-+
-+		/* Take the mutex before calling kill_sb, because it may
-+		 * modify the fs_supers list.
-+		 */
-+		mutex_lock(&fs->fs_supers_lock);
- 		fs->kill_sb(s);
-+
-+		/* Check to see if this is the last superblock of the
-+		 * filesystem going down, and if it is, then run the exit
-+		 * routine.
-+		 */
-+		if (list_empty(&fs->fs_supers) && fs->exit)
-+			fs->exit();
-+		mutex_unlock(&fs->fs_supers_lock);
-+
- 		put_filesystem(fs);
- 		put_super(s);
- 	}
-@@ -338,6 +352,7 @@ struct super_block *sget(struct file_system_type *type,
- 	struct super_block *old;
- 	int err;
+diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
+index 742b2c7..3e7340a 100644
+--- a/fs/xfs/linux-2.6/xfs_super.c
++++ b/fs/xfs/linux-2.6/xfs_super.c
+@@ -1422,23 +1422,9 @@ static struct quotactl_ops xfs_quotactl_operations = {
+ 	.set_xquota		= xfs_fs_setxquota,
+ };
  
-+	mutex_lock(&type->fs_supers_lock);
- retry:
- 	spin_lock(&sb_lock);
- 	if (test) {
-@@ -348,14 +363,17 @@ retry:
- 				goto retry;
- 			if (s)
- 				destroy_super(s);
-+			mutex_unlock(&type->fs_supers_lock);
- 			return old;
- 		}
- 	}
- 	if (!s) {
- 		spin_unlock(&sb_lock);
- 		s = alloc_super(type);
--		if (!s)
-+		if (!s) {
-+			mutex_unlock(&type->fs_supers_lock);
- 			return ERR_PTR(-ENOMEM);
-+		}
- 		goto retry;
- 	}
- 		
-@@ -363,14 +381,41 @@ retry:
- 	if (err) {
- 		spin_unlock(&sb_lock);
- 		destroy_super(s);
-+		mutex_unlock(&type->fs_supers_lock);
- 		return ERR_PTR(err);
- 	}
-+
-+	/* If this is the first superblock of this particular filesystem,
-+	 * run the init routine, if any.  If we're going to do this, then we
-+	 * also need to drop the sb_lock spinlock.
-+	 */
-+	if (list_empty(&type->fs_supers) && type->init) {
-+		spin_unlock(&sb_lock);
-+
-+		/* We can do this, because we're holding the fs_supers_lock
-+		 * mutex.
-+		 */
-+		err = type->init();
-+		if (err < 0) {
-+			/* If the filesystem failed to initialise, then back
-+			 * out, destroy the superblock and return the error.
-+			 */
-+			destroy_super(s);
-+			mutex_unlock(&type->fs_supers_lock);
-+			return ERR_PTR(err);
-+		}
-+
-+		spin_lock(&sb_lock);
-+	}
-+
- 	s->s_type = type;
- 	strlcpy(s->s_id, type->name, sizeof(s->s_id));
- 	list_add_tail(&s->s_list, &super_blocks);
- 	list_add(&s->s_instances, &type->fs_supers);
- 	spin_unlock(&sb_lock);
- 	get_filesystem(type);
-+
-+	mutex_unlock(&type->fs_supers_lock);
- 	return s;
+-static struct file_system_type xfs_fs_type = {
+-	.owner			= THIS_MODULE,
+-	.name			= "xfs",
+-	.get_sb			= xfs_fs_get_sb,
+-	.kill_sb		= kill_block_super,
+-	.fs_flags		= FS_REQUIRES_DEV,
+-};
+-
+-
+-STATIC int __init
+-init_xfs_fs( void )
++static int xfs_fs_init(void)
+ {
+-	int			error;
+-	static char		message[] __initdata = KERN_INFO \
+-		XFS_VERSION_STRING " with " XFS_BUILD_OPTIONS " enabled\n";
+-
+-	printk(message);
++	int error;
+ 
+ 	ktrace_init(64);
+ 
+@@ -1455,14 +1441,8 @@ init_xfs_fs( void )
+ 	uuid_init();
+ 	vfs_initquota();
+ 
+-	error = register_filesystem(&xfs_fs_type);
+-	if (error)
+-		goto undo_register;
+ 	return 0;
+ 
+-undo_register:
+-	xfs_buf_terminate();
+-
+ undo_buffers:
+ 	xfs_destroy_zones();
+ 
+@@ -1470,17 +1450,42 @@ undo_zones:
+ 	return error;
  }
  
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index f413085..92d446f 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1477,8 +1477,11 @@ struct file_system_type {
- 	int (*get_sb) (struct file_system_type *, int,
- 		       const char *, void *, struct vfsmount *);
- 	void (*kill_sb) (struct super_block *);
-+	int (*init) (void);
-+	void (*exit) (void);
- 	struct module *owner;
- 	struct file_system_type * next;
-+	struct mutex fs_supers_lock;
- 	struct list_head fs_supers;
+-STATIC void __exit
+-exit_xfs_fs( void )
++static void xfs_fs_exit(void)
+ {
+ 	vfs_exitquota();
+-	unregister_filesystem(&xfs_fs_type);
+ 	xfs_cleanup();
+ 	xfs_buf_terminate();
+ 	xfs_destroy_zones();
+ 	ktrace_uninit();
+ }
  
- 	struct lock_class_key s_lock_key;
++static struct file_system_type xfs_fs_type = {
++	.owner			= THIS_MODULE,
++	.name			= "xfs",
++	.get_sb			= xfs_fs_get_sb,
++	.kill_sb		= kill_block_super,
++	.fs_flags		= FS_REQUIRES_DEV,
++	.init			= xfs_fs_init,
++	.exit			= xfs_fs_exit,
++};
++
++
++STATIC int __init
++init_xfs_fs( void )
++{
++	static char		message[] __initdata = KERN_INFO \
++		XFS_VERSION_STRING " with " XFS_BUILD_OPTIONS " enabled\n";
++
++	printk(message);
++	return register_filesystem(&xfs_fs_type);
++}
++
++STATIC void __exit
++exit_xfs_fs( void )
++{
++	unregister_filesystem(&xfs_fs_type);
++}
++
+ module_init(init_xfs_fs);
+ module_exit(exit_xfs_fs);
+ 
 -- 
 1.5.4.3
 
