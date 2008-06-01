@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbYFAMNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYFAMU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130AbYFAMNB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 08:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYFAMMv
+	id S1752822AbYFAMU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 08:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYFAMUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 08:12:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49868 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbYFAMMv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 08:12:51 -0400
-Date: Sun, 1 Jun 2008 08:12:49 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: j.mell@t-online.de
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Chuck Ebbert <76306.1226@compuserve.com>,
-       Arjan van de Ven <arjan@linux.intel.com>, Andrew Morton <akpm@osdl.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
-In-Reply-To: <200806011101.06491.j.mell@t-online.de>
-Message-ID: <Pine.LNX.4.58.0806010808180.21278@gandalf.stny.rr.com>
-References: <200806011101.06491.j.mell@t-online.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 1 Jun 2008 08:20:46 -0400
+Received: from 1wt.eu ([62.212.114.60]:1362 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750863AbYFAMUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 08:20:46 -0400
+Date: Sun, 1 Jun 2008 14:20:33 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s peak for read, ~650MiB/s peak for write?
+Message-ID: <20080601122033.GE5609@1wt.eu>
+References: <alpine.DEB.1.10.0806010539430.24757@p34.internal.lan> <alpine.DEB.1.10.0806010700170.10729@p34.internal.lan> <alpine.DEB.1.10.0806010721230.10729@p34.internal.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0806010721230.10729@p34.internal.lan>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jun 01, 2008 at 07:26:09AM -0400, Justin Piszcz wrote:
+> 
+> 
+> On Sun, 1 Jun 2008, Justin Piszcz wrote:
+> 
+> >
+> >On Sun, 1 Jun 2008, Justin Piszcz wrote:
+> >
+> >>I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and 
+> >>it appears I have hit the limit, if I were able to get the maximum speed 
+> >>of all drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774 
+> >>MiB/s (currently running badblocks on all drives)..
+> >
+> >Small correction, they are 7200.11 Seagate Desktop Drives (ST31000340AS), 
+> >not enterprise drives:
+> >
+> >http://www.seagate.com/ww/v/index.jsp?vgnextoid=0732f141e7f43110VgnVCM100000f5ee0a0aRCRD
+> >http://www.newegg.com/Product/Product.aspx?Item=N82E16822148274
+> >
+> >
+> 
+> http://www.intel.com/products/chipsets/g965/diagram.jpg
+> 
+> Basically it appears I am hammering the southbridge as for this board the 
+> PCI-e (x1) slots also traverse through the southbridge.
+> 
+>  6_SATA -> G965 ICH8
+> 3_PCI-e -> G965 ICH8
+> 
+> >From which has to ship that data across the DMI (2GB) link to the 
+> northbridge.
+> 
+> If one utilized a 12, 16 or 24 port raid card (but used SW RAID) on the 
+> x16 slot on the northbridge itself, would this barrier exist as the:
+> GMCH<->CPU is (8.5GB/s)..?
+> 
+> Also on the X38 and X48 the speed increases slightly:
+> http://www.intel.com/products/chipsets/X38/X38_Block_Diagram.jpg (10.6GB/s)
+> http://www.intel.com/products/chipsets/x48/x48_block_diagram.jpg (12.8GB/s)
+> 
+> If one asks why would one need such speed?
 
-[
-  Fixed Andi's email and added those that Signed off on the
-  problem commit.
-]
+It looks like graphic games are pushing the technologies to their
+limits, which is good for us. I have bought X38 motherboards for
+10 Gbps experimentations, and this chipset is perfectly capable of
+feeding two Myri10GE NICs (20 Gbps total). This is 2.5 GB/s, not
+counting overhead. So I/O bandwidth is a premium requirement today.
 
+Other chipsets I have tested (945 and 965) were very poor (about 4.7
+and 6.5 Gbps respectively if my memory serves me right).
 
-On Sun, 1 Jun 2008 j.mell@t-online.de wrote:
+Willy
 
->
-> Hi,
->
-> > On Sat, May 17, 2008 at 06:31:08PM +0200, J?rgen Mell wrote:
-> > I tracked this down to a single kernel configuration option. If
-> > CONFIG_PREEMPT is set to 'y' the application will start crashing.
-> > If  CONFIG_PREEMPT is replaced by CONFIG_PREEMPT_VOLUNTARY, the
-> > application will run without errors.
->
-> With lots of help from Heinz-Bernd, Bernd and Oliver of the Einstein@Home
-> project I now found the the following:
->
-> 1. Einstein@home will crash with trap #8 if the problem is present. The
-> error occurs between some minutes after starting Einstein up to more than
-> 10 hours after starting Einstein. This seems to depend on how many other
-> applications are used on the system (it takes much more time, if only the
-> Einstein processes are active on the system).
->
-> 2. The error was introduced between kernel.org kernels 2.6.19.7 and 2.6.20.
-> It is still present in 2.6.26-rc4
->
-> 3. If I revert the patch
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=acc207616a91a413a50fdd8847a747c4a7324167
-
-Hi,
-
-Thanks for bisecting this. I added the commiter and those that signed off
-on the problem commit. They are the ones that will need to help you solve
-this.
-
--- Steve
-
-
->
-> in 2.6.20, Einstein does not crash anymore (program was run for more than
-> 30 hours while system was in normal use with programming, multi-media
-> etc.). Unfortunately git refuses to revert this patch in 2.6.26-rc4.
->
-> Now I need some help as I am not an expert in this area. What I assume is
-> that either the state of the FPU is not always restored (perhaps if the
-> process is swapped between the two cores?) or it is restored more than
-> once. Please keep in mind, that I am always running two Einstein processes
-> simultaneously on my two cores!
-> I am willing to do further testing of this problem if someone can give me a
-> hint how to continue.
->
-> Bye,
->
->           Jürgen
->
