@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbYFAKcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbYFAKeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754266AbYFAKcB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 06:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYFAKbw
+	id S1756046AbYFAKeL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 06:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYFAKd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 06:31:52 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:58748 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751347AbYFAKbw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 06:31:52 -0400
-Message-ID: <48427A13.7050704@cs.helsinki.fi>
-Date: Sun, 01 Jun 2008 13:29:39 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       David Howells <dhowells@redhat.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       akpm@linux-foundation.org, mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-References: <483DBA85.2060502@cs.helsinki.fi> <Pine.LNX.4.64.0805281325260.932@schroedinger.engr.sgi.com> <483DBFC3.1070108@cs.helsinki.fi> <29611.1212066517@redhat.com> <Pine.LNX.4.64.0805291620250.5415@sbz-30.cs.helsinki.fi> <20080529211207.GB13663@linux-sh.org> <484256AA.3000709@cs.helsinki.fi> <Pine.LNX.4.64.0806011119420.11749@sbz-30.cs.Helsinki.FI> <20080601082427.GC25429@linux-sh.org> <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI> <20080601102401.GD25429@linux-sh.org>
-In-Reply-To: <20080601102401.GD25429@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 06:33:57 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39280 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751714AbYFAKd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 06:33:57 -0400
+Date: Sun, 1 Jun 2008 12:34:37 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k libc5 regression
+Message-ID: <20080601103437.GA18798@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0805262226280.11902@anakin> <Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz> <20080601005338.3affe880.akpm@linux-foundation.org> <Pine.LNX.4.64.0806011035420.5559@anakin> <20080601014824.528173bb.akpm@linux-foundation.org> <20080601092205.GA18045@uranus.ravnborg.org> <20080601024105.b350d1b7.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080601024105.b350d1b7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 12:13:02PM +0300, Pekka J Enberg wrote:
->> I mean, assuming the BUG_ON bits are bogus, then we should always pass the 
->> pointer to the allocator. I audited most of the callers and they all seem 
->> to be really just using kmalloc() for allocation anyway.
->>
->> What do you think?
+On Sun, Jun 01, 2008 at 02:41:05AM -0700, Andrew Morton wrote:
+> On Sun, 1 Jun 2008 11:22:05 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > On Sun, Jun 01, 2008 at 01:48:24AM -0700, Andrew Morton wrote:
+> > > On Sun, 1 Jun 2008 10:37:59 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > 
+> > > > > I shall merge this fix into my tree (y'know - the one where memory
+> > > > > management patches are hosted) and I'll get it into 2.6.26 and shall
+> > > > > offer it to the -stable team.  This will cause me to get collisions
+> > > > > with the duplicated patch in linux-next but fortunately it is small. 
+> > > > > This time.
+> > > > 
+> > > > So what's the appropriate way to handle this?
+> > > 
+> > > Well at least please reply letting people know what's happening with it.
+> > > 
+> > > Ask me to merge it and remind me that it's needed in -stable.  Or just
+> > > send the thing to Linus and -stable immediately.
+> > 
+> > I recall adding:
+> > Cc: stable@kernel.org
+> > 
+> > will automagically tell the stable team when this is
+> > merged and that it is a -stable candidate.
+> > 
+> 
+> Yup.  Except I always use the <> wrappers around the email address.  In
+> fact my scripts require that (and probably shouldn't).  We don't seem
+> very consistent with that.
 
-Paul Mundt wrote:
-> Isn't this what my original patch did? ;-)
+Email addresses are often verbatim copied from MAINTAINERS
+where we not yet have proper format (no <>).
+So relying on <> in Cc: is not good.
 
-Oh, almost, you had this bit in ksize() of SLAB:
+For stable on 20 where without <> since 2.6.20 compered to
+291 with <>.
 
-+	page = virt_to_head_page(objp);
-+	if (unlikely(!PageSlab(page)))
-+		return PAGE_SIZE << compound_order(page);
-
-Did you actually need it for something?
-
-		Pekka
+	Sam
