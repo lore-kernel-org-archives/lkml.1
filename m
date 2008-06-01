@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbYFAJlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbYFAJpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756984AbYFAJlo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 05:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYFAJlg
+	id S1756945AbYFAJpu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 05:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYFAJpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 05:41:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52463 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752799AbYFAJlf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 05:41:35 -0400
-Date: Sun, 1 Jun 2008 02:41:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Jiri Kosina <jkosina@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k libc5 regression
-Message-Id: <20080601024105.b350d1b7.akpm@linux-foundation.org>
-In-Reply-To: <20080601092205.GA18045@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0805262226280.11902@anakin>
-	<Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
-	<20080601005338.3affe880.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0806011035420.5559@anakin>
-	<20080601014824.528173bb.akpm@linux-foundation.org>
-	<20080601092205.GA18045@uranus.ravnborg.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 05:45:41 -0400
+Received: from lucidpixels.com ([75.144.35.66]:37108 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753144AbYFAJpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 05:45:40 -0400
+Date: Sun, 1 Jun 2008 05:45:39 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
+Subject: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s
+ peak for read, ~650MiB/s peak for write?
+Message-ID: <alpine.DEB.1.10.0806010539430.24757@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jun 2008 11:22:05 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and 
+it appears I have hit the limit, if I were able to get the maximum speed 
+of all drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774 
+MiB/s (currently running badblocks on all drives)..
 
-> On Sun, Jun 01, 2008 at 01:48:24AM -0700, Andrew Morton wrote:
-> > On Sun, 1 Jun 2008 10:37:59 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > 
-> > > > I shall merge this fix into my tree (y'know - the one where memory
-> > > > management patches are hosted) and I'll get it into 2.6.26 and shall
-> > > > offer it to the -stable team.  This will cause me to get collisions
-> > > > with the duplicated patch in linux-next but fortunately it is small. 
-> > > > This time.
-> > > 
-> > > So what's the appropriate way to handle this?
-> > 
-> > Well at least please reply letting people know what's happening with it.
-> > 
-> > Ask me to merge it and remind me that it's needed in -stable.  Or just
-> > send the thing to Linus and -stable immediately.
-> 
-> I recall adding:
-> Cc: stable@kernel.org
-> 
-> will automagically tell the stable team when this is
-> merged and that it is a -stable candidate.
-> 
+I am testing some drives for someone and was curious to see how far one 
+can push the disks/backplane to their theoretical limit.
 
-Yup.  Except I always use the <> wrappers around the email address.  In
-fact my scripts require that (and probably shouldn't).  We don't seem
-very consistent with that.
+dstat output:
+----total-cpu-usage---- -dsk/total- -net/total- ---paging-- ---system--
+usr sys idl wai hiq siq| read  writ| recv  send|  in   out | int   csw
+   1  12   0  83   3   2|   -     0 |   0     0 |   0     0 |  13k   23k
+   1  11   0  84   2   2| 774M    0 |2100B 7373B|   0     0 |  13k   23k
+   1  12   0  83   3   2| 774M    0 |   0     0 |   0     0 |  13k   23k
+   1  11   0  82   4   2| 774M    0 |2030B 5178B|   0     0 |  13k   23k
+   1  11   0  83   4   2| 774M    0 |   0     0 |   0     0 |  13k   23k
+   1  11   0  83   3   2| 774M    0 |2264B 6225B|   0     0 |  13k   23k
+
+vmstat 1 output:
+~$ vmstat 1
+procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+  0 12    124 3841772      8  13012    0    0 12595 163880  379  352  0 31 37 32
+  2 12    124 3841772      8  12992    0    0 791744     8 12796 23033  1 18  0 82
+  0 12    124 3841772      8  12992    0    0 792192     0 12677 22918  1 15  0 84
+  0 12    124 3841772      8  12992    0    0 792960     0 12894 22929  1 15  0 84
+
+When I was writing to all of the drives it was maxing out around ~650 
+MiB/s.
+
+I also have 2 raptors on a PCI card (as I ran out of PCI-e cards) and:
+When I read from 1 of the raptors (w/ dd/example shown below) the speed 
+drops:
+
+   1  13   0  79   5   3| 764M    0 |2240B 7105B|   0     0 |  12k   21k
+   1  13   0  80   5   2| 764M    0 |   0     0 |   0     0 |  12k   21k
+   1  11   0  82   5   2| 764M    0 |2170B 5446B|   0     0 |  12k   21k
+   1  12   0  81   5   2| 762M    0 |   0     0 |   0     0 |  12k   21k
+
+Does/has anyone done this with server intel board/would greater speeds be 
+achievable?
+
+Also, how does AMD fair in this regard?  Has anyone run similar tests?
+For instance if you have 12 disks in your host you could:
+
+dd if=/dev/disk1 of=/dev/null bs=1M
+dd if=/dev/disk2 of=/dev/null bs=1M
+
+What rate(s) do you get?
+
+Justin.
