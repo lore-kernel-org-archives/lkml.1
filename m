@@ -1,89 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYFAJNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbYFAJVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbYFAJNR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 05:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYFAJNH
+	id S1756363AbYFAJVg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 05:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYFAJV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 05:13:07 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34554 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751654AbYFAJNG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 05:13:06 -0400
-Date: Sun, 1 Jun 2008 12:13:02 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Paul Mundt <lethal@linux-sh.org>
-cc: David Howells <dhowells@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       akpm@linux-foundation.org, mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-In-Reply-To: <20080601082427.GC25429@linux-sh.org>
-Message-ID: <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0805281646470.27125@sbz-30.cs.Helsinki.FI>
- <20080528153648.GA27783@linux-sh.org> <483DBA85.2060502@cs.helsinki.fi>
- <Pine.LNX.4.64.0805281325260.932@schroedinger.engr.sgi.com>
- <483DBFC3.1070108@cs.helsinki.fi> <29611.1212066517@redhat.com>
- <Pine.LNX.4.64.0805291620250.5415@sbz-30.cs.helsinki.fi>
- <20080529211207.GB13663@linux-sh.org> <484256AA.3000709@cs.helsinki.fi>
- <Pine.LNX.4.64.0806011119420.11749@sbz-30.cs.Helsinki.FI>
- <20080601082427.GC25429@linux-sh.org>
+	Sun, 1 Jun 2008 05:21:26 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:40295 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752035AbYFAJVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 05:21:25 -0400
+Date: Sun, 1 Jun 2008 11:22:05 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k libc5 regression
+Message-ID: <20080601092205.GA18045@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0805262226280.11902@anakin> <Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz> <20080601005338.3affe880.akpm@linux-foundation.org> <Pine.LNX.4.64.0806011035420.5559@anakin> <20080601014824.528173bb.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080601014824.528173bb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
-
-On Sun, 1 Jun 2008, Paul Mundt wrote:
-> This still needs to be virt_to_head_page() I think.
+On Sun, Jun 01, 2008 at 01:48:24AM -0700, Andrew Morton wrote:
+> On Sun, 1 Jun 2008 10:37:59 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > 
-> I don't have my nommu boards at home, so I'll test at the office tomorow
-> morning and let you know.
+> > > I shall merge this fix into my tree (y'know - the one where memory
+> > > management patches are hosted) and I'll get it into 2.6.26 and shall
+> > > offer it to the -stable team.  This will cause me to get collisions
+> > > with the duplicated patch in linux-next but fortunately it is small. 
+> > > This time.
+> > 
+> > So what's the appropriate way to handle this?
+> 
+> Well at least please reply letting people know what's happening with it.
+> 
+> Ask me to merge it and remind me that it's needed in -stable.  Or just
+> send the thing to Linus and -stable immediately.
 
-I was about to send a patch that fixes some of the kobjsize() abuses to 
-use ksize() but then I realized that what we probably should do is 
-something like this instead.
+I recall adding:
+Cc: stable@kernel.org
 
-I mean, assuming the BUG_ON bits are bogus, then we should always pass the 
-pointer to the allocator. I audited most of the callers and they all seem 
-to be really just using kmalloc() for allocation anyway.
+will automagically tell the stable team when this is
+merged and that it is a -stable candidate.
 
-What do you think?
-
-		Pekka
-
-diff --git a/mm/nommu.c b/mm/nommu.c
-index dca93fc..fc1ff52 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -103,22 +103,20 @@ EXPORT_SYMBOL(vmtruncate);
-  */
- unsigned int kobjsize(const void *objp)
- {
--	struct page *page;
--
- 	/*
- 	 * If the object we have should not have ksize performed on it,
- 	 * return size of 0
- 	 */
--	if (!objp || (unsigned long)objp >= memory_end || !((page = virt_to_page(objp))))
-+	if (!objp)
- 		return 0;
- 
--	if (PageSlab(page))
--		return ksize(objp);
-+	if ((unsigned long)objp >= memory_end)
-+		return 0;
- 
--	BUG_ON(page->index < 0);
--	BUG_ON(page->index >= MAX_ORDER);
-+	if (!virt_to_page(objp))
-+		return 0;
- 
--	return (PAGE_SIZE << page->index);
-+	return ksize(objp);
- }
- 
- /*
+	Sam
