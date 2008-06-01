@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbYFALBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYFALCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752913AbYFALBW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 07:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYFALBL
+	id S1752649AbYFALCQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 07:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYFALB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 07:01:11 -0400
-Received: from lucidpixels.com ([75.144.35.66]:39073 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbYFALBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 07:01:11 -0400
-Date: Sun, 1 Jun 2008 07:01:09 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Limits of the 965 chipset & 3 PCI-e cards/southbridge? ~774MiB/s
- peak for read, ~650MiB/s peak for write?
-In-Reply-To: <alpine.DEB.1.10.0806010539430.24757@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0806010700170.10729@p34.internal.lan>
-References: <alpine.DEB.1.10.0806010539430.24757@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 1 Jun 2008 07:01:59 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:56874 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbYFALB6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 07:01:58 -0400
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Justin Mattock" <justinmattock@gmail.com>
+Subject: Re: [Bug #10825] appletouch after wakeup
+Date: Sun, 1 Jun 2008 12:40:55 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <dd18b0c30805311510i14c2d3ffi9b94e68d5b539677@mail.gmail.com> <dd18b0c30805311621w7d06a6a5l3ab7e5c0a38132eb@mail.gmail.com>
+In-Reply-To: <dd18b0c30805311621w7d06a6a5l3ab7e5c0a38132eb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806011240.56514.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Sonntag, 1. Juni 2008 01:21:44 schrieb Justin Mattock:
+>  { USB_DEVICE(0x05ac, 0x021a), .driver_info = USB_QUIRK_RESET_RESUME },
 
-On Sun, 1 Jun 2008, Justin Piszcz wrote:
+This one.
 
-> I have 12 enterprise-class seagate 1TiB disks on a 965 desktop board and it 
-> appears I have hit the limit, if I were able to get the maximum speed of all 
-> drives, ~70MiB/avg * 12 = 840MiB/s but it seems to stop aound 774 MiB/s 
-> (currently running badblocks on all drives)..
-
-Small correction, they are 7200.11 Seagate Desktop Drives (ST31000340AS), 
-not enterprise drives:
-
-http://www.seagate.com/ww/v/index.jsp?vgnextoid=0732f141e7f43110VgnVCM100000f5ee0a0aRCRD
-http://www.newegg.com/Product/Product.aspx?Item=N82E16822148274
-
+	Regards
+		Oliver
