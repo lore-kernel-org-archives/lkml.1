@@ -1,92 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbYFAQJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYFAQKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566AbYFAQJR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 12:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYFAQJD
+	id S1752641AbYFAQKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 12:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751066AbYFAQKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 12:09:03 -0400
-Received: from mx1.suse.de ([195.135.220.2]:33628 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbYFAQJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 12:09:02 -0400
-Date: Sun, 1 Jun 2008 18:09:00 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Akinobu@suse.de, "Mita <akinobu.mita"@gmail.com
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 05/23] isdn: use simple_read_from_buffer
-Message-ID: <20080601160900.GA6831@pingi.kke.suse.de>
-Mail-Followup-To: Akinobu@suse.de, "Mita <akinobu.mita"@gmail.com,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20080601150017.176540188@gmail.com> <20080601150114.022504880@gmail.com>
+	Sun, 1 Jun 2008 12:10:11 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3764 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750936AbYFAQKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 12:10:10 -0400
+Date: Sun, 1 Jun 2008 18:09:51 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Lars Noschinski <lars@public.noschinski.de>
+Cc: Jiri Kosina <jkosina@suse.cz>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Miller <davem@davemloft.net>,
+       ksummit-2008-discuss@lists.linux-foundation.org, penberg@cs.helsinki.fi,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Subject: store-same-blocksonce (was Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project)
+Message-ID: <20080601160950.GA5555@ucw.cz>
+References: <1212010931.3445.103.camel@localhost.localdomain> <1212013125.2236.58.camel@shinybook.infradead.org> <1212014127.3445.115.camel@localhost.localdomain> <20080528.230934.131215087.davem@davemloft.net> <1212071813.3428.22.camel@localhost.localdomain> <Pine.LNX.4.64.0805291656000.6718@jikos.suse.cz> <20080531192120.GA6843@lars.home.noschinski.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080601150114.022504880@gmail.com>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.54-0.2.5-smp x86_64
+In-Reply-To: <20080531192120.GA6843@lars.home.noschinski.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 12:00:22AM +0900, Akinobu@suse.de wrote:
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Hi!
 
-Acked-by: Karsten Keil <kkeil@suse.de>
+> The project I was later involved on was writing a file 
+> system, which
+> stores blocks with the same content only once. In a two 
+> months period
+> (with other lectures to attend to), we managed to 
+> produce such a thing;
+> but it was very unreliable (which reminds me, I am 
+> supposed to publish
+> the results of this project here)
 
-> Cc: Karsten Keil <kkeil@suse.de>
-> ---
->  drivers/isdn/hysdn/hysdn_procconf.c |   27 +++++++--------------------
->  1 file changed, 7 insertions(+), 20 deletions(-)
-> 
-> Index: 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
-> ===================================================================
-> --- 2.6-git.orig/drivers/isdn/hysdn/hysdn_procconf.c
-> +++ 2.6-git/drivers/isdn/hysdn/hysdn_procconf.c
-> @@ -207,30 +207,17 @@ hysdn_conf_write(struct file *file, cons
->  /* read conf file -> output card info data */
->  /*******************************************/
->  static ssize_t
-> -hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t * off)
-> +hysdn_conf_read(struct file *file, char __user *buf, size_t count, loff_t *off)
->  {
->  	char *cp;
-> -	int i;
->  
-> -	if (file->f_mode & FMODE_READ) {
-> -		if (!(cp = file->private_data))
-> -			return (-EFAULT);	/* should never happen */
-> -		i = strlen(cp);	/* get total string length */
-> -		if (*off < i) {
-> -			/* still bytes to transfer */
-> -			cp += *off;	/* point to desired data offset */
-> -			i -= *off;	/* remaining length */
-> -			if (i > count)
-> -				i = count;	/* limit length to transfer */
-> -			if (copy_to_user(buf, cp, i))
-> -				return (-EFAULT);	/* copy error */
-> -			*off += i;	/* adjust offset */
-> -		} else
-> -			return (0);
-> -	} else
-> -		return (-EPERM);	/* no permission to read */
-> +	if (!(file->f_mode & FMODE_READ))
-> +		return -EPERM;	/* no permission to read */
->  
-> -	return (i);
-> +	if (!(cp = file->private_data))
-> +		return -EFAULT;	/* should never happen */
-> +
-> +	return simple_read_from_buffer(buf, count, off, cp, strlen(cp));
->  }				/* hysdn_conf_read */
->  
->  /******************/
-> 
-> -- 
-
+Yep, sounds like a cool project, actually. I guess it could be very
+useful for people like me that store many kernel trees around, and
+sometimes run out of  disk space.
+							Pavel
 -- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
