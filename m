@@ -1,89 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYFABfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYFABrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbYFABfL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 21:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYFABe6
+	id S1755894AbYFABrA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 May 2008 21:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbYFABqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 21:34:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:38781 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754122AbYFABe5 (ORCPT
+	Sat, 31 May 2008 21:46:49 -0400
+Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:37995 "EHLO
+	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754278AbYFABqs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 21:34:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=ValwgaafoNagOZzkZeQvUK5KkAbaM0qXP0CiLDT+9RspuxhngWQOmpvMqgFGxFaDeshld1+yJO2NvqPYY+H+1LTEmEgFzZWeSthYhj2wQ+KlRZIAdMV8rVttuFli/DkUbum+b8KK+m5mJDapxGqZXRJtZIFW419nWmgPmgMFB7U=
-Date: Sun, 1 Jun 2008 09:34:10 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: davem@davemloft.net
-Cc: arjan@linux.intel.com, marcel@holtmann.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org
-Subject: [PATCH][resend] rfcomm deadlock fix
-Message-ID: <20080601013410.GA3600@darkstar.domain.name>
+	Sat, 31 May 2008 21:46:48 -0400
+Date: Sun, 1 Jun 2008 02:46:22 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Bill Fink <billfink@mindspring.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Cammarata <jimi@sngx.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
+Message-ID: <20080601014620.GG30769@solarflare.com>
+References: <482F610D.2080108@sngx.net> <20080518003104.GK28241@solarflare.com> <482FBA09.80201@sngx.net> <483E0AAE.2020107@sngx.net> <20080528221118.63da4092.akpm@linux-foundation.org> <483EA2D1.8050603@sngx.net> <20080529154525.3916c7b5@core> <20080530151250.b44a119a.billfink@mindspring.com> <20080531131143.516ca56e@core> <20080531195702.0b879dd1.billfink@mindspring.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20080531195702.0b879dd1.billfink@mindspring.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's logic in __rfcomm_dlc_close:
-	rfcomm_dlc_lock(d);
-	d->state = BT_CLOSED;
-	d->state_changed(d, err);
-	rfcomm_dlc_unlock(d);
+Bill Fink wrote:
+<snip>
+> Yes, every individual Linux network administrator can re-create the
+> wheel by devising their own scripts, but it makes much more sense
+> to me to implement a simple general kernel mechanism once that could
+> be used generically, than to have hundreds (or thousands) of Linux
+> network administrators each having to do it themselves (perhaps
+> multiple times if they have a variety of types of systems and types
+> of NICs).
 
-In rfcomm_dev_state_change, it's possible that rfcomm_dev_put try to take the
-dlc lock, then we will deadlock.
+The ethtool interface is pretty generic, even if the names aren't.
+Here's some Python code I just knocked up which demonstrates how
+to get a set of named stats.  It shouldn't be terribly hard to
+extend this to saving and subtracting stat sets.
 
-Here fixed it by unlock dlc before rfcomm_dev_get in rfcomm_dev_state_change.
+Ben.
 
-why not unlock just before rfcomm_dev_put? it's because there's another problem.
-rfcomm_dev_get/rfcomm_dev_del will take rfcomm_dev_lock, but in rfcomm_dev_add
-the lock order is : rfcomm_dev_lock --> dlc lock
+import array, fcntl, os, socket, struct
 
-so I unlock dlc before the taken of rfcomm_dev_lock.
- 
-Actually it's a regression caused by commit
-1905f6c736cb618e07eca0c96e60e3c024023428, the dlc state_change could be two
-callbacks : rfcomm_sk_state_change and rfcomm_dev_state_change. I missed the rfcomm_sk_state_change that time.
+SIOCETHTOOL = 0x8946
 
-Thanks Arjan van de Ven <arjan@linux.intel.com> for the effort in commit
-4c8411f8c115def968820a4df6658ccfd55d7f1a
-but he missed the rfcomm_dev_state_change lock issue.
+ETH_GSTRING_LEN = 32
+ETH_SS_STATS = 1
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+ETHTOOL_GDRVINFO = 0x00000003
+ETHTOOL_GSTRINGS = 0x0000001b
+ETHTOOL_GSTATS = 0x0000001d
 
----
-net/bluetooth/rfcomm/tty.c |   13 ++++++++++++-
-1 file changed, 12 insertions(+), 1 deletion(-)
+def ethtool(sock, name, buf):
+    ifreq = struct.pack('16sP', name, buf.buffer_info()[0])
+    fcntl.ioctl(sock.fileno(), SIOCETHTOOL, ifreq)
 
-diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
---- linux/net/bluetooth/rfcomm/tty.c	2008-05-30 15:46:33.000000000 +0800
-+++ linux.new/net/bluetooth/rfcomm/tty.c	2008-05-30 17:08:30.000000000 +0800
-@@ -566,11 +566,22 @@ static void rfcomm_dev_state_change(stru
- 	if (dlc->state == BT_CLOSED) {
- 		if (!dev->tty) {
- 			if (test_bit(RFCOMM_RELEASE_ONHUP, &dev->flags)) {
--				if (rfcomm_dev_get(dev->id) == NULL)
-+				/* Drop DLC lock here to avoid deadlock
-+				 * 1. rfcomm_dev_get will take rfcomm_dev_lock
-+				 *    but in rfcomm_dev_add there's lock order:
-+				 *    rfcomm_dev_lock -> dlc lock
-+				 * 2. rfcomm_dev_put will deaklock if it's
-+				 *    the last reference
-+				 */
-+				rfcomm_dlc_unlock(dlc);
-+				if (rfcomm_dev_get(dev->id) == NULL) {
-+					rfcomm_dlc_lock(dlc);
- 					return;
-+				}
- 
- 				rfcomm_dev_del(dev);
- 				rfcomm_dev_put(dev);
-+				rfcomm_dlc_lock(dlc);
- 			}
- 		} else
- 			tty_hangup(dev->tty);
+def ethtool_gdrvinfo(sock, name):
+    cmd = struct.pack('=I', ETHTOOL_GDRVINFO)
+    buf = array.array('c', cmd)
+    format = '=32s32s32s32s32x12xIIIII'
+    buf.extend('\0' * struct.calcsize(format))
+    ethtool(sock, name, buf)
+    return dict(zip(['driver', 'version', 'fw_version', 'bus_info',
+                     'n_priv_flags', 'n_stats', 'testinfo_len',
+                     'eedump_len', 'regdump_len'],
+                    struct.unpack(format, buf[len(cmd):])))
+
+def ethtool_gstrings(sock, name, string_set, count):
+    cmd = struct.pack('=II', ETHTOOL_GSTRINGS, string_set)
+    buf = array.array('c', cmd)
+    buf.extend('\0' * (4 + count * ETH_GSTRING_LEN))
+    ethtool(sock, name, buf)
+    def nth_string(buf, n):
+        data = buf[12 + n * ETH_GSTRING_LEN : 12 + (n + 1) * ETH_GSTRING_LEN]
+        return data.tostring().replace('\0', '')
+    return [nth_string(buf, n) for n in range(count)]
+
+def ethtool_gstats(sock, name, count):
+    cmd = struct.pack('=I', ETHTOOL_GSTATS)
+    buf = array.array('c', cmd)
+    buf.extend('\0' * (4 + count * 8))
+    ethtool(sock, name, buf)
+    def nth_stat(buf, n):
+        data = buf[8 + n * 8 : 8 + (n + 1) * 8]
+        return struct.unpack('=Q', data)[0]
+    return [nth_stat(buf, n) for n in range(count)]
+
+if __name__ == '__main__':
+    import sys
+    name = sys.argv[1]
+    sock = socket.socket()
+    drvinfo = ethtool_gdrvinfo(sock, name)
+    count = drvinfo['n_stats']
+    print dict(zip(ethtool_gstrings(sock, name, ETH_SS_STATS, count),
+                   ethtool_gstats(sock, name, count)))
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
