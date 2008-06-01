@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYFAKXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYFAK0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbYFAKXv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 06:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYFAKXn
+	id S1756025AbYFAK0S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 06:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYFAK0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 06:23:43 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:42371 "EHLO smtp.drzeus.cx"
+	Sun, 1 Jun 2008 06:26:11 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:48953 "EHLO mx.gate01.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751457AbYFAKXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 06:23:42 -0400
-Date: Sun, 1 Jun 2008 12:23:36 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH 1/3] mmc: add support for card-detection polling
-Message-ID: <20080601122336.71915642@mjolnir.drzeus.cx>
-In-Reply-To: <20080523154340.GA24862@polina.dev.rtsoft.ru>
-References: <20080523154204.GA19803@polina.dev.rtsoft.ru>
-	<20080523154340.GA24862@polina.dev.rtsoft.ru>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.0; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751569AbYFAK0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 06:26:10 -0400
+Date: Sun, 1 Jun 2008 19:24:01 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: David Howells <dhowells@redhat.com>, Christoph Lameter <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+       akpm@linux-foundation.org, mpm@selenic.com
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
+Message-ID: <20080601102401.GD25429@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Pekka J Enberg <penberg@cs.helsinki.fi>,
+	David Howells <dhowells@redhat.com>,
+	Christoph Lameter <clameter@sgi.com>,
+	LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+	akpm@linux-foundation.org, mpm@selenic.com
+References: <483DBA85.2060502@cs.helsinki.fi> <Pine.LNX.4.64.0805281325260.932@schroedinger.engr.sgi.com> <483DBFC3.1070108@cs.helsinki.fi> <29611.1212066517@redhat.com> <Pine.LNX.4.64.0805291620250.5415@sbz-30.cs.helsinki.fi> <20080529211207.GB13663@linux-sh.org> <484256AA.3000709@cs.helsinki.fi> <Pine.LNX.4.64.0806011119420.11749@sbz-30.cs.Helsinki.FI> <20080601082427.GC25429@linux-sh.org> <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 May 2008 19:43:40 +0400
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> Some hosts (and boards that use mmc_spi) do not use interrupts on the CD
-> line, so they can't trigger mmc_detect_change. We want to poll the card
-> and see if there was a change. 1 second poll interval seems resonable.
+On Sun, Jun 01, 2008 at 12:13:02PM +0300, Pekka J Enberg wrote:
+> Hi Paul,
 > 
-> This patch also implements .get_cd() host operation, that could be used
-> by the hosts that are able to report card-detect status without need to
-> talk MMC.
+> On Sun, 1 Jun 2008, Paul Mundt wrote:
+> > This still needs to be virt_to_head_page() I think.
+> > 
+> > I don't have my nommu boards at home, so I'll test at the office tomorow
+> > morning and let you know.
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-
-Applied the whole lot. Thanks. :)
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+> I was about to send a patch that fixes some of the kobjsize() abuses to 
+> use ksize() but then I realized that what we probably should do is 
+> something like this instead.
+> 
+> I mean, assuming the BUG_ON bits are bogus, then we should always pass the 
+> pointer to the allocator. I audited most of the callers and they all seem 
+> to be really just using kmalloc() for allocation anyway.
+> 
+> What do you think?
+> 
+Isn't this what my original patch did? ;-)
