@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYFAVcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbYFAVgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504AbYFAVcV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 17:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYFAVcN
+	id S1754718AbYFAVgo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 17:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbYFAVgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 17:32:13 -0400
-Received: from sous-sol.org ([216.99.217.87]:53487 "EHLO sous-sol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbYFAVcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 17:32:13 -0400
-Date: Sun, 1 Jun 2008 14:31:39 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Thorsten Knabe <linux@thorsten-knabe.de>
-Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>
-Subject: Re: [BUG] Linux 2.6.25.4 task_struct leak
-Message-ID: <20080601213134.GJ4018@sequoia.sous-sol.org>
-References: <483EC624.90503@thorsten-knabe.de>
+	Sun, 1 Jun 2008 17:36:35 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:34050 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbYFAVge (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 17:36:34 -0400
+Message-ID: <48431726.1070206@keyaccess.nl>
+Date: Sun, 01 Jun 2008 23:39:50 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <483EC624.90503@thorsten-knabe.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [patch 06/15] PNP: increase I/O port & memory option address
+ sizes
+References: <20080530224853.976744229@ldl.fc.hp.com> <20080530224932.584460616@ldl.fc.hp.com>
+In-Reply-To: <20080530224932.584460616@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Cc: Jeff)
+On 31-05-08 00:48, Bjorn Helgaas wrote:
 
-* Thorsten Knabe (linux@thorsten-knabe.de) wrote:
-> [5.] Most recent kernel version which did not have the bug:
-> 2.6.23.17 does not leak task_structs.
-> 2.6.24 - 2.6.25.3 has not been tested
+> ACPI Address Space Descriptors can be up to 64 bits wide.
+> We should keep track of the whole thing when parsing resource
+> options, so this patch changes PNP port and mem option
+> fields from "unsigned short" and "unsigned int" to
+> "resource_size_t".
+> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Would you be able bisect this (or even just narrow it down a bit)?
+Acked-by: Rene Herman <rene.herman@gmail.com>
 
-> Running 2.6.23.16 i386 UML on a 2.6.25.4 i386 host does NOT leak
-> task_structs.
-> Running 64-bit UML guests has not been tested.
+Rene.
