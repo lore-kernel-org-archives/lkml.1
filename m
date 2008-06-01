@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510AbYFAOmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbYFAOnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752510AbYFAOmq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 10:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbYFAOmI
+	id S1753182AbYFAOnZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 10:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbYFAOnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 10:42:08 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:62536 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751151AbYFAOmG (ORCPT
+	Sun, 1 Jun 2008 10:43:17 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38602 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321AbYFAOnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 10:42:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=wct0CXF2hXcMpNOAitCrU3MtUMZLkGeUTtWIR8nRLvessq5Aw8/yyXzjfquxpVXWoKTBzH8WUyU7j0C5yxTumvg8BfjqNtbq4ZkuWA6IAsi2wwGMPsE4E0xzYDfhAa144ZemT5p2wKB2Q990Ykgs6LZqKNar4c229yPmo1wqiJ4=
-Message-ID: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com>
-Date: Sun, 1 Jun 2008 07:42:04 -0700
-From: "Avuton Olrich" <avuton@gmail.com>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my ALSA intel8x0 sound card regression
-Cc: "Rene Herman" <rene.herman@gmail.com>, "Len Brown" <len.brown@intel.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 10:43:16 -0400
+Date: Sun, 1 Jun 2008 15:42:52 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Pierre Ossman <drzeus@drzeus.cx>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Victor <linux@maxim.org.za>, Eric BENARD <ebenard@free.fr>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/7] mmc: at91_mci: add multiwrite switch
+Message-ID: <20080601144251.GS5818@flint.arm.linux.org.uk>
+References: <483FE9E7.7020707@atmel.com> <483FEE58.5000500@atmel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <483FEE58.5000500@atmel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My intel8x0 card stops working due to a regression; bisection and
-information below.
+On Fri, May 30, 2008 at 02:08:56PM +0200, Nicolas Ferre wrote:
+> at91_mci is capable of multiwrite. Enable it before it disappears.
 
-May have relationship to this thread
-http://groups.google.com/group/linux.kernel/browse_thread/thread/d5857287a36e71af/d7ae0a1490b7d142?lnk=st
+This doesn't look safe.  MULTIWRITE is not about whether you can do
+multi-writes, but whether you can properly report how many bytes were
+successfully written to the card _and_ the card acknowledged as having
+been successfully written.
 
-http://avuton.googlepages.com/intel8x0-config.gz
-http://avuton.googlepages.com/intel8x0-cpuinfo
-http://avuton.googlepages.com/intel8x0-dmesg
-http://avuton.googlepages.com/intel8x0-ioports
-http://avuton.googlepages.com/intel8x0-lspci-vvv
-http://avuton.googlepages.com/intel8x0-modules
-http://avuton.googlepages.com/intel8x0-ver-linux
-http://avuton.googlepages.com/intel8x0-version
+It looks to me as if the AT91 MMC driver reports no bytes, or all
+bytes if the FIFO reports that it became empty, which presumably it
+may do if you're unable to keep the FIFO full?
 
-commit 53052feb6ddd05cb2b5c6e89fb489bf83bbb6803
-Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Date:   Mon Apr 28 16:34:15 2008 -0600
+(Dropped Hans-JA¼rgen from the CC list since my mailer seems to corrupt
+the address.)
 
-    PNP: remove pnp_mem_flags() as an lvalue
-
-    A future change will change pnp_mem_flags() from a "#define that
-    simplifies to an lvalue" to "an inline function that returns the
-    flags value."
-
-    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-    Acked-By: Rene Herman <rene.herman@gmail.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
--- 
-avuton
---
- "I've got a fever. And the only prescription is more cowbell." --
-Christopher Walken
+If Pierre wants to remove the MULTIWRITE flag, I'd like to hear his
+solution for the pxamci driver, where the only way to ascertain how
+many bytes were transmitted may be to walk the SG list comparing the
+DMA pointer with what was in the hardware DMA engine at the time.
+Maybe.
