@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYFATxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYFAT7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYFATxk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 15:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYFATxc
+	id S1753517AbYFAT7U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 15:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYFAT7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 15:53:32 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:40570 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751337AbYFATxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 15:53:31 -0400
-Date: Sun, 1 Jun 2008 22:53:06 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Paul Mundt <lethal@linux-sh.org>, sam@ravnborg.org, hjl.tools@gmail.com,
-       linux-kbuild@vger.kernel.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: sh64 build error - sh, kbuild or binutils problem?
-Message-ID: <20080601195306.GD7347@cs181133002.pp.htv.fi>
-References: <20080531202239.GB7347@cs181133002.pp.htv.fi> <20080601053047.GA25429@linux-sh.org>
+	Sun, 1 Jun 2008 15:59:09 -0400
+Received: from fmmailgate09.web.de ([217.72.192.184]:47406 "EHLO
+	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751588AbYFAT7J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 15:59:09 -0400
+Date: Sun, 01 Jun 2008 21:59:07 +0200
+Message-Id: <300254332@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080601053047.GA25429@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: devzero@web.de
+To: "Renato S. Yamane" <yamane@diamondcut.com.br>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Bug 10797] Something is consuming power after shutdown
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX19a05/2GiIUFKy2YdVSDjNT7vYQ9WkhPkBikXmTXidOET/6y
+ dv1gJU2cVvMRisx4/gHhIQoD0mOsfIo04CTLdh4JtNgUJ8xUI8=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 02:30:47PM +0900, Paul Mundt wrote:
-> On Sat, May 31, 2008 at 11:22:39PM +0300, Adrian Bunk wrote:
-> > Minimal example demonstrating the problem:
-> > 
-> > $ sh64-linux-ar rcs tmp.o
-> > $ sh64-linux-ld -EL -r -o tmp2.o tmp.o
-> > $ sh64-linux-ld -EL -r -o out.o tmp2.o 
-> > sh64-linux-ld: sh3 architecture of input file `tmp2.o' is incompatible with sh5 output
-> > $ 
-> > 
-> Yes, it's a binutils bug. I've hit this on SH-2A zImage builds too, and
-> hacked together a patch for it. I'll see about fixing it up fo sh64 too
-> and then posting it to the list.
+>> Renato S. Yamane wrote:
+>> ...
+>>> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
+>>> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
+>>
+>> Try to find out which component eats power, eg. by opening the machine
+>> searching for heat.
+>> 
+>> (And yes, your hw is broken; on pc it is traditionaly hw
+>> responsibility to power machine down.)
+>
+>OK, I try do this but I think this is very difficult because demand
+>power is very low and is not enought to do hot some component. But I
+>will try.
 
-Thanks  :-)
-Adrian
+i also don`t think that you can find something which is noticeably warm this way - 4% of your battery in 12hrs - that "hot spot" should be hard to identify - and opening notebooks for getting access to the all parts of the mainboard may be hard/dangerous.
 
--- 
+>I don't think that my hardware is broked because I don't have this kind
+>of problem on Kernel <=2.6.22 or in other OS.
+>
+>And other user have the same problem (cc'ed on Bug #10797)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+if your notebook powers down and doesn`t show that something is still "on" and consuming power - i`d call that "broken by design".
+it should not be up to the operating system to make sure that all parts of the hardware are switched to off.
+
+if i power down some device and there is nothing showing "hey, here is something active" (e.g. by some led or lcd) - i expect it to stop consuming power. 
+
+maybe it`s not that broken as my PC, which is consuming 20W after power-off  (due to power-supply) - but i really would go ask the vendor and first complain there.
+
+they should know the details.
+_________________________________________________________________________
+In 5 Schritten zur eigenen Homepage. Jetzt Domain sichern und gestalten! 
+Nur 3,99 EUR/Monat! http://www.maildomain.web.de/?mc=021114
 
