@@ -1,96 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYFBHBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbYFBHCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757725AbYFBHBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYFBHA6
+	id S1758119AbYFBHCu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYFBHCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:00:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:12995 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753299AbYFBHA5 (ORCPT
+	Mon, 2 Jun 2008 03:02:41 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53853 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752781AbYFBHCk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:00:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wbcmkfQGr4qQJ276/jPCQma4o75GU8+sgYT2tDsjE0qRGHgYRxNNMYpEjZfyXwsbuyNxvyDdZS3wRtCT+U0G4eVSMYtGrydQaZDY927er9emK82/nbudIj9pE9hBfcqdmrgzwWM2i3juRGKuHKu713ttPwQs/okK3mVbnYPLA0k=
-Message-ID: <19f34abd0806020000h407e3fb1kadff228a3cf4c6f@mail.gmail.com>
-Date: Mon, 2 Jun 2008 09:00:56 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: find: WARNING: Hard link count is wrong for /proc/1
-Cc: "Pavel Emelyanov" <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <19f34abd0806012331m7c57468bu820e9b6b0184836d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0806012331m7c57468bu820e9b6b0184836d@mail.gmail.com>
+	Mon, 2 Jun 2008 03:02:40 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, hch@infradead.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
+       casey@schaufler-ca.com, agruen@suse.de, jjohansen@suse.de,
+       penguin-kernel@I-love.SAKURA.ne.jp, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20080602060144.GA11564@infradead.org> (message from Christoph
+	Hellwig on Mon, 2 Jun 2008 02:01:44 -0400)
+Subject: Re: [patch 01/15] security: pass path to inode_create
+References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org>
+Message-Id: <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 02 Jun 2008 09:02:14 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 2, 2008 at 8:31 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> Hi,
->
-> 2.6.26-rc4 seems to exhibit the following (new since at least 2.6.24)
-> warning when running find /proc/1:
->
-> find: WARNING: Hard link count is wrong for /proc/1: this may be a bug
-> in your filesystem driver.  Automatically turning on find's -noleaf
-> option.  Earlier results may have failed to include directories that
-> should have been searched.
+> > If you haven't noticed, I don't take "no" for an answer,
+> 
+> And now please tell us step 2 in your secret plan to win friends and
+> influence.
 
-My prime suspect is
+WTF are you getting at?  You think kernel development is about
+boot-licking instead of standing by your technical arguments?  What
+have you been smoking lately?
 
-commit e9720acd728a46cb40daa52c99a979f7c4ff195c
-Author: Pavel Emelyanov <xemul@openvz.org>
-Date:   Fri Mar 7 11:08:40 2008 -0800
+I maintain, that moving lsm hooks into callers is insane.  And that's
+*the* sanest alternative that anybody has been able to come up with to
+passing down vfsmounts into the vfs.
 
-    [NET]: Make /proc/net a symlink on /proc/self/net (v3)
+So again, can you offer an alternative?
 
+I *am* genuinely interested, so any ideas from anybody wanting to help
+resolve this issue are welcome.
 
-as this patch introduces a new directory entry without bumping the nlink count.
-
-Will this do? (Untested)
-
-Vegard
-
-
->From a43ef05a8c1f8d45ca88e00fdd31c00ddfdba1b8 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Mon, 2 Jun 2008 08:57:45 +0200
-Subject: [PATCH] proc: fix /proc/<pid> link count
-
-commit e9720acd728a46cb40daa52c99a979f7c4ff195c
-Author: Pavel Emelyanov <xemul@openvz.org>
-Date:   Fri Mar 7 11:08:40 2008 -0800
-
-    [NET]: Make /proc/net a symlink on /proc/self/net (v3)
-
-introduced /proc/net without bumping the link count on /proc/self.
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- fs/proc/base.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index c447e07..10ee4a2 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2589,6 +2589,9 @@ static struct dentry
-*proc_pid_instantiate(struct inode *dir,
- #ifdef CONFIG_SECURITY
- 	inode->i_nlink += 1;
- #endif
-+#ifdef CONFIG_NET
-+	inode->i_nlink += 1;
-+#endif
-
- 	dentry->d_op = &pid_dentry_operations;
-
--- 
-1.5.4.1
+Thanks,
+Miklos
