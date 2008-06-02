@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYFBSy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYFBTAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbYFBSy5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 14:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYFBSyt
+	id S1754733AbYFBTAF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 15:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYFBS7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 14:54:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40753 "EHLO mx3.mail.elte.hu"
+	Mon, 2 Jun 2008 14:59:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55067 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752564AbYFBSys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 14:54:48 -0400
-Date: Mon, 2 Jun 2008 20:54:33 +0200
+	id S1751362AbYFBS7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 14:59:53 -0400
+Date: Mon, 2 Jun 2008 20:57:40 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mtk.manpages@gmail.com
-Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-Message-ID: <20080602185433.GB4081@elte.hu>
-References: <200805310127.m4V1RLR4013808@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com> <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org> <4840CE51.9060109@redhat.com> <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: linux-next: Tree for May 30
+Message-ID: <20080602185740.GA18550@elte.hu>
+References: <20080530181901.8268f317.sfr@canb.auug.org.au> <1212316424.3253.8.camel@dhcppc1> <20080601150710.GB27843@elte.hu> <1212428404.484430742e07d@213.133.104.17>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org>
+In-Reply-To: <1212428404.484430742e07d@213.133.104.17>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Thomas Meyer <thomas@m3y3r.de> wrote:
 
-> IOW, I'm faking it, but I'm making a point. Namely that you can 
-> efficiently do read-write lock using *only* 32-bit ops, and without 
-> any real kind of limitations on the number of readers and writers.
+> Zitat von Ingo Molnar <mingo@elte.hu>:
 > 
-> So here goes the explanation and the pseudo-code.
+> > hm, that commit is gone in latest tip - does tip/master boot fine for 
+> > you? It's:
+> > 
+> >    http://people.redhat.com/mingo/tip.git/README
+> > 
+> > that commit was an interim fix that got removed meanwhile and replaced 
+> > with the real fixes.
 > 
->  - have two levels of locking: the contended case, and the uncontended
->    case
+> I just booted next-20080602 successfully, and the latest commit on 
+> file arch/x86/kernel/setup_32.c is:
+> 
+> 4efc5450e19128e0c77fbfdf4a14804f5a4a1d95 (Merge branch 'x86/numa' into 
+> auto-x86-next).
+> 
+> So yes, the original commit causing the error for me is gone.
 
-i suspect _any_ abstract locking functionality around a data structure 
-can be implemented via atomic control over just a single user-space bit.
-
-That bit can be used as a lock and if all access to the state of that 
-atomic variable uses it, arbitrary higher-order atomic state transitions 
-can be derived from it. The cost would be a bit more instructions in the 
-fastpath, but there would still only be a single atomic op (the acquire 
-op), as the unlock would be a natural barrier (on x86 at least).
-
-Concurrency (and scheduling) of that lock would still be exactly the 
-same as with genuine 64-bit (or even larger) atomic ops, and the 
-fastpath would be very close as well.
+thanks for testing it and it's great that the crash is gone!
 
 	Ingo
