@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYFBLkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbYFBLkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYFBLkh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757406AbYFBLkQ
+	id S1759047AbYFBLkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758393AbYFBLk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:40:16 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:38511 "EHLO
+	Mon, 2 Jun 2008 07:40:26 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:38513 "EHLO
 	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757274AbYFBLkP (ORCPT
+	with ESMTP id S1758343AbYFBLkY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:40:15 -0400
-Message-ID: <4843DC1A.7040607@ru.mvista.com>
-Date: Mon, 02 Jun 2008 15:40:10 +0400
+	Mon, 2 Jun 2008 07:40:24 -0400
+Message-ID: <4843DC22.2010806@ru.mvista.com>
+Date: Mon, 02 Jun 2008 15:40:18 +0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Organization: MontaVista Software Inc.
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
@@ -29,8 +29,9 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Bartlomiej Zolnierkiewicz wrote:
+
 > There should be no functional changes caused by this patch.
-> 
+
 > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
 Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
