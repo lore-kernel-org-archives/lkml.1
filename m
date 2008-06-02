@@ -1,36 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYFBCaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYFBCfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYFBCaj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 22:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYFBCab
+	id S1756629AbYFBCfs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 22:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYFBCfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 22:30:31 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51138 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753058AbYFBCaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 22:30:30 -0400
-Date: Sun, 1 Jun 2008 21:30:19 -0500
+	Sun, 1 Jun 2008 22:35:40 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:55964 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753438AbYFBCfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 22:35:39 -0400
+Date: Sun, 1 Jun 2008 21:35:33 -0500
 From: Paul Jackson <pj@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: Con Kolivas <kernel@kolivas.org>, "Derek L. Fults" <dfults@sgi.com>,
-       devik <devik@cdi.cz>, Dimitri Sivanich <sivanich@sgi.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Randy.Dunlap" <rddunlap@osdl.org>, rostedt@goodmis.org,
-       suresh.b.siddha@intel.com, Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Inquiry: Should we remove "isolcpus= kernel boot option? (may have
- realtime uses)
-Message-Id: <20080601213019.14ea8ef8.pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com, rostedt@goodmis.org
+Subject: Re: [PATCH] sched: Give cpusets exclusive control over sched
+ domains (ie remove cpu_isolated_map)
+Message-Id: <20080601213533.ab1c049f.pj@sgi.com>
+In-Reply-To: <4841A311.2050008@qualcomm.com>
+References: <1212085023-22284-1-git-send-email-maxk@qualcomm.com>
+	<1212085023-22284-2-git-send-email-maxk@qualcomm.com>
+	<1212085023-22284-3-git-send-email-maxk@qualcomm.com>
+	<20080529173759.ccbaf8ef.pj@sgi.com>
+	<483F3559.1030806@qualcomm.com>
+	<20080529191211.080ec5cf.pj@sgi.com>
+	<483F8178.7040300@qualcomm.com>
+	<20080530015200.f299afed.pj@sgi.com>
+	<4841A311.2050008@qualcomm.com>
 Organization: SGI
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
@@ -40,104 +36,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Max K wrote:
+> Would you be ok with a patch that exposes (via sysctl
+> for example) scheduler balancer mask when cpusets are disabled ?
 
-(Aside to the RealTime folks -- is there a 'realtime'
-email list which I should include in this discussion?)
+I wasn't looking for a variant implementation.  Unless this variant
+serves some critical purpose that isolcpus can't provide, I would be
+against it.  I'm trying to minimize API changes to kernel users.
 
-The kernel has a "isolcpus=" kernel boot time parameter.  This
-parameter isolates CPUs from scheduler load balancing, minimizing the
-impact of scheduler latencies on realtime tasks running on those CPUs.
+I am trying to discuss the reasons for or against removing isolcpus.
 
-Questions:
-==========
+I just started a separate lkml thread, with a wider audience, to
+address this question:
 
-    Do you, or someone you know, use "isolcpus="?
-
-    Can we remove it?
-
-    Should we remove it?
-
-    Should we first deprecate it somehow, for a while, before
-    removing it?
-    
-Background:
-===========
-
-In July 2004, Dimitri Sivanich <sivanich@sgi.com> proposed
-"isolcpus=" for realtime isolation of CPUs from the scheduler
-(http://lkml.org/lkml/2004/7/22/97).
-
-    Ingo said of it "looks good", and Nick said "Cool."
-
-    It appeared in 2.6.9 Linux kernels.
-
-    It made Item #6 of Zack Brown's Kernel Traffic #272, dated Sept
-    5, 2004.
-
-    It also made LWN.net Weekly Edition for October 28, 2004, at
-    http://lwn.net/Articles/107490/bigpage.
-    
-    Dimitri's fifteen minutes of fame had begun ;).
-
-In April 2005, Dinakar Guniguntala <dino@in.ibm.com> proposed
-dynamic scheduler domains (http://lkml.org/lkml/2005/4/18/187).
-
-    It was immediately recognized, by Nick that this new work was a
-    "complete superset of the isolcpus= functionality."
-
-    Dinakar concurred, responding that he "was hoping that by the
-    time we are done with this, we would be able to completely get
-    rid of the isolcpus= option."
-
-    To which I (pj) replied "I won't miss it.  Though, since it's
-    in the main line kernel, do you need to mark it deprecated for
-    a while first?"
-
-Since then, dynamic scheduler domains and cpusets have seen much
-work.  See for example http://lkml.org/lkml/2007/9/30/29, which
-added the sched_load_balance flag to cpusets.
-
-However nothing much has changed with regard to the "isolcpus=" kernel
-boot time parameter.  This parameter is still there.  In October of
-2006, Derek Fults <dfults@sgi.com> did extend the syntax of the CPU
-list argument to the "isolcpus=" parameter to handle CPU ranges.
-
-Some of us (perhaps not including Ingo) tend to agree "isolcpus="
-should go, but I am still recommending that we "deprecate" it in some
-fashion for a while first, as I am usually opposed to suddenly
-removing visible kernel features, because that breaks things.
-
-Recently:
-=========
-
-Recently, Peter Zijlstra <a.p.zijlstra@chello.nl> and Max Krasnyansky
-<maxk@qualcomm.com> have been advocating removing the "isolcpus="
-option.  See for example Peter's http://lkml.org/lkml/2008/2/27/378
-or Max's http://lkml.org/lkml/2008/5/27/356.  I've been resisting,
-still advocating that we deprecate it first, before removing it,
-if that is we even agree to remove it.
-
-Next Step:
-==========
-
-This message begins the next steps, which are:
-
- 1) Survey the current usage of "isolcpus=".  If we find evidence
-    of usage, then this should delay, or even argue against, the
-    removal of this feature.
-
- 2) Alert potential users of the change being considered here,
-    so that they can plan their work to adapt if we decided to
-    deprecate or remove the "isolcpus=" kernel boot parameter.
-
-My recommendation (which may change with feedback from this inquiry)
-is be to add a kernel printk, once at boot, issuing a KERN_WARN that
-isolcpus is deprecated, if isolcpus was specified.  Then in some
-future release, remove isolcpus (and the warning).
-
-One possible reason for keeping "isolcpus=" could be that it is
-available even when cpusets is not configured into kernel.  I don't
-know if that is a case that is valuable to some or not.
+  Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
 
 -- 
                   I won't rest till it's the best ...
