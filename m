@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbYFBCPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYFBCPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbYFBCPY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 22:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbYFBCPL
+	id S1756920AbYFBCPt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 22:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYFBCPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 22:15:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:58399 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753373AbYFBCPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 22:15:09 -0400
-Subject: Re: [PATCH] ftrace: powerpc clean ups
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, proski@gnu.org, a.p.zijlstra@chello.nl,
-       Pekka Paalanen <pq@iki.fi>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>, linuxppc-dev@ozlabs.org,
-       Soeren Sandmann Pedersen <sandmann@redhat.com>, paulus@samba.org
-In-Reply-To: <Pine.LNX.4.58.0805221429020.18018@gandalf.stny.rr.com>
-References: <20080515034942.109223655@goodmis.org>
-	 <20080515035918.896765954@goodmis.org> <1211292277.7960.8.camel@localhost>
-	 <Pine.LNX.4.58.0805221429020.18018@gandalf.stny.rr.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-vUkyxTTM+CreoaEPRw+2"
-Date: Mon, 02 Jun 2008 12:15:07 +1000
-Message-Id: <1212372907.14511.18.camel@localhost>
+	Sun, 1 Jun 2008 22:15:42 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:47669 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753568AbYFBCPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 22:15:41 -0400
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, menage@google.com,
+       lizf@cn.fujitsu.com
+Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+In-Reply-To: Your message of "Fri, 30 May 2008 10:45:15 +0900"
+	<20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Cue version 0.8 (080521-1813/takashi)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080602021540.5C6705A0D@siro.lan>
+Date: Mon,  2 Jun 2008 11:15:40 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> @@ -135,13 +138,118 @@ ssize_t res_counter_write(struct res_cou
+>  		if (*end != '\0')
+>  			goto out_free;
+>  	}
+> -	spin_lock_irqsave(&counter->lock, flags);
+> -	val = res_counter_member(counter, member);
+> -	*val = tmp;
+> -	spin_unlock_irqrestore(&counter->lock, flags);
+> -	ret = nbytes;
+> +	if (member != RES_LIMIT || !callback) {
 
---=-vUkyxTTM+CreoaEPRw+2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+is there any reason to check member != RES_LIMIT here,
+rather than in callers?
 
-On Thu, 2008-05-22 at 14:31 -0400, Steven Rostedt wrote:
-> This patch cleans up the ftrace code in PowerPC based on the comments fro=
-m
-> Michael Ellerman.
+> +/*
+> + * Move resource to its parent.
+> + *   child->limit -= val.
+> + *   parent->usage -= val.
+> + *   parent->limit -= val.
 
-Hi Steven,
+s/limit/for_children/
 
-Thanks for that.
+> + */
+> +
+> +int res_counter_repay_resource(struct res_counter *child,
+> +				struct res_counter *parent,
+> +				unsigned long long val,
+> +				res_shrink_callback_t callback, int retry)
 
-I posted some patches last week, also in my git tree[1], that should
-allow you to use create_branch() in your code (and also facilitate some
-other things I wanted to do). I also added a #define for NOP also.
+can you reduce gratuitous differences between
+res_counter_borrow_resource and res_counter_repay_resource?
+eg. 'success' vs 'done', how to decrement 'retry'.
 
-If/when my patches go into powerpc-next I'll do a patch against
-linux-next for ftrace to use them.
-
-cheers
-
-[1]: http://git.kernel.org/?p=3Dlinux/kernel/git/mpe/linux-2.6.git;a=3Dsumm=
-ary
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-vUkyxTTM+CreoaEPRw+2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIQ1erdSjSd0sB4dIRAp5HAJ0crqf+Y5Gk6KWHN2t/WDt3rFhEAwCdExPN
-UkDm5XeSipwInpy82KDTHqU=
-=p+P1
------END PGP SIGNATURE-----
-
---=-vUkyxTTM+CreoaEPRw+2--
-
+YAMAMOTO Takashi
