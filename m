@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYFBSaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYFBSew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbYFBSaV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 14:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbYFBSaF
+	id S1753828AbYFBSew (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 14:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYFBSeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 14:30:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41323 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061AbYFBSaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 14:30:04 -0400
-Message-ID: <48443C3C.3010401@redhat.com>
-Date: Mon, 02 Jun 2008 14:30:20 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-Reply-To: rwheeler@redhat.com
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: kristen.c.accardi@intel.com
-CC: Jeff Garzik <jeff@garzik.org>, Mark Lord <liml@rtr.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-References: <20080508161008.59361de5@appleyard>	<20080527030854.GC7515@mit.edu>	<20080527143202.4bab5bf0@appleyard>	<20080527225926.GE6843@mit.edu>	<20080527163251.04054a74@appleyard>	<20080531080015.GG5405@ucw.cz>	<4842F5A8.9020708@garzik.org>	<20080602080440.25fc663c@core>	<4843A4A7.3020809@garzik.org>	<4843EF88.2040606@rtr.ca>	<48441AA6.8080704@garzik.org>	<20080602100019.3d2d2522@appleyard>	<484431AB.7010005@garzik.org>	<20080602104753.3f24087d@appleyard>	<484438BF.7070303@garzik.org> <20080602111644.54738d57@appleyard>
-In-Reply-To: <20080602111644.54738d57@appleyard>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 2 Jun 2008 14:34:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38424 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbYFBSen (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 14:34:43 -0400
+Date: Mon, 2 Jun 2008 15:34:20 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Brandon Philips <bphilips@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Woodhouse <dwmw2@infradead.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Bastien Nocera <bnocera@redhat.com>
+Subject: Re: v4l regression: V4L2_CID_[VH]CENTER disappeared without notice.
+Message-ID: <20080602153420.2452889b@gaivota>
+In-Reply-To: <20080602181035.GA440@plankton.ifup.org>
+References: <200804241931.m3OJVQiR022368@hera.kernel.org>
+	<1212421611.16924.246.camel@pmac.infradead.org>
+	<20080602165649.01c2c680@core>
+	<20080602181035.GA440@plankton.ifup.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> On Mon, 02 Jun 2008 14:15:27 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
->
->   
->> Kristen Carlson Accardi wrote:
->>     
->>> Here you can see that it would be very easy for another driver
->>> to just add code to set the NO_HOTPLUG flag and then this code
->>> will work for them as well, since we power off the phy using
->>> DET which is specified by SATA.
->>>       
->>> here's that code:
->>>       
->> Agreed.  The main discussion in this sub-thread is more about user 
->> interface.  The user interface in this case, a module option, is 
->> specific to AHCI.
->>
->> Surely you can see how it is a bit silly to force each driver writer to 
->> create the same user interface in each driver, to support a generic concept.
->>
->> 	Jeff
->>
->>
->>     
-> Not all drivers will need a user interface to turn off hotplug
-> I would think.  At any rate - I would think it'd be better to let
-> driver writers decide how they want their drivers to behave wrt
-> hotplug and power instead of forcing a generic policy on everyone.
->
-> This patch would provide users of AHCI controllers a way to save
-> power now, while you work on the grand scheme for polling/turning on off
-> hotplug via sysfs.  It's an interim solution that impacts nobody but
-> ahci users and is can be easily integrated into whatever solution you
-> eventually work out.
->   
-I like the patch -  it seems that it will help a lot of users out near 
-term in a very positive way while we iterate on the broader solution,
+On Mon, 2 Jun 2008 11:10:35 -0700
+Brandon Philips <bphilips@suse.de> wrote:
 
-ric
+> On 16:56 Mon 02 Jun 2008, Alan Cox wrote:
+> > > Please can we revert the addition of _DEPRECATED to these ioctl
+> > > definitions. Perhaps we can add a runtime warning if they actually get
+> > > used? Or a compile-time warning if we can manage that?
 
+A runtime warning won't probably work, since the control doesn't appear at the
+ioctls that enumerates the supported controls, since no kernel driver uses
+those controls.
 
+> > Can you clarify the problem here ? Is this compile breakage as it appears
+> > (See 'do not include kernel headers in user space apps') or runtime ?
 
+The breakage appears only if you compile an userspace driver that uses those
+defined symbols. No in-kernel driver uses such controls. I'm not sure if there
+is any closed source or out-of-tree driver using they.
 
+> It is compile breakage and was also discussed on
+> fedora-devel-list@redhat.com with Mauro and myself CC'd.  The control
+> number will be reserved forever to avoid binary breakage.
+> 
+> However, as Mauro noted in that conversation: "Those controls haven't
+> been used by any Kernel drivers for a long time (I suspect that they
+> were never used)."  Since no driver had ever implemented the control I
+> figured user space application wouldn't be using it either.
+> 
+> If David wants to revert the _DEPRECATED tags that is fine; we can add a
+> feature removal for a year from now if it gets merged.
+
+I'm also ok on reverting the _DEPRECATED tags, but I would schedule its removal
+at Documentation/feature-removal-schedule.txt to a shorter time. It doesn't
+make much sense on keeping those unused controls for more than one kernel
+version. So, I think we may schedule such removal for October/2008.
+
+I'll apply your patch on my tree and send Linus on my next pull request.
+
+Cheers,
+Mauro
