@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbYFBLx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759828AbYFBLy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759946AbYFBLx2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756355AbYFBLxP
+	id S1759828AbYFBLy6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYFBLyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:53:15 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43262 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754260AbYFBLxN (ORCPT
+	Mon, 2 Jun 2008 07:54:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44765 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbYFBLyt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:53:13 -0400
-Date: Mon, 2 Jun 2008 14:53:09 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: johnpol@2ka.mipt.ru, ray-lk@madrabbit.org, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <E1K33OH-0005QX-00@gondolin.me.apana.org.au>
-Message-ID: <Pine.LNX.4.64.0806021442450.16829@wrl-59.cs.helsinki.fi>
-References: <E1K33OH-0005QX-00@gondolin.me.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jun 2008 07:54:49 -0400
+Date: Mon, 2 Jun 2008 12:41:53 +0100 (BST)
+From: Alexey Korolev <akorolev@infradead.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] JFFS2 power loss recovery issues in 2.6.25, 2.6.26-rc
+In-Reply-To: <6934efce0805301224t5e5d7a01n3b652c4df5324d58@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0806021239440.5100@pentafluge.infradead.org>
+References: <alpine.LFD.1.10.0805291205480.22130@pentafluge.infradead.org> <6934efce0805301224t5e5d7a01n3b652c4df5324d58@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-SRS-Rewrite: SMTP reverse-path rewritten from <akorolev@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008, Herbert Xu wrote:
-
-> Ilpo J??rvinen <ilpo.jarvinen@helsinki.fi> wrote:
+Hi,
+> > We made some investigations for this issue and found commit number which
+> > breaks JFFS2 power loss recoverability.
+> > It is:  [JFFS2] Improve getdents vs. f_pos handling on NOR flash.
+> >        http://git.infradead.org/mtd-2.6.git?a=commitdiff;h=15953580e79b58caefb107e77f218e009b9992e6
 > >
-> > Before:
-> > tcp    65436      0 lo:5000          lo:59980         ESTABLISHED -
+> > Currently we don't know why it breaks JFFS2 and how it could be fixed
+> > except roll back.
 > 
-> This is what happens before accept(2) is called.  Ingo, please
-> strace the process that owns the listening socket to make sure
-> that it is actually calling accept(2).  If it ever stops calling
-> accept(2) then this is expected behaviour.
+> Does everything work when you unmerge this one commit?
+> 
+Correct, commit roll back fixes the problem. 
 
-Shouldn't that be already visible in the ingo's sysrq-t dump, no? There:
-
-  http://marc.info/?l=linux-kernel&m=121182099131520&w=2
-
-There are many sys_accepts at least (if I understand that dump at all). 
-There were some ip_local_outs there as well, which made me wonder if the 
-totally innocent looking commit 1ac06e0306d0192a7a4d9ea1c9e06d355ce7e7d3 
-(ipsec: Use the correct ip_local_out function) has something to do with 
-this (I definately don't understand that part at all).
-
--- 
- i.
+Thanks
+Alexey
