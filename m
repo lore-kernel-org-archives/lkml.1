@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbYFBQeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbYFBQhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbYFBQeZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 12:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbYFBQeQ
+	id S1756052AbYFBQhu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 12:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYFBQhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 12:34:16 -0400
-Received: from outbound-mail-29.bluehost.com ([69.89.17.211]:60215 "HELO
-	outbound-mail-29.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752665AbYFBQeQ (ORCPT
+	Mon, 2 Jun 2008 12:37:42 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:63362 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbYFBQhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 12:34:16 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Add workaround for bug in ASUS A7V600 BIOS (rev 1005)
-Date: Mon, 2 Jun 2008 09:34:04 -0700
-User-Agent: KMail/1.9.9
-Cc: Bertram Felgenhauer <int-e@gmx.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080530012005.GA9514@zombie.inf.tu-dresden.de> <20080531155805.GA17465@elte.hu>
-In-Reply-To: <20080531155805.GA17465@elte.hu>
+	Mon, 2 Jun 2008 12:37:41 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5307"; a="3434819"
+Message-ID: <484421E6.30709@qualcomm.com>
+Date: Mon, 02 Jun 2008 09:37:58 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, rdunlap@xenotime.net
+Subject: Re: [PATCH] genirq: Expose default irq affinity mask (take 3)
+References: <1212084172-21459-1-git-send-email-maxk@qualcomm.com> <20080602102340.71d2399f.pj@sgi.com>
+In-Reply-To: <20080602102340.71d2399f.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806020934.04488.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, May 31, 2008 8:58 am Ingo Molnar wrote:
-> * Bertram Felgenhauer <int-e@gmx.de> wrote:
-> > This BIOS claims the VIA 8237 south bridge to be compatible with VIA 586,
-> > which it is not.
-> >
-> > Signed-off-by: Bertram Felgenhauer <int-e@gmx.de>
->
-> Cc:s added.
+Paul Jackson wrote:
+> Max,
+> 
+> I realized, when reading this again, that the default masks
+> are not ffffffff.  That's the default only on systems with
+> no more than 32 CPUs.  Rather I suspect that the default is
+> CPU_MASK_ALL.  Indeed, your patch has:
+> 
+>    cpumask_t irq_default_affinity = CPU_MASK_ALL;
+> 
+> This affects a few mentions of ffffffff in the Docs.
+Good point.
 
-I didn't see the original report, pulling down the for-jesse stuff to look 
-through it now though.
 
-Jesse
+> Otherwise looks good - thanks.
+> 
+> Acked-by: Paul Jackson <pj@sgi.com>
+
+Thanx.
+
+btw What's the procedure for including Acked-by ?
+cut&paste into the patch description and resend ?
+
+Max
+
