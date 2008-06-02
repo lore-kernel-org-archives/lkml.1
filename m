@@ -1,74 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbYFBGPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbYFBGSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757138AbYFBGPb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 02:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYFBGPW
+	id S1757508AbYFBGSU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 02:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYFBGSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 02:15:22 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:37348 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbYFBGPW (ORCPT
+	Mon, 2 Jun 2008 02:18:13 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:53575 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751577AbYFBGSM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 02:15:22 -0400
-Cc: davem@davemloft.net, arjan@linux.intel.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org
-Message-Id: <E5C422A2-82BC-4E9E-B113-835A11AB8CBD@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-In-Reply-To: <20080602014625.GA2893@darkstar.te-china.tietoenator.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Mon, 2 Jun 2008 02:18:12 -0400
+Message-ID: <4843903F.1090009@linux.vnet.ibm.com>
+Date: Mon, 02 Jun 2008 11:46:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: kamezawa.hiroyu@jp.fujitsu.com
+CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
+       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
+Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+References: <4841886A.1000901@linux.vnet.ibm.com> <48413482.5080409@linux.vnet.ibm.com> <48407DC3.8060001@linux.vnet.ibm.com> <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com> <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com> <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com> <5049235.1212280513897.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <5049235.1212280513897.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] bluetooth: rfcomm_dev_state_change deadlock fix
-Date: Mon, 2 Jun 2008 08:15:03 +0200
-References: <20080602014625.GA2893@darkstar.te-china.tietoenator.com>
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Hi, Kamezawa-san,
 
-> There's logic in __rfcomm_dlc_close:
-> 	rfcomm_dlc_lock(d);
-> 	d->state = BT_CLOSED;
-> 	d->state_changed(d, err);
-> 	rfcomm_dlc_unlock(d);
->
-> In rfcomm_dev_state_change, it's possible that rfcomm_dev_put try to  
-> take the
-> dlc lock, then we will deadlock.
->
-> Here fixed it by unlock dlc before rfcomm_dev_get in  
-> rfcomm_dev_state_change.
->
-> why not unlock just before rfcomm_dev_put? it's because there's  
-> another problem.
-> rfcomm_dev_get/rfcomm_dev_del will take rfcomm_dev_lock, but in  
-> rfcomm_dev_add
-> the lock order is : rfcomm_dev_lock --> dlc lock
->
-> so I unlock dlc before the taken of rfcomm_dev_lock.
->
-> Actually it's a regression caused by commit
-> 1905f6c736cb618e07eca0c96e60e3c024023428, the dlc state_change could  
-> be two
-> callbacks : rfcomm_sk_state_change and rfcomm_dev_state_change. I  
-> missed the rfcomm_sk_state_change that time.
->
-> Thanks Arjan van de Ven <arjan@linux.intel.com> for the effort in  
-> commit
-> 4c8411f8c115def968820a4df6658ccfd55d7f1a
-> but he missed the rfcomm_dev_state_change lock issue.
->
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+kamezawa.hiroyu@jp.fujitsu.com wrote:
+> 
+> It's not problem. We're not developing world-wide eco system.
+> It's good that there are several development groups. It's a way to evolution.
+> Something popular will be defacto standard. 
+> What we have to do is providing proper interfaces for allowing fair race.
+> 
 
-looks good. Thanks for adding a clear comment why we have to do it  
-this way.
+I did not claim that we were developing an eco system either :)
+My point is that we should not confuse *Linux* users. Lets do the common/useful
+stuff in the kernel and make it easy for users to use the cgroup subsystem.
 
-Acked-by: Marcel Holtmann <marcel@holtmann.org>
+>>> Here is an example. (just an example...)
+>>> Please point out if I'm misunderstanding "share".
+>>>
+>>> root_level/                   = limit 1G.
+>>>           /child_A = share=30
+>>>           /child_B = share=15
+>>>           /child_C = share=5
+>>> (and assume there is no process under root_level for make explanation easy.
+> .)
+>>> 0. At first, before starting to use memory, set all kernel_memory_limit.
+>>> root_level.limit = 1G
+>>>   child_A.limit=64M,usage=0
+>>>   child_B.limit=64M,usage=0
+>>>   child_C.limit=64M,usage=0
+>>>   free_resource=808M 
+>>>
+>> This sounds incorrect, since the limits should be proportional to shares. If 
+> the
+>> maximum shares in the root were 100 (*ideally we want higher resolution than 
+> that)
+>> Then
+>>
+>> child_A.limit = .3 * 1G
+>> child_B.limit = .15 * 1G
+>>
+>> and so on
+>>
+> Above just showing param to the kernel. 
+> From user's view, memory limitation is A:B:C=6:3:1 if memory is fully used.
+> (In above case, usage=0)
+> 
+> In general, "share" works only when the total usage reaches limitation.
+> (See how cpu scheduler works.)
+> When the usage doesn't reach limit, there is no limitatiuon.
+> 
 
-Regards
+If you are implying that shares imply a soft limit, I agree. But the only
+parameter in the kernel right now is hard limits. We need to add soft limit support.
 
-Marcel
+>>> 1. next, a process in child_C start to run and use memory of 600M.
+>>> root_level.limit = 1G
+>>>   child_A.limit=64M
+>>>   child_B.limit=64M
+>>>   child_C.limit=600M,usage=600M
+>>>   free_resource=272M
+>>>
+>> How is that feasible, it's limit was 64M, how did it bump up to 600M? If you
+>> want something like that, child_C should have no limits.
+> 
+> middleware just do when child_C.failcnt hits.
+> echo 64M > childC.memory.limits_in_bytes.
+> and periodically checks A,B,C and allow C to use what it wants becasue
+> A and B doesn't want memory.
+> 
+>>> 2. now, a process in child_A start tu run and use memory of 800M.
+>>>   child_A.limit=800M,usage=800M
+>>>   child_B.limit=64M,usage=0M
+>>>   child_C.limit=136M,usage=136M
+>>>   free_resouce=0,A:C=6:1
+>>>
+>> Not sure I understand this step
+>>
+> Middleware notices that usage in A is growing and moves resources to A.
+> 
+> echo current child_C's limit - 64M > child_C
+> echo current child_A's limit + 64M > child_A
+> do above in step by step with loops for making A:C = 6:1
+> (64M is just an example)
+> 
+>>> 3.Finally, a process in child_B start. and use memory of 500M.
+>>>   child_A.limit=600M,usage=600M
+>>>   child_B.limit=300M,usage=300M
+>>>   child_C.limit=100M,usage=100M
+>>>   free_resouce=0, A:B:C=6:3:1
+>>>
+>> Not sure I understand this step
+>>
+> echo current child_C's limit - 64M > child_C
+> echo current child_A's limit - 64M > child_A
+> echo current child_B's limit + 64M > child_B
+> do above in step by step with loops for making A:B:C = 6:3:1
+> 
+> 
+>>> 4. one more, a process in A exits.
+>>>   child_A.limit=64M, usage=0M
+>>>   child_B.limit=500M, usage=500M
+>>>   child_C.limit=436M, usage=436M
+>>>   free_resouce=0, B:C=3:1 (but B just want to use 500M)
+>>>
+>> Not sure I understand this step
+>>
+> middleware can notice memory pressure from Child_A is reduced.
+> 
+> echo current child_A's limit - 64M > child_A
+> echo current child_C's limit + 64M > child_C
+> echo current child_B's limit + 64M > child_B
+> do above in step by step with loops for making B:C = 3:1 with avoiding
+> the waste of resources.
+> 
+> 
+> 
+>>> This is only an example and the middleware can more pricise "limit"
+>>> contols by checking statistics of memory controller hierarchy based on
+>>> their own policy.
+>>>
+>>> What I think now is what kind of statistics/notifier/controls are
+>>> necessary to implement shares in middleware. How pricise/quick work the
+>>> middleware can do is based on interfaces.
+>>> Maybe the middleware should know "how fast the application runs now" by
+>>> some kind of check or co-operative interface with the application.
+>>> But I'm not sure how the kernel can help it.
+>> I am not sure if I understand your proposal at this point.
+>>
+> 
+> The most important point is cgoups.memory.memory.limit_in_bytes
+> is _just_ a notification to ask the kernel to limit the memory
+> usage of process groups temporally. It changes often.
+> Based on user's notification to the middleware (share or limit),
+> the middleware changes limit_in_bytes to be suitable value
+> and change it dynamically and periodically. 
+> 
 
+Why don't we add soft limits, so that we don't have to go to the kernel and
+change limits frequently. One missing piece in the memory controller is that we
+don't shrink the memory controller when limits change or when tasks move. I
+think soft limits is a better solution.
+
+Thanks for patiently explaining all of this.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
