@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbYFBVmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYFBVm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753474AbYFBVmH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 17:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYFBVlz
+	id S1754548AbYFBVm1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 17:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbYFBVmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 17:41:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54866 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751549AbYFBVly (ORCPT
+	Mon, 2 Jun 2008 17:42:04 -0400
+Received: from gw0.danplanet.com ([71.245.107.82]:55256 "EHLO
+	mail.danplanet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752721AbYFBVmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 17:41:54 -0400
-Date: Mon, 2 Jun 2008 16:41:51 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, "Derek L. Fults" <dfults@sgi.com>,
-       devik <devik@cdi.cz>, Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Randy.Dunlap" <rddunlap@osdl.org>, suresh.b.siddha@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
-Message-ID: <20080602214151.GA7072@sgi.com>
-References: <20080601213019.14ea8ef8.pj@sgi.com> <20080602164203.GA2477@sgi.com> <48443E66.6060205@qualcomm.com>
+	Mon, 2 Jun 2008 17:42:01 -0400
+X-Greylist: delayed 1473 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jun 2008 17:42:00 EDT
+From: Dan Smith <danms@us.ibm.com>
+To: Benjamin Thery <benjamin.thery@bull.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>
+Subject: Re: [PATCH 00/10] sysfs tagged directories V4
+References: <20080602134438.224352910@theryb.frec.bull.fr>
+Date: Mon, 02 Jun 2008 14:17:09 -0700
+In-Reply-To: <20080602134438.224352910@theryb.frec.bull.fr> (Benjamin Thery's
+	message of "Mon, 02 Jun 2008 15:44:38 +0200")
+Message-ID: <87ej7filka.fsf@caffeine.beaverton.ibm.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48443E66.6060205@qualcomm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 11:39:34AM -0700, Max Krasnyansky wrote:
-> Ah, I know exactly what you're talking about.  However this is non-issue these
-> days. In order to clear cpuN from all the timers and other things all you need
-> to do is to bring that cpu off-line
-> 	echo 0 > /sys/devices/cpu/cpuN/online
-> and then bring it back online
-> 	echo 1 > /sys/devices/cpu/cpuN/online
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-Although it seemed like something of a hack, we experimented with this
-previously and found that it didn't work reliably.  I'm sure things
-have gotten better, but will need to revisit.
+BT> Here is an updated version of Eric Biederman's patchset to
+BT> implement tagged directories in sysfs ported on top of
+BT> 2.6.26-rc2-mm1.
 
-> 
-> There are currently a couple of issues with scheduler domains and hotplug
-> event handling. I do have the fix for them, and Paul had already acked it.
+With this set applied, I am able to clone() with CLONE_NEWNET, get an
+isolated netns, and move interfaces into that namespace.  This removes
+the last barrier blocking the implementation of full containers (with
+network isolation) in libvirt.
 
-Until a proven reliable method for doing this is firmly in place (as
-firmly as anything is, anyway),  I don't think we should be removing
-the alternative.
+Thanks!
 
-> initialization). See my latest "default IRQ affinity" patch.
+=2D-=20
+Dan Smith
+IBM Linux Technology Center
+Open Hypervisor Team
+email: danms@us.ibm.com
 
-Nice idea.
+--=-=-=
+Content-Type: application/pgp-signature
 
-> Also isolcpus= conflicts with the scheduler domains created by the cpusets.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-What sort of conflict are we talking about?  I assume once you've begun setting up cpusets that include those cpus that you're intention is to change the original behavior.
-
+iD8DBQFIRGNXwtEf7b4GJVQRApBdAJsES7txJmV8t49L41p8cfd97y5DFwCeNBSH
+p8US3l4RzflflzPp7meade4=
+=2/NU
+-----END PGP SIGNATURE-----
+--=-=-=--
