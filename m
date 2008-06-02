@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbYFBLEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbYFBLEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbYFBLEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYFBLD6
+	id S1759192AbYFBLEe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYFBLEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:03:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36660 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751682AbYFBLD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:03:58 -0400
-Date: Mon, 2 Jun 2008 13:03:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] sched: Print the sd->level in sched_domain_debug code
-Message-ID: <20080602110352.GE14598@elte.hu>
-References: <20080529152632.GB28006@in.ibm.com>
+	Mon, 2 Jun 2008 07:04:20 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:20114 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758748AbYFBLER (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 07:04:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=CWZD8YaLXVf79Qg9aBFh7OBAXC7qwmhwUVaSrgRXbyAeX9zwN5qiguRjTAOxd87GfcSfxj7vGn4nwhCUadil6J/PdDqfI34I1gF6e7RY3TdOWsGzDhD+CDpFwzQZVMQyrEoC3xG8QynU6RZx+Zh81oUXknia0QWH0uXdVkBDlCo=
+Message-ID: <84144f020806020404v430e63c6i71cafdda616a2512@mail.gmail.com>
+Date: Mon, 2 Jun 2008 14:04:17 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
+       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
+       jjohansen@suse.de, penguin-kernel@i-love.sakura.ne.jp,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <E1K37hN-00039y-5o@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080529152632.GB28006@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20080529134903.615127628@szeredi.hu>
+	 <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu>
+	 <20080602060144.GA11564@infradead.org>
+	 <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
+	 <20080602091341.GA8011@infradead.org>
+	 <E1K36PE-0002wZ-0M@pomaz-ex.szeredi.hu>
+	 <20080602093630.GA25254@infradead.org>
+	 <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu>
+	 <20080602104203.GA21898@infradead.org>
+	 <E1K37hN-00039y-5o@pomaz-ex.szeredi.hu>
+X-Google-Sender-Auth: 172bbe65d84e75bd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 2, 2008 at 1:55 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> You can argue against the concept of apparmor itself, but you better
+> argue with Crispin, because I'm quite clueless about that part.  When
+> you've convinced him (and Linus (and Ubuntu, and SUSE, and Mandriva))
+> that apparmor is a stupid idea, then I'll give up.  Good luck with
+> that!
 
-* Gautham R Shenoy <ego@in.ibm.com> wrote:
-
-> sched: Print the sd->level in sched_domain_debug code
-> 
-> From: Gautham R Shenoy <ego@in.ibm.com>
-> 
-> While printing out the visual representation of the sched-domains, print
-> the level (MC, SMT, CPU, NODE, ... ) of each of the sched_domains.
-> 
-> Credit: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-
-applied to tip/sched-devel. Thanks,
-
-	Ingo
+But then I guess you can just by-pass the VFS maintainers and send
+your patches directly to Andrew/Linus. Good luck with that! :-)
