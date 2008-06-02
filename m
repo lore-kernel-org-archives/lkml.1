@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYFBJKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbYFBJNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658AbYFBJKQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 05:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYFBJKE
+	id S1753024AbYFBJNx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 05:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYFBJNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 05:10:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38389 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750986AbYFBJKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 05:10:02 -0400
-Date: Mon, 2 Jun 2008 11:09:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD
-	Barcelona
-Message-ID: <20080602090947.GA22060@elte.hu>
-References: <20080526180616.GB2752@erda.amd.com> <20080528165813.8D8E5814C@erda.amd.com>
+	Mon, 2 Jun 2008 05:13:43 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60466 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbYFBJNm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 05:13:42 -0400
+Date: Mon, 2 Jun 2008 05:13:41 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
+       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
+       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Message-ID: <20080602091341.GA8011@infradead.org>
+References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080528165813.8D8E5814C@erda.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 02, 2008 at 09:02:14AM +0200, Miklos Szeredi wrote:
+> > > If you haven't noticed, I don't take "no" for an answer,
+> > 
+> > And now please tell us step 2 in your secret plan to win friends and
+> > influence.
+> 
+> WTF are you getting at?  You think kernel development is about
+> boot-licking instead of standing by your technical arguments?  What
+> have you been smoking lately?
 
-* Robert Richter <robert.richter@amd.com> wrote:
+No licking required :)  But running against a wall continuously and
+pissing off the people working in that area and maintainer is generally
+not the smartest idea :)
 
-> This patch implements PCI extended configuration space access for 
-> AMD's Barcelona CPUs. It extends the method using CF8/CFC IO 
-> addresses. An x86 capability bit has been introduced that is set for 
-> CPUs supporting PCI extended config space accesses.
+> So again, can you offer an alternative?
 
-applied to -tip for more testing, thanks Robert. It needed some porting 
-(64-bit setup code got restructured in -tip) and the trivial build fix 
-below.
+Just give up on this dumb idea completely.
 
-	Ingo
-
-------------->
-commit fe8aef82b5040c39fb3bee28047db5c896421382
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Mon Jun 2 10:54:16 2008 +0200
-
-    fix build bug in "x86: add PCI extended config space access for AMD Barcelona"
-    
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/include/asm-x86/mmconfig.h b/include/asm-x86/mmconfig.h
-index 95beda0..46d6bb1 100644
---- a/include/asm-x86/mmconfig.h
-+++ b/include/asm-x86/mmconfig.h
-@@ -9,4 +9,6 @@ static inline void fam10h_check_enable_mmcfg(void) { }
- static inline void check_enable_amd_mmconf_dmi(void) { }
- #endif
- 
-+extern void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c);
-+
- #endif
