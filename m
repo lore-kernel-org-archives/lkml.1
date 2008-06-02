@@ -1,126 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbYFBKs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbYFBKtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbYFBKs7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYFBKsv
+	id S1757912AbYFBKtW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYFBKtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:48:51 -0400
-Received: from mail9.hitachi.co.jp ([133.145.228.44]:57802 "EHLO
-	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbYFBKsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:48:50 -0400
-X-AuditID: 0ac90648-ad37cba000000c2f-f9-4843d0101f70
-Message-ID: <4843D009.9010200@hitachi.com>
-Date: Mon, 02 Jun 2008 19:48:41 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Mon, 2 Jun 2008 06:49:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32856 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759025AbYFBKtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:49:01 -0400
+Date: Mon, 2 Jun 2008 12:48:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [#2][PATCH] x86: break mutual header inclusion
+Message-ID: <20080602104851.GD898@elte.hu>
+References: <20080528074619.GA9235@damson.getinternet.no>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: [PATCH 5/5] ext3: abort ext3 if the journal has aborted
-References: <4843CE15.6080506@hitachi.com>
-In-Reply-To: <4843CE15.6080506@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080528074619.GA9235@damson.getinternet.no>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 5/5] ext3: abort ext3 if the journal has aborted
 
-If the journal has aborted due to a checkpointing failure, we
-have to keep the contents of the journal space.  ext3_put_super()
-detects the journal abort, then it invokes ext3_abort() to make
-the filesystem read only and keep needs_recovery flag.
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- fs/ext3/ioctl.c |   12 ++++++------
- fs/ext3/super.c |   11 +++++++++--
- 2 files changed, 15 insertions(+), 8 deletions(-)
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Tue, 27 May 2008 21:38:35 +0200
+> Subject: [PATCH] x86: break mutual header inclusion
+> 
+> This breaks up the mutual inclusion between headers ptrace.h and vm86.h
+> by moving some small part of vm86.h which is needed by ptrace.h into
+> processor-flags.h.
+> 
+> We also try to move #include lines to the top.
+> 
+> This has been compile tested on x86_32 and x86_64 defconfig, and run
+> through 'make headers_check'.
 
-Index: linux-2.6.26-rc4/fs/ext3/ioctl.c
-===================================================================
---- linux-2.6.26-rc4.orig/fs/ext3/ioctl.c
-+++ linux-2.6.26-rc4/fs/ext3/ioctl.c
-@@ -239,7 +239,7 @@ setrsvsz_out:
- 	case EXT3_IOC_GROUP_EXTEND: {
- 		ext3_fsblk_t n_blocks_count;
- 		struct super_block *sb = inode->i_sb;
--		int err;
-+		int err, err2;
- 
- 		if (!capable(CAP_SYS_RESOURCE))
- 			return -EPERM;
-@@ -254,16 +254,16 @@ setrsvsz_out:
- 		}
- 		err = ext3_group_extend(sb, EXT3_SB(sb)->s_es, n_blocks_count);
- 		journal_lock_updates(EXT3_SB(sb)->s_journal);
--		journal_flush(EXT3_SB(sb)->s_journal);
-+		err2 = journal_flush(EXT3_SB(sb)->s_journal);
- 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
- group_extend_out:
- 		mnt_drop_write(filp->f_path.mnt);
--		return err;
-+		return (err) ? err : err2;
- 	}
- 	case EXT3_IOC_GROUP_ADD: {
- 		struct ext3_new_group_data input;
- 		struct super_block *sb = inode->i_sb;
--		int err;
-+		int err, err2;
- 
- 		if (!capable(CAP_SYS_RESOURCE))
- 			return -EPERM;
-@@ -280,11 +280,11 @@ group_extend_out:
- 
- 		err = ext3_group_add(sb, &input);
- 		journal_lock_updates(EXT3_SB(sb)->s_journal);
--		journal_flush(EXT3_SB(sb)->s_journal);
-+		err2 = journal_flush(EXT3_SB(sb)->s_journal);
- 		journal_unlock_updates(EXT3_SB(sb)->s_journal);
- group_add_out:
- 		mnt_drop_write(filp->f_path.mnt);
--		return err;
-+		return (err) ? err : err2;
- 	}
- 
- 
-Index: linux-2.6.26-rc4/fs/ext3/super.c
-===================================================================
---- linux-2.6.26-rc4.orig/fs/ext3/super.c
-+++ linux-2.6.26-rc4/fs/ext3/super.c
-@@ -393,7 +393,8 @@ static void ext3_put_super (struct super
- 	int i;
- 
- 	ext3_xattr_put_super(sb);
--	journal_destroy(sbi->s_journal);
-+	if (journal_destroy(sbi->s_journal) < 0)
-+		ext3_abort(sb, __func__, "Couldn't clean up the journal");
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
- 		es->s_state = cpu_to_le16(sbi->s_mount_state);
-@@ -2373,7 +2374,13 @@ static void ext3_write_super_lockfs(stru
- 
- 		/* Now we set up the journal barrier. */
- 		journal_lock_updates(journal);
--		journal_flush(journal);
-+
-+		/*
-+		 * We don't want to clear needs_recovery flag when we failed
-+		 * to flush the journal.
-+		 */
-+		if (journal_flush(journal) < 0)
-+			return;
- 
- 		/* Journal blocked and flushed, clear needs_recovery flag. */
- 		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+applied to tip/x86/cleanups. Thanks,
 
-
+	Ingo
