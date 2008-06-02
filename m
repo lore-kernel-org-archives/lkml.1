@@ -1,44 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbYFBAjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYFBAlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbYFBAjc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 20:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYFBAjX
+	id S1756148AbYFBAlv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 20:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYFBAll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 20:39:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:43911 "EHLO ozlabs.org"
+	Sun, 1 Jun 2008 20:41:41 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46035 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbYFBAjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 20:39:22 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752755AbYFBAlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 20:41:40 -0400
+Date: Mon, 2 Jun 2008 10:41:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [git patches] net driver updates for .27
+Message-Id: <20080602104137.8d8c0db5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18499.16693.526974.912404@cargo.ozlabs.ibm.com>
-Date: Mon, 2 Jun 2008 10:39:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: Re: Diagnosing linux-next (Was: Re: m68k libc5 regression)
-In-Reply-To: <20080601140415.a2f25b9d.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0805262226280.11902@anakin>
-	<Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
-	<20080601005338.3affe880.akpm@linux-foundation.org>
-	<20080601232638.fda1f3ab.sfr@canb.auug.org.au>
-	<20080601140415.a2f25b9d.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
+Hi Jeff,
 
-> hm, I just found the `committer' line in gitk.  Coulda sworn that
-> wasn't there yesterday.
+Another update, another ping ....
 
-It was, actually. :)
+Begin forwarded message:
 
-Seriously, if you have any suggestions about things that would make
-gitk more useful for you, let me know.
+Date: Thu, 29 May 2008 22:39:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: [git patches] net driver updates for .27
 
-Paul.
+
+Hi Jeff,
+
+On Thu, 29 May 2008 03:33:02 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+>
+> From: Jeff Garzik <jeff@garzik.org>
+> Date: Thu, 22 May 2008 15:10:49 -0400
+> 
+> > Please pull from 'upstream-next-davem' branch of
+> > master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-next-davem
+
+Is there some reason you missed "Fix various 8390 builds" from Tony
+Breeds.  I have been carrying it in linux-next for some time and would
+appreciate it being merged.  It fixes a build regression in the current
+net-next tree.
+
+I have included the patch below.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+Date: Mon, 19 May 2008 15:03:52 +1000
+To: David Miller <davem@davemloft.net>, Jeff Garzik <jgarzik@redhat.com>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+	Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: [PATCH v3] Fix various 8390 builds
+From: tony@bakeyournoodle.com (Tony Breeds)
+
+The commit 3f8cb098859bbea29d7b3765a3102e4a6bf81b85
+(drivers/net/lib8390: fix warning, trim trailing whitespace) removed
+ei_local from ei_tx_err() and ei_rx_overrun() resulting in the following
+build errors on m68k and sh:
+
+Using /scratch1/tony/next as source for kernel
+GEN     /scratch1/tony/next_out/Makefile
+CHK     include/linux/version.h
+CHK     include/linux/utsrelease.h
+CALL    /scratch1/tony/next/scripts/checksyscalls.sh
+CHK     include/linux/compile.h
+CC [M]  drivers/net/zorro8390.o
+In file included from /scratch1/tony/next/drivers/net/zorro8390.c:47:
+drivers/net/lib8390.c: In function 'ei_tx_err':
+drivers/net/lib8390.c:556: error: 'ei_local' undeclared (first use in this function)
+drivers/net/lib8390.c:556: error: (Each undeclared identifier is reported only once
+drivers/net/lib8390.c:556: error: for each function it appears in.)
+drivers/net/lib8390.c: In function 'ei_rx_overrun':
+drivers/net/lib8390.c:823: error: 'ei_local' undeclared (first use in this function)
+make[3]: *** [drivers/net/zorro8390.o] Error 1
+make[2]: *** [drivers/net] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
+
+The problem is that ei_inb_p() is using various #defines (from
+drivers/net/8390.h) that use EI_SHIFT, which in some drivers on some
+architectures use ei_local.  Tag ei_local as "__maybe_unused" to keep it
+around and keep the warnings the original commit is trying to silence
+... silenced.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+Updated to remove pointless casts
+
+ drivers/net/lib8390.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+ Dave, Jeff can one of you take this?
+
+
+diff --git a/drivers/net/lib8390.c b/drivers/net/lib8390.c
+index ed49527..00d59ab 100644
+--- a/drivers/net/lib8390.c
++++ b/drivers/net/lib8390.c
+@@ -553,6 +553,8 @@ static void __ei_poll(struct net_device *dev)
+ static void ei_tx_err(struct net_device *dev)
+ {
+ 	unsigned long e8390_base = dev->base_addr;
++	/* ei_local is used on some platforms via the EI_SHIFT macro */
++	struct ei_device *ei_local __maybe_unused = netdev_priv(dev);
+ 	unsigned char txsr = ei_inb_p(e8390_base+EN0_TSR);
+ 	unsigned char tx_was_aborted = txsr & (ENTSR_ABT+ENTSR_FU);
+ 
+@@ -815,6 +817,8 @@ static void ei_rx_overrun(struct net_device *dev)
+ {
+ 	unsigned long e8390_base = dev->base_addr;
+ 	unsigned char was_txing, must_resend = 0;
++	/* ei_local is used on some platforms via the EI_SHIFT macro */
++	struct ei_device *ei_local __maybe_unused = netdev_priv(dev);
+ 
+ 	/*
+ 	 * Record whether a Tx was in progress and then issue the
