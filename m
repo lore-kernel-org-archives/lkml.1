@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbYFBJNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYFBJQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbYFBJNx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 05:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYFBJNn
+	id S1753095AbYFBJQf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 05:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYFBJQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 05:13:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60466 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748AbYFBJNm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 05:13:42 -0400
-Date: Mon, 2 Jun 2008 05:13:41 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
-       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
-       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/15] security: pass path to inode_create
-Message-ID: <20080602091341.GA8011@infradead.org>
-References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
+	Mon, 2 Jun 2008 05:16:28 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:41972 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750862AbYFBJQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 05:16:28 -0400
+Date: Mon, 2 Jun 2008 12:16:08 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10829] sh/kernel/cpu/irq/intc-sh5.c build fix
+Message-ID: <20080602091608.GD29836@cs181133002.pp.htv.fi>
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <UJSav77TyUB.A.itC.dqZQIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <UJSav77TyUB.A.itC.dqZQIB@albercik>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 09:02:14AM +0200, Miklos Szeredi wrote:
-> > > If you haven't noticed, I don't take "no" for an answer,
-> > 
-> > And now please tell us step 2 in your secret plan to win friends and
-> > influence.
+On Sat, May 31, 2008 at 07:48:06PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> WTF are you getting at?  You think kernel development is about
-> boot-licking instead of standing by your technical arguments?  What
-> have you been smoking lately?
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 
-No licking required :)  But running against a wall continuously and
-pissing off the people working in that area and maintainer is generally
-not the smartest idea :)
+yes
 
-> So again, can you offer an alternative?
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10829
+> Subject		: sh/kernel/cpu/irq/intc-sh5.c build fix
+> Submitter	: Adrian Bunk <bunk@kernel.org>
+> Date		: 2008-05-29 15:06 (3 days old)
+> References	: http://lkml.org/lkml/2008/5/29/492
+> Handled-By	: Adrian Bunk <bunk@kernel.org>
+> Patch		: http://lkml.org/lkml/2008/5/29/492
 
-Just give up on this dumb idea completely.
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
