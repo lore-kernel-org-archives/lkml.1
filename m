@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761753AbYFBOHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761807AbYFBOJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761753AbYFBOHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 10:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbYFBOGy
+	id S1761807AbYFBOJW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 10:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbYFBOJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 10:06:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:42168 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755335AbYFBOGx (ORCPT
+	Mon, 2 Jun 2008 10:09:11 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:36595 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753928AbYFBOJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 10:06:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=PqVUmttlTCHnkVhH+I29wlKhNLIc6tIh3oye6DVrX77YN80f10GoOKvmWW9g092AlR/SWy7xgAFK7feMTlONeNXBOoRDwKDLWhNaCQKoTYmGPh2OPU1Acp9vBiMJ4PKIc/9485fQ2jcMuJFY+ssG/Od2ftzXBS9cHTzTJmoi2yI=
-Message-ID: <b6c5339f0806020706v5f48bc54tb2c17d0537d3ef5a@mail.gmail.com>
-Date: Mon, 2 Jun 2008 10:06:51 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [Bug #10825] appletouch after wakeup
-Cc: "Justin Mattock" <justinmattock@gmail.com>,
-       "Marcel Holtmann" <marcel@holtmann.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>
-In-Reply-To: <200806021510.37992.oliver@neukum.org>
+	Mon, 2 Jun 2008 10:09:10 -0400
+Date: Tue, 3 Jun 2008 00:08:55 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: johnpol@2ka.mipt.ru, ray-lk@madrabbit.org, mingo@elte.hu,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, rjw@sisk.pl,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+Message-ID: <20080602140855.GA25944@gondor.apana.org.au>
+References: <E1K33OH-0005QX-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0806021442450.16829@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
-	 <200806020915.27683.oliver@neukum.org>
-	 <b6c5339f0806020544u3993a9dbh38e746449c601c5e@mail.gmail.com>
-	 <200806021510.37992.oliver@neukum.org>
-X-Google-Sender-Auth: 5e63975e4334f675
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0806021442450.16829@wrl-59.cs.helsinki.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 2, 2008 at 9:10 AM, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Montag, 2. Juni 2008 14:44:41 schrieb Bob Copeland:
->> On Mon, Jun 2, 2008 at 3:15 AM, Oliver Neukum <oliver@neukum.org> wrote:
->> > Am Montag, 2. Juni 2008 01:09:00 schrieb Justin Mattock:
->> >> On Sun, Jun 1, 2008 at 7:37 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->> >> > On Sun, Jun 1, 2008 at 6:29 PM, Oliver Neukum <oliver@neukum.org> wrote:
->> >
->> >> >> Please also apply the patch from the following link:
->> >> >> https://bugzilla.novell.com/attachment.cgi?id=213908
->> >
->> > Is this a statistically significant number of tests? How often did you see
->> > the appletouch problem? Can we consider this regression to be fixed by
->> > this patch?
->>
->> [CCed Johannes since we discussed the original problem in a separate thread]
->>
->> Oliver,
->>
->> Is the RESET_RESUME quirk needed in addition to the Novell bugzilla patch?
+On Mon, Jun 02, 2008 at 02:53:09PM +0300, Ilpo Järvinen wrote:
 >
-> You need both.
+> Shouldn't that be already visible in the ingo's sysrq-t dump, no? There:
+> 
+>   http://marc.info/?l=linux-kernel&m=121182099131520&w=2
 
-Yup, I booted the wrong kernel before, sorry for that.  I'll test again shortly.
+No, we need an actual strace rather than the static stack back-trace.
+So start with netstat -lntp to locate the process listening on that
+port, and then strace it to see if it's calling accept.
 
-Just curious, why is the reset quirk is needed since <= 2.6.25 worked fine?
+> There are many sys_accepts at least (if I understand that dump at all). 
+> There were some ip_local_outs there as well, which made me wonder if the 
+> totally innocent looking commit 1ac06e0306d0192a7a4d9ea1c9e06d355ce7e7d3 
+> (ipsec: Use the correct ip_local_out function) has something to do with 
+> this (I definately don't understand that part at all).
 
+This patch only has an effect for IPsec.
+
+Cheers,
 -- 
-Bob Copeland %% www.bobcopeland.com
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
