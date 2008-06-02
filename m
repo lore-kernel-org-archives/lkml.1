@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYFBHAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYFBHBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYFBHAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYFBHAT
+	id S1757725AbYFBHBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYFBHA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:00:19 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:12468 "EHLO
+	Mon, 2 Jun 2008 03:00:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:12995 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752951AbYFBHAQ (ORCPT
+	with ESMTP id S1753299AbYFBHA5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:00:16 -0400
+	Mon, 2 Jun 2008 03:00:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=oGV1LQlq952WaHLspFyvFT3BNcOznSEM8L1AS9Bx75Bt6qiSMLfFbHPCZBwDbW5DMPdNRFbxOjn7ZxeYX2sup1ixeJRkFMX00ijlSSv4MB6AHKSsYDwE/GVL4r75HnWglB6avPS8nVRhcc33fBrUJ+DIRKld42CDQnABOD7rgFU=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: cleanup max_pfn_mapped usage - 64bit
-Date: Sun, 1 Jun 2008 23:55:37 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200805110030.15510.yhlu.kernel@gmail.com> <200805291625.56942.yhlu.kernel@gmail.com> <200806012106.31650.yhlu.kernel@gmail.com>
-In-Reply-To: <200806012106.31650.yhlu.kernel@gmail.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wbcmkfQGr4qQJ276/jPCQma4o75GU8+sgYT2tDsjE0qRGHgYRxNNMYpEjZfyXwsbuyNxvyDdZS3wRtCT+U0G4eVSMYtGrydQaZDY927er9emK82/nbudIj9pE9hBfcqdmrgzwWM2i3juRGKuHKu713ttPwQs/okK3mVbnYPLA0k=
+Message-ID: <19f34abd0806020000h407e3fb1kadff228a3cf4c6f@mail.gmail.com>
+Date: Mon, 2 Jun 2008 09:00:56 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: find: WARNING: Hard link count is wrong for /proc/1
+Cc: "Pavel Emelyanov" <xemul@openvz.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <19f34abd0806012331m7c57468bu820e9b6b0184836d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806012355.37334.yhlu.kernel@gmail.com>
+References: <19f34abd0806012331m7c57468bu820e9b6b0184836d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 2, 2008 at 8:31 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> Hi,
+>
+> 2.6.26-rc4 seems to exhibit the following (new since at least 2.6.24)
+> warning when running find /proc/1:
+>
+> find: WARNING: Hard link count is wrong for /proc/1: this may be a bug
+> in your filesystem driver.  Automatically turning on find's -noleaf
+> option.  Earlier results may have failed to include directories that
+> should have been searched.
 
-64bit only after init_memory_mapping, we get valid max_pfn_mapped.
+My prime suspect is
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+commit e9720acd728a46cb40daa52c99a979f7c4ff195c
+Author: Pavel Emelyanov <xemul@openvz.org>
+Date:   Fri Mar 7 11:08:40 2008 -0800
 
-Index: linux-2.6/arch/x86/kernel/e820_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820_64.c
-+++ linux-2.6/arch/x86/kernel/e820_64.c
-@@ -55,16 +55,12 @@ unsigned long __init e820_end_of_ram(voi
- 
- 	last_pfn = find_max_pfn_with_active_regions();
- 
--	if (last_pfn > max_pfn_mapped)
--		max_pfn_mapped = last_pfn;
--	if (max_pfn_mapped > MAXMEM>>PAGE_SHIFT)
--		max_pfn_mapped = MAXMEM>>PAGE_SHIFT;
-+	if (last_pfn > MAXMEM>>PAGE_SHIFT)
-+		last_pfn = MAXMEM>>PAGE_SHIFT;
- 	if (last_pfn > end_user_pfn)
- 		last_pfn = end_user_pfn;
--	if (last_pfn > max_pfn_mapped)
--		last_pfn = max_pfn_mapped;
- 
--	printk(KERN_INFO "max_pfn_mapped = %lu\n", max_pfn_mapped);
-+	printk(KERN_INFO "last_pfn = %lu\n", last_pfn);
- 	return last_pfn;
- }
- 
-@@ -109,10 +105,6 @@ static int __init e820_find_active_regio
- 	if (*ei_startpfn >= *ei_endpfn)
- 		return 0;
- 
--	/* Check if max_pfn_mapped should be updated */
--	if (ei->type != E820_RAM && *ei_endpfn > max_pfn_mapped)
--		max_pfn_mapped = *ei_endpfn;
--
- 	/* Skip if map is outside the node */
- 	if (ei->type != E820_RAM || *ei_endpfn <= start_pfn ||
- 				    *ei_startpfn >= last_pfn)
-@@ -229,7 +221,6 @@ static int __init parse_memmap_opt(char 
- 		saved_max_pfn = e820_end_of_ram();
- 		remove_all_active_ranges();
+    [NET]: Make /proc/net a symlink on /proc/self/net (v3)
+
+
+as this patch introduces a new directory entry without bumping the nlink count.
+
+Will this do? (Untested)
+
+Vegard
+
+
+>From a43ef05a8c1f8d45ca88e00fdd31c00ddfdba1b8 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Mon, 2 Jun 2008 08:57:45 +0200
+Subject: [PATCH] proc: fix /proc/<pid> link count
+
+commit e9720acd728a46cb40daa52c99a979f7c4ff195c
+Author: Pavel Emelyanov <xemul@openvz.org>
+Date:   Fri Mar 7 11:08:40 2008 -0800
+
+    [NET]: Make /proc/net a symlink on /proc/self/net (v3)
+
+introduced /proc/net without bumping the link count on /proc/self.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ fs/proc/base.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index c447e07..10ee4a2 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2589,6 +2589,9 @@ static struct dentry
+*proc_pid_instantiate(struct inode *dir,
+ #ifdef CONFIG_SECURITY
+ 	inode->i_nlink += 1;
  #endif
--		max_pfn_mapped = 0;
- 		e820.nr_map = 0;
- 		userdef = 1;
- 		return 0;
-Index: linux-2.6/arch/x86/kernel/setup_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_64.c
-+++ linux-2.6/arch/x86/kernel/setup_64.c
-@@ -388,7 +388,7 @@ void __init setup_arch(char **cmdline_p)
- 
- 	check_efer();
- 
--	max_pfn_mapped = init_memory_mapping(0, (max_pfn_mapped << PAGE_SHIFT));
-+	max_pfn_mapped = init_memory_mapping(0, (end_pfn << PAGE_SHIFT));
- 	if (efi_enabled)
- 		efi_init();
- 
++#ifdef CONFIG_NET
++	inode->i_nlink += 1;
++#endif
+
+ 	dentry->d_op = &pid_dentry_operations;
+
+-- 
+1.5.4.1
