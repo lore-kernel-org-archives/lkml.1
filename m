@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbYFBK2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYFBK3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbYFBK2q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbYFBK2g
+	id S1754022AbYFBK3A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbYFBK2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:28:36 -0400
-Received: from styx.suse.cz ([82.119.242.94]:35637 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752650AbYFBK2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:28:35 -0400
-Date: Mon, 2 Jun 2008 12:28:34 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Ingo Molnar <mingo@elte.hu>, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k libc5 regression
-In-Reply-To: <Pine.LNX.4.64.0805292137530.13388@anakin>
-Message-ID: <Pine.LNX.4.64.0806021227470.6718@jikos.suse.cz>
-References: <Pine.LNX.4.64.0805262226280.11902@anakin>
- <Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz> <Pine.LNX.4.64.0805292137530.13388@anakin>
+	Mon, 2 Jun 2008 06:28:43 -0400
+Received: from anchor-post-33.mail.demon.net ([194.217.242.91]:2534 "EHLO
+	anchor-post-33.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757704AbYFBK2m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:28:42 -0400
+Message-ID: <4843CB52.70808@rsk.demon.co.uk>
+Date: Mon, 02 Jun 2008 11:28:34 +0100
+From: richard kennedy <richard@rsk.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: gregkh <gregkh@suse.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kobject: reorder kobject to save space on 64 bit builds
+References: <1212401245.2966.8.camel@castor.localdomain>
+In-Reply-To: <1212401245.2966.8.camel@castor.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Geert Uytterhoeven wrote:
+Richard Kennedy wrote:
+> reorder kobject to save space on 64 bit builds.
+> shrinks from 76 to 64 bytes & moves allocated kobject to a smaller
+> slab. 
 
-> > From: Jiri Kosina <jkosina@suse.cz>
-> > 
-> > brk: check lower bound properly
-> > 
-> > The check in sys_brk() on minimum value the brk might have must take 
-> > CONFIG_COMPAT_BRK setting into account. When this option is turned on 
-> > (i.e. we support ancient legacy binaries, e.g. libc5-linked stuff), the 
-> > lower bound on brk value is mm->end_code, otherwise the brk start is 
-> > allowed to be arbitrarily shifted.
-> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+That size change should be 72 -> 64!
 
-Thanks a lot for verifying, Geert.
+Sorry
+Richard
 
-So, I assume the proper way to handle this now is you dropping it from 
-your m68k tree, and Andrew taking it through -mm.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
