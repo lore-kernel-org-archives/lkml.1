@@ -1,255 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753055AbYFBVd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbYFBViN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753055AbYFBVd2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 17:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbYFBVdU
+	id S1753500AbYFBViN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 17:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYFBVh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 17:33:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35047 "EHLO ogre.sisk.pl"
+	Mon, 2 Jun 2008 17:37:58 -0400
+Received: from mga11.intel.com ([192.55.52.93]:49089 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbYFBVdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 17:33:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: [RFC][PATCH] snapshot: Use pm_mutex for mutual exclusion
-Date: Mon, 2 Jun 2008 23:33:56 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, pm list <linux-pm@lists.linux-foundation.org>
-References: <20080522222500.0f5873ff@core> <20080523120452.6feefed0@core> <200805231322.33321.rjw@sisk.pl>
-In-Reply-To: <200805231322.33321.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1750900AbYFBVh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 17:37:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,579,1204531200"; 
+   d="scan'208";a="335143469"
+Date: Mon, 2 Jun 2008 14:37:56 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: =?iso-8859-1?Q?J=FCrgen?= Mell <j.mell@t-online.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
+       arjan@linux.intel.com, mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
+Message-ID: <20080602213756.GB25114@linux-os.sc.intel.com>
+References: <200806011101.06491.j.mell@t-online.de> <87wsl9fkno.fsf@basil.nowhere.org> <200806011847.29744.j.mell@t-online.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200806022333.56939.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200806011847.29744.j.mell@t-online.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 23 of May 2008, Rafael J. Wysocki wrote:
-> On Friday, 23 of May 2008, Alan Cox wrote:
-> > > >  
-> > > > +	lock_kernel();
-> > > > +
-> > > 
-> > > Hm, well, I admit I'm a bit ignorant as far as the chardev locking is
-> > > concerned, but can you please tell me why would that be wrong if we didn't call
-> > > lock_kernel() here at all?
-> > 
-> > I've just been pushing the lock down. If the code already has enough
-> > internal locking for things like multiple ioctls in parallel then you can
-> > probably kill it entirely - but that needs someone who knows that driver
-> > well to decide and evaluate.
+On Sun, Jun 01, 2008 at 06:47:29PM +0200, Jürgen Mell wrote:
+> On Sonntag, 1. Juni 2008, Andi Kleen wrote:
+> > j.mell@t-online.de writes:
+> > > or it is restored more than
+> > > once. Please keep in mind, that I am always running two Einstein
+> > > processes simultaneously on my two cores!
+> > > I am willing to do further testing of this problem if someone can give
+> > > me a hint how to continue.
+> >
+> > My bet would have been actually on
+> > aa283f49276e7d840a40fb01eee6de97eaa7e012 because it does some nasty
+> > things (enable interrupts in the middle of __switch_to).
+> >
+> > I looked through the old patchkit and couldn't find any specific
+> > PREEMPT problems. All code it changes should run with preempt_off
+> >
+> > You could verify with sticking WARN_ON_ONCE(preemptible()) into
+> > all the places acc207616a91a413a50fdd8847a747c4a7324167
+> > changes (__unlazy_fpu, math_state_restore) and see if that triggers
+> > anywhere.
 > 
-> Thanks, I'll have a look.
+> No, that did not trigger. I put the WARN_ON_ONCE into process.c, traps.c 
+> and also into the __unlazy_fpu macro in i387.h but I got no messages 
+> anywhere (dmesg, /var/log/messages, /var/log/warn) when the trap #8 
+> occurred. 
+> Meanwhile I am also running the tests on another machine to make sure it is 
+> not a hardware-related problem.
+> 
+> Any new ideas are welcome!
+> 
+> Meanwhile I will go back to 2.6.20 and revert
+> aa283f49276e7d840a40fb01eee6de97eaa7e012. Maybe I got on a wrong track...
 
-Appended is what I think we can do.
+2.6.20 doesn't have the commit 'aa283f49276e7d840a40fb01eee6de97eaa7e012'
 
-Thanks,
-Rafael
+As you are seeing this corruption problem starting from 2.6.20,
+atleast recent(in 2.6.26 series) fpu changes don't play a role in this.
 
----
-We can avoid taking the BKL in snapshot_ioctl() if pm_mutex is used to prevent
-the ioctls from being executed concurrently.
+I will try to reproduce your issue.
 
-In addition, although it is only possible to open /dev/snapshot once, the task
-which has done that may spawn a child that will inherit the open descriptor,
-so in theory they can call snapshot_write(), snapshot_read() and
-snapshot_release() concurrently.  pm_mutex can also be used for mutual
-exclusion in such cases.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/user.c |   68 ++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 42 insertions(+), 26 deletions(-)
-
-Index: linux-2.6/kernel/power/user.c
-===================================================================
---- linux-2.6.orig/kernel/power/user.c
-+++ linux-2.6/kernel/power/user.c
-@@ -70,16 +70,22 @@ static int snapshot_open(struct inode *i
- 	struct snapshot_data *data;
- 	int error;
- 
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
--		return -EBUSY;
-+	mutex_lock(&pm_mutex);
-+
-+	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-+		error = -EBUSY;
-+		goto Unlock;
-+	}
- 
- 	if ((filp->f_flags & O_ACCMODE) == O_RDWR) {
- 		atomic_inc(&snapshot_device_available);
--		return -ENOSYS;
-+		error = -ENOSYS;
-+		goto Unlock;
- 	}
- 	if(create_basic_memory_bitmaps()) {
- 		atomic_inc(&snapshot_device_available);
--		return -ENOMEM;
-+		error = -ENOMEM;
-+		goto Unlock;
- 	}
- 	nonseekable_open(inode, filp);
- 	data = &snapshot_state;
-@@ -99,33 +105,36 @@ static int snapshot_open(struct inode *i
- 		if (error)
- 			pm_notifier_call_chain(PM_POST_HIBERNATION);
- 	}
--	if (error) {
-+	if (error)
- 		atomic_inc(&snapshot_device_available);
--		return error;
--	}
- 	data->frozen = 0;
- 	data->ready = 0;
- 	data->platform_support = 0;
- 
--	return 0;
-+ Unlock:
-+	mutex_unlock(&pm_mutex);
-+
-+	return error;
- }
- 
- static int snapshot_release(struct inode *inode, struct file *filp)
- {
- 	struct snapshot_data *data;
- 
-+	mutex_lock(&pm_mutex);
-+
- 	swsusp_free();
- 	free_basic_memory_bitmaps();
- 	data = filp->private_data;
- 	free_all_swap_pages(data->swap);
--	if (data->frozen) {
--		mutex_lock(&pm_mutex);
-+	if (data->frozen)
- 		thaw_processes();
--		mutex_unlock(&pm_mutex);
--	}
- 	pm_notifier_call_chain(data->mode == O_WRONLY ?
- 			PM_POST_HIBERNATION : PM_POST_RESTORE);
- 	atomic_inc(&snapshot_device_available);
-+
-+	mutex_unlock(&pm_mutex);
-+
- 	return 0;
- }
- 
-@@ -135,9 +144,13 @@ static ssize_t snapshot_read(struct file
- 	struct snapshot_data *data;
- 	ssize_t res;
- 
-+	mutex_lock(&pm_mutex);
-+
- 	data = filp->private_data;
--	if (!data->ready)
--		return -ENODATA;
-+	if (!data->ready) {
-+		res = -ENODATA;
-+		goto Unlock;
-+	}
- 	res = snapshot_read_next(&data->handle, count);
- 	if (res > 0) {
- 		if (copy_to_user(buf, data_of(data->handle), res))
-@@ -145,6 +158,10 @@ static ssize_t snapshot_read(struct file
- 		else
- 			*offp = data->handle.offset;
- 	}
-+
-+ Unlock:
-+	mutex_unlock(&pm_mutex);
-+
- 	return res;
- }
- 
-@@ -154,6 +171,8 @@ static ssize_t snapshot_write(struct fil
- 	struct snapshot_data *data;
- 	ssize_t res;
- 
-+	mutex_lock(&pm_mutex);
-+
- 	data = filp->private_data;
- 	res = snapshot_write_next(&data->handle, count);
- 	if (res > 0) {
-@@ -162,6 +181,9 @@ static ssize_t snapshot_write(struct fil
- 		else
- 			*offp = data->handle.offset;
- 	}
-+
-+	mutex_unlock(&pm_mutex);
-+
- 	return res;
- }
- 
-@@ -180,16 +202,16 @@ static long snapshot_ioctl(struct file *
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 
--	data = filp->private_data;
-+	if (!mutex_trylock(&pm_mutex))
-+		return -EBUSY;
- 
--	lock_kernel();
-+	data = filp->private_data;
- 
- 	switch (cmd) {
- 
- 	case SNAPSHOT_FREEZE:
- 		if (data->frozen)
- 			break;
--		mutex_lock(&pm_mutex);
- 		printk("Syncing filesystems ... ");
- 		sys_sync();
- 		printk("done.\n");
-@@ -197,7 +219,6 @@ static long snapshot_ioctl(struct file *
- 		error = freeze_processes();
- 		if (error)
- 			thaw_processes();
--		mutex_unlock(&pm_mutex);
- 		if (!error)
- 			data->frozen = 1;
- 		break;
-@@ -205,9 +226,7 @@ static long snapshot_ioctl(struct file *
- 	case SNAPSHOT_UNFREEZE:
- 		if (!data->frozen || data->ready)
- 			break;
--		mutex_lock(&pm_mutex);
- 		thaw_processes();
--		mutex_unlock(&pm_mutex);
- 		data->frozen = 0;
- 		break;
- 
-@@ -310,16 +329,11 @@ static long snapshot_ioctl(struct file *
- 			error = -EPERM;
- 			break;
- 		}
--		if (!mutex_trylock(&pm_mutex)) {
--			error = -EBUSY;
--			break;
--		}
- 		/*
- 		 * Tasks are frozen and the notifiers have been called with
- 		 * PM_HIBERNATION_PREPARE
- 		 */
- 		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
--		mutex_unlock(&pm_mutex);
- 		break;
- 
- 	case SNAPSHOT_PLATFORM_SUPPORT:
-@@ -392,7 +406,9 @@ static long snapshot_ioctl(struct file *
- 		error = -ENOTTY;
- 
- 	}
--	unlock_kernel();
-+
-+	mutex_unlock(&pm_mutex);
-+
- 	return error;
- }
- 
+thanks,
+suresh
