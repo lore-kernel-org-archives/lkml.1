@@ -1,77 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbYFBHGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbYFBHGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757947AbYFBHGX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYFBHGQ
+	id S1758323AbYFBHGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYFBHG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:06:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60985 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752781AbYFBHGO (ORCPT
+	Mon, 2 Jun 2008 03:06:28 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35321 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbYFBHG2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:06:14 -0400
-Date: Mon, 2 Jun 2008 07:51:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
-Message-ID: <20080602075113.60d0fdf8@core>
-In-Reply-To: <20080601161510.GA26854@enneenne.com>
-References: <20080601161510.GA26854@enneenne.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jun 2008 03:06:28 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+In-reply-to: <20080602060509.GA27519@infradead.org> (message from Christoph
+	Hellwig on Mon, 2 Jun 2008 02:05:09 -0400)
+Subject: Re: [patch 8/8] vfs: create file_remove_suid() helper
+References: <20080529113245.450308367@szeredi.hu> <20080529113318.257547449@szeredi.hu> <20080531082934.GG24135@infradead.org> <E1K2uQk-0001dO-G7@pomaz-ex.szeredi.hu> <20080602060509.GA27519@infradead.org>
+Message-Id: <E1K347b-0002eY-Ve@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 02 Jun 2008 09:06:23 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> First I added a new dcd_change() ldisc method which can be used as
-> follow:
-
-This looks good.
+> > Which means, that that pointer dereference will be done once instead
+> > of in each caller, no?  It's a gain (albeit a small one) is in code
+> > cleanliness, and possibly in generated code size.
 > 
-> static void pps_tty_dcd_change(struct tty_struct *tty, unsigned int status)
-> {
->        int id = (int) tty->disc_data;
->        struct timespec __ts;
->        struct pps_ktime ts;
-> 
->        /* First of all we get the time stamp... */
->        getnstimeofday(&__ts);
-> 
->        /* ... and translate it to PPS time data struct */
->        ts.sec = __ts.tv_sec;
->        ts.nsec = __ts.tv_nsec;
-> 
->        /* Now do the PPS event report */
->        pps_event(id, &ts,
->                        status ? PPS_CAPTUREASSERT : PPS_CAPTURECLEAR, tty);
-> 
->        pr_debug("[STDev] PPS %s at %lu on source #%d\n",
->                        status ? "assert" : "clear", jiffies, id);
-> }
-> 
-> However this solution gives very low precision timestamps so that's
+> Again, it doesn't make anyhing simpler.  It might be a cleanup at best.
 
-Where are you calling it from, and how ?
+OK, that depends what you call simpler :)
 
-> 2) The new dcd_change() method is well implemented? Can I add the
-> "irq" parameter or I can find it somewhere?
+Yes it is a cleanup.
 
-Not all tty devices have an IRQ (I suspect those which do not are useless
-for PPS reporting however). 
-
-Do you get decent reports if you change the tty driver to do
-
-	getnstimeofday(&ts);
-	[blah blah lots of serial port I/O code]
-	if (dcd ^ old_dcd)
-		ld->dcd_change(tty, dcd, &ts);
-
-??
-
-Alan
+Miklos
