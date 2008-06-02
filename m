@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbYFBViN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbYFBVmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbYFBViN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 17:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYFBVh6
+	id S1753474AbYFBVmH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 17:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYFBVlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 17:37:58 -0400
-Received: from mga11.intel.com ([192.55.52.93]:49089 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750900AbYFBVh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 17:37:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,579,1204531200"; 
-   d="scan'208";a="335143469"
-Date: Mon, 2 Jun 2008 14:37:56 -0700
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: =?iso-8859-1?Q?J=FCrgen?= Mell <j.mell@t-online.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com,
-       arjan@linux.intel.com, mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
-Message-ID: <20080602213756.GB25114@linux-os.sc.intel.com>
-References: <200806011101.06491.j.mell@t-online.de> <87wsl9fkno.fsf@basil.nowhere.org> <200806011847.29744.j.mell@t-online.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 2 Jun 2008 17:41:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54866 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751549AbYFBVly (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 17:41:54 -0400
+Date: Mon, 2 Jun 2008 16:41:51 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, "Derek L. Fults" <dfults@sgi.com>,
+       devik <devik@cdi.cz>, Dinakar Guniguntala <dino@in.ibm.com>,
+       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
+       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Dobson <colpatch@us.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Paul Menage <menage@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Randy.Dunlap" <rddunlap@osdl.org>, suresh.b.siddha@intel.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
+Message-ID: <20080602214151.GA7072@sgi.com>
+References: <20080601213019.14ea8ef8.pj@sgi.com> <20080602164203.GA2477@sgi.com> <48443E66.6060205@qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200806011847.29744.j.mell@t-online.de>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <48443E66.6060205@qualcomm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 06:47:29PM +0200, Jürgen Mell wrote:
-> On Sonntag, 1. Juni 2008, Andi Kleen wrote:
-> > j.mell@t-online.de writes:
-> > > or it is restored more than
-> > > once. Please keep in mind, that I am always running two Einstein
-> > > processes simultaneously on my two cores!
-> > > I am willing to do further testing of this problem if someone can give
-> > > me a hint how to continue.
-> >
-> > My bet would have been actually on
-> > aa283f49276e7d840a40fb01eee6de97eaa7e012 because it does some nasty
-> > things (enable interrupts in the middle of __switch_to).
-> >
-> > I looked through the old patchkit and couldn't find any specific
-> > PREEMPT problems. All code it changes should run with preempt_off
-> >
-> > You could verify with sticking WARN_ON_ONCE(preemptible()) into
-> > all the places acc207616a91a413a50fdd8847a747c4a7324167
-> > changes (__unlazy_fpu, math_state_restore) and see if that triggers
-> > anywhere.
+On Mon, Jun 02, 2008 at 11:39:34AM -0700, Max Krasnyansky wrote:
+> Ah, I know exactly what you're talking about.  However this is non-issue these
+> days. In order to clear cpuN from all the timers and other things all you need
+> to do is to bring that cpu off-line
+> 	echo 0 > /sys/devices/cpu/cpuN/online
+> and then bring it back online
+> 	echo 1 > /sys/devices/cpu/cpuN/online
+
+Although it seemed like something of a hack, we experimented with this
+previously and found that it didn't work reliably.  I'm sure things
+have gotten better, but will need to revisit.
+
 > 
-> No, that did not trigger. I put the WARN_ON_ONCE into process.c, traps.c 
-> and also into the __unlazy_fpu macro in i387.h but I got no messages 
-> anywhere (dmesg, /var/log/messages, /var/log/warn) when the trap #8 
-> occurred. 
-> Meanwhile I am also running the tests on another machine to make sure it is 
-> not a hardware-related problem.
-> 
-> Any new ideas are welcome!
-> 
-> Meanwhile I will go back to 2.6.20 and revert
-> aa283f49276e7d840a40fb01eee6de97eaa7e012. Maybe I got on a wrong track...
+> There are currently a couple of issues with scheduler domains and hotplug
+> event handling. I do have the fix for them, and Paul had already acked it.
 
-2.6.20 doesn't have the commit 'aa283f49276e7d840a40fb01eee6de97eaa7e012'
+Until a proven reliable method for doing this is firmly in place (as
+firmly as anything is, anyway),  I don't think we should be removing
+the alternative.
 
-As you are seeing this corruption problem starting from 2.6.20,
-atleast recent(in 2.6.26 series) fpu changes don't play a role in this.
+> initialization). See my latest "default IRQ affinity" patch.
 
-I will try to reproduce your issue.
+Nice idea.
 
-thanks,
-suresh
+> Also isolcpus= conflicts with the scheduler domains created by the cpusets.
+
+What sort of conflict are we talking about?  I assume once you've begun setting up cpusets that include those cpus that you're intention is to change the original behavior.
+
