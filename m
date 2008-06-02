@@ -1,51 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbYFBL6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760072AbYFBL7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760114AbYFBL6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbYFBL57
+	id S1760072AbYFBL7T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYFBL7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:57:59 -0400
-Received: from gw.goop.org ([64.81.55.164]:52512 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753319AbYFBL56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:57:58 -0400
-Message-ID: <4843E01F.50609@goop.org>
-Date: Mon, 02 Jun 2008 12:57:19 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 2 Jun 2008 07:59:08 -0400
+Received: from styx.suse.cz ([82.119.242.94]:39574 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753900AbYFBL7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 07:59:06 -0400
+Date: Mon, 2 Jun 2008 13:59:02 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH 2/5] jbd: ordered data integrity fix
+Message-ID: <20080602115902.GI30613@duck.suse.cz>
+References: <4843CE15.6080506@hitachi.com> <4843CF30.9050801@hitachi.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
-       Zachary Amsden <zach@vmware.com>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1 of 4] mm: add a ptep_modify_prot transaction	abstraction
-References: <patchbomb.1212192268@localhost> <4deead25e96efc8ca783.1212192269@localhost> <20080602111339.GB18586@elte.hu>
-In-Reply-To: <20080602111339.GB18586@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4843CF30.9050801@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> +	/* Get the current pte state, but zero it out to make it
->> +	   non-present, preventing the hardware from asynchronously
->> +	   updating it. */
->>     
->
-> please use standard and consistent comment style, similar to:
->   
+On Mon 02-06-08 19:45:04, Hidehiro Kawai wrote:
+> Subject: [PATCH 2/5] jbd: ordered data integrity fix
+> 
+> In ordered mode, if a buffer being dirtied exists in the committing
+> transaction, we write the buffer to the disk, move it from the
+> committing transaction to the running transaction, then dirty it.
+> But we don't have to remove the buffer from the committing
+> transaction when the buffer couldn't be written out, otherwise it
+> would miss the error and the committing transaction would not abort.
+> 
+> This patch adds an error check before removing the buffer from the
+> committing transaction.
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+  You can add
+  Acked-by: Jan Kara <jack@suse.cz>
 
-OK.
-
-    J
+								Honza
+> ---
+>  fs/jbd/transaction.c |   16 +++++++++++++---
+>  1 file changed, 13 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.26-rc4/fs/jbd/transaction.c
+> ===================================================================
+> --- linux-2.6.26-rc4.orig/fs/jbd/transaction.c
+> +++ linux-2.6.26-rc4/fs/jbd/transaction.c
+> @@ -954,9 +954,10 @@ int journal_dirty_data(handle_t *handle,
+>  	journal_t *journal = handle->h_transaction->t_journal;
+>  	int need_brelse = 0;
+>  	struct journal_head *jh;
+> +	int ret = 0;
+>  
+>  	if (is_handle_aborted(handle))
+> -		return 0;
+> +		return ret;
+>  
+>  	jh = journal_add_journal_head(bh);
+>  	JBUFFER_TRACE(jh, "entry");
+> @@ -1067,7 +1068,16 @@ int journal_dirty_data(handle_t *handle,
+>  				   time if it is redirtied */
+>  			}
+>  
+> -			/* journal_clean_data_list() may have got there first */
+> +			/*
+> +			 * We cannot remove the buffer with io error from the
+> +			 * committing transaction, because otherwise it would
+> +			 * miss the error and the commit would not abort.
+> +			 */
+> +			if (unlikely(!buffer_uptodate(bh))) {
+> +				ret = -EIO;
+> +				goto no_journal;
+> +			}
+> +
+>  			if (jh->b_transaction != NULL) {
+>  				JBUFFER_TRACE(jh, "unfile from commit");
+>  				__journal_temp_unlink_buffer(jh);
+> @@ -1108,7 +1118,7 @@ no_journal:
+>  	}
+>  	JBUFFER_TRACE(jh, "exit");
+>  	journal_put_journal_head(jh);
+> -	return 0;
+> +	return ret;
+>  }
+>  
+>  /**
+> 
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
