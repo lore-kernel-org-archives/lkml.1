@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbYFBKEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYFBKHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbYFBKEs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbYFBKEh
+	id S1757037AbYFBKHk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYFBKHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:04:37 -0400
-Received: from ns2.suse.de ([195.135.220.15]:45476 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbYFBKEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:04:36 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [patch 01/15] security: pass path to inode_create
-Date: Mon, 2 Jun 2008 12:04:13 +0200
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
-       eparis@redhat.com, casey@schaufler-ca.com, jjohansen@suse.de,
-       penguin-kernel@i-love.sakura.ne.jp, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-References: <20080529134903.615127628@szeredi.hu> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602091341.GA8011@infradead.org>
-In-Reply-To: <20080602091341.GA8011@infradead.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1771
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 2 Jun 2008 06:07:32 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:53921 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750862AbYFBKHb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:07:31 -0400
+Subject: [PATCH] kobject: reorder kobject to save space on 64 bit builds
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: gregkh <gregkh@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 02 Jun 2008 11:07:25 +0100
+Message-Id: <1212401245.2966.8.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200806021204.16615.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 June 2008 11:13:41 Christoph Hellwig wrote:
-> On Mon, Jun 02, 2008 at 09:02:14AM +0200, Miklos Szeredi wrote:
-> > So again, can you offer an alternative?
->
-> Just give up on this dumb idea completely.
+reorder kobject to save space on 64 bit builds.
+shrinks from 76 to 64 bytes & moves allocated kobject to a smaller
+slab. 
+    
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+----
 
-The AppArmor guys have really gone a long way in arguing their case, and all 
-discussions so far have ended in you decreeing that pathnames are bad at some 
-point. Thanks a lot for your constructive input on other areas of the code, 
-but could you please come up with technical arguments why pathnames are 
-bad this time?
+Running successfully on 2.6.26-rc2 on my desktop AMD64.
 
-Thanks a lot!
 
-Andreas
+
+
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index 39e709f..07124fc 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -59,12 +59,12 @@ enum kobject_action {
+ 
+ struct kobject {
+ 	const char		*name;
+-	struct kref		kref;
+ 	struct list_head	entry;
+ 	struct kobject		*parent;
+ 	struct kset		*kset;
+ 	struct kobj_type	*ktype;
+ 	struct sysfs_dirent	*sd;
++	struct kref		kref;
+ 	unsigned int state_initialized:1;
+ 	unsigned int state_in_sysfs:1;
+ 	unsigned int state_add_uevent_sent:1;
+
+
