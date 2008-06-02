@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762227AbYFBN7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761753AbYFBOHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762227AbYFBN7T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 09:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbYFBN7E
+	id S1761753AbYFBOHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 10:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbYFBOGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 09:59:04 -0400
-Received: from saeurebad.de ([85.214.36.134]:58254 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754300AbYFBN7B convert rfc822-to-8bit (ORCPT
+	Mon, 2 Jun 2008 10:06:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:42168 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755335AbYFBOGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 09:59:01 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Chris Malley <mail@chrismalley.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH -mm 03/14] bootmem: add documentation to API functions
-References: <20080530194220.286976884@saeurebad.de>
-	<20080530194737.756122438@saeurebad.de>
-	<1212409084.25657.0.camel@helix.beotel.net>
-Date: Mon, 02 Jun 2008 15:58:22 +0200
-In-Reply-To: <1212409084.25657.0.camel@helix.beotel.net> (Chris Malley's
-	message of "Mon, 02 Jun 2008 13:18:04 +0100")
-Message-ID: <87d4n0rla9.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 2 Jun 2008 10:06:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PqVUmttlTCHnkVhH+I29wlKhNLIc6tIh3oye6DVrX77YN80f10GoOKvmWW9g092AlR/SWy7xgAFK7feMTlONeNXBOoRDwKDLWhNaCQKoTYmGPh2OPU1Acp9vBiMJ4PKIc/9485fQ2jcMuJFY+ssG/Od2ftzXBS9cHTzTJmoi2yI=
+Message-ID: <b6c5339f0806020706v5f48bc54tb2c17d0537d3ef5a@mail.gmail.com>
+Date: Mon, 2 Jun 2008 10:06:51 -0400
+From: "Bob Copeland" <me@bobcopeland.com>
+To: "Oliver Neukum" <oliver@neukum.org>
+Subject: Re: [Bug #10825] appletouch after wakeup
+Cc: "Justin Mattock" <justinmattock@gmail.com>,
+       "Marcel Holtmann" <marcel@holtmann.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>
+In-Reply-To: <200806021510.37992.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
+	 <200806020915.27683.oliver@neukum.org>
+	 <b6c5339f0806020544u3993a9dbh38e746449c601c5e@mail.gmail.com>
+	 <200806021510.37992.oliver@neukum.org>
+X-Google-Sender-Auth: 5e63975e4334f675
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jun 2, 2008 at 9:10 AM, Oliver Neukum <oliver@neukum.org> wrote:
+> Am Montag, 2. Juni 2008 14:44:41 schrieb Bob Copeland:
+>> On Mon, Jun 2, 2008 at 3:15 AM, Oliver Neukum <oliver@neukum.org> wrote:
+>> > Am Montag, 2. Juni 2008 01:09:00 schrieb Justin Mattock:
+>> >> On Sun, Jun 1, 2008 at 7:37 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+>> >> > On Sun, Jun 1, 2008 at 6:29 PM, Oliver Neukum <oliver@neukum.org> wrote:
+>> >
+>> >> >> Please also apply the patch from the following link:
+>> >> >> https://bugzilla.novell.com/attachment.cgi?id=213908
+>> >
+>> > Is this a statistically significant number of tests? How often did you see
+>> > the appletouch problem? Can we consider this regression to be fixed by
+>> > this patch?
+>>
+>> [CCed Johannes since we discussed the original problem in a separate thread]
+>>
+>> Oliver,
+>>
+>> Is the RESET_RESUME quirk needed in addition to the Novell bugzilla patch?
+>
+> You need both.
 
-Chris Malley <mail@chrismalley.co.uk> writes:
+Yup, I booted the wrong kernel before, sorry for that.  I'll test again shortly.
 
-> On Fri, 2008-05-30 at 21:42 +0200, Johannes Weiner wrote:
->
->> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
->> ---
->> 
->>  mm/bootmem.c |  147 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
->>  1 file changed, 146 insertions(+), 1 deletion(-)
->> 
->> --- a/mm/bootmem.c
->> +++ b/mm/bootmem.c
->
-> [snip]
->
->>  
->> +/**
->> + * reserve_bootmem_node - mark a page range as reserved
->> + * @addr: starting address of the range
->> + * @size: size of the range in bytes
->
-> kerneldoc arguments don't match the actual function definition.
->
->> + *
->> + * Partial pages will be reserved.
->> + *
->> + * Only physical pages that actually reside on @pgdat are marked.
->> + */
->>  void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
->>  				 unsigned long size, int flags)
->>  {
->> @@ -331,6 +390,16 @@ void __init reserve_bootmem_node(pg_data
->>  }
->>  
->>  #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
->> +/**
->> + * reserve_bootmem - mark a page range as usable
->> + * @addr: starting address of the range
->> + * @size: size of the range in bytes
->
->
-> and here (missing @flags)
->
->> ﻿﻿+ *
->> + * Partial pages will be reserved.
->> + *
->> + * All physical pages within the range are marked, no matter what
->> + * node they reside on.
->> + */
->>  int __init reserve_bootmem(unsigned long addr, unsigned long size,
->>  			    int flags)
->>  {
->> @@ -499,6 +568,19 @@ found:
->>  	return ret;
->>  }
->>  
+Just curious, why is the reset quirk is needed since <= 2.6.25 worked fine?
 
-Will be updated in the next send-out.  Thanks for your time.
-
-	Hannes
+-- 
+Bob Copeland %% www.bobcopeland.com
