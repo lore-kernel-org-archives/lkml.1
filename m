@@ -1,40 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbYFBClQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYFBCtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757111AbYFBClQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 22:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbYFBClE
+	id S1756644AbYFBCtP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 22:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbYFBCtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 22:41:04 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:58881 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753438AbYFBClD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 22:41:03 -0400
-Date: Sun, 1 Jun 2008 21:40:55 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Jay Cliburn <jacliburn@bellsouth.net>
-Cc: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, rdunlap@xenotime.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] doc: document the kernel-doc conventions for kernel
- hackers
-Message-Id: <20080601214055.82677878.pj@sgi.com>
-In-Reply-To: <20080531094253.30ae975e@osprey.hogchain.net>
-References: <20080530221941.28920.30102.sendpatchset@polaris-admin.engr.sgi.com>
-	<20080531094253.30ae975e@osprey.hogchain.net>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 22:49:03 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:46436 "EHLO
+	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753058AbYFBCtB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 22:49:01 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support 
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@lst.de
+In-Reply-To: <200806012349.29538.arnd@arndb.de>
+References: <200805311737.58991.arnd@arndb.de> <48421D65.8040301@lougher.demon.co.uk> <20080601122818.GA3687@shareable.org> <200806012349.29538.arnd@arndb.de>
+Date: Mon, 02 Jun 2008 11:48:22 +0900
+Message-ID: <9785.1212374902@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay wrote:
-> s/as/is
 
-Yup - I already sent this fix to Andrew.  Thanks.
+Arnd Bergmann:
+> Besides, there are a many more problems with unionfs, which have
+> all been mentioned in the previous review cycles. Aufs doesn't
+> address those either AFAIK, with the exception of at least
+> not making additional copies in the page cache when writing to
+> a file.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Hello Arnd,
+
+While I don't have particular objection to your idea and approach to
+cramfs, I'd point out that modern LiveCDs tend to save their
+modifications to disk.
+And AUFS did address all known problems. If there left something, please
+let me know.
+
+
+Junjiro Okajima
