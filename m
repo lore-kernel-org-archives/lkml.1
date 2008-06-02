@@ -1,87 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbYFBNgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbYFBNir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761272AbYFBNgg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 09:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbYFBNfd
+	id S1760971AbYFBNir (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 09:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbYFBNij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 09:35:33 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:55999 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760828AbYFBNfY (ORCPT
+	Mon, 2 Jun 2008 09:38:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:18178 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754184AbYFBNii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 09:35:24 -0400
-Message-ID: <4843F6DA.3080209@de.ibm.com>
-Date: Mon, 02 Jun 2008 15:34:18 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Mon, 2 Jun 2008 09:38:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JyJurpTX3zGLKin6ZvK/2Ps3t3Qq5w2Ig2EcjHX3EbYWKQQ5m/0ATM6BxJKpNbO62px/LpCWY3C5Yo/UkJV6GIfiVD0G6m3+TyWCHtHZMJ5NsxE8WhmsrpAgiD9Q2zhMQflKVIvXfQJp8VlIkZrZBqSrYDuG1HvA1+IjOX2v7bA=
+Message-ID: <7b9198260806020638y7bb5ff19l416b329b22528ba9@mail.gmail.com>
+Date: Mon, 2 Jun 2008 14:38:37 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: "Al Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC PATCH 1/2] vfs: Introduce on-demand filesystem initialisation
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20080601153205.GM28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: ltp-coverage@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Peter Oberparleiter <oberparleiter@googlemail.com>
-Subject: [PATCH 3/6] seq_file: add function to write binary data
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1212331915-22856-1-git-send-email-tspink@gmail.com>
+	 <1212331915-22856-2-git-send-email-tspink@gmail.com>
+	 <20080601153205.GM28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+2008/6/1 Al Viro <viro@zeniv.linux.org.uk>:
+> On Sun, Jun 01, 2008 at 03:51:54PM +0100, Tom Spink wrote:
+>
+>
+> Occam's Razor...
+>
+> You've just serialized ->kill_sb() for given fs type (and made sure that
+> if one gets stuck, _everything_ gets stuck).  Moreover, you've serialized
+> sget() against the same thing (i.e. pretty much each ->get_sb()).
+>
+> All of that (and a couple of new methods) is done for something that just
+> plain does not belong to VFS.  It's trivially doable in filesystem *and*
+> it's about the objects with lifetimes that make sense only for filesystem
+> itself.
 
-seq_write() can be used to construct seq_files containing arbitrary
-data. Required by the gcov-profiling interface to synthesize binary
-profiling data files.
+Okay!  Thanks for reviewing, anyway. :-)
 
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
- fs/seq_file.c            |   20 ++++++++++++++++++++
- include/linux/seq_file.h |    1 +
- 2 files changed, 21 insertions(+)
-
-Index: linux-2.6.26-rc4/fs/seq_file.c
-===================================================================
---- linux-2.6.26-rc4.orig/fs/seq_file.c
-+++ linux-2.6.26-rc4/fs/seq_file.c
-@@ -554,6 +554,26 @@ int seq_puts(struct seq_file *m, const c
- }
- EXPORT_SYMBOL(seq_puts);
- 
-+/**
-+ * seq_write - write arbitrary data to buffer
-+ * @seq: seq_file identifying the buffer to which data should be written
-+ * @data: data address
-+ * @len: number of bytes
-+ *
-+ * Return 0 on success, non-zero otherwise.
-+ */
-+int seq_write(struct seq_file *seq, const void *data, size_t len)
-+{
-+	if (seq->count + len < seq->size) {
-+		memcpy(seq->buf + seq->count, data, len);
-+		seq->count += len;
-+		return 0;
-+	}
-+	seq->count = seq->size;
-+	return -1;
-+}
-+EXPORT_SYMBOL(seq_write);
-+
- struct list_head *seq_list_start(struct list_head *head, loff_t pos)
- {
- 	struct list_head *lh;
-Index: linux-2.6.26-rc4/include/linux/seq_file.h
-===================================================================
---- linux-2.6.26-rc4.orig/include/linux/seq_file.h
-+++ linux-2.6.26-rc4/include/linux/seq_file.h
-@@ -39,6 +39,7 @@ int seq_release(struct inode *, struct f
- int seq_escape(struct seq_file *, const char *, const char *);
- int seq_putc(struct seq_file *m, char c);
- int seq_puts(struct seq_file *m, const char *s);
-+int seq_write(struct seq_file *seq, const void *data, size_t len);
- 
- int seq_printf(struct seq_file *, const char *, ...)
- 	__attribute__ ((format (printf,2,3)));
-
-
-
+-- 
+Tom Spink
