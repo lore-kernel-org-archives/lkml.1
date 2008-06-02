@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYFBTAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbYFBTAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYFBTAF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 15:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbYFBS7y
+	id S1756414AbYFBTAd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 15:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbYFBTAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 14:59:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55067 "EHLO mx3.mail.elte.hu"
+	Mon, 2 Jun 2008 15:00:13 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53647 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbYFBS7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 14:59:53 -0400
-Date: Mon, 2 Jun 2008 20:57:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: linux-next: Tree for May 30
-Message-ID: <20080602185740.GA18550@elte.hu>
-References: <20080530181901.8268f317.sfr@canb.auug.org.au> <1212316424.3253.8.camel@dhcppc1> <20080601150710.GB27843@elte.hu> <1212428404.484430742e07d@213.133.104.17>
+	id S1755418AbYFBTAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 15:00:11 -0400
+Date: Mon, 2 Jun 2008 13:59:53 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
+       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
+       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Message-ID: <20080602185953.GA14108@us.ibm.com>
+References: <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602091341.GA8011@infradead.org> <E1K36PE-0002wZ-0M@pomaz-ex.szeredi.hu> <20080602093630.GA25254@infradead.org> <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu> <20080602104203.GA21898@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1212428404.484430742e07d@213.133.104.17>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
+In-Reply-To: <20080602104203.GA21898@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Thomas Meyer <thomas@m3y3r.de> wrote:
-
-> Zitat von Ingo Molnar <mingo@elte.hu>:
-> 
-> > hm, that commit is gone in latest tip - does tip/master boot fine for 
-> > you? It's:
+Quoting Christoph Hellwig (hch@infradead.org):
+> On Mon, Jun 02, 2008 at 11:52:52AM +0200, Miklos Szeredi wrote:
+> > These patches fix several issues raised at previous submissions:
 > > 
-> >    http://people.redhat.com/mingo/tip.git/README
+> >  - passing NULL vfsmounts
+> >  - using nameidata
+> >  - using extra stack for vfsmount argument
 > > 
-> > that commit was an interim fix that got removed meanwhile and replaced 
-> > with the real fixes.
+> > So, it seems to me that there's in fact no issues remaining and the
+> > best excuse you can come up with is that it's a dumb idea.  Well,
+> > that's not a very imressive technical argument IMNSHO.
 > 
-> I just booted next-20080602 successfully, and the latest commit on 
-> file arch/x86/kernel/setup_32.c is:
-> 
-> 4efc5450e19128e0c77fbfdf4a14804f5a4a1d95 (Merge branch 'x86/numa' into 
-> auto-x86-next).
-> 
-> So yes, the original commit causing the error for me is gone.
+> Well, pathname based access control is a dumb idea, and we've been
+> through this N times.  You've also been told that vfs_ routines should
+> remain without vfsmount, and no that's not a stack-related issue no idea
+> where that part came from.
 
-thanks for testing it and it's great that the crash is gone!
+Sorry, noone else asked, so just out of curiosity - the *actual* reason
+is api layering?  Or am I missing another reason?
 
-	Ingo
+thanks,
+-serge
