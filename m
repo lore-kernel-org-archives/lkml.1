@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbYFBP4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbYFBP7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757274AbYFBP4V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 11:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYFBP4H
+	id S1756976AbYFBP7d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 11:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYFBP7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 11:56:07 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:30957 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbYFBP4G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 11:56:06 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 00/15] PNP: convert resource options to unified dynamic list, v1
-Date: Mon, 2 Jun 2008 09:56:07 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
-References: <20080530224853.976744229@ldl.fc.hp.com> <4842F857.9060309@keyaccess.nl>
-In-Reply-To: <4842F857.9060309@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jun 2008 11:59:23 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:35325 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752519AbYFBP7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 11:59:21 -0400
+Date: Mon, 2 Jun 2008 19:51:52 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Toshiharu Harada <haradats@gmail.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
+       casey@schaufler-ca.com, agruen@suse.de, jjohansen@suse.de,
+       penguin-kernel@i-love.sakura.ne.jp, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Message-ID: <20080602155152.GA18257@2ka.mipt.ru>
+References: <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602091341.GA8011@infradead.org> <E1K36PE-0002wZ-0M@pomaz-ex.szeredi.hu> <20080602093630.GA25254@infradead.org> <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu> <20080602104203.GA21898@infradead.org> <E1K37hN-00039y-5o@pomaz-ex.szeredi.hu> <20080602150517.GB22400@2ka.mipt.ru> <9d732d950806020831h1b8aeabag9cb6db8e16bac971@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806020956.08729.bjorn.helgaas@hp.com>
+In-Reply-To: <9d732d950806020831h1b8aeabag9cb6db8e16bac971@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 June 2008 01:28:23 pm Rene Herman wrote:
-> On 31-05-08 00:48, Bjorn Helgaas wrote:
+On Tue, Jun 03, 2008 at 12:31:14AM +0900, Toshiharu Harada (haradats@gmail.com) wrote:
+> > This is a really interesting flame, can you proceed,
+> > we will run for cola and peanuts :)
 > 
-> > This patch series converts the PNP resource option structures
-> > to a unified linked list.  This preserves resource order, which
-> > is important for some devices.  There's more detail in the
-> > comments for the last patch.
-> > 
-> > Any comments would be welcome.
-> > 
-> > This depends on some patches that are in -mm, but not yet
-> > upstream.  In mmotm, these would probably go after
-> > pnp-dont-sort-by-type-in-sys-resources.patch
-> 
-> Will look at this in more detail but as first testing feedback -- I need 
-> this on top.
-> 
-> Both ISAPnP and PnPBIOS for some or other reason set the priority to 
-> 0x100 | prio after which that 0x100 is immediately masked of again in 
-> pnp_build_option() leaving just the prio. Your new scheme reserves 16 
-> bits for the priority though meaning the 0x100 survives causing it to be 
-> considered "invalid" by at least pnp_option_priority_name() for example.
-> 
-> There cannot be any currently valid reason for the 0x100 it seems given 
-> that it's immediately masked of again in pnp_build_option() so let's 
-> just get rid of it...
+> Let me quote a message by Chris Wright from LSM ml:
+> "You cannot discover the path used to access an inode without knowing
+> both the dentry and the vfsmount objects. "
 
-I agree, that bit looks superfluous.  I added a patch to remove it.
-Thanks,
-  Bjorn
+Depending on what path you really want. If you want it related to bind
+mount, you can (trivially). And even full path with vfsmount with
+additional work.
+
+Without any single additional patch on top of security system.
+
+It maybe a bit slower, more complex, duplicate, whatever...
+Active security was never a fast solution and was never a compromiss
+between those who like it and who do not.
+
+Technically you can be inside created limits and formally do not change
+security model, but in practice implement you lovely path based security
+checks.
+
+> Another one by Stephen Smalley:
+> "Pathname-based security considered harmful.  You want to control access
+> to an object, not a name, and the name-to-object mapping is neither
+> one-to-one nor immutable."
+
+For those who care exactly about path, they do not want to have security
+checks for object, which was there. As addition, selinux
+maintainer/architector opinion is a bit biassed :)
+
+> Can you guess when they were posted?
+> The answer is December 2003. :)
+> Do we need more time? I don't think so.
+
+Apparently we do :)
+
+> I'm viewing Miklos' patches as *enhancements* not only for AppArmor (and
+> other pathname-based LSM modules). Everyone can make use of
+> information and lose nothing.  Am I too simple minded?
+
+What I wanted to say, is that people who do want to implement theirs
+idea, will find a way to do it without breaking other approach.
+With additional changes, with more complex approach, more code and
+possibly some duplication/optimization/whatever.
+
+So, if people continue to kick theirs head to the wall, they want
+exactly that flame, that void talks and so on :)
+
+-- 
+	Evgeniy Polyakov
