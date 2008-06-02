@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbYFBRMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbYFBRP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbYFBRMp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 13:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbYFBRLS
+	id S1758040AbYFBRP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 13:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYFBRPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 13:11:18 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55201 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753725AbYFBRLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 13:11:15 -0400
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH] ext2: Add explicit include of <linux/quota.h> into super.c
-Date: Mon,  2 Jun 2008 19:11:09 +0200
-Message-Id: <12124266723968-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: <12124266722979-git-send-email-jack@suse.cz>
-References: y
- <12124266712214-git-send-email-jack@suse.cz>
- <12124266711334-git-send-email-jack@suse.cz>
- <12124266712838-git-send-email-jack@suse.cz>
- <12124266722979-git-send-email-jack@suse.cz>
+	Mon, 2 Jun 2008 13:15:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51093 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752203AbYFBRPV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 13:15:21 -0400
+Date: Mon, 2 Jun 2008 17:59:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Rodolfo Giometti <giometti@enneenne.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
+Message-ID: <20080602175946.366c5d64@core>
+In-Reply-To: <20080602170916.GD16164@csclub.uwaterloo.ca>
+References: <20080601161510.GA26854@enneenne.com>
+	<20080602075113.60d0fdf8@core>
+	<20080602092551.GC26854@enneenne.com>
+	<20080602150257.54692f35@core>
+	<20080602145603.GG26854@enneenne.com>
+	<20080602170916.GD16164@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need definitions from quota.h and so far we depended on fs.h to
-include this file for us. This will be no longer true.
+> Of course if you have to check of the DCD changed, that may not be
+> constant.  A check for whether this device currently has anyone that
+> wants the timestamp though should be a constant time.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext2/super.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Not having to take the cost of that for other users is far more important
+than a time variance of a jump prediction. CPU cache effects alone will
+add way more variance already. It's not a meaningful number to chase
+compared to the randomness introduced by the IRQ handling itself.
 
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index ef50cbc..609df85 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -31,6 +31,7 @@
- #include <linux/seq_file.h>
- #include <linux/mount.h>
- #include <linux/log2.h>
-+#include <linux/quota.h>
- #include <asm/uaccess.h>
- #include "ext2.h"
- #include "xattr.h"
--- 
-1.5.2.4
+If you want perfect accuracy do what I²IT did years ago and use a card
+which timestamps the physical IRQ bus transition and exposes it to the OS.
 
+Alan
