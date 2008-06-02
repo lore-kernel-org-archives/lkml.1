@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757709AbYFBRHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757460AbYFBRJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757709AbYFBRHW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 13:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbYFBRHH
+	id S1757460AbYFBRJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 13:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYFBRJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 13:07:07 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:1997 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753611AbYFBRHC (ORCPT
+	Mon, 2 Jun 2008 13:09:18 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:35272 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752456AbYFBRJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 13:07:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OotLqhAL6Kunz5cxG+ilEEYfgR8VZ8un4fOwaa0JeGoXMvFevy9JCTQ1CLHKOVw+/zj0+cOzpP9HmkI/qVTej9pIlVrs83z9oouGH8iQAXfgAzhS/f7CNoH3Edc1yyAvcwbPospdQTNIBwvcsl4wlRim4FdSSCrkZcAxwdRbdUI=
-Message-ID: <87f94c370806021007i5df45716u38f5b7ce525c03b0@mail.gmail.com>
-Date: Mon, 2 Jun 2008 13:07:01 -0400
-From: "Greg Freemyer" <greg.freemyer@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-Cc: "Mark Lord" <liml@rtr.ca>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Pavel Machek" <pavel@ucw.cz>,
-       "Kristen Carlson Accardi" <kristen.c.accardi@intel.com>,
-       "Theodore Tso" <tytso@mit.edu>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48441AA6.8080704@garzik.org>
+	Mon, 2 Jun 2008 13:09:17 -0400
+Date: Mon, 2 Jun 2008 13:09:16 -0400
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
+Message-ID: <20080602170916.GD16164@csclub.uwaterloo.ca>
+References: <20080601161510.GA26854@enneenne.com> <20080602075113.60d0fdf8@core> <20080602092551.GC26854@enneenne.com> <20080602150257.54692f35@core> <20080602145603.GG26854@enneenne.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080508161008.59361de5@appleyard>
-	 <20080527143202.4bab5bf0@appleyard> <20080527225926.GE6843@mit.edu>
-	 <20080527163251.04054a74@appleyard> <20080531080015.GG5405@ucw.cz>
-	 <4842F5A8.9020708@garzik.org> <20080602080440.25fc663c@core>
-	 <4843A4A7.3020809@garzik.org> <4843EF88.2040606@rtr.ca>
-	 <48441AA6.8080704@garzik.org>
+In-Reply-To: <20080602145603.GG26854@enneenne.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 2, 2008 at 12:07 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> Mark Lord wrote:
->>
->> For the power-off of unused ports, the current patch still sounds
->> extremely vendor-specific (Intel).
->>
->> Does it actually work (demonstrate, please) on any other hardware ?
->
-> Ding...  correct.  We need something per-port that's not Intel specific.
->
->        Jeff
+On Mon, Jun 02, 2008 at 04:56:03PM +0200, Rodolfo Giometti wrote:
+> I prefere avoid the if clause for getnstimeofday() since each
+> instruction delay may decrease time precision, so:
 
-But, isn't Alan correct that the new logic is useful to some and with
-a simple boot option is can be used to enable / disable it.
+Not if the delay is always constant.  That you can adjust for.  You
+already have to adjust for cable length and such for your GPS, so
+adjusting for a fixed delay for a conditional is no big deal.
 
-So if it is defaulted it to disabled, and the end user is allowed to
-have a boot option to enable it, you get a reasonable first step for
-now.
+Of course if you have to check of the DCD changed, that may not be
+constant.  A check for whether this device currently has anyone that
+wants the timestamp though should be a constant time.
 
-Greg
 -- 
-Greg Freemyer
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-First 99 Days Litigation White Paper -
-http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
-
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+Len Sorensen
