@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbYFBQmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYFBQo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbYFBQmS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 12:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYFBQmH
+	id S1755618AbYFBQo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 12:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYFBQou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 12:42:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43693 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752861AbYFBQmG (ORCPT
+	Mon, 2 Jun 2008 12:44:50 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:34150 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753243AbYFBQot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 12:42:06 -0400
-Date: Mon, 2 Jun 2008 11:42:03 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       "Derek L. Fults" <dfults@sgi.com>, devik <devik@cdi.cz>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Randy.Dunlap" <rddunlap@osdl.org>, suresh.b.siddha@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
-Message-ID: <20080602164203.GA2477@sgi.com>
-References: <20080601213019.14ea8ef8.pj@sgi.com>
+	Mon, 2 Jun 2008 12:44:49 -0400
+Date: Mon, 2 Jun 2008 17:44:35 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Roger Heflin <rogerheflin@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Guntsche Michael <mike@it-loops.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.x: Wrong CPU frequency (cpufreq table) with p4-clockmod
+Message-ID: <20080602164434.GA14012@srcf.ucam.org>
+References: <12C649C0-4BEF-41F1-B738-8C8CEF8AEBB8@it-loops.com> <20080530065717.44cf7414@infradead.org> <F2473A1D-E4F5-4B9D-9538-B122553E1011@it-loops.com> <E234E250-922E-45F6-B01E-0B3CDC80A8ED@it-loops.com> <20080601185643.3d3db64f@infradead.org> <48435CCA.5000905@gmail.com> <20080602153759.GA3406@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080601213019.14ea8ef8.pj@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080602153759.GA3406@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul,
+On Mon, Jun 02, 2008 at 12:37:59PM -0300, Henrique de Moraes Holschuh wrote:
 
-On Sun, Jun 01, 2008 at 09:30:19PM -0500, Paul Jackson wrote:
+> Indeed.  And if we had a generic interface for throttling (ACPI
+> T-states-like) and frequency changes (ACPI P-states-like), we could just
+> move p4-clockmod to the throttling one (and NOT letting it register with
+> the frequency changes interface), and be done with it.
 > 
->     Do you, or someone you know, use "isolcpus="?
+> Do we have these interfaces?
 
-We use it.
-
->     Can we remove it?
-
-We use isolcpus to ensure that boot-time intialization, specifically timer initialization, happens on a specific set of cpus that we won't be using for lower latency purposes.  Some of these timers will repeatedly restart themselves on the same cpu and a few do add latency (although admittedly I haven't checked timer latency recently).
-
-Looking at tracebacks in 2.6.26-rc3 from hrtimer_init() and internal_add_timer() things still appear to be working this way, with the timer starting on the originating cpu.  If I isolate all but, say one, cpu, timers all seem to start on the unisolated cpu.
-
-Attempts have been made to add an interface to ward timers off of specific cpus, but these have always been rejected.
-
-> 
->     Should we remove it?
-
-Why?
- 
->     Should we first deprecate it somehow, for a while, before
->     removing it?
-
-A better idea than just removing it.
+No.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
