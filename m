@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759318AbYFBLTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbYFBLVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759318AbYFBLTP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYFBLS5
+	id S1752046AbYFBLVT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYFBLVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:18:57 -0400
-Received: from stinky.trash.net ([213.144.137.162]:33154 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752182AbYFBLS4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:18:56 -0400
-Message-ID: <4843D71A.5090107@trash.net>
-Date: Mon, 02 Jun 2008 13:18:50 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+	Mon, 2 Jun 2008 07:21:06 -0400
+Received: from www.sophics.cz ([92.61.80.24]:41369 "EHLO www.sophics.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751480AbYFBLVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 07:21:05 -0400
+X-Greylist: delayed 1559 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jun 2008 07:21:04 EDT
+Message-ID: <4843D179.7070809@sophics.cz>
+Date: Mon, 02 Jun 2008 12:54:49 +0200
+From: Petr Stehlik <pstehlik@sophics.cz>
+User-Agent: Icedove 1.5.0.14eol (X11/20080509)
 MIME-Version: 1.0
-To: Rami Rosen <ramirose@gmail.com>
-CC: David Miller <davem@davemloft.net>, netfilter-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-2.6] [NETFILTER] Misc Cleanups.
-References: <20080601.234549.229050768.davem@davemloft.net>	 <4843C183.4060008@trash.net> <eb3ff54b0806020411p16531d2chb05061a6d209b406@mail.gmail.com>
-In-Reply-To: <eb3ff54b0806020411p16531d2chb05061a6d209b406@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       =?UTF-8?B?77+9?= <rene.scharfe@lsrfire.ath.cx>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] msdos fs: remove unsettable atari option
+References: <1211717062.5782.16.camel@ubuntu> <87ve12s849.fsf@duaron.myhome.or.jp> <20080601221035.GA9107@nineveh.local> <87zlq4rd30.fsf@duaron.myhome.or.jp> <Pine.LNX.4.64.0806020930170.7351@anakin>
+In-Reply-To: <Pine.LNX.4.64.0806020930170.7351@anakin>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rami Rosen wrote:
-> Hi,
->   - Thanks for your comments; I was not aware that this issues occur
-> in other places too; attached here is another patch, fixing where
-> applicable in ip6_queue and nfnetlink_queue.
+Geert Uytterhoeven wrote:
+>>> Geert Uytterhoeven has a patch in his POSTPONED queue that is supposed
+>>> to fix Atari FAT.  I can't speak to whether it works or why it's
+>>> postponed, but it seems to compile.
+>> I see. Although I don't know the patch, I'd like to add this part to
+>> Geert's patch if possible. And when the patch can be posted, we can
+>> re-add this part again.
+>>
+>> Geert, what do you think?
 > 
->   1) in net/ipv6/netfilter/ip6_queue.c
->     - No need to perform data_len = 0 in the switch command, since data_len
-> 	   is initialized to 0 in the beginning of the
-> ipq_build_packet_message() method
->     - We can reach nlmsg_failure only from one place; skb is sure to be NULL
-> 	     when getting there; since skb is NULL, there is no need to check this fact
-> 	     and call kfree_skb().
+> It's in POSTPONED state because nobody speaks up for/against it.
+> Personally, I don't know how much it is (still) needed...
+> But a few years ago somebody contacted me that he used it succesfully
+> on PA-RISC and i386 ;-)
 > 
-> 2) in net/netfilter/nfnetlink_queue.c:
->     - No need to perform data_len = 0 in the switch command, since data_len
-> 	   is initialized to 0 in the beginning of the
-> nfqnl_build_packet_message() method
+> BTW, the patch is
+> http://linux-m68k-cvs.ubb.ca/~geert/linux-m68k-patches-2.6/POSTPONED/134-atari-fat.diff
 > 
-> (Note: here, as opposed to previous patch, nlmsg_failure must check
-> skb and free it if it is not NULL, so the call to kfree_skb() is
-> needed , so it is not removed)
+> Atari people, I think now is the time to let it live or die...
 
+The patch looks good, how can I let it live?
 
-I've queued this patch and the previous one (without the procfs
-bits) as one combined patch for 2.6.27, thanks.
+Petr
 
