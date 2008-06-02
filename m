@@ -1,104 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbYFBDxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbYFBD4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757306AbYFBDxx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 23:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbYFBDxp
+	id S1757373AbYFBD4V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 23:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYFBD4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 23:53:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:28285 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754615AbYFBDxo (ORCPT
+	Sun, 1 Jun 2008 23:56:09 -0400
+Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:35431
+	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754293AbYFBD4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 23:53:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RMc5Nejld5WYaTP8wnD4HLaGBbQvFGGTRVXFx6BsGm6vSNymTW+9tyLDlDSooOwg3mFfB24IuZLmWwwjgKtTVG0ZwP1dd3E8Ix+CT8se1aY7taInuh7BiabsrZX1qZxpbWR1vLJ6U/pKdBr699rJjPrvcanC5M0Wn16WdbFa9RE=
-Message-ID: <dd18b0c30806012053q27b00fd6p40fa63bcb4bb19a3@mail.gmail.com>
-Date: Mon, 2 Jun 2008 03:53:43 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: BUG kmalloc-2048: Poison overwritten
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080601190138.4d86dc66@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 1 Jun 2008 23:56:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=HnABUZ5IwA14I4H3BFCeSwIPN6mwsNgxsQ/TJeKYiG8HayGM2E3xZXyR3GUdOkIB;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Sun, 1 Jun 2008 23:55:58 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Cammarata <jimi@sngx.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] net: add ability to clear stats via ethtool -
+ e1000/pcnet32
+Message-Id: <20080601235558.66e1ed7b.billfink@mindspring.com>
+In-Reply-To: <20080601222906.GH30769@solarflare.com>
+References: <482FBA09.80201@sngx.net>
+	<483E0AAE.2020107@sngx.net>
+	<20080528221118.63da4092.akpm@linux-foundation.org>
+	<483EA2D1.8050603@sngx.net>
+	<20080529154525.3916c7b5@core>
+	<20080530151250.b44a119a.billfink@mindspring.com>
+	<20080531131143.516ca56e@core>
+	<20080531195702.0b879dd1.billfink@mindspring.com>
+	<20080601014620.GG30769@solarflare.com>
+	<20080601164614.012fe1f6.billfink@mindspring.com>
+	<20080601222906.GH30769@solarflare.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30806011613l6c8c1863rd237f7de06a6b33a@mail.gmail.com>
-	 <20080601190138.4d86dc66@infradead.org>
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d9aa12f8e711a3a35c4c85a385c2628c5350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.248
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 2, 2008 at 2:01 AM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sun, 1 Jun 2008 23:13:51 +0000
-> "Justin Mattock" <justinmattock@gmail.com> wrote:
->
->> I received this after the second simultaneous suspend: (I will try and
->> see if this is re creatable or not)
->>
->> [  232.270737] BUG: unable to handle kernel paging request at 6b6b6c6b
->
-> bad bad bad
->
->
->> [  232.270743] IP: [<c013f96d>] module_put+0x12/0x2b
->> [  232.270750] *pde = 00000000
->> [  232.270753] Oops: 0002 [#1] SMP
->> [  232.270757] Modules linked in: hci_usb cpufreq_ondemand
->> cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
->> ipmi_watchdog ipmi_msghandler uinput wlan_tkip ieee80211_crypt_tkip
->> ieee80211_crypt arpt_mangle arptable_filter arp_tables
->> nf_conntrack_ipv4 nf_conntrack iptable_mangle iptable_filter ip_tables
->> x_tables intelfb i2c_i810 i2c_algo_bit coretemp eeprom acpi_cpufreq
->> fglrx(P) applesmc joydev uvcvideo appletouch wlan_scan_sta
->   ^^^^^
->
-> naughty
->
->> ath_rate_sample firewire_ohci firewire_core snd_hda_intel ath_pci
->> snd_pcm wlan ohci1394 intel_agp evdev ath_hal(P) snd_timer ieee1394
->                                        ^^^^^^^^^^
->
-> worse
->
->
->> Hopefully this is nothing serious,
->> regards;
->
-> actually it's very serious, something is scribbling all over your
-> memory, it's just a matter of time before that overwrites something
-> important on your filesystem, and then you have a high risk of losing
-> most of your data.
->
-> However, since  you're using 2 proprietary kernel modules, you really
-> ought to contact the vendors for those modules for support; they're a
-> very likely cause for problems
-> (for example, these two are the cause for the number 1, 2, 5 and 7 of
-> the top 10 kernel oopses/crashes for the last week)
->
->
->
->>
->
->
-> --
-> If you want to reach me at my work email, use arjan@linux.intel.com
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+On Sun, 1 Jun 2008, Ben Hutchings wrote:
 
-great!!!  Well The problem I have with these modules is A) madwifi
-"waiting until support is in the kernel for this one, for now I
-just have to deal with risking loosing any data". B) graphics driver I
-can unload the driver but then loose suspend to mem "argh!!"
-aside from that, I just performed the test again of simultaneously
-suspending to memory and didn't receive this message, so now I'm at a
-lost for words as to what is happening. The positive side is there
-isn't any important data on my system i.g. important doc's etc..., but
-there
-is data with the applications.(alsa,acpid,etc...)
-regards;
--- 
-Justin P. Mattock
+> Bill Fink wrote:
+> 
+> > But the question
+> > is how does one devise a generic script or tool that doesn't require
+> > any special knowledge of the specific NIC being used.  For example,
+> > here's the "ethtool -S" info for my myri10ge NIC:
+> > 
+> > [root@chance8 ~]# ethtool -S eth2
+> > NIC statistics:
+> [...]
+> >      WC: 1
+> >      irq: 8413
+> >      MSI: 1
+> >      read_dma_bw_MBs: 1398
+> >      write_dma_bw_MBs: 1613
+> >      read_write_dma_bw_MBs: 2711
+> >      serial_number: 287046
+> [...]
+> >      tx_linearized: 0
+> >      link_changes: 8
+> >      link_up: 1
+> [...]
+> > 
+> > How does one know which of these reported values are counter stats
+> > that one wishes to zero/snapshot, and which are not?
+> 
+> Ah, I see, I didn't realise some drivers were abusing ethtool stats in
+> this way.  But for the most part the differences will show up as zeroes.
+
+I'm not sure I would characterize that as abuse of the ethtool stats,
+but rather just a different category of stats.  And I wouldn't want
+them to show up as zeros after doing a clear/snapshot of the counter
+stats.  The "ethtool -S" output should be completely normal afterward,
+with just the counter stats being zeroed.
+
+> If there's really a need for ethtool stats that aren't counters,
+> maybe the ethtool API should include flags to indicate which they are.
+
+That would be useful.  Maybe some way of determining the type of an
+ethtool stat such as COUNTER (perhaps with subtypes for signed versus
+unsigned, 32-bit versus 64-bit), RUNTIME_INFO, etc.
+
+> > Another issue that occurred to me is if multiple people are working
+> > on troubleshooting a network problem, how do we insure that they all
+> > get a consistent view of the stats?  If this is done via a kernel
+> > mechanism then there isn't an issue.  But if it's done via user space,
+> > then you have to make sure that everyone zeros/snapshots the stats
+> > at the same time.
+> > 
+> > Ideally, one should be able to do something like "ethtool -z ethX"
+> > to zero/snapshot the driver stats, and then "ethtool -S ethX" to get
+> > the stats since the last snapshot.  You should be able to use the
+> > same tool ("ethtool") to do all of this, and not some other special
+> > tool or specially devised homegrown script.  Why make users lives
+> > any more difficult than need be?
+> 
+> No-one's stopping you from adding these options to ethtool.  You could
+> have it save statistic sets in, say, /var/run/ethtool.
+
+Yes, that could be done if the ability to determine which ethtool stats
+were counter stats was added to the ethtool API.  And I guess they
+should be saved in something like /var/run/ethtool/ethX.  But then
+what happens when you start using multiple network namespaces, and
+for example have eth0 in several different network namespaces.  How
+could that be handled, to keep the different network namespaces from
+clobbering the stats of another namespace?  If done in the kernel,
+I believe it would all work as expected, but it's not clear to me
+how to handle this in user space.
+
+						-Bill
