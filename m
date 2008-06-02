@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYFAX4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYFBADs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYFAX4x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 19:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752566AbYFAX4p
+	id S1755905AbYFBADs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 20:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYFBADi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 19:56:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38956 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521AbYFAX4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 19:56:44 -0400
-Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, David Miller <davem@davemloft.net>,
-       James.Bottomley@HansenPartnership.com,
-       ksummit-2008-discuss@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0806012221170.3235@apollo.tec.linutronix.de>
-References: <20080529124548.GC8065@mit.edu>
-	 <20080529.135431.235149338.davem@davemloft.net>
-	 <20080529211404.GH8065@mit.edu>
-	 <20080529.143921.34376298.davem@davemloft.net>
-	 <alpine.LFD.1.10.0806011605590.3235@apollo.tec.linutronix.de>
-	 <20080601181706.GB26477@srcf.ucam.org>
-	 <alpine.LFD.1.10.0806012221170.3235@apollo.tec.linutronix.de>
-Content-Type: text/plain
-Date: Mon, 02 Jun 2008 09:56:15 +1000
-Message-Id: <1212364575.15633.115.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 20:03:38 -0400
+Received: from namei.org ([69.55.235.186]:48896 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752751AbYFBADi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 20:03:38 -0400
+Date: Mon, 2 Jun 2008 10:02:41 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Hugh Dickins <hugh@veritas.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+In-Reply-To: <48402DAA.60202@linux.intel.com>
+Message-ID: <Xine.LNX.4.64.0806020955570.8594@us.intercode.com.au>
+References: <48402DAA.60202@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-06-01 at 22:22 +0200, Thomas Gleixner wrote:
-> On Sun, 1 Jun 2008, Matthew Garrett wrote:
-> 
-> > On Sun, Jun 01, 2008 at 04:11:01PM +0200, Thomas Gleixner wrote:
-> > 
-> > > Fix NOHZ/CPUIDLE along with suspend/resume on all participants
-> > > laptops, which are probably 50+ different models. That'd be an odd
-> > > enough mix of wreckaged hardware / BIOS / ACPI.
-> > 
-> > If we have in-kernel video reinit for the major vendors by then, sure. 
-> > If not, I suspect the majority of issues we'd hit would just be "My 
-> > screen doesn't come back".
-> 
-> And why wouldn't it be a good idea to spend time on adding the video
-> reinit right there at the hacking session ?
+On Fri, 30 May 2008, Arjan van de Ven wrote:
 
-You mean adding the right sequence of whacking 200+ non documented chip
-registers in the right order with the right values that have to be
-subtly different on each revision and each OEM implementation ? :-)
+> Rank 4: task_has_capability (warning)
+> 	Reported 181 times (202 total reports)
+> 	[out of tree] Bug in the proprietary firegl driver
+> 	warning only shows up in tainted kernels
+> 	This warning was last seen in version 2.6.25.3, and first seen in
+> 	2.6.25.
+> 	More info:
+> 	http://www.kerneloops.org/searchweek.php?search=task_has_capability
 
-At least for ATI, we do have the necessary infos to do it actually. We
-can parse tables in the BIOS, we know how to, we have the format and the
-necessary interpreter, it's mostly a matter of doing it (and
-re-implementing the interpreter in code that is acceptable to the
-kernel, last I looked, the one in X isn't).
+This is a shining example of why people should avoid binary drivers.  I'd 
+guess that the bug is related to the new 64-bit capability code.
 
-For nVidia, it's harder though the "nouveau" folks do have figured how
-to run some of the BIOS foo too (same thing, BIOS contains magic
-"scripts" that can be interpreted to bootstrap the card).
+It'd be really interesting to know what this driver is doing with 
+capabilities in the first place.
 
-For others (VIA, XGI, ...) I don't know.
+If anyone is using this driver, the output of the following command as a 
+non-root user from gnome-terminal or similar may be of interest:
 
-Cheers,
-Ben.
+$ cat /proc/self/status |grep ^Cap
+
+It should generally be all zeroes.
 
 
+- James
+-- 
+James Morris
+<jmorris@namei.org>
