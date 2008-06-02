@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYFBMLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbYFBMLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbYFBMLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 08:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYFBMLA
+	id S1754726AbYFBMLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 08:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYFBML2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 08:11:00 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57206 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753009AbYFBMK7 (ORCPT
+	Mon, 2 Jun 2008 08:11:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:10501 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757994AbYFBMLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 08:10:59 -0400
-Date: Mon, 2 Jun 2008 13:11:00 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@suse.cz>,
-       mtk.manpages@gmail.com, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
-In-Reply-To: <200806021318.26404.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0806021305550.11775@blonde.site>
-References: <Pine.LNX.4.64.0805301451020.19914@blonde.site>
- <20080601161133.ea344adf.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0806020906001.9534@blonde.site> <200806021318.26404.rjw@sisk.pl>
+	Mon, 2 Jun 2008 08:11:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DSmaFIaG3XTpr+7S5P+xja6r5kN7VvBb+mk8WRrMrHM/q20lUOXv8JcRQwam2iC7SolSfBX5otX8RAEpATV69PaLq3YCoyXinLWj0Nd96x4qzw/0o+3HedsSjHs5GfXpLui11dyY7UhQjd591o1FLY1KVCKb+sUMvQ7gBopGYRg=
+Message-ID: <961aa3350806020511u78896881raef7f5e12b94c121@mail.gmail.com>
+Date: Mon, 2 Jun 2008 21:11:19 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [patch -v2 01/23] sunrpc: use simple_read_from_buffer
+Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       netdev@vger.kernel.org
+In-Reply-To: <20080602053552.GA6592@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080601231329.223608711@gmail.com>
+	 <20080601231451.529328123@gmail.com>
+	 <20080602053552.GA6592@martell.zuzino.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008, Rafael J. Wysocki wrote:
-> 
-> Well, frankly, I'm not sure if we need anything better than we already have.
-> In fact my numbers show that SYNC_FILE_RANGE_WRITE works quite well -
-> please see
-> http://sourceforge.net/mailarchive/message.php?msg_name=200806020122.36193.rjw%40sisk.pl
-> "early writeout" means that SYNC_FILE_RANGE_WRITE is used and the file with
-> the results is attached for convenience.
-> 
-> My interpretation of the results is here:
-> http://sourceforge.net/mailarchive/forum.php?thread_name=200806021238.17100.rjw%40sisk.pl&forum_name=suspend-devel
+>> +     len = sprintf(tbuf, "%lu\n", cd->flush_time);
+>> +
+>> +     return simple_read_from_buffer(buf, count, ppos, tbuf, len);
+>>  }
+>
+> Please, switch to seq_file:
+>
+>        seq_printf(m, "%lu\n", cd->flush_time);
+>        return 0;
+>
+> and that's everything module have to worry about.
+>
 
-If the current SYNC_FILE_RANGE_WRITE is good enough for you, great,
-keep on using it.  Forgive me, I'm not much concerned with your
-particular use, I'll happily leave that to you and Pavel!  What
-bothers me is Pavel's discovery that a WAIT|WRITE|WAIT interface,
-designed to help callers by allowing those stages to be separated,
-ends up doing a significant amount of WAITing in the WRITE stage.
-
-Hugh
+OK. I'll drop this patch from the patch series.
+And I'll send this seq_file convertion in another chance.
