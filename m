@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1761377AbYFZN13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761377AbYFZN13 (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 26 Jun 2008 09:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763627AbYFZN0z
+	id S1755232AbYFBLMw (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 2 Jun 2008 07:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYFBLMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jun 2008 09:26:55 -0400
-Received: from mx.sjtu.edu.cn ([202.112.26.52]:57255 "EHLO mx2.sjtu.edu.cn"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763616AbYFZN0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jun 2008 09:26:54 -0400
-X-Greylist: delayed 1799 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jun 2008 09:26:53 EDT
-Message-ID: <20080626205650.9ifra13zswgoo0ow@webmail1.sjtu.edu.cn>
-Date: Thu, 26 Jun 2008 20:56:50 +0800
-From: =?gb2312?b?z8TBwQ==?= <xiaiaxaxi@sjtu.edu.cn>
+	Mon, 2 Jun 2008 07:12:43 -0400
+Received: from ip83.conference8th.com ([76.76.120.83]:38641 "HELO
+	ip83.conference8th.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751076AbYFBLMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 07:12:42 -0400
+Date: Mon, 02 Jun 2008 07:06:03 -0400
+From: "Jason M McCartney" <jasonmccartney@conference8th.com>
 To: linux-kernel@vger.kernel.org
-Subject: Can I use yield in this way
+Subject: 18 days to historic event 
 MIME-Version: 1.0
+X-Mailer: ekb v8.3.3.1000.5359131
+Reply-To: r.367.5359131@conference8th.com
+Message-Id: <20080602062001.nzufzvfisl@conference8th.com>
 Content-Type: text/plain;
-	charset=GB2312;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755232AbYFBLMw@vger.kernel.org>
 
-Hello,
+Brokers, LOs, Realtors agents, Investors and Lenders are welcome, this is not for the general public.
 
-        I'd like to ask a question about the use of a kernel function,  
-yield(); I am working on Intel Core Duo, running Linux 2.6.21 I want  
-to let current process be off the cpu when the temperature of cpu is  
-too high. I add a function called thermal_balance in the timer  
-interrupt. My program is as following,
+please go:
 
-scheduler_tick()
-{
-       static int count = 0;
-       count++;
-       if(count % 100 == 0)
-           thermal_balance();
-}
+http://rulending.com/
 
-static int thermal_balance(void)
-{
-       int cpu = smp_processor_id();
-       struct task_struct* task;
-       Get CPU temperature.
 
-       if (temperature is too high){
-               task = cpu_rq(cpu)->curr;
-               yield();
-               Move task to other cpu.
-       }
-}
+or call today: 858 736 7788 
 
-       Can yield() be used as above. After I compile the kernel and  
-run again. Kernel is not working just as it meets deadlock. And if I  
-comment yield(), it runs ok. Could anyone help me?Thanks!
+
+to be taken of our list please: 
+http://rulending.com/rev/ or, send us a letter to: 
+PBMSII, 5451 Weuery Ave., La JoIIa, CA 92037
+
+
+--------------------------------------------
+. 
+
+
+
+
 
