@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbYFBJsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbYFBJtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbYFBJsr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 05:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbYFBJs1
+	id S1758557AbYFBJtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 05:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbYFBJsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 05:48:27 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42423 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757133AbYFBJs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 05:48:26 -0400
-Message-ID: <4843C1E0.3080900@garzik.org>
-Date: Mon, 02 Jun 2008 05:48:16 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Pavel Machek <pavel@ucw.cz>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-References: <20080508161008.59361de5@appleyard>	<20080527030854.GC7515@mit.edu>	<20080527143202.4bab5bf0@appleyard>	<20080527225926.GE6843@mit.edu>	<20080527163251.04054a74@appleyard>	<20080531080015.GG5405@ucw.cz>	<4842F5A8.9020708@garzik.org>	<20080602080440.25fc663c@core>	<4843A4A7.3020809@garzik.org> <20080602092225.26db9b5b@core>
-In-Reply-To: <20080602092225.26db9b5b@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 2 Jun 2008 05:48:40 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60281 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757845AbYFBJsi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 05:48:38 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <11041923.1212400091150.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 2 Jun 2008 18:48:11 +0900 (JST)
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, xemul@openvz.org,
+       menage@google.com, yamamoto@valinux.co.jp, lizf@cn.fujitsu.com
+In-Reply-To: <4843903F.1090009@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <4843903F.1090009@linux.vnet.ibm.com>
+ <4841886A.1000901@linux.vnet.ibm.com> <48413482.5080409@linux.vnet.ibm.com> <48407DC3.8060001@linux.vnet.ibm.com> <20080530104312.4b20cc60.kamezawa.hiroyu@jp.fujitsu.com> <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com> <25360008.1212199156779.kamezawa.hiroyu@jp.fujitsu.com> <26479923.1212245220415.kamezawa.hiroyu@jp.fujitsu.com> <5049235.1212280513897.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> The key requirement is per-port control.  Ideally via hdparm or another 
->> userspace tool, but kernel command line (module options) or sysfs would 
->> be just fine too.  And agreed, the minimal you need is simply 1/0 for 
->> the port's policy.
-> 
-> We don't need it per port Jeff, you are being quite silly here. Right now
-> its permanently foo=0 for all ports and nobody has suffered anything too
-> horrible so being able to turn it off for all ports is clearly quite
-> sufficient for the neat future.
+>Why don't we add soft limits, so that we don't have to go to the kernel and
+>change limits frequently. One missing piece in the memory controller is that 
+we
+>don't shrink the memory controller when limits change or when tasks move. I
+>think soft limits is a better solution.
+>
+My code adds shirinking_at_limit_change. I'm now try to write migrate_resouces
+_at_task_move. (But seems not so easy to be implemented in 
+clean/fast way.)
 
-Er, huh?  foo=0 means hotplug continues to work on the unused ports. 
-Nobody has suffered because we default to enabling all the goodies.
+I have no objection to soft-limit if it's easy to be implemented. (I wrote
+my explanation was just an example and we could add more knobs.) 
+_But_ I think that something to control multiple cgroups with regard to hierar
+chy under some policy never be a simple one. Adding some knobs for each cgroup
+s to do soft-limit will be simple one if no hirerachy.
 
-	Jeff
+Memory controller's  difference from scheduler's hirerachy is that we have to 
+do multilevel page reclaim with feedback under some policy (not only one..). 
+Even without hierarhcy, we _did_ make the kernel's LRU logic more complicated.
+But we can get a help from the middleware here, I think.
 
+My goal is never to make cgroup slow or complicated. If it's slow, 
+I'd like to say "ok, please use VMware.It's simpler and enough fast for you." 
+"How fast it works rather than Hardware-Virtualization" is the most
+important for me. It should be much more faster.
+
+>Thanks for patiently explaining all of this.
+>
+Thanks, I'm sorry for my poor explanation skill.
+
+Regards,
+-Kame
 
