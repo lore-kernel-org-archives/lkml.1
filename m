@@ -1,216 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbYFBIRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYFBISP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758237AbYFBIRx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 04:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYFBIRq
+	id S1753823AbYFBISP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 04:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758275AbYFBIRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 04:17:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:42118 "EHLO smtps.tip.net.au"
+	Mon, 2 Jun 2008 04:17:55 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:27243 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751094AbYFBIRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 04:17:43 -0400
-Date: Mon, 2 Jun 2008 18:17:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 2
-Message-Id: <20080602181736.a936eb4f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__2_Jun_2008_18_17_36_+1000_UgDT+8yOoOB7dFpn"
+	id S1758147AbYFBIRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 04:17:52 -0400
+Date: Mon, 2 Jun 2008 10:17:50 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
+       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
+       paulmck@linux.vnet.ibm.com, Kyle McMartin <kyle@parisc-linux.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [PATCH 9/10] parisc: convert to generic helpers for IPI  function calls
+Message-ID: <20080602081749.GG5757@kernel.dk>
+References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-10-git-send-email-jens.axboe@oracle.com> <20080531070049.GA6623@phobos.i.cabal.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080531070049.GA6623@phobos.i.cabal.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__2_Jun_2008_18_17_36_+1000_UgDT+8yOoOB7dFpn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, May 31 2008, Kyle McMartin wrote:
+> On Thu, May 29, 2008 at 10:58:23AM +0200, Jens Axboe wrote:
+> > This converts parisc to use the new helpers for smp_call_function() and
+> > friends, and adds support for smp_call_function_single(). Not tested,
+> > not even compiled.
+> > 
+> > Cc: Kyle McMartin <kyle@parisc-linux.org>
+> > Cc: Matthew Wilcox <matthew@wil.cx>
+> > Cc: Grant Grundler <grundler@parisc-linux.org>
+> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> >  
+> 
+> Do you have all this in an easily accessible git tree that I can merge
+> to test?
 
-Hi all,
+Yep, you can pull:
 
-Changes since next-20080530:
+git://git.kernel.dk/linux-2.6-block.git generic-ipi
 
-New tree: lsm
+to get this patchset. I should have mentioned that in the intro
+mail...
 
-The ide tree build failure was fixed.
+-- 
+Jens Axboe
 
-The scsi tree needed a patch for a build failure.
-
-The semaphore-removal tree now has some merge conflicts fixed instead of
-commits reverted.  Also some long standing other conflicts were removed.
-
-I have applied the following temporary patch for known build problems:
-
-	"Fix various 8390 builds" - the net tree broke builds on various
-architectures - hopefully this patch will go into the net tree shortly.
-
-The "hil_kbd: restore pci_ids.h" was no longer needed.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 82 trees (counting Linus' and 13 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging quilt/driver-core
-Merging quilt/usb
-Merging x86/auto-x86-next
-Merging sched/auto-sched-next
-Merging ftrace/auto-ftrace-next
-Applying ftrace: fix rculist split fallout
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in drivers/base/power/main.c
-CONFLICT (content): Merge conflict in include/linux/device.h
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/i2c-core.c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_eckd.c
-CONFLICT (content): Merge conflict in drivers/s390/block/dasd_fba.c
-CONFLICT (content): Merge conflict in drivers/s390/char/tape_core.c
-CONFLICT (content): Merge conflict in drivers/s390/cio/device_fsm.c
-CONFLICT (content): Merge conflict in drivers/s390/net/claw.c
-CONFLICT (content): Merge conflict in drivers/s390/net/ctcm_main.c
-CONFLICT (content): Merge conflict in drivers/s390/net/lcs.c
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Applying scsi: fix fallout from KOBJ_NAME_LEN removal
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging hrt/mm
-Merging lblnet/master
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/libertas/main.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt2x00dev=
-.c
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-Merging sound/master
-Merging arm/devel
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/s390/kvm/kvm_virtio.c
-CONFLICT (content): Merge conflict in drivers/virtio/virtio.c
-CONFLICT (content): Merge conflict in drivers/virtio/virtio_pci.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging rcu/core/rcu
-Merging locking/core/locking
-Merging safe-poison-pointers/safe-poison-pointers
-Merging stackprotector/stackprotector
-Merging input/next
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
-Merging quilt/ldp.next
-Merging bkl-removal/bkl-removal
-Merging trivial/next
-Merging ubifs/for_andrew
-Merging lsm/for-next
-Applying Fix various 8390 builds
-
---Signature=_Mon__2_Jun_2008_18_17_36_+1000_UgDT+8yOoOB7dFpn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIQ6ylTgG2atn1QN8RAqbyAJ9PqtCQc0hOnWZPJSzeyvFgH6wwSQCeLV60
-d4nZ9YvWY/QbcAh1Xp99IQE=
-=YGXK
------END PGP SIGNATURE-----
-
---Signature=_Mon__2_Jun_2008_18_17_36_+1000_UgDT+8yOoOB7dFpn--
