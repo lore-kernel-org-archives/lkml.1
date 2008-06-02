@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbYFBIhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbYFBIiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758337AbYFBIhf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 04:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbYFBIh1
+	id S1758690AbYFBIiG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 04:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYFBIhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 04:37:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58604 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752130AbYFBIh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 04:37:26 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: [Bug #10741] bug in `tty: BKL pushdown'?
-Date: Mon, 2 Jun 2008 10:37:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <UJSav77TyUB.A.llE.zrZQIB@albercik> <878wxotfto.fsf@saeurebad.de>
-In-Reply-To: <878wxotfto.fsf@saeurebad.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 2 Jun 2008 04:37:54 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56689 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753959AbYFBIhx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 04:37:53 -0400
+Date: Mon, 2 Jun 2008 09:22:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ata: ahci: power off unused ports
+Message-ID: <20080602092225.26db9b5b@core>
+In-Reply-To: <4843A4A7.3020809@garzik.org>
+References: <20080508161008.59361de5@appleyard>
+	<20080527030854.GC7515@mit.edu>
+	<20080527143202.4bab5bf0@appleyard>
+	<20080527225926.GE6843@mit.edu>
+	<20080527163251.04054a74@appleyard>
+	<20080531080015.GG5405@ucw.cz>
+	<4842F5A8.9020708@garzik.org>
+	<20080602080440.25fc663c@core>
+	<4843A4A7.3020809@garzik.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806021037.35384.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 2 of June 2008, Johannes Weiner wrote:
-> Hi,
+> The key requirement is per-port control.  Ideally via hdparm or another 
+> userspace tool, but kernel command line (module options) or sysfs would 
+> be just fine too.  And agreed, the minimal you need is simply 1/0 for 
+> the port's policy.
 
-Hi,
- 
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10741
-> > Subject		: bug in `tty: BKL pushdown'?
-> > Submitter	: Johannes Weiner <hannes@saeurebad.de>
-> > Date		: 2008-05-18 2:16 (14 days old)
-> > References	: http://marc.info/?l=linux-kernel&amp;m=121107706506181&amp;w=4
-> > Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> 
-> Bug still exists in Linus' current tree.
+We don't need it per port Jeff, you are being quite silly here. Right now
+its permanently foo=0 for all ports and nobody has suffered anything too
+horrible so being able to turn it off for all ports is clearly quite
+sufficient for the neat future. If someone wants it per port they'll send
+you a patch later.
 
-Thanks for the update.
+Alan
 
-Alan says it's a user space bug, though.
-
-Rafael
