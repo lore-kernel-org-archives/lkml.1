@@ -1,108 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbYFBMxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760676AbYFBM6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbYFBMxr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 08:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbYFBMxk
+	id S1760676AbYFBM6r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 08:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbYFBM6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 08:53:40 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:13902 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755139AbYFBMxj (ORCPT
+	Mon, 2 Jun 2008 08:58:36 -0400
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:49813 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754216AbYFBM6f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 08:53:39 -0400
-Date: Mon, 2 Jun 2008 16:53:37 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Gary Jennejohn <garyj@denx.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/2] mmc_spi: export probe and remove functions
-Message-ID: <20080602125337.GA2872@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080523182754.GA26891@polina.dev.rtsoft.ru> <20080523182834.GA469@polina.dev.rtsoft.ru> <20080526141836.72db0623@mjolnir.drzeus.cx> <20080526122533.GA9595@polina.dev.rtsoft.ru> <20080526131009.GA19861@polina.dev.rtsoft.ru> <20080601121841.0392b01c@mjolnir.drzeus.cx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080601121841.0392b01c@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 2 Jun 2008 08:58:35 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support 
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@lst.de
+In-Reply-To: <200806021315.41211.arnd@arndb.de>
+References: <200805311737.58991.arnd@arndb.de> <200806020912.49721.arnd@arndb.de> <9159.1212402992@jrobl> <200806021315.41211.arnd@arndb.de>
+Date: Mon, 02 Jun 2008 21:56:40 +0900
+Message-ID: <6880.1212411400@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 12:18:41PM +0200, Pierre Ossman wrote:
-> On Mon, 26 May 2008 17:10:09 +0400
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > 
-> > Btw, this isn't actually drivers encapsulating. This is about making
-> > mmc_spi export some "library" function which could be used by other
-> > bindings.
-> > 
-> > Think of usb_add_hcd() used by various drivers' bindings for e.g.
-> > drivers/usb/host/ehci-*.c. Though usb_add_hcd() is more generic
-> > than just "EHCI" bindings, but only because there is nothing to
-> > share between them. (for MMC over SPI bindings all we want to do is fill
-> > the platform data).
-> > 
-> 
-> There's a big difference.
 
-This depends on the perception. :-)
+Arnd Bergmann:
+> This is a very complicated approach, and I'm not sure if it even addresses
+> the case where you have a shared mmap on both files. With VFS based union
+> mounts, they share one inode, so you don't need to use idiotify in the first
+> place, and it automatically works on shared mmaps.
 
-> usb_add_hcd() is designed specifically to be called by other, real probe
-> functions.
-
-Yes, by convention (or better, by design).
-
-> mmc_spi_probe() _is_ a probe function. 
-
-Yes, so far.
-
-> Also exporting it as a library function is very confusing.
-
-No, if designed/documented properly.
-
-Just imagine this (100% similarity to USB code):
-
-mmc_spi_create_hcd(&mmc_spi_driver, dev, dev->bus_id);
-mmc_spi_add_hcd(dev, irq, irqflags);
-
-> > Maybe something like this? I don't like it so much, but given that
-> > you don't like to export functions from mmc_spi, we'll have to place
-> > some calls into the driver itself. :-/ And there is no easy way to do
-> > generic callbacks, since that way we'll have implement "mmc_spi
-> > callbacks subsystem". :-)
-> 
-> That's not a callback, but an explicit call to another module.
-> 
-> 
-> All of this work looks a bit like trying to wedge a square piece into a
-> round hole. It looks to me that the kernel needs a bit of restructuring
-> to handle it. You can't really export every probe function of every
-> platform device so that you can add OF hooks to it.
-> 
-> From what I can tell, the OF stuff behaves very much like the PNP
-> system on PCs. The information relayed is a bit more versatile though.
-> Perhaps what is needed is a more advanced "platform" bus that is
-> modeled after the PNP bus, but with the extra ability of handling the
-> stuff currently crammed into the platform structures. mmc_spi would
-> then be extended to be driver for the "platform" bus and we could have
-> generic calls like platform_get_pin(dev, "ro");.
-
-platform_get_pin()? Um, maybe platform_get_gpio(), as _irq()? Yes,
-this is doable (and someday this should be done). But this way we can
-pass only GPIOs and then teach mmc_spi to work with them directly
-(in addition to callbacks).
-
-But this is not enough, there is still no way to pass real platform data,
-such as: caps and ocr_mask. Any idea how to deliver these?
+As you might know, aufs doesn't have its own file mapped pages. Aufs
+overrides vm_operations and redirects the page fault to the lower file's
+vm_operation. So the shared mmap has no problem.
+I am afraid that I should write "marks the attributes in aufs is
+obsoleted" instead of "marks the aufs data for the file is obsoleted" in
+my previous mail.
 
 
-Thanks,
+> I mean having your own dentry and inode object is duplication. The
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+I see.
+Then the solution must be union-mount.
+Your 10 steps seem to be rather verbose. Generally, 'lookup' means to
+create (or get) inode and dentry, and the fs inode and VFS inode are
+allocated in the same time.
+Aufs does 'lookup' for the lower dentry (yes, it must be repeated if
+necessary), and sets it to the aufs dentry/inode private data.
+
+
+> It's not so much a practical limitation as an exploitable feature.
+> E.g. an unpriviledged user may use this to get an application into
+> an error condition by asking for an invalid file name.
+
+If a user specifies the prohibitted filename, the he will get an error.
+
+
+> Posix reserves a well-defined set of invalid file names, and
+> deviation from this means that you are not compliant, and that
+> in a potentially unexpected way.
+
+Yes, the whiteout prefix is a limitation (or a feature).
+
+
+> How does aufs know that one of its branches is an aufs itself?
+> If you detect this, do you fold it into a single aufs instance with
+> more branches?
+> In case you don't do it, I don't see how you get around the stack
+> overflow, but if you do it, you have again added a whole lot of
+> complexity for something that should be trivial when done right.
+
+- To detect the filesystem type is easy. Aufs can know whether the
+  branch is aufs or not by checking s_magic or s_type->name.
+- aufs doesn't fold? expand? the nested aufs branch.
+
+You might be pointng out a general matter of stacking filesystem.
+When one of branches is a stacking fs, and it is nested deeper and
+deeper,
+- /aufs1 = /rw1 + /aufs2
+- /aufs2 = /rw2 + /aufs3
+- /aufs3 = /rw3 + /aufs4
+	:::
+then the stack-overflow may happen. It is not limited to readdir, it can
+happen in every operation. Basically aufs rejects 'aufs/unionfs branch',
+in other word "aufs branch of another aufs mount."
+But aufs has a configuration to enable this. When a user enables it and
+sets deeply nested aufs branch, it could happen. But this is same thing
+even if you use union-mount (and if UnionMount supports such branch).
+
+
+> I personally think that a policy other than writing to the top is crazy
+> enough, but randomly writing to multiple places is much worse, as it
+> becomes unpredictable what the file system does, not just unexpected.
+
+I don't want you to call aufs users crazy who are using such policies.
+By the way, how do you think link(2) or rename(2)? When the source file
+exists on the lower writable branch, do you think copy-up is the best
+way? Or do you think all lower branches should be readonly?
+There is an exception in aufs's branch-select policy. That is
+link/rename case. When the source file exists on a writable branch, aufs
+tries link/rename it on that branch in every policy. Do you think it
+best to do it on the top branch only?
+
+
+Junjiro Okajima
