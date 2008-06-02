@@ -1,132 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYFBAlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbYFBApu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbYFBAlv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 20:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYFBAll
+	id S1755729AbYFBApu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 20:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbYFBApl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 20:41:41 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46035 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbYFBAlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 20:41:40 -0400
-Date: Mon, 2 Jun 2008 10:41:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [git patches] net driver updates for .27
-Message-Id: <20080602104137.8d8c0db5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 1 Jun 2008 20:45:41 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:60298 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbYFBApk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 20:45:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K/FK5/ihyO4aF1PeWfH4eRJoIjeujWOFaWvvC8goXmtpbaSpjT1vFv2PIu/B86dt3ubkKM6C3BwABWKs+VoxFDtzs7gbLP4MCT96k/hHAEQ690Yvfmaasjtb6tY/Z0BYopZohPRHL4ZMQx4SucUSTXWVaw8aJZokOM+ZgmKPNOU=
+Message-ID: <75b57c110806011745t1af46305mddaf01f8c321857f@mail.gmail.com>
+Date: Sun, 1 Jun 2008 20:45:38 -0400
+From: "Gerb Stralko" <gerb.stralko@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH] scsi: remove CDROM not ready printk
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <1212074573.3428.32.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.10.0805271502370.3985@localhost.localdomain>
+	 <20080529004154.bbc7b1d4.akpm@linux-foundation.org>
+	 <1212069932.3428.1.camel@localhost.localdomain>
+	 <75b57c110805290735i493eca0fp882f4a38901a416c@mail.gmail.com>
+	 <1212072912.3428.28.camel@localhost.localdomain>
+	 <75b57c110805290804p2280a6ffwf68174754db59e9c@mail.gmail.com>
+	 <1212074573.3428.32.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
-
-Another update, another ping ....
-
-Begin forwarded message:
-
-Date: Thu, 29 May 2008 22:39:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [git patches] net driver updates for .27
-
-
-Hi Jeff,
-
-On Thu, 29 May 2008 03:33:02 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
+On Thu, May 29, 2008 at 11:22 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> On Thu, 2008-05-29 at 11:04 -0400, Gerb Stralko wrote:
+>> On Thu, May 29, 2008 at 10:55 AM, James Bottomley
+>> <James.Bottomley@hansenpartnership.com> wrote:
+>> > On Thu, 2008-05-29 at 10:35 -0400, Gerb Stralko wrote:
+>> >> So is that printk really needed?  Should the kernel even need to print
+>> >> a message like that, esp. if user-space is handling state updates and
+>> >> notifications.  Or do i need to configure hald to be quietier?   FWIW
+>> >> I'm using fedora core 9 and hald version:
+>> >> -bash-3.2$ /usr/sbin/hald --version
+>> >> HAL package version: 0.5.11
+>> >
+>> > Actually, I misspoke; it's set internally via sets of ioctls.  However,
+>> > it's designed only to show on ioctls that do medium requiring things.
+>> >
+>> > I'm also using FC9 and I see no such messages (and for noisy cgc,
+>> > they're printed out for every action on the CD).  You have some
+>> > application that's poking the CD wrongly (probably not hal), so you
+>> > really need to find out what it is.  It may be pointing to some other
+>> > error in the kernel that needs fixing, but simply removing the message
+>> > is covering up the issue.
+>> >
+>> > To help track the application, you could update the printk to print out
+>> > current->comm and current->pid.  That would tell you who is responsible
+>> >
+>> > James
+>> >
+>> >
+>> >
+>> Okay, i'll do some investigation and see if I can track this down,
+>> I'll let you know.   Thanks for the info.
+>>
+>> Are you using GNOME or KDE?  I'm currently using KDE.
 >
-> From: Jeff Garzik <jeff@garzik.org>
-> Date: Thu, 22 May 2008 15:10:49 -0400
-> 
-> > Please pull from 'upstream-next-davem' branch of
-> > master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-next-davem
+> I'm using gnome ... there are intermittent reports of kde problems
+> mainly with k3b though (the burner program), but if you put the printk
+> in it should identify the application.
+>
+> James
+>
+>
+>
+I download the fedora updates and I rebooted and the messages went
+away from my dmesg.   I left my computer on for a few hours and no
+message. So I guess I problem was fixed in one of the updates.
 
-Is there some reason you missed "Fix various 8390 builds" from Tony
-Breeds.  I have been carrying it in linux-next for some time and would
-appreciate it being merged.  It fixes a build regression in the current
-net-next tree.
+Thanks for you help.  Sorry for the noise.
 
-I have included the patch below.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+thanks again,
 
-Date: Mon, 19 May 2008 15:03:52 +1000
-To: David Miller <davem@davemloft.net>, Jeff Garzik <jgarzik@redhat.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-	Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: [PATCH v3] Fix various 8390 builds
-From: tony@bakeyournoodle.com (Tony Breeds)
-
-The commit 3f8cb098859bbea29d7b3765a3102e4a6bf81b85
-(drivers/net/lib8390: fix warning, trim trailing whitespace) removed
-ei_local from ei_tx_err() and ei_rx_overrun() resulting in the following
-build errors on m68k and sh:
-
-Using /scratch1/tony/next as source for kernel
-GEN     /scratch1/tony/next_out/Makefile
-CHK     include/linux/version.h
-CHK     include/linux/utsrelease.h
-CALL    /scratch1/tony/next/scripts/checksyscalls.sh
-CHK     include/linux/compile.h
-CC [M]  drivers/net/zorro8390.o
-In file included from /scratch1/tony/next/drivers/net/zorro8390.c:47:
-drivers/net/lib8390.c: In function 'ei_tx_err':
-drivers/net/lib8390.c:556: error: 'ei_local' undeclared (first use in this function)
-drivers/net/lib8390.c:556: error: (Each undeclared identifier is reported only once
-drivers/net/lib8390.c:556: error: for each function it appears in.)
-drivers/net/lib8390.c: In function 'ei_rx_overrun':
-drivers/net/lib8390.c:823: error: 'ei_local' undeclared (first use in this function)
-make[3]: *** [drivers/net/zorro8390.o] Error 1
-make[2]: *** [drivers/net] Error 2
-make[1]: *** [drivers] Error 2
-make: *** [sub-make] Error 2
-
-The problem is that ei_inb_p() is using various #defines (from
-drivers/net/8390.h) that use EI_SHIFT, which in some drivers on some
-architectures use ei_local.  Tag ei_local as "__maybe_unused" to keep it
-around and keep the warnings the original commit is trying to silence
-... silenced.
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-Updated to remove pointless casts
-
- drivers/net/lib8390.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
- Dave, Jeff can one of you take this?
-
-
-diff --git a/drivers/net/lib8390.c b/drivers/net/lib8390.c
-index ed49527..00d59ab 100644
---- a/drivers/net/lib8390.c
-+++ b/drivers/net/lib8390.c
-@@ -553,6 +553,8 @@ static void __ei_poll(struct net_device *dev)
- static void ei_tx_err(struct net_device *dev)
- {
- 	unsigned long e8390_base = dev->base_addr;
-+	/* ei_local is used on some platforms via the EI_SHIFT macro */
-+	struct ei_device *ei_local __maybe_unused = netdev_priv(dev);
- 	unsigned char txsr = ei_inb_p(e8390_base+EN0_TSR);
- 	unsigned char tx_was_aborted = txsr & (ENTSR_ABT+ENTSR_FU);
- 
-@@ -815,6 +817,8 @@ static void ei_rx_overrun(struct net_device *dev)
- {
- 	unsigned long e8390_base = dev->base_addr;
- 	unsigned char was_txing, must_resend = 0;
-+	/* ei_local is used on some platforms via the EI_SHIFT macro */
-+	struct ei_device *ei_local __maybe_unused = netdev_priv(dev);
- 
- 	/*
- 	 * Record whether a Tx was in progress and then issue the
+Jerry
