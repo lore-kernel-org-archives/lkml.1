@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYFBKxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759012AbYFBKzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbYFBKxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYFBKxK
+	id S1759012AbYFBKzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYFBKzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:53:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:36821 "EHLO mail.goop.org"
+	Mon, 2 Jun 2008 06:55:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33105 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750986AbYFBKxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:53:09 -0400
-Message-ID: <4843D0EE.6070805@goop.org>
-Date: Mon, 02 Jun 2008 11:52:30 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1750862AbYFBKzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:55:45 -0400
+Date: Mon, 2 Jun 2008 12:55:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] x86: coding style fixes for nmi.c
+Message-ID: <20080602105525.GG898@elte.hu>
+References: <483CBA33.5080104@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Isaku Yamahata <yamahata@valinux.co.jp>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 10 of 12] xen: implement save/restore
-References: <patchbomb.1211550067@localhost> <9e8d06e5ae8024829836.1211550077@localhost> <20080602092144.GA22955%yamahata@valinux.co.jp> <4843C578.6060201@goop.org> <20080602104701.GB22955%yamahata@valinux.co.jp>
-In-Reply-To: <20080602104701.GB22955%yamahata@valinux.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483CBA33.5080104@ct.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isaku Yamahata wrote:
-> On Mon, Jun 02, 2008 at 11:03:36AM +0100, Jeremy Fitzhardinge wrote:
->   
->> Isaku Yamahata wrote:
->>     
->>> What is the purpose of load_cr3() here?
->>> I'd like to make this load_cr3() more arch generic for ia64 support.
->>> (or eliminate it if possible)
->>>  
->>>       
->> I think it's an unnecessary left-over from when I was trying to get that 
->> stuff to work.  I can't think of a good reason not to just remove it if 
->> it causes you problems.
->>     
->
-> Here is the patch. I did only compile test.
->
->
->   
->> BTW, I tried to split the suspend/resume stuff into common and things 
->> which were definitely x86-specific with you in mind.  How close did I get?
->>     
->
-> Almost complete. Your effort made my task easier.
-> I haven't yet succeeded to save/restore, though.
->
-> Is CONFIG_PM_SLEEP necessary?
->   
-Yes.
 
-It's necessary because the Xen save/restore code calls into various core 
-functions to handle things like resuming timekeeping; that code is 
-compiled controlled by CONFIG_PM_SLEEP.
+* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-> Since ia64 doesn't define ARCH_HIBERNATION_POSSIBLE nor
-> ARCH_SUSPEND_POSSIBLE.
-> Although I can define them in ia64/xen/Kconfig, I'd like to leave
-> them untouched if possible.
->   
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> 
+> before
+> 	total: 1 errors, 6 warnings, 534 lines checked
+> after
+> 	total: 0 errors, 1 warnings, 532 lines checked
+> 
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+> cleanup for unified nmi.c
 
-Hm, not sure how can address that then.
+applied to tip/x86/nmi, thanks Hiroshi.
 
-I'll confirm test that the load_cr3() is unnecessary later today.
-
-    J
+	Ingo
