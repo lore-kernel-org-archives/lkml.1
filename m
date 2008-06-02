@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYFBHA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYFBHAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYFBHA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYFBHAR
+	id S1754674AbYFBHAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYFBHAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:00:17 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:42475 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbYFBHAP (ORCPT
+	Mon, 2 Jun 2008 03:00:19 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:12468 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752951AbYFBHAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:00:15 -0400
+	Mon, 2 Jun 2008 03:00:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=rPfKyn3/1YLYfd+x4mCgNDFLSt88rjIhJDFzYY62dkXSCidSanATTRqNvtZ+0VqxI9AQNHgt7iu2xCFTEER7Z2zmBn0TZ3/qljQV9wM70OtxQVnjWScQWOefi5XeOQvlq/OpneU9xSoCP9AyvijIg/AuQySJa8bwBohSzS7nO5g=
+        b=oGV1LQlq952WaHLspFyvFT3BNcOznSEM8L1AS9Bx75Bt6qiSMLfFbHPCZBwDbW5DMPdNRFbxOjn7ZxeYX2sup1ixeJRkFMX00ijlSSv4MB6AHKSsYDwE/GVL4r75HnWglB6avPS8nVRhcc33fBrUJ+DIRKld42CDQnABOD7rgFU=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH] x86: cleanup max_pfn_mapped usage - 32bit
-Date: Sun, 1 Jun 2008 23:53:50 -0700
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86: cleanup max_pfn_mapped usage - 64bit
+Date: Sun, 1 Jun 2008 23:55:37 -0700
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 References: <200805110030.15510.yhlu.kernel@gmail.com> <200805291625.56942.yhlu.kernel@gmail.com> <200806012106.31650.yhlu.kernel@gmail.com>
@@ -31,78 +30,69 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806012353.51213.yhlu.kernel@gmail.com>
+Message-Id: <200806012355.37334.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-32bit in head_32.S after initial page table is done, we get initial
-max_pfn_mapped, and then kernel_physical_mapping_init will give us
-final one.
-
-We need to use that to make sure find_e820_area to get valid address for
-boot_map and NODE_DATA(0) for numa32.
-
-XEN PV and lguest may need to assign max_pfn_mapped too.
+64bit only after init_memory_mapping, we get valid max_pfn_mapped.
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Index: linux-2.6/arch/x86/kernel/head_32.S
+Index: linux-2.6/arch/x86/kernel/e820_64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/head_32.S
-+++ linux-2.6/arch/x86/kernel/head_32.S
-@@ -220,6 +220,8 @@ default_entry:
- 	jb 10b
- 1:
- 	movl %edi,pa(init_pg_tables_end)
-+	shrl $12, %eax
-+	movl %eax, pa(max_pfn_mapped)
+--- linux-2.6.orig/arch/x86/kernel/e820_64.c
++++ linux-2.6/arch/x86/kernel/e820_64.c
+@@ -55,16 +55,12 @@ unsigned long __init e820_end_of_ram(voi
  
- 	/* Do early initialization of the fixmap area */
- 	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
-@@ -251,6 +253,8 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
- 	cmpl %ebp,%eax
- 	jb 10b
- 	movl %edi,pa(init_pg_tables_end)
-+	shrl $12, %eax
-+	movl %eax, pa(max_pfn_mapped)
+ 	last_pfn = find_max_pfn_with_active_regions();
  
- 	/* Do early initialization of the fixmap area */
- 	movl $pa(swapper_pg_fixmap)+PDE_ATTR,%eax
-Index: linux-2.6/arch/x86/kernel/setup_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup_32.c
-+++ linux-2.6/arch/x86/kernel/setup_32.c
-@@ -587,7 +587,7 @@ void __init setup_bootmem_allocator(void
- 	 */
- 	bootmap_size = bootmem_bootmap_pages(max_low_pfn)<<PAGE_SHIFT;
- 	bootmap = find_e820_area(min_low_pfn<<PAGE_SHIFT,
--				 max_low_pfn<<PAGE_SHIFT, bootmap_size,
-+				 max_pfn_mapped<<PAGE_SHIFT, bootmap_size,
- 				 PAGE_SIZE);
- 	if (bootmap == -1L)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
-@@ -596,6 +596,8 @@ void __init setup_bootmem_allocator(void
- 	reserve_initrd();
+-	if (last_pfn > max_pfn_mapped)
+-		max_pfn_mapped = last_pfn;
+-	if (max_pfn_mapped > MAXMEM>>PAGE_SHIFT)
+-		max_pfn_mapped = MAXMEM>>PAGE_SHIFT;
++	if (last_pfn > MAXMEM>>PAGE_SHIFT)
++		last_pfn = MAXMEM>>PAGE_SHIFT;
+ 	if (last_pfn > end_user_pfn)
+ 		last_pfn = end_user_pfn;
+-	if (last_pfn > max_pfn_mapped)
+-		last_pfn = max_pfn_mapped;
+ 
+-	printk(KERN_INFO "max_pfn_mapped = %lu\n", max_pfn_mapped);
++	printk(KERN_INFO "last_pfn = %lu\n", last_pfn);
+ 	return last_pfn;
+ }
+ 
+@@ -109,10 +105,6 @@ static int __init e820_find_active_regio
+ 	if (*ei_startpfn >= *ei_endpfn)
+ 		return 0;
+ 
+-	/* Check if max_pfn_mapped should be updated */
+-	if (ei->type != E820_RAM && *ei_endpfn > max_pfn_mapped)
+-		max_pfn_mapped = *ei_endpfn;
+-
+ 	/* Skip if map is outside the node */
+ 	if (ei->type != E820_RAM || *ei_endpfn <= start_pfn ||
+ 				    *ei_startpfn >= last_pfn)
+@@ -229,7 +221,6 @@ static int __init parse_memmap_opt(char 
+ 		saved_max_pfn = e820_end_of_ram();
+ 		remove_all_active_ranges();
  #endif
- 	bootmap_size = init_bootmem(bootmap >> PAGE_SHIFT, max_low_pfn);
-+	printk(KERN_INFO "  mapped low ram: 0 - %08lx\n",
-+		 max_pfn_mapped<<PAGE_SHIFT);
- 	printk(KERN_INFO "  low ram: %08lx - %08lx\n",
- 		 min_low_pfn<<PAGE_SHIFT, max_low_pfn<<PAGE_SHIFT);
- 	printk(KERN_INFO "  bootmap %08lx - %08lx\n",
-Index: linux-2.6/arch/x86/mm/discontig_32.c
+-		max_pfn_mapped = 0;
+ 		e820.nr_map = 0;
+ 		userdef = 1;
+ 		return 0;
+Index: linux-2.6/arch/x86/kernel/setup_64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/mm/discontig_32.c
-+++ linux-2.6/arch/x86/mm/discontig_32.c
-@@ -163,7 +163,8 @@ static void __init allocate_pgdat(int ni
- 	else {
- 		unsigned long pgdat_phys;
- 		pgdat_phys = find_e820_area(min_low_pfn<<PAGE_SHIFT,
--				 max_low_pfn<<PAGE_SHIFT, sizeof(pg_data_t),
-+				 (nid ? max_low_pfn:max_pfn_mapped)<<PAGE_SHIFT,
-+				 sizeof(pg_data_t),
- 				 PAGE_SIZE);
- 		NODE_DATA(nid) = (pg_data_t *)(pfn_to_kaddr(pgdat_phys>>PAGE_SHIFT));
- 		reserve_early(pgdat_phys, pgdat_phys + sizeof(pg_data_t),
+--- linux-2.6.orig/arch/x86/kernel/setup_64.c
++++ linux-2.6/arch/x86/kernel/setup_64.c
+@@ -388,7 +388,7 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	check_efer();
+ 
+-	max_pfn_mapped = init_memory_mapping(0, (max_pfn_mapped << PAGE_SHIFT));
++	max_pfn_mapped = init_memory_mapping(0, (end_pfn << PAGE_SHIFT));
+ 	if (efi_enabled)
+ 		efi_init();
+ 
