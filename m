@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbYFBGxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbYFBGxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757742AbYFBGxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 02:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYFBGxQ
+	id S1753231AbYFBGxl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 02:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYFBGx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 02:53:16 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:49144 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752048AbYFBGxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 02:53:15 -0400
-Date: Mon, 2 Jun 2008 15:50:55 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: David Howells <dhowells@redhat.com>, Christoph Lameter <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-       akpm@linux-foundation.org, mpm@selenic.com
-Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
-Message-ID: <20080602065055.GA27293@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	David Howells <dhowells@redhat.com>,
-	Christoph Lameter <clameter@sgi.com>,
-	LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
-	akpm@linux-foundation.org, mpm@selenic.com
-References: <484256AA.3000709@cs.helsinki.fi> <Pine.LNX.4.64.0806011119420.11749@sbz-30.cs.Helsinki.FI> <20080601082427.GC25429@linux-sh.org> <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI> <20080601102401.GD25429@linux-sh.org> <48427A13.7050704@cs.helsinki.fi> <20080601112137.GE25429@linux-sh.org> <Pine.LNX.4.64.0806011426150.17742@sbz-30.cs.Helsinki.FI> <20080602055922.GA24626@linux-sh.org> <84144f020806012332n47ba7a7eg37a6892dbb059d09@mail.gmail.com>
+	Mon, 2 Jun 2008 02:53:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46216 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756823AbYFBGx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 02:53:27 -0400
+Message-ID: <48439890.6030904@redhat.com>
+Date: Mon, 02 Jun 2008 08:52:00 +0200
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: Yan Li <elliot.li.tech@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Ritesh Raj Sarraf <rrs@researchut.com>,
+       Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, Herbert Xu <herbert@gondor.apana.org.au>,
+       rjmaomao@gmail.com, Alasdair G Kergon <agk@redhat.com>,
+       dm-crypt@saout.de
+Subject: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in dm-crypt
+References: <20080602030738.GA7761@yantp.cn.ibm.com>
+In-Reply-To: <20080602030738.GA7761@yantp.cn.ibm.com>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020806012332n47ba7a7eg37a6892dbb059d09@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 09:32:48AM +0300, Pekka Enberg wrote:
-> On Mon, Jun 2, 2008 at 8:59 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> > In the kmem_cache_alloc() case calling ksize() there is bogus, the
-> > previous semantics for kobjsize() just defaulted to returning PAGE_SIZE
-> > for these, since page->index was typically 0. Presently if we ksize()
-> > those objects, we get bogus size results that are smaller than the
-> > minimum alignment size. So we still need a way to handle that, even if
-> > it's not frightfully accurate.
-> >
-> > If we go back and apply your PG_slab patch for SLUB + SLOB, then
-> > kobjsize() can just become:
+
+Yan Li wrote:
+> On Thu, 28 Feb 2008 23:20:48 -0800, Andrew Morton wrote:
+>> On Thu, 28 Feb 2008 19:24:03 +0530 Ritesh Raj Sarraf <rrs@researchut.com> wrote:
+>>> I noted kernel soft lockup messages on my laptop when doing a lot of I/O 
+>>> (200GB) to a dm-crypt device. It was setup using LUKS.
+>>> The I/O never got disrupted nor anything failed. Just the messages.
 > 
-> What call-sites are using kmem_cache_alloc()? Can we convert them to
-> kmalloc() or page_alloc()? IIRC both Christoph and Matt opposed my
-> PG_slab patches.
+> I met the same problem yesterday.
+> 
+>> Could be a dm-crypt problem, could be a crypto problem, could even be a
+>> core block problems.
+> 
+> I think it's due to heavy encryption computation that run longer than
+> 10s and triggered the warning. By heavy I mean dm-crypt with
+> aes-xts-plain, 512b key size.
+> 
+> This is a typical soft lockup call trace snip from dmesg:
+> Call Trace:
+>  [<ffffffff882c60b6>] :xts:crypt+0x9d/0xea
+>  [<ffffffff882b5705>] :aes_x86_64:aes_encrypt+0x0/0x5
+>  [<ffffffff882b5705>] :aes_x86_64:aes_encrypt+0x0/0x5
+>  [<ffffffff882c622e>] :xts:encrypt+0x41/0x46
+>  [<ffffffff8828273f>] :dm_crypt:crypt_convert_scatterlist+0x7b/0xc7
+>  [<ffffffff882828ae>] :dm_crypt:crypt_convert+0x123/0x15d
+>  [<ffffffff88282abd>] :dm_crypt:kcryptd_do_crypt+0x1d5/0x253
+>  [<ffffffff882828e8>] :dm_crypt:kcryptd_do_crypt+0x0/0x253
+>  [<ffffffff802448e5>] run_workqueue+0x7f/0x10b
+> ... (omitted)
 
-Well, with that modified version of your patch I posted, even if your
-previous PG_slab patches aren't applied, kobjsize() doesn't behave any
-worse than it presently does in terms of object size accuracy.
+Please could you try if  patch here helps and doesn't cause performance degradation?
 
-In short: PG_slab doesn't get set and ksize() is never called, so we get
-the same degree of accuracy as the existing implementation, and the
-oopses get fixed (and the comments are still accurate, too!). So I think
-it's worth applying. Verified on all of SLUB/SLOB/SLAB.
+http://www2.kernel.org/pub/linux/kernel/people/agk/patches/2.6/2.6.25/dm-crypt-add-cond_resched.patch
 
-As for the call-site question, perhaps I'm misunderstanding your
-question. alloc_vfsmnt() is the first to call kmem_cache_zalloc() during
-boot-up on my system, but I'm not sure what relevance this has to
-anything? Accurately measuring kmem_cache_alloc() and static allocations
-is going to need quite a bit more of a re-think, but that's out of scope
-for 2.6.26. Presently I'd rather have my system booting first :-)
+...
+> Anybody see a data corruption?
+
+It shouldn't cause any corruption of data.
+
+Milan
