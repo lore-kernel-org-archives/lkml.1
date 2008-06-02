@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbYFBR62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbYFBR6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756221AbYFBR62 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 13:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYFBR6R
+	id S1756888AbYFBR6l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 13:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYFBR6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 13:58:17 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:42655 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbYFBR6Q (ORCPT
+	Mon, 2 Jun 2008 13:58:20 -0400
+Received: from mga11.intel.com ([192.55.52.93]:56433 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753424AbYFBR6S convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 13:58:16 -0400
-Date: Mon, 2 Jun 2008 14:58:00 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: casey@schaufler-ca.com
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Smack: fuse mount hang fix
-Message-ID: <20080602145800.0e0d0c73@mandriva.com.br>
-In-Reply-To: <48442820.3080400@schaufler-ca.com>
-References: <48442820.3080400@schaufler-ca.com>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
+	Mon, 2 Jun 2008 13:58:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,578,1204531200"; 
+   d="scan'208";a="335048019"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [patch 01/41] cpu_alloc: Increase percpu area size to 128k
+Date: Mon, 2 Jun 2008 10:58:17 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843EC0177822B@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080530040010.806208523@sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 01/41] cpu_alloc: Increase percpu area size to 128k
+Thread-Index: AcjCCaxS8MOkmh28T3SXEj23jssv7gC0CzJA
+References: <20080530035620.587204923@sgi.com> <20080530040010.806208523@sgi.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Christoph Lameter" <clameter@sgi.com>, <akpm@linux-foundation.org>
+Cc: <linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, "Mike Travis" <travis@sgi.com>
+X-OriginalArrivalTime: 02 Jun 2008 17:58:17.0969 (UTC) FILETIME=[3CA91E10:01C8C4DA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 02 Jun 2008 10:04:32 -0700
-Casey Schaufler <casey@schaufler-ca.com> escreveu:
+> The per cpu allocator requires more per cpu space and we are already near
+> the limit on IA64. Increase the maximum size of the IA64 per cpu area from
+> 64K to 128K.
 
-| From: Casey Schaufler <casey@schaufler-ca.com>
-| 
-| The d_instantiate hook for Smack can hang on the root
-| inode of a filesystem if the file system code has not
-| really done all the set-up. Fuse is known to encounter
-| this problem. This change detects an attempt to
-| instantiate a root inode and addresses it early in the
-| processing, before any attempt is made to do something
-| that might hang.
-| 
-| Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> -#define PERCPU_PAGE_SHIFT	16	/* log2() of max. size of per-CPU area */
+> +#define PERCPU_PAGE_SHIFT	17	/* log2() of max. size of per-CPU area */
 
- Fixed the problem for me, thank very much.
+Don't you need some more changes to the alt_dtlb_miss handler in
+ivt.S for this to work?  128K is not a supported pagesize on any
+processor model.
 
-Tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
-
--- 
-Luiz Fernando N. Capitulino
+-Tony
