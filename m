@@ -1,139 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbYFBXuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYFBXvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbYFBXuk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 19:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYFBXud
+	id S1756243AbYFBXvg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 19:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYFBXv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 19:50:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39121 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752828AbYFBXuc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 19:50:32 -0400
-Date: Mon, 2 Jun 2008 16:49:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: torvalds@linux-foundation.org, avuton@gmail.com, rene.herman@keyaccess.nl,
-       rene.herman@gmail.com, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Re: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my
- ALSA intel8x0 sound card regression
-Message-Id: <20080602164954.2aff2d77.akpm@linux-foundation.org>
-In-Reply-To: <200806021642.50491.bjorn.helgaas@hp.com>
-References: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com>
-	<200806021605.14519.bjorn.helgaas@hp.com>
-	<3aa654a40806021523k5b89cd0cjbcddf5810d05072b@mail.gmail.com>
-	<200806021642.50491.bjorn.helgaas@hp.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Jun 2008 19:51:27 -0400
+Received: from ozlabs.org ([203.10.76.45]:41738 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753291AbYFBXv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 19:51:27 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: [patch 01/41] cpu_alloc: Increase percpu area size to 128k
+Date: Tue, 3 Jun 2008 09:48:25 +1000
+User-Agent: KMail/1.9.9
+Cc: "Christoph Lameter" <clameter@sgi.com>, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David Miller" <davem@davemloft.net>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Peter Zijlstra" <peterz@infradead.org>, "Mike Travis" <travis@sgi.com>
+References: <20080530035620.587204923@sgi.com> <20080530040010.806208523@sgi.com> <1FE6DD409037234FAB833C420AA843EC0177822B@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC0177822B@orsmsx424.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806030948.25448.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008 16:42:49 -0600
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+On Tuesday 03 June 2008 03:58:17 Luck, Tony wrote:
+> > The per cpu allocator requires more per cpu space and we are already near
+> > the limit on IA64. Increase the maximum size of the IA64 per cpu area
+> > from 64K to 128K.
+> >
+> > -#define PERCPU_PAGE_SHIFT	16	/* log2() of max. size of per-CPU area */
+> > +#define PERCPU_PAGE_SHIFT	17	/* log2() of max. size of per-CPU area */
+>
+> Don't you need some more changes to the alt_dtlb_miss handler in
+> ivt.S for this to work?  128K is not a supported pagesize on any
+> processor model.
 
-> PNP: mark resources that conflict with PCI devices "disabled"
-> 
-> Both the PNP/PCI conflict detection quirk and the PNP system
-> driver must use the same mechanism to mark resources as disabled.
-> 
-> I think it's best to keep the resource and to keep the type bit
-> (IORESOURCE_MEM, etc), so that we match the list from firmware
-> as closely as possible.
-> 
-> Fixes this regression from 2.6.25: http://lkml.org/lkml/2008/6/1/82
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Tested-by: Avuton Olrich <avuton@gmail.com>
-> 
-> Index: work11/drivers/pnp/quirks.c
-> ===================================================================
-> --- work11.orig/drivers/pnp/quirks.c	2008-06-02 14:59:03.000000000 -0600
-> +++ work11/drivers/pnp/quirks.c	2008-06-02 15:42:35.000000000 -0600
-> @@ -286,7 +286,7 @@ static void quirk_system_pci_resources(s
->  					pci_name(pdev), i,
->  					(unsigned long long) pci_start,
->  					(unsigned long long) pci_end);
-> -				res->flags = 0;
-> +				res->flags |= IORESOURCE_DISABLED;
->  			}
->  		}
->  	}
-> Index: work11/drivers/pnp/system.c
-> ===================================================================
-> --- work11.orig/drivers/pnp/system.c	2008-06-02 14:58:56.000000000 -0600
-> +++ work11/drivers/pnp/system.c	2008-06-02 15:44:36.000000000 -0600
-> @@ -81,7 +81,7 @@ static void reserve_resources_of_dev(str
->  	}
->  
->  	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
-> -		if (res->flags & IORESOURCE_UNSET)
-> +		if (res->flags & IORESOURCE_DISABLED)
->  			continue;
->  
->  		reserve_range(dev, res->start, res->end, 0);
+Yes, this was one of the issues with IA64 and extending the per-cpu area.  
+It's probable that the IA64 TLB nailing trick might have to give way for 
+dynamic per-cpu...
 
-This broke
-pnp-replace-pnp_resource_table-with-dynamically-allocated-resources.patch:
-
-***************
-*** 80,91 ****
-  		reserve_range(dev, res->start, res->end, 1);
-  	}
-  
-- 	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
-- 		if (res->flags & IORESOURCE_UNSET)
-- 			continue;
-- 
-  		reserve_range(dev, res->start, res->end, 0);
-- 	}
-  }
-  
-  static int system_pnp_probe(struct pnp_dev *dev,
---- 78,85 ----
-  		reserve_range(dev, res->start, res->end, 1);
-  	}
-  
-+ 	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++)
-  		reserve_range(dev, res->start, res->end, 0);
-  }
-  
-  static int system_pnp_probe(struct pnp_dev *dev,
-
-Which I fixed thusly:
-
-static void reserve_resources_of_dev(struct pnp_dev *dev)
-{
-	struct resource *res;
-	int i;
-
-	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IO, i)); i++) {
-		if (res->start == 0)
-			continue;	/* disabled */
-		if (res->start < 0x100)
-			/*
-			 * Below 0x100 is only standard PC hardware
-			 * (pics, kbd, timer, dma, ...)
-			 * We should not get resource conflicts there,
-			 * and the kernel reserves these anyway
-			 * (see arch/i386/kernel/setup.c).
-			 * So, do nothing
-			 */
-			continue;
-		if (res->end < res->start)
-			continue;	/* invalid */
-
-		reserve_range(dev, res->start, res->end, 1);
-	}
-
-	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++)
-		reserve_range(dev, res->start, res->end, 0);
-}
-
-
-Is it still correct?
-
-Thanks.
+Rusty.
