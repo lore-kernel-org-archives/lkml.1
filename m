@@ -1,103 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbYFBHwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbYFBIAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbYFBHwK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYFBHv6
+	id S1757705AbYFBIAO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 04:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbYFBH75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:51:58 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:55861 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbYFBHv5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:51:57 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
-Date: Mon, 2 Jun 2008 09:51:26 +0200
-User-Agent: KMail/1.9.9
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@lst.de
-References: <200806020325.m523Pqsq025740@agora.fsl.cs.sunysb.edu>
-In-Reply-To: <200806020325.m523Pqsq025740@agora.fsl.cs.sunysb.edu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 2 Jun 2008 03:59:57 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:40175 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751691AbYFBH74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 03:59:56 -0400
+Date: Mon, 2 Jun 2008 10:59:37 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: initialization of static per-cpu variables
+Message-ID: <20080602075937.GA29836@cs181133002.pp.htv.fi>
+References: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com> <200805221820.07290.rusty@rustcorp.com.au> <20080523142904.GB28257@cs181133002.pp.htv.fi> <200805252035.24535.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200806020951.26868.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX185S1eQqmQKhGP+m8O9cWSyRDqOPqBHR/f6Sqz
- w2T5OHPPj3Ge5dZ0Zf1x/3l7xyaadpKTgm+GY5cFd1bKdLUDMp
- I95VC7IslKH625gkggXmQ==
+In-Reply-To: <200805252035.24535.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 June 2008, Erez Zadok wrote:
-> Correction: Unionfs doesn't make additional copies in the page cache.
+On Sun, May 25, 2008 at 08:35:24PM +1000, Rusty Russell wrote:
+> On Saturday 24 May 2008 00:29:04 Adrian Bunk wrote:
+> > On Thu, May 22, 2008 at 06:20:06PM +1000, Rusty Russell wrote:
+> > > Yep, it was an old toolchain used by Sparc: DaveM found this one.  As you
+> > > say, it's ancient: I'm happy to queue a cleanup patch now everyone is on
+> > > a modern compiler.
+> >
+> > The commit says:
+> >
+> >     GCC3.1 apparently gets confused about uninitialized sections
+> >
+> > We do still support gcc 3.2 (which is the same as 3.1 except for a C++
+> > ABI change) as a compiler for the kernel.
+> 
+> Adrian, that's a little silly.  There are obviously bug fixes in 3.2 over 
+> 3.1.0.
 
-Ok, I must have misunderstood something there. Sorry about that.
+I've checked the announcements of 3.1.1 and 3.2, and at least for me 
+nothing looked like it would fix this bug.
 
-> Arnd, I favor a more generic approach, one that will work with the vast
-> majority of file systems that people use w/ unioning, preferably all of
-> them.  Supporting copy-on-write in cramfs will only help a small subset of
-> users.  Yes, it might be simple, but I fear it won't be useful enough to
-> convince existing users of unioning to switch over.  And I don't think we
-> should add CoW support in every file system -- the complexity will be much
-> more than using unionfs or some other VFS-based solution.
+> Noone has complained about the introduction of multiple other cases 
+> which would screw things up if they experienced this bug.
 
-My idea was to have it in cramfs, squashfs and iso9660 at most, I agree
-that doing it in even a single writable file system would add far too
-much complexity. I did not mean to start a fundamental discussion about
-how to do it the right way, just noticed that there are half a dozen
-implementations that have been around for years without getting close to
-inclusion in the mainline kernel, while a much simpler approach gives
-you sane semantics for a subset of users.
+I doubt there is any serious userbase for gcc 3.2 left.
 
-> I can see some advantages (re: cache coherency) by hacking CoW support
-> directly into a f/s.  If you want to use a filesystem-specific solution,
-> then I suggest you don't modify a file system used as a source in a union,
-> but one used as a destination.  You'll have better overage that way.  The
-> vast majority of times, unionfs users will either write to tmpfs or ext2;
-> but the source readonly f/s can be a lot of different ones (most popular are
-> ext*, nfs*, isofs, and cramfs/squashfs).
+But your "now everyone is on a modern compiler" does not match what we 
+announce as supported compiler versions for the kernel.
 
-Yes, that absolutely makes sense. I don't care much about a persistant
-storage for the overlay, so tmpfs (if not ramfs) should be the only place
-to do it in. It does introduce some of the same old problems though,
-because you could still write to a bind mounted copy of the underlying
-file system (unlike cramfs, which is guaranteed to be read-only), which
-forces you to either to a full copy-up, or can result in inconsistent
-file contents. Also, stacking multiple union-tmpfs copies on top of each
-other would be hard to do without the potential to overflow the kernel
-stack.
+If you have a good reason for pushing the minimum required gcc version 
+for compiling the kernel to 3.3 or 3.4 [1] you have my full support, but 
+as long as we officially support gcc 3.2 we should try to break as few 
+as possible - especially since it will take time until anyone will run 
+into any breakage.
 
-I'll probably try implementing a '-o union' option tmpfs anyway, just
-to see how hard it is and what the problems are.
+> Finally, it's a sparc64 problem and DaveM acked already.
 
-> I find it somewhat ironic to hear the argument that "union mounts isn't
-> stable yet, so lets come up with a new solution inside cramfs."  Why should
-> your solution become stable much faster than union mounts (which also had
-> patches floating around for a long time already).
+Was it a sparc64 problem or a generic problem DaveM happened to run into 
+on sparc?
 
-Because the patches are not trying to solve any of the hard problems at all:
-Persistent storage of overlays, readdir traversal through more than two
-layers, stable inode numbers, opening a file through two different overlays,
-copyup, and so on. I'm sure you know more about these problems that I do,
-but as long as I don't have to care about them, I don't see a problem
-with my patches (other than the bugs I already described).
+> That's half the userbase!
 
-> If you have cycles to spare, why not help Bharata and Jan?
+sparc64 isn't that unpopular...
 
-I spent a lot of time on discussing the initial implementation with Jan
-years ago, and will keep reviewing their patches, but I have neither the
-time nor the brains to really contribute much to them. As you mentioned
-in your reply to Jan E., it's on an entirely different scale than doing
-a small hack to cramfs or tmpfs.
+> Cheers,
+> Rusty.
 
-	Arnd <><
+Sorry if I'm sounding overly pedantic, but I want that what we try as 
+good as possible that what we announce as being supported also works 
+(even if this results in several workarounds shipped).
+
+cu
+Adrian
+
+[1] gcc 3.4 still has a serious userbase at least in ARM country, so you
+    won't be able to drop support for it
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
