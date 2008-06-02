@@ -1,73 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYFBWVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYFBWXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbYFBWVE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 18:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYFBWUw
+	id S1754707AbYFBWXt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 18:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbYFBWXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 18:20:52 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52341 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYFBWUv (ORCPT
+	Mon, 2 Jun 2008 18:23:41 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:17300 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752084AbYFBWXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 18:20:51 -0400
-Date: Tue, 3 Jun 2008 00:21:42 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, marcel@holtmann.org,
-       linux-bluetooth@vger.kernel.org
-Subject: hci_usb strikes again (was Re: BUG kmalloc-2048: Poison
-	overwritten)
-Message-ID: <20080602222142.GB18599@elf.ucw.cz>
-References: <dd18b0c30806011613l6c8c1863rd237f7de06a6b33a@mail.gmail.com> <200806020125.25918.rjw@sisk.pl>
+	Mon, 2 Jun 2008 18:23:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tLtFVy79jVl8w9gRSBSygt6MFDfd9dGMMeRATxXm+6ZAVXYh9kRsCEf4KOdsZJvuwjqLNIquBWs7tyPODfFv45y01wbamUWtayc+g/zf1sT1A/WCw0X/wupXGJWYKq2pEnyIbtzPnqy+XSHvNHqBKCDUWVjWgdgdzMpoh1Cn/qM=
+Message-ID: <3aa654a40806021523k5b89cd0cjbcddf5810d05072b@mail.gmail.com>
+Date: Mon, 2 Jun 2008 15:23:28 -0700
+From: "Avuton Olrich" <avuton@gmail.com>
+To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+Subject: Re: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my ALSA intel8x0 sound card regression
+Cc: "Rene Herman" <rene.herman@keyaccess.nl>,
+       "Rene Herman" <rene.herman@gmail.com>,
+       "Len Brown" <len.brown@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <200806021605.14519.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806020125.25918.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com>
+	 <3aa654a40806012025ic6b9d0dlec05211bad782581@mail.gmail.com>
+	 <484444A4.80206@keyaccess.nl>
+	 <200806021605.14519.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2008-06-02 01:25:25, Rafael J. Wysocki wrote:
-> On Monday, 2 of June 2008, Justin Mattock wrote:
-> > I received this after the second simultaneous suspend: (I will try and
-> > see if this is re creatable or not)
-> 
-> Suspend to RAM or hibernation?
+On Mon, Jun 2, 2008 at 3:05 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> On Monday 02 June 2008 01:06:12 pm Rene Herman wrote:
+>> On 02-06-08 05:25, Avuton Olrich wrote:
+>>
+>> > On Sun, Jun 1, 2008 at 9:20 AM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+>> >> On 01-06-08 16:42, Avuton Olrich wrote:
+>> >>
+>> >>> My intel8x0 card stops working due to a regression; bisection and
+>> >>> information below.
+>
+> Thank you very much for doing all the work to bisect this and write
+> up such a complete report.
+>
+> Can you try the patch below, please?
+>
+> PNP: mark resources that conflict with PCI devices "disabled"
+>
+> Both the PNP/PCI conflict detection quirk and the PNP system
+> driver must use the same mechanism to mark resources as disabled.
+>
+> I think it's best to keep the resource and to keep the type bit
+> (IORESOURCE_MEM, etc), so that we match the list from firmware
+> as closely as possible.
+>
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>
+> Index: work11/drivers/pnp/quirks.c
+> ===================================================================
+> --- work11.orig/drivers/pnp/quirks.c    2008-06-02 14:59:03.000000000 -0600
+> +++ work11/drivers/pnp/quirks.c 2008-06-02 15:42:35.000000000 -0600
+> @@ -286,7 +286,7 @@ static void quirk_system_pci_resources(s
+>                                        pci_name(pdev), i,
+>                                        (unsigned long long) pci_start,
+>                                        (unsigned long long) pci_end);
+> -                               res->flags = 0;
+> +                               res->flags |= IORESOURCE_DISABLED;
+>                        }
+>                }
+>        }
+> Index: work11/drivers/pnp/system.c
+> ===================================================================
+> --- work11.orig/drivers/pnp/system.c    2008-06-02 14:58:56.000000000 -0600
+> +++ work11/drivers/pnp/system.c 2008-06-02 15:44:36.000000000 -0600
+> @@ -81,7 +81,7 @@ static void reserve_resources_of_dev(str
+>        }
+>
+>        for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
+> -               if (res->flags & IORESOURCE_UNSET)
+> +               if (res->flags & IORESOURCE_DISABLED)
+>                        continue;
+>
+>                reserve_range(dev, res->start, res->end, 0);
+>
 
-hci_usb... that beast is known to corrupt random data on suspend and
-surprise removal.
-
-> > [  232.270737] BUG: unable to handle kernel paging request at 6b6b6c6b
-> > [  232.270743] IP: [<c013f96d>] module_put+0x12/0x2b
-> > [  232.270750] *pde = 00000000
-> > [  232.270753] Oops: 0002 [#1] SMP
-> > [  232.270757] Modules linked in: hci_usb cpufreq_ondemand
-> > cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
-> > ipmi_watchdog ipmi_msghandler uinput wlan_tkip ieee80211_crypt_tkip
-> > ieee80211_crypt arpt_mangle arptable_filter arp_tables
-> > nf_conntrack_ipv4 nf_conntrack iptable_mangle iptable_filter ip_tables
-> > x_tables intelfb i2c_i810 i2c_algo_bit coretemp eeprom acpi_cpufreq
-> > fglrx(P) applesmc joydev uvcvideo appletouch wlan_scan_sta
-> > ath_rate_sample firewire_ohci firewire_core snd_hda_intel ath_pci
-> > snd_pcm wlan ohci1394 intel_agp evdev ath_hal(P) snd_timer ieee1394
-> > pata_acpi thermal ehci_hcd uhci_hcd snd_page_alloc snd_hwdep agpgart
-> > video button processor
-> > [  232.270800]
-> > [  232.270802] Pid: 2690, comm: btdelconn Tainted: P
-> > (2.6.26-rc4-00033-g5463508 #4)
-
-...and we get oops in bluetooth.
-
-Use btusb, instead.
-
-Actually, I guess we should mark hci_usb as broken. I don't see why we
-should debug the same problem over and over again.
-								Pavel
-
+Sweet! That works, thanks for the quick fix. Feel free to add me as Tested-by:.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+avuton
+--
+ "I've got a fever. And the only prescription is more cowbell." --
+Christopher Walken
