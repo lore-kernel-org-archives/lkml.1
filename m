@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYFBT5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbYFBT75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbYFBT5e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 15:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYFBT50
+	id S1753820AbYFBT75 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 15:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYFBT7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 15:57:26 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52704 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751616AbYFBT5Z (ORCPT
+	Mon, 2 Jun 2008 15:59:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55656 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbYFBT7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 15:57:25 -0400
-Date: Mon, 2 Jun 2008 20:41:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Xiaoming Li" <forrubm2@gmail.com>
-Cc: "Rik van Riel" <riel@redhat.com>, "Dave Chinner" <david@fromorbit.com>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [help]How to block new write in a "Thin Provisioning" logical
- volume manager as a virtual device driver when physical spaces run out?
-Message-ID: <20080602204138.4e198ffd@core>
-In-Reply-To: <5f7c1d2c0806021022t67d07733p47b78d351dcf63b6@mail.gmail.com>
-References: <5f7c1d2c0805290212i45aece46j7fae2dcf9c158b92@mail.gmail.com>
-	<20080529113159.113a7f06@core>
-	<5f7c1d2c0806021022t67d07733p47b78d351dcf63b6@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 2 Jun 2008 15:59:48 -0400
+Subject: Re: v4l regression: V4L2_CID_[VH]CENTER disappeared without notice.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Brandon Philips <bphilips@suse.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, Bastien Nocera <bnocera@redhat.com>
+In-Reply-To: <20080602201911.1a48cc83@core>
+References: <200804241931.m3OJVQiR022368@hera.kernel.org>
+	 <1212421611.16924.246.camel@pmac.infradead.org>
+	 <20080602165649.01c2c680@core>
+	 <1212434648.8810.10.camel@shinybook.infradead.org>
+	 <20080602201911.1a48cc83@core>
+Content-Type: text/plain
+Date: Mon, 02 Jun 2008 20:59:38 +0100
+Message-Id: <1212436778.8810.27.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> However, I want to ask, is there _any need_ to implement "Thin
-> Provioning" on block level rather than FS level?
+On Mon, 2008-06-02 at 20:19 +0100, Alan Cox wrote:
+> > Don't forget to document how people are _supposed_ to use the v4l api
+> > from userspace, though.
+> 
+> Correct but those methods are not part of the V4L2 API and have not been
+> for some considerable time. 
 
-A good question
+It seems that message hadn't got through. Any suggestions as to how we
+could make sure it does in future?
 
-> In my opinon, there are some reasons why we implemented "Thin
-> Provioning" on block level:
-> 1. We can use _all_ types of FS on our ASD device.
+The usual answers are (in order of preference):
+ 1) don't remove userspace APIs
+ 2) don't remove userspace APIs
+ 3) Documentation/feature-removal-schedule.txt
+ 4) don't remove userspace APIs
 
-Except that you can run out of space and die.
+It would be good if we could combine #3 with some form of
+__deprecated... can we make that work for ioctls in userspace?
 
-> 2. In our current system, we use some other virtual device drivers to
-> provide other features, like snapshot, cahce management, exporting as
-> an iSCSI target in a SAN, etc. Please note, all of these virtual
-> device drivers have been developed already.
+-- 
+dwmw2
 
-A cluster file system can do cache management and in theory snapshots.
-The iscsi larget is a block property - the equivalence in fs layer would
-I guess be NFS. Most of those have been developed too ;)
-
-> 3. Some storage vendors (e.g. EMC) have their own "Block-based thin
-> provisioning" product; they must have enough reasons to do so.
-
-Some storage vendors do the most marvellously bizzare things. That
-doesn't mean they are right answers. EMC don't/didn't have a cluster file
-system so that rather limited their choice.
-
-I think you missed one however and maybe one EMC considered - its a much
-easier way to do cross platform non shared filestore as a device than add
-clustering file systems to do that.
-
-However if you overcommit you have a problem. Its interesting as a front
-end technology with an array of slow large disks behind it (so you don't
-overcommit but push old storage to the slow disks). I don't think its
-interesting in the general case except where you can carefully avoid
-overcommit by management policies.
-
-Its also not helped by the fact your storage layer needs to understand
-the fs's it supports in order to deduce what blocks are free so that it
-can recover them.
-
-Alan
