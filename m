@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYFBDZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYFBD0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbYFBDZg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 23:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYFBDZ0
+	id S1757267AbYFBD0b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 23:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbYFBD0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 23:25:26 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:41702 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753697AbYFBDZ0 (ORCPT
+	Sun, 1 Jun 2008 23:26:22 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39549 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753917AbYFBD0V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 23:25:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WOGxjTTTqPKW+MCA4v0A2HdfNhxwzeZx8wbDwwMo94jrxevOfLIkRXWqpIujbU34pr0nGcZCdQOKUY2acGtncEObecjI8YQlDWz5kz9EO6TkrJP36GEGSZKSVQ5W5F7nHr3OwVB7/jSlTR4+5NY8ZoNc0eKfcTH14aKmXPOMtYw=
-Message-ID: <3aa654a40806012025ic6b9d0dlec05211bad782581@mail.gmail.com>
-Date: Sun, 1 Jun 2008 20:25:19 -0700
-From: "Avuton Olrich" <avuton@gmail.com>
-To: "Rene Herman" <rene.herman@keyaccess.nl>
-Subject: Re: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my ALSA intel8x0 sound card regression
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Rene Herman" <rene.herman@gmail.com>,
-       "Len Brown" <len.brown@intel.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <4842CC50.4030406@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com>
-	 <4842CC50.4030406@keyaccess.nl>
+	Sun, 1 Jun 2008 23:26:21 -0400
+Date: Sun, 1 Jun 2008 23:25:52 -0400
+Message-Id: <200806020325.m523Pqsq025740@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Arnd Bergmann <arnd@arndb.de>, Jamie Lokier <jamie@shareable.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@lst.de
+Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support 
+In-reply-to: Your message of "Mon, 02 Jun 2008 11:48:22 +0900."
+             <9785.1212374902@jrobl> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 1, 2008 at 9:20 AM, Rene Herman <rene.herman@keyaccess.nl> wrote:
-> On 01-06-08 16:42, Avuton Olrich wrote:
->
->> My intel8x0 card stops working due to a regression; bisection and
->> information below.
->>
->> May have relationship to this thread
->>
->> http://groups.google.com/group/linux.kernel/browse_thread/thread/d5857287a36e71af/d7ae0a1490b7d142?lnk=st
->>
->> http://avuton.googlepages.com/intel8x0-config.gz
->> http://avuton.googlepages.com/intel8x0-cpuinfo
->> http://avuton.googlepages.com/intel8x0-dmesg
->
-> This dmesg seems to be 6-byte file consisting of "dmesg\n" ...
+Arnd Bergmann:
+> Besides, there are a many more problems with unionfs, which have
+> all been mentioned in the previous review cycles. Aufs doesn't
+> address those either AFAIK, with the exception of at least
+> not making additional copies in the page cache when writing to
+> a file.
 
-Corrected:
-http://avuton.googlepages.com/dmesg.txt
+Correction: Unionfs doesn't make additional copies in the page cache.
 
->> http://avuton.googlepages.com/intel8x0-ioports
->> http://avuton.googlepages.com/intel8x0-lspci-vvv
->> http://avuton.googlepages.com/intel8x0-modules
->> http://avuton.googlepages.com/intel8x0-ver-linux
->> http://avuton.googlepages.com/intel8x0-version
->>
->> commit 53052feb6ddd05cb2b5c6e89fb489bf83bbb6803
->> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
->> Date:   Mon Apr 28 16:34:15 2008 -0600
->>
->>    PNP: remove pnp_mem_flags() as an lvalue
->>
->>    A future change will change pnp_mem_flags() from a "#define that
->>    simplifies to an lvalue" to "an inline function that returns the
->>    flags value."
->>
->>    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
->>    Acked-By: Rene Herman <rene.herman@gmail.com>
->>    Signed-off-by: Len Brown <len.brown@intel.com>
->>
->
-> I'm probably just really blind but I don't see how that specific commit may
-> have made any difference. It _is_ in the exact spot which would fix that
-> overlap problem of yours but this should be an identity change as far as
-> fuctionality goes. Are you _really_ sure it's this one?
->
-> (Is this racing with anything?)
+Arnd, I favor a more generic approach, one that will work with the vast
+majority of file systems that people use w/ unioning, preferably all of
+them.  Supporting copy-on-write in cramfs will only help a small subset of
+users.  Yes, it might be simple, but I fear it won't be useful enough to
+convince existing users of unioning to switch over.  And I don't think we
+should add CoW support in every file system -- the complexity will be much
+more than using unionfs or some other VFS-based solution.
 
-I will confirm in the next 24 hours that the previous revision works.
+I can see some advantages (re: cache coherency) by hacking CoW support
+directly into a f/s.  If you want to use a filesystem-specific solution,
+then I suggest you don't modify a file system used as a source in a union,
+but one used as a destination.  You'll have better overage that way.  The
+vast majority of times, unionfs users will either write to tmpfs or ext2;
+but the source readonly f/s can be a lot of different ones (most popular are
+ext*, nfs*, isofs, and cramfs/squashfs).
 
-Thanks,
--- 
-avuton
---
- "I've got a fever. And the only prescription is more cowbell." --
-Christopher Walken
+I find it somewhat ironic to hear the argument that "union mounts isn't
+stable yet, so lets come up with a new solution inside cramfs."  Why should
+your solution become stable much faster than union mounts (which also had
+patches floating around for a long time already).
+
+If you have cycles to spare, why not help Bharata and Jan?
+
+Cheers,
+Erez.
