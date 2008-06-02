@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYFBPVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYFBPXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbYFBPVS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 11:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYFBPVD
+	id S1754725AbYFBPXw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 11:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbYFBPXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 11:21:03 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:16010 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752456AbYFBPVB (ORCPT
+	Mon, 2 Jun 2008 11:23:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40043 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751297AbYFBPXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 11:21:01 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 01/15] serial: when guessing, check only active resources, not options
-Date: Mon, 2 Jun 2008 09:21:02 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
-References: <20080530224853.976744229@ldl.fc.hp.com> <20080530224931.549456692@ldl.fc.hp.com> <4842FB89.6040802@keyaccess.nl>
-In-Reply-To: <4842FB89.6040802@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 2 Jun 2008 11:23:44 -0400
+Date: Mon, 2 Jun 2008 10:23:40 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, rdunlap@xenotime.net
+Subject: Re: [PATCH] genirq: Expose default irq affinity mask (take 3)
+Message-Id: <20080602102340.71d2399f.pj@sgi.com>
+In-Reply-To: <1212084172-21459-1-git-send-email-maxk@qualcomm.com>
+References: <1212084172-21459-1-git-send-email-maxk@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806020921.04350.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 June 2008 01:42:01 pm Rene Herman wrote:
-> We used to cry "modem" if the device _could_ be configured using a COM 
-> address while after this change we'd only do so if it _was_ configured 
-> using one.
-> 
-> My old analog modem for example had 5 dependent sets -- the first with 
-> the regular COM port addresses (0x3f8, 0x2f8, 0x3e8, 0x2e8) and a 5th 
-> one listing a port range of (IIRC, something like that at least) 0x100 
-> to 0xff8.
-> 
-> So say I'd have a PC with the regular two onboard COM ports at COM1 and 
-> COM2 (0x3f8 and 0x2f8) and an additional serial controller providing 
-> COM3 and COM4 (0x3e8 and 0x2e8). My modem would then be configured to 
-> use 0x100 and this code would no longer trigger while it did use to.
+Max,
 
-Ah, you're right.  That scenario hadn't occurred to me.  Let me see
-if I can figure out a way to make that work again.
+I realized, when reading this again, that the default masks
+are not ffffffff.  That's the default only on systems with
+no more than 32 CPUs.  Rather I suspect that the default is
+CPU_MASK_ALL.  Indeed, your patch has:
 
-Bjorn
+   cpumask_t irq_default_affinity = CPU_MASK_ALL;
+
+This affects a few mentions of ffffffff in the Docs.
+
+Otherwise looks good - thanks.
+
+Acked-by: Paul Jackson <pj@sgi.com>
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
