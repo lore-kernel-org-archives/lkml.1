@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYFBLYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYFBLZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbYFBLYV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYFBLYJ
+	id S1756043AbYFBLZl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYFBLZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:24:09 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:52329 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbYFBLYI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:24:08 -0400
-Date: Mon, 2 Jun 2008 05:23:51 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
-       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
-       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/15] security: pass path to inode_create
-Message-ID: <20080602112350.GB8562@parisc-linux.org>
-References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
+	Mon, 2 Jun 2008 07:25:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42682 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750986AbYFBLZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 07:25:32 -0400
+Date: Mon, 2 Jun 2008 13:25:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH] xen: avoid hypercalls when updating unpinned pud/pmd
+Message-ID: <20080602112508.GD18586@elte.hu>
+References: <48409ABB.20301@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <48409ABB.20301@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0075]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 09:02:14AM +0200, Miklos Szeredi wrote:
-> I maintain, that moving lsm hooks into callers is insane.  And that's
-> *the* sanest alternative that anybody has been able to come up with to
-> passing down vfsmounts into the vfs.
 
-Not so.  I showed how pathname-based security could be done *without*
-passing vfsmounts down at all.  Unfortunately, you weren't interested.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> When operating on an unpinned pagetable (ie, one under construction or 
+> destruction), it isn't necessary to use a hypercall to update a 
+> pud/pmd entry.  Jan Beulich observed that a similar optimisation 
+> avoided many thousands of hypercalls while doing a kernel build.
+>
+> One tricky part is that early in the kernel boot there's no page 
+> structure, so we can't check to see if the page is pinned.  In that 
+> case, we just always use the hypercall.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Jan Beulich <jbeulich@novell.com>
+
+applied to tip/x86/xen, thanks Jeremy.
+
+	Ingo
