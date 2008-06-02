@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbYFBSo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYFBSqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754774AbYFBSo0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 14:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbYFBSoT
+	id S1754729AbYFBSqn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 14:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbYFBSqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 14:44:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50301 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386AbYFBSoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 14:44:18 -0400
-Date: Mon, 2 Jun 2008 20:43:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com, torvalds@linux-foundation.org, x86@kernel.org
-Subject: Re: [PATCH 3/3] 64-bit futexes: x86 support
-Message-ID: <20080602184320.GA4081@elte.hu>
-References: <200805310127.m4V1RLdP013819@devserv.devel.redhat.com> <20080602082226.GA2450@elte.hu>
+	Mon, 2 Jun 2008 14:46:32 -0400
+Received: from mailbox2.myri.com ([64.172.73.26]:2004 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751602AbYFBSqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 14:46:31 -0400
+X-Greylist: delayed 1695 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jun 2008 14:46:31 EDT
+Message-ID: <4844395C.2010900@myri.com>
+Date: Mon, 02 Jun 2008 14:18:04 -0400
+From: Loic Prylli <loic@myri.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080602082226.GA2450@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Brice Goglin <brice@myri.com>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
+Subject: Re: howto use ioremap_wc?
+References: <4841143E.5080003@myri.com> <20080531185424.1cd18220@infradead.org> <48441F73.5040005@myri.com>
+In-Reply-To: <48441F73.5040005@myri.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/02/2008 12:27 PM, Brice Goglin wrote:
+> Arjan van de Ven wrote:
+>   
+>> Ok this leads to a question: since write combining is effectively an
+>> extension (eg relaxation) to uncached, how much do you care if you
+>> actually get uncached? Eg can you just use the "WC" function even for
+>> the case where you get an uncached mapping ?
+>>   
+>>     
+>
+> WC is strictly required for our "wcfifo" path,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > This patch adds 64-bit futex support for x86.  As explained in the 
-> > introduction, this requires a new system call.  The remaining 
-> > changes are similarly to the x86-64 changes: enable support for 
-> > FUTEX_WAKE_OP.
-> 
-> great work - the first two patches look good and we've created a new 
-> -tip topic branch for it, tip/core/futex-64bit.
 
-the topic is not yet offered for linux-next though, until the API 
-discussion with Linus is resolved one way or another :-)
 
-	Ingo
+To be more accurate about the above statement, that codepath will still 
+work correctly even if the mapping ends-up being uncached, but that 
+could lead to a 16X slowdown on some machines, since that path was 
+really designed for the WC case.
+
+
+Anyway that codepath does not really matter as Brice mentioned 
+afterwards :-)
+
+
+
+>  but this path is actually
+> not so important nowadays. It is disabled by default and might even be
+> removed in the future. So, no, myri10ge itself does not really need to
+> know whether the mapping is actually WC.
+>   
+
+
+
+
+Loic
+
