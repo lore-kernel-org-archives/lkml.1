@@ -1,54 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYFBO4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbYFBO50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbYFBO4G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 10:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYFBOzu
+	id S1754634AbYFBO50 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 10:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYFBO5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 10:55:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:20099 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbYFBOzu (ORCPT
+	Mon, 2 Jun 2008 10:57:18 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:49770 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752335AbYFBO5R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 10:55:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CO6fHhlRr9MGp9GY2jXwQZR61Cn+pcP/PcFuVAXjy38fssYaYINg1c8D+M680HjQbqy4NK1fZq2YE4awYr65sODa5H2ucHMSCqZYuU6foOpRp7G3lJMfP5w3WUPTZ5e1+SW5Xtc9/sfB/C60HtNZUlzoeb/K3fks4bW+avplazU=
-Message-ID: <b6c5339f0806020755s3fe1976dg207de2e01635e43d@mail.gmail.com>
-Date: Mon, 2 Jun 2008 10:55:49 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [Bug #10825] appletouch after wakeup
-Cc: "Justin Mattock" <justinmattock@gmail.com>,
-       "Marcel Holtmann" <marcel@holtmann.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>
-In-Reply-To: <200806021640.43225.oliver@neukum.org>
+	Mon, 2 Jun 2008 10:57:17 -0400
+Date: Mon, 2 Jun 2008 16:56:03 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Message-ID: <20080602145603.GG26854@enneenne.com>
+References: <20080601161510.GA26854@enneenne.com> <20080602075113.60d0fdf8@core> <20080602092551.GC26854@enneenne.com> <20080602150257.54692f35@core>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
-	 <200806021510.37992.oliver@neukum.org>
-	 <b6c5339f0806020706v5f48bc54tb2c17d0537d3ef5a@mail.gmail.com>
-	 <200806021640.43225.oliver@neukum.org>
-X-Google-Sender-Auth: 853bc4064f21e02e
+In-Reply-To: <20080602150257.54692f35@core>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 2, 2008 at 10:40 AM, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Montag, 2. Juni 2008 16:06:51 schrieb Bob Copeland:
->> Just curious, why is the reset quirk is needed since <= 2.6.25 worked fine?
->
-> I don't know. I suspect it is related to timing and you are just vastly
-> unlikelier to hit the issue under < 2.6.25.
+On Mon, Jun 02, 2008 at 03:02:57PM +0100, Alan Cox wrote:
+> > It could be a bit better... I did as above since I supposed that you
+> > wished all PPS code should be removed from serial port code.
+> 
+> Ideally. But if it is genuinely the case that the serial port IRQ handler
+> in some cases needs to do
+> 
+> my_interrupt() {
+> 	get_timestamp()
+> 	frob_with_hardware()
+> 	ld->dcd_change(blah, timestamp)
+> }
+> 
+> then that is still fairly clean and more importantly actually appears to
+> work. I'd avoid all the ifdefs with this in the serial drivers that need
+> more accuracy:
+> 
+> {
+> 	struct timespec ts;
+> 	if (ld->dcd_change)
+> 		getnstimeofday(&ts);
+> 	existing tty stuff
+> 	if (ld->dcd_change)
+> 		ld->dcd_change(tty, status, &ts);
+> }
 
-Yeah that jives with my unsuccessful bisection attempts.
+I prefere avoid the if clause for getnstimeofday() since each
+instruction delay may decrease time precision, so:
 
-At any rate, I retested and the reset quirk does indeed fix the regression for
-me as well.  Thanks!
+{
+      struct timespec ts;
+      getnstimeofday(&ts);
+      existing tty stuff
+      if (ld->dcd_change)
+              ld->dcd_change(tty, status, &ts);
+}
+
+In the wrost case the timestamp is not used.
+
+> And in ld->dcd_change do
+> 
+> 	struct timespec myts;
+> 	/* Caller passed NULL meaning 'do your own timestamp' */
+> 	if (ts == NULL) {
+> 		ts = &myts;
+> 		getnstimeofday(&myts);
+> 	}
+
+Ok.
+
+> so for uart that would
+> 
+> 	uart_dcd_change(struct uart_port *port, unsigned int status,
+> 					struct timespec *ts) {
+> 	{
+> 		...
+> 	}
+> 
+> passing the timestamp from the ttys own IRQ handler
+
+Great!
+
+Thanks,
+
+Rodolfo
 
 -- 
-Bob Copeland %% www.bobcopeland.com
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@linux.it
+Embedded Systems                     phone:	+39 349 2432127
+UNIX programming                     skype:     rodolfo.giometti
