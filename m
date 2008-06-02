@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbYFBVCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbYFBVId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbYFBVCc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 17:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYFBVCV
+	id S1752703AbYFBVId (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 17:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYFBVIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 17:02:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53737 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750877AbYFBVCU (ORCPT
+	Mon, 2 Jun 2008 17:08:25 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:1081 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbYFBVIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 17:02:20 -0400
-Date: Mon, 2 Jun 2008 14:02:13 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Jes Sorensen <jes@sgi.com>
-Cc: Roland Dreier <rdreier@cisco.com>, benh@kernel.crashing.org,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602210213.GA116363@sgi.com>
-References: <1211854540.3286.42.camel@pasglop> <20080526.192812.184590464.davem@davemloft.net> <20080526204233.75b71bb8@infradead.org> <1211872130.3286.64.camel@pasglop> <adaprr721c6.fsf@cisco.com> <1211922696.3286.82.camel@pasglop> <adaiqwzsa83.fsf@cisco.com> <yq0iqwxrwuh.fsf@jaguar.mkp.net> <20080531075242.GC108600@sgi.com> <4843C3D7.7000609@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4843C3D7.7000609@sgi.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 2 Jun 2008 17:08:24 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5308"; a="3619129"
+From: Max Krasnyansky <maxk@qualcomm.com>
+To: mingo@elte.hu
+Cc: pj@sgi.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com, rostedt@goodmis.org,
+       Max Krasnyansky <maxk@qualcomm.com>
+Subject: [PATCH] sched: Fix memory leak in the cpu hotplug handing logic
+Date: Mon,  2 Jun 2008 14:08:21 -0700
+Message-Id: <1212440902-31215-1-git-send-email-maxk@qualcomm.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 11:56:39AM +0200, Jes Sorensen wrote:
-> Jeremy Higdon wrote:
-> >We don't actually have that problem on the Altix.  All writes issued
-> >by CPU X will be ordered with respect to each other.  But writes by
-> >CPU X and CPU Y will not be, unless an mmiowb() is done by the
-> >original CPU before the second CPU writes.  I.e.
-> >
-> >	CPU X	writel
-> >	CPU X	writel
-> >	CPU X	mmiowb
-> >
-> >	CPU Y	writel
-> >	...
-> >
-> >Note that this implies some sort of locking.  Also note that if in
-> >the above, CPU Y did the mmiowb, that would not work.
-> 
-> Hmmm,
-> 
-> Then it's less bad than I thought - my apologies for the confusion.
-> 
-> Would we be able to use Ben's trick of setting a per cpu flag in
-> writel() then and checking that in spin unlock issuing the mmiowb()
-> there if needed?
+This is an updated/split up version of the patch I sent earlier.
 
+Basically the issue is that we are leaking doms_cur on cpu hotplug events.
+doms_cur is allocated in the arch_init_sched_domains() which is called for
+every hotplug event. So we just keep reallocating doms_cur without freeing it.
+This patch introduces free_sched_domains() function that cleans things up.
 
-Yes, that should work fine.  You will get more mmiowb's than you
-need, since some drivers, such as Fusion, don't need them.  On the
-Origins (older SGI MIPS-based Numa), the 'sync' instruction had
-the same effect as mmiowb() with respect to mmio write ordering,
-and it was issued unconditionally in the spin unlock.  It was
-cheaper than mmiowb, however.
+Note that doms_cur can also come from cpusets via partition_sched_domains().
+That path is already handled correctly.
 
-If it matters, we could invent and use writel_relaxed() to get
-performance back in drivers we care about....
+This just a bug fix and should go into 2.6.26 and probably -stable as well.
 
-jeremy
+Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
+---
+ kernel/sched.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 8dcdec6..465f3c8 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6855,6 +6855,19 @@ void __attribute__((weak)) arch_update_cpu_topology(void)
+ }
+ 
+ /*
++ * Free current domain masks.
++ * Called after all cpus are attached to NULL domain.
++ */
++static void free_sched_domains(void)
++{
++	ndoms_cur = 0;
++	if (doms_cur != &fallback_doms) {
++		kfree(doms_cur);
++		doms_cur = &fallback_doms;
++	}
++}
++
++/*
+  * Set up scheduler domains and groups. Callers must hold the hotplug lock.
+  * For now this just excludes isolated cpus, but could be used to
+  * exclude other special cases in the future.
+@@ -6974,6 +6987,7 @@ int arch_reinit_sched_domains(void)
+ 
+ 	get_online_cpus();
+ 	detach_destroy_domains(&cpu_online_map);
++	free_sched_domains();
+ 	err = arch_init_sched_domains(&cpu_online_map);
+ 	put_online_cpus();
+ 
+@@ -7058,6 +7072,7 @@ static int update_sched_domains(struct notifier_block *nfb,
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
+ 		detach_destroy_domains(&cpu_online_map);
++		free_sched_domains();
+ 		return NOTIFY_OK;
+ 
+ 	case CPU_UP_CANCELED:
+-- 
+1.5.4.5
+
