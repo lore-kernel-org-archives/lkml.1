@@ -1,107 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYFBWbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYFBWdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbYFBWbt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 18:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYFBWbl
+	id S1755349AbYFBWdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 18:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbYFBWdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 18:31:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56101 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752712AbYFBWbk (ORCPT
+	Mon, 2 Jun 2008 18:33:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57029 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbYFBWdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 18:31:40 -0400
-Date: Mon, 2 Jun 2008 15:30:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, davej@codemonkey.org.uk,
-       andi@firstfloor.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: aperture_64.c: corner case wrong
-Message-Id: <20080602153033.2d1672f0.akpm@linux-foundation.org>
-In-Reply-To: <20080526191730.GA18425@elf.ucw.cz>
-References: <20080526191730.GA18425@elf.ucw.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 2 Jun 2008 18:33:11 -0400
+Subject: Re: Kernel marker has no performance impact on ia64.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Hideo AOKI <haoki@redhat.com>
+Cc: mingo@elte.hu, mathieu.desnoyers@polymtl.ca,
+       Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <48447052.3030300@redhat.com>
+References: <48447052.3030300@redhat.com>
+Content-Type: text/plain
+Date: Tue, 03 Jun 2008 00:32:45 +0200
+Message-Id: <1212445965.6269.22.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 May 2008 21:17:30 +0200
-Pavel Machek <pavel@suse.cz> wrote:
+On Mon, 2008-06-02 at 18:12 -0400, Hideo AOKI wrote:
+> Hello,
+> 
+> I evaluated overhead of kernel marker using linux-2.6-sched-fixes
+> git tree, which includes several markers for LTTng, using an ia64
+> server.
+> 
+> While the immediate trace mark feature isn't implemented on ia64,
+> there is no major performance regression. So, I think that we 
+> don't have any issues to propose merging marker point patches 
+> into Linus's tree from the viewpoint of performance impact.
 
-> 
-> If 
-> 
-> fix == 0, aper_enabled == 1, gart_fix_e820 == 0
-> 
-> 	if (!fix && !aper_enabled)
-> 		return;
-> 
-> 	if (gart_fix_e820 && !fix && aper_enabled) {
-> 		if (e820_any_mapped(aper_base, aper_base + aper_size,
-> 				    E820_RAM)) {
-> 			/* reserve it, so we can reuse it in second
-> kernel */
-> 			printk(KERN_INFO "update e820 for GART\n");
-> 			add_memory_region(aper_base, aper_size,
-> E820_RESERVED);
-> 			update_e820();
-> 		}
-> 		return;
-> 	}
-> 
-> 	/* different nodes have different setting, disable them all atfirst*/
-> 
-> we'll fall back here and disable all the settings, even when they were
-> all consistent.
-> 
-> What about this? (I hope it compiles...)
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> 
-> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-> index 02f4dba..aa4876a 100644
-> --- a/arch/x86/kernel/aperture_64.c
-> +++ b/arch/x86/kernel/aperture_64.c
-> @@ -344,14 +323,16 @@ out:
->  	if (gart_fix_e820 && !fix && aper_enabled) {
->  		if (!e820_all_mapped(aper_base, aper_base + aper_size,
->  				    E820_RESERVED)) {
->  			/* reserve it, so we can reuse it in second kernel */
->  			printk(KERN_INFO "update e820 for GART\n");
->  			add_memory_region(aper_base, aper_size, E820_RESERVED);
->  			update_e820();
->  		}
-> -		return;
->  	}
->  
-> +	if (!fix)
-> +		return;
-> +
->  	/* different nodes have different setting, disable them all at first*/
->  	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
->  		int bus;
-> 
+Performance is atm the least of the concerns regarding this work.
 
-So what happened with this?  Thomas has merged an "x86: aperture_64.c:
-cleanups" from yourself but it appears that half of this bugfix got
-applied somewhere and the below part did not?
+I'm still convinced markers are too ugly to live.
+
+I also worry greatly about the fact that its too easy to expose too much
+to user-space. There are no clear rules and the free form marker format
+just begs for an inconsistent mess to arise.
+
+IMHO the current free-form trace_mark() should be removed from the tree
+- its great for ad-hoc debugging but its a disaster waiting to happen
+for anything else. Anybody doing ad-hoc debugging can patch it in
+themselves if needed.
+
+Regular trace points can be custom made; this has the advantages that it
+raises the implementation barrier and hopefully that encourages some
+thought in the process. It also avoid the code from growing into
+something that looks like someone had a long night of debugging.
 
 
-diff -puN arch/x86/kernel/aperture_64.c~aperture_64c-corner-case-wrong arch/x86/kernel/aperture_64.c
---- a/arch/x86/kernel/aperture_64.c~aperture_64c-corner-case-wrong
-+++ a/arch/x86/kernel/aperture_64.c
-@@ -331,6 +331,9 @@ out:
- 		return;
- 	}
- 
-+	if (!fix)
-+		return;
-+
- 	/* different nodes have different setting, disable them all at first*/
- 	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
- 		int bus;
-_
+
 
