@@ -1,158 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYFBNe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbYFBNfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbYFBNe6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 09:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYFBNev
+	id S1760834AbYFBNfY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 09:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYFBNfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 09:34:51 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:13203 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752247AbYFBNeu (ORCPT
+	Mon, 2 Jun 2008 09:35:04 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:55978 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759323AbYFBNfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 09:34:50 -0400
-Message-ID: <4843F6F7.9020000@de.ibm.com>
-Date: Mon, 02 Jun 2008 15:34:47 +0200
+	Mon, 2 Jun 2008 09:35:03 -0400
+Message-ID: <4843F6BF.9070409@de.ibm.com>
+Date: Mon, 02 Jun 2008 15:33:51 +0200
 From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: ltp-coverage@lists.sourceforge.net,
        Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
        Peter Oberparleiter <oberparleiter@googlemail.com>
-Subject: [PATCH 6/6] gcov: architecture specific compile flag adjustments
+Subject: [PATCH 0/6] gcov kernel support
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+This is version #3 of the gcov kernel support patch set (see further
+below for an in-depth explanation). Patch base is 2.6.26-rc4.
+Please replace the previous gcov patch set with this one.
 
-Exclude code from profiling which is not linked to the main kernel or
-which is running in a context not compatible with the assumptions made
-by gcc's profiling code.
+Changes based on mailing list feedback:
 
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
- arch/arm/boot/compressed/Makefile      |    1 +
- arch/powerpc/kernel/vdso32/Makefile    |    1 +
- arch/powerpc/kernel/vdso64/Makefile    |    1 +
- arch/ppc/boot/Makefile                 |    1 +
- arch/ppc/boot/common/Makefile          |    1 +
- arch/ppc/boot/simple/Makefile          |    1 +
- arch/x86/boot/Makefile                 |    1 +
- arch/x86/boot/compressed/Makefile      |    1 +
- arch/x86/kernel/acpi/realmode/Makefile |    1 +
- 9 files changed, 9 insertions(+)
+ * removed patch "kbuild: make source and include paths absolute".
+   Replaced by new approach (patch 5) which creates symbolic links
+   in the build directory instead.
+ * updated docs to match new approach
+ * removed patch "kbuild: delay object file renaming during module
+   versioning". No longer required.
+ * gcov core code no longer creates symbolic links in debugfs
+ * updated patch "gcov: architecture specific compile flag adjustments".
+   Contains changes for powerpc.
 
-Index: linux-2.6.26-rc4/arch/arm/boot/compressed/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/arm/boot/compressed/Makefile
-+++ linux-2.6.26-rc4/arch/arm/boot/compressed/Makefile
-@@ -7,6 +7,7 @@
- HEAD	= head.o
- OBJS	= misc.o
- FONTC	= $(srctree)/drivers/video/console/font_acorn_8x8.c
-+GCOV	:= n
- 
- #
- # Architecture dependencies
-Index: linux-2.6.26-rc4/arch/x86/boot/compressed/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/x86/boot/compressed/Makefile
-+++ linux-2.6.26-rc4/arch/x86/boot/compressed/Makefile
-@@ -12,6 +12,7 @@ cflags-$(CONFIG_X86_64) := -mcmodel=smal
- KBUILD_CFLAGS += $(cflags-y)
- KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
- KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
-+GCOV := n
- 
- KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
- 
-Index: linux-2.6.26-rc4/arch/ppc/boot/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/ppc/boot/Makefile
-+++ linux-2.6.26-rc4/arch/ppc/boot/Makefile
-@@ -16,6 +16,7 @@
- # KBUILD_CFLAGS used when building rest of boot (takes effect recursively)
- KBUILD_CFLAGS 	+= -fno-builtin -D__BOOTER__ -Iarch/$(ARCH)/boot/include
- HOSTCFLAGS	+= -Iarch/$(ARCH)/boot/include
-+GCOV		:= n
- 
- BOOT_TARGETS	= zImage zImage.initrd znetboot znetboot.initrd
- 
-Index: linux-2.6.26-rc4/arch/ppc/boot/common/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/ppc/boot/common/Makefile
-+++ linux-2.6.26-rc4/arch/ppc/boot/common/Makefile
-@@ -5,6 +5,7 @@
- # Tom Rini	January 2001
- #
- 
-+GCOV := n
- lib-y					:= string.o util.o misc-common.o \
- 						serial_stub.o bootinfo.o
- lib-$(CONFIG_SERIAL_8250_CONSOLE)	+= ns16550.o
-Index: linux-2.6.26-rc4/arch/ppc/boot/simple/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/ppc/boot/simple/Makefile
-+++ linux-2.6.26-rc4/arch/ppc/boot/simple/Makefile
-@@ -21,6 +21,7 @@
- # XXX_memory.o file for this to work, as well as editing the
- # misc-$(CONFIG_MACHINE) variable.
- 
-+GCOV				:= n
- boot				:= arch/ppc/boot
- common				:= $(boot)/common
- utils				:= $(boot)/utils
-Index: linux-2.6.26-rc4/arch/x86/boot/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/x86/boot/Makefile
-+++ linux-2.6.26-rc4/arch/x86/boot/Makefile
-@@ -71,6 +71,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS +=   $(call cc-option,-m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV		:= n
- 
- $(obj)/zImage:  IMAGE_OFFSET := 0x1000
- $(obj)/zImage:  asflags-y := $(SVGA_MODE) $(RAMDISK)
-Index: linux-2.6.26-rc4/arch/x86/kernel/acpi/realmode/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/x86/kernel/acpi/realmode/Makefile
-+++ linux-2.6.26-rc4/arch/x86/kernel/acpi/realmode/Makefile
-@@ -42,6 +42,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS	+= $(call cc-option, -m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV		:= n
- 
- WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
- 
-Index: linux-2.6.26-rc4/arch/powerpc/kernel/vdso32/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/powerpc/kernel/vdso32/Makefile
-+++ linux-2.6.26-rc4/arch/powerpc/kernel/vdso32/Makefile
-@@ -17,6 +17,7 @@ EXTRA_CFLAGS := -shared -fno-common -fno
- EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso32.so.1 \
- 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
- EXTRA_AFLAGS := -D__VDSO32__ -s
-+GCOV := n
- 
- obj-y += vdso32_wrapper.o
- extra-y += vdso32.lds
-Index: linux-2.6.26-rc4/arch/powerpc/kernel/vdso64/Makefile
-===================================================================
---- linux-2.6.26-rc4.orig/arch/powerpc/kernel/vdso64/Makefile
-+++ linux-2.6.26-rc4/arch/powerpc/kernel/vdso64/Makefile
-@@ -11,6 +11,7 @@ EXTRA_CFLAGS := -shared -fno-common -fno
- EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
- 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
- EXTRA_AFLAGS := -D__VDSO64__ -s
-+GCOV := n
- 
- obj-y += vdso64_wrapper.o
- extra-y += vdso64.lds
+Patch overview:
+
+[PATCH 1/6] kernel: call constructors
+[PATCH 2/6] kernel: introduce GCC_VERSION_LOWER macro
+[PATCH 3/6] seq_file: add function to write binary data
+[PATCH 4/6] gcov: add gcov profiling infrastructure
+[PATCH 5/6] gcov: create links to .gcda files in build directory
+[PATCH 6/6] gcov: architecture specific compile flag adjustments
+
+===
+
+gcov profiling kernel support enables the use of GCC's coverage testing
+tool gcov [1] with the Linux kernel. Coverage data of a running kernel
+is exported in gcov-compatible format via the "gcov "debugfs directory.
+
+Example:
+
+To get coverage data for file base.c in directory drivers/base, simply
+change to the kernel build directory and run gcov with the -o option
+(assumptions: kernel was built in /tmp/linux and debugfs is mounted at
+/sys/kernel/debug):
+
+# cd /tmp/linux
+# gcov -o drivers/base/ bus.c
+
+This will create source code files annotated with execution counts
+in the current directory. In addition, graphical gcov front-ends such
+as lcov [2] can be used to automate the process of collecting data
+for the entire kernel and provide coverage overviews in HTML format.
+
+Possible uses:
+
+* debugging (has this line been executed at all?)
+* test improvement (how do I change my test to cover these lines?)
+* minimizing kernel configurations (do I need this option if the
+  associated code is never executed?)
+
+
+Known issues:
+
+* some architecture specific problems: the patch has been tested
+  successfully on s390 and i386. Known problems exist on x86_64 and
+  arm (to be investigated)
+* GCC's profiling mechanism together with optimization sometimes
+  produces skewed data (see [1])
+* GCC's profiling code assumes single-threaded execution
+* gcov assumes that a program has finished when coverage data is
+  analyzed
+
+Despite these issues, the data which can be obtained has been proven
+to be sufficiently accurate for most practical uses.
+
+
+History:
+
+Hubertus Franke <frankeh@us.ibm.com> wrote the first version of this
+patch around 2002. Since then it has been adapted to new versions of
+the kernel and GCC with contributions by several people (see file
+kernel/gcov/fs.c, write me if I missed anyone). Due to regular
+requests, I rewrote the gcov-kernel patch from scratch so that it
+would (hopefully) be fit for inclusion into the upstream kernel.
+
+--
+[1] http://gcc.gnu.org/onlinedocs/gcc/Gcov.html
+[2] http://ltp.sourceforge.net/coverage/lcov.php
+
 
 
 
