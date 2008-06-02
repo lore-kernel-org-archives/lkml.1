@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbYFBJji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbYFBJl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751892AbYFBJji (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 05:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbYFBJja
+	id S1755314AbYFBJl0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 05:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbYFBJlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 05:39:30 -0400
-Received: from saeurebad.de ([85.214.36.134]:54449 "EHLO saeurebad.de"
+	Mon, 2 Jun 2008 05:41:18 -0400
+Received: from saeurebad.de ([85.214.36.134]:54473 "EHLO saeurebad.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750986AbYFBJj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 05:39:29 -0400
+	id S1750862AbYFBJlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 05:41:18 -0400
 From: Johannes Weiner <hannes@saeurebad.de>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -17,10 +17,10 @@ Subject: Re: [Bug #10741] bug in `tty: BKL pushdown'?
 References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
 	<UJSav77TyUB.A.llE.zrZQIB@albercik> <878wxotfto.fsf@saeurebad.de>
 	<200806021037.35384.rjw@sisk.pl>
-Date: Mon, 02 Jun 2008 11:38:51 +0200
+Date: Mon, 02 Jun 2008 11:40:41 +0200
 In-Reply-To: <200806021037.35384.rjw@sisk.pl> (Rafael J. Wysocki's message of
 	"Mon, 2 Jun 2008 10:37:34 +0200")
-Message-ID: <874p8ctbv8.fsf@saeurebad.de>
+Message-ID: <87zlq4rx7q.fsf@saeurebad.de>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -60,7 +60,8 @@ Hi,
 >
 > Alan says it's a user space bug, though.
 
-Yeah, saw the bugzilla update.  I have no idea.  Crap.  Noone will ever
-fix screen.
+Alan could you hint me what to look for in screen?   What in the commit
+I bisected could cause breakage for it?
 
+Thanks,
 	Hannes
