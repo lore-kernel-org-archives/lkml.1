@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbYFBTAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYFBTBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756414AbYFBTAd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 15:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbYFBTAN
+	id S1756546AbYFBTBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 15:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYFBTBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 15:00:13 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53647 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755418AbYFBTAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 15:00:11 -0400
-Date: Mon, 2 Jun 2008 13:59:53 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
-       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
-       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/15] security: pass path to inode_create
-Message-ID: <20080602185953.GA14108@us.ibm.com>
-References: <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602091341.GA8011@infradead.org> <E1K36PE-0002wZ-0M@pomaz-ex.szeredi.hu> <20080602093630.GA25254@infradead.org> <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu> <20080602104203.GA21898@infradead.org>
+	Mon, 2 Jun 2008 15:01:08 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:12076 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752771AbYFBTBH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 15:01:07 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5308"; a="3441191"
+Message-ID: <4844437C.2020700@qualcomm.com>
+Date: Mon, 02 Jun 2008 12:01:16 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080602104203.GA21898@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Paul Jackson <pj@sgi.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       menage@google.com, rostedt@goodmis.org
+Subject: Re: [PATCH] sched: CPU hotplug events must not destroy scheduler
+ domains created by the cpusets
+References: <1212085023-22284-1-git-send-email-maxk@qualcomm.com> <20080602101902.cf8cdf11.pj@sgi.com>
+In-Reply-To: <20080602101902.cf8cdf11.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Christoph Hellwig (hch@infradead.org):
-> On Mon, Jun 02, 2008 at 11:52:52AM +0200, Miklos Szeredi wrote:
-> > These patches fix several issues raised at previous submissions:
-> > 
-> >  - passing NULL vfsmounts
-> >  - using nameidata
-> >  - using extra stack for vfsmount argument
-> > 
-> > So, it seems to me that there's in fact no issues remaining and the
-> > best excuse you can come up with is that it's a dumb idea.  Well,
-> > that's not a very imressive technical argument IMNSHO.
-> 
-> Well, pathname based access control is a dumb idea, and we've been
-> through this N times.  You've also been told that vfs_ routines should
-> remain without vfsmount, and no that's not a stack-related issue no idea
-> where that part came from.
+Paul Jackson wrote:
 
-Sorry, noone else asked, so just out of curiosity - the *actual* reason
-is api layering?  Or am I missing another reason?
+> How about:
+>  1) Defining arch_init_sched_domains() for all CONFIGs, CPUSET or not
+>     (see for example how free_sched_groups() is defined, NUMA or not)
+>  2) Then the ifndef can be removed from here.
+>  3) Then the arch_init_sched_domains() can be moved comfortably inside
+>     the switch statement.
 
-thanks,
--serge
+Paul, I just realized that this won't work. We actually need the default
+version of arch_init_sched_domains() which builds the default domain. It's
+used during bootup. It's only the hotplug event handling where we do not want
+the default.
+I could still redo the switch() statement as you suggested but it seems that
+it's not going to improve the readability that much at this point.
+
+Max
