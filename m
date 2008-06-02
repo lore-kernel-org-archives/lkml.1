@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYFBCPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbYFBC1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbYFBCPt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 22:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbYFBCPm
+	id S1756135AbYFBC1x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 22:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYFBC1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 22:15:42 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:47669 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753568AbYFBCPl (ORCPT
+	Sun, 1 Jun 2008 22:27:42 -0400
+Received: from mga06.intel.com ([134.134.136.21]:39581 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753438AbYFBC1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 22:15:41 -0400
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, menage@google.com,
-       lizf@cn.fujitsu.com
-Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
-In-Reply-To: Your message of "Fri, 30 May 2008 10:45:15 +0900"
-	<20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080530104515.9afefdbb.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Cue version 0.8 (080521-1813/takashi)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080602021540.5C6705A0D@siro.lan>
-Date: Mon,  2 Jun 2008 11:15:40 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+	Sun, 1 Jun 2008 22:27:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,575,1204531200"; 
+   d="scan'208";a="389249135"
+Message-ID: <48435A89.2090004@linux.intel.com>
+Date: Sun, 01 Jun 2008 19:27:21 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: James Morris <jmorris@namei.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Hugh Dickins <hugh@veritas.com>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+References: <48402DAA.60202@linux.intel.com> <Xine.LNX.4.64.0806020955570.8594@us.intercode.com.au>
+In-Reply-To: <Xine.LNX.4.64.0806020955570.8594@us.intercode.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -135,13 +138,118 @@ ssize_t res_counter_write(struct res_cou
->  		if (*end != '\0')
->  			goto out_free;
->  	}
-> -	spin_lock_irqsave(&counter->lock, flags);
-> -	val = res_counter_member(counter, member);
-> -	*val = tmp;
-> -	spin_unlock_irqrestore(&counter->lock, flags);
-> -	ret = nbytes;
-> +	if (member != RES_LIMIT || !callback) {
+James Morris wrote:
+> On Fri, 30 May 2008, Arjan van de Ven wrote:
+> 
+>> Rank 4: task_has_capability (warning)
+>> 	Reported 181 times (202 total reports)
+>> 	[out of tree] Bug in the proprietary firegl driver
+>> 	warning only shows up in tainted kernels
+>> 	This warning was last seen in version 2.6.25.3, and first seen in
+>> 	2.6.25.
+>> 	More info:
+>> 	http://www.kerneloops.org/searchweek.php?search=task_has_capability
+> 
+> This is a shining example of why people should avoid binary drivers.  I'd 
+> guess that the bug is related to the new 64-bit capability code.
+> 
+> It'd be really interesting to know what this driver is doing with 
+> capabilities in the first place.
 
-is there any reason to check member != RES_LIMIT here,
-rather than in callers?
+it's easy; it's making the user root via the following function:
 
-> +/*
-> + * Move resource to its parent.
-> + *   child->limit -= val.
-> + *   parent->usage -= val.
-> + *   parent->limit -= val.
+void ATI_API_CALL KCL_PosixSecurityCapSetEffectiveVector(KCL_TYPE_Cap cap)
+{
+	capt_t(current->cap_effective) = cap;
+}
 
-s/limit/for_children/
-
-> + */
-> +
-> +int res_counter_repay_resource(struct res_counter *child,
-> +				struct res_counter *parent,
-> +				unsigned long long val,
-> +				res_shrink_callback_t callback, int retry)
-
-can you reduce gratuitous differences between
-res_counter_borrow_resource and res_counter_repay_resource?
-eg. 'success' vs 'done', how to decrement 'retry'.
-
-YAMAMOTO Takashi
