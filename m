@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbYFBGJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbYFBGPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbYFBGJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 02:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYFBGJn
+	id S1757138AbYFBGPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 02:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYFBGPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 02:09:43 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:47662 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbYFBGJn (ORCPT
+	Mon, 2 Jun 2008 02:15:22 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:37348 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751943AbYFBGPW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 02:09:43 -0400
-Message-ID: <48438E54.1000404@linux.vnet.ibm.com>
-Date: Mon, 02 Jun 2008 11:38:20 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       Michael Neuling <mikey@neuling.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com> <20080526085000.33787eac@infradead.org> <20080531211306.GM5405@ucw.cz>
-In-Reply-To: <20080531211306.GM5405@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Jun 2008 02:15:22 -0400
+Cc: davem@davemloft.net, arjan@linux.intel.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org
+Message-Id: <E5C422A2-82BC-4E9E-B113-835A11AB8CBD@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+In-Reply-To: <20080602014625.GA2893@darkstar.te-china.tietoenator.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] bluetooth: rfcomm_dev_state_change deadlock fix
+Date: Mon, 2 Jun 2008 08:15:03 +0200
+References: <20080602014625.GA2893@darkstar.te-china.tietoenator.com>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->>> entitlement for the process as per the current CPU frequency.  This
->>> technique is used in powerpc architecture with the help of hardware
->>> registers that accurately capture the entitlement.
->>>
->> there are some issues with this unfortunately, and these make it
->> a very complex thing to do. 
->> Just to mention a few:
->> 1) What if the BIOS no longer allows us to go to the max frequency for
->> a period (for example as a result of overheating); with the approach
->> above, the admin would THINK he can go faster, but he cannot in reality,
->> so there's misleading information (the system looks half busy, while in
-> 
-> Plus time one-second-computation-job returning anything else is just
-> wrong. Even when it only happens when overheated... or only on battery
-> power.
-> 
-> If you want scaled utime, you need new interface.
+Hi Dave,
 
-We do have a new interface, two new parameters per-task utimescaled and
-stimescaled. They already exist in task_struct. Ditto for the delay accounting
-pieces. Did I misunderstand your need for a new interface? We still keep utime
-and stime around.
+> There's logic in __rfcomm_dlc_close:
+> 	rfcomm_dlc_lock(d);
+> 	d->state = BT_CLOSED;
+> 	d->state_changed(d, err);
+> 	rfcomm_dlc_unlock(d);
+>
+> In rfcomm_dev_state_change, it's possible that rfcomm_dev_put try to  
+> take the
+> dlc lock, then we will deadlock.
+>
+> Here fixed it by unlock dlc before rfcomm_dev_get in  
+> rfcomm_dev_state_change.
+>
+> why not unlock just before rfcomm_dev_put? it's because there's  
+> another problem.
+> rfcomm_dev_get/rfcomm_dev_del will take rfcomm_dev_lock, but in  
+> rfcomm_dev_add
+> the lock order is : rfcomm_dev_lock --> dlc lock
+>
+> so I unlock dlc before the taken of rfcomm_dev_lock.
+>
+> Actually it's a regression caused by commit
+> 1905f6c736cb618e07eca0c96e60e3c024023428, the dlc state_change could  
+> be two
+> callbacks : rfcomm_sk_state_change and rfcomm_dev_state_change. I  
+> missed the rfcomm_sk_state_change that time.
+>
+> Thanks Arjan van de Ven <arjan@linux.intel.com> for the effort in  
+> commit
+> 4c8411f8c115def968820a4df6658ccfd55d7f1a
+> but he missed the rfcomm_dev_state_change lock issue.
+>
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+looks good. Thanks for adding a clear comment why we have to do it  
+this way.
+
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
+
+Regards
+
+Marcel
+
