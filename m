@@ -1,119 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbYFBD4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbYFBEGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbYFBD4V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 23:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYFBD4J
+	id S1752867AbYFBEGb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 00:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbYFBEGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 23:56:09 -0400
-Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:35431
-	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754293AbYFBD4I (ORCPT
+	Mon, 2 Jun 2008 00:06:21 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:34899 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbYFBEGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 23:56:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=HnABUZ5IwA14I4H3BFCeSwIPN6mwsNgxsQ/TJeKYiG8HayGM2E3xZXyR3GUdOkIB;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Sun, 1 Jun 2008 23:55:58 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Cammarata <jimi@sngx.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool -
- e1000/pcnet32
-Message-Id: <20080601235558.66e1ed7b.billfink@mindspring.com>
-In-Reply-To: <20080601222906.GH30769@solarflare.com>
-References: <482FBA09.80201@sngx.net>
-	<483E0AAE.2020107@sngx.net>
-	<20080528221118.63da4092.akpm@linux-foundation.org>
-	<483EA2D1.8050603@sngx.net>
-	<20080529154525.3916c7b5@core>
-	<20080530151250.b44a119a.billfink@mindspring.com>
-	<20080531131143.516ca56e@core>
-	<20080531195702.0b879dd1.billfink@mindspring.com>
-	<20080601014620.GG30769@solarflare.com>
-	<20080601164614.012fe1f6.billfink@mindspring.com>
-	<20080601222906.GH30769@solarflare.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Jun 2008 00:06:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=rX6mNCR/E5w2ZTZi7SqOj0Vf6CuU4cXA2YQNYV1ZPJIBhGRe+mcKj6skhvE0brY6pSZpeo7XJEx+f/e6jDPqF6GxriIxUGz3FHmuG6WKP/Rb9r0JBgQRPMoOAkv3nvpjjUAarX9EbET/ynF2rnyUDB41QcgMo2d4V88fSVj+e14=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86: numa_32 avoid clash between ramdisk and kva
+Date: Sun, 1 Jun 2008 21:06:31 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200805110030.15510.yhlu.kernel@gmail.com> <200805251000.10205.yhlu.kernel@gmail.com> <200805291625.56942.yhlu.kernel@gmail.com>
+In-Reply-To: <200805291625.56942.yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d9aa12f8e711a3a35c4c85a385c2628c5350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 96.234.158.248
+Content-Disposition: inline
+Message-Id: <200806012106.31650.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jun 2008, Ben Hutchings wrote:
 
-> Bill Fink wrote:
-> 
-> > But the question
-> > is how does one devise a generic script or tool that doesn't require
-> > any special knowledge of the specific NIC being used.  For example,
-> > here's the "ethtool -S" info for my myri10ge NIC:
-> > 
-> > [root@chance8 ~]# ethtool -S eth2
-> > NIC statistics:
-> [...]
-> >      WC: 1
-> >      irq: 8413
-> >      MSI: 1
-> >      read_dma_bw_MBs: 1398
-> >      write_dma_bw_MBs: 1613
-> >      read_write_dma_bw_MBs: 2711
-> >      serial_number: 287046
-> [...]
-> >      tx_linearized: 0
-> >      link_changes: 8
-> >      link_up: 1
-> [...]
-> > 
-> > How does one know which of these reported values are counter stats
-> > that one wishes to zero/snapshot, and which are not?
-> 
-> Ah, I see, I didn't realise some drivers were abusing ethtool stats in
-> this way.  But for the most part the differences will show up as zeroes.
+use find_e820_area to get address space...
 
-I'm not sure I would characterize that as abuse of the ethtool stats,
-but rather just a different category of stats.  And I wouldn't want
-them to show up as zeros after doing a clear/snapshot of the counter
-stats.  The "ethtool -S" output should be completely normal afterward,
-with just the counter stats being zeroed.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> If there's really a need for ethtool stats that aren't counters,
-> maybe the ethtool API should include flags to indicate which they are.
-
-That would be useful.  Maybe some way of determining the type of an
-ethtool stat such as COUNTER (perhaps with subtypes for signed versus
-unsigned, 32-bit versus 64-bit), RUNTIME_INFO, etc.
-
-> > Another issue that occurred to me is if multiple people are working
-> > on troubleshooting a network problem, how do we insure that they all
-> > get a consistent view of the stats?  If this is done via a kernel
-> > mechanism then there isn't an issue.  But if it's done via user space,
-> > then you have to make sure that everyone zeros/snapshots the stats
-> > at the same time.
-> > 
-> > Ideally, one should be able to do something like "ethtool -z ethX"
-> > to zero/snapshot the driver stats, and then "ethtool -S ethX" to get
-> > the stats since the last snapshot.  You should be able to use the
-> > same tool ("ethtool") to do all of this, and not some other special
-> > tool or specially devised homegrown script.  Why make users lives
-> > any more difficult than need be?
-> 
-> No-one's stopping you from adding these options to ethtool.  You could
-> have it save statistic sets in, say, /var/run/ethtool.
-
-Yes, that could be done if the ability to determine which ethtool stats
-were counter stats was added to the ethtool API.  And I guess they
-should be saved in something like /var/run/ethtool/ethX.  But then
-what happens when you start using multiple network namespaces, and
-for example have eth0 in several different network namespaces.  How
-could that be handled, to keep the different network namespaces from
-clobbering the stats of another namespace?  If done in the kernel,
-I believe it would all work as expected, but it's not clear to me
-how to handle this in user space.
-
-						-Bill
+Index: linux-2.6/arch/x86/mm/discontig_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/discontig_32.c
++++ linux-2.6/arch/x86/mm/discontig_32.c
+@@ -38,6 +38,7 @@
+ #include <asm/setup.h>
+ #include <asm/mmzone.h>
+ #include <asm/bios_ebda.h>
++#include <asm/proto.h>
+ 
+ struct pglist_data *node_data[MAX_NUMNODES] __read_mostly;
+ EXPORT_SYMBOL(node_data);
+@@ -304,7 +305,6 @@ unsigned long __init setup_memory(void)
+ {
+ 	int nid;
+ 	unsigned long system_start_pfn, system_max_low_pfn;
+-	unsigned long wasted_pages;
+ 
+ 	/*
+ 	 * When mapping a NUMA machine we allocate the node_mem_map arrays
+@@ -315,29 +315,18 @@ unsigned long __init setup_memory(void)
+ 	 */
+ 	get_memcfg_numa();
+ 
+-	kva_pages = calculate_numa_remap_pages();
++	kva_pages = round_up(calculate_numa_remap_pages(), PTRS_PER_PTE);
+ 
+ 	/* partially used pages are not usable - thus round upwards */
+ 	system_start_pfn = min_low_pfn = PFN_UP(init_pg_tables_end);
+ 
+-	kva_start_pfn = find_max_low_pfn() - kva_pages;
+-
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	/* Numa kva area is below the initrd */
+-	if (initrd_start)
+-		kva_start_pfn = PFN_DOWN(initrd_start - PAGE_OFFSET)
+-			- kva_pages;
+-#endif
+-
+-	/*
+-	 * We waste pages past at the end of the KVA for no good reason other
+-	 * than how it is located. This is bad.
+-	 */
+-	wasted_pages = kva_start_pfn & (PTRS_PER_PTE-1);
+-	kva_start_pfn -= wasted_pages;
+-	kva_pages += wasted_pages;
+-
+ 	system_max_low_pfn = max_low_pfn = find_max_low_pfn();
++	kva_start_pfn = round_down(max_low_pfn - kva_pages, PTRS_PER_PTE);
++	kva_start_pfn = find_e820_area(kva_start_pfn<<PAGE_SHIFT,
++				max_low_pfn<<PAGE_SHIFT,
++				kva_pages<<PAGE_SHIFT,
++				PTRS_PER_PTE<<PAGE_SHIFT) >> PAGE_SHIFT;
++
+ 	printk("kva_start_pfn ~ %ld find_max_low_pfn() ~ %ld\n",
+ 		kva_start_pfn, max_low_pfn);
+ 	printk("max_pfn = %ld\n", max_pfn);
