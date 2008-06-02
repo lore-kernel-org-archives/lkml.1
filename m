@@ -1,130 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYFBUZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYFBUbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbYFBUZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 16:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYFBUYP
+	id S1754684AbYFBUbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 16:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYFBUbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 16:24:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40521 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756228AbYFBUYJ (ORCPT
+	Mon, 2 Jun 2008 16:31:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:19769 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbYFBUbj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 16:24:09 -0400
-Date: Mon, 2 Jun 2008 13:22:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       David Howells <dhowells@redhat.com>
-cc: Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-In-Reply-To: <20080602185433.GB4081@elte.hu>
-Message-ID: <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org>
-References: <200805310127.m4V1RLR4013808@devserv.devel.redhat.com> <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com> <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org> <4840CE51.9060109@redhat.com>
- <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org> <20080602185433.GB4081@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 2 Jun 2008 16:31:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F7S8lxvx5Mo5Tf+elDlL6LaDalT82brVkC0GG9/RNfFIGueidMZC/K0AqOpID4D7Zm+axWrtnSVnRI/aqSkbZv2rW/XtgJ2Xs8fJaER77zpRWrn8kDxjuVvw3mHVk/mGjzbOjyRTpiFSYty4CVgVmIaXG64o/oL7+v7e/xdQtWc=
+Message-ID: <86802c440806021331x4a483201k83c5db040a6cb70b@mail.gmail.com>
+Date: Mon, 2 Jun 2008 13:31:38 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Richter" <robert.richter@amd.com>
+Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD Barcelona
+Cc: "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, "Andi Kleen" <andi@firstfloor.org>
+In-Reply-To: <20080528165813.8D8E5814C@erda.amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080526180616.GB2752@erda.amd.com>
+	 <20080528165813.8D8E5814C@erda.amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 3, 2007 at 1:17 AM, Robert Richter <robert.richter@amd.com> wrote:
+> This patch implements PCI extended configuration space access for
+> AMD's Barcelona CPUs. It extends the method using CF8/CFC IO
+> addresses. An x86 capability bit has been introduced that is set for
+> CPUs supporting PCI extended config space accesses.
+>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  arch/x86/kernel/cpu/amd.c    |    4 ++++
+>  arch/x86/kernel/setup.c      |   13 +++++++++++++
+>  arch/x86/kernel/setup.h      |   26 ++++++++++++++++++++++++++
+>  arch/x86/kernel/setup_64.c   |    5 +++++
+>  arch/x86/pci/direct.c        |   21 +++++++++++++++------
+>  include/asm-x86/cpufeature.h |    2 ++
+>  6 files changed, 65 insertions(+), 6 deletions(-)
+>  create mode 100644 arch/x86/kernel/setup.h
+>
+> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+> index 2458668..99221f9 100644
+> --- a/arch/x86/kernel/cpu/amd.c
+> +++ b/arch/x86/kernel/cpu/amd.c
+> @@ -6,6 +6,7 @@
+>  #include <asm/apic.h>
+>
+>  #include <mach_apic.h>
+> +#include "../setup.h"
+>  #include "cpu.h"
+>
+>  /*
+> @@ -308,6 +309,9 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+>
+>        if (cpu_has_xmm2)
+>                set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
+> +
+> +       if (c->x86 == 0x10)
+> +               amd_enable_pci_ext_cfg(c);
+>  }
+>
+>  static unsigned int __cpuinit amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 6f80b85..d8f1712 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -136,4 +136,17 @@ void __init setup_per_cpu_areas(void)
+>        setup_cpumask_of_cpu();
+>  }
+>
+> +#define ENABLE_CF8_EXT_CFG      (1ULL << 46)
+> +
+> +void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c)
+> +{
+> +       u64 reg;
+> +       rdmsrl(MSR_AMD64_NB_CFG, reg);
+> +       if (!(reg & ENABLE_CF8_EXT_CFG)) {
+> +               reg |= ENABLE_CF8_EXT_CFG;
+> +               wrmsrl(MSR_AMD64_NB_CFG, reg);
+> +       }
+> +       set_cpu_cap(c, X86_FEATURE_PCI_EXT_CFG);
+> +}
+> +
+>  #endif
+> diff --git a/arch/x86/kernel/setup.h b/arch/x86/kernel/setup.h
+> new file mode 100644
+> index 0000000..66cc2c7
+> --- /dev/null
+> +++ b/arch/x86/kernel/setup.h
+> @@ -0,0 +1,26 @@
+> +/*
+> + * Internal declarations for shared x86 setup code.
+> + *
+> + * Copyright (c) 2008 Advanced Micro Devices, Inc.
+> + * Contributed by Robert Richter <robert.richter@amd.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of version 2 of the GNU General Public
+> + * License as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+> + * 02111-1307 USA
+> + */
+> +
+> +#ifndef _ARCH_X86_KERNEL_SETUP_H
+> +
+> +extern void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c);
+> +
+> +#endif /* _ARCH_X86_KERNEL_SETUP_H */
+> diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+> index 6dff128..fdd2469 100644
+> --- a/arch/x86/kernel/setup_64.c
+> +++ b/arch/x86/kernel/setup_64.c
+> @@ -72,6 +72,8 @@
+>  #include <asm/trampoline.h>
+>  #include <asm/pat.h>
+>
+> +#include "setup.h"
+> +
+>  #include <mach_apic.h>
+>  #ifdef CONFIG_PARAVIRT
+>  #include <asm/paravirt.h>
+> @@ -790,6 +792,9 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+>        if (c->x86 == 0x10)
+>                fam10h_check_enable_mmcfg();
+>
+> +       if (c->x86 == 0x10)
+> +               amd_enable_pci_ext_cfg(c);
+> +
+>        if (amd_apic_timer_broken())
+>                disable_apic_timer = 1;
+>
+> diff --git a/arch/x86/pci/direct.c b/arch/x86/pci/direct.c
+> index 21d1e0e..27d61b6 100644
+> --- a/arch/x86/pci/direct.c
+> +++ b/arch/x86/pci/direct.c
+> @@ -8,18 +8,21 @@
+>  #include "pci.h"
+>
+>  /*
+> - * Functions for accessing PCI configuration space with type 1 accesses
+> + * Functions for accessing PCI base (first 256 bytes) and extended
+> + * (4096 bytes per PCI function) configuration space with type 1
+> + * accesses.
+>  */
+>
+>  #define PCI_CONF1_ADDRESS(bus, devfn, reg) \
+> -       (0x80000000 | (bus << 16) | (devfn << 8) | (reg & ~3))
+> +       (0x80000000 | ((reg & 0xF00) << 16) | (bus << 16) \
+> +       | (devfn << 8) | (reg & 0xFC))
+>
+>  static int pci_conf1_read(unsigned int seg, unsigned int bus,
+>                          unsigned int devfn, int reg, int len, u32 *value)
+>  {
+>        unsigned long flags;
+>
+> -       if ((bus > 255) || (devfn > 255) || (reg > 255)) {
+> +       if ((bus > 255) || (devfn > 255) || (reg > 4095)) {
+>                *value = -1;
+>                return -EINVAL;
+>        }
+> @@ -50,7 +53,7 @@ static int pci_conf1_write(unsigned int seg, unsigned int bus,
+>  {
+>        unsigned long flags;
+>
+> -       if ((bus > 255) || (devfn > 255) || (reg > 255))
+> +       if ((bus > 255) || (devfn > 255) || (reg > 4095))
+>                return -EINVAL;
+>
+>        spin_lock_irqsave(&pci_config_lock, flags);
+> @@ -260,10 +263,16 @@ void __init pci_direct_init(int type)
+>                return;
+>        printk(KERN_INFO "PCI: Using configuration type %d for base access\n",
+>                 type);
+> -       if (type == 1)
+> +       if (type == 1) {
+>                raw_pci_ops = &pci_direct_conf1;
+> -       else
+> +               if (!raw_pci_ext_ops && cpu_has_pci_ext_cfg) {
+> +                       printk(KERN_INFO "PCI: Using configuration type 1 "
+> +                              "for extended access\n");
+> +                       raw_pci_ext_ops = &pci_direct_conf1;
 
-[ I added Nick and DavidH to the Cc, since they have at least historically 
-  shown interest in locking algorithms ]
+can you add extra pci_direct_ext_conf1 intead?
 
-On Mon, 2 Jun 2008, Ingo Molnar wrote:
-> 
-> i suspect _any_ abstract locking functionality around a data structure 
-> can be implemented via atomic control over just a single user-space bit.
+so don't need change reg size in pci_direct_conf1
 
-Well, theory is theory, and practice is different.
+also if could avoid cpu_has_pci_ext_cfg, it would be great...
 
-That's *especially* true when it comes to locking, which is just so 
-tightly coupled to the exact details of which atomics are fast on a 
-particular architecture.
+YH
 
-Also, different people will want to see different performance profiles. 
-
-For example, it makes a *huge* difference whether you are strictly fair or 
-not. I can almost guarantee that a 100% fair implementation may be really 
-"nice" from a theoretical standpoint, but suck really badly in practice, 
-because if you want best performance, then you want the lock to have a 
-very strong CPU affinity - and the faster you can do your lock ops, the 
-more of a unfairness and CPU affinity they get!
-
-And rwlocks in particular are actually much more interesting in this 
-respect, because they not only have that CPU affinity fairness, but also 
-the reader-vs-writer fairness. You optimize for one load, and it may give 
-you almost perfect performance, but at the cost of sucking at another 
-load.
-
-For example, some loads are almost entirely read-read locks, with only 
-very occasional write locks for some uncommon config change thing. Do you 
-want to optimize for that? Maybe. And yes, you can make those uncontended 
-read-read locks go really quickly, but then (especially if you continue to 
-let reads through even when writers want to contend), that can slow down 
-writers a *lot*, to the point of starvation.
-
-Different CPU's will also show different patterns. 
-
-Anyway, I was busy most of the weekend, but I've now coded up a partial 
-actual example implementation. Its' probably buggy. Uli is very correct in 
-saying that it's easy to screw up futex'es, but even in the absense of 
-futexes, it's just easy to screw up any threaded logic.
-
-But if anybody wants to look at a rough draft that at least limps along 
-_partially_, there's
-
-	http://git.kernel.org/?p=linux/kernel/git/torvalds/rwlock.git;a=summary
-
-for you.
-
-And I'll freely admit that 
- (a) the above thing is pretty hacked up. No guarantees as to correctness 
-     or anything else.
- (b) I looked _mainly_ at the "all readers" case, and considered that the 
-     primary goal. Which explains why it does really well on that 
-     particular load.
- (c) However, I refuse to starve writers. In fact, my thing will always 
-     prefer a writer to any new readers, on the assumption that the sanest 
-     rwlock situation is the "tons of readers, occasional writer".
- (d) it does ok for me on the write-write contention case too, but the 
-     random mixed "all threads do 5% writelocks" test-case seems to suck.
-
-As an exmaple: the current glibc code I have seems to be uniformly and 
-boringly middle-of-the-road. It really doesn't seem to be horrible at all. 
-That said, the above thing _is_ 2-3x faster for me on that read-read case 
-(from single thread up to 20 threads - but just tested on one particular 
-machine), so if that is what you want to aim for, it's certainly easy to 
-beat.
-
-But for the write case, while I can easily beat it for a low-thread count 
-with little contention, my example thing above benchmarks about equal for 
-bigger thread counts (caveat: again - I've only tested on one machine, 
-which is a single-socket dual-core thing. Caveat emptor).
-
-And the pthreads implementation actually beats my hacked-up one at least 
-for the 5% random writelocks case. It's not beating it by a huge amount, 
-but it's not in the noise level either (maybe 15%). And I bet the pthreads 
-implementation is a hell of a lot better tested ;)
-
-> That bit can be used as a lock and if all access to the state of that 
-> atomic variable uses it, arbitrary higher-order atomic state transitions 
-> can be derived from it. The cost would be a bit more instructions in the 
-> fastpath, but there would still only be a single atomic op (the acquire 
-> op), as the unlock would be a natural barrier (on x86 at least).
-
-No, "unlocks as a natural barrier" only works for exclusive kernel locks 
-(spin_unlock and write_unlock). There we can just do a write to unlock. 
-But for anything that wants to handle contention differently than just 
-spinning, the unlock path needs to be able to do an atomic "unlock and 
-test if I need to do something else", because it may need to wake things 
-up.
-
-Feel free to try out my code, and laugh at it. Getting locking right is 
-definitely not simple, and I would be really surprised if I got everything 
-right. It's meant as a "hey, here's real code people can at least play 
-with" for anybody who is interested in this kind of thing. 
-
-		Linus
+> +               }
+> +       } else {
+>                raw_pci_ops = &pci_direct_conf2;
+> +       }
+>  }
+>
+>  int __init pci_direct_probe(void)
+> diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
+> index 0d609c8..40fcbba 100644
+> --- a/include/asm-x86/cpufeature.h
+> +++ b/include/asm-x86/cpufeature.h
+> @@ -79,6 +79,7 @@
+>  #define X86_FEATURE_REP_GOOD   (3*32+16) /* rep microcode works well on this CPU */
+>  #define X86_FEATURE_MFENCE_RDTSC (3*32+17) /* Mfence synchronizes RDTSC */
+>  #define X86_FEATURE_LFENCE_RDTSC (3*32+18) /* Lfence synchronizes RDTSC */
+> +#define X86_FEATURE_PCI_EXT_CFG        (3*32+19) /* PCI extended cfg access */
+>
+>  /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+>  #define X86_FEATURE_XMM3       (4*32+ 0) /* Streaming SIMD Extensions-3 */
+> @@ -187,6 +188,7 @@ extern const char * const x86_power_flags[32];
+>  #define cpu_has_gbpages                boot_cpu_has(X86_FEATURE_GBPAGES)
+>  #define cpu_has_arch_perfmon   boot_cpu_has(X86_FEATURE_ARCH_PERFMON)
+>  #define cpu_has_pat            boot_cpu_has(X86_FEATURE_PAT)
+> +#define cpu_has_pci_ext_cfg    boot_cpu_has(X86_FEATURE_PCI_EXT_CFG)
+>
+>  #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+>  # define cpu_has_invlpg                1
+> --
+> 1.5.3.7
+>
+>
+>
