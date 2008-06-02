@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYFBPza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbYFBP4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYFBPza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 11:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYFBPzV
+	id S1757274AbYFBP4V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 11:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYFBP4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 11:55:21 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:53701 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbYFBPzU (ORCPT
+	Mon, 2 Jun 2008 11:56:07 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:30957 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbYFBP4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 11:55:20 -0400
-Date: Mon, 2 Jun 2008 10:48:12 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, benh@kernel.crashing.org,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602154812.GB2734@loki.buserror.net>
-References: <1211924335.3286.89.camel@pasglop> <20080527214241.GA22636@parisc-linux.org> <1211926636.3286.100.camel@pasglop> <20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com> <1212110003.15633.0.camel@pasglop> <20080530080700.773a82cc@siona.local> <1212132267.15633.69.camel@pasglop> <20080530102706.56fca248@siona.local> <Pine.LNX.4.64.0805301120510.26332@anakin> <20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
+	Mon, 2 Jun 2008 11:56:06 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 00/15] PNP: convert resource options to unified dynamic list, v1
+Date: Mon, 2 Jun 2008 09:56:07 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+References: <20080530224853.976744229@ldl.fc.hp.com> <4842F857.9060309@keyaccess.nl>
+In-Reply-To: <4842F857.9060309@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200806020956.08729.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 10:11:02AM +0200, Haavard Skinnemoen wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Fri, 30 May 2008, Haavard Skinnemoen wrote:
-> > > Maybe we need another interface that does not do byteswapping but
-> > > provides stronger ordering guarantees?
-> > 
-> > The byte swapping depends on the device/bus.
+On Sunday 01 June 2008 01:28:23 pm Rene Herman wrote:
+> On 31-05-08 00:48, Bjorn Helgaas wrote:
 > 
-> Of course. But isn't it reasonable to assume that a device integrated
-> on the same silicon as the CPU is connected to a somewhat sane bus
-> which doesn't require any byte swapping?
+> > This patch series converts the PNP resource option structures
+> > to a unified linked list.  This preserves resource order, which
+> > is important for some devices.  There's more detail in the
+> > comments for the last patch.
+> > 
+> > Any comments would be welcome.
+> > 
+> > This depends on some patches that are in -mm, but not yet
+> > upstream.  In mmotm, these would probably go after
+> > pnp-dont-sort-by-type-in-sys-resources.patch
+> 
+> Will look at this in more detail but as first testing feedback -- I need 
+> this on top.
+> 
+> Both ISAPnP and PnPBIOS for some or other reason set the priority to 
+> 0x100 | prio after which that 0x100 is immediately masked of again in 
+> pnp_build_option() leaving just the prio. Your new scheme reserves 16 
+> bits for the priority though meaning the 0x100 survives causing it to be 
+> considered "invalid" by at least pnp_option_priority_name() for example.
+> 
+> There cannot be any currently valid reason for the 0x100 it seems given 
+> that it's immediately masked of again in pnp_build_option() so let's 
+> just get rid of it...
 
-No, unfortunately. :-(
-
-See the end of drivers/dma/fsldma.h.  Likewise with Freescale's PCI host
-bridges; for some reason the bus itself being little endian led to the host
-bridge control registers also being little endian.
-
--Scott
+I agree, that bit looks superfluous.  I added a patch to remove it.
+Thanks,
+  Bjorn
