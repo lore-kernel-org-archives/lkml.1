@@ -1,140 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761939AbYFBNry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761331AbYFBNwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761939AbYFBNry (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 09:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761692AbYFBNrW
+	id S1761331AbYFBNwO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 09:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbYFBNv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 09:47:22 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49706 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761660AbYFBNrV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 09:47:21 -0400
-Message-Id: <20080602134439.456399756@theryb.frec.bull.fr>
-References: <20080602134438.224352910@theryb.frec.bull.fr>
-User-Agent: quilt/0.46-1
-Date: Mon, 02 Jun 2008 15:45:48 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 07/10] sysfs: Implement sysfs_delete_link and
- sysfs_rename_link
+	Mon, 2 Jun 2008 09:51:58 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53239 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753473AbYFBNv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 09:51:57 -0400
+From: Olaf Dabrunz <od@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org,
+       Olaf Dabrunz <od@suse.de>, Stefan Assmann <sassmann@suse.de>
+Subject: [PATCH 4/7] disable broadcomm legacy boot interrupt generation
+Date: Mon,  2 Jun 2008 14:45:04 +0200
+Message-Id: <12124107072891-git-send-email-od@suse.de>
+X-Mailer: git-send-email 1.5.2.4
+In-Reply-To: <12124107071847-git-send-email-od@suse.de>
+References: <12124107071847-git-send-email-od@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs: Implement sysfs_delete_link and sysfs_rename_link
+From: Olaf Dabrunz <od@suse.de>
 
-When removing a symlink sysfs_remove_link does not provide
-enough information to figure out which tagged directory the symlink
-falls in.  So I need sysfs_delete_link which is passed the target
-of the symlink to delete.
+Add a quirk to disable legacy boot interrupt generation on broadcomm HT1000.
 
-Further half the time when we are removing a symlink the code is
-actually renaming the symlink but not doing so explicitly because
-we don't have a symlink rename method. So I have added sysfs_rename_link
-as well.
-
-Both of these functions now have enough information to find a symlink
-in a tagged directory.  The only restriction is that they must be called
-before the target kobject is renamed or deleted.  If they are called
-later I loose track of which tag the target kobject was marked with
-and can no longer find the old symlink to remove it.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
+Signed-off-by: Olaf Dabrunz <od@suse.de>
+Signed-off-by: Stefan Assmann <sassmann@suse.de>
 ---
- fs/sysfs/symlink.c    |   31 +++++++++++++++++++++++++++++++
- include/linux/sysfs.h |   17 +++++++++++++++++
- 2 files changed, 48 insertions(+)
+ drivers/pci/quirks.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-Index: linux-mm/fs/sysfs/symlink.c
-===================================================================
---- linux-mm.orig/fs/sysfs/symlink.c
-+++ linux-mm/fs/sysfs/symlink.c
-@@ -80,6 +80,21 @@ int sysfs_create_link(struct kobject * k
- }
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 8f09f8f..e2fed6c 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1377,6 +1377,36 @@ int nobootirqquirk_setup(char *str)
+ __setup("nobootirqquirk", nobootirqquirk_setup);
  
- /**
-+ *	sysfs_delete_link - remove symlink in object's directory.
-+ *	@kobj:	object we're acting for.
-+ *	@targ:	object we're pointing to.
-+ *	@name:	name of the symlink to remove.
-+ *
-+ *	Unlike sysfs_remove_link sysfs_delete_link has enough information
-+ *	to successfully delete symlinks in tagged directories.
+ /*
++ * disabled boot interrupts on HT-1000
 + */
-+void sysfs_delete_link(struct kobject *kobj, struct kobject *targ,
-+			const char *name)
++static void quirk_disable_broadcom_boot_interrupt(struct pci_dev *dev)
 +{
-+	sysfs_hash_and_remove(targ, kobj->sd, name);
++	u32 feature_enable;
++	u32 saved_feature_enable;
++	u8 irq;
++
++	if (nobootirqquirk)
++		return;
++
++	pci_read_config_dword(dev, 0x64,
++		       &feature_enable);
++	saved_feature_enable = feature_enable;
++	feature_enable |= (1<<0);
++	pci_write_config_dword(dev, 0x64, feature_enable);
++
++	for (irq = 0x10; irq < 0x10 + 32; irq++) {
++		outb(irq, 0xC00);
++		outb(0x00, 0xC01);
++	}
++
++	pci_write_config_dword(dev, 0x64, saved_feature_enable);
++
++	printk(KERN_INFO "disabled boot interrupts on PCI device 0x%04x:0x%04x\n",
++		       dev->vendor, dev->device);
 +}
++DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SERVERWORKS,   PCI_DEVICE_ID_SERVERWORKS_HT1000SB, 	quirk_disable_broadcom_boot_interrupt);
 +
-+/**
-  *	sysfs_remove_link - remove symlink in object's directory.
-  *	@kobj:	object we're acting for.
-  *	@name:	name of the symlink to remove.
-@@ -97,6 +112,22 @@ void sysfs_remove_link(struct kobject * 
- 	sysfs_hash_and_remove(kobj, parent_sd, name);
- }
- 
-+/**
-+ *	sysfs_rename_link - rename symlink in object's directory.
-+ *	@kobj:	object we're acting for.
-+ *	@targ:	object we're pointing to.
-+ *	@old:	previous name of the symlink.
-+ *	@new:	new name of the symlink.
-+ *
-+ *	A helper function for the common rename symlink idiom.
-+ */
-+int sysfs_rename_link(struct kobject *kobj, struct kobject *targ,
-+			const char *old, const char *new)
-+{
-+	sysfs_delete_link(kobj, targ, old);
-+	return sysfs_create_link(kobj, targ, new);
-+}
-+
- static int sysfs_get_target_path(struct sysfs_dirent *parent_sd,
- 				 struct sysfs_dirent *target_sd, char *path)
- {
-Index: linux-mm/include/linux/sysfs.h
-===================================================================
---- linux-mm.orig/include/linux/sysfs.h
-+++ linux-mm/include/linux/sysfs.h
-@@ -111,6 +111,12 @@ int __must_check sysfs_create_link(struc
- 				   const char *name);
- void sysfs_remove_link(struct kobject *kobj, const char *name);
- 
-+int sysfs_rename_link(struct kobject *kobj, struct kobject *target,
-+			const char *old_name, const char *new_name);
-+
-+void sysfs_delete_link(struct kobject *dir, struct kobject *targ,
-+			const char *name);
-+
- int __must_check sysfs_create_group(struct kobject *kobj,
- 				    const struct attribute_group *grp);
- int sysfs_update_group(struct kobject *kobj,
-@@ -192,6 +198,17 @@ static inline void sysfs_remove_link(str
- {
- }
- 
-+static inline int sysfs_rename_link(struct kobject *k, struct kobject *t,
-+				    const char *old_name, const char *new_name)
-+{
-+	return 0;
-+}
-+
-+static inline void sysfs_delete_link(struct kobject *k, struct kobject *t,
-+				     const char *name)
-+{
-+}
-+
- static inline int sysfs_create_group(struct kobject *kobj,
- 				     const struct attribute_group *grp)
- {
++/*
+  * On some chipsets we can disable the generation of legacy INTx boot
+  * interrupts.
+  */
+-- 
+1.5.2.4
 
 -- 
+Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
+
