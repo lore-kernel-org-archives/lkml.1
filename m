@@ -1,97 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYFBPHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbYFBPKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbYFBPHu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 11:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYFBPHl
+	id S1755320AbYFBPKP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 11:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYFBPJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 11:07:41 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:43117 "EHLO 2ka.mipt.ru"
+	Mon, 2 Jun 2008 11:09:59 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:54524 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752335AbYFBPHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 11:07:40 -0400
-Date: Mon, 2 Jun 2008 18:54:05 +0400
+	id S1752144AbYFBPJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 11:09:58 -0400
+Date: Mon, 2 Jun 2008 19:05:17 +0400
 From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: hooanon05@yahoo.co.jp, Jamie Lokier <jamie@shareable.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@lst.de
-Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
-Message-ID: <20080602145404.GA22400@2ka.mipt.ru>
-References: <200805311737.58991.arnd@arndb.de> <200806020912.49721.arnd@arndb.de> <9159.1212402992@jrobl> <200806021315.41211.arnd@arndb.de>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
+       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
+       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Message-ID: <20080602150517.GB22400@2ka.mipt.ru>
+References: <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602091341.GA8011@infradead.org> <E1K36PE-0002wZ-0M@pomaz-ex.szeredi.hu> <20080602093630.GA25254@infradead.org> <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu> <20080602104203.GA21898@infradead.org> <E1K37hN-00039y-5o@pomaz-ex.szeredi.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806021315.41211.arnd@arndb.de>
+In-Reply-To: <E1K37hN-00039y-5o@pomaz-ex.szeredi.hu>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnd.
+Hi.
 
-On Mon, Jun 02, 2008 at 01:15:40PM +0200, Arnd Bergmann (arnd@arndb.de) wrote:
-> This is a very complicated approach, and I'm not sure if it even addresses
-> the case where you have a shared mmap on both files. With VFS based union
-> mounts, they share one inode, so you don't need to use idiotify in the first
-> place, and it automatically works on shared mmaps.
+On Mon, Jun 02, 2008 at 12:55:33PM +0200, Miklos Szeredi (miklos@szeredi.hu) wrote:
+> Oh, I've been told.  But valid technical reason given?  No.
 
-Inotify has nothing common with that - it notifies about inode update,
-which is only thing needed for unionfs. VM and aufs vmops will take care of
-reads and writes, since there is no duplication of the data here.
+This is a really interesting flame, can you proceed,
+we will run for cola and peanuts :)
 
-> I mean having your own dentry and inode object is duplication. The
-> underlying file system already has them, so if you have your own,
-> you need to keep them synchronized. I guess that in order to do
-> a lookup on a file, you need the steps of
-> 
-> 1. lookup in aufs dentry cache -> fail
-> 2. lookup in underlying dentry cache -> fail
-> 3. try to read dentry from disk -> fail
-> 4. repeat 2-3 until found, or arrive at lowest level 
-> 5. create an inode in memory for the lower file system
-> 6. create dentry in memory on lower file system, pointing
->    to that
-> 7. create an aufs specific inode pointing to the underlying
->    inode
-> 8. create an aufs specific dentry object to point to that
-> 9. create a struct inode representing the aufs inode
-> 10. create another VFS dentry to point to that
-> 
-> when you really should just return the dentry found by the
-> lower file system.
-
-Or it is a feature, and you should not return dentry for lower file
-system, when you can have different objects pointing to the
-same object.
-
-> It's not so much a practical limitation as an exploitable feature.
-> E.g. an unpriviledged user may use this to get an application into
-> an error condition by asking for an invalid file name.
-
-Hmm... I believe if exploit wants to do bad things and system prevents
-it, it is actually a right decision? But since you asked, I'm not sure
-anymore...
-
-> Posix reserves a well-defined set of invalid file names, and
-> deviation from this means that you are not compliant, and that
-> in a potentially unexpected way.
-
-Everything has own limitation. 256 bytes per name is much stronger
-problem, but everyone works with that.
-It is a limitation, buts rather nonsignificant IMO.
-
-> I personally think that a policy other than writing to the top is crazy
-> enough, but randomly writing to multiple places is much worse, as it
-> becomes unpredictable what the file system does, not just unexpected.
-
-Is this a double rot13 encoded "people will never use computers with
-more than 640 kb of ram" phrase? :)
-
-While working VFS union mounting does not exist, AUFS does work.
-It is just another filesystem, which works and has big userbase. Any VFS
-approach (when implemented) will work on its own and its implementation
-does not depend on this particular fs.
+For the technical reason: in case of stackable/bind, which path should
+be checked? Whatever answer is, there will always be another party,
+which wants different behaviour.
 
 -- 
 	Evgeniy Polyakov
