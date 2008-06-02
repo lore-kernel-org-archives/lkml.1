@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbYFBApu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYFBAqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbYFBApu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 20:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbYFBApl
+	id S1754213AbYFBAqL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 20:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbYFBApy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 20:45:41 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:60298 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbYFBApk (ORCPT
+	Sun, 1 Jun 2008 20:45:54 -0400
+Received: from smtp-04.mandic.com.br ([200.225.81.151]:59357 "EHLO
+	smtp-04.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756294AbYFBApx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 20:45:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K/FK5/ihyO4aF1PeWfH4eRJoIjeujWOFaWvvC8goXmtpbaSpjT1vFv2PIu/B86dt3ubkKM6C3BwABWKs+VoxFDtzs7gbLP4MCT96k/hHAEQ690Yvfmaasjtb6tY/Z0BYopZohPRHL4ZMQx4SucUSTXWVaw8aJZokOM+ZgmKPNOU=
-Message-ID: <75b57c110806011745t1af46305mddaf01f8c321857f@mail.gmail.com>
-Date: Sun, 1 Jun 2008 20:45:38 -0400
-From: "Gerb Stralko" <gerb.stralko@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH] scsi: remove CDROM not ready printk
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1212074573.3428.32.camel@localhost.localdomain>
+	Sun, 1 Jun 2008 20:45:53 -0400
+Message-ID: <484342B6.7020605@diamondcut.com.br>
+Date: Sun, 01 Jun 2008 21:45:42 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: devzero@web.de
+CC: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, hmh@hmh.eng.br
+Subject: Re: [Bug 10797] Something is consuming power after shutdown
+References: <300254332@web.de>
+In-Reply-To: <300254332@web.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.10.0805271502370.3985@localhost.localdomain>
-	 <20080529004154.bbc7b1d4.akpm@linux-foundation.org>
-	 <1212069932.3428.1.camel@localhost.localdomain>
-	 <75b57c110805290735i493eca0fp882f4a38901a416c@mail.gmail.com>
-	 <1212072912.3428.28.camel@localhost.localdomain>
-	 <75b57c110805290804p2280a6ffwf68174754db59e9c@mail.gmail.com>
-	 <1212074573.3428.32.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 11:22 AM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Thu, 2008-05-29 at 11:04 -0400, Gerb Stralko wrote:
->> On Thu, May 29, 2008 at 10:55 AM, James Bottomley
->> <James.Bottomley@hansenpartnership.com> wrote:
->> > On Thu, 2008-05-29 at 10:35 -0400, Gerb Stralko wrote:
->> >> So is that printk really needed?  Should the kernel even need to print
->> >> a message like that, esp. if user-space is handling state updates and
->> >> notifications.  Or do i need to configure hald to be quietier?   FWIW
->> >> I'm using fedora core 9 and hald version:
->> >> -bash-3.2$ /usr/sbin/hald --version
->> >> HAL package version: 0.5.11
->> >
->> > Actually, I misspoke; it's set internally via sets of ioctls.  However,
->> > it's designed only to show on ioctls that do medium requiring things.
->> >
->> > I'm also using FC9 and I see no such messages (and for noisy cgc,
->> > they're printed out for every action on the CD).  You have some
->> > application that's poking the CD wrongly (probably not hal), so you
->> > really need to find out what it is.  It may be pointing to some other
->> > error in the kernel that needs fixing, but simply removing the message
->> > is covering up the issue.
->> >
->> > To help track the application, you could update the printk to print out
->> > current->comm and current->pid.  That would tell you who is responsible
->> >
->> > James
->> >
->> >
->> >
->> Okay, i'll do some investigation and see if I can track this down,
->> I'll let you know.   Thanks for the info.
+devzero@web.de wrote:
+> Renato S. Yamane wrote:
+>> Pavel Machek wrote:
+>>> Renato S. Yamane wrote:
+>>> ...
+>>>> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
+>>>> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
+>>>
+>>> Try to find out which component eats power, eg. by opening the machine
+>>> searching for heat.
+>>>
+>>> (And yes, your hw is broken; on pc it is traditionaly hw
+>>> responsibility to power machine down.)
 >>
->> Are you using GNOME or KDE?  I'm currently using KDE.
->
-> I'm using gnome ... there are intermittent reports of kde problems
-> mainly with k3b though (the burner program), but if you put the printk
-> in it should identify the application.
->
-> James
->
->
->
-I download the fedora updates and I rebooted and the messages went
-away from my dmesg.   I left my computer on for a few hours and no
-message. So I guess I problem was fixed in one of the updates.
+>> OK, I try do this but I think this is very difficult because demand
+>> power is very low and is not enought to do hot some component. But I
+>> will try.
+> 
+> i also don`t think that you can find something which is noticeably warm
+> this way - 4% of your battery in 12hrs - that "hot spot" should be hard
+> to identify
 
-Thanks for you help.  Sorry for the noise.
+Yes, you are right!
+I try find a "hot spot" and it's impossible.
 
-thanks again,
+> if your notebook powers down and doesn`t show that something is still
+> "on" and consuming power - i`d call that "broken by design".
 
-Jerry
+I don't know why, but as commented in Bug #10797, if I close my LCD
+Display (activing LID), power on again (because when LID is actived, my
+laptop hibernate), and shutdown, my battery charge not is changed.
+
+Best regards,
+Renato S. Yamane
