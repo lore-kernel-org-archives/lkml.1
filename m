@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbYFBMaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbYFBMcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759044AbYFBMaR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 08:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbYFBM37
+	id S1759082AbYFBMcU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 08:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYFBMcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 08:29:59 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58827 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbYFBM36 (ORCPT
+	Mon, 2 Jun 2008 08:32:08 -0400
+Received: from el-out-1112.google.com ([209.85.162.179]:6861 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752708AbYFBMcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 08:29:58 -0400
-Date: Mon, 2 Jun 2008 13:29:35 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-       linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH 6/10] arm: convert to generic helpers for IPI function calls
-Message-ID: <20080602122935.GB27125@flint.arm.linux.org.uk>
-Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
-	linux-kernel@vger.kernel.org, peterz@infradead.org, npiggin@suse.de,
-	linux-arch@vger.kernel.org, jeremy@goop.org, mingo@elte.hu,
-	paulmck@linux.vnet.ibm.com
-References: <1212051504-12561-1-git-send-email-jens.axboe@oracle.com> <1212051504-12561-7-git-send-email-jens.axboe@oracle.com>
-Mime-Version: 1.0
+	Mon, 2 Jun 2008 08:32:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Ee+hVD70jEk8O178O3GasxW8TXRcRC0RgWSMCzRYZah8XYf4eaYFQGkzPshboxRmusPNhd80Xgc0SdS23di1k9whCyrek3d7WZefhopFFPRKh5TX5dsv6+eRk03l6Tqx4Ch1lKNcsbFS1wfUVVSziIHREFtNDLKmVDPY8GfuLZI=
+Date: Mon, 2 Jun 2008 20:31:45 +0800
+From: Yan Li <elliot.li.tech@gmail.com>
+To: Milan Broz <mbroz@redhat.com>
+Cc: Yan Li <elliot.li.tech@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ritesh Raj Sarraf <rrs@researchut.com>,
+       Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, Herbert Xu <herbert@gondor.apana.org.au>,
+       rjmaomao@gmail.com, Alasdair G Kergon <agk@redhat.com>,
+       dm-crypt@saout.de
+Subject: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in dm-crypt
+Message-ID: <20080602123145.GA8258@yantp.cn.ibm.com>
+References: <20080602030738.GA7761@yantp.cn.ibm.com> <48439890.6030904@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1212051504-12561-7-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <48439890.6030904@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 29, 2008 at 10:58:20AM +0200, Jens Axboe wrote:
-> This converts arm to use the new helpers for smp_call_function() and
-> friends, and adds support for smp_call_function_single().
+Hi Milan,
 
-> +void arch_send_call_function_ipi(cpumask_t mask)
->  {
-> -	return smp_call_function_on_cpu(func, info, retry, wait,
-> -					cpu_online_map);
-> +	send_ipi_message(mask, IPI_CALL_FUNC);
->  }
+On Mon, Jun 02, 2008 at 08:52:00AM +0200, Milan Broz wrote:
+> Please could you try if  patch here helps and doesn't cause performance degradation?
+> http://www2.kernel.org/pub/linux/kernel/people/agk/patches/2.6/2.6.25/dm-crypt-add-cond_resched.patch
 
-Can things like the above be inline functions to be included in the
-generic code?
+Will the result of testing a Debian 2.6.24-etchnhalf.1-amd64 kernel
+(very near a vanilla kernel) be of same value?  Since the data on some
+other drives on this server is important so I dare not try 2.6.25-rc
+on it.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Following is my test plan, comments are welcomed:
+
+Test command:
+# dd if=/dev/zero of=/dev/mapper/open_device bs=500M count=10
+(this server has 2G memory)
+
+The command will be run	for 3 times, and average speed of last two
+runs will be taken as result score.
+
+Dm-crypt LUKS Encryption scenarios:
+aes-cbc-essiv:sha256, keysize 128
+aes-xts-plain, keysize 256
+aes-xts-plain, keysize 512
+
+I will compare the speed of all above 3 encryption scenarios, with and
+without the patch.
+
+--
+Li, Yan
