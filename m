@@ -1,124 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbYFBDIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYFBDZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568AbYFBDIA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 23:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYFBDHt
+	id S1756620AbYFBDZg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 23:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYFBDZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 23:07:49 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:46723 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753659AbYFBDHs (ORCPT
+	Sun, 1 Jun 2008 23:25:26 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:41702 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753697AbYFBDZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 23:07:48 -0400
+	Sun, 1 Jun 2008 23:25:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ebu8rDUEyUSmbc6oz3UbuxBG3Ldy/6InhZMJlXUztetLylCThL3WXscs8xpzqM08TGusXj0aEitS+WEFRSm3mdsmawE+vbCHGHVwAfuSG6aFGsK6dMuvtq3Gb3kPW9+F3aEjyf3Q2ZH/dnMc0XWhl+UDBlteQc9UVpgCLt0oa50=
-Date: Mon, 2 Jun 2008 11:07:38 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ritesh Raj Sarraf <rrs@researchut.com>,
-       Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, Herbert Xu <herbert@gondor.apana.org.au>,
-       elliot.li.tech@gmail.com, rjmaomao@gmail.com
-Subject: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in dm-crypt
-Message-ID: <20080602030738.GA7761@yantp.cn.ibm.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WOGxjTTTqPKW+MCA4v0A2HdfNhxwzeZx8wbDwwMo94jrxevOfLIkRXWqpIujbU34pr0nGcZCdQOKUY2acGtncEObecjI8YQlDWz5kz9EO6TkrJP36GEGSZKSVQ5W5F7nHr3OwVB7/jSlTR4+5NY8ZoNc0eKfcTH14aKmXPOMtYw=
+Message-ID: <3aa654a40806012025ic6b9d0dlec05211bad782581@mail.gmail.com>
+Date: Sun, 1 Jun 2008 20:25:19 -0700
+From: "Avuton Olrich" <avuton@gmail.com>
+To: "Rene Herman" <rene.herman@keyaccess.nl>
+Subject: Re: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my ALSA intel8x0 sound card regression
+Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Rene Herman" <rene.herman@gmail.com>,
+       "Len Brown" <len.brown@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <4842CC50.4030406@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080228232048.51e28c1d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com>
+	 <4842CC50.4030406@keyaccess.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 Feb 2008 23:20:48 -0800, Andrew Morton wrote:
-> On Thu, 28 Feb 2008 19:24:03 +0530 Ritesh Raj Sarraf <rrs@researchut.com> wrote:
-> > I noted kernel soft lockup messages on my laptop when doing a lot of I/O 
-> > (200GB) to a dm-crypt device. It was setup using LUKS.
-> > The I/O never got disrupted nor anything failed. Just the messages.
+On Sun, Jun 1, 2008 at 9:20 AM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> On 01-06-08 16:42, Avuton Olrich wrote:
+>
+>> My intel8x0 card stops working due to a regression; bisection and
+>> information below.
+>>
+>> May have relationship to this thread
+>>
+>> http://groups.google.com/group/linux.kernel/browse_thread/thread/d5857287a36e71af/d7ae0a1490b7d142?lnk=st
+>>
+>> http://avuton.googlepages.com/intel8x0-config.gz
+>> http://avuton.googlepages.com/intel8x0-cpuinfo
+>> http://avuton.googlepages.com/intel8x0-dmesg
+>
+> This dmesg seems to be 6-byte file consisting of "dmesg\n" ...
 
-I met the same problem yesterday.
+Corrected:
+http://avuton.googlepages.com/dmesg.txt
 
-> Could be a dm-crypt problem, could be a crypto problem, could even be a
-> core block problems.
+>> http://avuton.googlepages.com/intel8x0-ioports
+>> http://avuton.googlepages.com/intel8x0-lspci-vvv
+>> http://avuton.googlepages.com/intel8x0-modules
+>> http://avuton.googlepages.com/intel8x0-ver-linux
+>> http://avuton.googlepages.com/intel8x0-version
+>>
+>> commit 53052feb6ddd05cb2b5c6e89fb489bf83bbb6803
+>> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>> Date:   Mon Apr 28 16:34:15 2008 -0600
+>>
+>>    PNP: remove pnp_mem_flags() as an lvalue
+>>
+>>    A future change will change pnp_mem_flags() from a "#define that
+>>    simplifies to an lvalue" to "an inline function that returns the
+>>    flags value."
+>>
+>>    Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+>>    Acked-By: Rene Herman <rene.herman@gmail.com>
+>>    Signed-off-by: Len Brown <len.brown@intel.com>
+>>
+>
+> I'm probably just really blind but I don't see how that specific commit may
+> have made any difference. It _is_ in the exact spot which would fix that
+> overlap problem of yours but this should be an identity change as far as
+> fuctionality goes. Are you _really_ sure it's this one?
+>
+> (Is this racing with anything?)
 
-I think it's due to heavy encryption computation that run longer than
-10s and triggered the warning. By heavy I mean dm-crypt with
-aes-xts-plain, 512b key size.
+I will confirm in the next 24 hours that the previous revision works.
 
-This is a typical soft lockup call trace snip from dmesg:
-Call Trace:
- [<ffffffff882c60b6>] :xts:crypt+0x9d/0xea
- [<ffffffff882b5705>] :aes_x86_64:aes_encrypt+0x0/0x5
- [<ffffffff882b5705>] :aes_x86_64:aes_encrypt+0x0/0x5
- [<ffffffff882c622e>] :xts:encrypt+0x41/0x46
- [<ffffffff8828273f>] :dm_crypt:crypt_convert_scatterlist+0x7b/0xc7
- [<ffffffff882828ae>] :dm_crypt:crypt_convert+0x123/0x15d
- [<ffffffff88282abd>] :dm_crypt:kcryptd_do_crypt+0x1d5/0x253
- [<ffffffff882828e8>] :dm_crypt:kcryptd_do_crypt+0x0/0x253
- [<ffffffff802448e5>] run_workqueue+0x7f/0x10b
-... (omitted)
-
-> If nothing happens in the next few days, yes, please do raise a bugzilla
-> report. 
-
-Anybody has done this yet? Or I'll do it.
-
-> If you can provide us with a simple step-by-step recipe to reprodue this,
-> and if others can indeed reproduce it, the chances of getting it fixed will
-> increase.
-
-Here's my step to reproduce: 
-
-1. You need a moderate computer, it can't be too fast (I'm testing
-   this on a Intel(R) Xeon Duo 3040 @ 1.86GHz with 2G ECC RAM on a
-   Dell SC440 server, and it's slow enough). On faster computer the
-   computation maybe fast enough and not trigger the soft lockup
-   detector.
-
-2. Use a 2.6.24+ kernel (I'm using a 2.6.24-etchnhalf.1-amd64 from
-   Debian)
-
-3. Create a big partition (or loop file, I think it's OK), at least
-   40G.
-
-4. # modprobe xts
-   # modprobe aes (or aes-x86_64, same result)
-   # cryptsetup -c aes-xts-plain -s 512 luksFormat /dev/sd<Partition>
-   # cryptsetup luksOpen /dev/sd<Partition> open_par
-
-5. Do heavy I/O on it, like this:
-   # dd if=/dev/zero of=/dev/mapper/open_par
-
-6. After some time (like one hour), run top, I found "kcryptd" is
-   running at 100%sy. Check dmesg and I found the soft lockup warning.
-
-I think disk I/O speed is not important here. I'm using a 500G SATA2
-drive.
-
-On my server, only AES-XTS with 512 keysize is slow enough to trigger
-the lockup detector.  Other slow cryptor such as AES-CBC is OK that I
-have test it for hours without any problem.
-
-> Now, I'm assuming that it's just unreasonable for a machine to spend a full
-> 11 seconds crunching away on crypto in that code path.  Maybe it _is_
-> reasonable, and all we need to do is to poke a cond_resched() in there
-> somewhere.
-
-I think this can solve the problem, however, this may harm the
-performance of most average users who use only simple crypto such as
-CBC-ESSIV, or the performance of high-end server that could handle XTS
-with 512b keysize in less than 10s.
-
-Or we can just ignore this problem is there's no data
-corruption. Since for moderate computers running XTS with 512 keysize,
-the status quo is not very bad, only some dmesg lockup warning and a
-unresponsive system. We can add a warning to the document like
-"running AES-XTS with 512b key size is a CPU hog and may slow down
-your computer."
-
-Anybody see a data corruption?
-
+Thanks,
 -- 
-Li, Yan
+avuton
+--
+ "I've got a fever. And the only prescription is more cowbell." --
+Christopher Walken
