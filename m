@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYFBSCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbYFBSK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbYFBSCk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 14:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYFBSCc
+	id S1753724AbYFBSK7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 14:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYFBSKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 14:02:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58319 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752033AbYFBSCb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 14:02:31 -0400
-Date: Mon, 2 Jun 2008 14:02:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Abhishek Sagar <sagar.abhishek@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] ftrace: prevent freeing of all failed updates
-In-Reply-To: <4842CB9A.1080800@gmail.com>
-Message-ID: <Pine.LNX.4.58.0806021401340.10366@gandalf.stny.rr.com>
-References: <4842CB9A.1080800@gmail.com>
+	Mon, 2 Jun 2008 14:10:53 -0400
+Received: from mail.suse.de ([195.135.220.2]:49045 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750862AbYFBSKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 14:10:52 -0400
+Date: Mon, 2 Jun 2008 11:10:35 -0700
+From: Brandon Philips <bphilips@suse.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, Bastien Nocera <bnocera@redhat.com>
+Subject: Re: v4l regression: V4L2_CID_[VH]CENTER disappeared without notice.
+Message-ID: <20080602181035.GA440@plankton.ifup.org>
+References: <200804241931.m3OJVQiR022368@hera.kernel.org> <1212421611.16924.246.camel@pmac.infradead.org> <20080602165649.01c2c680@core>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080602165649.01c2c680@core>
+User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 16:56 Mon 02 Jun 2008, Alan Cox wrote:
+> > Please can we revert the addition of _DEPRECATED to these ioctl
+> > definitions. Perhaps we can add a runtime warning if they actually get
+> > used? Or a compile-time warning if we can manage that?
+> 
+> Can you clarify the problem here ? Is this compile breakage as it appears
+> (See 'do not include kernel headers in user space apps') or runtime ?
 
+It is compile breakage and was also discussed on
+fedora-devel-list@redhat.com with Mauro and myself CC'd.  The control
+number will be reserved forever to avoid binary breakage.
 
-On Sun, 1 Jun 2008, Abhishek Sagar wrote:
-5B> @@ -611,18 +612,33 @@ static int __ftrace_update_code(void *ignore)
->
->  	/* No locks needed, the machine is stopped! */
->  	for (i = 0; i < FTRACE_HASHSIZE; i++) {
-> -		if (hlist_empty(&ftrace_hash[i]))
-> -			continue;
-> +		/* all CPUS are stopped, we are safe to modify code */
-> +		hlist_for_each_entry_safe(p, t, n, &ftrace_hash[i], node) {
-> +			/* Skip over failed records which have not been
-> +			 * freed. */
-> +			if (p->flags & FTRACE_FL_FAILED)
-> +				continue;
->
-> -		head = ftrace_hash[i];
-> -		INIT_HLIST_HEAD(&ftrace_hash[i]);
-> +			/* Unconverted records are always at the head of the
-> +			 * hash bucket. Once we encounter a converted record,
-> +			 * simply skip over to the next bucket. Saves ftraced
-> +			 * some processor cycles (ftrace does its bid for
-> +			 * global warming :-p ). */
-> +			if (p->flags & (FTRACE_FL_CONVERTED))
-> +				break;
+However, as Mauro noted in that conversation: "Those controls haven't
+been used by any Kernel drivers for a long time (I suspect that they
+were never used)."  Since no driver had ever implemented the control I
+figured user space application wouldn't be using it either.
 
-If we unload a module and reload it, will it ever get converted again?
+If David wants to revert the _DEPRECATED tags that is fine; we can add a
+feature removal for a year from now if it gets merged.
 
--- Steve
+Thanks,
+
+	Brandon
