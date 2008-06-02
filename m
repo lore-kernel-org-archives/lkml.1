@@ -1,90 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYFBNcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYFBNe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYFBNcj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 09:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYFBNc3
+	id S1757913AbYFBNe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 09:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYFBNev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 09:32:29 -0400
-Received: from openfortress.nl ([213.189.19.244]:37406 "EHLO fame.vanrein.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752373AbYFBNc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 09:32:28 -0400
-X-Greylist: delayed 2000 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jun 2008 09:32:28 EDT
-Date: Mon, 2 Jun 2008 12:59:04 +0000
-From: Rick van Rein <rick@groengemak.nl>
-To: linux-kernel@vger.kernel.org
-Subject: Future Linux on Bistable Storage
-Message-ID: <20080602125904.GA15129@phantom.vanrein.org>
+	Mon, 2 Jun 2008 09:34:51 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:13203 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752247AbYFBNeu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 09:34:50 -0400
+Message-ID: <4843F6F7.9020000@de.ibm.com>
+Date: Mon, 02 Jun 2008 15:34:47 +0200
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-My-Coolest-Hack: http://rick.vanrein.org/linux/badram -> Exploit broken RAM
-User-Agent: Mutt/1.5.11
+To: linux-kernel@vger.kernel.org
+CC: ltp-coverage@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Oberparleiter <oberparleiter@googlemail.com>
+Subject: [PATCH 6/6] gcov: architecture specific compile flag adjustments
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 
-Future generations of Linux are likely to run on machines with non-volatile
-memories based on bistable technologies.  This will save the energy of DRAM
-refresh cycles and avoid the mechanical problems related to hard disks.  The
-result is probably a computer with no distinction between disk and RAM.
+Exclude code from profiling which is not linked to the main kernel or
+which is running in a context not compatible with the assumptions made
+by gcc's profiling code.
 
-Such computer architectures can conserve a lot of energy, as it is very
-simple to suspend and resume them: no data loss means no time needed to
-resume the system -- except perhaps for I/O initialisation.  Conserving
-energy means (1) having more fun|hours per kg of batteries, and (2) saving
-the planet.
+Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+---
+ arch/arm/boot/compressed/Makefile      |    1 +
+ arch/powerpc/kernel/vdso32/Makefile    |    1 +
+ arch/powerpc/kernel/vdso64/Makefile    |    1 +
+ arch/ppc/boot/Makefile                 |    1 +
+ arch/ppc/boot/common/Makefile          |    1 +
+ arch/ppc/boot/simple/Makefile          |    1 +
+ arch/x86/boot/Makefile                 |    1 +
+ arch/x86/boot/compressed/Makefile      |    1 +
+ arch/x86/kernel/acpi/realmode/Makefile |    1 +
+ 9 files changed, 9 insertions(+)
+
+Index: linux-2.6.26-rc4/arch/arm/boot/compressed/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/arm/boot/compressed/Makefile
++++ linux-2.6.26-rc4/arch/arm/boot/compressed/Makefile
+@@ -7,6 +7,7 @@
+ HEAD	= head.o
+ OBJS	= misc.o
+ FONTC	= $(srctree)/drivers/video/console/font_acorn_8x8.c
++GCOV	:= n
+ 
+ #
+ # Architecture dependencies
+Index: linux-2.6.26-rc4/arch/x86/boot/compressed/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/x86/boot/compressed/Makefile
++++ linux-2.6.26-rc4/arch/x86/boot/compressed/Makefile
+@@ -12,6 +12,7 @@ cflags-$(CONFIG_X86_64) := -mcmodel=smal
+ KBUILD_CFLAGS += $(cflags-y)
+ KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
+ KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
++GCOV := n
+ 
+ KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
+ 
+Index: linux-2.6.26-rc4/arch/ppc/boot/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/ppc/boot/Makefile
++++ linux-2.6.26-rc4/arch/ppc/boot/Makefile
+@@ -16,6 +16,7 @@
+ # KBUILD_CFLAGS used when building rest of boot (takes effect recursively)
+ KBUILD_CFLAGS 	+= -fno-builtin -D__BOOTER__ -Iarch/$(ARCH)/boot/include
+ HOSTCFLAGS	+= -Iarch/$(ARCH)/boot/include
++GCOV		:= n
+ 
+ BOOT_TARGETS	= zImage zImage.initrd znetboot znetboot.initrd
+ 
+Index: linux-2.6.26-rc4/arch/ppc/boot/common/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/ppc/boot/common/Makefile
++++ linux-2.6.26-rc4/arch/ppc/boot/common/Makefile
+@@ -5,6 +5,7 @@
+ # Tom Rini	January 2001
+ #
+ 
++GCOV := n
+ lib-y					:= string.o util.o misc-common.o \
+ 						serial_stub.o bootinfo.o
+ lib-$(CONFIG_SERIAL_8250_CONSOLE)	+= ns16550.o
+Index: linux-2.6.26-rc4/arch/ppc/boot/simple/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/ppc/boot/simple/Makefile
++++ linux-2.6.26-rc4/arch/ppc/boot/simple/Makefile
+@@ -21,6 +21,7 @@
+ # XXX_memory.o file for this to work, as well as editing the
+ # misc-$(CONFIG_MACHINE) variable.
+ 
++GCOV				:= n
+ boot				:= arch/ppc/boot
+ common				:= $(boot)/common
+ utils				:= $(boot)/utils
+Index: linux-2.6.26-rc4/arch/x86/boot/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/x86/boot/Makefile
++++ linux-2.6.26-rc4/arch/x86/boot/Makefile
+@@ -71,6 +71,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
+ 		   $(call cc-option, -mpreferred-stack-boundary=2)
+ KBUILD_CFLAGS +=   $(call cc-option,-m32)
+ KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
++GCOV		:= n
+ 
+ $(obj)/zImage:  IMAGE_OFFSET := 0x1000
+ $(obj)/zImage:  asflags-y := $(SVGA_MODE) $(RAMDISK)
+Index: linux-2.6.26-rc4/arch/x86/kernel/acpi/realmode/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/x86/kernel/acpi/realmode/Makefile
++++ linux-2.6.26-rc4/arch/x86/kernel/acpi/realmode/Makefile
+@@ -42,6 +42,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
+ 		   $(call cc-option, -mpreferred-stack-boundary=2)
+ KBUILD_CFLAGS	+= $(call cc-option, -m32)
+ KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
++GCOV		:= n
+ 
+ WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
+ 
+Index: linux-2.6.26-rc4/arch/powerpc/kernel/vdso32/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/powerpc/kernel/vdso32/Makefile
++++ linux-2.6.26-rc4/arch/powerpc/kernel/vdso32/Makefile
+@@ -17,6 +17,7 @@ EXTRA_CFLAGS := -shared -fno-common -fno
+ EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso32.so.1 \
+ 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
+ EXTRA_AFLAGS := -D__VDSO32__ -s
++GCOV := n
+ 
+ obj-y += vdso32_wrapper.o
+ extra-y += vdso32.lds
+Index: linux-2.6.26-rc4/arch/powerpc/kernel/vdso64/Makefile
+===================================================================
+--- linux-2.6.26-rc4.orig/arch/powerpc/kernel/vdso64/Makefile
++++ linux-2.6.26-rc4/arch/powerpc/kernel/vdso64/Makefile
+@@ -11,6 +11,7 @@ EXTRA_CFLAGS := -shared -fno-common -fno
+ EXTRA_CFLAGS += -nostdlib -Wl,-soname=linux-vdso64.so.1 \
+ 		$(call ld-option, -Wl$(comma)--hash-style=sysv)
+ EXTRA_AFLAGS := -D__VDSO64__ -s
++GCOV := n
+ 
+ obj-y += vdso64_wrapper.o
+ extra-y += vdso64.lds
 
 
-I wonder inhowfar Linux is (already) capable of dealing with such hardware.
-Several core concepts suddenly become meaningless if disk and RAM are merged
-into one storage device:
- * swapping out data
- * lazy loading of programs from disk to RAM
- * buffering disk blocks
- * mapping and unmapping disk onto RAM
-
-
-Regarding I/O init: Current Linux boots while initiating one device at a
-time.  Some degree of serialism must exist, but after scanning a bus would
-it not be possible to fork threads to initiate each of the devices found
-on it?  Am I overlooking details or could this be a useful change?
-If it is possible, it would make Linux _much_ quicker to boot (also on
-current hardware), and it could even make it acceptable to do a suspend
-after a _very_ short time (say, a minute) of non-activity.  It'd be an
-easy way to save some trees :)
-
-In the long run, it seems fair to assume that all devices, including
-processors, would use non-volatile buffers based on one of the bistable
-semiconductor devices currently being developed; but I would not be
-surprised if at first we will be working with computers that have older
-parts mixed in; boards that still forget their registers when switched off.
-But in the end I expect the entire system to switch itself off in between
-every two keystrokes (!) simply because loosing no data anywhere in the
-system means being able to resume operations at the next whim/interrupt.
-
-
-I have seen Linux make quite impressive changes to its fundamental
-architecture.  Could this be the Next Big Challenge to the flexibility
-of our favourite OS?  What would have to change to make it happen, and
-is it doable?
-
-
-Finally, a few background links:
-
-* WikiPedia on Non-volatile memory; especially review the "Upcoming"
-  technologies FeRAM, MRAM, NRAM, PRAM, and so on:
-  http://en.wikipedia.org/wiki/Non-volatile_memory
-
-* "Towards Zero-power Computing" at GroenGemak:
-  http://groengemak.nl/en/article/2008-05-19-10-05.toekomst-computer.html
-
-
-Yours truly,
-
-Rick van Rein
-GroenGemak
-http://groengemak.nl/
 
