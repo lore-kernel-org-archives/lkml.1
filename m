@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757977AbYFBHSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYFBHUQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757977AbYFBHSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYFBHSB
+	id S1758055AbYFBHUQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:20:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYFBHUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:18:01 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56286 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611AbYFBHSB (ORCPT
+	Mon, 2 Jun 2008 03:20:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42656 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750936AbYFBHUC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:18:01 -0400
-Date: Mon, 2 Jun 2008 09:17:59 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-cc: Arnd Bergmann <arnd@arndb.de>, Jamie Lokier <jamie@shareable.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@lst.de
-Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support 
-In-Reply-To: <200806020437.m524bWiW027508@agora.fsl.cs.sunysb.edu>
-Message-ID: <alpine.LNX.1.10.0806020857580.4055@fbirervta.pbzchgretzou.qr>
-References: <200806020437.m524bWiW027508@agora.fsl.cs.sunysb.edu>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Jun 2008 03:20:02 -0400
+Date: Mon, 2 Jun 2008 08:04:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ata: ahci: power off unused ports
+Message-ID: <20080602080440.25fc663c@core>
+In-Reply-To: <4842F5A8.9020708@garzik.org>
+References: <20080508161008.59361de5@appleyard>
+	<20080527030854.GC7515@mit.edu>
+	<20080527143202.4bab5bf0@appleyard>
+	<20080527225926.GE6843@mit.edu>
+	<20080527163251.04054a74@appleyard>
+	<20080531080015.GG5405@ucw.cz>
+	<4842F5A8.9020708@garzik.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> If you are talking about SATA -- incorrect.
+> 
+> The patch deals with policy, and the user MUST have the ability to 
+> control this stuff.  Otherwise you create a situation where the user 
+> might be denied hotplug use in valid cases, or similar negative situations.
 
-On Monday 2008-06-02 06:37, Erez Zadok wrote:
->> Jan Engelhardt wrote:
->> > On Sunday 2008-06-01 08:02, David Newall wrote:
->> >>   
->> >>> I prefer the technique of union of a tmpfs over some other fs
->> >>
->> >> You're right in principle, but unfortunately there is to date no working
->> >> implementation of union mounts. Giving users the option of using an
->> >> existing file system with a few tweaks can only be better than than
->> >> forcing them to use hacks like unionfs.
+The policy isn't however complicated. Tejun added the stuff for forcing
+cable type and mode on setup and has therefore written all the per device
+setup code we might need. Alternatively a single
 
->Folks, I've said it before: unioning is a deceptively simple idea in
->principle, and &^@%*$&^@ hard in practice.  And anyone who thinks otherwise
->is welcome to write a *versatile* unioning implementation on their own. Once
->you get through all corner cases and satisfy all the features which users
->want, you have a complex large file system.
->[...]
+	foo=1/0
 
-To the original posters:
+option has been fine for acpi and will do fine for this. Total additional
+cost - 1 line.
 
-I urge those who do believe {au,union}fs is too fat to go and build
-their unioning into their on-disk filesystems, then let users run it
-(remark: iff you can convince (or force) them why they should not be
-using existing fs), let users report issues and iron it out for
-perhaps 2-3 years, and then see how much your implementation has
-grown. That is, if you actually added code (see remark 1).
-
-About last year (June 2007), SLAX sought a solution that enhances
-VFAT with UNIX permissions -- much like the old umsdosfs. A kernel
-solution was initially preferred by Tomas (SLAX developer), yet I
-(who got to write posixovl then) went for FUSE. It was about 20 KB
-when it was moderately usable. The end result? Posixovl is a 46 KB C
-file today. For userspace code. I bet it would be much more if it was
-in-kernel.
-
-Take that as a hint when developing your fs-specific unioning.
+Alan
