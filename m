@@ -1,95 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbYFBV71@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYFBWF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbYFBV71 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 17:59:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYFBV7U
+	id S1753872AbYFBWF1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 18:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYFBWFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 17:59:20 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:16606 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbYFBV7R (ORCPT
+	Mon, 2 Jun 2008 18:05:15 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:26890 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815AbYFBWFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 17:59:17 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5308"; a="3447199"
-Message-ID: <48446D46.2010903@qualcomm.com>
-Date: Mon, 02 Jun 2008 14:59:34 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 2 Jun 2008 18:05:14 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my ALSA intel8x0 sound card regression
+Date: Mon, 2 Jun 2008 16:05:13 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Avuton Olrich <avuton@gmail.com>, Rene Herman <rene.herman@gmail.com>,
+       Len Brown <len.brown@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com> <3aa654a40806012025ic6b9d0dlec05211bad782581@mail.gmail.com> <484444A4.80206@keyaccess.nl>
+In-Reply-To: <484444A4.80206@keyaccess.nl>
 MIME-Version: 1.0
-To: Dimitri Sivanich <sivanich@sgi.com>
-CC: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, "Derek L. Fults" <dfults@sgi.com>,
-       devik <devik@cdi.cz>, Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Randy.Dunlap" <rddunlap@osdl.org>, suresh.b.siddha@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
- have realtime uses)
-References: <20080601213019.14ea8ef8.pj@sgi.com> <20080602164203.GA2477@sgi.com> <48443E66.6060205@qualcomm.com> <20080602214151.GA7072@sgi.com>
-In-Reply-To: <20080602214151.GA7072@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806021605.14519.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dimitri Sivanich wrote:
-> On Mon, Jun 02, 2008 at 11:39:34AM -0700, Max Krasnyansky wrote:
->> Ah, I know exactly what you're talking about.  However this is non-issue these
->> days. In order to clear cpuN from all the timers and other things all you need
->> to do is to bring that cpu off-line
->> 	echo 0 > /sys/devices/cpu/cpuN/online
->> and then bring it back online
->> 	echo 1 > /sys/devices/cpu/cpuN/online
+On Monday 02 June 2008 01:06:12 pm Rene Herman wrote:
+> On 02-06-08 05:25, Avuton Olrich wrote:
 > 
-> Although it seemed like something of a hack, we experimented with this
-> previously and found that it didn't work reliably.  I'm sure things
-> have gotten better, but will need to revisit.
-Yes it used to be somewhat unstable. These days it solid. I'm using it on a
-wide range of systems: uTCA Core2Duo, NUMA dual-Opteron, 8way Core2, etc. And
-things work as expected.
-I forgot to mention that it's not just timers. There are also work queues and
-delayed work that have similar side effects (ie they stick to the CPU they
-were originally scheduled on). Hotplug cleans all that stuff very nicely.
+> > On Sun, Jun 1, 2008 at 9:20 AM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> >> On 01-06-08 16:42, Avuton Olrich wrote:
+> >>
+> >>> My intel8x0 card stops working due to a regression; bisection and
+> >>> information below.
 
-btw I would not call it a hack. ie Using cpu hotplug for isolation purposes.
-By definition hotplug must be able to migrate _everything_ running on the cpuN
-when it goes off-line, otherwise it simply won't work. And that's exactly what
-we need for the isolation too (migrate everything running on a cpuN to other
-cpus).
+Thank you very much for doing all the work to bisect this and write
+up such a complete report.
 
->> There are currently a couple of issues with scheduler domains and hotplug
->> event handling. I do have the fix for them, and Paul had already acked it.
-> 
-> Until a proven reliable method for doing this is firmly in place (as
-> firmly as anything is, anyway),  I don't think we should be removing
-> the alternative.
-Agree. That's why I submitted the removal patch along with those fixes ;-).
+Can you try the patch below, please?
 
->> initialization). See my latest "default IRQ affinity" patch.
-> Nice idea.
-Thanx.
+PNP: mark resources that conflict with PCI devices "disabled"
 
->> Also isolcpus= conflicts with the scheduler domains created by the cpusets.
-> 
-> What sort of conflict are we talking about? I assume once you've begun
-> setting up cpusets that include those cpus that you're intention is to change
-> the original behavior.
-That exactly where the conflict is. Lets say you boot with isolcpus=2 (ie cpu2
-is not load balanced), then you add cpu2 along with cpu3 to cpuset N and
-enable load balancing in cpusetN. In that case cpu2 will still remain
-unbalanced which is definitely a wrong behaviour.
+Both the PNP/PCI conflict detection quirk and the PNP system
+driver must use the same mechanism to mark resources as disabled.
 
-Max
+I think it's best to keep the resource and to keep the type bit
+(IORESOURCE_MEM, etc), so that we match the list from firmware
+as closely as possible.
 
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-
-
-
+Index: work11/drivers/pnp/quirks.c
+===================================================================
+--- work11.orig/drivers/pnp/quirks.c	2008-06-02 14:59:03.000000000 -0600
++++ work11/drivers/pnp/quirks.c	2008-06-02 15:42:35.000000000 -0600
+@@ -286,7 +286,7 @@ static void quirk_system_pci_resources(s
+ 					pci_name(pdev), i,
+ 					(unsigned long long) pci_start,
+ 					(unsigned long long) pci_end);
+-				res->flags = 0;
++				res->flags |= IORESOURCE_DISABLED;
+ 			}
+ 		}
+ 	}
+Index: work11/drivers/pnp/system.c
+===================================================================
+--- work11.orig/drivers/pnp/system.c	2008-06-02 14:58:56.000000000 -0600
++++ work11/drivers/pnp/system.c	2008-06-02 15:44:36.000000000 -0600
+@@ -81,7 +81,7 @@ static void reserve_resources_of_dev(str
+ 	}
+ 
+ 	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
+-		if (res->flags & IORESOURCE_UNSET)
++		if (res->flags & IORESOURCE_DISABLED)
+ 			continue;
+ 
+ 		reserve_range(dev, res->start, res->end, 0);
