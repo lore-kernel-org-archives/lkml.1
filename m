@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbYFBJYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbYFBJZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753831AbYFBJYg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 05:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYFBJY0
+	id S1754739AbYFBJZM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 05:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYFBJY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 05:24:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39609 "EHLO mx2.mail.elte.hu"
+	Mon, 2 Jun 2008 05:24:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60585 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750735AbYFBJYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 05:24:25 -0400
-Date: Mon, 2 Jun 2008 11:23:53 +0200
+	id S1751324AbYFBJY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 05:24:58 -0400
+Date: Mon, 2 Jun 2008 11:24:37 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Patrick McManus <mcmanus@ducksong.com>,
-       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Message-ID: <20080602092353.GB22060@elte.hu>
-References: <20080529112257.GA18130@elte.hu> <20080530181839.GA31915@elte.hu> <20080531060947.GA26441@elte.hu> <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi> <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi> <20080531125428.GA22111@elte.hu> <Pine.LNX.4.64.0805311555570.2329@wrl-59.cs.helsinki.fi> <20080531163501.GB22607@elte.hu> <1212273974.28319.107.camel@tng> <48423C0A.1090104@cosmosbay.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
+Subject: Re: [PATCH] x86: IO-APIC - use NMI_NONE instead of numeric constant
+Message-ID: <20080602092437.GC22060@elte.hu>
+References: <20080529183230.GC6937@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48423C0A.1090104@cosmosbay.com>
+In-Reply-To: <20080529183230.GC6937@cvg>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,49 +36,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric Dumazet <dada1@cosmosbay.com> wrote:
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
->>>  22003 write(3, "distccd[22003] (dcc_listen_by_ad"..., 62) = 62
->>>  22003 listen(4, 10)                     = 0
->>>  22003 setsockopt(4, SOL_TCP, TCP_DEFER_ACCEPT, [1], 4) = 0
->>>
->>> i'll queue up your reverts for testing in -tip.
+> Not sure but maybe it is better to use NMI_DISABLED, will take a look. 
+> But for now this patch is not change anything in logic so it will not 
+> hurt/broke the kernel. For most cases nmi_watchdog assignment is by 
+> one of NMI_* macro so I think there it make sense too.
 
-I turned off localhost distcc two days ago and there has not been a 
-single hung socket since then, so we now know it for sure that without 
-localhost distcc connections, -tip's QA will not produce any hung 
-sockets in about 1000 random-kernel-build+boot iterations.
-
-i've added those reverts this morning and added back the localhost 
-distcc rules - we'll see whether the hung sockets are back.
-
-> I believe Ingo problems come on long lived sockets (were many bytes 
-> were exchanged between the peers), so I dont think DEFER_ACCEPT is the 
-> cullprit.
->
-> I suggest to enable CONFIG_TIMER_STATS and to check timers, because 
-> /proc/net/tcp can display apparently large timer values when the timer 
-> is elapsed (jiffies > icsk->icsk_timeout) and 
-> jiffies_to_clock_t(timer_expires - jiffies) is then overflowing doing 
-> a multiply and a divide.
-
-i'm wondering whether your suspicion on broken TCP timers is consistent 
-with the symptoms i've seen: the hung sockets clearly produced periodic 
-packet activity every 180 seconds, up to 8 hours, without ever changing 
-their receive of send queue. So at least a part of the TCP timer 
-mechanism for that specific stuck socket was working fine.
-
-is there no sysctl or other debug mechanism to somehow get its full TCP 
-state and the reasons for why it is stuck? I'm wondering how you debug 
-broken TCP state machines without enabling testers to be able to dump 
-all state and passing it to developers.
-
-I have a clearly reproducable testcase and i'd like to help out, but the 
-whole effort is stalled on 'not enough information' it appears. Doing 
-random reverts might help in truly helpless situations where a bug has 
-no debuggable state - but this situation seems really routine to me: 
-it's very difficult to trigger the bug but once it triggers the bug 
-scenario is stable and analyzable. I'd be glad to test any 
-instrumentation patch that makes similar scenarios more analyzable.
+applied to -tip, thanks Cyrill.
 
 	Ingo
