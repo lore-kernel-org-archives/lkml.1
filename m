@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbYFBR6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYFBSCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbYFBR6l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 13:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYFBR6U
+	id S1754839AbYFBSCk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 14:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbYFBSCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 13:58:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:56433 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753424AbYFBR6S convert rfc822-to-8bit (ORCPT
+	Mon, 2 Jun 2008 14:02:32 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58319 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752033AbYFBSCb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 13:58:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,578,1204531200"; 
-   d="scan'208";a="335048019"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 2 Jun 2008 14:02:31 -0400
+Date: Mon, 2 Jun 2008 14:02:30 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Abhishek Sagar <sagar.abhishek@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] ftrace: prevent freeing of all failed updates
+In-Reply-To: <4842CB9A.1080800@gmail.com>
+Message-ID: <Pine.LNX.4.58.0806021401340.10366@gandalf.stny.rr.com>
+References: <4842CB9A.1080800@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [patch 01/41] cpu_alloc: Increase percpu area size to 128k
-Date: Mon, 2 Jun 2008 10:58:17 -0700
-Message-ID: <1FE6DD409037234FAB833C420AA843EC0177822B@orsmsx424.amr.corp.intel.com>
-In-Reply-To: <20080530040010.806208523@sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 01/41] cpu_alloc: Increase percpu area size to 128k
-Thread-Index: AcjCCaxS8MOkmh28T3SXEj23jssv7gC0CzJA
-References: <20080530035620.587204923@sgi.com> <20080530040010.806208523@sgi.com>
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Christoph Lameter" <clameter@sgi.com>, <akpm@linux-foundation.org>
-Cc: <linux-arch@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, "Mike Travis" <travis@sgi.com>
-X-OriginalArrivalTime: 02 Jun 2008 17:58:17.0969 (UTC) FILETIME=[3CA91E10:01C8C4DA]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The per cpu allocator requires more per cpu space and we are already near
-> the limit on IA64. Increase the maximum size of the IA64 per cpu area from
-> 64K to 128K.
 
-> -#define PERCPU_PAGE_SHIFT	16	/* log2() of max. size of per-CPU area */
-> +#define PERCPU_PAGE_SHIFT	17	/* log2() of max. size of per-CPU area */
 
-Don't you need some more changes to the alt_dtlb_miss handler in
-ivt.S for this to work?  128K is not a supported pagesize on any
-processor model.
+On Sun, 1 Jun 2008, Abhishek Sagar wrote:
+5B> @@ -611,18 +612,33 @@ static int __ftrace_update_code(void *ignore)
+>
+>  	/* No locks needed, the machine is stopped! */
+>  	for (i = 0; i < FTRACE_HASHSIZE; i++) {
+> -		if (hlist_empty(&ftrace_hash[i]))
+> -			continue;
+> +		/* all CPUS are stopped, we are safe to modify code */
+> +		hlist_for_each_entry_safe(p, t, n, &ftrace_hash[i], node) {
+> +			/* Skip over failed records which have not been
+> +			 * freed. */
+> +			if (p->flags & FTRACE_FL_FAILED)
+> +				continue;
+>
+> -		head = ftrace_hash[i];
+> -		INIT_HLIST_HEAD(&ftrace_hash[i]);
+> +			/* Unconverted records are always at the head of the
+> +			 * hash bucket. Once we encounter a converted record,
+> +			 * simply skip over to the next bucket. Saves ftraced
+> +			 * some processor cycles (ftrace does its bid for
+> +			 * global warming :-p ). */
+> +			if (p->flags & (FTRACE_FL_CONVERTED))
+> +				break;
 
--Tony
+If we unload a module and reload it, will it ever get converted again?
+
+-- Steve
