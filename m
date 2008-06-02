@@ -1,89 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYFBXiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbYFBXp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbYFBXiP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 19:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbYFBXhy
+	id S1755772AbYFBXp2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 19:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYFBXpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 19:37:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:20728 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753905AbYFBXhx (ORCPT
+	Mon, 2 Jun 2008 19:45:16 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46892 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbYFBXpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 19:37:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iV+aNAO14uuZn5JMlLW0ALD+WmVYUdiOa7EhXpXIO91JcMSGAaBpQ5gJagpy5mUMJvGHlNj99wxD+sMLdEk2Z+818uUHysFIeX+hVbyHr1kqTZpgw3QjOhLfZKSMfw9JHHfkrGlsTTP7JhYwAoO8pco8GR/lzmzUVEg9fM72EjA=
-Message-ID: <9d732d950806021637q5527398boad7cb54ae5f26662@mail.gmail.com>
-Date: Tue, 3 Jun 2008 08:37:52 +0900
-From: "Toshiharu Harada" <haradats@gmail.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: [patch 01/15] security: pass path to inode_create
-Cc: "Miklos Szeredi" <miklos@szeredi.hu>, hch@infradead.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
-       casey@schaufler-ca.com, agruen@suse.de, jjohansen@suse.de,
-       penguin-kernel@i-love.sakura.ne.jp, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080602165223.GA9121@2ka.mipt.ru>
+	Mon, 2 Jun 2008 19:45:14 -0400
+Date: Tue, 3 Jun 2008 00:44:38 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
+In-Reply-To: <Pine.LNX.4.64.0805302017580.16427@blonde.site>
+Message-ID: <Pine.LNX.4.64.0806030000110.9919@blonde.site>
+References: <48402DAA.60202@linux.intel.com> <Pine.LNX.4.64.0805302017580.16427@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080602091341.GA8011@infradead.org>
-	 <20080602093630.GA25254@infradead.org>
-	 <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu>
-	 <20080602104203.GA21898@infradead.org>
-	 <E1K37hN-00039y-5o@pomaz-ex.szeredi.hu>
-	 <20080602150517.GB22400@2ka.mipt.ru>
-	 <9d732d950806020831h1b8aeabag9cb6db8e16bac971@mail.gmail.com>
-	 <20080602155152.GA18257@2ka.mipt.ru>
-	 <9d732d950806020929v1ece55ecobabc418425c1e044@mail.gmail.com>
-	 <20080602165223.GA9121@2ka.mipt.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/3 Evgeniy Polyakov <johnpol@2ka.mipt.ru>:
-> On Tue, Jun 03, 2008 at 01:29:33AM +0900, Toshiharu Harada (haradats@gmail.com) wrote:
->> > For those who care exactly about path, they do not want to have security
->> > checks for object, which was there. As addition, selinux
->> > maintainer/architector opinion is a bit biassed :)
->>
->> This is a very important point.
->>
->> The world of Linux consists of the two pieces, userland and kernel.
->> Objects have names and inodes. Information flow control need to be
->> handled using inodes (labels), but pathnames need to be
->> controlled because objects are represented by names in userland.
->> Both pieces work together. Vfsmount is a missing piece.
->>
->> AppArmor and TOMOYO Linux are not claiming they are better MAC for Linux.
->> (that's how I understood Stephen's words. I am agreed)
->> So people don't have to eliminate pathname-based MACs.
->
-> They can, if really want, to get vfsmount.
->
-> A hint: there is security_sb_check_sb() and security_sb_post_addmount().
-> Store that vsmount in private cache, search the very root dentry for any inode
-> inside that cache of vfsmounts and get a pointer. Looks a bit ugly
-> though, and slower (really a bit), but it can solve a problem.
-> It is also possible to implement own path cache isntead of using dentry
-> cache, since apparently dentry is not needed neither to apparmor nor to
-> tomoyo, but path info (in own format). And that will be even better
-> solution, since it will be exactly what selinux does with its data.
-> Only to different objects. This will complicate move/rename and other
-> pathname manipulation. There are of course underwater rocks, but they
-> can be worked out with existing inode-biased approach.
->
-> --
->        Evgeniy Polyakov
+On Fri, 30 May 2008, Hugh Dickins wrote:
+> On Fri, 30 May 2008, Arjan van de Ven wrote:
+> > 
+> > Rank 7: set_page_address (oops)
+> > 	Reported 53 times (65 total reports)
+> > 	crash coming from flush_all_zero_pkmaps; was this fixed by Hugh the
+> > 	other day?
+> 
+> No, not at all.  But I'll have a little ponder over it.
+> 
+> > 	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25.
+> > 	More info:
+> > 	http://www.kerneloops.org/searchweek.php?search=set_page_address
 
-Actually, another option has been suggested last month.
-http://lkml.org/lkml/2008/4/9/93
+Though I've spent quite a while poring over it, I regret to say I
+haven't got much beyond the obvious with this BUG_ON(!PageHighMem)
+in set_page_address() called from flush_all_zero_pkmaps().
 
-Miklos' patches seem to me well suited after vfs cleanup jobs, but...
+It appears to be a corruption of the start of the pkmap_page_table,
+but not a random corruption: entries of the form 0x378xxxxx through
+0x37Bxxxxxx where they need to be 0x38xxxxxx or more to be highmem.
+(I say appears because the compiler is reusing %eax a lot, there's
+no trace on the stack or in registers of what pte was actually read.)
 
--- 
-Toshiharu Harada
-haradats@gmail.com
+In every case except the 17141 nfsd one, it's found at the start of
+the table, when flush_all_zero_pkmaps() is called for the very first
+time (I'm guessing that from the fact that they're all failing on the
+second entry, which preincrementation of the index made the first one
+used).  Whereas 17141 nfsd finds a 0x00000xxx some way into the page
+table, quite possibly later on: may have a very different cause.
+
+Do we have any idea whether all or most of these come from a single
+machine?  That would of course be a very different (less interesting)
+story from if they're spread out over lots of machines.
+
+I didn't notice anything suspicious in the Fedora patches to 2.6.25,
+but I haven't heard (Google hasn't shown) any such problem outside
+of these kerneloops from Fedora 9.  Is it showing up on Rawhide at
+all?  If so, then we could devise some debug to include in coming
+kernels to help shed more light on it.
+
+Veering off at a tangent away from the oops: I was rather sobered
+to see all those traces of execve using kmap, I thought we were
+avoiding kmap like BKL in common paths these days (though it is
+convenient for symlinks).  Would a patch something like that
+below, copying the filemap.c trick, be welcome?
+
+Hugh
+
+--- 2.6.26-rc4/fs/exec.c	2008-05-26 20:00:39.000000000 +0100
++++ linux/fs/exec.c	2008-06-02 11:18:32.000000000 +0100
+@@ -33,6 +33,7 @@
+ #include <linux/string.h>
+ #include <linux/init.h>
+ #include <linux/pagemap.h>
++#include <linux/hardirq.h>
+ #include <linux/highmem.h>
+ #include <linux/spinlock.h>
+ #include <linux/key.h>
+@@ -396,7 +397,7 @@ static int copy_strings(int argc, char _
+ {
+ 	struct page *kmapped_page = NULL;
+ 	char *kaddr = NULL;
+-	unsigned long kpos = 0;
++	unsigned long kpos = ~PAGE_MASK;
+ 	int ret;
+ 
+ 	while (argc-- > 0) {
+@@ -436,28 +437,38 @@ static int copy_strings(int argc, char _
+ 			str -= bytes_to_copy;
+ 			len -= bytes_to_copy;
+ 
+-			if (!kmapped_page || kpos != (pos & PAGE_MASK)) {
+-				struct page *page;
+-
+-				page = get_arg_page(bprm, pos, 1);
+-				if (!page) {
+-					ret = -E2BIG;
+-					goto out;
+-				}
+-
++			if (kpos != (pos & PAGE_MASK)) {
+ 				if (kmapped_page) {
+ 					flush_kernel_dcache_page(kmapped_page);
+-					kunmap(kmapped_page);
++					if (in_atomic())
++						kunmap_atomic(kaddr, KM_USER0);
++					else
++						kunmap(kmapped_page);
+ 					put_arg_page(kmapped_page);
+ 				}
+-				kmapped_page = page;
+-				kaddr = kmap(kmapped_page);
++				kmapped_page = get_arg_page(bprm, pos, 1);
++				if (!kmapped_page) {
++					ret = -E2BIG;
++					goto out;
++				}
++				kaddr = kmap_atomic(kmapped_page, KM_USER0);
+ 				kpos = pos & PAGE_MASK;
+ 				flush_arg_page(bprm, kpos, kmapped_page);
+ 			}
+-			if (copy_from_user(kaddr+offset, str, bytes_to_copy)) {
+-				ret = -EFAULT;
+-				goto out;
++			if (in_atomic()) {
++				if (need_resched() ||
++				    __copy_from_user_inatomic(kaddr + offset,
++							str, bytes_to_copy)) {
++					kunmap_atomic(kaddr, KM_USER0);
++					kaddr = kmap(kmapped_page);
++				}
++			}
++			if (!in_atomic()) {
++				if (copy_from_user(kaddr + offset,
++							str, bytes_to_copy)) {
++					ret = -EFAULT;
++					goto out;
++				}
+ 			}
+ 		}
+ 	}
+@@ -465,7 +476,10 @@ static int copy_strings(int argc, char _
+ out:
+ 	if (kmapped_page) {
+ 		flush_kernel_dcache_page(kmapped_page);
+-		kunmap(kmapped_page);
++		if (in_atomic())
++			kunmap_atomic(kaddr, KM_USER0);
++		else
++			kunmap(kmapped_page);
+ 		put_arg_page(kmapped_page);
+ 	}
+ 	return ret;
