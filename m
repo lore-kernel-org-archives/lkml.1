@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbYFBFB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYFBFM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbYFBFB7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 01:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYFBFBs
+	id S1754244AbYFBFM2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 01:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbYFBFMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 01:01:48 -0400
-Received: from mga06.intel.com ([134.134.136.21]:25884 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751225AbYFBFBs (ORCPT
+	Mon, 2 Jun 2008 01:12:19 -0400
+Received: from mailout03.t-online.de ([194.25.134.81]:40277 "EHLO
+	mailout03.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748AbYFBFMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 01:01:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,576,1204531200"; 
-   d="scan'208";a="389273640"
-Subject: Re: [Bug #10638] sysbench+mysql(oltp, readonly) 30% regression
-	with 2.6.26-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20080530094541.GA32508@elte.hu>
-References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
-	 <7wuznNhcUqC.A.IMB.TtBMIB@albercik>
-	 <1211131278.6463.7.camel@lappy.programming.kicks-ass.net>
-	 <1211135856.6463.22.camel@lappy.programming.kicks-ass.net>
-	 <1211160283.3177.134.camel@ymzhang> <1211176540.8292.3.camel@twins>
-	 <1211179767.3177.166.camel@ymzhang>  <20080530094541.GA32508@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 02 Jun 2008 12:57:37 +0800
-Message-Id: <1212382657.3177.319.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 2 Jun 2008 01:12:18 -0400
+Message-ID: <48438126.3080308@t-online.de>
+Date: Mon, 02 Jun 2008 07:12:06 +0200
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080503)
+MIME-Version: 1.0
+To: Joe Peterson <joe@skyrush.com>
+CC: linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
+Subject: Re: 2.6.25.3: su gets stuck for root
+References: <48434D57.6030801@skyrush.com>
+In-Reply-To: <48434D57.6030801@skyrush.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ID: EP1RCmZ1QhUJ7hr672584KvbD11XWhqbxvJa-A0i06Fd+4ak2nMc0Ktcr9c6lJZgL5
+X-TOI-MSGID: 4a4ddec8-d3b4-4ab9-95bc-eb927efda3af
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Joe,
 
-On Fri, 2008-05-30 at 11:45 +0200, Ingo Molnar wrote:
-> Yanmin,
+Joe Peterson wrote:
+> Hi Harold,
 > 
-> could you please check whether the performance regressions you noticed 
-> are now fixed in upstream -git? [make sure merge a7f75d3bed28 is 
-> included]
+> Doing "ps" while hung shows stty in the "T" state.  "killall -9 stty"
+> releases it.
 > 
-> i believe most of the regressions to 2.6.25 you found should be 
-> addressed - if not, please let me know which one is still hurting.
-Most regressions are fixed.
 
-I tested the latest git tree on a couple of machines. Below results compare with
-2.6.25 result except special comments.
+Does strace give you the same output if you attach it to the blocking
+stty (strace -p $pid)?
 
-
-1) ﻿sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1:
-﻿http://bugzilla.kernel.org/show_bug.cgi?id=10638
-It's fixed completely.
-
-2) ﻿volanoMark regression with kernel 2.6.26-rc1:
-﻿http://bugzilla.kernel.org/show_bug.cgi?id=10634
-﻿It's fixed completely.
-
-3) ﻿hackbench regression with 2.6.26-rc2 on tulsa machine:
-﻿http://bugzilla.kernel.org/show_bug.cgi?id=10761
-On 16-thread tulsa machine, hackbench result becomes 34 seconds. 2.6.26-rc2's
-result is 40 seconds and 2.6.26-rc1's is 30 seconds. So there is much improvement.
-On another Montvale machine(supporting multi-threading,
-but I don't turn on it in BIOS), hackbench has the similiar behavior.
-
-4) aim7 regression with 2.6.26-rc1:
-With Linus's patch which was accepted into 2.6.26-rc2, most aim7 regression disappeared,
-but about 6% regression on 16-core tigerton still existed. If just applying Linus' patch
-against 2.6.26-rc1, all regression of aim7 disappeared. So there is something else changed
-in 2.6.26-rc2.
-I retested aim7 against the latest git tree and all aim7 regression disappeared.
-
-5) Kbuild regression 3%~6% with 2.6.26-rc1:
-I run kbuild in a loop of 25 or more. On some machines, the testing script drops page cache
-at the begining of every loop, and doesn't drop caches on other machines. The second testing
-method result is stable, but the first one's result isn't stable. The regression is about the second
-method.
-I didn't report it because bisect located 2 groups of patches.
-With the latest git, I retested kbuild and all regression with the second method disappears.
+I got
 
 
+:
+ioctl(0, SNDCTL_TMR_START or TCSETS, {B38400 opost isig icanon echo ...}) = ? ERESTARTSYS (To be restarted)
+--- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
+--- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
+:
+
+
+Regards
+
+Harri
 
