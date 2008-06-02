@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762428AbYFBOSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762501AbYFBOTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762428AbYFBOSW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 10:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbYFBOSJ
+	id S1762501AbYFBOTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 10:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbYFBOTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 10:18:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57860 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755340AbYFBOSI (ORCPT
+	Mon, 2 Jun 2008 10:19:45 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:50160 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752592AbYFBOTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 10:18:08 -0400
-Date: Mon, 2 Jun 2008 15:02:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
-Message-ID: <20080602150257.54692f35@core>
-In-Reply-To: <20080602092551.GC26854@enneenne.com>
-References: <20080601161510.GA26854@enneenne.com>
-	<20080602075113.60d0fdf8@core>
-	<20080602092551.GC26854@enneenne.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jun 2008 10:19:45 -0400
+X-BigFish: VPS-28(zz98dR168aJ62a3L7efVzz10d3izzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K1UAGD-02-BY5-01
+Date: Mon, 2 Jun 2008 16:19:29 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD
+	Barcelona
+Message-ID: <20080602141928.GH23679@erda.amd.com>
+References: <20080526180616.GB2752@erda.amd.com> <20080528165813.8D8E5814C@erda.amd.com> <20080528120253.26fcdb9d@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080528120253.26fcdb9d@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 02 Jun 2008 14:19:29.0192 (UTC) FILETIME=[AB4CBA80:01C8C4BB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It could be a bit better... I did as above since I supposed that you
-> wished all PPS code should be removed from serial port code.
+Arjan,
 
-Ideally. But if it is genuinely the case that the serial port IRQ handler
-in some cases needs to do
+On 28.05.08 12:02:53, Arjan van de Ven wrote:
+> Comment 1:
+> Can we make the 256/4096 thing conditional on actually having the
+> feature somehow? (while not making the code TOO ugly)
 
-my_interrupt() {
-	get_timestamp()
-	frob_with_hardware()
-	ld->dcd_change(blah, timestamp)
-}
+In the first version I had 2 functions also. The patch have had lots
+of duplicate code or inline functions. Since the conditional check is
+already in raw_pci_* I decided to not implement an additional check
+and use only one function.
 
-then that is still fairly clean and more importantly actually appears to
-work. I'd avoid all the ifdefs with this in the serial drivers that need
-more accuracy:
-
+int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
+                                                int reg, int len, u32 *val)
 {
-	struct timespec ts;
-	if (ld->dcd_change)
-		getnstimeofday(&ts);
-	existing tty stuff
-	if (ld->dcd_change)
-		ld->dcd_change(tty, status, &ts);
+	if (reg < 256 && raw_pci_ops)
+	   return raw_pci_ops->read(domain, bus, devfn, reg, len, val);
+	   if (raw_pci_ext_ops)
+	      return raw_pci_ext_ops->read(domain, bus, devfn, reg, len, val);
+	      return -EINVAL;
 }
 
-And in ld->dcd_change do
+That leaves as a difference to the basic access is the shift left of
+bits 8:11 in the PCI_CONF1_ADDRESS macro. Functional the new macro is
+the same and the overhead for this is small. So I see keeping all code
+in one function as the best solution.
 
-	struct timespec myts;
-	/* Caller passed NULL meaning 'do your own timestamp' */
-	if (ts == NULL) {
-		ts = &myts;
-		getnstimeofday(&myts);
-	}
+> Comment 2: 
+> The cpu_has_XXX is a bit dubious; while it's dependent on your cpu
+> model right now, I'm a bit hesitant to consider a PCI feature something
+> that belongs in the cpu_has_XXX namespace. (Yes I know PCI is moving
+> into the cpu package, but on a logical level it seems just the wrong
+> place).
+> Do we need a platform_has_XXX namespace for things like this?
 
-so for uart that would
+An alternative implementation would be here to use a check something
+like pci_probe & PCI_HAS_EXT_CFG. If needed, I will send an updated
+patch.
 
-	uart_dcd_change(struct uart_port *port, unsigned int status,
-					struct timespec *ts) {
-	{
-		...
-	}
+-Robert
 
-passing the timestamp from the ttys own IRQ handler
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
