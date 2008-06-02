@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbYFBLVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbYFBLYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752046AbYFBLVT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYFBLVG
+	id S1754870AbYFBLYV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYFBLYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:21:06 -0400
-Received: from www.sophics.cz ([92.61.80.24]:41369 "EHLO www.sophics.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbYFBLVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:21:05 -0400
-X-Greylist: delayed 1559 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Jun 2008 07:21:04 EDT
-Message-ID: <4843D179.7070809@sophics.cz>
-Date: Mon, 02 Jun 2008 12:54:49 +0200
-From: Petr Stehlik <pstehlik@sophics.cz>
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	Mon, 2 Jun 2008 07:24:09 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52329 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751647AbYFBLYI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 07:24:08 -0400
+Date: Mon, 2 Jun 2008 05:23:51 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
+       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
+       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Message-ID: <20080602112350.GB8562@parisc-linux.org>
+References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       =?UTF-8?B?77+9?= <rene.scharfe@lsrfire.ath.cx>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] msdos fs: remove unsettable atari option
-References: <1211717062.5782.16.camel@ubuntu> <87ve12s849.fsf@duaron.myhome.or.jp> <20080601221035.GA9107@nineveh.local> <87zlq4rd30.fsf@duaron.myhome.or.jp> <Pine.LNX.4.64.0806020930170.7351@anakin>
-In-Reply-To: <Pine.LNX.4.64.0806020930170.7351@anakin>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
->>> Geert Uytterhoeven has a patch in his POSTPONED queue that is supposed
->>> to fix Atari FAT.  I can't speak to whether it works or why it's
->>> postponed, but it seems to compile.
->> I see. Although I don't know the patch, I'd like to add this part to
->> Geert's patch if possible. And when the patch can be posted, we can
->> re-add this part again.
->>
->> Geert, what do you think?
-> 
-> It's in POSTPONED state because nobody speaks up for/against it.
-> Personally, I don't know how much it is (still) needed...
-> But a few years ago somebody contacted me that he used it succesfully
-> on PA-RISC and i386 ;-)
-> 
-> BTW, the patch is
-> http://linux-m68k-cvs.ubb.ca/~geert/linux-m68k-patches-2.6/POSTPONED/134-atari-fat.diff
-> 
-> Atari people, I think now is the time to let it live or die...
+On Mon, Jun 02, 2008 at 09:02:14AM +0200, Miklos Szeredi wrote:
+> I maintain, that moving lsm hooks into callers is insane.  And that's
+> *the* sanest alternative that anybody has been able to come up with to
+> passing down vfsmounts into the vfs.
 
-The patch looks good, how can I let it live?
+Not so.  I showed how pathname-based security could be done *without*
+passing vfsmounts down at all.  Unfortunately, you weren't interested.
 
-Petr
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
