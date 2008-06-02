@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYFBKEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbYFBKEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758015AbYFBKEX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYFBKEQ
+	id S1752149AbYFBKEs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbYFBKEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:04:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:54196 "EHLO mail.goop.org"
+	Mon, 2 Jun 2008 06:04:37 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45476 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751531AbYFBKEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:04:15 -0400
-Message-ID: <4843C578.6060201@goop.org>
-Date: Mon, 02 Jun 2008 11:03:36 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1752391AbYFBKEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:04:36 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Date: Mon, 2 Jun 2008 12:04:13 +0200
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
+       eparis@redhat.com, casey@schaufler-ca.com, jjohansen@suse.de,
+       penguin-kernel@i-love.sakura.ne.jp, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+References: <20080529134903.615127628@szeredi.hu> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602091341.GA8011@infradead.org>
+In-Reply-To: <20080602091341.GA8011@infradead.org>
 MIME-Version: 1.0
-To: Isaku Yamahata <yamahata@valinux.co.jp>
-CC: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 10 of 12] xen: implement save/restore
-References: <patchbomb.1211550067@localhost> <9e8d06e5ae8024829836.1211550077@localhost> <20080602092144.GA22955%yamahata@valinux.co.jp>
-In-Reply-To: <20080602092144.GA22955%yamahata@valinux.co.jp>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+X-Length: 1771
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200806021204.16615.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isaku Yamahata wrote:
-> What is the purpose of load_cr3() here?
-> I'd like to make this load_cr3() more arch generic for ia64 support.
-> (or eliminate it if possible)
->   
+On Monday 02 June 2008 11:13:41 Christoph Hellwig wrote:
+> On Mon, Jun 02, 2008 at 09:02:14AM +0200, Miklos Szeredi wrote:
+> > So again, can you offer an alternative?
+>
+> Just give up on this dumb idea completely.
 
-I think it's an unnecessary left-over from when I was trying to get that 
-stuff to work.  I can't think of a good reason not to just remove it if 
-it causes you problems.
+The AppArmor guys have really gone a long way in arguing their case, and all 
+discussions so far have ended in you decreeing that pathnames are bad at some 
+point. Thanks a lot for your constructive input on other areas of the code, 
+but could you please come up with technical arguments why pathnames are 
+bad this time?
 
-BTW, I tried to split the suspend/resume stuff into common and things 
-which were definitely x86-specific with you in mind.  How close did I get?
+Thanks a lot!
 
-    J
+Andreas
