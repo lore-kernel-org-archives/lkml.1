@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYFBHDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758435AbYFBHDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYFBHDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYFBHDW
+	id S1758435AbYFBHDl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbYFBHDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:03:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:15001 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbYFBHDW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:03:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=P6rSZL5gNR8fI04TSWU7xOIfAwbGtW0gCibDr8A8jGs9zWZAAKb4R1f0oWswQ4l2LJROtA/xH4d8IyNhpRGavbdn2uOb0hSvr5OH+rUydCYfT+nHVCnfo1YOxoffF6BSQfTG25ztmgr2nvFzL8H7HWMaqe2pz9VCb4TOQss6CLk=
-Message-ID: <19f34abd0806020003ub40def1w9dc011a357367f02@mail.gmail.com>
-Date: Mon, 2 Jun 2008 09:03:19 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: find: WARNING: Hard link count is wrong for /proc/1
-Cc: "Pavel Emelyanov" <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <19f34abd0806020000h407e3fb1kadff228a3cf4c6f@mail.gmail.com>
+	Mon, 2 Jun 2008 03:03:24 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:45723 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756384AbYFBHDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 03:03:23 -0400
+Date: Mon, 2 Jun 2008 16:01:05 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: David Howells <dhowells@redhat.com>, Christoph Lameter <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+       akpm@linux-foundation.org, mpm@selenic.com
+Subject: Re: [PATCH] nommu: fix kobjsize() for SLOB and SLUB
+Message-ID: <20080602070105.GA28198@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	David Howells <dhowells@redhat.com>,
+	Christoph Lameter <clameter@sgi.com>,
+	LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+	akpm@linux-foundation.org, mpm@selenic.com
+References: <20080601082427.GC25429@linux-sh.org> <Pine.LNX.4.64.0806011208480.13090@sbz-30.cs.Helsinki.FI> <20080601102401.GD25429@linux-sh.org> <48427A13.7050704@cs.helsinki.fi> <20080601112137.GE25429@linux-sh.org> <Pine.LNX.4.64.0806011426150.17742@sbz-30.cs.Helsinki.FI> <20080602055922.GA24626@linux-sh.org> <84144f020806012332n47ba7a7eg37a6892dbb059d09@mail.gmail.com> <20080602065055.GA27293@linux-sh.org> <84144f020806012358y6a2e5707odca7216a72e4092f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <19f34abd0806012331m7c57468bu820e9b6b0184836d@mail.gmail.com>
-	 <19f34abd0806020000h407e3fb1kadff228a3cf4c6f@mail.gmail.com>
+In-Reply-To: <84144f020806012358y6a2e5707odca7216a72e4092f@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 2, 2008 at 9:00 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-...
-> Will this do? (Untested)
->
-> Vegard
->
->
-> From a43ef05a8c1f8d45ca88e00fdd31c00ddfdba1b8 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Mon, 2 Jun 2008 08:57:45 +0200
-> Subject: [PATCH] proc: fix /proc/<pid> link count
->
-> commit e9720acd728a46cb40daa52c99a979f7c4ff195c
-> Author: Pavel Emelyanov <xemul@openvz.org>
-> Date:   Fri Mar 7 11:08:40 2008 -0800
->
->    [NET]: Make /proc/net a symlink on /proc/self/net (v3)
->
-> introduced /proc/net without bumping the link count on /proc/self.
+On Mon, Jun 02, 2008 at 09:58:01AM +0300, Pekka Enberg wrote:
+> Hi Paul,
+> 
+> On Mon, Jun 2, 2008 at 9:50 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+> > Well, with that modified version of your patch I posted, even if your
+> > previous PG_slab patches aren't applied, kobjsize() doesn't behave any
+> > worse than it presently does in terms of object size accuracy.
+> >
+> > In short: PG_slab doesn't get set and ksize() is never called, so we get
+> > the same degree of accuracy as the existing implementation, and the
+> > oopses get fixed (and the comments are still accurate, too!). So I think
+> > it's worth applying. Verified on all of SLUB/SLOB/SLAB.
+> 
+> Agreed. Can you send this to Andrew?
+> 
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+Will do!
 
-Oops ---^
+> On Mon, Jun 2, 2008 at 9:50 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+> > As for the call-site question, perhaps I'm misunderstanding your
+> > question. alloc_vfsmnt() is the first to call kmem_cache_zalloc() during
+> > boot-up on my system, but I'm not sure what relevance this has to
+> > anything? Accurately measuring kmem_cache_alloc() and static allocations
+> > is going to need quite a bit more of a re-think, but that's out of scope
+> > for 2.6.26. Presently I'd rather have my system booting first :-)
+> 
+> David already mentioned some (most?) of the kobjsize() calls can go
+> away and I think we should pursue that for 2.6.27.
 
-Should say /proc/self/net. Sorry for the spamming.
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Ah, the kobjsize() calls is what you were getting at. Yes, getting rid of
+those would be a good plan. I'll start looking at that more in-depth once
+I've got some of my other 2.6.27 stuff out of the way. That's definitely
+one interface that needs to be killed off with extreme prejudice..
