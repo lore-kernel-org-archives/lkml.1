@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761807AbYFBOJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbYFBOKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761807AbYFBOJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 10:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbYFBOJL
+	id S1762204AbYFBOKo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 10:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbYFBOKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 10:09:11 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:36595 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753928AbYFBOJK (ORCPT
+	Mon, 2 Jun 2008 10:10:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33776 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754765AbYFBOKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 10:09:10 -0400
-Date: Tue, 3 Jun 2008 00:08:55 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: johnpol@2ka.mipt.ru, ray-lk@madrabbit.org, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-Message-ID: <20080602140855.GA25944@gondor.apana.org.au>
-References: <E1K33OH-0005QX-00@gondolin.me.apana.org.au> <Pine.LNX.4.64.0806021442450.16829@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0806021442450.16829@wrl-59.cs.helsinki.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 2 Jun 2008 10:10:35 -0400
+Date: Mon, 2 Jun 2008 14:54:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ata: ahci: power off unused ports
+Message-ID: <20080602145458.011b3655@core>
+In-Reply-To: <4843C1E0.3080900@garzik.org>
+References: <20080508161008.59361de5@appleyard>
+	<20080527030854.GC7515@mit.edu>
+	<20080527143202.4bab5bf0@appleyard>
+	<20080527225926.GE6843@mit.edu>
+	<20080527163251.04054a74@appleyard>
+	<20080531080015.GG5405@ucw.cz>
+	<4842F5A8.9020708@garzik.org>
+	<20080602080440.25fc663c@core>
+	<4843A4A7.3020809@garzik.org>
+	<20080602092225.26db9b5b@core>
+	<4843C1E0.3080900@garzik.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 02:53:09PM +0300, Ilpo Järvinen wrote:
->
-> Shouldn't that be already visible in the ingo's sysrq-t dump, no? There:
+> > We don't need it per port Jeff, you are being quite silly here. Right now
+> > its permanently foo=0 for all ports and nobody has suffered anything too
+> > horrible so being able to turn it off for all ports is clearly quite
+> > sufficient for the neat future.
 > 
->   http://marc.info/?l=linux-kernel&m=121182099131520&w=2
+> Er, huh?  foo=0 means hotplug continues to work on the unused ports. 
+> Nobody has suffered because we default to enabling all the goodies.
 
-No, we need an actual strace rather than the static stack back-trace.
-So start with netstat -lntp to locate the process listening on that
-port, and then strace it to see if it's calling accept.
+Thats a simple question of what "=0" means - is it "disable=1" or
+"enable=1" or to quote Alice in Wonderland
 
-> There are many sys_accepts at least (if I understand that dump at all). 
-> There were some ip_local_outs there as well, which made me wonder if the 
-> totally innocent looking commit 1ac06e0306d0192a7a4d9ea1c9e06d355ce7e7d3 
-> (ipsec: Use the correct ip_local_out function) has something to do with 
-> this (I definately don't understand that part at all).
+	'When I use a word,' Humpty Dumpty said, in a rather scornful
+	tone,' it means just what I choose it to mean, neither more nor
+	less
 
-This patch only has an effect for IPsec.
+It really doesn't matter if it is on by default or off by default,
+whether 0 means off or on, what matters is that the single switch is
+quite sufficient initially to improve matters for everyone wanting to use
+the feature without harming anyone else.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Sure you might want to make it per port later but someone who wants to
+optimise that peculiar case, has a problem and can test it can deal with
+that.
+
+Alan
+
