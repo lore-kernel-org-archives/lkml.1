@@ -1,53 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYFBPBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYFBPB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbYFBPBn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 11:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYFBPBe
+	id S1755500AbYFBPB5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 11:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYFBPBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 11:01:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:50221 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbYFBPBd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 11:01:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: hooanon05@yahoo.co.jp
-Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
-Date: Mon, 2 Jun 2008 17:01:16 +0200
-User-Agent: KMail/1.9.9
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@lst.de
-References: <200805311737.58991.arnd@arndb.de> <200806021613.15088.arnd@arndb.de> <8353.1212417209@jrobl>
-In-Reply-To: <8353.1212417209@jrobl>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 2 Jun 2008 11:01:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34139 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754139AbYFBPBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 11:01:42 -0400
+Date: Mon, 2 Jun 2008 17:01:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 1/1] SGI UV: TLB shootdown using broadcast assist unit
+Message-ID: <20080602150122.GB6835@elte.hu>
+References: <E1K3AWE-00056Z-83@eag09.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806021701.17076.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19J3D2QnsMjAXXj6TYJIrmFQvkxBqihW73x1o1
- JL5pB3OZydhHtgyE0MZPo/kaUmP9RsmHVoEg9lMOLoOe/BqCKE
- PknLnGncmU29YVB8S3u9w==
+In-Reply-To: <E1K3AWE-00056Z-83@eag09.americas.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 June 2008, hooanon05@yahoo.co.jp wrote:
-> Aure rename returns EXDEV when the target is a dir and it has child
-> entr(y|ies) on lower branhc(es). And mv(1) handles this case.
-> My Engilsh might be miunderstood. Do you think link(2) should return an
-> error when the target exists on lower writable branch?
 
-Any writes should always just go to the top level. If the source file
-for link() exists on the top level, link should succeed even if a target
-exists on a lower level (given that the user has permissions to
-unlink that file), but should return EXDEV if the source comes from
-a lower level.
+* Cliff Wickman <cpw@sgi.com> wrote:
 
-	Arnd <><
+> From: Cliff Wickman <cpw@sgi.com>
+> 
+> TLB shootdown for SGI UV.
+
+looks mostly good to me, but there are a few code structure and 
+stylistic nits:
+
+> +	if (is_uv_system() && uv_flush_tlb_others(&cpumask, mm, va))
+> +			return;
+
+one tab too many.
+
+> +struct bau_control **uv_bau_table_bases;
+> +static int uv_bau_retry_limit;
+> +static int uv_nshift;		/* position of pnode (which is nasid>>1) */
+> +static unsigned long uv_mmask;
+
+shouldnt these be __read_mostly ?
+
+> +{
+> +	int fw;
+> +
+> +	fw = (1 << (resource + UV_SW_ACK_NPENDING)) | (1 << resource);
+> +	msg->replied_to = 1;
+> +	msg->sw_ack_vector = 0;
+> +	if (msp)
+> +		msp->seen_by.bits = 0;
+> +	uv_write_local_mmr(UVH_LB_BAU_INTD_SOFTWARE_ACKNOWLEDGE_ALIAS, fw);
+
+'fw' is int here, while uv_write_local_mmr() takes 'unsigned long', so 
+'fw' will be sign-extended. It's better to use the natural type of such 
+values, even if you only fill in low bits. (otherwise it can later on 
+result in unexpected results if the u32 value here has bit 31 set.)
+
+> +		local_flush_tlb();
+> +		__get_cpu_var(ptcstats).alltlb++;
+> +	} else {
+> +		__flush_tlb_one(msg->address);
+> +		__get_cpu_var(ptcstats).onetlb++;
+> +	}
+> +
+> +	__get_cpu_var(ptcstats).requestee++;
+> +
+> +	atomic_inc_short(&msg->acknowledge_count);
+> +	if (msg->number_of_cpus == msg->acknowledge_count)
+> +		uv_reply_to_message(sw_ack_slot, msg, msp);
+> +	return;
+> +}
+> +
+> +/*
+> + * Examine the payload queue on all the distribution nodes to see
+> + * which messages have not been seen, and which cpu(s) have not seen them.
+> + *
+> + * Returns the number of cpu's that have not responded.
+> + */
+> +static int
+> +uv_examine_destinations(struct bau_target_nodemask *distribution)
+> +{
+> +	int sender;
+> +	int i;
+> +	int j;
+> +	int k;
+> +	int count = 0;
+> +	struct bau_control *bau_tablesp;
+> +	struct bau_payload_queue_entry *msg;
+> +	struct bau_msg_status *msp;
+> +
+> +	sender = smp_processor_id();
+> +	for (i = 0; i < (sizeof(struct bau_target_nodemask) * BITSPERBYTE);
+> +	     i++) {
+> +		if (bau_node_isset(i, distribution)) {
+
+use a:
+
+		if (!(...))
+			continue;
+
+construct to make the function more readable and to save an indentation 
+level. Possibly split the iterator body into a separate function as 
+well.
+
+> +}
+> +
+> +/**
+> + * uv_flush_tlb_others - globally purge translation cache of a virtual
+> + * address or all TLB's
+> + * @cpumaskp: mask of all cpu's in which the address is to be removed
+> + * @mm: mm_struct containing virtual address range
+> + * @va: virtual address to be removed (or TLB_FLUSH_ALL for all TLB's on cpu)
+> + *
+> + * This is the entry point for initiating any UV global TLB shootdown.
+> + *
+> + * Purges the translation caches of all specified processors of the given
+> + * virtual address, or purges all TLB's on specified processors.
+> + *
+> + * The caller has derived the cpumaskp from the mm_struct and has subtracted
+> + * the local cpu from the mask.  This function is called only if there
+> + * are bits set in the mask. (e.g. flush_tlb_page())
+> + *
+> + * The cpumaskp is converted into a nodemask of the nodes containing
+> + * the cpus.
+> + */
+> +int
+> +uv_flush_tlb_others(cpumask_t *cpumaskp, struct mm_struct *mm, unsigned long va)
+> +{
+> +	int i;
+> +	int blade;
+> +	int cpu;
+> +	int bit;
+> +	int right_shift;
+> +	int this_blade;
+> +	int exams = 0;
+> +	int tries = 0;
+> +	long source_timeouts = 0;
+> +	long destination_timeouts = 0;
+> +	unsigned long index;
+> +	unsigned long mmr_offset;
+> +	unsigned long descriptor_status;
+> +	struct bau_activation_descriptor *bau_desc;
+> +	ktime_t time1, time2;
+
+this function needs to be broken up into smaller ones.
+
+> +	bau_desc += (UV_ITEMS_PER_DESCRIPTOR * cpu);
+
+unnecessary paranthesis.
+
+> +		/* leave the bits for the remote cpu's in the mask until
+> +		   success; on failure we fall back to the IPI method */
+
+use such comment style:
+
+ /*
+  * Comment
+  */
+
+(this applies to many other places in this file as well)
+
+> +	time1 = ktime_get();
+
+dont use ktime_get() in performance-sensitive code, it can get _really_ 
+expensive if GTOD falls back to pmtimer or hpet or other southbridge-ish 
+time methods.
+
+> +static const struct file_operations proc_uv_ptc_operations = {
+> +	.open = uv_ptc_proc_open,
+> +	.read = seq_read,
+> +	.write = uv_ptc_proc_write,
+> +	.llseek = seq_lseek,
+> +	.release = seq_release,
+> +};
+
+do something like this for structure initialization:
+
+> +static const struct file_operations proc_uv_ptc_operations = {
+> +	.open		= uv_ptc_proc_open,
+> +	.read		= seq_read,
+> +	.write		= uv_ptc_proc_write,
+> +	.llseek		= seq_lseek,
+> +	.release	= seq_release,
+> +};
+
+to make it easier to read.
+
+> +static struct proc_dir_entry *proc_uv_ptc;
+
+static variable in the middle of file - data should move up to the 
+header portion of the file, or this functionality should go into a 
+separate file if it's well-isolated.
+
+> +static int __init
+> +uv_ptc_init(void)
+
+unnecessary line break. (applies to many other function definitions in 
+this file too)
+
+> +{
+> +	static struct proc_dir_entry *sgi_proc_dir;
+
+static variable hidden in function. It should move into head of the file 
+instead.
+
+> +uv_ptc_exit(void)
+> +{
+> +	remove_proc_entry(UV_PTC_BASENAME, NULL);
+> +}
+> +
+> +module_init(uv_ptc_init);
+> +module_exit(uv_ptc_exit);
+
+why is this modular?
+
+> +/*
+> + * Initialization of BAU-related structures
+> + */
+> +int __init
+> +uv_bau_init(void)
+> +{
+> +	int i;
+> +	int j;
+> +	int blade;
+> +	int nblades;
+> +	int *ip;
+> +	int pnode;
+> +	int last_blade;
+> +	int cur_cpu = 0;
+> +	unsigned long pa;
+> +	unsigned long n;
+> +	unsigned long m;
+> +	unsigned long mmr_image;
+> +	unsigned long apicid;
+> +	char *cp;
+> +	struct bau_control *bau_tablesp;
+> +	struct bau_activation_descriptor *adp, *ad2;
+> +	struct bau_payload_queue_entry *pqp;
+> +	struct bau_msg_status *msp;
+> +	struct bau_control *bcp;
+
+function way too large - per node initialization should go into a helper 
+function to reduce function linecount and complexity.
+
+> +}
+> +
+> +__initcall(uv_bau_init);
+
+unnecessary newline in front of __initcall().
+
+> +
+> +#define UV_ITEMS_PER_DESCRIPTOR 8
+> +#define UV_CPUS_PER_ACT_STATUS 32
+> +#define UV_ACT_STATUS_MASK 0x3
+> +#define UV_ACT_STATUS_SIZE 2
+> +#define UV_ACTIVATION_DESCRIPTOR_SIZE 32
+> +#define UV_DISTRIBUTION_SIZE 256
+> +#define UV_SW_ACK_NPENDING 8
+> +#define UV_BAU_MESSAGE 200	/* Messaging irq; see irq_64.h */
+> +				/* and include/asm-x86/hw_irq_64.h */
+> +				/* To be dynamically allocated in the future */
+> +#define UV_NET_ENDPOINT_INTD 0x38
+> +#define UV_DESC_BASE_PNODE_SHIFT 49 /* position of pnode (nasid>>1) in MMR */
+> +#define UV_PAYLOADQ_PNODE_SHIFT 49
+
+please use the style and alignment found in other areas of 
+include/asm-x86, such as include/asm-x86/processor.h. (applies to other 
+areas of this patch as well)
+
+> +/*
+> + * atomic increment of a short integer
+> + * (rather than using the __sync_add_and_fetch() intrinsic)
+> + *
+> + * returns the new value of the variable
+> + */
+> +static inline short int atomic_inc_short(short int *v)
+> +{
+> +	asm volatile("movw $1, %%cx\n"
+> +			"lock ; xaddw %%cx, %0\n"
+> +			: "+m" (*v)		/* outputs */
+> +			: : "%cx", "memory");	/* inputs : clobbereds */
+> +	return *v;
+> +}
+
+this (and the other atomic_*() additions) should go into atomic.h 
+instead.
+
+> +int uv_flush_tlb_others(cpumask_t *, struct mm_struct *, unsigned long);
+> +void uv_bau_message_intr1(void);
+> +void uv_bau_timeout_intr1(void);
+
+function prototypes in headers should use 'extern'.
+
+
+
+	Ingo
