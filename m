@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYFBKiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbYFBKji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYFBKiR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYFBKiB
+	id S1757481AbYFBKji (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYFBKja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:38:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60069 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751736AbYFBKiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:38:00 -0400
-Date: Mon, 2 Jun 2008 12:36:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602103643.GA21285@elte.hu>
-References: <1211852026.3286.36.camel@pasglop> <20080526.184047.88207142.davem@davemloft.net> <1211854540.3286.42.camel@pasglop> <20080526.192812.184590464.davem@davemloft.net> <1211859542.3286.46.camel@pasglop> <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org> <alpine.LFD.1.10.0805270943100.2958@woody.linux-foundation.org> <alpine.LFD.1.10.0805271028520.2958@woody.linux-foundation.org>
+	Mon, 2 Jun 2008 06:39:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:1977 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751233AbYFBKj3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:39:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ee15iKb0WKSeAjpws2bkGqooMEfO3xVhxOA7GxZGlXJW1t6Ggbp0vM9mx+VGwq5QbgoGEc/20UXbOREvcJYr9Cz0BWA+Z3ox/Gqi/Fpso0jFi2v8GJKyEAJ+gSY5jD8YvCUYv+q/wxJtHRCo5fJFS0m6qrj9F01LNfrdQn4iy9A=
+Message-ID: <19f34abd0806020339m100fd3f8m6c0c6ff0c08a66d2@mail.gmail.com>
+Date: Mon, 2 Jun 2008 12:39:29 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.25.3: su gets stuck for root
+Cc: "David Newall" <davidn@davidnewall.com>, "Willy Tarreau" <w@1wt.eu>,
+       "Harald Dunkel" <harald.dunkel@t-online.de>,
+       "Joe Peterson" <joe@skyrush.com>, linux-kernel@vger.kernel.org,
+       "Alan Cox" <alan@redhat.com>
+In-Reply-To: <19f34abd0806020316v4135935dxff04bcf663ebd4bf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805271028520.2958@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <48434D57.6030801@skyrush.com> <48438126.3080308@t-online.de>
+	 <20080602053256.GF5609@1wt.eu> <20080602091016.571dda7c@core>
+	 <4843B6EE.8080104@davidnewall.com> <20080602102033.63e4cd18@core>
+	 <19f34abd0806020316v4135935dxff04bcf663ebd4bf@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 2, 2008 at 12:16 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> On Mon, Jun 2, 2008 at 11:20 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> On Mon, 02 Jun 2008 18:31:34 +0930
+>> David Newall <davidn@davidnewall.com> wrote:
+>>
+>>> Alan Cox wrote:
+>>> > Not really. The task would get suspended if it attempted to change the
+>>> > tty settings while not being session leader. This is part of the POSIX
+>>> > and BSD job control.
+>>>
+>>> I haven't heard about this new restriction, but it begs the observation
+>>> that stty, when forked from a shell (the usual case), is never a session
+>>> leader.
+>>
+>> Sorry I mean part of the current session. I was thinking about the
+>> specific case of bash or the ssh->bash setup where the question would be
+>> whether the shell was session leader.
+>>
+>> Someone who can dup this needs to instrument it in tty_ioctl really.
+>
+> Hi,
+>
+> I have written a short test program that seems to reproduce it for me
+> (see attachment), even though the original su/stty stuff wouldn't.
+>
+> Basically, the strace shows this:
+> ioctl(0, SNDCTL_TMR_START or TCSETS, {B38400 opost isig icanon echo
+> ...}) = ? ERESTARTSYS (To be restarted)
+> --- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
+> --- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
+> ioctl(0, SNDCTL_TMR_START or TCSETS, {B38400 opost isig icanon echo
+> ...}) = ? ERESTARTSYS (To be restarted)
+> --- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
+> --- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
+> ... (repeating)
+>
+> The exact code path triggering this seems to be:
+>
+> tcsetattr() -> ioctl(TCSETS) -> set_termios() -> tty_check_change()
+>
+> This is on a 2.6.24.5-85.fc8 kernel.
+>
+> I don't know what's wrong, but I hope this helps.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+The error seems that tty_check_change() returns -ERESTARTSYS.
+Shouldn't it be EINTR to allow the signal to be processed and let the
+process decide whether to retry the tcsetattr()?
 
-> > Here's a UNTESTED patch for x86 that may or may not compile and 
-> > work, and which serializes (on a compiler level) the IO accesses 
-> > against regular memory accesses.
-> 
-> Ok, so it at least boots on x86-32. Thus probably on x86-64 too (since 
-> the code is now shared). I didn't look at whether it generates much 
-> bigger code due to the potential extra serialization, but some of the 
-> code generation I looked at looked fine.
-> 
-> IOW, it doesn't at least create any _obviously_ worse code, and it 
-> should be arguably safer than assuming the compiler does volatile 
-> accesses the way we want it to.
+Vegard
 
-ok, to pursue this topic of making readl*/writel*() more robust i picked 
-up your patch into -tip and created a new topic branch for it: 
-tip/x86/mmio.
-
-The patch passed initial light testing in -tip (~30 successful random 
-self-builds and bootups on various mixed 32-bit/64-bit boxes) but it's 
-still v2.6.27 material IMO.
-
-Failures in this area are subtle so there's no good way to tell whether 
-it works as intended - we need wider testing. I've also added the 
-tip/x86/mmio topic to tip/auto-x86-next rules as well so these changes 
-will be picked up by tomorrow's linux-next tree as well, and by the next 
--mm iteration.
-
-	Ingo
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
