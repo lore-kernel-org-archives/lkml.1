@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbYFBKqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbYFBKrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbYFBKqU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYFBKqK
+	id S1758905AbYFBKrT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYFBKrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:46:10 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:52506 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYFBKqJ (ORCPT
+	Mon, 2 Jun 2008 06:47:03 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:56822 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753095AbYFBKrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:46:09 -0400
-X-AuditID: 0ac90648-add7dba000000c2f-25-4843cf6fd964
-Message-ID: <4843CF6A.7090107@hitachi.com>
-Date: Mon, 02 Jun 2008 19:46:02 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com
-Cc: adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
-       cmm@us.ibm.com, tytso@mit.edu, sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: [PATCH 3/5] jbd: abort when failed to log metadata buffers
-References: <4843CE15.6080506@hitachi.com>
-In-Reply-To: <4843CE15.6080506@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+	Mon, 2 Jun 2008 06:47:02 -0400
+Date: Mon, 2 Jun 2008 19:47:01 +0900
+From: Isaku Yamahata <yamahata@valinux.co.jp>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 10 of 12] xen: implement save/restore
+Message-ID: <20080602104701.GB22955%yamahata@valinux.co.jp>
+References: <patchbomb.1211550067@localhost> <9e8d06e5ae8024829836.1211550077@localhost> <20080602092144.GA22955%yamahata@valinux.co.jp> <4843C578.6060201@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4843C578.6060201@goop.org>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 3/5] jbd: abort when failed to log metadata buffers
+On Mon, Jun 02, 2008 at 11:03:36AM +0100, Jeremy Fitzhardinge wrote:
+> Isaku Yamahata wrote:
+> >What is the purpose of load_cr3() here?
+> >I'd like to make this load_cr3() more arch generic for ia64 support.
+> >(or eliminate it if possible)
+> >  
+> 
+> I think it's an unnecessary left-over from when I was trying to get that 
+> stuff to work.  I can't think of a good reason not to just remove it if 
+> it causes you problems.
 
-If we failed to write metadata buffers to the journal space and
-succeeded to write the commit record, stale data can be written
-back to the filesystem as metadata in the recovery phase.
+Here is the patch. I did only compile test.
 
-To avoid this, when we failed to write out metadata buffers,
-abort the journal before writing the commit record.
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> BTW, I tried to split the suspend/resume stuff into common and things 
+> which were definitely x86-specific with you in mind.  How close did I get?
+
+Almost complete. Your effort made my task easier.
+I haven't yet succeeded to save/restore, though.
+
+Is CONFIG_PM_SLEEP necessary?
+Since ia64 doesn't define ARCH_HIBERNATION_POSSIBLE nor
+ARCH_SUSPEND_POSSIBLE.
+Although I can define them in ia64/xen/Kconfig, I'd like to leave
+them untouched if possible.
+
+>From 93906ae3785206cdd1e25e27b3797914f24f55aa Mon Sep 17 00:00:00 2001
+From: Isaku Yamahata <yamahata@valinux.co.jp>
+Date: Mon, 2 Jun 2008 19:36:20 +0900
+Subject: [PATCH] xen: clean up of manage.c
+
+remove load_cr3() from manage.c. It is unncessary and x86 dependent.
+
+Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 ---
- fs/jbd/commit.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/xen/manage.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.26-rc4/fs/jbd/commit.c
-===================================================================
---- linux-2.6.26-rc4.orig/fs/jbd/commit.c
-+++ linux-2.6.26-rc4/fs/jbd/commit.c
-@@ -734,6 +734,9 @@ wait_for_iobuf:
- 		/* AKPM: bforget here */
- 	}
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index 675c3dd..28bb618 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -38,8 +38,6 @@ static int xen_suspend(void *data)
  
-+	if (err)
-+		journal_abort(journal, err);
-+
- 	jbd_debug(3, "JBD: commit phase 6\n");
+ 	BUG_ON(!irqs_disabled());
  
- 	if (journal_write_commit_record(journal, commit_transaction))
+-	load_cr3(swapper_pg_dir);
+-
+ 	err = device_power_down(PMSG_SUSPEND);
+ 	if (err) {
+ 		printk(KERN_ERR "xen_suspend: device_power_down failed: %d\n",
+-- 
+1.5.3
 
 
+
+
+-- 
+yamahata
