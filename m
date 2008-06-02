@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760167AbYFBMmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbYFBMoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760167AbYFBMmE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 08:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbYFBMlz
+	id S1760394AbYFBMoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 08:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYFBMoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 08:41:55 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:58753 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509AbYFBMly (ORCPT
+	Mon, 2 Jun 2008 08:44:08 -0400
+Received: from hu-out-0506.google.com ([72.14.214.239]:35528 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753725AbYFBMoG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 08:41:54 -0400
-Date: Mon, 2 Jun 2008 13:40:28 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Pavel Machek <pavel@suse.cz>, mtk.manpages@gmail.com,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
-In-Reply-To: <20080602114319.GI5757@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0806021319250.16157@blonde.site>
-References: <20080530102619.GA2468@elf.ucw.cz> <Pine.LNX.4.64.0805301451020.19914@blonde.site>
- <20080530204307.GA4978@ucw.cz> <Pine.LNX.4.64.0805311925190.27293@blonde.site>
- <20080531173950.c4f04028.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0806010752510.24919@blonde.site> <20080601011501.199af80c.akpm@linux-foundation.org>
- <20080601114008.GC16843@elf.ucw.cz> <20080601133727.4e62ae55.akpm@linux-foundation.org>
- <20080602114319.GI5757@kernel.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Jun 2008 08:44:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding:sender;
+        b=HY0dsIY9lufe4hAEqimFXNRjkz9sBWd0HAskW2xoz0ukb/4vVsRbo2+xurUR0O+An3qp6Qkva863AqAnwQdLWTtSYqbk+kxLwm8C8XO022g/dEhDx/qJuiK2NSu8gchfvCsiO5wPQyEx7NZ+NYQdZnTTS1oHq+/LfiEjL1DnMjM=
+Subject: Re: [PATCH -mm 03/14] bootmem: add documentation to API functions
+From: Chris Malley <mail@chrismalley.co.uk>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20080530194737.756122438@saeurebad.de>
+References: <20080530194220.286976884@saeurebad.de>
+	 <20080530194737.756122438@saeurebad.de>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 02 Jun 2008 13:18:04 +0100
+Message-Id: <1212409084.25657.0.camel@helix.beotel.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008, Jens Axboe wrote:
-> On Sun, Jun 01 2008, Andrew Morton wrote:
-> > 
-> > Well if you're asking the syscall to shove more data into the block
-> > layer than it can concurrently handle, sure, the block layer will
-> > block.  It's tunable...
-> 
-> Ehm, lets get the history right, please :-)
-> 
-> The block layer pretty much doesn't care about how large the queue
-> size is, it's largely at 128 to prevent the vm from shitting itself
-> like it has done in the past (and continues to do I guess, though
-> your reply leaves me wondering).
-> 
-> So you think the vm will be fine with a huge number of requests?
-> It wont go nuts scanning and reclaiming, wasting oodles of CPU
-> cycles?
+On Fri, 2008-05-30 at 21:42 +0200, Johannes Weiner wrote:
 
-Interesting.  I wonder.  I may be quite wrong (Cc'ed Rik and Lee
-who I think are currently most in touch with what goes on there),
-but my impression is that whereas vmscan.c takes pages off LRU
-while it's doing writeback on them, and arranges for them to go
-back to the reclaimable tail of the LRU once writeback completes
-(the rotate reclaimable business), pages under writeback which
-it did not itself initiate will get put back on LRU at the head
-(with write completion still pending).
+> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> ---
+> 
+>  mm/bootmem.c |  147 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 146 insertions(+), 1 deletion(-)
+> 
+> --- a/mm/bootmem.c
+> +++ b/mm/bootmem.c
 
-If unbounded queues turn out to be viable in other respects
-(which would be very attractive for SYNC_PAGE_RANGE_WRITE), even
-if not, then maybe shrink_page_list needs to be able to take pages
-already under Writeback off the LRU and set them Reclaimable.
+[snip]
 
-Hugh
+>  
+> +/**
+> + * reserve_bootmem_node - mark a page range as reserved
+> + * @addr: starting address of the range
+> + * @size: size of the range in bytes
+
+kerneldoc arguments don't match the actual function definition.
+
+> + *
+> + * Partial pages will be reserved.
+> + *
+> + * Only physical pages that actually reside on @pgdat are marked.
+> + */
+>  void __init reserve_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+>  				 unsigned long size, int flags)
+>  {
+> @@ -331,6 +390,16 @@ void __init reserve_bootmem_node(pg_data
+>  }
+>  
+>  #ifndef CONFIG_HAVE_ARCH_BOOTMEM_NODE
+> +/**
+> + * reserve_bootmem - mark a page range as usable
+> + * @addr: starting address of the range
+> + * @size: size of the range in bytes
+
+
+and here (missing @flags)
+
+> ﻿﻿+ *
+> + * Partial pages will be reserved.
+> + *
+> + * All physical pages within the range are marked, no matter what
+> + * node they reside on.
+> + */
+>  int __init reserve_bootmem(unsigned long addr, unsigned long size,
+>  			    int flags)
+>  {
+> @@ -499,6 +568,19 @@ found:
+>  	return ret;
+>  }
+>  
+
+cheers
+Chris
+
