@@ -1,72 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYFBHYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYFBH3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYFBHYn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbYFBHYf
+	id S1757497AbYFBH3s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbYFBH3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:24:35 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38823 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbYFBHYe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:24:34 -0400
-Date: Mon, 2 Jun 2008 08:24:03 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080602072403.GA20222@flint.arm.linux.org.uk>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-	scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-	alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-	tpiepho@freescale.com
-References: <1211852026.3286.36.camel@pasglop> <20080526.184047.88207142.davem@davemloft.net> <1211854540.3286.42.camel@pasglop> <20080526.192812.184590464.davem@davemloft.net> <1211859542.3286.46.camel@pasglop> <alpine.LFD.1.10.0805270833060.2958@woody.linux-foundation.org> <1211922621.3286.80.camel@pasglop> <alpine.LFD.1.10.0805271421570.2958@woody.linux-foundation.org> <1211924335.3286.89.camel@pasglop> <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-Mime-Version: 1.0
+	Mon, 2 Jun 2008 03:29:40 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:20933 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750936AbYFBH3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 03:29:39 -0400
+Date: Mon, 2 Jun 2008 16:27:06 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, David Howells <dhowells@redhat.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+       mpm@selenic.com
+Subject: [PATCH] nommu: fix kobjsize() for SLOB and SLUB, v2.
+Message-ID: <20080602072706.GB28268@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	David Howells <dhowells@redhat.com>,
+	Christoph Lameter <clameter@sgi.com>,
+	LKML <linux-kernel@vger.kernel.org>, cooloney@kernel.org,
+	mpm@selenic.com
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 27, 2008 at 02:55:56PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 28 May 2008, Benjamin Herrenschmidt wrote:
-> > 
-> > A problem with __raw_ though is that they -also- don't do byteswap,
-> 
-> Well, that's why there is __readl() and __raw_readl(), no?
-> 
-> Neither does ordering, and __raw_readl() doesn't do byte-swap.
+kobjsize() has been abusing page->index as a method for sorting out
+compound order, which blows up both for page cache pages, and SLOB's
+reuse of the index in struct slob_page.
 
-This is where the lack of documentation causes arch maintainers a big
-problem.  None of the semantics of __raw_readl vs __readl vs readl are
-documented _anywhere_.  If you look at x86 as a template, there's no
-comments there about what the different variants are supposed to do
-or not do.
+Presently we are not able to accurately size arbitrary pointers that
+don't come from kmalloc(), so the best we can do is sort out the
+compound order from the head page if it's a compound page, or default
+to 0-order if it's impossible to ksize() the object.
 
-So it's left up to arch maintainers to literally guess what should be
-done.  That's precisely what I did when I implemented ARMs __raw_readl
-and friends.  I guessed.
+Obviously this leaves quite a bit to be desired in terms of object
+sizing accuracy, but the behaviour is unchanged over the existing
+implementation, while fixing the page->index oopses originally reported
+here:
 
-And it was only after I read a few mails on lkml which suggested that
-readl and friends should always be LE that ARMs readl implementation
-started to use le32_to_cpu()... before that it had always been native
-endian.  Again, lack of documentation...
+	http://marc.info/?l=linux-mm&m=121127773325245&w=2
 
-So, can the semantics of what's expected from these IO accessor
-functions be documented somewhere.  Please?  Before this thread gets
-lost in the depths of time?
+Accuracy could also be improved by having SLUB and SLOB both set PG_slab
+on ksizeable pages, rather than just handling the __GFP_COMP cases
+irregardless of the PG_slab setting, as made possibly with Pekka's
+patches:
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	http://marc.info/?l=linux-kernel&m=121139439900534&w=2
+	http://marc.info/?l=linux-kernel&m=121139440000537&w=2
+	http://marc.info/?l=linux-kernel&m=121139440000540&w=2
+
+This is primarily a bugfix for nommu systems for 2.6.26, with the aim
+being to gradually kill off kobjsize() and its particular brand of
+object abuse entirely.
+
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+---
+
+ mm/nommu.c |   30 ++++++++++++++++++++++++++----
+ 1 file changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/mm/nommu.c b/mm/nommu.c
+index dca93fc..3abd084 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -104,21 +104,43 @@ EXPORT_SYMBOL(vmtruncate);
+ unsigned int kobjsize(const void *objp)
+ {
+ 	struct page *page;
++	int order = 0;
+ 
+ 	/*
+ 	 * If the object we have should not have ksize performed on it,
+ 	 * return size of 0
+ 	 */
+-	if (!objp || (unsigned long)objp >= memory_end || !((page = virt_to_page(objp))))
++	if (!objp)
+ 		return 0;
+ 
++	if ((unsigned long)objp >= memory_end)
++		return 0;
++
++	page = virt_to_head_page(objp);
++	if (!page)
++		return 0;
++
++	/*
++	 * If the allocator sets PageSlab, we know the pointer came from
++	 * kmalloc().
++	 */
+ 	if (PageSlab(page))
+ 		return ksize(objp);
+ 
+-	BUG_ON(page->index < 0);
+-	BUG_ON(page->index >= MAX_ORDER);
++	/*
++	 * The ksize() function is only guaranteed to work for pointers
++	 * returned by kmalloc(). So handle arbitrary pointers, that we expect
++	 * always to be compound pages, here.
++	 */
++	if (PageCompound(page))
++		order = compound_order(page);
+ 
+-	return (PAGE_SIZE << page->index);
++	/*
++	 * Finally, handle arbitrary pointers that don't set PageSlab.
++	 * Default to 0-order in the case when we're unable to ksize()
++	 * the object.
++	 */
++	return PAGE_SIZE << order;
+ }
+ 
+ /*
