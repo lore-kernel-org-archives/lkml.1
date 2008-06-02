@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYFBSq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYFBSvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbYFBSq5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 14:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYFBSqk
+	id S1755506AbYFBSvT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 14:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYFBSvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 14:46:40 -0400
-Received: from web50106.mail.re2.yahoo.com ([206.190.38.34]:27411 "HELO
-	web50106.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753163AbYFBSqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 14:46:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=xtebVpkDj9gXWE39GoO/4idjxa4n1PJnLN5Elcx1BOgrWcOY/m4xUUOxbuBNJSnovIMZNItCX9n9VLJwMKIhQU88wQZri2+ryGUrNbXi3MQHU2nVD95j4oBvsJf4J4E7boi9s3vfh+1ktRyEokWTF32hf9pRbkMiv1gnxKUlb4k=;
-X-YMail-OSG: qH36TuwVM1kaUgjsYirxEkjfWru_h5xRnAmfR7DXpU7iaSsI611pMLJzZqQGXAISvmHkHRHa5LcVvq7huAS16Ime4A8aykKMhGUZ3ytFfPIA2V4RRoDdYs4JSQ--
-Date: Mon, 2 Jun 2008 11:46:37 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: EDAC i5000 MC0: NON-FATAL ERRORS
-To: Jack Howarth <howarth@bromo.msbb.uc.edu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080530165550.GA23698@bromo.msbb.uc.edu>
+	Mon, 2 Jun 2008 14:51:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33391 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751801AbYFBSvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 14:51:02 -0400
+Message-ID: <484440AA.6060202@redhat.com>
+Date: Mon, 02 Jun 2008 14:49:14 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+Reply-To: rwheeler@redhat.com
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <534708.90379.qm@web50106.mail.re2.yahoo.com>
+To: Jeff Garzik <jeff@garzik.org>
+CC: kristen.c.accardi@intel.com, Mark Lord <liml@rtr.ca>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ata: ahci: power off unused ports
+References: <20080508161008.59361de5@appleyard>	<20080527030854.GC7515@mit.edu>	<20080527143202.4bab5bf0@appleyard>	<20080527225926.GE6843@mit.edu>	<20080527163251.04054a74@appleyard>	<20080531080015.GG5405@ucw.cz>	<4842F5A8.9020708@garzik.org>	<20080602080440.25fc663c@core>	<4843A4A7.3020809@garzik.org>	<4843EF88.2040606@rtr.ca>	<48441AA6.8080704@garzik.org>	<20080602100019.3d2d2522@appleyard>	<484431AB.7010005@garzik.org>	<20080602104753.3f24087d@appleyard>	<484438BF.7070303@garzik.org> <20080602111644.54738d57@appleyard> <48443C3C.3010401@redhat.com> <48443EB3.8020303@garzik.org>
+In-Reply-To: <48443EB3.8020303@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+> Ric Wheeler wrote:
+>> Kristen Carlson Accardi wrote:
+>>> Not all drivers will need a user interface to turn off hotplug
+>>> I would think.  At any rate - I would think it'd be better to let
+>>> driver writers decide how they want their drivers to behave wrt
+>>> hotplug and power instead of forcing a generic policy on everyone.
+>>>
+>>> This patch would provide users of AHCI controllers a way to save
+>>> power now, while you work on the grand scheme for polling/turning on 
+>>> off
+>>> hotplug via sysfs.  It's an interim solution that impacts nobody but
+>>> ahci users and is can be easily integrated into whatever solution you
+>>> eventually work out.
+>
+>> I like the patch -  it seems that it will help a lot of users out 
+>> near term in a very positive way while we iterate on the broader 
+>> solution,
+>
+> A better patch would enable the _possibility_ of power savings on 
+> non-AHCI chips, and not add a one-off AHCI-specific user interface 
+> that must be supported for years to come.
+>
+>     Jeff
+I think that the patch does that first part pretty reasonably for all 
+chips as Kristen explained before.
 
---- Jack Howarth <howarth@bromo.msbb.uc.edu> wrote:
+If the user interface is the only obstacle and the base code seems to be 
+flexible enough for any device to take advantage of, it would still seem 
+to be a positive step forward to put in that base functionality (even 
+without the module param) to enable power saving.
 
->    I am seeing the following errors on a Fedora 7 x86_64 linux box,
-> running on a Tyan Tempest i5000XL motherboard, after upgrading from
-> kernel-2.6.25-14.fc9.x86_64 to kernel-2.6.25.3-18.fc9.x86_64...
-> 
-> May 25 04:30:56 fourier kernel: EDAC i5000 MC0: NON-FATAL ERRORS Found!!! 1st NON-FATAL Err Reg=
-> 0x10000
-> May 25 04:30:56 fourier kernel: EDAC MC0: CE row 1, channel 0, label "": (Branch=0 DRAM-Bank=3
-> RDWR=Read RAS=14339 CAS=672, CE Err=0x10000)
-> 
-> These messages occur about once an hour and are always for the same DRAM-Bank.
-> I've not been able to find any memory errors when running memtest86 with or
-> without ECC checking being enabled. Are there any known issues with the
-> EDAC support in the kernel that might cause false positives like this?
-> The errors are always marked as non-fatal and are for reads. Also, does
-> anyone know how this code numbers ram banks? Is the first ram bank considered
-> 0 or 1 by this code? Thanks in advance for any clarifications.
->                     Jack
+It is always good to get the complete solution in (how hard can the user 
+interface be to code once we agree on what it should be ;-)), but this 
+seems to be a good first step.
 
-Yes, it is a known false positive bug.
-
-The hardware has some type of error which it calls NON-FATAL, and the driver is TOO verbose in
-reporting that event. I am working on a patch to quiet that down
-
-thanks
-
-doug t
+ric
 
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
-
-W1DUG
