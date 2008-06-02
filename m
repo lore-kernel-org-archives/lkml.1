@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYFBLjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbYFBLkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbYFBLjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbYFBLjF
+	id S1757764AbYFBLkT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYFBLkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:39:05 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:38494 "EHLO
+	Mon, 2 Jun 2008 07:40:04 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:38506 "EHLO
 	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753124AbYFBLjE (ORCPT
+	with ESMTP id S1752432AbYFBLkB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:39:04 -0400
-Message-ID: <4843DBD3.2030201@ru.mvista.com>
-Date: Mon, 02 Jun 2008 15:38:59 +0400
+	Mon, 2 Jun 2008 07:40:01 -0400
+Message-ID: <4843DC0C.2070400@ru.mvista.com>
+Date: Mon, 02 Jun 2008 15:39:56 +0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Organization: MontaVista Software Inc.
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
@@ -19,9 +19,9 @@ X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/21] qd65xx: convert to use ide_timing_find_mode()
-References: <20080528213944.16327.92950.sendpatchset@localhost.localdomain> <20080528214215.16327.58984.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080528214215.16327.58984.sendpatchset@localhost.localdomain>
+Subject: Re: [PATCH 11/21] alim15x3: convert to use ide_timing_find_mode()
+References: <20080528213944.16327.92950.sendpatchset@localhost.localdomain> <20080528214223.16327.11847.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080528214223.16327.11847.sendpatchset@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,3 +37,4 @@ Bartlomiej Zolnierkiewicz wrote:
 Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
 MBR, Sergei
+
