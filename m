@@ -1,41 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbYFBXLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYFBXMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbYFBXLs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 19:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbYFBXLk
+	id S1755878AbYFBXMw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 19:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbYFBXMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 19:11:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:56670 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753763AbYFBXLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 19:11:39 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: initialization of static per-cpu variables
-Date: Tue, 3 Jun 2008 09:11:23 +1000
-User-Agent: KMail/1.9.9
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-References: <19f34abd0805211128r29fa437fm9e9e4c3d3c196f62@mail.gmail.com> <200805252035.24535.rusty@rustcorp.com.au> <20080602075937.GA29836@cs181133002.pp.htv.fi>
-In-Reply-To: <20080602075937.GA29836@cs181133002.pp.htv.fi>
+	Mon, 2 Jun 2008 19:12:41 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:22106 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754364AbYFBXMk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 19:12:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=leEq2J+doCVvv8Uh2Bl8ZwvP+tCTu1OZ4SFWYJl+ZWeZc8kPLpVl7V/Z7Psu0BTPzXiJVXdjhTgX3OLneHdhckJJOvRYFPFwF0Oe1yIzA1pRJSnCcEsQ0dO57koYQDJTybjD17GFcdss7DCcc0PU2ng0ULDrpowM7opYBwKjX2s=
+Message-ID: <dd18b0c30806021612h34f776f6kb480b3aa7a1d5e41@mail.gmail.com>
+Date: Mon, 2 Jun 2008 23:12:38 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: hci_usb strikes again (was Re: BUG kmalloc-2048: Poison overwritten)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org
+In-Reply-To: <20080602222142.GB18599@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806030911.23987.rusty@rustcorp.com.au>
+References: <dd18b0c30806011613l6c8c1863rd237f7de06a6b33a@mail.gmail.com>
+	 <200806020125.25918.rjw@sisk.pl> <20080602222142.GB18599@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 June 2008 17:59:37 Adrian Bunk wrote:
-> On Sun, May 25, 2008 at 08:35:24PM +1000, Rusty Russell wrote:
-> > Finally, it's a sparc64 problem and DaveM acked already.
+On Mon, Jun 2, 2008 at 10:21 PM, Pavel Machek <pavel@suse.cz> wrote:
+> On Mon 2008-06-02 01:25:25, Rafael J. Wysocki wrote:
+>> On Monday, 2 of June 2008, Justin Mattock wrote:
+>> > I received this after the second simultaneous suspend: (I will try and
+>> > see if this is re creatable or not)
+>>
+>> Suspend to RAM or hibernation?
 >
-> Was it a sparc64 problem or a generic problem DaveM happened to run into
-> on sparc?
+> hci_usb... that beast is known to corrupt random data on suspend and
+> surprise removal.
+>
+>> > [  232.270737] BUG: unable to handle kernel paging request at 6b6b6c6b
+>> > [  232.270743] IP: [<c013f96d>] module_put+0x12/0x2b
+>> > [  232.270750] *pde = 00000000
+>> > [  232.270753] Oops: 0002 [#1] SMP
+>> > [  232.270757] Modules linked in: hci_usb cpufreq_ondemand
+>> > cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
+>> > ipmi_watchdog ipmi_msghandler uinput wlan_tkip ieee80211_crypt_tkip
+>> > ieee80211_crypt arpt_mangle arptable_filter arp_tables
+>> > nf_conntrack_ipv4 nf_conntrack iptable_mangle iptable_filter ip_tables
+>> > x_tables intelfb i2c_i810 i2c_algo_bit coretemp eeprom acpi_cpufreq
+>> > fglrx(P) applesmc joydev uvcvideo appletouch wlan_scan_sta
+>> > ath_rate_sample firewire_ohci firewire_core snd_hda_intel ath_pci
+>> > snd_pcm wlan ohci1394 intel_agp evdev ath_hal(P) snd_timer ieee1394
+>> > pata_acpi thermal ehci_hcd uhci_hcd snd_page_alloc snd_hwdep agpgart
+>> > video button processor
+>> > [  232.270800]
+>> > [  232.270802] Pid: 2690, comm: btdelconn Tainted: P
+>> > (2.6.26-rc4-00033-g5463508 #4)
+>
+> ...and we get oops in bluetooth.
+>
+> Use btusb, instead.
+>
+> Actually, I guess we should mark hci_usb as broken. I don't see why we
+> should debug the same problem over and over again.
+>                                                                Pavel
+>
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
 
-Yes, it was a sparc specific problem.
+Well; "shizzle my frizzle," The funny thing is, is I have not seen
+this after performing more suspends,
+maybe this is a every once in a while scenario.
+regards;
 
-Rusty.
+-- 
+Justin P. Mattock
