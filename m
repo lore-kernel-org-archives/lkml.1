@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbYFBIiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbYFBImY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758690AbYFBIiG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 04:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYFBIhy
+	id S1758141AbYFBImY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 04:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYFBImQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 04:37:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56689 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753959AbYFBIhx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 04:37:53 -0400
-Date: Mon, 2 Jun 2008 09:22:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-Message-ID: <20080602092225.26db9b5b@core>
-In-Reply-To: <4843A4A7.3020809@garzik.org>
-References: <20080508161008.59361de5@appleyard>
-	<20080527030854.GC7515@mit.edu>
-	<20080527143202.4bab5bf0@appleyard>
-	<20080527225926.GE6843@mit.edu>
-	<20080527163251.04054a74@appleyard>
-	<20080531080015.GG5405@ucw.cz>
-	<4842F5A8.9020708@garzik.org>
-	<20080602080440.25fc663c@core>
-	<4843A4A7.3020809@garzik.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jun 2008 04:42:16 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:43078 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750936AbYFBImP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 04:42:15 -0400
+Date: Mon, 2 Jun 2008 11:41:56 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [RFC: 2.6 patch] always enable FW_LOADER unless EMBEDDED=y
+Message-ID: <20080602084155.GB29836@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The key requirement is per-port control.  Ideally via hdparm or another 
-> userspace tool, but kernel command line (module options) or sysfs would 
-> be just fine too.  And agreed, the minimal you need is simply 1/0 for 
-> the port's policy.
+James Bottomley recently discovered that we have 
+{request,release}_firmware() dummies for the case of the actual 
+functions not being available and has a fix for the bug that was 
+actually causing build errors for built-in users with 
+CONFIG_FW_LOADER=m.
 
-We don't need it per port Jeff, you are being quite silly here. Right now
-its permanently foo=0 for all ports and nobody has suffered anything too
-horrible so being able to turn it off for all ports is clearly quite
-sufficient for the neat future. If someone wants it per port they'll send
-you a patch later.
+But now missing selects on FW_LOADER are no longer visible at 
+compile-time at all and can become runtime problems.
 
-Alan
+FW_LOADER is infrastructure with relatively smalll codesize we can 
+safely enable for everyone, and only for people who really need small 
+kernels (and can be expected to know what they are doing) it matters 
+being able to disable it.
+
+This patch therefore always sets FW_LOADER=y and allows users only to 
+disable it with EMBEDDED=y.
+
+As a bonus, we can now get rid of all "select FW_LOADER" plus the due to 
+it required "depends on HOTPLUG" which removes a bit of complexity from 
+our Kconfig files.
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+462ee1ceb263f523b6f4e3bd30a0f63810f05c67 diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+index d7da109..629e255 100644
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -27,8 +27,9 @@ config PREVENT_FIRMWARE_BUILD
+ 	  If unsure say Y here.
+ 
+ config FW_LOADER
+-	tristate "Userspace firmware loading support"
++	tristate "Userspace firmware loading support" if EMBEDDED
+ 	depends on HOTPLUG
++	default y
+ 	---help---
+ 	  This option is provided for the case where no in-kernel-tree modules
+ 	  require userspace firmware loading support, but a module built outside
 
