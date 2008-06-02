@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbYFBDes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757030AbYFBDvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757053AbYFBDes (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 23:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbYFBDeh
+	id S1757030AbYFBDvj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 23:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYFBDv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 23:34:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:33554 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753697AbYFBDeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 23:34:36 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
-Date: Mon, 2 Jun 2008 12:00:41 +1000
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Travis <travis@sgi.com>
-References: <20080530035620.587204923@sgi.com> <200805301708.51284.rusty@rustcorp.com.au> <Pine.LNX.4.64.0805301055270.14564@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0805301055270.14564@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806021200.41652.rusty@rustcorp.com.au>
+	Sun, 1 Jun 2008 23:51:27 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:39608 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303AbYFBDv0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 23:51:26 -0400
+Date: Sun, 1 Jun 2008 23:51:07 -0400
+Message-Id: <200806020351.m523p7Lw026335@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Arnd Bergmann <arnd@arndb.de>, Jamie Lokier <jamie@shareable.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@lst.de
+Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support 
+In-reply-to: Your message of "Mon, 02 Jun 2008 11:48:22 +0900."
+             <9785.1212374902@jrobl> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 May 2008 04:00:40 Christoph Lameter wrote:
-> On Fri, 30 May 2008, Rusty Russell wrote:
-> > > No its not! In order to increment a per cpu value you need to calculate
-> > > the per cpu pointer address in the current per cpu segment.
-> >
-> > Christoph, you just missed it, that's all.  Look at cpu_local_read et al
-> > in include/asm-i386/local.h (ie. before the x86 mergers chose the lowest
-> > common denominator one).
->
-> There is no doubt that local_t does perform an atomic vs. interrupt inc
-> for example. But its not usable. Because you need to determine the address
-> of the local_t belonging to the current processor first.
 
-Christoph!
+> Jamie Lokier wrote:
+> > Phillip Lougher wrote:
+> > If I read the patches correctly, when a file page is written to, only 
+> > that page gets copied into the page cache and locked, the other pages 
+> > continue to be read off disk from cramfs?  With Unionfs a page write 
+> > causes the entire file to be copied up to the r/w tmpfs and locked into 
+> > the page cache causing unnecessary RAM overhead.
 
-STOP typing, and START reading.
+Yes, unionfs does copyup whole files, but it doesn't lock the entire file
+into the page cache.  But I agree, that copying up large files to a tmpfs
+partition adds more memory pressure, at least temporarily (until pdflush
+kicks in).
 
-cpu_local_inc() does all this: it takes the name of a local_t var, and is 
-expected to increment this cpu's version of that.  You ripped this out and 
-called it CPU_INC().
+> Ok, so why not fix that in unionfs?  An option so that holes in the
+> overlay file let through data from the underlying file sounds like it
+> would be generally useful, and quite easy to implement.
 
-Do not make me explain it a third time.
+If I understand you right, you want to copyup one page at a time, right?
+That's not nearly as easy as one might imagine.  First, you can't do it on
+file systems which don't support holes.  Second, holes is a file-systems
+specific implementation issue, and the knowledge of holes AFAIC, is hidden
+from the VFS (IIRC, FreeBSD has a specific "zfod" page flag, which is turned
+on when the VM has a page that came out of a f/s hole).
 
-> As soon as you 
-> have loaded a processor specific address you can no longer be preempted
-> because that may change the processor and then the wrong address may be
-> increment (and then we have a race again since now we are incrementing
-> counters belonging to other processors). So local_t at mininum requires
-> disabling preempt.
+You'll need a way to tell if a given page was copied up or not, and
+distinguish b/t pages which are naturally filled with zeros vs. those which
+came from f/s holes.
 
-Think for a moment.  What are the chances that I didn't understand this when I 
-wrote the multiple implementations of local_t?
+Copyup is also providing persistency: you can copyup to a persistent f/s
+such as ext2.  So you'll need a bitmap or some sort of record that will
+survive file system remount and system reboot; such a bitmap will have to
+tell which pages of a file have been copied up or not.
 
-You are wasting my time explaining the obvious, and wasting your own.
+I'm not saying it's not possible, but it's to do this page-wise caching at a
+stackable layer than inside a native f/s such as ext2.  Now, if there was a
+generic VFS op that allowed me to query a file system whether a page it a
+given file is a hole or not, then unionfs would be able to do page-wise
+copyup easily.
 
-> Believe me I have tried to use local_t repeatedly for vm statistics etc.
-> It always fails on that issue.
+Frankly, I think something like support for a copied-up file, page-by-page,
+should probably be supported by a block layer virtual driver (this might be
+easier in a BSD-like geom layer.)
 
-Frankly, I am finding it increasingly easy to believe that you failed.  But 
-you are blaming the wrong thing.
+BTW, I believe FSCache has page-wise caching, right?  Caching is a
+copy-on-read operation, and it doesn't take much to make it cache (read:
+copy) on writes.  So FScache might be a good starting point for such an
+effort.
 
-There are three implementations of local_t which are obvious.  The best is for 
-architectures which can locate and increment a per-cpu var in one instruction 
-(eg. x86).  Otherwise, using atomic_t/atomic64_t for local_t provides a 
-general solution.  The other general solution would involve 
-local_irq_disable()/increment/local_irq_enable().
+> If not unionfs, a "union-tmpfs" combination would be good.  Many
+> filesystems aren't well suited to being the overlay filesystem -
+> adding to the implementation's complexity - but a modified tmpfs could
+> be very well suited.
 
-My (fading) hope is that this idiocy is an abberation,
-Rusty.
+I think a union-tmpfs is a better solution than a cramfs-specific one, b/c
+at least with union-tmpfs, many more users could use it.  Even if you
+restrict yourself to using tmpfs as the r-w layer, and read-only from just
+one other source f/s, that still will cover a large portion of unioning
+users.
+
+> -- Jamie
+
+Cheers,
+Erez.
