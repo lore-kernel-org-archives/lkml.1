@@ -1,170 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYFBWha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbYFBWm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbYFBWha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 18:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYFBWhV
+	id S1754367AbYFBWm4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 18:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYFBWmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 18:37:21 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:11257 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752844AbYFBWhT (ORCPT
+	Mon, 2 Jun 2008 18:42:46 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:2610 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752038AbYFBWmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 18:37:19 -0400
-X-BigFish: VPS1(zzzz10d3izzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <48447615.5050806@am.sony.com>
-Date: Mon, 2 Jun 2008 15:37:09 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 2 Jun 2008 18:42:46 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 53052feb6 (PNP: remove pnp_mem_flags() as an lvalue) breaks my ALSA intel8x0 sound card regression
+Date: Mon, 2 Jun 2008 16:42:49 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Avuton Olrich" <avuton@gmail.com>,
+       "Rene Herman" <rene.herman@keyaccess.nl>,
+       "Rene Herman" <rene.herman@gmail.com>,
+       "Len Brown" <len.brown@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <3aa654a40806010742r1d61caa2j681882145533b56a@mail.gmail.com> <200806021605.14519.bjorn.helgaas@hp.com> <3aa654a40806021523k5b89cd0cjbcddf5810d05072b@mail.gmail.com>
+In-Reply-To: <3aa654a40806021523k5b89cd0cjbcddf5810d05072b@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] console - Add configurable support for console charset translation
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Jun 2008 22:37:07.0039 (UTC) FILETIME=[2FF69EF0:01C8C501]
+Content-Disposition: inline
+Message-Id: <200806021642.50491.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With CONSOLE_TRANSLATIONS turned off, this saves about 6K
-on my kernel configured for an ARM development board (OMAP
-5912 OSK).  In embedded products I'm familiar with,
-console translations are not needed.
+On Monday 02 June 2008 04:23:28 pm Avuton Olrich wrote:
+> On Mon, Jun 2, 2008 at 3:05 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > On Monday 02 June 2008 01:06:12 pm Rene Herman wrote:
+> >> On 02-06-08 05:25, Avuton Olrich wrote:
+> >>
+> >> > On Sun, Jun 1, 2008 at 9:20 AM, Rene Herman <rene.herman@keyaccess.nl> wrote:
+> >> >> On 01-06-08 16:42, Avuton Olrich wrote:
+> >> >>
+> >> >>> My intel8x0 card stops working due to a regression; bisection and
+> >> >>> information below.
+> >
+> > Thank you very much for doing all the work to bisect this and write
+> > up such a complete report.
+> >
+> > Can you try the patch below, please?
+> > ...
+> 
+> Sweet! That works, thanks for the quick fix. Feel free to add me as Tested-by:.
 
-This was taken from the Linux-tiny project and updated slightly
-for 2.6.25.
+The patch below fixes this regression from 2.6.25 and should go in
+2.6.26.
 
-  drivers/char/consolemap.c |   81 ++++++++++++++++++++++++++++++++++++++++++++++
-  drivers/char/vt.c         |    4 ++
-  init/Kconfig              |    7 +++
-  3 files changed, 92 insertions(+)
 
-Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+PNP: mark resources that conflict with PCI devices "disabled"
 
---- a/drivers/char/consolemap.c
-+++ b/drivers/char/consolemap.c
-@@ -22,6 +22,8 @@
-  #include <linux/consolemap.h>
-  #include <linux/vt_kern.h>
+Both the PNP/PCI conflict detection quirk and the PNP system
+driver must use the same mechanism to mark resources as disabled.
 
-+#ifdef CONFIG_CONSOLE_TRANSLATIONS
-+
-  static unsigned short translations[][256] = {
-    /* 8-bit Latin-1 mapped to Unicode -- trivial mapping */
-    {
-@@ -742,3 +744,82 @@ console_map_init(void)
-  }
+I think it's best to keep the resource and to keep the type bit
+(IORESOURCE_MEM, etc), so that we match the list from firmware
+as closely as possible.
 
-  EXPORT_SYMBOL(con_copy_unimap);
-+
-+#else
-+
-+u16 inverse_translate(struct vc_data *conp, int glyph, int use_unicode)
-+{
-+	return glyph;
-+}
-+
-+unsigned short *set_translate(int m, struct vc_data *vc)
-+{
-+	return NULL;
-+}
-+
-+int con_set_trans_old(unsigned char *arg)
-+{
-+	return 0;
-+}
-+
-+int con_get_trans_old(unsigned char *arg)
-+{
-+	return -EINVAL;
-+}
-+
-+int con_set_trans_new(ushort *arg)
-+{
-+	return 0;
-+}
-+
-+int con_get_trans_new(ushort *arg)
-+{
-+	return -EINVAL;
-+}
-+
-+int con_clear_unimap(struct vc_data *vc, struct unimapinit *ui)
-+{
-+	return 0;
-+}
-+
-+int con_set_unimap(struct vc_data *vc, ushort ct, struct unipair *list)
-+{
-+	return 0;
-+}
-+
-+int con_set_default_unimap(struct vc_data *vc)
-+{
-+	return 0;
-+}
-+
-+int con_copy_unimap(struct vc_data *d, struct vc_data *s)
-+{
-+	return 0;
-+}
-+
-+int con_get_unimap(struct vc_data *vc, ushort ct, ushort *uct,
-+		   struct unipair *list)
-+{
-+	return -EINVAL;
-+}
-+
-+void con_free_unimap(struct vc_data *vc) { }
-+
-+int conv_uni_to_pc(struct vc_data *conp, long ucs)
-+{
-+	return ucs > 0xff ? -1: ucs;
-+}
-+
-+void __init console_map_init(void) { }
-+
-+u32 conv_8bit_to_uni(unsigned char c)
-+{
-+	return c;
-+}
-+
-+int conv_uni_to_8bit(u32 uni)
-+{
-+	return (int)uni & 0xff;
-+}
-+
-+#endif
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -2198,7 +2198,11 @@ rescan_last_byte:
-  			c = 0xfffd;
-  		    tc = c;
-  		} else {	/* no utf or alternate charset mode */
-+#ifdef CONFIG_CONSOLE_TRANSLATIONS
-  		    tc = vc->vc_translate[vc->vc_toggle_meta ? (c | 0x80) : c];
-+#else
-+		    tc = c;
-+#endif
-  		}
+Fixes this regression from 2.6.25: http://lkml.org/lkml/2008/6/1/82
 
-                  /* If the original code was a control character we
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -758,6 +758,13 @@ config PROC_PAGE_MONITOR
-  	  /proc/kpagecount, and /proc/kpageflags. Disabling these
-            interfaces will reduce the size of the kernel by approximately 4kb.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Tested-by: Avuton Olrich <avuton@gmail.com>
 
-+config CONSOLE_TRANSLATIONS
-+	default y
-+	bool "Enable character translations in console" if EMBEDDED
-+	help
-+	  This enables support for font mapping and Unicode translation
-+          on virtual consoles.
-+
-  endmenu		# General setup
-
-  config SLABINFO
-
+Index: work11/drivers/pnp/quirks.c
+===================================================================
+--- work11.orig/drivers/pnp/quirks.c	2008-06-02 14:59:03.000000000 -0600
++++ work11/drivers/pnp/quirks.c	2008-06-02 15:42:35.000000000 -0600
+@@ -286,7 +286,7 @@ static void quirk_system_pci_resources(s
+ 					pci_name(pdev), i,
+ 					(unsigned long long) pci_start,
+ 					(unsigned long long) pci_end);
+-				res->flags = 0;
++				res->flags |= IORESOURCE_DISABLED;
+ 			}
+ 		}
+ 	}
+Index: work11/drivers/pnp/system.c
+===================================================================
+--- work11.orig/drivers/pnp/system.c	2008-06-02 14:58:56.000000000 -0600
++++ work11/drivers/pnp/system.c	2008-06-02 15:44:36.000000000 -0600
+@@ -81,7 +81,7 @@ static void reserve_resources_of_dev(str
+ 	}
+ 
+ 	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
+-		if (res->flags & IORESOURCE_UNSET)
++		if (res->flags & IORESOURCE_DISABLED)
+ 			continue;
+ 
+ 		reserve_range(dev, res->start, res->end, 0);
