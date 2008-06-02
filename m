@@ -1,78 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbYFBWal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYFBWbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbYFBWal (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 18:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYFBWad
+	id S1753977AbYFBWbt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 18:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYFBWbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 18:30:33 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:43564 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbYFBWac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 18:30:32 -0400
-Subject: Re: kvm causing memory corruption?  now 2.6.26-rc4
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       kvm-devel <kvm-devel@lists.sourceforge.net>,
-       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>
-In-Reply-To: <47EBB63E.2060306@qumranet.com>
-References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
-	 <47EA1C63.8010202@qumranet.com>
-	 <1206550329.7883.5.camel@nimitz.home.sr71.net>
-	 <47EA80AC.4070204@qumranet.com>
-	 <1206551794.7883.7.camel@nimitz.home.sr71.net>
-	 <47EB6AAC.3040607@qumranet.com>  <47EB7281.6070300@qumranet.com>
-	 <1206629709.7883.30.camel@nimitz.home.sr71.net>
-	 <47EBB63E.2060306@qumranet.com>
-Content-Type: text/plain
-Date: Mon, 02 Jun 2008 15:30:10 -0700
-Message-Id: <1212445810.8211.9.camel@nimitz.home.sr71.net>
+	Mon, 2 Jun 2008 18:31:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56101 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752712AbYFBWbk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 18:31:40 -0400
+Date: Mon, 2 Jun 2008 15:30:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, davej@codemonkey.org.uk,
+       andi@firstfloor.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: aperture_64.c: corner case wrong
+Message-Id: <20080602153033.2d1672f0.akpm@linux-foundation.org>
+In-Reply-To: <20080526191730.GA18425@elf.ucw.cz>
+References: <20080526191730.GA18425@elf.ucw.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-03-27 at 16:59 +0200, Avi Kivity wrote:
-> Dave Hansen wrote:
-> > On Thu, 2008-03-27 at 12:10 +0200, Avi Kivity wrote:
-> >> btw, is this with >= 4GB RAM on the host?
-> >
-> > Well, are you asking whether I have PAE on or not? :)  
+On Mon, 26 May 2008 21:17:30 +0200
+Pavel Machek <pavel@suse.cz> wrote:
+
 > 
-> No, I'm asking whether there is a possibility of address truncation :)
+> If 
 > 
-> PAE by itself doesn't affect kvm much, as it always runs the guest in 
-> pae mode.
+> fix == 0, aper_enabled == 1, gart_fix_e820 == 0
 > 
-> Can you try running with mem=2000M or something?
+> 	if (!fix && !aper_enabled)
+> 		return;
+> 
+> 	if (gart_fix_e820 && !fix && aper_enabled) {
+> 		if (e820_any_mapped(aper_base, aper_base + aper_size,
+> 				    E820_RAM)) {
+> 			/* reserve it, so we can reuse it in second
+> kernel */
+> 			printk(KERN_INFO "update e820 for GART\n");
+> 			add_memory_region(aper_base, aper_size,
+> E820_RESERVED);
+> 			update_e820();
+> 		}
+> 		return;
+> 	}
+> 
+> 	/* different nodes have different setting, disable them all atfirst*/
+> 
+> we'll fall back here and disable all the settings, even when they were
+> all consistent.
+> 
+> What about this? (I hope it compiles...)
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> 
+> diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+> index 02f4dba..aa4876a 100644
+> --- a/arch/x86/kernel/aperture_64.c
+> +++ b/arch/x86/kernel/aperture_64.c
+> @@ -344,14 +323,16 @@ out:
+>  	if (gart_fix_e820 && !fix && aper_enabled) {
+>  		if (!e820_all_mapped(aper_base, aper_base + aper_size,
+>  				    E820_RESERVED)) {
+>  			/* reserve it, so we can reuse it in second kernel */
+>  			printk(KERN_INFO "update e820 for GART\n");
+>  			add_memory_region(aper_base, aper_size, E820_RESERVED);
+>  			update_e820();
+>  		}
+> -		return;
+>  	}
+>  
+> +	if (!fix)
+> +		return;
+> +
+>  	/* different nodes have different setting, disable them all at first*/
+>  	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
+>  		int bus;
+> 
 
-I have a few more data points on this.  Sorry for the massive delay from
-the last report -- I'm being a crappy bug reporter.  But, this is on my
-one and only laptop which makes it a serious pain to diagnose.  I also
-didn't have a hardware serial console on it before, which I do now.
-This is all on 2.6.26-rc4-01549-g1beee8d.
+So what happened with this?  Thomas has merged an "x86: aperture_64.c:
+cleanups" from yourself but it appears that half of this bugfix got
+applied somewhere and the below part did not?
 
-Adding the mem= does not help at all.  But, it is all a bit more
-diagnosable now than a month or two ago.  I turned on all of the kernel
-debugging that I could get my grubby little hands on.  It now oopses
-quite consistently when kvm runs instead of after.  Here's a collection
-of oopses that I captured after setting up a serial line:
 
-	http://sr71.net/~dave/kvm-oops1.txt
-
-After collecting all those, I turned on CONFIG_DEBUG_HIGHMEM and the
-oopses miraculously stopped.  But, the guest hung (for at least 5
-minutes or so) during windows bootup, pegging my host CPU.  Most of the
-CPU was going to klogd, so I checked dmesg.
-
-I was seeing messages like this
-
-[  428.918108] kvm_handle_exit: unexpected, valid vectoring info and exit reason is 0x9
-
-And quite a few of them, like 100,000/sec.  That's why klogd was pegging
-the CPU.  Any idea on a next debugging step?
-
--- Dave
+diff -puN arch/x86/kernel/aperture_64.c~aperture_64c-corner-case-wrong arch/x86/kernel/aperture_64.c
+--- a/arch/x86/kernel/aperture_64.c~aperture_64c-corner-case-wrong
++++ a/arch/x86/kernel/aperture_64.c
+@@ -331,6 +331,9 @@ out:
+ 		return;
+ 	}
+ 
++	if (!fix)
++		return;
++
+ 	/* different nodes have different setting, disable them all at first*/
+ 	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
+ 		int bus;
+_
 
