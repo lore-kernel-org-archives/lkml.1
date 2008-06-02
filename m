@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbYFBLn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbYFBLnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758914AbYFBLn1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbYFBLnQ
+	id S1759592AbYFBLnl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759594AbYFBLnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:43:16 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:38561 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755936AbYFBLnP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:43:15 -0400
-Message-ID: <4843DCCD.6080600@ru.mvista.com>
-Date: Mon, 02 Jun 2008 15:43:09 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 2 Jun 2008 07:43:24 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5991 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759580AbYFBLnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 07:43:23 -0400
+Date: Mon, 2 Jun 2008 13:43:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@suse.cz>, mtk.manpages@gmail.com,
+       Hugh Dickins <hugh@veritas.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: sync_file_range(SYNC_FILE_RANGE_WRITE) blocks?
+Message-ID: <20080602114319.GI5757@kernel.dk>
+References: <20080530102619.GA2468@elf.ucw.cz> <Pine.LNX.4.64.0805301451020.19914@blonde.site> <20080530204307.GA4978@ucw.cz> <Pine.LNX.4.64.0805311925190.27293@blonde.site> <20080531173950.c4f04028.akpm@linux-foundation.org> <Pine.LNX.4.64.0806010752510.24919@blonde.site> <20080601011501.199af80c.akpm@linux-foundation.org> <20080601114008.GC16843@elf.ucw.cz> <20080601133727.4e62ae55.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/21] ide: remove unused XFER_UDMA_SLOW
-References: <20080528213944.16327.92950.sendpatchset@localhost.localdomain> <20080528214002.16327.28489.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080528214002.16327.28489.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080601133727.4e62ae55.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Sun, Jun 01 2008, Andrew Morton wrote:
+> > > I expect major users of this system call will be applications which do
+> > > small-sized overwrites into large files, mainly databases.  That is,
+> > > once the application developers discover its existence.  I'm still
+> > > getting expressions of wonder from people who I tell about the
+> > > five-year-old fadvise().
+> > 
+> > Hey, you have one user now, its called s2disk. But for this call to be
+> > useful, we'd need asynchronous variant... is there such thing?
+> 
+> Well if you're asking the syscall to shove more data into the block
+> layer than it can concurrently handle, sure, the block layer will
+> block.  It's tunable...
 
-> Remove unused XFER_UDMA_SLOW from ide_timing[].
+Ehm, lets get the history right, please :-)
 
-> While at it:
+The block layer pretty much doesn't care about how large the queue
+size is, it's largely at 128 to prevent the vm from shitting itself
+like it has done in the past (and continues to do I guess, though
+your reply leaves me wondering).
 
-> - fix re-defining XFER_PIO_5 (no need to define it in ide-timing.h as
->   it is defined in <linux/ata.h> which is included by <linux/hdreg.h>)
+So you think the vm will be fine with a huge number of requests?
+It wont go nuts scanning and reclaiming, wasting oodles of CPU
+cycles?
 
-> - fix whitespace damage
+-- 
+Jens Axboe
 
-> There should be no functional changes caused by this patch.
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
