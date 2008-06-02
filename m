@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbYFBMoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbYFBMpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbYFBMoz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 08:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbYFBMoq
+	id S1760640AbYFBMpd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 08:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbYFBMpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 08:44:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:37538 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754440AbYFBMoo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 08:44:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=LQKlxhKVBWxqI8lByTBB8W651NcuCmJlmaggLE0vyzSz+MnXpfp1XRVnsKj3GANew8/14krSj8JEq3eENrvMk9lS3RKUSdGK7VJSwmVRBLQ5K0wsg7waQznwttXa+mss8DRMN8WaZPuT8i/ZSkJC3wLVmsQiB+lnoA/5PcLnaV0=
-Message-ID: <b6c5339f0806020544u3993a9dbh38e746449c601c5e@mail.gmail.com>
-Date: Mon, 2 Jun 2008 08:44:41 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [Bug #10825] appletouch after wakeup
-Cc: "Justin Mattock" <justinmattock@gmail.com>,
-       "Marcel Holtmann" <marcel@holtmann.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>
-In-Reply-To: <200806020915.27683.oliver@neukum.org>
+	Mon, 2 Jun 2008 08:45:22 -0400
+Received: from mx2.suse.de ([195.135.220.15]:59930 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756015AbYFBMpV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 08:45:21 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: Novell, SuSE Labs
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [patch 01/15] security: pass path to inode_create
+Date: Mon, 2 Jun 2008 14:45:10 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
+       casey@schaufler-ca.com, jjohansen@suse.de,
+       penguin-kernel@i-love.sakura.ne.jp, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
+References: <20080529134903.615127628@szeredi.hu> <E1K38aL-0003KY-Qq@pomaz-ex.szeredi.hu> <20080602123244.GC8562@parisc-linux.org>
+In-Reply-To: <20080602123244.GC8562@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik>
-	 <dd18b0c30806011237v129990ddud066b603bf66cfcd@mail.gmail.com>
-	 <dd18b0c30806011609o7871f5b7wc487f5fd00045f76@mail.gmail.com>
-	 <200806020915.27683.oliver@neukum.org>
-X-Google-Sender-Auth: 84aa43036b4b5e57
+Message-Id: <200806021445.13831.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 2, 2008 at 3:15 AM, Oliver Neukum <oliver@neukum.org> wrote:
-> Am Montag, 2. Juni 2008 01:09:00 schrieb Justin Mattock:
->> On Sun, Jun 1, 2008 at 7:37 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->> > On Sun, Jun 1, 2008 at 6:29 PM, Oliver Neukum <oliver@neukum.org> wrote:
->
->> >> Please also apply the patch from the following link:
->> >> https://bugzilla.novell.com/attachment.cgi?id=213908
->
-> Is this a statistically significant number of tests? How often did you see
-> the appletouch problem? Can we consider this regression to be fixed by
-> this patch?
+On Monday 02 June 2008 14:32:46 Matthew Wilcox wrote:
+> The point is to resolve pathnames into dev_t + inode in the
+> context where the rule is set up.  Then you can implement (say)
+> security_inode_permission() without needing to pass in a vfsmount -- all
+> you need are the inode->i_ino and inode->i_sb->s_dev to do a comparison.
 
-[CCed Johannes since we discussed the original problem in a separate thread]
+Without the vfsmount, when something is mounted in more than once place, you 
+cannot report which of the name aliases a process is accessing. This is 
+unacceptable; the logs would become unusable. With pathname-based, the 
+AppArmor and TOMOYO folks really mean pathname-based, not a hybrid pathname / 
+mount point model.
 
-Oliver,
+> Yes, if someone mounts /etc onto /etc2/ and has a rule to allow them to
+> access /etc/shadow, they will then be able to access /etc2/shadow as
+> well (which they weren't able to under previous apparmour).  But I can't
+> think of a way that permits Something Bad to happen (since the contents
+> of the file could have been accessed through /etc/shadow *anyway*).
 
-Is the RESET_RESUME quirk needed in addition to the Novell bugzilla patch?
+Yes, when a security policy specifies different permissions for the same 
+object on different paths, processes are of course limited to the least 
+restrictive of those paths.
 
-I tried the bugzilla patch which fixed "mouse completely broken" after
-resume, but the mouse now behaves strangely - it warps to random
-positions whenever you remove your finger from the touchpad.  I did
-not apply the quirk.
+One consequence of this is that pathname-based models must control who is 
+allowed to create aliases where, of course.
 
-I also did not get an oops here.
-
--- 
-Bob Copeland %% www.bobcopeland.com
+Andreas
