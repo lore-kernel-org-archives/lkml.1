@@ -1,145 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbYFBRh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYFBRiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757582AbYFBRh5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 13:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbYFBRhl
+	id S1755430AbYFBRiW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 13:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYFBRhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 13:37:41 -0400
-Received: from smtp21.orange.fr ([80.12.242.49]:59006 "EHLO smtp21.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755235AbYFBRh1 convert rfc822-to-8bit (ORCPT
+	Mon, 2 Jun 2008 13:37:43 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:14407 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755299AbYFBRha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 13:37:27 -0400
-X-ME-UUID: 20080602141645892.D9EFC1C00081@mwinf2603.orange.fr
-From: Guillaume FORTAINE <gui.fortaine@orange.fr>
-Reply-To: Guillaume FORTAINE <gui.fortaine@orange.fr>
-To: subrata@linux.vnet.ibm.com, ltp-list <ltp-list@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Mon, 2 Jun 2008 13:37:30 -0400
+Date: Mon, 2 Jun 2008 21:37:26 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Wim Van Sebroeck <wim@iguana.be>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>, Avantika Mathur <mathur@us.ibm.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Message-ID: <21212281.2485021212416205853.JavaMail.www@wwinf2625>
-Subject: re: [LTP] [ANNOUNCE] The Linux Test Project has been Released for
- MAY	2008
+       Jochen Friedrich <jochen@scram.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and mpc8xx
+Message-ID: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Originating-IP: [217.128.82.75]
-X-Wum-Nature: EMAIL-NATURE
-X-WUM-FROM: |~|
-X-WUM-TO: |~||~||~|
-X-WUM-CC: |~||~||~||~||~||~||~|
-X-WUM-REPLYTO: |~|
-Date: Mon,  2 Jun 2008 16:16:45 +0200 (CEST)
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-Dear All,
+No comments on the previous version for two weeks... resending once
+again.
 
-There is also this project :
+Changes since v3:
 
-http://linuxtesting.org/
+- None. Simply resending, plus adding Andrew Morton and linux-kernel
+  to Cc, since I'm constantly getting bounces from Wim Van Sebroeck's
+  email:
 
-Mission and Activities of the Linux Verification Center
+  - - - -
+  <wim@iguana.be>:
+  213.249.96.99 does not like recipient.
+  Remote host said: 450 Client host rejected: cannot find your hostname, [85.21.88.2]
+  Giving up on 213.249.96.99.
+  I'm not going to try again; this message has been in the queue too long.
+  - - - -
 
-The mission of the Center is to propagate the Linux platform by ensuring its high reliability and compatibility through the use of open standards and advanced testing and verification technologies.
+  Not sure whose fault is it though.
 
-    * Development of open source test suites for automated conformance and functional Linux testing.
-    * Strengthening open standards - helping standard bodies to improve, develop and enforce Linux standards.
-    * Dissemination of academic and industrial expertise in the area of requirements analysis and advanced testing and verification.
+  Andrew, if Wim will not get this series and there will no objections,
+  could you please pick [WATCHDOG] ones?
 
-The Center is supported by the Russian Federal Agency for Science and Innovations, by the international consortium The Linux Foundation and is based at the Institute for System Programming of the Russian Academy of Sciences (ISP RAS).
+Changes since v2:
 
+- New patch to fix current driver's checkpatch issues;
+- New patch supporting MPC8xx watchdogs;
+- Removed MODULE_ALIAS("platform:mpc83xx_wdt"), since this driver is no
+  longer on the platform bus;
+- When renaming the driver also mention what kind of CPUs we support.
+  Also give a pointer for BookE watchdog driver. Though BookE users will
+  not see the MPC8xxx driver at all, because we're explicitly listing the
+  CPU families in "depends on". But this tip might be useful for
+  developers.
+- Scott Wood noticed that we don't need device_type anymore. I thought
+  that OpenFirmware defines this type, but google didn't prove that.
+  So I just removed the device_type.
 
-Best Regards,
+Changes since v1:
 
-Guillaume FORTAINE
-"I have root @ Google"
+- Scott Wood asked for mpc83xx_wdt on multiplatform kernels. Done via
+  OF platform driver;
+- Kumar Gala asked for mpc83xx_wdt -> mpc8xxx_wdt rename. Done in two
+  steps;
+- Segher Boessenkool noticed a negligence in the wdt device tree node.
+  Fixed by removing mpc83xx_wdt compatible entry.
 
-
-
-> Message du 02/06/08 15:47
-> De : "Subrata Modak"
-> A : "ltp-list" , "linux-kernel"
-> Copie à : "Andrew Morton" , "Linus Torvalds" , "Matt Helsley" , "Avantika Mathur" , "Badari Pulavarty" , "Mingming Cao" , "linux-rt-users"
-> Objet : [LTP] [ANNOUNCE] The Linux Test Project has been Released for MAY2008
->
-> Dear All,
->
-> The Linux Test Project test suite has been released for the month of
-> MAY 2008. The latest version of the test-suite contains 3000+ tests
-> for the Linux OS and can be found at
-> http://ltp.sourceforge.net/.
-> Latest happenings in LTP can also be found at:
-> http://ltp.sourceforge.net/wiki/,
-> http://ltp.sourceforge.net/wikiArchives.php, and,
-> IRC: irc.freenode.org #ltp.
->
->
-> MAY 2008 Highlights:
->
-> * Addition of FILESYSTEM BIND MOUNT tests,
-> * Addition of 2nd Set of Memory Controller Test Cases,
-> * Added Default Log File generation capability,
-> * Stable Release of LTP-DEVEL-2.0.0.0 RPM Packages for
-> i386,ia64,ppc64,x86_64 & s390x,
-> * FCNTL LOCKTESTS updates,
-> * Update to OpenHPI 2.10.2,
-> * Continuing work for Concurrency fixes,
-> * Cleanup/Updates to LTP Real Time test cases,
->
->
-> Note(s) from the Maintainer:
->
-> Continuing with our endeavor to improve kernel code coverage, we will
-> see some new test cases getting added to LTP in June 2008. But we would
-> probably need much much more test cases in LTP to compete the pace of
-> growing kernel. And this is becoming difficult with each passing day. We
-> need to address this through multiple efforts, namely:
->
-> 1) Invest more time in writing new test cases,
-> 2) Searching existing testcases available from various locations, that
-> can be a potential candidate to add to LTP under GPLv2,
-> 3) Dig out unit test cases from developerś desktop and put it in LTP.
->
-> Much of these efforts will also depend on preventing the Linux Testing
-> community to fragment further, identify areas where all Linux testing
-> projects can collaborate and complement each otherś importance, and work
-> together for achieving the ultimate goal to make Linux better.
->
-> >From this release onwards, we will also announce the significant
-> contribution of this month, which happens to be the File System Bind
-> Mount tests from Matt Helsley & Avantika Mathur. Thank you. Equally
-> important has been huge contributions from others in terms of new test
-> cases and Patches to fix existing test cases.
->
-> Our web site also contains other information such as:
-> - A Linux test tools matrix
-> - Technical papers
-> - How To's on Linux testing
-> - Code coverage analysis tool.
->
->
-> We would encourage the community to post results to
-> ltp-results@lists.sf.net,
-> patches, new tests, bugs or comments/questions to ltp-list@lists.sf.net,
-> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=103382
-> (for New Bug(s)),
-> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=303382
-> (for New Patch(s)),
-> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=353382
-> (for New Feature Request(s))
->
-> Please also see the Change Log Attached (MAY 2008):
->
-> Happy testing,
-> Regards--
-> Subrata,
->
->
-> [ May-2008_Changelog.txt (51.6 Ko) ]
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
