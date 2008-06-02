@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYFBADs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYFBAaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbYFBADs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 20:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYFBADi
+	id S1755595AbYFBAaP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 20:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYFBAaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 20:03:38 -0400
-Received: from namei.org ([69.55.235.186]:48896 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752751AbYFBADi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 20:03:38 -0400
-Date: Mon, 2 Jun 2008 10:02:41 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, Hugh Dickins <hugh@veritas.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: Top kernel oopses/warnings for the week of May 30th 2008
-In-Reply-To: <48402DAA.60202@linux.intel.com>
-Message-ID: <Xine.LNX.4.64.0806020955570.8594@us.intercode.com.au>
-References: <48402DAA.60202@linux.intel.com>
+	Sun, 1 Jun 2008 20:30:01 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:41662 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752662AbYFBAaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 20:30:00 -0400
+Date: Mon, 2 Jun 2008 10:29:57 +1000
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] net driver updates .27
+Message-ID: <20080602002956.GS20457@bakeyournoodle.com>
+References: <20080531022651.GA3078@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080531022651.GA3078@havoc.gtf.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 May 2008, Arjan van de Ven wrote:
+On Fri, May 30, 2008 at 10:26:52PM -0400, Jeff Garzik wrote:
+> 
+> Please pull from 'davem-next' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-next
 
-> Rank 4: task_has_capability (warning)
-> 	Reported 181 times (202 total reports)
-> 	[out of tree] Bug in the proprietary firegl driver
-> 	warning only shows up in tainted kernels
-> 	This warning was last seen in version 2.6.25.3, and first seen in
-> 	2.6.25.
-> 	More info:
-> 	http://www.kerneloops.org/searchweek.php?search=task_has_capability
+<snip>
 
-This is a shining example of why people should avoid binary drivers.  I'd 
-guess that the bug is related to the new 64-bit capability code.
+Hi Jeff,
+	Any chance of taking the patch at: http://lkml.org/lkml/2008/5/19/10
+It's stop Stephen from carrying it in linux-next.
 
-It'd be really interesting to know what this driver is doing with 
-capabilities in the first place.
+Yours Tony
 
-If anyone is using this driver, the output of the following command as a 
-non-root user from gnome-terminal or similar may be of interest:
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
 
-$ cat /proc/self/status |grep ^Cap
-
-It should generally be all zeroes.
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
