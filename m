@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbYFBNqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761698AbYFBNrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761385AbYFBNqW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 09:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760512AbYFBNpw
+	id S1761698AbYFBNrX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 09:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbYFBNqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 09:45:52 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:48799 "EHLO
+	Mon, 2 Jun 2008 09:46:44 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:49376 "EHLO
 	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758541AbYFBNpn (ORCPT
+	with ESMTP id S1757690AbYFBNqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 09:45:43 -0400
-Message-Id: <20080602134438.405739039@theryb.frec.bull.fr>
+	Mon, 2 Jun 2008 09:46:43 -0400
+Message-Id: <20080602134439.102435445@theryb.frec.bull.fr>
 References: <20080602134438.224352910@theryb.frec.bull.fr>
 User-Agent: quilt/0.46-1
-Date: Mon, 02 Jun 2008 15:44:48 +0200
+Date: Mon, 02 Jun 2008 15:45:28 +0200
 From: Benjamin Thery <benjamin.thery@bull.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>,
@@ -21,178 +21,95 @@ Cc: Greg Kroah-Hartman <gregkh@suse.de>,
        linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
        Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>,
        Benjamin Thery <benjamin.thery@bull.net>
-Subject: [PATCH 01/10] sysfs: Support for preventing unmounts.
+Subject: [PATCH 05/10] sysfs: sysfs_chmod_file handle multiple superblocks
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs: Support for preventing unmounts.
+sysfs: sysfs_chmod_file handle multiple superblocks
 
-To support mounting multiple instances of sysfs occassionally I
-need to walk through all of the currently present sysfs super blocks.
-
-To allow this iteration this patch adds sysfs_grab_supers
-and sysfs_release_supers.  While a piece of code is in
-a section surrounded by these no more sysfs super blocks
-will be either created or destroyed.
+Teach sysfs_chmod_file how to handle multiple sysfs
+superblocks.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Benjamin Thery <benjamin.thery@bull.net>
 ---
- fs/sysfs/mount.c |   79 +++++++++++++++++++++++++++++++++++++++++++++++++------
- fs/sysfs/sysfs.h |   10 ++++++
- 2 files changed, 81 insertions(+), 8 deletions(-)
+ fs/sysfs/file.c |   54 ++++++++++++++++++++++++++++++------------------------
+ 1 file changed, 30 insertions(+), 24 deletions(-)
 
-Index: linux-mm/fs/sysfs/mount.c
+Index: linux-mm/fs/sysfs/file.c
 ===================================================================
---- linux-mm.orig/fs/sysfs/mount.c
-+++ linux-mm/fs/sysfs/mount.c
-@@ -41,47 +41,110 @@ struct sysfs_dirent sysfs_root = {
- 
- static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+--- linux-mm.orig/fs/sysfs/file.c
++++ linux-mm/fs/sysfs/file.c
+@@ -573,7 +573,8 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_grou
+ int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
  {
--	struct inode *inode;
--	struct dentry *root;
-+	struct sysfs_super_info *info = NULL;
-+	struct inode *inode = NULL;
-+	struct dentry *root = NULL;
-+	int error;
- 
- 	sb->s_blocksize = PAGE_CACHE_SIZE;
- 	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
- 	sb->s_magic = SYSFS_MAGIC;
- 	sb->s_op = &sysfs_ops;
- 	sb->s_time_gran = 1;
--	sysfs_sb = sb;
-+	if (!sysfs_sb)
-+		sysfs_sb = sb;
-+
-+	error = -ENOMEM;
-+	info = kzalloc(sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		goto out_err;
- 
- 	/* get root inode, initialize and unlock it */
-+	error = -ENOMEM;
- 	inode = sysfs_get_inode(&sysfs_root);
- 	if (!inode) {
- 		pr_debug("sysfs: could not get root inode\n");
--		return -ENOMEM;
-+		goto out_err;
- 	}
- 
- 	/* instantiate and link root dentry */
-+	error = -ENOMEM;
- 	root = d_alloc_root(inode);
- 	if (!root) {
- 		pr_debug("%s: could not get root dentry!\n",__func__);
--		iput(inode);
--		return -ENOMEM;
-+		goto out_err;
- 	}
- 	root->d_fsdata = &sysfs_root;
- 	sb->s_root = root;
-+	sb->s_fs_info = info;
- 	return 0;
-+
-+out_err:
-+	dput(root);
-+	iput(inode);
-+	kfree(info);
-+	if (sysfs_sb == sb)
-+		sysfs_sb = NULL;
-+	return error;
- }
- 
- static int sysfs_get_sb(struct file_system_type *fs_type,
- 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
- {
--	return get_sb_single(fs_type, flags, data, sysfs_fill_super, mnt);
-+	int rc;
-+	mutex_lock(&sysfs_rename_mutex);
-+	rc = get_sb_single(fs_type, flags, data, sysfs_fill_super, mnt);
-+	mutex_unlock(&sysfs_rename_mutex);
-+	return rc;
- }
- 
--static struct file_system_type sysfs_fs_type = {
-+struct file_system_type sysfs_fs_type = {
- 	.name		= "sysfs",
- 	.get_sb		= sysfs_get_sb,
- 	.kill_sb	= kill_anon_super,
- };
- 
-+void sysfs_grab_supers(void)
-+{
-+	/* must hold sysfs_rename_mutex */
+ 	struct sysfs_dirent *victim_sd = NULL;
+-	struct dentry *victim = NULL;
 +	struct super_block *sb;
-+	/* Loop until I have taken s_umount on all sysfs superblocks */
-+restart:
-+	spin_lock(&sb_lock);
++	struct dentry *victim;
+ 	struct inode * inode;
+ 	struct iattr newattrs;
+ 	int rc;
+@@ -584,31 +585,36 @@ int sysfs_chmod_file(struct kobject *kob
+ 		goto out;
+ 
+ 	mutex_lock(&sysfs_rename_mutex);
+-	victim = sysfs_get_dentry(sysfs_sb, victim_sd);
+-	mutex_unlock(&sysfs_rename_mutex);
+-	if (IS_ERR(victim)) {
+-		rc = PTR_ERR(victim);
+-		victim = NULL;
+-		goto out;
+-	}
+-
+-	inode = victim->d_inode;
++	sysfs_grab_supers();
 +	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
-+		if (sysfs_info(sb)->grabbed)
++		victim = sysfs_get_dentry(sb, victim_sd);
++		if (victim == ERR_PTR(-EXDEV))
 +			continue;
-+		/* Wait for unmount activity to complete. */
-+		if (sb->s_count < S_BIAS) {
-+			sb->s_count += 1;
-+			spin_unlock(&sb_lock);
-+			down_read(&sb->s_umount);
-+			drop_super(sb);
-+			goto restart;
++		if (IS_ERR(victim)) {
++			rc = PTR_ERR(victim);
++			victim = NULL;
++			goto out_unlock;
 +		}
-+		atomic_inc(&sb->s_active);
-+		sysfs_info(sb)->grabbed = 1;
-+	}
-+	spin_unlock(&sb_lock);
-+}
 +
-+void sysfs_release_supers(void)
-+{
-+	/* must hold sysfs_rename_mutex */
-+	struct super_block *sb;
-+restart:
-+	spin_lock(&sb_lock);
-+	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
-+		if (!sysfs_info(sb)->grabbed)
-+			continue;
-+		sysfs_info(sb)->grabbed = 0;
-+		spin_unlock(&sb_lock);
-+		deactivate_super(sb);
-+		goto restart;
-+	}
-+	spin_unlock(&sb_lock);
-+}
-+
- int __init sysfs_init(void)
- {
- 	int err = -ENOMEM;
-Index: linux-mm/fs/sysfs/sysfs.h
-===================================================================
---- linux-mm.orig/fs/sysfs/sysfs.h
-+++ linux-mm/fs/sysfs/sysfs.h
-@@ -85,6 +85,12 @@ struct sysfs_addrm_cxt {
- 	int			cnt;
- };
++		inode = victim->d_inode;
++		mutex_lock(&inode->i_mutex);
++		newattrs.ia_mode = (mode & S_IALLUGO) |
++				   (inode->i_mode & ~S_IALLUGO);
++		newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
++		rc = notify_change(victim, &newattrs);
++		if (rc == 0) {
++			mutex_lock(&sysfs_mutex);
++			victim_sd->s_mode = newattrs.ia_mode;
++			mutex_unlock(&sysfs_mutex);
++		}
++		mutex_unlock(&inode->i_mutex);
  
-+struct sysfs_super_info {
-+	int	grabbed;
-+};
-+
-+#define sysfs_info(SB) ((struct sysfs_super_info *)(SB)->s_fs_info)
-+
- /*
-  * mount.c
-  */
-@@ -92,6 +98,10 @@ extern struct sysfs_dirent sysfs_root;
- extern struct super_block *sysfs_sb;
- extern struct kmem_cache *sysfs_dir_cachep;
- extern struct vfsmount *sysfs_mount;
-+extern struct file_system_type sysfs_fs_type;
-+
-+void sysfs_grab_supers(void);
-+void sysfs_release_supers(void);
- 
- /*
-  * dir.c
+-	mutex_lock(&inode->i_mutex);
+-
+-	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+-	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
+-	rc = notify_change(victim, &newattrs);
+-
+-	if (rc == 0) {
+-		mutex_lock(&sysfs_mutex);
+-		victim_sd->s_mode = newattrs.ia_mode;
+-		mutex_unlock(&sysfs_mutex);
++		dput(victim);
+ 	}
+-
+-	mutex_unlock(&inode->i_mutex);
+- out:
+-	dput(victim);
++out_unlock:
++	sysfs_release_supers();
++	mutex_unlock(&sysfs_rename_mutex);
++out:
+ 	sysfs_put(victim_sd);
+ 	return rc;
+ }
 
 -- 
