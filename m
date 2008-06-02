@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYFBAaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbYFBAjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbYFBAaP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 20:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYFBAaB
+	id S1755729AbYFBAjc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 20:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbYFBAjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 20:30:01 -0400
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:41662 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbYFBAaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 20:30:00 -0400
-Date: Mon, 2 Jun 2008 10:29:57 +1000
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver updates .27
-Message-ID: <20080602002956.GS20457@bakeyournoodle.com>
-References: <20080531022651.GA3078@havoc.gtf.org>
+	Sun, 1 Jun 2008 20:39:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:43911 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750985AbYFBAjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Jun 2008 20:39:22 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080531022651.GA3078@havoc.gtf.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18499.16693.526974.912404@cargo.ozlabs.ibm.com>
+Date: Mon, 2 Jun 2008 10:39:17 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org
+Subject: Re: Diagnosing linux-next (Was: Re: m68k libc5 regression)
+In-Reply-To: <20080601140415.a2f25b9d.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0805262226280.11902@anakin>
+	<Pine.LNX.4.64.0805270014110.6718@jikos.suse.cz>
+	<20080601005338.3affe880.akpm@linux-foundation.org>
+	<20080601232638.fda1f3ab.sfr@canb.auug.org.au>
+	<20080601140415.a2f25b9d.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 30, 2008 at 10:26:52PM -0400, Jeff Garzik wrote:
-> 
-> Please pull from 'davem-next' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-next
+Andrew Morton writes:
 
-<snip>
+> hm, I just found the `committer' line in gitk.  Coulda sworn that
+> wasn't there yesterday.
 
-Hi Jeff,
-	Any chance of taking the patch at: http://lkml.org/lkml/2008/5/19/10
-It's stop Stephen from carrying it in linux-next.
+It was, actually. :)
 
-Yours Tony
+Seriously, if you have any suggestions about things that would make
+gitk more useful for you, let me know.
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
-
+Paul.
