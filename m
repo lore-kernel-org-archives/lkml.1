@@ -1,106 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbYFBO50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbYFBPBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbYFBO50 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 10:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbYFBO5S
+	id S1754484AbYFBPBn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 11:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYFBPBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 10:57:18 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:49770 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752335AbYFBO5R (ORCPT
+	Mon, 2 Jun 2008 11:01:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:50221 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbYFBPBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 10:57:17 -0400
-Date: Mon, 2 Jun 2008 16:56:03 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Message-ID: <20080602145603.GG26854@enneenne.com>
-References: <20080601161510.GA26854@enneenne.com> <20080602075113.60d0fdf8@core> <20080602092551.GC26854@enneenne.com> <20080602150257.54692f35@core>
+	Mon, 2 Jun 2008 11:01:33 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: hooanon05@yahoo.co.jp
+Subject: Re: [RFC 0/7] [RFC] cramfs: fake write support
+Date: Mon, 2 Jun 2008 17:01:16 +0200
+User-Agent: KMail/1.9.9
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       David Newall <davidn@davidnewall.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@lst.de
+References: <200805311737.58991.arnd@arndb.de> <200806021613.15088.arnd@arndb.de> <8353.1212417209@jrobl>
+In-Reply-To: <8353.1212417209@jrobl>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080602150257.54692f35@core>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Message-Id: <200806021701.17076.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19J3D2QnsMjAXXj6TYJIrmFQvkxBqihW73x1o1
+ JL5pB3OZydhHtgyE0MZPo/kaUmP9RsmHVoEg9lMOLoOe/BqCKE
+ PknLnGncmU29YVB8S3u9w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 03:02:57PM +0100, Alan Cox wrote:
-> > It could be a bit better... I did as above since I supposed that you
-> > wished all PPS code should be removed from serial port code.
-> 
-> Ideally. But if it is genuinely the case that the serial port IRQ handler
-> in some cases needs to do
-> 
-> my_interrupt() {
-> 	get_timestamp()
-> 	frob_with_hardware()
-> 	ld->dcd_change(blah, timestamp)
-> }
-> 
-> then that is still fairly clean and more importantly actually appears to
-> work. I'd avoid all the ifdefs with this in the serial drivers that need
-> more accuracy:
-> 
-> {
-> 	struct timespec ts;
-> 	if (ld->dcd_change)
-> 		getnstimeofday(&ts);
-> 	existing tty stuff
-> 	if (ld->dcd_change)
-> 		ld->dcd_change(tty, status, &ts);
-> }
+On Monday 02 June 2008, hooanon05@yahoo.co.jp wrote:
+> Aure rename returns EXDEV when the target is a dir and it has child
+> entr(y|ies) on lower branhc(es). And mv(1) handles this case.
+> My Engilsh might be miunderstood. Do you think link(2) should return an
+> error when the target exists on lower writable branch?
 
-I prefere avoid the if clause for getnstimeofday() since each
-instruction delay may decrease time precision, so:
+Any writes should always just go to the top level. If the source file
+for link() exists on the top level, link should succeed even if a target
+exists on a lower level (given that the user has permissions to
+unlink that file), but should return EXDEV if the source comes from
+a lower level.
 
-{
-      struct timespec ts;
-      getnstimeofday(&ts);
-      existing tty stuff
-      if (ld->dcd_change)
-              ld->dcd_change(tty, status, &ts);
-}
-
-In the wrost case the timestamp is not used.
-
-> And in ld->dcd_change do
-> 
-> 	struct timespec myts;
-> 	/* Caller passed NULL meaning 'do your own timestamp' */
-> 	if (ts == NULL) {
-> 		ts = &myts;
-> 		getnstimeofday(&myts);
-> 	}
-
-Ok.
-
-> so for uart that would
-> 
-> 	uart_dcd_change(struct uart_port *port, unsigned int status,
-> 					struct timespec *ts) {
-> 	{
-> 		...
-> 	}
-> 
-> passing the timestamp from the ttys own IRQ handler
-
-Great!
-
-Thanks,
-
-Rodolfo
-
--- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@linux.it
-Embedded Systems                     phone:	+39 349 2432127
-UNIX programming                     skype:     rodolfo.giometti
+	Arnd <><
