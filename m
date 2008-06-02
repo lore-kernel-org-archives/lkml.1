@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYFBAqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbYFBAu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbYFBAqL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 20:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbYFBApy
+	id S1756388AbYFBAu4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 20:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYFBAus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 20:45:54 -0400
-Received: from smtp-04.mandic.com.br ([200.225.81.151]:59357 "EHLO
-	smtp-04.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756294AbYFBApx (ORCPT
+	Sun, 1 Jun 2008 20:50:48 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:47702 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbYFBAur (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 20:45:53 -0400
-Message-ID: <484342B6.7020605@diamondcut.com.br>
-Date: Sun, 01 Jun 2008 21:45:42 -0300
-From: "Renato S. Yamane" <yamane@diamondcut.com.br>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: devzero@web.de
-CC: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, hmh@hmh.eng.br
-Subject: Re: [Bug 10797] Something is consuming power after shutdown
-References: <300254332@web.de>
-In-Reply-To: <300254332@web.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Jun 2008 20:50:47 -0400
+Date: Sun, 01 Jun 2008 20:50:29 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: floppy question of the hour
+In-reply-to: <alpine.LNX.1.10.0806012053440.4055@fbirervta.pbzchgretzou.qr>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Phillip Susi <psusi@cfl.rr.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
+Message-id: <200806012050.30124.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200805232114.20937.gene.heskett@gmail.com>
+ <200805271826.18320.gene.heskett@gmail.com>
+ <alpine.LNX.1.10.0806012053440.4055@fbirervta.pbzchgretzou.qr>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devzero@web.de wrote:
-> Renato S. Yamane wrote:
->> Pavel Machek wrote:
->>> Renato S. Yamane wrote:
->>> ...
->>>> <http://bugzilla.kernel.org/show_bug.cgi?id=10797>
->>>> <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=481493>
->>>
->>> Try to find out which component eats power, eg. by opening the machine
->>> searching for heat.
->>>
->>> (And yes, your hw is broken; on pc it is traditionaly hw
->>> responsibility to power machine down.)
+On Sunday 01 June 2008, Jan Engelhardt wrote:
+>On Wednesday 2008-05-28 00:26, Gene Heskett wrote:
+>>On Tuesday 27 May 2008, Phillip Susi wrote:
+>>>Gene Heskett wrote:
 >>
->> OK, I try do this but I think this is very difficult because demand
->> power is very low and is not enought to do hot some component. But I
->> will try.
-> 
-> i also don`t think that you can find something which is noticeably warm
-> this way - 4% of your battery in 12hrs - that "hot spot" should be hard
-> to identify
+>>Also, does anyone know how long after a floppy is inserted before it is
+>>recognized?  From observation today, it appears to be something in the 5
+>> minute territory before a getfdprm returns data instead of "/dev/fd0: no
+>> such device".
+>
+>I have a SONY USB floppy drive which used to get read within 2s
+>after inserting a new floppy. Which means it somehow signalled
+>the host, probably through an USB command.
+>
+>Just as I tried again now (with 2.6.23.17), this does not happen
+>anymore so I suspect udev or the kernel changed in some way.
 
-Yes, you are right!
-I try find a "hot spot" and it's impossible.
+This is attached directly to end connector on the 34 pin floppy cable.
 
-> if your notebook powers down and doesn`t show that something is still
-> "on" and consuming power - i`d call that "broken by design".
+What I have found that seems to work, is to put the disk in, then hit it with a 
+junk, 1 block read from dd.  That will take about 25-30 seconds to fail with an 
+I/O error.
 
-I don't know why, but as commented in Bug #10797, if I close my LCD
-Display (activing LID), power on again (because when LID is actived, my
-laptop hibernate), and shutdown, my battery charge not is changed.
+Then I can do the 'setfdprm' thing, check it with getfdprm, and go ahead and 
+write the disk image with dd.
 
-Best regards,
-Renato S. Yamane
+But if I don't knock on the door & fail once, just relying on getting a good 
+response from getfdprm from the setfdprm operation before trying dd, it will 
+_never_ work.  It has to be hammered on by dd before setfdprm and getfdprm will 
+work, and then dd can write to it just fine.
+
+Houston, we have a problem.  But I now know how to work around it sorta like 
+McGiver would do I guess, but what about the next user who will never see this 
+thread without a truly diligent search?  He will be similarly screwed, but the 
+only heavy breathing will be from frustration.
+
+If the kernel should somehow shrink so it could fit on a floppy again, I'd bet 
+this would be fixed yet this week. :)  But we all know what the chances of that 
+happening are. :(  It would however, be muchly appreciated by us old farts 
+using floppies to get stuff to/from a legacy computer.
+
+Thanks guys.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Wash: "It's Jayne being so generous with his cut that confuses and frightens
+me."
+
+Zoe: "It does kind of freeze the blood."
+				--Episode #10, "War Stories"
