@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbYFBHUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbYFBHWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbYFBHUQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 03:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYFBHUE
+	id S1758116AbYFBHWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 03:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYFBHWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 03:20:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42656 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750936AbYFBHUC (ORCPT
+	Mon, 2 Jun 2008 03:22:13 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:37675 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752416AbYFBHWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 03:20:02 -0400
-Date: Mon, 2 Jun 2008 08:04:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       Theodore Tso <tytso@mit.edu>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-Message-ID: <20080602080440.25fc663c@core>
-In-Reply-To: <4842F5A8.9020708@garzik.org>
-References: <20080508161008.59361de5@appleyard>
-	<20080527030854.GC7515@mit.edu>
-	<20080527143202.4bab5bf0@appleyard>
-	<20080527225926.GE6843@mit.edu>
-	<20080527163251.04054a74@appleyard>
-	<20080531080015.GG5405@ucw.cz>
-	<4842F5A8.9020708@garzik.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Jun 2008 03:22:12 -0400
+Date: Mon, 2 Jun 2008 09:22:10 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: akinobu.mita@gmail.com
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch -v2 19/23] zorro: use memory_read_from_buffer
+In-Reply-To: <20080601231633.611599860@gmail.com>
+Message-ID: <Pine.LNX.4.64.0806020921590.7351@anakin>
+References: <20080601231329.223608711@gmail.com> <20080601231633.611599860@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you are talking about SATA -- incorrect.
+On Mon, 2 Jun 2008, akinobu.mita@gmail.com wrote:
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+> ---
+>  drivers/zorro/zorro-sysfs.c |   10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
 > 
-> The patch deals with policy, and the user MUST have the ability to 
-> control this stuff.  Otherwise you create a situation where the user 
-> might be denied hotplug use in valid cases, or similar negative situations.
+> Index: 2.6-git/drivers/zorro/zorro-sysfs.c
+> ===================================================================
+> --- 2.6-git.orig/drivers/zorro/zorro-sysfs.c
+> +++ 2.6-git/drivers/zorro/zorro-sysfs.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/zorro.h>
+>  #include <linux/stat.h>
+>  #include <linux/string.h>
+> +#include <linux/fs.h>
+>  
+>  #include "zorro.h"
+>  
+> @@ -56,12 +57,6 @@ static ssize_t zorro_read_config(struct 
+>  	struct zorro_dev *z = to_zorro_dev(container_of(kobj, struct device,
+>  					   kobj));
+>  	struct ConfigDev cd;
+> -	unsigned int size = sizeof(cd);
+> -
+> -	if (off > size)
+> -		return 0;
+> -	if (off+count > size)
+> -		count = size-off;
+>  
+>  	/* Construct a ConfigDev */
+>  	memset(&cd, 0, sizeof(cd));
+> @@ -71,8 +66,7 @@ static ssize_t zorro_read_config(struct 
+>  	cd.cd_BoardAddr = (void *)zorro_resource_start(z);
+>  	cd.cd_BoardSize = zorro_resource_len(z);
+>  
+> -	memcpy(buf, (void *)&cd+off, count);
+> -	return count;
+> +	return memory_read_from_buffer(buf, count, &off, &cd, sizeof(cd));
+>  }
+>  
+>  static struct bin_attribute zorro_config_attr = {
 
-The policy isn't however complicated. Tejun added the stuff for forcing
-cable type and mode on setup and has therefore written all the per device
-setup code we might need. Alternatively a single
+Gr{oetje,eeting}s,
 
-	foo=1/0
+						Geert
 
-option has been fine for acpi and will do fine for this. Total additional
-cost - 1 line.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Alan
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
