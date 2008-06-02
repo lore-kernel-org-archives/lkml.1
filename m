@@ -1,103 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYFBKkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbYFBKmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbYFBKkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbYFBKkm
+	id S1758015AbYFBKmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYFBKmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:40:42 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:50709 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbYFBKkl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:40:41 -0400
-X-AuditID: 0ac90648-abf7aba000000c2f-05-4843ce2770c4
-Message-ID: <4843CE15.6080506@hitachi.com>
-Date: Mon, 02 Jun 2008 19:40:21 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
+	Mon, 2 Jun 2008 06:42:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56316 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752149AbYFBKmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:42:01 -0400
+Date: Mon, 2 Jun 2008 12:41:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: distinguish kretprobe'd functions in trace logs
+Message-ID: <20080602104150.GB898@elte.hu>
+References: <483C53EE.2060602@gmail.com> <Pine.LNX.4.58.0805271442090.396@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: [PATCH 0/5] jbd: possible filesystem corruption fixes (take 2)
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0805271442090.396@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH 0/5] jbd: possible filesystem corruption fixes (take 2)
 
-This patch set is the take 2 of fixing error handling problem in
-ext3/JBD.  The previous discussion can be found here:
-http://lkml.org/lkml/2008/5/14/10
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-The same problem should also be in ext4/JBD, but I haven't prepared
-it yet.
+> On Wed, 28 May 2008, Abhishek Sagar wrote:
+> >
+> > But if irq_enter() has a kretprobe installed on it, the return value stored on the stack at each invocation is modified to divert the return to a kprobe trampoline function called kretprobe_trampoline(). So with this the trace would (currently) look like:
+> >
+> > <idle>-0     [00] 4154504455.781616: irq_enter <- kretprobe_trampoline
+> >
+> > Now this is quite misleading to the end user, as it suggests something that didn't actually happen. So just to avoid such misinterpretations, the inlined patch aims to output such a log as:
+> >
+> > <idle>-0     [00] 4154504455.781616: irq_enter <- [unknown/kretprobe'd]
+> >
+> >
+> > Signed-off-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+> 
+> Thanks Abhishek,
+> 
+> Acked-by: Steven Rostedt <srostedt@redhat.com>
 
+applied to tip/tracing/ftrace, thanks.
 
-Problem
-=======
-Currently some error checkings are missing, so the journal cannot abort
-correctly.  This causes breakage of the ordered mode rule and filesystem
-corruption.  Missing error checkings are:
-
-(1) error check for dirty buffers flushed before the commit
-    (addressed by PATCH 1/5 and 2/5)
-(2) error check for the metadata writes to the journal before the
-    commit (addressed by PATCH 3/5)
-(3) error check for checkpointing and replay (addressed by PATCH 4/5
-    and 5/5)
-
-
-Changes from take 1
-===================
-[PATCH 1/5]
-o not changed
-
-[PATCH 2/5]
-o rewrite my coment in journal_dirty_data() comprehensibly
-
-[PATCH 3/5]
-o check for errors and abort the journal just before
-  journal_write_commit_record() instead of after writing metadata
-  buffers
-
-[PATCH 4/5 and 5/5]
-o separate the ext3 part from the jbd part in a patch
-o use JFS_ABORT for checkpointing failures instead of introducing
-  JFS_CP_ABORT flag
-o don't update only the journal super block, but also j_tail and
-  j_tail_sequence when the journal has aborted (at least we only
-  have to avoid updating the super block, but keeping j_tail*'s
-  values will be good thing because it may protect someone from
-  adding bugs in the future)
-o journal_destroy() returns -EIO when the journal has aborted so that
-  ext3_put_super() can detect the abort
-o journal_flush() uses j_checkpoint_mutex to avoid a race with
-  __log_wait_for_space()
-
-The last item targets a newly found problem.  journal_flush() can be
-called while processing __log_wait_for_space().  In this case,
-cleanup_journal_tail() can be called between
-__journal_drop_transaction() and journal_abort(), then 
-the transaction with checkpointing failure is lost from the journal.
-Using j_checkpoint_mutex which is used by __log_wait_for_space(),
-we should avoid the race condition.  But the test is not so sufficient
-because it is very difficult to produce this race.  So I hope that
-this locking is reviewed carefully (including a possibility of
-deadlock.)
-
-Regards,
-
--- 
-Hidehiro Kawai
-Hitachi, Systems Development Laboratory
-Linux Technology Center
-
-
+	Ingo
