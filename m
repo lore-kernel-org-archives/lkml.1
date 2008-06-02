@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYFBXED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbYFBXE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbYFBXED (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 19:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYFBXDx
+	id S1755807AbYFBXE3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 19:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYFBXEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 19:03:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59922 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753075AbYFBXDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 19:03:51 -0400
-Date: Tue, 3 Jun 2008 01:03:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, David Howells <dhowells@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-Message-ID: <20080602230316.GA24159@elte.hu>
-References: <alpine.LFD.1.10.0805301846530.3141@woody.linux-foundation.org> <4840C29B.6030507@redhat.com> <alpine.LFD.1.10.0805302044310.3141@woody.linux-foundation.org> <4840CE51.9060109@redhat.com> <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org> <20080602185433.GB4081@elte.hu> <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org>
+	Mon, 2 Jun 2008 19:04:12 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:10231 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755438AbYFBXEF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 19:04:05 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5308"; a="3449275"
+Message-ID: <48447C75.8040203@qualcomm.com>
+Date: Mon, 02 Jun 2008 16:04:21 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Oeser <ioe-lkml@rameria.de>, Paul Jackson <pj@sgi.com>,
+       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       "Derek L. Fults" <dfults@sgi.com>, devik <devik@cdi.cz>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
+       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Dobson <colpatch@us.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Paul Menage <menage@google.com>, "Randy.Dunlap" <rddunlap@osdl.org>,
+       suresh.b.siddha@intel.com, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
+ have realtime uses)
+References: <20080601213019.14ea8ef8.pj@sgi.com>	 <200806030035.58387.ioe-lkml@rameria.de> <1212446707.6269.26.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1212446707.6269.26.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> > That bit can be used as a lock and if all access to the state of 
-> > that atomic variable uses it, arbitrary higher-order atomic state 
-> > transitions can be derived from it. The cost would be a bit more 
-> > instructions in the fastpath, but there would still only be a single 
-> > atomic op (the acquire op), as the unlock would be a natural barrier 
-> > (on x86 at least).
+Peter Zijlstra wrote:
+> On Tue, 2008-06-03 at 00:35 +0200, Ingo Oeser wrote:
+>> Hi Paul,
+>>
+>> in short: NAK!
+>>
+>> On Monday 02 June 2008, Paul Jackson wrote:
+>>> (Aside to the RealTime folks -- is there a 'realtime'
+>>> email list which I should include in this discussion?)
+>>>
+>>> The kernel has a "isolcpus=" kernel boot time parameter.  This
+>>> parameter isolates CPUs from scheduler load balancing, minimizing the
+>>> impact of scheduler latencies on realtime tasks running on those CPUs.
+>> I used it to mask out a defect CPU on a 8-CPU node of a 
+>> HPC-cluster at a customer site, until the $BIG_VENDOR 
+>> sent a replacement. And to prove $BIG_VENDOR, that we actually
+>> have a problem on THAT CPU.
+>>
+>> So I would really like to keep this fault isolation capability.
+>> I made my customer happy with that.
+>>
+>> I wish Linux had more such "mask out bad hardware" features
+>> to faciliate fault isolation and boot and runtime.
 > 
-> No, "unlocks as a natural barrier" only works for exclusive kernel 
-> locks (spin_unlock and write_unlock). There we can just do a write to 
-> unlock. But for anything that wants to handle contention differently 
-> than just spinning, the unlock path needs to be able to do an atomic 
-> "unlock and test if I need to do something else", because it may need 
-> to wake things up.
+> Yeah - except that its not meant to be used as such - it will still
+> brings the cpu up, and it is still usable for the OS.
+> 
+> So sorry, your abuse doesn't make for a case to keep this abomination.
 
-yeah, indeed. Compared to all the other costs that have to be dealt with 
-here, having a second atomic op isnt all that much of an issue either, 
-especially on latest hw. An atomic op will probably never be as cheap as 
-a non-atomic op, but ~20 cycles is still plenty fast for most practical 
-purposes.
+Ingo, I just wanted to elaborate on what Peter is saying. That CPU will still
+have to be _booted_ properly. It may be used for hard- and soft- interrupt
+processing, workqueues (internal kernel queuing mechanism) and kernel timers.
 
-	Ingo
+In your particular case you're much much much better off with doing
+	echo 0 > /sys/devices/system/cpuN/online
+either during initrd stage or as a first init script.
+That way bad cpu will be _completely_ disabled.
+
+Max
