@@ -1,43 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYFBLf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYFBLip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbYFBLf5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 07:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYFBLfq
+	id S1755543AbYFBLip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 07:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbYFBLih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 07:35:46 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46399 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751716AbYFBLfp (ORCPT
+	Mon, 2 Jun 2008 07:38:37 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:38488 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751716AbYFBLig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 07:35:45 -0400
-To: matthew@wil.cx
-CC: miklos@szeredi.hu, hch@infradead.org,
-       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       jmorris@namei.org, sds@tycho.nsa.gov, eparis@redhat.com,
-       casey@schaufler-ca.com, agruen@suse.de, jjohansen@suse.de,
-       penguin-kernel@I-love.SAKURA.ne.jp, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20080602112350.GB8562@parisc-linux.org> (message from Matthew
-	Wilcox on Mon, 2 Jun 2008 05:23:51 -0600)
-Subject: Re: [patch 01/15] security: pass path to inode_create
-References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602112350.GB8562@parisc-linux.org>
-Message-Id: <E1K38JN-0003H0-J9@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 02 Jun 2008 13:34:49 +0200
+	Mon, 2 Jun 2008 07:38:36 -0400
+Message-ID: <4843DBB4.8060400@ru.mvista.com>
+Date: Mon, 02 Jun 2008 15:38:28 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/21] ali14xx: convert to use ide_timing_find_mode()
+References: <20080528213944.16327.92950.sendpatchset@localhost.localdomain> <20080528214054.16327.46227.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080528214054.16327.46227.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I maintain, that moving lsm hooks into callers is insane.  And that's
-> > *the* sanest alternative that anybody has been able to come up with to
-> > passing down vfsmounts into the vfs.
-> 
-> Not so.  I showed how pathname-based security could be done *without*
-> passing vfsmounts down at all.  Unfortunately, you weren't interested.
+Hello.
 
-Umm, not sure what you are referring to.  Could you please give a
-pointer?  I'm sure the apparmor developers would be more than
-interested in such a scheme, if it does indeed work.
+Bartlomiej Zolnierkiewicz wrote:
 
-Thanks,
-Miklos
+> There should be no functional changes caused by this patch.
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
