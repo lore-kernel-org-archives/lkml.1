@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYFBKmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYFBKm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbYFBKmd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 06:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYFBKmG
+	id S1758861AbYFBKm6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 06:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbYFBKmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 06:42:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41485 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbYFBKmF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 06:42:05 -0400
-Date: Mon, 2 Jun 2008 06:42:03 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, linux-security-module@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jmorris@namei.org, sds@tycho.nsa.gov,
-       eparis@redhat.com, casey@schaufler-ca.com, agruen@suse.de,
-       jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/15] security: pass path to inode_create
-Message-ID: <20080602104203.GA21898@infradead.org>
-References: <20080529134903.615127628@szeredi.hu> <20080529134958.655985182@szeredi.hu> <20080531083052.GH24135@infradead.org> <E1K2uXZ-0001eE-Oi@pomaz-ex.szeredi.hu> <20080602060144.GA11564@infradead.org> <E1K343a-0002dG-C9@pomaz-ex.szeredi.hu> <20080602091341.GA8011@infradead.org> <E1K36PE-0002wZ-0M@pomaz-ex.szeredi.hu> <20080602093630.GA25254@infradead.org> <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu>
+	Mon, 2 Jun 2008 06:42:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59811 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752890AbYFBKmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 06:42:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [Ksummit-2008-discuss] Fixing the Kernel Janitors project
+Date: Mon, 2 Jun 2008 12:43:33 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       ksummit-2008-discuss@lists.linux-foundation.org, penberg@cs.helsinki.fi,
+       dwmw2@infradead.org, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+References: <1212010931.3445.103.camel@localhost.localdomain> <20080529163247.GW22636@parisc-linux.org> <Pine.LNX.4.64.0806021231220.6718@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0806021231220.6718@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1K36ii-0002zj-Gn@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200806021243.33976.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 11:52:52AM +0200, Miklos Szeredi wrote:
-> These patches fix several issues raised at previous submissions:
+On Monday, 2 of June 2008, Jiri Kosina wrote:
+> On Thu, 29 May 2008, Matthew Wilcox wrote:
 > 
->  - passing NULL vfsmounts
->  - using nameidata
->  - using extra stack for vfsmount argument
+> > > - fixing random bugs from kernel bugzilla is boring (spending 10 hours 
+> > >   looking for missing '=' doesn't really attract them)
+> > Perhaps you could try making the process of finding a kernel bug seem
+> > more exciting?  I doubt that most kernel bugs are a simple as a missing =.
 > 
-> So, it seems to me that there's in fact no issues remaining and the
-> best excuse you can come up with is that it's a dumb idea.  Well,
-> that's not a very imressive technical argument IMNSHO.
+> Indeed. Large amount of kernel bugs is 'kernel doesn't work on this 
+> hardware setup X, other hardware setups are not affected". That doesn't 
+> sound too sexy either, unless you are unfortunate enough to have the piece 
+> of hardware in question, of course.
 
-Well, pathname based access control is a dumb idea, and we've been
-through this N times.  You've also been told that vfs_ routines should
-remain without vfsmount, and no that's not a stack-related issue no idea
-where that part came from.
+Well, if you test linux-next or -mm on a regular basis, you are almost
+guaranteed to encounter a bug that manifests itself on your hardware, sooner
+or later. :-)
+
+Thanks,
+Rafael
