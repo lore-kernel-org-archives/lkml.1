@@ -1,77 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbYFBVWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbYFBVbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753058AbYFBVWg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 17:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYFBVW1
+	id S1753387AbYFBVbx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 17:31:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYFBVbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 17:22:27 -0400
-Received: from flusers.ccur.com ([12.192.68.2]:36570 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750900AbYFBVW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 17:22:26 -0400
-Date: Mon, 2 Jun 2008 17:21:06 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Theodore Tso <tytso@mit.edu>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Keith Packard <keithp@keithp.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       bugme-daemon@bugzilla.kernel.org, airlied@linux.ie,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Fix for asm warning in head_32.S
-Message-ID: <20080602212106.GA25959@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <E1JxGth-0001te-S4@closure.thunk.org> <924EFEDD5F540B4284297C4DC59F3DEE01119AFE@orsmsx423.amr.corp.intel.com> <20080517154131.GA7651@mit.edu> <924EFEDD5F540B4284297C4DC59F3DEE01119B07@orsmsx423.amr.corp.intel.com> <1211047916.27447.314.camel@koto.keithp.com> <482F24C6.2050705@frugalware.org> <20080517184626.GA16496@mit.edu> <Pine.LNX.4.64.0805192217430.15410@blonde.site> <alpine.LFD.1.10.0805191528550.32253@woody.linux-foundation.org>
+	Mon, 2 Jun 2008 17:31:42 -0400
+Received: from mga11.intel.com ([192.55.52.93]:12157 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750900AbYFBVbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 17:31:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,579,1204531200"; 
+   d="scan'208";a="335140854"
+Date: Mon, 2 Jun 2008 14:31:36 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+Cc: j.mell@t-online.de, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, ak@suse.de, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, arjan@linux.intel.com
+Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
+Message-ID: <20080602213136.GA25114@linux-os.sc.intel.com>
+References: <200806011101.06491.j.mell@t-online.de> <1212340262.5802.8.camel@odie.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805191528550.32253@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1212340262.5802.8.camel@odie.local>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 04:10:02PM -0700, Linus Torvalds wrote:
-> It also causes these warnings on 32-bit PAE:
+On Sun, Jun 01, 2008 at 07:11:02PM +0200, Simon Holm Thøgersen wrote:
+> søn, 01 06 2008 kl. 11:01 +0200, skrev j.mell@t-online.de:
+> [...]
+> > 
+> > 3. If I revert the patch
+> >  
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=acc207616a91a413a50fdd8847a747c4a7324167
+> > 
+> > in 2.6.20, Einstein does not crash anymore (program was run for more than 
+> > 30 hours while system was in normal use with programming, multi-media 
+> > etc.). Unfortunately git refuses to revert this patch in 2.6.26-rc4.
+> [...]
 > 
-> 	  AS      arch/x86/kernel/head_32.o
-> 	arch/x86/kernel/head_32.S: Assembler messages:
-> 	arch/x86/kernel/head_32.S:225: Warning: left operand is a bignum; integer 0 assumed
-> 	arch/x86/kernel/head_32.S:609: Warning: left operand is a bignum; integer 0 assumed
+> I don't think the bisected commit is responsible for anything, but
+> triggering a bug elsewhere with your workload. I've been chasing the
+> same problem I think, but with other symptoms.
+
+Simon, There seems to be multiple issues here. fpu corruption seems
+to be a different problem compared to the issue you have encountered.
+
 > 
-> and I do not see why (the end result seems to be identical).
+> I'm triggering the following by running an lguest guest, but I guess the
+> workload just need to have the right scheduler intensity to trigger the
+> bug.
+> 
+> BUG: sleeping function called from invalid context at mm/slab.c:3052
+> in_atomic():1, irqs_disabled():0
+> Pid: 4771, comm: lguest Not tainted
+> 2.6.26-rc4-debug-only-preemptible-00103-g1beee8d #3
+>  [<c01146ee>] __might_sleep+0xe4/0xeb
+>  [<c01605d9>] kmem_cache_alloc+0x22/0xb4
+>  [<c0108479>] init_fpu+0xb0/0x14d
+>  [<c0104768>] math_state_restore+0x26/0x5d
+>  [<c01045ab>] device_not_available+0x43/0x48
+>  [<c011007b>] ? handle_vm86_fault+0x213/0x6b8
+>  [<c01029ad>] ? __switch_to+0x23/0x113
+>  [<c02d6c9f>] schedule+0x221/0x2a4
 
+Simon, Can you please try the appended patch and see if it fixes this
+issue? Thanks.
+---
 
+[patch] x86: fix blocking call (math_state_restore()) condition in __switch_to
 
-Fix head_32.S gcc bignum warnings when CONFIG_PAE=y.
+Add tsk_used_math() checks to prevent calling math_state_restore()
+which can sleep in the case of !tsk_used_math(). This prevents
+making a blocking call in __switch_to().
 
-    arch/x86/kernel/head_32.S: Assembler messages:
-    arch/x86/kernel/head_32.S:225: Warning: left operand is a bignum; integer 0 assumed
-    arch/x86/kernel/head_32.S:609: Warning: left operand is a bignum; integer 0 assumed
+Apparently "fpu_counter > 5" check is not enough, as in some signal handling
+and fork/exec scenarios, fpu_counter > 5 and !tsk_used_math() is possible.
 
-The assembler was stumbling over the 64-bit constant 0x100000000 in the
-KPMDS #define.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
-Testing: a cmp(1) on head_32.o before and after shows the binary is unchanged.
-
-Signed-off-by: Joe Korty <joe.korty@ccur.com
-
-Index: a/arch/x86/kernel/head_32.S
-===================================================================
---- a.orig/arch/x86/kernel/head_32.S	2008-06-02 16:51:20.000000000 -0400
-+++ a/arch/x86/kernel/head_32.S	2008-06-02 16:54:05.000000000 -0400
-@@ -189,7 +189,7 @@
- 	 * this stage.
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index f8476df..6d54833 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -649,8 +649,11 @@ struct task_struct * __switch_to(struct task_struct *prev_p, struct task_struct
+ 	/* If the task has used fpu the last 5 timeslices, just do a full
+ 	 * restore of the math state immediately to avoid the trap; the
+ 	 * chances of needing FPU soon are obviously high now
++	 *
++	 * tsk_used_math() checks prevent calling math_state_restore(),
++	 * which can sleep in the case of !tsk_used_math()
  	 */
+-	if (next_p->fpu_counter > 5)
++	if (tsk_used_math(next_p) && next_p->fpu_counter > 5)
+ 		math_state_restore();
  
--#define KPMDS ((0x100000000-__PAGE_OFFSET) >> 30) /* Number of kernel PMDs */
-+#define KPMDS (((-__PAGE_OFFSET) >> 30) & 3) /* Number of kernel PMDs */
- 
- 	xorl %ebx,%ebx				/* %ebx is kept at zero */
- 
+ 	/*
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index e2319f3..ac54ff5 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -658,8 +658,11 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	/* If the task has used fpu the last 5 timeslices, just do a full
+ 	 * restore of the math state immediately to avoid the trap; the
+ 	 * chances of needing FPU soon are obviously high now
++	 *
++	 * tsk_used_math() checks prevent calling math_state_restore(),
++	 * which can sleep in the case of !tsk_used_math()
+ 	 */
+-	if (next_p->fpu_counter>5)
++	if (tsk_used_math(next_p) && next_p->fpu_counter > 5)
+ 		math_state_restore();
+ 	return prev_p;
+ }
