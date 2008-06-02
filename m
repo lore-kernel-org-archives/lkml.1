@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbYFBBhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYFBBp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbYFBBhz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Jun 2008 21:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYFBBht
+	id S1755969AbYFBBp2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Jun 2008 21:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbYFBBpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Jun 2008 21:37:49 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:34691 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752840AbYFBBhs (ORCPT
+	Sun, 1 Jun 2008 21:45:16 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:31697 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbYFBBpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Jun 2008 21:37:48 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Jun 2008 21:37:48 EDT
-Message-ID: <48434D57.6030801@skyrush.com>
-Date: Sun, 01 Jun 2008 19:31:03 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sun, 1 Jun 2008 21:45:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=muv6onx4bvwHK7IS0pLI6V6JxgW7EVkoCYMJoXKWwjm2r6fieb8jvK2TY+qlHarEf45/sgP0tyOz8ok0MrMgpD1kJJWMedAVs7NoTS5HFbT8Pboc+SF2eq97dVz0wzV2SnCXVWX3/Sri0sDtOE1w2MrawbLZvmSTUYwjr5hKTdc=
+Date: Mon, 2 Jun 2008 09:46:25 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: davem@davemloft.net
+Cc: arjan@linux.intel.com, marcel@holtmann.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-bluetooth@vger.kernel.org
+Subject: [PATCH] bluetooth: rfcomm_dev_state_change deadlock fix
+Message-ID: <20080602014625.GA2893@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-To: harald.dunkel@t-online.de, linux-kernel@vger.kernel.org
-CC: Alan Cox <alan@redhat.com>
-Subject: Re: 2.6.25.3: su gets stuck for root
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harold,
+There's logic in __rfcomm_dlc_close:
+	rfcomm_dlc_lock(d);
+	d->state = BT_CLOSED;
+	d->state_changed(d, err);
+	rfcomm_dlc_unlock(d);
 
-I just also discovered this problem independently, and when I tracked it
-down to stty and googled for it, I found your post.  In my test case, it
-seems to get stuck in stty as run from the user's .bashrc (i.e., "su
-user", where the user's .bashrc has the stty command).  In my case, the
-arguments to stty do not seem to matter (well, I've tried "-ixany" and
-"echoctl" - same results).  Also, the problem is made more reliable if a
-sleep is done before the stty.  E.g., here's my test .bashrc:
+In rfcomm_dev_state_change, it's possible that rfcomm_dev_put try to take the
+dlc lock, then we will deadlock.
 
-sleep 2
-stty -ixany
+Here fixed it by unlock dlc before rfcomm_dev_get in rfcomm_dev_state_change.
 
-Note that if run from the console or a tty, having the user logged in
-already seems to avoid the hang, but doing it within an xterm shows the
-hang.  Strange, since with my original [more complex] test case, it
-seemed to require *not* running X (tty/console only).
+why not unlock just before rfcomm_dev_put? it's because there's another problem.
+rfcomm_dev_get/rfcomm_dev_del will take rfcomm_dev_lock, but in rfcomm_dev_add
+the lock order is : rfcomm_dev_lock --> dlc lock
 
-Most recent kernels show the issue - the only one that doesn't is
-2.6.25-git17.  I am running Gentoo.  It does happen in a recent 2.6.26
-git (an rc4 git from a couple of days ago).
+so I unlock dlc before the taken of rfcomm_dev_lock.
+ 
+Actually it's a regression caused by commit
+1905f6c736cb618e07eca0c96e60e3c024023428, the dlc state_change could be two
+callbacks : rfcomm_sk_state_change and rfcomm_dev_state_change. I missed the rfcomm_sk_state_change that time.
 
-Doing "ps" while hung shows stty in the "T" state.  "killall -9 stty"
-releases it.
+Thanks Arjan van de Ven <arjan@linux.intel.com> for the effort in commit
+4c8411f8c115def968820a4df6658ccfd55d7f1a
+but he missed the rfcomm_dev_state_change lock issue.
 
-					-Joe
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-P.S.  Please cc my address on reply.
+---
+net/bluetooth/rfcomm/tty.c |   13 ++++++++++++-
+1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff -upr linux/net/bluetooth/rfcomm/tty.c linux.new/net/bluetooth/rfcomm/tty.c
+--- linux/net/bluetooth/rfcomm/tty.c	2008-05-30 15:46:33.000000000 +0800
++++ linux.new/net/bluetooth/rfcomm/tty.c	2008-06-02 09:16:31.000000000 +0800
+@@ -566,11 +566,22 @@ static void rfcomm_dev_state_change(stru
+ 	if (dlc->state == BT_CLOSED) {
+ 		if (!dev->tty) {
+ 			if (test_bit(RFCOMM_RELEASE_ONHUP, &dev->flags)) {
+-				if (rfcomm_dev_get(dev->id) == NULL)
++				/* Drop DLC lock here to avoid deadlock
++				 * 1. rfcomm_dev_get will take rfcomm_dev_lock
++				 *    but in rfcomm_dev_add there's lock order:
++				 *    rfcomm_dev_lock -> dlc lock
++				 * 2. rfcomm_dev_put will deadlock if it's
++				 *    the last reference
++				 */
++				rfcomm_dlc_unlock(dlc);
++				if (rfcomm_dev_get(dev->id) == NULL) {
++					rfcomm_dlc_lock(dlc);
+ 					return;
++				}
+ 
+ 				rfcomm_dev_del(dev);
+ 				rfcomm_dev_put(dev);
++				rfcomm_dlc_lock(dlc);
+ 			}
+ 		} else
+ 			tty_hangup(dev->tty);
