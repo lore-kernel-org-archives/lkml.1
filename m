@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYFCXsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYFCXvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYFCXsH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 19:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYFCXry
+	id S1756767AbYFCXvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 19:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbYFCXvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 19:47:54 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:22468 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776AbYFCXrx (ORCPT
+	Tue, 3 Jun 2008 19:51:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55512 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752796AbYFCXvB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 19:47:53 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5309"; a="3482982"
-Message-ID: <4845D825.6000403@qualcomm.com>
-Date: Tue, 03 Jun 2008 16:47:49 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Oeser <ioe-lkml@rameria.de>, Dimitri Sivanich <sivanich@sgi.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       "Derek L. Fults" <dfults@sgi.com>, devik <devik@cdi.cz>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>, "Randy.Dunlap" <rddunlap@osdl.org>,
-       suresh.b.siddha@intel.com, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
- have realtime uses)
-References: <20080601213019.14ea8ef8.pj@sgi.com> <1212446707.6269.26.camel@lappy.programming.kicks-ass.net> <48447C75.8040203@qualcomm.com> <200806030156.00155.ioe-lkml@rameria.de> <4844BB41.7000605@qualcomm.com>
-In-Reply-To: <4844BB41.7000605@qualcomm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 3 Jun 2008 19:51:01 -0400
+Date: Tue, 3 Jun 2008 16:48:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: avorontsov@ru.mvista.com
+Cc: galak@kernel.crashing.org, wim@iguana.be, jochen@scram.de,
+       sfr@canb.auug.org.au, segher@kernel.crashing.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and
+ mpc8xx
+Message-Id: <20080603164830.32457962.akpm@linux-foundation.org>
+In-Reply-To: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I would really appreciate some way to keep the kernel from using 
->> a CPU at all to do fault isolation. If possible not even booting it.
-> How does isolcpu= boot option helps in this case ?
-> I suppose the closes option is maxcpus=. We can probably add ignorecpus= or
-> something to handle your use case but it has nothing to do with isolcpus=.
+On Mon, 2 Jun 2008 21:37:26 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-btw Ingo, I just realized that maxcpu= option is exactly what you need.
-Here is how you can use it.
-Boot your system with maxcpus=1. That way the kernel will only bring up 
-processor 0. I'm assuming cpu0 is "good" otherwise your system is totally 
-busted :). Other cpus will stay off-line and will not be initialized.
-Then once the system boots you can selectively bring "good" processors online 
-by doing
-	echo 1 > /sys/devices/system/cpu/cpuN/online
+> No comments on the previous version for two weeks... resending once
+> again.
 
-This actually solves the case you're talking about (ie ignoring bad 
-processors) instead of partially covering it with isolcpus=.
+I did all the rework to make the patches apply on top of all the
+pending watchdog work in Wim's tree and in -mm.  I haven't build tested
+it yet.
 
-Dimitri, you can probably use that too. ie Boot the thing with most CPUs 
-offline and then bring them online. That way you'll know for sure that no 
-timers, works, hard-/soft-irqs, etc are running on them.
 
-So I expect two ACKs for isolcpu= removal from both of you, in bold please :)
+I'll assume that
 
-Max
+ [PATCH 7/8] [POWERPC] fsl_soc: remove mpc83xx_wdt code
+
+and
+
+ [PATCH 8/8] [POWERPC] 86xx: mpc8610_hpcd: add watchdog node
+
+are dependent upon the preceding six patches.  This might be wrong.
+
+
+Please put the subsystem identifier (eg, "watchdog" and "powerpc")
+outside the [], for reasons which should be in
+Documentation/SubmittingPatches, which used to be there but which got
+lost.  Bascially the text inside [] is for temporary not-for-committing
+information such as "rfc", "2.6.24-rc4", "resend", etc and should be stripped
+by the email recipient before merging.
+
+
