@@ -1,38 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYFCJu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYFCJ51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886AbYFCJu7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 05:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYFCJuv
+	id S1754103AbYFCJ51 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 05:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYFCJ5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 05:50:51 -0400
-Received: from styx.suse.cz ([82.119.242.94]:57992 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752062AbYFCJuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 05:50:50 -0400
-Date: Tue, 3 Jun 2008 11:50:49 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andrew Morton <akpm@linuxfoundation.org>
-cc: alexander@comm.utoronto.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usbhid: Fix fn key on Macbook Pro 4,1 and Macbook Air
-In-Reply-To: <20080529164554.0d3b6606.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0806031150230.6718@jikos.suse.cz>
-References: <36765.142.151.170.214.1212101197.squirrel@webmail.comm.utoronto.ca>
- <20080529164554.0d3b6606.akpm@linux-foundation.org>
+	Tue, 3 Jun 2008 05:57:16 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39973 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbYFCJ5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 05:57:16 -0400
+Date: Tue, 3 Jun 2008 10:57:13 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080603095713.GR28946@ZenIV.linux.org.uk>
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Andrew Morton wrote:
+On Tue, Jun 03, 2008 at 11:49:32AM +0200, Jesper Krogh wrote:
 
-> > Added device ids to hid-quriks for detection of keyboards on 4th 
-> > generation Macbook Pro and Macbook Air
-> Jiri, I'll assume this this is destined for your tree.  Perhaps
-> suitable for 2.6.26?   I can merge it at your request, as always.
+> I reported it to the NFS-guys on a .22 kernel, and was directed to the
+> fsdevel list(CC'ed again) back then. Now the problem is reproduces on
+> .26-rc4
 
-I will merge it through my tree, thanks.
-
--- 
-Jiri Kosina
-SUSE Labs
+Lovely...  Do you have the full oops trace, with the actual code
+dump?
