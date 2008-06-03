@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYFCUq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760676AbYFCUqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759690AbYFCUq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbYFCUi7
+	id S1760676AbYFCUqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 16:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbYFCUiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:38:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47088
+	Tue, 3 Jun 2008 16:38:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47089
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752490AbYFCUgx (ORCPT
+	by vger.kernel.org with ESMTP id S1752969AbYFCUgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 3 Jun 2008 16:36:53 -0400
-Date: Tue, 03 Jun 2008 12:19:51 -0700 (PDT)
-Message-Id: <20080603.121951.193695839.davem@davemloft.net>
+Date: Tue, 03 Jun 2008 12:20:17 -0700 (PDT)
+Message-Id: <20080603.122017.152652193.davem@davemloft.net>
 To: linux-wireless@vger.kernel.org
 CC: linville@tuxdriver.com, mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 0/12]: Proper compat WEXT support.
+Subject: [PATCH 8/12]: wext: Pull top-level ioctl dispatch logic into
+ helper function.
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,38 +27,57 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is a refresh of my previous WEXT compat patch set.
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ net/wireless/wext.c |   26 ++++++++++++++++++++------
+ 1 files changed, 20 insertions(+), 6 deletions(-)
 
-I've actually tested these exact patches on sparc64 with a RNDIS based
-USB wireless device from Linksys.  I was able to perform iwconfig
-commands, check iwlist, bring up the interface and use it properly.
-All with 32-bit tools.  I've also done an allmodconfig sanity
-build check on sparc64.
+diff --git a/net/wireless/wext.c b/net/wireless/wext.c
+index b72cdd2..91cf548 100644
+--- a/net/wireless/wext.c
++++ b/net/wireless/wext.c
+@@ -1079,8 +1079,10 @@ static int wext_permission_check(unsigned int cmd)
+ }
+ 
+ /* entry point from dev ioctl */
+-int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
+-		      void __user *arg)
++static int wext_ioctl_dispatch(struct net *net, struct ifreq *ifr,
++			       unsigned int cmd,
++			       wext_ioctl_func standard,
++			       wext_ioctl_func private)
+ {
+ 	int ret = wext_permission_check(cmd);
+ 
+@@ -1089,12 +1091,24 @@ int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
+ 
+ 	dev_load(net, ifr->ifr_name);
+ 	rtnl_lock();
+-	ret = wireless_process_ioctl(net, ifr, cmd,
+-				     ioctl_standard_call,
+-				     ioctl_private_call);
++	ret = wireless_process_ioctl(net, ifr, cmd, standard, private);
+ 	rtnl_unlock();
+-	if (IW_IS_GET(cmd) && copy_to_user(arg, ifr, sizeof(struct iwreq)))
++
++	return ret;
++}
++
++int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
++		      void __user *arg)
++{
++	int ret = wext_ioctl_dispatch(net, ifr, cmd,
++				      ioctl_standard_call,
++				      ioctl_private_call);
++
++	if (ret >= 0 &&
++	    IW_IS_GET(cmd) &&
++	    copy_to_user(arg, ifr, sizeof(struct iwreq)))
+ 		return -EFAULT;
++
+ 	return ret;
+ }
+ 
+-- 
+1.5.5.1.308.g1fbb5
 
-The one thing I was not able to test yet is wpa_supplicant use, and
-that likely doesn't work properly yet, but we can fix that on top and
-these patches do not break native non-compat binaries.  They do make a
-lot of compat stuff work which wasn't the case before.  So applying
-this stuff makes sense, and we can get wpa_supplicant working if it
-isn't working using follow-on patches.
-
-The patch set starts by cleaning up the code so that we can avoid
-having multiple copies of the WEXT main dispatch routines, one for
-compat and one for the non-compat case.
-
-Next, basic compat level handling of the WEXT ioctl is added, and the
-equivalent code in the compat_ioctl.c file is removed.
-
-Finally, compat IWE stream munging is added for the wireless layer.
-When we get a compat WEXT ioctl request, we set a bit in the request
-info blob, and the stream building helpers tip off this to format the
-stream entries properly.
-
-These patches are against net-next-2.6 and are also available as
-a GIT tree at:
-
-	master.kernel.org:/pub/scm/linux/kernel/git/davem/wireless-2.6.git
-
-John, please pull or apply as you deem appropriate.
-
-Thanks!
