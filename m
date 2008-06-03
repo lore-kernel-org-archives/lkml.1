@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758391AbYFCU5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYFCVBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758391AbYFCU5n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYFCU5a
+	id S1756578AbYFCVBn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 17:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbYFCVBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:57:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42620
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751682AbYFCU53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 16:57:29 -0400
-Date: Tue, 03 Jun 2008 13:57:28 -0700 (PDT)
-Message-Id: <20080603.135728.103448928.davem@davemloft.net>
-To: johannes@sipsolutions.net
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com,
-       mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/12]: wext: Emit event stream entries correctly when
- compat.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1212526129.14371.5.camel@johannes.berg>
-References: <20080603.132856.202640855.davem@davemloft.net>
-	<1212526129.14371.5.camel@johannes.berg>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 3 Jun 2008 17:01:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59133 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750751AbYFCVBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 17:01:33 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+X-Fcc: ~/Mail/linus
+Cc: Luming Yu <luming.yu@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a
+ race
+In-Reply-To: Petr Tesarik's message of  Tuesday, 3 June 2008 16:32:57 +0200 <48455619.6040608@suse.cz>
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	<20080523041940.39E8726FA24@magilla.localdomain>
+	<3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com>
+	<20080526001527.81E1126FA9E@magilla.localdomain>
+	<3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com>
+	<3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com>
+	<20080527040454.053C526FA9E@magilla.localdomain>
+	<3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
+	<20080527061209.9A24426FAA6@magilla.localdomain>
+	<1211869515.29836.2.camel@elijah.suse.cz>
+	<3877989d0806022304w35764b17p9d4c3c95eceae0f5@mail.gmail.com>
+	<48450864.6080707@suse.cz>
+	<48455619.6040608@suse.cz>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20080603210125.1724C26FC96@magilla.localdomain>
+Date: Tue,  3 Jun 2008 14:01:25 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
-Date: Tue, 03 Jun 2008 22:48:49 +0200
+> It's definitely a bug in strace. For some reason (I don't care about)
+> the execve() syscall produces an extra notification. However, this
+> notification message is suppressed when SIGTRAP is blocked. This
+> explains why the test case fails only when SIGTRAP is blocked.
 
-> Did you miss drivers/net/ps3_gelic_wireless.c?
+What do you mean by "extra"?  There is a SIGTRAP sent after execve
+completes when ptraced, even when PTRACE_SYSCALL is not being used.
+So for an execve that succeeds under PTRACE_SYSCALL, there is a
+ptrace_notify at syscall entry, then a SIGTRAP queued (i.e., not seen
+by ptrace if blocked), then a ptrace_notify at syscall exit.  If
+that's what's happening (including the blocked SIGTRAP not being seen
+by the ptracer, i.e. strace), then there is no mystery (and no bug).
 
-Likely yes, I guess that won't get hit with an allmodconfig
-build on sparc64 :(
 
-It would be really nice if we had some more compat layers
-so that the ps3 bus probing layer just nopped out but you
-could at least build test drivers on other platforms.
+Thanks,
+Roland
