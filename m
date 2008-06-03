@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758160AbYFCUjC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbYFCUju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758160AbYFCUjC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:39:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYFCUhA
+	id S1759199AbYFCUju (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 16:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbYFCUhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:37:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47070
+	Tue, 3 Jun 2008 16:37:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47076
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752595AbYFCUgw (ORCPT
+	by vger.kernel.org with ESMTP id S1752774AbYFCUgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 16:36:52 -0400
-Date: Tue, 03 Jun 2008 13:28:42 -0700 (PDT)
-Message-Id: <20080603.132842.123235332.davem@davemloft.net>
+	Tue, 3 Jun 2008 16:36:53 -0400
+Date: Tue, 03 Jun 2008 13:28:34 -0700 (PDT)
+Message-Id: <20080603.132834.181129742.davem@davemloft.net>
 To: linux-wireless@vger.kernel.org
 CC: linville@tuxdriver.com, mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 9/12]: wext: Dispatch and handle compat ioctls entirely in
- net/wireless/wext.c
+Subject: [PATCH 7/12]: wext: Pass iwreq pointer down into standard/private
+ handlers.
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -27,233 +27,85 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Next we can kill the hacks in fs/compat_ioctl.c and also
-dispatch compat ioctls down into the driver and 80211 protocol
-helper layers in order to handle iw_point objects embedded in
-stream replies which need to be translated.
+They have no need to see the object as an ifreq.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- fs/compat_ioctl.c        |    6 ---
- include/linux/wireless.h |   13 ++++++
- include/net/wext.h       |    7 +++
- net/socket.c             |   10 ++++
- net/wireless/wext.c      |  104 ++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 134 insertions(+), 6 deletions(-)
+ net/wireless/wext.c |   17 ++++++++---------
+ 1 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index 97dba0d..8ab850b 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -1757,12 +1757,6 @@ static int do_i2c_smbus_ioctl(unsigned int fd, unsigned int cmd, unsigned long a
- 	return sys_ioctl(fd, cmd, (unsigned long)tdata);
- }
- 
--struct compat_iw_point {
--	compat_caddr_t pointer;
--	__u16 length;
--	__u16 flags;
--};
--
- static int do_wireless_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
- {
- 	struct iwreq __user *iwr;
-diff --git a/include/linux/wireless.h b/include/linux/wireless.h
-index 0a9b5b4..c5606a1 100644
---- a/include/linux/wireless.h
-+++ b/include/linux/wireless.h
-@@ -675,6 +675,19 @@ struct	iw_point
-   __u16		flags;		/* Optional params */
- };
- 
-+#ifdef __KERNEL__
-+#ifdef CONFIG_COMPAT
-+
-+#include <linux/compat.h>
-+
-+struct compat_iw_point {
-+	compat_caddr_t pointer;
-+	__u16 length;
-+	__u16 flags;
-+};
-+#endif
-+#endif
-+
- /*
-  *	A frequency
-  *	For numbers lower than 10^9, we encode the number in 'm' and
-diff --git a/include/net/wext.h b/include/net/wext.h
-index 80b31d8..6d76a39 100644
---- a/include/net/wext.h
-+++ b/include/net/wext.h
-@@ -12,6 +12,8 @@ extern int wext_proc_init(struct net *net);
- extern void wext_proc_exit(struct net *net);
- extern int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
- 			     void __user *arg);
-+extern int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
-+				    unsigned long arg);
- #else
- static inline int wext_proc_init(struct net *net)
- {
-@@ -26,6 +28,11 @@ static inline int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned
- {
- 	return -EINVAL;
- }
-+static inline int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
-+					   unsigned long arg)
-+{
-+	return -EINVAL;
-+}
- #endif
- 
- #endif /* __NET_WEXT_H */
-diff --git a/net/socket.c b/net/socket.c
-index 66c4a8c..81fe825 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -90,6 +90,7 @@
- #include <asm/unistd.h>
- 
- #include <net/compat.h>
-+#include <net/wext.h>
- 
- #include <net/sock.h>
- #include <linux/netfilter.h>
-@@ -2210,10 +2211,19 @@ static long compat_sock_ioctl(struct file *file, unsigned cmd,
- {
- 	struct socket *sock = file->private_data;
- 	int ret = -ENOIOCTLCMD;
-+	struct sock *sk;
-+	struct net *net;
-+
-+	sk = sock->sk;
-+	net = sock_net(sk);
- 
- 	if (sock->ops->compat_ioctl)
- 		ret = sock->ops->compat_ioctl(sock, cmd, arg);
- 
-+	if (ret == -ENOIOCTLCMD &&
-+	    (cmd >= SIOCIWFIRST && cmd <= SIOCIWLAST))
-+		ret = compat_wext_handle_ioctl(net, cmd, arg);
-+
- 	return ret;
- }
- #endif
 diff --git a/net/wireless/wext.c b/net/wireless/wext.c
-index 91cf548..071cee4 100644
+index 929d241..b72cdd2 100644
 --- a/net/wireless/wext.c
 +++ b/net/wireless/wext.c
-@@ -1112,6 +1112,110 @@ int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
- 	return ret;
+@@ -832,11 +832,10 @@ out:
+  * user space and kernel space.
+  */
+ static int ioctl_standard_call(struct net_device *	dev,
+-			       struct ifreq *		ifr,
++			       struct iwreq *		iwr,
+ 			       unsigned int		cmd,
+ 			       iw_handler		handler)
+ {
+-	struct iwreq *				iwr = (struct iwreq *) ifr;
+ 	const struct iw_ioctl_description *	descr;
+ 	struct iw_request_info			info;
+ 	int					ret = -EINVAL;
+@@ -984,10 +983,9 @@ out:
+ 	return err;
  }
  
-+#ifdef CONFIG_COMPAT
-+static int compat_standard_call(struct net_device *	dev,
-+				struct iwreq *		iwr,
-+				unsigned int		cmd,
-+				iw_handler		handler)
-+{
-+	const struct iw_ioctl_description *descr;
-+	struct compat_iw_point *iwp_compat;
-+	struct iw_request_info info;
-+	struct iw_point iwp;
-+	int err;
-+
-+	descr = standard_ioctl + (cmd - SIOCIWFIRST);
-+
-+	if (descr->header_type != IW_HEADER_TYPE_POINT)
-+		return ioctl_standard_call(dev, iwr, cmd, handler);
-+
-+	iwp_compat = (struct compat_iw_point *) &iwr->u.data;
-+	iwp.pointer = compat_ptr(iwp_compat->pointer);
-+	iwp.length = iwp_compat->length;
-+	iwp.flags = iwp_compat->flags;
-+
-+	info.cmd = cmd;
-+	info.flags = 0;
-+
-+	err = ioctl_standard_iw_point(&iwp, cmd, descr, handler, dev, &info);
-+
-+	iwp_compat->pointer = ptr_to_compat(iwp.pointer);
-+	iwp_compat->length = iwp.length;
-+	iwp_compat->flags = iwp.flags;
-+
-+	return err;
-+}
-+
-+static int compat_private_call(struct net_device *dev, struct iwreq *iwr,
-+			       unsigned int cmd, iw_handler handler)
-+{
-+	const struct iw_priv_args *descr;
-+	struct iw_request_info info;
-+	int ret, extra_size;
-+
-+	extra_size = get_priv_descr_and_size(dev, cmd, &descr);
-+
-+	/* Prepare the call */
-+	info.cmd = cmd;
-+	info.flags = 0;
-+
-+	/* Check if we have a pointer to user space data or not. */
-+	if (extra_size == 0) {
-+		/* No extra arguments. Trivial to handle */
-+		ret = handler(dev, &info, &(iwr->u), (char *) &(iwr->u));
-+	} else {
-+		struct compat_iw_point *iwp_compat;
-+		struct iw_point iwp;
-+
-+		iwp_compat = (struct compat_iw_point *) &iwr->u.data;
-+		iwp.pointer = compat_ptr(iwp_compat->pointer);
-+		iwp.length = iwp_compat->length;
-+		iwp.flags = iwp_compat->flags;
-+
-+		ret = ioctl_private_iw_point(&iwp, cmd, descr,
-+					     handler, dev, &info, extra_size);
-+
-+		iwp_compat->pointer = ptr_to_compat(iwp.pointer);
-+		iwp_compat->length = iwp.length;
-+		iwp_compat->flags = iwp.flags;
-+	}
-+
-+	/* Call commit handler if needed and defined */
-+	if (ret == -EIWCOMMIT)
-+		ret = call_commit_handler(dev);
-+
-+	return ret;
-+}
-+
-+int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
-+			     unsigned long arg)
-+{
-+	void __user *argp = (void __user *)arg;
-+	struct iwreq iwr;
-+	char *colon;
-+	int ret;
-+
-+	if (copy_from_user(&iwr, argp, sizeof(struct iwreq)))
-+		return -EFAULT;
-+
-+	iwr.ifr_name[IFNAMSIZ-1] = 0;
-+	colon = strchr(iwr.ifr_name, ':');
-+	if (colon)
-+		*colon = 0;
-+
-+	ret = wext_ioctl_dispatch(net, (struct ifreq *) &iwr, cmd,
-+				  compat_standard_call,
-+				  compat_private_call);
-+
-+	if (ret >= 0 &&
-+	    IW_IS_GET(cmd) &&
-+	    copy_to_user(argp, &iwr, sizeof(struct iwreq)))
-+		return -EFAULT;
-+
-+	return ret;
-+}
-+#endif
-+
- /************************* EVENT PROCESSING *************************/
+-static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
++static int ioctl_private_call(struct net_device *dev, struct iwreq *iwr,
+ 			      unsigned int cmd, iw_handler handler)
+ {
+-	struct iwreq *iwr = (struct iwreq *) ifr;
+ 	int extra_size = 0, ret = -EINVAL;
+ 	const struct iw_priv_args *descr;
+ 	struct iw_request_info info;
+@@ -1015,7 +1013,7 @@ static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
+ }
+ 
+ /* ---------------------------------------------------------------- */
+-typedef int (*wext_ioctl_func)(struct net_device *, struct ifreq *,
++typedef int (*wext_ioctl_func)(struct net_device *, struct iwreq *,
+ 			       unsigned int, iw_handler);
+ 
  /*
-  * Process events generated by the wireless layer or the driver.
+@@ -1027,6 +1025,7 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
+ 				  wext_ioctl_func standard,
+ 				  wext_ioctl_func private)
+ {
++	struct iwreq *iwr = (struct iwreq *) ifr;
+ 	struct net_device *dev;
+ 	iw_handler	handler;
+ 
+@@ -1041,11 +1040,11 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
+ 	 * Note that 'cmd' is already filtered in dev_ioctl() with
+ 	 * (cmd >= SIOCIWFIRST && cmd <= SIOCIWLAST) */
+ 	if (cmd == SIOCGIWSTATS)
+-		return standard(dev, ifr, cmd,
++		return standard(dev, iwr, cmd,
+ 				&iw_handler_get_iwstats);
+ 
+ 	if (cmd == SIOCGIWPRIV && dev->wireless_handlers)
+-		return standard(dev, ifr, cmd,
++		return standard(dev, iwr, cmd,
+ 				&iw_handler_get_private);
+ 
+ 	/* Basic check */
+@@ -1057,9 +1056,9 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
+ 	if (handler) {
+ 		/* Standard and private are not the same */
+ 		if (cmd < SIOCIWFIRSTPRIV)
+-			return standard(dev, ifr, cmd, handler);
++			return standard(dev, iwr, cmd, handler);
+ 		else
+-			return private(dev, ifr, cmd, handler);
++			return private(dev, iwr, cmd, handler);
+ 	}
+ 	/* Old driver API : call driver ioctl handler */
+ 	if (dev->do_ioctl)
 -- 
 1.5.5.1.308.g1fbb5
 
