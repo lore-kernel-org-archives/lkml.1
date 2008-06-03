@@ -1,134 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYFCQ2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbYFCQ3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753341AbYFCQ2O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 12:28:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYFCQ15
+	id S1754440AbYFCQ3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbYFCQ2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 12:27:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37477 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751244AbYFCQ14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 12:27:56 -0400
-Date: Tue, 3 Jun 2008 09:26:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrea Arcangeli <andrea@qumranet.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 001/001] mmu-notifier-core v17
-In-Reply-To: <20080509193230.GH7710@duo.random>
-Message-ID: <alpine.LFD.1.10.0806030909030.3473@woody.linux-foundation.org>
-References: <20080509193230.GH7710@duo.random>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 3 Jun 2008 12:28:52 -0400
+Received: from saeurebad.de ([85.214.36.134]:50775 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751753AbYFCQ2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 12:28:51 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: "Kevin Winchester" <kjwinchester@gmail.com>
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Ingo Molnar" <mingo@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
+References: <4844868F.20104@gmail.com> <1212483192.6304.8.camel@twins>
+	<d1af83620806030522i4b8120dgda19d3196f0838f5@mail.gmail.com>
+Date: Tue, 03 Jun 2008 18:28:09 +0200
+In-Reply-To: <d1af83620806030522i4b8120dgda19d3196f0838f5@mail.gmail.com>
+	(Kevin Winchester's message of "Tue, 3 Jun 2008 09:22:28 -0300")
+Message-ID: <87ve0qh49y.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+"Kevin Winchester" <kjwinchester@gmail.com> writes:
 
-On Fri, 9 May 2008, Andrea Arcangeli wrote:
-> 
-> At least for KVM without this patch it's impossible to swap guests
-> reliably. And having this feature and removing the page pin allows
-> several other optimizations that simplify life considerably.
+> On Tue, Jun 3, 2008 at 5:53 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>> On Mon, 2008-06-02 at 20:47 -0300, Kevin Winchester wrote:
+>>> In next-20080530 and next-20080602 (and possibly earlier - I can't
+>>> remember the linux-next tree before that I tried) I get the following:
+>>>
+>>> [   12.885153] ------------[ cut here ]------------
+>>> [   12.885203] WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
+>>> [   12.885248] Pid: 4, comm: watchdog/0 Not tainted
+>>> 2.6.26-rc4-next-20080602 #13
+>>> [   12.885292]
+>>> [   12.885293] Call Trace:
+>>> [   12.885364]  [<ffffffff8022bbd5>] warn_on_slowpath+0x58/0x8a
+>>> [   12.885410]  [<ffffffff804c9cfe>] ? _spin_unlock_irqrestore+0x51/0x6d
+>>> [   12.885455]  [<ffffffff8032ff41>] ? debug_locks_off+0x9/0x3c
+>>> [   12.885498]  [<ffffffff802582dd>] ? ftrace_record_ip+0x1fa/0x272
+>>> [   12.885542]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
+>>> [   12.885584]  [<ffffffff8020b2c0>] ? mcount_call+0x5/0x35
+>>> [   12.885627]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
+>>> [   12.885668]  [<ffffffff80247c80>] check_flags+0x98/0x151
+>>> [   12.885710]  [<ffffffff8024ae72>] lock_acquire+0x4a/0xa9
+>>> [   12.885753]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
+>>> [   12.885795]  [<ffffffff802526c5>] ? watchdog+0x0/0x1ff
+>>> [   12.885837]  [<ffffffff804c98da>] _read_lock+0x37/0x43
+>>> [   12.885879]  [<ffffffff8025278a>] watchdog+0xc5/0x1ff
+>>> [   12.885921]  [<ffffffff802526c5>] ? watchdog+0x0/0x1ff
+>>> [   12.885963]  [<ffffffff8023e48b>] kthread+0x4e/0x7b
+>>> [   12.886005]  [<ffffffff8020bf18>] child_rip+0xa/0x12
+>>> [   12.886046]  [<ffffffff80227d8f>] ? finish_task_switch+0x57/0x92
+>>> [   12.886090]  [<ffffffff804c9d55>] ? _spin_unlock_irq+0x3b/0x57
+>>> [   12.886133]  [<ffffffff8020bad3>] ? restore_args+0x0/0x30
+>>> [   12.886137]  [<ffffffff8023e43d>] ? kthread+0x0/0x7b
+>>> [   12.886137]  [<ffffffff8020bf0e>] ? child_rip+0x0/0x12
+>>> [   12.886137]
+>>> [   12.886137] ---[ end trace 60e7f098a6913839 ]---
+>>> [   12.886137] possible reason: unannotated irqs-on.
+>>> [   12.886137] irq event stamp: 20
+>>> [   12.886137] hardirqs last  enabled at (19): [<ffffffff80249cc3>]
+>>> trace_hardirqs_on+0xd/0xf
+>>> [   12.886137] hardirqs last disabled at (20): [<ffffffff80248565>]
+>>> trace_hardirqs_off+0xd/0xf
+>>> [   12.886137] softirqs last  enabled at (0): [<ffffffff80229fef>]
+>>> copy_process+0x2da/0x109e
+>>> [   12.886137] softirqs last disabled at (0): [<0000000000000000>] 0x0
+>>>
+>>> Do I understand this correctly that something enabled irqs in a way that
+>>> got around lockdep?  I assume the problem is not in watchdog, just that
+>>> the watchdog was the next thing to run that interacted with irqs and
+>>> thus lockdep picked up the situation then?
+>>>
+>>> Is there additional debugging I can do, given some instructions?  If the
+>>> cause is readily apparent to anyone, could they let me know (for my own
+>>> interest) why it is apparent so that I can investigate things like this
+>>> further next time?
+>>
+>>
+>> You are correct - someone did sti but failed to call
+>> trace_hardirqs_on(). Frequently its possible to isolate the code from
+>> knowing the last recorded event:
+>>
+>> [   12.886137] irq event stamp: 20
+>> [   12.886137] hardirqs last disabled at (20): [<ffffffff80248565>] trace_hardirqs_off+0xd/0xf
+>>
+>> However your compilation seems to have lost the caller IP:
+>>
+>> void trace_hardirqs_off(void)
+>> {
+>>        trace_hardirqs_off_caller(CALLER_ADDR0);
+>> }
+>> EXPORT_SYMBOL(trace_hardirqs_off);
+>>
+>> So that is of little help here. (Not sure how that happened, nor how you
+>> could fix that - perhaps turn on some debugging knobs like build with
+>> debug info etc..)
+>>
+>
+> Could this be related to CONFIG_CC_OPTIMIZE_INLINING (or whatever it
+> is called now)?  I am pretty sure I have that enabled.  I will check
+> the rest of my config this evening to see if there is anything else I
+> can turn on/off to help.
+>
+>>
+>>> This is completely reproducible on every boot - should I try to bisect it?
+>>
+>> That is a possibility yes - if you can find the offending patch it
+>> should be relatively straight forward to find the offending sti.
+>>
+>
+> Sure - I can try it this evening.  Also, is calling sti the only way
+> this could have happened?  And is linux-next broken out into a single
+> patch?  I wouldn't expect there to be too many calls to sti, so a grep
+> in the patch file might be quicker than bisection.
 
-Ok, this looks ok as far as I'm concerned. I did not look at any details, 
-so obviously other VM people need to ack the parts they care about, but at 
-least I think this one is fine from a "big picture".
+git-log -p origin/master..next/master showed nothing interesting.
+Grepping for sti() would also not find indirect calls.
 
-I do have some small nits that are just about trivial stuff.
-
-> 1) Introduces list_del_init_rcu and documents it (fixes a comment for
->    list_del_rcu too)
-
-I think this should go in separately, and be split up into a patch of its 
-own, just because it's really an independent area. So make it [1/3].
-
-> 2) mm_take_all_locks() to register the mmu notifier when the whole VM
->    isn't doing anything with "mm". This allows mmu notifier users to
->    keep track if the VM is in the middle of the
->    invalidate_range_begin/end critical section with an atomic counter
->    incraese in range_begin and decreased in range_end.
-
-Similarly, even without any users, I think this can be posted as an 
-independent patch, just for setting things up, and to make the whole thing 
-easier to look through and review. So make this [2/3].
-
-But before doing that, can you split up the low-level single-vma anon/file 
-locking/unlocking, please?
-
-In other words, your 'mm_take_all_locks()' rigth now looks like it _works_ 
-correctly, but it nests too deeply considering the complexity of it. 
-There's really subtle things going on inside that for-loop, and I think it 
-would be much better to split those low-level locking rules out.
-
-IOW, instead of:
-
-> +int mm_take_all_locks(struct mm_struct *mm)
-> +{
-> +	struct vm_area_struct *vma;
-> +	int ret = -EINTR;
-> +
-> +	BUG_ON(down_read_trylock(&mm->mmap_sem));
-> +
-> +	mutex_lock(&mm_all_locks_mutex);
-> +
-> +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-> +		struct file *filp;
-> +		if (signal_pending(current))
-> +			goto out_unlock;
-> +		if (vma->anon_vma && !test_bit(0, (unsigned long *)
-> +					       &vma->anon_vma->head.next)) {
-> +			/*
-> +			 * The LSB of head.next can't change from
-> +			 * under us because we hold the
-> +			 * global_mm_spinlock.
-> +			 */
-> +			spin_lock(&vma->anon_vma->lock);
-...
-
-ie, can you please make it be
-
-	for (vma = mm->mmap; vma; vma = vma->vm_next) {
-		if (signal_pending(current))
-			goto out_unlock;
-		if (vma->anon_vma)
-			vm_lock_anon_vma(vma->anon_vma);
-		if (vma->vm_file && vma->vm_file->f_mapping)
-			vm_lock_mapping(vma->vm_file->f_mapping);
-	}
-
-and the same thing for unlocking.. Doesn't that look more obvious and 
-easier to understand from a high-level standpoing (and then the individual 
-locking rules for mappings/anon_vma's will also be more obvious, just 
-because they are separated from the higher-level code).
-
-The comments are fine, but even with the comments I'd prefer you to write 
-the code so that you don't need to break up the conditionals over multiple 
-lines etc.
-
-Anyway - I didn't look very much at the actual _notifier_ stuff (ie the 
-thing that I think should be [patch 3/3]), so I don't have any real 
-comments about that part - but I don't really care either. Becasue as long 
-as it doesn't mess up the core VM logic, I no longer have any real 
-objections.
-
-I'd obviously want to see ack's by people like Andrew, Hugh and Nick, but 
-as far as I am concerned, if you just do the trivial cleanup/split, you 
-can add an "Acked-by: Linus Torvalds <torvalds@linux-foundation.org>" to 
-at least the two first patches of the split-up series.
-
-		Linus
+	Hannes
