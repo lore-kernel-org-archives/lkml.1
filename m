@@ -1,181 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYFCNo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYFCNqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYFCNo5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 09:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYFCNoo
+	id S1756760AbYFCNqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 09:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYFCNp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 09:44:44 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:37256 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbYFCNon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 09:44:43 -0400
-Subject: Re: [patch 01/15] security: pass path to inode_create
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       jmorris@namei.org, eparis@redhat.com, casey@schaufler-ca.com,
-       agruen@suse.de, jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
-       hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080529134958.655985182@szeredi.hu>
-References: <20080529134903.615127628@szeredi.hu>
-	 <20080529134958.655985182@szeredi.hu>
+	Tue, 3 Jun 2008 09:45:58 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49131 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbYFCNp4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 09:45:56 -0400
+Subject: Re: [PATCH] console - Add configurable support for console charset
+	translation
+From: David Woodhouse <dwmw2@infradead.org>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <48447615.5050806@am.sony.com>
+References: <48447615.5050806@am.sony.com>
 Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 03 Jun 2008 09:43:38 -0400
-Message-Id: <1212500618.11369.11.camel@moss-spartans.epoch.ncsc.mil>
+Date: Tue, 03 Jun 2008 14:45:50 +0100
+Message-Id: <1212500751.16924.322.camel@pmac.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-06-02 at 15:37 -0700, Tim Bird wrote:
+> With CONSOLE_TRANSLATIONS turned off, this saves about 6K
+> on my kernel configured for an ARM development board (OMAP
+> 5912 OSK).  In embedded products I'm familiar with,
+> console translations are not needed.
+> 
+> This was taken from the Linux-tiny project and updated slightly
+> for 2.6.25.
 
-On Thu, 2008-05-29 at 15:49 +0200, Miklos Szeredi wrote:
-> plain text document attachment (security_create_path.patch)
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> In the inode_create() security operation and related functions pass
-> the path (vfsmount + dentry) to the parent directory instead of the
-> inode.  AppArmor will need this.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> ---
->  fs/namei.c               |   12 ++++++------
->  include/linux/security.h |    9 ++++-----
->  security/dummy.c         |    4 ++--
->  security/security.c      |    4 ++--
->  security/selinux/hooks.c |    5 +++--
->  5 files changed, 17 insertions(+), 17 deletions(-)
-> 
-> Index: linux-2.6/fs/namei.c
-> ===================================================================
-> --- linux-2.6.orig/fs/namei.c	2008-05-29 12:20:49.000000000 +0200
-> +++ linux-2.6/fs/namei.c	2008-05-29 12:20:51.000000000 +0200
-> @@ -1586,11 +1586,11 @@ void unlock_rename(struct dentry *p1, st
->  	}
->  }
->  
-> -static int vfs_create(struct dentry *dir_dentry, struct dentry *dentry,
-> +static int vfs_create(struct path *dir_path, struct dentry *dentry,
->  		      int mode,	struct nameidata *nd)
->  {
-> -	struct inode *dir = dir_dentry->d_inode;
-> -	int error = may_create(dir_dentry, dentry);
-> +	struct inode *dir = dir_path->dentry->d_inode;
-> +	int error = may_create(dir_path->dentry, dentry);
->  
->  	if (error)
->  		return error;
-> @@ -1599,7 +1599,7 @@ static int vfs_create(struct dentry *dir
->  		return -EACCES;	/* shouldn't it be ENOSYS? */
->  	mode &= S_IALLUGO;
->  	mode |= S_IFREG;
-> -	error = security_inode_create(dir, dentry, mode);
-> +	error = security_inode_create(dir_path, dentry, mode);
->  	if (error)
->  		return error;
->  	DQUOT_INIT(dir);
-> @@ -1615,7 +1615,7 @@ int path_create(struct path *dir_path, s
->  	int error = mnt_want_write(dir_path->mnt);
->  
->  	if (!error) {
-> -		error = vfs_create(dir_path->dentry, dentry, mode, nd);
-> +		error = vfs_create(dir_path, dentry, mode, nd);
->  		mnt_drop_write(dir_path->mnt);
->  	}
->  
-> @@ -1718,7 +1718,7 @@ static int __open_namei_create(struct na
->  
->  	if (!IS_POSIXACL(dir->d_inode))
->  		mode &= ~current->fs->umask;
-> -	error = vfs_create(dir, path->dentry, mode, nd);
-> +	error = vfs_create(&nd->path, path->dentry, mode, nd);
->  	mutex_unlock(&dir->d_inode->i_mutex);
->  	dput(nd->path.dentry);
->  	nd->path.dentry = path->dentry;
-> Index: linux-2.6/include/linux/security.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/security.h	2008-05-29 12:20:48.000000000 +0200
-> +++ linux-2.6/include/linux/security.h	2008-05-29 12:20:51.000000000 +0200
-> @@ -339,7 +339,7 @@ static inline void security_free_mnt_opt
->   *		-ENOMEM on memory allocation failure.
->   * @inode_create:
->   *	Check permission to create a regular file.
-> - *	@dir contains inode structure of the parent of the new file.
-> + *	@dir contains the path to the parent of the new file.
->   *	@dentry contains the dentry structure for the file to be created.
->   *	@mode contains the file mode of the file to be created.
->   *	Return 0 if permission is granted.
-> @@ -1353,8 +1353,7 @@ struct security_operations {
->  	void (*inode_free_security) (struct inode *inode);
->  	int (*inode_init_security) (struct inode *inode, struct inode *dir,
->  				    char **name, void **value, size_t *len);
-> -	int (*inode_create) (struct inode *dir,
-> -			     struct dentry *dentry, int mode);
-> +	int (*inode_create) (struct path *dir, struct dentry *dentry, int mode);
->  	int (*inode_link) (struct dentry *old_dentry,
->  			   struct inode *dir, struct dentry *new_dentry);
->  	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
-> @@ -1626,7 +1625,7 @@ int security_inode_alloc(struct inode *i
->  void security_inode_free(struct inode *inode);
->  int security_inode_init_security(struct inode *inode, struct inode *dir,
->  				  char **name, void **value, size_t *len);
-> -int security_inode_create(struct inode *dir, struct dentry *dentry, int mode);
-> +int security_inode_create(struct path *dir, struct dentry *dentry, int mode);
->  int security_inode_link(struct dentry *old_dentry, struct inode *dir,
->  			 struct dentry *new_dentry);
->  int security_inode_unlink(struct inode *dir, struct dentry *dentry);
-> @@ -1964,7 +1963,7 @@ static inline int security_inode_init_se
->  	return -EOPNOTSUPP;
->  }
->  
-> -static inline int security_inode_create(struct inode *dir,
-> +static inline int security_inode_create(struct path *dir,
->  					 struct dentry *dentry,
->  					 int mode)
->  {
-> Index: linux-2.6/security/dummy.c
-> ===================================================================
-> --- linux-2.6.orig/security/dummy.c	2008-05-29 12:20:48.000000000 +0200
-> +++ linux-2.6/security/dummy.c	2008-05-29 12:20:51.000000000 +0200
-> @@ -286,8 +286,8 @@ static int dummy_inode_init_security (st
->  	return -EOPNOTSUPP;
->  }
->  
-> -static int dummy_inode_create (struct inode *inode, struct dentry *dentry,
-> -			       int mask)
-> +static int dummy_inode_create(struct path *dir, struct dentry *dentry,
-> +			      int mask)
->  {
->  	return 0;
->  }
-> Index: linux-2.6/security/selinux/hooks.c
-> ===================================================================
-> --- linux-2.6.orig/security/selinux/hooks.c	2008-05-29 12:20:48.000000000 +0200
-> +++ linux-2.6/security/selinux/hooks.c	2008-05-29 12:20:51.000000000 +0200
-> @@ -2482,9 +2482,10 @@ static int selinux_inode_init_security(s
->  	return 0;
->  }
->  
-> -static int selinux_inode_create(struct inode *dir, struct dentry *dentry, int mask)
-> +static int selinux_inode_create(struct path *dir, struct dentry *dentry,
-> +				int mask)
->  {
-> -	return may_create(dir, dentry, SECCLASS_FILE);
-> +	return may_create(dir->dentry->d_inode, dentry, SECCLASS_FILE);
->  }
->  
->  static int selinux_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
+I prefer it like this... we can drop consolemap.o and
+consolemap_deftbl.o from the build completely. It saves 7.2KiB on a
+ppc32 build here.
 
-This may be moot given the vfs maintainers' objections, but if you were
-to make this change, then logically you'd push the struct path all the
-way down and set it in the avc_audit_data so that it could be used by
-avc_audit() for emitting a pathname in the audit record.  Likewise for
-the other hook changes.
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 595a925..f740190 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -36,6 +36,13 @@ config VT
+ 	  If unsure, say Y, or else you won't be able to do much with your new
+ 	  shiny Linux system :-)
+ 
++config CONSOLE_TRANSLATIONS
++	default y
++	bool "Enable character translations in console" if EMBEDDED
++	---help---
++	  This enables support for font mapping and Unicode translation
++	  on virtual consoles.
++
+ config VT_CONSOLE
+ 	bool "Support for console on virtual terminal" if EMBEDDED
+ 	depends on VT
+diff --git a/drivers/char/Makefile b/drivers/char/Makefile
+index 4c1c584..6ef173c 100644
+--- a/drivers/char/Makefile
++++ b/drivers/char/Makefile
+@@ -12,8 +12,8 @@ obj-y	 += mem.o random.o tty_io.o n_tty.o tty_ioctl.o
+ obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
+ obj-$(CONFIG_UNIX98_PTYS)	+= pty.o
+ obj-y				+= misc.o
+-obj-$(CONFIG_VT)		+= vt_ioctl.o vc_screen.o consolemap.o \
+-				   consolemap_deftbl.o selection.o keyboard.o
++obj-$(CONFIG_VT)		+= vt_ioctl.o vc_screen.o selection.o keyboard.o
++obj-$(CONFIG_CONSOLE_TRANSLATIONS) += consolemap.o consolemap_deftbl.o
+ obj-$(CONFIG_HW_CONSOLE)	+= vt.o defkeymap.o
+ obj-$(CONFIG_AUDIT)		+= tty_audit.o
+ obj-$(CONFIG_MAGIC_SYSRQ)	+= sysrq.o
+diff --git a/include/linux/consolemap.h b/include/linux/consolemap.h
+index e2bf7e5..c4811da 100644
+--- a/include/linux/consolemap.h
++++ b/include/linux/consolemap.h
+@@ -3,6 +3,9 @@
+  *
+  * Interface between console.c, selection.c  and consolemap.c
+  */
++#ifndef __LINUX_CONSOLEMAP_H__
++#define __LINUX_CONSOLEMAP_H__
++
+ #define LAT1_MAP 0
+ #define GRAF_MAP 1
+ #define IBMPC_MAP 2
+@@ -10,6 +13,7 @@
+ 
+ #include <linux/types.h>
+ 
++#ifdef CONFIG_CONSOLE_TRANSLATIONS
+ struct vc_data;
+ 
+ extern u16 inverse_translate(struct vc_data *conp, int glyph, int use_unicode);
+@@ -18,3 +22,13 @@ extern int conv_uni_to_pc(struct vc_data *conp, long ucs);
+ extern u32 conv_8bit_to_uni(unsigned char c);
+ extern int conv_uni_to_8bit(u32 uni);
+ void console_map_init(void);
++#else
++#define inverse_translate(conp, glyph, uni) ((uint16_t)glyph)
++#define set_translate(m, vc) ((unsigned short *)NULL)
++#define conv_uni_to_pc(conp, ucs) ((int) (ucs > 0xff ? -1: ucs))
++#define conv_8bit_to_uni(c) ((uint32_t)(c))
++#define conv_uni_to_8bit(c) ((int) ((c) & 0xff))
++#define console_map_init(c) do { ; } while (0)
++#endif /* CONFIG_CONSOLE_TRANSLATIONS */
++
++#endif /* __LINUX_CONSOLEMAP_H__ */
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index 9448ffb..81ed155 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -12,6 +12,7 @@
+ #include <linux/mutex.h>
+ #include <linux/console_struct.h>
+ #include <linux/mm.h>
++#include <linux/consolemap.h>
+ 
+ /*
+  * Presently, a lot of graphics programs do not restore the contents of
+@@ -54,6 +55,7 @@ void redraw_screen(struct vc_data *vc, int is_switch);
+ struct tty_struct;
+ int tioclinux(struct tty_struct *tty, unsigned long arg);
+ 
++#ifdef CONFIG_CONSOLE_TRANSLATIONS
+ /* consolemap.c */
+ 
+ struct unimapinit;
+@@ -70,6 +72,18 @@ int con_set_default_unimap(struct vc_data *vc);
+ void con_free_unimap(struct vc_data *vc);
+ void con_protect_unimap(struct vc_data *vc, int rdonly);
+ int con_copy_unimap(struct vc_data *dst_vc, struct vc_data *src_vc);
++#else
++#define con_set_trans_old(arg) (0)
++#define con_get_trans_old(arg) (-EINVAL)
++#define con_set_trans_new(arg) (0)
++#define con_get_trans_new(arg) (-EINVAL)
++#define con_clear_unimap(vc, ui) (0)
++#define con_set_unimap(vc, ct, list) (0)
++#define con_set_default_unimap(vc) (0)
++#define con_copy_unimap(d, s) (0)
++#define con_get_unimap(vc, ct, uct, list) (-EINVAL)
++#define con_free_unimap(vc) do { ; } while (0)
++#endif
+ 
+ /* vt.c */
+ int vt_waitactive(int vt);
 
 -- 
-Stephen Smalley
-National Security Agency
+dwmw2
 
