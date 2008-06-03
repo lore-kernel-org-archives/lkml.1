@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbYFCNqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYFCNyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbYFCNqb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 09:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYFCNp6
+	id S1755859AbYFCNyy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 09:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYFCNyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 09:45:58 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52395 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752235AbYFCNp5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 09:45:57 -0400
-X-Sasl-enc: SsrimojTk2tLGBnLv2KjAcPNuHs92ZGX9w1cVre16etz 1212499817
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, jesper@krogh.cc,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080603105258.GV28946@ZenIV.linux.org.uk>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-	 <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
-	 <20080603095713.GR28946@ZenIV.linux.org.uk>
-	 <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-	 <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
-	 <20080603104035.GT28946@ZenIV.linux.org.uk>
-	 <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>
-	 <20080603105258.GV28946@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Tue, 03 Jun 2008 21:27:02 +0800
-Message-Id: <1212499623.3025.46.camel@raven.themaw.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 09:54:44 -0400
+Received: from www.tglx.de ([62.245.132.106]:35639 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752535AbYFCNyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 09:54:44 -0400
+Date: Tue, 3 Jun 2008 15:54:10 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       davej@codemonkey.org.uk, andi@firstfloor.org
+Subject: Re: aperture_64.c: corner case wrong
+In-Reply-To: <20080602153033.2d1672f0.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0806031551330.3235@apollo.tec.linutronix.de>
+References: <20080526191730.GA18425@elf.ucw.cz> <20080602153033.2d1672f0.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-06-03 at 11:52 +0100, Al Viro wrote:
-> On Tue, Jun 03, 2008 at 12:45:33PM +0200, Miklos Szeredi wrote:
-> 
-> > I think it must be autofs4 doing something weird.  Like this in
-> > autofs4_lookup_unhashed():
+On Mon, 2 Jun 2008, Andrew Morton wrote:
+> On Mon, 26 May 2008 21:17:30 +0200
+> Pavel Machek <pavel@suse.cz> wrote:
+> > diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+> > index 02f4dba..aa4876a 100644
+> > --- a/arch/x86/kernel/aperture_64.c
+> > +++ b/arch/x86/kernel/aperture_64.c
+> > @@ -344,14 +323,16 @@ out:
+> >  	if (gart_fix_e820 && !fix && aper_enabled) {
+> >  		if (!e820_all_mapped(aper_base, aper_base + aper_size,
+> >  				    E820_RESERVED)) {
+> >  			/* reserve it, so we can reuse it in second kernel */
+> >  			printk(KERN_INFO "update e820 for GART\n");
+> >  			add_memory_region(aper_base, aper_size, E820_RESERVED);
+> >  			update_e820();
+> >  		}
+> > -		return;
+> >  	}
+> >  
+> > +	if (!fix)
+> > +		return;
+> > +
+> >  	/* different nodes have different setting, disable them all at first*/
+> >  	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
+> >  		int bus;
 > > 
-> > 			/*
-> > 			 * Make the rehashed dentry negative so the VFS
-> > 			 * behaves as it should.
-> > 			 */
-> > 			if (inode) {
-> > 				dentry->d_inode = NULL;
 > 
-> Lovely.  If we ever step into that with somebody else (no matter who)
-> holding a reference to that dentry, we are certainly well and truly
-> buggered.  It's not just mount(2) - everything in the tree assumes that
-> holding a reference to positive dentry guarantees that it remains
-> positive.
+> So what happened with this?  Thomas has merged an "x86: aperture_64.c:
+> cleanups" from yourself but it appears that half of this bugfix got
+> applied somewhere and the below part did not?
 
-The intent here is that, the dentry above is unhashed at this point, and
-if hasn't been reclaimed by the VFS, it is made negative and replaces
-the unhashed negative dentry passed to ->lookup(). The reference count
-is incremented to account for the reference held by the path walk.
+Err, no. I seem to have dropped the patch completely. I'm picking it
+up again.
 
-What am I doing wrong here?
- 
-Ian
+> diff -puN arch/x86/kernel/aperture_64.c~aperture_64c-corner-case-wrong arch/x86/kernel/aperture_64.c
+> --- a/arch/x86/kernel/aperture_64.c~aperture_64c-corner-case-wrong
+> +++ a/arch/x86/kernel/aperture_64.c
+> @@ -331,6 +331,9 @@ out:
+>  		return;
 
+This should be:
+-  		return;
+
+right?
+
+>  	}
+>  
+> +	if (!fix)
+> +		return;
+> +
+>  	/* different nodes have different setting, disable them all at first*/
+>  	for (i = 0; i < ARRAY_SIZE(bus_dev_ranges); i++) {
+>  		int bus;
+> _
+
+Thanks,
+	tglx
 
