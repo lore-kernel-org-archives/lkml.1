@@ -1,239 +1,362 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbYFCDhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYFCDru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbYFCDhu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 23:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYFCDhn
+	id S1754815AbYFCDru (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 23:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYFCDrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 23:37:43 -0400
-Received: from smtp21.orange.fr ([80.12.242.46]:31395 "EHLO smtp21.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752552AbYFCDhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 23:37:42 -0400
-X-ME-UUID: 20080603033740408.63B3F1C0009B@mwinf2129.orange.fr
-Message-ID: <4844BC75.8040705@cosmosbay.com>
-Date: Tue, 03 Jun 2008 05:37:25 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Mon, 2 Jun 2008 23:47:41 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60829 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752627AbYFCDrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Jun 2008 23:47:39 -0400
+Message-ID: <4844BE83.5010401@cn.fujitsu.com>
+Date: Tue, 03 Jun 2008 11:46:11 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vmallocinfo: Add NUMA informations
-References: <48439916.2070108@cosmosbay.com> <20080602160548.B6D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080602160548.B6D4.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Content-Type: multipart/mixed;
- boundary="------------050209070605020102020907"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: paulmck@linux.vnet.ibm.com, torvalds@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] rcu classic: new algorithm for callbacks-processing
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050209070605020102020907
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
 
-KOSAKI Motohiro a =E9crit :
-> Hi
->
->  =20
->> Christoph recently added /proc/vmallocinfo file to get information abo=
-ut=20
->> vmalloc allocations.
->>
->> This patch adds NUMA specific information, giving number of pages=20
->> allocated on each memory node.
->>
->> This should help to check that vmalloc() is able to respect NUMA polic=
-ies.
->>    =20
->
-> good patch :)
->
->
->  =20
->> +static void show_numa_infos(struct seq_file *m, struct vm_struct *v)
->> +{
->> +	if (NUMA_BUILD) {
->> +		unsigned int *counters, nr;
->> +
->> +		counters =3D kzalloc(MAX_NUMNODES * sizeof(unsigned int),
->> +				   GFP_KERNEL);
->> +		if (!counters)
->> +			return;
->> +
->> +		for (nr =3D 0; nr < v->nr_pages; nr++)
->> +			counters[page_to_nid(v->pages[nr])]++;
->> +
->> +		for (nr =3D 0; nr < MAX_NUMNODES; nr++)
->> +			if (counters[nr])
->> +				seq_printf(m, " N%u=3D%u", nr, counters[nr]);
->> +
->>    =20
->
-> for_each_node_state(n, N_HIGH_MEMORY) is better?
-> because MAX_NUMNODES has offten very large value.
->
->
->
->  =20
-Yes, good idea, thank you.
+The code/algorithm of the implement of current callbacks-processing
+is very efficient and technical. But when I studied it and I found
+a disadvantage:
 
-I also used nr_node_ids instead of MAX_NUMNODES in this second version :
+In multi-CPU systems, when a new RCU callback is being
+queued(call_rcu[_bh]), this callback will be invoked after the grace
+period for the batch with batch number = rcp->cur+2 has completed
+very very likely in current implement. Actually, this callback can be
+invoked after the grace period for the batch with
+batch number = rcp->cur+1 has completed. The delay of invocation means
+that latency of synchronize_rcu() is extended. But more important thing
+is that the callbacks usually free memory, and these works are delayed
+too! it's necessary for reclaimer to free memory as soon as
+possible when left memory is few.
 
-[PATCH] vmallocinfo: Add NUMA informations
+A very simple way can solve this problem:
+a field(struct rcu_head::batch) is added to record the batch number for
+the RCU callback. And when a new RCU callback is being queued, we
+determine the batch number for this callback(head->batch = rcp->cur+1)
+and we move this callback to rdp->donelist if we find
+that head->batch <= rcp->completed when we process callbacks.
+This simple way reduces the wait time for invocation a lot. (about
+2.5Grace Period -> 1.5Grace Period in average in multi-CPU systems)
 
-Christoph recently added /proc/vmallocinfo file to get information about =
+This is my algorithm. But I do not add any field for struct rcu_head
+in my implement. We just need to memorize the last 2 batches and
+their batch number, because these 2 batches include all entries that
+for whom the grace period hasn't completed. So we use a special
+linked-list rather than add a field.
+Please see the comment of struct rcu_data.
 
-vmalloc allocations.
+rcutourture was tested successfully(x86_64/4cpu i386/2cpu i386/1cpu).
 
-This patch adds NUMA specific information, giving number of pages=20
-allocated on each memory node.
-
-This should help to check that vmalloc() is able to respect NUMA policies=
-=2E
-
-Example of output on a four nodes machine (one cpu per node)
-
-1) network hash tables are evenly spreaded on four nodes (OK)
-  (Same point for inodes and dentries hash tables)
-2) iptables tables (x_tables) are correctly allocated on each cpu node=20
-(OK).
-3) sys_swapon() allocates its memory from one node only.
-4) each loaded module is using memory on one node.
-
-Sysadmins could tune their setup to change points 3) and 4) if necessary.=
-
-
-grep "pages=3D"  /proc/vmallocinfo
-0xffffc20000000000-0xffffc20000201000 2101248=20
-alloc_large_system_hash+0x204/0x2c0 pages=3D512 vmalloc N0=3D128 N1=3D128=
-=20
-N2=3D128 N3=3D128
-0xffffc20000201000-0xffffc20000302000 1052672=20
-alloc_large_system_hash+0x204/0x2c0 pages=3D256 vmalloc N0=3D64 N1=3D64 N=
-2=3D64=20
-N3=3D64
-0xffffc2000031a000-0xffffc2000031d000   12288=20
-alloc_large_system_hash+0x204/0x2c0 pages=3D2 vmalloc N1=3D1 N2=3D1
-0xffffc2000031f000-0xffffc2000032b000   49152=20
-cramfs_uncompress_init+0x2e/0x80 pages=3D11 vmalloc N0=3D3 N1=3D3 N2=3D2 =
-N3=3D3
-0xffffc2000033e000-0xffffc20000341000   12288 sys_swapon+0x640/0xac0=20
-pages=3D2 vmalloc N0=3D2
-0xffffc20000341000-0xffffc20000344000   12288=20
-xt_alloc_table_info+0xfe/0x130 [x_tables] pages=3D2 vmalloc N0=3D2
-0xffffc20000344000-0xffffc20000347000   12288=20
-xt_alloc_table_info+0xfe/0x130 [x_tables] pages=3D2 vmalloc N1=3D2
-0xffffc20000347000-0xffffc2000034a000   12288=20
-xt_alloc_table_info+0xfe/0x130 [x_tables] pages=3D2 vmalloc N2=3D2
-0xffffc2000034a000-0xffffc2000034d000   12288=20
-xt_alloc_table_info+0xfe/0x130 [x_tables] pages=3D2 vmalloc N3=3D2
-0xffffc20004381000-0xffffc20004402000  528384=20
-alloc_large_system_hash+0x204/0x2c0 pages=3D128 vmalloc N0=3D32 N1=3D32 N=
-2=3D32=20
-N3=3D32
-0xffffc20004402000-0xffffc20004803000 4198400=20
-alloc_large_system_hash+0x204/0x2c0 pages=3D1024 vmalloc vpages N0=3D256 =
-
-N1=3D256 N2=3D256 N3=3D256
-0xffffc20004803000-0xffffc20004904000 1052672=20
-alloc_large_system_hash+0x204/0x2c0 pages=3D256 vmalloc N0=3D64 N1=3D64 N=
-2=3D64=20
-N3=3D64
-0xffffc20004904000-0xffffc20004bec000 3047424 sys_swapon+0x640/0xac0=20
-pages=3D743 vmalloc vpages N0=3D743
-0xffffffffa0000000-0xffffffffa000f000   61440=20
-sys_init_module+0xc27/0x1d00 pages=3D14 vmalloc N1=3D14
-0xffffffffa000f000-0xffffffffa0014000   20480=20
-sys_init_module+0xc27/0x1d00 pages=3D4 vmalloc N0=3D4
-0xffffffffa0014000-0xffffffffa0017000   12288=20
-sys_init_module+0xc27/0x1d00 pages=3D2 vmalloc N0=3D2
-0xffffffffa0017000-0xffffffffa0022000   45056=20
-sys_init_module+0xc27/0x1d00 pages=3D10 vmalloc N1=3D10
-0xffffffffa0022000-0xffffffffa0028000   24576=20
-sys_init_module+0xc27/0x1d00 pages=3D5 vmalloc N3=3D5
-0xffffffffa0028000-0xffffffffa0050000  163840=20
-sys_init_module+0xc27/0x1d00 pages=3D39 vmalloc N1=3D39
-0xffffffffa0050000-0xffffffffa0052000    8192=20
-sys_init_module+0xc27/0x1d00 pages=3D1 vmalloc N1=3D1
-0xffffffffa0052000-0xffffffffa0056000   16384=20
-sys_init_module+0xc27/0x1d00 pages=3D3 vmalloc N1=3D3
-0xffffffffa0056000-0xffffffffa0081000  176128=20
-sys_init_module+0xc27/0x1d00 pages=3D42 vmalloc N3=3D42
-0xffffffffa0081000-0xffffffffa00ae000  184320=20
-sys_init_module+0xc27/0x1d00 pages=3D44 vmalloc N3=3D44
-0xffffffffa00ae000-0xffffffffa00b1000   12288=20
-sys_init_module+0xc27/0x1d00 pages=3D2 vmalloc N3=3D2
-0xffffffffa00b1000-0xffffffffa00b9000   32768=20
-sys_init_module+0xc27/0x1d00 pages=3D7 vmalloc N0=3D7
-0xffffffffa00b9000-0xffffffffa00c4000   45056=20
-sys_init_module+0xc27/0x1d00 pages=3D10 vmalloc N3=3D10
-0xffffffffa00c6000-0xffffffffa00e0000  106496=20
-sys_init_module+0xc27/0x1d00 pages=3D25 vmalloc N2=3D25
-0xffffffffa00e0000-0xffffffffa00f1000   69632=20
-sys_init_module+0xc27/0x1d00 pages=3D16 vmalloc N2=3D16
-0xffffffffa00f1000-0xffffffffa00f4000   12288=20
-sys_init_module+0xc27/0x1d00 pages=3D2 vmalloc N3=3D2
-0xffffffffa00f4000-0xffffffffa00f7000   12288=20
-sys_init_module+0xc27/0x1d00 pages=3D2 vmalloc N3=3D2
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
- mm/vmalloc.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+)
-
-
-
---------------050209070605020102020907
-Content-Type: text/plain;
- name="vmallocinfo_numa.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="vmallocinfo_numa.patch"
-
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 6e45b0f..d2bbd85 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -931,6 +931,27 @@ static void s_stop(struct seq_file *m, void *p)
- 	read_unlock(&vmlist_lock);
+diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+index b3aa05b..fce7106 100644
+--- a/include/linux/rcuclassic.h
++++ b/include/linux/rcuclassic.h
+@@ -66,11 +66,7 @@ static inline int rcu_batch_after(long a, long b)
+ 	return (a - b) > 0;
  }
  
-+static void show_numa_infos(struct seq_file *m, struct vm_struct *v)
+-/*
+- * Per-CPU data for Read-Copy UPdate.
+- * nxtlist - new callbacks are added here
+- * curlist - current batch for which quiescent cycle started if any
+- */
++/* Per-CPU data for Read-Copy UPdate. */
+ struct rcu_data {
+ 	/* 1) quiescent state handling : */
+ 	long		quiescbatch;     /* Batch # for grace period */
+@@ -78,12 +74,24 @@ struct rcu_data {
+ 	int		qs_pending;	 /* core waits for quiesc state */
+ 
+ 	/* 2) batch handling */
+-	long  	       	batch;           /* Batch # for current RCU batch */
++	/*
++	 * if nxtlist is not NULL, then:
++	 * batch:
++	 *	The batch # for the last entry of nxtlist
++	 * [*nxttail[1], NULL = *nxttail[2]):
++	 *	Entries that batch # <= batch
++	 * [*nxttail[0], *nxttail[1]):
++	 *	Entries that batch # <= batch - 1
++	 * [nxtlist, *nxttail[0]):
++	 *	Entries that batch # <= batch - 2
++	 *	The grace period for these entries has completed, and
++	 *	the other grace-period-completed entries may be moved
++	 *	here temporarily in rcu_process_callbacks().
++	 */
++	long  	       	batch;
+ 	struct rcu_head *nxtlist;
+-	struct rcu_head **nxttail;
++	struct rcu_head **nxttail[3];
+ 	long            qlen; 	 	 /* # of queued callbacks */
+-	struct rcu_head *curlist;
+-	struct rcu_head **curtail;
+ 	struct rcu_head *donelist;
+ 	struct rcu_head **donetail;
+ 	long		blimit;		 /* Upper limit on a processed batch */
+diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+index f4ffbd0..36ceb9f 100644
+--- a/kernel/rcuclassic.c
++++ b/kernel/rcuclassic.c
+@@ -104,6 +104,31 @@ static inline void force_quiescent_state(struct rcu_data *rdp,
+ }
+ #endif
+ 
++static void __call_rcu(struct rcu_head *head, struct rcu_ctrlblk *rcp,
++		struct rcu_data *rdp)
 +{
-+	if (NUMA_BUILD) {
-+		unsigned int *counters, nr;
++	long batch;
++	smp_mb(); /* reads the most recently updated value of rcu->cur. */
++	batch = rcp->cur + 1;
 +
-+		counters = kzalloc(nr_node_ids * sizeof(unsigned int),
-+				   GFP_KERNEL);
-+		if (!counters)
-+			return;
++	if (rdp->nxtlist && rdp->batch <= batch - 1) {
++		/* process callbacks */
++		rdp->nxttail[0] = rdp->nxttail[1];
++		rdp->nxttail[1] = rdp->nxttail[2];
++		if (rdp->batch <= batch - 2)
++			rdp->nxttail[0] = rdp->nxttail[2];
++	}
 +
-+		for (nr = 0; nr < v->nr_pages; nr++)
-+			counters[page_to_nid(v->pages[nr])]++;
++	rdp->batch = batch;
++	*rdp->nxttail[2] = head;
++	rdp->nxttail[2] = &head->next;
 +
-+		for_each_node_state(nr, N_HIGH_MEMORY)
-+			if (counters[nr])
-+				seq_printf(m, " N%u=%u", nr, counters[nr]);
-+
-+		kfree(counters);
++	if (unlikely(++rdp->qlen > qhimark)) {
++		rdp->blimit = INT_MAX;
++		force_quiescent_state(rdp, &rcu_ctrlblk);
 +	}
 +}
 +
- static int s_show(struct seq_file *m, void *p)
+ /**
+  * call_rcu - Queue an RCU callback for invocation after a grace period.
+  * @head: structure to be used for queueing the RCU updates.
+@@ -119,18 +144,11 @@ void call_rcu(struct rcu_head *head,
+ 				void (*func)(struct rcu_head *rcu))
  {
- 	struct vm_struct *v = p;
-@@ -967,6 +988,7 @@ static int s_show(struct seq_file *m, void *p)
- 	if (v->flags & VM_VPAGES)
- 		seq_printf(m, " vpages");
+ 	unsigned long flags;
+-	struct rcu_data *rdp;
  
-+	show_numa_infos(m, v);
- 	seq_putc(m, '\n');
- 	return 0;
+ 	head->func = func;
+ 	head->next = NULL;
+ 	local_irq_save(flags);
+-	rdp = &__get_cpu_var(rcu_data);
+-	*rdp->nxttail = head;
+-	rdp->nxttail = &head->next;
+-	if (unlikely(++rdp->qlen > qhimark)) {
+-		rdp->blimit = INT_MAX;
+-		force_quiescent_state(rdp, &rcu_ctrlblk);
+-	}
++	__call_rcu(head, &rcu_ctrlblk, &__get_cpu_var(rcu_data));
+ 	local_irq_restore(flags);
  }
+ EXPORT_SYMBOL_GPL(call_rcu);
+@@ -155,20 +173,11 @@ void call_rcu_bh(struct rcu_head *head,
+ 				void (*func)(struct rcu_head *rcu))
+ {
+ 	unsigned long flags;
+-	struct rcu_data *rdp;
+ 
+ 	head->func = func;
+ 	head->next = NULL;
+ 	local_irq_save(flags);
+-	rdp = &__get_cpu_var(rcu_bh_data);
+-	*rdp->nxttail = head;
+-	rdp->nxttail = &head->next;
+-
+-	if (unlikely(++rdp->qlen > qhimark)) {
+-		rdp->blimit = INT_MAX;
+-		force_quiescent_state(rdp, &rcu_bh_ctrlblk);
+-	}
+-
++	__call_rcu(head, &rcu_bh_ctrlblk, &__get_cpu_var(rcu_bh_data));
+ 	local_irq_restore(flags);
+ }
+ EXPORT_SYMBOL_GPL(call_rcu_bh);
+@@ -197,12 +206,6 @@ EXPORT_SYMBOL_GPL(rcu_batches_completed_bh);
+ static inline void raise_rcu_softirq(void)
+ {
+ 	raise_softirq(RCU_SOFTIRQ);
+-	/*
+-	 * The smp_mb() here is required to ensure that this cpu's
+-	 * __rcu_process_callbacks() reads the most recently updated
+-	 * value of rcu->cur.
+-	 */
+-	smp_mb();
+ }
+ 
+ /*
+@@ -265,11 +268,6 @@ static void rcu_start_batch(struct rcu_ctrlblk *rcp)
+ 	if (rcp->next_pending &&
+ 			rcp->completed == rcp->cur) {
+ 		rcp->next_pending = 0;
+-		/*
+-		 * next_pending == 0 must be visible in
+-		 * __rcu_process_callbacks() before it can see new value of cur.
+-		 */
+-		smp_wmb();
+ 		rcp->cur++;
+ 
+ 		/*
+@@ -350,13 +348,15 @@ static void rcu_check_quiescent_state(struct rcu_ctrlblk *rcp,
+  * which is dead and hence not processing interrupts.
+  */
+ static void rcu_move_batch(struct rcu_data *this_rdp, struct rcu_head *list,
+-				struct rcu_head **tail)
++				struct rcu_head **tail, long batch)
+ {
+-	local_irq_disable();
+-	*this_rdp->nxttail = list;
+-	if (list)
+-		this_rdp->nxttail = tail;
+-	local_irq_enable();
++	if (list) {
++		local_irq_disable();
++		this_rdp->batch = batch;
++		*this_rdp->nxttail[2] = list;
++		this_rdp->nxttail[2] = tail;
++		local_irq_enable();
++	}
+ }
+ 
+ static void __rcu_offline_cpu(struct rcu_data *this_rdp,
+@@ -370,9 +370,8 @@ static void __rcu_offline_cpu(struct rcu_data *this_rdp,
+ 	if (rcp->cur != rcp->completed)
+ 		cpu_quiet(rdp->cpu, rcp);
+ 	spin_unlock_bh(&rcp->lock);
+-	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail);
+-	rcu_move_batch(this_rdp, rdp->curlist, rdp->curtail);
+-	rcu_move_batch(this_rdp, rdp->nxtlist, rdp->nxttail);
++	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail, rcp->cur + 1);
++	rcu_move_batch(this_rdp, rdp->nxtlist, rdp->nxttail[2], rcp->cur + 1);
+ }
+ 
+ static void rcu_offline_cpu(int cpu)
+@@ -402,33 +401,37 @@ static void rcu_offline_cpu(int cpu)
+ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp,
+ 					struct rcu_data *rdp)
+ {
+-	if (rdp->curlist && !rcu_batch_before(rcp->completed, rdp->batch)) {
+-		*rdp->donetail = rdp->curlist;
+-		rdp->donetail = rdp->curtail;
+-		rdp->curlist = NULL;
+-		rdp->curtail = &rdp->curlist;
+-	}
+-
+-	if (rdp->nxtlist && !rdp->curlist) {
++	if (rdp->nxtlist) {
+ 		local_irq_disable();
+-		rdp->curlist = rdp->nxtlist;
+-		rdp->curtail = rdp->nxttail;
+-		rdp->nxtlist = NULL;
+-		rdp->nxttail = &rdp->nxtlist;
+-		local_irq_enable();
+ 
+-		/*
+-		 * start the next batch of callbacks
++		/* move the other grace-period-completed entries to
++		 * [rdp->nxtlist, *rdp->nxttail[0]) temporarily
+ 		 */
+-
+-		/* determine batch number */
+-		rdp->batch = rcp->cur + 1;
+-		/* see the comment and corresponding wmb() in
+-		 * the rcu_start_batch()
++		if (rdp->batch <= rcp->completed)
++			rdp->nxttail[0] = rdp->nxttail[1] = rdp->nxttail[2];
++		else if (rdp->batch - 1 <= rcp->completed)
++			rdp->nxttail[0] = rdp->nxttail[1];
++
++		/* the grace period for entries in
++		 * [rdp->nxtlist, *rdp->nxttail[0]) has completed and
++		 * move these entries to donelist
+ 		 */
+-		smp_rmb();
++		if (rdp->nxttail[0] != &rdp->nxtlist) {
++			*rdp->donetail = rdp->nxtlist;
++			rdp->donetail = rdp->nxttail[0];
++			rdp->nxtlist = *rdp->nxttail[0];
++			*rdp->donetail = NULL;
++
++			if (rdp->nxttail[1] == rdp->nxttail[0])
++				rdp->nxttail[1] = &rdp->nxtlist;
++			if (rdp->nxttail[2] == rdp->nxttail[0])
++				rdp->nxttail[2] = &rdp->nxtlist;
++			rdp->nxttail[0] = &rdp->nxtlist;
++		}
++
++		local_irq_enable();
+ 
+-		if (!rcp->next_pending) {
++		if (rcp->cur < rdp->batch && !rcp->next_pending) {
+ 			/* and start it/schedule start if it's a new batch */
+ 			spin_lock(&rcp->lock);
+ 			rcp->next_pending = 1;
+@@ -450,15 +453,24 @@ static void rcu_process_callbacks(struct softirq_action *unused)
+ 
+ static int __rcu_pending(struct rcu_ctrlblk *rcp, struct rcu_data *rdp)
+ {
+-	/* This cpu has pending rcu entries and the grace period
+-	 * for them has completed.
+-	 */
+-	if (rdp->curlist && !rcu_batch_before(rcp->completed, rdp->batch))
+-		return 1;
+-
+-	/* This cpu has no pending entries, but there are new entries */
+-	if (!rdp->curlist && rdp->nxtlist)
+-		return 1;
++	if (rdp->nxtlist) {
++		/* This cpu has pending rcu entries and the grace period
++		 * for them has completed.
++		 */
++		if (rdp->batch <= rcp->completed)
++			return 1;
++		if (rdp->batch - 1 <= rcp->completed &&
++				rdp->nxttail[0] != rdp->nxttail[1])
++			return 1;
++		if (rdp->nxttail[0] != &rdp->nxtlist)
++			return 1;
++
++		/* This cpu has pending rcu entries and the new batch
++		 * for then hasn't been started nor scheduled start
++		 */
++		if (rcp->cur < rdp->batch && !rcp->next_pending)
++			return 1;
++	}
+ 
+ 	/* This cpu has finished callbacks to invoke */
+ 	if (rdp->donelist)
+@@ -494,7 +506,7 @@ int rcu_needs_cpu(int cpu)
+ 	struct rcu_data *rdp = &per_cpu(rcu_data, cpu);
+ 	struct rcu_data *rdp_bh = &per_cpu(rcu_bh_data, cpu);
+ 
+-	return (!!rdp->curlist || !!rdp_bh->curlist || rcu_pending(cpu));
++	return (!!rdp->nxtlist || !!rdp_bh->nxtlist || rcu_pending(cpu));
+ }
+ 
+ void rcu_check_callbacks(int cpu, int user)
+@@ -513,8 +525,7 @@ static void rcu_init_percpu_data(int cpu, struct rcu_ctrlblk *rcp,
+ 						struct rcu_data *rdp)
+ {
+ 	memset(rdp, 0, sizeof(*rdp));
+-	rdp->curtail = &rdp->curlist;
+-	rdp->nxttail = &rdp->nxtlist;
++	rdp->nxttail[0] = rdp->nxttail[1] = rdp->nxttail[2] = &rdp->nxtlist;
+ 	rdp->donetail = &rdp->donelist;
+ 	rdp->quiescbatch = rcp->completed;
+ 	rdp->qs_pending = 0;
 
---------------050209070605020102020907--
+
 
 
