@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYFCPUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbYFCPYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYFCPUi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 11:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYFCPU2
+	id S1753697AbYFCPYI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 11:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYFCPX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 11:20:28 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:27296 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752223AbYFCPU1 (ORCPT
+	Tue, 3 Jun 2008 11:23:56 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43214 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752671AbYFCPXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 11:20:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=jcNThREpYEGrV4bsZlvw97HKA49EPDkhW3ZmX8gZgrufmurc71yKI4SXQ50O+f7RK70eooaH2YIKLF+i74+5RW4vAT4C7GxDR8bl/tsqq6Gdb0kyHYWaUqJ+OB02J8qY4phf/J+IPZ2ZKFGHtWoN5V7e5EhjZ+pBWJd8inVnm+w=
-Message-ID: <87a5b0800806030820i16b36366qf199e1c56d729fbe@mail.gmail.com>
-Date: Tue, 3 Jun 2008 16:20:25 +0100
-From: "Will Newton" <will.newton@gmail.com>
-To: linux-usb@vger.kernel.org,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>, leoli@freescale.com
-Subject: [PATCH] fsl_usb2_udc: Add a wmb before priming endpoint.
+	Tue, 3 Jun 2008 11:23:55 -0400
+Message-ID: <48456225.6070505@bull.net>
+Date: Tue, 03 Jun 2008 17:24:21 +0200
+From: Benjamin Thery <benjamin.thery@bull.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_1146_15095292.1212506425839"
+To: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>
+Subject: Re: [PATCH 09/10] netns: Enable tagging for net_class directories
+ in sysfs
+References: <20080602134438.224352910@theryb.frec.bull.fr> <20080602134439.782528644@theryb.frec.bull.fr> <20080603040818.GA18507@suse.de>
+In-Reply-To: <20080603040818.GA18507@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_1146_15095292.1212506425839
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Greg KH wrote:
+> On Mon, Jun 02, 2008 at 03:46:08PM +0200, Benjamin Thery wrote:
+>> net: Enable tagging for net_class directories in sysfs
+>>
+>> The problem.  Network devices show up in sysfs and with the network
+>> namespace active multiple devices with the same name can show up in
+>> the same directory, ouch!
+>>
+>> To avoid that problem and allow existing applications in network namespaces
+>> to see the same interface that is currently presented in sysfs, this
+>> patch enables the tagging directory support in sysfs.
+>>
+>> By using the network namespace pointers as tags to separate out the
+>> the sysfs directory entries we ensure that we don't have conflicts
+>> in the directories and applications only see a limited set of
+>> the network devices.
+> 
+> I don't like it how the network subsystem is starting to leach into the
+> sysfs core here.  What happens when the next subsystem wants to do the
+> same thing?  And then the next one?  Will they all have to do this kind
+> of intrusive changes to sysfs?
+ >
+ > Can't this be done only in the network subsystem?
 
-Add a wmb to fsl_queue_td before priming the endpoint. This ensures that the
-modifications to the QH are seen by the hardware.
+I'm not sure to understand exactly what you mean.
 
-Signed-off-by: Will Newton <will.newton@gmail.com>
----
- drivers/usb/gadget/fsl_usb2_udc.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+What you don't like is seeing these hunks of network code in
+fs/sysfs/mount.c? And you prefer to see these bits of code resides in
+the network subsystem instead and see only "generic" sysfs services in
+fs/sysfs/mount.c?
 
-diff --git a/drivers/usb/gadget/fsl_usb2_udc.c
-b/drivers/usb/gadget/fsl_usb2_udc.c
-index 1868754..dd06a5b 100644
---- a/drivers/usb/gadget/fsl_usb2_udc.c
-+++ b/drivers/usb/gadget/fsl_usb2_udc.c
-@@ -653,6 +653,8 @@ static int fsl_queue_td(struct fsl_ep *ep, struct
-fsl_req *req)
- 			| EP_QUEUE_HEAD_STATUS_HALT));
- 	dQH->size_ioc_int_sts &= temp;
+If this is it, I have some idea to implement a less intrusive
+sysfs_net_exit(), which can be shared with the other namespaces.
+Serge introduces the same kind of changes in patch 10 to fix an issue in 
+  user namespace. I think we can share a bit of code and move the parts
+specific to each namespace in their own subsystems.
 
-+	wmb();
-+
- 	/* Prime endpoint by writing 1 to ENDPTPRIME */
- 	temp = ep_is_in(ep)
- 		? (1 << (ep_index(ep) + 16))
+Benjamin
+
+> 
+> thanks,
+> 
+> greg k-h
+> 
+> 
+
+
 -- 
-1.5.5.2
+B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
 
-------=_Part_1146_15095292.1212506425839
-Content-Type: text/x-patch;
- name=0001-fsl_usb2_udc-Add-a-wmb-before-priming-endpoint.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fh0mzq290
-Content-Disposition: attachment;
- filename=0001-fsl_usb2_udc-Add-a-wmb-before-priming-endpoint.patch
-
-RnJvbSBhMTQxNjRiMDNkZWRmYjJlZDFiZGIxMmEwOTFjNTZiZWU2OGZjZTRlIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBXaWxsIE5ld3RvbiA8d2lsbC5uZXd0b25AZ21haWwuY29tPgpE
-YXRlOiBUdWUsIDMgSnVuIDIwMDggMTY6MTU6MDEgKzAxMDAKU3ViamVjdDogW1BBVENIXSBmc2xf
-dXNiMl91ZGM6IEFkZCBhIHdtYiBiZWZvcmUgcHJpbWluZyBlbmRwb2ludC4KCkFkZCBhIHdtYiB0
-byBmc2xfcXVldWVfdGQgYmVmb3JlIHByaW1pbmcgdGhlIGVuZHBvaW50LiBUaGlzIGVuc3VyZXMg
-dGhhdCB0aGUKbW9kaWZpY2F0aW9ucyB0byB0aGUgUUggYXJlIHNlZW4gYnkgdGhlIGhhcmR3YXJl
-LgoKU2lnbmVkLW9mZi1ieTogV2lsbCBOZXd0b24gPHdpbGwubmV3dG9uQGdtYWlsLmNvbT4KLS0t
-CiBkcml2ZXJzL3VzYi9nYWRnZXQvZnNsX3VzYjJfdWRjLmMgfCAgICAyICsrCiAxIGZpbGVzIGNo
-YW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2
-ZXJzL3VzYi9nYWRnZXQvZnNsX3VzYjJfdWRjLmMgYi9kcml2ZXJzL3VzYi9nYWRnZXQvZnNsX3Vz
-YjJfdWRjLmMKaW5kZXggMTg2ODc1NC4uZGQwNmE1YiAxMDA2NDQKLS0tIGEvZHJpdmVycy91c2Iv
-Z2FkZ2V0L2ZzbF91c2IyX3VkYy5jCisrKyBiL2RyaXZlcnMvdXNiL2dhZGdldC9mc2xfdXNiMl91
-ZGMuYwpAQCAtNjUzLDYgKzY1Myw4IEBAIHN0YXRpYyBpbnQgZnNsX3F1ZXVlX3RkKHN0cnVjdCBm
-c2xfZXAgKmVwLCBzdHJ1Y3QgZnNsX3JlcSAqcmVxKQogCQkJfCBFUF9RVUVVRV9IRUFEX1NUQVRV
-U19IQUxUKSk7CiAJZFFILT5zaXplX2lvY19pbnRfc3RzICY9IHRlbXA7CiAKKwl3bWIoKTsKKwog
-CS8qIFByaW1lIGVuZHBvaW50IGJ5IHdyaXRpbmcgMSB0byBFTkRQVFBSSU1FICovCiAJdGVtcCA9
-IGVwX2lzX2luKGVwKQogCQk/ICgxIDw8IChlcF9pbmRleChlcCkgKyAxNikpCi0tIAoxLjUuNS4y
-Cgo=
-------=_Part_1146_15095292.1212506425839--
+    http://www.bull.com
