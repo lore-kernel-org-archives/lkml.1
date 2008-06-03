@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbYFCWhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYFCWnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759279AbYFCWhF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 18:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbYFCWgy
+	id S1754618AbYFCWnq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 18:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYFCWne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 18:36:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36095 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752008AbYFCWgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 18:36:53 -0400
-Date: Tue, 3 Jun 2008 15:35:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
-       cmm@us.ibm.com, tytso@mit.edu, yumiko.sugita.yf@hitachi.com,
-       satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 3/5] jbd: abort when failed to log metadata buffers
-Message-Id: <20080603153506.8a9ca2a4.akpm@linux-foundation.org>
-In-Reply-To: <4843CF6A.7090107@hitachi.com>
-References: <4843CE15.6080506@hitachi.com>
-	<4843CF6A.7090107@hitachi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Jun 2008 18:43:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33523 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbYFCWnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 18:43:33 -0400
+Message-ID: <4845C8D1.4080808@garzik.org>
+Date: Tue, 03 Jun 2008 18:42:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Nathan Lynch <ntl@pobox.com>
+CC: Badari Pulavarty <pbadari@us.ibm.com>,
+       Hannes Hering <hannes.hering@linux.vnet.ibm.com>, tklein@de.ibm.com,
+       themann@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       ossthema@de.ibm.com, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 2/2] ehea: remove dependency on MEMORY_HOTPLUG
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com> <20080528164405.GA4836@localdomain> <200806031007.40162.hannes.hering@linux.vnet.ibm.com> <20080603204908.GB7475@localdomain> <1212527335.23656.2.camel@badari-desktop> <4845B382.20205@garzik.org> <20080603223128.GD7475@localdomain>
+In-Reply-To: <20080603223128.GD7475@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Jun 2008 19:46:02 +0900
-Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
-
-> Subject: [PATCH 3/5] jbd: abort when failed to log metadata buffers
+Nathan Lynch wrote:
+> Now that walk_memory_resource() is available regardless of
+> MEMORY_HOTPLUG's setting, this dependency is not needed.
 > 
-> If we failed to write metadata buffers to the journal space and
-> succeeded to write the commit record, stale data can be written
-> back to the filesystem as metadata in the recovery phase.
-> 
-> To avoid this, when we failed to write out metadata buffers,
-> abort the journal before writing the commit record.
-> 
-> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
 > ---
->  fs/jbd/commit.c |    3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/net/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Index: linux-2.6.26-rc4/fs/jbd/commit.c
-> ===================================================================
-> --- linux-2.6.26-rc4.orig/fs/jbd/commit.c
-> +++ linux-2.6.26-rc4/fs/jbd/commit.c
-> @@ -734,6 +734,9 @@ wait_for_iobuf:
->  		/* AKPM: bforget here */
->  	}
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index dd0ec9e..f4182cf 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2426,7 +2426,7 @@ config CHELSIO_T3
 >  
-> +	if (err)
-> +		journal_abort(journal, err);
-> +
->  	jbd_debug(3, "JBD: commit phase 6\n");
->  
->  	if (journal_write_commit_record(journal, commit_transaction))
-> 
+>  config EHEA
+>  	tristate "eHEA Ethernet support"
+> -	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
+> +	depends on IBMEBUS && INET && SPARSEMEM
+>  	select INET_LRO
 
-I assume this has all been tested?
+ACK, please send via appropriate target for memory hotplug stuff
 
-How are you finding these problems and testing the fixes?  Fault
-injection?
-
-Does it make sense to proceed into phase 6 here, or should we bale out
-of commit at this point?
 
