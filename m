@@ -1,46 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbYFCSOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYFCSOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538AbYFCSOK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 14:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYFCSN4
+	id S1758048AbYFCSOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 14:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYFCSOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 14:13:56 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:44693 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754301AbYFCSNy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 14:13:54 -0400
-Date: Tue, 3 Jun 2008 19:13:46 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] libata: Handle bay devices in dock stations
-Message-ID: <20080603181346.GA5013@srcf.ucam.org>
-References: <20080528143857.GB5585@homac.suse.de> <4845886E.2010505@garzik.org>
+	Tue, 3 Jun 2008 14:14:36 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49793 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753896AbYFCSOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 14:14:35 -0400
+Date: Tue, 3 Jun 2008 21:14:08 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/net/: remove CVS keywords
+Message-ID: <20080603181408.GC2663@cs181133002.pp.htv.fi>
+References: <20080519220619.GL17716@cs181133002.pp.htv.fi> <48354660.7060500@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4845886E.2010505@garzik.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <48354660.7060500@pobox.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 03, 2008 at 02:07:42PM -0400, Jeff Garzik wrote:
+On Thu, May 22, 2008 at 06:09:36AM -0400, Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> This patch removes some CVS keywords that weren't updated for a long  
+>> time.
+>>
+>> I haven't touched drivers that looked as if they might still be used.
+>>
+>> In three drivers I've also removed printk's printing them since they  
+>> were part of several printk's in a row and it doesn't make sense to  
+>> print ancient version information to the user.
+>>
+>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+> I'm fine with removing CVS keywords, but I do not agree with removing  
+> net driver version numbers that have been in the drivers for a while.
 
-> It would be nice if you and Holger could work together to produce a 
-> single patch[set]...  right now I have patches from both of you, and I 
-> was sorta waiting on the thread to die down to see if competing patches 
-> might merge into a single set
+Below is the part of the patches that removes these printk's.
 
-I think we were waiting for feedback from Tejun as to why removing the 
-port freeze call fixed the hang I was seeing? Beyond that, Holger's 
-latest patch looked good to me.
+Do CVS $Revision tags that haven't been updated for ages really qualify 
+as net driver version numbers?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+I can resend the patch with these changes removed, I'm just asking 
+whether you might confuse this with regular version numbers.
+
+> 	Jeff
+
+cu
+Adrian
+
+--- a/drivers/net/82596.c
++++ b/drivers/net/82596.c
+@@ -59,9 +59,6 @@
+ #include <asm/pgtable.h>
+ #include <asm/cacheflush.h>
+ 
+-static char version[] __initdata =
+-	"82596.c $Revision: 1.5 $\n";
+-
+ #define DRV_NAME	"82596"
+ 
+ /* DEBUG flags
+@@ -1227,8 +1224,6 @@ struct net_device * __init i82596_probe(int unit)
+ 
+ 	DEB(DEB_PROBE,printk(" IRQ %d.\n", dev->irq));
+ 
+-	DEB(DEB_PROBE,printk(KERN_INFO "%s", version));
+-
+ 	/* The 82596-specific entries in the device structure. */
+ 	dev->open = i596_open;
+ 	dev->stop = i596_close;
+--- a/drivers/net/de600.c
++++ b/drivers/net/de600.c
+@@ -1,4 +1,3 @@
+-static const char version[] = "de600.c: $Revision: 1.41-2.5 $,  Bjorn Ekwall (bj0rn@blox.se)\n";
+ /*
+  *	de600.c
+  *
+@@ -398,9 +397,6 @@ static struct net_device * __init de600_probe(void)
+ 	}
+ 
+ 	printk(KERN_INFO "%s: D-Link DE-600 pocket adapter", dev->name);
+-	/* Alpha testers must have the version number to report bugs. */
+-	if (de600_debug > 1)
+-		printk(version);
+ 
+ 	/* probe for adapter */
+ 	err = -ENODEV;
+--- a/drivers/net/de620.c
++++ b/drivers/net/de620.c
+@@ -38,8 +35,6 @@
+  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  *
+  *****************************************************************************/
+-static const char version[] =
+-	"de620.c: $Revision: 1.40 $,  Bjorn Ekwall <bj0rn@blox.se>\n";
+ 
+ /***********************************************************************
+  *
+@@ -828,9 +823,6 @@ struct net_device * __init de620_probe(int unit)
+ 		netdev_boot_setup_check(dev);
+ 	}
+ 
+-	if (de620_debug)
+-		printk(version);
+-
+ 	printk(KERN_INFO "D-Link DE-620 pocket adapter");
+ 
+ 	if (!request_region(dev->base_addr, 3, "de620")) {
