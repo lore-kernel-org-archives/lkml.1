@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbYFCRa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbYFCRar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbYFCRa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 13:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYFCRaP
+	id S1757658AbYFCRar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 13:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYFCRag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 13:30:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:55627 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753310AbYFCRaN (ORCPT
+	Tue, 3 Jun 2008 13:30:36 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:49898 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbYFCRaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 13:30:13 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC 1/3] hvc_console: rework setup to replace irq functions with callbacks (not word wrapped)
-Date: Tue, 3 Jun 2008 19:30:09 +0200
-User-Agent: KMail/1.9.9
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200806031444.21945.borntraeger@de.ibm.com> <200806031449.14385.borntraeger@de.ibm.com>
-In-Reply-To: <200806031449.14385.borntraeger@de.ibm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 3 Jun 2008 13:30:35 -0400
+Date: Tue, 3 Jun 2008 18:30:30 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ian Kent <raven@themaw.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080603173029.GD28946@ZenIV.linux.org.uk>
+References: <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk> <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu> <20080603104035.GT28946@ZenIV.linux.org.uk> <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu> <20080603105258.GV28946@ZenIV.linux.org.uk> <1212499623.3025.46.camel@raven.themaw.net> <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> <1212509263.3025.66.camel@raven.themaw.net> <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org> <1212513189.3025.101.camel@raven.themaw.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806031930.09556.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/iQEPGlECgUWOmmYBtt0AexHE+nDjO7oKGljM
- c16/RsdpRVzJqqgWzkByaN6ohVIZMtLdYOxnm8oofsBvj6/Xqg
- t0QmieAItgMXXrUa51I1Q==
+In-Reply-To: <1212513189.3025.101.camel@raven.themaw.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 June 2008, Christian Borntraeger wrote:
+On Wed, Jun 04, 2008 at 01:13:08AM +0800, Ian Kent wrote:
 
-> @@ -42,22 +42,48 @@
->   */
->  #define HVC_ALLOC_TTY_ADAPTERS	8
->  
-> +struct hvc_struct {
-> +	spinlock_t lock;
-> +	int index;
-> +	struct tty_struct *tty;
-> +	unsigned int count;
-> +	int do_wakeup;
-> +	char *outbuf;
-> +	int outbuf_size;
-> +	int n_outbuf;
-> +	uint32_t vtermno;
-> +	struct hv_ops *ops;
-> +	int data;
-> +	struct list_head next;
-> +	struct kref kref; /* ref count & hvc_struct lifetime */
-> +};
->  
+> "What happens is that during an expire the situation can arise
+> that a directory is removed and another lookup is done before
+> the expire issues a completion status to the kernel module.
+> In this case, since the the lookup gets a new dentry, it doesn't
+> know that there is an expire in progress and when it posts its
+> mount request, matches the existing expire request and waits
+> for its completion. ENOENT is then returned to user space
+> from lookup (as the dentry passed in is now unhashed) without
+> having performed the mount request.
+> 
+> The solution used here is to keep track of dentrys in this
+> unhashed state and reuse them, if possible, in order to
+> preserve the flags. Additionally, this infrastructure will
+> provide the framework for the reintroduction of caching
+> of mount fails removed earlier in development."
+> 
+> I wasn't able to do an acceptable re-implementation of the negative
+> caching we had in 2.4 with this framework, so just ignore the last
+> sentence in the above description. 
 
-I don't see a reason to make this data structure known to other files,
-so why not leave it in hvc_console.c?
+> Unfortunately no, but I thought that once the dentry became unhashed
+> (aka ->rmdir() or ->unlink()) it was invisible to the dcache. But, of
+> course there may be descriptors open on the dentry, which I think is the
+> problem that's being pointed out.
+ 
+... or we could have had a pending mount(2) sitting there with a reference
+to mountpoint-to-be...
 
+> Yes, that would be ideal but the reason we arrived here is that, because
+> we must release the directory mutex before calling back to the daemon
+> (the heart of the problem, actually having to drop the mutex) to perform
+> the mount, we can get a deadlock. The cause of the problem was that for
+> "create" like operations the mutex is held for ->lookup() and
+> ->revalidate() but for a "path walks" the mutex is only held for
+> ->lookup(), so if the mutex is held when we're in ->revalidate(), we
+> could never be sure that we where the code path that acquired it.
+> 
+> Sorry, this last bit is unclear.
+> I'll need to work a bit harder on the explanation if you're interested
+> in checking further.
 
-> +
-> +#ifdef CONFIG_HVC_IRQ
-> +/* default notifier for irq based notification */
-> +extern int notifier_add_irq(struct hvc_struct *hp, int irq);
-> +extern void notifier_del_irq(struct hvc_struct *hp, int irq);
-> +#endif
->  #endif // HVC_CONSOLE_H
+I am.
 
-Please remove the #ifdef around the declarations.
-
-h	Arnd <><
+Oh, well...  Looks like RTFS time for me for now...  Additional parts of
+braindump would be appreciated - the last time I've seriously looked at
+autofs4 internal had been ~2005 or so ;-/
