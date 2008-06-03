@@ -1,90 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYFCIGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYFCIIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYFCIGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 04:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYFCIGj
+	id S1754169AbYFCIIG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 04:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYFCIHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 04:06:39 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:31482 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbYFCIGh (ORCPT
+	Tue, 3 Jun 2008 04:07:50 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:37935 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbYFCIHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 04:06:37 -0400
-Subject: Re: [PATCH] Optimize page_remove_rmap for anon pages
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-In-Reply-To: <200806030957.49069.nickpiggin@yahoo.com.au>
-References: <1212069392.16984.25.camel@localhost>
-	 <200806030957.49069.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 03 Jun 2008 10:06:03 +0200
-Message-Id: <1212480363.7746.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 3 Jun 2008 04:07:47 -0400
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Organization: IBM
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 2/3] [2.6.26] ehea: Add dependency to Kconfig
+Date: Tue, 3 Jun 2008 10:07:39 +0200
+User-Agent: KMail/1.9.9
+Cc: jeff@garzik.org, tklein@de.ibm.com, themann@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       ossthema@de.ibm.com
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com> <20080528164405.GA4836@localdomain>
+In-Reply-To: <20080528164405.GA4836@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806031007.40162.hannes.hering@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-03 at 09:57 +1000, Nick Piggin wrote:
+Hi Nathan,
 
-First of all: thanks for looking into this. Games with the dirty bit are
-scary and any change needs careful consideration.
+I agree that the ehea cannot be built without MEMORY_HOTPLUG. The problem is
+the fact that the ppc walk_memory_resource declaration is in the scope of
+MEMORY_HOTPLUG. At the moment I don't have complete overview if the move of the
+code as you propose in your patch has any side effects. We probably need to
+talk to Badari who provided the walk_memory_resource code. We can also just
+throw it onto one of our boxes to see what happens. ;)
 
-> I don't know if it is that simple, is it?
+Regards
 
-It should be analog to the fact that for the two place the page_zap_rmap
-function is supposed to be used the pte dirty bit isn't checked as well.
+Hannes
 
-> I don't know how you are guaranteeing the given page ceases to exist.
-> Even checking for the last mapper of the page (which you don't appear
-> to do anyway) isn't enough because there could be a swapcount, in which
-> case you should still have to mark the page as dirty.
+On Wednesday 28 May 2008 18:44:05 Nathan Lynch wrote:
+> Hello,
 > 
-> For example (I think, unless s390 somehow propogates the dirty page
-> bit some other way that I've missed), wouldn't the following break:
+> Hannes Hering wrote:
+> > The new ehea memory hot plug implementation depends on MEMORY_HOTPLUG.
+> > 
+> > Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> > ---
+> > 
+> > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> > index f90a86b..181cd86 100644
+> > --- a/drivers/net/Kconfig
+> > +++ b/drivers/net/Kconfig
+> > @@ -2440,7 +2440,7 @@ config CHELSIO_T3
+> >  
+> >  config EHEA
+> >  	tristate "eHEA Ethernet support"
+> > -	depends on IBMEBUS && INET && SPARSEMEM
+> > +	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
+> >  	select INET_LRO
+> >  	---help---
+> >  	  This driver supports the IBM pSeries eHEA ethernet adapter.
 > 
-> process p1 allocates anonymous page A
-> p1 dirties A
-> p1 forks p2, A now has a mapcount of 2
-> p2 VM_LOCKs A (something to prevent it being swapped)
-> page reclaim unmaps p1's pte, fails on p2
-> p2 exits, page_dirty does not get checked because of this patch
-> page has mapcount 0, PG_dirty is clear
-> Page reclaim can drop it without writing it to swap
-
-Indeed, this would break. Even without the VM_LOCK there is a race of
-try_to_unmap vs. process exit. 
-
-> As far as the general idea goes, it might be possible to avoid the
-> check somehow, but you'd want to be pretty sure of yourself before
-> diverging the s390 path further from the common code base, no?
-
-I don't want to diverge more than necessary. But the performance gains
-of the SSKE/ISKE avoidance makes it worthwhile for s390, no?
-
-> The "easy" way to do it might be just unconditionally mark the page
-> as dirty in this path (if the pte was writeable), so you can avoid
-> the page_test_dirty check and be sure of not missing the dirty bit.
-
-Hmm, but then an mprotect() can change the pte to read-ony and we'd miss
-the dirty bit again. Back to the drawing board.
-
-By the way there is another SSKE I want to get rid of: __SetPageUptodate
-does a page_clear_dirty(). For all uses of __SetPageUptodate the page
-will be dirty after the application did its first write. To clear the
-page dirty bit only to have it set again shortly after doesn't make much
-sense to me. Has there been any particular reason for the
-page_clear_dirty in __SetPageUptodate ?
-
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
+> I disagree with this change.
+> 
+> It makes it impossible to build the ehea driver without memory hotplug
+> enabled.  Presumably, this commit was intended to work around a build
+> break of this sort (with EHEA=m and MEMORY_HOTPLUG=n):
+> 
+> drivers/net/ehea/ehea_qmr.c: In function 'ehea_create_busmap':
+> drivers/net/ehea/ehea_qmr.c:635: error: implicit declaration of function 'walk_memory_resource'
+> 
+> (some indication of this should have been in the commit message, btw)
+> 
+> I think this was the wrong way to fix the issue.  EHEA=m and
+> MEMORY_HOTPLUG=n is a valid configuration for machines I test.
+> 
+> Any thoughts on the following, which makes walk_memory_resource()
+> available regardless of MEMORY_HOTPLUG's setting?  I've tested it on a
+> JS22 (Power6 blade).
+> 
+> ---
+> 
+>  arch/powerpc/mm/mem.c          |    3 +--
+>  drivers/net/Kconfig            |    2 +-
+>  include/linux/memory_hotplug.h |   16 ++++++++--------
+>  3 files changed, 10 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index f67e118..51f82d8 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -151,6 +151,7 @@ out:
+>  	return ret;
+>  }
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+> +#endif /* CONFIG_MEMORY_HOTPLUG */
+> 
+>  /*
+>   * walk_memory_resource() needs to make sure there is no holes in a given
+> @@ -184,8 +185,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+>  }
+>  EXPORT_SYMBOL_GPL(walk_memory_resource);
+> 
+> -#endif /* CONFIG_MEMORY_HOTPLUG */
+> -
+>  void show_mem(void)
+>  {
+>  	unsigned long total = 0, reserved = 0;
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index dd0ec9e..f4182cf 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2426,7 +2426,7 @@ config CHELSIO_T3
+> 
+>  config EHEA
+>  	tristate "eHEA Ethernet support"
+> -	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
+> +	depends on IBMEBUS && INET && SPARSEMEM
+>  	select INET_LRO
+>  	---help---
+>  	  This driver supports the IBM pSeries eHEA ethernet adapter.
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index 73e3586..ea9f5ad 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -77,14 +77,6 @@ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+>  extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+>  	unsigned long nr_pages);
+> 
+> -/*
+> - * Walk through all memory which is registered as resource.
+> - * arg is (start_pfn, nr_pages, private_arg_pointer)
+> - */
+> -extern int walk_memory_resource(unsigned long start_pfn,
+> -			unsigned long nr_pages, void *arg,
+> -			int (*func)(unsigned long, unsigned long, void *));
+> -
+>  #ifdef CONFIG_NUMA
+>  extern int memory_add_physaddr_to_nid(u64 start);
+>  #else
+> @@ -199,6 +191,14 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
+> 
+>  #endif /* ! CONFIG_MEMORY_HOTPLUG */
+> 
+> +/*
+> + * Walk through all memory which is registered as resource.
+> + * arg is (start_pfn, nr_pages, private_arg_pointer)
+> + */
+> +extern int walk_memory_resource(unsigned long start_pfn,
+> +			unsigned long nr_pages, void *arg,
+> +			int (*func)(unsigned long, unsigned long, void *));
+> +
+>  extern int add_memory(int nid, u64 start, u64 size);
+>  extern int arch_add_memory(int nid, u64 start, u64 size);
+>  extern int remove_memory(u64 start, u64 size);
+> 
 
 
