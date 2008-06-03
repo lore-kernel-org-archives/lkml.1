@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYFCLwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYFCLwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610AbYFCLwc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 07:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbYFCLwX
+	id S1755282AbYFCLwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 07:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757684AbYFCLwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 07:52:23 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:33212 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754819AbYFCLwW (ORCPT
+	Tue, 3 Jun 2008 07:52:36 -0400
+Received: from hpsmtp-eml12.kpnxchange.com ([213.75.38.112]:2838 "EHLO
+	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757657AbYFCLwf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 07:52:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DrV40T3yaw3cdBEgouYGld81uABIhZdHpWRgkc14Pq5qsg2O7iXDYnwCPZmlasmKyOqcfybVWkKq025WCU3Cj+a9ZxBQUzkAxv8bO/24VBfzi7QHYEi5ALQ3mWfP3gNLDpvHcMjkH+ToUm6vEVE8qJF1VaHQuettlmaAENaPhM8=
-Message-ID: <cfd18e0f0806030452n32fa6d4dke1e2e4443a361a3@mail.gmail.com>
-Date: Tue, 3 Jun 2008 13:52:20 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
-Cc: drepper@redhat.com, viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu>
+	Tue, 3 Jun 2008 07:52:35 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Rainer Koenig <Rainer.Koenig@fujitsu-siemens.com>
+Subject: Re: Who can backport the AHCI driver to older kernels
+Date: Tue, 3 Jun 2008 13:52:30 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
+In-reply-To: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <482D4665.4050401@gmail.com>
-	 <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com>
-	 <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com>
-	 <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu>
+Message-Id: <200806031352.31940.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Jun 2008 11:52:33.0277 (UTC) FILETIME=[4F049AD0:01C8C570]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 3, 2008 at 1:13 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
->> > I'm not sure of the correct way to get the required nameidata (to do a
->> > vfs_permission() call) from the file descriptor.  Can you give me a
->> > tip there?
->>
->> Could you point me at the right way of doing this?
->
-> You don't need nameidata for this at all.  Just call permission() with
-> a NULL nameidata.
+Rainer Koenig wrote:
+> New mainboard platfrom with latest chipset from a chipset vendor that
+> can't do the job that we are asking for. The chipset (especially the
+> SATA controller is supported in Kernel 2.6.24 and later.
+> 
+> The target market for those boards is using old fashioned distributions
+> like CentOS, Debian, Fedora 8 openSUSE 10 and so on. So the gap is that
+> the latest driver from 2.6.24 is not yet in those distributions.
 
-Thanks Miklos!
+Debian will offer the option to install a system using 2.6.24 with its 
+next update for Etch (stable). That point release is expected within the 
+next few weeks.
+
+Cheers,
+FJP
