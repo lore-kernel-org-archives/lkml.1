@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYFCGmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYFCGnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYFCGmM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 02:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYFCGl4
+	id S1754919AbYFCGnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 02:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYFCGnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 02:41:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41635 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753101AbYFCGl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 02:41:56 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/Mk7gZubDMezIiCDiNV/4fdEeapvcgxuzjlMIO65
-	VrdVW/YaoG/KYj
-Date: Tue, 3 Jun 2008 08:42:03 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ben Nizette <bn@niasdigital.com>
-cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] generic GPIO parameter API
-In-Reply-To: <1212448437.5446.21.camel@moss.renham>
-Message-ID: <Pine.LNX.4.64.0806030834440.19323@axis700.grange>
-References: <Pine.LNX.4.64.0806021841500.30390@axis700.grange> 
- <Pine.LNX.4.64.0806021949210.30390@axis700.grange> <1212448437.5446.21.camel@moss.renham>
+	Tue, 3 Jun 2008 02:43:10 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38375 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753125AbYFCGnJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 02:43:09 -0400
+Date: Tue, 3 Jun 2008 08:43:59 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org
+Subject: Re: hci_usb strikes again (was Re: BUG kmalloc-2048: Poison
+	overwritten)
+Message-ID: <20080603064359.GC18599@elf.ucw.cz>
+References: <dd18b0c30806011613l6c8c1863rd237f7de06a6b33a@mail.gmail.com> <200806020125.25918.rjw@sisk.pl> <20080602222142.GB18599@elf.ucw.cz> <dd18b0c30806021612h34f776f6kb480b3aa7a1d5e41@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c30806021612h34f776f6kb480b3aa7a1d5e41@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008, Ben Nizette wrote:
+Hi!
+> >> > cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
+> >> > ipmi_watchdog ipmi_msghandler uinput wlan_tkip ieee80211_crypt_tkip
+> >> > ieee80211_crypt arpt_mangle arptable_filter arp_tables
+> >> > nf_conntrack_ipv4 nf_conntrack iptable_mangle iptable_filter ip_tables
+> >> > x_tables intelfb i2c_i810 i2c_algo_bit coretemp eeprom acpi_cpufreq
+> >> > fglrx(P) applesmc joydev uvcvideo appletouch wlan_scan_sta
+> >> > ath_rate_sample firewire_ohci firewire_core snd_hda_intel ath_pci
+> >> > snd_pcm wlan ohci1394 intel_agp evdev ath_hal(P) snd_timer ieee1394
+> >> > pata_acpi thermal ehci_hcd uhci_hcd snd_page_alloc snd_hwdep agpgart
+> >> > video button processor
+> >> > [  232.270800]
+> >> > [  232.270802] Pid: 2690, comm: btdelconn Tainted: P
+> >> > (2.6.26-rc4-00033-g5463508 #4)
+> >
+> > ...and we get oops in bluetooth.
+> >
+> > Use btusb, instead.
+> >
+> > Actually, I guess we should mark hci_usb as broken. I don't see why we
+> > should debug the same problem over and over again.
 
-> On Mon, 2008-06-02 at 19:54 +0200, Guennadi Liakhovetski wrote:
-> > On Mon, 2 Jun 2008, Guennadi Liakhovetski wrote:
-> > > int gpio_register_parameter(struct gpio_chip *chip, struct gpio_parameter 
-> > > 				*param);
-> > > struct gpio_parameter *gpio_find_parameter(struct gpio_chip *chip, char 
-> > > 						*name);
-> > 
-> > Actually, I think, it would be even better to just add two fields
-> > 
-> > 	struct gpio_parameter	*param;
-> > 	int			param_n;
-> > 
-> > to struct gpio_chip.
-> 
-> I like the idea in general.  The biggest worry I have is trying to find
-> the parameter for you to fiddle with.
+> Well; "shizzle my frizzle," The funny thing is, is I have not seen
+> this after performing more suspends,
+> maybe this is a every once in a while scenario.
 
-Oh, this doesn't worry me - I have a driver here for a controller with 
-switchable pullups.
+It was "one in three" in my tests; but you need usb actively in use
+while you are suspending for this to bite.
+									Pavel
 
-> The driver which is going to want
-> to set the parameters is going to have the gpio number, not the
-> gpio_chip.
-
-Sure, right.
-
-> Also, the fact that the parameters are uniquely identified
-> by strings is a bit awkward.  I can see people registering the same kind
-> of parameter for different chips like "pullup", "Pullup", "pu" etc
-> making the driver's task even harder.
-
-Well, I thought about that too, but then I decided there would have to be 
-too many of those macros. But we can try it that way too.
-
-> So, I reckon if we're to do this we should stick with the current style
-> of gpio calls for the outside interface, maybe something more like
-> 
-> int gpio_set_param(int gpio, int param, int val);
-> int gpio_get_param(int gpio, int param);
-
-For the get I would rather pass it "int *val" because we don't know which 
-values are valid and which are an error code for this specific parameter.
-
-> with the different parameters defined as an enum in some gpio.h
-> somewhere.  Where to keep the gpio_parameters and how to search/find
-> them should be up to the implementation (though the gpiolib
-> implementation would probably look quite like what you've got above).
-> 
-> Note you'll probably want a char *name in there somewhere for the sysfs
-> interface, but I don't think it should be the primary mechanism for
-> identification.
-> 
-> Anyway, that's my $0.02  :-)
-
-Thanks for the comments
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
