@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYFCKWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYFCKbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbYFCKWg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 06:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYFCKW1
+	id S1755436AbYFCKbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 06:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbYFCKbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 06:22:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39068 "EHLO mx1.redhat.com"
+	Tue, 3 Jun 2008 06:31:09 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:51071 "EHLO bagnes.atmel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751968AbYFCKW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 06:22:26 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080530124554.GA14312@linux.vnet.ibm.com>
-References: <20080530124554.GA14312@linux.vnet.ibm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Confused by smp_read_barrier_depends() in rxrpc_rotate_tx_window()
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Tue, 03 Jun 2008 11:19:51 +0100
-Message-ID: <27030.1212488391@redhat.com>
+	id S1752367AbYFCKbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 06:31:08 -0400
+Date: Tue, 3 Jun 2008 12:31:12 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] clean up duplicated alloc/free_thread_info
+Message-ID: <20080603123112.0d58e193@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080603140620S.fujita.tomonori@lab.ntt.co.jp>
+References: <20080603140620S.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jun 2008 10:30:43.0574 (UTC) FILETIME=[E09B6160:01C8C564]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>  include/asm-alpha/thread_info.h     |    4 +---
+>  include/asm-arm/thread_info.h       |   13 -------------
+>  include/asm-blackfin/thread_info.h  |    5 +----
+>  include/asm-cris/thread_info.h      |    2 ++
+>  include/asm-frv/thread_info.h       |    2 ++
+>  include/asm-h8300/thread_info.h     |    5 +----
+>  include/asm-ia64/thread_info.h      |    2 ++
+>  include/asm-m32r/thread_info.h      |    2 ++
+>  include/asm-m68k/thread_info.h      |    8 +-------
+>  include/asm-m68knommu/thread_info.h |    4 ----
+>  include/asm-mips/thread_info.h      |    2 ++
+>  include/asm-mn10300/thread_info.h   |    2 ++
+>  include/asm-parisc/thread_info.h    |   10 +++-------
+>  include/asm-powerpc/thread_info.h   |   14 +++-----------
+>  include/asm-s390/thread_info.h      |    5 +----
+>  include/asm-sh/thread_info.h        |    2 ++
+>  include/asm-sparc/thread_info.h     |    2 ++
+>  include/asm-sparc64/thread_info.h   |   23 ++---------------------
+>  include/asm-um/thread_info.h        |   16 +---------------
+>  include/asm-x86/thread_info.h       |    2 ++
+>  include/asm-xtensa/thread_info.h    |    5 +----
+>  kernel/fork.c                       |   17 +++++++++++++++++
+>  22 files changed, 50 insertions(+), 97 deletions(-)
 
-> I confess to being confused by the smp_read_barrier_depends() in
-> rxrpc_rotate_tx_window().  It looks like it is ordering the prior
-> fetch of tail from call->acks_tail with the subsequent use of
+Can you do the same with avr32 as well?
 
-No.  call->acks_head vs [tail].
-
-> tail as an index into the call->acks_window[] array, but then the
-> code does an assignment to call->acks_tail a few lines later.
-> 
-> If we hold a lock protecting call->acks_tail, why do we need the
-> smp_read_barrier_depends()?  If we don't hold such a lock, why
-> is the assignment to call->acks_tail safe?
-
-We don't hold a lock protecting call->acks_tail.  The head insertion and the
-tail extraction are only protected by memory barriers.
-
-	int tail = call->acks_tail, old_tail;
-	int win = CIRC_CNT(call->acks_head, tail, call->acks_winsz);
-	...
-		smp_read_barrier_depends();
-		_skb = call->acks_window[tail] & ~1;
-
-In this bit of code, we must protect against seeing the item at '[tail]' set
-after 'call->acks_head' itself is updated, hence why we need a barrier here.
-Possibly it should be smp_rmb() rather than smp_read_barrier_depends().
-
-		_skb = call->acks_window[tail] & ~1;
-		...
-		old_tail = tail;
-		tail = (tail + 1) & (call->acks_winsz - 1);
-		call->acks_tail = tail;
-
-I believe this does not require a barrier between reading '[tail]' and updating
-'tail' because there's no way we can update tail without first reading
-'[tail]'.
-
-David
+Haavard
