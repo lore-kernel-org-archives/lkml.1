@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756524AbYFCN4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbYFCN42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756524AbYFCN4J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 09:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYFCNzz
+	id S1757686AbYFCN42 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 09:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYFCN4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 09:55:55 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50234 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751958AbYFCNzz (ORCPT
+	Tue, 3 Jun 2008 09:56:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41225 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752547AbYFCN4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 09:55:55 -0400
-X-Sasl-enc: 8+4nHJXkguh0pYs6uBaFNal1qZ93GCFoZ4vP61LvcdGM 1212500059
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, jesper@krogh.cc,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080603104814.GU28946@ZenIV.linux.org.uk>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-	 <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
-	 <20080603095713.GR28946@ZenIV.linux.org.uk>
-	 <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-	 <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
-	 <E1K3Ttv-0005ji-Cx@pomaz-ex.szeredi.hu>
-	 <20080603104814.GU28946@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Tue, 03 Jun 2008 21:31:09 +0800
-Message-Id: <1212499870.3025.50.camel@raven.themaw.net>
+	Tue, 3 Jun 2008 09:56:18 -0400
+Date: Tue, 3 Jun 2008 14:40:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matti Aarnio <matti.aarnio@zmailer.org>
+Cc: Rodolfo Giometti <giometti@enneenne.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: LinuxPPS low-level IRQs timestamps & ldisc
+Message-ID: <20080603144058.6a7f3216@core>
+In-Reply-To: <20080602202135.GF3700@mea-ext.zmailer.org>
+References: <20080601161510.GA26854@enneenne.com>
+	<20080602075113.60d0fdf8@core>
+	<20080602092551.GC26854@enneenne.com>
+	<20080602150257.54692f35@core>
+	<20080602145603.GG26854@enneenne.com>
+	<20080602164840.0dc9cb96@core>
+	<20080602172203.GI26854@enneenne.com>
+	<20080602202135.GF3700@mea-ext.zmailer.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-06-03 at 11:48 +0100, Al Viro wrote:
-> On Tue, Jun 03, 2008 at 12:37:59PM +0200, Miklos Szeredi wrote:
-> > > http://www.kerneloops.org/raw.php?rawid=12419&msgid=
-> > > 
-> > > Looks like a negative inode in S_ISDIR(mnt->mnt_root->d_inode->i_mode),
-> > > which would be due to NFS not properly filling in its root dentry?
-> > 
-> > On second thought it's S_ISDIR(path->dentry->d_inode->i_mode), which
-> > means it's an autofs thing.
+> Perhaps I am looking for unattainable..  but I have HP/Agilent 58534A
+> (a.k.a Symmetricom 58534A) "GPS Timing Antenna",  which specifications
+> are telling that it should attain 1PPS timing jitter of less than 40 ns
+> in proper stabilized position hold mode.
 > 
-> It is path->dentry, all right, but the question is how'd it get that way.
-> Look: we got that nd.path.dentry out of path_lookup() with LOOKUP_FOLLOW
-> as flags.  Then we'd passed it through do_new_mount() to do_add_mount()
-> without changes.  And went through
->         /* Something was mounted here while we slept */
->         while (d_mountpoint(nd->path.dentry) &&
->                follow_down(&nd->path.mnt, &nd->path.dentry))
->                 ;
+> Can that level be handled with standard PC hardware, or should the time
+> keeping and core parts of NTP be delegated into FPGA entirely ?
+> Stratum-1 is rather demanding, after all...
 
-And this relates to previous in that a mount isn't done by autofs until
-until after the directory is created, at which time the (->mkdir())
-dentry is hashed.
+That depends on what the NTP logic needs. Hardware IRQ time stamping is
+fairly easy to do and providing your algorithms work with knowing the
+time that the event occurred relative to a timer on the stamping device
+(+/- bus delays and inaccuracies in the timers) you can get very good
+numbers - but I doubt in the 40nS range.
 
-Ian
-
+Alan (who actually worked on a time stamping hardware toy almost 20 years
+ago)
 
