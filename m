@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbYFCKzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYFCK4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015AbYFCKzl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 06:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYFCKzd
+	id S1756823AbYFCK4z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 06:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYFCK4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 06:55:33 -0400
-Received: from www.tglx.de ([62.245.132.106]:37319 "EHLO www.tglx.de"
+	Tue, 3 Jun 2008 06:56:47 -0400
+Received: from www.tglx.de ([62.245.132.106]:37378 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752535AbYFCKzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 06:55:32 -0400
-Date: Tue, 3 Jun 2008 12:55:11 +0200 (CEST)
+	id S1750818AbYFCK4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 06:56:46 -0400
+Date: Tue, 3 Jun 2008 12:56:28 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
 To: Olaf Dabrunz <od@suse.de>
 cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       LKML <linux-kernel@vger.kernel.org>, Stefan Assmann <sassmann@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 6/7] disable pci legacy boot irq quirks on noapic boot
-In-Reply-To: <12124107071424-git-send-email-od@suse.de>
-Message-ID: <alpine.LFD.1.10.0806031254110.3235@apollo.tec.linutronix.de>
-References: <12124107071847-git-send-email-od@suse.de> <12124107071424-git-send-email-od@suse.de>
+       Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org,
+       Stefan Assmann <sassmann@suse.de>
+Subject: Re: [PATCH 7/7] bootirqquirk= parameter to enable bootirq quirks
+ for additional chips
+In-Reply-To: <1212410707427-git-send-email-od@suse.de>
+Message-ID: <alpine.LFD.1.10.0806031255230.3235@apollo.tec.linutronix.de>
+References: <12124107071847-git-send-email-od@suse.de> <1212410707427-git-send-email-od@suse.de>
 User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,39 +28,177 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 2 Jun 2008, Olaf Dabrunz wrote:
+> From: Olaf Dabrunz <od@suse.de>
+> 
+> The existing bootirq quirks and the reroute workaround may work for other chips
+> where we could not test them. This parameter allows users to apply these to
+> other chips without the need to re-build the kernel.
+> 
+> This patch was conceived simultaneously by Stefan Assmann, Daniel Gollub and
+> Olaf Dabrunz. The implementation is the author's.
+> 
+>     bootirqquirk=0x<vendor>,0x<device>,<quirk_type>
+> 
+>     - quirk type  1 - 32 selects an IRQ reroute algorithm for devices
+>       connected to that PCI bridge (currently only algorithm "1" is
+>       implemented),
+> 
+>     - quirk type 33 -  x applies one of the known quirks to the PCI
+>       device, currently these:
+> 
+>         33 -> quirk_disable_intel_boot_interrupt
+>         34 -> quirk_disable_broadcom_boot_interrupt
+>         35 -> quirk_disable_amd_8111_boot_interrupt
+>         36 -> quirk_disable_amd_813x_boot_interrupt
+>         37 -> quirk_disable_amd_sb700s_boot_interrupt
 
-> From: Stefan Assmann <sassmann@suse.de>
-> 
-> Don't enable pci boot irq quirks when falling back to pic, this would
-> break interrupt routing.
-> 
-> Signed-off-by: Stefan Assmann <sassmann@suse.de>
+Oh no. This can be used as an debug aid when the need arises, but we
+dont want to add this to the kernel.
+
+Thanks,
+	tglx
+ 
 > Signed-off-by: Olaf Dabrunz <od@suse.de>
+> Signed-off-by: Stefan Assmann <sassmann@suse.de>
 > ---
->  include/asm-x86/io_apic.h |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+>  drivers/pci/quirks.c |  118 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 118 insertions(+), 0 deletions(-)
 > 
-> diff --git a/include/asm-x86/io_apic.h b/include/asm-x86/io_apic.h
-> index 5b1292f..461771c 100644
-> --- a/include/asm-x86/io_apic.h
-> +++ b/include/asm-x86/io_apic.h
-> @@ -151,8 +151,11 @@ extern int skip_ioapic_setup;
->  /* 1 if the timer IRQ uses the '8259A Virtual Wire' mode */
->  extern int timer_through_8259;
->  
-> +extern int nobootirqquirk;
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index 090ce38..bb7fa65 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -1576,6 +1576,113 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_PXH_1,	quirk_re
+>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_PXHV,	quirk_reroute_to_boot_interrupts_intel);
+>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_80332_0,	quirk_reroute_to_boot_interrupts_intel);
+>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_80332_1,	quirk_reroute_to_boot_interrupts_intel);
 > +
-
-declarations in headers please.
-
->  static inline void disable_ioapic_setup(void)
->  {
-> +	nobootirqquirk = 1;
-
-This logic needs to be default disabled anyway.
-
->  	skip_ioapic_setup = 1;
+> +/*
+> + * For additional boot irq quirks save boot time settings or call the quirks
+> + * directly.
+> + */
+> +
+> +#define MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY			32
+> +struct pci_fixup __start_bc_pci_fixups_early[MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY];
+> +struct pci_fixup *__end_bc_pci_fixups_early = __start_bc_pci_fixups_early +
+> +					MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY;
+> +
+> +static void (*bootirq_quirk_func[])(struct pci_dev *dev) = {
+> +	&quirk_disable_intel_boot_interrupt,
+> +	&quirk_disable_broadcom_boot_interrupt,
+> +	&quirk_disable_amd_8111_boot_interrupt,
+> +	&quirk_disable_amd_813x_boot_interrupt,
+> +	&quirk_disable_amd_sb700s_boot_interrupt,
+> +};
+> +
+> +int __init bootirqquirk_setup(char *str)
+> +{
+> +	int ints[4];
+> +	struct quirk_bootirq_reroute_dev tmp;
+> +	int i;
+> +
+> +	str = get_options(str, ARRAY_SIZE(ints), ints);
+> +	if (!str)
+> +		return 0;
+> +
+> +	if (nobootirqquirk)
+> +		return 1;
+> +
+> +	/* all parameters are required */
+> +	if (ints[0] != 3)
+> +		return 0;
+> +
+> +	/* save settings */
+> +	tmp.vendor = ints[1];
+> +	tmp.device = ints[2];
+> +	tmp.quirk_variant = ints[3];
+> +
+> +	/*
+> +	 * quirk variants > MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS select quirk
+> +	 * functions
+> +	 */
+> +	if (tmp.quirk_variant > MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS) {
+> +		for (i = 0; i < MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY; i++) {
+> +			if (__start_bc_pci_fixups_early[i].vendor == 0)
+> +				break;
+> +
+> +			if (__start_bc_pci_fixups_early[i].vendor == tmp.vendor &&
+> +			    __start_bc_pci_fixups_early[i].device == tmp.device)
+> +				return 1;	/* already in array */
+> +		}
+> +
+> +		if (i >= MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY) {
+> +			printk(KERN_INFO "PCI quirk: too many boottime "
+> +					"configurable early quirk entries when "
+> +					"trying to add 0x%04x:0x%04x\n",
+> +					tmp.vendor, tmp.device);
+> +			return 0;
+> +		}
+> +
+> +		if (tmp.quirk_variant > ARRAY_SIZE(bootirq_quirk_func) +
+> +				MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS) {
+> +			printk(KERN_INFO "PCI quirk: no such quirk function: "
+> +					"%d\n", tmp.quirk_variant);
+> +			return 0;
+> +		}
+> +
+> +		__start_bc_pci_fixups_early[i].vendor = tmp.vendor;
+> +		__start_bc_pci_fixups_early[i].device = tmp.device;
+> +		__start_bc_pci_fixups_early[i].hook =
+> +				bootirq_quirk_func[tmp.quirk_variant -
+> +				(MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS + 1)];
+> +	} else {
+> +		for (i = 0; i < MAX_QUIRK_BOOTIRQ_REROUTE_DEVS; i++) {
+> +			if (quirk_bootirq_reroute_devs[i].vendor == 0)
+> +				break;
+> +
+> +			if (quirk_bootirq_reroute_devs[i].vendor == tmp.vendor &&
+> +			    quirk_bootirq_reroute_devs[i].device == tmp.device)
+> +				return 1;	/* already in array */
+> +		}
+> +
+> +		if (i >= MAX_QUIRK_BOOTIRQ_REROUTE_DEVS) {
+> +			printk(KERN_INFO "PCI quirk: too many reroute entries when "
+> +					"trying to add 0x%04x:0x%04x\n",
+> +					tmp.vendor, tmp.device);
+> +			return 0;
+> +		}
+> +
+> +		quirk_bootirq_reroute_devs[i].vendor = tmp.vendor;
+> +		quirk_bootirq_reroute_devs[i].device = tmp.device;
+> +		quirk_bootirq_reroute_devs[i].quirk_variant = tmp.quirk_variant;
+> +
+> +		reroute_to_boot_interrupts = 1;
+> +	}
+> +
+> +	printk(KERN_INFO "PCI quirk: reroute interrupts for 0x%04x:0x%04x\n",
+> +			tmp.vendor, tmp.device);
+> +	return 1;
+> +}
+> +
+> +/* bootirqquirk=0x<vendor>,0x<device>,<quirk_type> */
+> +__setup("bootirqquirk=", bootirqquirk_setup);
+> +
+>  #endif /* CONFIG_X86_IO_APIC */
+>  
+>  /*
+> @@ -1773,6 +1880,17 @@ void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev)
+>  		return;
+>  	}
+>  	pci_do_fixups(dev, start, end);
+> +
+> +	switch(pass) {
+> +	case pci_fixup_early:
+> +		start = __start_bc_pci_fixups_early;
+> +		end = __end_bc_pci_fixups_early;
+> +		break;
+> +
+> +	default:
+> +		return;
+> +	}
+> +	pci_do_fixups(dev, start, end);
 >  }
+>  EXPORT_SYMBOL(pci_fixup_device);
 >  
 > -- 
 > 1.5.2.4
