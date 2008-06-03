@@ -1,65 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYFCPGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYFCPUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbYFCPGV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 11:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYFCPGJ
+	id S1754045AbYFCPUi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 11:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbYFCPU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 11:06:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39044 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753986AbYFCPGI (ORCPT
+	Tue, 3 Jun 2008 11:20:28 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:27296 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752223AbYFCPU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 11:06:08 -0400
-Date: Tue, 3 Jun 2008 15:46:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Cammarata <jimi@sngx.net>
-Cc: Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool -
- e1000/pcnet32
-Message-ID: <20080603154602.01b10adb@core>
-In-Reply-To: <48453909.4000301@sngx.net>
-References: <482DA5B6.1020606@sngx.net>
-	<482DB46A.8020103@cosmosbay.com>
-	<482EF192.4070707@sngx.net>
-	<482F5113.5090703@cosmosbay.com>
-	<482F610D.2080108@sngx.net>
-	<20080518003104.GK28241@solarflare.com>
-	<482FBA09.80201@sngx.net>
-	<483E0AAE.2020107@sngx.net>
-	<20080528221118.63da4092.akpm@linux-foundation.org>
-	<483EA2D1.8050603@sngx.net>
-	<20080529154525.3916c7b5@core>
-	<20080530151250.b44a119a.billfink@mindspring.com>
-	<20080531131143.516ca56e@core>
-	<20080531195702.0b879dd1.billfink@mindspring.com>
-	<48437C25.7080400@gdt.id.au>
-	<20080602121007.1e81cf05.billfink@mindspring.com>
-	<48453909.4000301@sngx.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 11:20:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type;
+        b=jcNThREpYEGrV4bsZlvw97HKA49EPDkhW3ZmX8gZgrufmurc71yKI4SXQ50O+f7RK70eooaH2YIKLF+i74+5RW4vAT4C7GxDR8bl/tsqq6Gdb0kyHYWaUqJ+OB02J8qY4phf/J+IPZ2ZKFGHtWoN5V7e5EhjZ+pBWJd8inVnm+w=
+Message-ID: <87a5b0800806030820i16b36366qf199e1c56d729fbe@mail.gmail.com>
+Date: Tue, 3 Jun 2008 16:20:25 +0100
+From: "Will Newton" <will.newton@gmail.com>
+To: linux-usb@vger.kernel.org,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>, leoli@freescale.com
+Subject: [PATCH] fsl_usb2_udc: Add a wmb before priming endpoint.
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_1146_15095292.1212506425839"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Also, I'd like to point out that the "stepping on other peoples toes" 
-> argument is a bogus one, since most major network vendors include this 
-> ability, and it's not exactly a concern now.
+------=_Part_1146_15095292.1212506425839
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I used to work in a large ISP - it was a huge concern then and was
-enforced and managed by the less effective 'do you like your kneecaps'
-approach to permissions.
+Add a wmb to fsl_queue_td before priming the endpoint. This ensures that the
+modifications to the QH are seen by the hardware.
 
-Its basically impossible to write a correct non-racy application which
-zeros kernel statistics and then measures the change, because you cannot
-know another application did the same while you were running.
+Signed-off-by: Will Newton <will.newton@gmail.com>
+---
+ drivers/usb/gadget/fsl_usb2_udc.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-This is the most basic and blindingly obvious stuff. You should not be
-able to zero the kernel stats just because you can't work perl.
+diff --git a/drivers/usb/gadget/fsl_usb2_udc.c
+b/drivers/usb/gadget/fsl_usb2_udc.c
+index 1868754..dd06a5b 100644
+--- a/drivers/usb/gadget/fsl_usb2_udc.c
++++ b/drivers/usb/gadget/fsl_usb2_udc.c
+@@ -653,6 +653,8 @@ static int fsl_queue_td(struct fsl_ep *ep, struct
+fsl_req *req)
+ 			| EP_QUEUE_HEAD_STATUS_HALT));
+ 	dQH->size_ioc_int_sts &= temp;
 
-Alan
++	wmb();
++
+ 	/* Prime endpoint by writing 1 to ENDPTPRIME */
+ 	temp = ep_is_in(ep)
+ 		? (1 << (ep_index(ep) + 16))
+-- 
+1.5.5.2
+
+------=_Part_1146_15095292.1212506425839
+Content-Type: text/x-patch;
+ name=0001-fsl_usb2_udc-Add-a-wmb-before-priming-endpoint.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fh0mzq290
+Content-Disposition: attachment;
+ filename=0001-fsl_usb2_udc-Add-a-wmb-before-priming-endpoint.patch
+
+RnJvbSBhMTQxNjRiMDNkZWRmYjJlZDFiZGIxMmEwOTFjNTZiZWU2OGZjZTRlIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBXaWxsIE5ld3RvbiA8d2lsbC5uZXd0b25AZ21haWwuY29tPgpE
+YXRlOiBUdWUsIDMgSnVuIDIwMDggMTY6MTU6MDEgKzAxMDAKU3ViamVjdDogW1BBVENIXSBmc2xf
+dXNiMl91ZGM6IEFkZCBhIHdtYiBiZWZvcmUgcHJpbWluZyBlbmRwb2ludC4KCkFkZCBhIHdtYiB0
+byBmc2xfcXVldWVfdGQgYmVmb3JlIHByaW1pbmcgdGhlIGVuZHBvaW50LiBUaGlzIGVuc3VyZXMg
+dGhhdCB0aGUKbW9kaWZpY2F0aW9ucyB0byB0aGUgUUggYXJlIHNlZW4gYnkgdGhlIGhhcmR3YXJl
+LgoKU2lnbmVkLW9mZi1ieTogV2lsbCBOZXd0b24gPHdpbGwubmV3dG9uQGdtYWlsLmNvbT4KLS0t
+CiBkcml2ZXJzL3VzYi9nYWRnZXQvZnNsX3VzYjJfdWRjLmMgfCAgICAyICsrCiAxIGZpbGVzIGNo
+YW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2
+ZXJzL3VzYi9nYWRnZXQvZnNsX3VzYjJfdWRjLmMgYi9kcml2ZXJzL3VzYi9nYWRnZXQvZnNsX3Vz
+YjJfdWRjLmMKaW5kZXggMTg2ODc1NC4uZGQwNmE1YiAxMDA2NDQKLS0tIGEvZHJpdmVycy91c2Iv
+Z2FkZ2V0L2ZzbF91c2IyX3VkYy5jCisrKyBiL2RyaXZlcnMvdXNiL2dhZGdldC9mc2xfdXNiMl91
+ZGMuYwpAQCAtNjUzLDYgKzY1Myw4IEBAIHN0YXRpYyBpbnQgZnNsX3F1ZXVlX3RkKHN0cnVjdCBm
+c2xfZXAgKmVwLCBzdHJ1Y3QgZnNsX3JlcSAqcmVxKQogCQkJfCBFUF9RVUVVRV9IRUFEX1NUQVRV
+U19IQUxUKSk7CiAJZFFILT5zaXplX2lvY19pbnRfc3RzICY9IHRlbXA7CiAKKwl3bWIoKTsKKwog
+CS8qIFByaW1lIGVuZHBvaW50IGJ5IHdyaXRpbmcgMSB0byBFTkRQVFBSSU1FICovCiAJdGVtcCA9
+IGVwX2lzX2luKGVwKQogCQk/ICgxIDw8IChlcF9pbmRleChlcCkgKyAxNikpCi0tIAoxLjUuNS4y
+Cgo=
+------=_Part_1146_15095292.1212506425839--
