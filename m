@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbYFCToo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbYFCTwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755720AbYFCToo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 15:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYFCToU
+	id S1756534AbYFCTwy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 15:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYFCTwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 15:44:20 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:54013 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757143AbYFCToT (ORCPT
+	Tue, 3 Jun 2008 15:52:44 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:45472 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754164AbYFCTwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 15:44:19 -0400
-Date: Tue, 3 Jun 2008 12:43:21 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806031416.18195.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0806031154050.3242@t2.domain.actdsltmp>
-References: <1211852026.3286.36.camel@pasglop>
- <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
- <20080602072403.GA20222@flint.arm.linux.org.uk> <200806031416.18195.nickpiggin@yahoo.com.au>
+	Tue, 3 Jun 2008 15:52:43 -0400
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Dike <jdike@addtoit.com>,
+       akpm@linuxfoundation.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
+References: <20080603190235.GA9511@c2.user-mode-linux.org>
+	<20080603123211.e129c222.akpm@linux-foundation.org>
+	<200806031543.56864.dhazelton@enter.net>
+From: Nix <nix@esperi.org.uk>
+Emacs: an inspiring example of form following function... to Hell.
+Date: Tue, 03 Jun 2008 20:52:18 +0100
+In-Reply-To: <200806031543.56864.dhazelton@enter.net> (Daniel Hazelton's message of "Tue, 3 Jun 2008 15:43:56 -0400")
+Message-ID: <878wxmfg99.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+X-DCC--Metrics: hades 1114; Body=6 Fuz1=6 Fuz2=6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008, Nick Piggin wrote:
-> On Monday 02 June 2008 17:24, Russell King wrote:
->> So, can the semantics of what's expected from these IO accessor
->> functions be documented somewhere.  Please?  Before this thread gets
->> lost in the depths of time?
+On 3 Jun 2008, Daniel Hazelton said:
+
+> On Tuesday 03 June 2008 03:32:11 pm Andrew Morton wrote:
+>> On Tue, 3 Jun 2008 15:02:35 -0400
+>>
+>> Jeff Dike <jdike@addtoit.com> wrote:
+>> > Protection against the host's time going backwards - keep track of the
+>> > time at the last tick and if it's greater than the current time, keep
+>> > time stopped until the host catches up.
+>>
+>> Strange.  What would cause the host's time (or at least UML's perception
+>> of it) to go backwards?
 >
-> This whole thread also ties in with my posts about mmiowb (which IMO
-> should go away).
->
-> readl/writel:  strongly ordered wrt one another and other stores
->               to cacheable RAM, byteswapping
-> __readl/__writel:  not ordered (needs mb/rmb/wmb to order with
->                   other readl/writel and cacheable operations, or
->                   io_*mb to order with one another)
-> raw_readl/raw_writel:  strongly ordered, no byteswapping
-> __raw_readl/__raw_writel:  not ordered, no byteswapping
+> A wild guess would be that the UML process is running "fast" at some point and 
+> its expectation of the host's time is skewed forward because of that.
 
-Byte-swapping vs not byte-swapping is not usually what the programmer wants. 
-Usually your device's registers are defined as being big-endian or
-little-endian and you want whatever is needed to give you that.
+Quite so. Simply running ntp on the host (in slew-only mode, no less!) 
+can cause this.
 
-I believe that on some archs that can be either byte order, some built-in
-devices will change their registers to match, and so you want "native endian"
-or no swapping for these.  Though that's definitely in the minority.
+> Another possibility is that the hosts clock got reset between the times UML 
+> has checked it and the correction was a negative one.
 
-An accessors that always byte-swaps regardless of the endianness of the host
-is never something I've seen a driver want.
+That too.
 
-IOW, there are four ways one can defined endianness/swapping:
-1) Little-endian
-2) Big-endian
-3) Native-endian aka non-byte-swapping
-4) Foreign-endian aka byte-swapping
-
-1 and 2 are by far the most used.  Some code wants 3.  No one wants 4.  Yet
-our API is providing 3 & 4, the two which are the least useful.
-
-Is it enough to provide only "all or none" for ordering strictness?  For
-instance on powerpc, one can get a speedup by dropping strict ordering for IO
-vs cacheable memory, but still keeping ordering for IO vs IO and IO vs locks. 
-This is much easier to program for than no ordering at all.  In fact, if one
-doesn't use coherent DMA, it's basically the same as fully strict ordering.
+-- 
+`If you are having a "ua luea luea le ua le" kind of day, I can only
+ assume that you are doing no work due [to] incapacitating nausea caused 
+ by numerous lazy demons.' --- Frossie
