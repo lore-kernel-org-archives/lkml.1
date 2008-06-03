@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYFCLtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbYFCLvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbYFCLtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 07:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYFCLtd
+	id S1757487AbYFCLvb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 07:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYFCLvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 07:49:33 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:48732 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751727AbYFCLtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 07:49:32 -0400
-Date: Tue, 3 Jun 2008 12:49:21 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Jamie Lokier <jamie@shareable.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       drepper@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
-Message-ID: <20080603114921.GX28946@ZenIV.linux.org.uk>
-References: <482D4665.4050401@gmail.com> <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com> <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu> <20080603112221.GW28946@ZenIV.linux.org.uk> <cfd18e0f0806030427p22a274dev746e1656662f34f6@mail.gmail.com> <20080603113018.GA27955@shareable.org> <cfd18e0f0806030439n5a11fa4aocd6251ffab66b6dd@mail.gmail.com>
+	Tue, 3 Jun 2008 07:51:24 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:39832 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754261AbYFCLvX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 07:51:23 -0400
+Date: Tue, 3 Jun 2008 13:51:19 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: using smp_processor_id() in preemptible [00000000] code:
+ pm-suspend/17334
+In-Reply-To: <c4e36d110806030142j379f5a63xfba7c3bbb9df602a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0806031350330.1716@twin.jikos.cz>
+References: <c4e36d110806030142j379f5a63xfba7c3bbb9df602a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfd18e0f0806030439n5a11fa4aocd6251ffab66b6dd@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 03, 2008 at 01:39:07PM +0200, Michael Kerrisk wrote:
+On Tue, 3 Jun 2008, Zdenek Kabelac wrote:
 
-> > Is there anything else where the file descriptor's access mode allows
-> > doing things on Linux, but the standard requires a permissions check
-> > each time?
-> 
-> Jamie,
-> 
-> I can't think of examples offhand -- but I'm also not quite sure what
-> your question is about.  Could you say a little more?
+> Another backtrace from suspend code path:
+> (T61, 2GB, C2D, no SD card)
+> kernel from git 20080603, commit 1beee8dc8cf58e3f605bd7b34d7a39939be7d8d2
+> ----
+> agpgart-intel 0000:00:00.0: LATE suspend
+> platform bay.0: LATE suspend
+> platform dock.0: LATE suspend
+> Extended CMOS year: 2000
+>  hwsleep-0324 [00] enter_sleep_state     : Entering sleep state [S3]
+> Back to C!
+> BUG: using smp_processor_id() in preemptible [00000000] code: pm-suspend/17334
+> caller is do_machine_check+0xa9/0x500
+> Pid: 17334, comm: pm-suspend Not tainted 2.6.26-rc4 #31
+> Call Trace:
+>  [<ffffffff8118347c>] debug_smp_processor_id+0xcc/0xd0
+>  [<ffffffff810184d9>] do_machine_check+0xa9/0x500
+>  [<ffffffff81010e7b>] ? init_8259A+0x1b/0x120
+>  [<ffffffff810189d6>] mce_init+0x56/0xf0
+>  [<ffffffff81018a7b>] mce_resume+0xb/0x10
+>  [<ffffffff81204fd0>] __sysdev_resume+0x20/0x60
+>  [<ffffffff81205068>] sysdev_resume+0x58/0x90
+>  [<ffffffff8120aac9>] device_power_up+0x9/0x10
+>  [<ffffffff8106f4f7>] suspend_devices_and_enter+0x147/0x1a0
+>  [<ffffffff8106f6c6>] enter_state+0x146/0x1d0
+>  [<ffffffff8106f80a>] state_store+0xba/0x100
+>  [<ffffffff81177ae7>] kobj_attr_store+0x17/0x20
+>  [<ffffffff81110fea>] sysfs_write_file+0xca/0x140
+>  [<ffffffff810ba00b>] vfs_write+0xcb/0x190
+>  [<ffffffff810ba1c0>] sys_write+0x50/0x90
+>  [<ffffffff8100c4fb>] system_call_after_swapgs+0x7b/0x80
 
-"Is anything else equally stupid?", I suspect...  AFAICS, behaviour in
-question is inherited from futimes(2) in one of the *BSD - nothing to
-do about that now (at least 10 years too late).  It's rather inconsistent
-with a lot of things, starting with "why utimes(2) has weaker requirements
-with NULL argument", but we are far too late to fix that.
+This looks very much like the oops you reported here: 
+http://lkml.org/lkml/2008/4/7/130
+
+Is this also a virtual machine run under KVM, as it has been in the 
+aforementioned thread?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
+
