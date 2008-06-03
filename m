@@ -1,149 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757744AbYFCVrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYFCVuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757744AbYFCVrO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 17:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbYFCVq7
+	id S1758108AbYFCVuT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 17:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYFCVuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 17:46:59 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44550 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753022AbYFCVq6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 17:46:58 -0400
-Date: Wed, 4 Jun 2008 00:46:55 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Patrick McManus <mcmanus@ducksong.com>
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-In-Reply-To: <20080603094057.GA29480@elte.hu>
-Message-ID: <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
-References: <20080529084524.GA24892@elte.hu> <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi>
- <20080529112257.GA18130@elte.hu> <20080530181839.GA31915@elte.hu>
- <20080531060947.GA26441@elte.hu> <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi>
- <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi> <20080531125428.GA22111@elte.hu>
- <Pine.LNX.4.64.0805311555570.2329@wrl-59.cs.helsinki.fi> <20080531163501.GB22607@elte.hu>
- <20080603094057.GA29480@elte.hu>
+	Tue, 3 Jun 2008 17:50:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33942 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752795AbYFCVuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 17:50:06 -0400
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-742855239-1212522473=:3474"
-Content-ID: <Pine.LNX.4.64.0806040045510.3474@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, ebiederm@xmission.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] coredump: zap_threads() must skip kernel threads
+In-Reply-To: Andrew Morton's message of  Tuesday, 3 June 2008 14:15:48 -0700 <20080603141548.15d60a32.akpm@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+References: <20080601153045.GA8244@tv-sign.ru>
+	<20080603141548.15d60a32.akpm@linux-foundation.org>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20080603214959.0208826FC96@magilla.localdomain>
+Date: Tue,  3 Jun 2008 14:49:58 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----696208474-742855239-1212522473=:3474
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0806032248131.3474@wrl-59.cs.helsinki.fi>
-
-On Tue, 3 Jun 2008, Ingo Molnar wrote:
-
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> This is a bugfix, yes?
 > 
-> > > ...setsockopt(listenfd, SOL_TCP, TCP_DEFER_ACCEPT, &val, 
-> > > sizeof(val)) seems to be the magic trick that is interestion here.
-> > 
-> > seems to be used:
-> > 
-> >  22003 write(3, "distccd[22003] (dcc_listen_by_ad"..., 62) = 62
-> >  22003 listen(4, 10)                     = 0
-> >  22003 setsockopt(4, SOL_TCP, TCP_DEFER_ACCEPT, [1], 4) = 0
-> > 
-> > i'll queue up your reverts for testing in -tip.
-> 
-> update: your 3 reverts in tip/out-of-tree [commit dad98991c] definitely 
-> fixed the hangs!
+> How does it get triggered?
 
-...It wasn't exactly out-of-tree, Evgeniy fixed a problem that was found
-in "TCP_DEFER_ACCEPT updates - process as established", perhaps it just 
-wasn't in your testing tree yet.
+Yes, I think it fixes a bug.  The trigger would be an aio request doing
+some work (inside aio_kick_handler) simultaneous with some thread in the
+requester's mm doing a core dump (inside zap_threads).
 
-$ git-log -n 1 --pretty=full 9ae27e0adbf471c7a6b80102e38e1d5a346b3b38 | 
-grep "Commit:"
-Commit: David S. Miller <davem@davemloft.net>
+> Do you think the bug is sufficiently serious to fix it in 2.6.26?  In
+> 2.6.25.x?  If so, it would be better if this patch were not dependent
+> upon the preceding ones, which do not appear to be 2.6.26 or -stable
+> material.
 
-> Here is the testing i did:
-> 
-> first i ran about 500+ successful iterations on the affected testboxes 
-> with your revert patch applied, on multiple systems.
+It has probably never been seen for real, but might be possible to produce
+with an exploit that works hard to hit the race.  I'm not sure off hand
+what all the bad effects would be, mainly those of SIGKILL'ing the
+workqueue thread (keventd I guess).  The core-dumping threads will be stuck
+in uninterruptible waits and never be killable.
 
-Are you sure this is enough to conclude the results? Seems quite small 
-number to me to rule out luck. Especially considering that it was some 
-amount of time in the tree already until you noticed it for the first 
-time.
+Oleg's cleanups make the fix much nicer because there is an easy persistent
+flag to check without races.  Probably the most isolated fix for this is
+something like the bit below (wholly untested).  This is hairy enough that
+I think Oleg's 1/3 + 2/3 would be preferable even for -stable.
 
-Anyway, nice that it seems to be helping. It was almost the only 
-possibility on TCP side, I don't think there were any other state machine 
-related changes. So it wasn't just "random revert" in that sense like you 
-were implying :-), I just didn't have any theory how it would cause the 
-problem... ...I even first disregarded DA that because of timeline 
-in-exactness and because I wrongly assumed that distcc probably won't use 
-it anyway, but then I checked later on and found out that it was present 
-at least in the source I had lying around.
 
-Anyway, it might be that the revert was a bit overkill, I'm not fully sure 
-if 539fae and e4c7884 need to be reverted to fix it since main changes 
-are in ec3c098. I just didn't want to take chances at first and put them 
-all to the revert list.
+Thanks,
+Roland
 
-> Then today, without 
-> changing anything else on one of the testsystems i reverted your revert 
-> on that single system. After about an hour of testing, in 20 iterations 
-> i got a hang again over localhost:
-> 
->  titan:~> netstat -nt
->  Active Internet connections (w/o servers)
->  Proto Recv-Q Send-Q Local Address               Foreign Address             State
->  tcp        0 174592 10.0.1.14:34710             10.0.1.14:3632              ESTABLISHED
->  tcp    72145      0 10.0.1.14:3632              10.0.1.14:34710             ESTABLISHED
-> 
-> so i hereby conclude that your revert works :) I've repeated the commit 
-> below that resolves this nasty regression.
 
-...I couldn't immediately find anything obviously wrong with those changes 
-but the patch below might be worth of a try (without the revert of 
-course). If it ever spits out that WARN_ON for you, we were playing with 
-fire too much and it's better to return on the safe side there...
-
--- 
- i.
-
-[PATCH] tcp DEFER_ACCEPT: see if header prediction got turned on
-
-If header prediction is turned on under some circumstances,
-DA can deadlock though I have great trouble in figuring out
-how it could ever happen while ending up into that else
-branch (but I've been wrong before as well :-)).
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- net/ipv4/tcp_input.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index c9454f0..0d9a3fe 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -4595,6 +4595,9 @@ static int tcp_defer_accept_check(struct sock *sk)
- 			   tp->defer_tcp_accept.listen_sk->sk_state != TCP_LISTEN) {
- 			tcp_reset(sk);
- 			return -1;
-+		} else {
-+			WARN_ON(tp->pred_flags);
-+			tp->pred_flags = 0;
- 		}
- 	}
- 	return 0;
--- 
-1.5.2.2
----696208474-742855239-1212522473=:3474--
+diff --git a/fs/exec.c b/fs/exec.c
+index 9448f1b..0000000 100644  
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1545,8 +1545,23 @@ static inline int zap_threads(struct tas
+ 
+ 		p = g;
+ 		do {
+-			if (p->mm) {
+-				if (p->mm == mm) {
++			struct mm_struct *pmm = p->mm;
++			if (pmm) {
++				/*
++				 * We must ignore a kernel thread (aio)
++				 * using PF_BORROWED_MM.  But we need
++				 * task_lock() to avoid races with use_mm()
++				 * or unuse_mm().
++				 */
++				if (pmm == mm) {
++					task_lock(p);
++					if (p->flags & PF_BORROWED_MM)
++						pmm = NULL;
++					else
++						pmm = p->mm;
++					task_unlock(p);
++				}
++				if (pmm == mm) {
+ 					/*
+ 					 * p->sighand can't disappear, but
+ 					 * may be changed by de_thread()
