@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760550AbYFCUp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYFCUq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760550AbYFCUp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbYFCUi5
+	id S1759690AbYFCUq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 16:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758311AbYFCUi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:38:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47075
+	Tue, 3 Jun 2008 16:38:59 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47088
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752951AbYFCUgx (ORCPT
+	by vger.kernel.org with ESMTP id S1752490AbYFCUgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 3 Jun 2008 16:36:53 -0400
-Date: Tue, 03 Jun 2008 12:19:58 -0700 (PDT)
-Message-Id: <20080603.121958.75907598.davem@davemloft.net>
+Date: Tue, 03 Jun 2008 12:19:51 -0700 (PDT)
+Message-Id: <20080603.121951.193695839.davem@davemloft.net>
 To: linux-wireless@vger.kernel.org
 CC: linville@tuxdriver.com, mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/12]: wext: Make adjust_priv_size() take a "struct
- iw_point *".
+Subject: [PATCH 0/12]: Proper compat WEXT support.
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -27,36 +26,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- net/wireless/wext.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+This is a refresh of my previous WEXT compat patch set.
 
-diff --git a/net/wireless/wext.c b/net/wireless/wext.c
-index e83d74a..cd2cf9f 100644
---- a/net/wireless/wext.c
-+++ b/net/wireless/wext.c
-@@ -512,9 +512,9 @@ static int get_priv_size(__u16 args)
- /*
-  * Re-calculate the size of private arguments
-  */
--static int adjust_priv_size(__u16 args, union iwreq_data *wrqu)
-+static int adjust_priv_size(__u16 args, struct iw_point *iwp)
- {
--	int	num = wrqu->data.length;
-+	int	num = iwp->length;
- 	int	max = args & IW_PRIV_SIZE_MASK;
- 	int	type = (args & IW_PRIV_TYPE_MASK) >> 12;
- 
-@@ -976,7 +976,7 @@ static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
- 			 * avoid leaking kernel bits outside. */
- 			if (!(descr->get_args & IW_PRIV_SIZE_FIXED)) {
- 				extra_size = adjust_priv_size(descr->get_args,
--							      &(iwr->u));
-+							      &(iwr->u.data));
- 			}
- 
- 			err = copy_to_user(iwr->u.data.pointer, extra,
--- 
-1.5.5.1.308.g1fbb5
+I've actually tested these exact patches on sparc64 with a RNDIS based
+USB wireless device from Linksys.  I was able to perform iwconfig
+commands, check iwlist, bring up the interface and use it properly.
+All with 32-bit tools.  I've also done an allmodconfig sanity
+build check on sparc64.
 
+The one thing I was not able to test yet is wpa_supplicant use, and
+that likely doesn't work properly yet, but we can fix that on top and
+these patches do not break native non-compat binaries.  They do make a
+lot of compat stuff work which wasn't the case before.  So applying
+this stuff makes sense, and we can get wpa_supplicant working if it
+isn't working using follow-on patches.
+
+The patch set starts by cleaning up the code so that we can avoid
+having multiple copies of the WEXT main dispatch routines, one for
+compat and one for the non-compat case.
+
+Next, basic compat level handling of the WEXT ioctl is added, and the
+equivalent code in the compat_ioctl.c file is removed.
+
+Finally, compat IWE stream munging is added for the wireless layer.
+When we get a compat WEXT ioctl request, we set a bit in the request
+info blob, and the stream building helpers tip off this to format the
+stream entries properly.
+
+These patches are against net-next-2.6 and are also available as
+a GIT tree at:
+
+	master.kernel.org:/pub/scm/linux/kernel/git/davem/wireless-2.6.git
+
+John, please pull or apply as you deem appropriate.
+
+Thanks!
