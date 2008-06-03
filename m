@@ -1,105 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbYFCTKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYFCTT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbYFCTKb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 15:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYFCTKX
+	id S1755856AbYFCTT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 15:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYFCTTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 15:10:23 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54345 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbYFCTKW convert rfc822-to-8bit (ORCPT
+	Tue, 3 Jun 2008 15:19:16 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39293 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbYFCTTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 15:10:22 -0400
-Message-ID: <20080603211045.z5e6w0z88c8kssgo@intran0x.frec.bull.fr>
-Date: Tue, 03 Jun 2008 21:10:45 +0200
-From: "Benjamin Thery " <Benjamin.Thery@bull.net>
-To: Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>
-Subject: Re: [PATCH 09/10] netns: Enable tagging for net_class directories
-	in sysfs
-References: <20080602134438.224352910@theryb.frec.bull.fr>
-	<20080602134439.782528644@theryb.frec.bull.fr>
-	<20080603040818.GA18507@suse.de> <48456225.6070505@bull.net>
-	<20080603163514.GB544@suse.de>
-In-Reply-To: <20080603163514.GB544@suse.de>
+	Tue, 3 Jun 2008 15:19:15 -0400
+Date: Tue, 3 Jun 2008 20:18:59 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Ian Kent <raven@themaw.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080603191859.GG28946@ZenIV.linux.org.uk>
+References: <20080603104035.GT28946@ZenIV.linux.org.uk> <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu> <20080603105258.GV28946@ZenIV.linux.org.uk> <1212499623.3025.46.camel@raven.themaw.net> <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> <1212509263.3025.66.camel@raven.themaw.net> <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org> <1212513189.3025.101.camel@raven.themaw.net> <20080603173029.GD28946@ZenIV.linux.org.uk> <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
-	DelSp=Yes	format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
+In-Reply-To: <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Greg KH <gregkh@suse.de>:
+On Tue, Jun 03, 2008 at 01:46:41PM -0400, Jeff Moyer wrote:
 
-> On Tue, Jun 03, 2008 at 05:24:21PM +0200, Benjamin Thery wrote:
->> Greg KH wrote:
->>> On Mon, Jun 02, 2008 at 03:46:08PM +0200, Benjamin Thery wrote:
->>>> net: Enable tagging for net_class directories in sysfs
->>>>
->>>> The problem.  Network devices show up in sysfs and with the network
->>>> namespace active multiple devices with the same name can show up in
->>>> the same directory, ouch!
->>>>
->>>> To avoid that problem and allow existing applications in network
->>>> namespaces
->>>> to see the same interface that is currently presented in sysfs, this
->>>> patch enables the tagging directory support in sysfs.
->>>>
->>>> By using the network namespace pointers as tags to separate out the
->>>> the sysfs directory entries we ensure that we don't have conflicts
->>>> in the directories and applications only see a limited set of
->>>> the network devices.
->>> I don't like it how the network subsystem is starting to leach into the
->>> sysfs core here.  What happens when the next subsystem wants to do the
->>> same thing?  And then the next one?  Will they all have to do this kind
->>> of intrusive changes to sysfs?
->> >
->> > Can't this be done only in the network subsystem?
->>
->> I'm not sure to understand exactly what you mean.
->>
->> What you don't like is seeing these hunks of network code in
->> fs/sysfs/mount.c? And you prefer to see these bits of code resides in
->> the network subsystem instead and see only "generic" sysfs services in
->> fs/sysfs/mount.c?
->
-> Yes, exactly.
->
-> I don't want the problem that if more subsystems want to implement
-> something like this, they too need to modify the sysfs core.
->
-> And the mess with the #ifdef, that's not nice either :)
+> Well, let me know what level of dump you'd like.  I can give the 50,000
+> foot view, or I can give you the history of things that happened to get
+> us to where we are today, or anything inbetween.  The more specific
+> your request, the quicker I can respond.  A full brain-dump would take
+> some time!
 
-OK. This is clear now :)
+a) what the hell is going on in autofs4_free_ino()?  It checks for
+ino->dentry, when the only caller has just set it to NULL.
 
->> If this is it, I have some idea to implement a less intrusive
->> sysfs_net_exit(), which can be shared with the other namespaces.
->> Serge introduces the same kind of changes in patch 10 to fix an issue in
->> user namespace. I think we can share a bit of code and move the parts
->> specific to each namespace in their own subsystems.
->
-> I think that would be a good idea.  Care to redo the series?
+b) while we are at it, what's ino->inode doing there?  AFAICS, it's
+a write-only field...
 
-I'm already working on it.
-I'll try to re-post in a couple of days.
+c) what are possible states of autofs4 dentry and what's the supposed
+life cycle of these beasts?
 
-Benjamin
+d)
+/* For dentries of directories in the root dir */
+static struct dentry_operations autofs4_root_dentry_operations = {
+        .d_revalidate   = autofs4_revalidate,
+        .d_release      = autofs4_dentry_release,
+};
 
->
-> thanks,
->
-> greg k-h
->
->
+/* For other dentries */
+static struct dentry_operations autofs4_dentry_operations = {
+        .d_revalidate   = autofs4_revalidate,
+        .d_release      = autofs4_dentry_release,
+};
 
+Just what is the difference?
 
-
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
-
+e) in autofs4_tree_busy() we do atomic_read() on ino->count and dentry->d_count
+What's going to keep these suckers consistent with each other in any useful
+way?
