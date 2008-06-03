@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbYFCHgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYFCHgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbYFCHgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 03:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbYFCHgB
+	id S1755603AbYFCHgd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 03:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYFCHgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 03:36:01 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:49581 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbYFCHgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 03:36:00 -0400
+	Tue, 3 Jun 2008 03:36:17 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:50020 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754184AbYFCHgQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 03:36:16 -0400
+X-BigFish: VPS-39(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K1VMG2-01-IUG-01
+Date: Tue, 3 Jun 2008 09:35:50 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD
+	Barcelona
+Message-ID: <20080603073550.GS23679@erda.amd.com>
+References: <20080526180616.GB2752@erda.amd.com> <20080528165813.8D8E5814C@erda.amd.com> <86802c440806021331x4a483201k83c5db040a6cb70b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18500.62552.958244.633204@harpo.it.uu.se>
-Date: Tue, 3 Jun 2008 09:35:52 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: davem@davemloft.net
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [BUG] 2.6.26-rc1 broke X on SPARC Ultra5
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <86802c440806021331x4a483201k83c5db040a6cb70b@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 03 Jun 2008 07:35:51.0015 (UTC) FILETIME=[728DEF70:01C8C54C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While investigating a report in linux.debian.ports.sparc
-saying that X doesn't work with the 2.6.24 kernel, I noticed
-that while X works for me with 2.6.25, 2.6.24, and Aurora's
-2.6.23 kernels, it doesn't work with any 2.6.26-rcN (1<=N<=4)
-kernel; with those it always fails with a
+On 02.06.08 13:31:38, Yinghai Lu wrote:
+> > +               if (!raw_pci_ext_ops && cpu_has_pci_ext_cfg) {
+> > +                       printk(KERN_INFO "PCI: Using configuration type 1 "
+> > +                              "for extended access\n");
+> > +                       raw_pci_ext_ops = &pci_direct_conf1;
+> 
+> can you add extra pci_direct_ext_conf1 intead?
+> 
+> so don't need change reg size in pci_direct_conf1
 
-Fatal server error:
-xf86MapPciMem: Could not mmap PCI memory [base=0xe2000000,hostbase=0xe2000000,size=2000] (No such file or directory)
+The reg size check is already in raw_pci_*. Both functions would be
+almost identical. See my previous mail.
 
-I'll start digging through 2.6.25->2.6.26-rc1 later today,
-meanwhile I've put Xorg.0.log, Xorg strace, dmesg, and .config
-files for 2.6.25 (working) and 2.6.26-rc4 (failing) in
-<http://user.it.uu.se/~mikpe/linux/sparc64-2.6.26-rcN-xorg-bug/>.
+> also if could avoid cpu_has_pci_ext_cfg, it would be great...
 
-/Mikael
+I intend to implement pci_probe & PCI_HAS_EXT_CFG in a follow on patch
+instead.
+
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
