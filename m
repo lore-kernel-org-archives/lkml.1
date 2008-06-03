@@ -1,214 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758966AbYFCUmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759748AbYFCUme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758966AbYFCUmM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757803AbYFCUhX
+	id S1759748AbYFCUme (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 16:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758590AbYFCUiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:37:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47094
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753067AbYFCUgy (ORCPT
+	Tue, 3 Jun 2008 16:38:05 -0400
+Received: from keil-draco.com ([216.193.185.50]:43728 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758429AbYFCUhz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 16:36:54 -0400
-Date: Tue, 03 Jun 2008 13:28:20 -0700 (PDT)
-Message-Id: <20080603.132820.04181365.davem@davemloft.net>
-To: linux-wireless@vger.kernel.org
-CC: linville@tuxdriver.com, mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 4/12]: wext: Extract private call iw_point handling into
- seperate functions.
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 3 Jun 2008 16:37:55 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
+Date: Tue, 3 Jun 2008 16:37:52 -0400
+User-Agent: KMail/1.9.9
+Cc: Nix <nix@esperi.org.uk>, jdike@addtoit.com, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+References: <20080603190235.GA9511@c2.user-mode-linux.org> <878wxmfg99.fsf@hades.wkstn.nix> <20080603130709.fcf6a751.akpm@linux-foundation.org>
+In-Reply-To: <20080603130709.fcf6a751.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806031637.52992.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 03 June 2008 04:07:09 pm Andrew Morton wrote:
+> On Tue, 03 Jun 2008 20:52:18 +0100
+>
+> Nix <nix@esperi.org.uk> wrote:
+> > On 3 Jun 2008, Daniel Hazelton said:
+> > > On Tuesday 03 June 2008 03:32:11 pm Andrew Morton wrote:
+> > >> On Tue, 3 Jun 2008 15:02:35 -0400
+> > >>
+> > >> Jeff Dike <jdike@addtoit.com> wrote:
+> > >> > Protection against the host's time going backwards - keep track of
+> > >> > the time at the last tick and if it's greater than the current time,
+> > >> > keep time stopped until the host catches up.
+> > >>
+> > >> Strange.  What would cause the host's time (or at least UML's
+> > >> perception of it) to go backwards?
+> > >
+> > > A wild guess would be that the UML process is running "fast" at some
+> > > point and its expectation of the host's time is skewed forward because
+> > > of that.
+> >
+> > Quite so. Simply running ntp on the host (in slew-only mode, no less!)
+> > can cause this.
+> >
+> > > Another possibility is that the hosts clock got reset between the times
+> > > UML has checked it and the correction was a negative one.
+> >
+> > That too.
+>
+> So if I change the host's time by an hour, the time will not advance at all
+> on the guest for the next hour? Sounds suboptimal :)
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- net/wireless/wext.c |  141 +++++++++++++++++++++++++++------------------------
- 1 files changed, 74 insertions(+), 67 deletions(-)
+I agree. But like I said originally - it's a wild guess. I don't even know how 
+accurate it is. 
 
-diff --git a/net/wireless/wext.c b/net/wireless/wext.c
-index d17c0f4..a1cd19a 100644
---- a/net/wireless/wext.c
-+++ b/net/wireless/wext.c
-@@ -890,25 +890,22 @@ static int ioctl_standard_call(struct net_device *	dev,
-  * a iw_handler but process it in your ioctl handler (i.e. use the
-  * old driver API).
-  */
--static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
--			      unsigned int cmd, iw_handler handler)
-+static int get_priv_descr_and_size(struct net_device *dev, unsigned int cmd,
-+				   const struct iw_priv_args **descrp)
- {
--	struct iwreq *			iwr = (struct iwreq *) ifr;
--	const struct iw_priv_args *	descr = NULL;
--	struct iw_request_info		info;
--	int				extra_size = 0;
--	int				i;
--	int				ret = -EINVAL;
-+	const struct iw_priv_args *descr;
-+	int i, extra_size;
- 
--	/* Get the description of the IOCTL */
--	for (i = 0; i < dev->wireless_handlers->num_private_args; i++)
-+	descr = NULL;
-+	for (i = 0; i < dev->wireless_handlers->num_private_args; i++) {
- 		if (cmd == dev->wireless_handlers->private_args[i].cmd) {
--			descr = &(dev->wireless_handlers->private_args[i]);
-+			descr = &dev->wireless_handlers->private_args[i];
- 			break;
- 		}
-+	}
- 
--	/* Compute the size of the set/get arguments */
--	if (descr != NULL) {
-+	extra_size = 0;
-+	if (descr) {
- 		if (IW_IS_SET(cmd)) {
- 			int	offset = 0;	/* For sub-ioctls */
- 			/* Check for sub-ioctl handler */
-@@ -933,72 +930,82 @@ static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
- 				extra_size = 0;
- 		}
- 	}
-+	*descrp = descr;
-+	return extra_size;
-+}
- 
--	/* Prepare the call */
--	info.cmd = cmd;
--	info.flags = 0;
-+static int ioctl_private_iw_point(struct iw_point *iwp, unsigned int cmd,
-+				  const struct iw_priv_args *descr,
-+				  iw_handler handler, struct net_device *dev,
-+				  struct iw_request_info *info, int extra_size)
-+{
-+	char *extra;
-+	int err;
- 
--	/* Check if we have a pointer to user space data or not. */
--	if (extra_size == 0) {
--		/* No extra arguments. Trivial to handle */
--		ret = handler(dev, &info, &(iwr->u), (char *) &(iwr->u));
--	} else {
--		char *	extra;
--		int	err;
-+	/* Check what user space is giving us */
-+	if (IW_IS_SET(cmd)) {
-+		if (!iwp->pointer && iwp->length != 0)
-+			return -EFAULT;
- 
--		/* Check what user space is giving us */
--		if (IW_IS_SET(cmd)) {
--			/* Check NULL pointer */
--			if ((iwr->u.data.pointer == NULL) &&
--			   (iwr->u.data.length != 0))
--				return -EFAULT;
-+		if (iwp->length > (descr->set_args & IW_PRIV_SIZE_MASK))
-+			return -E2BIG;
-+	} else if (!iwp->pointer)
-+		return -EFAULT;
- 
--			/* Does it fits within bounds ? */
--			if (iwr->u.data.length > (descr->set_args &
--						 IW_PRIV_SIZE_MASK))
--				return -E2BIG;
--		} else if (iwr->u.data.pointer == NULL)
--			return -EFAULT;
-+	extra = kmalloc(extra_size, GFP_KERNEL);
-+	if (!extra)
-+		return -ENOMEM;
- 
--		/* Always allocate for max space. Easier, and won't last
--		 * long... */
--		extra = kmalloc(extra_size, GFP_KERNEL);
--		if (extra == NULL)
--			return -ENOMEM;
--
--		/* If it is a SET, get all the extra data in here */
--		if (IW_IS_SET(cmd) && (iwr->u.data.length != 0)) {
--			err = copy_from_user(extra, iwr->u.data.pointer,
--					     extra_size);
--			if (err) {
--				kfree(extra);
--				return -EFAULT;
--			}
-+	/* If it is a SET, get all the extra data in here */
-+	if (IW_IS_SET(cmd) && (iwp->length != 0)) {
-+		if (copy_from_user(extra, iwp->pointer, extra_size)) {
-+			err = -EFAULT;
-+			goto out;
- 		}
-+	}
- 
--		/* Call the handler */
--		ret = handler(dev, &info, &(iwr->u), extra);
-+	/* Call the handler */
-+	err = handler(dev, info, (union iwreq_data *) iwp, extra);
- 
--		/* If we have something to return to the user */
--		if (!ret && IW_IS_GET(cmd)) {
-+	/* If we have something to return to the user */
-+	if (!err && IW_IS_GET(cmd)) {
-+		/* Adjust for the actual length if it's variable,
-+		 * avoid leaking kernel bits outside.
-+		 */
-+		if (!(descr->get_args & IW_PRIV_SIZE_FIXED))
-+			extra_size = adjust_priv_size(descr->get_args, iwp);
- 
--			/* Adjust for the actual length if it's variable,
--			 * avoid leaking kernel bits outside. */
--			if (!(descr->get_args & IW_PRIV_SIZE_FIXED)) {
--				extra_size = adjust_priv_size(descr->get_args,
--							      &(iwr->u.data));
--			}
-+		if (copy_to_user(iwp->pointer, extra, extra_size))
-+			err =  -EFAULT;
-+	}
- 
--			err = copy_to_user(iwr->u.data.pointer, extra,
--					   extra_size);
--			if (err)
--				ret =  -EFAULT;
--		}
-+out:
-+	kfree(extra);
-+	return err;
-+}
- 
--		/* Cleanup - I told you it wasn't that long ;-) */
--		kfree(extra);
--	}
-+static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
-+			      unsigned int cmd, iw_handler handler)
-+{
-+	struct iwreq *iwr = (struct iwreq *) ifr;
-+	int extra_size = 0, ret = -EINVAL;
-+	const struct iw_priv_args *descr;
-+	struct iw_request_info info;
- 
-+	extra_size = get_priv_descr_and_size(dev, cmd, &descr);
-+
-+	/* Prepare the call */
-+	info.cmd = cmd;
-+	info.flags = 0;
-+
-+	/* Check if we have a pointer to user space data or not. */
-+	if (extra_size == 0) {
-+		/* No extra arguments. Trivial to handle */
-+		ret = handler(dev, &info, &(iwr->u), (char *) &(iwr->u));
-+	} else {
-+		ret = ioctl_private_iw_point(&iwr->u.data, cmd, descr,
-+					     handler, dev, &info, extra_size);
-+	}
- 
- 	/* Call commit handler if needed and defined */
- 	if (ret == -EIWCOMMIT)
+> I suppose the guest should be running an ntp client synced to something
+> sane anyway?
+
+That might be helpful :)
+
+DRH
+
 -- 
-1.5.5.1.308.g1fbb5
-
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
