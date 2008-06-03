@@ -1,104 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYFCOei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbYFCOkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757995AbYFCOei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 10:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757686AbYFCOe2
+	id S1757636AbYFCOkZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 10:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYFCOkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 10:34:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54949 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757695AbYFCOe1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 10:34:27 -0400
-Date: Tue, 3 Jun 2008 15:18:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: gyang <graf.yang@analog.com>
-Cc: Bryan Wu <cooloney@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@osdl.org
-Subject: [PATCH] serial_core: uart_set_ldisc (Was Re: Blackfin Serial
- Driver: Enable IR function when user application (irattach /dev/ttyBFx -s)
- call TIOCSETD ioctl with line discipline N_IRDA)
-Message-ID: <20080603151854.488af929@core>
-In-Reply-To: <1212459526.6187.8.camel@dyang>
-References: <200804241929.m3OJToSE021045@hera.kernel.org>
-	<20080424215004.34517136@the-village.bc.nu>
-	<0F1B54C89D5F954D8535DB252AF412FA0164BC7A@chinexm1.ad.analog.com>
-	<20080425105545.77b8c5e8@core>
-	<386072610805040827w7a606ee2ld24e6752a6c745c7@mail.gmail.com>
-	<20080504165625.083d3d22@core>
-	<1212459526.6187.8.camel@dyang>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 10:40:17 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:40133 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753537AbYFCOkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 10:40:15 -0400
+Date: Tue, 3 Jun 2008 09:40:10 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, "Derek L. Fults" <dfults@sgi.com>,
+       devik <devik@cdi.cz>, Dinakar Guniguntala <dino@in.ibm.com>,
+       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
+       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Dobson <colpatch@us.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Paul Menage <menage@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Randy.Dunlap" <rddunlap@osdl.org>, suresh.b.siddha@intel.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
+Message-ID: <20080603144010.GA25948@sgi.com>
+References: <20080601213019.14ea8ef8.pj@sgi.com> <20080602164203.GA2477@sgi.com> <48443E66.6060205@qualcomm.com> <20080602214151.GA7072@sgi.com> <48446D46.2010903@qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48446D46.2010903@qualcomm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Jun 2008 10:18:46 +0800
-gyang <graf.yang@analog.com> wrote:
+On Mon, Jun 02, 2008 at 02:59:34PM -0700, Max Krasnyansky wrote:
+> Yes it used to be somewhat unstable. These days it solid. I'm using it on a
+> wide range of systems: uTCA Core2Duo, NUMA dual-Opteron, 8way Core2, etc. And
+> things work as expected.
 
-> Hi, Alan,
-> 
-> Have the set_ldisc operator been put into main tree?
+Max,
 
-It's been in for ages. The Uart level one seems to have gotten stuck. Let
-me poke that again
---
+I tried the following scenario on an ia64 Altix running 2.6.26-rc4 with cpusets compiled in but cpuset fs unmounted.  Do your patches already address this?
 
-The tty layer provides a callback that is used when the line discipline
-is changed. Some hardware uses this to configure hardware specific
-features such as IrDA mode on serial ports. Unfortunately the serial
-layer does not provide this feature or pass it down to drivers.
+$ taskset -cp 3 $$   (attach to cpu 3)
+pid 4591's current affinity list: 0-3
+pid 4591's new affinity list: 3
+$ echo 0 > /sys/devices/system/cpu/cpu2/online  (down cpu 2)
+  (above command hangs)
 
-Blackfin used to hack around this by rewriting the tty ops, but those are
-now properly shared and const so the hack fails. Instead provide the
-proper operations.
+Backtrace of pid 4591 (bash)
 
-Linus: This change plus a follow up from the Blackfin guys is needed to
-avoid blackfin losing features in this release.
+Call Trace:
+ [<a00000010078e990>] schedule+0x1210/0x13c0
+                                sp=e0000060b6dffc90 bsp=e0000060b6df11e0
+ [<a00000010078ef60>] schedule_timeout+0x40/0x180
+                                sp=e0000060b6dffce0 bsp=e0000060b6df11b0
+ [<a00000010078d3e0>] wait_for_common+0x240/0x3c0
+                                sp=e0000060b6dffd10 bsp=e0000060b6df1180
+ [<a00000010078d760>] wait_for_completion+0x40/0x60
+                                sp=e0000060b6dffd40 bsp=e0000060b6df1160
+ [<a000000100114ee0>] __stop_machine_run+0x120/0x160
+                                sp=e0000060b6dffd40 bsp=e0000060b6df1120
+ [<a000000100765ae0>] _cpu_down+0x2a0/0x600
+                                sp=e0000060b6dffd80 bsp=e0000060b6df10c8
+ [<a000000100765ea0>] cpu_down+0x60/0xa0
+                                sp=e0000060b6dffe20 bsp=e0000060b6df10a0
+ [<a000000100768090>] store_online+0x50/0xe0
+                                sp=e0000060b6dffe20 bsp=e0000060b6df1070
+ [<a0000001004f8800>] sysdev_store+0x60/0xa0
+                                sp=e0000060b6dffe20 bsp=e0000060b6df1038
+ [<a00000010022e370>] sysfs_write_file+0x250/0x300
+                                sp=e0000060b6dffe20 bsp=e0000060b6df0fe0
+ [<a00000010018a750>] vfs_write+0x1b0/0x300
+                                sp=e0000060b6dffe20 bsp=e0000060b6df0f90
+ [<a00000010018b350>] sys_write+0x70/0xe0
+                                sp=e0000060b6dffe20 bsp=e0000060b6df0f18
+ [<a00000010000af80>] ia64_ret_from_syscall+0x0/0x20
+                                sp=e0000060b6dffe30 bsp=e0000060b6df0f18
+ [<a000000000010720>] ia64_ivt+0xffffffff00010720/0x400
+                                sp=e0000060b6e00000 bsp=e0000060b6df0f18
 
-Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff -u --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.26-rc2/drivers/serial/serial_core.c linux-2.6.26-rc2/drivers/serial/serial_core.c
---- linux.vanilla-2.6.26-rc2/drivers/serial/serial_core.c	2008-05-12 12:09:06.000000000 +0100
-+++ linux-2.6.26-rc2/drivers/serial/serial_core.c	2008-06-03 15:09:52.000000000 +0100
-@@ -1165,6 +1166,15 @@
- 	return ret;
- }
- 
-+static void uart_set_ldisc(struct tty_struct *tty, int ldisc)
-+{
-+	struct uart_state *state = tty->driver_data;
-+	struct uart_port *port = state->port;
-+
-+	if (port->ops->set_ldisc)
-+		port->ops->set_ldisc(port);
-+}
-+
- static void uart_set_termios(struct tty_struct *tty,
- 						struct ktermios *old_termios)
- {
-@@ -2285,6 +2298,7 @@
- 	.unthrottle	= uart_unthrottle,
- 	.send_xchar	= uart_send_xchar,
- 	.set_termios	= uart_set_termios,
-+	.set_ldisc	= uart_set_ldisc,
- 	.stop		= uart_stop,
- 	.start		= uart_start,
- 	.hangup		= uart_hangup,
-diff -u --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.26-rc2/include/linux/serial_core.h linux-2.6.26-rc2/include/linux/serial_core.h
---- linux.vanilla-2.6.26-rc2/include/linux/serial_core.h	2008-05-12 12:09:08.000000000 +0100
-+++ linux-2.6.26-rc2/include/linux/serial_core.h	2008-06-03 15:08:28.000000000 +0100
-@@ -192,6 +192,7 @@
- 	void		(*shutdown)(struct uart_port *);
- 	void		(*set_termios)(struct uart_port *, struct ktermios *new,
- 				       struct ktermios *old);
-+	void		(*set_ldisc)(struct uart_port *);
- 	void		(*pm)(struct uart_port *, unsigned int state,
- 			      unsigned int oldstate);
- 	int		(*set_wake)(struct uart_port *, unsigned int state);
+I also got this to hang after doing this:
+ - taskset -cp 3 $$   (attach to cpu 3)
+ - echo 0 > /sys/devices/system/cpu/cpu2/online (down cpu 2, successful this time)
+ - echo 1 > /sys/devices/system/cpu/cpu2/online (up cpu 2, successful)
+ - taskset -p $$  (read cpumask, this command hangs)
+
+Traceback here was:
+
+Backtrace of pid 4653 (bash)
+
+Call Trace:
+ [<a00000010078e990>] schedule+0x1210/0x13c0
+                                sp=e0000060b78afab0 bsp=e0000060b78a1320
+ [<a00000010078ef60>] schedule_timeout+0x40/0x180
+                                sp=e0000060b78afb00 bsp=e0000060b78a12f0
+ [<a00000010078d3e0>] wait_for_common+0x240/0x3c0
+                                sp=e0000060b78afb30 bsp=e0000060b78a12c0
+ [<a00000010078d760>] wait_for_completion+0x40/0x60
+                                sp=e0000060b78afb60 bsp=e0000060b78a12a0
+ [<a0000001000a63b0>] set_cpus_allowed_ptr+0x210/0x2a0
+                                sp=e0000060b78afb60 bsp=e0000060b78a1270
+ [<a000000100786930>] cache_add_dev+0x970/0xbc0
+                                sp=e0000060b78afbb0 bsp=e0000060b78a11d0
+ [<a000000100786c20>] cache_cpu_callback+0xa0/0x1e0
+                                sp=e0000060b78afe10 bsp=e0000060b78a1190
+ [<a0000001000e96b0>] notifier_call_chain+0x50/0xe0
+                                sp=e0000060b78afe10 bsp=e0000060b78a1148
+ [<a0000001000e9900>] __raw_notifier_call_chain+0x40/0x60
+                                sp=e0000060b78afe10 bsp=e0000060b78a1108
+ [<a0000001000e9960>] raw_notifier_call_chain+0x40/0x60
+                                sp=e0000060b78afe10 bsp=e0000060b78a10d8
+ [<a00000010078ba70>] cpu_up+0x2d0/0x380
+                                sp=e0000060b78afe10 bsp=e0000060b78a10a0
+ [<a0000001007680b0>] store_online+0x70/0xe0
+                                sp=e0000060b78afe20 bsp=e0000060b78a1070
+ [<a0000001004f8800>] sysdev_store+0x60/0xa0
+                                sp=e0000060b78afe20 bsp=e0000060b78a1038
+ [<a00000010022e370>] sysfs_write_file+0x250/0x300
+                                sp=e0000060b78afe20 bsp=e0000060b78a0fe0
+ [<a00000010018a750>] vfs_write+0x1b0/0x300
+                                sp=e0000060b78afe20 bsp=e0000060b78a0f90
+ [<a00000010018b350>] sys_write+0x70/0xe0
+                                sp=e0000060b78afe20 bsp=e0000060b78a0f18
+ [<a00000010000af80>] ia64_ret_from_syscall+0x0/0x20
+                                sp=e0000060b78afe30 bsp=e0000060b78a0f18
+ [<a000000000010720>] ia64_ivt+0xffffffff00010720/0x400
+                                sp=e0000060b78b0000 bsp=e0000060b78a0f18
+
+
