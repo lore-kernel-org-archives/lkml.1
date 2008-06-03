@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYFCHrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbYFCHxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbYFCHrP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 03:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYFCHrE
+	id S1752646AbYFCHxr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 03:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750818AbYFCHxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 03:47:04 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:47651 "EHLO bagnes.atmel.com"
+	Tue, 3 Jun 2008 03:53:38 -0400
+Received: from main.gmane.org ([80.91.229.2]:35816 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751228AbYFCHrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 03:47:03 -0400
-Date: Tue, 3 Jun 2008 09:46:46 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, benh@kernel.crashing.org,
-       Matthew Wilcox <matthew@wil.cx>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080603094646.0dbf2911@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080602154812.GB2734@loki.buserror.net>
-References: <1211924335.3286.89.camel@pasglop>
-	<20080527214241.GA22636@parisc-linux.org>
-	<1211926636.3286.100.camel@pasglop>
-	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
-	<1212110003.15633.0.camel@pasglop>
-	<20080530080700.773a82cc@siona.local>
-	<1212132267.15633.69.camel@pasglop>
-	<20080530102706.56fca248@siona.local>
-	<Pine.LNX.4.64.0805301120510.26332@anakin>
-	<20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
-	<20080602154812.GB2734@loki.buserror.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	id S1750790AbYFCHxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 03:53:37 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: linux-next: WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
+Date: Tue, 03 Jun 2008 08:53:21 +0100
+Message-ID: <g22t9h$b01$1@ger.gmane.org>
+References: <4844868F.20104@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jun 2008 07:46:18.0085 (UTC) FILETIME=[E8513950:01C8C54D]
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: KNode/0.10.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Wood <scottwood@freescale.com> wrote:
-> On Mon, Jun 02, 2008 at 10:11:02AM +0200, Haavard Skinnemoen wrote:
-> > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > On Fri, 30 May 2008, Haavard Skinnemoen wrote:
-> > > > Maybe we need another interface that does not do byteswapping but
-> > > > provides stronger ordering guarantees?
-> > > 
-> > > The byte swapping depends on the device/bus.
-> > 
-> > Of course. But isn't it reasonable to assume that a device integrated
-> > on the same silicon as the CPU is connected to a somewhat sane bus
-> > which doesn't require any byte swapping?
+Kevin Winchester wrote:
+
+> In next-20080530 and next-20080602 (and possibly earlier - I can't
+> remember the linux-next tree before that I tried) I get the following:
 > 
-> No, unfortunately. :-(
+> [   12.885153] ------------[ cut here ]------------
+> [   12.885203] WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
+> [   12.885248] Pid: 4, comm: watchdog/0 Not tainted
+> 2.6.26-rc4-next-20080602 #13
 
-Ok, I guess I was being naive.
+I saw this and mentioned it too - 
+http://groups.google.co.uk/group/fa.linux.kernel/browse_thread/thread/77d4cedb7b27fa3b/fc66f2d849b42031?lnk=gst&q=watchdog+sitsofe#fc66f2d849b42031 .
 
-> See the end of drivers/dma/fsldma.h.  Likewise with Freescale's PCI host
-> bridges; for some reason the bus itself being little endian led to the host
-> bridge control registers also being little endian.
+> This is completely reproducible on every boot - should I try to bisect it?
 
-Right. But still, isn't it better to handle it on a case-by-case basis
-in the drivers? In some cases, it's best to explicitly use a certain
-byte order, in others it's best to use whatever is native to the CPU.
+Things that have been bisected seem far more likely to be looked at so if
+you have the stomach... If you do start bisection I can confirm that it is
+in next-20080529 . I can also mention that on my system the warning seems
+to go away if I boot with nmi_watchdog=2 .
 
-Haavard
+-- 
+Sitsofe | http://sucs.org/~sits/
+
