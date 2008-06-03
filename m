@@ -1,136 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbYFCOkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYFCOlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbYFCOkZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 10:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYFCOkR
+	id S1757989AbYFCOlG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 10:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbYFCOkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 10:40:17 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:40133 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753537AbYFCOkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 10:40:15 -0400
-Date: Tue, 3 Jun 2008 09:40:10 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, "Derek L. Fults" <dfults@sgi.com>,
-       devik <devik@cdi.cz>, Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Randy.Dunlap" <rddunlap@osdl.org>, suresh.b.siddha@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
-Message-ID: <20080603144010.GA25948@sgi.com>
-References: <20080601213019.14ea8ef8.pj@sgi.com> <20080602164203.GA2477@sgi.com> <48443E66.6060205@qualcomm.com> <20080602214151.GA7072@sgi.com> <48446D46.2010903@qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48446D46.2010903@qualcomm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 3 Jun 2008 10:40:52 -0400
+Received: from linode.ducksong.com ([64.22.125.164]:38704 "EHLO
+	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753876AbYFCOkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 10:40:51 -0400
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+	v2.6.26-rc3+
+From: Patrick McManus <mcmanus@ducksong.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+In-Reply-To: <20080603094057.GA29480@elte.hu>
+References: <20080529084524.GA24892@elte.hu>
+	 <Pine.LNX.4.64.0805291332401.16829@wrl-59.cs.helsinki.fi>
+	 <20080529112257.GA18130@elte.hu> <20080530181839.GA31915@elte.hu>
+	 <20080531060947.GA26441@elte.hu>
+	 <Pine.LNX.4.64.0805311431100.2329@wrl-59.cs.helsinki.fi>
+	 <Pine.LNX.4.64.0805311505410.2329@wrl-59.cs.helsinki.fi>
+	 <20080531125428.GA22111@elte.hu>
+	 <Pine.LNX.4.64.0805311555570.2329@wrl-59.cs.helsinki.fi>
+	 <20080531163501.GB22607@elte.hu>  <20080603094057.GA29480@elte.hu>
+Content-Type: text/plain
+Date: Tue, 03 Jun 2008 10:41:22 -0400
+Message-Id: <1212504082.28319.155.camel@tng>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 02:59:34PM -0700, Max Krasnyansky wrote:
-> Yes it used to be somewhat unstable. These days it solid. I'm using it on a
-> wide range of systems: uTCA Core2Duo, NUMA dual-Opteron, 8way Core2, etc. And
-> things work as expected.
-
-Max,
-
-I tried the following scenario on an ia64 Altix running 2.6.26-rc4 with cpusets compiled in but cpuset fs unmounted.  Do your patches already address this?
-
-$ taskset -cp 3 $$   (attach to cpu 3)
-pid 4591's current affinity list: 0-3
-pid 4591's new affinity list: 3
-$ echo 0 > /sys/devices/system/cpu/cpu2/online  (down cpu 2)
-  (above command hangs)
-
-Backtrace of pid 4591 (bash)
-
-Call Trace:
- [<a00000010078e990>] schedule+0x1210/0x13c0
-                                sp=e0000060b6dffc90 bsp=e0000060b6df11e0
- [<a00000010078ef60>] schedule_timeout+0x40/0x180
-                                sp=e0000060b6dffce0 bsp=e0000060b6df11b0
- [<a00000010078d3e0>] wait_for_common+0x240/0x3c0
-                                sp=e0000060b6dffd10 bsp=e0000060b6df1180
- [<a00000010078d760>] wait_for_completion+0x40/0x60
-                                sp=e0000060b6dffd40 bsp=e0000060b6df1160
- [<a000000100114ee0>] __stop_machine_run+0x120/0x160
-                                sp=e0000060b6dffd40 bsp=e0000060b6df1120
- [<a000000100765ae0>] _cpu_down+0x2a0/0x600
-                                sp=e0000060b6dffd80 bsp=e0000060b6df10c8
- [<a000000100765ea0>] cpu_down+0x60/0xa0
-                                sp=e0000060b6dffe20 bsp=e0000060b6df10a0
- [<a000000100768090>] store_online+0x50/0xe0
-                                sp=e0000060b6dffe20 bsp=e0000060b6df1070
- [<a0000001004f8800>] sysdev_store+0x60/0xa0
-                                sp=e0000060b6dffe20 bsp=e0000060b6df1038
- [<a00000010022e370>] sysfs_write_file+0x250/0x300
-                                sp=e0000060b6dffe20 bsp=e0000060b6df0fe0
- [<a00000010018a750>] vfs_write+0x1b0/0x300
-                                sp=e0000060b6dffe20 bsp=e0000060b6df0f90
- [<a00000010018b350>] sys_write+0x70/0xe0
-                                sp=e0000060b6dffe20 bsp=e0000060b6df0f18
- [<a00000010000af80>] ia64_ret_from_syscall+0x0/0x20
-                                sp=e0000060b6dffe30 bsp=e0000060b6df0f18
- [<a000000000010720>] ia64_ivt+0xffffffff00010720/0x400
-                                sp=e0000060b6e00000 bsp=e0000060b6df0f18
+On Tue, 2008-06-03 at 11:40 +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > ...setsockopt(listenfd, SOL_TCP, TCP_DEFER_ACCEPT, &val, 
+> > > sizeof(val)) seems to be the magic trick that is interestion here.
+> > 
+> > seems to be used:
+> > 
+> >  22003 write(3, "distccd[22003] (dcc_listen_by_ad"..., 62) = 62
+> >  22003 listen(4, 10)                     = 0
+> >  22003 setsockopt(4, SOL_TCP, TCP_DEFER_ACCEPT, [1], 4) = 0
+> > 
+> > i'll queue up your reverts for testing in -tip.
+> 
+> update: your 3 reverts in tip/out-of-tree [commit dad98991c] definitely 
+> fixed the hangs!
+> 
+> Here is the testing i did:
 
 
-I also got this to hang after doing this:
- - taskset -cp 3 $$   (attach to cpu 3)
- - echo 0 > /sys/devices/system/cpu/cpu2/online (down cpu 2, successful this time)
- - echo 1 > /sys/devices/system/cpu/cpu2/online (up cpu 2, successful)
- - taskset -p $$  (read cpumask, this command hangs)
+hm.
 
-Traceback here was:
+Here's a theory - the DA code put the socket in the accept queue after
+data has been queued on the socket, instead of the other way around
+which is normal.
 
-Backtrace of pid 4653 (bash)
+Could this be confusing the select() mechanism?
 
-Call Trace:
- [<a00000010078e990>] schedule+0x1210/0x13c0
-                                sp=e0000060b78afab0 bsp=e0000060b78a1320
- [<a00000010078ef60>] schedule_timeout+0x40/0x180
-                                sp=e0000060b78afb00 bsp=e0000060b78a12f0
- [<a00000010078d3e0>] wait_for_common+0x240/0x3c0
-                                sp=e0000060b78afb30 bsp=e0000060b78a12c0
- [<a00000010078d760>] wait_for_completion+0x40/0x60
-                                sp=e0000060b78afb60 bsp=e0000060b78a12a0
- [<a0000001000a63b0>] set_cpus_allowed_ptr+0x210/0x2a0
-                                sp=e0000060b78afb60 bsp=e0000060b78a1270
- [<a000000100786930>] cache_add_dev+0x970/0xbc0
-                                sp=e0000060b78afbb0 bsp=e0000060b78a11d0
- [<a000000100786c20>] cache_cpu_callback+0xa0/0x1e0
-                                sp=e0000060b78afe10 bsp=e0000060b78a1190
- [<a0000001000e96b0>] notifier_call_chain+0x50/0xe0
-                                sp=e0000060b78afe10 bsp=e0000060b78a1148
- [<a0000001000e9900>] __raw_notifier_call_chain+0x40/0x60
-                                sp=e0000060b78afe10 bsp=e0000060b78a1108
- [<a0000001000e9960>] raw_notifier_call_chain+0x40/0x60
-                                sp=e0000060b78afe10 bsp=e0000060b78a10d8
- [<a00000010078ba70>] cpu_up+0x2d0/0x380
-                                sp=e0000060b78afe10 bsp=e0000060b78a10a0
- [<a0000001007680b0>] store_online+0x70/0xe0
-                                sp=e0000060b78afe20 bsp=e0000060b78a1070
- [<a0000001004f8800>] sysdev_store+0x60/0xa0
-                                sp=e0000060b78afe20 bsp=e0000060b78a1038
- [<a00000010022e370>] sysfs_write_file+0x250/0x300
-                                sp=e0000060b78afe20 bsp=e0000060b78a0fe0
- [<a00000010018a750>] vfs_write+0x1b0/0x300
-                                sp=e0000060b78afe20 bsp=e0000060b78a0f90
- [<a00000010018b350>] sys_write+0x70/0xe0
-                                sp=e0000060b78afe20 bsp=e0000060b78a0f18
- [<a00000010000af80>] ia64_ret_from_syscall+0x0/0x20
-                                sp=e0000060b78afe30 bsp=e0000060b78a0f18
- [<a000000000010720>] ia64_ivt+0xffffffff00010720/0x400
-                                sp=e0000060b78b0000 bsp=e0000060b78a0f18
+-Pat
+
+
+
+
+
+
 
 
