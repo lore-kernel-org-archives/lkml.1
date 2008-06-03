@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYFCICx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYFCIGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYFCICx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 04:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYFCICW
+	id S1753388AbYFCIGw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 04:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYFCIGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 04:02:22 -0400
-Received: from styx.suse.cz ([82.119.242.94]:53752 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752624AbYFCICU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 04:02:20 -0400
-Date: Tue, 3 Jun 2008 10:02:19 +0200
-From: Jan Kara <jack@suse.cz>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
-Message-ID: <20080603080219.GA17936@duck.suse.cz>
-References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> <20080602124409.GL30613@duck.suse.cz> <4844CB39.6060409@hitachi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4844CB39.6060409@hitachi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 3 Jun 2008 04:06:39 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:31482 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbYFCIGh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 04:06:37 -0400
+Subject: Re: [PATCH] Optimize page_remove_rmap for anon pages
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+In-Reply-To: <200806030957.49069.nickpiggin@yahoo.com.au>
+References: <1212069392.16984.25.camel@localhost>
+	 <200806030957.49069.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 03 Jun 2008 10:06:03 +0200
+Message-Id: <1212480363.7746.19.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 03-06-08 13:40:25, Hidehiro Kawai wrote:
-> Subject: [PATCH 4/5] jbd: fix error handling for checkpoint io
-> 
-> When a checkpointing IO fails, current JBD code doesn't check the
-> error and continue journaling.  This means latest metadata can be
-> lost from both the journal and filesystem.
-> 
-> This patch leaves the failed metadata blocks in the journal space
-> and aborts journaling in the case of log_do_checkpoint().
-> To achieve this, we need to do:
-> 
-> 1. don't remove the failed buffer from the checkpoint list where in
->    the case of __try_to_free_cp_buf() because it may be released or
->    overwritten by a later transaction
-> 2. log_do_checkpoint() is the last chance, remove the failed buffer
->    from the checkpoint list and abort the journal
-> 3. when checkpointing fails, don't update the journal super block to
->    prevent the journaled contents from being cleaned.  For safety,
->    don't update j_tail and j_tail_sequence either
-> 4. when checkpointing fails, notify this error to the ext3 layer so
->    that ext3 don't clear the needs_recovery flag, otherwise the
->    journaled contents are ignored and cleaned in the recovery phase
-> 5. if the recovery fails, keep the needs_recovery flag
-> 6. prevent cleanup_journal_tail() from being called between
->    __journal_drop_transaction() and journal_abort() (a race issue
->    between journal_flush() and __log_wait_for_space()
-> 
-> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-  You can add:
-  Acked-by: Jan Kara <jack@suse.cz>
+On Tue, 2008-06-03 at 09:57 +1000, Nick Piggin wrote:
 
-								Honza
+First of all: thanks for looking into this. Games with the dirty bit are
+scary and any change needs careful consideration.
+
+> I don't know if it is that simple, is it?
+
+It should be analog to the fact that for the two place the page_zap_rmap
+function is supposed to be used the pte dirty bit isn't checked as well.
+
+> I don't know how you are guaranteeing the given page ceases to exist.
+> Even checking for the last mapper of the page (which you don't appear
+> to do anyway) isn't enough because there could be a swapcount, in which
+> case you should still have to mark the page as dirty.
+> 
+> For example (I think, unless s390 somehow propogates the dirty page
+> bit some other way that I've missed), wouldn't the following break:
+> 
+> process p1 allocates anonymous page A
+> p1 dirties A
+> p1 forks p2, A now has a mapcount of 2
+> p2 VM_LOCKs A (something to prevent it being swapped)
+> page reclaim unmaps p1's pte, fails on p2
+> p2 exits, page_dirty does not get checked because of this patch
+> page has mapcount 0, PG_dirty is clear
+> Page reclaim can drop it without writing it to swap
+
+Indeed, this would break. Even without the VM_LOCK there is a race of
+try_to_unmap vs. process exit. 
+
+> As far as the general idea goes, it might be possible to avoid the
+> check somehow, but you'd want to be pretty sure of yourself before
+> diverging the s390 path further from the common code base, no?
+
+I don't want to diverge more than necessary. But the performance gains
+of the SSKE/ISKE avoidance makes it worthwhile for s390, no?
+
+> The "easy" way to do it might be just unconditionally mark the page
+> as dirty in this path (if the pte was writeable), so you can avoid
+> the page_test_dirty check and be sure of not missing the dirty bit.
+
+Hmm, but then an mprotect() can change the pte to read-ony and we'd miss
+the dirty bit again. Back to the drawing board.
+
+By the way there is another SSKE I want to get rid of: __SetPageUptodate
+does a page_clear_dirty(). For all uses of __SetPageUptodate the page
+will be dirty after the application did its first write. To clear the
+page dirty bit only to have it set again shortly after doesn't make much
+sense to me. Has there been any particular reason for the
+page_clear_dirty in __SetPageUptodate ?
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
