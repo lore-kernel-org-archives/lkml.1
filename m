@@ -1,166 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYFCIIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbYFCIKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169AbYFCIIG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 04:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYFCIHu
+	id S1754212AbYFCIKa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 04:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYFCIKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 04:07:50 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:37935 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbYFCIHr (ORCPT
+	Tue, 3 Jun 2008 04:10:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:29922 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYFCIKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 04:07:47 -0400
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-Organization: IBM
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 2/3] [2.6.26] ehea: Add dependency to Kconfig
-Date: Tue, 3 Jun 2008 10:07:39 +0200
-User-Agent: KMail/1.9.9
-Cc: jeff@garzik.org, tklein@de.ibm.com, themann@de.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
-       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-       ossthema@de.ibm.com
-References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com> <20080528164405.GA4836@localdomain>
-In-Reply-To: <20080528164405.GA4836@localdomain>
+	Tue, 3 Jun 2008 04:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eb5r+NqJvHASmyFPn7rjkrHFFWVOHocjciHqyALy2Ik7JSFaz+FAgR8CN/NXr5H7s1EMO5IOW+2G3KA3w1iiTapXh77ojZC8pyBGZtWL31G+mRP31N5QUIABxX+vG0PHTRg4FHA8rR5iisGO5CoVHcJ8xOqjcPDwXzt/jIp8TX0=
+Message-ID: <c4e36d110806030110t3e4f406fy4d3afe6c74362501@mail.gmail.com>
+Date: Tue, 3 Jun 2008 10:10:10 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Suspend to memory is freezing my machine
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <c4e36d110805262344r16c64f3dweb127c7fd0fc8f36@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806031007.40162.hannes.hering@linux.vnet.ibm.com>
+References: <c4e36d110805040037u1b98c027x46dc17bf6be5da5b@mail.gmail.com>
+	 <200805242301.25695.rjw@sisk.pl>
+	 <c4e36d110805250159x34e667f2kcfbc01a7b87dda29@mail.gmail.com>
+	 <200805251424.49186.rjw@sisk.pl>
+	 <c4e36d110805262344r16c64f3dweb127c7fd0fc8f36@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nathan,
+2008/5/27 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
+> 2008/5/25 Rafael J. Wysocki <rjw@sisk.pl>:
+>> On Sunday, 25 of May 2008, Zdenek Kabelac wrote:
+>>> 2008/5/24 Rafael J. Wysocki <rjw@sisk.pl>:
+>>> > On Thursday, 22 of May 2008, Zdenek Kabelac wrote:
+>>> >> Hello Rafael
+>>> >>
+>>> >>
+>>
+>> If you use s2ram, please check if "echo mem > /sys/power/state" works instead.
+>
+> The problem occurs also with plain echo 'mem' - I've already checked before.
+> Just resently I've discovered that actually I've had some serious
+> problem with CONFIG_DEBUG_PAGEALLOC option. Unsure if this thing could
+> be related to my deadlocking problem during suspend - I'll watch, if
+> the freeze will be still ocurring even without this option.
+>
+> I'll make probably a separate post about my debug option problem.
 
-I agree that the ehea cannot be built without MEMORY_HOTPLUG. The problem is
-the fact that the ppc walk_memory_resource declaration is in the scope of
-MEMORY_HOTPLUG. At the moment I don't have complete overview if the move of the
-code as you propose in your patch has any side effects. We probably need to
-talk to Badari who provided the walk_memory_resource code. We can also just
-throw it onto one of our boxes to see what happens. ;)
+Hello
 
-Regards
+It looks like from the time I've disabled CONFIG_DEBUG_PAGEALLOC
+option I've not seen a single freeze during the suspend - I'll
+continue to watch this - but I guess it's the key part of my problem.
 
-Hannes
-
-On Wednesday 28 May 2008 18:44:05 Nathan Lynch wrote:
-> Hello,
-> 
-> Hannes Hering wrote:
-> > The new ehea memory hot plug implementation depends on MEMORY_HOTPLUG.
-> > 
-> > Signed-off-by: Hannes Hering <hering2@de.ibm.com>
-> > ---
-> > 
-> > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> > index f90a86b..181cd86 100644
-> > --- a/drivers/net/Kconfig
-> > +++ b/drivers/net/Kconfig
-> > @@ -2440,7 +2440,7 @@ config CHELSIO_T3
-> >  
-> >  config EHEA
-> >  	tristate "eHEA Ethernet support"
-> > -	depends on IBMEBUS && INET && SPARSEMEM
-> > +	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
-> >  	select INET_LRO
-> >  	---help---
-> >  	  This driver supports the IBM pSeries eHEA ethernet adapter.
-> 
-> I disagree with this change.
-> 
-> It makes it impossible to build the ehea driver without memory hotplug
-> enabled.  Presumably, this commit was intended to work around a build
-> break of this sort (with EHEA=m and MEMORY_HOTPLUG=n):
-> 
-> drivers/net/ehea/ehea_qmr.c: In function 'ehea_create_busmap':
-> drivers/net/ehea/ehea_qmr.c:635: error: implicit declaration of function 'walk_memory_resource'
-> 
-> (some indication of this should have been in the commit message, btw)
-> 
-> I think this was the wrong way to fix the issue.  EHEA=m and
-> MEMORY_HOTPLUG=n is a valid configuration for machines I test.
-> 
-> Any thoughts on the following, which makes walk_memory_resource()
-> available regardless of MEMORY_HOTPLUG's setting?  I've tested it on a
-> JS22 (Power6 blade).
-> 
-> ---
-> 
->  arch/powerpc/mm/mem.c          |    3 +--
->  drivers/net/Kconfig            |    2 +-
->  include/linux/memory_hotplug.h |   16 ++++++++--------
->  3 files changed, 10 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index f67e118..51f82d8 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -151,6 +151,7 @@ out:
->  	return ret;
->  }
->  #endif /* CONFIG_MEMORY_HOTREMOVE */
-> +#endif /* CONFIG_MEMORY_HOTPLUG */
-> 
->  /*
->   * walk_memory_resource() needs to make sure there is no holes in a given
-> @@ -184,8 +185,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
->  }
->  EXPORT_SYMBOL_GPL(walk_memory_resource);
-> 
-> -#endif /* CONFIG_MEMORY_HOTPLUG */
-> -
->  void show_mem(void)
->  {
->  	unsigned long total = 0, reserved = 0;
-> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> index dd0ec9e..f4182cf 100644
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -2426,7 +2426,7 @@ config CHELSIO_T3
-> 
->  config EHEA
->  	tristate "eHEA Ethernet support"
-> -	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
-> +	depends on IBMEBUS && INET && SPARSEMEM
->  	select INET_LRO
->  	---help---
->  	  This driver supports the IBM pSeries eHEA ethernet adapter.
-> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-> index 73e3586..ea9f5ad 100644
-> --- a/include/linux/memory_hotplug.h
-> +++ b/include/linux/memory_hotplug.h
-> @@ -77,14 +77,6 @@ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
->  extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
->  	unsigned long nr_pages);
-> 
-> -/*
-> - * Walk through all memory which is registered as resource.
-> - * arg is (start_pfn, nr_pages, private_arg_pointer)
-> - */
-> -extern int walk_memory_resource(unsigned long start_pfn,
-> -			unsigned long nr_pages, void *arg,
-> -			int (*func)(unsigned long, unsigned long, void *));
-> -
->  #ifdef CONFIG_NUMA
->  extern int memory_add_physaddr_to_nid(u64 start);
->  #else
-> @@ -199,6 +191,14 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
-> 
->  #endif /* ! CONFIG_MEMORY_HOTPLUG */
-> 
-> +/*
-> + * Walk through all memory which is registered as resource.
-> + * arg is (start_pfn, nr_pages, private_arg_pointer)
-> + */
-> +extern int walk_memory_resource(unsigned long start_pfn,
-> +			unsigned long nr_pages, void *arg,
-> +			int (*func)(unsigned long, unsigned long, void *));
-> +
->  extern int add_memory(int nid, u64 start, u64 size);
->  extern int arch_add_memory(int nid, u64 start, u64 size);
->  extern int remove_memory(u64 start, u64 size);
-> 
-
-
+Zdenek
