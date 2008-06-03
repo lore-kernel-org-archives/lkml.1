@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbYFCFWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYFCFW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754968AbYFCFWH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 01:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbYFCFVx
+	id S1756073AbYFCFW1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 01:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYFCFWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 01:21:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33342 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751432AbYFCFVw (ORCPT
+	Tue, 3 Jun 2008 01:22:05 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:31174 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753563AbYFCFWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 01:21:52 -0400
-Date: Mon, 2 Jun 2008 22:20:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Jan Kara <jack@suse.cz>, sct@redhat.com, adilger@clusterfs.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
-Message-Id: <20080602222044.ff3760fc.akpm@linux-foundation.org>
-In-Reply-To: <4844D290.7000802@hitachi.com>
-References: <4843CE15.6080506@hitachi.com>
-	<4843CFBD.7040706@hitachi.com>
-	<20080602124409.GL30613@duck.suse.cz>
-	<4844CB39.6060409@hitachi.com>
-	<4844D290.7000802@hitachi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 01:22:04 -0400
+Date: Tue, 3 Jun 2008 08:21:46 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, alexisb@us.ibm.com, mingo@elte.hu,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] x86 calgary: fix handling of devces that aren't
+	behind the Calgary
+Message-ID: <20080603052146.GI7011@il.ibm.com>
+References: <20080531133114P.tomof@acm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080531133114P.tomof@acm.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Jun 2008 14:11:44 +0900 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
+On Sat, May 31, 2008 at 01:31:33PM +0900, FUJITA Tomonori wrote:
 
-> Hidehiro Kawai wrote:
+> The calgary code can give drivers addresses above 4GB which is very
+> bad for hardware that is only 32bit DMA addressable:
 > 
-> > Subject: [PATCH 4/5] jbd: fix error handling for checkpoint io
+> http://lkml.org/lkml/2008/5/8/423
 > 
-> Sorry, I forgot to remove the subject at the first line...
+> This patch tries to fix the problem by using per-device
+> dma_mapping_ops support. This fixes the calgary code to use swiotlb
+> or nommu properly for devices which are not behind the
+> Calgary/CalIOC2.
+> 
+> With this patch, the calgary code sets the global dma_ops to swiotlb
+> or nommu, and the dma_ops of devices behind the Calgary/CalIOC2 to
+> calgary_dma_ops. So the calgary code can handle devices safely that
+> aren't behind the Calgary/CalIOC2.
 
-Is OK ;)
+This seems a little backward to me. I thought we were going to get rid
+of the global dma_ops? If not, assuming going through the global one
+would be more efficient, Calgary should be the global one and
+nommu/swiotlb should be used on devices that do not have translation
+enabled. The reason why is that the majority of devices on a Calgary
+system, assuming Calgary is in use, will have translation enabled.
 
-Sometimes it helps, when people use WeirdRandomStuff in their patch
-titles, or when the patch comes in reply to some email thread which has
-an irrelevant Subject:.
+In general the patch looks good, barring the point above. We'll give
+it a spin on some Calgary/CalIOC2 machines.
+
+Cheers,
+Muli
+
 
