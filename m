@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbYFCCUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbYFCCVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbYFCCUa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 22:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbYFCCUR
+	id S1757481AbYFCCVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 22:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbYFCCVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 22:20:17 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:3466 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753538AbYFCCUP convert rfc822-to-8bit (ORCPT
+	Mon, 2 Jun 2008 22:21:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50693 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753427AbYFCCVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 22:20:15 -0400
-X-IronPort-AV: E=Sophos;i="4.27,581,1204520400"; 
-   d="scan'208";a="69427617"
-Subject: Re: Blackfin Serial Driver: Enable IR function when user
-	application (irattach /dev/ttyBFx -s) call TIOCSETD ioctl with line
-	discipline N_IRDA
-From: gyang <graf.yang@analog.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bryan Wu <cooloney@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080504165625.083d3d22@core>
-References: <200804241929.m3OJToSE021045@hera.kernel.org>
-	 <20080424215004.34517136@the-village.bc.nu>
-	 <0F1B54C89D5F954D8535DB252AF412FA0164BC7A@chinexm1.ad.analog.com>
-	 <20080425105545.77b8c5e8@core>
-	 <386072610805040827w7a606ee2ld24e6752a6c745c7@mail.gmail.com>
-	 <20080504165625.083d3d22@core>
-Content-Type: text/plain; charset=gbk
-Date: Tue, 03 Jun 2008 10:18:46 +0800
-Message-Id: <1212459526.6187.8.camel@dyang>
+	Mon, 2 Jun 2008 22:21:08 -0400
+Date: Mon, 2 Jun 2008 19:20:48 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: svaidy@linux.vnet.ibm.com
+Cc: Pavel Machek <pavel@ucw.cz>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       Michael Neuling <mikey@neuling.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
+Message-ID: <20080602192048.39c86b2e@infradead.org>
+In-Reply-To: <20080602175400.GN5504@dirshya.in.ibm.com>
+References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com>
+	<20080526085000.33787eac@infradead.org>
+	<483AF25B.6090806@linux.vnet.ibm.com>
+	<20080526110040.5ddc4656@infradead.org>
+	<483B0348.2000204@linux.vnet.ibm.com>
+	<20080526115108.6a19e2c0@infradead.org>
+	<483C059B.9040301@linux.vnet.ibm.com>
+	<20080531212709.GA6757@ucw.cz>
+	<20080602175400.GN5504@dirshya.in.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 03 Jun 2008 02:20:10.0515 (UTC) FILETIME=[5922FE30:01C8C520]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Alan,
+On Mon, 2 Jun 2008 23:24:00 +0530
+Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
 
-Have the set_ldisc operator been put into main tree?
-
-As current development cycle will end in few weeks, while rc4 kernel
-still can't be compiled successfully because of this issue.
-
-BRs,
-Graf
-
-
-在 2008-05-04日的 16:56 +0100，Alan Cox写道：
-> > Oh, I got the compile failure now:
-> > --
-> >   CC      drivers/serial/bfin_5xx.o
-> > drivers/serial/bfin_5xx.c: In function 'bfin_serial_init':
-> > drivers/serial/bfin_5xx.c:1281: error: 'struct tty_driver' has no
-> > member named 'set_ldisc'
-> > make[2]: *** [drivers/serial/bfin_5xx.o] Error 1
-> > make[1]: *** [drivers/serial] Error 2
-> > make: *** [drivers] Error 2
-> > --
-> > 
-> > Obviously, it is no way to change code like this for passing compiling:
 > 
-> I've added the uart set_ldisc operator to my tree. I thought Andrew had
-> it as well, but if not I'll push it again Tuesday (Monday is a holiday
-> here)
-> 
-> Alan
-> --
-> 	"Alan, I'm getting a bit worried about you."
-> 				-- Linus Torvalds
+> Lets start adding parameters in steps to make the scaled statistics
+> accurate.  We want to start with cpu and see if we can provide
+> a reasonable solution.
+
+sadly your patches don't even achieve that ;-(
+At least not in terms of CPU capacity etc.
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
