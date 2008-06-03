@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYFCLrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYFCLtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbYFCLrc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 07:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbYFCLrZ
+	id S1757369AbYFCLtm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 07:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbYFCLtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 07:47:25 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:39528 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753833AbYFCLrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 07:47:25 -0400
-Date: Tue, 3 Jun 2008 13:47:19 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Mike White <argentia@operamail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel GPF ACPI
-In-Reply-To: <20080603021645.A63FDCBC9E@ws5-11.us4.outblaze.com>
-Message-ID: <Pine.LNX.4.64.0806031345190.1716@twin.jikos.cz>
-References: <20080603021645.A63FDCBC9E@ws5-11.us4.outblaze.com>
+	Tue, 3 Jun 2008 07:49:33 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48732 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751727AbYFCLtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 07:49:32 -0400
+Date: Tue, 3 Jun 2008 12:49:21 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Jamie Lokier <jamie@shareable.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       drepper@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
+Message-ID: <20080603114921.GX28946@ZenIV.linux.org.uk>
+References: <482D4665.4050401@gmail.com> <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com> <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu> <20080603112221.GW28946@ZenIV.linux.org.uk> <cfd18e0f0806030427p22a274dev746e1656662f34f6@mail.gmail.com> <20080603113018.GA27955@shareable.org> <cfd18e0f0806030439n5a11fa4aocd6251ffab66b6dd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0806030439n5a11fa4aocd6251ffab66b6dd@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008, Mike White wrote:
+On Tue, Jun 03, 2008 at 01:39:07PM +0200, Michael Kerrisk wrote:
 
-> Running Opensuse 10.3 on Asus M2N32-SLI (default BIOS settings), AMD Dual core CPU.
-> Kernel is stock that comes with that version of suse.
-> Linux deathscape 2.6.22.5-31-default #1 SMP 2007/09/21 22:29:00 UTC x86_64 x86_64 x86_64 GNU/Linux
-> Upon booting the system, service /etc/rc.d/powersaved segfaults, specifically /usr/sbin/powersaved
-> Output from dmesg:
-> Jun  2 00:51:01 deathscape kernel: general protection fault: 0000 [1] SMP 
+> > Is there anything else where the file descriptor's access mode allows
+> > doing things on Linux, but the standard requires a permissions check
+> > each time?
+> 
+> Jamie,
+> 
+> I can't think of examples offhand -- but I'm also not quite sure what
+> your question is about.  Could you say a little more?
 
-This is not a vanilla kernel, but a kernel with distro-specific patches, 
-please report this through your distro bugzilla.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
-
+"Is anything else equally stupid?", I suspect...  AFAICS, behaviour in
+question is inherited from futimes(2) in one of the *BSD - nothing to
+do about that now (at least 10 years too late).  It's rather inconsistent
+with a lot of things, starting with "why utimes(2) has weaker requirements
+with NULL argument", but we are far too late to fix that.
