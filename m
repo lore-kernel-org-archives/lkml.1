@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYFCCT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbYFCCUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbYFCCT4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 22:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbYFCCTs
+	id S1757416AbYFCCUa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 22:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbYFCCUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 22:19:48 -0400
-Received: from fallback.us4.outblaze.com ([205.158.62.120]:53815 "EHLO
-	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753732AbYFCCTr convert rfc822-to-8bit (ORCPT
+	Mon, 2 Jun 2008 22:20:17 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:3466 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753538AbYFCCUP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 22:19:47 -0400
-X-OB-Received: from unknown (205.158.62.232)
-  by wfilter.us4.outblaze.com; 3 Jun 2008 02:16:45 -0000
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-MIME-Version: 1.0
-From: "Mike White" <argentia@operamail.com>
-To: linux-kernel@vger.kernel.org
-Date: Tue, 3 Jun 2008 03:16:45 +0100
-Subject: Kernel GPF ACPI
-X-Originating-Ip: 69.158.147.108
-X-Originating-Server: ws5-11.us4.outblaze.com
-Message-Id: <20080603021645.A63FDCBC9E@ws5-11.us4.outblaze.com>
+	Mon, 2 Jun 2008 22:20:15 -0400
+X-IronPort-AV: E=Sophos;i="4.27,581,1204520400"; 
+   d="scan'208";a="69427617"
+Subject: Re: Blackfin Serial Driver: Enable IR function when user
+	application (irattach /dev/ttyBFx -s) call TIOCSETD ioctl with line
+	discipline N_IRDA
+From: gyang <graf.yang@analog.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bryan Wu <cooloney@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080504165625.083d3d22@core>
+References: <200804241929.m3OJToSE021045@hera.kernel.org>
+	 <20080424215004.34517136@the-village.bc.nu>
+	 <0F1B54C89D5F954D8535DB252AF412FA0164BC7A@chinexm1.ad.analog.com>
+	 <20080425105545.77b8c5e8@core>
+	 <386072610805040827w7a606ee2ld24e6752a6c745c7@mail.gmail.com>
+	 <20080504165625.083d3d22@core>
+Content-Type: text/plain; charset=gbk
+Date: Tue, 03 Jun 2008 10:18:46 +0800
+Message-Id: <1212459526.6187.8.camel@dyang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 03 Jun 2008 02:20:10.0515 (UTC) FILETIME=[5922FE30:01C8C520]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Running Opensuse 10.3 on Asus M2N32-SLI (default BIOS settings), AMD Dual core CPU.
-Kernel is stock that comes with that version of suse.
+Hi, Alan,
 
-Linux deathscape 2.6.22.5-31-default #1 SMP 2007/09/21 22:29:00 UTC x86_64 x86_64 x86_64 GNU/Linux
+Have the set_ldisc operator been put into main tree?
 
-Upon booting the system, service /etc/rc.d/powersaved segfaults, specifically /usr/sbin/powersaved
+As current development cycle will end in few weeks, while rc4 kernel
+still can't be compiled successfully because of this issue.
 
-Output from dmesg:
-
-
-Jun  2 00:51:01 deathscape kernel: general protection fault: 0000 [1] SMP 
-Jun  2 00:51:01 deathscape kernel: last sysfs file: /block/sr0/capability
-Jun  2 00:51:01 deathscape kernel: CPU 1 
-Jun  2 00:51:01 deathscape kernel: Modules linked in: snd_pcm_oss snd_mixer_oss snd_seq ip6t_REJECT xt_tcpudp ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat iptable_filter ip6table_mangle cpufreq_conservative cpufreq_userspace nf_conntrack_ipv4 nf_conntrack cpufreq_powersave nfnetlink powernow_k8 ip_tables ip6table_filter ip6_tables x_tables ipv6 apparmor dm_crypt xfs loop dm_mod rfcomm l2cap joydev hci_usb usbhid parport_pc hid parport bluetooth ff_memless snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device ohci1394 snd_hda_intel snd_pcm snd_timer rtc_cmos rtc_core rtc_lib uvcvideo firmware_class compat_ioctl32 videodev snd_hwdep nvidia(P) snd k8temp forcedeth ieee1394 hwmon serio_raw sr_mod cdrom snd_page_alloc i2c_nforce2 v4l1_compat soundcore i2c_core v4l2_common button sg sd_mod ehci_hcd ohci_hcd usbcore edd ext3 mbcache jbd fan sata_sil24 sata_nv pata_amd libata scsi_mod thermal processor
-Jun  2 00:51:01 deathscape kernel: Pid: 3327, comm: powersaved Tainted: P      N 2.6.22.5-31-default #1
-Jun  2 00:51:01 deathscape kernel: RIP: 0010:[<ffffffff80333fda>]  [<ffffffff80333fda>] acpi_ns_map_handle_to_node+0x14/0x1d
-Jun  2 00:51:01 deathscape kernel: RSP: 0018:ffff810111ae7e10  EFLAGS: 00010246
-Jun  2 00:51:01 deathscape kernel: RAX: 0000000000000000 RBX: 0000000000001001 RCX: ffffffff804801f7
-Jun  2 00:51:01 deathscape kernel: RDX: 000000000000b57b RSI: 0000000000000100 RDI: 4d52454854584e4c
-Jun  2 00:51:01 deathscape kernel: RBP: 4d52454854584e4c R08: ffffffff8047fdf0 R09: ffffffff804801af
-Jun  2 00:51:01 deathscape kernel: R10: 0000000000000000 R11: 0000000000000000 R12: ffff810111ae7e78
-Jun  2 00:51:01 deathscape kernel: R13: ffffffff8033f448 R14: ffff810111ae7e78 R15: 00002b0fae66f000
-Jun  2 00:51:01 deathscape kernel: FS:  00002b0fb02ac140(0000) GS:ffff81011b962840(0000) knlGS:0000000000000000
-Jun  2 00:51:01 deathscape kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-Jun  2 00:51:01 deathscape kernel: CR2: 00002b0fae66f000 CR3: 00000001118c4000 CR4: 00000000000006e0
-Jun  2 00:51:01 deathscape kernel: Process powersaved (pid: 3327, threadinfo ffff810111ae6000, task ffff81011a738850)
-Jun  2 00:51:01 deathscape kernel: Stack:  ffffffff8033321e ffff810111859c38 ffff810111ae7e78 4d52454854584e4c
-Jun  2 00:51:01 deathscape kernel:  ffff81011969b8c0 ffffffff8801434d ffffffff8033e980 0000000000000003
-Jun  2 00:51:01 deathscape kernel:  ffff810119a6f000 0000000000000000 ffffffff880135c5 0000000000100073
-Jun  2 00:51:01 deathscape kernel: Call Trace:
-Jun  2 00:51:01 deathscape kernel:  [<ffffffff8033321e>] acpi_get_data+0x3e/0x6e
-Jun  2 00:51:01 deathscape kernel:  [<ffffffff8033e980>] acpi_bus_get_device+0x25/0x68
-Jun  2 00:51:01 deathscape kernel:  [<ffffffff880135c5>] :thermal:acpi_thermal_trip_seq_show+0x12b/0x257
-Jun  2 00:51:01 deathscape kernel:  [<ffffffff802a19c2>] seq_read+0x105/0x28b
-Jun  2 00:51:01 deathscape kernel:  [<ffffffff8028943d>] vfs_read+0xcb/0x153
-Jun  2 00:51:01 deathscape kernel:  [<ffffffff802897d1>] sys_read+0x45/0x6e
-Jun  2 00:51:01 deathscape kernel:  [<ffffffff80209dac>] tracesys+0xdc/0xe1
-Jun  2 00:51:01 deathscape kernel: 
-Jun  2 00:51:01 deathscape kernel: 
-Jun  2 00:51:01 deathscape kernel: Code: 80 7f 08 0f 48 0f 44 c7 c3 48 89 f8 c3 31 c0 48 85 ff 74 0d 
-Jun  2 00:51:01 deathscape kernel: RIP  [<ffffffff80333fda>] acpi_ns_map_handle_to_node+0x14/0x1d
-Jun  2 00:51:01 deathscape kernel:  RSP <ffff810111ae7e10>
+BRs,
+Graf
 
 
--- 
-_______________________________________________
-Surf the Web in a faster, safer and easier way:
-Download Opera 9 at http://www.opera.com
-
-Powered by Outblaze
+在 2008-05-04日的 16:56 +0100，Alan Cox写道：
+> > Oh, I got the compile failure now:
+> > --
+> >   CC      drivers/serial/bfin_5xx.o
+> > drivers/serial/bfin_5xx.c: In function 'bfin_serial_init':
+> > drivers/serial/bfin_5xx.c:1281: error: 'struct tty_driver' has no
+> > member named 'set_ldisc'
+> > make[2]: *** [drivers/serial/bfin_5xx.o] Error 1
+> > make[1]: *** [drivers/serial] Error 2
+> > make: *** [drivers] Error 2
+> > --
+> > 
+> > Obviously, it is no way to change code like this for passing compiling:
+> 
+> I've added the uart set_ldisc operator to my tree. I thought Andrew had
+> it as well, but if not I'll push it again Tuesday (Monday is a holiday
+> here)
+> 
+> Alan
+> --
+> 	"Alan, I'm getting a bit worried about you."
+> 				-- Linus Torvalds
