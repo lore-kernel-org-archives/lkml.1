@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbYFCQgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbYFCQgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbYFCQgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 12:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYFCQgI
+	id S1752796AbYFCQgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYFCQgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 12:36:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34745 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752413AbYFCQgF (ORCPT
+	Tue, 3 Jun 2008 12:36:22 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:4886 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754357AbYFCQgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 12:36:05 -0400
-Date: Tue, 3 Jun 2008 09:35:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ian Kent <raven@themaw.net>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, Miklos Szeredi <miklos@szeredi.hu>,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Linux 2.6.26-rc4
-In-Reply-To: <1212509263.3025.66.camel@raven.themaw.net>
-Message-ID: <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>  <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>  <20080603095713.GR28946@ZenIV.linux.org.uk>  <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk> 
- <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>  <20080603104035.GT28946@ZenIV.linux.org.uk>  <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>  <20080603105258.GV28946@ZenIV.linux.org.uk>  <1212499623.3025.46.camel@raven.themaw.net>  <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
- <1212509263.3025.66.camel@raven.themaw.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 3 Jun 2008 12:36:21 -0400
+To: Jason Yeh <jason.yeh@amd.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Updated: Oprofile Multiplexing
+From: Andi Kleen <andi@firstfloor.org>
+References: <1212509807.22351.1.camel@pranjaparamita>
+Date: Tue, 03 Jun 2008 18:35:33 +0200
+In-Reply-To: <1212509807.22351.1.camel@pranjaparamita> (Jason Yeh's message of "Tue, 3 Jun 2008 11:16:47 -0500")
+Message-ID: <87bq2iv5m2.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 Jun 2008 16:28:24.0635 (UTC) FILETIME=[D86568B0:01C8C596]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jason Yeh <jason.yeh@amd.com> writes:
 
+> This is an updated patch to enable Oprofile module to switch between different
+> sets of events at the user specified interval. It allows the module to gather
+> more event statistics than the number of event counters on the hardware in a
+> single run of profiling.
+>
+> A new file (/dev/oprofile/timeout_ms) is added for user to specify the interval.
 
-On Wed, 4 Jun 2008, Ian Kent wrote:
-> 
-> The code we're talking about deals with a race between expiring and
-> mounting an autofs mount point at the same time. 
-> 
-> I'll have a closer look and see if I can make it work without turning
-> the dentry negative.
+This sounds actually like something that should be handled with hrtimers
+for best results and then ms would be not finegrained enough.
 
-Hmm.
-
-Can you walk me through this?
-
-If the dentry is unhashed, it means that it _either_
-
- - has already been deleted (rmdir'ed) or d_invalidate()'d. Right?
-
-   I don't see why you should ever return the dentry in this case..
-
- - or it has not yet been hashed at all
-
-   But then d_inode should be NULL too, no?
-
-Anyway, as far as I can tell, you should handle the race between expiring 
-and re-mounting not by unhashing at expire time (which causes these kinds 
-of problems), but by setting a bit in the dentry and using the dentry 
-"revalidate()" callback to wait for the revalidate.
-
-But I don't know autofs4, so you probably have some reason. Could you 
-explain it?
-
-		Linus
+-Andi
