@@ -1,105 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYFCI3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbYFCIac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbYFCI3l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 04:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYFCI3a
+	id S1755445AbYFCIac (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 04:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYFCIaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 04:29:30 -0400
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:37859 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751456AbYFCI32 (ORCPT
+	Tue, 3 Jun 2008 04:30:24 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:8509 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYFCIaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 04:29:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=pmnXmE2565MxavqU3mVSHa9FB4U0wEDVYOWqj9rN96NCnbeM07WHMcjBVIxT3EyihKyqRc7XIQybSbydu2cIl73+uReZ9qdBUPgOjCBWTp52BqJFSZloO7BkuP/KxTEuiuc4jJvKsFPFqBhkOMi99P+JXQ9zcR1jeD2BtYlxdbY=  ;
-X-YMail-OSG: jCiRmWgVM1kG19BgGQIJHCbk6KL6vC7HugYFyweG7OHv4Jbw1zEmIkCF9NwaZuneSOyicmOOOXotPyuNa9plk37ijyK8qUqU0wwXbL8nr6fNEB8l8aoRLuqBLQqa2MnjydE-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: schwidefsky@de.ibm.com
-Subject: Re: [PATCH] Optimize page_remove_rmap for anon pages
-Date: Tue, 3 Jun 2008 18:29:13 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-References: <1212069392.16984.25.camel@localhost> <200806030957.49069.nickpiggin@yahoo.com.au> <1212480363.7746.19.camel@localhost>
-In-Reply-To: <1212480363.7746.19.camel@localhost>
+	Tue, 3 Jun 2008 04:30:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=M8Izz7GvzdB1dLO2vg6bz4itQEG9ItwLTdPzmQm5Y4g4T46pUsc6xM98p+y7iN5sI+HIcZLyaVwMgIS5YoDIpHBu6flhjWWK9ZohOb5MX7crFvtUaS1CXAgjcaVsn+eMoJD0yhBTVQo0SPBQiifmE+6yT9f4+s0QoYrjObEsYM0=
+Message-ID: <dd18b0c30806030130j9273d8bq380bdea71e60250d@mail.gmail.com>
+Date: Tue, 3 Jun 2008 08:30:20 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: hci_usb strikes again (was Re: BUG kmalloc-2048: Poison overwritten)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, marcel@holtmann.org,
+       linux-bluetooth@vger.kernel.org
+In-Reply-To: <20080603064359.GC18599@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806031829.14150.nickpiggin@yahoo.com.au>
+References: <dd18b0c30806011613l6c8c1863rd237f7de06a6b33a@mail.gmail.com>
+	 <200806020125.25918.rjw@sisk.pl> <20080602222142.GB18599@elf.ucw.cz>
+	 <dd18b0c30806021612h34f776f6kb480b3aa7a1d5e41@mail.gmail.com>
+	 <20080603064359.GC18599@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 June 2008 18:06, Martin Schwidefsky wrote:
-> On Tue, 2008-06-03 at 09:57 +1000, Nick Piggin wrote:
+On Tue, Jun 3, 2008 at 6:43 AM, Pavel Machek <pavel@suse.cz> wrote:
+> Hi!
+>> >> > cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
+>> >> > ipmi_watchdog ipmi_msghandler uinput wlan_tkip ieee80211_crypt_tkip
+>> >> > ieee80211_crypt arpt_mangle arptable_filter arp_tables
+>> >> > nf_conntrack_ipv4 nf_conntrack iptable_mangle iptable_filter ip_tables
+>> >> > x_tables intelfb i2c_i810 i2c_algo_bit coretemp eeprom acpi_cpufreq
+>> >> > fglrx(P) applesmc joydev uvcvideo appletouch wlan_scan_sta
+>> >> > ath_rate_sample firewire_ohci firewire_core snd_hda_intel ath_pci
+>> >> > snd_pcm wlan ohci1394 intel_agp evdev ath_hal(P) snd_timer ieee1394
+>> >> > pata_acpi thermal ehci_hcd uhci_hcd snd_page_alloc snd_hwdep agpgart
+>> >> > video button processor
+>> >> > [  232.270800]
+>> >> > [  232.270802] Pid: 2690, comm: btdelconn Tainted: P
+>> >> > (2.6.26-rc4-00033-g5463508 #4)
+>> >
+>> > ...and we get oops in bluetooth.
+>> >
+>> > Use btusb, instead.
+>> >
+>> > Actually, I guess we should mark hci_usb as broken. I don't see why we
+>> > should debug the same problem over and over again.
 >
-> First of all: thanks for looking into this. Games with the dirty bit are
-> scary and any change needs careful consideration.
+>> Well; "shizzle my frizzle," The funny thing is, is I have not seen
+>> this after performing more suspends,
+>> maybe this is a every once in a while scenario.
 >
-> > I don't know if it is that simple, is it?
+> It was "one in three" in my tests; but you need usb actively in use
+> while you are suspending for this to bite.
+>                                                                        Pavel
 >
-> It should be analog to the fact that for the two place the page_zap_rmap
-> function is supposed to be used the pte dirty bit isn't checked as well.
-
-pte dirty bit is checked in zap_pte_range. In do_wp_page, the pte dirty
-bit is not checked because it cannot have been dirtied via that mapping.
-However, this may not necessarily be true in the s390 case where it might
-be dirtied by _another_ mapping which has subsequently exited but not
-propogated the physical dirty bit (I don't know, but I'm just wary about
-it).
-
-
-> > I don't know how you are guaranteeing the given page ceases to exist.
-> > Even checking for the last mapper of the page (which you don't appear
-> > to do anyway) isn't enough because there could be a swapcount, in which
-> > case you should still have to mark the page as dirty.
-> >
-> > For example (I think, unless s390 somehow propogates the dirty page
-> > bit some other way that I've missed), wouldn't the following break:
-> >
-> > process p1 allocates anonymous page A
-> > p1 dirties A
-> > p1 forks p2, A now has a mapcount of 2
-> > p2 VM_LOCKs A (something to prevent it being swapped)
-> > page reclaim unmaps p1's pte, fails on p2
-> > p2 exits, page_dirty does not get checked because of this patch
-> > page has mapcount 0, PG_dirty is clear
-> > Page reclaim can drop it without writing it to swap
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 >
-> Indeed, this would break. Even without the VM_LOCK there is a race of
-> try_to_unmap vs. process exit.
->
-> > As far as the general idea goes, it might be possible to avoid the
-> > check somehow, but you'd want to be pretty sure of yourself before
-> > diverging the s390 path further from the common code base, no?
->
-> I don't want to diverge more than necessary. But the performance gains
-> of the SSKE/ISKE avoidance makes it worthwhile for s390, no?
 
-I guess it's worth exploring.
+Aahhhh the beast has been discovered.
+That's pretty cool!! I quess from my side, I'll try what you had
+suggested "btusb".
+("I just have to allocate enough time to do so, ("come on people", get
+out of my way!!"))
+I'm finding myself in one of those days where I'm away from my laptop
+(contingency or not).
+regards;
 
-
-> > The "easy" way to do it might be just unconditionally mark the page
-> > as dirty in this path (if the pte was writeable), so you can avoid
-> > the page_test_dirty check and be sure of not missing the dirty bit.
->
-> Hmm, but then an mprotect() can change the pte to read-ony and we'd miss
-> the dirty bit again. Back to the drawing board.
-
-Hmm, I guess you _could_ set_page_dirty in mprotect.
-
-
-> By the way there is another SSKE I want to get rid of: __SetPageUptodate
-> does a page_clear_dirty(). For all uses of __SetPageUptodate the page
-> will be dirty after the application did its first write. To clear the
-> page dirty bit only to have it set again shortly after doesn't make much
-> sense to me. Has there been any particular reason for the
-> page_clear_dirty in __SetPageUptodate ?
-
-I guess it is just to match SetPageUptodate. Not all __SetPageUptodate
-paths may necessarily dirty the page, FWIW.
+-- 
+Justin P. Mattock
