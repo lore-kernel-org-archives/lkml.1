@@ -1,129 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbYFCW1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759778AbYFCW0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759922AbYFCW1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 18:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbYFCW0b
+	id S1759778AbYFCW0x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 18:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758818AbYFCWZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 18:26:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:33816 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759523AbYFCW0a (ORCPT
+	Tue, 3 Jun 2008 18:25:55 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:19831 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758804AbYFCWZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 18:26:30 -0400
-Date: Tue, 3 Jun 2008 15:25:46 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] doc: add suggestions about good practises for
- maintainers
-Message-Id: <20080603152546.e6fb915e.randy.dunlap@oracle.com>
-In-Reply-To: <20080603053446.GA27148@1wt.eu>
-References: <20080603053446.GA27148@1wt.eu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Jun 2008 18:25:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=Yq5x7+ekKiN5XMA14uduWjTjLQZUhYBencdwTE9PXIZVu8vSssXOOqgrsnSfNl3uZcqcq5C2bjk4eUZLDVoBdMi+zgEpjAmJWWGtOchd0Un6MjSgDC1josrwBcOlZuLdqqdPIR3oYh2fCfFuC5dddUe5SrQ26sRxhclpHyVF8yY=
+Message-ID: <4845C4D2.8050408@gmail.com>
+Date: Wed, 04 Jun 2008 00:25:22 +0200
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
+       Miklos Szeredi <miklos@szeredi.hu>, Al Viro <viro@zeniv.linux.org.uk>,
+       jamie@shareable.org, Ulrich Drepper <drepper@redhat.com>,
+       linux-fsdevel@vger.kernel.org,
+       Subrata Modak <subrata@linux.vnet.ibm.com>
+Subject: [parch 4/4] vfs: utimensat(): fix write access check for futimens()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008 07:34:46 +0200 Willy Tarreau wrote:
+The POSIX.1 draft spec for futimens()/utimensat() says:
 
-> Linus,
-> 
-> I'm proposing the following add-on to SubmittingPatches. I think
-> it clarifies the situation for maintainers and back-porters.
-> 
-> Regards,
-> Willy
-> --
-> 
-> >From 1bf91b1072323ae3150c8962f36092b5b8528c48 Mon Sep 17 00:00:00 2001
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Tue, 3 Jun 2008 00:20:28 +0200
-> Subject: doc: add suggestions about good practises for maintainers
-> 
-> Suggest how to deal with patch modifications caused by
-> merging or back-porting when you're a maintainer.
-> 
-> Signed-off-by: Willy Tarreau <w@1wt.eu>
-> ---
->  Documentation/SubmittingPatches |   46 +++++++++++++++++++++++++++++++++++++++
->  1 files changed, 46 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
-> index 9c93a03..6e7183b 100644
-> --- a/Documentation/SubmittingPatches
-> +++ b/Documentation/SubmittingPatches
-> @@ -327,6 +327,52 @@ Some people also put extra tags at the end.  They'll just be ignored for
->  now, but you can do this to mark internal company procedures or just
->  point out some special detail about the sign-off. 
->  
-> +If you are a subsystem or branch maintainer, sometimes you need to slightly
-> +modify patches you receive in order to merge them, because the code is not
-> +exactly the same in your tree and the submitters'. If you stick strictly to
-> +rule (c), you should ask the submitter to rediff, but this is a totally
-> +counter-productive waste of time and energy. Rule (b) allows you to adjust
-> +the code, but then it is very impolite to change one submitter's code and
-> +make him endorse your bugs. To solve this problem, it is recommended that
-> +you add a line between the last Signed-off-by header and yours, indicating
-> +the nature of your changes. While there is nothing mandatory about this, it
-> +seems like prepending the description with your mail and/or name, all
-> +enclosed in square brackets, is noticeable enough to make it obvious that
-> +you are responsible for last-minute changes. Example :
-> +
-> +	Signed-off-by: Random J Developer <random@developer.example.org>
-> +	[lucky@maintainer.example.org: struct foo moved from foo.c to foo.h]
-> +	Signed-off-by: Lucky K Maintainer <lucky@maintainer.example.org>
-> +
-> +This practise is particularly helpful if you maintain a stable branch and
-> +want at the same time to credit the author, track changes, merge the fix,
-> +and protect the submitter from complaints. Note that under no ciscumstances
+        Only a process with the effective user ID equal to the
+        user ID of the file, *or with write access to the file*,
+        or with appropriate privileges may use futimens() or
+        utimensat() with a null pointer as the times argument
+        or with both tv_nsec fields set to the special value
+        UTIME_NOW.
 
-                                                                 circumstances
+The important piece here is "with write access to the file", and
+this matters for futimens(), which deals with an argument that
+is a file descriptor referring to the file whose timestamps are
+being updated,  The standard is saying that the "writability"
+check is based on the file permissions, not the access mode with
+which the file is opened.  (This behavior is consistent with the
+semantics of FreeBSD's futimes().)  However, Linux is currently
+doing the latter -- futimens(fd, times) is a library
+function implemented as
 
-> +you can change the author's identity (the From header), as it is the one
+       utimensat(fd, NULL, times, 0)
 
-   can you change
+and within the utimensat() implementation we have the code:
 
-> +which appears in the changelog.
-> +
-> +Special note to back-porters. It seems to be a common and useful practise
+                f = fget(dfd);  // dfd is 'fd'
+                ...
+                if (f) {
+                        if (!(f->f_mode & FMODE_WRITE))
+                                goto mnt_drop_write_and_out;
 
-                   back-porters:
+The check should instead be based on the file permissions.
 
-> +to insert an indication of the origin of a patch at the top of the commit
-> +message (just after the subject line) to facilitate tracking. For instance,
-> +here's what we see in 2.6-stable :
-> +
-> +    Date:   Tue May 13 19:10:30 2008 +0000
-> +
-> +        SCSI: libiscsi regression in 2.6.25: fix nop timer handling
-> +
-> +        commit 4cf1043593db6a337f10e006c23c69e5fc93e722 upstream
-> +
-> +And here's what appears in 2.4 :
-> +
-> +    Date:   Tue May 13 22:12:27 2008 +0200
-> +
-> +        wireless, airo: waitbusy() won't delay
-> +
-> +        [backport of 2.6 commit b7acbdfbd1f277c1eb23f344f899cfa4cd0bf36a]
-> +
-> +Whatever the format, this information provides a valuable help to people
-> +tracking your trees, and to people trying to trouble-shoot bugs in your
-> +tree.
-> +
->  
->  13) When to use Acked-by: and Cc:
->  
-> -- 
+Thanks to Miklos for pointing out how to do this check.
 
----
-~Randy
+CC: Miklos Szeredi <miklos@szeredi.hu>
+CC: Al Viro <viro@zeniv.linux.org.uk>
+CC: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
+
+--- linux-2.6.26-rc4/fs/utimes.c	2008-06-03 23:13:31.000000000 +0200
++++ linux-2.6.26-rc4-utimensat-fix-v4/fs/utimes.c	2008-06-03 23:15:12.000000000 +0200
+@@ -137,7 +137,8 @@
+
+ 		if (!is_owner_or_cap(inode)) {
+ 			if (f) {
+-				if (!(f->f_mode & FMODE_WRITE))
++				error = permission(inode, MAY_WRITE, NULL);
++				if (error)
+ 					goto mnt_drop_write_and_out;
+ 			} else {
+ 				error = vfs_permission(&nd, MAY_WRITE);
+
