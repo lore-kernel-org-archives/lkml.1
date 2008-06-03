@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751429AbYFCVfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458AbYFCVlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751429AbYFCVfR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 17:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYFCVfE
+	id S1754458AbYFCVlK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 17:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYFCVlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 17:35:04 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:58311 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbYFCVfD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 17:35:03 -0400
-Date: Tue, 3 Jun 2008 15:35:01 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Trent Piepho <tpiepho@freescale.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080603213501.GD3549@parisc-linux.org>
-References: <1211852026.3286.36.camel@pasglop> <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org> <20080602072403.GA20222@flint.arm.linux.org.uk> <200806031416.18195.nickpiggin@yahoo.com.au> <alpine.LFD.1.10.0806030746190.3473@woody.linux-foundation.org> <Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp> <20080603185541.GB3549@parisc-linux.org> <Pine.LNX.4.64.0806031253180.3242@t2.domain.actdsltmp>
+	Tue, 3 Jun 2008 17:41:00 -0400
+Received: from anubis.ausil.us ([216.75.14.43]:51676 "EHLO mail.ausil.us"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752262AbYFCVlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 17:41:00 -0400
+X-Greylist: delayed 603 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 17:41:00 EDT
+To: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.26-rc1 broke X on SPARC Ultra5
+From: Dennis Gilmore <dennis@ausil.us>
+Date: Tue, 3 Jun 2008 16:30:30 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806031253180.3242@t2.domain.actdsltmp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart2987902.khisIloDI5";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200806031630.36487.dennis@ausil.us>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 03, 2008 at 12:57:56PM -0700, Trent Piepho wrote:
-> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
-> >On Tue, Jun 03, 2008 at 11:47:00AM -0700, Trent Piepho wrote:
-> >>On Tue, 3 Jun 2008, Linus Torvalds wrote:
-> >>>On Tue, 3 Jun 2008, Nick Piggin wrote:
-> >>>>
-> >>>>Linus: on x86, memory operations to wc and wc+ memory are not ordered
-> >>>>with one another, or operations to other memory types (ie. load/load
-> >>>>and store/store reordering is allowed). Also, as you know, store/load
-> >>>>reordering is explicitly allowed as well, which covers all memory
-> >>>>types. So perhaps it is not quite true to say readl/writel is strongly
-> >>>>ordered by default even on x86. You would have to put in some
-> >>>>mfence instructions in them to make it so.
-> >>
-> >>So on x86, these could be re-ordered?
-> >>
-> >>writel(START_OPERATION, CONTROL_REGISTER);
-> >>status = readl(STATUS_REGISTER);
-> >
-> >You wouldn't ask for write-combining memory mapping for control or
-> >status registers.
-> 
-> But Nick said, "store/load reordering is explicitly allowed as well, which
-> covers *all* memory types."
+--nextPart2987902.khisIloDI5
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Then Nick is confused.  PCI only defines one way to flush posted writes
-to a device -- doing a read from it.  There's no way that reads can
-be allowed to pass writes (unless you've asked for it, like with write
-combining).
+On Tuesday 03 June 2008, you wrote:
+> From: Mikael Pettersson <mikpe@it.uu.se>
+> Date: Tue, 3 Jun 2008 21:26:35 +0200
+>
+> > It's a shame though that a bug fix needs to have such draconian
+> > consequences.
+>
+> I agree, but the way the X server (tried to) work on sparc before
+> libpciaccess was even more draconian.
+> --
+> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+well i can confirm that X server 1.5 works fine on 2.6.25.4  not that its=20
+unexpected.
+
+Dennis
+
+--nextPart2987902.khisIloDI5
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkhFt/wACgkQkSxm47BaWfdSbgCePhNny1O9esiPnT6bko36zoRp
+KcEAnAg1FNs4OaocNCn5xwON1azuDdct
+=SngN
+-----END PGP SIGNATURE-----
+
+--nextPart2987902.khisIloDI5--
