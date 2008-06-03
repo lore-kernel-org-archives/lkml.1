@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYFCQmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYFCQtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbYFCQmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 12:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYFCQmM
+	id S1754172AbYFCQtN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYFCQs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 12:42:12 -0400
-Received: from saeurebad.de ([85.214.36.134]:51013 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbYFCQmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 12:42:12 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>, pavel@suse.cz,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] add a printk_init variant storing format strings in __initdata
-References: <20080529162257.03426e48.akpm@linux-foundation.org>
-	<1212485252.0@pinky>
-Date: Tue, 03 Jun 2008 18:41:31 +0200
-In-Reply-To: <1212485252.0@pinky> (Andy Whitcroft's message of "Tue, 3 Jun
-	2008 10:27:32 +0100")
-Message-ID: <87r6beh3no.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	Tue, 3 Jun 2008 12:48:57 -0400
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:49984 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751377AbYFCQs5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 12:48:57 -0400
+Subject: Re: [PATCH 0/3] have pooled sunrpc services make more intelligent
+	allocations
+From: Tom Tucker <tom@opengridcomputing.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       bfields@fieldses.org
+In-Reply-To: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
+References: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
+Content-Type: text/plain
+Organization: Open Grid Computing, Inc.
+Date: Tue, 03 Jun 2008 11:53:42 -0500
+Message-Id: <1212512022.29133.18.camel@trinity.ogc.int>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jeff:
 
-Andy Whitcroft <apw@shadowen.org> writes:
+This brings up an interesting issue with the RDMA transport and
+RDMA_READ. RDMA_READ is submitted as part of fetching an RPC from the
+client (e.g. NFS_WRITE). The xpo_recvfrom function doesn't block waiting
+for the RDMA_READ to complete, but rather queues the RPC for subsequent
+processing when the I/O completes and returns 0. 
 
-> [As gcc seems unable to help us out selecting the appropriate data segment
-> for the code, how about we did something like this?]
->
-> When using printk from __init functions it would be desirable to place
-> the printk format strings in __initdata.  Add a printk_init() variant
-> which does this.
+I can use these new services to allocate CPU local pages for this I/O.
+So far, so good. However, when the I/O completes, and the transport is
+rescheduled for subsequent RPC completion processing, the pool/CPU that
+is elected doesn't have any affinity for the CPU on which the I/O was
+initially submitted. I think this means that the svc_process/reply steps
+may occur on a CPU far away from the memory in which the data resides.
 
-http://lkml.org/lkml/2008/2/4/185
+Am I making sense here? If so, any thoughts on what could/should be
+done?
 
-I don't know if `desirable' is the technical argument Sam wants to hear :)
+Thanks,
+Tom
 
-	Hannes
+On Tue, 2008-06-03 at 07:16 -0400, Jeff Layton wrote:
+> The sunrpc code has had some support for spreading pooled services over
+> different NUMA nodes and CPUs for some time. So far though, this support
+> has been for CPU masks only. Memory allocated for these services is
+> generally done by whatever CPU happens to be running the init script
+> that starts the services and so most of it ends up on the same NUMA node.
+> This means that nfsd's end up wasting a lot of time updating remote
+> memory on a different memory node.
+> 
+> This patchset attempts to remedy that by having pooled services make
+> per-thread allocations that are on their local memory node. I have no
+> hard performance numbers for this particular patchset, but Greg Banks
+> sent me a different patch that has a similar effect and claims that
+> there is a significant performance gain.
+> 
+> Comments and suggestions appreciated...
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
