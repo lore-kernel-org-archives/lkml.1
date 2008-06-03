@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYFCF33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYFCFfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbYFCF33 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 01:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYFCF3U
+	id S1755421AbYFCFfH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 01:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYFCFez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 01:29:20 -0400
-Received: from mail00a.mail.t-online.hu ([84.2.40.5]:51287 "EHLO
-	mail00a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbYFCF3U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 01:29:20 -0400
-X-Greylist: delayed 664 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 01:29:20 EDT
-Message-ID: <4844D414.7010402@freemail.hu>
-Date: Tue, 03 Jun 2008 07:18:12 +0200
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [regression][bisected] ~90,000 wakeups as of 2.6.26-rc3
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00a.mail.t-online.hu 32710; Body=3 Fuz1=3
-	Fuz2=3
+	Tue, 3 Jun 2008 01:34:55 -0400
+Received: from 1wt.eu ([62.212.114.60]:1423 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751432AbYFCFey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 01:34:54 -0400
+Date: Tue, 3 Jun 2008 07:34:46 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: torvalds@linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] doc: add suggestions about good practises for maintainers
+Message-ID: <20080603053446.GA27148@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus,
 
-there is a problem in 2.6.26-rc3 which was not there in case of
-2.6.25: the CPU wakes up ~90,000 times per sec instead of ~60 per sec.
-
-I also "git bisected" the problem, the result is:
-
-6e908947b4995bc0e551a8257c586d5c3e428201 is first bad commit
-commit 6e908947b4995bc0e551a8257c586d5c3e428201
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Fri Mar 21 14:32:36 2008 +0100
-
-    x86: fix ioapic bug again
-
-    un-revert:
-
-     commit 4960c9df1407c2723459c60ff13e6efe0c209c62
-     Author: Thomas Gleixner <tglx@linutronix.de>
-     Date:   Tue Jan 22 10:23:01 2008 +0100
-
-         Revert "x86: fix NMI watchdog & 'stopped time' problem"
-
-             This reverts commit d4d25deca49ec2527a634557bf5a6cf449f85deb.
-
-    needs a proper fix though ...
-
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-:040000 040000 02918f7e330d004e1dd4c6fbb340ba4e353916df
-7f9969e324e5982ebf232bb9e5f5c27f208f977b M      arch
-
-
-For more details please see: http://bugzilla.kernel.org/show_bug.cgi?id=9489
+I'm proposing the following add-on to SubmittingPatches. I think
+it clarifies the situation for maintainers and back-porters.
 
 Regards,
+Willy
+--
 
-	Márton Németh
+>From 1bf91b1072323ae3150c8962f36092b5b8528c48 Mon Sep 17 00:00:00 2001
+From: Willy Tarreau <w@1wt.eu>
+Date: Tue, 3 Jun 2008 00:20:28 +0200
+Subject: doc: add suggestions about good practises for maintainers
+
+Suggest how to deal with patch modifications caused by
+merging or back-porting when you're a maintainer.
+
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+---
+ Documentation/SubmittingPatches |   46 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 46 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
+index 9c93a03..6e7183b 100644
+--- a/Documentation/SubmittingPatches
++++ b/Documentation/SubmittingPatches
+@@ -327,6 +327,52 @@ Some people also put extra tags at the end.  They'll just be ignored for
+ now, but you can do this to mark internal company procedures or just
+ point out some special detail about the sign-off. 
+ 
++If you are a subsystem or branch maintainer, sometimes you need to slightly
++modify patches you receive in order to merge them, because the code is not
++exactly the same in your tree and the submitters'. If you stick strictly to
++rule (c), you should ask the submitter to rediff, but this is a totally
++counter-productive waste of time and energy. Rule (b) allows you to adjust
++the code, but then it is very impolite to change one submitter's code and
++make him endorse your bugs. To solve this problem, it is recommended that
++you add a line between the last Signed-off-by header and yours, indicating
++the nature of your changes. While there is nothing mandatory about this, it
++seems like prepending the description with your mail and/or name, all
++enclosed in square brackets, is noticeable enough to make it obvious that
++you are responsible for last-minute changes. Example :
++
++	Signed-off-by: Random J Developer <random@developer.example.org>
++	[lucky@maintainer.example.org: struct foo moved from foo.c to foo.h]
++	Signed-off-by: Lucky K Maintainer <lucky@maintainer.example.org>
++
++This practise is particularly helpful if you maintain a stable branch and
++want at the same time to credit the author, track changes, merge the fix,
++and protect the submitter from complaints. Note that under no ciscumstances
++you can change the author's identity (the From header), as it is the one
++which appears in the changelog.
++
++Special note to back-porters. It seems to be a common and useful practise
++to insert an indication of the origin of a patch at the top of the commit
++message (just after the subject line) to facilitate tracking. For instance,
++here's what we see in 2.6-stable :
++
++    Date:   Tue May 13 19:10:30 2008 +0000
++
++        SCSI: libiscsi regression in 2.6.25: fix nop timer handling
++
++        commit 4cf1043593db6a337f10e006c23c69e5fc93e722 upstream
++
++And here's what appears in 2.4 :
++
++    Date:   Tue May 13 22:12:27 2008 +0200
++
++        wireless, airo: waitbusy() won't delay
++
++        [backport of 2.6 commit b7acbdfbd1f277c1eb23f344f899cfa4cd0bf36a]
++
++Whatever the format, this information provides a valuable help to people
++tracking your trees, and to people trying to trouble-shoot bugs in your
++tree.
++
+ 
+ 13) When to use Acked-by: and Cc:
+ 
+-- 
+1.5.3.8
+
+
+----- End forwarded message -----
