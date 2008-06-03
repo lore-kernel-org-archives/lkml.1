@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbYFCO34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbYFCOa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbYFCO34 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 10:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbYFCO3t
+	id S1757644AbYFCOa2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 10:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbYFCOaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 10:29:49 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:33012 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbYFCO3s (ORCPT
+	Tue, 3 Jun 2008 10:30:06 -0400
+Received: from s131.mittwaldmedien.de ([62.216.178.31]:14929 "EHLO
+	s131.mittwaldmedien.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757441AbYFCOaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 10:29:48 -0400
-Message-ID: <484554EE.6020007@s5r6.in-berlin.de>
-Date: Tue, 03 Jun 2008 16:27:58 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Tue, 3 Jun 2008 10:30:04 -0400
+X-Greylist: delayed 1405 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 10:30:04 EDT
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
+To: linux-tiny@selenic.com
+Subject: Re: [PATCH] console - Add configurable support for console charset translation
+Date: Tue, 3 Jun 2008 16:06:29 +0200
+User-Agent: KMail/1.9.7
+Cc: David Woodhouse <dwmw2@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>
+References: <48447615.5050806@am.sony.com> <1212500751.16924.322.camel@pmac.infradead.org>
+In-Reply-To: <1212500751.16924.322.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Rick van Rein <rick@groengemak.nl>, daniel.blueman@gmail.com,
-       david@lang.hm, linux-kernel@vger.kernel.org
-Subject: Re: Future Linux on Bistable Storage
-References: <20080602125904.GA15129@phantom.vanrein.org> <87prqzvc17.fsf@basil.nowhere.org> <20080602211027.GB18415@phantom.vanrein.org> <484495A7.6010006@firstfloor.org>
-In-Reply-To: <484495A7.6010006@firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806031606.29574.hs4233@mail.mn-solutions.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Rick van Rein wrote:
->>> Rick van Rein <rick@groengemak.nl> writes:
->>>> Regarding I/O init: Current Linux boots while initiating one device at a
->>>> time.  Some degree of serialism must exist, but after scanning a bus would
->>>> it not be possible to fork threads to initiate each of the devices found
->>>> on it?
->>> 
->>> Multithreaded driver initialization has been tried, but reverted
->>> because it triggered too many driver bugs.
->>> 
->> Thanks for your responses.  You convinced me I/O initiatilisation cannot
->> be improved upon.
-> 
-> I'm sure it can. It's just significant work to do it and would need
-> to be done step by step. It's a bit like the "remove BKL everywhere"
-> project.
+Maybe change the Kconfig entry so that:
 
-Several bus subsystems actually probe asynchronously (i.e. in parallel
-to other bus subsystems) or even with some degree of internal parallelism.
-
-Of course there are notable benefits in this only if the devices are
-very slow to start up --- e.g. because they contain moving parts (this
-kind of devices is not present in Rick's setup) or because they are
-connected via high latency interconnects --- or if there is a massive
-number of devices.
--- 
-Stefan Richter
--=====-==--- -==- ---==
-http://arcgraph.de/sr/
+* with CONFIG_EMBEDDED=y it's configuration
+* with CONFIG_EMBEDDED=n it's on by default
