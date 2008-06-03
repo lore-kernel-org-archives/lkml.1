@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbYFCQzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYFCQ4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbYFCQzt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 12:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYFCQzm
+	id S1755859AbYFCQ4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbYFCQ4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 12:55:42 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:36223 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbYFCQzl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 12:55:41 -0400
-Subject: Re: [PATCH -mm] x86 calgary: fix handling of devces that aren't
-	behind the Calgary
-From: Alexis Bruemmer <alexisb@us.ibm.com>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org
-In-Reply-To: <20080603052146.GI7011@il.ibm.com>
-References: <20080531133114P.tomof@acm.org>
-	 <20080603052146.GI7011@il.ibm.com>
-Content-Type: text/plain
-Date: Tue, 03 Jun 2008 09:55:37 -0700
-Message-Id: <1212512137.8567.43.camel@alexis>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 12:56:08 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38091 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751708AbYFCQ4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 12:56:06 -0400
+Date: Tue, 3 Jun 2008 18:56:37 +0200
+From: Olaf Dabrunz <od@suse.de>
+To: Jon Masters <jcm@redhat.com>
+Cc: Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Stefan Assmann <sassmann@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+Message-ID: <20080603165637.GD16200@suse.de>
+Mail-Followup-To: Jon Masters <jcm@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+	"H. Peter Anvin" <hpa@zytor.com>, Stefan Assmann <sassmann@suse.de>,
+	linux-kernel@vger.kernel.org
+References: <12124107071847-git-send-email-od@suse.de> <1212508321.22357.13.camel@londonpacket.bos.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1212508321.22357.13.camel@londonpacket.bos.redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-03 at 08:21 +0300, Muli Ben-Yehuda wrote:
-> On Sat, May 31, 2008 at 01:31:33PM +0900, FUJITA Tomonori wrote:
-> 
-> > The calgary code can give drivers addresses above 4GB which is very
-> > bad for hardware that is only 32bit DMA addressable:
-> > 
-> > http://lkml.org/lkml/2008/5/8/423
-> > 
-> > This patch tries to fix the problem by using per-device
-> > dma_mapping_ops support. This fixes the calgary code to use swiotlb
-> > or nommu properly for devices which are not behind the
-> > Calgary/CalIOC2.
-> > 
-> > With this patch, the calgary code sets the global dma_ops to swiotlb
-> > or nommu, and the dma_ops of devices behind the Calgary/CalIOC2 to
-> > calgary_dma_ops. So the calgary code can handle devices safely that
-> > aren't behind the Calgary/CalIOC2.
-> 
-> This seems a little backward to me. I thought we were going to get rid
-> of the global dma_ops? If not, assuming going through the global one
-> would be more efficient, Calgary should be the global one and
-> nommu/swiotlb should be used on devices that do not have translation
-> enabled. The reason why is that the majority of devices on a Calgary
-> system, assuming Calgary is in use, will have translation enabled.
-> 
-> In general the patch looks good, barring the point above. We'll give
-> it a spin on some Calgary/CalIOC2 machines.
-Initial testing on a CalIO2 box this patch causes the machine not to
-boot (and this time I tested the base 2.6.26-rc4 + FUJITA 2 per deive
-dma_ops patches first and it boots just fine).  Here is a bit of the
-dump from the failed boot:
+On 03-Jun-08, Jon Masters wrote:
+> I like the patch series, insomuch as the intention is good, and it does
+> away with the special PCI IRQ quirk patches some of us are carrying in
+> our vendor trees to temporarily workaround this problem[0]. Also, I'm
+> extremely impressed with the research that went into this, since I
+> repeatedly tried to get ahold of information about disabling this
+> unfortunate "feature" of various bridges, without much success.
 
-Loading megaraid_sas
-[17180656.651128] megasas: 00.00.03.20-rc1 Mon. March 10 11:02:31 PDT 2008
-[17180656.657866] megasas: 0x1000:0x0060:0x1014:0x0363: bus 4:slot 0:func 0
-[17180656.663899] ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 46 (level, low) -> IRQ 46
-[17180656.673677] megasas: FW now in Ready state
-[17180657.774102] Calgary: DMA error on CalIOC2 PHB 0x3
-[17180657.779171] Calgary: 0x02000000@CSR 0x00000000@PLSSR 0xb0008000@CSMR 0x00000000@MCK
-[17180657.787212] Calgary: 0x00000000@0x810 0xf6200000@0x820 0xf6200040@0x830 0x00000000@0x840 0x06000000@0x850 0x00000000@0x860 0x00000000@0x870 
-[17180657.801629] Calgary: 0x00000000@0xcb0
+Thanks a lot. :)
 
-Adding some quick debug code it seems that the megaraid controller is
-not getting its dev->dev.archdata.dma_ops set to calgary_dma_ops.  I am
-not sure why, but will keep digging.  Any ideas?
+BTW, your blog was really helpful to get up to speed on this again. :)
+(I read about (RT) IRQ problems a looong time ago on lkml... ;))
 
---Alexis
+We also looked through the code and added tests to make sure that
+IRQ-handling works correctly and to test a few theories. We became
+relatively convinced that the code was correct. Then we thought the
+failures were too systematic to be caused by glitches. Always the same
+IRQs were triggered, and only when the "original" ones were masked.
+
+We found first answers in the i6700PXH datasheet. After the first
+reroute patch worked, the rest was about finding similar answers for
+other chipsets.
+
+> However, I really am not happy with the implementation as it stands. The
+> duplicated table of quirks that doesn't really fit in with the existing
+> PCI quirks infrastructure, the weird naming of the kernel options, and
+> various other things that Thomas has already mentioned in his reply.
+> Therefore, I think this needs a bit more reworking before going in.
+
+Yep. We are working on it. Thanks for your comments. :)
+
+> Thanks!
 > 
-> Cheers,
-> Muli
+> Jon.
 > 
-> 
+> [0] The real fix come when we move IRQ handling in RT to per-device
+> threads, as is the longer term intention. Then you can quiesse the
+> device immediately and not the mask/unmask cycle that fails here.
+
+Yes, per-device threads help with the latency. I believe the boot irq
+patches here can then make drivers work that do not (yet) use the new
+approach. Also, I am not sure so far whether all devices can quiesce
+their IRQs on the device without introducing possible loss of IRQs --
+but that is just theory (or FUD? BS? oh-oh *duck*), so please don't
+mind... :}
+
+Thanks,
+
+-- 
+Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
 
