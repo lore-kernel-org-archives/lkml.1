@@ -1,97 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYFCDcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYFCDf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbYFCDcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 23:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYFCDcE
+	id S1755184AbYFCDf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 23:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYFCDfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 23:32:04 -0400
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:37772 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbYFCDcB (ORCPT
+	Mon, 2 Jun 2008 23:35:20 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:41354 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752231AbYFCDfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 23:32:01 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5308"; a="3454377"
-Message-ID: <4844BB41.7000605@qualcomm.com>
-Date: Mon, 02 Jun 2008 20:32:17 -0700
+	Mon, 2 Jun 2008 23:35:19 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5308"; a="3628319"
+Message-ID: <4844BC0B.4070809@qualcomm.com>
+Date: Mon, 02 Jun 2008 20:35:39 -0700
 From: Max Krasnyansky <maxk@qualcomm.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Ingo Oeser <ioe-lkml@rameria.de>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       "Derek L. Fults" <dfults@sgi.com>, devik <devik@cdi.cz>,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>, "Randy.Dunlap" <rddunlap@osdl.org>,
-       suresh.b.siddha@intel.com, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
- have realtime uses)
-References: <20080601213019.14ea8ef8.pj@sgi.com> <1212446707.6269.26.camel@lappy.programming.kicks-ass.net> <48447C75.8040203@qualcomm.com> <200806030156.00155.ioe-lkml@rameria.de>
-In-Reply-To: <200806030156.00155.ioe-lkml@rameria.de>
+To: Natalie Protasevich <protasnb@gmail.com>
+CC: "Zabele, Stephen (US SSA)" <steve.zabele@baesystems.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Submitting fixes for bugs: Re: tun device patch for IPv6
+References: <32209efe0806020804m751d71c4k1fe8339627f6dbd1@mail.gmail.com>
+In-Reply-To: <32209efe0806020804m751d71c4k1fe8339627f6dbd1@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Ingo Oeser wrote:
-> Hi Max,
-> Hi Peter,
-> 
-> On Tuesday 03 June 2008, Max Krasnyansky wrote:
->> Ingo, I just wanted to elaborate on what Peter is saying. That CPU will still
->> have to be _booted_ properly. It may be used for hard- and soft- interrupt
->> processing, workqueues (internal kernel queuing mechanism) and kernel timers.
-> 
-> Oh! Didn't know that user process scheduling is so much 
-Not sure what you meant here. Stuff that I listed has nothing to do with user
-process scheduling.
-
->> In your particular case you're much much much better off with doing
->> 	echo 0 > /sys/devices/system/cpuN/online
->> either during initrd stage or as a first init script.
->> That way bad cpu will be _completely_ disabled.
-> 
-> The initrd is from the distribution. I have no sane way to change it
-> fast and permanent. Can I change the initrd and still have a certified
-> RHEL or SLES? Are there initrd hooks, which survive packet installation?
-That's why I mentioned "first init" script. You can create a simple init.d
-compliant script that runs with priority 0 (see /etc/init.d/network for
-example). That should be early enough.
-
-> I would really appreciate some way to keep the kernel from using 
-> a CPU at all to do fault isolation. If possible not even booting it.
-How does isolcpu= boot option helps in this case ?
-I suppose the closes option is maxcpus=. We can probably add ignorecpus= or
-something to handle your use case but it has nothing to do with isolcpus=.
-
-> Bootparameters survived all distro fiddling so far. I love them!
-So do custom init.d scripts.
-
-> 
-> Try to convince a hardware vendor, that you don't have a software bug.
-> Try to convince him that you didn't break the hardware by swapping it around.
-> 
-> So I'll ACK removing isolcpus, if we get a better replacement boot option.
-I think you're missing the point here. It's like saying
-"Lets not switch to electric cars because I use gasoline to kill weeds".
-
-As I mentioned before, cpus listed in the isolcpus= boot option will still
-handle hard-/soft- irqs, kernel work, kernel timers. You are much better off
-using cpu hotplug (ie putting bad cpu offline). Feel free to propose
-ignorecpus= option in a separate thread.
+btw I naked similar patch a couple of times already.
+TUN driver provide PI (protocol info) extension that lets uses set packet
+type. Please use that instead.
 
 Max
 
-
-
-
-
+Natalie Protasevich wrote:
+> On Mon, Jun 2, 2008 at 6:53 AM, Zabele, Stephen (US SSA)
+> <steve.zabele@baesystems.com> wrote:
+>> Natalie,
+>>
+>>> Steve,
+>>> Can you please submit the patch to LKML and to Maxim
+>> (maxk@qualcomm.com) >via email (if you haven't already)?
+>>
+>> The patch is accessible from the bottom of the bugzilla web page, but
+>> I'm also providing it again here for reference. I' not sure how to
+>> submit it to LKML other than through the bugzilla mechanism. Can you
+>> provide me a pointer??
+>>
+>> Thanks!
+>>
+>> Steve
+>>
+> 
+> Hi Steve,
+> This issue is pretty generic. Bug reporters often produce fixes, that
+> remain in bugzilla not being harvested, simply because bugzilla is not
+> designed for submitting patches. Even developers who work on bugzilla
+> and leave their patches attached to the bug don't get those
+> incorporated until they submit it conventional way.
+> 
+> To submit the patch properly follow
+> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt. There are
+> other pointers like http://linux.yyz.us/patch-format.html,
+> http://lxr.linux.no/linux/Documentation/SubmittingPatches. You can
+> look at any submitted patch as a sample and examine the format; note
+> that added/changed/removed lines produced with diffstat.
+> 
+> Maintainers deal with great number of patches, so in order to be able
+> to use your patch they have go receive it in proper format i.e. with
+> conventional comments and headers, such that it complies with source
+> keeping process (not mentioning that it should apply to latest tree,
+> so they don't have to port it...)
+> Any patch that fixes a problem is valuable, so by submitting it proper
+> way you'll make sure (1) your patch will get the best review possible
+> (2)  you will get proper credit for it. Then you post it to LKML and
+> CC to subsystem maintainer and/or developers heavily involved with
+> this module.
+> Thanks,
+> --Natalie
+> 
+>> --- Cut here ---
+>>
+>> --- a/drivers/net/tun.c 2008-02-11 01:06:32.000000000 -0500
+>> +++ b/drivers/net/tun.c 2008-03-18 15:30:55.000000000 -0400
+>> @@ -243,8 +243,26 @@
+>>
+>>                if(memcpy_fromiovec((void *)&pi, iv, sizeof(pi)))
+>>                        return -EFAULT;
+>> -       }
+>> -
+>> +
+>> +        } else if ((tun->flags & TUN_TYPE_MASK) == TUN_TUN_DEV) {
+>> +                if (iv->iov_len) {
+>> +                        unsigned char verbuf;
+>> +
+>> +                        if (copy_from_user((void *)&verbuf,
+>> iv->iov_base, sizeof(verbuf)))
+>> +                                return -EFAULT;
+>> +
+>> +                        switch (verbuf & 0xf0) {
+>> +                          case 0x40:
+>> +                            break;
+>> +                          case 0x60:
+>> +                            pi.proto = htons(ETH_P_IPV6);
+>> +                            break;
+>> +                          default:
+>> +                            return -EINVAL;
+>> +                        }
+>> +                }
+>> +        }
+>> +
+>>        if ((tun->flags & TUN_TYPE_MASK) == TUN_TAP_DEV)
+>>                align = NET_IP_ALIGN;
+>>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
