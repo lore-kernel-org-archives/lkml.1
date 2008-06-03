@@ -1,428 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbYFCRKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbYFCRLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbYFCRKq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 13:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbYFCRG3
+	id S1758284AbYFCRLA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 13:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbYFCRIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 13:06:29 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:10471 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756301AbYFCRGY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 13:06:24 -0400
-Message-Id: <20080603170520.765534673@de.ibm.com>
-References: <20080603165859.107949986@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 03 Jun 2008 18:59:09 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 10/14] cio: provide helper functions for fcx enabled I/O
-Content-Disposition: inline; filename=109-fcx-helper.diff
+	Tue, 3 Jun 2008 13:08:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39014 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756502AbYFCRIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 13:08:10 -0400
+Date: Tue, 3 Jun 2008 19:08:41 +0200
+From: Olaf Dabrunz <od@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Olaf Dabrunz <od@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jon Masters <jonathan@jonmasters.org>,
+       Stefan Assmann <sassmann@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+Message-ID: <20080603170841.GI27585@suse.de>
+Mail-Followup-To: Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+	Jon Masters <jonathan@jonmasters.org>,
+	Stefan Assmann <sassmann@suse.de>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <12124107071847-git-send-email-od@suse.de> <alpine.LFD.1.10.0806031201010.3235@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.1.10.0806031201010.3235@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Hello Thomas, :)
 
-Provide functions which can be used to incrementally construct fcx
-enabled I/O control blocks.
+On 03-Jun-08, Thomas Gleixner wrote:
+> Olaf,
+> 
+> On Mon, 2 Jun 2008, Olaf Dabrunz wrote:
+> > These patches are against linux-2.6-tip, auto-x86-next.
+> > 
+> > When IRQ lines on secondary or higher IO-APICs are masked (as done by
+> > RT and others), many chipsets redirect IRQs on this line to the PIC, and
+> > thereby regularly to the first IO-APIC in the system. This causes
+> > spurious interrupts and can lead to disabled IRQ lines.
+> > 
+> > Disabling this "boot interrupt" (as it is mostly used to supply all
+> > IRQs to the legacy PIC during boot) is chipset-specific, and not
+> > possible for all chips. This patchset disables the boot interrupt on
+> > chipsets where this is possible and where we know how to do it.
+> > 
+> > When disabling the boot interrupt is not possible, the patches tell the
+> > IRQ code to always use the redirected interrupt line (on the first
+> > IO-APIC) instead of the "original" line on the secondary (tertiary ...)
+> > IO-APIC. The original line remains masked, and IRQs always appear on
+> > the boot interrupt line on the first IO-APIC instead.
+> 
+> Thanks for doing the research on this problem. 
+> 
+> We probably don't want to enable this unconditionally right away, so
+> we should have a command line option which enables these quirks.
 
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Is this part of the process (sth like: keep it disabled until we trust
+it)?
 
- drivers/s390/cio/Makefile |    3 
- drivers/s390/cio/itcw.c   |  327 ++++++++++++++++++++++++++++++++++++++++++++++
- include/asm-s390/itcw.h   |   30 ++++
- 3 files changed, 359 insertions(+), 1 deletion(-)
+Otherwise I would suggest to enable the "disable-quirks" by default
+(when we use the APICs), and to disable the reroute stuff by default
+until people trust it.
 
-Index: quilt-2.6/drivers/s390/cio/itcw.c
-===================================================================
---- /dev/null
-+++ quilt-2.6/drivers/s390/cio/itcw.c
-@@ -0,0 +1,327 @@
-+/*
-+ *  Functions for incremental construction of fcx enabled I/O control blocks.
-+ *
-+ *    Copyright IBM Corp. 2008
-+ *    Author(s): Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/string.h>
-+#include <linux/errno.h>
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <asm/fcx.h>
-+#include <asm/itcw.h>
-+
-+/**
-+ * struct itcw - incremental tcw helper data type
-+ *
-+ * This structure serves as a handle for the incremental construction of a
-+ * tcw and associated tccb, tsb, data tidaw-list plus an optional interrogate
-+ * tcw and associated data. The data structures are contained inside a single
-+ * contiguous buffer provided by the user.
-+ *
-+ * The itcw construction functions take care of overall data integrity:
-+ * - reset unused fields to zero
-+ * - fill in required pointers
-+ * - ensure required alignment for data structures
-+ * - prevent data structures to cross 4k-byte boundary where required
-+ * - calculate tccb-related length fields
-+ * - optionally provide ready-made interrogate tcw and associated structures
-+ *
-+ * Restrictions apply to the itcws created with these construction functions:
-+ * - tida only supported for data address, not for tccb
-+ * - only contiguous tidaw-lists (no ttic)
-+ * - total number of bytes required per itcw may not exceed 4k bytes
-+ * - either read or write operation (may not work with r=0 and w=0)
-+ *
-+ * Example:
-+ * struct itcw *itcw;
-+ * void *buffer;
-+ * size_t size;
-+ *
-+ * size = itcw_calc_size(1, 2, 0);
-+ * buffer = kmalloc(size, GFP_DMA);
-+ * if (!buffer)
-+ *	return -ENOMEM;
-+ * itcw = itcw_init(buffer, size, ITCW_OP_READ, 1, 2, 0);
-+ * if (IS_ERR(itcw))
-+ *	return PTR_ER(itcw);
-+ * itcw_add_dcw(itcw, 0x2, 0, NULL, 0, 72);
-+ * itcw_add_tidaw(itcw, 0, 0x30000, 20);
-+ * itcw_add_tidaw(itcw, 0, 0x40000, 52);
-+ * itcw_finalize(itcw);
-+ *
-+ */
-+struct itcw {
-+	struct tcw *tcw;
-+	struct tcw *intrg_tcw;
-+	int num_tidaws;
-+	int max_tidaws;
-+	int intrg_num_tidaws;
-+	int intrg_max_tidaws;
-+};
-+
-+/**
-+ * itcw_get_tcw - return pointer to tcw associated with the itcw
-+ * @itcw: address of the itcw
-+ *
-+ * Return pointer to the tcw associated with the itcw.
-+ */
-+struct tcw *itcw_get_tcw(struct itcw *itcw)
-+{
-+	return itcw->tcw;
-+}
-+EXPORT_SYMBOL(itcw_get_tcw);
-+
-+/**
-+ * itcw_calc_size - return the size of an itcw with the given parameters
-+ * @intrg: if non-zero, add an interrogate tcw
-+ * @max_tidaws: maximum number of tidaws to be used for data addressing or zero
-+ * if no tida is to be used.
-+ * @intrg_max_tidaws: maximum number of tidaws to be used for data addressing
-+ * by the interrogate tcw, if specified
-+ *
-+ * Calculate and return the number of bytes required to hold an itcw with the
-+ * given parameters and assuming tccbs with maximum size.
-+ *
-+ * Note that the resulting size also contains bytes needed for alignment
-+ * padding as well as padding to ensure that data structures don't cross a
-+ * 4k-boundary where required.
-+ */
-+size_t itcw_calc_size(int intrg, int max_tidaws, int intrg_max_tidaws)
-+{
-+	size_t len;
-+
-+	/* Main data. */
-+	len = sizeof(struct itcw);
-+	len += /* TCW */ sizeof(struct tcw) + /* TCCB */ TCCB_MAX_SIZE +
-+	       /* TSB */ sizeof(struct tsb) +
-+	       /* TIDAL */ max_tidaws * sizeof(struct tidaw);
-+	/* Interrogate data. */
-+	if (intrg) {
-+		len += /* TCW */ sizeof(struct tcw) + /* TCCB */ TCCB_MAX_SIZE +
-+		       /* TSB */ sizeof(struct tsb) +
-+		       /* TIDAL */ intrg_max_tidaws * sizeof(struct tidaw);
-+	}
-+	/* Maximum required alignment padding. */
-+	len += /* Initial TCW */ 63 + /* Interrogate TCCB */ 7;
-+	/* Maximum padding for structures that may not cross 4k boundary. */
-+	if ((max_tidaws > 0) || (intrg_max_tidaws > 0))
-+		len += max(max_tidaws, intrg_max_tidaws) *
-+		       sizeof(struct tidaw) - 1;
-+	return len;
-+}
-+EXPORT_SYMBOL(itcw_calc_size);
-+
-+#define CROSS4K(x, l)	(((x) & ~4095) != ((x + l) & ~4095))
-+
-+static inline void *fit_chunk(addr_t *start, addr_t end, size_t len,
-+			      int align, int check_4k)
-+{
-+	addr_t addr;
-+
-+	addr = ALIGN(*start, align);
-+	if (check_4k && CROSS4K(addr, len)) {
-+		addr = ALIGN(addr, 4096);
-+		addr = ALIGN(addr, align);
-+	}
-+	if (addr + len > end)
-+		return ERR_PTR(-ENOSPC);
-+	*start = addr + len;
-+	return (void *) addr;
-+}
-+
-+/**
-+ * itcw_init - initialize incremental tcw data structure
-+ * @buffer: address of buffer to use for data structures
-+ * @size: number of bytes in buffer
-+ * @op: %ITCW_OP_READ for a read operation tcw, %ITCW_OP_WRITE for a write
-+ * operation tcw
-+ * @intrg: if non-zero, add and initialize an interrogate tcw
-+ * @max_tidaws: maximum number of tidaws to be used for data addressing or zero
-+ * if no tida is to be used.
-+ * @intrg_max_tidaws: maximum number of tidaws to be used for data addressing
-+ * by the interrogate tcw, if specified
-+ *
-+ * Prepare the specified buffer to be used as an incremental tcw, i.e. a
-+ * helper data structure that can be used to construct a valid tcw by
-+ * successive calls to other helper functions. Note: the buffer needs to be
-+ * located below the 2G address limit. The resulting tcw has the following
-+ * restrictions:
-+ *  - no tccb tidal
-+ *  - input/output tidal is contiguous (no ttic)
-+ *  - total data should not exceed 4k
-+ *  - tcw specifies either read or write operation
-+ *
-+ * On success, return pointer to the resulting incremental tcw data structure,
-+ * ERR_PTR otherwise.
-+ */
-+struct itcw *itcw_init(void *buffer, size_t size, int op, int intrg,
-+		       int max_tidaws, int intrg_max_tidaws)
-+{
-+	struct itcw *itcw;
-+	void *chunk;
-+	addr_t start;
-+	addr_t end;
-+
-+	/* Check for 2G limit. */
-+	start = (addr_t) buffer;
-+	end = start + size;
-+	if (end > (1 << 31))
-+		return ERR_PTR(-EINVAL);
-+	memset(buffer, 0, size);
-+	/* ITCW. */
-+	chunk = fit_chunk(&start, end, sizeof(struct itcw), 1, 0);
-+	if (IS_ERR(chunk))
-+		return chunk;
-+	itcw = chunk;
-+	itcw->max_tidaws = max_tidaws;
-+	itcw->intrg_max_tidaws = intrg_max_tidaws;
-+	/* Main TCW. */
-+	chunk = fit_chunk(&start, end, sizeof(struct tcw), 64, 0);
-+	if (IS_ERR(chunk))
-+		return chunk;
-+	itcw->tcw = chunk;
-+	tcw_init(itcw->tcw, (op == ITCW_OP_READ) ? 1 : 0,
-+		 (op == ITCW_OP_WRITE) ? 1 : 0);
-+	/* Interrogate TCW. */
-+	if (intrg) {
-+		chunk = fit_chunk(&start, end, sizeof(struct tcw), 64, 0);
-+		if (IS_ERR(chunk))
-+			return chunk;
-+		itcw->intrg_tcw = chunk;
-+		tcw_init(itcw->intrg_tcw, 1, 0);
-+		tcw_set_intrg(itcw->tcw, itcw->intrg_tcw);
-+	}
-+	/* Data TIDAL. */
-+	if (max_tidaws > 0) {
-+		chunk = fit_chunk(&start, end, sizeof(struct tidaw) *
-+				  max_tidaws, 16, 1);
-+		if (IS_ERR(chunk))
-+			return chunk;
-+		tcw_set_data(itcw->tcw, chunk, 1);
-+	}
-+	/* Interrogate data TIDAL. */
-+	if (intrg && (intrg_max_tidaws > 0)) {
-+		chunk = fit_chunk(&start, end, sizeof(struct tidaw) *
-+				  intrg_max_tidaws, 16, 1);
-+		if (IS_ERR(chunk))
-+			return chunk;
-+		tcw_set_data(itcw->intrg_tcw, chunk, 1);
-+	}
-+	/* TSB. */
-+	chunk = fit_chunk(&start, end, sizeof(struct tsb), 8, 0);
-+	if (IS_ERR(chunk))
-+		return chunk;
-+	tsb_init(chunk);
-+	tcw_set_tsb(itcw->tcw, chunk);
-+	/* Interrogate TSB. */
-+	if (intrg) {
-+		chunk = fit_chunk(&start, end, sizeof(struct tsb), 8, 0);
-+		if (IS_ERR(chunk))
-+			return chunk;
-+		tsb_init(chunk);
-+		tcw_set_tsb(itcw->intrg_tcw, chunk);
-+	}
-+	/* TCCB. */
-+	chunk = fit_chunk(&start, end, TCCB_MAX_SIZE, 8, 0);
-+	if (IS_ERR(chunk))
-+		return chunk;
-+	tccb_init(chunk, TCCB_MAX_SIZE, TCCB_SAC_DEFAULT);
-+	tcw_set_tccb(itcw->tcw, chunk);
-+	/* Interrogate TCCB. */
-+	if (intrg) {
-+		chunk = fit_chunk(&start, end, TCCB_MAX_SIZE, 8, 0);
-+		if (IS_ERR(chunk))
-+			return chunk;
-+		tccb_init(chunk, TCCB_MAX_SIZE, TCCB_SAC_INTRG);
-+		tcw_set_tccb(itcw->intrg_tcw, chunk);
-+		tccb_add_dcw(chunk, TCCB_MAX_SIZE, DCW_CMD_INTRG, 0, NULL,
-+			     sizeof(struct dcw_intrg_data), 0);
-+		tcw_finalize(itcw->intrg_tcw, 0);
-+	}
-+	return itcw;
-+}
-+EXPORT_SYMBOL(itcw_init);
-+
-+/**
-+ * itcw_add_dcw - add a dcw to the itcw
-+ * @itcw: address of the itcw
-+ * @cmd: the dcw command
-+ * @flags: flags for the dcw
-+ * @cd: address of control data for this dcw or NULL if none is required
-+ * @cd_count: number of control data bytes for this dcw
-+ * @count: number of data bytes for this dcw
-+ *
-+ * Add a new dcw to the specified itcw by writing the dcw information specified
-+ * by @cmd, @flags, @cd, @cd_count and @count to the tca of the tccb. Return
-+ * a pointer to the newly added dcw on success or -%ENOSPC if the new dcw
-+ * would exceed the available space.
-+ *
-+ * Note: the tcal field of the tccb header will be updated to reflect added
-+ * content.
-+ */
-+struct dcw *itcw_add_dcw(struct itcw *itcw, u8 cmd, u8 flags, void *cd,
-+			 u8 cd_count, u32 count)
-+{
-+	return tccb_add_dcw(tcw_get_tccb(itcw->tcw), TCCB_MAX_SIZE, cmd,
-+			    flags, cd, cd_count, count);
-+}
-+EXPORT_SYMBOL(itcw_add_dcw);
-+
-+/**
-+ * itcw_add_tidaw - add a tidaw to the itcw
-+ * @itcw: address of the itcw
-+ * @flags: flags for the new tidaw
-+ * @addr: address value for the new tidaw
-+ * @count: count value for the new tidaw
-+ *
-+ * Add a new tidaw to the input/output data tidaw-list of the specified itcw
-+ * (depending on the value of the r-flag and w-flag). Return a pointer to
-+ * the new tidaw on success or -%ENOSPC if the new tidaw would exceed the
-+ * available space.
-+ *
-+ * Note: the tidaw-list is assumed to be contiguous with no ttics. The
-+ * last-tidaw flag for the last tidaw in the list will be set by itcw_finalize.
-+ */
-+struct tidaw *itcw_add_tidaw(struct itcw *itcw, u8 flags, void *addr, u32 count)
-+{
-+	if (itcw->num_tidaws >= itcw->max_tidaws)
-+		return ERR_PTR(-ENOSPC);
-+	return tcw_add_tidaw(itcw->tcw, itcw->num_tidaws++, flags, addr, count);
-+}
-+EXPORT_SYMBOL(itcw_add_tidaw);
-+
-+/**
-+ * itcw_set_data - set data address and tida flag of the itcw
-+ * @itcw: address of the itcw
-+ * @addr: the data address
-+ * @use_tidal: zero of the data address specifies a contiguous block of data,
-+ * non-zero if it specifies a list if tidaws.
-+ *
-+ * Set the input/output data address of the itcw (depending on the value of the
-+ * r-flag and w-flag). If @use_tidal is non-zero, the corresponding tida flag
-+ * is set as well.
-+ */
-+void itcw_set_data(struct itcw *itcw, void *addr, int use_tidal)
-+{
-+	tcw_set_data(itcw->tcw, addr, use_tidal);
-+}
-+EXPORT_SYMBOL(itcw_set_data);
-+
-+/**
-+ * itcw_finalize - calculate length and count fields of the itcw
-+ * @itcw: address of the itcw
-+ *
-+ * Calculate tcw input-/output-count and tccbl fields and add a tcat the tccb.
-+ * In case input- or output-tida is used, the tidaw-list must be stored in
-+ * continuous storage (no ttic). The tcal field in the tccb must be
-+ * up-to-date.
-+ */
-+void itcw_finalize(struct itcw *itcw)
-+{
-+	tcw_finalize(itcw->tcw, itcw->num_tidaws);
-+}
-+EXPORT_SYMBOL(itcw_finalize);
-Index: quilt-2.6/drivers/s390/cio/Makefile
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/Makefile
-+++ quilt-2.6/drivers/s390/cio/Makefile
-@@ -2,7 +2,8 @@
- # Makefile for the S/390 common i/o drivers
- #
- 
--obj-y += airq.o blacklist.o chsc.o cio.o css.o chp.o idset.o scsw.o fcx.o
-+obj-y += airq.o blacklist.o chsc.o cio.o css.o chp.o idset.o scsw.o fcx.o \
-+	 itcw.o
- ccw_device-objs += device.o device_fsm.o device_ops.o
- ccw_device-objs += device_id.o device_pgid.o device_status.o
- obj-y += ccw_device.o cmf.o
-Index: quilt-2.6/include/asm-s390/itcw.h
-===================================================================
---- /dev/null
-+++ quilt-2.6/include/asm-s390/itcw.h
-@@ -0,0 +1,30 @@
-+/*
-+ *  Functions for incremental construction of fcx enabled I/O control blocks.
-+ *
-+ *    Copyright IBM Corp. 2008
-+ *    Author(s): Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-+ */
-+
-+#ifndef _ASM_S390_ITCW_H
-+#define _ASM_S390_ITCW_H _ASM_S390_ITCW_H
-+
-+#include <linux/types.h>
-+#include <asm/fcx.h>
-+
-+#define ITCW_OP_READ	0
-+#define ITCW_OP_WRITE	1
-+
-+struct itcw;
-+
-+struct tcw *itcw_get_tcw(struct itcw *itcw);
-+size_t itcw_calc_size(int intrg, int max_tidaws, int intrg_max_tidaws);
-+struct itcw *itcw_init(void *buffer, size_t size, int op, int intrg,
-+		       int max_tidaws, int intrg_max_tidaws);
-+struct dcw *itcw_add_dcw(struct itcw *itcw, u8 cmd, u8 flags, void *cd,
-+			 u8 cd_count, u32 count);
-+struct tidaw *itcw_add_tidaw(struct itcw *itcw, u8 flags, void *addr,
-+			     u32 count);
-+void itcw_set_data(struct itcw *itcw, void *addr, int use_tidal);
-+void itcw_finalize(struct itcw *itcw);
-+
-+#endif /* _ASM_S390_ITCW_H */
+The "disable-quirks" are what some chipset documentation recommends to
+do in the ACPI "_PIC" method anyway, when APIC mode is selected by the
+operating system. I have seen a few BIOSes that do exactly the same in
+the "_PIC" method. They are straightforward and simple. I believe they
+are safe in APIC mode (and off in PIC mode) and we should expose them to
+testing.
+
+The reroute patch is a bit of a hack for the chips where boot interrupts
+cannot be switched off. It is a simple approach, and I can think up
+(so far theoretical) scenarios where it breaks.
+
+In defense of the reroute patch:
+
+    - we have not seen it break during our testing on more than 10 intel
+      machines (with and without chips on which it is used) and
+
+    - so far the rerouting was only necessary for some intel bridges,
+      and I checked that
+
+        1) all these bridges use the same routing for boot interrupts to
+           PCI IRQs, as in the i6700PXH datasheet, section 2.15.2:
+
+                Pin          INT
+
+                0,4,8,12  -> INTA
+                1,5,9,13  -> INTB
+                2,6,10,14 -> INTC
+                3,7,11,15 -> INTD
+
+           (also note that this routing pattern is required by the PCI
+           specs for _cards_ that add PCI bridges, as the BIOS cannot
+           otherwise know the routing)
+
+        2) all intel ICHxs use the same routing for external PCI IRQs to
+           the ICHx's IO-APIC, as in the ICH5 datasheet, section 5.9.2:
+
+                Direct
+                from Pin     IRQ #
+
+                PIRQA#    -> 16
+                PIRQB#    -> 17
+                PIRQC#    -> 18
+                PIRQD#    -> 19
+                PIRQE#    -> 20
+                PIRQF#    -> 21
+                PIRQG#    -> 22
+                PIRQH#    -> 23
+
+      and as the ICH provides a PIC, it needs to be the first interrupt
+      controller in the system, unless another chip also provides a PIC.
+
+To break the reroute patch, someone would need to connect the PCI IRQs
+from an intel PCI bridge that cannot disable boot interrupts
+(6700PX[VH], 8033[23] or 6300ESB) to something other than an intel ICHx.
+I have never seen such a board and I doubt there will be many such
+boards.
+
+> Also is there any interaction with MSI ?
+
+The docs for the 6700PX[VH], and IIRC also for the 8033[23] or 6300ESB
+say that boot irqs are generated when the original ones are masked. So
+this is independent of MSI.
+
+We have not many boards where MSI is enabled (as there are quirks for
+many chips that switch MSI off). But our testing showed no problems on
+MSI-enabled machines.
+
+> Thanks,
+> 	tglx
+
+Thanks, :)
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
 
