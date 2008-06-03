@@ -1,86 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYFCMSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbYFCMWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbYFCMSw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 08:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbYFCMSo
+	id S1757772AbYFCMWi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 08:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbYFCMWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 08:18:44 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:35351 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754325AbYFCMSn (ORCPT
+	Tue, 3 Jun 2008 08:22:31 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:34299 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754201AbYFCMWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 08:18:43 -0400
-Date: Tue, 3 Jun 2008 05:17:21 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nadia.Derbey@bull.net
-Cc: akpm@linux-foundation.org, manfred@colorfullife.com,
-       lnxninja@linux.vnet.ibm.com, efault@gmx.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm1] Remove useless calls to INIT_RCU_HEAD in the idr code (was Scalability requirements for sysv ipc - v3)
-Message-ID: <20080603121721.GA13488@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080603065633.480505000@bull.net> <20080603065712.322118000@bull.net>
+	Tue, 3 Jun 2008 08:22:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XBWPc/bM6J3hvNySmhIMjDhQJ5RAluyXZAlf1Tspj6UL+8TKq91VqcU4yRGBCABrngPg1+F5E97IFhNZfOo3sZduy6DCJAkZLrHuuTjNO1Pof3kEH6AGJK733nu+h/FWrOuh5srNPUFzGoiLvjItnhQ97EeyCnrUiaiClvFGYC8=
+Message-ID: <d1af83620806030522i4b8120dgda19d3196f0838f5@mail.gmail.com>
+Date: Tue, 3 Jun 2008 09:22:28 -0300
+From: "Kevin Winchester" <kjwinchester@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: linux-next: WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
+Cc: "Ingo Molnar" <mingo@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1212483192.6304.8.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080603065712.322118000@bull.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <4844868F.20104@gmail.com> <1212483192.6304.8.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 03, 2008 at 08:56:34AM +0200, Nadia.Derbey@bull.net wrote:
-> Since I didn't get any answer yesterday, (see http://lkml.org/lkml/2008/6/2/20)
-> here's the patch after Paul's review.
-> 
-> 
-> Regards,
-> Nadia
-> 
-> [ PATCH 01/01 ]
-> 
-> This is a trivial patch that removes unneeded calls to INIT_RCU_HEAD() in the
-> idr api code.
-> 
-> This patch applies to 2.6.26-rc2-mm1.
+On Tue, Jun 3, 2008 at 5:53 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Mon, 2008-06-02 at 20:47 -0300, Kevin Winchester wrote:
+>> In next-20080530 and next-20080602 (and possibly earlier - I can't
+>> remember the linux-next tree before that I tried) I get the following:
+>>
+>> [   12.885153] ------------[ cut here ]------------
+>> [   12.885203] WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
+>> [   12.885248] Pid: 4, comm: watchdog/0 Not tainted
+>> 2.6.26-rc4-next-20080602 #13
+>> [   12.885292]
+>> [   12.885293] Call Trace:
+>> [   12.885364]  [<ffffffff8022bbd5>] warn_on_slowpath+0x58/0x8a
+>> [   12.885410]  [<ffffffff804c9cfe>] ? _spin_unlock_irqrestore+0x51/0x6d
+>> [   12.885455]  [<ffffffff8032ff41>] ? debug_locks_off+0x9/0x3c
+>> [   12.885498]  [<ffffffff802582dd>] ? ftrace_record_ip+0x1fa/0x272
+>> [   12.885542]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
+>> [   12.885584]  [<ffffffff8020b2c0>] ? mcount_call+0x5/0x35
+>> [   12.885627]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
+>> [   12.885668]  [<ffffffff80247c80>] check_flags+0x98/0x151
+>> [   12.885710]  [<ffffffff8024ae72>] lock_acquire+0x4a/0xa9
+>> [   12.885753]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
+>> [   12.885795]  [<ffffffff802526c5>] ? watchdog+0x0/0x1ff
+>> [   12.885837]  [<ffffffff804c98da>] _read_lock+0x37/0x43
+>> [   12.885879]  [<ffffffff8025278a>] watchdog+0xc5/0x1ff
+>> [   12.885921]  [<ffffffff802526c5>] ? watchdog+0x0/0x1ff
+>> [   12.885963]  [<ffffffff8023e48b>] kthread+0x4e/0x7b
+>> [   12.886005]  [<ffffffff8020bf18>] child_rip+0xa/0x12
+>> [   12.886046]  [<ffffffff80227d8f>] ? finish_task_switch+0x57/0x92
+>> [   12.886090]  [<ffffffff804c9d55>] ? _spin_unlock_irq+0x3b/0x57
+>> [   12.886133]  [<ffffffff8020bad3>] ? restore_args+0x0/0x30
+>> [   12.886137]  [<ffffffff8023e43d>] ? kthread+0x0/0x7b
+>> [   12.886137]  [<ffffffff8020bf0e>] ? child_rip+0x0/0x12
+>> [   12.886137]
+>> [   12.886137] ---[ end trace 60e7f098a6913839 ]---
+>> [   12.886137] possible reason: unannotated irqs-on.
+>> [   12.886137] irq event stamp: 20
+>> [   12.886137] hardirqs last  enabled at (19): [<ffffffff80249cc3>]
+>> trace_hardirqs_on+0xd/0xf
+>> [   12.886137] hardirqs last disabled at (20): [<ffffffff80248565>]
+>> trace_hardirqs_off+0xd/0xf
+>> [   12.886137] softirqs last  enabled at (0): [<ffffffff80229fef>]
+>> copy_process+0x2da/0x109e
+>> [   12.886137] softirqs last disabled at (0): [<0000000000000000>] 0x0
+>>
+>> Do I understand this correctly that something enabled irqs in a way that
+>> got around lockdep?  I assume the problem is not in watchdog, just that
+>> the watchdog was the next thing to run that interacted with irqs and
+>> thus lockdep picked up the situation then?
+>>
+>> Is there additional debugging I can do, given some instructions?  If the
+>> cause is readily apparent to anyone, could they let me know (for my own
+>> interest) why it is apparent so that I can investigate things like this
+>> further next time?
+>
+>
+> You are correct - someone did sti but failed to call
+> trace_hardirqs_on(). Frequently its possible to isolate the code from
+> knowing the last recorded event:
+>
+> [   12.886137] irq event stamp: 20
+> [   12.886137] hardirqs last disabled at (20): [<ffffffff80248565>] trace_hardirqs_off+0xd/0xf
+>
+> However your compilation seems to have lost the caller IP:
+>
+> void trace_hardirqs_off(void)
+> {
+>        trace_hardirqs_off_caller(CALLER_ADDR0);
+> }
+> EXPORT_SYMBOL(trace_hardirqs_off);
+>
+> So that is of little help here. (Not sure how that happened, nor how you
+> could fix that - perhaps turn on some debugging knobs like build with
+> debug info etc..)
+>
 
-Looks good to me!
+Could this be related to CONFIG_CC_OPTIMIZE_INLINING (or whatever it
+is called now)?  I am pretty sure I have that enabled.  I will check
+the rest of my config this evening to see if there is anything else I
+can turn on/off to help.
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>
+>> This is completely reproducible on every boot - should I try to bisect it?
+>
+> That is a possibility yes - if you can find the offending patch it
+> should be relatively straight forward to find the offending sti.
+>
 
-> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-> 
-> ---
->  lib/idr.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> Index: linux-2.6.26-rc2-mm1/lib/idr.c
-> ===================================================================
-> --- linux-2.6.26-rc2-mm1.orig/lib/idr.c	2008-05-29 13:09:01.000000000 +0200
-> +++ linux-2.6.26-rc2-mm1/lib/idr.c	2008-06-02 09:32:46.000000000 +0200
-> @@ -185,7 +185,6 @@ static int sub_alloc(struct idr *idp, in
->  			new = get_from_free_list(idp);
->  			if (!new)
->  				return -1;
-> -			INIT_RCU_HEAD(&new->rcu_head);
->  			rcu_assign_pointer(p->ary[m], new);
->  			p->count++;
->  		}
-> @@ -211,7 +210,6 @@ build_up:
->  	if (unlikely(!p)) {
->  		if (!(p = get_from_free_list(idp)))
->  			return -1;
-> -		INIT_RCU_HEAD(&p->rcu_head);
->  		layers = 1;
->  	}
->  	/*
-> @@ -239,7 +237,6 @@ build_up:
->  		}
->  		new->ary[0] = p;
->  		new->count = 1;
-> -		INIT_RCU_HEAD(&new->rcu_head);
->  		if (p->bitmap == IDR_FULL)
->  			__set_bit(0, &new->bitmap);
->  		p = new;
-> 
-> --
+Sure - I can try it this evening.  Also, is calling sti the only way
+this could have happened?  And is linux-next broken out into a single
+patch?  I wouldn't expect there to be too many calls to sti, so a grep
+in the patch file might be quicker than bisection.
+
+Thanks,
+
+-- 
+Kevin Winchester
