@@ -1,35 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbYFCCVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYFCCfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757481AbYFCCVW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 22:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbYFCCVK
+	id S1755664AbYFCCfs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 22:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbYFCCfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 22:21:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50693 "EHLO
+	Mon, 2 Jun 2008 22:35:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36514 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753427AbYFCCVI (ORCPT
+	with ESMTP id S1751691AbYFCCfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 22:21:08 -0400
-Date: Mon, 2 Jun 2008 19:20:48 -0700
+	Mon, 2 Jun 2008 22:35:41 -0400
+Date: Mon, 2 Jun 2008 19:35:27 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: svaidy@linux.vnet.ibm.com
-Cc: Pavel Machek <pavel@ucw.cz>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       Michael Neuling <mikey@neuling.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v1 0/3] Scaled statistics using APERF/MPERF in x86
-Message-ID: <20080602192048.39c86b2e@infradead.org>
-In-Reply-To: <20080602175400.GN5504@dirshya.in.ibm.com>
-References: <20080526142513.24680.97164.stgit@drishya.in.ibm.com>
-	<20080526085000.33787eac@infradead.org>
-	<483AF25B.6090806@linux.vnet.ibm.com>
-	<20080526110040.5ddc4656@infradead.org>
-	<483B0348.2000204@linux.vnet.ibm.com>
-	<20080526115108.6a19e2c0@infradead.org>
-	<483C059B.9040301@linux.vnet.ibm.com>
-	<20080531212709.GA6757@ucw.cz>
-	<20080602175400.GN5504@dirshya.in.ibm.com>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD
+ Barcelona
+Message-ID: <20080602193527.722fbbce@infradead.org>
+In-Reply-To: <20080602141928.GH23679@erda.amd.com>
+References: <20080526180616.GB2752@erda.amd.com>
+	<20080528165813.8D8E5814C@erda.amd.com>
+	<20080528120253.26fcdb9d@infradead.org>
+	<20080602141928.GH23679@erda.amd.com>
 Organization: Intel
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -41,17 +35,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008 23:24:00 +0530
-Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+On Mon, 2 Jun 2008 16:19:29 +0200
+Robert Richter <robert.richter@amd.com> wrote:
+
+> Arjan,
+> 
+> On 28.05.08 12:02:53, Arjan van de Ven wrote:
+> > Comment 1:
+> > Can we make the 256/4096 thing conditional on actually having the
+> > feature somehow? (while not making the code TOO ugly)
+> 
+> In the first version I had 2 functions also. The patch have had lots
+> of duplicate code or inline functions. Since the conditional check is
+> already in raw_pci_* I decided to not implement an additional check
+> and use only one function.
+
+ok fair enough.
 
 > 
-> Lets start adding parameters in steps to make the scaled statistics
-> accurate.  We want to start with cpu and see if we can provide
-> a reasonable solution.
+> > Comment 2: 
+> > The cpu_has_XXX is a bit dubious; while it's dependent on your cpu
+> > model right now, I'm a bit hesitant to consider a PCI feature
+> > something that belongs in the cpu_has_XXX namespace. (Yes I know
+> > PCI is moving into the cpu package, but on a logical level it seems
+> > just the wrong place).
+> > Do we need a platform_has_XXX namespace for things like this?
+> 
+> An alternative implementation would be here to use a check something
+> like pci_probe & PCI_HAS_EXT_CFG. If needed, I will send an updated
+> patch.
 
-sadly your patches don't even achieve that ;-(
-At least not in terms of CPU capacity etc.
-
+I kind of prefer this, since logically this is a PCI not a CPU property.
+Would you mind doing this ?
+(not that your current patch is wrong, it's just nicer to keep CPU
+stuff with the CPU and PCI stuff with PCI :)
+(This wouldn't need to stop inclusion of your current patch, it can
+just be an incremental cleanup)
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
