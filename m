@@ -1,94 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYFCOMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbYFCORq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYFCOMv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 10:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYFCOMk
+	id S1757012AbYFCORq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 10:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYFCORi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 10:12:40 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:37399 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752062AbYFCOMj (ORCPT
+	Tue, 3 Jun 2008 10:17:38 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:42014 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbYFCORi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 10:12:39 -0400
-Date: Tue, 3 Jun 2008 10:12:38 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-cc: netdev@vger.kernel.org, <linux-kernel@vger.kernel.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>, <linux-acpi@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
- problems
-In-Reply-To: <20080603061618.GB9301@yamamaya.is-a-geek.org>
-Message-ID: <Pine.LNX.4.44L0.0806031002510.2363-100000@iolanthe.rowland.org>
+	Tue, 3 Jun 2008 10:17:38 -0400
+X-Greylist: delayed 890 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 10:17:37 EDT
+Message-ID: <48454EFC.9080201@pobox.com>
+Date: Tue, 03 Jun 2008 10:02:36 -0400
+From: Mark Lord <mlord@pobox.com>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rainer Koenig <Rainer.Koenig@fujitsu-siemens.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Who can backport the AHCI driver to older kernels
+References: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
+In-Reply-To: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Pobox-Relay-ID: BD260E74-3175-11DD-BEBB-B8BFEAD4C077-82205200!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008, Tobias Diedrich wrote:
-
-> One of the ports on the back of the board seems to be broken (Maybe
-> esd?), the other three work fine, but nothing happens when I plug a
-> device into that one, so I guess that's the culprit.
-
-Sounds like it.
-
-> > The log didn't reveal anything.  Perhaps you can learn more by looking 
-> > at the "registers" file for that OHCI controller in debugfs.
+Rainer Koenig wrote:
+> Hi,
+>  
+> I need help and/or advice on the following problem:
 > 
-> Ok, I can try that this evening...
+> New mainboard platfrom with latest chipset from a chipset vendor that 
+> can't do the job that we are asking for. The chipset (especially the
+> SATA controller is supported in Kernel 2.6.24 and later. 
 > 
-> > Also, you should run "lspci -vv" as root to see what wakeup signals the 
-> > USB controllers are issuing.
+> The target market for those boards is using old fashioned distributions 
+> like CentOS, Debian, Fedora 8 openSUSE 10 and so on. So the gap is that 
+> the latest driver from 2.6.24 is not yet in those distributions. The 
+> impact of this is that the customer in the target market can't use the
+> mainboards to run actual Linux distributions on them.
+> 
+> So there is a need ot backport e.g. the AHCI driver from 2.6.24 to 
+> 2.6.16 or 2.6.18. Doing a diff on the sources makes me think this is a 
+> sort of "mission impossible" since it sureley isn't just the ahci code
+> that changed but also a lot in the kernel infrastructure meanwhile.
+> 
+> So what options do we have to help the customer? Changing to 2.6.24 
+> kernel is not an option due to the customer. So it looks like the 
+> only way to "solve" this is a backport, but then we come to "who can
+> do this?". 
+..
 
-...
+I regularly do backports of libata stuff for various clients.
+Contact me directly if you feel you really need this service.
 
-> 00:02.0 USB Controller: nVidia Corporation MCP55 USB Controller (rev a1) (prog-if 10 [OHCI])
-> 	Subsystem: ASUSTeK Computer Inc. Unknown device 8239
-> 	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> 	Latency: 0 (750ns min, 250ns max)
-> 	Interrupt: pin A routed to IRQ 23
-> 	Region 0: Memory at fe02f000 (32-bit, non-prefetchable) [size=4K]
-> 	Capabilities: [44] Power Management version 2
-> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-> 	Kernel driver in use: ohci_hcd
-
-The OHCI controller settings look normal.  It doesn't appear to be 
-sending a wakeup signal.
-
-> 00:02.1 USB Controller: nVidia Corporation MCP55 USB Controller (rev a2) (prog-if 20 [EHCI])
-> 	Subsystem: ASUSTeK Computer Inc. Unknown device 8239
-> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> 	Latency: 0 (750ns min, 250ns max)
-> 	Interrupt: pin B routed to IRQ 20
-> 	Region 0: Memory at fe02e000 (32-bit, non-prefetchable) [size=256]
-> 	Capabilities: [44] Debug port: BAR=1 offset=0098
-> 	Capabilities: [80] Power Management version 2
-> 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-> 	Kernel driver in use: ehci_hcd
-
-The EHCI controller settings, however, are strange.  The relevant part 
-is the Power Management Status line near the end:
-
-> 		Status: D0 PME-Enable- DSel=0 DScale=0 PME+
-
-This means the controller is in the D0 state (as expected) and 
-PME-Enable is currently turned off ("PME" stands for "Power Management 
-Event").  But the PME+ at the end means that as soon as PME does get 
-enabled -- like when the controller is suspended at the start of a 
-system sleep -- it _will_ send a PME signal.
-
-So for some reason your EHCI controller thinks a wakeup event is 
-pending.  This means you should examine the contents of the "registers" 
-file in the debugfs directory for the EHCI controller, not OHCI.
-
-Alan Stern
-
+Cheers
+-- 
+Mark Lord
+Real-Time Remedies Inc.
+mlord@pobox.com
