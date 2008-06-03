@@ -1,35 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbYFCNfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYFCNo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbYFCNfm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 09:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYFCNfd
+	id S1755428AbYFCNo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 09:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYFCNoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 09:35:33 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58518 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752211AbYFCNfc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 09:35:32 -0400
-X-Greylist: delayed 312 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 09:35:32 EDT
-X-Sasl-enc: CD9uVPjc2vlrVflxJ1Zc2m+phKi1Ne0cCCLfyoKbmHVm 1212500130
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, jesper@krogh.cc,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <1212499870.3025.50.camel@raven.themaw.net>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-	 <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
-	 <20080603095713.GR28946@ZenIV.linux.org.uk>
-	 <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-	 <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
-	 <E1K3Ttv-0005ji-Cx@pomaz-ex.szeredi.hu>
-	 <20080603104814.GU28946@ZenIV.linux.org.uk>
-	 <1212499870.3025.50.camel@raven.themaw.net>
+	Tue, 3 Jun 2008 09:44:44 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:37256 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751958AbYFCNon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 09:44:43 -0400
+Subject: Re: [patch 01/15] security: pass path to inode_create
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       jmorris@namei.org, eparis@redhat.com, casey@schaufler-ca.com,
+       agruen@suse.de, jjohansen@suse.de, penguin-kernel@I-love.SAKURA.ne.jp,
+       hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080529134958.655985182@szeredi.hu>
+References: <20080529134903.615127628@szeredi.hu>
+	 <20080529134958.655985182@szeredi.hu>
 Content-Type: text/plain
-Date: Tue, 03 Jun 2008 21:32:18 +0800
-Message-Id: <1212499940.3025.51.camel@raven.themaw.net>
+Organization: National Security Agency
+Date: Tue, 03 Jun 2008 09:43:38 -0400
+Message-Id: <1212500618.11369.11.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
@@ -38,33 +32,150 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Tue, 2008-06-03 at 21:31 +0800, Ian Kent wrote:
-> On Tue, 2008-06-03 at 11:48 +0100, Al Viro wrote:
-> > On Tue, Jun 03, 2008 at 12:37:59PM +0200, Miklos Szeredi wrote:
-> > > > http://www.kerneloops.org/raw.php?rawid=12419&msgid=
-> > > > 
-> > > > Looks like a negative inode in S_ISDIR(mnt->mnt_root->d_inode->i_mode),
-> > > > which would be due to NFS not properly filling in its root dentry?
-> > > 
-> > > On second thought it's S_ISDIR(path->dentry->d_inode->i_mode), which
-> > > means it's an autofs thing.
-> > 
-> > It is path->dentry, all right, but the question is how'd it get that way.
-> > Look: we got that nd.path.dentry out of path_lookup() with LOOKUP_FOLLOW
-> > as flags.  Then we'd passed it through do_new_mount() to do_add_mount()
-> > without changes.  And went through
-> >         /* Something was mounted here while we slept */
-> >         while (d_mountpoint(nd->path.dentry) &&
-> >                follow_down(&nd->path.mnt, &nd->path.dentry))
-> >                 ;
+On Thu, 2008-05-29 at 15:49 +0200, Miklos Szeredi wrote:
+> plain text document attachment (security_create_path.patch)
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> And this relates to previous in that a mount isn't done by autofs until
-> until after the directory is created, at which time the (->mkdir())
-> dentry is hashed.
+> In the inode_create() security operation and related functions pass
+> the path (vfsmount + dentry) to the parent directory instead of the
+> inode.  AppArmor will need this.
+> 
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> ---
+>  fs/namei.c               |   12 ++++++------
+>  include/linux/security.h |    9 ++++-----
+>  security/dummy.c         |    4 ++--
+>  security/security.c      |    4 ++--
+>  security/selinux/hooks.c |    5 +++--
+>  5 files changed, 17 insertions(+), 17 deletions(-)
+> 
+> Index: linux-2.6/fs/namei.c
+> ===================================================================
+> --- linux-2.6.orig/fs/namei.c	2008-05-29 12:20:49.000000000 +0200
+> +++ linux-2.6/fs/namei.c	2008-05-29 12:20:51.000000000 +0200
+> @@ -1586,11 +1586,11 @@ void unlock_rename(struct dentry *p1, st
+>  	}
+>  }
+>  
+> -static int vfs_create(struct dentry *dir_dentry, struct dentry *dentry,
+> +static int vfs_create(struct path *dir_path, struct dentry *dentry,
+>  		      int mode,	struct nameidata *nd)
+>  {
+> -	struct inode *dir = dir_dentry->d_inode;
+> -	int error = may_create(dir_dentry, dentry);
+> +	struct inode *dir = dir_path->dentry->d_inode;
+> +	int error = may_create(dir_path->dentry, dentry);
+>  
+>  	if (error)
+>  		return error;
+> @@ -1599,7 +1599,7 @@ static int vfs_create(struct dentry *dir
+>  		return -EACCES;	/* shouldn't it be ENOSYS? */
+>  	mode &= S_IALLUGO;
+>  	mode |= S_IFREG;
+> -	error = security_inode_create(dir, dentry, mode);
+> +	error = security_inode_create(dir_path, dentry, mode);
+>  	if (error)
+>  		return error;
+>  	DQUOT_INIT(dir);
+> @@ -1615,7 +1615,7 @@ int path_create(struct path *dir_path, s
+>  	int error = mnt_want_write(dir_path->mnt);
+>  
+>  	if (!error) {
+> -		error = vfs_create(dir_path->dentry, dentry, mode, nd);
+> +		error = vfs_create(dir_path, dentry, mode, nd);
+>  		mnt_drop_write(dir_path->mnt);
+>  	}
+>  
+> @@ -1718,7 +1718,7 @@ static int __open_namei_create(struct na
+>  
+>  	if (!IS_POSIXACL(dir->d_inode))
+>  		mode &= ~current->fs->umask;
+> -	error = vfs_create(dir, path->dentry, mode, nd);
+> +	error = vfs_create(&nd->path, path->dentry, mode, nd);
+>  	mutex_unlock(&dir->d_inode->i_mutex);
+>  	dput(nd->path.dentry);
+>  	nd->path.dentry = path->dentry;
+> Index: linux-2.6/include/linux/security.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/security.h	2008-05-29 12:20:48.000000000 +0200
+> +++ linux-2.6/include/linux/security.h	2008-05-29 12:20:51.000000000 +0200
+> @@ -339,7 +339,7 @@ static inline void security_free_mnt_opt
+>   *		-ENOMEM on memory allocation failure.
+>   * @inode_create:
+>   *	Check permission to create a regular file.
+> - *	@dir contains inode structure of the parent of the new file.
+> + *	@dir contains the path to the parent of the new file.
+>   *	@dentry contains the dentry structure for the file to be created.
+>   *	@mode contains the file mode of the file to be created.
+>   *	Return 0 if permission is granted.
+> @@ -1353,8 +1353,7 @@ struct security_operations {
+>  	void (*inode_free_security) (struct inode *inode);
+>  	int (*inode_init_security) (struct inode *inode, struct inode *dir,
+>  				    char **name, void **value, size_t *len);
+> -	int (*inode_create) (struct inode *dir,
+> -			     struct dentry *dentry, int mode);
+> +	int (*inode_create) (struct path *dir, struct dentry *dentry, int mode);
+>  	int (*inode_link) (struct dentry *old_dentry,
+>  			   struct inode *dir, struct dentry *new_dentry);
+>  	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+> @@ -1626,7 +1625,7 @@ int security_inode_alloc(struct inode *i
+>  void security_inode_free(struct inode *inode);
+>  int security_inode_init_security(struct inode *inode, struct inode *dir,
+>  				  char **name, void **value, size_t *len);
+> -int security_inode_create(struct inode *dir, struct dentry *dentry, int mode);
+> +int security_inode_create(struct path *dir, struct dentry *dentry, int mode);
+>  int security_inode_link(struct dentry *old_dentry, struct inode *dir,
+>  			 struct dentry *new_dentry);
+>  int security_inode_unlink(struct inode *dir, struct dentry *dentry);
+> @@ -1964,7 +1963,7 @@ static inline int security_inode_init_se
+>  	return -EOPNOTSUPP;
+>  }
+>  
+> -static inline int security_inode_create(struct inode *dir,
+> +static inline int security_inode_create(struct path *dir,
+>  					 struct dentry *dentry,
+>  					 int mode)
+>  {
+> Index: linux-2.6/security/dummy.c
+> ===================================================================
+> --- linux-2.6.orig/security/dummy.c	2008-05-29 12:20:48.000000000 +0200
+> +++ linux-2.6/security/dummy.c	2008-05-29 12:20:51.000000000 +0200
+> @@ -286,8 +286,8 @@ static int dummy_inode_init_security (st
+>  	return -EOPNOTSUPP;
+>  }
+>  
+> -static int dummy_inode_create (struct inode *inode, struct dentry *dentry,
+> -			       int mask)
+> +static int dummy_inode_create(struct path *dir, struct dentry *dentry,
+> +			      int mask)
+>  {
+>  	return 0;
+>  }
+> Index: linux-2.6/security/selinux/hooks.c
+> ===================================================================
+> --- linux-2.6.orig/security/selinux/hooks.c	2008-05-29 12:20:48.000000000 +0200
+> +++ linux-2.6/security/selinux/hooks.c	2008-05-29 12:20:51.000000000 +0200
+> @@ -2482,9 +2482,10 @@ static int selinux_inode_init_security(s
+>  	return 0;
+>  }
+>  
+> -static int selinux_inode_create(struct inode *dir, struct dentry *dentry, int mask)
+> +static int selinux_inode_create(struct path *dir, struct dentry *dentry,
+> +				int mask)
+>  {
+> -	return may_create(dir, dentry, SECCLASS_FILE);
+> +	return may_create(dir->dentry->d_inode, dentry, SECCLASS_FILE);
+>  }
+>  
+>  static int selinux_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
 
-Oh .. and made positive at the same time.
+This may be moot given the vfs maintainers' objections, but if you were
+to make this change, then logically you'd push the struct path all the
+way down and set it in the avc_audit_data so that it could be used by
+avc_audit() for emitting a pathname in the audit record.  Likewise for
+the other hook changes.
 
-> 
-> Ian
-> 
+-- 
+Stephen Smalley
+National Security Agency
 
