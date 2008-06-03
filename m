@@ -1,98 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbYFCKkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYFCKku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbYFCKkd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 06:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYFCKkZ
+	id S1753369AbYFCKku (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 06:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbYFCKkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 06:40:25 -0400
-Received: from www.tglx.de ([62.245.132.106]:33969 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752539AbYFCKkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 06:40:25 -0400
-Date: Tue, 3 Jun 2008 12:40:04 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Olaf Dabrunz <od@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       LKML <linux-kernel@vger.kernel.org>, Stefan Assmann <sassmann@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 3/7] disable legacy boot interrupt generation
-In-Reply-To: <12124107072533-git-send-email-od@suse.de>
-Message-ID: <alpine.LFD.1.10.0806031238070.3235@apollo.tec.linutronix.de>
-References: <12124107071847-git-send-email-od@suse.de> <12124107072533-git-send-email-od@suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 3 Jun 2008 06:40:39 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44467 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbYFCKki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 06:40:38 -0400
+Date: Tue, 3 Jun 2008 11:40:35 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jesper@krogh.cc, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080603104035.GT28946@ZenIV.linux.org.uk>
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk> <20080603095713.GR28946@ZenIV.linux.org.uk> <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk> <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008, Olaf Dabrunz wrote:
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index 6173be5..8f09f8f 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -1377,6 +1377,34 @@ int nobootirqquirk_setup(char *str)
->  __setup("nobootirqquirk", nobootirqquirk_setup);
->  
->  /*
-> + * On some chipsets we can disable the generation of legacy INTx boot
-> + * interrupts.
-> + */
-> +#define PCI_IOAPIC_ALTERNATE_BASE_ADDRESS	0x40
-> +#define INTEL_6300_ESB_BOOT_INTERRUPT_ENABLE	(1<<14)
-
-new line
-
-> +static void quirk_disable_intel_boot_interrupt(struct pci_dev *dev)
-> +{
-> +	u16 cnf;
-> +
-> +	if (nobootirqquirk)
-> +		return;
-> +
-> +	pci_read_config_word(dev, PCI_IOAPIC_ALTERNATE_BASE_ADDRESS, &cnf);
-> +	/* this disables the boot interrupt even though it reads ENABLE */
-
-And why cant we use a name for that constant which makes this obvious
-w/o a comment ?
-
-> +	cnf |= INTEL_6300_ESB_BOOT_INTERRUPT_ENABLE;
-> +	pci_write_config_word(dev, PCI_IOAPIC_ALTERNATE_BASE_ADDRESS, cnf);
-> +
-> +	printk(KERN_INFO "disabled boot interrupt on device 0x%04x:0x%04x\n",
-> +		dev->vendor, dev->device);
-> +}
-> +#undef PCI_IOAPIC_ALTERNATE_BASE_ADDRESS
-
-Why #undef ?
-
-> +/*
-> + * IO-APIC1 on 6300ESB generates boot interrupts, see intel order no
-> + * 300641-004US, section 5.7.3.
-> + */
-> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_ESB_10, 	quirk_disable_intel_boot_interrupt);
-> +
-> +/*
->   * Boot interrupts on some chipsets cannot be turned off. For these chipsets,
->   * remap the original interrupt in the linux kernel to the boot interrupt, so
->   * that a PCI device's interrupt handler is installed on the boot interrupt
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index c675399..b89616d 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -2309,6 +2309,7 @@
->  #define PCI_DEVICE_ID_INTEL_ESB_4	0x25a4
->  #define PCI_DEVICE_ID_INTEL_ESB_5	0x25a6
->  #define PCI_DEVICE_ID_INTEL_ESB_9	0x25ab
-> +#define PCI_DEVICE_ID_INTEL_ESB_10	0x25ac
->  #define PCI_DEVICE_ID_INTEL_82820_HB	0x2500
->  #define PCI_DEVICE_ID_INTEL_82820_UP_HB	0x2501
->  #define PCI_DEVICE_ID_INTEL_82850_HB	0x2530
-> -- 
-> 1.5.2.4
+On Tue, Jun 03, 2008 at 12:13:54PM +0200, Miklos Szeredi wrote:
 > 
-> -- 
-> Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, N??rnberg
+> http://www.kerneloops.org/raw.php?rawid=12419&msgid=
 > 
+> Looks like a negative inode in S_ISDIR(mnt->mnt_root->d_inode->i_mode),
+> which would be due to NFS not properly filling in its root dentry?
+
+Look more carefully.  It's path->dentry; aside of the fact that dentry
+pointer is fetched at offset 8 from one of the arguments (fits path->dentry,
+too low for mnt->mnt_root), do_add_mount() itself has just done S_ISLNK
+on the very same thing, so it'd die before getting to graft_tree().
+
+No, it's either path_lookup() somehow returning a negative dentry in
+do_mount() (which shouldn't be possible, unless it's some crap around
+return_reval in __link_path_walk()) or it's follow_down() giving us
+a negative dentry.  Which almost certainly would've exploded prior to
+that...
