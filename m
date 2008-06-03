@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbYFCWet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbYFCWhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759341AbYFCWet (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 18:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbYFCWel
+	id S1759279AbYFCWhF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 18:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbYFCWgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 18:34:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54816 "EHLO
+	Tue, 3 Jun 2008 18:36:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36095 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753430AbYFCWek (ORCPT
+	by vger.kernel.org with ESMTP id S1752008AbYFCWgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 18:34:40 -0400
-Date: Tue, 3 Jun 2008 15:33:04 -0700
+	Tue, 3 Jun 2008 18:36:53 -0400
+Date: Tue, 3 Jun 2008 15:35:06 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 Cc: sct@redhat.com, adilger@clusterfs.com, linux-kernel@vger.kernel.org,
        linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
        cmm@us.ibm.com, tytso@mit.edu, yumiko.sugita.yf@hitachi.com,
        satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 2/5] jbd: ordered data integrity fix
-Message-Id: <20080603153304.741eaa2b.akpm@linux-foundation.org>
-In-Reply-To: <4843CF30.9050801@hitachi.com>
+Subject: Re: [PATCH 3/5] jbd: abort when failed to log metadata buffers
+Message-Id: <20080603153506.8a9ca2a4.akpm@linux-foundation.org>
+In-Reply-To: <4843CF6A.7090107@hitachi.com>
 References: <4843CE15.6080506@hitachi.com>
-	<4843CF30.9050801@hitachi.com>
+	<4843CF6A.7090107@hitachi.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,21 +30,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Jun 2008 19:45:04 +0900
+On Mon, 02 Jun 2008 19:46:02 +0900
 Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
 
-> In ordered mode, if a buffer being dirtied exists in the committing
-
-I changed this text to read "if a file data buffer being dirtied". 
-Please do be careful when describing all these buffers, else it gets
-more confusing that it already is.
-
-
-> transaction, we write the buffer to the disk, move it from the
-> committing transaction to the running transaction, then dirty it.
-> But we don't have to remove the buffer from the committing
-> transaction when the buffer couldn't be written out, otherwise it
-> would miss the error and the committing transaction would not abort.
+> Subject: [PATCH 3/5] jbd: abort when failed to log metadata buffers
 > 
-> This patch adds an error check before removing the buffer from the
-> committing transaction.
+> If we failed to write metadata buffers to the journal space and
+> succeeded to write the commit record, stale data can be written
+> back to the filesystem as metadata in the recovery phase.
+> 
+> To avoid this, when we failed to write out metadata buffers,
+> abort the journal before writing the commit record.
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> ---
+>  fs/jbd/commit.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6.26-rc4/fs/jbd/commit.c
+> ===================================================================
+> --- linux-2.6.26-rc4.orig/fs/jbd/commit.c
+> +++ linux-2.6.26-rc4/fs/jbd/commit.c
+> @@ -734,6 +734,9 @@ wait_for_iobuf:
+>  		/* AKPM: bforget here */
+>  	}
+>  
+> +	if (err)
+> +		journal_abort(journal, err);
+> +
+>  	jbd_debug(3, "JBD: commit phase 6\n");
+>  
+>  	if (journal_write_commit_record(journal, commit_transaction))
+> 
+
+I assume this has all been tested?
+
+How are you finding these problems and testing the fixes?  Fault
+injection?
+
+Does it make sense to proceed into phase 6 here, or should we bale out
+of commit at this point?
+
