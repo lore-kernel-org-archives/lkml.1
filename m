@@ -1,78 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbYFCRar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYFCRbK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658AbYFCRar (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 13:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbYFCRag
+	id S1755254AbYFCRbK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 13:31:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbYFCRar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 13:30:36 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49898 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753192AbYFCRaf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 13:30:35 -0400
-Date: Tue, 3 Jun 2008 18:30:30 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ian Kent <raven@themaw.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, jesper@krogh.cc,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Linux 2.6.26-rc4
-Message-ID: <20080603173029.GD28946@ZenIV.linux.org.uk>
-References: <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk> <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu> <20080603104035.GT28946@ZenIV.linux.org.uk> <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu> <20080603105258.GV28946@ZenIV.linux.org.uk> <1212499623.3025.46.camel@raven.themaw.net> <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> <1212509263.3025.66.camel@raven.themaw.net> <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org> <1212513189.3025.101.camel@raven.themaw.net>
+	Tue, 3 Jun 2008 13:30:47 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:34801 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758216AbYFCRao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 13:30:44 -0400
+Date: Tue, 3 Jun 2008 19:30:13 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan
+	problems
+Message-ID: <20080603173013.GA9490@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	Alan Stern <stern@rowland.harvard.edu>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	David Brownell <david-b@pacbell.net>, linux-acpi@vger.kernel.org,
+	linux-pm@lists.linux-foundation.org
+References: <20080603061618.GB9301@yamamaya.is-a-geek.org> <Pine.LNX.4.44L0.0806031002510.2363-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1212513189.3025.101.camel@raven.themaw.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.44L0.0806031002510.2363-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 01:13:08AM +0800, Ian Kent wrote:
-
-> "What happens is that during an expire the situation can arise
-> that a directory is removed and another lookup is done before
-> the expire issues a completion status to the kernel module.
-> In this case, since the the lookup gets a new dentry, it doesn't
-> know that there is an expire in progress and when it posts its
-> mount request, matches the existing expire request and waits
-> for its completion. ENOENT is then returned to user space
-> from lookup (as the dentry passed in is now unhashed) without
-> having performed the mount request.
+Alan Stern wrote:
+> > > Also, you should run "lspci -vv" as root to see what wakeup signals the 
+> > > USB controllers are issuing.
+[...]
+> > 00:02.1 USB Controller: nVidia Corporation MCP55 USB Controller (rev a2) (prog-if 20 [EHCI])
+> > 	Subsystem: ASUSTeK Computer Inc. Unknown device 8239
+> > 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+> > 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> > 	Latency: 0 (750ns min, 250ns max)
+> > 	Interrupt: pin B routed to IRQ 20
+> > 	Region 0: Memory at fe02e000 (32-bit, non-prefetchable) [size=256]
+> > 	Capabilities: [44] Debug port: BAR=1 offset=0098
+> > 	Capabilities: [80] Power Management version 2
+> > 		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+> > 		Status: D0 PME-Enable- DSel=0 DScale=0 PME+
+> > 	Kernel driver in use: ehci_hcd
 > 
-> The solution used here is to keep track of dentrys in this
-> unhashed state and reuse them, if possible, in order to
-> preserve the flags. Additionally, this infrastructure will
-> provide the framework for the reintroduction of caching
-> of mount fails removed earlier in development."
+> The EHCI controller settings, however, are strange.  The relevant part 
+> is the Power Management Status line near the end:
 > 
-> I wasn't able to do an acceptable re-implementation of the negative
-> caching we had in 2.4 with this framework, so just ignore the last
-> sentence in the above description. 
-
-> Unfortunately no, but I thought that once the dentry became unhashed
-> (aka ->rmdir() or ->unlink()) it was invisible to the dcache. But, of
-> course there may be descriptors open on the dentry, which I think is the
-> problem that's being pointed out.
- 
-... or we could have had a pending mount(2) sitting there with a reference
-to mountpoint-to-be...
-
-> Yes, that would be ideal but the reason we arrived here is that, because
-> we must release the directory mutex before calling back to the daemon
-> (the heart of the problem, actually having to drop the mutex) to perform
-> the mount, we can get a deadlock. The cause of the problem was that for
-> "create" like operations the mutex is held for ->lookup() and
-> ->revalidate() but for a "path walks" the mutex is only held for
-> ->lookup(), so if the mutex is held when we're in ->revalidate(), we
-> could never be sure that we where the code path that acquired it.
+> > 		Status: D0 PME-Enable- DSel=0 DScale=0 PME+
 > 
-> Sorry, this last bit is unclear.
-> I'll need to work a bit harder on the explanation if you're interested
-> in checking further.
+> This means the controller is in the D0 state (as expected) and 
+> PME-Enable is currently turned off ("PME" stands for "Power Management 
+> Event").  But the PME+ at the end means that as soon as PME does get 
+> enabled -- like when the controller is suspended at the start of a 
+> system sleep -- it _will_ send a PME signal.
+> 
+> So for some reason your EHCI controller thinks a wakeup event is 
+> pending.  This means you should examine the contents of the "registers" 
+> file in the debugfs directory for the EHCI controller, not OHCI.
 
-I am.
+melchior:/mnt/ehci/0000:00:02.1# cat registers
+bus pci, device 0000:00:02.1 (driver 10 Dec 2004)
+EHCI Host Controller
+EHCI 1.00, hcd state 1
+ownership 00000001
+SMI sts/enable 0xc0080000
+structural params 0x00101a8a
+capability params 0x0000a086
+status 0008 FLR
+command 010009 (park)=0 ithresh=1 period=256 RUN
+intrenable 37 IAA FATAL PCD ERR INT
+uframe 3f3a
+port 1 status 003400 POWER OWNER sig=k
+port 2 status 001000 POWER sig=se0
+port 3 status 003400 POWER OWNER sig=k
+port 4 status 003400 POWER OWNER sig=k
+port 5 status 001000 POWER sig=se0
+port 6 status 001000 POWER sig=se0
+port 7 status 001000 POWER sig=se0
+port 8 status 001000 POWER sig=se0
+port 9 status 001000 POWER sig=se0
+port 10 status 001000 POWER sig=se0
+irq normal 0 err 0 reclaim 0 (lost 0)
+complete 0 unlink 0
 
-Oh, well...  Looks like RTFS time for me for now...  Additional parts of
-braindump would be appreciated - the last time I've seriously looked at
-autofs4 internal had been ~2005 or so ;-/
+HTH,
+
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
