@@ -1,90 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbYFCVuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbYFCV4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758108AbYFCVuT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 17:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbYFCVuI
+	id S1757401AbYFCV4Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 17:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYFCV4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 17:50:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33942 "EHLO mx1.redhat.com"
+	Tue, 3 Jun 2008 17:56:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51573 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbYFCVuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 17:50:06 -0400
+	id S1753189AbYFCV4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 17:56:16 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
 X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, ebiederm@xmission.com, mingo@elte.hu,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] coredump: zap_threads() must skip kernel threads
-In-Reply-To: Andrew Morton's message of  Tuesday, 3 June 2008 14:15:48 -0700 <20080603141548.15d60a32.akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <20080601153045.GA8244@tv-sign.ru>
-	<20080603141548.15d60a32.akpm@linux-foundation.org>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20080603214959.0208826FC96@magilla.localdomain>
-Date: Tue,  3 Jun 2008 14:49:58 -0700 (PDT)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] s/PF_BORROWED_MM/PF_KTHREAD/
+In-Reply-To: Oleg Nesterov's message of  Sunday, 1 June 2008 19:30:41 +0400 <20080601153041.GA8235@tv-sign.ru>
+References: <20080601153041.GA8235@tv-sign.ru>
+X-Windows: a mistake carried out to perfection.
+Message-Id: <20080603215543.3230026FC96@magilla.localdomain>
+Date: Tue,  3 Jun 2008 14:55:43 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is a bugfix, yes?
-> 
-> How does it get triggered?
-
-Yes, I think it fixes a bug.  The trigger would be an aio request doing
-some work (inside aio_kick_handler) simultaneous with some thread in the
-requester's mm doing a core dump (inside zap_threads).
-
-> Do you think the bug is sufficiently serious to fix it in 2.6.26?  In
-> 2.6.25.x?  If so, it would be better if this patch were not dependent
-> upon the preceding ones, which do not appear to be 2.6.26 or -stable
-> material.
-
-It has probably never been seen for real, but might be possible to produce
-with an exploit that works hard to hit the race.  I'm not sure off hand
-what all the bad effects would be, mainly those of SIGKILL'ing the
-workqueue thread (keventd I guess).  The core-dumping threads will be stuck
-in uninterruptible waits and never be killable.
-
-Oleg's cleanups make the fix much nicer because there is an easy persistent
-flag to check without races.  Probably the most isolated fix for this is
-something like the bit below (wholly untested).  This is hairy enough that
-I think Oleg's 1/3 + 2/3 would be preferable even for -stable.
+I like all three of these changes.  The 1/3 and 2/3 together constitute a
+fix for the coredump vs aio race that is nice and clean.  The 2/2 is all
+cleanup or possibly fixes more arcane cases we haven't enumerated yet.  
+(I would have made that the last patch of the three.)  It merits some
+follow-up looking at all (!task->mm) sorts of tests and making them use
+a helper for what they really mean to express (e.g. is_kernel_thread()
+if that's what they intend).
 
 
 Thanks,
 Roland
-
-
-diff --git a/fs/exec.c b/fs/exec.c
-index 9448f1b..0000000 100644  
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1545,8 +1545,23 @@ static inline int zap_threads(struct tas
- 
- 		p = g;
- 		do {
--			if (p->mm) {
--				if (p->mm == mm) {
-+			struct mm_struct *pmm = p->mm;
-+			if (pmm) {
-+				/*
-+				 * We must ignore a kernel thread (aio)
-+				 * using PF_BORROWED_MM.  But we need
-+				 * task_lock() to avoid races with use_mm()
-+				 * or unuse_mm().
-+				 */
-+				if (pmm == mm) {
-+					task_lock(p);
-+					if (p->flags & PF_BORROWED_MM)
-+						pmm = NULL;
-+					else
-+						pmm = p->mm;
-+					task_unlock(p);
-+				}
-+				if (pmm == mm) {
- 					/*
- 					 * p->sighand can't disappear, but
- 					 * may be changed by de_thread()
