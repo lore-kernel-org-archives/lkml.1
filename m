@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYFCKpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbYFCKqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbYFCKpr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 06:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbYFCKpi
+	id S1753329AbYFCKqG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 06:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbYFCKpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 06:45:38 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57072 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbYFCKph (ORCPT
+	Tue, 3 Jun 2008 06:45:53 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4047 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbYFCKpw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 06:45:37 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, jesper@krogh.cc, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <20080603104035.GT28946@ZenIV.linux.org.uk> (message from Al Viro
-	on Tue, 3 Jun 2008 11:40:35 +0100)
-Subject: Re: Linux 2.6.26-rc4
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org> <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk> <20080603095713.GR28946@ZenIV.linux.org.uk> <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk> <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu> <20080603104035.GT28946@ZenIV.linux.org.uk>
-Message-Id: <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 03 Jun 2008 12:45:33 +0200
+	Tue, 3 Jun 2008 06:45:52 -0400
+Date: Tue, 3 Jun 2008 11:45:38 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, mingo@elte.hu, pavel@suse.cz
+Subject: Re: [patch 2.6.26-rc4-git] PM: boot time suspend selftest
+Message-ID: <20080603104538.GQ27013@shadowen.org>
+References: <200805291333.42057.david-b@pacbell.net> <20080529162257.03426e48.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080529162257.03426e48.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > http://www.kerneloops.org/raw.php?rawid=12419&msgid=
-> > 
-> > Looks like a negative inode in S_ISDIR(mnt->mnt_root->d_inode->i_mode),
-> > which would be due to NFS not properly filling in its root dentry?
+On Thu, May 29, 2008 at 04:22:57PM -0700, Andrew Morton wrote:
+
+> > +static void __init test_wakealarm(struct rtc_device *rtc, suspend_state_t state)
+> > +{
+> > +	static char		err_readtime [] __initdata =
+> > +		KERN_ERR "PM: can't read %s time, err %d\n";
+> > +	static char		err_wakealarm [] __initdata =
+> > +		KERN_ERR "PM: can't set %s wakealarm, err %d\n";
+> > +	static char		err_suspend [] __initdata =
+> > +		KERN_ERR "PM: suspend test failed, error %d\n";
+> > +	static char		info_test [] __initdata =
+> > +		KERN_INFO "PM: test RTC wakeup from '%s' suspend\n";
 > 
-> Look more carefully.  It's path->dentry; aside of the fact that dentry
-> pointer is fetched at offset 8 from one of the arguments (fits path->dentry,
-> too low for mnt->mnt_root),
-
-Yup, realized this after posting.
-
-> do_add_mount() itself has just done S_ISLNK
-> on the very same thing, so it'd die before getting to graft_tree().
+> - One tab before the variable space is a waste of space.  Two tabs is
+>   just extravagant.
 > 
-> No, it's either path_lookup() somehow returning a negative dentry in
-> do_mount() (which shouldn't be possible, unless it's some crap around
-> return_reval in __link_path_walk()) or it's follow_down() giving us
-> a negative dentry.  Which almost certainly would've exploded prior to
-> that...
+> - The space before the [] shouldn't be there.  checkpatch misses this.
 
-I think it must be autofs4 doing something weird.  Like this in
-autofs4_lookup_unhashed():
+Ok, this should be picked up in the next release:
 
-			/*
-			 * Make the rehashed dentry negative so the VFS
-			 * behaves as it should.
-			 */
-			if (inode) {
-				dentry->d_inode = NULL;
+ERROR: space prohibited before open square bracket '['
+#1: FILE: Z152.c:1:
++       static char             info_test [] __initdata =
 
-
-Miklos
+-apw
