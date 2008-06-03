@@ -1,65 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758430AbYFCUIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbYFCUOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758430AbYFCUIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbYFCUIH
+	id S1752517AbYFCUOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 16:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbYFCUOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:08:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57157 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754819AbYFCUIG (ORCPT
+	Tue, 3 Jun 2008 16:14:12 -0400
+Received: from mu-out-0910.google.com ([209.85.134.189]:25096 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754896AbYFCUOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 16:08:06 -0400
-Date: Tue, 3 Jun 2008 13:07:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nix <nix@esperi.org.uk>
-Cc: dhazelton@enter.net, jdike@addtoit.com, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
-Message-Id: <20080603130709.fcf6a751.akpm@linux-foundation.org>
-In-Reply-To: <878wxmfg99.fsf@hades.wkstn.nix>
-References: <20080603190235.GA9511@c2.user-mode-linux.org>
-	<20080603123211.e129c222.akpm@linux-foundation.org>
-	<200806031543.56864.dhazelton@enter.net>
-	<878wxmfg99.fsf@hades.wkstn.nix>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Jun 2008 16:14:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:from;
+        b=R2+1RXG00jSyQNpaHWE0q0Jdj6Hi02NubLldZ7zqepQ20U/9VHofv0T1XbVA3kxnFNpVIGzwRoKjQrUEmi7e1TmSEHnZBcUkeiez1XEWkXMAudPtn9zSI2bzK7TEwm880ma974fn0nEB5I9lCM7FVqLRUEoL/M1NgXxDvficEXE=
+Message-ID: <4845A5EC.9010501@gmail.com>
+Date: Tue, 03 Jun 2008 22:13:32 +0200
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
+       Miklos Szeredi <miklos@szeredi.hu>, Al Viro <viro@zeniv.linux.org.uk>,
+       jamie@shareable.org, Ulrich Drepper <drepper@redhat.com>,
+       linux-fsdevel@vger.kernel.org,
+       Subrata Modak <subrata@linux.vnet.ibm.com>
+Subject: utimensat() non-conformances and fixes [v4] (overview)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Jun 2008 20:52:18 +0100
-Nix <nix@esperi.org.uk> wrote:
+Andrew,
 
-> On 3 Jun 2008, Daniel Hazelton said:
-> 
-> > On Tuesday 03 June 2008 03:32:11 pm Andrew Morton wrote:
-> >> On Tue, 3 Jun 2008 15:02:35 -0400
-> >>
-> >> Jeff Dike <jdike@addtoit.com> wrote:
-> >> > Protection against the host's time going backwards - keep track of the
-> >> > time at the last tick and if it's greater than the current time, keep
-> >> > time stopped until the host catches up.
-> >>
-> >> Strange.  What would cause the host's time (or at least UML's perception
-> >> of it) to go backwards?
-> >
-> > A wild guess would be that the UML process is running "fast" at some point and 
-> > its expectation of the host's time is skewed forward because of that.
-> 
-> Quite so. Simply running ntp on the host (in slew-only mode, no less!) 
-> can cause this.
-> 
-> > Another possibility is that the hosts clock got reset between the times UML 
-> > has checked it and the correction was a negative one.
-> 
-> That too.
-> 
+A follow-on to this mail is a patch (against 2.6.26-rc4) for -mm.  The
+patch fixes several problems in the utimensat() system call.
 
-So if I change the host's time by an hour, the time will not advance at all
-on the guest for the next hour? Sounds suboptimal :)
+I would like to see this patch get into mainline ASAP.  If you don't want
+to push it for .26, I can understand that, since we are late in the cycle.
+ Nevertheless, I will provide some arguments in favor of doing so, in a
+follow-on mail.  (I'll also provide a fairly comprehensive test suite, and
+test results, which may make you feel fairly confident of the patch.)
 
-I suppose the guest should be running an ntp client synced to something
-sane anyway?
+==
+
+In an earlier mail I described four problems with the utimensat()
+implementation, and attempted a clumsy fix,
+http://thread.gmane.org/gmane.linux.man/129
+
+Miklos pointed out a number of problems in my attempted fix, and pushed a
+fix into .26-rc for one of the problems (number 3 in the mail), which was a
+security-related issue (http://thread.gmane.org/gmane.linux.kernel/678130).
+ He also gave me a couple of clues along the way about how to fix the
+remaining problems.
+
+In this mail, I will explain the remaining problems from the beginning.
+(Although Miklos pushed a fix for one of the problems, there still remain
+four problems, because I found another one in the meantime.)
+
+==
+
+While writing a man page for utimensat(2) and futimens(3), I found a few
+bugs in the utimensat() system call (i.e., non-conformances with either
+the specification in the draft POSIX.1-200x revision or traditional Linux
+behavior).
+
+       int futimens(inf fd, const struct timespec times[2]);
+
+       int utimensat(int dirfd, const char *pathname,
+                     const struct timespec times[2], int flags);
+
+1. The POSIX.1 draft says that to do anything other than setting both
+   timestamps to a time other than the current time (i.e., times is
+   not NULL, and both tv_nsec fields are not UTIME_NOW and both
+   tv_nsec fields are not UTIME_OMIT), either:
+   a) the caller's effective user ID must match the file owner; or
+   b) the caller must have appropriate privileges.
+   If this condition is violated, then the error EPERM should result.
+   However, the current implementation does not generate EPERM if
+   one tv_nsec field is UTIME_NOW while the other is TIME_OMIT -- it
+   should give this error for that case.
+
+2. The POSIX.1 draft says:
+
+        Only a process with the effective user ID equal to the
+        user ID of the file, *or with write access to the file*,
+        or with appropriate privileges may use futimens() or
+        utimensat() with a null pointer as the times argument
+        or with both tv_nsec fields set to the special value
+        UTIME_NOW.
+
+   The important piece here is "with write access to the file", and
+   this matters for futimens(), which deals with an argument that
+   is a file descriptor referring to the file whose timestamps are
+   being updated,  The standard is saying that the "writability"
+   check is based on the file permissions, not the access mode with
+   which the file is opened.  (This behavior is consistent with the
+   semantics of FreeBSD's futimes().)  However, Linux is currently
+   doing the latter -- futimens(fd, times) is implemented as
+
+       utimensat(fd, NULL, times, 0)
+
+   and within the utimensat() implementation we have the code:
+
+                f = fget(dfd);  // dfd is 'fd'
+                ...
+                if (f) {
+                        if (!(f->f_mode & FMODE_WRITE))
+                                goto mnt_drop_write_and_out;
+
+   The check should instead be based on the file permissions.
+
+3. The POSIX.1 draft says that if a times[n].tv_nsec field is
+   UTIME_OMIT or UTIME_NOW, then the value in the corresponding tv_sec
+   field is ignored.  However the current Linux implementation
+   requires the tv_sec value to be zero (or the EINVAL error results).
+   This requirement should be removed.
+
+4. A further bug relates to traditional Linux behavior.  Traditionally
+   (i.e., utime(2) and utimes(2)), the EPERM error could also occur if
+   the 'times' argument was non-NULL (i.e., we are setting the
+   timestamps to a value other than the current time) and the file is
+   marked as immutable or append-only.  The current implementation
+   also returns this error if 'times' is non-NULL and the tv_nsec
+   fields are both UTIME_NOW.  For consistency, the
+
+   (times != NULL && times[0].tv_nsec == UTIME_NOW &&
+                     times[1].tv_nsec == UTIME_NOW)
+
+   case should be treated like the traditional utimes() case where
+   'times' is NULL.  That is, the call should succeed for a file
+   marked append-only and should give the error EACCES if the file
+   is marked as immutable.
+
+Cheers,
+
+Michael
+
+
+PS For completeness, here are the expected results from various cases of
+calls to utime() and utimensat().
+
+                |   utime[s]() |     utimensat() 'times' argument
+                | NULL   non-  | NULL   .       non-NULL arg
+                | arg    NULL  | arg    . 2*NOW  2*OMIT  OMIT   {x,y}
+                |        arg   |        .                +NOW
+----------------+--------------+-------------------------------------
+file owned by/  |              |        .
+permissions     |              |        .
+                |              |        .
+caller     400  | succ   succ  | succ   . succ   succ    succ   succ
+                |              |        .
+not-caller 644  | EACCES EPERM | EACCES . EACCES succ    EPERM  EPERM
+                |              |        .
+not-caller 666  | succ   EPERM | succ   . succ   succ    EPERM  EPERM
+----------------+--------------+-------------------------------------
+ext2 attributes |              |        .
+append-only     | succ   EPERM | succ   . succ   succ    EPERM  EPERM
+                |              |        .
+immutable       | EACCES EPERM | EACCES . EACCES succ    EPERM  EPERM
+
+
