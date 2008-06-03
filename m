@@ -1,68 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbYFCQSH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYFCQ2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752845AbYFCQSH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 12:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbYFCQRm
+	id S1753341AbYFCQ2O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYFCQ15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 12:17:42 -0400
-Received: from mx2.suse.de ([195.135.220.15]:34766 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753236AbYFCQRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 12:17:41 -0400
-Message-ID: <48456EA3.6030909@suse.de>
-Date: Tue, 03 Jun 2008 18:17:39 +0200
-From: Stefan Assmann <sassmann@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 3 Jun 2008 12:27:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37477 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751244AbYFCQ14 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 12:27:56 -0400
+Date: Tue, 3 Jun 2008 09:26:05 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 001/001] mmu-notifier-core v17
+In-Reply-To: <20080509193230.GH7710@duo.random>
+Message-ID: <alpine.LFD.1.10.0806030909030.3473@woody.linux-foundation.org>
+References: <20080509193230.GH7710@duo.random>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Jon Masters <jcm@redhat.com>
-Cc: Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
-References: <12124107071847-git-send-email-od@suse.de> <1212508321.22357.13.camel@londonpacket.bos.redhat.com>
-In-Reply-To: <1212508321.22357.13.camel@londonpacket.bos.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jon Masters schrieb:
-> I like the patch series, insomuch as the intention is good, and it does
-> away with the special PCI IRQ quirk patches some of us are carrying in
-> our vendor trees to temporarily workaround this problem[0]. Also, I'm
-> extremely impressed with the research that went into this, since I
-> repeatedly tried to get ahold of information about disabling this
-> unfortunate "feature" of various bridges, without much success.
->   
-In a perfect world these "features" as you call them should be disabled 
-by the bios, but this is not happening everywhere. Some bioses seem to 
-have code for that in ACPI others rely on the OS to do the work.
-> However, I really am not happy with the implementation as it stands. The
-> duplicated table of quirks that doesn't really fit in with the existing
-> PCI quirks infrastructure, the weird naming of the kernel options, and
-> various other things that Thomas has already mentioned in his reply.
-> Therefore, I think this needs a bit more reworking before going in.
->   
-We're already working on that thanks to Thomas' review and will send an 
-updated patchset asap. If there's anything you'd like to have changed 
-feel free to let us know.
-> Thanks!
->
-> Jon.
->
-> [0] The real fix come when we move IRQ handling in RT to per-device
-> threads, as is the longer term intention. Then you can quiesse the
-> device immediately and not the mask/unmask cycle that fails here.
->
->
->   
 
-Thanks :)
-    Stefan
 
--- 
-Stefan Assmann          | SUSE LINUX Products GmbH
-Software Engineer       | Maxfeldstr. 5, D-90409 Nuernberg
-Mail : sassmann@suse.de | GF: Markus Rex, HRB 16746 (AG Nuernberg)
+On Fri, 9 May 2008, Andrea Arcangeli wrote:
+> 
+> At least for KVM without this patch it's impossible to swap guests
+> reliably. And having this feature and removing the page pin allows
+> several other optimizations that simplify life considerably.
 
+Ok, this looks ok as far as I'm concerned. I did not look at any details, 
+so obviously other VM people need to ack the parts they care about, but at 
+least I think this one is fine from a "big picture".
+
+I do have some small nits that are just about trivial stuff.
+
+> 1) Introduces list_del_init_rcu and documents it (fixes a comment for
+>    list_del_rcu too)
+
+I think this should go in separately, and be split up into a patch of its 
+own, just because it's really an independent area. So make it [1/3].
+
+> 2) mm_take_all_locks() to register the mmu notifier when the whole VM
+>    isn't doing anything with "mm". This allows mmu notifier users to
+>    keep track if the VM is in the middle of the
+>    invalidate_range_begin/end critical section with an atomic counter
+>    incraese in range_begin and decreased in range_end.
+
+Similarly, even without any users, I think this can be posted as an 
+independent patch, just for setting things up, and to make the whole thing 
+easier to look through and review. So make this [2/3].
+
+But before doing that, can you split up the low-level single-vma anon/file 
+locking/unlocking, please?
+
+In other words, your 'mm_take_all_locks()' rigth now looks like it _works_ 
+correctly, but it nests too deeply considering the complexity of it. 
+There's really subtle things going on inside that for-loop, and I think it 
+would be much better to split those low-level locking rules out.
+
+IOW, instead of:
+
+> +int mm_take_all_locks(struct mm_struct *mm)
+> +{
+> +	struct vm_area_struct *vma;
+> +	int ret = -EINTR;
+> +
+> +	BUG_ON(down_read_trylock(&mm->mmap_sem));
+> +
+> +	mutex_lock(&mm_all_locks_mutex);
+> +
+> +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> +		struct file *filp;
+> +		if (signal_pending(current))
+> +			goto out_unlock;
+> +		if (vma->anon_vma && !test_bit(0, (unsigned long *)
+> +					       &vma->anon_vma->head.next)) {
+> +			/*
+> +			 * The LSB of head.next can't change from
+> +			 * under us because we hold the
+> +			 * global_mm_spinlock.
+> +			 */
+> +			spin_lock(&vma->anon_vma->lock);
+...
+
+ie, can you please make it be
+
+	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+		if (signal_pending(current))
+			goto out_unlock;
+		if (vma->anon_vma)
+			vm_lock_anon_vma(vma->anon_vma);
+		if (vma->vm_file && vma->vm_file->f_mapping)
+			vm_lock_mapping(vma->vm_file->f_mapping);
+	}
+
+and the same thing for unlocking.. Doesn't that look more obvious and 
+easier to understand from a high-level standpoing (and then the individual 
+locking rules for mappings/anon_vma's will also be more obvious, just 
+because they are separated from the higher-level code).
+
+The comments are fine, but even with the comments I'd prefer you to write 
+the code so that you don't need to break up the conditionals over multiple 
+lines etc.
+
+Anyway - I didn't look very much at the actual _notifier_ stuff (ie the 
+thing that I think should be [patch 3/3]), so I don't have any real 
+comments about that part - but I don't really care either. Becasue as long 
+as it doesn't mess up the core VM logic, I no longer have any real 
+objections.
+
+I'd obviously want to see ack's by people like Andrew, Hugh and Nick, but 
+as far as I am concerned, if you just do the trivial cleanup/split, you 
+can add an "Acked-by: Linus Torvalds <torvalds@linux-foundation.org>" to 
+at least the two first patches of the split-up series.
+
+		Linus
