@@ -1,208 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYFCK4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYFCK5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbYFCK4z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 06:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYFCK4r
+	id S1757311AbYFCK5k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 06:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbYFCK5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 06:56:47 -0400
-Received: from www.tglx.de ([62.245.132.106]:37378 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbYFCK4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 06:56:46 -0400
-Date: Tue, 3 Jun 2008 12:56:28 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Olaf Dabrunz <od@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org,
-       Stefan Assmann <sassmann@suse.de>
-Subject: Re: [PATCH 7/7] bootirqquirk= parameter to enable bootirq quirks
- for additional chips
-In-Reply-To: <1212410707427-git-send-email-od@suse.de>
-Message-ID: <alpine.LFD.1.10.0806031255230.3235@apollo.tec.linutronix.de>
-References: <12124107071847-git-send-email-od@suse.de> <1212410707427-git-send-email-od@suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 3 Jun 2008 06:57:32 -0400
+Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:54273 "EHLO
+	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751708AbYFCK5b convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 06:57:31 -0400
+X-Greylist: delayed 587 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 06:57:31 EDT
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:From:Organization:To:Subject:Date:User-Agent:
+   MIME-Version:Content-Type:Content-Transfer-Encoding:
+   Content-Disposition:Message-Id;
+  b=v8AP3kUbeXT8DXJ588XLdgPoMxJF7TCYy25ppJkbKmQykKHr23HZW/D9
+   GR2HLv4cB09EhYszndKdLoStlBoNzijz9NV3ZiY9X1XrFsvxVVR5SJKfl
+   oc8foRkJsmFLjkG;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.27,581,1204498800"; 
+   d="scan'208";a="14458423"
+X-IronPort-AV: E=Sophos;i="4.27,582,1204498800"; 
+   d="scan'208";a="34432211"
+From: Rainer Koenig <Rainer.Koenig@fujitsu-siemens.com>
+Organization: IP BC E SW OS
+To: linux-kernel@vger.kernel.org
+Subject: Who can backport the AHCI driver to older kernels
+Date: Tue, 3 Jun 2008 12:47:41 +0200
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008, Olaf Dabrunz wrote:
-> From: Olaf Dabrunz <od@suse.de>
-> 
-> The existing bootirq quirks and the reroute workaround may work for other chips
-> where we could not test them. This parameter allows users to apply these to
-> other chips without the need to re-build the kernel.
-> 
-> This patch was conceived simultaneously by Stefan Assmann, Daniel Gollub and
-> Olaf Dabrunz. The implementation is the author's.
-> 
->     bootirqquirk=0x<vendor>,0x<device>,<quirk_type>
-> 
->     - quirk type  1 - 32 selects an IRQ reroute algorithm for devices
->       connected to that PCI bridge (currently only algorithm "1" is
->       implemented),
-> 
->     - quirk type 33 -  x applies one of the known quirks to the PCI
->       device, currently these:
-> 
->         33 -> quirk_disable_intel_boot_interrupt
->         34 -> quirk_disable_broadcom_boot_interrupt
->         35 -> quirk_disable_amd_8111_boot_interrupt
->         36 -> quirk_disable_amd_813x_boot_interrupt
->         37 -> quirk_disable_amd_sb700s_boot_interrupt
-
-Oh no. This can be used as an debug aid when the need arises, but we
-dont want to add this to the kernel.
-
-Thanks,
-	tglx
+Hi,
  
-> Signed-off-by: Olaf Dabrunz <od@suse.de>
-> Signed-off-by: Stefan Assmann <sassmann@suse.de>
-> ---
->  drivers/pci/quirks.c |  118 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 118 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index 090ce38..bb7fa65 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -1576,6 +1576,113 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_PXH_1,	quirk_re
->  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_PXHV,	quirk_reroute_to_boot_interrupts_intel);
->  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_80332_0,	quirk_reroute_to_boot_interrupts_intel);
->  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_80332_1,	quirk_reroute_to_boot_interrupts_intel);
-> +
-> +/*
-> + * For additional boot irq quirks save boot time settings or call the quirks
-> + * directly.
-> + */
-> +
-> +#define MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY			32
-> +struct pci_fixup __start_bc_pci_fixups_early[MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY];
-> +struct pci_fixup *__end_bc_pci_fixups_early = __start_bc_pci_fixups_early +
-> +					MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY;
-> +
-> +static void (*bootirq_quirk_func[])(struct pci_dev *dev) = {
-> +	&quirk_disable_intel_boot_interrupt,
-> +	&quirk_disable_broadcom_boot_interrupt,
-> +	&quirk_disable_amd_8111_boot_interrupt,
-> +	&quirk_disable_amd_813x_boot_interrupt,
-> +	&quirk_disable_amd_sb700s_boot_interrupt,
-> +};
-> +
-> +int __init bootirqquirk_setup(char *str)
-> +{
-> +	int ints[4];
-> +	struct quirk_bootirq_reroute_dev tmp;
-> +	int i;
-> +
-> +	str = get_options(str, ARRAY_SIZE(ints), ints);
-> +	if (!str)
-> +		return 0;
-> +
-> +	if (nobootirqquirk)
-> +		return 1;
-> +
-> +	/* all parameters are required */
-> +	if (ints[0] != 3)
-> +		return 0;
-> +
-> +	/* save settings */
-> +	tmp.vendor = ints[1];
-> +	tmp.device = ints[2];
-> +	tmp.quirk_variant = ints[3];
-> +
-> +	/*
-> +	 * quirk variants > MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS select quirk
-> +	 * functions
-> +	 */
-> +	if (tmp.quirk_variant > MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS) {
-> +		for (i = 0; i < MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY; i++) {
-> +			if (__start_bc_pci_fixups_early[i].vendor == 0)
-> +				break;
-> +
-> +			if (__start_bc_pci_fixups_early[i].vendor == tmp.vendor &&
-> +			    __start_bc_pci_fixups_early[i].device == tmp.device)
-> +				return 1;	/* already in array */
-> +		}
-> +
-> +		if (i >= MAX_BOOTTIME_CONFIG_PCI_FIXUPS_EARLY) {
-> +			printk(KERN_INFO "PCI quirk: too many boottime "
-> +					"configurable early quirk entries when "
-> +					"trying to add 0x%04x:0x%04x\n",
-> +					tmp.vendor, tmp.device);
-> +			return 0;
-> +		}
-> +
-> +		if (tmp.quirk_variant > ARRAY_SIZE(bootirq_quirk_func) +
-> +				MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS) {
-> +			printk(KERN_INFO "PCI quirk: no such quirk function: "
-> +					"%d\n", tmp.quirk_variant);
-> +			return 0;
-> +		}
-> +
-> +		__start_bc_pci_fixups_early[i].vendor = tmp.vendor;
-> +		__start_bc_pci_fixups_early[i].device = tmp.device;
-> +		__start_bc_pci_fixups_early[i].hook =
-> +				bootirq_quirk_func[tmp.quirk_variant -
-> +				(MAX_QUIRK_BOOTIRQ_REROUTE_VARIANTS + 1)];
-> +	} else {
-> +		for (i = 0; i < MAX_QUIRK_BOOTIRQ_REROUTE_DEVS; i++) {
-> +			if (quirk_bootirq_reroute_devs[i].vendor == 0)
-> +				break;
-> +
-> +			if (quirk_bootirq_reroute_devs[i].vendor == tmp.vendor &&
-> +			    quirk_bootirq_reroute_devs[i].device == tmp.device)
-> +				return 1;	/* already in array */
-> +		}
-> +
-> +		if (i >= MAX_QUIRK_BOOTIRQ_REROUTE_DEVS) {
-> +			printk(KERN_INFO "PCI quirk: too many reroute entries when "
-> +					"trying to add 0x%04x:0x%04x\n",
-> +					tmp.vendor, tmp.device);
-> +			return 0;
-> +		}
-> +
-> +		quirk_bootirq_reroute_devs[i].vendor = tmp.vendor;
-> +		quirk_bootirq_reroute_devs[i].device = tmp.device;
-> +		quirk_bootirq_reroute_devs[i].quirk_variant = tmp.quirk_variant;
-> +
-> +		reroute_to_boot_interrupts = 1;
-> +	}
-> +
-> +	printk(KERN_INFO "PCI quirk: reroute interrupts for 0x%04x:0x%04x\n",
-> +			tmp.vendor, tmp.device);
-> +	return 1;
-> +}
-> +
-> +/* bootirqquirk=0x<vendor>,0x<device>,<quirk_type> */
-> +__setup("bootirqquirk=", bootirqquirk_setup);
-> +
->  #endif /* CONFIG_X86_IO_APIC */
->  
->  /*
-> @@ -1773,6 +1880,17 @@ void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev)
->  		return;
->  	}
->  	pci_do_fixups(dev, start, end);
-> +
-> +	switch(pass) {
-> +	case pci_fixup_early:
-> +		start = __start_bc_pci_fixups_early;
-> +		end = __end_bc_pci_fixups_early;
-> +		break;
-> +
-> +	default:
-> +		return;
-> +	}
-> +	pci_do_fixups(dev, start, end);
->  }
->  EXPORT_SYMBOL(pci_fixup_device);
->  
-> -- 
-> 1.5.2.4
-> 
-> -- 
-> Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, N??rnberg
-> 
+I need help and/or advice on the following problem:
+
+New mainboard platfrom with latest chipset from a chipset vendor that 
+can't do the job that we are asking for. The chipset (especially the
+SATA controller is supported in Kernel 2.6.24 and later. 
+
+The target market for those boards is using old fashioned distributions 
+like CentOS, Debian, Fedora 8 openSUSE 10 and so on. So the gap is that 
+the latest driver from 2.6.24 is not yet in those distributions. The 
+impact of this is that the customer in the target market can't use the
+mainboards to run actual Linux distributions on them.
+
+So there is a need ot backport e.g. the AHCI driver from 2.6.24 to 
+2.6.16 or 2.6.18. Doing a diff on the sources makes me think this is a 
+sort of "mission impossible" since it sureley isn't just the ahci code
+that changed but also a lot in the kernel infrastructure meanwhile.
+
+So what options do we have to help the customer? Changing to 2.6.24 
+kernel is not an option due to the customer. So it looks like the 
+only way to "solve" this is a backport, but then we come to "who can
+do this?". 
+
+Any hints welcome and thanks a lot for your attention
+Rainer
+-- 
+Dipl.-Inf. (FH) Rainer Koenig
+Project Manager Linux Business Clients
+Dept. IP BC E SW OS
+
+Fujitsu Siemens Computers 
+Bürgermeister-Ullrich-Str. 100
+86199 Augsburg
+Germany
+
+Telephone: +49-821-804-3321
+Telefax:   +49-821-804-2131
+Mail:      mailto:Rainer.Koenig@fujitsu-siemens.com 
+
+Internet         www.fujitsu-siemens.com
+Company Details  www.fujitsu-siemens.com/imprint.html
