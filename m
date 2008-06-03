@@ -1,129 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbYFCMWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYFCM1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757772AbYFCMWi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 08:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbYFCMWb
+	id S1755232AbYFCM1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 08:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbYFCM1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 08:22:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:34299 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbYFCMWa (ORCPT
+	Tue, 3 Jun 2008 08:27:04 -0400
+Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:59575
+	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752342AbYFCM1D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 08:22:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XBWPc/bM6J3hvNySmhIMjDhQJ5RAluyXZAlf1Tspj6UL+8TKq91VqcU4yRGBCABrngPg1+F5E97IFhNZfOo3sZduy6DCJAkZLrHuuTjNO1Pof3kEH6AGJK733nu+h/FWrOuh5srNPUFzGoiLvjItnhQ97EeyCnrUiaiClvFGYC8=
-Message-ID: <d1af83620806030522i4b8120dgda19d3196f0838f5@mail.gmail.com>
-Date: Tue, 3 Jun 2008 09:22:28 -0300
-From: "Kevin Winchester" <kjwinchester@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: linux-next: WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
-Cc: "Ingo Molnar" <mingo@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1212483192.6304.8.camel@twins>
+	Tue, 3 Jun 2008 08:27:03 -0400
+Message-ID: <48453909.4000301@sngx.net>
+Date: Tue, 03 Jun 2008 07:28:57 -0500
+From: James Cammarata <jimi@sngx.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bill Fink <billfink@mindspring.com>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
+References: <482DA5B6.1020606@sngx.net>	<482DB46A.8020103@cosmosbay.com>	<482EF192.4070707@sngx.net>	<482F5113.5090703@cosmosbay.com>	<482F610D.2080108@sngx.net>	<20080518003104.GK28241@solarflare.com>	<482FBA09.80201@sngx.net>	<483E0AAE.2020107@sngx.net>	<20080528221118.63da4092.akpm@linux-foundation.org>	<483EA2D1.8050603@sngx.net>	<20080529154525.3916c7b5@core>	<20080530151250.b44a119a.billfink@mindspring.com>	<20080531131143.516ca56e@core>	<20080531195702.0b879dd1.billfink@mindspring.com>	<48437C25.7080400@gdt.id.au> <20080602121007.1e81cf05.billfink@mindspring.com>
+In-Reply-To: <20080602121007.1e81cf05.billfink@mindspring.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4844868F.20104@gmail.com> <1212483192.6304.8.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 3, 2008 at 5:53 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> On Mon, 2008-06-02 at 20:47 -0300, Kevin Winchester wrote:
->> In next-20080530 and next-20080602 (and possibly earlier - I can't
->> remember the linux-next tree before that I tried) I get the following:
->>
->> [   12.885153] ------------[ cut here ]------------
->> [   12.885203] WARNING: at kernel/lockdep.c:2680 check_flags+0x98/0x151()
->> [   12.885248] Pid: 4, comm: watchdog/0 Not tainted
->> 2.6.26-rc4-next-20080602 #13
->> [   12.885292]
->> [   12.885293] Call Trace:
->> [   12.885364]  [<ffffffff8022bbd5>] warn_on_slowpath+0x58/0x8a
->> [   12.885410]  [<ffffffff804c9cfe>] ? _spin_unlock_irqrestore+0x51/0x6d
->> [   12.885455]  [<ffffffff8032ff41>] ? debug_locks_off+0x9/0x3c
->> [   12.885498]  [<ffffffff802582dd>] ? ftrace_record_ip+0x1fa/0x272
->> [   12.885542]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
->> [   12.885584]  [<ffffffff8020b2c0>] ? mcount_call+0x5/0x35
->> [   12.885627]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
->> [   12.885668]  [<ffffffff80247c80>] check_flags+0x98/0x151
->> [   12.885710]  [<ffffffff8024ae72>] lock_acquire+0x4a/0xa9
->> [   12.885753]  [<ffffffff8025278a>] ? watchdog+0xc5/0x1ff
->> [   12.885795]  [<ffffffff802526c5>] ? watchdog+0x0/0x1ff
->> [   12.885837]  [<ffffffff804c98da>] _read_lock+0x37/0x43
->> [   12.885879]  [<ffffffff8025278a>] watchdog+0xc5/0x1ff
->> [   12.885921]  [<ffffffff802526c5>] ? watchdog+0x0/0x1ff
->> [   12.885963]  [<ffffffff8023e48b>] kthread+0x4e/0x7b
->> [   12.886005]  [<ffffffff8020bf18>] child_rip+0xa/0x12
->> [   12.886046]  [<ffffffff80227d8f>] ? finish_task_switch+0x57/0x92
->> [   12.886090]  [<ffffffff804c9d55>] ? _spin_unlock_irq+0x3b/0x57
->> [   12.886133]  [<ffffffff8020bad3>] ? restore_args+0x0/0x30
->> [   12.886137]  [<ffffffff8023e43d>] ? kthread+0x0/0x7b
->> [   12.886137]  [<ffffffff8020bf0e>] ? child_rip+0x0/0x12
->> [   12.886137]
->> [   12.886137] ---[ end trace 60e7f098a6913839 ]---
->> [   12.886137] possible reason: unannotated irqs-on.
->> [   12.886137] irq event stamp: 20
->> [   12.886137] hardirqs last  enabled at (19): [<ffffffff80249cc3>]
->> trace_hardirqs_on+0xd/0xf
->> [   12.886137] hardirqs last disabled at (20): [<ffffffff80248565>]
->> trace_hardirqs_off+0xd/0xf
->> [   12.886137] softirqs last  enabled at (0): [<ffffffff80229fef>]
->> copy_process+0x2da/0x109e
->> [   12.886137] softirqs last disabled at (0): [<0000000000000000>] 0x0
->>
->> Do I understand this correctly that something enabled irqs in a way that
->> got around lockdep?  I assume the problem is not in watchdog, just that
->> the watchdog was the next thing to run that interacted with irqs and
->> thus lockdep picked up the situation then?
->>
->> Is there additional debugging I can do, given some instructions?  If the
->> cause is readily apparent to anyone, could they let me know (for my own
->> interest) why it is apparent so that I can investigate things like this
->> further next time?
->
->
-> You are correct - someone did sti but failed to call
-> trace_hardirqs_on(). Frequently its possible to isolate the code from
-> knowing the last recorded event:
->
-> [   12.886137] irq event stamp: 20
-> [   12.886137] hardirqs last disabled at (20): [<ffffffff80248565>] trace_hardirqs_off+0xd/0xf
->
-> However your compilation seems to have lost the caller IP:
->
-> void trace_hardirqs_off(void)
-> {
->        trace_hardirqs_off_caller(CALLER_ADDR0);
-> }
-> EXPORT_SYMBOL(trace_hardirqs_off);
->
-> So that is of little help here. (Not sure how that happened, nor how you
-> could fix that - perhaps turn on some debugging knobs like build with
-> debug info etc..)
->
+> First of all, when assisting a user, they typically aren't even
+> running an snmp daemon (and there might be firewall issues to
+> access it if they are).  And I don't think the "ethtool -S" driver
+> stats are even accessible via SNMP (although they may contribute
+> to more generic interface stats which are), and it is the specific
+> driver stats which are often key to help diagnosing the problem.
 
-Could this be related to CONFIG_CC_OPTIMIZE_INLINING (or whatever it
-is called now)?  I am pretty sure I have that enabled.  I will check
-the rest of my config this evening to see if there is anything else I
-can turn on/off to help.
+Ok, just to jump back in and add my $0.02, I plan to send a patch to 
+the ethtool project to do what was suggested (snapshot to /var, and 
+diff stats against that for future reference).  I would just like to 
+point out that this will introduce inconsistencies between _every_ 
+other source of interface stats (ifconfig/procfs/etc).  I can deal 
+with that, it just means one more thing to keep track of when you're 
+troubleshooting.
 
->
->> This is completely reproducible on every boot - should I try to bisect it?
->
-> That is a possibility yes - if you can find the offending patch it
-> should be relatively straight forward to find the offending sti.
->
-
-Sure - I can try it this evening.  Also, is calling sti the only way
-this could have happened?  And is linux-next broken out into a single
-patch?  I wouldn't expect there to be too many calls to sti, so a grep
-in the patch file might be quicker than bisection.
-
-Thanks,
-
--- 
-Kevin Winchester
+Also, I'd like to point out that the "stepping on other peoples toes" 
+argument is a bogus one, since most major network vendors include this 
+ability, and it's not exactly a concern now.
