@@ -1,41 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbYFCGyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbYFCG5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbYFCGyh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 02:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbYFCGyN
+	id S1755823AbYFCG5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 02:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYFCG4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 02:54:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:44673 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752511AbYFCGyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 02:54:11 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18500.59345.230174.727316@cargo.ozlabs.ibm.com>
-Date: Tue, 3 Jun 2008 16:42:25 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH -mm] clean up duplicated alloc/free_thread_info
-In-Reply-To: <84144f020806022306h236a48cbv32b82cfa83fe4ee6@mail.gmail.com>
-References: <20080603140620S.fujita.tomonori@lab.ntt.co.jp>
-	<84144f020806022306h236a48cbv32b82cfa83fe4ee6@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 22.1.1
+	Tue, 3 Jun 2008 02:56:52 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:55138 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752511AbYFCG4w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 02:56:52 -0400
+Message-Id: <20080603065712.322118000@bull.net>
+References: <20080603065633.480505000@bull.net>
+User-Agent: quilt/0.45-1
+Date: Tue, 03 Jun 2008 08:56:34 +0200
+From: Nadia.Derbey@bull.net
+To: akpm@linux-foundation.org, paulmck@linux.vnet.ibm.com
+Cc: manfred@colorfullife.com, lnxninja@linux.vnet.ibm.com, efault@gmx.de,
+       linux-kernel@vger.kernel.org, Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: [PATCH -mm1] Remove useless calls to INIT_RCU_HEAD in the idr code (was Scalability requirements for sysv ipc - v3)
+Content-Disposition: inline; filename=remove_useless_init_rcu_head_from_idr_code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg writes:
+Since I didn't get any answer yesterday, (see http://lkml.org/lkml/2008/6/2/20)
+here's the patch after Paul's review.
 
-> Yeah, I too have wondered why some architectures use kmalloc() whereas
-> others use the page allocator. Is THREAD_SIZE significantly smaller
-> than PAGE_SIZE for those?
 
-64-bit powerpc uses 16k kernel stacks and either 4k or 64k page size.
-If the page size is 64k then we don't want to allocate a whole page
-for a kernel stack.
+Regards,
+Nadia
 
-Paul.
+[ PATCH 01/01 ]
+
+This is a trivial patch that removes unneeded calls to INIT_RCU_HEAD() in the
+idr api code.
+
+This patch applies to 2.6.26-rc2-mm1.
+
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+
+---
+ lib/idr.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+Index: linux-2.6.26-rc2-mm1/lib/idr.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/lib/idr.c	2008-05-29 13:09:01.000000000 +0200
++++ linux-2.6.26-rc2-mm1/lib/idr.c	2008-06-02 09:32:46.000000000 +0200
+@@ -185,7 +185,6 @@ static int sub_alloc(struct idr *idp, in
+ 			new = get_from_free_list(idp);
+ 			if (!new)
+ 				return -1;
+-			INIT_RCU_HEAD(&new->rcu_head);
+ 			rcu_assign_pointer(p->ary[m], new);
+ 			p->count++;
+ 		}
+@@ -211,7 +210,6 @@ build_up:
+ 	if (unlikely(!p)) {
+ 		if (!(p = get_from_free_list(idp)))
+ 			return -1;
+-		INIT_RCU_HEAD(&p->rcu_head);
+ 		layers = 1;
+ 	}
+ 	/*
+@@ -239,7 +237,6 @@ build_up:
+ 		}
+ 		new->ary[0] = p;
+ 		new->count = 1;
+-		INIT_RCU_HEAD(&new->rcu_head);
+ 		if (p->bitmap == IDR_FULL)
+ 			__set_bit(0, &new->bitmap);
+ 		p = new;
+
+--
