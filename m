@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbYFCLSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbYFCLWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbYFCLSn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 07:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbYFCLSL
+	id S1756817AbYFCLWp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 07:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYFCLWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 07:18:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50810 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756055AbYFCLSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 07:18:09 -0400
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 3/3] sunrpc: change default for pooled services to
-	SVC_POOL_AUTO and make settings persistent
-To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       bfields@fieldses.org
-Date: Tue, 03 Jun 2008 07:18:07 -0400
-Message-ID: <20080603111807.8769.56170.stgit@dantu.usersys.redhat.com>
-In-Reply-To: <20080603111757.8769.69366.stgit@dantu.usersys.redhat.com>
-References: <20080603111757.8769.69366.stgit@dantu.usersys.redhat.com>
-User-Agent: StGIT/0.14.2
+	Tue, 3 Jun 2008 07:22:36 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40414 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbYFCLWf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 07:22:35 -0400
+Date: Tue, 3 Jun 2008 12:22:21 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mtk.manpages@googlemail.com, drepper@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
+Message-ID: <20080603112221.GW28946@ZenIV.linux.org.uk>
+References: <482D4665.4050401@gmail.com> <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com> <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current default for pooled services is SVC_POOL_GLOBAL, which just
-does allocations in whatever pool the current process is running, and
-doesn't restrict which CPUs the tasks will run.
+On Tue, Jun 03, 2008 at 01:13:00PM +0200, Miklos Szeredi wrote:
+> > > I'm not sure of the correct way to get the required nameidata (to do a
+> > > vfs_permission() call) from the file descriptor.  Can you give me a
+> > > tip there?
+> > 
+> > Could you point me at the right way of doing this?
+> 
+> You don't need nameidata for this at all.  Just call permission() with
+> a NULL nameidata.
+> 
+> Ugly API?  Yes, will be cleaned up if we manage to find some common
+> ground with the VFS maintainers.
 
-Change the default to SVC_POOL_AUTO so that large-scale machines will
-automatically choose an allocation and cpu masking scheme that's better
-suited to their architecture. Also, change it so that when the pool
-refcount goes to zero, that we do not reset the allocation scheme to the
-compile-time default. The setting should stick once it's made.
+As soon as I'm done with sysctls...
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
-
- net/sunrpc/svc.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
-index a61e7aa..7238c37 100644
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -39,7 +39,7 @@ enum {
- 	SVC_POOL_PERCPU,	/* one pool per cpu */
- 	SVC_POOL_PERNODE	/* one pool per numa node */
- };
--#define SVC_POOL_DEFAULT	SVC_POOL_GLOBAL
-+#define SVC_POOL_DEFAULT	SVC_POOL_AUTO
- 
- /*
-  * Structure for mapping cpus to pools and vice versa.
-@@ -280,7 +280,6 @@ svc_pool_map_put(void)
- 	mutex_lock(&svc_pool_map_mutex);
- 
- 	if (!--m->count) {
--		m->mode = SVC_POOL_DEFAULT;
- 		kfree(m->to_pool);
- 		kfree(m->pool_to);
- 		m->npools = 0;
-
+FWIW, I very much doubt that you are right wrt required permissions, though.
+AFAICS, intent here is "if you can write to file, you can touch the timestamps
+anyway" and having descriptor opened for write gives that, current permissions
+be damned.
