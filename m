@@ -1,54 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbYFCP6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbYFCQAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753846AbYFCP6x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 11:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYFCP6p
+	id S1754171AbYFCQAo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYFCQAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 11:58:45 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49037 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbYFCP6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 11:58:45 -0400
-Date: Tue, 3 Jun 2008 17:59:15 +0200
-From: Olaf Dabrunz <od@suse.de>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Stefan Assmann <sassmann@suse.de>
-Subject: Re: [PATCH 4/7] disable broadcomm legacy boot interrupt generation
-Message-ID: <20080603155914.GC16200@suse.de>
-Mail-Followup-To: Jon Masters <jonathan@jonmasters.org>,
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-	Stefan Assmann <sassmann@suse.de>
-References: <12124107071847-git-send-email-od@suse.de> <12124107072891-git-send-email-od@suse.de> <1212508003.22357.8.camel@londonpacket.bos.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Tue, 3 Jun 2008 12:00:37 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:33929 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbYFCQAg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 12:00:36 -0400
+Date: Tue, 3 Jun 2008 18:00:34 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 4/4] configfs: Make multiple default_group
+	destructions lockdep friendly
+Message-ID: <20080603160034.GA17308@localhost>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <20080522114048.265996107@kerlabs.com> <20080522114947.927196541@kerlabs.com> <4836F48A.70008@kerlabs.com> <20080602230721.GD19500@mail.oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1212508003.22357.8.camel@londonpacket.bos.redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080602230721.GD19500@mail.oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03-Jun-08, Jon Masters wrote:
-> On Mon, 2008-06-02 at 14:45 +0200, Olaf Dabrunz wrote:
-> 
-> > Add a quirk to disable legacy boot interrupt generation on broadcomm HT1000.
-> 
-> This one interests me, because I got access to the Broadcom HT-1000
-> datasheet and could not find this feature mentioned in there. I'd
-> appreciate knowing how you figured this one out :)
+On Mon, Jun 02, 2008 at 04:07:21PM -0700, Joel Becker wrote:
+> 	A couple comments.
+> 	First, put a BUG_ON() where you have BAD BAD BAD - we shouldn't
+> be creating a depth we can't delete.
 
-I had a sharp look at it... ;)
+I think that the best way to avoid this is to use the same numbering scheme
+while attaching default groups.
 
-Actually, I looked through the datasheet three times, and did not find
-anything. Then I looked at the IRQ routing picture until I had an idea
-of how it is supposed to work and the solution was becoming clear. The
-register descriptions made me believe it could work, and testing
-confirmed this.
+This would change the body of populate_groups() like this:
+
+-	if (group->default_groups) {
++	/* lock_level starts at zero for the non default group.
++	 * Set it even if we do not take the lock, so that we can use the same
++	 * numbering scheme as for destruction time, and can prevent overload at
++	 * destruction time. */
++	lock_level = set_dirent_lock_level(parent_sd, sd);
++	if (lock_level < 0) {
++		/* Too many default groups */
++		ret = lock_level;
++	} else if (group->default_groups) {
+ 		/*
+ 		 * FYI, we're faking mkdir here
+ 		 * I'm not sure we need this semaphore, as we're called
+ 		 * from our parent's mkdir.  That holds our parent's
+ 		 * i_mutex, so afaik lookup cannot continue through our
+ 		 * parent to find us, let alone mess with our tree.
+ 		 * That said, taking our i_mutex is closer to mkdir
+ 		 * emulation, and shouldn't hurt.
+ 		 */
+-		/* lock_level starts at zero for the non default group */
+-		lock_level = set_dirent_lock_level(parent_sd, sd);
+-		if (lock_level < 0) {
+-			/* Too deeply nested default groups */
+-			ret = lock_level;
+-		} else {
+ 			mutex_lock_nested(&dentry->d_inode->i_mutex,
+ 					  I_MUTEX_CHILD + lock_level);
+ 
+ 			for (i = 0; group->default_groups[i]; i++) {
+ 				new_group = group->default_groups[i];
+ 
+ 				ret = create_default_group(group, new_group);
+ 				if (ret)
+ 					break;
+ 			}
+ 
+ 			mutex_unlock(&dentry->d_inode->i_mutex);
+-			/* Reset for future sub-group creations */
+-			reset_dirent_lock_level(sd);
+-		}
+ 	}
++	if (lock_level > 0)
++		/* Update parent lock_level to keep it increasing, but not
++		 * if group is the one actually created/registered by the
++		 * user/subsystem */
++		copy_dirent_lock_level(sd, parent_sd);
++	/* Reset for future sub-group creations */
++	reset_dirent_lock_level(sd);
+
+> 
+> > @@ -392,6 +437,10 @@ static int configfs_detach_prep(struct d
+> >  			 * deep nesting of default_groups
+> >  			 */
+> >  			ret = configfs_detach_prep(sd->s_dentry);
+> > +			/* Update parent's lock_level so that remaining
+> > +			 * sibling children keep on globally increasing
+> > +			 * lock_level */
+> > +			copy_dirent_lock_level(sd, parent_sd);
+> >  			if (!ret)
+> >  				continue;
+> >  		} else
+> 
+> 	I'm not sure I get this hunk.  If our parent was 1 and we are 2,
+> we are copying 2 to our parent so the parent can only have other
+> children at 3?
+
+Exactly.
+
+Louis
 
 -- 
-Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, Nürnberg
-
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
