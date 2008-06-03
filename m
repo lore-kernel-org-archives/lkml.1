@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYFCScs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbYFCSdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbYFCScs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 14:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYFCSck
+	id S1758152AbYFCSdr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 14:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYFCSdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 14:32:40 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:46983 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753387AbYFCScj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 14:32:39 -0400
-Subject: Re: [PATCH 0/3] have pooled sunrpc services make more intelligent
-	allocations
-From: Tom Tucker <tom@opengridcomputing.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       bfields@fieldses.org
-In-Reply-To: <20080603134257.1de3a1c3@tleilax.poochiereds.net>
-References: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
-	 <1212512022.29133.18.camel@trinity.ogc.int>
-	 <20080603134257.1de3a1c3@tleilax.poochiereds.net>
-Content-Type: text/plain
-Organization: Open Grid Computing, Inc.
-Date: Tue, 03 Jun 2008 13:37:25 -0500
-Message-Id: <1212518245.29133.25.camel@trinity.ogc.int>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 14:33:40 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:32871 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752166AbYFCSdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 14:33:40 -0400
+Date: Tue, 3 Jun 2008 21:33:12 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Subject: Re: [Bug #10716] VIDEO_DEV=y, DVB_CORE=m build error
+Message-ID: <20080603183312.GD2663@cs181133002.pp.htv.fi>
+References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <UJSav77TyUB.A.RAF.TsZQIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <UJSav77TyUB.A.RAF.TsZQIB@albercik>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-06-03 at 13:42 -0400, Jeff Layton wrote:
-> On Tue, 03 Jun 2008 11:53:42 -0500
-> Tom Tucker <tom@opengridcomputing.com> wrote:
+On Sat, May 31, 2008 at 07:48:05PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> > Jeff:
-> > 
-> > This brings up an interesting issue with the RDMA transport and
-> > RDMA_READ. RDMA_READ is submitted as part of fetching an RPC from the
-> > client (e.g. NFS_WRITE). The xpo_recvfrom function doesn't block waiting
-> > for the RDMA_READ to complete, but rather queues the RPC for subsequent
-> > processing when the I/O completes and returns 0. 
-> > 
-> > I can use these new services to allocate CPU local pages for this I/O.
-> > So far, so good. However, when the I/O completes, and the transport is
-> > rescheduled for subsequent RPC completion processing, the pool/CPU that
-> > is elected doesn't have any affinity for the CPU on which the I/O was
-> > initially submitted. I think this means that the svc_process/reply steps
-> > may occur on a CPU far away from the memory in which the data resides.
-> > 
-> > Am I making sense here? If so, any thoughts on what could/should be
-> > done?
-> > 
-> > Thanks,
-> > Tom
-> > 
-> 
-> I confess I didn't think hard about the RDMA case here (and haven't
-> been paying as much attention as I probably should to the design of
-> it). So take my thoughts with a large chunk of salt...
-> 
-> On a NUMA box, the pages have to live _somewhere_ and some CPUs will be
-> closer to them than others. If we're concerned about making sure that
-> the post-RDMA_READ processing is done on a CPU close to the memory,
-> then we don't have much choice but to try to make sure that this
-> processing is only done on CPUs that are close to that memory.
-> 
-> Assuming that this post-processing is done by nfsd, I suppose we'd need
-> to tag the post-RDMA_READ RPC with a poolid or something and make sure
-> that only nfsds running on CPUs close to the memory pick it up. Perhaps
-> there could be a per-pool queue for these RPC's or something...
-> 
-> Either way, the big question is whether that will be a net win or loss
-> for throughput. i.e. are we better off waiting for the right nfsd to
-> become available or allowing the first nfsd that becomes available to
-> make the crosscalls needed to do the RPC? It's hard to say...
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 
-Not only that, but it would lead to more disorder in the RPC processing
-which might kill write-behind.
+yes
 
-> 
-> In the near term, I doubt this patchset will harm the RDMA case. 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10716
+> Subject		: VIDEO_DEV=y, DVB_CORE=m build error
+> Submitter	: Toralf Förster <toralf.foerster@gmx.de>
+> Date		: 2008-05-15 13:15 (17 days old)
+> References	: http://marc.info/?l=linux-kernel&amp;m=121085736708543&amp;w=4
+> 		  http://lkml.org/lkml/2008/5/18/128
+> 		  http://marc.info/?l=linux-kernel&amp;m=121166610604173&amp;w=4
+> Handled-By	: Adrian Bunk <bunk@kernel.org>
+> Patch		: http://lkml.org/lkml/2008/5/16/47
 
-Agreed. 
+cu
+Adrian
 
-> After
-> all, the distribution of memory allocations is pretty lumpy now. On
-> a NUMA box with RDMA you're probably doing a lot of crosscalls with
-> the current code.
+-- 
 
-Probably no worse than the socket's transport since the skbuf's aren't
-necessarily allocated on the CPU calling svc_recv.
-
-> 
-
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
