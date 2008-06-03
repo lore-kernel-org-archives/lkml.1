@@ -1,163 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbYFCNAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbYFCNF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755063AbYFCNAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 09:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbYFCNAl
+	id S1756803AbYFCNF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 09:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYFCNFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 09:00:41 -0400
-Received: from dmzmta103.na.baesystems.com ([149.32.252.103]:37061 "EHLO
-	dmzmta103.na.baesystems.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756888AbYFCNAk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 09:00:40 -0400
-X-Greylist: delayed 2053 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 09:00:37 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
-content-class: urn:content-classes:message
+	Tue, 3 Jun 2008 09:05:47 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:54382 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754042AbYFCNFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 09:05:46 -0400
+Date: Tue, 3 Jun 2008 14:05:39 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mtk.manpages@googlemail.com, drepper@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-man@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
+Message-ID: <20080603130538.GA28946@ZenIV.linux.org.uk>
+References: <482D4665.4050401@gmail.com> <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com> <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu> <20080603112221.GW28946@ZenIV.linux.org.uk> <E1K3VRJ-00065P-Pq@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Submitting fixes for bugs: Re: tun device patch for IPv6
-Date: Tue, 3 Jun 2008 08:26:18 -0400
-Message-ID: <81E1305DE5C9BB4089AF6F74955100D9066D9E7F@blums0017.bluelnk.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Submitting fixes for bugs: Re: tun device patch for IPv6
-Thread-Index: AcjFKubWOLLukL/GSouafW/Q5CWykwASMacQ
-References: <32209efe0806020804m751d71c4k1fe8339627f6dbd1@mail.gmail.com> <4844BC0B.4070809@qualcomm.com>
-From: "Zabele, Stephen \(US SSA\)" <steve.zabele@baesystems.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>,
-       "Natalie Protasevich" <protasnb@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 03 Jun 2008 12:26:19.0394 (UTC) FILETIME=[06AD8620:01C8C575]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1K3VRJ-00065P-Pq@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max,
-
-I am confused by your comment. As you point out, the TUN driver does
-have an option that allows users to provide the protocol information as
-an extended header. The problem is that there is a lot of existing IPv4
-code that does not use this approach, and we'd like to make it easy for
-folsk to port their existing code to work with IPv6.
-
-Hence, the patch provided below allows existing software that does not
-use the extra protocol information to work with IPv6.
-
-If you are suggesting that "people shouldn't be using the non-PI option"
-for the TUN device, then the option should be taken out to force the
-issue rather than leaving an incomplete implementations lying around the
-kernel and making folks spend a lot of hours trying to debug why the
-non-PI version doesn't work with IPv6 -- like I did. 
-
-I disagree with this assertion, however, because providing this
-information forces a lot of extra (and in my opinion unnecessary) coding
-in user space.
-
-Steve
-
------Original Message-----
-From: Max Krasnyansky [mailto:maxk@qualcomm.com] 
-Sent: Monday, June 02, 2008 11:36 PM
-To: Natalie Protasevich
-Cc: Zabele, Stephen (US SSA); Andrew Morton; LKML
-Subject: Re: Submitting fixes for bugs: Re: tun device patch for IPv6
-
-btw I naked similar patch a couple of times already.
-TUN driver provide PI (protocol info) extension that lets uses set
-packet
-type. Please use that instead.
-
-Max
-
-Natalie Protasevich wrote:
-> On Mon, Jun 2, 2008 at 6:53 AM, Zabele, Stephen (US SSA)
-> <steve.zabele@baesystems.com> wrote:
->> Natalie,
->>
->>> Steve,
->>> Can you please submit the patch to LKML and to Maxim
->> (maxk@qualcomm.com) >via email (if you haven't already)?
->>
->> The patch is accessible from the bottom of the bugzilla web page, but
->> I'm also providing it again here for reference. I' not sure how to
->> submit it to LKML other than through the bugzilla mechanism. Can you
->> provide me a pointer??
->>
->> Thanks!
->>
->> Steve
->>
+On Tue, Jun 03, 2008 at 02:16:33PM +0200, Miklos Szeredi wrote:
+> > > > > I'm not sure of the correct way to get the required nameidata (to do a
+> > > > > vfs_permission() call) from the file descriptor.  Can you give me a
+> > > > > tip there?
+> > > > 
+> > > > Could you point me at the right way of doing this?
+> > > 
+> > > You don't need nameidata for this at all.  Just call permission() with
+> > > a NULL nameidata.
+> > > 
+> > > Ugly API?  Yes, will be cleaned up if we manage to find some common
+> > > ground with the VFS maintainers.
+> > 
+> > As soon as I'm done with sysctls...
 > 
-> Hi Steve,
-> This issue is pretty generic. Bug reporters often produce fixes, that
-> remain in bugzilla not being harvested, simply because bugzilla is not
-> designed for submitting patches. Even developers who work on bugzilla
-> and leave their patches attached to the bug don't get those
-> incorporated until they submit it conventional way.
-> 
-> To submit the patch properly follow
-> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt. There are
-> other pointers like http://linux.yyz.us/patch-format.html,
-> http://lxr.linux.no/linux/Documentation/SubmittingPatches. You can
-> look at any submitted patch as a sample and examine the format; note
-> that added/changed/removed lines produced with diffstat.
-> 
-> Maintainers deal with great number of patches, so in order to be able
-> to use your patch they have go receive it in proper format i.e. with
-> conventional comments and headers, such that it complies with source
-> keeping process (not mentioning that it should apply to latest tree,
-> so they don't have to port it...)
-> Any patch that fixes a problem is valuable, so by submitting it proper
-> way you'll make sure (1) your patch will get the best review possible
-> (2)  you will get proper credit for it. Then you post it to LKML and
-> CC to subsystem maintainer and/or developers heavily involved with
-> this module.
-> Thanks,
-> --Natalie
-> 
->> --- Cut here ---
->>
->> --- a/drivers/net/tun.c 2008-02-11 01:06:32.000000000 -0500
->> +++ b/drivers/net/tun.c 2008-03-18 15:30:55.000000000 -0400
->> @@ -243,8 +243,26 @@
->>
->>                if(memcpy_fromiovec((void *)&pi, iv, sizeof(pi)))
->>                        return -EFAULT;
->> -       }
->> -
->> +
->> +        } else if ((tun->flags & TUN_TYPE_MASK) == TUN_TUN_DEV) {
->> +                if (iv->iov_len) {
->> +                        unsigned char verbuf;
->> +
->> +                        if (copy_from_user((void *)&verbuf,
->> iv->iov_base, sizeof(verbuf)))
->> +                                return -EFAULT;
->> +
->> +                        switch (verbuf & 0xf0) {
->> +                          case 0x40:
->> +                            break;
->> +                          case 0x60:
->> +                            pi.proto = htons(ETH_P_IPV6);
->> +                            break;
->> +                          default:
->> +                            return -EINVAL;
->> +                        }
->> +                }
->> +        }
->> +
->>        if ((tun->flags & TUN_TYPE_MASK) == TUN_TAP_DEV)
->>                align = NET_IP_ALIGN;
->>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Can't you just do that independently (for now just put a
+> d_find_alias() in there and be done with it)?  If you fix every piece
+> of horrid code that you come across, it'll never be done...
 
+There's not much left to do, actually...  FWIW, solution goes like this:
+	* introduce structure on the classes of sysctls
+(currently - root and per-network-namespace).  Namely "X is parent of Y",
+with "if task T sees Y, it also sees X" as defining property.
+	* when adding a sysctl table, find a "parent" one.  Which is to say,
+find the deepest node on its stem that already is present in one of the
+tables from our class or its ancestor classes.  That table will be our
+parent and that node in it - attachment point.
+	* delay freeing the table headers; have them refcounted and instead
+of unconditionally freeing the sucker on unregistration just drop the refcount.
+
+Now we can keep a pair (reference to header, pointer to ctl table entry)
+as long as we hold refcount on header.  It won't affect unregistration
+in any way.  And at any point we can try to acquire "active" (use) reference
+to header.  If that succeeds, we know that
+	+ unregistration hadn't been started
+	+ unregistration won't be finished until we unuse the sucker
+	+ table entry is alive and will stay alive until then.
+
+So we can hold references to those puppies from inodes under /proc/sys
+without blocking unregistration, etc.
+
+What's more, we can associate such pair with each node in sysctl tree.
+For non-directories that's obvious.  For directories, take the tree such
+that directory belongs to tree \setminus parent of tree.
+
+That's pretty much it.  Filesystem side is simple - we keep a pointer to
+class of tree responsible for a node (see directly above) in dentry.
+And ->d_compare() checks that class of candidate match should be visible
+for task doing the lookup.  ->lookup() tries finding an entry with requested
+name in sysctl table (found by directory inode) and in case of miss it goes
+through the list of tables attached at that node, searching in those that
+ought to be visible to us.
+
+As the result, we have direct access to sysctl table entry right from inode,
+maintain these references accross lookups without going through the contortions
+done by current code and we do *NOT* use the same dentry for flipping between
+unrelated sysctl nodes with different visibility...
