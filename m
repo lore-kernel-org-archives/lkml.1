@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbYFCHTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbYFCHWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754368AbYFCHTN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 03:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYFCHTA
+	id S1754998AbYFCHWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 03:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYFCHWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 03:19:00 -0400
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:30747 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751228AbYFCHS7 (ORCPT
+	Tue, 3 Jun 2008 03:22:03 -0400
+Received: from mail164.messagelabs.com ([216.82.253.131]:52776 "EHLO
+	mail164.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbYFCHWB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 03:18:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=L/B8UIs9JSnrFQLGoy5Mri3GdVYgOtcj8hoy89Z1NzqLUu8WVOk60swVcqw1oh0UOSTPVTzKhVf6OGUik2Owy3gTpSrbcRNGlqqYHkBk5iaui4lm5NdHJB3VNq3DHCSHEhGvP5Wj7gIVIvj3TjDqoUL6tCErHz1BSOqLSJbiT58=  ;
-X-YMail-OSG: zXPUNwcVM1lzv3Lisiv7j0CNxx8.DBKQYW5cEMZfQtErJ7XrtUqhIEo6q0aqj3s97JrxumHUrOw3pTtJAB.UDsETrtRJSGAI.e3olqD7paQEmcgNdLZ6OGGIZjub.1YVSd4-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Tue, 3 Jun 2008 17:18:42 +1000
-User-Agent: KMail/1.9.5
-Cc: benh@kernel.crashing.org, Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-References: <1211852026.3286.36.camel@pasglop> <200806031611.13817.nickpiggin@yahoo.com.au> <18500.60032.989380.864674@cargo.ozlabs.ibm.com>
-In-Reply-To: <18500.60032.989380.864674@cargo.ozlabs.ibm.com>
+	Tue, 3 Jun 2008 03:22:01 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-9.tower-164.messagelabs.com!1212477718!18371097!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Tue, 3 Jun 2008 09:21:55 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Greg KH <gregkh@suse.de>
+CC: "Hans J. Koch" <hjk@linutronix.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] UIO: generic platform driver
+Message-ID: <20080603072155.GA11824@digi.com>
+References: <20080520092312.GA10745@digi.com> <1211275482-11249-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1211275482-11249-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080520210844.GF3220@local> <20080526055818.GD8791@digi.com> <20080526060247.GA14453@suse.de> <20080530091631.GA1367@digi.com> <20080530163546.GA19603@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Message-Id: <200806031718.43393.nickpiggin@yahoo.com.au>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080530163546.GA19603@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 03 Jun 2008 07:21:56.0291 (UTC) FILETIME=[81052930:01C8C54A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 June 2008 16:53, Paul Mackerras wrote:
-> Nick Piggin writes:
-> > So your readl can pass an earlier cacheable store or earlier writel?
->
-> No.  It's quite gross at the moment, it has a sync before the access
-> (i.e. a full mb()) and a twi; isync sequence after the access that
-> stalls execution until the data comes back.
+Hello Greg,
 
+Greg KH wrote:
+> > > Yes, if everyone has finally agreed, Hans, can you resend them to me so
+> > > I know what to apply, with you signed-off-by?
+> > If Hans did that, I didn't notice it.  If you want to take the patches
+> > from me you can pull them from my uio branch at
+> > 
+> > 	git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git uio
+> > 
+> > These have the Signed-off-by: by Hans, too.
+> 
+> Hans is at LinuxTag this week and said he would send them to me when he
+> got back.  So I'll wait for his copies,
 OK.
 
+>                                         I'd prefer not to pull from git,
+> as that doesn't really work well with my patchflow process.
+I know you work with quilt, but I thought it to be no problem for you to
+extract the patches from my tree into your quilt queue.  I'll remember
+that for the future. :-)
 
-> > > We don't provide meaningless ones like writel + cacheable store for
-> > > example. (PCI posting would defeat it anyway).
-> >
-> > What do you mean by meaningless? Ordering of writel followed by a
-> > cacheable store  is meaningful eg. for retaining io operations within
-> > locks. OK, you explicitly have some extra code for spin_unlock, but
-> > not for bit locks, mutexes, etc. It would make sense to have the
-> > default operations _very_ strongly ordered IMO, and then move drivers
-> > to be more relaxed when they are verified.
->
-> It's meaningless in the sense that nothing guarantees that the writel
-> has actually hit the device, even if we put a full mb() barrier in
-> between the writel and the cacheable write.  That would guarantee that
-> the writel had got to the PCI host bridge, and couldn't be reordered
-> with other accesses to the device, but not that the device had
-> actually seen it.
+Best regards
+Uwe
 
-OK, but I think fits OK with our SMP ordering model for cacheable
-stores: no amount of barriers on CPU0 will guarantee that CPU1 has
-seen the store, you actually have to observe a causual effect
-of the store before you can say that.
-
-
-> I don't mind adding code to the mutex unlock to do the same as
-> spin_unlock, but I really don't want to have *two* sync instructions
-> for every MMIO write.  One is bad enough.
-
-So you can't provide iostore/store ordering without another sync
-after the writel store?
-
-I guess the problem with providing exceptions is that it makes it
-hard for people who absolutely don't know or care about ordering.
-I don't like having to think about it "hmm, we can allow this type
-of reordering... oh, unless some silly device does X...".
-
-If we come up with a sane set of weakly ordered accessors
-(including io_*mb()), it will make it easier to go through the
-important drivers and improve them. We don't have to enforce the
-the new semantics strictly until then if they'll slow you down
-too much in the meantime.
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
