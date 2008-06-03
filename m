@@ -1,79 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbYFCVbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbYFCVcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbYFCVbx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 17:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYFCVbp
+	id S1757382AbYFCVcV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 17:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbYFCVcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 17:31:45 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:38043 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752062AbYFCVbo (ORCPT
+	Tue, 3 Jun 2008 17:32:01 -0400
+Received: from mga02.intel.com ([134.134.136.20]:54682 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754160AbYFCVbx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 17:31:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bd8Hah84++kGbDifd9Lc8cIVXc8EN27S4Rz0A03nZca2Yz8aFKRnxLC2qkWeZBYfO6112B5RI994oxvbCUIlkcGwND79ALg6xsFYYs61iZ2nlqK0Ncowj9OuoCg7OkKrqkks3z4S0fKPOFfWK4VtF+drAwqfZzr0YzkqWIvcdnA=
-Message-ID: <e9e943910806031431r46f6c56fn1974b28e9aefd6ce@mail.gmail.com>
-Date: Tue, 3 Jun 2008 22:31:43 +0100
-From: "Duane Griffin" <duaneg@dghda.com>
-To: "Andreas Dilger" <adilger@sun.com>
-Subject: Re: Correct EXT3_TOPDIR_FL behaviour
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080603205220.GG2961@webber.adilger.int>
+	Tue, 3 Jun 2008 17:31:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,585,1204531200"; 
+   d="scan'208";a="287752477"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e9e943910806021727h111b0e57qeea0032d164e0ffb@mail.gmail.com>
-	 <20080603205220.GG2961@webber.adilger.int>
-X-Google-Sender-Auth: 121d63f807ff9bc2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Date: Tue, 3 Jun 2008 14:31:50 -0700
+Message-ID: <1FE6DD409037234FAB833C420AA843EC017C44B2@orsmsx424.amr.corp.intel.com>
+In-Reply-To: <20080603210125.1724C26FC96@magilla.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Thread-Index: AcjFvcIlI/jYoa7JRC+nODv6B0DIxwAAdTeA
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com><20080523041940.39E8726FA24@magilla.localdomain><3877989d0805222224n77ce36b6wdf15c4bab330a0f8@mail.gmail.com><20080526001527.81E1126FA9E@magilla.localdomain><3877989d0805251830w70f19e4cu46fbc32148217749@mail.gmail.com><3877989d0805262031i29db16bcjfa31652afc746b49@mail.gmail.com><20080527040454.053C526FA9E@magilla.localdomain><3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com><20080527061209.9A24426FAA6@magilla.localdomain><1211869515.29836.2.camel@elijah.suse.cz><3877989d0806022304w35764b17p9d4c3c95eceae0f5@mail.gmail.com><48450864.6080707@suse.cz><48455619.6040608@suse.cz> <20080603210125.1724C26FC96@magilla.localdomain>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Roland McGrath" <roland@redhat.com>, "Petr Tesarik" <ptesarik@suse.cz>
+Cc: "Luming Yu" <luming.yu@gmail.com>, "LKML" <linux-kernel@vger.kernel.org>,
+       <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 03 Jun 2008 21:31:52.0058 (UTC) FILETIME=[3CDDADA0:01C8C5C1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/3 Andreas Dilger <adilger@sun.com>:
-> On Jun 03, 2008  01:27 +0100, Duane Griffin wrote:
->> I'm looking at http://bugzilla.kernel.org/show_bug.cgi?id=9866, where
->> the reporter is claiming that EXT3_TOPDIR_FL (chattr +T) is behaving
->> incorrectly by being inherited from the parent. As mentioned in the
->> bug, it also only seems to only make sense for directories but
->> ext{2,3,4} is happy to set it on anything. It seems to me that the
->> reporter is correct and the behaviour should be changed to prevent the
->> flag being inherited and to limit it to directories only. If there is
->> no disagreement I'll follow-up with patches accordingly.
->
-> Yes, this is a problem that was mentioned previously, and hasn't been
-> fixed yet.  The TOPDIR_FL shouldn't be inherited, similar to the
-> non-inheritance of INDEX_FL and EXTENTS_FL.
->
-> It could be argued pretty easily that inheriting flags is usually wrong,
-> and that we should instead specify which flags SHOULD be inherited,
-> instead of repeatedly fixing bugs like this.
+> What do you mean by "extra"?  There is a SIGTRAP sent after execve
+> completes when ptraced, even when PTRACE_SYSCALL is not being used.
+> So for an execve that succeeds under PTRACE_SYSCALL, there is a
+> ptrace_notify at syscall entry, then a SIGTRAP queued (i.e., not seen
+> by ptrace if blocked), then a ptrace_notify at syscall exit.  If
+> that's what's happening (including the blocked SIGTRAP not being seen
+> by the ptracer, i.e. strace), then there is no mystery (and no bug).
 
-Right, I was wondering about the others.
+This might not be the same bug ... but I do have a definite 100%
+reproducible bug (latest git kernel, old version of strace (4.5.15-1.el4.1))
 
-> Flags that I would propose should be inherited from directories to
-> regular files and subdirectories are: SECRM, UNRM, SYNC, APPEND, NODUMP,
-> NOATIME, COMPR, NOCOMPR, JOURNAL_DATA, NOTAIL, and DIRSYNC, EXTENTS.
-> I'm not sure what the semantics of IMMUTABLE on a directory are, whether
-> it is even possible to create a new file in such a directory, but by
-> principle of least surprise it should probably be inherited.
->
-> Flags that definitely do not make sense to be inherited are: DIRTY, ECOMPR,
-> INDEX, IMAGIC, TOPDIR, HUGE_FILE.
->
-> Flags that don't make sense to be set on non-file/dir inodes are: DIRTY,
-> ECOMPR, INDEX, SECRM, UNRM, SYNC, APPEND, COMPR, NOCOMPR, JOURNAL_DATA,
-> NOTAIL, DIRSYNC, TOPDIR, EXTENTS, HUGE_FILE (used for files > 2TB).
+Run:
 
-OK, thanks. I'll fix these up at the same time then. At the moment,
-for ext3, it seems INDEX is being cleared on everything, IMMUTABLE and
-APPEND are being cleared on links, and DIRSYNC is cleared on
-non-directories.
+	$ strace -o logit -f make
 
-Cheers,
-Duane.
+in any directory where make is actually going to have to do some
+work.  You'll see that the command hangs after make outputs the
+first action that it will take.  Looking at the stack traces of
+the 3 processes involved it seems that make forked, the child
+stopped in ptrace waiting for some action from strace, but strace
+isn't woken from its sleep in wait().
 
--- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+Backtrace of pid 6442 (strace)
+
+Call Trace:
+ [<a0000001007069b0>] schedule+0x11f0/0x1380
+                                sp=e0000001b28cfdb0 bsp=e0000001b28c0e00
+ [<a0000001000842d0>] do_wait+0x1110/0x1520
+                                sp=e0000001b28cfdd0 bsp=e0000001b28c0d58
+ [<a0000001000849c0>] sys_wait4+0x140/0x1a0
+                                sp=e0000001b28cfe30 bsp=e0000001b28c0cd8
+ [<a00000010000aa60>] ia64_ret_from_syscall+0x0/0x20
+                                sp=e0000001b28cfe30 bsp=e0000001b28c0cd8
+ [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
+                                sp=e0000001b28d0000 bsp=e0000001b28c0cd8
+
+Backtrace of pid 6443 (make)
+
+Call Trace:
+ [<a0000001007069b0>] schedule+0x11f0/0x1380
+                                sp=e0000001b768fb40 bsp=e0000001b7680d58
+ [<a000000100707800>] schedule_timeout+0x40/0x180
+                                sp=e0000001b768fb60 bsp=e0000001b7680d28
+ [<a000000100706d60>] wait_for_common+0x220/0x380
+                                sp=e0000001b768fb90 bsp=e0000001b7680cd8
+ [<a000000100706f00>] wait_for_completion+0x40/0x60
+                                sp=e0000001b768fbf0 bsp=e0000001b7680cb8
+ [<a0000001000794d0>] do_fork+0x430/0x4a0
+                                sp=e0000001b768fbf0 bsp=e0000001b7680c60
+ [<a00000010000a340>] sys_clone+0x60/0x80
+                                sp=e0000001b768fc20 bsp=e0000001b7680c10
+ [<a00000010000a990>] ia64_trace_syscall+0xd0/0x110
+                                sp=e0000001b768fe30 bsp=e0000001b7680c10
+ [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
+                                sp=e0000001b7690000 bsp=e0000001b7680c10
+
+Backtrace of pid 6444 (make)
+
+Call Trace:
+ [<a0000001007069b0>] schedule+0x11f0/0x1380
+                                sp=e0000001b803fd60 bsp=e0000001b8030dd8
+ [<a000000100097590>] ptrace_stop+0x2d0/0x380
+                                sp=e0000001b803fd80 bsp=e0000001b8030da0
+ [<a000000100097c90>] get_signal_to_deliver+0x1d0/0x6a0
+                                sp=e0000001b803fd80 bsp=e0000001b8030d38
+ [<a000000100034a10>] ia64_do_signal+0xb0/0xd00
+                                sp=e0000001b803fd80 bsp=e0000001b8030c90
+ [<a000000100012c60>] do_notify_resume_user+0x100/0x180
+                                sp=e0000001b803fe20 bsp=e0000001b8030c60
+ [<a00000010000b0c0>] notify_resume_user+0x40/0x60
+                                sp=e0000001b803fe20 bsp=e0000001b8030c10
+ [<a00000010000aff0>] skip_rbs_switch+0xe0/0x110
+                                sp=e0000001b803fe30 bsp=e0000001b8030c10
+ [<a000000000010740>] __kernel_syscall_via_break+0x0/0x20
+                                sp=e0000001b8040000 bsp=e0000001b8030c10
+
