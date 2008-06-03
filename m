@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbYFCQtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYFCQvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbYFCQtN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 12:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYFCQs5
+	id S1754863AbYFCQvL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYFCQu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 12:48:57 -0400
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:49984 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751377AbYFCQs5 (ORCPT
+	Tue, 3 Jun 2008 12:50:56 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59426 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbYFCQuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 12:48:57 -0400
-Subject: Re: [PATCH 0/3] have pooled sunrpc services make more intelligent
-	allocations
-From: Tom Tucker <tom@opengridcomputing.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       bfields@fieldses.org
-In-Reply-To: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
-References: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
-Content-Type: text/plain
-Organization: Open Grid Computing, Inc.
-Date: Tue, 03 Jun 2008 11:53:42 -0500
-Message-Id: <1212512022.29133.18.camel@trinity.ogc.int>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 12:50:55 -0400
+Date: Tue, 3 Jun 2008 17:50:42 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ian Kent <raven@themaw.net>, Miklos Szeredi <miklos@szeredi.hu>,
+       jesper@krogh.cc, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Linux 2.6.26-rc4
+Message-ID: <20080603165042.GC28946@ZenIV.linux.org.uk>
+References: <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk> <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu> <20080603104035.GT28946@ZenIV.linux.org.uk> <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu> <20080603105258.GV28946@ZenIV.linux.org.uk> <1212499623.3025.46.camel@raven.themaw.net> <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> <1212509263.3025.66.camel@raven.themaw.net> <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org> <20080603164102.GB28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080603164102.GB28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff:
+On Tue, Jun 03, 2008 at 05:41:03PM +0100, Al Viro wrote:
 
-This brings up an interesting issue with the RDMA transport and
-RDMA_READ. RDMA_READ is submitted as part of fetching an RPC from the
-client (e.g. NFS_WRITE). The xpo_recvfrom function doesn't block waiting
-for the RDMA_READ to complete, but rather queues the RPC for subsequent
-processing when the I/O completes and returns 0. 
-
-I can use these new services to allocate CPU local pages for this I/O.
-So far, so good. However, when the I/O completes, and the transport is
-rescheduled for subsequent RPC completion processing, the pool/CPU that
-is elected doesn't have any affinity for the CPU on which the I/O was
-initially submitted. I think this means that the svc_process/reply steps
-may occur on a CPU far away from the memory in which the data resides.
-
-Am I making sense here? If so, any thoughts on what could/should be
-done?
-
-Thanks,
-Tom
-
-On Tue, 2008-06-03 at 07:16 -0400, Jeff Layton wrote:
-> The sunrpc code has had some support for spreading pooled services over
-> different NUMA nodes and CPUs for some time. So far though, this support
-> has been for CPU masks only. Memory allocated for these services is
-> generally done by whatever CPU happens to be running the init script
-> that starts the services and so most of it ends up on the same NUMA node.
-> This means that nfsd's end up wasting a lot of time updating remote
-> memory on a different memory node.
+> >From my reading of that code looks like it's been rmdir'ed.  And no, I
+> don't understand what the hell is that code trying to do.
 > 
-> This patchset attempts to remedy that by having pooled services make
-> per-thread allocations that are on their local memory node. I have no
-> hard performance numbers for this particular patchset, but Greg Banks
-> sent me a different patch that has a similar effect and claims that
-> there is a significant performance gain.
-> 
-> Comments and suggestions appreciated...
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Ian, could you describe the race you are talking about?
 
+BTW, this stuff is definitely broken regardless of mount - if something
+had the directory in question opened before that rmdir and we'd hit
+your lookup_unhashed while another CPU had been in the middle of
+getdents(2) on that opened descriptor, we'll get
+
+vfs_readdir() grabs i_mutex
+vfs_readdir() checks that it's dead
+autofs4_lookup_unhashed() calls iput()
+inode is freed
+vfs_readdir() releases i_mutex - in already freed struct inode.
+
+Hell, just getdents() right *after* dentry->d_inode = NULL will oops,
+plain and simple.
