@@ -1,243 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbYFCWTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbYFCWTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759101AbYFCWTg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 18:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbYFCWTT
+	id S1755643AbYFCWTu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 18:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbYFCWTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 3 Jun 2008 18:19:19 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39194 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753700AbYFCWTR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: from relay1.sgi.com ([192.48.171.29]:44664 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755330AbYFCWTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 3 Jun 2008 18:19:17 -0400
-Date: Wed, 4 Jun 2008 00:20:05 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [RFC][PATCH] snapshot: Use pm_mutex for mutual exclusion
-Message-ID: <20080603222005.GA10929@elf.ucw.cz>
-References: <20080522222500.0f5873ff@core> <20080523120452.6feefed0@core> <200805231322.33321.rjw@sisk.pl> <200806022333.56939.rjw@sisk.pl>
+Date: Tue, 3 Jun 2008 17:17:59 -0500
+From: Cliff Wickman <cpw@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: sivanich@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] hotplug cpus on ia64
+Message-ID: <20080603221759.GA19039@sgi.com>
+References: <E1K1l2y-0007bu-44@eag09.americas.sgi.com> <1212154614.12349.244.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200806022333.56939.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1212154614.12349.244.camel@twins>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> Appended is what I think we can do.
+On Fri, May 30, 2008 at 03:36:54PM +0200, Peter Zijlstra wrote:
+> On Thu, 2008-05-29 at 11:32 -0500, Cliff Wickman wrote:
+> > >> I built an ia64 kernel from Andrew's tree (2.6.26-rc2-mm1)
+> > >> and get a very predictable hotplug cpu problem.
+> > >> billberry1:/tmp/cpw # ./dis
+> > >> disabled cpu 17
+> > >> enabled cpu 17
+> > >> billberry1:/tmp/cpw # ./dis
+> > >> disabled cpu 17
+> > >> enabled cpu 17
+> > >> billberry1:/tmp/cpw # ./dis
+> > >> 
+> > >> The script that disables the cpu always hangs (unkillable)
+> > >> on the 3rd attempt.
+> > 
+> > > And a bit further:
+> > > The kstopmachine thread always sits on the run queue (real time) for about
+> > > 30 minutes before running.
+> > 
+> > And a bit further:
+> > 
+> > The kstopmachine thread is queued as real-time on the downed cpu:
+> > >> rq -f 17
+> > CPU#       runq address size Lock     current task         time name
+> > ==========================================================================
+> >   17 0xe000046003059540    3  U 0xe0000360f06f8000            0 swapper
+> >         Total of 3 queued:
+> >         3 real time tasks:  px *(rt_rq *)0xe000046003059608
+> >         exclusive queue:
+> >         slot 0
+> >         0xe0000760f4628000            0 migration/17
+> >         0xe0000760f4708000            0 kstopmachine
+> >         0xe0000760f6678000            0 watchdog/17
+> > 
+> > I put in counters and see that schedule() is never again entered by cpu 17
+> > after it is downed the 3rd time.
+> > (it is entered after being up'd the first two times)
+> > 
+> > The kstopmachine thread is bound to cpu 17 by __stop_machine_run()'s call
+> > to kthread_bind().
+> > 
+> > A cpu does not schedule after being downed, of course.  But it does again
+> > after being up'd.  
+> > Why would the second up be different?  Following it, if the cpu is
+> > downed it never schedules again.
+> > 
+> > If I always bind kstopmachine to cpu 0 the problem disappears.
+> 
+> does:
+> 
+> echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+> 
+> fix the problem?
 
-Looks ok to me. ACK.
-								Pavel
-> ---
-> We can avoid taking the BKL in snapshot_ioctl() if pm_mutex is used to prevent
-> the ioctls from being executed concurrently.
-> 
-> In addition, although it is only possible to open /dev/snapshot once, the task
-> which has done that may spawn a child that will inherit the open descriptor,
-> so in theory they can call snapshot_write(), snapshot_read() and
-> snapshot_release() concurrently.  pm_mutex can also be used for mutual
-> exclusion in such cases.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/user.c |   68 ++++++++++++++++++++++++++++++++--------------------
->  1 file changed, 42 insertions(+), 26 deletions(-)
-> 
-> Index: linux-2.6/kernel/power/user.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/user.c
-> +++ linux-2.6/kernel/power/user.c
-> @@ -70,16 +70,22 @@ static int snapshot_open(struct inode *i
->  	struct snapshot_data *data;
->  	int error;
->  
-> -	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
-> -		return -EBUSY;
-> +	mutex_lock(&pm_mutex);
-> +
-> +	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-> +		error = -EBUSY;
-> +		goto Unlock;
-> +	}
->  
->  	if ((filp->f_flags & O_ACCMODE) == O_RDWR) {
->  		atomic_inc(&snapshot_device_available);
-> -		return -ENOSYS;
-> +		error = -ENOSYS;
-> +		goto Unlock;
->  	}
->  	if(create_basic_memory_bitmaps()) {
->  		atomic_inc(&snapshot_device_available);
-> -		return -ENOMEM;
-> +		error = -ENOMEM;
-> +		goto Unlock;
->  	}
->  	nonseekable_open(inode, filp);
->  	data = &snapshot_state;
-> @@ -99,33 +105,36 @@ static int snapshot_open(struct inode *i
->  		if (error)
->  			pm_notifier_call_chain(PM_POST_HIBERNATION);
->  	}
-> -	if (error) {
-> +	if (error)
->  		atomic_inc(&snapshot_device_available);
-> -		return error;
-> -	}
->  	data->frozen = 0;
->  	data->ready = 0;
->  	data->platform_support = 0;
->  
-> -	return 0;
-> + Unlock:
-> +	mutex_unlock(&pm_mutex);
-> +
-> +	return error;
->  }
->  
->  static int snapshot_release(struct inode *inode, struct file *filp)
->  {
->  	struct snapshot_data *data;
->  
-> +	mutex_lock(&pm_mutex);
-> +
->  	swsusp_free();
->  	free_basic_memory_bitmaps();
->  	data = filp->private_data;
->  	free_all_swap_pages(data->swap);
-> -	if (data->frozen) {
-> -		mutex_lock(&pm_mutex);
-> +	if (data->frozen)
->  		thaw_processes();
-> -		mutex_unlock(&pm_mutex);
-> -	}
->  	pm_notifier_call_chain(data->mode == O_WRONLY ?
->  			PM_POST_HIBERNATION : PM_POST_RESTORE);
->  	atomic_inc(&snapshot_device_available);
-> +
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return 0;
->  }
->  
-> @@ -135,9 +144,13 @@ static ssize_t snapshot_read(struct file
->  	struct snapshot_data *data;
->  	ssize_t res;
->  
-> +	mutex_lock(&pm_mutex);
-> +
->  	data = filp->private_data;
-> -	if (!data->ready)
-> -		return -ENODATA;
-> +	if (!data->ready) {
-> +		res = -ENODATA;
-> +		goto Unlock;
-> +	}
->  	res = snapshot_read_next(&data->handle, count);
->  	if (res > 0) {
->  		if (copy_to_user(buf, data_of(data->handle), res))
-> @@ -145,6 +158,10 @@ static ssize_t snapshot_read(struct file
->  		else
->  			*offp = data->handle.offset;
->  	}
-> +
-> + Unlock:
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return res;
->  }
->  
-> @@ -154,6 +171,8 @@ static ssize_t snapshot_write(struct fil
->  	struct snapshot_data *data;
->  	ssize_t res;
->  
-> +	mutex_lock(&pm_mutex);
-> +
->  	data = filp->private_data;
->  	res = snapshot_write_next(&data->handle, count);
->  	if (res > 0) {
-> @@ -162,6 +181,9 @@ static ssize_t snapshot_write(struct fil
->  		else
->  			*offp = data->handle.offset;
->  	}
-> +
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return res;
->  }
->  
-> @@ -180,16 +202,16 @@ static long snapshot_ioctl(struct file *
->  	if (!capable(CAP_SYS_ADMIN))
->  		return -EPERM;
->  
-> -	data = filp->private_data;
-> +	if (!mutex_trylock(&pm_mutex))
-> +		return -EBUSY;
->  
-> -	lock_kernel();
-> +	data = filp->private_data;
->  
->  	switch (cmd) {
->  
->  	case SNAPSHOT_FREEZE:
->  		if (data->frozen)
->  			break;
-> -		mutex_lock(&pm_mutex);
->  		printk("Syncing filesystems ... ");
->  		sys_sync();
->  		printk("done.\n");
-> @@ -197,7 +219,6 @@ static long snapshot_ioctl(struct file *
->  		error = freeze_processes();
->  		if (error)
->  			thaw_processes();
-> -		mutex_unlock(&pm_mutex);
->  		if (!error)
->  			data->frozen = 1;
->  		break;
-> @@ -205,9 +226,7 @@ static long snapshot_ioctl(struct file *
->  	case SNAPSHOT_UNFREEZE:
->  		if (!data->frozen || data->ready)
->  			break;
-> -		mutex_lock(&pm_mutex);
->  		thaw_processes();
-> -		mutex_unlock(&pm_mutex);
->  		data->frozen = 0;
->  		break;
->  
-> @@ -310,16 +329,11 @@ static long snapshot_ioctl(struct file *
->  			error = -EPERM;
->  			break;
->  		}
-> -		if (!mutex_trylock(&pm_mutex)) {
-> -			error = -EBUSY;
-> -			break;
-> -		}
->  		/*
->  		 * Tasks are frozen and the notifiers have been called with
->  		 * PM_HIBERNATION_PREPARE
->  		 */
->  		error = suspend_devices_and_enter(PM_SUSPEND_MEM);
-> -		mutex_unlock(&pm_mutex);
->  		break;
->  
->  	case SNAPSHOT_PLATFORM_SUPPORT:
-> @@ -392,7 +406,9 @@ static long snapshot_ioctl(struct file *
->  		error = -ENOTTY;
->  
->  	}
-> -	unlock_kernel();
-> +
-> +	mutex_unlock(&pm_mutex);
-> +
->  	return error;
->  }
->  
+Yes! It does. 
+
+Dimitri Sivanich has run into what looks like a similar problem.
+Hope the above workaround is a good clue to its solution.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cliff Wickman
+Silicon Graphics, Inc.
+cpw@sgi.com
+(651) 683-3824
