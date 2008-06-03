@@ -1,46 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYFCM1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYFCMbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbYFCM1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 08:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbYFCM1E
+	id S1755859AbYFCMbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 08:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYFCMbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 08:27:04 -0400
-Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:59575
-	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752342AbYFCM1D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 08:27:03 -0400
-Message-ID: <48453909.4000301@sngx.net>
-Date: Tue, 03 Jun 2008 07:28:57 -0500
-From: James Cammarata <jimi@sngx.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Bill Fink <billfink@mindspring.com>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
-References: <482DA5B6.1020606@sngx.net>	<482DB46A.8020103@cosmosbay.com>	<482EF192.4070707@sngx.net>	<482F5113.5090703@cosmosbay.com>	<482F610D.2080108@sngx.net>	<20080518003104.GK28241@solarflare.com>	<482FBA09.80201@sngx.net>	<483E0AAE.2020107@sngx.net>	<20080528221118.63da4092.akpm@linux-foundation.org>	<483EA2D1.8050603@sngx.net>	<20080529154525.3916c7b5@core>	<20080530151250.b44a119a.billfink@mindspring.com>	<20080531131143.516ca56e@core>	<20080531195702.0b879dd1.billfink@mindspring.com>	<48437C25.7080400@gdt.id.au> <20080602121007.1e81cf05.billfink@mindspring.com>
-In-Reply-To: <20080602121007.1e81cf05.billfink@mindspring.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 08:31:39 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:39558 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640AbYFCMbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 08:31:39 -0400
+Date: Tue, 3 Jun 2008 16:33:09 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Q: down_killable() is racy? or schedule() is not right?
+Message-ID: <20080603123309.GA472@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> First of all, when assisting a user, they typically aren't even
-> running an snmp daemon (and there might be firewall issues to
-> access it if they are).  And I don't think the "ethtool -S" driver
-> stats are even accessible via SNMP (although they may contribute
-> to more generic interface stats which are), and it is the specific
-> driver stats which are often key to help diagnosing the problem.
+I just noticed we have generic semaphores, a couple of questions.
 
-Ok, just to jump back in and add my $0.02, I plan to send a patch to 
-the ethtool project to do what was suggested (snapshot to /var, and 
-diff stats against that for future reference).  I would just like to 
-point out that this will introduce inconsistencies between _every_ 
-other source of interface stats (ifconfig/procfs/etc).  I can deal 
-with that, it just means one more thing to keep track of when you're 
-troubleshooting.
+	down():
 
-Also, I'd like to point out that the "stepping on other peoples toes" 
-argument is a bogus one, since most major network vendors include this 
-ability, and it's not exactly a concern now.
+		spin_lock_irqsave(&sem->lock, flags);
+		...
+		__down(sem);
+
+Why _irqsave ? we must not do down() with irqs disabled, and of course
+__down() restores/clears irqs unconditionally.
+
+
+Another question,
+
+	__down_common(TASK_KILLABLE):
+
+			if (state == TASK_KILLABLE && fatal_signal_pending(task))
+				goto interrupted;
+
+			/* --- WINDOW --- */
+
+			__set_task_state(task, TASK_KILLABLE);
+			schedule_timeout(timeout);
+
+This looks racy. If SIGKILL comes in the WINDOW above, the event is lost.
+The task will wait for up() or timeout with the fatal signal pending, and
+it is not possible to wakeup it via kill() again.
+
+This is easy to fix, but I wonder if we should change schedule() instead.
+Note that __down_common() does 2 checks,
+
+		if (state == TASK_INTERRUPTIBLE && signal_pending(task))
+			goto interrupted;
+		if (state == TASK_KILLABLE && fatal_signal_pending(task))
+			goto interrupted;
+
+they look very symmetrical, but the first one is OK, and the second is racy.
+Also, I think we have the similar issues with lock_page_killable().
+
+How about something like
+
+	int signal_pending_state(struct task_struct *tsk)
+	{
+		if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
+			return 0;
+		if (signal_pending(tsk))
+			return 0;
+
+		return (state & TASK_INTERRUPTIBLE) ||
+			__fatal_signal_pending(tsk);
+	}
+
+now,
+
+	--- kernel/sched.c
+	+++ kernel/sched.c
+	@@ -4510,8 +4510,7 @@ need_resched_nonpreemptible:
+		clear_tsk_need_resched(prev);
+	 
+		if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+	-		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
+	-				signal_pending(prev))) {
+	+		if (unlikely(signal_pending_state(prev))) {
+				prev->state = TASK_RUNNING;
+			} else {
+				deactivate_task(rq, prev, 1);
+
+Thoughts?
+
+Oleg.
+
