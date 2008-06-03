@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbYFCWDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759464AbYFCWD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759413AbYFCWDZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 18:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757363AbYFCWDP
+	id S1759464AbYFCWD6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 18:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYFCWDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 18:03:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48405
+	Tue, 3 Jun 2008 18:03:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48410
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753695AbYFCWDO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 18:03:14 -0400
-Date: Tue, 03 Jun 2008 15:03:13 -0700 (PDT)
-Message-Id: <20080603.150313.27318034.davem@davemloft.net>
-To: Larry.Finger@lwfinger.net
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com,
-       mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/12]: wext: Emit event stream entries correctly when
- compat.
+	by vger.kernel.org with ESMTP id S1750987AbYFCWDp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 18:03:45 -0400
+Date: Tue, 03 Jun 2008 15:03:44 -0700 (PDT)
+Message-Id: <20080603.150344.145518113.davem@davemloft.net>
+To: ilpo.jarvinen@helsinki.fi
+Cc: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, rjw@sisk.pl, akpm@linux-foundation.org,
+       johnpol@2ka.mipt.ru, mcmanus@ducksong.com
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+ v2.6.26-rc3+
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4845BF11.7070604@lwfinger.net>
-References: <20080603.132856.202640855.davem@davemloft.net>
-	<4845BF11.7070604@lwfinger.net>
+In-Reply-To: <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi>
+References: <20080603094057.GA29480@elte.hu>
+	<Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
+	<Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Date: Tue, 03 Jun 2008 17:00:49 -0500
+From: "Ilpo_Järvinen" <ilpo.jarvinen@helsinki.fi>
+Date: Wed, 4 Jun 2008 01:01:25 +0300 (EEST)
 
-> What tree should be used for this patch? On wireless-testing that 
-> git-describe lists as v2.6.26-rc4-8782-gd9a8bd7, hunk 5 for mlme.c fails.
+> On Wed, 4 Jun 2008, Ilpo Järvinen wrote:
+> 
+> > ...I couldn't immediately find anything obviously wrong with those changes 
+> > but the patch below might be worth of a try (without the revert of 
+> > course). If it ever spits out that WARN_ON for you, we were playing with 
+> > fire too much and it's better to return on the safe side there...
+> 
+> 
+> > [PATCH] tcp DEFER_ACCEPT: see if header prediction got turned on
+> > 
+> > If header prediction is turned on under some circumstances,
+> > DA can deadlock though I have great trouble in figuring out
+> 
+> ...Nah, keepalive timer would then eventually kill it then, so no
+> deadlock seems possible through that one.
 
-I said in the 0/12 posting that the patches are based upon
-net-next-2.6
+Keepalive is very long, it might still "seem" like a deadlock for
+someone without much patience :-)
