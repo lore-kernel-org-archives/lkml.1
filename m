@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbYFCMIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbYFCMJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757992AbYFCMIo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 08:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbYFCMIe
+	id S1758101AbYFCMJU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 08:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbYFCMJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 08:08:34 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:56981 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754024AbYFCMId (ORCPT
+	Tue, 3 Jun 2008 08:09:04 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52601 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756072AbYFCMJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 08:08:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kbfTq81HbvlaxHYpke0aBhBN+nxcdYaMXKkBwG8JfE6drp93gWWNPql6a79eFHJ7k+dH+zAfysNZsfCihiyMDkV/CJTEnzTk4JFfYBYTDLN6zYB1WQBD8skQIHcZl7tqJTT5duZGfXBhgv25ZFm6s+HAYiD7AcK8Uh7+y+/u9KQ=
-Message-ID: <ca0148c30806030508g23bf0f52r2ac847fcc7cb7cbe@mail.gmail.com>
-Date: Tue, 3 Jun 2008 15:08:32 +0300
-From: "Matti Linnanvuori" <mattilinn@gmail.com>
-To: "Krzysztof Halasa" <khc@pm.waw.pl>
-Subject: Re: [PATCH v1.2.26] wan: new driver retina
-Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <m3lk1rhio4.fsf@maximus.localdomain>
+	Tue, 3 Jun 2008 08:09:03 -0400
+Date: Tue, 3 Jun 2008 13:08:50 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Miklos Szeredi <miklos@szeredi.hu>, drepper@redhat.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-man@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
+Message-ID: <20080603120850.GZ28946@ZenIV.linux.org.uk>
+References: <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com> <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu> <20080603112221.GW28946@ZenIV.linux.org.uk> <cfd18e0f0806030427p22a274dev746e1656662f34f6@mail.gmail.com> <20080603113018.GA27955@shareable.org> <cfd18e0f0806030439n5a11fa4aocd6251ffab66b6dd@mail.gmail.com> <20080603114921.GX28946@ZenIV.linux.org.uk> <20080603120135.GA28905@shareable.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <ca0148c30805280342l39ffe387rf4c670b17804f99d@mail.gmail.com>
-	 <m3prr6obkz.fsf@maximus.localdomain>
-	 <ca0148c30805300552u7eb5da43tfc75127a2e819d1@mail.gmail.com>
-	 <m3lk1rhio4.fsf@maximus.localdomain>
+In-Reply-To: <20080603120135.GA28905@shareable.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/30 Krzysztof Halasa <khc@pm.waw.pl>:
-> "Matti Linnanvuori" <mattilinn@gmail.com> writes:
->
->> I would not like to change a legacy driver much.
->
-> But this is a new driver, right? I guess the SIOCDEVPRIVATEs will go
-> at some point so the change can't be really avoided.
+On Tue, Jun 03, 2008 at 01:01:35PM +0100, Jamie Lokier wrote:
+> > with a lot of things, starting with "why utimes(2) has weaker requirements
+> > with NULL argument", but we are far too late to fix that.
+> 
+> To be fair, having a writable file descriptor only lets you change the
+> mtime to "now", and having a readable file descriptor only lets you
+> change the atime to "now".
+> 
+> Changing the times _in general_ can be seen as over-reaching those
+> capabilities and arguably justifies more strict checks.
 
-I posted retina-1.2.29.patch that does not have SIOCDEVPRIVATEs at
-http://groups.google.com/group/pcidriver/files.
-
->>>> +static int fepci_char_open(struct inode *inode, struct file *filp)
->>>> +{
->>>> +     unsigned int minor = MINOR(inode->i_rdev);
->>>> +     if (unlikely(minor >= find_cnt || card_privates[minor].pci_dev == NULL))
->>>> +             return -ENXIO;
->>>> +     filp->f_op = &fepci_char_fops;
->>>> +     if (unlikely(!try_module_get(THIS_MODULE)))
->>>> +             return -EBUSY;
->>>
->>> That won't work race-free, use owner field.
->>
->> You mean the f_op assignment? I have removed that.
->
-> Actually I meant try_module_get() from within the driver, for example
-> your module may get unloaded while in this function, before this
-> try_module_get(), and that would be fatal. If you set the owner field
-> the reference count will be incremented by the caller first.
-
-I added the owner field setting to the above mentioned patch.
+Which is what all questions about writability apply only to NULL case
+anyway...
