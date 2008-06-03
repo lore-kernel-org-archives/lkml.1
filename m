@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759900AbYFCUmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbYFCUlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759900AbYFCUmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbYFCUhF
+	id S1759525AbYFCUlr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 16:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757061AbYFCUhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:37:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47075
+	Tue, 3 Jun 2008 16:37:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47084
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752712AbYFCUgw (ORCPT
+	by vger.kernel.org with ESMTP id S1752941AbYFCUgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 16:36:52 -0400
-Date: Tue, 03 Jun 2008 12:20:11 -0700 (PDT)
-Message-Id: <20080603.122011.202411331.davem@davemloft.net>
+	Tue, 3 Jun 2008 16:36:53 -0400
+Date: Tue, 03 Jun 2008 13:28:10 -0700 (PDT)
+Message-Id: <20080603.132810.05908596.davem@davemloft.net>
 To: linux-wireless@vger.kernel.org
 CC: linville@tuxdriver.com, mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 7/12]: wext: Pass iwreq pointer down into standard/private
- handlers.
+Subject: [PATCH 2/12]: wext: Make adjust_priv_size() take a "struct
+ iw_point *".
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -27,85 +27,36 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-They have no need to see the object as an ifreq.
-
 Signed-off-by: David S. Miller <davem@davemloft.net>
 ---
- net/wireless/wext.c |   17 ++++++++---------
- 1 files changed, 8 insertions(+), 9 deletions(-)
+ net/wireless/wext.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/net/wireless/wext.c b/net/wireless/wext.c
-index 929d241..b72cdd2 100644
+index e83d74a..cd2cf9f 100644
 --- a/net/wireless/wext.c
 +++ b/net/wireless/wext.c
-@@ -832,11 +832,10 @@ out:
-  * user space and kernel space.
-  */
- static int ioctl_standard_call(struct net_device *	dev,
--			       struct ifreq *		ifr,
-+			       struct iwreq *		iwr,
- 			       unsigned int		cmd,
- 			       iw_handler		handler)
- {
--	struct iwreq *				iwr = (struct iwreq *) ifr;
- 	const struct iw_ioctl_description *	descr;
- 	struct iw_request_info			info;
- 	int					ret = -EINVAL;
-@@ -984,10 +983,9 @@ out:
- 	return err;
- }
- 
--static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
-+static int ioctl_private_call(struct net_device *dev, struct iwreq *iwr,
- 			      unsigned int cmd, iw_handler handler)
- {
--	struct iwreq *iwr = (struct iwreq *) ifr;
- 	int extra_size = 0, ret = -EINVAL;
- 	const struct iw_priv_args *descr;
- 	struct iw_request_info info;
-@@ -1015,7 +1013,7 @@ static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
- }
- 
- /* ---------------------------------------------------------------- */
--typedef int (*wext_ioctl_func)(struct net_device *, struct ifreq *,
-+typedef int (*wext_ioctl_func)(struct net_device *, struct iwreq *,
- 			       unsigned int, iw_handler);
- 
+@@ -512,9 +512,9 @@ static int get_priv_size(__u16 args)
  /*
-@@ -1027,6 +1025,7 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
- 				  wext_ioctl_func standard,
- 				  wext_ioctl_func private)
+  * Re-calculate the size of private arguments
+  */
+-static int adjust_priv_size(__u16 args, union iwreq_data *wrqu)
++static int adjust_priv_size(__u16 args, struct iw_point *iwp)
  {
-+	struct iwreq *iwr = (struct iwreq *) ifr;
- 	struct net_device *dev;
- 	iw_handler	handler;
+-	int	num = wrqu->data.length;
++	int	num = iwp->length;
+ 	int	max = args & IW_PRIV_SIZE_MASK;
+ 	int	type = (args & IW_PRIV_TYPE_MASK) >> 12;
  
-@@ -1041,11 +1040,11 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
- 	 * Note that 'cmd' is already filtered in dev_ioctl() with
- 	 * (cmd >= SIOCIWFIRST && cmd <= SIOCIWLAST) */
- 	if (cmd == SIOCGIWSTATS)
--		return standard(dev, ifr, cmd,
-+		return standard(dev, iwr, cmd,
- 				&iw_handler_get_iwstats);
+@@ -976,7 +976,7 @@ static int ioctl_private_call(struct net_device *dev, struct ifreq *ifr,
+ 			 * avoid leaking kernel bits outside. */
+ 			if (!(descr->get_args & IW_PRIV_SIZE_FIXED)) {
+ 				extra_size = adjust_priv_size(descr->get_args,
+-							      &(iwr->u));
++							      &(iwr->u.data));
+ 			}
  
- 	if (cmd == SIOCGIWPRIV && dev->wireless_handlers)
--		return standard(dev, ifr, cmd,
-+		return standard(dev, iwr, cmd,
- 				&iw_handler_get_private);
- 
- 	/* Basic check */
-@@ -1057,9 +1056,9 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
- 	if (handler) {
- 		/* Standard and private are not the same */
- 		if (cmd < SIOCIWFIRSTPRIV)
--			return standard(dev, ifr, cmd, handler);
-+			return standard(dev, iwr, cmd, handler);
- 		else
--			return private(dev, ifr, cmd, handler);
-+			return private(dev, iwr, cmd, handler);
- 	}
- 	/* Old driver API : call driver ioctl handler */
- 	if (dev->do_ioctl)
+ 			err = copy_to_user(iwr->u.data.pointer, extra,
 -- 
 1.5.5.1.308.g1fbb5
 
