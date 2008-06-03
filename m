@@ -1,115 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbYFCW0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759922AbYFCW1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbYFCW0g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 18:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758605AbYFCWZq
+	id S1759922AbYFCW1R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 18:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759544AbYFCW0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 18:25:46 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:19831 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758560AbYFCWZo (ORCPT
+	Tue, 3 Jun 2008 18:26:31 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:33816 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759523AbYFCW0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 18:25:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:from;
-        b=q0kvcosbd2+d2B5K8rOGEzElX+XTGZ4SnUU3qt9Akl0iJqONYlah8lwEwKocWmjaiCufHus4QcCenK73Z76LxPN2iME+qKFV4vTqufbt9u6leiLGN1q8hGDGBzbwCBXCeSExmerEgX6AvFwM6OnbpK8vzhbv06YD+35icR8oUTY=
-Message-ID: <4845C4CA.5070403@gmail.com>
-Date: Wed, 04 Jun 2008 00:25:14 +0200
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
-       Miklos Szeredi <miklos@szeredi.hu>, Al Viro <viro@zeniv.linux.org.uk>,
-       jamie@shareable.org, Ulrich Drepper <drepper@redhat.com>,
-       linux-fsdevel@vger.kernel.org,
-       Subrata Modak <subrata@linux.vnet.ibm.com>
-Subject: [parch 3/4] vfs: utimensat(): fix error checking for {UTIME_NOW,UTIME_OMIT}
- case
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 3 Jun 2008 18:26:30 -0400
+Date: Tue, 3 Jun 2008 15:25:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] doc: add suggestions about good practises for
+ maintainers
+Message-Id: <20080603152546.e6fb915e.randy.dunlap@oracle.com>
+In-Reply-To: <20080603053446.GA27148@1wt.eu>
+References: <20080603053446.GA27148@1wt.eu>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The POSIX.1 draft spec for utimensat() says that to do anything
-other than setting both timestamps to a time other than the
-current time (i.e., times is not NULL, and both tv_nsec fields
-are not UTIME_NOW and both tv_nsec fields are not UTIME_OMIT),
-either:
+On Tue, 3 Jun 2008 07:34:46 +0200 Willy Tarreau wrote:
 
-a) the caller's effective user ID must match the file owner; or
-b) the caller must have appropriate privileges.
+> Linus,
+> 
+> I'm proposing the following add-on to SubmittingPatches. I think
+> it clarifies the situation for maintainers and back-porters.
+> 
+> Regards,
+> Willy
+> --
+> 
+> >From 1bf91b1072323ae3150c8962f36092b5b8528c48 Mon Sep 17 00:00:00 2001
+> From: Willy Tarreau <w@1wt.eu>
+> Date: Tue, 3 Jun 2008 00:20:28 +0200
+> Subject: doc: add suggestions about good practises for maintainers
+> 
+> Suggest how to deal with patch modifications caused by
+> merging or back-porting when you're a maintainer.
+> 
+> Signed-off-by: Willy Tarreau <w@1wt.eu>
+> ---
+>  Documentation/SubmittingPatches |   46 +++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 46 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
+> index 9c93a03..6e7183b 100644
+> --- a/Documentation/SubmittingPatches
+> +++ b/Documentation/SubmittingPatches
+> @@ -327,6 +327,52 @@ Some people also put extra tags at the end.  They'll just be ignored for
+>  now, but you can do this to mark internal company procedures or just
+>  point out some special detail about the sign-off. 
+>  
+> +If you are a subsystem or branch maintainer, sometimes you need to slightly
+> +modify patches you receive in order to merge them, because the code is not
+> +exactly the same in your tree and the submitters'. If you stick strictly to
+> +rule (c), you should ask the submitter to rediff, but this is a totally
+> +counter-productive waste of time and energy. Rule (b) allows you to adjust
+> +the code, but then it is very impolite to change one submitter's code and
+> +make him endorse your bugs. To solve this problem, it is recommended that
+> +you add a line between the last Signed-off-by header and yours, indicating
+> +the nature of your changes. While there is nothing mandatory about this, it
+> +seems like prepending the description with your mail and/or name, all
+> +enclosed in square brackets, is noticeable enough to make it obvious that
+> +you are responsible for last-minute changes. Example :
+> +
+> +	Signed-off-by: Random J Developer <random@developer.example.org>
+> +	[lucky@maintainer.example.org: struct foo moved from foo.c to foo.h]
+> +	Signed-off-by: Lucky K Maintainer <lucky@maintainer.example.org>
+> +
+> +This practise is particularly helpful if you maintain a stable branch and
+> +want at the same time to credit the author, track changes, merge the fix,
+> +and protect the submitter from complaints. Note that under no ciscumstances
 
-If this condition is violated, then the error EPERM should result.
-However, the current implementation does not generate EPERM if
-one tv_nsec field is UTIME_NOW while the other is UTIME_OMIT.
-It should give this error for that case.
+                                                                 circumstances
 
-This patch:
+> +you can change the author's identity (the From header), as it is the one
 
-a) Repairs that problem.
-b) Removes the now unneeded nsec_special() helper function.
+   can you change
 
-Miklos suggested an alternative idea, migrating the
-is_owner_or_cap() checks into fs/attr.c:inode_change_ok() via
-the use of an ATTR_OWNER_CHECK flag.  Maybe we could do that
-later, but for now I've gone with this version, which is
-simpler, and can be more easily read as being correct.
+> +which appears in the changelog.
+> +
+> +Special note to back-porters. It seems to be a common and useful practise
 
-CC: Miklos Szeredi <miklos@szeredi.hu>
-CC: Al Viro <viro@zeniv.linux.org.uk>
-CC: Ulrich Drepper <drepper@redhat.com>
-Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
+                   back-porters:
 
+> +to insert an indication of the origin of a patch at the top of the commit
+> +message (just after the subject line) to facilitate tracking. For instance,
+> +here's what we see in 2.6-stable :
+> +
+> +    Date:   Tue May 13 19:10:30 2008 +0000
+> +
+> +        SCSI: libiscsi regression in 2.6.25: fix nop timer handling
+> +
+> +        commit 4cf1043593db6a337f10e006c23c69e5fc93e722 upstream
+> +
+> +And here's what appears in 2.4 :
+> +
+> +    Date:   Tue May 13 22:12:27 2008 +0200
+> +
+> +        wireless, airo: waitbusy() won't delay
+> +
+> +        [backport of 2.6 commit b7acbdfbd1f277c1eb23f344f899cfa4cd0bf36a]
+> +
+> +Whatever the format, this information provides a valuable help to people
+> +tracking your trees, and to people trying to trouble-shoot bugs in your
+> +tree.
+> +
+>  
+>  13) When to use Acked-by: and Cc:
+>  
+> -- 
 
---- linux-2.6.26-rc4/fs/utimes.c	2008-06-03 23:11:53.000000000 +0200
-+++ linux-2.6.26-rc4-utimensat-fix-v4/fs/utimes.c	2008-06-03 23:04:48.000000000 +0200
-@@ -40,14 +40,9 @@
-
- #endif
-
--static bool nsec_special(long nsec)
--{
--	return nsec == UTIME_OMIT || nsec == UTIME_NOW;
--}
--
- static bool nsec_valid(long nsec)
- {
--	if (nsec_special(nsec))
-+	if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
- 		return true;
-
- 	return nsec >= 0 && nsec <= 999999999;
-@@ -135,8 +130,7 @@
- 	 * UTIME_NOW, then need to check permissions, because
- 	 * inode_change_ok() won't do it.
- 	 */
--	if (!times || (nsec_special(times[0].tv_nsec) &&
--		       nsec_special(times[1].tv_nsec))) {
-+	if (!times) {
- 		error = -EACCES;
-                 if (IS_IMMUTABLE(inode))
- 			goto mnt_drop_write_and_out;
-@@ -151,6 +145,18 @@
- 					goto mnt_drop_write_and_out;
- 			}
- 		}
-+	} else if ((times[0].tv_nsec == UTIME_NOW &&
-+		    times[1].tv_nsec == UTIME_OMIT)
-+		  ||
-+		   (times[0].tv_nsec == UTIME_OMIT &&
-+		    times[1].tv_nsec == UTIME_NOW)) {
-+		error =-EPERM;
-+
-+		if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-+			goto mnt_drop_write_and_out;
-+
-+		if (!is_owner_or_cap(inode))
-+			goto mnt_drop_write_and_out;
- 	}
- 	mutex_lock(&inode->i_mutex);
- 	error = notify_change(dentry, &newattrs);
-
-
+---
+~Randy
