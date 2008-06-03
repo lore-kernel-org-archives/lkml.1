@@ -1,40 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYFCVCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYFCVHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbYFCVCE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 17:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbYFCVBt
+	id S1755232AbYFCVHF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 17:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbYFCVGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 17:01:49 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:59502 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751958AbYFCVBs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 17:01:48 -0400
-Date: Tue, 3 Jun 2008 17:00:48 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nix <nix@esperi.org.uk>, dhazelton@enter.net, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
-Message-ID: <20080603210048.GA12182@c2.user-mode-linux.org>
-References: <20080603190235.GA9511@c2.user-mode-linux.org> <20080603123211.e129c222.akpm@linux-foundation.org> <200806031543.56864.dhazelton@enter.net> <878wxmfg99.fsf@hades.wkstn.nix> <20080603130709.fcf6a751.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Tue, 3 Jun 2008 17:06:54 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45687 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750913AbYFCVGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 17:06:52 -0400
+Date: Tue, 3 Jun 2008 23:07:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Paulo Marques <pmarques@grupopie.com>, Keith Owens <kaos@ocs.com.au>
+Subject: [RFC PATCH] drop support for KALLSYMS_EXTRA_PASS
+Message-ID: <20080603210732.GA6247@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080603130709.fcf6a751.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 03, 2008 at 01:07:09PM -0700, Andrew Morton wrote:
-> So if I change the host's time by an hour, the time will not advance at all
-> on the guest for the next hour? Sounds suboptimal :)
+We have not seen any reports on inconsistent kallsysms data recently
+as in the last one or two years. At least I do not recall these
+and google had no hits in my searching.
 
-It is, but if the host is whacked, the guest just has to do the best that
-it can...
+So I suggest removing this as to simplify the final linking.
+When doing "make allyesconfig" build this extra linking
+takes considerably time (and I usually forgoet to turn it off).
 
-			Jeff
+In addition this patch removes the debug target: debug_kallsyms
 
--- 
-Work email - jdike at linux dot intel dot com
+	Sam
+
+Suggested patch:
+
+diff --git a/Makefile b/Makefile
+index 8db70fe..911cb90 100644
+--- a/Makefile
++++ b/Makefile
+@@ -702,7 +702,6 @@ define rule_vmlinux__
+ 		rm -f $@;                                                    \
+ 		/bin/false;                                                  \
+ 	fi;
+-	$(verify_kallsyms)
+ endef
+ 
+ 
+@@ -719,28 +718,8 @@ ifdef CONFIG_KALLSYMS
+ # o The correct .tmp_kallsyms2.o is linked into the final vmlinux.
+ # o Verify that the System.map from vmlinux matches the map from
+ #   .tmp_vmlinux2, just in case we did not generate kallsyms correctly.
+-# o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
+-#   .tmp_vmlinux3 and .tmp_kallsyms3.o.  This is only meant as a
+-#   temporary bypass to allow the kernel to be built while the
+-#   maintainers work out what went wrong with kallsyms.
+ 
+-ifdef CONFIG_KALLSYMS_EXTRA_PASS
+-last_kallsyms := 3
+-else
+-last_kallsyms := 2
+-endif
+-
+-kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
+-
+-define verify_kallsyms
+-	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
+-	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
+-	  $(cmd_sysmap) .tmp_vmlinux$(last_kallsyms) .tmp_System.map
+-	$(Q)cmp -s System.map .tmp_System.map ||                             \
+-		(echo Inconsistent kallsyms data;                            \
+-		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
+-		 rm .tmp_kallsyms* ; /bin/false )
+-endef
++kallsyms.o := .tmp_kallsyms2.o
+ 
+ # Update vmlinux version before link
+ # Use + in front of this rule to silent warning about make -j1
+@@ -758,7 +737,7 @@ quiet_cmd_kallsyms = KSYM    $@
+       cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) \
+                      $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) > $@
+ 
+-.tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
++.tmp_kallsyms1.o .tmp_kallsyms2.o: %.o: %.S scripts FORCE
+ 	$(call if_changed_dep,as_o_S)
+ 
+ .tmp_kallsyms%.S: .tmp_vmlinux% $(KALLSYMS)
+@@ -771,22 +750,9 @@ quiet_cmd_kallsyms = KSYM    $@
+ .tmp_vmlinux2: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms1.o FORCE
+ 	$(call if_changed,vmlinux__)
+ 
+-.tmp_vmlinux3: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms2.o FORCE
+-	$(call if_changed,vmlinux__)
+-
+ # Needs to visit scripts/ before $(KALLSYMS) can be used.
+ $(KALLSYMS): scripts ;
+ 
+-# Generate some data for debugging strange kallsyms problems
+-debug_kallsyms: .tmp_map$(last_kallsyms)
+-
+-.tmp_map%: .tmp_vmlinux% FORCE
+-	($(OBJDUMP) -h $< | $(AWK) '/^ +[0-9]/{print $$4 " 0 " $$2}'; $(NM) $<) | sort > $@
+-
+-.tmp_map3: .tmp_map2
+-
+-.tmp_map2: .tmp_map1
+-
+ endif # ifdef CONFIG_KALLSYMS
+ 
+ # Do modpost on a prelinked vmlinux. The finally linked vmlinux has
+diff --git a/init/Kconfig b/init/Kconfig
+index 6199d11..5fc1067 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -588,18 +588,6 @@ config KALLSYMS_ALL
+ 
+ 	   Say N.
+ 
+-config KALLSYMS_EXTRA_PASS
+-	bool "Do an extra kallsyms pass"
+-	depends on KALLSYMS
+-	help
+-	   If kallsyms is not working correctly, the build will fail with
+-	   inconsistent kallsyms data.  If that occurs, log a bug report and
+-	   turn on KALLSYMS_EXTRA_PASS which should result in a stable build.
+-	   Always say N here unless you find a bug in kallsyms, which must be
+-	   reported.  KALLSYMS_EXTRA_PASS is only a temporary workaround while
+-	   you wait for kallsyms to be fixed.
+-
+-
+ config HOTPLUG
+ 	bool "Support for hot-pluggable devices" if EMBEDDED
+ 	default y
