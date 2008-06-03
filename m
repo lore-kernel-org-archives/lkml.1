@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbYFCMfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbYFCMog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755696AbYFCMfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 08:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbYFCMfd
+	id S1756029AbYFCMog (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 08:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbYFCMo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 08:35:33 -0400
-Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:43110 "EHLO
-	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753399AbYFCMfd (ORCPT
+	Tue, 3 Jun 2008 08:44:26 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:21968 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbYFCMo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 08:35:33 -0400
-Date: Tue, 3 Jun 2008 13:35:22 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: James Cammarata <jimi@sngx.net>
-Cc: Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
-Message-ID: <20080603123520.GF18161@solarflare.com>
-References: <483E0AAE.2020107@sngx.net> <20080528221118.63da4092.akpm@linux-foundation.org> <483EA2D1.8050603@sngx.net> <20080529154525.3916c7b5@core> <20080530151250.b44a119a.billfink@mindspring.com> <20080531131143.516ca56e@core> <20080531195702.0b879dd1.billfink@mindspring.com> <48437C25.7080400@gdt.id.au> <20080602121007.1e81cf05.billfink@mindspring.com> <48453909.4000301@sngx.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Jun 2008 08:44:26 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Linux PPC devel <linuxppc-dev@ozlabs.org>
+Subject: [RFC 0/3]: hvc_console rework for platform without hard irqs
+Date: Tue, 3 Jun 2008 14:44:21 +0200
+User-Agent: KMail/1.9.9
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48453909.4000301@sngx.net>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200806031444.21945.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Cammarata wrote:
-> >First of all, when assisting a user, they typically aren't even
-> >running an snmp daemon (and there might be firewall issues to
-> >access it if they are).  And I don't think the "ethtool -S" driver
-> >stats are even accessible via SNMP (although they may contribute
-> >to more generic interface stats which are), and it is the specific
-> >driver stats which are often key to help diagnosing the problem.
-> 
-> Ok, just to jump back in and add my $0.02, I plan to send a patch to 
-> the ethtool project to do what was suggested (snapshot to /var, and 
-> diff stats against that for future reference).  I would just like to 
-> point out that this will introduce inconsistencies between _every_ 
-> other source of interface stats (ifconfig/procfs/etc).  I can deal 
-> with that, it just means one more thing to keep track of when you're 
-> troubleshooting.
+This patch set if my first attempt to make virtio_console usable on s390.
+To do so, I had to change hvc_console, because s390 has no request_irq and
+no free_irq.
+I want to get feedback from the main users of hvc_console before I proceed.
 
-You could perhaps add a third column to the statistics when a snapshot
-exists, with the second column still showing absolute values and the
-third showing the difference from the snapshot.
+The basic idea of this patch set is to remove the calls to request_irq and
+free_irq and replace them with backend specific callbacks.
 
-Ben.
+Please see the descriptions of the patches for further details:
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+1/3: hvc_console: rework setup to replace irq functions with callbacks
+2/3: virtio_console: use virtqueue notification for hvc_console
+3/3: s390: use virtio_console for KVM on s390
