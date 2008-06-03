@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753697AbYFCPYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbYFCP1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753697AbYFCPYI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 11:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYFCPX4
+	id S1753493AbYFCP1S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 11:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYFCP1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 11:23:56 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43214 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbYFCPXz (ORCPT
+	Tue, 3 Jun 2008 11:27:08 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:11315 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbYFCP1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 11:23:55 -0400
-Message-ID: <48456225.6070505@bull.net>
-Date: Tue, 03 Jun 2008 17:24:21 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 3 Jun 2008 11:27:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uDJk6g0lpb/IbhnJbvtDYyKBNe5KMYcgaCczUv0LY4kDqG3ENbiNKMghxdCzjEGuoD6uG3j0j/JquuEL+lSoKmjiveJHKEuMJYsGd9Tm1EUmJrCdcAQP4UIDR6+Bvn5IvuefIQ9KbSimWmJmOZgPCzaVS2CvJeqK2KNSgUejYj4=
+Message-ID: <863e9df20806030827n41942f28i30fe3d45b10df6ae@mail.gmail.com>
+Date: Tue, 3 Jun 2008 20:57:05 +0530
+From: "Abhishek Sagar" <sagar.abhishek@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/3][RFC] ftrace: track dynamic ftrace update failures
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.58.0806030858500.20107@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>
-Subject: Re: [PATCH 09/10] netns: Enable tagging for net_class directories
- in sysfs
-References: <20080602134438.224352910@theryb.frec.bull.fr> <20080602134439.782528644@theryb.frec.bull.fr> <20080603040818.GA18507@suse.de>
-In-Reply-To: <20080603040818.GA18507@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4842CB8F.2000702@gmail.com>
+	 <Pine.LNX.4.58.0806021354520.10366@gandalf.stny.rr.com>
+	 <863e9df20806022113w339257b1pa4c8a7762bab8bc1@mail.gmail.com>
+	 <Pine.LNX.4.58.0806030858500.20107@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Jun 02, 2008 at 03:46:08PM +0200, Benjamin Thery wrote:
->> net: Enable tagging for net_class directories in sysfs
->>
->> The problem.  Network devices show up in sysfs and with the network
->> namespace active multiple devices with the same name can show up in
->> the same directory, ouch!
->>
->> To avoid that problem and allow existing applications in network namespaces
->> to see the same interface that is currently presented in sysfs, this
->> patch enables the tagging directory support in sysfs.
->>
->> By using the network namespace pointers as tags to separate out the
->> the sysfs directory entries we ensure that we don't have conflicts
->> in the directories and applications only see a limited set of
->> the network devices.
-> 
-> I don't like it how the network subsystem is starting to leach into the
-> sysfs core here.  What happens when the next subsystem wants to do the
-> same thing?  And then the next one?  Will they all have to do this kind
-> of intrusive changes to sysfs?
- >
- > Can't this be done only in the network subsystem?
+On Tue, Jun 3, 2008 at 6:30 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> Can we add an API to kprobes or perhaps a way to register code
+> modification in ftrace, that ftrace can ignore? Let the two know about
+> each other, but in a way that they dont need to know the internals of one
+> another.
 
-I'm not sure to understand exactly what you mean.
+There's a get_kprobe() already which can tell if an address's kprobed
+or not. But still doesn't stop kprobe from forcing change on mcount
+sites and fooling ftrace like mentioned previously. The
+problem with maintaining a blacklist sort of thing for kprobed mcount
+sites may also be an
+overkill since it can permanently make that function un-ftraceable.
 
-What you don't like is seeing these hunks of network code in
-fs/sysfs/mount.c? And you prefer to see these bits of code resides in
-the network subsystem instead and see only "generic" sysfs services in
-fs/sysfs/mount.c?
+One kprobe specific measure can be to provide notifiers in
+[un]register_kprobe(). Ftrace can
+listen on register event to temporarily disable tracing of the
+corresponding function by forcing
+a NOP at the mcount site just before a kprobe is placed on it, if it's
+already recorded/enabled.
+The tracing can be enabled back when the corresponding unregister
+event is received. Worth a
+shot?
 
-If this is it, I have some idea to implement a less intrusive
-sysfs_net_exit(), which can be shared with the other namespaces.
-Serge introduces the same kind of changes in patch 10 to fix an issue in 
-  user namespace. I think we can share a bit of code and move the parts
-specific to each namespace in their own subsystems.
-
-Benjamin
-
-> 
-> thanks,
-> 
-> greg k-h
-> 
-> 
-
-
--- 
-B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
-
-    http://www.bull.com
+--
+Regards,
+Abhishek Sagar
