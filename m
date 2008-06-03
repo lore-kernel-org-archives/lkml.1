@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYFCHgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbYFCHrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbYFCHgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 03:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYFCHgR
+	id S1754313AbYFCHrP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 03:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYFCHrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 03:36:17 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:50020 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754184AbYFCHgQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 03:36:16 -0400
-X-BigFish: VPS-39(zz1432R98dR62a3L7efV1805Mzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K1VMG2-01-IUG-01
-Date: Tue, 3 Jun 2008 09:35:50 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] x86: Add PCI extended config space access for AMD
-	Barcelona
-Message-ID: <20080603073550.GS23679@erda.amd.com>
-References: <20080526180616.GB2752@erda.amd.com> <20080528165813.8D8E5814C@erda.amd.com> <86802c440806021331x4a483201k83c5db040a6cb70b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <86802c440806021331x4a483201k83c5db040a6cb70b@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 03 Jun 2008 07:35:51.0015 (UTC) FILETIME=[728DEF70:01C8C54C]
+	Tue, 3 Jun 2008 03:47:04 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:47651 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751228AbYFCHrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 03:47:03 -0400
+Date: Tue, 3 Jun 2008 09:46:46 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, benh@kernel.crashing.org,
+       Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, tpiepho@freescale.com
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080603094646.0dbf2911@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080602154812.GB2734@loki.buserror.net>
+References: <1211924335.3286.89.camel@pasglop>
+	<20080527214241.GA22636@parisc-linux.org>
+	<1211926636.3286.100.camel@pasglop>
+	<20080528103648.54eb8734@hskinnemo-gx745.norway.atmel.com>
+	<1212110003.15633.0.camel@pasglop>
+	<20080530080700.773a82cc@siona.local>
+	<1212132267.15633.69.camel@pasglop>
+	<20080530102706.56fca248@siona.local>
+	<Pine.LNX.4.64.0805301120510.26332@anakin>
+	<20080602101102.0d8979c5@hskinnemo-gx745.norway.atmel.com>
+	<20080602154812.GB2734@loki.buserror.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jun 2008 07:46:18.0085 (UTC) FILETIME=[E8513950:01C8C54D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02.06.08 13:31:38, Yinghai Lu wrote:
-> > +               if (!raw_pci_ext_ops && cpu_has_pci_ext_cfg) {
-> > +                       printk(KERN_INFO "PCI: Using configuration type 1 "
-> > +                              "for extended access\n");
-> > +                       raw_pci_ext_ops = &pci_direct_conf1;
+Scott Wood <scottwood@freescale.com> wrote:
+> On Mon, Jun 02, 2008 at 10:11:02AM +0200, Haavard Skinnemoen wrote:
+> > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > On Fri, 30 May 2008, Haavard Skinnemoen wrote:
+> > > > Maybe we need another interface that does not do byteswapping but
+> > > > provides stronger ordering guarantees?
+> > > 
+> > > The byte swapping depends on the device/bus.
+> > 
+> > Of course. But isn't it reasonable to assume that a device integrated
+> > on the same silicon as the CPU is connected to a somewhat sane bus
+> > which doesn't require any byte swapping?
 > 
-> can you add extra pci_direct_ext_conf1 intead?
-> 
-> so don't need change reg size in pci_direct_conf1
+> No, unfortunately. :-(
 
-The reg size check is already in raw_pci_*. Both functions would be
-almost identical. See my previous mail.
+Ok, I guess I was being naive.
 
-> also if could avoid cpu_has_pci_ext_cfg, it would be great...
+> See the end of drivers/dma/fsldma.h.  Likewise with Freescale's PCI host
+> bridges; for some reason the bus itself being little endian led to the host
+> bridge control registers also being little endian.
 
-I intend to implement pci_probe & PCI_HAS_EXT_CFG in a follow on patch
-instead.
+Right. But still, isn't it better to handle it on a case-by-case basis
+in the drivers? In some cases, it's best to explicitly use a certain
+byte order, in others it's best to use whatever is native to the CPU.
 
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Haavard
