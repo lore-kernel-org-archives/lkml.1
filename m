@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYFCLex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYFCLha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbYFCLex (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 07:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYFCLep
+	id S1757255AbYFCLha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 07:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYFCLhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 07:34:45 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:18850 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752942AbYFCLeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 07:34:44 -0400
-Date: Tue, 3 Jun 2008 20:32:49 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.26-rc5
-Message-ID: <20080603113249.GA15541@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 3 Jun 2008 07:37:22 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:40017 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbYFCLhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 07:37:22 -0400
+Date: Tue, 3 Jun 2008 13:37:21 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Rainer Koenig <Rainer.Koenig@fujitsu-siemens.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Who can backport the AHCI driver to older kernels
+In-Reply-To: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
+Message-ID: <alpine.LNX.1.10.0806031332410.4055@fbirervta.pbzchgretzou.qr>
+References: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.26.git
+On Tuesday 2008-06-03 12:47, Rainer Koenig wrote:
+>
+>New mainboard platfrom with latest chipset from a chipset vendor that 
+>can't do the job that we are asking for. The chipset (especially the
+>SATA controller is supported in Kernel 2.6.24 and later. 
+>
+>The target market for those boards is using old fashioned distributions 
+>like CentOS, Debian, Fedora 8 openSUSE 10 and so on.
 
-Which contains:
-
-Adrian Bunk (1):
-      sh/kernel/cpu/irq/intc-sh5.c build fix
-
-Harvey Harrison (1):
-      sh: module.c use kernel unaligned helpers
-
-Paul Mundt (4):
-      sh: fix miscompilation of ip_fast_csum with gcc >= 4.3
-      sh: Disable 4KSTACKS on nommu.
-      sh: Update SE7206 defconfig.
-      sh: Add defconfig for RSK7203.
-
- arch/sh/Kconfig.debug             |    2 +-
- arch/sh/configs/rsk7203_defconfig |  841 +++++++++++++++++++++++++++++++++++++
- arch/sh/configs/se7206_defconfig  |  475 ++++++++++++++-------
- arch/sh/kernel/cpu/irq/intc-sh5.c |    1 +
- arch/sh/kernel/module.c           |   39 +--
- include/asm-sh/checksum_32.h      |    2 +-
- 6 files changed, 1164 insertions(+), 196 deletions(-)
- create mode 100644 arch/sh/configs/rsk7203_defconfig
+Wait a minute, that seems like an impossible dependency.
+These boards cannot be targeted for these distro versions,
+because the manufacturer knows (hopefully) that the shipped
+kernel versions do not have the driver with the required
+new code.
