@@ -1,38 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYFCAwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYFCBAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbYFCAwB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Jun 2008 20:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbYFCAvz
+	id S1756054AbYFCBAW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Jun 2008 21:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYFCBAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Jun 2008 20:51:55 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38728 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbYFCAvy (ORCPT
+	Mon, 2 Jun 2008 21:00:06 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53560 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbYFCBAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Jun 2008 20:51:54 -0400
-Message-ID: <484495A7.6010006@firstfloor.org>
-Date: Tue, 03 Jun 2008 02:51:51 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Rick van Rein <rick@groengemak.nl>
-CC: daniel.blueman@gmail.com, david@lang.hm, linux-kernel@vger.kernel.org
-Subject: Re: Future Linux on Bistable Storage
-References: <20080602125904.GA15129@phantom.vanrein.org> <87prqzvc17.fsf@basil.nowhere.org> <20080602211027.GB18415@phantom.vanrein.org>
-In-Reply-To: <20080602211027.GB18415@phantom.vanrein.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 2 Jun 2008 21:00:03 -0400
+Subject: Re: kvm causing memory corruption?  now 2.6.26-rc4
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Anthony N. Liguori [imap]" <aliguori@us.ibm.com>, kvm@vger.kernel.org
+In-Reply-To: <1212445810.8211.9.camel@nimitz.home.sr71.net>
+References: <1206479576.7562.21.camel@nimitz.home.sr71.net>
+	 <47EA1C63.8010202@qumranet.com>
+	 <1206550329.7883.5.camel@nimitz.home.sr71.net>
+	 <47EA80AC.4070204@qumranet.com>
+	 <1206551794.7883.7.camel@nimitz.home.sr71.net>
+	 <47EB6AAC.3040607@qumranet.com>  <47EB7281.6070300@qumranet.com>
+	 <1206629709.7883.30.camel@nimitz.home.sr71.net>
+	 <47EBB63E.2060306@qumranet.com>
+	 <1212445810.8211.9.camel@nimitz.home.sr71.net>
+Content-Type: text/plain
+Date: Mon, 02 Jun 2008 17:59:58 -0700
+Message-Id: <1212454798.8211.17.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick van Rein wrote:
+On Mon, 2008-06-02 at 15:30 -0700, Dave Hansen wrote:
+> On Thu, 2008-03-27 at 16:59 +0200, Avi Kivity wrote:
+> > Dave Hansen wrote:
+> > > On Thu, 2008-03-27 at 12:10 +0200, Avi Kivity wrote:
+> > >> btw, is this with >= 4GB RAM on the host?
+> > >
+> > > Well, are you asking whether I have PAE on or not? :)  
+> > 
+> > No, I'm asking whether there is a possibility of address truncation :)
+> > 
+> > PAE by itself doesn't affect kvm much, as it always runs the guest in 
+> > pae mode.
+> > 
+> > Can you try running with mem=2000M or something?
+> 
+> I have a few more data points on this.  Sorry for the massive delay from
+> the last report -- I'm being a crappy bug reporter.  But, this is on my
+> one and only laptop which makes it a serious pain to diagnose.  I also
+> didn't have a hardware serial console on it before, which I do now.
+> This is all on 2.6.26-rc4-01549-g1beee8d.
+> 
+> Adding the mem= does not help at all.  But, it is all a bit more
+> diagnosable now than a month or two ago.  I turned on all of the kernel
+> debugging that I could get my grubby little hands on.  It now oopses
+> quite consistently when kvm runs instead of after.  Here's a collection
+> of oopses that I captured after setting up a serial line:
+> 
+> 	http://sr71.net/~dave/kvm-oops1.txt
+> 
+> After collecting all those, I turned on CONFIG_DEBUG_HIGHMEM and the
+> oopses miraculously stopped.  But, the guest hung (for at least 5
+> minutes or so) during windows bootup, pegging my host CPU.  Most of the
+> CPU was going to klogd, so I checked dmesg.
+> 
+> I was seeing messages like this
+> 
+> [  428.918108] kvm_handle_exit: unexpected, valid vectoring info and exit reason is 0x9
+> 
+> And quite a few of them, like 100,000/sec.  That's why klogd was pegging
+> the CPU.  Any idea on a next debugging step?
 
-> Thanks for your responses.  You convinced me I/O initiatilisation cannot
-> be improved upon.
+I followed these steps, and can now boot a vm.  But, causing the host
+crashes is still a pretty bad bug.  I would imagine turning ACPI back on
+will let me reproduce if necessary.
 
-I'm sure it can. It's just significant work to do it and would need
-to be done step by step. It's a bit like the "remove BKL everywhere"
-project.
+http://kvm.qumranet.com/kvmwiki/Windows_ACPI_Workaround
 
--Andi
+-- Dave
+
