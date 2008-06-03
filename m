@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbYFCKOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYFCKWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756539AbYFCKOX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 06:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYFCKOG
+	id S1754203AbYFCKWg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 06:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYFCKW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 06:14:06 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46549 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbYFCKOF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 06:14:05 -0400
-To: jesper@krogh.cc
-CC: viro@ZenIV.linux.org.uk, jesper@krogh.cc, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-	(jesper@krogh.cc)
-Subject: Re: Linux 2.6.26-rc4
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-    <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
-    <20080603095713.GR28946@ZenIV.linux.org.uk> <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-Message-Id: <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 03 Jun 2008 12:13:54 +0200
+	Tue, 3 Jun 2008 06:22:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39068 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751968AbYFCKW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 06:22:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080530124554.GA14312@linux.vnet.ibm.com>
+References: <20080530124554.GA14312@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: Confused by smp_read_barrier_depends() in rxrpc_rotate_tx_window()
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Tue, 03 Jun 2008 11:19:51 +0100
+Message-ID: <27030.1212488391@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On Tue, Jun 03, 2008 at 11:49:32AM +0200, Jesper Krogh wrote:
-> >
-> >
-> >> I reported it to the NFS-guys on a .22 kernel, and was directed to the
-> >> fsdevel list(CC'ed again) back then. Now the problem is reproduced on
-> >> .26-rc4
-> >>
-> >
-> > Lovely...  Do you have the full oops trace, with the actual code
-> > dump? --
+Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+
+> I confess to being confused by the smp_read_barrier_depends() in
+> rxrpc_rotate_tx_window().  It looks like it is ordering the prior
+> fetch of tail from call->acks_tail with the subsequent use of
+
+No.  call->acks_head vs [tail].
+
+> tail as an index into the call->acks_window[] array, but then the
+> code does an assignment to call->acks_tail a few lines later.
 > 
-> This is all I got from the logs. I'll try go get more from the serial
+> If we hold a lock protecting call->acks_tail, why do we need the
+> smp_read_barrier_depends()?  If we don't hold such a lock, why
+> is the assignment to call->acks_tail safe?
 
-Probably the same as this one:
+We don't hold a lock protecting call->acks_tail.  The head insertion and the
+tail extraction are only protected by memory barriers.
 
-http://www.kerneloops.org/raw.php?rawid=12419&msgid=
+	int tail = call->acks_tail, old_tail;
+	int win = CIRC_CNT(call->acks_head, tail, call->acks_winsz);
+	...
+		smp_read_barrier_depends();
+		_skb = call->acks_window[tail] & ~1;
 
-Looks like a negative inode in S_ISDIR(mnt->mnt_root->d_inode->i_mode),
-which would be due to NFS not properly filling in its root dentry?
+In this bit of code, we must protect against seeing the item at '[tail]' set
+after 'call->acks_head' itself is updated, hence why we need a barrier here.
+Possibly it should be smp_rmb() rather than smp_read_barrier_depends().
 
-Miklos
+		_skb = call->acks_window[tail] & ~1;
+		...
+		old_tail = tail;
+		tail = (tail + 1) & (call->acks_winsz - 1);
+		call->acks_tail = tail;
+
+I believe this does not require a barrier between reading '[tail]' and updating
+'tail' because there's no way we can update tail without first reading
+'[tail]'.
+
+David
