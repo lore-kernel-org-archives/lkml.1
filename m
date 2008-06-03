@@ -1,115 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYFCSOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYFCSTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758048AbYFCSOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 14:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbYFCSOg
+	id S1757068AbYFCSTe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 14:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbYFCST0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 14:14:36 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:49793 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753896AbYFCSOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 14:14:35 -0400
-Date: Tue, 3 Jun 2008 21:14:08 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/net/: remove CVS keywords
-Message-ID: <20080603181408.GC2663@cs181133002.pp.htv.fi>
-References: <20080519220619.GL17716@cs181133002.pp.htv.fi> <48354660.7060500@pobox.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <48354660.7060500@pobox.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Jun 2008 14:19:26 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:47829 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753763AbYFCSTZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 14:19:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Y1Hiyw44NJEp5WDa0ykUtqT3fU/sUXMlTnHcCfA9XVUimtdp1iG8/ogY7LdMPnirxe6bWg+g5dcB8qRVqLhWQ6sG3DO3X16m+5AG0naVgkIe6EeinfFtFazo2KcVSXzBuzX/axtTrcvtk8ZBd6QdcwA2UpI6zKTJFJcyjj4V8bY=
+Subject: [PATCH 1/2] lib: export bitrev16
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Marcel Holtmann <marcel@holtmann.org>
+Content-Type: text/plain
+Date: Tue, 03 Jun 2008 11:19:20 -0700
+Message-Id: <1212517160.11008.59.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 22, 2008 at 06:09:36AM -0400, Jeff Garzik wrote:
-> Adrian Bunk wrote:
->> This patch removes some CVS keywords that weren't updated for a long  
->> time.
->>
->> I haven't touched drivers that looked as if they might still be used.
->>
->> In three drivers I've also removed printk's printing them since they  
->> were part of several printk's in a row and it doesn't make sense to  
->> print ancient version information to the user.
->>
->> Signed-off-by: Adrian Bunk <bunk@kernel.org>
->
-> I'm fine with removing CVS keywords, but I do not agree with removing  
-> net driver version numbers that have been in the drivers for a while.
+Bluetooth will be able to use this.
 
-Below is the part of the patches that removes these printk's.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ include/linux/bitrev.h |    1 +
+ lib/bitrev.c           |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-Do CVS $Revision tags that haven't been updated for ages really qualify 
-as net driver version numbers?
+diff --git a/include/linux/bitrev.h b/include/linux/bitrev.h
+index 05e540d..7ffe03f 100644
+--- a/include/linux/bitrev.h
++++ b/include/linux/bitrev.h
+@@ -10,6 +10,7 @@ static inline u8 bitrev8(u8 byte)
+ 	return byte_rev_table[byte];
+ }
+ 
++extern u16 bitrev16(u16 in);
+ extern u32 bitrev32(u32 in);
+ 
+ #endif /* _LINUX_BITREV_H */
+diff --git a/lib/bitrev.c b/lib/bitrev.c
+index 989aff7..3956203 100644
+--- a/lib/bitrev.c
++++ b/lib/bitrev.c
+@@ -42,10 +42,11 @@ const u8 byte_rev_table[256] = {
+ };
+ EXPORT_SYMBOL_GPL(byte_rev_table);
+ 
+-static __always_inline u16 bitrev16(u16 x)
++u16 bitrev16(u16 x)
+ {
+ 	return (bitrev8(x & 0xff) << 8) | bitrev8(x >> 8);
+ }
++EXPORT_SYMBOL(bitrev16);
+ 
+ /**
+  * bitrev32 - reverse the order of bits in a u32 value
+-- 
+1.5.6.rc0.336.ge5422
 
-I can resend the patch with these changes removed, I'm just asking 
-whether you might confuse this with regular version numbers.
 
-> 	Jeff
-
-cu
-Adrian
-
---- a/drivers/net/82596.c
-+++ b/drivers/net/82596.c
-@@ -59,9 +59,6 @@
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
- 
--static char version[] __initdata =
--	"82596.c $Revision: 1.5 $\n";
--
- #define DRV_NAME	"82596"
- 
- /* DEBUG flags
-@@ -1227,8 +1224,6 @@ struct net_device * __init i82596_probe(int unit)
- 
- 	DEB(DEB_PROBE,printk(" IRQ %d.\n", dev->irq));
- 
--	DEB(DEB_PROBE,printk(KERN_INFO "%s", version));
--
- 	/* The 82596-specific entries in the device structure. */
- 	dev->open = i596_open;
- 	dev->stop = i596_close;
---- a/drivers/net/de600.c
-+++ b/drivers/net/de600.c
-@@ -1,4 +1,3 @@
--static const char version[] = "de600.c: $Revision: 1.41-2.5 $,  Bjorn Ekwall (bj0rn@blox.se)\n";
- /*
-  *	de600.c
-  *
-@@ -398,9 +397,6 @@ static struct net_device * __init de600_probe(void)
- 	}
- 
- 	printk(KERN_INFO "%s: D-Link DE-600 pocket adapter", dev->name);
--	/* Alpha testers must have the version number to report bugs. */
--	if (de600_debug > 1)
--		printk(version);
- 
- 	/* probe for adapter */
- 	err = -ENODEV;
---- a/drivers/net/de620.c
-+++ b/drivers/net/de620.c
-@@ -38,8 +35,6 @@
-  *	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  *
-  *****************************************************************************/
--static const char version[] =
--	"de620.c: $Revision: 1.40 $,  Bjorn Ekwall <bj0rn@blox.se>\n";
- 
- /***********************************************************************
-  *
-@@ -828,9 +823,6 @@ struct net_device * __init de620_probe(int unit)
- 		netdev_boot_setup_check(dev);
- 	}
- 
--	if (de620_debug)
--		printk(version);
--
- 	printk(KERN_INFO "D-Link DE-620 pocket adapter");
- 
- 	if (!request_region(dev->base_addr, 3, "de620")) {
