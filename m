@@ -1,106 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbYFCQLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYFCQMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbYFCQLQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 12:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYFCQK7
+	id S1754864AbYFCQMF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 12:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYFCQLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 12:10:59 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:39378 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752511AbYFCQK6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 12:10:58 -0400
-X-Sasl-enc: I/wgdTzGCtAG9hoaqjX47YK/nhfWty0MqtLx7kb9f/Fz 1212509456
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, Miklos Szeredi <miklos@szeredi.hu>,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-	 <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
-	 <20080603095713.GR28946@ZenIV.linux.org.uk>
-	 <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-	 <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
-	 <20080603104035.GT28946@ZenIV.linux.org.uk>
-	 <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>
-	 <20080603105258.GV28946@ZenIV.linux.org.uk>
-	 <1212499623.3025.46.camel@raven.themaw.net>
-	 <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 00:07:42 +0800
-Message-Id: <1212509263.3025.66.camel@raven.themaw.net>
+	Tue, 3 Jun 2008 12:11:55 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:51438 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752633AbYFCQLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 12:11:54 -0400
+Date: Tue, 3 Jun 2008 20:13:38 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: down_killable() is racy? or schedule() is not right?
+Message-ID: <20080603161338.GA736@tv-sign.ru>
+References: <20080603123309.GA472@tv-sign.ru> <20080603125842.GB8434@parisc-linux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080603125842.GB8434@parisc-linux.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-06-03 at 08:01 -0700, Linus Torvalds wrote:
-> 
-> On Tue, 3 Jun 2008, Ian Kent wrote:
-> > > 
-> > > > I think it must be autofs4 doing something weird.  Like this in
-> > > > autofs4_lookup_unhashed():
-> > > > 
-> > > > 			/*
-> > > > 			 * Make the rehashed dentry negative so the VFS
-> > > > 			 * behaves as it should.
-> > > > 			 */
-> > > > 			if (inode) {
-> > > > 				dentry->d_inode = NULL;
-> 
-> Uhhuh. Yeah, that's not allowed.
-> 
-> A dentry inode can start _out_ as NULL, but it can never later become NULL 
-> again until it is totally unused.
-> 
-> > > Lovely.  If we ever step into that with somebody else (no matter who)
-> > > holding a reference to that dentry, we are certainly well and truly
-> > > buggered.  It's not just mount(2) - everything in the tree assumes that
-> > > holding a reference to positive dentry guarantees that it remains
-> > > positive.
-> 
-> Indeed. Things like regular file ops won't even test the inode, since they 
-> know that "open()" will only open a dentry with a positive entry, so they 
-> know that the dentry->inode is non-NULL.
-> 
-> [ Although some code-paths do test - but that is just because people are 
->   so used to testign that pointers are non-NULL. ]
-> 
-> > The intent here is that, the dentry above is unhashed at this point, and
-> > if hasn't been reclaimed by the VFS, it is made negative and replaces
-> > the unhashed negative dentry passed to ->lookup(). The reference count
-> > is incremented to account for the reference held by the path walk.
+On 06/03, Matthew Wilcox wrote:
+>
+> On Tue, Jun 03, 2008 at 04:33:09PM +0400, Oleg Nesterov wrote:
 > > 
-> > What am I doing wrong here?
+> > Why _irqsave ? we must not do down() with irqs disabled, and of course
+> > __down() restores/clears irqs unconditionally.
 > 
-> What's wrong is that you can't do that "dentry->d_inode = NULL". EVER.
+> How about reading the fine comments?
 
-OK.
+Thanks,
 
+> I would paste it, but Debian has fucked up my X copy and paste.  Line 13
+> of kernel/semaphore.c.
 > 
-> Why would you want to? If the dentry is already unhashed, then no _new_ 
-> lookups will ever find it anyway, so it's effectively unfindable anyway. 
-> Except by people who *have* to find it, ie the people who already hold it 
-> open (because, for example, they opened it earlier, or because they 
-> chdir()'ed into a subdirectory).
-
-The code we're talking about deals with a race between expiring and
-mounting an autofs mount point at the same time. 
-
-I'll have a closer look and see if I can make it work without turning
-the dentry negative.
-
+> > 	__down_common(TASK_KILLABLE):
+> > 
+> > 			if (state == TASK_KILLABLE && fatal_signal_pending(task))
+> > 				goto interrupted;
+> > 
+> > 			/* --- WINDOW --- */
+> > 
+> > 			__set_task_state(task, TASK_KILLABLE);
+> > 			schedule_timeout(timeout);
+> > 
+> > This looks racy. If SIGKILL comes in the WINDOW above, the event is lost.
+> > The task will wait for up() or timeout with the fatal signal pending, and
+> > it is not possible to wakeup it via kill() again.
 > 
-> So why don't you just return a NULL dentry instead, for a unhashed dentry? 
-> Or do the "goto next" thing?
+> Hmmm.  I think you're right.  But mutex.c has the same problem, then.
 
-That just won't work for the case this is meant to deal with.
+and do_wait_for_common()
 
-Ian
+> > This is easy to fix, but I wonder if we should change schedule() instead.
+> > Note that __down_common() does 2 checks,
+> > 
+> > 		if (state == TASK_INTERRUPTIBLE && signal_pending(task))
+> > 			goto interrupted;
+> > 		if (state == TASK_KILLABLE && fatal_signal_pending(task))
+> > 			goto interrupted;
+> > 
+> > they look very symmetrical, but the first one is OK, and the second is racy.
+> 
+> Oh, because of the special casing in sched.c.  Why not just move the
+> __set_task_state before the checks for signals pending?
 
+Yes sure, this all is fixeable (we need set_task_state() of course).
+
+But please compare
+
+	current->state = TASK_INTERRUPTIBLE;
+	schedule();
+and
+	current->state = TASK_KILLABLE;
+	schedule();
+
+it seems to me that it is not nice they behave "differently".
+
+> > Also, I think we have the similar issues with lock_page_killable().
+>
+> I don't think so because __wait_on_bit_lock sets the state before
+> checking the 'action' (sync_page_killable).
+
+You are right.
+
+> > 	int signal_pending_state(struct task_struct *tsk)
+> > 	{
+> > 		if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
+> > 			return 0;
+> > 		if (signal_pending(tsk))
+> > 			return 0;
+> > 
+> > 		return (state & TASK_INTERRUPTIBLE) ||
+> > 			__fatal_signal_pending(tsk);
+> > 	}
+> > 
+> > now,
+> > 
+> > 	--- kernel/sched.c
+> > 	+++ kernel/sched.c
+> > 	@@ -4510,8 +4510,7 @@ need_resched_nonpreemptible:
+> > 		clear_tsk_need_resched(prev);
+> > 	 
+> > 		if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+> > 	-		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
+> > 	-				signal_pending(prev))) {
+> > 	+		if (unlikely(signal_pending_state(prev))) {
+> > 				prev->state = TASK_RUNNING;
+> > 			} else {
+> > 				deactivate_task(rq, prev, 1);
+> > 
+> > Thoughts?
+> 
+> That might be worth doing anyway, but I'd leave that up to Ingo.
+
+Yes, we need Ingo's opinion ;)
+
+Oleg.
 
