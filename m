@@ -1,45 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbYFCHAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbYFCHTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbYFCHAj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 03:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYFCHAb
+	id S1754368AbYFCHTN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 03:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbYFCHTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 03:00:31 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:45486 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbYFCHAa (ORCPT
+	Tue, 3 Jun 2008 03:19:00 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:30747 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751228AbYFCHS7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 03:00:30 -0400
-Date: Tue, 3 Jun 2008 08:00:16 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] console - Add configurable support for console charset translation
-Message-ID: <20080603070016.GA23429@shareable.org>
-References: <48447615.5050806@am.sony.com> <48449FAE.70404@zytor.com>
+	Tue, 3 Jun 2008 03:18:59 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=L/B8UIs9JSnrFQLGoy5Mri3GdVYgOtcj8hoy89Z1NzqLUu8WVOk60swVcqw1oh0UOSTPVTzKhVf6OGUik2Owy3gTpSrbcRNGlqqYHkBk5iaui4lm5NdHJB3VNq3DHCSHEhGvP5Wj7gIVIvj3TjDqoUL6tCErHz1BSOqLSJbiT58=  ;
+X-YMail-OSG: zXPUNwcVM1lzv3Lisiv7j0CNxx8.DBKQYW5cEMZfQtErJ7XrtUqhIEo6q0aqj3s97JrxumHUrOw3pTtJAB.UDsETrtRJSGAI.e3olqD7paQEmcgNdLZ6OGGIZjub.1YVSd4-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: MMIO and gcc re-ordering issue
+Date: Tue, 3 Jun 2008 17:18:42 +1000
+User-Agent: KMail/1.9.5
+Cc: benh@kernel.crashing.org, Russell King <rmk+lkml@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       tpiepho@freescale.com
+References: <1211852026.3286.36.camel@pasglop> <200806031611.13817.nickpiggin@yahoo.com.au> <18500.60032.989380.864674@cargo.ozlabs.ibm.com>
+In-Reply-To: <18500.60032.989380.864674@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48449FAE.70404@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200806031718.43393.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Tim Bird wrote:
-> >With CONSOLE_TRANSLATIONS turned off, this saves about 6K
-> >on my kernel configured for an ARM development board (OMAP
-> >5912 OSK).  In embedded products I'm familiar with,
-> >console translations are not needed.
-> 
-> On most embedded products I'm familiar with, you wouldn't have virtual 
-> consoles at all...?
+On Tuesday 03 June 2008 16:53, Paul Mackerras wrote:
+> Nick Piggin writes:
+> > So your readl can pass an earlier cacheable store or earlier writel?
+>
+> No.  It's quite gross at the moment, it has a sync before the access
+> (i.e. a full mb()) and a twi; isync sequence after the access that
+> stalls execution until the data comes back.
 
-On anything with a framebuffer, VCs are quite handy for debugging.
-Saving 6k won't save the world on those devices, but each little bit
-helps - especially due to no-MMU fragmentation.
+OK.
 
--- Jamie
+
+> > > We don't provide meaningless ones like writel + cacheable store for
+> > > example. (PCI posting would defeat it anyway).
+> >
+> > What do you mean by meaningless? Ordering of writel followed by a
+> > cacheable store  is meaningful eg. for retaining io operations within
+> > locks. OK, you explicitly have some extra code for spin_unlock, but
+> > not for bit locks, mutexes, etc. It would make sense to have the
+> > default operations _very_ strongly ordered IMO, and then move drivers
+> > to be more relaxed when they are verified.
+>
+> It's meaningless in the sense that nothing guarantees that the writel
+> has actually hit the device, even if we put a full mb() barrier in
+> between the writel and the cacheable write.  That would guarantee that
+> the writel had got to the PCI host bridge, and couldn't be reordered
+> with other accesses to the device, but not that the device had
+> actually seen it.
+
+OK, but I think fits OK with our SMP ordering model for cacheable
+stores: no amount of barriers on CPU0 will guarantee that CPU1 has
+seen the store, you actually have to observe a causual effect
+of the store before you can say that.
+
+
+> I don't mind adding code to the mutex unlock to do the same as
+> spin_unlock, but I really don't want to have *two* sync instructions
+> for every MMIO write.  One is bad enough.
+
+So you can't provide iostore/store ordering without another sync
+after the writel store?
+
+I guess the problem with providing exceptions is that it makes it
+hard for people who absolutely don't know or care about ordering.
+I don't like having to think about it "hmm, we can allow this type
+of reordering... oh, unless some silly device does X...".
+
+If we come up with a sane set of weakly ordered accessors
+(including io_*mb()), it will make it easier to go through the
+important drivers and improve them. We don't have to enforce the
+the new semantics strictly until then if they'll slow you down
+too much in the meantime.
