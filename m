@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbYFCEa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbYFCEcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbYFCEa3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 00:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYFCEaT
+	id S1754987AbYFCEcO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 00:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYFCEb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 00:30:19 -0400
-Received: from mail4.hitachi.co.jp ([133.145.228.5]:34587 "EHLO
-	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbYFCEaR (ORCPT
+	Tue, 3 Jun 2008 00:31:58 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:38301 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbYFCEb5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 00:30:17 -0400
-X-AuditID: 0ac90650-ad08dba0000062df-46-4844c8d76fb8
-Message-ID: <4844C8CF.8060700@hitachi.com>
-Date: Tue, 03 Jun 2008 13:30:07 +0900
+	Tue, 3 Jun 2008 00:31:57 -0400
+X-AuditID: 0ac90648-add7dba000000c2f-da-4844c93c6fc5
+Message-ID: <4844C938.7030401@hitachi.com>
+Date: Tue, 03 Jun 2008 13:31:52 +0900
 From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
     Gecko/20030624 Netscape/7.1 (ax)
@@ -24,10 +24,10 @@ Cc: akpm@linux-foundation.org, sct@redhat.com, adilger@clusterfs.com,
        jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu,
        sugita <yumiko.sugita.yf@hitachi.com>,
        Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
-Subject: Re: [PATCH 0/5] jbd: possible filesystem corruption fixes (take 2)
-References: <4843CE15.6080506@hitachi.com> 
-    <20080602120538.GK30613@duck.suse.cz>
-In-Reply-To: <20080602120538.GK30613@duck.suse.cz>
+Subject: Re: [PATCH 4/5] jbd: fix error handling for checkpoint io
+References: <4843CE15.6080506@hitachi.com> <4843CFBD.7040706@hitachi.com> 
+    <20080602124409.GL30613@duck.suse.cz>
+In-Reply-To: <20080602124409.GL30613@duck.suse.cz>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 X-Brightmail-Tracker: AAAAAA==
@@ -37,20 +37,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello,
 
+Thank you for reviewing.
+
 Jan Kara wrote:
-> On Mon 02-06-08 19:40:21, Hidehiro Kawai wrote:
-> 
->>Subject: [PATCH 0/5] jbd: possible filesystem corruption fixes (take 2)
-> 
->   Just a small note - repeating the subject in the changelog makes it a bit
-> harder for Andrew to merge the patches. Standard merging scripts prepend
-> subject of the email to the changelog below and so in your case the message
-> would be there twice... Just that you know when you create the patch series
-> next time.
 
-Thank you for letting me know.  I'll not do such odd thing next time.
+>>@@ -347,6 +361,8 @@ restart:
+>> 				break;
+>> 			}
+>> 			retry = __process_buffer(journal, jh, bhs,&batch_count);
+>>+			if (retry < 0)
+>>+				result = retry;
+> 
+>   Here you update result whenever retry is < 0 and below when result == 0.
+> I think it's better to have these two consistent (not that it would be
+> currently any functional difference).
 
-Regards,
+I fixed it.
+
+> Only please add a comment in front of
+> log_do_checkpoint() that it's supposed to be called with j_checkpoint_mutex
+> held so that EIO propagation works correctly.
+
+I added a comment.
+
+I'll send the revised patch soon.
+
+Thanks,
 -- 
 Hidehiro Kawai
 Hitachi, Systems Development Laboratory
