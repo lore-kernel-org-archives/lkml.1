@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbYFCSDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbYFCSHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbYFCSDu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 14:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbYFCSDm
+	id S1755987AbYFCSHy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 14:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYFCSHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 14:03:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:37470 "EHLO mail.dvmed.net"
+	Tue, 3 Jun 2008 14:07:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47689 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752245AbYFCSDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 14:03:41 -0400
-Message-ID: <48458777.70904@garzik.org>
-Date: Tue, 03 Jun 2008 14:03:35 -0400
+	id S1753336AbYFCSHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 14:07:45 -0400
+Message-ID: <4845886E.2010505@garzik.org>
+Date: Tue, 03 Jun 2008 14:07:42 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [patch] libata:ahci: enclosure management support (resend)
-References: <20080603103355.34c49ef4@appleyard>
-In-Reply-To: <20080603103355.34c49ef4@appleyard>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>, akpm@linux-foundation.org
+Subject: Re: [PATCH] libata: Handle bay devices in dock stations
+References: <20080528143857.GB5585@homac.suse.de>
+In-Reply-To: <20080528143857.GB5585@homac.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
 X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
@@ -29,29 +29,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> Here's a resend of the patch I sent 2 weeks ago, refreshed against
-> Andrews kernel.  This is one of many resends since the original 
-> patch was sent in January-ish. Could you please review this patch 
-> and let me know what you'd like me to change?  I'm happy to change it 
-> however you want as long as the feature still functions.
+Holger Macht wrote:
+> * Differentiate between bay devices in dock stations and others:
 > 
-> Thanks,
-> Kristen
+>  - When an ACPI_NOTIFY_EJECT_REQUEST appears, just signal uevent to
+>    userspace (that is when the optional eject button on a bay device is
+>    pressed/pulled) giving the possibility to unmount file systems and to
+>    clean up. Also, only send uevent in case we get an EJECT_REQUEST
+>    without doing anything else. In other cases, you'll get an add/remove
+>    event because libata attaches/detaches the device.
 > 
-> Add Enclosure Management support to libata and ahci.
+>  - In case of a dock event, which in turn signals an
+>    ACPI_NOTIFY_EJECT_REQUEST, immediately detach the device, because it
+>    may already have been gone
 > 
-> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> * In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
+>   the device has been plugged or unplugged. If plugged, hotplug it, if
+>   unplugged, just signal event to userspace
+>   (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
+> 
+> * Call ACPI _EJ0 for detached devices
+> 
+> Signed-off-by: Holger Macht <hmacht@suse.de>
 > ---
->  drivers/ata/ahci.c        |  321 +++++++++++++++++++++++++++++++++++++++++++++-
->  drivers/ata/libata-scsi.c |   79 +++++++++++
->  include/linux/libata.h    |   21 +++
->  3 files changed, 419 insertions(+), 2 deletions(-)
+> 
+> Changes regarding the previous patch:
+> 
+>  * Make sure kobj does not go away outside locking
+>  * Coding style cleanups
+>  * Call _EJ0 for detached devices
 
-I'm pretty happy with this, and I plan on queueing it for #upstream 
-(2.6.27, linux-next).
+Matthew, any comments?
 
-Ideally a better solution would be a bit more generic (i.e. not just 
-libata), but this is a nice and compact implementation, and generic 
-enough to support all of libata's purposes.
+It would be nice if you and Holger could work together to produce a 
+single patch[set]...  right now I have patches from both of you, and I 
+was sorta waiting on the thread to die down to see if competing patches 
+might merge into a single set
 
