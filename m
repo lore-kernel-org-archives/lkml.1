@@ -1,45 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759050AbYFCUtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbYFCUtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759050AbYFCUtT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 16:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759841AbYFCUrI
+	id S1759971AbYFCUtl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 16:49:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbYFCUt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 16:47:08 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:41606 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759856AbYFCUrG (ORCPT
+	Tue, 3 Jun 2008 16:49:28 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:36362 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755762AbYFCUt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 16:47:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BJVXqZZBimDLPNx2wz8bb8emO2BAJUC+STJOR7FizBtwv2037VlXFZYvq58PgMJ8mWzJWIiXylupXYBPRWmKtQFpU1xeA5sFOxniZccG/gCGOlS0S2Cx64GRGV7sesPs87269rFYVD20Rptt3vlAZ9b2+BVAahiU9ToHHy0iJtU=
-Message-ID: <4845AD90.4080909@gmail.com>
-Date: Tue, 03 Jun 2008 22:46:08 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 3 Jun 2008 16:49:26 -0400
+Date: Tue, 3 Jun 2008 15:49:08 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Cc: jeff@garzik.org, tklein@de.ibm.com, themann@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       ossthema@de.ibm.com, Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [PATCH 2/3] [2.6.26] ehea: Add dependency to Kconfig
+Message-ID: <20080603204908.GB7475@localdomain>
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+ <20080528164405.GA4836@localdomain>
+ <200806031007.40162.hannes.hering@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, Paul Fulghum <paulkf@microgate.com>
-Subject: Re: [PATCH 1/1] Char: tty_io, fix closecount counting
-References: <1211810923-3122-1-git-send-email-jirislaby@gmail.com>	<48413B6E.3050202@gmail.com> <20080531144345.0a2f3c11@core>
-In-Reply-To: <20080531144345.0a2f3c11@core>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200806031007.40162.hannes.hering@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Pobox-Relay-ID: 8CBD4840-31AE-11DD-9E99-F9737025C2AA-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/31/2008 03:43 PM, Alan Cox wrote:
->> It is ever vcs1, which is /dev/console and it is the only treated separately 
->> (otherwise I think we would have more (and distinct) reports like this). 
->> When the console is HUPped? And what should happen with openers? The 
->> 2.6.22+suse happened when sulogin /dev/console was invoked. Any ideas how to 
->> track this down?
+Hannes Hering wrote:
 > 
-> Its a complete and total mess is the obvious answer. In fact its far
-> worse than it first looks and I don't believe it can be fixed without
-> reworking the whole printk/console stuff.
+> On Wednesday 28 May 2008 18:44:05 Nathan Lynch wrote:
+> > 
+> > Hannes Hering wrote:
+> > > The new ehea memory hot plug implementation depends on MEMORY_HOTPLUG.
+> > > 
+> > > Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+> > > ---
+> > > 
+> > > diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> > > index f90a86b..181cd86 100644
+> > > --- a/drivers/net/Kconfig
+> > > +++ b/drivers/net/Kconfig
+> > > @@ -2440,7 +2440,7 @@ config CHELSIO_T3
+> > >  
+> > >  config EHEA
+> > >  	tristate "eHEA Ethernet support"
+> > > -	depends on IBMEBUS && INET && SPARSEMEM
+> > > +	depends on IBMEBUS && INET && SPARSEMEM && MEMORY_HOTPLUG
+> > >  	select INET_LRO
+> > >  	---help---
+> > >  	  This driver supports the IBM pSeries eHEA ethernet adapter.
+> > 
+> > I disagree with this change.
+> > 
+> > It makes it impossible to build the ehea driver without memory hotplug
+> > enabled.  Presumably, this commit was intended to work around a build
+> > break of this sort (with EHEA=m and MEMORY_HOTPLUG=n):
+> > 
+> > drivers/net/ehea/ehea_qmr.c: In function 'ehea_create_busmap':
+> > drivers/net/ehea/ehea_qmr.c:635: error: implicit declaration of function 'walk_memory_resource'
+> > 
+> > (some indication of this should have been in the commit message, btw)
+> > 
+> > I think this was the wrong way to fix the issue.  EHEA=m and
+> > MEMORY_HOTPLUG=n is a valid configuration for machines I test.
+> > 
+> > Any thoughts on the following, which makes walk_memory_resource()
+> > available regardless of MEMORY_HOTPLUG's setting?  I've tested it on a
+> > JS22 (Power6 blade).
+>
+> I agree that the ehea cannot be built without MEMORY_HOTPLUG. The
+> problem is the fact that the ppc walk_memory_resource declaration is
+> in the scope of MEMORY_HOTPLUG. At the moment I don't have complete
+> overview if the move of the code as you propose in your patch has
+> any side effects. We probably need to talk to Badari who provided
+> the walk_memory_resource code. We can also just throw it onto one of
+> our boxes to see what happens. ;)
 
-Thanks a heap for the answer.
+I would certainly appreciate any additional testing.
+
+You wrote the ehea code that uses walk_memory_resource, so I was
+hoping you could speak to whether ehea needs that interface when
+CONFIG_MEMORY_HOTPLUG=n.  Or maybe there should be a no-op version of
+walk_memory_resource for that case?  And what about the
+arch-independent version in kernel/resource.c?  Badari?
+
+It would be nice to get this resolved for 2.6.26 -- this new
+dependency causes working 2.6.25 configs to effectively fail (by
+deselecting CONFIG_EHEA during make oldconfig).
