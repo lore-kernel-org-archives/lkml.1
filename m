@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYFCMLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757671AbYFCMRJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbYFCMLE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 08:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbYFCMKx
+	id S1757671AbYFCMRJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 08:17:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755662AbYFCMQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 08:10:53 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:37382 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbYFCMKw (ORCPT
+	Tue, 3 Jun 2008 08:16:53 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:43324 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752822AbYFCMQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 08:10:52 -0400
-Date: Tue, 3 Jun 2008 13:10:15 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Miklos Szeredi <miklos@szeredi.hu>, drepper@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-man@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
-Message-ID: <20080603121015.GC28905@shareable.org>
-References: <48401E7E.9090304@gmail.com> <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com> <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu> <20080603112221.GW28946@ZenIV.linux.org.uk> <cfd18e0f0806030427p22a274dev746e1656662f34f6@mail.gmail.com> <20080603113018.GA27955@shareable.org> <cfd18e0f0806030439n5a11fa4aocd6251ffab66b6dd@mail.gmail.com> <20080603114921.GX28946@ZenIV.linux.org.uk> <20080603120135.GA28905@shareable.org> <20080603120850.GZ28946@ZenIV.linux.org.uk>
+	Tue, 3 Jun 2008 08:16:52 -0400
+Date: Tue, 3 Jun 2008 07:16:47 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Biederman <ebiederm@xmission.com>, Serge Hallyn <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>
+Subject: Re: [PATCH 09/10] netns: Enable tagging for net_class directories
+	in sysfs
+Message-ID: <20080603121647.GA11503@us.ibm.com>
+References: <20080602134438.224352910@theryb.frec.bull.fr> <20080602134439.782528644@theryb.frec.bull.fr> <20080603040818.GA18507@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080603120850.GZ28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080603040818.GA18507@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Tue, Jun 03, 2008 at 01:01:35PM +0100, Jamie Lokier wrote:
-> > > with a lot of things, starting with "why utimes(2) has weaker requirements
-> > > with NULL argument", but we are far too late to fix that.
+Quoting Greg KH (gregkh@suse.de):
+> On Mon, Jun 02, 2008 at 03:46:08PM +0200, Benjamin Thery wrote:
+> > net: Enable tagging for net_class directories in sysfs
 > > 
-> > To be fair, having a writable file descriptor only lets you change the
-> > mtime to "now", and having a readable file descriptor only lets you
-> > change the atime to "now".
+> > The problem.  Network devices show up in sysfs and with the network
+> > namespace active multiple devices with the same name can show up in
+> > the same directory, ouch!
 > > 
-> > Changing the times _in general_ can be seen as over-reaching those
-> > capabilities and arguably justifies more strict checks.
+> > To avoid that problem and allow existing applications in network namespaces
+> > to see the same interface that is currently presented in sysfs, this
+> > patch enables the tagging directory support in sysfs.
+> > 
+> > By using the network namespace pointers as tags to separate out the
+> > the sysfs directory entries we ensure that we don't have conflicts
+> > in the directories and applications only see a limited set of
+> > the network devices.
 > 
-> Which is what all questions about writability apply only to NULL case
-> anyway...
+> I don't like it how the network subsystem is starting to leach into the
+> sysfs core here.  What happens when the next subsystem wants to do the
+> same thing?  And then the next one?  Will they all have to do this kind
+> of intrusive changes to sysfs?
 
-Oh!
+At least as far as the tagging goes, each namespace which needs to do
+this (network, devices, and user, at least) will add a field to the
+tag structure and call sysfs_enable_tagging() on the relevant
+directories.  So no more core sysfs changes should be needed, as Eric
+tried to make this generic enough to be generally useful.
 
-So if I have the file descriptor, I can just as well change the mtime
-by read a byte and write it back.  Or even do a zero-length write, on
-some OSes.
+> Can't this be done only in the network subsystem?
 
--- Jamie
+sysfs/kobject layer has to somehow decide what to show for
+/sys/class/net contents based on the mountpoint, right, so I don't see
+how the network subsystem could do it.
+
+The only non-tagging alternative I'd see would be to keep entirely
+separate kobject pools for each namespace.  To do that we'd probably
+want to break /sys/class/net into a separate fs that can be
+remounted, so at least we don't have to keep the rest of the kobject
+pools (/sys/firmware, kernel, etc) in sync...
+
+Eric had mentioned before breaking /sys into multiple mountpoints, so
+I'll assume the fact that he implemented tagging means that there was
+too much cross-linking and whatnot across the /sys tree to make that
+feasible.
+
+More importantly, that approach would require more core sysfs changes
+for the next namespace, whereas the tagging approach does not!
+
+thanks,
+-serge
