@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbYFCLN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbYFCLQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbYFCLN3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 07:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYFCLNU
+	id S1756813AbYFCLQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 07:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbYFCLQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 07:13:20 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47391 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbYFCLNT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 07:13:19 -0400
-To: mtk.manpages@googlemail.com
-CC: miklos@szeredi.hu, drepper@redhat.com, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-man@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-reply-to: <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com>
-	(mtk.manpages@googlemail.com)
-Subject: Re: [PATCH] utimensat() non-conformances and fixes [v3]
-References: <482D4665.4050401@gmail.com>
-	 <E1Jx3Gw-0002eA-55@pomaz-ex.szeredi.hu> <48401E7E.9090304@gmail.com> <cfd18e0f0806030405u1c32b114pa0fdd979f36f87fb@mail.gmail.com>
-Message-Id: <E1K3URo-0005sj-JW@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 03 Jun 2008 13:13:00 +0200
+	Tue, 3 Jun 2008 07:16:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46155 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751999AbYFCLQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 07:16:27 -0400
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH 0/3] have pooled sunrpc services make more intelligent
+	allocations
+To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       bfields@fieldses.org
+Date: Tue, 03 Jun 2008 07:16:09 -0400
+Message-ID: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'm not sure of the correct way to get the required nameidata (to do a
-> > vfs_permission() call) from the file descriptor.  Can you give me a
-> > tip there?
-> 
-> Could you point me at the right way of doing this?
+The sunrpc code has had some support for spreading pooled services over
+different NUMA nodes and CPUs for some time. So far though, this support
+has been for CPU masks only. Memory allocated for these services is
+generally done by whatever CPU happens to be running the init script
+that starts the services and so most of it ends up on the same NUMA node.
+This means that nfsd's end up wasting a lot of time updating remote
+memory on a different memory node.
 
-You don't need nameidata for this at all.  Just call permission() with
-a NULL nameidata.
+This patchset attempts to remedy that by having pooled services make
+per-thread allocations that are on their local memory node. I have no
+hard performance numbers for this particular patchset, but Greg Banks
+sent me a different patch that has a similar effect and claims that
+there is a significant performance gain.
 
-Ugly API?  Yes, will be cleaned up if we manage to find some common
-ground with the VFS maintainers.
+Comments and suggestions appreciated...
 
-Miklos
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
