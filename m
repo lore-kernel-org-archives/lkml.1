@@ -1,108 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbYFCEeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYFCEfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755766AbYFCEeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 00:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbYFCEeH
+	id S1755969AbYFCEfw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 00:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYFCEfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 00:34:07 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41474 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751481AbYFCEeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 00:34:05 -0400
-Subject: Re: MMIO and gcc re-ordering issue
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       tpiepho@freescale.com
-In-Reply-To: <200806031416.18195.nickpiggin@yahoo.com.au>
-References: <1211852026.3286.36.camel@pasglop>
-	 <alpine.LFD.1.10.0805271451100.2958@woody.linux-foundation.org>
-	 <20080602072403.GA20222@flint.arm.linux.org.uk>
-	 <200806031416.18195.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 03 Jun 2008 14:32:31 +1000
-Message-Id: <1212467551.9496.23.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Tue, 3 Jun 2008 00:35:43 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32794 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbYFCEfm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 00:35:42 -0400
+Date: Tue, 03 Jun 2008 13:35:13 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH] vmallocinfo: Add NUMA informations
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4844BC75.8040705@cosmosbay.com>
+References: <20080602160548.B6D4.KOSAKI.MOTOHIRO@jp.fujitsu.com> <4844BC75.8040705@cosmosbay.com>
+Message-Id: <20080603133247.B6E0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> This whole thread also ties in with my posts about mmiowb (which IMO
-> should go away).
+> >> +		for (nr = 0; nr < MAX_NUMNODES; nr++)
+> >> +			if (counters[nr])
+> >> +				seq_printf(m, " N%u=%u", nr, counters[nr]);
+> >
+> > for_each_node_state(n, N_HIGH_MEMORY) is better?
+> > because MAX_NUMNODES has offten very large value.
+> >   
+> Yes, good idea, thank you.
 > 
-> readl/writel:  strongly ordered wrt one another and other stores
->                to cacheable RAM, byteswapping
-> __readl/__writel:  not ordered (needs mb/rmb/wmb to order with
->                    other readl/writel and cacheable operations, or
->                    io_*mb to order with one another)
-> raw_readl/raw_writel:  strongly ordered, no byteswapping
-> __raw_readl/__raw_writel:  not ordered, no byteswapping
-> 
-> then get rid of *relaxed* variants.
+> I also used nr_node_ids instead of MAX_NUMNODES in this second version :
 
-In addition, some archs like powerpc also provide readl_be/writel_be as
-being defined as big endian (ie. byteswap on LE archs, no byteswap on BE
-archs).
+Thank you! looks goot to me.
+and, my test fouund no bug.
 
-As of today, powerpc lacks the raw_readl/raw_writel and __readl/__writel
-variants (ie, we only provide fully ordered + byteswap and no ordering +
-no byteswap variants).
+	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-If we agree on the above semantics, I'll do a patch providing the
-missing ones.
 
-> Linus: on x86, memory operations to wc and wc+ memory are not ordered
-> with one another, or operations to other memory types (ie. load/load
-> and store/store reordering is allowed). Also, as you know, store/load
-> reordering is explicitly allowed as well, which covers all memory
-> types. So perhaps it is not quite true to say readl/writel is strongly
-> ordered by default even on x86. You would have to put in some
-> mfence instructions in them to make it so.
-> 
-> So, what *exact* definition are you going to mandate for readl/writel?
-> Anything less than strict ordering then we also need to ensure drivers
-> use the correct barriers (to implement strict ordering, we could either
-> put mfence instructions in, or explicitly disallow readl/writel to be
-> used on wc/wc+ memory).
+Cristoph, What do you think?
 
-The ordering guarantees that I provide on powerpc for "ordered" variants
-are:
-
-	- cacheable store + writel stays ordered (ie, write to some
-          DMA stuff and then a register to trigger the DMA).
-
-	- readl + cacheable read stays ordered (ie. read some status
-          register, for example, after an interrupt, and then read the
-          resulting data in memory).
-
-	- any of these ordered vs. spin_lock and spin_unlock (with the
-          exception that stores done before the spin_lock 
-          could potentially leak into the lock).
-
-	- readl is synchronous (ie, makes the CPU think the
-          data was actually used before executing subsequent
-          instructions, thus waits for the data to come back,
-          for example to ensure that a read used to push out
-          post buffers followed by a delay will indeed happen
-          with the right delay).
-
-We don't provide meaningless ones like writel + cacheable store for
-example. (PCI posting would defeat it anyway).
-
-> The other way we can go is just say that they have x86 semantics,
-> although that would be a bit sad IMO: we should have strong ops, in
-> which case driver writers never need to use a single barrier provided
-> they have locking right, and weak ops, in which case they should match
-> up with the weak Linux memory ordering model for system RAM.
-
-Ben.
 
 
