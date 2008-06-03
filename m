@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbYFCKNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbYFCKOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbYFCKNs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 06:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYFCKNk
+	id S1756539AbYFCKOX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 06:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYFCKOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 06:13:40 -0400
-Received: from www.tglx.de ([62.245.132.106]:43801 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbYFCKNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 06:13:40 -0400
-Date: Tue, 3 Jun 2008 12:13:24 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Olaf Dabrunz <od@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       LKML <linux-kernel@vger.kernel.org>, Stefan Assmann <sassmann@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 1/7] add kernel cmdline option to disable pci-irq
- quirks
-In-Reply-To: <12124107071030-git-send-email-od@suse.de>
-Message-ID: <alpine.LFD.1.10.0806031211500.3235@apollo.tec.linutronix.de>
-References: <12124107071847-git-send-email-od@suse.de> <12124107071030-git-send-email-od@suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Jun 2008 06:14:06 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:46549 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbYFCKOF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 06:14:05 -0400
+To: jesper@krogh.cc
+CC: viro@ZenIV.linux.org.uk, jesper@krogh.cc, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
+	(jesper@krogh.cc)
+Subject: Re: Linux 2.6.26-rc4
+References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
+    <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
+    <20080603095713.GR28946@ZenIV.linux.org.uk> <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
+Message-Id: <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 03 Jun 2008 12:13:54 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Jun 2008, Olaf Dabrunz wrote:
-> From: Olaf Dabrunz <od@suse.de>
+> > On Tue, Jun 03, 2008 at 11:49:32AM +0200, Jesper Krogh wrote:
+> >
+> >
+> >> I reported it to the NFS-guys on a .22 kernel, and was directed to the
+> >> fsdevel list(CC'ed again) back then. Now the problem is reproduced on
+> >> .26-rc4
+> >>
+> >
+> > Lovely...  Do you have the full oops trace, with the actual code
+> > dump? --
 > 
-> Add a switch to disable all boot interrupt quirks, using the parameter
-> nobootirqquirk.
+> This is all I got from the logs. I'll try go get more from the serial
 
-This should be a parameter in the form of
+Probably the same as this one:
 
-pci=ioapicquirk
+http://www.kerneloops.org/raw.php?rawid=12419&msgid=
 
-and not a separate and completely unintuitive thing.
+Looks like a negative inode in S_ISDIR(mnt->mnt_root->d_inode->i_mode),
+which would be due to NFS not properly filling in its root dentry?
 
-Thanks,
-	tglx
-
-> Signed-off-by: Olaf Dabrunz <od@suse.de>
-> Signed-off-by: Stefan Assmann <sassmann@suse.de>
-> ---
->  drivers/pci/quirks.c |   15 +++++++++++++++
->  1 files changed, 15 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index dabb563..6245486 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -1363,6 +1363,21 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,	0x2609, quirk_intel_pcie_pm);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,	0x260a, quirk_intel_pcie_pm);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,	0x260b, quirk_intel_pcie_pm);
->  
-> +
-> +#ifdef CONFIG_X86_IO_APIC
-> +int nobootirqquirk __read_mostly = 0;
-> +
-> +int nobootirqquirk_setup(char *str)
-> +{
-> +	nobootirqquirk = 1;
-> +	printk(KERN_INFO "Boot IRQ quirk handling disabled\n");
-> +
-> +	return 1;
-> +}
-> +__setup("nobootirqquirk", nobootirqquirk_setup);
-> +#endif /* CONFIG_X86_IO_APIC */
-> +
-> +
->  /*
->   * Toshiba TC86C001 IDE controller reports the standard 8-byte BAR0 size
->   * but the PIO transfers won't work if BAR0 falls at the odd 8 bytes.
-> -- 
-> 1.5.2.4
-> 
-> -- 
-> Olaf Dabrunz (od/odabrunz), SUSE Linux Products GmbH, N??rnberg
-> 
+Miklos
