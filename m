@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYFCTAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbYFCTDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbYFCTAw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 15:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYFCTAp
+	id S1757940AbYFCTDd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 15:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYFCTDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 15:00:45 -0400
-Received: from www.linux-info-tag.de ([217.160.143.166]:4205 "EHLO
-	p15139323.pureserver.info" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751311AbYFCTAp (ORCPT
+	Tue, 3 Jun 2008 15:03:22 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:58505 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbYFCTDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 15:00:45 -0400
-X-Greylist: delayed 2403 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 15:00:45 EDT
-Date: Tue, 3 Jun 2008 20:20:40 +0200
-From: Christian Perle <chris@linuxinfotag.de>
-To: linux-kernel@vger.kernel.org
-Subject: "core dump helper" runs always as root
-Message-ID: <20080603182040.GB20582@silmor.de>
-Reply-To: chris@linuxinfotag.de
+	Tue, 3 Jun 2008 15:03:21 -0400
+Date: Tue, 3 Jun 2008 15:02:36 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Cc: Huang Weiyi <weiyi.huang@gmail.com>
+Subject: [PATCH 2/6] UML - Remove a duplicate include
+Message-ID: <20080603190236.GA9513@c2.user-mode-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Organization: Silmor
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi *
+From: Huang Weiyi <weiyi.huang@gmail.com>
 
-I recently played around with the /proc/sys/kernel/core_pattern file
-(2.6.24.7 and 2.6.25) and found out that processes started by the
-"|/path/to/executable" notation always run as root, even if the
-segfaulting process runs as non-root.
+Removed duplicated include file "kern_util.h" in 
+arch/um/drivers/ubd_kern.c.
 
-Is there a reason for this behaviour? If not, i would suggest starting the
-process which receives the core dump on stdin as the same UID of the
-segfaulting process.
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+---
+ arch/um/drivers/ubd_kern.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-With the current behaviour you can do funny things:
-
-(as root)
-# echo "|/bin/chmod 4755 /bin/ash" > /proc/sys/kernel/core_pattern
-
-(as user)
-$ sleep 2 & kill -11 $!
-
-Of course this is *not* a local root exploit because you need to be root
-to write to the proc entry, but IMHO running the "core dump helper" (is
-there a better name for this?) always as root is potentially harmful.
-
-
-Greetings,
-  Chris
--- 
-Christian Perle                                    chris AT linuxinfotag.de
-010111                                              http://chris.silmor.de/
-101010                          LinuxGuitarKitesBicyclesBeerPizzaRaytracing
+Index: linux-2.6.22/arch/um/drivers/ubd_kern.c
+===================================================================
+--- linux-2.6.22.orig/arch/um/drivers/ubd_kern.c	2008-04-24 13:22:04.000000000 -0400
++++ linux-2.6.22/arch/um/drivers/ubd_kern.c	2008-05-09 11:12:09.000000000 -0400
+@@ -49,7 +49,6 @@
+ #include "irq_user.h"
+ #include "irq_kern.h"
+ #include "ubd_user.h"
+-#include "kern_util.h"
+ #include "os.h"
+ #include "mem.h"
+ #include "mem_kern.h"
