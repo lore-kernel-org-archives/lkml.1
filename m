@@ -1,85 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbYFCXA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbYFCXBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbYFCXA7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 19:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYFCXAr
+	id S1757657AbYFCXBm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 19:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbYFCXBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 19:00:47 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49152 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753772AbYFCXAp (ORCPT
+	Tue, 3 Jun 2008 19:01:34 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:63318 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbYFCXBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 19:00:45 -0400
-Date: Wed, 4 Jun 2008 00:00:26 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Ian Kent <raven@themaw.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>, jesper@krogh.cc,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Linux 2.6.26-rc4
-Message-ID: <20080603230026.GH28946@ZenIV.linux.org.uk>
-References: <20080603105258.GV28946@ZenIV.linux.org.uk> <1212499623.3025.46.camel@raven.themaw.net> <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> <1212509263.3025.66.camel@raven.themaw.net> <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org> <1212513189.3025.101.camel@raven.themaw.net> <20080603173029.GD28946@ZenIV.linux.org.uk> <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com> <20080603191859.GG28946@ZenIV.linux.org.uk> <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 3 Jun 2008 19:01:33 -0400
+Date: Tue, 3 Jun 2008 15:59:03 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Olaf Dabrunz <od@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jon Masters <jonathan@jonmasters.org>,
+       LKML <linux-kernel@vger.kernel.org>, Stefan Assmann <sassmann@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 2/7] reroute PCI interrupt to legacy boot interrupt
+ equivalent
+Message-Id: <20080603155903.4bec13b9.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.1.10.0806031213360.3235@apollo.tec.linutronix.de>
+References: <12124107071847-git-send-email-od@suse.de>
+	<12124107074065-git-send-email-od@suse.de>
+	<alpine.LFD.1.10.0806031213360.3235@apollo.tec.linutronix.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 03, 2008 at 03:53:36PM -0400, Jeff Moyer wrote:
+On Tue, 3 Jun 2008 12:37:58 +0200 (CEST) Thomas Gleixner wrote:
 
-> autofs4_lookup is called on behalf a process trying to walk into an
-> automounted directory.  That dentry's d_flags is set to
-> DCACHE_AUTOFS_PENDING but not hashed.  A waitqueue entry is created,
-> indexed off of the name of the dentry.  A callout is made to the
-> automount daemon (via autofs4_wait).
+> On Mon, 2 Jun 2008, Olaf Dabrunz wrote:
+> > From: Stefan Assmann <sassmann@suse.de>
+> > 
+> > Some chipsets (e.g. intel 6700PXH) generate a legacy INTx when the
+> > IRQ entry in the chipset's IO-APIC is masked (as, e.g. the RT kernel
+> > does during interrupt handling). On chipsets where this INTx generation
+> > cannot be disabled, we reroute the valid interrupts to their legacy
+> > equivalent to get rid of spurious interrupts that might otherwise bring
+> > down (vital) interrupt lines through spurious interrupt detection in
+> > note_interrupt().
+> > 
+> > The patch should eventually simply use another bitfield in the pci_dev
+> > structure for the rerouting variant. This was in another variant of the patch
+> > by Daniel Gollub. It is the cleanest and most simple approach.
+> > 
+> > This patch benefited from discussions with Alexander Graf, Torsten Duwe,
+> > Ihno Krumreich, Daniel Gollub, Hannes Reinecke. The conclusions we drew
+> > and the patch itself are the authors' responsibility alone.
+> > 
+> > Signed-off-by: Stefan Assmann <sassmann@suse.de>
+> > Signed-off-by: Olaf Dabrunz <od@suse.de>
+> > ---
+> >  drivers/acpi/pci_irq.c     |   63 ++++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/pci/quirks.c       |   51 ++++++++++++++++++++++++++++++++++-
+> >  include/linux/pci.h        |    2 +
+> >  include/linux/pci_ids.h    |    4 +++
+> >  include/linux/pci_quirks.h |   28 +++++++++++++++++++
+> >  5 files changed, 147 insertions(+), 1 deletions(-)
+> >  create mode 100644 include/linux/pci_quirks.h
+> > 
+> > diff --git a/drivers/acpi/pci_irq.c b/drivers/acpi/pci_irq.c
+> > index 89022a7..ebdfbfe 100644
+> > --- a/drivers/acpi/pci_irq.c
+> > +++ b/drivers/acpi/pci_irq.c
+> > @@ -384,6 +384,34 @@ acpi_pci_free_irq(struct acpi_prt_entry *entry,
+> >  	return irq;
+> >  }
+> >  
+> > +#ifdef CONFIG_X86_IO_APIC
+> > +static int
+> > +bridge_has_boot_interrupt_variant(struct pci_bus *bus)
 > 
-> The daemon looks up the directory name in its configuration.  If it
-> finds a valid map entry, it will then create the directory using
-> sys_mkdir.  The autofs4_lookup call on behalf of the daemon (oz_mode ==
-> 1) will return NULL, and then the mkdir call will be made.  The
-> autofs4_mkdir function then instantiates the dentry which, by the way,
-> is different from the original dentry passed to autofs4_lookup.  (This
-> dentry also does not get the PENDING flag set, which is a bug addressed
-> by a patch set that Ian and I have been working on;  specifically, the
-> idea is to reuse the dentry from the original lookup, but I digress).
+> one line
 > 
-> The daemon then mounts the share on the given directory and issues an
-> ioctl to wakeup the waiter.  When awakened, the waiter clears the
-> DCACHE_AUTOFS_PENDING flag, does another lookup of the name in the
-> dcache and returns that dentry if found.
-> Later, the dentry gets expired via another ioctl.  That path sets
-> the AUTOFS_INF_EXPIRING flag in the d_fsdata associated with the dentry.
-> It then calls out to the daemon to perform the unmount and rmdir.  The
-> rmdir unhashes the dentry (and places it on the rehash list).
-> 
-> The dentry is removed from the rehash list if there was a racing expire
-> and mount or if the dentry is released.
-> 
-> This description is valid for the tree as it stands today.  Ian and I
-> have been working on fixing some other race conditions which will change
-> the dentry life cycle (for the better, I hope).
+> > +{
+> > +	struct pci_bus *bus_it;
+> > +	int i;
+> > +
+> > +	for (bus_it = bus ; bus_it ; bus_it = bus_it->parent) {
 
-So what happens if new lookup hits between umount and rmdir?
+Along with Thomas's comments:
 
-Another thing: would be nice to write down the expected state of dentry
-(positive/negative, flags, has/hasn't ->d_fsdata, flags on ->d_fsdata)
-for all stages.  I'll go through the code and do that once I get some sleep,
-but if you'll have time to do it before that...
+spacing:
+	for (bus_it = bus; bus_it; bus_it = bus_it->parent) {
 
-FWIW, I wonder if it would be better to leave the directory alone and just
-have the daemon mount the sucker elsewhere and let the kernel side move
-the damn thing in place itself, along with making dentry positive and
-waking the sleepers up.  Then we might get away with not unlocking anything
-at all...  That obviously doesn't help the current systems with existing
-daemon, but it might be interesting for the next autofs version...
-Note that we don't even have to mount it anywhere - mount2() is close to
-the top of the pile for the next couple of cycles and it'd separate
-"activate fs" from "attach fully set up fs to given place", with the
-former resulting in a descriptor and the latter being
-	mount2(Attach, dir_fd, fs_fd);
-Kernel side of autofs might receive the file descriptor in question and
-do the rest itself...
+and additions to Documentation/kernel-parameters.txt, please.
+
+
+> > +		if (!bus_it->self)
+> > +			return 0;
+> > +
+> > +		printk(KERN_INFO "vendor=%04x device=%04x\n", bus_it->self->vendor,
+> > +				bus_it->self->device);
+> > +		for (i = 0; i < MAX_QUIRK_BOOTIRQ_REROUTE_DEVS; i++) {
+> > +			if (quirk_bootirq_reroute_devs[i].vendor == 0)
+> > +				return 0;
+> > +
+> > +			if (quirk_bootirq_reroute_devs[i].vendor == bus_it->self->vendor &&
+> > +			    quirk_bootirq_reroute_devs[i].device == bus_it->self->device)
+> > +				return quirk_bootirq_reroute_devs[i].quirk_variant;
+> > +		}
+> > +	}
+> > +	return 0;
+> > +}
+
+
+---
+~Randy
