@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYFCGnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbYFCGqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbYFCGnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 02:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYFCGnK
+	id S1754725AbYFCGqL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 02:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbYFCGp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 02:43:10 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38375 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125AbYFCGnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 02:43:09 -0400
-Date: Tue, 3 Jun 2008 08:43:59 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, marcel@holtmann.org,
-       linux-bluetooth@vger.kernel.org
-Subject: Re: hci_usb strikes again (was Re: BUG kmalloc-2048: Poison
-	overwritten)
-Message-ID: <20080603064359.GC18599@elf.ucw.cz>
-References: <dd18b0c30806011613l6c8c1863rd237f7de06a6b33a@mail.gmail.com> <200806020125.25918.rjw@sisk.pl> <20080602222142.GB18599@elf.ucw.cz> <dd18b0c30806021612h34f776f6kb480b3aa7a1d5e41@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dd18b0c30806021612h34f776f6kb480b3aa7a1d5e41@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 3 Jun 2008 02:45:58 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54119 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750695AbYFCGp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 02:45:57 -0400
+Date: Tue, 3 Jun 2008 15:43:43 +0900
+To: muli@il.ibm.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       alexisb@us.ibm.com, mingo@elte.hu, akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] x86 calgary: fix handling of devces that aren't
+	behind the Calgary
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080603052146.GI7011@il.ibm.com>
+References: <20080531133114P.tomof@acm.org>
+	<20080603052146.GI7011@il.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080603150902Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-> >> > cpufreq_performance cpufreq_powersave rfcomm hidp l2cap bluetooth fan
-> >> > ipmi_watchdog ipmi_msghandler uinput wlan_tkip ieee80211_crypt_tkip
-> >> > ieee80211_crypt arpt_mangle arptable_filter arp_tables
-> >> > nf_conntrack_ipv4 nf_conntrack iptable_mangle iptable_filter ip_tables
-> >> > x_tables intelfb i2c_i810 i2c_algo_bit coretemp eeprom acpi_cpufreq
-> >> > fglrx(P) applesmc joydev uvcvideo appletouch wlan_scan_sta
-> >> > ath_rate_sample firewire_ohci firewire_core snd_hda_intel ath_pci
-> >> > snd_pcm wlan ohci1394 intel_agp evdev ath_hal(P) snd_timer ieee1394
-> >> > pata_acpi thermal ehci_hcd uhci_hcd snd_page_alloc snd_hwdep agpgart
-> >> > video button processor
-> >> > [  232.270800]
-> >> > [  232.270802] Pid: 2690, comm: btdelconn Tainted: P
-> >> > (2.6.26-rc4-00033-g5463508 #4)
-> >
-> > ...and we get oops in bluetooth.
-> >
-> > Use btusb, instead.
-> >
-> > Actually, I guess we should mark hci_usb as broken. I don't see why we
-> > should debug the same problem over and over again.
+On Tue, 3 Jun 2008 08:21:46 +0300
+Muli Ben-Yehuda <muli@il.ibm.com> wrote:
 
-> Well; "shizzle my frizzle," The funny thing is, is I have not seen
-> this after performing more suspends,
-> maybe this is a every once in a while scenario.
+> On Sat, May 31, 2008 at 01:31:33PM +0900, FUJITA Tomonori wrote:
+> 
+> > The calgary code can give drivers addresses above 4GB which is very
+> > bad for hardware that is only 32bit DMA addressable:
+> > 
+> > http://lkml.org/lkml/2008/5/8/423
+> > 
+> > This patch tries to fix the problem by using per-device
+> > dma_mapping_ops support. This fixes the calgary code to use swiotlb
+> > or nommu properly for devices which are not behind the
+> > Calgary/CalIOC2.
+> > 
+> > With this patch, the calgary code sets the global dma_ops to swiotlb
+> > or nommu, and the dma_ops of devices behind the Calgary/CalIOC2 to
+> > calgary_dma_ops. So the calgary code can handle devices safely that
+> > aren't behind the Calgary/CalIOC2.
+> 
+> This seems a little backward to me. I thought we were going to get rid
+> of the global dma_ops?
 
-It was "one in three" in my tests; but you need usb actively in use
-while you are suspending for this to bite.
-									Pavel
+Yeah, I think that we can (though I'm not sure yet if it's the
+cleanest way to handle IOMMUs). I think that it would better to clean
+up the x86 IOMMU startup code a bit. Currently, IOMMUs interact too
+much. It might take time for me to figure out the cleanest way so I
+tried to fix the Calgary problem in the easiest way.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yeah, I'm not sure if x86 maintainers are ok with the cleanup. If they
+are, I'll try.
+
+
+> If not, assuming going through the global one
+> would be more efficient, Calgary should be the global one and
+> nommu/swiotlb should be used on devices that do not have translation
+> enabled. The reason why is that the majority of devices on a Calgary
+> system, assuming Calgary is in use, will have translation enabled.
+
+get_dma_ops() checks dev->archdata.dma_ops first then uses the global
+if device dma_ops is NULL. So I'm not sure about the efficiency.
+
+But I agreed that it's a bit odd to set nommu/swiotlb to the global
+ops since the majority of devices uses calgary_ops on a Calgary
+system, as you said. The patch does that just because seems that it's
+the easiest way to handle devices that aren't behind Calgary.
+
+
+> In general the patch looks good, barring the point above. We'll give
+> it a spin on some Calgary/CalIOC2 machines.
+
+Thanks,
+
+Please feel free to drop the patch if you want to fix the problem
+differently. I just wanted to see how the per-device ops can handle
+the problem.
