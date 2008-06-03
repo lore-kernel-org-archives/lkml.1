@@ -1,162 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbYFCXWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYFCXcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbYFCXWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 19:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbYFCXWU
+	id S1756159AbYFCXcK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 19:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbYFCXbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 19:22:20 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55706 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755680AbYFCXWS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 19:22:18 -0400
-Date: Wed, 4 Jun 2008 02:22:16 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: David Miller <davem@davemloft.net>, mingo@elte.hu, mcmanus@ducksong.com,
-       peterz@infradead.org
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       rjw@sisk.pl, Andrew Morton <akpm@linux-foundation.org>,
-       johnpol@2ka.mipt.ru
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-In-Reply-To: <20080603.150344.145518113.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>
-References: <20080603094057.GA29480@elte.hu> <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
- <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi>
- <20080603.150344.145518113.davem@davemloft.net>
+	Tue, 3 Jun 2008 19:31:55 -0400
+Received: from saeurebad.de ([85.214.36.134]:56478 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751930AbYFCXby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 19:31:54 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@suse.cz>
+Subject: Longstanding bug in ac97/intel8x0 resume/init
+CC: linux-kernel@vger.kernel.org
+Date: Wed, 04 Jun 2008 01:31:10 +0200
+Message-ID: <87hcca3xkx.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1229339905-1212535336=:7315"
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi,
 
----696208474-1229339905-1212535336=:7315
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+my laptop has muted sound after resuming the soundcard (by
+s2ram/hibernation).  The problem seems to be that the cached register
+values are not written back to the device properly.
 
-On Tue, 3 Jun 2008, David Miller wrote:
+Before suspend, the registers look like this:
 
-> From: "Ilpo_Järvinen" <ilpo.jarvinen@helsinki.fi>
-> Date: Wed, 4 Jun 2008 01:01:25 +0300 (EEST)
-> 
-> > On Wed, 4 Jun 2008, Ilpo Järvinen wrote:
-> > 
-> > > ...I couldn't immediately find anything obviously wrong with those changes 
-> > > but the patch below might be worth of a try (without the revert of 
-> > > course). If it ever spits out that WARN_ON for you, we were playing with 
-> > > fire too much and it's better to return on the safe side there...
-> > 
-> > 
-> > > [PATCH] tcp DEFER_ACCEPT: see if header prediction got turned on
-> > > 
-> > > If header prediction is turned on under some circumstances,
-> > > DA can deadlock though I have great trouble in figuring out
-> > 
-> > ...Nah, keepalive timer would then eventually kill it then, so no
-> > deadlock seems possible through that one.
-> 
-> Keepalive is very long, it might still "seem" like a deadlock for
-> someone without much patience :-)
+0:00 = 1990
+0:02 = 0000
+0:04 = 9f1f
+0:06 = 801f
+0:08 = 0000
+0:0a = 801e
+0:0c = 801f
+0:0e = 801f
+0:10 = 9f1f
+0:12 = 9f1f
+0:14 = 9f1f
+0:16 = 9f1f
+0:18 = 0b0b
+0:1a = 0000
+0:1c = 0000
+0:1e = 0000
+0:20 = 0000
+0:22 = 0000
+0:24 = 0000
+0:26 = 000f
+0:28 = 0201
+0:2a = 0001
+0:2c = bb80
+0:2e = 0000
+0:30 = 0000
+0:32 = bb80
+0:34 = 0000
+0:36 = 0000
+0:38 = 0000
+0:3a = 0000
+0:3c = 0000
+0:3e = 0000
+0:40 = 0000
+0:42 = 0000
+0:44 = 0000
+0:46 = 0000
+0:48 = 0000
+0:4a = 0000
+0:4c = 0000
+0:4e = 0000
+0:50 = 0000
+0:52 = 0000
+0:54 = 0000
+0:56 = ffff
+0:58 = 0000
+0:5a = 0604
+0:5c = 0000
+0:5e = 0080
+0:60 = 0023
+0:62 = 0000
+0:64 = 0000
+0:66 = 0000
+0:68 = 0824
+0:6a = 0000
+0:6c = 0000
+0:6e = 0000
+0:70 = 0000
+0:72 = 0000
+0:74 = 0000
+0:76 = 0000
+0:78 = 003c
+0:7a = 0000
+0:7c = 4352
+0:7e = 5936
 
-I think we want that clearing there, it's better to be safe than sorry 
-there and to not put any trust on the keepalive thingie which tears down 
-rather than results in a connection.
+and right after a resume, they look like this (annotations by me):
 
-But here's somewhat more likely explanation... Only compile tested...
-It probably needs some commenting from people who understand locking 
-variants & details (I don't).
+0:00 = 1990
+0:02 = 8000	! Master Volume
+0:04 = 8000	! Headphone Volume
+0:06 = 8000	! Master Mono Volume
+0:08 = 0000
+0:0a = 0000	! PC Beep Volume
+0:0c = 8008	! Phone Volume
+0:0e = 8008	! Mic Volume
+0:10 = 8808	! Line In Volume
+0:12 = 8808	! CD Volume
+0:14 = 8808	! Video Volume
+0:16 = 8808	! AUX Volume
+0:18 = 8808	! PCM Volume
+0:1a = 0000
+0:1c = 8000	! Record gain
+0:1e = 0000
+0:20 = 0000
+0:22 = 0000
+0:24 = 0000
+0:26 = 000f
+0:28 = 0201
+0:2a = 0001
+0:2c = bb80
+0:2e = 0000
+0:30 = 0000
+0:32 = bb80
+0:34 = 0000
+0:36 = 0000
+0:38 = 0000
+0:3a = 0000
+0:3c = 0000
+0:3e = 0000
+0:40 = 0000
+0:42 = 0000
+0:44 = 0000
+0:46 = 0000
+0:48 = 0000
+0:4a = 0000
+0:4c = 0000
+0:4e = 0000
+0:50 = 0000
+0:52 = 0000
+0:54 = 0000
+0:56 = ffff
+0:58 = 0000
+0:5a = 0604
+0:5c = 0000
+0:5e = 0080
+0:60 = 0023
+0:62 = 0000
+0:64 = 0000
+0:66 = 0000
+0:68 = 0824
+0:6a = 0000
+0:6c = 0000
+0:6e = 0000
+0:70 = 0000
+0:72 = 0000
+0:74 = 0000
+0:76 = 0000
+0:78 = 003c
+0:7a = 0000
+0:7c = 4352
+0:7e = 5936
 
+When I run alsamixer and change around the values of Master and PCM in a
+purely random way - a bit higher/lower, mute/unmute, etc. - sound comes
+back to life.
 
--- 
- i.
+I remember to `fix' this by adding more delays between waking the device
+and syncing back the cache.  But I think that took up to 6 seconds,
+sometimes, so there must be something else going on (see below).
 
+The chip is the following:
 
---
-[PATCH] tcp DEFER_ACCEPT: fix racy access to listen_sk
+0-0/0: Cirrus Logic CS4299 rev 6
 
-It seems that replacement of DA code also moved parts outside
-of appropriate locking. The Ingo's problem seems to come from
-the fact that two flows could now race in
-(inet_csk_)reqsk_queue_add corrupting the queue. ...This can
-leave dangling socks around which won't resolve themselves
-without stimuli from outside (e.g., external RST would help
-I think).
+PCI Subsys Vendor: 0x1014
+PCI Subsys Device: 0x0222
 
-Then some details I'm not too sure of:
-I guess we want to put listen_sk->sk_state checking under the
-lock as well. I've not evaluated if ->sk_data_ready too
-requires locking but assumed it does.
+Capabilities     : -headphone out-
+DAC resolution   : 20-bit
+ADC resolution   : 18-bit
+3D enhancement   : Crystal Semi 3D Stereo Enhancement
 
-I'm by no means familiar with all locking variants, requirements,
-etc.
+Current setup
+Mic gain         : +0dB [+0dB]
+POP path         : pre 3D
+Sim. stereo      : off
+3D enhancement   : off
+Loudness         : off
+Mono output      : MIX
+Mic select       : Mic1
+ADC/DAC loopback : off
+Extended ID      : codec=0 rev=0 AMAP DSA=0 VRA
+Extended status  : VRA
+PCM front DAC    : 48000Hz
+PCM ADC          : 48000Hz
+SPDIF Control    : Consumer PCM Copyright Category=0x22 Generation=1 Rate=48kHz
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- net/ipv4/tcp_input.c |   23 +++++++++++++----------
- 1 files changed, 13 insertions(+), 10 deletions(-)
+Something else is strange, too.  When I have the driver as a module and
+unload it once, another load will succeed module-wise but the device is
+unusable then.  Here is the dmesg snippet:
 
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index c9454f0..d21d2b9 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -4562,6 +4562,7 @@ static int tcp_defer_accept_check(struct sock *sk)
- 	struct tcp_sock *tp = tcp_sk(sk);
- 
- 	if (tp->defer_tcp_accept.request) {
-+		struct sock *listen_sk = tp->defer_tcp_accept.listen_sk;
- 		int queued_data =  tp->rcv_nxt - tp->copied_seq;
- 		int hasfin =  !skb_queue_empty(&sk->sk_receive_queue) ?
- 			tcp_hdr((struct sk_buff *)
-@@ -4570,8 +4571,9 @@ static int tcp_defer_accept_check(struct sock *sk)
- 		if (queued_data && hasfin)
- 			queued_data--;
- 
--		if (queued_data &&
--		    tp->defer_tcp_accept.listen_sk->sk_state == TCP_LISTEN) {
-+		bh_lock_sock(listen_sk);
-+
-+		if (queued_data && listen_sk->sk_state == TCP_LISTEN) {
- 			if (sock_flag(sk, SOCK_KEEPOPEN)) {
- 				inet_csk_reset_keepalive_timer(sk,
- 							       keepalive_time_when(tp));
-@@ -4579,23 +4581,24 @@ static int tcp_defer_accept_check(struct sock *sk)
- 				inet_csk_delete_keepalive_timer(sk);
- 			}
- 
--			inet_csk_reqsk_queue_add(
--				tp->defer_tcp_accept.listen_sk,
--				tp->defer_tcp_accept.request,
--				sk);
-+			inet_csk_reqsk_queue_add(listen_sk,
-+						 tp->defer_tcp_accept.request,
-+						 sk);
- 
- 			tp->defer_tcp_accept.listen_sk->sk_data_ready(
--				tp->defer_tcp_accept.listen_sk, 0);
-+						listen_sk, 0);
- 
--			sock_put(tp->defer_tcp_accept.listen_sk);
-+			sock_put(listen_sk);
- 			sock_put(sk);
- 			tp->defer_tcp_accept.listen_sk = NULL;
- 			tp->defer_tcp_accept.request = NULL;
--		} else if (hasfin ||
--			   tp->defer_tcp_accept.listen_sk->sk_state != TCP_LISTEN) {
-+		} else if (hasfin || listen_sk->sk_state != TCP_LISTEN) {
-+			bh_unlock_sock(listen_sk);
- 			tcp_reset(sk);
- 			return -1;
- 		}
-+
-+		bh_unlock_sock(listen_sk);
- 	}
- 	return 0;
- }
--- 
-1.5.2.2
+[ 1462.343612] ACPI: PCI interrupt for device 0000:00:1f.5 disabled
+[ 1487.092547] ACPI: PCI Interrupt 0000:00:1f.5[B] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
+[ 1487.094499] PCI: Setting latency timer of device 0000:00:1f.5 to 64
+[ 1488.347180] ALSA sound/pci/ac97/ac97_codec.c:2053: AC'97 0 does not respond - RESET
+[ 1488.347442] ACPI: PCI interrupt for device 0000:00:1f.5 disabled
+[ 1488.347569] Intel ICH: probe of 0000:00:1f.5 failed with error -13
 
----696208474-1229339905-1212535336=:7315--
+After another unload-load cycle, I get a working device again and this
+in dmesg:
+
+[ 2623.093209] ACPI: PCI Interrupt 0000:00:1f.5[B] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
+[ 2623.095264] PCI: Setting latency timer of device 0000:00:1f.5 to 64
+[ 2623.975121] intel8x0_measure_ac97_clock: measured 50399 usecs
+[ 2623.975268] intel8x0: clocking to 48000
+
+Please let me know if you need more information to debug this issue.
+It's really annoying :/
+
+Many thanks in advance,
+	Hannes
