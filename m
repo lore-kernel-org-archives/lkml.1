@@ -1,43 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762581AbYFDVze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbYFDV65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762581AbYFDVze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 17:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbYFDVzY
+	id S1761562AbYFDV65 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 17:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYFDV6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 17:55:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55079
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751934AbYFDVzX convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 17:55:23 -0400
-Date: Wed, 04 Jun 2008 14:55:22 -0700 (PDT)
-Message-Id: <20080604.145522.118061703.davem@davemloft.net>
-To: ilpo.jarvinen@helsinki.fi
-Cc: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, rjw@sisk.pl, akpm@linux-foundation.org,
-       johnpol@2ka.mipt.ru, mcmanus@ducksong.com
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0806042202030.6328@wrl-59.cs.helsinki.fi>
-References: <20080604072311.GA32491@elte.hu>
-	<20080604.112426.62778239.davem@davemloft.net>
-	<Pine.LNX.4.64.0806042202030.6328@wrl-59.cs.helsinki.fi>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Jun 2008 17:58:47 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:36162 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752063AbYFDV6q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 17:58:46 -0400
+Date: Wed, 04 Jun 2008 15:58:34 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data	buffers
+In-reply-to: <20080604111911.c1fe09c6.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       tytso@mit.edu, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Message-id: <20080604215834.GA2961@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com>
+ <20080603153050.fb99ac8a.akpm@linux-foundation.org>
+ <20080604101925.GB16572@duck.suse.cz>
+ <20080604111911.c1fe09c6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Ilpo_Järvinen" <ilpo.jarvinen@helsinki.fi>
-Date: Wed, 4 Jun 2008 23:56:34 +0300 (EEST)
+On Jun 04, 2008  11:19 -0700, Andrew Morton wrote:
+> On Wed, 4 Jun 2008 12:19:25 +0200 Jan Kara <jack@suse.cz> wrote:
+> 
+> > On Tue 03-06-08 15:30:50, Andrew Morton wrote:
+> > > On Mon, 02 Jun 2008 19:43:57 +0900
+> > > Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
+> > > 
+> > > > 
+> > > > In ordered mode, we should abort journaling when an I/O error has
+> > > > occurred on a file data buffer in the committing transaction.
+> > > 
+> > > Why should we do that?
+> >   I see two reasons:
+> > 1) If fs below us is returning IO errors, we don't really know how severe
+> > it is so it's safest to stop accepting writes. Also user notices the
+> > problem early this way. I agree that with the growing size of disks and
+> > thus probability of seeing IO error, we should probably think of something
+> > cleverer than this but aborting seems better than just doing nothing.
+> > 
+> > 2) If the IO error is just transient (i.e., link to NAS is disconnected for
+> > a while), we would silently break ordering mode guarantees (user could be
+> > able to see old / uninitialized data).
+> > 
+> 
+> Does any other filesystem driver turn the fs read-only on the first
+> write-IO-error?
+> 
+> It seems like a big policy change to me.  For a lot of applications
+> it's effectively a complete outage and people might get a bit upset if
+> this happens on the first blip from their NAS.
 
-> Do you know if TCP ever needs to lock the child sk again (after creating 
-> it and it has started to live on its own) from a context that has already 
-> locked the listen_sk (it could deadlock after this change)?
+I agree with Andrew.  The historical policy of ext2/3/4 is that write
+errors for FILE DATA propagate to the application via EIO, regardless
+of whether ordered mode is active or not.  If filesystem METADATA is
+involved, yes this should cause an ext3_error() to be called and the
+policy for what to do next is controlled by the administrator.
 
-I don't know, and since I'm getting back onto an airplane again tomorrow
-morning I'm the last person who is likely do be able to do an audit
-of these cases for you :-)
+If the journal is aborted for a file data write error, the node maybe
+panics (errors=panic) or is rebooted by the administrator, then e2fsck
+is run and no problem is found (which it will not because e2fsck does
+not check file data), then all that has been accomplished is to reboot
+the node.
+
+Applications should check the error return codes from their writes,
+and call fsync on the file before closing it if they are really worried
+about whether the data made it to disk safely, otherwise even a read-only
+filesystem will not cause the application to notice anything.
+
+Now, if we have a problem where the write error from the journal checkpoint
+is not being propagated back to the original buffer, that is a different
+issue.  For ordered-mode data I don't _think_ that the data buffers are
+mirrored when a transaction is closed, so as long as the !buffer_uptodate()
+error is propagated back to the caller on fsync() that is enough.
+
+We might also consider having a separate mechanism to handle write failures,
+but I don't think that that should be intermixed with the ext3 error handling
+for metadata errors.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
