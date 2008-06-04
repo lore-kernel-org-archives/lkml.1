@@ -1,104 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYFDNWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbYFDNXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYFDNWo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 09:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758229AbYFDNWQ
+	id S1753085AbYFDNXA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 09:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbYFDNWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 09:22:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38581 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758180AbYFDNWP (ORCPT
+	Wed, 4 Jun 2008 09:22:20 -0400
+Received: from hu-out-0506.google.com ([72.14.214.232]:4132 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758264AbYFDNWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 09:22:15 -0400
-Date: Wed, 4 Jun 2008 06:16:37 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Alok kataria" <alokkataria1@gmail.com>
-Cc: akataria@vmware.com, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Dan Hecht" <dhecht@vmware.com>, "Tim Mann" <mann@vmware.com>,
-       "Zachary Amsden" <zach@vmware.com>, "Sahil Rihan" <srihan@vmware.com>
-Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
-Message-ID: <20080604061637.6bab3f67@infradead.org>
-In-Reply-To: <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
-References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
-	<20080603182014.79a38d03@infradead.org>
-	<35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Jun 2008 09:22:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=BJ6a3nweYUlZJSZKwJy4rearUk8os3bNgxIfwQ7YwDot/K0j/nqIOmJip8UWGn2uU2
+         zMvgDcTIg7wZ58ttyu6uejcOj2Y2Zj4GZF3TCnjP9vAepB9y159Bzisx63UbYkEGlQPP
+         nF8bP3HzrS0ucx7rX2iHSfckwYJWVlDu/K3RU=
+Message-ID: <517f3f820806040622j5a5b4cb0m9baacbc4ad79c779@mail.gmail.com>
+Date: Wed, 4 Jun 2008 15:22:17 +0200
+From: "Michael Kerrisk" <mtk.manpages@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [patch 0/4 v2] vfs: fix utimensat() non-conformances to spec
+Cc: lkml <linux-kernel@vger.kernel.org>, "Christoph Hellwig" <hch@lst.de>,
+       "Miklos Szeredi" <miklos@szeredi.hu>, viro@zeniv.linux.org.uk,
+       jamie@shareable.org, "Ulrich Drepper" <drepper@redhat.com>,
+       linux-fsdevel@vger.kernel.org,
+       "Subrata Modak" <subrata@linux.vnet.ibm.com>
+In-Reply-To: <484694C1.7030603@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <484694C1.7030603@gmail.com>
+X-Google-Sender-Auth: e95736cafb50d42b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008 21:01:54 -0700
-"Alok kataria" <alokkataria1@gmail.com> wrote:
+>  This patch series is a revised version of the patch series
+>  that I sent yesterday to fix various utimensat()
+>  non-conformances.  Patches 1 and 2 are unchanged (and were
+>  Acked by Miklos); patches 3 and 4 are revised following
+>  comments by Miklos.
 
-> On Tue, Jun 3, 2008 at 6:20 PM, Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> > On Tue, 03 Jun 2008 17:41:09 -0700
-> > Alok Kataria <akataria@vmware.com> wrote:
-> >
-> >> On X86 platform we can use the value of cpu_khz computed during tsc
-> >> calibration to calculate the loops_per_jiffy value. Its very
-> >> important to keep the error in lpj values to minimum as any error
-> >> in that may result in kernel panic in check_timer.
-> >> In virtualization environment on a highly overloaded host, the
-> >> guest delay calibration may sometimes result in errors beyond the
-> >> ~50% that timer_irq_works can handle, resulting in the guest
-> >> panicking.
-> > \
-> >
-> > can you guarantee that the rate tsc ticks at is the same as the
-> > current CPU frequency? Answer: You can't....
-> >
-> 
-> I think at the boot time atleast we can assume that, no ?
-
-Nope, absolutely not.
-1) The rate TSC ticks may or may not be the maximum frequency (usually
-is, but no guarantee)
-2) The BIOS might not boot your system at the maximum frequency (think
-"laptop on battery")... that's really up to the BIOS.
-
-> 
-> > sadly we do need to calibrate this...
-> >
-> > In addition, clearly you can have different cpus in a system run at
-> > a different rate (both in terms of cpu_khz and, independently, in
-> > terms of tsc rate)
-> >
-> 
-> Again yes at run time frequency's may change but they shouldn't at
-> boottime. AFAIK, i don't think there are X86 MP systems with
-> asymmetric cpus i.e. systems with different
-> base frequencies. If thats not true then there sure is a problem.
-
-there's nothing that guarantees this. (Well maybe Dell's website does
-because they want to sell you 2 expensive cpus rather than 1 cheap 1
-expensive one ;-)
-
-> 
-> Thanks,
-> Alok
-> 
-> >
-> > --
-> > If you want to reach me at my work email, use arjan@linux.intel.com
-> > For development, discussion and tips for power savings,
-> > visit http://www.lesswatts.org
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe
-> > linux-kernel" in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+D'oh!  I left the "v2" markers off the resent patchs 1 and 3, so they
+got the same subject lines as yesterday's versions.  Sorry about that!
