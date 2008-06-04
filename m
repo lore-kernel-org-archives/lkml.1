@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbYFDLu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYFDLww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760198AbYFDLu6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 07:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYFDLuu
+	id S1760208AbYFDLww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 07:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYFDLwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 07:50:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33052 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725AbYFDLut (ORCPT
+	Wed, 4 Jun 2008 07:52:45 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40995 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751163AbYFDLwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 07:50:49 -0400
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 4 -
-	firmware/keyspan/mpr.fw.gen.S
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <48468091.5000102@linux.vnet.ibm.com>
-References: <20080604180025.3ecd03ff.sfr@canb.auug.org.au>
-	 <48468091.5000102@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 12:50:45 +0100
-Message-Id: <1212580245.32207.51.camel@pmac.infradead.org>
+	Wed, 4 Jun 2008 07:52:44 -0400
+Date: Wed, 4 Jun 2008 12:36:42 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Andrew Victor" <avictor.za@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, wim@iguana.be,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: AT91SAM9/CAP9 watchdog driver
+Message-ID: <20080604123642.51449a04@core>
+In-Reply-To: <cd73a99e0806040031s13e6b4a5ndc5fb3d931e1945f@mail.gmail.com>
+References: <cd73a99e0806010940g501f11b4jcb7caf6acfd5c49f@mail.gmail.com>
+	<20080603142316.c53b32b2.akpm@linux-foundation.org>
+	<cd73a99e0806040031s13e6b4a5ndc5fb3d931e1945f@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-04 at 17:16 +0530, Kamalesh Babulal wrote:
-> The next-20080604 kernel build fails on the x86_64 machine
+On Wed, 4 Jun 2008 09:31:50 +0200
+"Andrew Victor" <avictor.za@gmail.com> wrote:
+
+> hi Andrew,
 > 
-> make[1]: *** No rule to make target
-> `/usr/local/autobench/autotest/tmp/build/linux/$(dir)', needed by
-> `firmware/keyspan/mpr.fw.gen.S'.  Stop.
-> make: *** [firmware] Error 2
+> >> +             return 0;
+> >
+> > That looks like the wrong return value?
+> 
+> Since the watchdog registers are Write-Once, if the user does not
+> specify a "wdt_timeout" parameter we'd still like the driver to load
+> even if it's not enabled.
 
-Hm, what version of make? Does .SECONDEXPANSION: not work everywhere?
-
-If you remove the '| $(objtree)/$$(dir %)' dependency from
-firmware/Makefile line 90, does it work then? You might have to remove
-other similar deps -- they're only for O= builds anyway.
-
--- 
-dwmw2
-
+Surely you can avoid doing the register writes until after you check the
+validity of arguments ?
