@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbYFDDDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYFDDH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbYFDDDp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 23:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbYFDDDe
+	id S1752181AbYFDDH0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 23:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYFDDHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 23:03:34 -0400
-Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:58058
-	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751652AbYFDDDd (ORCPT
+	Tue, 3 Jun 2008 23:07:13 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34713 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbYFDDHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 23:03:33 -0400
-Message-ID: <4846067C.1020807@sngx.net>
-Date: Tue, 03 Jun 2008 22:05:32 -0500
-From: James Cammarata <jimi@sngx.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Tue, 3 Jun 2008 23:07:12 -0400
+Date: Wed, 04 Jun 2008 12:07:29 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+Subject: Re: [PATCH 4/4] per-task-delay-accounting: /proc export for memory reclaim delay
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080603194608.ed76ecf3.kobayashi.kk@ncos.nec.co.jp>
+References: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp> <20080603194608.ed76ecf3.kobayashi.kk@ncos.nec.co.jp>
+Message-Id: <20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bill Fink <billfink@mindspring.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] net: add ability to clear stats via ethtool - e1000/pcnet32
-References: <482DA5B6.1020606@sngx.net>	<482DB46A.8020103@cosmosbay.com>	<482EF192.4070707@sngx.net>	<482F5113.5090703@cosmosbay.com>	<482F610D.2080108@sngx.net>	<20080518003104.GK28241@solarflare.com>	<482FBA09.80201@sngx.net>	<483E0AAE.2020107@sngx.net>	<20080528221118.63da4092.akpm@linux-foundation.org>	<483EA2D1.8050603@sngx.net>	<20080529154525.3916c7b5@core>	<20080530151250.b44a119a.billfink@mindspring.com>	<20080531131143.516ca56e@core>	<20080531195702.0b879dd1.billfink@mindspring.com>	<48437C25.7080400@gdt.id.au>	<20080602121007.1e81cf05.billfink@mindspring.com>	<48453909.4000301@sngx.net> <20080603154602.01b10adb@core>
-In-Reply-To: <20080603154602.01b10adb@core>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I used to work in a large ISP - it was a huge concern then and was
-> enforced and managed by the less effective 'do you like your kneecaps'
-> approach to permissions.
+Hi
 
-I work at a large ISP now, and you're absolutely right.  You don't just go 
-around resetting interface counters on backbone routers for the hell of it, 
-and we never do it without customer permission while troubleshooting an 
-issue with a connection, that is why I said I thought it was a non-argument.
-There seems to be an irrational fear of counter-based anarchy here.
-
-> Its basically impossible to write a correct non-racy application which
-> zeros kernel statistics and then measures the change, because you cannot
-> know another application did the same while you were running.
+> diff --git a/fs/proc/array.c b/fs/proc/array.c
+> index 9e3b8c3..a3e6e86 100644
+> --- a/fs/proc/array.c
+> +++ b/fs/proc/array.c
+> @@ -498,7 +498,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
 > 
-> This is the most basic and blindingly obvious stuff. You should not be
-> able to zero the kernel stats just because you can't work perl.
+>  	seq_printf(m, "%d (%s) %c %d %d %d %d %d %u %lu \
+>  %lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
+> -%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld\n",
+> +%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %llu %lu %ld\n",
+>  		pid_nr_ns(pid, ns),
+>  		tcomm,
+>  		state,
+> @@ -544,6 +544,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+>  		task->rt_priority,
+>  		task->policy,
+>  		(unsigned long long)delayacct_blkio_ticks(task),
+> +		(unsigned long long)delayacct_freepages_ticks(task),
+>  		cputime_to_clock_t(gtime),
+>  		cputime_to_clock_t(cgtime));
 
-I've already said I'd drop the issue 4+ days ago, and that I'd be more
-than happy to do it in userland as you suggested, my point was simply that
-adding it to only one userland tool will lead to inconsistencies.  It is not
-an issue of being able to "work perl" or not.
+userland program oftern below access.
+thus, this patch break userland compatibility.
+
+----------------------------------------
+#!/usr/bin/perl
+
+$stat = `cat /proc/$pid/stat`;
+split
+@stat_list = split(/ / , $stat);
+print stat_list[$index];
+                 ^
+                 |
+                 use array index number
+
+
+
