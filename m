@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760923AbYFDTV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761599AbYFDTWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760923AbYFDTV3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 15:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbYFDTVT
+	id S1761599AbYFDTWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 15:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbYFDTWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 15:21:19 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61178 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756762AbYFDTVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 15:21:19 -0400
-Date: Wed, 4 Jun 2008 20:19:10 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jon Masters <jcm@redhat.com>
-cc: Stefan Assmann <sassmann@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
-In-Reply-To: <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
-Message-ID: <Pine.LNX.4.55.0806042014110.28685@cliff.in.clinika.pl>
-References: <12124107071847-git-send-email-od@suse.de>  <m1tzgauduu.fsf@frodo.ebiederm.org>
- <4846651F.4070802@suse.de>  <m1ve0pqy06.fsf@frodo.ebiederm.org> 
- <48467DA7.9030309@suse.de> <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
+	Wed, 4 Jun 2008 15:22:01 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:63669 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756762AbYFDTWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 15:22:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=muslOE2bCmWoy2A6uBxEV56TdGH28QP0Bk9QjOtIEDZe6w6IOIQjOtLtUr3+XKBJiv
+         JgZaOZxogalU3JP0fNINBSw0bYtlNywSxjd38BIO2+L2EUAXXyBKtzU9/XbmG2xmj/J9
+         /L8Sy8A9b9+sjRFjzoGBDLQ3omM/THmu90WPQ=
+Date: Wed, 4 Jun 2008 21:21:37 +0200
+From: Bernhard Fischer <rep.dot.nop@gmail.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] console - Add configurable support for console charset
+	translation
+Message-ID: <20080604192137.GD27768@mx.loc>
+References: <48447615.5050806@am.sony.com> <20080604103353.GC27335@cs181133002.pp.htv.fi> <20080604183432.GC27768@mx.loc> <20080604190146.GE4189@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604190146.GE4189@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008, Jon Masters wrote:
+On Wed, Jun 04, 2008 at 10:01:46PM +0300, Adrian Bunk wrote:
+>On Wed, Jun 04, 2008 at 08:34:32PM +0200, Bernhard Fischer wrote:
+ 
+>> Current kernels are too big, they tend to be about 1MB (ignoring lzma or
+>> gz compression), a couple of years back an ide- and network-enabled
+>> kernel with 8139too (or whatever -nic you use in qemu nowadays) was at
+>> least 30% smaller.
+>
+>No disagreement that the kernel could (and should) become smaller for
+>situations where the kernel size matters.
+>
+>My question is only about whether *this kind of patches* is the correct 
+>approach.
 
-> Meanwhile, I think this really shows that a couple of us who've been
-> meaning to poke at per-device IRQs should do so once again. This is the
-> real solution - kill off all those per-IRQ threads, have one per device
-> and split each IRQ into a "top" and "bottom" (just kidding on the names)
-> half. Have the first part be *incredibly* small and just return if the
-> device actually was responsible for the IRQ (and quiesse it), and have
-> the second part do the heavyweight handling. Since the second part can
-> run as a thread (and actually sleep for however long, because it's now
-> per device) - and since we have threaded tasklets and all this on RT
-> anyway - we can just kill off most of the extra logic in many Linux
-> interrupt handlers and have just the interrupt thread do the work. 
+Every dozend of bytes less helps to some degree. I can boot a smallish
+testsystem in qemu with 4MB ram and have a useable userspace in 120k or
+up to 1.2MB diskspace to play with.
 
- This is how a lot of our drivers used to work in the old days -- modulo
-implementation details.  It is still a good idea, but it requires more
-care and effort to implement, so people tend to avoid it unless forced by
-the design of hardware involved (cf. phylib in the interrupt mode).
+The kernel ultimately needs the vast majority of resources in such a
+system; most of the RAM and most of the diskspace (assuming a
+comfortable userspace with 500k). Booting with 2MB didn't work last time
+i tried. This imbalance is something we should fix.
 
-  Maciej
+So yes, 5k help, several 5k help more. I can see how it's problematic to
+represent that in menuconfig without adding too much clutter but still
+letting the user decide whether or not to include certain families of
+features, but that should not turn out to be a real problem.
