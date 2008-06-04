@@ -1,103 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbYFDIk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbYFDIlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757127AbYFDIk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 04:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYFDIkO
+	id S1758540AbYFDIlj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 04:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYFDIlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 04:40:14 -0400
-Received: from qb-out-0506.google.com ([72.14.204.229]:28041 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbYFDIkN (ORCPT
+	Wed, 4 Jun 2008 04:41:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43193 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752589AbYFDIla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 04:40:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SpE3LzhUOsNO/8Y+kslCL3dlNKAS4RRnEb9G5LczWdDzI5gozez9AdxrVOo0s3tcdtMfOYLq2Fba/PLjJjr0msNZ76OFNNjs1JoqD+IX2LInrlGeYSzTrZHNSPfIxD1flhI2v0i2cDuQFN365OkS/hIrVyQ9f4NDHe4FXjweb98=
-Message-ID: <cfd18e0f0806040140g15524e5w3f464f3da9dbd3de@mail.gmail.com>
-Date: Wed, 4 Jun 2008 10:40:11 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [parch 4/4] vfs: utimensat(): fix write access check for futimens()
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@lst.de,
-       viro@zeniv.linux.org.uk, jamie@shareable.org, drepper@redhat.com,
-       linux-fsdevel@vger.kernel.org, subrata@linux.vnet.ibm.com
-In-Reply-To: <E1K3kot-0007gz-U7@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Jun 2008 04:41:30 -0400
+Date: Wed, 4 Jun 2008 01:40:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] proc: calculate the correct /proc/<pid> link count
+Message-Id: <20080604014059.06b170b4.akpm@linux-foundation.org>
+In-Reply-To: <20080603131659.GA2970@damson.getinternet.no>
+References: <20080603131659.GA2970@damson.getinternet.no>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4845C4D2.8050408@gmail.com>
-	 <E1K3kot-0007gz-U7@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 4, 2008 at 6:41 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
->> The POSIX.1 draft spec for futimens()/utimensat() says:
->>
->>         Only a process with the effective user ID equal to the
->>         user ID of the file, *or with write access to the file*,
->>         or with appropriate privileges may use futimens() or
->>         utimensat() with a null pointer as the times argument
->>         or with both tv_nsec fields set to the special value
->>         UTIME_NOW.
->>
->> The important piece here is "with write access to the file", and
->> this matters for futimens(), which deals with an argument that
->> is a file descriptor referring to the file whose timestamps are
->> being updated,  The standard is saying that the "writability"
->> check is based on the file permissions, not the access mode with
->> which the file is opened.  (This behavior is consistent with the
->> semantics of FreeBSD's futimes().)  However, Linux is currently
->> doing the latter -- futimens(fd, times) is a library
->> function implemented as
->>
->>        utimensat(fd, NULL, times, 0)
->>
->> and within the utimensat() implementation we have the code:
->>
->>                 f = fget(dfd);  // dfd is 'fd'
->>                 ...
->>                 if (f) {
->>                         if (!(f->f_mode & FMODE_WRITE))
->>                                 goto mnt_drop_write_and_out;
->>
->> The check should instead be based on the file permissions.
->>
->> Thanks to Miklos for pointing out how to do this check.
->>
->> CC: Miklos Szeredi <miklos@szeredi.hu>
->> CC: Al Viro <viro@zeniv.linux.org.uk>
->> CC: Ulrich Drepper <drepper@redhat.com>
->> Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
->>
->> --- linux-2.6.26-rc4/fs/utimes.c      2008-06-03 23:13:31.000000000 +0200
->> +++ linux-2.6.26-rc4-utimensat-fix-v4/fs/utimes.c     2008-06-03 23:15:12.000000000 +0200
->> @@ -137,7 +137,8 @@
->>
->>               if (!is_owner_or_cap(inode)) {
->>                       if (f) {
->> -                             if (!(f->f_mode & FMODE_WRITE))
->> +                             error = permission(inode, MAY_WRITE, NULL);
->> +                             if (error)
->>                                       goto mnt_drop_write_and_out;
->>                       } else {
->>                               error = vfs_permission(&nd, MAY_WRITE);
->
-> At which point the "if (f)" and the "else" branches become equivalent
-> (the nameidata isn't interesting in the other case either).  So that
-> could be written as:
->
->                if (!is_owner_or_cap(inode)) {
->                        error = permission(inode, MAY_WRITE, NULL);
->                        if (error)
->                                goto mnt_drop_write_and_out;
->                }
+On Tue, 3 Jun 2008 15:16:59 +0200 Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-Okay -- thanks Miklos.  I'll change that, and test.
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Mon, 2 Jun 2008 08:57:45 +0200
+> Subject: [PATCH] proc: calculate the correct /proc/<pid> link count
+> 
+> commit e9720acd728a46cb40daa52c99a979f7c4ff195c
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Linus gets upset when we refer to commits only by their hash.
+
+I did this:
+
+This patch:
+
+  commit e9720acd728a46cb40daa52c99a979f7c4ff195c
+  Author: Pavel Emelyanov <xemul@openvz.org>
+  Date:   Fri Mar 7 11:08:40 2008 -0800
+
+    [NET]: Make /proc/net a symlink on /proc/self/net (v3)
+
+introduced a /proc/self/net directory without bumping the corresponding
+link count for /proc/self.
+
+> introduced a
+> /proc/self/net directory without bumping the corresponding link count
+> for /proc/self.
+> 
+> This patch replaces the static link count initializations with a call
+> that counts the number of directory entries in the given pid_entry
+> table whenever it is instantiated, and thus relieves the burden of
+> manually keeping the two in sync.
+
+Seems much saner.
+
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index c447e07..334ce46 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -127,6 +127,23 @@ struct pid_entry {
+>  		NULL, &proc_single_file_operations,	\
+>  		{ .proc_show = &proc_##OTYPE } )
+>  
+> +/* Count the number of hardlinks for the pid_entry table, excluding the .
+> + * and .. links. */
+
+Like this:
+
+/*
+ * Count the number of hardlinks for the pid_entry table, excluding the .
+ * and .. links.
+ */
+
+please.
+
+> +static unsigned int pid_entry_count_dirs(const struct pid_entry *entries,
+> +	unsigned int n)
+> +{
+> +	unsigned int i;
+> +	unsigned int count;
+> +
+> +	count = 0;
+> +	for (i = 0; i < n; ++i) {
+> +		if (S_ISDIR(entries[i].mode))
+> +			++count;
+> +	}
+> +
+> +	return count;
+> +}
+
+I'm unable to correlate the code with the comment.  There is nothing in
+here which handles .  and ..?
+
+ 
+> @@ -2585,10 +2602,9 @@ static struct dentry *proc_pid_instantiate(struct inode *dir,
+>  	inode->i_op = &proc_tgid_base_inode_operations;
+>  	inode->i_fop = &proc_tgid_base_operations;
+>  	inode->i_flags|=S_IMMUTABLE;
+> -	inode->i_nlink = 5;
+> -#ifdef CONFIG_SECURITY
+> -	inode->i_nlink += 1;
+> -#endif
+> +
+> +	inode->i_nlink = 2 + pid_entry_count_dirs(tgid_base_stuff,
+> +		ARRAY_SIZE(tgid_base_stuff));
+>  
+
+oh, can we do that?  Is it possible for some code somewhere to come
+along and add a new entry to /proc/pid which doesn't appear in
+these static tables?
+
+I guess that doesn't happen.  In which case can we not calculate the
+unmber of directories in these two tables just a single time, at
+bootup?
+
+I think I'm missing things here...
