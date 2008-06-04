@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbYFDC0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbYFDChj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbYFDC0T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 22:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750695AbYFDC0G
+	id S1754386AbYFDChj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 22:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYFDCh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 22:26:06 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:36441 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751847AbYFDC0G (ORCPT
+	Tue, 3 Jun 2008 22:37:28 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:49899 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143AbYFDChX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 22:26:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=zKej/lgfMgFnlap2p4pfXxPV2y63xdaeOhQ0LCSs//0SQCptLlptvu/eSFnqDQbGl4ZCi5/QyTZe6MB2fStWGBuojyTcsUvtAG6NTMzCx51HUVsLdsxJONwdI0Kha8K9HvCWuzZlLdtF20zy4KndT+OLrvi18SCSm754yVo1E8A=  ;
-X-YMail-OSG: i1bkcX4VM1nB5EcGlMwiGOeqLQ5E7N2dTQ0YyzYxWQ0IihTgIaYe9PCTbr0VEgZYcyy8x4TReg2AM9TRNhKx3jwNjfPzaBVIUrrhJA3JWDYWKc7EfxJDJu.S.zQCMMHJ5K8-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Trent Piepho <tpiepho@freescale.com>
-Subject: Re: MMIO and gcc re-ordering issue
-Date: Wed, 4 Jun 2008 12:25:49 +1000
-User-Agent: KMail/1.9.5
-Cc: Matthew Wilcox <matthew@wil.cx>, Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-References: <1211852026.3286.36.camel@pasglop> <20080603213310.GC3549@parisc-linux.org> <Pine.LNX.4.64.0806031439520.3242@t2.domain.actdsltmp>
-In-Reply-To: <Pine.LNX.4.64.0806031439520.3242@t2.domain.actdsltmp>
+	Tue, 3 Jun 2008 22:37:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=xbCiVahHYbkMTh07Q+ulFBuCyWaeWuHKZGzkwSkVVGcu61zNYwIo+rS7xG3aloKGHHcsAOv3w52076Tm80N3Vm271cJ5zyioZ9dE1ueJ7UJ8/jWweYwpltDD4F5H50dvYxqsxQkymE08GVqY53CJwJq6GiZ3SDQuK9dQj8E3OMc=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86: numa32 make sure get kva space
+Date: Tue, 3 Jun 2008 19:32:30 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200806031025.55026.yhlu.kernel@gmail.com>
+In-Reply-To: <200806031025.55026.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200806041225.50058.nickpiggin@yahoo.com.au>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806031932.31376.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 June 2008 07:44, Trent Piepho wrote:
-> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
 
-> > I don't understand why you keep talking about DMA.  Are you talking
-> > about ordering between readX() and DMA?  PCI proides those guarantees.
->
-> I guess you haven't been reading the whole thread.  The reason it started
-> was because gcc can re-order powerpc (and everyone else's too) IO accesses
-> vs accesses to cachable memory (but not spin-locks), which ends up only
-> being a problem with coherent DMA.
+when 1/3 user/kernel is used, and less memory is installed, or have big hole
+below 4g, max_low_pfn is still using 3g-128m
 
-I don't think it is only a problem with coherent DMA.
+try to go down from max_low_pfn until get it. otherwise will panic.
 
-CPU0                         CPU1
-mutex_lock(mutex);
-writel(something, DATA_REG);
-writel(GO, CTRL_REG);
-started = 1;
-mutex_unlock(mutex);
-                             mutex_lock(mutex);
-                             if (started)
-                               /* oops, this can reach device before GO */
-                               writel(STOP, CTRL_REG);
-                               
+need to make 32bit code to use register_e820_active_regions...later
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+diff --git a/arch/x86/mm/discontig_32.c b/arch/x86/mm/discontig_32.c
+index e119c53..e8d9a0a 100644
+--- a/arch/x86/mm/discontig_32.c
++++ b/arch/x86/mm/discontig_32.c
+@@ -306,6 +306,7 @@ unsigned long __init setup_memory(void)
+ {
+ 	int nid;
+ 	unsigned long system_start_pfn, system_max_low_pfn;
++	long kva_target_pfn;
+ 
+ 	/*
+ 	 * When mapping a NUMA machine we allocate the node_mem_map arrays
+@@ -322,11 +323,17 @@ unsigned long __init setup_memory(void)
+ 	system_start_pfn = min_low_pfn = PFN_UP(init_pg_tables_end);
+ 
+ 	system_max_low_pfn = max_low_pfn = find_max_low_pfn();
+-	kva_start_pfn = round_down(max_low_pfn - kva_pages, PTRS_PER_PTE);
+-	kva_start_pfn = find_e820_area(kva_start_pfn<<PAGE_SHIFT,
+-				max_low_pfn<<PAGE_SHIFT,
+-				kva_pages<<PAGE_SHIFT,
+-				PTRS_PER_PTE<<PAGE_SHIFT) >> PAGE_SHIFT;
++	kva_target_pfn = round_down(max_low_pfn - kva_pages, PTRS_PER_PTE);
++	do {
++		kva_start_pfn = find_e820_area(kva_target_pfn<<PAGE_SHIFT,
++					max_low_pfn<<PAGE_SHIFT,
++					kva_pages<<PAGE_SHIFT,
++					PTRS_PER_PTE<<PAGE_SHIFT) >> PAGE_SHIFT;
++		kva_target_pfn -= PTRS_PER_PTE;
++	} while (kva_start_pfn == -1UL && kva_target_pfn > min_low_pfn);
++
++	if (kva_start_pfn == -1UL)
++		panic("Can not get kva space\n");
+ 
+ 	printk("kva_start_pfn ~ %ld find_max_low_pfn() ~ %ld\n",
+ 		kva_start_pfn, max_low_pfn);
