@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbYFDOCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbYFDONv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbYFDOCR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 10:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYFDOCD
+	id S1757071AbYFDONv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 10:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYFDONl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 10:02:03 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:47004 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753385AbYFDOCB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 10:02:01 -0400
-Message-ID: <4846A04F.1030909@grupopie.com>
-Date: Wed, 04 Jun 2008 15:01:51 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
+	Wed, 4 Jun 2008 10:13:41 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42124 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752659AbYFDONi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 10:13:38 -0400
+Date: Wed, 4 Jun 2008 16:13:37 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       marcel@holtmann.org, linux-kernel@vger.kernel.org,
+       anssi.hannula@gmail.com, Jiri Slaby <jslaby@suse.cz>
+Subject: Re: [PATCH 08/10] HID: move apple quirks
+In-Reply-To: <1210931362-18422-8-git-send-email-jirislaby@gmail.com>
+Message-ID: <Pine.LNX.4.64.0806041610240.10085@jikos.suse.cz>
+References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-2-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-3-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-4-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-7-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-8-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Keith Owens <kaos@ocs.com.au>
-Subject: Re: [RFC PATCH] drop support for KALLSYMS_EXTRA_PASS
-References: <20080603210732.GA6247@uranus.ravnborg.org>
-In-Reply-To: <20080603210732.GA6247@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> We have not seen any reports on inconsistent kallsysms data recently
-> as in the last one or two years. At least I do not recall these
-> and google had no hits in my searching.
-> 
-> So I suggest removing this as to simplify the final linking.
-> When doing "make allyesconfig" build this extra linking
-> takes considerably time (and I usually forgoet to turn it off).
+On Fri, 16 May 2008, Jiri Slaby wrote:
 
-I don't remember any recent (read: in the last few years) problems 
-either, so I guess this is ok.
 
-> In addition this patch removes the debug target: debug_kallsyms
+> +static int apple_probe(struct hid_device *hdev,
+> +		const struct hid_device_id *id)
+> +{
+> +	unsigned long quirks = id->driver_data;
+> +	struct apple_sc *asc;
+> +	int ret;
+> +
+> +	/* return something else or move to hid layer? device will reside
+> +	   allocated */
+> +	if (id->bus == BUS_USB && (id->driver_data & APPLE_IGNORE_MOUSE) &&
+> +			to_usb_interface(hdev->dev.parent)->cur_altsetting->
+> +			desc.bInterfaceProtocol == USB_INTERFACE_PROTOCOL_MOUSE)
+> +		return -ENODEV;
+> +
+> +	asc = kzalloc(sizeof(*asc), GFP_KERNEL);
+> +	if (asc == NULL) {
+> +		dev_err(&hdev->dev, "can't alloc apple descriptor\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	hid_set_drvdata(hdev, asc);
+> +
+> +	if (quirks & APPLE_HIDDEV)
+> +		hdev->quirks |= HID_QUIRK_HIDDEV;
+> +	if (quirks & APPLE_IGNORE_HIDINPUT)
+> +		hdev->quirks |= HID_QUIRK_IGNORE_HIDINPUT;
+> +
+> +	ret = hid_parse(hdev);
+> +	if (ret) {
+> +		dev_err(&hdev->dev, "parse failed\n");
+> +		goto err_free;
+> +	}
+> +
+> +	ret = hid_hw_start(hdev);
+> +	if (ret) {
+> +		dev_err(&hdev->dev, "hw start failed\n");
+> +		goto err_free;
+> +	}
+> +
+> +	return 0;
+> +err_free:
+> +	kfree(asc);
+> +	return ret;
+> +}
 
-This might be useful if changes in some binutils version creates new 
-problems for kallsyms, but it doesn't seem like a lot of work to just 
-send a reporter a patch to add this back if needed. Since there haven't 
-been any reports in a few years, I have no problems with this.
+Hi Jiri,
 
-Acked-by: Paulo Marques <pmarques@grupopie.com>
+you don't seem to set asc->quirks anywhere, but the rest of the code is 
+testing this flag. Is something like
+
+	asc->quirks = id->driver_data;
+
+missing in the _probe routine?
+
+Or am I just horribly overlooking something?
+
+Thanks,
 
 -- 
-Paulo Marques - www.grupopie.com
-
-"'thinking outside the box' works better if I know what's inside the box."
+Jiri Kosina
+SUSE Labs
