@@ -1,309 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbYFDVp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYFDVqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761623AbYFDVp5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 17:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYFDVps
+	id S1756241AbYFDVqq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 17:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbYFDVqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 17:45:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48758 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751498AbYFDVpr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 17:45:47 -0400
-Date: Wed, 4 Jun 2008 14:44:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       balajirrao@gmail.com, containers@lists.osdl.org, menage@google.com,
-       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl
-Subject: Re: [-mm] CPU controller statistics (v5)
-Message-Id: <20080604144408.be680056.akpm@linux-foundation.org>
-In-Reply-To: <20080603200515.GA25753@balbir.in.ibm.com>
-References: <20080603200515.GA25753@balbir.in.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 4 Jun 2008 17:46:38 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:40817 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbYFDVqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 17:46:37 -0400
+Date: Wed, 4 Jun 2008 23:46:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: [PATCH 1/2] kbuild: drop support for KALLSYMS_EXTRA_PASS
+Message-ID: <20080604214644.GB13032@uranus.ravnborg.org>
+References: <20080604214514.GA13032@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604214514.GA13032@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008 01:35:15 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>From 636b71590757772f8a0af2155ae1e6fa0c1f0856 Mon Sep 17 00:00:00 2001
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Wed, 4 Jun 2008 22:16:47 +0200
+Subject: [PATCH] kbuild: drop support for KALLSYMS_EXTRA_PASS
 
-> From: Balaji Rao <balajirrao@gmail.com>
-> 
-> This is a repost of Balaji's patches at
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/11/1791504
-> I've made changes to the format exported to user space. I've used
-> clock_t, since /proc/<pid>/stat uses the same format to export data.
-> 
-> I've run some basic tests to verify that the patches work.
-> 
-> Andrew could you please consider them for inclusion if there are no
-> objections to this patch. This patch helps fill a void in the controllers
-> we have w.r.t. statistics
-> 
-> The patch is against the latest git.
-> 
+We have not seen any reports on inconsistent kallsysms data recently
+as in the last one or two years. At least I do not recall these
+and google had no hits in my searching.
 
-That is not a changelog.  Please always include a (good) changelog with
-each iteration of a patch.
+Removing this to simplify the final linking.
+When doing "make allyesconfig" build this extra linking
+takes considerably time (and I usually forget to turn it off).
 
-Were all my previous comments addressed?  Most, it seems.
+In addition this patch removes the debug target: debug_kallsyms
 
-> 
-> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-> index e155aa7..60a25cb 100644
-> --- a/include/linux/cgroup.h
-> +++ b/include/linux/cgroup.h
-> @@ -293,6 +293,7 @@ int cgroup_is_descendant(const struct cgroup *cgrp);
->  struct cgroup_subsys {
->  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
->  						  struct cgroup *cgrp);
-> +	void (*initialize)(int early);
->  	void (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->  	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->  	int (*can_attach)(struct cgroup_subsys *ss,
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 15ac0e1..77569d7 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -2553,6 +2553,9 @@ int __init cgroup_init_early(void)
->  
->  		if (ss->early_init)
->  			cgroup_init_subsys(ss);
-> +
-> +		if (ss->initialize)
-> +			ss->initialize(1);
->  	}
->  	return 0;
->  }
-> @@ -2577,6 +2580,9 @@ int __init cgroup_init(void)
->  		struct cgroup_subsys *ss = subsys[i];
->  		if (!ss->early_init)
->  			cgroup_init_subsys(ss);
-> +
-> +		if (ss->initialize)
-> +			ss->initialize(0);
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Acked-by: Paulo Marques <pmarques@grupopie.com>
+Cc: Keith Owens <kaos@ocs.com.au>
+---
+ Makefile     |   38 ++------------------------------------
+ init/Kconfig |   12 ------------
+ 2 files changed, 2 insertions(+), 48 deletions(-)
 
-Can we avoid these tests?  By requiring that cgroup_subsys.initialize()
-always be non-zero?  It might make sense, and it might not...
+diff --git a/Makefile b/Makefile
+index 8db70fe..911cb90 100644
+--- a/Makefile
++++ b/Makefile
+@@ -702,7 +702,6 @@ define rule_vmlinux__
+ 		rm -f $@;                                                    \
+ 		/bin/false;                                                  \
+ 	fi;
+-	$(verify_kallsyms)
+ endef
+ 
+ 
+@@ -719,28 +718,8 @@ ifdef CONFIG_KALLSYMS
+ # o The correct .tmp_kallsyms2.o is linked into the final vmlinux.
+ # o Verify that the System.map from vmlinux matches the map from
+ #   .tmp_vmlinux2, just in case we did not generate kallsyms correctly.
+-# o If CONFIG_KALLSYMS_EXTRA_PASS is set, do an extra pass using
+-#   .tmp_vmlinux3 and .tmp_kallsyms3.o.  This is only meant as a
+-#   temporary bypass to allow the kernel to be built while the
+-#   maintainers work out what went wrong with kallsyms.
+ 
+-ifdef CONFIG_KALLSYMS_EXTRA_PASS
+-last_kallsyms := 3
+-else
+-last_kallsyms := 2
+-endif
+-
+-kallsyms.o := .tmp_kallsyms$(last_kallsyms).o
+-
+-define verify_kallsyms
+-	$(Q)$(if $($(quiet)cmd_sysmap),                                      \
+-	  echo '  $($(quiet)cmd_sysmap)  .tmp_System.map' &&)                \
+-	  $(cmd_sysmap) .tmp_vmlinux$(last_kallsyms) .tmp_System.map
+-	$(Q)cmp -s System.map .tmp_System.map ||                             \
+-		(echo Inconsistent kallsyms data;                            \
+-		 echo Try setting CONFIG_KALLSYMS_EXTRA_PASS;                \
+-		 rm .tmp_kallsyms* ; /bin/false )
+-endef
++kallsyms.o := .tmp_kallsyms2.o
+ 
+ # Update vmlinux version before link
+ # Use + in front of this rule to silent warning about make -j1
+@@ -758,7 +737,7 @@ quiet_cmd_kallsyms = KSYM    $@
+       cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) \
+                      $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) > $@
+ 
+-.tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
++.tmp_kallsyms1.o .tmp_kallsyms2.o: %.o: %.S scripts FORCE
+ 	$(call if_changed_dep,as_o_S)
+ 
+ .tmp_kallsyms%.S: .tmp_vmlinux% $(KALLSYMS)
+@@ -771,22 +750,9 @@ quiet_cmd_kallsyms = KSYM    $@
+ .tmp_vmlinux2: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms1.o FORCE
+ 	$(call if_changed,vmlinux__)
+ 
+-.tmp_vmlinux3: $(vmlinux-lds) $(vmlinux-all) .tmp_kallsyms2.o FORCE
+-	$(call if_changed,vmlinux__)
+-
+ # Needs to visit scripts/ before $(KALLSYMS) can be used.
+ $(KALLSYMS): scripts ;
+ 
+-# Generate some data for debugging strange kallsyms problems
+-debug_kallsyms: .tmp_map$(last_kallsyms)
+-
+-.tmp_map%: .tmp_vmlinux% FORCE
+-	($(OBJDUMP) -h $< | $(AWK) '/^ +[0-9]/{print $$4 " 0 " $$2}'; $(NM) $<) | sort > $@
+-
+-.tmp_map3: .tmp_map2
+-
+-.tmp_map2: .tmp_map1
+-
+ endif # ifdef CONFIG_KALLSYMS
+ 
+ # Do modpost on a prelinked vmlinux. The finally linked vmlinux has
+diff --git a/init/Kconfig b/init/Kconfig
+index 6199d11..5fc1067 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -588,18 +588,6 @@ config KALLSYMS_ALL
+ 
+ 	   Say N.
+ 
+-config KALLSYMS_EXTRA_PASS
+-	bool "Do an extra kallsyms pass"
+-	depends on KALLSYMS
+-	help
+-	   If kallsyms is not working correctly, the build will fail with
+-	   inconsistent kallsyms data.  If that occurs, log a bug report and
+-	   turn on KALLSYMS_EXTRA_PASS which should result in a stable build.
+-	   Always say N here unless you find a bug in kallsyms, which must be
+-	   reported.  KALLSYMS_EXTRA_PASS is only a temporary workaround while
+-	   you wait for kallsyms to be fixed.
+-
+-
+ config HOTPLUG
+ 	bool "Support for hot-pluggable devices" if EMBEDDED
+ 	default y
+-- 
+1.5.4.1.143.ge7e51
 
->  	}
->  
->  	/* Add init_css_set to the hash table */
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index bfb8ad8..d6df3d3 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -245,11 +245,32 @@ static DEFINE_MUTEX(sched_domains_mutex);
->  struct cfs_rq;
->  
->  static LIST_HEAD(task_groups);
-> +#ifdef CONFIG_CGROUP_SCHED
-> +#define CPU_CGROUP_STAT_THRESHOLD (1 << 30)
-> +enum cpu_cgroup_stat_index {
-> +	CPU_CGROUP_STAT_UTIME, /* Usertime of the task group */
-> +	CPU_CGROUP_STAT_STIME, /* Kerneltime of the task group */
-> +
-> +	CPU_CGROUP_STAT_NSTATS,
-> +};
-> +
-> +struct cpu_cgroup_stat {
-> +	struct percpu_counter cpustat[CPU_CGROUP_STAT_NSTATS];
-> +};
-> +
-> +static void __cpu_cgroup_stat_add(struct cpu_cgroup_stat *stat,
-> +		enum cpu_cgroup_stat_index idx, s64 val)
-> +{
-> +	if (stat)
-> +		percpu_counter_add(&stat->cpustat[idx], val);
-> +}
-> +#endif
->  
->  /* task group related information */
->  struct task_group {
->  #ifdef CONFIG_CGROUP_SCHED
->  	struct cgroup_subsys_state css;
-> +	struct cpu_cgroup_stat *stat;
->  #endif
->  
->  #ifdef CONFIG_FAIR_GROUP_SCHED
-> @@ -3885,6 +3906,16 @@ void account_user_time(struct task_struct *p, cputime_t cputime)
->  		cpustat->nice = cputime64_add(cpustat->nice, tmp);
->  	else
->  		cpustat->user = cputime64_add(cpustat->user, tmp);
-> +
-> +       /* Charge the task's group */
-> +#ifdef CONFIG_CGROUP_SCHED
-> +	{
-> +		struct task_group *tg;
-> +		tg = task_group(p);
-> +		__cpu_cgroup_stat_add(tg->stat, CPU_CGROUP_STAT_UTIME,
-> +				cputime_to_msecs(cputime) * NSEC_PER_MSEC);
-> +	}
-> +#endif
->  }
->  
->  /*
-> @@ -3942,8 +3973,17 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
->  		cpustat->irq = cputime64_add(cpustat->irq, tmp);
->  	else if (softirq_count())
->  		cpustat->softirq = cputime64_add(cpustat->softirq, tmp);
-> -	else if (p != rq->idle)
-> +	else if (p != rq->idle) {
->  		cpustat->system = cputime64_add(cpustat->system, tmp);
-> +#ifdef CONFIG_CGROUP_SCHED
-> +		{
-> +			struct task_group *tg;
-> +			tg = task_group(p);
-> +			__cpu_cgroup_stat_add(tg->stat, CPU_CGROUP_STAT_STIME,
-> +				cputime_to_msecs(cputime) * NSEC_PER_MSEC);
-> +		}
-> +#endif
-
-The above two almost-identical code sequences should, I suggest, be
-broken out into a standalone helper function, which has two
-implementations, the CONFIG_CGROUP_SCHED=n version of which is a
-do-nothing stub, in the usual fashion.
-
-I suggested this last time.
-
-> +	}
->  	else if (atomic_read(&rq->nr_iowait) > 0)
->  		cpustat->iowait = cputime64_add(cpustat->iowait, tmp);
->  	else
-> @@ -8325,6 +8365,24 @@ unsigned long sched_group_shares(struct task_group *tg)
->  }
->  #endif
->  
-> +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
-> +		enum cpu_cgroup_stat_index idx)
-> +{
-> +	if (stat)
-> +		return nsec_to_clock_t(
-> +				percpu_counter_read(&stat->cpustat[idx]));
-> +
-> +	return 0;
-> +}
-
-ick at the code layout.  How about this:
-
-	if (!stat)
-		return 0;
-	return nsec_to_clock_t(percpu_counter_read(&stat->cpustat[idx]));
-
-?
-
-> +static const struct cpu_cgroup_stat_desc {
-> +	const char *msg;
-> +	u64 unit;
-> +} cpu_cgroup_stat_desc[] = {
-> +	[CPU_CGROUP_STAT_UTIME] = { "utime", 1, },
-> +	[CPU_CGROUP_STAT_STIME] = { "stime", 1, },
-> +};
-> +
->  #ifdef CONFIG_RT_GROUP_SCHED
->  /*
->   * Ensure that the real time constraints are schedulable.
-> @@ -8551,10 +8609,41 @@ static inline struct task_group *cgroup_tg(struct cgroup *cgrp)
->  			    struct task_group, css);
->  }
->  
-> +static int cpu_cgroup_stats_show(struct cgroup *cgrp, struct cftype *cft,
-> +		struct cgroup_map_cb *cb)
-> +{
-> +	struct task_group *tg = cgroup_tg(cgrp);
-> +	struct cpu_cgroup_stat *stat = tg->stat;
-> +	int i;
-> +	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++) {
-
-Please prefer to put a blank line between end-of-locals and
-start-of-code.  It does make the code somewhat easier to read.
-
-
-> +		s64 val;
-> +		val = cpu_cgroup_read_stat(stat, i);
-> +		val *= cpu_cgroup_stat_desc[i].unit;
-> +		cb->fill(cb, cpu_cgroup_stat_desc[i].msg, val);
-> +	}
-> +	return 0;
-> +}
-> +
-> +static void cpu_cgroup_initialize(int early)
-> +{
-> +	int i;
-> +	struct cpu_cgroup_stat *stat;
-> +
-> +	if (!early) {
-
-like that.
-
-> +		stat = kmalloc(sizeof(struct cpu_cgroup_stat)
-> +				, GFP_KERNEL);
-> +		for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
-> +			percpu_counter_init(
-> +					&stat->cpustat[i], 0);
-
-Suppose the kmalloc failed?
-
-> +		init_task_group.stat = stat;
-> +	}
-> +}
-
-more icky layout, and what's that comma doing there?
-
-Again, please use a bit of thought rather than blindly whacking in
-newlines everywhere.
-
-static void cpu_cgroup_initialize(int early)
-{
-	int i;
-	struct cpu_cgroup_stat *stat;
-
-	if (early)
-		return;
-
-	stat = kmalloc(sizeof(struct cpu_cgroup_stat), GFP_KERNEL);
-	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
-		percpu_counter_init(&stat->cpustat[i], 0);
-	init_task_group.stat = stat;
-}
-
-is better, yes?
-
-
-Also, if this code is likely to be executed with any frequency then the
-test of `early' could be inlined:
-
-static inline void cpu_cgroup_initialize(int early)
-{
-	if (unlikely(!early))
-		__cpu_cgroup_initialize();
-}
-
-yes?
-
-
->  static struct cgroup_subsys_state *
->  cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
->  {
->  	struct task_group *tg, *parent;
-> +	int i;
->  
->  	if (!cgrp->parent) {
->  		/* This is early initialization for the top cgroup */
-> @@ -8567,6 +8656,10 @@ cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
->  	if (IS_ERR(tg))
->  		return ERR_PTR(-ENOMEM);
->  
-> +	tg->stat = kmalloc(sizeof(struct cpu_cgroup_stat), GFP_KERNEL);
-> +	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
-> +		percpu_counter_init(&tg->stat->cpustat[i], 0);
-
-Which will crash the machine if the kmalloc failed.
-
-
-
-c'mon guys, that wasn't a great effort.
