@@ -1,217 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYFDCik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbYFDCls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbYFDCik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 22:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbYFDCiT
+	id S1755992AbYFDCls (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 22:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYFDClk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 22:38:19 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:27558 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757633AbYFDCiQ (ORCPT
+	Tue, 3 Jun 2008 22:41:40 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:56114 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbYFDClj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 22:38:16 -0400
-Date: Tue, 3 Jun 2008 19:38:25 -0700
-From: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [PATCH 1/4] per-task-delay-accounting: add memory reclaim delay
-Message-Id: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Jun 2008 22:41:39 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Olaf Dabrunz <od@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jon Masters <jonathan@jonmasters.org>,
+       Stefan Assmann <sassmann@suse.de>, linux-kernel@vger.kernel.org
+References: <12124107071847-git-send-email-od@suse.de>
+Date: Tue, 03 Jun 2008 19:35:05 -0700
+In-Reply-To: <12124107071847-git-send-email-od@suse.de> (Olaf Dabrunz's
+	message of "Mon, 2 Jun 2008 14:45:00 +0200")
+Message-ID: <m1tzgauduu.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Olaf Dabrunz <od@suse.de>
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0740]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes, application responses become bad under heavy memory load.
-Applications take a bit time to reclaim memory.
-The statistics, how long memory reclaim takes, will be useful to
-measure memory usage.
+Olaf Dabrunz <od@suse.de> writes:
 
-This patch adds accounting memory reclaim to per-task-delay-accounting
-for accounting the time of try_to_free_pages().
+> These patches are against linux-2.6-tip, auto-x86-next.
+>
+> When IRQ lines on secondary or higher IO-APICs are masked (as done by
+> RT and others), many chipsets redirect IRQs on this line to the PIC, and
+> thereby regularly to the first IO-APIC in the system. This causes
+> spurious interrupts and can lead to disabled IRQ lines.
 
-<i.e>
+Sounds like good problem tracking.
 
-- When System is under low memory load,
-  memory reclaim may not occur.
+> Disabling this "boot interrupt" (as it is mostly used to supply all
+> IRQs to the legacy PIC during boot) is chipset-specific, and not
+> possible for all chips. This patchset disables the boot interrupt on
+> chipsets where this is possible and where we know how to do it.
 
-$ free
-             total       used       free     shared    buffers     cached
-Mem:       8197800    1577300    6620500          0       4808    1516724
--/+ buffers/cache:      55768    8142032
-Swap:     16386292          0   16386292
+I know to work around a similar issue we disable the interrupt inputs
+on the PIC.  Is that not enough?  In particular what is enabled and
+what is disabled when these interrupts are coming in.
 
-$ vmstat 1
-procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
- 0  0      0 5069748  10612 3014060    0    0     0     0    3   26  0  0 100  0
- 0  0      0 5069748  10612 3014060    0    0     0     0    4   22  0  0 100  0
- 0  0      0 5069748  10612 3014060    0    0     0     0    3   18  0  0 100  0
+> When disabling the boot interrupt is not possible, the patches tell the
+> IRQ code to always use the redirected interrupt line (on the first
+> IO-APIC) instead of the "original" line on the secondary (tertiary ...)
+> IO-APIC. The original line remains masked, and IRQs always appear on
+> the boot interrupt line on the first IO-APIC instead.
 
-Measure the time of tar command.
+In general we should not be disabling interrupts, especially in the
+mainline kernel.  Artificially increasing interrupt sharing just so
+you can be certain of disabling the interrupt line seems to be the
+wrong approach.
 
-$ ls -s test.dat
-1501472 test.dat
+Much better would be to get everything off of the shared boot
+interrupt line, so you can disable that, if that is possible.
 
-$ time tar cvf test.tar test.dat
-real    0m13.388s
-user    0m0.116s
-sys     0m5.304s
+For the mainstream kernel I expect we can even teach the drivers
+not to call disable_irq.  As a function of last resort to deal
+with screaming irqs, disable_irq seems reasonable.  Using disable_irq
+on a regular basis appears to be asking for a trouble (as you have
+found).
 
-$ ./delayget -d -p <pid>
-CPU             count     real total  virtual total    delay total
-                  428     5528345500     5477116080       62749891
-IO              count    delay total
-                  338     8078977189
-SWAP            count    delay total
-                    0              0
-RECLAIM         count    delay total
-                    0              0
+As for the question about MSI.  Good MSI implementations have a mask
+bit so we should be able to disable those reliably.  For other MSI
+implementations we disable both the mask bit and the pci_intx
+capability.  So there should be no way for the irq to leave the
+device.  But it hardware is strange sometimes.
 
-- When system is under heavy memory load
-  memory reclaim may occur.
+That said have you tried clearing the PCI_COMMAND_INTX_DISABLE bit
+of the PCI_COMMAND register to mask the boot interrupts?  I expect
+that would work on quite a lot of modern hardware.
 
-$ vmstat 1
-procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
- 0  0 7159032  49724   1812   3012    0    0     0     0    3   24  0  0 100  0
- 0  0 7159032  49724   1812   3012    0    0     0     0    4   24  0  0 100  0
- 0  0 7159032  49848   1812   3012    0    0     0     0    3   22  0  0 100  0
-
-In this case, one process uses more 8G memory 
-by execution of malloc() and memset().
-
-
-$ time tar cvf test.tar test.dat
-real    1m38.563s        <-  increased by 85 sec
-user    0m0.140s
-sys     0m7.060s
-
-$ ./delayget -d -p <pid>
-CPU             count     real total  virtual total    delay total
-                 9021     7140446250     7315277975      923201824
-IO              count    delay total
-                 8965    90466349669
-SWAP            count    delay total
-                    3       21036367
-RECLAIM         count    delay total
-                  740    61011951153
-
-In the later case, the value of RECLAIM is increasing.
-So, taskstats can show how much memory reclaim influences TAT.
-
-
-Signed-off-by: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
----
- include/linux/delayacct.h |   19 +++++++++++++++++++
- include/linux/sched.h     |    4 ++++
- kernel/delayacct.c        |   13 +++++++++++++
- mm/page_alloc.c           |    3 +++
- 4 files changed, 39 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/delayacct.h b/include/linux/delayacct.h
-index ab94bc0..f352f06 100644
---- a/include/linux/delayacct.h
-+++ b/include/linux/delayacct.h
-@@ -39,6 +39,8 @@ extern void __delayacct_blkio_start(void);
- extern void __delayacct_blkio_end(void);
- extern int __delayacct_add_tsk(struct taskstats *, struct task_struct *);
- extern __u64 __delayacct_blkio_ticks(struct task_struct *);
-+extern void __delayacct_freepages_start(void);
-+extern void __delayacct_freepages_end(void);
-
- static inline int delayacct_is_task_waiting_on_io(struct task_struct *p)
- {
-@@ -107,6 +109,18 @@ static inline __u64 delayacct_blkio_ticks(struct task_struct *tsk)
- 	return 0;
- }
-
-+static inline void delayacct_freepages_start(void)
-+{
-+	if (current->delays)
-+		__delayacct_freepages_start();
-+}
-+
-+static inline void delayacct_freepages_end(void)
-+{
-+	if (current->delays)
-+		__delayacct_freepages_end();
-+}
-+
- #else
- static inline void delayacct_set_flag(int flag)
- {}
-@@ -129,6 +143,11 @@ static inline __u64 delayacct_blkio_ticks(struct task_struct *tsk)
- { return 0; }
- static inline int delayacct_is_task_waiting_on_io(struct task_struct *p)
- { return 0; }
-+static inline void delayacct_freepages_start(void)
-+{}
-+static inline void delayacct_freepages_end(void)
-+{}
-+
- #endif /* CONFIG_TASK_DELAY_ACCT */
-
- #endif
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3e05e54..e6c557c 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -666,6 +666,10 @@ struct task_delay_info {
- 				/* io operations performed */
- 	u32 swapin_count;	/* total count of the number of swapin block */
- 				/* io operations performed */
-+
-+	struct timespec freepages_start, freepages_end;
-+	u64 freepages_delay;	/* wait for memory reclaim */
-+	u32 freepages_count;	/* total count of memory reclaim */
- };
- #endif	/* CONFIG_TASK_DELAY_ACCT */
-
-diff --git a/kernel/delayacct.c b/kernel/delayacct.c
-index 10e43fd..84b6782 100644
---- a/kernel/delayacct.c
-+++ b/kernel/delayacct.c
-@@ -165,3 +165,16 @@ __u64 __delayacct_blkio_ticks(struct task_struct *tsk)
- 	return ret;
- }
-
-+void __delayacct_freepages_start(void)
-+{
-+	delayacct_start(&current->delays->freepages_start);
-+}
-+
-+void __delayacct_freepages_end(void)
-+{
-+	delayacct_end(&current->delays->freepages_start,
-+			&current->delays->freepages_end,
-+			&current->delays->freepages_delay,
-+			&current->delays->freepages_count);
-+}
-+
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 8e83f02..8b4e606 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -46,6 +46,7 @@
- #include <linux/page-isolation.h>
- #include <linux/memcontrol.h>
- #include <linux/debugobjects.h>
-+#include <linux/delayacct.h>
-
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -1571,7 +1572,9 @@ nofail_alloc:
- 	reclaim_state.reclaimed_slab = 0;
- 	p->reclaim_state = &reclaim_state;
-
-+	delayacct_freepages_start();
- 	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
-+	delayacct_freepages_end();
-
- 	p->reclaim_state = NULL;
- 	p->flags &= ~PF_MEMALLOC;
--- 
-1.5.0.6
+Eric
