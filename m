@@ -1,94 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbYFDPsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYFDPyD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760905AbYFDPsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbYFDPsi
+	id S1758907AbYFDPyD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:54:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYFDPxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:48:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47509 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756572AbYFDPsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:48:36 -0400
-Date: Wed, 4 Jun 2008 11:41:37 -0400
-From: Dave Jones <davej@redhat.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.25 md oops during boot.
-Message-ID: <20080604154137.GA26157@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Neil Brown <neilb@suse.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	Wed, 4 Jun 2008 11:53:54 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64038 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754883AbYFDPxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:53:53 -0400
+Date: Wed, 4 Jun 2008 16:52:39 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Stefan Assmann <sassmann@suse.de>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jon Masters <jonathan@jonmasters.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+In-Reply-To: <48467DA7.9030309@suse.de>
+Message-ID: <Pine.LNX.4.55.0806041555370.28685@cliff.in.clinika.pl>
+References: <12124107071847-git-send-email-od@suse.de> <m1tzgauduu.fsf@frodo.ebiederm.org>
+ <4846651F.4070802@suse.de> <m1ve0pqy06.fsf@frodo.ebiederm.org>
+ <48467DA7.9030309@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Neil,
- Here's an odd one.
-https://bugzilla.redhat.com/show_bug.cgi?id=442204
+On Wed, 4 Jun 2008, Stefan Assmann wrote:
 
-Slightly old (.25-rc8-git7), but I don't recall anything changing between
-then and .25 final that could explain this.
+> You're right, that behavior is more appropriate for RT, where we see
+> these boot interrupts because of the way interrupts are handled there.
+> We're rewriting the patches to use a parameter like pci=ioapicreroute to
+> trigger this only if the parameter is specified (for the mainstream
+> kernel).
 
-	Dave
+ Well, this is clear these chipsets are broken beyond imagination,
+negating some 15 years of I/O APIC compatibility where masking an input in
+its redirection table is expected not to have any side effects.  They
+should have used a separate bit for the legacy INTx redirection.  That has
+been fixed in hardware though and there is nothing we can do about it at
+this stage.  Hire competent hardware designers the next time.
 
-BUG: unable to handle kernel NULL pointer dereference at 00000020
-IP: [<c04bbb65>] sysfs_addrm_start+0x21/0x7d
-Oops: 0000 [#1] SMP 
-Modules linked in: e1000(+) i2c_piix4 i2c_core sg ac button sr_mod cdrom
-ata_piix libata dm_snapshot dm_zero dm_mirror dm_mod mptspi mptscsih mptbase
-scsi_transport_spi sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd
-[last unloaded: scsi_wait_scan]
+ However I do not feel adding a command line parameter for each of such
+workarounds is the right way to do it.  We end up with an infinite number
+of obscure options nobody or hardly anybody really understands.  We should
+be removing them rather than adding new ones.
 
-Pid: 742, comm: mdadm Not tainted (2.6.25-0.218.rc8.git7.fc9.i686 #1)
-EIP: 0060:[<c04bbb65>] EFLAGS: 00010246 CPU: 0
-EIP is at sysfs_addrm_start+0x21/0x7d
-EAX: c04bbc23 EBX: 00000000 ECX: 00000000 EDX: 00000062
-ESI: f6ecdc84 EDI: f6ecdc94 EBP: f6ecdc78 ESP: f6ecdc6c
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process mdadm (pid: 742, ti=f6ecd000 task=f6e22e80 task.ti=f6ecd000)
-Stack: f6ecdc84 f6e75bd0 fffffff4 f6ecdca0 c04bbfb7 00000000 00000000 00000000 
-       00000000 00000000 f7853dc4 fffffffe f7af6824 f6ecdcb4 c04bc01c f6ecdcac 
-       c04f08f2 f7853dc4 f6ecdcd0 c04f09ec f7af6824 f6ecdcd0 00000000 f7853dc4 
-Call Trace:
- [<c04bbfb7>] ? create_dir+0x3a/0x72
- [<c04bc01c>] ? sysfs_create_dir+0x2d/0x41
- [<c04f08f2>] ? kobject_get+0x12/0x17
- [<c04f09ec>] ? kobject_add_internal+0xa4/0x145
- [<c04f0b21>] ? kobject_add_varg+0x35/0x41
- [<c04f0b92>] ? kobject_add+0x43/0x49
- [<c05948aa>] ? bind_rdev_to_array+0x124/0x1ab
- [<c04cf900>] ? task_has_capability+0x47/0x76
- [<c04f4f94>] ? copy_from_user+0x39/0x121
- [<c05994d1>] ? md_ioctl+0xf75/0x183b
- [<c04cfde2>] ? inode_has_perm+0x5b/0x65
- [<c0490ce5>] ? d_free+0x3b/0x4d
- [<c0492094>] ? dput+0x34/0xee
- [<c04efb51>] ? _atomic_dec_and_lock+0x29/0x44
- [<c04958b8>] ? mntput_no_expire+0x16/0x69
- [<c0488796>] ? path_put+0x20/0x23
- [<c048ab1b>] ? __link_path_walk+0xce7/0xcfc
- [<c04e831d>] ? blkdev_driver_ioctl+0x49/0x5b
- [<c04e8ab0>] ? blkdev_ioctl+0x781/0x79d
- [<c04d06a8>] ? selinux_file_free_security+0x14/0x16
- [<c04cfde2>] ? inode_has_perm+0x5b/0x65
- [<c04d01b9>] ? file_has_perm+0x7c/0x85
- [<c04a241b>] ? block_ioctl+0x16/0x1b
- [<c04a2405>] ? block_ioctl+0x0/0x1b
- [<c048c99e>] ? vfs_ioctl+0x22/0x69
- [<c048cc1e>] ? do_vfs_ioctl+0x239/0x24c
- [<c04d034f>] ? selinux_file_ioctl+0xa8/0xab
- [<c048cc71>] ? sys_ioctl+0x40/0x5b
- [<c0405cf6>] ? syscall_call+0x7/0xb
- =======================
-Code: 89 31 8d 65 f4 5b 5e 5f 5d c3 55 b9 04 00 00 00 89 e5 57 89 c7 56 89 c6 53
-31 c0 89 d3 f3 ab b8 34 fc 71 c0 89 16 e8 1f e2 16 00 <8b> 53 20 b9 f0 b7 4b c0
-a1 88 f4 83 c0 53 e8 43 71 fd ff 5f 85 
-EIP: [<c04bbb65>] sysfs_addrm_start+0x21/0x7d SS:ESP 0068:f6ecdc6c
----[ end trace ca143223eefdc828 ]---
+ What's the reasoning behind the option in this case?  As I understand 
+there are two cases possible:
 
+1. Secondary, etc. I/O APIC inputs are not masked under any circumstances.  
+   No legacy INTx redirection happens, nothing to be done.
 
--- 
-http://www.codemonkey.org.uk
+2. Secondary, etc. I/O APIC inputs are to be masked from time to time.  
+   That would cause legacy INTx redirection for the affected chipsets in 
+   situations where an interrupt arrives at a masked I/O APIC input.  This 
+   interrupt is delivered to an input of the primary I/O APIC which cannot 
+   be masked because of other devices wired to it.
+
+   OK -- that means the interrupt is delivered anyway (and perhaps 
+   discarded in the handler, but that does not matter here), so why to do
+   the rerouting in the first place?  Because we could equally well keep 
+   the original secondary, etc. I/O APIC input for the interrupt unmasked 
+   (if an affected chipset is discovered) to the very same effect, yet 
+   avoid all the hassle and unnecessary sharing.  It could be handled very 
+   easily by selecting a different "interrupt controller" setup for the
+   affected I/O APICs.
+
+Either way I fail to see a reason not to this automatically -- I cannot
+imagine a sane user to be able to decide whether to use the option or not
+in this case.
+
+ That's one.  Second -- I have had a look at the relevant chipset
+documentation and I fail to see how INTx messages received over PCI
+Express are actually converted to interrupt signals.  I gather they are
+interpreted by the MCH and posted to the ICH "somehow".  What does that
+"somehow" look like?  Does the MCH assert PIRQ lines of the ICH? -- but I
+fail to see any available outputs in the MCH that could be used for this
+purpose.  SERIRQ is obviously not used, because it is not implemented in
+the MCH and PCI messages I am assuming are not used either as they are
+edge-triggered and therefore preclude sharing and as such could be simply
+masked out in the primary I/O APIC permanently.
+
+ Knowing this could help understanding the problem better.
+
+  Maciej
