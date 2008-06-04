@@ -1,84 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbYFDSER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbYFDSGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761188AbYFDSER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbYFDSEG
+	id S1761416AbYFDSGy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbYFDSGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:04:06 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41042
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754504AbYFDSEF (ORCPT
+	Wed, 4 Jun 2008 14:06:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44983 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755116AbYFDSGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:04:05 -0400
-X-Greylist: delayed 687 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jun 2008 14:04:03 EDT
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Adrian Bunk <adrian.bunk@movial.fi>
-Subject: Re: [PATCH] console - Add configurable support for console charset translation
-Date: Wed, 4 Jun 2008 12:51:42 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Tim Bird <tim.bird@am.sony.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-References: <48447615.5050806@am.sony.com> <20080604103353.GC27335@cs181133002.pp.htv.fi>
-In-Reply-To: <20080604103353.GC27335@cs181133002.pp.htv.fi>
+	Wed, 4 Jun 2008 14:06:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=IXQv0MJJLtP2izbr3yJ9wrOBSxpX0bFZorXWDcZN7f1dqJPbCIIBJ6eWbSCirp9LR
+	lKz/jh9VD7iAoZdXuKbkw==
+Message-ID: <da824cf30806041106p1de2355fg38594fcb9dcbf203@mail.gmail.com>
+Date: Wed, 4 Jun 2008 11:06:15 -0700
+From: "Grant Grundler" <grundler@google.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+Cc: linux-kernel@vger.kernel.org, mgross@linux.intel.com,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806041251.43432.rob@landley.net>
+References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 June 2008 05:33:53 Adrian Bunk wrote:
-> Does the linux-tiny approach of adding a kconfig variable for each 5kB
-> of code actually make sense? I'm asking since an exploding amount of
-> kconfig variables and their interdependencies have a not so small
-> maintainance impact in the long term.
+On Wed, Jun 4, 2008 at 7:47 AM, FUJITA Tomonori
+<fujita.tomonori@lab.ntt.co.jp> wrote:
+...
+> Now I try to fix Intel IOMMU code, the free space management
+> algorithm.
+>
+> The major difference between Intel IOMMU code and the others is Intel
+> IOMMU code uses Red Black tree to manage free space while the others
+> use bitmap (swiotlb is the only exception).
+>
+> The Red Black tree method consumes less memory than the bitmap method,
+> but it incurs more overheads (the RB tree method needs to walk through
+> the tree, allocates a new item, and insert it every time it maps an
+> I/O address). Intel IOMMU (and IOMMUs for virtualization) needs
+> multiple IOMMU address spaces. That's why the Red Black tree method is
+> chosen, I guess.
 
-Complexity is a cost, you have to get good bang for the buck when you spend 
-it.
+It's possible to split up one flat address space and share the IOMMU
+among several users. Each user gets her own segment of bitmap and
+corresponding IO Pdir. So I don't see allocation policy as a strong reason
+to use Red/Black Tree.
 
-> And I'm wondering whether it's the best approach for reaching
-> measurable results.
+I suspect R/B tree was chosen becuase they expected a host VM to allocate
+one large "static" entry for a guest OS and the guest would manage that range
+itself. R/B Tree seems like a very efficient way to handle that from the host
+VM point of view.
 
-When I first started stripping down systems to make embedded masquerading 
-routers back in the late 90's (before linksys came out), I started with a Red 
-Hat install and removed lots and lots of packages.  That's the approach we're 
-taking today, and I can say from experience that it's not sustainable.
+> Half a year ago, I tried to convert POWER IOMMU code to use the Red
+> Black method and saw performance drop:
+>
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg00650.html
+>
+> So I tried to convert Intel IOMMU code to use the bitmap method to see
+> how much I can get.
+>
+> I didn't see noticable performance differences with 1GbE. So I tried
+> the modified driver of a SCSI HBA that just does memory accesses to
+> emulate the performances of SSD disk drives, 10GbE, Infiniband, etc.
 
-I then wandered to a Linux From Scratch approach, building a system that had 
-nothing in it but what I wanted.  Starting from zero and adding stuff, rather 
-than starting from Mt. Crapmore and removing things until the shovel broke.
+You can easily emulate SSD drives by doing sequential 4K reads
+from a normal SATA HD. That should result in ~7-8K IOPS since the disk
+will recognize the sequential stream and read ahead. SAS/SCSI/FC will
+probably work the same way with different IOP rates.
 
-Someday I want to do the same for the Linux kernel.  When I started building 
-systems instead of carving them out of blocks of distro, I started with 
-a "hello world" root filesystem, and I want to make a "hello world" kernel.  
-Start with just the boot code that does the jump to C code, only instead of 
-start_kernel() in init/main.c have it call a hello_world() function that 
-prints "hello world" to the console using the early_printk logic, then calls 
-HLT.  And does _nothing_else_.  Then add stuff back one chunk at a time, 
-sstarting with memory management, then the scheduler and process stuff, then 
-the vfs, and so on.  So I know what all the bits do, and how big and 
-complicated they are.  And I can document the lot of it as I go.
+> I got the following results with one thread issuing 1KB I/Os:
+>
+>                    IOPS (I/O per second)
+> IOMMU disabled         145253.1 (1.000)
+> RB tree (mainline)     118313.0 (0.814)
+> Bitmap                 128954.1 (0.887)
 
-Unfortunately, as a learning experience, I estimate this would take me about a 
-year.  And I haven't got a spare year on me at the moment.  But it remains 
-prominently on my todo list, if I decide to start another major project.  
-(Maybe after I get a 1.0 release of FWL out.)
+Just to make this clear, this is a 10% performance difference.
 
-> My gut feeling is that the influence of this kind of linux-tiny patches
-> is hardly noticably compared to the overall code size development, but
-> if you have numbers that prove me wrong just point me to them and I'll
-> stand corrected.
+But a second metric is more telling: CPU utilization.
+How much time was spent in the IOMMU code for each
+implementation with the same workload?
 
-The whackamole approach is never going to turn Ubuntu into Damn Small Linux, 
-and it ignores the needs of the people who don't want the /proc hairball but 
-_do_ want a ps that works.
+This isn't a demand for that information but just a request
+to measure that in any future benchmarking.
+oprofile or perfmon2 are the best tools to determine that.
 
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+
+> I've attached the patch to modify Intel IOMMU code to use the bitmap
+> method but I have no intention of arguing that Intel IOMMU code
+> consumes more memory for better performance. :) I want to do more
+> performance tests with 10GbE (probably, I have to wait for a server
+> box having VT-d, which is not available on the market now).
+
+
+> As I said, what I want to do now is to make Intel IOMMU code respect
+> drivers' DMA alignment. Well, it's easier to do that if Intel IOMMU
+> uses the bitmap method since I can simply convert the IOMMU code to
+> use lib/iommu-helper but I can modify the RB tree method too.
+
+Just as important as the allocation data structure is the allocation policy.
+The allocation policy will perform best if it matches the IO TLB
+replacement implemented in the IOMMU HW. Thrashing the IO TLB
+by allocating aliases to competing streams will hurt perf as well.
+Obviously a single benchmark is unlikely to detect this.
+
+> I'm just interested in other people's opinions on IOMMU
+> implementations, performances, possible future changes for performance
+> improvement, etc.
+>
+> For further information:
+>
+> LSF'08 "Storage Track" summary by Grant Grundler:
+> http://iou.parisc-linux.org/lsf2008/SUMMARY-Storage.txt
+>
+> My LSF'08 slides:
+> http://iou.parisc-linux.org/lsf2008/IO-DMA_Representations-fujita_tomonori.pdf
+
+I personally found this to be one of the more interesting talks :)
+Excellent work!
+
+
+> Tis patch is against the latst git tree (note that it just converts
+> Intel IOMMU code to use the bitmap. It doesn't make it respect
+> drivers' DMA alignment yet).
+...
+
+
+> diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+> index f941f60..41ad545 100644
+> --- a/drivers/pci/dmar.c
+> +++ b/drivers/pci/dmar.c
+> @@ -26,7 +26,6 @@
+>
+>  #include <linux/pci.h>
+>  #include <linux/dmar.h>
+> -#include "iova.h"
+>  #include "intel-iommu.h"
+>
+>  #undef PREFIX
+> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+> index 66c0fd2..839363a 100644
+> --- a/drivers/pci/intel-iommu.c
+> +++ b/drivers/pci/intel-iommu.c
+> @@ -32,8 +32,7 @@
+>  #include <linux/dmar.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/mempool.h>
+> -#include <linux/timer.h>
+> -#include "iova.h"
+> +#include <linux/iommu-helper.h>
+>  #include "intel-iommu.h"
+>  #include <asm/proto.h> /* force_iommu in this header in x86-64*/
+>  #include <asm/cacheflush.h>
+> @@ -51,33 +50,15 @@
+>
+>  #define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000) /* 10sec */
+>
+> -#define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
+> -
+> -
+> -static void flush_unmaps_timeout(unsigned long data);
+> +#define DMA_ERROR_CODE (~(dma_addr_t)0x0)
+>
+> -DEFINE_TIMER(unmap_timer,  flush_unmaps_timeout, 0, 0);
+> +#define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
+>
+>  static struct intel_iommu *g_iommus;
+>
+> -#define HIGH_WATER_MARK 250
+> -struct deferred_flush_tables {
+> -       int next;
+> -       struct iova *iova[HIGH_WATER_MARK];
+> -       struct dmar_domain *domain[HIGH_WATER_MARK];
+> -};
+
+Sorry, I didn't see a replacement for the deferred_flush_tables.
+Mark Gross and I agree this substantially helps with unmap performance.
+See http://lkml.org/lkml/2008/3/3/373
+
+...
+>  static void dmar_init_reserved_ranges(void)
+>  {
+>        struct pci_dev *pdev = NULL;
+> -       struct iova *iova;
+>        int i;
+>        u64 addr, size;
+>
+> -       init_iova_domain(&reserved_iova_list, DMA_32BIT_PFN);
+> +       reserved_it_size = 1UL << (32 - PAGE_SHIFT_4K);
+
+Can you make reserved_it_size a module or kernel parameter?
+
+I've never been able to come up with a good heuristic
+for determining the size of the IOVA space. It generally
+does NOT need to map all of Host Physical RAM.
+The actual requirement depends entirely on the workload,
+type and number of IO devices installed. The problem is we
+don't know any of those things until well after the IOMMU
+is already needed.
+
+> +       reserved_it_map = kzalloc(reserved_it_size / BITS_PER_BYTE, GFP_ATOMIC);
+> +       BUG_ON(!reserved_it_map);
+>
+>        lockdep_set_class(&reserved_iova_list.iova_alloc_lock,
+>                &reserved_alloc_key);
+>        lockdep_set_class(&reserved_iova_list.iova_rbtree_lock,
+>                &reserved_rbtree_key);
+>
+> +       reserve_area(reserved_it_map, 0, IOVA_PFN(IOVA_START_ADDR));
+> +
+>        /* IOAPIC ranges shouldn't be accessed by DMA */
+> -       iova = reserve_iova(&reserved_iova_list, IOVA_PFN(IOAPIC_RANGE_START),
+> -               IOVA_PFN(IOAPIC_RANGE_END));
+> -       if (!iova)
+> -               printk(KERN_ERR "Reserve IOAPIC range failed\n");
+> +       reserve_area(reserved_it_map, IOVA_PFN(IOAPIC_RANGE_START),
+> +                    IOVA_PFN(IOAPIC_RANGE_END));
+>
+>        /* Reserve all PCI MMIO to avoid peer-to-peer access */
+>        for_each_pci_dev(pdev) {
+
+I didn't check....but reserving MMIO address space might be better done
+by looking at MMIO ranges routed by  all the top level PCI Host-bus controllers
+(aka PCI-e Root ports). Maybe this is an idea for Mark Gross to implement.
+
+
+> -static void domain_reserve_special_ranges(struct dmar_domain *domain)
+> -{
+> -       copy_reserved_iova(&reserved_iova_list, &domain->iovad);
+>  }
+>
+>  static inline int guestwidth_to_adjustwidth(int gaw)
+> @@ -1191,38 +1163,52 @@ static inline int guestwidth_to_adjustwidth(int gaw)
+>  static int domain_init(struct dmar_domain *domain, int guest_width)
+>  {
+>        struct intel_iommu *iommu;
+> -       int adjust_width, agaw;
+> +       int ret, adjust_width, agaw;
+>        unsigned long sagaw;
+>
+> -       init_iova_domain(&domain->iovad, DMA_32BIT_PFN);
+>        spin_lock_init(&domain->mapping_lock);
+>
+> -       domain_reserve_special_ranges(domain);
+> -
+>        /* calculate AGAW */
+>        iommu = domain->iommu;
+> +
+>        if (guest_width > cap_mgaw(iommu->cap))
+>                guest_width = cap_mgaw(iommu->cap);
+>        domain->gaw = guest_width;
+>        adjust_width = guestwidth_to_adjustwidth(guest_width);
+>        agaw = width_to_agaw(adjust_width);
+>        sagaw = cap_sagaw(iommu->cap);
+> +
+> +/*     domain->it_size = 1UL << (guest_width - PAGE_SHIFT_4K); */
+> +       domain->it_size = 1UL << (32 - PAGE_SHIFT_4K);
+
+"32-PAGE_SHIFT_4K" expression is used in several places but I didn't see
+an explanation of why 32. Can you add one someplace?
+
+out of time...
+
+thanks!
+grant
