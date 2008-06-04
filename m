@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYFDNi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYFDNjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYFDNi4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 09:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYFDNir
+	id S1758599AbYFDNjV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 09:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYFDNjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 09:38:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57884 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751936AbYFDNir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 09:38:47 -0400
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 4 -
-	firmware/keyspan/mpr.fw.gen.S
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>,
-       sam@ravnborg.org
-In-Reply-To: <48468091.5000102@linux.vnet.ibm.com>
-References: <20080604180025.3ecd03ff.sfr@canb.auug.org.au>
-	 <48468091.5000102@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 14:38:37 +0100
-Message-Id: <1212586717.32207.71.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Wed, 4 Jun 2008 09:39:10 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33025 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752301AbYFDNjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 09:39:09 -0400
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: Wim Van Sebroeck <wim@iguana.be>
+Subject: [PATCH] watchdog: Strip stray space in log message
+Date: Wed, 4 Jun 2008 15:38:53 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200806041538.53326.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-04 at 17:16 +0530, Kamalesh Babulal wrote:
-> Hi Stephen,
-> 
-> The next-20080604 kernel build fails on the x86_64 machine
-> 
-> make[1]: *** No rule to make target `/usr/local/autobench/autotest/tmp/build/linux/$(dir)', needed by `firmware/keyspan/mpr.fw.gen.S'.  Stop.
-> make: *** [firmware] Error 2
+Strip a stray space in log messages of 3 watchdog drivers.
+(And fold these long lines to make checkpatch.pl happy.)
 
-Does this 'fix' it?
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+---
+This patch was already sent on:
+ * 2008-01-19
 
-diff --git a/firmware/Makefile b/firmware/Makefile
-index b4f758a..5244ea4 100644
---- a/firmware/Makefile
-+++ b/firmware/Makefile
-@@ -83,7 +83,20 @@ wordsize_deps := $(wildcard include/config/64bit.h include/config/32bit.h \
- 		include/config/superh32.h include/config/superh64.h \
- 		include/config/x86_32.h include/config/x86_64.h)
+ drivers/watchdog/mpcore_wdt.c |    3 ++-
+ drivers/watchdog/softdog.c    |    3 ++-
+ drivers/watchdog/txx9wdt.c    |    2 +-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
+
+--- linux-2.6.26-rc4.orig/drivers/watchdog/mpcore_wdt.c	2008-06-03 10:55:01.000000000 +0200
++++ linux-2.6.26-rc4/drivers/watchdog/mpcore_wdt.c	2008-06-03 10:57:25.000000000 +0200
+@@ -405,7 +405,8 @@ static struct platform_driver mpcore_wdt
+ 	},
+ };
  
--# For the $$(dir %) trick, where we need % to be expanded first.
-+# .SECONDEXPANSION for the $$(dir %) trick, where we need % to be expanded
-+# first before we expand the $(dir ...). And a workaround for broken make.
-+PHONY += make-warning
-+make-warning:
-+	@echo '*************'
-+	@echo 'WARNING: Your version of make ($(MAKE_VERSION)) seems not to work'
-+	@echo 'correctly with .SECONDEXPANSION: as used in firmware/Makefile.'
-+	@echo 'Creating directories in advance instead of on-demand'
-+	@echo '*************'
-+
-+PHONY += $(objtree)/$$(%) $(objtree)/$(obj)/$$(%)
-+$(objtree)/$$(%) $(objtree)/$(obj)/$$(%): make-warning $(firmware-dirs)
-+	@true
-+
- .SECONDEXPANSION:
+-static char banner[] __initdata = KERN_INFO "MPcore Watchdog Timer: 0.1. mpcore_noboot=%d mpcore_margin=%d sec (nowayout= %d)\n";
++static char banner[] __initdata = KERN_INFO "MPcore Watchdog Timer: 0.1. "
++	"mpcore_noboot=%d mpcore_margin=%d sec (nowayout=%d)\n";
  
- $(patsubst %,$(obj)/%.gen.S, $(fw-shipped-y)): %: $(wordsize_deps) \
+ static int __init mpcore_wdt_init(void)
+ {
+--- linux-2.6.26-rc4.orig/drivers/watchdog/softdog.c	2008-06-03 10:55:01.000000000 +0200
++++ linux-2.6.26-rc4/drivers/watchdog/softdog.c	2008-06-03 10:57:25.000000000 +0200
+@@ -262,7 +262,8 @@ static struct notifier_block softdog_not
+ 	.notifier_call	= softdog_notify_sys,
+ };
+ 
+-static char banner[] __initdata = KERN_INFO "Software Watchdog Timer: 0.07 initialized. soft_noboot=%d soft_margin=%d sec (nowayout= %d)\n";
++static char banner[] __initdata = KERN_INFO "Software Watchdog Timer: 0.07 "
++	"initialized. soft_noboot=%d soft_margin=%d sec (nowayout=%d)\n";
+ 
+ static int __init watchdog_init(void)
+ {
+--- linux-2.6.26-rc4.orig/drivers/watchdog/txx9wdt.c	2008-04-17 04:49:44.000000000 +0200
++++ linux-2.6.26-rc4/drivers/watchdog/txx9wdt.c	2008-06-04 15:25:34.000000000 +0200
+@@ -227,7 +227,7 @@ static int __init txx9wdt_probe(struct p
+ 	}
+ 
+ 	printk(KERN_INFO "Hardware Watchdog Timer for TXx9: "
+-	       "timeout=%d sec (max %ld) (nowayout= %d)\n",
++	       "timeout=%d sec (max %ld) (nowayout=%d)\n",
+ 	       timeout, WD_MAX_TIMEOUT, nowayout);
+ 
+ 	return 0;
 
 -- 
-dwmw2
-
+Jean Delvare
+Suse L3
