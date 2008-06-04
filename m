@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbYFDPIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYFDPJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbYFDPIe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758371AbYFDPIP
+	id S1759343AbYFDPJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYFDPJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:08:15 -0400
-Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:45899 "EHLO
-	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758121AbYFDPIN (ORCPT
+	Wed, 4 Jun 2008 11:09:25 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:36494 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbYFDPJY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:08:13 -0400
-Date: Wed, 4 Jun 2008 16:07:07 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] cputopology: Add default CPU topology information [3rd try]
-Message-ID: <20080604150705.GC11300@solarflare.com>
-References: <20080531214429.GQ1743@solarflare.com> <20080603130222.694c5675.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080603130222.694c5675.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+	Wed, 4 Jun 2008 11:09:24 -0400
+Date: Wed, 4 Jun 2008 18:09:22 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
+In-Reply-To: <a01a16b50806040700h1efce63cq2a27b087df0d25be@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0806041802360.2580@wrl-59.cs.helsinki.fi>
+References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
+  <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com> 
+ <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>  <484191BD.8000904@gmail.com>
+  <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi> 
+ <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com> 
+ <Pine.LNX.4.64.0805312332270.2760@wrl-59.cs.helsinki.fi> 
+ <a01a16b50806031710u54b9297bkf1fad9c4f8fd581f@mail.gmail.com> 
+ <Pine.LNX.4.64.0806041402211.16829@wrl-59.cs.helsinki.fi>
+ <a01a16b50806040700h1efce63cq2a27b087df0d25be@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1745598132-1212592162=:2580"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 31 May 2008 22:44:30 +0100
-> Ben Hutchings <bhutchings@solarflare.com> wrote:
-> 
-> > Define the macros topology_{physical_package,core}_id() and
-> > topology_{thread,core}_siblings() in <asm-generic/topology.h> if they are not
-> > already defined.
-> > 
-> > Move inclusion of <asm-generic/topology.h> after definitions of these
-> > macros in <asm-powerpc/topology.h> and <asm-x86/topology.h>.
-> > 
-> > Change drivers/base/topology.c to use the topology macros unconditionally and
-> > to cope with definitions that aren't lvalues.
-> 
-> Can you please redo this against linux-next?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Will do.
+---696208474-1745598132-1212592162=:2580
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-> That tree contains a number of directly conflicting changes.  In
-> particular, linux-next introduces alternate implementations of
-> show_##name and show_##name##_list in topology.c and from a quick peek,
-> your change could make them go away again.
+On Wed, 4 Jun 2008, Håkon Løvdal wrote:
 
-I don't see what you're referring to.  The only things I'm removing are
-the attribute list macros, which are unnecessary if the list of attributes
-is constant.
+> 2008/6/4 Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>:
+>
+> > Usually such logs compress quite well. A best thing might be to put
+> > somewhere (if possible) and http:// reference them.
 
-> Please also enhance the changelog so we have some idea of why you're
-> actually doing all this.  What do we gain?  Does it fix a bug?  If so,
-> what?  etc.
+> The largest file was a strace log of 1.5GB uncompressed. I will try to
+> sort out something.
 
-I'll go back to the explanatory text from my first version.
-
-Ben.
+I guess not all of the strace will be necessary anyway. You could first 
+leave that out completely and concentrate on the other logs first.
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+ i.
+---696208474-1745598132-1212592162=:2580--
