@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbYFDTC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbYFDTCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762110AbYFDTC2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 15:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYFDTCU
+	id S1762203AbYFDTCu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 15:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760060AbYFDTCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 15:02:20 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:49923 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753286AbYFDTCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 15:02:19 -0400
-Date: Wed, 4 Jun 2008 22:01:46 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bernhard Fischer <rep.dot.nop@gmail.com>
-Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] console - Add configurable support for console charset
-	translation
-Message-ID: <20080604190146.GE4189@cs181133002.pp.htv.fi>
-References: <48447615.5050806@am.sony.com> <20080604103353.GC27335@cs181133002.pp.htv.fi> <20080604183432.GC27768@mx.loc>
+	Wed, 4 Jun 2008 15:02:40 -0400
+Received: from hs-out-0708.google.com ([64.233.178.251]:23029 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759534AbYFDTCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 15:02:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=px+e0YtnK4dPzYU1U/m8+uCP3YZ5Hep7oDQPmRPcECbR0x6MvvsuLdkEOU3TAg5tr2
+         goMOZtug0wOzsITUMKmTjBO1dswyhn8OFckvY3QQaNPAGQxRFK6KMu5QFGANON/Drv3r
+         RMnKhcPnXGNTMhyyLL8ViGiWqL7elufy8ZY7g=
+Message-ID: <cd73a99e0806041202v592c41e1ya3c9fa51918efb0f@mail.gmail.com>
+Date: Wed, 4 Jun 2008 21:02:30 +0200
+From: "Andrew Victor" <avictor.za@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: AT91SAM9/CAP9 watchdog driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, wim@iguana.be,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20080604192458.02f76022@core>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080604183432.GC27768@mx.loc>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <cd73a99e0806010940g501f11b4jcb7caf6acfd5c49f@mail.gmail.com>
+	 <20080603142316.c53b32b2.akpm@linux-foundation.org>
+	 <cd73a99e0806040031s13e6b4a5ndc5fb3d931e1945f@mail.gmail.com>
+	 <20080604123642.51449a04@core>
+	 <cd73a99e0806041136o2a9ee520q28752af9b6290644@mail.gmail.com>
+	 <20080604192458.02f76022@core>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 08:34:32PM +0200, Bernhard Fischer wrote:
-> On Wed, Jun 04, 2008 at 01:33:53PM +0300, Adrian Bunk wrote:
-> 
-> >My gut feeling is that the influence of this kind of linux-tiny patches 
-> >is hardly noticably compared to the overall code size development, but 
-> >if you have numbers that prove me wrong just point me to them and I'll 
-> >stand corrected.
-> >
-> >cu
-> >Adrian
-> >
-> >BTW: I'm not insisting on "between 2.6.16 and 2.6.26", that's just some
-> >     timeframe big enough for showing general trends.
-> 
-> Current kernels are too big, they tend to be about 1MB (ignoring lzma or
-> gz compression), a couple of years back an ide- and network-enabled
-> kernel with 8139too (or whatever -nic you use in qemu nowadays) was at
-> least 30% smaller.
+hi Alan ,
 
-No disagreement that the kernel could (and should) become smaller for
-situations where the kernel size matters.
+> Every other watchdog behaves as follows
+>
+> - If you specify a bogus value it doesn't load
+> - If you specify no value you get a valid default
+> - If you specify a valid value you get that
+>
+> I don't believe yours should be different.
 
-My question is only about whether *this kind of patches* is the correct 
-approach.
+I don't think any other in-kernel watchdog driver has to deal with
+write-once hardware.  On these processors once the watchdog register
+is programmed, it cannot be disabled or re-programmed.
+If the above behaviour is required, then we might aswell remove the
+ioctl(WDIOC_SETTIMEOUT) interface for this driver since if the user
+wants anything other than the default timeout they would need to pass
+it via the kernel command-line or module parameters.
 
-cu
-Adrian
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Regards,
+  Andrew Victor
