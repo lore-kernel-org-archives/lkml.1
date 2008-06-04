@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761750AbYFDTOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760923AbYFDTV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761750AbYFDTOw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 15:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758366AbYFDTOn
+	id S1760923AbYFDTV3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 15:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbYFDTVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 15:14:43 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:50304 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756768AbYFDTOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 15:14:42 -0400
-Date: Wed, 4 Jun 2008 21:15:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Adrian Bunk <adrian.bunk@movial.fi>, linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] console - Add configurable support for console charset translation
-Message-ID: <20080604191522.GA18873@uranus.ravnborg.org>
-References: <48447615.5050806@am.sony.com> <20080604103353.GC27335@cs181133002.pp.htv.fi> <4846E44A.1010601@am.sony.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4846E44A.1010601@am.sony.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 4 Jun 2008 15:21:19 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61178 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756762AbYFDTVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 15:21:19 -0400
+Date: Wed, 4 Jun 2008 20:19:10 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jon Masters <jcm@redhat.com>
+cc: Stefan Assmann <sassmann@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+In-Reply-To: <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
+Message-ID: <Pine.LNX.4.55.0806042014110.28685@cliff.in.clinika.pl>
+References: <12124107071847-git-send-email-od@suse.de>  <m1tzgauduu.fsf@frodo.ebiederm.org>
+ <4846651F.4070802@suse.de>  <m1ve0pqy06.fsf@frodo.ebiederm.org> 
+ <48467DA7.9030309@suse.de> <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> I can do a more controlled comparison if you're interested.
+On Wed, 4 Jun 2008, Jon Masters wrote:
 
-What would be really useful would be to do some king of automated
-monitoring of the size of individual parts of the kernel in
-a few controlled configs.
-And then as son as somethings grows with > 1% for example then to
-bring this to lkml.
-Doing this based on linux-next would allow us to catch the bloaters
-while they are still or just have been doing certain changes.
+> Meanwhile, I think this really shows that a couple of us who've been
+> meaning to poke at per-device IRQs should do so once again. This is the
+> real solution - kill off all those per-IRQ threads, have one per device
+> and split each IRQ into a "top" and "bottom" (just kidding on the names)
+> half. Have the first part be *incredibly* small and just return if the
+> device actually was responsible for the IRQ (and quiesse it), and have
+> the second part do the heavyweight handling. Since the second part can
+> run as a thread (and actually sleep for however long, because it's now
+> per device) - and since we have threaded tasklets and all this on RT
+> anyway - we can just kill off most of the extra logic in many Linux
+> interrupt handlers and have just the interrupt thread do the work. 
 
-It would be nice to tell someone that just enabled som new gcc option
-that this had a cost of 163.432 bytes with a certain config.
-This would get attraction and be dealt with.
+ This is how a lot of our drivers used to work in the old days -- modulo
+implementation details.  It is still a good idea, but it requires more
+care and effort to implement, so people tend to avoid it unless forced by
+the design of hardware involved (cf. phylib in the interrupt mode).
 
-Doing so three months later or maybe one year later would often
-get less focus (if the individual commit ever got identified).
-
-Now how to do so I dunno - that would require a bit of tweaking
-before working reliable. But the value of being quick here would
-pay of this soon I think.
-
-	Sam
+  Maciej
