@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbYFDWlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761971AbYFDWrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762694AbYFDWlj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbYFDWla
+	id S1761971AbYFDWrx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbYFDWro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:41:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43988 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754052AbYFDWl3 (ORCPT
+	Wed, 4 Jun 2008 18:47:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53304 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752903AbYFDWrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:41:29 -0400
-Date: Wed, 4 Jun 2008 15:41:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kobayashi.kk@ncos.nec.co.jp, kosaki.motohiro@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] per-task-delay-accounting: /proc export for memory
- reclaim delay
-Message-Id: <20080604154124.5b5b5bf7.akpm@linux-foundation.org>
-In-Reply-To: <20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
-	<20080603194608.ed76ecf3.kobayashi.kk@ncos.nec.co.jp>
-	<20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Jun 2008 18:47:43 -0400
+Message-ID: <48471B68.3050103@zytor.com>
+Date: Wed, 04 Jun 2008 15:47:04 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: e820 max_arch_pfn typo fix for 64 bit
+References: <200806031025.55026.yhlu.kernel@gmail.com> <200806031934.01198.yhlu.kernel@gmail.com> <200806031935.05202.yhlu.kernel@gmail.com> <200806041321.30083.yhlu.kernel@gmail.com>
+In-Reply-To: <200806041321.30083.yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Jun 2008 12:07:29 +0900
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> Hi
+Yinghai Lu wrote:
+> should use right shift
 > 
-> > diff --git a/fs/proc/array.c b/fs/proc/array.c
-> > index 9e3b8c3..a3e6e86 100644
-> > --- a/fs/proc/array.c
-> > +++ b/fs/proc/array.c
-> > @@ -498,7 +498,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
-> > 
-> >  	seq_printf(m, "%d (%s) %c %d %d %d %d %d %u %lu \
-> >  %lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
-> > -%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld\n",
-> > +%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %llu %lu %ld\n",
-> >  		pid_nr_ns(pid, ns),
-> >  		tcomm,
-> >  		state,
-> > @@ -544,6 +544,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
-> >  		task->rt_priority,
-> >  		task->policy,
-> >  		(unsigned long long)delayacct_blkio_ticks(task),
-> > +		(unsigned long long)delayacct_freepages_ticks(task),
-> >  		cputime_to_clock_t(gtime),
-> >  		cputime_to_clock_t(cgtime));
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 > 
-> userland program oftern below access.
-> thus, this patch break userland compatibility.
-> 
-> ----------------------------------------
-> #!/usr/bin/perl
-> 
-> $stat = `cat /proc/$pid/stat`;
-> split
-> @stat_list = split(/ / , $stat);
-> print stat_list[$index];
->                  ^
->                  |
->                  use array index number
-> 
+> Index: linux-2.6/arch/x86/kernel/e820.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/e820.c
+> +++ linux-2.6/arch/x86/kernel/e820.c
+> @@ -771,7 +771,7 @@ u64 __init early_reserve_e820(u64 startt
+>  #  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
+>  # endif
+>  #else /* CONFIG_X86_32 */
+> -# define MAX_ARCH_PFN MAXMEM<<PAGE_SHIFT
+> +# define MAX_ARCH_PFN MAXMEM>>PAGE_SHIFT
+>  #endif
+>  
 
-Any application which breaks if we add more things to /proc/pid/stat
-just needs to be fixed.
+Should also use parens (operator inside a macro).
 
-But we can't add new fields in the middle of the line!  We can only add
-new items to the end.
-
-But I think it would be good if we just weren't to make this change. 
-Do we really want to keep reporting the same information in two
-separate ways?
-
-If so, a new /proc/pid/delays would be a better way, but it might be a
-bit late for doing that now, given that we already put
-delayacct_blkio_ticks into /proc/pid/stat.
-
-
+	-hpa
