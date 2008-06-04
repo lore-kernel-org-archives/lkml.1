@@ -1,71 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761493AbYFDSOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbYFDSSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761493AbYFDSOm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbYFDSOf
+	id S1761077AbYFDSSc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbYFDSSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:14:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39569 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbYFDSOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:14:34 -0400
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>, chucklever@gmail.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Message-Id: <E1135064-06EA-405C-A967-DFB1DC9F0418@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: Dave Jones <davej@redhat.com>
-In-Reply-To: <20080604141958.GA14148@redhat.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 4 Jun 2008 14:18:23 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:55000 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752599AbYFDSSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 14:18:22 -0400
+Message-ID: <4846DC6B.6030802@sgi.com>
+Date: Wed, 04 Jun 2008 11:18:19 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu
+ operations
+References: <20080530035620.587204923@sgi.com> <200805301708.51284.rusty@rustcorp.com.au> <Pine.LNX.4.64.0805301055270.14564@schroedinger.engr.sgi.com> <200806021200.41652.rusty@rustcorp.com.au>
+In-Reply-To: <200806021200.41652.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v924)
-Subject: Re: NFS oops in 2.6.26rc4
-Date: Wed, 4 Jun 2008 14:13:08 -0400
-References: <20080527190419.GA14577@redhat.com> <76bd70e30805301059v461e8f0eocc38b6fe36dd3b21@mail.gmail.com> <20080530182126.GB32480@redhat.com> <1212172308.8579.20.camel@localhost> <20080530190314.GC32480@redhat.com> <CEA741EF-8E34-40FD-82A8-747AE1B6E78F@oracle.com> <20080604141958.GA14148@redhat.com>
-X-Mailer: Apple Mail (2.924)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jun 4, 2008, at 10:19 AM, Dave Jones wrote:
+> cpu_local_inc() does all this: it takes the name of a local_t var, and is 
+> expected to increment this cpu's version of that.  You ripped this out and 
+> called it CPU_INC().
 
-> On Fri, May 30, 2008 at 03:37:01PM -0400, Chuck Lever wrote:
->
->>> Something else of note which I hadn't seen before, usually things  
->>> lock
->>> up just after that first oops. For some reason, today it survived
->>> a little longer, but things really went downhill fast.
->>> It survived a 'dmesg ; scp dmesg davej@gelk', and then wedged solid.
->>> So as well as the oops, it seems we're corrupting memory too.
->>> For reference, this kernel has both SLUB_DEBUG and PAGEALLOC_DEBUG
->>> enabled.
->>
->> I haven't seen this kind of problem here with .26, but yes, it does
->> look like something is clobbering memory during an NFS mount.
->>
->> I introduced some NFS mount parsing changes in this commit range:
->>
->>   2d767432..82d101d5
->>
->> A quick bisect should show which, if any of these, is the guilty
->> party.  If any of these are the problem, I suspect it's 3f8400d1.
->
-> I didn't get time to try this out yet (hopefully tomorrow).
-> In the meantime, we've just gotten word of another user seeing memory
-> corruption with nfs - https://bugzilla.redhat.com/show_bug.cgi?id=449958
+Hi,
 
-449958 could very well be the same problem.  The stack traceback is a  
-lot cleaner than the one you originally sent, but there are a lot of  
-similarities.  (I doubt this is related to symlinks, as the comment  
-suggests).
+I'm attempting to test both approaches to compare the object generated in order
+to understand the issues involved here.  Here's my code:
 
-Is commit 86d61d863 applied to the current rawhide kernel?
+        void test_cpu_inc(int *s)
+        {
+                __CPU_INC(s);
+        }
 
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+        void test_local_inc(local_t *t)
+        {
+                __local_inc(THIS_CPU(t));
+        }
+
+        void test_cpu_local_inc(local_t *t)
+        {
+                __cpu_local_inc(t);
+        }
+
+But I don't know how I can use cpu_local_inc because the pointer to the object
+is not &__get_cpu_var(l):
+
+	#define __cpu_local_inc(l)      cpu_local_inc((l))
+	#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var((l))))
+
+At the minimum, we would need a new local_t op to get the correct CPU_ALLOC'd
+pointer value for the increment.  These new local_t ops for CPU_ALLOC'd variables
+could use CPU_XXX primitives to implement them, or just a base val_to_ptr primitive
+to replace __get_cpu_var().
+
+I did notice this in local.h:
+
+	 * X86_64: This could be done better if we moved the per cpu data directly
+	 * after GS.
+
+... which it now is, so true per_cpu variables could be optimized better as well.
+
+Also, the above cpu_local_wrap(...) adds:
+
+	#define cpu_local_wrap(l)               \
+	({                                      \
+	        preempt_disable();              \
+	        (l);                            \
+	        preempt_enable();               \
+	})                                      \
+
+... and there isn't a non-preemption version that I can find.
+
+Here are the objects.  
+
+0000000000000000 <test_cpu_inc>:
+   0:   55                      push   %rbp
+   1:   48 89 e5                mov    %rsp,%rbp
+   4:   48 83 ec 08             sub    $0x8,%rsp
+   8:   48 89 7d f8             mov    %rdi,0xfffffffffffffff8(%rbp)
+   c:   65 48 ff 45 f8          incq   %gs:0xfffffffffffffff8(%rbp)
+  11:   c9                      leaveq
+  12:   c3                      retq
+
+0000000000000013 <test_local_inc>:
+  13:   55                      push   %rbp
+  14:   65 48 8b 05 00 00 00    mov    %gs:0(%rip),%rax        # 1c <test_local_inc+0x9>
+  1b:   00
+  1c:   48 89 e5                mov    %rsp,%rbp
+  1f:   48 ff 04 07             incq   (%rdi,%rax,1)
+  23:   c9                      leaveq
+  24:   c3                      retq
+
+
+With a new local_t op then test_local_inc probably could be optimized to be
+the same instructions as test_cpu_inc.
+
+One other distinction is CPU_INC increments an arbitrary sized variable
+while local_inc requires a local_t variable.  This may not make it usable
+in all cases.
+
+Thanks,
+Mike
