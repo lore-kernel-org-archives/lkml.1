@@ -1,137 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbYFDNOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756979AbYFDNTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753684AbYFDNOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 09:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757194AbYFDNNp
+	id S1756979AbYFDNTO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 09:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYFDNS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 09:13:45 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:42160 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756922AbYFDNNn (ORCPT
+	Wed, 4 Jun 2008 09:18:59 -0400
+Received: from smtpout01s1.x-echo.com ([193.252.149.37]:53037 "EHLO
+	smtpout01s1.x-echo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002AbYFDNS7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 09:13:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
-         :content-transfer-encoding:from;
-        b=SxgJ6cWBmIbqNKwD5Sxt3fTUZ9Th2yS4q/UAO1cGBWD3/vLAH4rv3bQRkzXgUuh5DO
-         ZlaSwKSSqmofOqeP2fTWxzv3Nx5AuFurYnR3pXjICA9OlvfvyUpMnDnZYbmK+GM6G7aF
-         pZuhn/pat8P6TRdYJ0gvHMRk+B4gYalO0wZZs=
-Message-ID: <484694E7.3080405@gmail.com>
-Date: Wed, 04 Jun 2008 15:13:11 +0200
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 4 Jun 2008 09:18:59 -0400
+From: Lkm <lkm@lea-linux.com>
+To: "Bart Van Assche" <bart.vanassche@gmail.com>
+Subject: Re: PROBLEM: Hardware clock instable
+Date: Wed, 4 Jun 2008 15:17:43 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200806041402.39515.lkm@lea-linux.com> <e2e108260806040549p11117410x192d1020adb885c7@mail.gmail.com>
+In-Reply-To: <e2e108260806040549p11117410x192d1020adb885c7@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
-       Miklos Szeredi <miklos@szeredi.hu>, viro@zeniv.linux.org.uk,
-       jamie@shareable.org, Ulrich Drepper <drepper@redhat.com>,
-       linux-fsdevel@vger.kernel.org,
-       Subrata Modak <subrata@linux.vnet.ibm.com>
-Subject: [patch 3/4 v2] vfs: utimensat(): fix error checking for {UTIME_NOW,UTIME_OMIT}
- case
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806041517.43347.lkm@lea-linux.com>
+X-AV-Checked: ClamAV using ClamSMTP
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The POSIX.1 draft spec for utimensat() says:
+Le Wednesday 04 June 2008 14:49:58 Bart Van Assche, vous avez écrit :
+> On Wed, Jun 4, 2008 at 2:02 PM, Lkm <lkm@lea-linux.com> wrote:
+> > i work in a web hosting compagny. We have a strange problem on many
+> > servers. The hardware clock of several server is totaly instable. This
+> > happen on many server, not all.
+>
+> Which messages are logged by the NTP daemon during the first 24 hours
+> after it has been started ? On Debian systems you can install NTP by
+> running apt-get install ntp.
+>
+> Bart.
 
-    Only a process with the effective user ID equal to the
-    user ID of the file or with appropriate privileges may use
-    futimens() or utimensat() with a non-null times argument
-    that does not have both tv_nsec fields set to UTIME_NOW
-    and does not have both tv_nsec fields set to UTIME_OMIT.
+Ntpd logs:
 
-If this condition is violated, then the error EPERM should result.
-However, the current implementation does not generate EPERM if
-one tv_nsec field is UTIME_NOW while the other is UTIME_OMIT.
-It should give this error for that case.
-
-This patch:
-
-a) Repairs that problem.
-b) Removes the now unneeded nsec_special() helper function.
-c) Adds some comments to explain the checks that are being
-   performed.
-
-Thanks to Miklos, who provided comments on the previous iteration
-of this patch.  As a result, this version is a little simpler and
-and its logic is better structured.
-
-Miklos suggested an alternative idea, migrating the
-is_owner_or_cap() checks into fs/attr.c:inode_change_ok() via
-the use of an ATTR_OWNER_CHECK flag.  Maybe we could do that
-later, but for now I've gone with this version, which is
-IMO simpler, and can be more easily read as being correct.
-
-CC: Miklos Szeredi <miklos@szeredi.hu>
-CC: Al Viro <viro@zeniv.linux.org.uk>
-CC: Ulrich Drepper <drepper@redhat.com>
-Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
-
---- linux-2.6.26-rc4/fs/utimes.c	2008-06-04 13:36:33.000000000 +0200
-+++ linux-2.6.26-rc4-utimensat-fix-v4/fs/utimes.c	2008-06-04 13:35:14.000000000 +0200
-@@ -40,14 +40,9 @@
-
- #endif
-
--static bool nsec_special(long nsec)
--{
--	return nsec == UTIME_OMIT || nsec == UTIME_NOW;
--}
--
- static bool nsec_valid(long nsec)
- {
--	if (nsec_special(nsec))
-+	if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
- 		return true;
-
- 	return nsec >= 0 && nsec <= 999999999;
-@@ -106,7 +101,7 @@
- 		     times[1].tv_nsec == UTIME_NOW)
- 		times = NULL;
-
--	/* Don't worry, the checks are done in inode_change_ok() */
-+	/* In most cases, the checks are done in inode_change_ok() */
- 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
- 	if (times) {
- 		error = -EPERM;
-@@ -128,15 +123,26 @@
- 			newattrs.ia_mtime.tv_nsec = times[1].tv_nsec;
- 			newattrs.ia_valid |= ATTR_MTIME_SET;
- 		}
--	}
-
--	/*
--	 * If times is NULL or both times are either UTIME_OMIT or
--	 * UTIME_NOW, then need to check permissions, because
--	 * inode_change_ok() won't do it.
--	 */
--	if (!times || (nsec_special(times[0].tv_nsec) &&
--		       nsec_special(times[1].tv_nsec))) {
-+		/*
-+		 * For the UTIME_OMIT/UTIME_NOW and UTIME_NOW/UTIME_OMIT
-+		 * cases, we need to make an extra check that is not done by
-+		 * inode_change_ok().
-+		 */
-+		if (((times[0].tv_nsec == UTIME_NOW &&
-+			    times[1].tv_nsec == UTIME_OMIT)
-+			  ||
-+			   (times[0].tv_nsec == UTIME_OMIT &&
-+			    times[1].tv_nsec == UTIME_NOW))
-+		     && !is_owner_or_cap(inode))
-+				goto mnt_drop_write_and_out;
-+	} else {
-+
-+		/*
-+		 * If times is NULL (or both times are UTIME_NOW),
-+		 * then we need to check permissions, because
-+		 * inode_change_ok() won't do it.
-+		 */
- 		error = -EACCES;
-                 if (IS_IMMUTABLE(inode))
- 			goto mnt_drop_write_and_out;
+28 May 10:32:17 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+28 May 10:51:34 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+29 May 00:20:57 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+29 May 01:46:28 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+29 May 02:27:10 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+29 May 02:33:34 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+29 May 02:39:02 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+29 May 04:02:28 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+29 May 04:45:12 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+29 May 09:01:20 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+31 May 16:16:55 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+31 May 17:33:50 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+31 May 17:59:26 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+31 May 18:33:32 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+31 May 18:47:22 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+31 May 18:52:04 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+31 May 18:55:53 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+31 May 19:49:25 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+31 May 20:28:30 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+31 May 21:45:19 ntpd[31086]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 05:28:59 ntpd[31086]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 10:46:26 ntpd[31086]: ntpd exiting on signal 15
+ 2 Jun 10:53:32 ntpd[2299]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 10:53:32 ntpd[2299]: kernel time sync enabled 0001
+ 2 Jun 11:02:11 ntpd[2299]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 11:06:36 ntpd[2299]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 11:19:26 ntpd[2299]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 11:55:56 ntpd[2299]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 12:34:24 ntpd[2299]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 13:00:08 ntpd[2299]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 13:33:44 ntpd[2299]: ntpd exiting on signal 15
+ 2 Jun 13:42:20 ntpd[2299]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 13:42:20 ntpd[2299]: time reset -109.498922 s
+ 2 Jun 13:42:20 ntpd[2299]: kernel time sync enabled 0001
+ 2 Jun 13:45:34 ntpd[2299]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 14:21:59 ntpd[2299]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 14:30:41 ntpd[2299]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 15:33:28 ntpd[2299]: ntpd exiting on signal 15
+ 2 Jun 15:39:55 ntpd[2300]: ntpd exiting on signal 15
+ 2 Jun 15:46:39 ntpd[2354]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 15:46:39 ntpd[2354]: kernel time sync enabled 0001
+ 2 Jun 15:54:11 ntpd[2354]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 15:59:36 ntpd[2354]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 16:27:25 ntpd[2354]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 16:36:06 ntpd[2354]: synchronized to 192.168.0.150, stratum 3
+ 2 Jun 17:01:40 ntpd[2354]: synchronized to 192.168.0.151, stratum 3
+ 2 Jun 17:50:52 ntpd[2354]: synchronized to 192.168.0.150, stratum 3
+ 3 Jun 01:31:52 ntpd[2354]: synchronized to 192.168.0.151, stratum 3
 
 
+Other (useful?) logs:
+
+Jun  4 14:29:53 rd10 kernel: set_rtc_mmss: can't update from 77 to 29
+Jun  4 14:29:54 rd10 kernel: set_rtc_mmss: can't update from 77 to 29
+Jun  4 14:29:55 rd10 kernel: set_rtc_mmss: can't update from 77 to 29
+Jun  4 14:29:56 rd10 kernel: set_rtc_mmss: can't update from 77 to 29
+Jun  4 14:29:57 rd10 kernel: set_rtc_mmss: can't update from 77 to 29
+Jun  4 14:29:58 rd10 kernel: set_rtc_mmss: can't update from 77 to 29
+Jun  4 14:29:59 rd10 kernel: set_rtc_mmss: can't update from 77 to 29
+Jun  4 14:30:00 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:01 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:02 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:03 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:04 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:05 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:06 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:07 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:08 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:09 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:10 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:11 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:12 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:13 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:14 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:15 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:16 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:17 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:18 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:19 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:20 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:21 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:22 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:23 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:24 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:25 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:26 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:27 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:28 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:29 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:30 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:31 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:32 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:33 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:34 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:35 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:36 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:37 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:38 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:39 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:40 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:41 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:42 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:43 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:44 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:45 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:46 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+Jun  4 14:30:47 rd10 kernel: set_rtc_mmss: can't update from 78 to 30
+:                                                                                             
