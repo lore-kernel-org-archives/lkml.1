@@ -1,148 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759428AbYFDJAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbYFDJAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759428AbYFDJAj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 05:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759218AbYFDI7u
+	id S1759530AbYFDJAz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 05:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759143AbYFDJAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 04:59:50 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:21656 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759188AbYFDI7s (ORCPT
+	Wed, 4 Jun 2008 05:00:24 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:16084 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759345AbYFDJAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 04:59:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=OGXVYaRK5CAoQ87VttNPQF8h4Z2gA9FnUjeXSe6opAwkGxfzUChxWgx6ZvPLOv6aU
-	If+79g8blSRp6GZD1Sa4w==
-Message-ID: <6599ad830806040159w1026003fhe3212beac895927a@mail.gmail.com>
-Date: Wed, 4 Jun 2008 01:59:12 -0700
-From: "Paul Menage" <menage@google.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 2/2] memcg: hardwall hierarhcy for memcg
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-In-Reply-To: <20080604140329.8db1b67e.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 4 Jun 2008 05:00:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZfHxDg0lUz1wvImjfS+DNcKQH9xzagEbgxx6/kcim1BWfjs3G/mbLf9zo7bnPHkYgHEe3a9LQF+fwLOyO9AJstEPCWFJ5oFhBm9pq8Aw5VqfIfJAqa1p7mHGfgyF6SPolVKh2WJ1OUS4mcA3i1U6q42XSUyU+HdGuvZdsFr51yo=
+Message-ID: <4af2d03a0806040200p473a3958t74dd0c38c67b26f8@mail.gmail.com>
+Date: Wed, 4 Jun 2008 11:00:18 +0200
+From: "Jiri Slaby" <jirislaby@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: [PATCH 09/10] HID: add compat support
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       "Marcel Holtmann" <marcel@holtmann.org>, linux-kernel@vger.kernel.org,
+       anssi.hannula@gmail.com
+In-Reply-To: <Pine.LNX.4.64.0806041054460.10085@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080604140329.8db1b67e.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-2-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-3-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-4-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-7-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-8-git-send-email-jirislaby@gmail.com>
+	 <1210931362-18422-9-git-send-email-jirislaby@gmail.com>
+	 <Pine.LNX.4.64.0806041054460.10085@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 3, 2008 at 10:03 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> @@ -792,6 +798,89 @@ int mem_cgroup_shrink_usage(struct mm_st
->  }
+On Wed, Jun 4, 2008 at 10:55 AM, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Fri, 16 May 2008, Jiri Slaby wrote:
 >
->  /*
-> + * Memory Controller hierarchy support.
-> + */
-> +
-> +/*
-> + * shrink usage to be res->usage + val < res->limit.
-> + */
-> +
-> +int memcg_shrink_val(struct res_counter *cnt, unsigned long long val)
-> +{
-> +       struct mem_cgroup *memcg = container_of(cnt, struct mem_cgroup, res);
-> +       unsigned long flags;
-> +       int ret = 1;
-> +       int progress = 1;
-> +
-> +retry:
-> +       spin_lock_irqsave(&cnt->lock, flags);
-> +       /* Need to shrink ? */
-> +       if (cnt->usage + val <= cnt->limit)
-> +               ret = 0;
-> +       spin_unlock_irqrestore(&cnt->lock, flags);
-
-Can't this logic be in res_counter itself? I.e. the callback can
-assume that some shrinking needs to be done, and should just do it and
-return. The res_counter can handle retrying if necessary.
-
-> +/*
-> + * For Hard Wall Hierarchy.
-> + */
-> +
-> +int mem_cgroup_resize_callback(struct res_counter *cnt,
-> +                       unsigned long long val, int what)
-> +{
-> +       unsigned long flags, borrow;
-> +       unsigned long long diffs;
-> +       int ret = 0;
-> +
-> +       BUG_ON(what != RES_LIMIT);
-> +
-> +       /* Is this under hierarchy ? */
-> +       if (!cnt->parent) {
-> +               spin_lock_irqsave(&cnt->lock, flags);
-> +               cnt->limit = val;
-> +               spin_unlock_irqrestore(&cnt->lock, flags);
-> +               return 0;
-> +       }
-> +
-> +       spin_lock_irqsave(&cnt->lock, flags);
-> +       if (val > cnt->limit) {
-> +               diffs = val - cnt->limit;
-> +               borrow = 1;
-> +       } else {
-> +               diffs = cnt->limit - val;
-> +               borrow = 0;
-> +       }
-> +       spin_unlock_irqrestore(&cnt->lock, flags);
-> +
-> +       if (borrow)
-> +               ret = res_counter_move_resource(cnt,diffs,
-> +                                       memcg_shrink_val,
-> +                                       MEM_CGROUP_RECLAIM_RETRIES);
-> +       else
-> +               ret = res_counter_return_resource(cnt, diffs,
-> +                                       memcg_shrink_val,
-> +                                       MEM_CGROUP_RECLAIM_RETRIES);
-> +       return ret;
-> +}
-
-Again, a lot of this function seems like generic logic that should be
-in res_counter. The only bit that's memory specific is the
-memcg_shrink_val, and maybe that could just be passed when creating
-the res_counter. Perhaps we should have a res_counter_ops structure
-with operations like "parse" for parsing strings into numbers
-(currently called "write_strategy") and "reclaim" for trying to shrink
-the usage.
-
-> @@ -896,11 +987,44 @@ static ssize_t mem_cgroup_write(struct c
->                                struct file *file, const char __user *userbuf,
->                                size_t nbytes, loff_t *ppos)
->  {
-> -       return res_counter_write(&mem_cgroup_from_cont(cont)->res,
-> +       struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
-> +
-> +       if (cft->private != RES_LIMIT
-> +               || !cont->parent
-> +               || memcg->hierarchy_model == MEMCG_NO_HIERARCHY)
-
-The res_counter already knows whether it has a parent, so these checks
-shouldn't be necessary.
-
-> @@ -1096,6 +1238,12 @@ static void mem_cgroup_destroy(struct cg
->        int node;
->        struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+>> Add compat option to hid code to allow loading of all modules on
+>> systems which don't allow autoloading because of old userspace.
+> [ ... ]
+>> +config HID_COMPAT
+>> +     bool "Load all HID drivers on hid core load"
+>> +     ---help---
+>> +     Compatible option for older userspace. If you have system without udev
+>> +     support of module loading through aliases and also old
+>> +     module-init-tools which can't handle hid bus, choose Y here. Otherwise
+>> +     say N. If you say N and your userspace is old enough, the only
+>> +     functionality you loose is modules autoloading.
+>> +
+>> +     If unsure, say N.
+>> +
 >
-> +       if (cont->parent &&
-> +           mem->hierarchy_model == MEMCG_HARDWALL_HIERARCHY) {
-> +               /* we did what we can...just returns what we borrow */
-> +               res_counter_return_resource(&mem->res, -1, NULL, 0);
-> +       }
-> +
+> Hi Jiri,
 
-Should we also re-account any remaining child usage to the parent?
+Hi,
 
-Paul
+> shouldn't we leave this default to 'Y' for quite some time?
+
+This is unnecessary on most configurations, but requisite on old
+userspace. I think, we choose options like this to be yes. Please
+alter the patch. Thanks.
