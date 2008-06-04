@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYFDCro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbYFDCyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbYFDCro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 22:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYFDCrf
+	id S1755177AbYFDCyc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 22:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYFDCyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 22:47:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47684 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752143AbYFDCre (ORCPT
+	Tue, 3 Jun 2008 22:54:19 -0400
+Received: from linode.ducksong.com ([64.22.125.164]:57545 "EHLO
+	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752166AbYFDCyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 22:47:34 -0400
-Date: Tue, 3 Jun 2008 19:46:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Trent Piepho <tpiepho@freescale.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806041205.45833.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
-References: <1211852026.3286.36.camel@pasglop> <Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp> <alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org> <200806041205.45833.nickpiggin@yahoo.com.au>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Jun 2008 22:54:18 -0400
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+	v2.6.26-rc3+
+From: Patrick McManus <mcmanus@ducksong.com>
+To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: David Miller <davem@davemloft.net>, mingo@elte.hu, peterz@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       rjw@sisk.pl, Andrew Morton <akpm@linux-foundation.org>,
+       johnpol@2ka.mipt.ru
+In-Reply-To: <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>
+References: <20080603094057.GA29480@elte.hu>
+	 <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
+	 <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi>
+	 <20080603.150344.145518113.davem@davemloft.net>
+	 <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 03 Jun 2008 22:54:52 -0400
+Message-Id: <1212548093.12617.0.camel@tng>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 4 Jun 2008, Nick Piggin wrote:
+On Wed, 2008-06-04 at 02:22 +0300, Ilpo Järvinen wrote:
+==
+> --
+> [PATCH] tcp DEFER_ACCEPT: fix racy access to listen_sk
 > 
-> Actually, according to the document I am looking at (the AMD one), a UC
-> store may pass a previous WC store.
+> It seems that replacement of DA code also moved parts outside
+> of appropriate locking. The Ingo's problem seems to come from
+> the fact that two flows could now race in
+> (inet_csk_)reqsk_queue_add corrupting the queue. ...This can
+> leave dangling socks around which won't resolve themselves
+> without stimuli from outside (e.g., external RST would help
+> I think).
 
-Hmm. Intel arch manyal, Vol 3, 10.3 (page 10-7 in my version):
 
-  "If the WC bufer is partially filled, the writes may be delayed until 
-   the next ocurrence of a serializing event; such as, an SFENCE or MFENCE 
-   instruction, CPUID execution, a read or write to uncached memory, ..."
+﻿Ilpo, has anyone told you today that you rock? Well allow me - you
+rock.
+> 
+do_rcv() clearly has the listening socket locked in the non-DA case, and
+in the DA case it is the 'child' ESTABLISHED socket that is locked -
+leaving the accept queue unprotected. So simple.
 
-Any typos mine.
+-Pat
 
-Anyway, Intel certainly seems to document that WC memory is serialized by 
-any access to UC memory.
 
-But yes, I can well imagine that AMD is different, and I also heartily 
-would recommend rather being safe than sorry. Putting an explicit memory 
-barrier in between those accesses when you know it might make a difference 
-is just a good idea. 
-
-But basically, as far as I know the thing was designed to be invisible to 
-old software: that is the whole idea behind WC memory. So the design was 
-certainly intended to be that you can generally mark a framebuffer-like 
-structure WC without any software _ever_ caring, as long as you keep all 
-control ports in UC memory.
-
-Of course, because burst writes from the WC buffer are <i>so</i> much more 
-efficient on the PCI bus than dribbling them out one write at a time, it 
-didn't take long before all the graphics cards etc wanted to <i>also</i> 
-mark their command queues as WC memory, so that you could burst out the 
-commands to the ring buffers as fast as possible. So now you have both 
-your frame buffer *and* your command buffers mapped WC, and now ordering 
-really has to be ensured in software if you access both.
-
-[ And then there are the crazy people who mark *main memory* as WC, 
-  because they don't want to pollute the cache with all the data, and then 
-  you have the issue of cache coherency etc crap. Which only gets worse 
-  with SMP, especially if one processor thinks it has part of memory 
-  exclusively cached, and another one - or even the same one, 
-  through another aliasign address - ignores the cache protocol.
-
-  And you now get unhappy CPU's that think that there is a bug in the 
-  cache protocol and they get machine check faults.
-
-  So what started out as a "we can do accesses to the frame buffer more 
-  efficiently without anybody ever even having to know or care" has 
-  turned into a whole nightmare of people using it for other things, and 
-  then you very much _do_ have to care! ]
-
-And it doesn't surprise me if AMD then didn't get exactly the same 
-rules. 
-
-Oh, well.
-
-		Linus
