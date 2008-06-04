@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760663AbYFDPhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbYFDPiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760663AbYFDPhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbYFDPg7
+	id S1761106AbYFDPiX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbYFDPiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:36:59 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:30096 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754095AbYFDPg6 (ORCPT
+	Wed, 4 Jun 2008 11:38:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33697 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990AbYFDPiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:36:58 -0400
-X-BigFish: VPS-32(z34a4nz1432R98dR7efV1805Mzz10d3izzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4846B656.6030707@am.sony.com>
-Date: Wed, 4 Jun 2008 08:35:50 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] console - Add configurable support for console charset
- translation
-References: <48447615.5050806@am.sony.com>	 <1212500751.16924.322.camel@pmac.infradead.org>	 <4845DB46.3020308@am.sony.com> <1212538597.4042.29.camel@shinybook.infradead.org>
-In-Reply-To: <1212538597.4042.29.camel@shinybook.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+	Wed, 4 Jun 2008 11:38:14 -0400
+Subject: Re: [PATCH] quota: Split out quota_struct.h out of quota.h
+From: David Woodhouse <dwmw2@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080604152647.GA4189@cs181133002.pp.htv.fi>
+References: <12124266712214-git-send-email-jack@suse.cz>
+	 <12124266711334-git-send-email-jack@suse.cz>
+	 <12124266712838-git-send-email-jack@suse.cz>
+	 <12124266722979-git-send-email-jack@suse.cz>
+	 <12124266723968-git-send-email-jack@suse.cz>
+	 <12124266721420-git-send-email-jack@suse.cz>
+	 <20080604135624.GA13683@cs181133002.pp.htv.fi>
+	 <20080604145130.GC16572@duck.suse.cz>
+	 <20080604152647.GA4189@cs181133002.pp.htv.fi>
+Content-Type: text/plain
+Date: Wed, 04 Jun 2008 16:38:06 +0100
+Message-Id: <1212593886.32207.119.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Jun 2008 15:36:11.0914 (UTC) FILETIME=[B78FDEA0:01C8C658]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Tue, 2008-06-03 at 17:01 -0700, Tim Bird wrote:
->> This is clearly an improvement. But it is missing this part of the
->> original patch:
+On Wed, 2008-06-04 at 18:26 +0300, Adrian Bunk wrote:
+> On Wed, Jun 04, 2008 at 04:51:30PM +0200, Jan Kara wrote:
+> > On Wed 04-06-08 16:56:24, Adrian Bunk wrote:
+> > > On Mon, Jun 02, 2008 at 07:11:10PM +0200, Jan Kara wrote:
+> >...
+> > > > --- a/include/linux/quota.h
+> > > > +++ b/include/linux/quota.h
+> > > > @@ -37,13 +37,11 @@
+> > > >  
+> > > >  #include <linux/errno.h>
+> > > >  #include <linux/types.h>
+> > > > +#include <linux/quota_struct.h>
+> > > >...
+> > > 
+> > > This breaks our userspace headers.
+> > > 
+> > > Please always run "make headers_check" after touching #include's
+> > > under include/
+> >   I didn't know this existed :) I'll use it in future. Thanks. The question
+> > is how to fix this. Probably the best would be if didn't have to export new
+> > header file, wouldn't it? We can split the headers into quota.h containing
+> > structures and all other userspace stuff and quota_func.h carrying other
+> > kernel-internal stuff like inline functions etc. Oh well...
 > 
-> Oops, well spotted. I've updated the patch in the git tree; thanks.
+> Considering that quota.h #include's quota_struct.h it wouldn't be a 
+> problem if the new header also gets exported to userspace.
 > 
-> (that's what comes of applying patches by hand -- I _knew_ I had to do
-> that hunk, but managed to forget about it within the space of about 30
-> seconds when I was doing the other parts. I plead stupidity)
+> At least I do not have any strong opinion regarding how to best organize 
+> the quota headers - David (Cc'ed) might have a more input on this.
 
-We can chalk it up to my stupidity for sending a patch
-that couldn't be applied automatically...
-Thanks very much for the improvements!
- -- Tim
+To a large extent it doesn't actually matter for userspace. 
+All userspace will be using <sys/quota.h> instead, because for a very
+long period in our history, <linux/quota.h> would be completely broken
+for userspace because it would give the v1 quota stuff. I believe that
+was because we were depending on some CONFIG_xxx definition, which
+doesn't exist in userspace (we _really_ should add that to headers_check
+some time).
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+That said, the patch looks OK as long as you remember to add the new
+file to unifdef-y, and as long as you have #ifdef __KERNEL__ in the
+correct places in it (I can't see the updated patch with the new file
+actually included, so I haven't checked).
+
+-- 
+dwmw2
 
