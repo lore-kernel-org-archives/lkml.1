@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761677AbYFDMQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760225AbYFDMTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761677AbYFDMQx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 08:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760560AbYFDMLM
+	id S1760225AbYFDMTK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 08:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYFDMSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 08:11:12 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:64902 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760926AbYFDMLK (ORCPT
+	Wed, 4 Jun 2008 08:18:54 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:41611 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754649AbYFDMSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 08:11:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:references:user-agent:date:from:to:cc:subject
-         :content-disposition;
-        b=RFZF0YtbmPgBm1sNnQjfFDHsF5M3x7ypTIREPkmJIk3ncaVJuQ1GVGwJLb+AQh1ZYI
-         U5GQyU4HXsmGgrjanbT/QHfVXlUjafsExJcUsa2nqrdmKaBNVAMo5+Kl7THcVsMtMm8Z
-         DDOqbs/sGjoTXafODiK3iCiyLGKrqcE/w0ntk=
-Message-Id: <20080604115844.881301782@gmail.com>
-References: <20080604115633.116832712@gmail.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 04 Jun 2008 20:56:53 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org
-Subject: [patch -v3 20/22] s390: use memory_read_from_buffer
-Content-Disposition: inline; filename=s390-ipl-use-memory-read-from-buffer.patch
+	Wed, 4 Jun 2008 08:18:53 -0400
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: Paul Jackson <pj@sgi.com>, ioe-lkml@rameria.de, sivanich@sgi.com,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       kernel@kolivas.org, dfults@sgi.com, devik@cdi.cz, dino@in.ibm.com,
+       emmanuel.pacaud@univ-poitiers.fr, deweerdt@free.fr, mingo@elte.hu,
+       colpatch@us.ibm.com, nickpiggin@yahoo.com.au, rostedt@goodmis.org,
+       oleg@tv-sign.ru, paulmck@us.ibm.com, menage@google.com,
+       rddunlap@osdl.org, suresh.b.siddha@intel.com, tglx@linutronix.de
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080601213019.14ea8ef8.pj@sgi.com>
+	<1212446707.6269.26.camel@lappy.programming.kicks-ass.net>
+	<48447C75.8040203@qualcomm.com>
+	<200806030156.00155.ioe-lkml@rameria.de>
+	<4844BB41.7000605@qualcomm.com> <4845D825.6000403@qualcomm.com>
+	<20080603194148.56dfebe1.pj@sgi.com> <48461ADA.8020303@qualcomm.com>
+Date: Wed, 04 Jun 2008 14:18:11 +0200
+In-Reply-To: <48461ADA.8020303@qualcomm.com> (Max Krasnyansky's message of "Tue, 03 Jun 2008 21:32:26 -0700")
+Message-ID: <877id5v1fg.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 04 Jun 2008 12:11:06.0415 (UTC) FILETIME=[10E9BBF0:01C8C63C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux390@de.ibm.com
-Cc: linux-s390@vger.kernel.org
----
- arch/s390/kernel/ipl.c |   18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
+Max Krasnyansky <maxk@qualcomm.com> writes:
 
-Index: 2.6-git/arch/s390/kernel/ipl.c
-===================================================================
---- 2.6-git.orig/arch/s390/kernel/ipl.c
-+++ 2.6-git/arch/s390/kernel/ipl.c
-@@ -14,6 +14,7 @@
- #include <linux/delay.h>
- #include <linux/reboot.h>
- #include <linux/ctype.h>
-+#include <linux/fs.h>
- #include <asm/ipl.h>
- #include <asm/smp.h>
- #include <asm/setup.h>
-@@ -285,14 +286,8 @@ static struct kobj_attribute sys_ipl_dev
- static ssize_t ipl_parameter_read(struct kobject *kobj, struct bin_attribute *attr,
- 				  char *buf, loff_t off, size_t count)
- {
--	unsigned int size = IPL_PARMBLOCK_SIZE;
--
--	if (off > size)
--		return 0;
--	if (off + count > size)
--		count = size - off;
--	memcpy(buf, (void *)IPL_PARMBLOCK_START + off, count);
--	return count;
-+	return memory_read_from_buffer(buf, count, &off, IPL_PARMBLOCK_START,
-+					IPL_PARMBLOCK_SIZE);
- }
- 
- static struct bin_attribute ipl_parameter_attr = {
-@@ -310,12 +305,7 @@ static ssize_t ipl_scp_data_read(struct 
- 	unsigned int size = IPL_PARMBLOCK_START->ipl_info.fcp.scp_data_len;
- 	void *scp_data = &IPL_PARMBLOCK_START->ipl_info.fcp.scp_data;
- 
--	if (off > size)
--		return 0;
--	if (off + count > size)
--		count = size - off;
--	memcpy(buf, scp_data + off, count);
--	return count;
-+	return memory_read_from_buffer(buf, count, &off, scp_data, size);
- }
- 
- static struct bin_attribute ipl_scp_data_attr = {
+> We've seen exactly two replies with usage examples. Dimitri's case is legit
+> but can be handled much better (as in it not only avoids timers, but any other
+> kernel work) with cpu hotplug and cpusets. Ingo's case is bogus because it
+> does not actually do what he needs. There is a much better way to do exactly
+> what he needs which involves only cpu hotplug and has nothing to do with the
+> scheduler and such.
 
--- 
+One example I've seen in the past is that someone wanted to isolate a node
+completely from any memory traffic to avoid performance disturbance
+for memory intensive workloads.
+
+Right now the system boot could put pages from some daemon in there before any 
+cpusets are set up and there's no easy way to get them away again
+(short of migratepages for all running pids, but that's pretty ugly and won't 
+cover kernel level allocations and also can mess up locality)
+
+Given the use case wants more a "isolnodes", but given that there
+tends to be enough free memory at boot "isolcpus" tended to work.
+
+-Andi
+
