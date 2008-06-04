@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760607AbYFDPSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760926AbYFDPUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760607AbYFDPSx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYFDPSp
+	id S1760926AbYFDPUT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbYFDPUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:18:45 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40842 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbYFDPSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:18:44 -0400
-Date: Wed, 4 Jun 2008 17:18:42 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Petr Tesarik <ptesarik@suse.cz>, Christoph Hellwig <hch@lst.de>,
-       torvalds@osdl.org, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: Why is the rewritten ramdisk driver called brd instad of rd
-Message-ID: <20080604151842.GA30484@wotan.suse.de>
-References: <20080321130552.GA28274@lst.de> <1211880480.29836.11.camel@elijah.suse.cz> <20080528061130.GB16441@wotan.suse.de> <alpine.LNX.1.10.0806031309350.4055@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
+	Wed, 4 Jun 2008 11:20:07 -0400
+Received: from [165.204.77.10] ([165.204.77.10]:44653 "EHLO erda.localdomain"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753211AbYFDPUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:20:06 -0400
+X-Greylist: delayed 511 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jun 2008 11:20:06 EDT
+Date: Wed, 4 Jun 2008 17:11:31 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH] fix build bug in "x86: add PCI extended config space
+	access for AMD Barcelona"
+Message-ID: <20080604151131.GV23679@erda.amd.com>
+References: <20080602143830.GA6835@elte.hu> <20080603173705.1790F8316@erda.amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0806031309350.4055@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080603173705.1790F8316@erda.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 03, 2008 at 01:09:55PM +0200, Jan Engelhardt wrote:
-> 
-> On Wednesday 2008-05-28 08:11, Nick Piggin wrote:
-> 
-> >On Tue, May 27, 2008 at 11:28:00AM +0200, Petr Tesarik wrote:
-> >> On Fri, 2008-03-21 at 14:05 +0100, Christoph Hellwig wrote:
-> >> > Any reason why the rewritten ramdisk driver has a new name?  It's for
-> >> > all matters an inplace replacement of the old rd driver so it should
-> >> > be called rd.c / rd.ko to not confused instaler/developers/etc.
-> >> 
-> >> I think it's because the old rd played some dirty tricks with the page
-> >> cache, while the reworked one is a straightforward implementation of a
-> >> normal _b_lock device -> hence the "b".
-> >> 
-> >> No guarantee of correctness.
-> >
-> >Yeah it was a rwrite from scratch and it lived with the rd.c code for
-> >a while (although maybe never in mainline). I guess it might be good
-> >idea to rename it back to rd?
-> 
-> Just add a MODULE_ALIAS("rd").
+Ingo,
 
-Couldn't hurt... shall we merge this, then?
+On 03.06.08 19:37:04, Robert Richter wrote:
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  arch/powerpc/kernel/setup_64.c |    
 
+This patch is wrong. It touches a different setup_64.c file. Sorry for
+that, will send an update for tip/x86/cpu.
 
-Alias brd to rd in the hope of helping legacy users. Suggested by Jan.
+-Robert
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/drivers/block/brd.c
-===================================================================
---- linux-2.6.orig/drivers/block/brd.c	2008-06-05 00:51:53.000000000 +1000
-+++ linux-2.6/drivers/block/brd.c	2008-06-05 00:52:43.000000000 +1000
-@@ -397,6 +397,7 @@ module_param(max_part, int, 0);
- MODULE_PARM_DESC(max_part, "Maximum number of partitions per RAM disk");
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_BLOCKDEV_MAJOR(RAMDISK_MAJOR);
-+MODULE_ALIAS("rd");
- 
- #ifndef MODULE
- /* Legacy boot options - nonmodular */
+>  arch/x86/kernel/cpu/amd.c      |    1 -
+>  arch/x86/kernel/cpu/amd_64.c   |    1 +
+>  arch/x86/kernel/setup.c        |    4 ++--
+>  include/asm-x86/mmconfig.h     |    6 ------
+>  5 files changed, 3 insertions(+), 11 deletions(-)
