@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbYFDECI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbYFDECn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbYFDECI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 00:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbYFDEB4
+	id S1754177AbYFDECn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 00:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYFDECf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 00:01:56 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:14749 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbYFDEBz (ORCPT
+	Wed, 4 Jun 2008 00:02:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57767 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750781AbYFDECe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 00:01:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lYllpyARQGSb0XaHATCQbOzYXlfFca+fxSy36JbNrx2HzdN3CNrRVLYR3MQZN2j2kIvN97N36SQcRc6ER9iE7w1nPs2YyPYvfzU/mBqNGSPkelCBRbODLJLD2a5VgvzuvX4/zyBISV6K2jPeEJ5ANlTjzfv3sDqJ3eKfG0r7+WU=
-Message-ID: <35f686220806032101h103152dat841818982aaa5052@mail.gmail.com>
-Date: Tue, 3 Jun 2008 21:01:54 -0700
-From: "Alok kataria" <alokkataria1@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
-Cc: akataria@vmware.com, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Dan Hecht" <dhecht@vmware.com>, "Tim Mann" <mann@vmware.com>,
-       "Zachary Amsden" <zach@vmware.com>, "Sahil Rihan" <srihan@vmware.com>
-In-Reply-To: <20080603182014.79a38d03@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Jun 2008 00:02:34 -0400
+Date: Tue, 3 Jun 2008 21:02:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Jackson <pj@sgi.com>, miaox@cn.fujitsu.com, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [PATCH 1/2] cpusets: restructure the function update_cpumask()
+ and update_nodemask()
+Message-Id: <20080603210221.0978307c.akpm@linux-foundation.org>
+In-Reply-To: <20080603210038.51aabd12.akpm@linux-foundation.org>
+References: <4843AFC9.7000100@cn.fujitsu.com>
+	<20080603150346.4611b5ab.akpm@linux-foundation.org>
+	<4845E80F.5000808@cn.fujitsu.com>
+	<4845F742.2070301@cn.fujitsu.com>
+	<20080603191108.1c35d3c5.akpm@linux-foundation.org>
+	<20080603215917.7fd5af63.pj@sgi.com>
+	<20080603210038.51aabd12.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
-	 <20080603182014.79a38d03@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 3, 2008 at 6:20 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Tue, 03 Jun 2008 17:41:09 -0700
-> Alok Kataria <akataria@vmware.com> wrote:
->
->> On X86 platform we can use the value of cpu_khz computed during tsc
->> calibration to calculate the loops_per_jiffy value. Its very
->> important to keep the error in lpj values to minimum as any error in
->> that may result in kernel panic in check_timer.
->> In virtualization environment on a highly overloaded host, the guest
->> delay calibration may sometimes result in errors beyond the ~50% that
->> timer_irq_works can handle, resulting in the guest panicking.
-> \
->
-> can you guarantee that the rate tsc ticks at is the same as the current
-> CPU frequency? Answer: You can't....
->
+On Tue, 3 Jun 2008 21:00:38 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I think at the boot time atleast we can assume that, no ?
-If you are referring to the cpu frequency changing at run time (aka
-dynamic frequency scaling),
-in that case the time_cpufreq_notifier should take care of updating
-the loops_per_jiffy
-value for that corresponding cpu.
+> On Tue, 3 Jun 2008 21:59:17 -0500 Paul Jackson <pj@sgi.com> wrote:
+> 
+> > Andrew wrote:
+> > > I already did that, didn't I?
+> > 
+> > Where can I find your attempted merge, Andrew?
+> > 
+> > Probably someplace I should know about ... sorry.
+> > 
+> 
+> Who are you and what do you have to do with cpusets?
+> 
+> Sigh, sorry.  I need to drop and redo them anyway.
 
-> sadly we do need to calibrate this...
->
-> In addition, clearly you can have different cpus in a system run at a
-> different rate (both in terms of cpu_khz and, independently, in terms
-> of tsc rate)
->
-
-Again yes at run time frequency's may change but they shouldn't at boottime.
-AFAIK, i don't think there are X86 MP systems with asymmetric cpus
-i.e. systems with different
-base frequencies. If thats not true then there sure is a problem.
-
-Thanks,
-Alok
-
->
-> --
-> If you want to reach me at my work email, use arjan@linux.intel.com
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+hey, who are you calling senile?  You were cc'ed.
