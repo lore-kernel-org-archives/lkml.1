@@ -1,32 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYFDUVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759179AbYFDUXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761412AbYFDUVp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYFDUVf
+	id S1759179AbYFDUXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 16:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbYFDUXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:21:35 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:60421 "EHLO relay.sgi.com"
+	Wed, 4 Jun 2008 16:23:25 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54308 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751667AbYFDUVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:21:34 -0400
-Date: Wed, 4 Jun 2008 15:21:30 -0500
+	id S1751624AbYFDUXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 16:23:24 -0400
+Date: Wed, 4 Jun 2008 15:23:17 -0500
 From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: menage@google.com, miaox@cn.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] cpusets: update tasks' cpus_allowed and
- mems_allowed after CPU/NODE offline/online
-Message-Id: <20080604152130.b41d7922.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.10.0806041249390.23189@chino.kir.corp.google.com>
-References: <4845F864.8060102@cn.fujitsu.com>
-	<6599ad830806040230l24bd1201y3cc0ea0273d835ad@mail.gmail.com>
-	<6599ad830806040258h552e4623m5efae8202c5d026d@mail.gmail.com>
-	<20080604122227.a092e70e.pj@sgi.com>
-	<alpine.DEB.1.10.0806041149560.21323@chino.kir.corp.google.com>
-	<20080604142540.6fa2bcc3.pj@sgi.com>
-	<alpine.DEB.1.10.0806041232190.22192@chino.kir.corp.google.com>
-	<20080604144221.de09b709.pj@sgi.com>
-	<alpine.DEB.1.10.0806041249390.23189@chino.kir.corp.google.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: maxk@qualcomm.com, andi@firstfloor.org, ioe-lkml@rameria.de,
+       sivanich@sgi.com, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       kernel@kolivas.org, dfults@sgi.com, devik@cdi.cz, dino@in.ibm.com,
+       emmanuel.pacaud@univ-poitiers.fr, deweerdt@free.fr, mingo@elte.hu,
+       colpatch@us.ibm.com, nickpiggin@yahoo.com.au, rostedt@goodmis.org,
+       oleg@tv-sign.ru, paulmck@us.ibm.com, menage@google.com,
+       rddunlap@osdl.org, suresh.b.siddha@intel.com, tglx@linutronix.de
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
+ have realtime uses)
+Message-Id: <20080604152317.5a36d2cc.pj@sgi.com>
+In-Reply-To: <20080604200508.GM20824@one.firstfloor.org>
+References: <1212446707.6269.26.camel@lappy.programming.kicks-ass.net>
+	<48447C75.8040203@qualcomm.com>
+	<200806030156.00155.ioe-lkml@rameria.de>
+	<4844BB41.7000605@qualcomm.com>
+	<4845D825.6000403@qualcomm.com>
+	<20080603194148.56dfebe1.pj@sgi.com>
+	<48461ADA.8020303@qualcomm.com>
+	<877id5v1fg.fsf@basil.nowhere.org>
+	<20080604124126.0d281a99.pj@sgi.com>
+	<4846DF25.4020300@qualcomm.com>
+	<20080604200508.GM20824@one.firstfloor.org>
 Organization: SGI
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
@@ -36,13 +43,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> So I'll repost the patch and see where it goes.
+Andi, replying to Max:
+> > That script will move init itself into the appropriate cpuset and from then on
+> > everything will inherit it.
+> 
+> It won't be the parent of the other init scripts.
 
-Ok.  Perhaps you could add a brief comment, noting that
-the additional PF_* flag could perhaps be avoided with
-checks in cpusets and sched_setaffinity, as explained in
-http://lkml.org/lkml/2008/6/4/388.
+True, but init will be the parent of other init scripts,
+and init itself was moved into the appropriate cpuset.
 
 -- 
                   I won't rest till it's the best ...
