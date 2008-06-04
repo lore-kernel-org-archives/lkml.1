@@ -1,115 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762570AbYFDWwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbYFDW6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762570AbYFDWwU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYFDWwL
+	id S1762224AbYFDW6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYFDW6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:52:11 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:51316 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752903AbYFDWwK (ORCPT
+	Wed, 4 Jun 2008 18:58:00 -0400
+Received: from mailservice.tudelft.nl ([130.161.131.5]:9057 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753883AbYFDW57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:52:10 -0400
-Date: Wed, 4 Jun 2008 18:51:55 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jack@suse.cz, hidehiro.kawai.ez@hitachi.com, sct@redhat.com,
-       adilger@sun.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
-	buffers
-Message-ID: <20080604225155.GB8727@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>, jack@suse.cz,
-	hidehiro.kawai.ez@hitachi.com, sct@redhat.com, adilger@sun.com,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-	jbacik@redhat.com, cmm@us.ibm.com, yumiko.sugita.yf@hitachi.com,
-	satoshi.oshima.fk@hitachi.com
-References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com> <20080603153050.fb99ac8a.akpm@linux-foundation.org> <20080604101925.GB16572@duck.suse.cz> <20080604111911.c1fe09c6.akpm@linux-foundation.org> <20080604212202.GA8727@mit.edu> <20080604145848.e3da6f20.akpm@linux-foundation.org>
+	Wed, 4 Jun 2008 18:57:59 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -8.389
+Message-ID: <48471DF1.70505@tremplin-utc.net>
+Date: Thu, 05 Jun 2008 00:57:53 +0200
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.14) Gecko/20080504 Mandriva/2.0.0.14-1mdv2009.0 (2009.0) Thunderbird/2.0.0.14 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080604145848.e3da6f20.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andrew Morton <akpm@osdl.org>, pavel@ucw.cz,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       HWMON <lm-sensors@lm-sensors.org>
+Subject: Re: [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection  System 3D
+ ACPI driver -- please review!
+References: <1212235533.3815.5.camel@localhost>	<4846EBF5.2030406@tremplin-utc.net> <20080604225830.1dff64fc@hyperion.delvare>
+In-Reply-To: <20080604225830.1dff64fc@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 02:58:48PM -0700, Andrew Morton wrote:
-> On Wed, 4 Jun 2008 17:22:02 -0400
-> Theodore Tso <tytso@mit.edu> wrote:
+04-06-08 22:58, Jean Delvare wrote/a écrit:
+> Hi Eric,
 > 
-> > On Wed, Jun 04, 2008 at 11:19:11AM -0700, Andrew Morton wrote:
-> > > Does any other filesystem driver turn the fs read-only on the first
-> > > write-IO-error?
+> On Wed, 04 Jun 2008 21:24:37 +0200, Éric Piel wrote:
+>> We haven't received any review for this driver since last week's post by
+>> Yan :-( That's why I'm adding explicitly as receivers of this email all
+>> the people who have reviewed the first two previous takes. Apologies for
+>> the possible multiple receptions.
+>>
+>> It would be _really really kind_ if some of you could take some time and
+>> comment (or simply ACK ;-) ) this code. It adds support for hardware
+>> which can be found in mostly every HP Compaq laptop less than three
+>> years old. It's quite worthy.
+>>
+>> Mark, as maintainer of the hwmon tree, would accept this driver? Let us
+>> know if there are things we need to change.
 > 
-
-For failures to write to data blocks, I don't think any other
-filesystems turn the filesystem read-only.  Not that many other
-filesystems do the remount on read-only thing in general; remounting
-read/only is something that might be unique to ext2/3/4.
-
-> > It is similarly insane to ask a filesystem to figure out that a newly
-> > plugged in USB stick is the same one that the user had accidentally
-> > unplugged 30 seconds ago.  We don't want to put that kind of low-level
-> > knowlede about storage details in each different filesystem.
-> > 
-> > A much better place to put that kind of smarts is in a multipath
-> > module which sits in between the device and the filesystem.  It can
-> > retry writes from a transient failure, if a path goes down or if a
-> > iSCSI device temporarily drops off the network.
+> If you didn't receive any answer, my guess is that it's because you're
+> trying to add this driver to the wrong tree. Why would this driver go
+> in drivers/hwmon and be reviewed by hwmon folks, when it doesn't expose
+> a single hwmon attribute to user-space?
 > 
-> That's fine in theory, but we don't do any if that right now, do we?
-
-No, but I think it's insane to put any of this into the filesystem.  I
-don't want to put words in other people's mouths, but Mingming and I
-were chatting with Chris Mason the last two days at a BTRFS workshop
-(which is why we've been a bit slow on responding), and when discussed
-this thread informally, he agreed that it was really bad idea to try
-to put this kind of retry logic in an individual filesystem.
-
-> >  But if a filesystem
-> > gets a write failure, it has to assume that the write failure is
-> > permanent.
+> I guess you thought putting the driver there would be fine because
+> that's where the hdaps and ams drivers are, but IMHO the hdaps and ams
+> drivers should never have been placed in drivers/hwmon. These devices
+> really aren't hardware monitoring chips is the traditional sense of the
+> term. They are different chips, serving different purposes and
+> deserving a totally different interface. They'd better live in a
+> different subsystem and be maintainer by a different crew with interest
+> in these devices and hardware to test the drivers.
 > 
-> To that sector, yes.  But to the entire partition?
-
-I agree it's a bad idea.  OTOH, we really need a good way of notifying
-a system daemon or administrator, and not just rely on the application
-to DTRT when it receives an -EIO.  Probably what we should do is (1)
-return -EIO, (2) send a uevent that includes as much information as
-possible.  At the minimum, the block that had the write (or read)
-error, and if available the file name involved, and application and/or
-pid involved.  That way, the policy of what should happen in case of a
-data I/O error can be informed by what write just failed.  It might be
-that if the failure is to some critical application data, the right
-thing to do is to kill of the application server and let the HA system
-bring up the hotbackup.  Or if the failure is writing to a log file,
-some other recovery procedure is the right thing.   
-
-But forcing the entire filesystem read-only just because of a write
-failure to a data block is probably not the best way to go.
-
-> But afaict this patch changes things so that if we get a write failure
-> in a data block we make the entire fs read-only.  Which, as I said, is
-> often "dead box".
+> This discussion thread might sched some light on a possible approach:
+> http://marc.info/?l=lm-sensors&m=121127824726050&w=2
 > 
-> This seems like a quite major policy change to me.
+> So my advice is that you don't wait for a review from the hwmon people,
+> because apparently we don't have much interest in this type of device,
+> so you'll be waiting forever. You're much better adding the mdps driver
+> to drivers/misc through Andrew Morton, at least until someone takes
+> care of creating a subsystem for this type of devices and move all
+> existing drivers there.
+Hi Jean,
+I understand your argumentation. Indeed, this driver has nothing
+specially related to hwmon, excepted that all the other accelerometers
+so far have been put in hwmon. I've got nothing against redoing the
+patch to move the code to drivers/misc. Andrew, would you accept it?
 
-Agreed, and it's not appropriate.  I could imagine that for some
-setups it is the right policy, but the kernel should not be setting
-policy like this.  Maybe as a new tunable in the superblock, or maybe
-via a round-trip to userspace via a uevent, but certainly not as the
-new default behavior.
+> Would someone object to moving the hdaps and ams (and possibly
+> applesmc) drivers to drivers/misc?
+Yeah, applesmc seems a bit less obvious because it also exposes really
+some hardware sensors. Any idea how to handle this? Just leave it in
+hwmon for now?
 
-Apologies, I'm still catching up on patches sent in the past few days,
-so I haven't had a chance to do a detailed review on Kawai-san's
-patches yet.  I do agree that if this patch is forcing the entire
-filesystem read-only on a write-failure to a data block, it's probably
-not appropriate.
+So, the rational about moving all these drivers to drivers/misc/ would
+be that it shows they have no relation with hwmon, and they are
+maintained separately. This would be a temporary place until the
+"accelerometer" subsystem exists by it own, right?
+If everyone is happy with this idea, I can submit a separate patch to
+move them.
 
-							- Ted
+See you,
+Eric
