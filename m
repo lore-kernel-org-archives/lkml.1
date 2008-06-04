@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbYFDBvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbYFDB4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246AbYFDBvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 21:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbYFDBve
+	id S1753513AbYFDB4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 21:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbYFDB4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 21:51:34 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:35742 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbYFDBvd (ORCPT
+	Tue, 3 Jun 2008 21:56:07 -0400
+Received: from bizon.gios.gov.pl ([212.244.124.8]:41596 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbYFDB4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 21:51:33 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nix <nix@esperi.org.uk>,
-       dhazelton@enter.net, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net
-References: <20080603190235.GA9511@c2.user-mode-linux.org>
-	<20080603123211.e129c222.akpm@linux-foundation.org>
-	<200806031543.56864.dhazelton@enter.net>
-	<878wxmfg99.fsf@hades.wkstn.nix>
-	<20080603130709.fcf6a751.akpm@linux-foundation.org>
-	<20080603210048.GA12182@c2.user-mode-linux.org>
-Date: Tue, 03 Jun 2008 18:50:49 -0700
-In-Reply-To: <20080603210048.GA12182@c2.user-mode-linux.org> (Jeff Dike's
-	message of "Tue, 3 Jun 2008 17:00:48 -0400")
-Message-ID: <m1zlq2vuh2.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 3 Jun 2008 21:56:06 -0400
+X-Greylist: delayed 932 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Jun 2008 21:56:05 EDT
+Date: Wed, 04 Jun 2008 03:40:17 +0200
+From: Krzysztof Oledzki <ole@ans.pl>
+To: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+Subject: [PATCH]  Add another PCI ID for ICH6 force hpet.
+Message-ID: <4845f281.8dQsWzXdrYDR2glC%ole@ans.pl>
+User-Agent: nail 11.25 7/29/05
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Jeff Dike <jdike@addtoit.com>
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0023]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  1.0 XMPlayFrnd1 XMPlayFrnd: Play Friend Spam 1 Or More Qualities
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike <jdike@addtoit.com> writes:
+>From 4c01199fa9cd9e5871ca96cd243a03aeae0d0f48 Mon Sep 17 00:00:00 2001
+From: Krzysztof Piotr Oledzki <ole@ans.pl>
+Date: Wed, 4 Jun 2008 03:30:26 +0200
+Subject: [HPET] Add another PCI ID for ICH6 force hpet.
 
-> On Tue, Jun 03, 2008 at 01:07:09PM -0700, Andrew Morton wrote:
->> So if I change the host's time by an hour, the time will not advance at all
->> on the guest for the next hour? Sounds suboptimal :)
->
-> It is, but if the host is whacked, the guest just has to do the best that
-> it can...
+Tested on Asus P5GDC-V
 
-Could using a CLOCK_MONOTONIC time source fix this?  Those timers do not
-change when we change the time on the host.
+$ lspci -n -n |grep ISA
+00:1f.0 ISA bridge [0601]: Intel Corporation 82801FB/FR (ICH6/ICH6R) LPC Interface Bridge [8086:2640] (rev 03)
 
-Eric
+Force enabled HPET at base address 0xfed00000
+hpet clockevent registered
+hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+hpet0: 3 64-bit timers, 14318180 Hz
+
+Signed-off-by: Krzysztof Piotr Oledzki <ole@ans.pl>
+---
+ arch/x86/kernel/quirks.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index d89a648..06e1fd6 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -158,6 +158,8 @@ static void ich_force_enable_hpet(struct pci_dev *dev)
+ 
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ESB2_0,
+ 			 ich_force_enable_hpet);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH6_0,
++			 ich_force_enable_hpet);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH6_1,
+ 			 ich_force_enable_hpet);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_0,
+-- 
+1.5.5.3
+
