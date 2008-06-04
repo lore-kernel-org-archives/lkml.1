@@ -1,88 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760094AbYFDLOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYFDLQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760094AbYFDLOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 07:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbYFDLOL
+	id S1759974AbYFDLQR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 07:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbYFDLP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 07:14:11 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59308 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYFDLOK (ORCPT
+	Wed, 4 Jun 2008 07:15:59 -0400
+Received: from [211.125.136.229] ([211.125.136.229]:37073 "EHLO
+	ms13.sony.co.jp" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754901AbYFDLP6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 07:14:10 -0400
-Date: Wed, 4 Jun 2008 14:14:06 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <a01a16b50806031710u54b9297bkf1fad9c4f8fd581f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0806041402211.16829@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
-  <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com> 
- <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>  <484191BD.8000904@gmail.com>
-  <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi> 
- <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com> 
- <Pine.LNX.4.64.0805312332270.2760@wrl-59.cs.helsinki.fi>
- <a01a16b50806031710u54b9297bkf1fad9c4f8fd581f@mail.gmail.com>
+	Wed, 4 Jun 2008 07:15:58 -0400
+Date: Wed, 04 Jun 2008 19:09:06 +0900
+From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/12]: Proper compat WEXT support.
+Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080603.132755.262737024.davem@davemloft.net>
+References: <20080603.132755.262737024.davem@davemloft.net>
+Message-Id: <20080604184955.B033.40F06B3A@sm.sony.co.jp>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-565432715-1212578046=:16829"
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.46 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----696208474-565432715-1212578046=:16829
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Thanks for updating the patch set!!
 
-On Wed, 4 Jun 2008, Håkon Løvdal wrote:
+On Tue, 03 Jun 2008 13:27:55 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> Hi. I have now tested and taken various logs before/under/after (ps, 
-> netstat, tcpdump, strace, /proc/net/tcp). The logs did not grow as big 
-> as I feared however they are way too big attach here. Any tips on how to 
-> distribute?
 
-Usually such logs compress quite well. A best thing might be to put 
-somewhere (if possible) and http:// reference them.
-
-> I mentioned before that the ssh connection died on the new PC, but 
-> sometimes it just hangs as well, i.e. the ssh connection is alive but 
-> there is no data transferred.
-> The last test I did hang after just 292MB transferred. In this case pv
-> just hangs on the new PC, waiting for data that never arrives. On the 
-> sending side tar which is producing data have died and the corresponding 
-> ssh is locked in some uninterruptible sleep:
-
-> //netstat before the hang:
-> Proto Recv-Q Send-Q Local Address               Foreign Address
->      State       PID/Program name    Timer
-> tcp        0    504 new_pc:22                   old_pc:39464
->      ESTABLISHED 17054/sshd: hlovdal on (0.20/0/0)
+> This is a refresh of my previous WEXT compat patch set.
 > 
-> // after the hang:
-> Proto Recv-Q Send-Q Local Address               Foreign Address
->      State       PID/Program name    Timer
-> tcp        0   2896 old_pc:22                   new_pc:39464
->      ESTABLISHED -                   on (21329441.19/0/0)
+> I've actually tested these exact patches on sparc64 with a RNDIS based
+> USB wireless device from Linksys.  I was able to perform iwconfig
+> commands, check iwlist, bring up the interface and use it properly.
+> All with 32-bit tools.  I've also done an allmodconfig sanity
+> build check on sparc64.
+> 
+> The one thing I was not able to test yet is wpa_supplicant use, and
+> that likely doesn't work properly yet, but we can fix that on top and
+> these patches do not break native non-compat binaries.  They do make a
+> lot of compat stuff work which wasn't the case before.  So applying
+> this stuff makes sense, and we can get wpa_supplicant working if it
+> isn't working using follow-on patches.
+> 
+> The patch set starts by cleaning up the code so that we can avoid
+> having multiple copies of the WEXT main dispatch routines, one for
+> compat and one for the non-compat case.
+> 
+> Next, basic compat level handling of the WEXT ioctl is added, and the
+> equivalent code in the compat_ioctl.c file is removed.
+> 
+> Finally, compat IWE stream munging is added for the wireless layer.
+> When we get a compat WEXT ioctl request, we set a bit in the request
+> info blob, and the stream building helpers tip off this to format the
+> stream entries properly.
 
-??? Are these on the same machine? How come the ip-addresses got reversed 
-(while ports remain the same)...?!?
 
-...Something could be corrupting more than a little, addresses, reference 
-to the process, timers all seem mixed up here...
+I'm testing these patches on my PS3.  I've found a problem.
 
-> Many things  in /proc/17054/ are in a non-normal state (exe is an
-> empty symlink, fd is empty, etc)
+With 32-bit wireless-tools v28, the bitrates from the scan result were
+wrong (with gelic/rt2x00 driver):
 
-...
+[root@localhost wireless_tools.28]# ./iwlist wlan3 scanning
+Warning: Driver for device wlan3 has been compiled with version 22
+of Wireless Extension, while this program supports up to version 20.
+Some things may be broken...
 
+wlan3     Scan completed :
+          Cell 01 - Address: 00:06:25:C6:B9:A7
+                    ESSID:"planexuser"
+                    Mode:Master
+                    Channel:1
+                    Frequency:2.412 GHz (Channel 1)
+                    Quality=51/100  Signal level=-50 dBm  
+                    Encryption key:on
+                    IE: WPA Version 1
+                        Group Cipher : CCMP 
+                        Pairwise Ciphers (1) : CCMP 
+                        Authentication Suites (1) : PSK  
+                    Bit Rates:0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s
+                              0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s
+                              0 kb/s; 0 kb/s
+                    Extra:tsf=000000013f454d92
+
+With 32-bit wireless-tools v30 (i.e. the SOIGIWSCAN workaround
+included):
+
+[root@localhost wireless_tools.30]# ./iwlist wlan3 scanning
+wlan3     Scan completed :
+          Cell 01 - Address: 00:06:25:C6:B9:A7
+                    ESSID:"planexuser"
+                    Mode:Master
+                    Channel:1
+                    Frequency:2.412 GHz (Channel 1)
+                    Quality=48/100  Signal level=-68 dBm  
+                    Encryption key:on
+                    IE: WPA Version 1
+                        Group Cipher : CCMP
+                        Pairwise Ciphers (1) : CCMP
+                        Authentication Suites (1) : PSK
+                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
+                              24 Mb/s; 36 Mb/s; 54 Mb/s; 6 Mb/s; 9 Mb/s
+                              12 Mb/s; 48 Mb/s
+                    Extra:tsf=000000014e16ea91
+
+I think the callers of iwe_stream_add_value() need to do some
+preparations before the call if iocompat is needed, like the following.
+
+---
+ drivers/net/ps3_gelic_wireless.c |    7 +++++++
+ net/mac80211/mlme.c              |   11 ++++++++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+--- a/drivers/net/ps3_gelic_wireless.c
++++ b/drivers/net/ps3_gelic_wireless.c
+@@ -605,7 +605,14 @@ static char *gelic_wl_translate_scan(str
+ 	iwe.cmd = SIOCGIWRATE;
+ 	iwe.u.bitrate.fixed = iwe.u.bitrate.disabled = 0;
+ 	/* to stuff multiple values in one event */
++#ifdef CONFIG_COMPAT
++	if (info->flags & IW_REQUEST_FLAG_COMPAT)
++		tmp = ev + IW_EV_COMPAT_LCP_LEN;
++	else
++		tmp = ev + IW_EV_LCP_LEN;
++#else
+ 	tmp = ev + IW_EV_LCP_LEN;
++#endif
+ 	/* put them in ascendant order (older is first) */
+ 	i = 0;
+ 	j = 0;
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -4147,9 +4147,18 @@ ieee80211_sta_scan_result(struct net_dev
+ 
+ 	if (bss && bss->supp_rates_len > 0) {
+ 		/* display all supported rates in readable format */
+-		char *p = current_ev + IW_EV_LCP_LEN;
++		char *p;
+ 		int i;
+ 
++#ifdef CONFIG_COMPAT
++		if (info->flags & IW_REQUEST_FLAG_COMPAT)
++			p = current_ev + IW_EV_COMPAT_LCP_LEN;
++		else
++			p = current_ev + IW_EV_LCP_LEN;
++#else
++		p = current_ev + IW_EV_LCP_LEN;
++#endif
++
+ 		memset(&iwe, 0, sizeof(iwe));
+ 		iwe.cmd = SIOCGIWRATE;
+ 		/* Those two flags are ignored... */
 
 -- 
- i.
----696208474-565432715-1212578046=:16829--
+Masakazu Mokuno
+
