@@ -1,93 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYFDFAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYFDFGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYFDFAr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 01:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbYFDFAk
+	id S1753552AbYFDFGc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 01:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbYFDFGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 01:00:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57234 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbYFDFAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 01:00:39 -0400
-Message-ID: <4846210E.8080401@redhat.com>
-Date: Wed, 04 Jun 2008 00:58:54 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 4 Jun 2008 01:06:24 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38838 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbYFDFGX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 01:06:23 -0400
+Date: Wed, 04 Jun 2008 14:05:48 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: sparc64 bootup regression...
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+In-Reply-To: <20080603.151416.266389541.davem@davemloft.net>
+References: <20080430213831.F808.E1E9C6FF@jp.fujitsu.com> <20080603.151416.266389541.davem@davemloft.net>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080604112717.9792.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <peterz@infradead.org>
-CC: Hideo AOKI <haoki@redhat.com>, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Kernel marker has no performance impact on ia64.
-References: <48447052.3030300@redhat.com> <1212445965.6269.22.camel@lappy.programming.kicks-ass.net> <20080602232135.GA20173@Krystal>
-In-Reply-To: <20080602232135.GA20173@Krystal>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter and Mathieu,
+David-san.
 
-Thank you for your comments.
+Thank you for your concern. I'm very glad.
 
-Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
->> On Mon, 2008-06-02 at 18:12 -0400, Hideo AOKI wrote:
->>> Hello,
->>>
->>> I evaluated overhead of kernel marker using linux-2.6-sched-fixes
->>> git tree, which includes several markers for LTTng, using an ia64
->>> server.
->>>
->>> While the immediate trace mark feature isn't implemented on ia64,
->>> there is no major performance regression. So, I think that we 
->>> don't have any issues to propose merging marker point patches 
->>> into Linus's tree from the viewpoint of performance impact.
->> Performance is atm the least of the concerns regarding this work.
->>
->> I'm still convinced markers are too ugly to live.
->>
->> I also worry greatly about the fact that its too easy to expose too much
->> to user-space. There are no clear rules and the free form marker format
->> just begs for an inconsistent mess to arise.
-
-Sure, I think we should review each point carefully
-and should make clear rules what is acceptable or not and why.
-
->>
->> IMHO the current free-form trace_mark() should be removed from the tree
->> - its great for ad-hoc debugging but its a disaster waiting to happen
->> for anything else. Anybody doing ad-hoc debugging can patch it in
->> themselves if needed.
->>
->> Regular trace points can be custom made; this has the advantages that it
->> raises the implementation barrier and hopefully that encourages some
->> thought in the process. It also avoid the code from growing into
->> something that looks like someone had a long night of debugging.
->>
+> > I'll reconsider around here.
 > 
-> Maybe we could settle for an intermediate solution : I agree with you
-> that defining the trace points in headers, like you did for the
-> scheduler, makes the code much cleaner and makes things much easier to
-> maintain afterward. However, having the trace_mark mechanism underneath
-> helps a lot in plugging a generic tracer (actually, if we can settle the
-> marker issue, I've got a kernel tracer, LTTng, that I've been waiting
-> for quite a while to push to mainline that I would like to post someday).
+> I think I know at least one of the problems in this change.
+> 
+> This code assumes that it can take __pa() on NODE_DATA().
+> 
+> But, if NUMA is disabled, NODE_DATA() is &contig_page_data which is a
+> kernel image symbol.  __pa() is not supported for such addresses.
+> 
+> It happens to work on x86, but it will not work on just about every
+> other platform.
+> 
+> There are several things to consider to fix this changeset and
+> get it back into a state where it can be resubmitted into the
+> tree:
+> 
+> 1) What is the goal here wrt. allocating the usemap when NUMA
+>    is disabled.
+> 
+> 2) What is appropriate if section_nr targetted allocation of
+>    the usemap fails.
+> 
+> It seems to me that the pgdat and usemap should be allocated
+> together if putting them into the same section is important.
+> This allows us to avoid case #2 completely, and therefore we
+> don't even need to consider how to handle such a failure.
 
-That's good to me.
-BTW, I'd like to know your plan, would those static inline functions be
-defined in new headers or marker.h(or other existing headers)?
+Basically, this is for memory hot-remove feature.
+Pgdat's section and usemap section can't be removed until
+that all other section are removed.
+If usemap is allocated another section from pgdat,
+both section's can't be removed due to each other dependency.
+So, I would like to allocate them on the same section to
+remove whole of node completely.
 
-Regards,
+IIRC, some of architecture (like powerpc) allow un-removable section,
+because its box will gather -removable- sections and pass them to
+other "partition" via "dynamic logical partitioning" feature.
+Especially, powerpc's section size is very small, this allocation failure
+may often occur than I thought.
+
+In this case, usemap should be allocated on another section and
+kernel should just show message of unremovable sections.
+I think it would be simple workaround.
+
+Just I didn't notice the case of sparsemem with non-NUMA.
+So, it should be fixed.
+
+Ok. Now I have some internal works for my company in this week.
+And I would like to help clean up of bootmem before this.
+But, I'll fix this next week. Sorry for late.
+
+Thanks.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Yasunori Goto 
 
