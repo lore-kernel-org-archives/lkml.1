@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYFDNjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYFDNlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbYFDNjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 09:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbYFDNjK
+	id S1757956AbYFDNlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 09:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYFDNkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 09:39:10 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33025 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752301AbYFDNjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 09:39:09 -0400
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Wim Van Sebroeck <wim@iguana.be>
-Subject: [PATCH] watchdog: Strip stray space in log message
-Date: Wed, 4 Jun 2008 15:38:53 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
+	Wed, 4 Jun 2008 09:40:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:17472 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbYFDNkw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 09:40:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=FZnP99Kq9MqHdgppKUZJycqsNFU45tj08ajUbZxJQnaVucumijTtntF/hQCtJlQUTE
+         JjoIRkLiUvIBi22rVDUD6cT8BWD5wjJqvdmXos2D7nkFVMOfN66J4qgl//UWPrxJ+xkd
+         PyDFPtX8UFIdfYnR1OUHZyrwOdrEFS0St17u8=
+Message-ID: <e2e108260806040640k3ffb9712j443c2da37feb394c@mail.gmail.com>
+Date: Wed, 4 Jun 2008 15:40:49 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: Lkm <lkm@lea-linux.com>
+Subject: Re: PROBLEM: Hardware clock instable
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200806041517.43347.lkm@lea-linux.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806041538.53326.jdelvare@suse.de>
+References: <200806041402.39515.lkm@lea-linux.com>
+	 <e2e108260806040549p11117410x192d1020adb885c7@mail.gmail.com>
+	 <200806041517.43347.lkm@lea-linux.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Strip a stray space in log messages of 3 watchdog drivers.
-(And fold these long lines to make checkpatch.pl happy.)
+On Wed, Jun 4, 2008 at 3:17 PM, Lkm <lkm@lea-linux.com> wrote:
+> Ntpd logs:
+...
+>  2 Jun 13:42:20 ntpd[2299]: time reset -109.498922 s
+...
 
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
----
-This patch was already sent on:
- * 2008-01-19
+The reason I asked for the ntpd logs is that I'm still not sure
+whether there is a hardware problem. How long was the ntpd process
+running when the above line was logged ? And can you also post the
+output of ntpq -pn ?
 
- drivers/watchdog/mpcore_wdt.c |    3 ++-
- drivers/watchdog/softdog.c    |    3 ++-
- drivers/watchdog/txx9wdt.c    |    2 +-
- 3 files changed, 5 insertions(+), 3 deletions(-)
-
---- linux-2.6.26-rc4.orig/drivers/watchdog/mpcore_wdt.c	2008-06-03 10:55:01.000000000 +0200
-+++ linux-2.6.26-rc4/drivers/watchdog/mpcore_wdt.c	2008-06-03 10:57:25.000000000 +0200
-@@ -405,7 +405,8 @@ static struct platform_driver mpcore_wdt
- 	},
- };
- 
--static char banner[] __initdata = KERN_INFO "MPcore Watchdog Timer: 0.1. mpcore_noboot=%d mpcore_margin=%d sec (nowayout= %d)\n";
-+static char banner[] __initdata = KERN_INFO "MPcore Watchdog Timer: 0.1. "
-+	"mpcore_noboot=%d mpcore_margin=%d sec (nowayout=%d)\n";
- 
- static int __init mpcore_wdt_init(void)
- {
---- linux-2.6.26-rc4.orig/drivers/watchdog/softdog.c	2008-06-03 10:55:01.000000000 +0200
-+++ linux-2.6.26-rc4/drivers/watchdog/softdog.c	2008-06-03 10:57:25.000000000 +0200
-@@ -262,7 +262,8 @@ static struct notifier_block softdog_not
- 	.notifier_call	= softdog_notify_sys,
- };
- 
--static char banner[] __initdata = KERN_INFO "Software Watchdog Timer: 0.07 initialized. soft_noboot=%d soft_margin=%d sec (nowayout= %d)\n";
-+static char banner[] __initdata = KERN_INFO "Software Watchdog Timer: 0.07 "
-+	"initialized. soft_noboot=%d soft_margin=%d sec (nowayout=%d)\n";
- 
- static int __init watchdog_init(void)
- {
---- linux-2.6.26-rc4.orig/drivers/watchdog/txx9wdt.c	2008-04-17 04:49:44.000000000 +0200
-+++ linux-2.6.26-rc4/drivers/watchdog/txx9wdt.c	2008-06-04 15:25:34.000000000 +0200
-@@ -227,7 +227,7 @@ static int __init txx9wdt_probe(struct p
- 	}
- 
- 	printk(KERN_INFO "Hardware Watchdog Timer for TXx9: "
--	       "timeout=%d sec (max %ld) (nowayout= %d)\n",
-+	       "timeout=%d sec (max %ld) (nowayout=%d)\n",
- 	       timeout, WD_MAX_TIMEOUT, nowayout);
- 
- 	return 0;
-
--- 
-Jean Delvare
-Suse L3
+Bart.
