@@ -1,113 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760949AbYFDOvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbYFDO60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760949AbYFDOvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 10:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbYFDOvf
+	id S1760016AbYFDO60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 10:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYFDO6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 10:51:35 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:61526 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089AbYFDOvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 10:51:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references
-         :in-reply-to:content-type:content-transfer-encoding:from;
-        b=RK5IFus0O86+Y+tzgnpfpsrdRt6FZ8EkYp/HbRxq0Z/Q9RFthcMYSqg+oLW3tJdKxa
-         hwm1xrozXiHbOQcbDJABMZ8/1KDlJ9oYG2NR8NDSTzDCCnJ8nNhOgr5SmFSPhhzPsLje
-         zACDraiHc5NeNANWUSFKh4F6JYXb+nWPE/+Qo=
-Message-ID: <4846ABD3.4000600@gmail.com>
-Date: Wed, 04 Jun 2008 16:50:59 +0200
+	Wed, 4 Jun 2008 10:58:17 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:38996 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754079AbYFDO6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 10:58:14 -0400
+Message-ID: <4846AD84.2090800@sgi.com>
+Date: Wed, 04 Jun 2008 07:58:12 -0700
+From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
-       Miklos Szeredi <miklos@szeredi.hu>, viro@zeniv.linux.org.uk,
-       jamie@shareable.org, Ulrich Drepper <drepper@redhat.com>,
-       linux-fsdevel@vger.kernel.org,
-       Subrata Modak <subrata@linux.vnet.ibm.com>
-Subject: Re: [patch 3/4 v2] vfs: utimensat(): fix error checking for {UTIME_NOW,UTIME_OMIT}
- case
-References: <484694E7.3080405@gmail.com>
-In-Reply-To: <484694E7.3080405@gmail.com>
+To: Christoph Lameter <clameter@sgi.com>
+CC: Eric Dumazet <dada1@cosmosbay.com>, akpm@linux-foundation.org,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 02/41] cpu alloc: The allocator
+References: <20080530035620.587204923@sgi.com> <20080530040011.084909898@sgi.com> <483F8AF7.9000309@cosmosbay.com> <Pine.LNX.4.64.0805292219220.12107@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0805292219220.12107@schroedinger.engr.sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+Christoph Lameter wrote:
+> On Fri, 30 May 2008, Eric Dumazet wrote:
+> 
+>>> +static DEFINE_PER_CPU(UNIT_TYPE, area[UNITS]);
+>>>   
+>> area[] is not guaranteed to be aligned on anything but 4 bytes.
+>>
+>> If someone then needs to call cpu_alloc(8, GFP_KERNEL, 8), it might get an non
+>> aligned result.
+>>
+>> Either you should add an __attribute__((__aligned__(PAGE_SIZE))),
+>> or take into account the real address of area[] in cpu_alloc() to avoid waste
+>> of up to PAGE_SIZE bytes
+>> per cpu.
+> 
+> I think cacheline aligning should be sufficient. People should not 
+> allocate large page aligned objects here.
 
-This patch improves the indentation of the previous patch.
-(No other changes).
+I'm a bit confused.  Why is DEFINE_PER_CPU_SHARED_ALIGNED() conditioned on
+ifdef MODULE?
 
-Cheers,
+        #ifdef MODULE
+        #define SHARED_ALIGNED_SECTION ".data.percpu"
+        #else
+        #define SHARED_ALIGNED_SECTION ".data.percpu.shared_aligned"
+        #endif
 
-Michael
+        #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)                       \
+                __attribute__((__section__(SHARED_ALIGNED_SECTION)))            \
+                PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name             \
+                ____cacheline_aligned_in_smp
 
---- linux-2.6.26-rc4/fs/utimes.c	2008-06-04 13:36:33.000000000 +0200
-+++ linux-2.6.26-rc4-utimensat-fix-v4/fs/utimes.c	2008-06-04 13:35:14.000000000 +0200
-@@ -40,14 +40,9 @@
-
- #endif
-
--static bool nsec_special(long nsec)
--{
--	return nsec == UTIME_OMIT || nsec == UTIME_NOW;
--}
--
- static bool nsec_valid(long nsec)
- {
--	if (nsec_special(nsec))
-+	if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
- 		return true;
-
- 	return nsec >= 0 && nsec <= 999999999;
-@@ -106,7 +101,7 @@
- 		     times[1].tv_nsec == UTIME_NOW)
- 		times = NULL;
-
--	/* Don't worry, the checks are done in inode_change_ok() */
-+	/* In most cases, the checks are done in inode_change_ok() */
- 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
- 	if (times) {
- 		error = -EPERM;
-@@ -128,15 +123,26 @@
- 			newattrs.ia_mtime.tv_nsec = times[1].tv_nsec;
- 			newattrs.ia_valid |= ATTR_MTIME_SET;
- 		}
--	}
-
--	/*
--	 * If times is NULL or both times are either UTIME_OMIT or
--	 * UTIME_NOW, then need to check permissions, because
--	 * inode_change_ok() won't do it.
--	 */
--	if (!times || (nsec_special(times[0].tv_nsec) &&
--		       nsec_special(times[1].tv_nsec))) {
-+		/*
-+		 * For the UTIME_OMIT/UTIME_NOW and UTIME_NOW/UTIME_OMIT
-+		 * cases, we need to make an extra check that is not done by
-+		 * inode_change_ok().
-+		 */
-+		if (((times[0].tv_nsec == UTIME_NOW &&
-+			    times[1].tv_nsec == UTIME_OMIT)
-+		     ||
-+		     (times[0].tv_nsec == UTIME_OMIT &&
-+			    times[1].tv_nsec == UTIME_NOW))
-+		    && !is_owner_or_cap(inode))
-+			goto mnt_drop_write_and_out;
-+	} else {
-+
-+		/*
-+		 * If times is NULL (or both times are UTIME_NOW),
-+		 * then we need to check permissions, because
-+		 * inode_change_ok() won't do it.
-+		 */
- 		error = -EACCES;
-                 if (IS_IMMUTABLE(inode))
- 			goto mnt_drop_write_and_out;
-
-
+Thanks,
+Mike
