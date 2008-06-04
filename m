@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762075AbYFDWkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762694AbYFDWlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762075AbYFDWkd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYFDWkX
+	id S1762694AbYFDWlj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbYFDWla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:40:23 -0400
-Received: from mail.thorsten-knabe.de ([212.60.139.226]:60884 "EHLO
-	mail.thorsten-knabe.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbYFDWkW (ORCPT
+	Wed, 4 Jun 2008 18:41:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43988 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754052AbYFDWl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:40:22 -0400
-Message-ID: <484719C7.2020502@thorsten-knabe.de>
-Date: Thu, 05 Jun 2008 00:40:07 +0200
-From: Thorsten Knabe <linux@thorsten-knabe.de>
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
-MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Linux 2.6.25.4 task_struct leak
-References: <483EC624.90503@thorsten-knabe.de> <20080601213134.GJ4018@sequoia.sous-sol.org> <20080602010546.GA8578@c2.user-mode-linux.org>
-In-Reply-To: <20080602010546.GA8578@c2.user-mode-linux.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Jun 2008 18:41:29 -0400
+Date: Wed, 4 Jun 2008 15:41:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: kobayashi.kk@ncos.nec.co.jp, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] per-task-delay-accounting: /proc export for memory
+ reclaim delay
+Message-Id: <20080604154124.5b5b5bf7.akpm@linux-foundation.org>
+In-Reply-To: <20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
+	<20080603194608.ed76ecf3.kobayashi.kk@ncos.nec.co.jp>
+	<20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Report: SpamAssassin@thorsten-knabe.de:
-	Content analysis details:   (-2.6 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-0.0 NO_RELAYS              Informational: message was not relayed via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Dike wrote:
-> On Sun, Jun 01, 2008 at 02:31:39PM -0700, Chris Wright wrote:
->> * Thorsten Knabe (linux@thorsten-knabe.de) wrote:
->>> [5.] Most recent kernel version which did not have the bug:
->>> 2.6.23.17 does not leak task_structs.
->>> 2.6.24 - 2.6.25.3 has not been tested
+On Wed, 04 Jun 2008 12:07:29 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> Hi
 > 
-> Has this been seen on non-UML?
+> > diff --git a/fs/proc/array.c b/fs/proc/array.c
+> > index 9e3b8c3..a3e6e86 100644
+> > --- a/fs/proc/array.c
+> > +++ b/fs/proc/array.c
+> > @@ -498,7 +498,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+> > 
+> >  	seq_printf(m, "%d (%s) %c %d %d %d %d %d %u %lu \
+> >  %lu %lu %lu %lu %lu %ld %ld %ld %ld %d 0 %llu %lu %ld %lu %lu %lu %lu %lu \
+> > -%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld\n",
+> > +%lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %llu %lu %ld\n",
+> >  		pid_nr_ns(pid, ns),
+> >  		tcomm,
+> >  		state,
+> > @@ -544,6 +544,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+> >  		task->rt_priority,
+> >  		task->policy,
+> >  		(unsigned long long)delayacct_blkio_ticks(task),
+> > +		(unsigned long long)delayacct_freepages_ticks(task),
+> >  		cputime_to_clock_t(gtime),
+> >  		cputime_to_clock_t(cgtime));
+> 
+> userland program oftern below access.
+> thus, this patch break userland compatibility.
+> 
+> ----------------------------------------
+> #!/usr/bin/perl
+> 
+> $stat = `cat /proc/$pid/stat`;
+> split
+> @stat_list = split(/ / , $stat);
+> print stat_list[$index];
+>                  ^
+>                  |
+>                  use array index number
+> 
 
-Hello Jeff.
+Any application which breaks if we add more things to /proc/pid/stat
+just needs to be fixed.
 
-I'm not sure, if I understood your question correctly. The task_struct
-leak is on the host running a vanilla Linux 2.6.25.4 x86_64 on real
-hardware and not within the UML instances. I'll try to describe the
-situation more precisely:
+But we can't add new fields in the middle of the line!  We can only add
+new items to the end.
 
-The host system is a vanilla Linux 2.6.25.4 x86_64 running on real
-hardware with a Debian Etch x86_64 user space. However I've created a
-Debian Etch i386 (32bit) userspace chroot environment on the system,
-which is used, among other things, to compile the Linux 2.6.23.17 UML
-kernels and start various UML instances.
+But I think it would be good if we just weren't to make this change. 
+Do we really want to keep reporting the same information in two
+separate ways?
 
-I can start other 32-bit applications, for example compile an UML
-kernel, within the chroot without leaking task_structs, but as soon as I
-start an UML instance, I see leaked task_structs. Starting and
-immediately shutting down an UML instacne leaks approximately 2000
-task_structs. The number of leaked task_structs on the host seems to be
-equal to the number of processes that have been created (and destroyed)
-within the UML instances.
+If so, a new /proc/pid/delays would be a better way, but it might be a
+bit late for doing that now, given that we already put
+delayacct_blkio_ticks into /proc/pid/stat.
 
-The host system was upgraded from 2.6.23.17 x86_64 which did not leak
-task_structs to 2.6.25.4 x86_64. Also running the same UML kernels and
-filesystems on my laptop with a vanilla Linux 2.6.25.4 i386 kernel does
-not leak task_structs. The version of the UML kernel (tested 2.6.23.17
-and 2.6.25.4) does not seem to matter.
 
-As far as I understand the UML code in the kernel, an UML kernel uses
-some unusual clone() flags when creating new processes, which are seldom
-used by other applications and could be related to the bug.
-
-If there is no obvious bug in the code, I'll try to bisect that beast
-next weekend as suggested by Chris.
-
-Regards
-Thorsten
-
--- 
-___
- |        | /                 E-Mail: linux@thorsten-knabe.de
- |horsten |/\nabe                WWW: http://linux.thorsten-knabe.de
