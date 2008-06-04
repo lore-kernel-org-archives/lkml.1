@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbYFDDML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbYFDDNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756256AbYFDDML (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 23:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYFDDL5
+	id S1757898AbYFDDNc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 23:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYFDDNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 23:11:57 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51810 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752143AbYFDDL4 (ORCPT
+	Tue, 3 Jun 2008 23:13:23 -0400
+Received: from hs-out-0708.google.com ([64.233.178.250]:19503 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbYFDDNW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 23:11:56 -0400
-X-Sasl-enc: n0kFD3dWh6eayIGPGtGLYEUcfFmX36ksJgccf8gdf22Q 1212549115
-Date: Wed, 4 Jun 2008 00:11:53 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: [PATCH 15/15] rfkill: document rw rfkill switches and clarify
-	input subsystem interactions (v2)
-Message-ID: <20080604031153.GA30067@khazad-dum.debian.net>
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <200805291502.23726.IvDoorn@gmail.com> <20080529162625.GA3375@khazad-dum.debian.net> <200805291919.04384.IvDoorn@gmail.com> <20080529172252.GB3375@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080529172252.GB3375@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Jun 2008 23:13:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=KxaecMFNlm9gdUXfQWSE4RQb3WvgPOu6pSS002GqKdBbugNAMkcsUnx1kXLAwRfNFt/vo9/P1C0POXKfqkHytoPhC99tf2vE4rknLo4hd+CWkjeLjSDuFhDQcoX3bCAJUTBZf9dkeNcpKf1ODilLLkgz3hKHl4Du7wpRydCMwRc=
+Date: Tue, 3 Jun 2008 22:13:09 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Tim Bird <tim.bird@am.sony.com>, linux-tiny <Linux-tiny@selenic.com>,
+       linux-embedded <linux-embedded@vger.kernel.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] console - Add configurable support for console charset
+ translation
+Message-ID: <20080603221309.5e2762be@vader.jdub.homelinux.org>
+In-Reply-To: <1212541541.4042.41.camel@shinybook.infradead.org>
+References: <48447615.5050806@am.sony.com>
+	<1212500751.16924.322.camel@pmac.infradead.org>
+	<4845DB46.3020308@am.sony.com>
+	<1212538597.4042.29.camel@shinybook.infradead.org>
+	<20080603200349.3b1957e1@vader.jdub.homelinux.org>
+	<1212541541.4042.41.camel@shinybook.infradead.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 May 2008, Henrique de Moraes Holschuh wrote:
-> On Thu, 29 May 2008, Ivo van Doorn wrote:
-> > On Thursday 29 May 2008, Henrique de Moraes Holschuh wrote:
-> > > On Thu, 29 May 2008, Ivo van Doorn wrote:
-> > > > > This version better documents *_RFKILL_ALL.  Is it good enough for an
-> > > > > ACK for patch 14 of 15?
-> > > > 
-> > > > Yes, you can put my ack on patch 14.
-> > > > Thanks for the documentation update. :)
-> > > 
-> > > Then, this entire batch is ready for merging.  Now, if only Len would
-> > > come back from wherever he disappeared to, in order to merge the two
-> > > thinkpad-acpi patches, I could send it to netdev for merge.
+On Wed, 04 Jun 2008 02:05:40 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
+
+> On Tue, 2008-06-03 at 20:03 -0500, Josh Boyer wrote:
+> > On Wed, 04 Jun 2008 01:16:37 +0100
+> > David Woodhouse <dwmw2@infradead.org> wrote:
 > > 
-> > Actually,  I believe the correct merge order would through wireless-dev,
-> > which means the patches should go to John Linville and linux-wireless in the CC.
+> > > On Tue, 2008-06-03 at 17:01 -0700, Tim Bird wrote:
+> > > > This is clearly an improvement. But it is missing this part of the
+> > > > original patch:
+> > > 
+> > > Oops, well spotted. I've updated the patch in the git tree; thanks.
+> > 
+> > What git tree?
 > 
-> Noted.  At merge time (which will be as soon as the thinkpad-acpi
-> changes hit mainline), I will send them to you, John, and
-> linux-wireless.
+>  git.infradead.org/embedded-2.6.git
 
-I have just done this.  The patchset (with a minor fix to address an
-issue sparse found) has been sent to linux-wireless and John Linville
-for merging.
+Do you have plans to get that in -mm, or linux-next?
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+(Please say yes).
+
+josh
