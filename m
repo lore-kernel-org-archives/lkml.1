@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbYFDMDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYFDMJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760678AbYFDMDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 08:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbYFDMDF
+	id S1760056AbYFDMJd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 08:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbYFDMJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 08:03:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55954 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750764AbYFDMDC convert rfc822-to-8bit (ORCPT
+	Wed, 4 Jun 2008 08:09:23 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:2280 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbYFDMJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 08:03:02 -0400
-Date: Wed, 4 Jun 2008 12:47:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Trent Piepho <tpiepho@freescale.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-Message-ID: <20080604124714.55dbce65@core>
-In-Reply-To: <alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
-References: <1211852026.3286.36.camel@pasglop>
-	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
-	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
-	<200806041205.45833.nickpiggin@yahoo.com.au>
-	<alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Jun 2008 08:09:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:user-agent:date:from:to:subject;
+        b=Lq79HHRGIjtv6XTWkpPK6Vt1iXmiknGzfPwPSxdjkrXIpCKu+FhZq+68yWgDD2Jx6m
+         Fvj9L/fPPl18j/L10xGK4igOB9+UtgoihdmmrfUxslZrR2k+djZOoe8PbdGawutjAYmp
+         iC4tkygTKjEzrU+synZBD5cBT+l3kaCcrOkUU=
+Message-Id: <20080604115633.116832712@gmail.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 04 Jun 2008 20:56:33 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [patch -v3 00/22] use simple_read_from_buffer and memory_read_from_buffer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Anyway, Intel certainly seems to document that WC memory is serialized by 
-> any access to UC memory.
+Changes since -v2:
+- drop sunrpc patch because of a preference for seq_printf() conversion
+- fix available buffer size in vmcp patch
+- add Acked-by: from maintainers
 
-I don't believe that is actually true on Pentium Pro at least.
+This series of patches is almost trivial replacement except for
+introducing memory_read_from_buffer().
 
->   So what started out as a "we can do accesses to the frame buffer more 
->   efficiently without anybody ever even having to know or care" has 
->   turned into a whole nightmare of people using it for other things, and 
->   then you very much _do_ have to care! ]
+The only difference between memory_read_from_buffer() and
+simple_read_from_buffer() is which address space the function copies to.
 
-Notably graphics where 3Dfx lined the registers up specifically to make
-this work. We were also using it with I²O where it gave a small
-performance gain.
-
-Alan
+simple_read_from_buffer() copies to user space memory.
+memory_read_from_buffer() copies to normal memory.
