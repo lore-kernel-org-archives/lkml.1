@@ -1,28 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758334AbYFDLxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbYFDLxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758334AbYFDLxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 07:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbYFDLxX
+	id S1760596AbYFDLxw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 07:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760467AbYFDLxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 07:53:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41001 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753724AbYFDLxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 07:53:22 -0400
-Date: Wed, 4 Jun 2008 07:53:18 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       bfields@fieldses.org
-Subject: Re: [PATCH 0/3] have pooled sunrpc services make more intelligent
- allocations
-Message-ID: <20080604075318.66fece9c@barsoom.rdu.redhat.com>
-In-Reply-To: <1212518245.29133.25.camel@trinity.ogc.int>
-References: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
-	<1212512022.29133.18.camel@trinity.ogc.int>
-	<20080603134257.1de3a1c3@tleilax.poochiereds.net>
-	<1212518245.29133.25.camel@trinity.ogc.int>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Wed, 4 Jun 2008 07:53:42 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:6764 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754508AbYFDLxk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 07:53:40 -0400
+Date: Wed, 4 Jun 2008 13:53:31 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: [PATCH] PCI: Unhide the SMBus on the Compaq Evo D510
+Message-ID: <20080604135331.3fb6f284@hyperion.delvare>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,86 +24,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Jun 2008 13:37:25 -0500
-Tom Tucker <tom@opengridcomputing.com> wrote:
+One more machine with a hidden Intel SMBus. Unhiding it reveals a SMSC
+EMC6D100 hardware monitoring chip. I have checked that this machine
+has no ACPI magic touching the SMBus nor the hardware monitoring chip,
+so this should be safe.
 
-> 
-> On Tue, 2008-06-03 at 13:42 -0400, Jeff Layton wrote:
-> > On Tue, 03 Jun 2008 11:53:42 -0500
-> > Tom Tucker <tom@opengridcomputing.com> wrote:
-> > 
-> > > Jeff:
-> > > 
-> > > This brings up an interesting issue with the RDMA transport and
-> > > RDMA_READ. RDMA_READ is submitted as part of fetching an RPC from the
-> > > client (e.g. NFS_WRITE). The xpo_recvfrom function doesn't block waiting
-> > > for the RDMA_READ to complete, but rather queues the RPC for subsequent
-> > > processing when the I/O completes and returns 0. 
-> > > 
-> > > I can use these new services to allocate CPU local pages for this I/O.
-> > > So far, so good. However, when the I/O completes, and the transport is
-> > > rescheduled for subsequent RPC completion processing, the pool/CPU that
-> > > is elected doesn't have any affinity for the CPU on which the I/O was
-> > > initially submitted. I think this means that the svc_process/reply steps
-> > > may occur on a CPU far away from the memory in which the data resides.
-> > > 
-> > > Am I making sense here? If so, any thoughts on what could/should be
-> > > done?
-> > > 
-> > > Thanks,
-> > > Tom
-> > > 
-> > 
-> > I confess I didn't think hard about the RDMA case here (and haven't
-> > been paying as much attention as I probably should to the design of
-> > it). So take my thoughts with a large chunk of salt...
-> > 
-> > On a NUMA box, the pages have to live _somewhere_ and some CPUs will be
-> > closer to them than others. If we're concerned about making sure that
-> > the post-RDMA_READ processing is done on a CPU close to the memory,
-> > then we don't have much choice but to try to make sure that this
-> > processing is only done on CPUs that are close to that memory.
-> > 
-> > Assuming that this post-processing is done by nfsd, I suppose we'd need
-> > to tag the post-RDMA_READ RPC with a poolid or something and make sure
-> > that only nfsds running on CPUs close to the memory pick it up. Perhaps
-> > there could be a per-pool queue for these RPC's or something...
-> > 
-> > Either way, the big question is whether that will be a net win or loss
-> > for throughput. i.e. are we better off waiting for the right nfsd to
-> > become available or allowing the first nfsd that becomes available to
-> > make the crosscalls needed to do the RPC? It's hard to say...
-> 
-> Not only that, but it would lead to more disorder in the RPC processing
-> which might kill write-behind.
-> 
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+Patch already sent on:
+ * 2008-04-17
 
-Oof, yeah...good point...
+ drivers/pci/quirks.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Another option might be to keep the nfsd that issued the RDMA_READ idle
-for a short time in the expectation that the RDMA_READ reply will come
-in soon. With a large enough pool of nfsd's I'd think that wouldn't
-cause too much of a problem. That might be easier to implement anyway,
-though we'd still have to think about how best to make sure that we
-dispatch the RDMA_READ reply to the right nfsd (or at least to the
-right svc pool).
+--- linux-2.6.25.orig/drivers/pci/quirks.c	2008-04-17 16:39:59.000000000 +0200
++++ linux-2.6.25/drivers/pci/quirks.c	2008-04-17 16:40:29.000000000 +0200
+@@ -1054,6 +1054,12 @@ static void __init asus_hides_smbus_host
+ 				 * its on-board VGA controller */
+ 				asus_hides_smbus = 1;
+ 			}
++		else if (dev->device == PCI_DEVICE_ID_INTEL_82845G_IG)
++			switch(dev->subsystem_device) {
++			case 0x00b8: /* Compaq Evo D510 CMT */
++			case 0x00b9: /* Compaq Evo D510 SFF */
++				asus_hides_smbus = 1;
++			}
+ 	}
+ }
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82845_HB,	asus_hides_smbus_hostbridge);
+@@ -1068,6 +1074,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_I
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82915GM_HB, asus_hides_smbus_hostbridge);
+ 
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82810_IG3,	asus_hides_smbus_hostbridge);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	PCI_DEVICE_ID_INTEL_82845G_IG,	asus_hides_smbus_hostbridge);
+ 
+ static void asus_hides_smbus_lpc(struct pci_dev *dev)
+ {
 
-> > 
-> > In the near term, I doubt this patchset will harm the RDMA case. 
-> 
-> Agreed. 
-> 
-> > After
-> > all, the distribution of memory allocations is pretty lumpy now. On
-> > a NUMA box with RDMA you're probably doing a lot of crosscalls with
-> > the current code.
-> 
-> Probably no worse than the socket's transport since the skbuf's aren't
-> necessarily allocated on the CPU calling svc_recv.
-> 
-
-Right, it's certainly no worse than the current situation for the
-non-RDMA case.
 
 -- 
-Jeff Layton <jlayton@redhat.com>
+Jean Delvare
