@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbYFDUVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYFDUVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759824AbYFDUVY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYFDUVQ
+	id S1761412AbYFDUVp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 16:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYFDUVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:21:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:2915 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbYFDUVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:21:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=GLvHwlth8PHLDDNb6UxRo3L1tbVMzhBilxj4I8b1wXMT14fMNL/2bM773gtGkFjh+8
-         bHDPW8vpuGo+o9LP76A0JLO+a1kXTXtx2W4ATugtMkU6FYpHqFuwjjHgf6sdFegG24Vt
-         e3fcj1aDvF9N72xr9LKYm8NGUKzFJBlKfPa6w=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: e820 max_arch_pfn typo fix for 64 bit
-Date: Wed, 4 Jun 2008 13:21:29 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806031025.55026.yhlu.kernel@gmail.com> <200806031934.01198.yhlu.kernel@gmail.com> <200806031935.05202.yhlu.kernel@gmail.com>
-In-Reply-To: <200806031935.05202.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 4 Jun 2008 16:21:35 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:60421 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751667AbYFDUVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 16:21:34 -0400
+Date: Wed, 4 Jun 2008 15:21:30 -0500
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: menage@google.com, miaox@cn.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] cpusets: update tasks' cpus_allowed and
+ mems_allowed after CPU/NODE offline/online
+Message-Id: <20080604152130.b41d7922.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.10.0806041249390.23189@chino.kir.corp.google.com>
+References: <4845F864.8060102@cn.fujitsu.com>
+	<6599ad830806040230l24bd1201y3cc0ea0273d835ad@mail.gmail.com>
+	<6599ad830806040258h552e4623m5efae8202c5d026d@mail.gmail.com>
+	<20080604122227.a092e70e.pj@sgi.com>
+	<alpine.DEB.1.10.0806041149560.21323@chino.kir.corp.google.com>
+	<20080604142540.6fa2bcc3.pj@sgi.com>
+	<alpine.DEB.1.10.0806041232190.22192@chino.kir.corp.google.com>
+	<20080604144221.de09b709.pj@sgi.com>
+	<alpine.DEB.1.10.0806041249390.23189@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806041321.30083.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David wrote:
+> So I'll repost the patch and see where it goes.
 
-should use right shift
+Ok.  Perhaps you could add a brief comment, noting that
+the additional PF_* flag could perhaps be avoided with
+checks in cpusets and sched_setaffinity, as explained in
+http://lkml.org/lkml/2008/6/4/388.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -771,7 +771,7 @@ u64 __init early_reserve_e820(u64 startt
- #  define MAX_ARCH_PFN		(1ULL<<(32-PAGE_SHIFT))
- # endif
- #else /* CONFIG_X86_32 */
--# define MAX_ARCH_PFN MAXMEM<<PAGE_SHIFT
-+# define MAX_ARCH_PFN MAXMEM>>PAGE_SHIFT
- #endif
- 
- /*
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
