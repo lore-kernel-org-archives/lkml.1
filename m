@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762265AbYFDU0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbYFDUdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762265AbYFDU0s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759727AbYFDU0d
+	id S1759282AbYFDUdW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 16:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbYFDUdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:26:33 -0400
-Received: from saeurebad.de ([85.214.36.134]:45263 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758767AbYFDU0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:26:32 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 11/14] bootmem: respect goal more likely
-References: <20080603225700.9780.E1E9C6FF@jp.fujitsu.com>
-	<87zlq2h4sn.fsf@saeurebad.de>
-	<20080604193712.97A9.E1E9C6FF@jp.fujitsu.com>
-Date: Wed, 04 Jun 2008 22:25:46 +0200
-In-Reply-To: <20080604193712.97A9.E1E9C6FF@jp.fujitsu.com> (Yasunori Goto's
-	message of "Wed, 04 Jun 2008 19:55:29 +0900")
-Message-ID: <87fxrtaqwl.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 4 Jun 2008 16:33:05 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:34857 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752897AbYFDUcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 16:32:52 -0400
+Message-ID: <4846FBF2.9010206@skyrush.com>
+Date: Wed, 04 Jun 2008 14:32:50 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+To: Alan Cox <alan@redhat.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Newall <davidn@davidnewall.com>,
+       Willy Tarreau <w@1wt.eu>, Harald Dunkel <harald.dunkel@t-online.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.3: su gets stuck for root
+References: <48438126.3080308@t-online.de> <20080602053256.GF5609@1wt.eu> <20080602091016.571dda7c@core> <4843B6EE.8080104@davidnewall.com> <20080602102033.63e4cd18@core> <48441138.90503@skyrush.com> <20080602155133.GC933@devserv.devel.redhat.com> <4846A9F4.40003@skyrush.com> <20080604151649.GB12625@devserv.devel.redhat.com> <4846C85E.7080309@skyrush.com> <20080604171056.GB17875@devserv.devel.redhat.com>
+In-Reply-To: <20080604171056.GB17875@devserv.devel.redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Alan Cox wrote:
+>> tty = current->signal->tty = -142080000 or 0xf7880800
+>> task->pgrg                 = -142405824 or 0xf7830f40
+> 
+> task->pgrp is a struct pid - you need the value it holds
 
-Yasunori Goto <y-goto@jp.fujitsu.com> writes:
+Yeah, I figured later that giving you the addresses was rather useless.  :)
 
->> This check is backwards and probably made your boot fail.
->> 
->> >> +		if (limit && limit < bdata->node_boot_start)
->> >> +			continue;
->> 
->> Changed this to break, because we don't need to search any further if
->> the current node already starts at/above the limit (remember, we walk a
->> list sorted by ->node_boot_start here).
->> 
->> I also made the checks more intuitively understandable.
->> 
->> Could you try the following fix on top of this patch?
->
-> I tried it. However, my box cannot boot yet.
->
->>>  	max -= PFN_DOWN(bdata->node_boot_start);
->>>  	start -= PFN_DOWN(bdata->node_boot_start);
->>> +	fallback -= PFN_DOWN(bdata->node_boot_start);
->
-> I thought this fallback was wrong at first, 
-> because fallback may point 0 at this time,
-> it doesn't point start_pfn of this node.
->
-> But even if here is commented out, kernel can't boot up yet.
+Anyway, here is more info:
 
-Oh, that should go out, sorry.  It is a left-over from another way to do
-it.  Should pay more attention :/
+tty_check_change: current->signal->tty = f7880800
+tty_check_change: tty = f7880800
+tty_check_change: tty->pgrp = f7b99e40
+  tty->pgrp->count = 5
+  tty->pgrp->level = 0
+  tty->pgrp->numbers[0].nr = 6951
+tty_check_change: task_pgrp(current) = f7b99d40
+  task_pgrp(current)->count = 1
+  task_pgrp(current)->level = 0
+  task_pgrp(current)->numbers[0].nr = 6952
+tty_check_change: kill_pgrp called; returning -ERESTARTSYS
+set_termios: error return value (-512) from tty_check_change
+foo       6951  0.0  0.1   2332  1096 tty1     S+   14:18   0:00 su foo
+foo       6952  0.0  0.1   2988  1464 tty1     S    14:18   0:00 bash
 
-> I'd like to straggle more, but may be need more time,
-> because, IA64 doesn't have early_printk, and console is not enable
-> at here.....
 
-Hm, just to make sure: this is the patch that breaks booting, right?  If
-you apply all patches in the series before this one, the machine boots
-fine?
+So, looks like the tty->pgrp's process is the "su" command itself, and
+the task_pgrp(current)'s process is "bash" - the shell started by the su.
 
-Could you boot a working image with bootmem_debug in the command line?
-Perhaps seeing the usual bootmem usage on this box gives a hint what is
-broken.
-
-> P.S.
-> I was very confused by local variable namimng in alloc_bootmem_core. 
-> I suppose start, max, and end, should be named like
-> sidx, eidx, and midx. They are not pfn, but index of bitmap.
-
-Okay, I will make them more clear.
-
-> However, new_start and new_end should be named as new_start_offset and
-> new_end_offset. They are not index, but offset from start address of
-> the node.
-
-Yes, that too.  I would also rename last_offset to last_eidx and
-last_success to last_sidx.  What do you think?
-
-	Hannes
+						-Joe
