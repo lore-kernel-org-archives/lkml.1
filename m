@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbYFDGkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYFDGnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbYFDGkV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 02:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYFDGkF
+	id S1758164AbYFDGnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 02:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYFDGnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 02:40:05 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:34164 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751529AbYFDGkE (ORCPT
+	Wed, 4 Jun 2008 02:43:01 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33716 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbYFDGnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 02:40:04 -0400
-Date: Tue, 3 Jun 2008 23:39:06 -0700 (PDT)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Matthew Wilcox <matthew@wil.cx>, Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
-       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
-       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: MMIO and gcc re-ordering issue
-In-Reply-To: <200806041225.50058.nickpiggin@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0806032307580.3242@t2.domain.actdsltmp>
-References: <1211852026.3286.36.camel@pasglop> <20080603213310.GC3549@parisc-linux.org>
- <Pine.LNX.4.64.0806031439520.3242@t2.domain.actdsltmp>
- <200806041225.50058.nickpiggin@yahoo.com.au>
+	Wed, 4 Jun 2008 02:43:00 -0400
+Date: Wed, 4 Jun 2008 09:42:58 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Patrick McManus <mcmanus@ducksong.com>
+cc: David Miller <davem@davemloft.net>, mingo@elte.hu, peterz@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       rjw@sisk.pl, Andrew Morton <akpm@linux-foundation.org>,
+       johnpol@2ka.mipt.ru
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+ v2.6.26-rc3+
+In-Reply-To: <1212548093.12617.0.camel@tng>
+Message-ID: <Pine.LNX.4.64.0806040927410.16057@wrl-59.cs.helsinki.fi>
+References: <20080603094057.GA29480@elte.hu>  <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
+  <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi> 
+ <20080603.150344.145518113.davem@davemloft.net> 
+ <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi> <1212548093.12617.0.camel@tng>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; boundary="-696208474-2131221771-1212560878=:16057"
+Content-ID: <Pine.LNX.4.64.0806040928060.16057@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008, Nick Piggin wrote:
-> On Wednesday 04 June 2008 07:44, Trent Piepho wrote:
->> On Tue, 3 Jun 2008, Matthew Wilcox wrote:
->
->>> I don't understand why you keep talking about DMA.  Are you talking
->>> about ordering between readX() and DMA?  PCI proides those guarantees.
->>
->> I guess you haven't been reading the whole thread.  The reason it started
->> was because gcc can re-order powerpc (and everyone else's too) IO accesses
->> vs accesses to cachable memory (but not spin-locks), which ends up only
->> being a problem with coherent DMA.
->
-> I don't think it is only a problem with coherent DMA.
->
-> CPU0                         CPU1
-> mutex_lock(mutex);
-> writel(something, DATA_REG);
-> writel(GO, CTRL_REG);
-> started = 1;
- 	(A)
-> mutex_unlock(mutex);
->                             mutex_lock(mutex);
- 	(B)
->                             if (started)
->                               /* oops, this can reach device before GO */
->                               writel(STOP, CTRL_REG);
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The locks themselves should have (and do have) ordering operations to insure
-gcc and/or the cpu can't move a store or load outside the locked region. 
-Generally you need that to keep stores/loads to cacheable memory inside the
-critical area, much less I/O operations.  Otherwise all you have to do is
-replace writel(something, ...) with shared_data->something = ...  and there's
-an obvious problem.  In your example, gcc currently can and will move the GO
-operation to point A (if it can figure out that CTRL_REG and started aren't
-aliased), but that's not a problem.  If it could move it to B that would be a
-problem, but it can't.
+---696208474-2131221771-1212560878=:16057
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0806040928061.16057@wrl-59.cs.helsinki.fi>
 
-Other than coherent DMA, I don't think there is any reason to care if I/O
-accessors are strongly ordered wrt load/stores to cacheable memory.  locking
-and streaming DMA sync operations already need to have ordering, so they don't
-require all I/O to be ordered wrt all cacheable memory.
+On Tue, 3 Jun 2008, Patrick McManus wrote:
+
+> On Wed, 2008-06-04 at 02:22 +0300, Ilpo Järvinen wrote:
+> ==
+> > --
+> > [PATCH] tcp DEFER_ACCEPT: fix racy access to listen_sk
+> > 
+> > It seems that replacement of DA code also moved parts outside
+> > of appropriate locking. The Ingo's problem seems to come from
+> > the fact that two flows could now race in
+> > (inet_csk_)reqsk_queue_add corrupting the queue. ...This can
+> > leave dangling socks around which won't resolve themselves
+> > without stimuli from outside (e.g., external RST would help
+> > I think).
+
+> do_rcv() clearly has the listening socket locked in the non-DA case, and
+> in the DA case it is the 'child' ESTABLISHED socket that is locked -
+> leaving the accept queue unprotected. So simple.
+
+It also well explains why Ingo finally got the KERNEL: assertion 
+(!sk->sk_ack_backlog) which is adjusted in the very same reqsk_queue_add 
+making it and the actual queue come out of sync.
+
+...too bad this has no relevance to Håkon's case, so more digging
+is necessary... :-)
+
+-- 
+ i.
+---696208474-2131221771-1212560878=:16057--
