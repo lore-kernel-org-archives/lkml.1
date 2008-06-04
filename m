@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbYFDRTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760885AbYFDRUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760148AbYFDRTV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 13:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYFDRTJ
+	id S1760885AbYFDRUS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 13:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbYFDRUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 13:19:09 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63929 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752009AbYFDRTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 13:19:08 -0400
-Date: Wed, 4 Jun 2008 18:18:28 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Stefan Assmann <sassmann@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
-In-Reply-To: <alpine.LFD.1.10.0806041801260.3235@apollo.tec.linutronix.de>
-Message-ID: <Pine.LNX.4.55.0806041755040.28685@cliff.in.clinika.pl>
-References: <12124107071847-git-send-email-od@suse.de> <m1tzgauduu.fsf@frodo.ebiederm.org>
- <4846651F.4070802@suse.de> <m1ve0pqy06.fsf@frodo.ebiederm.org>
- <48467DA7.9030309@suse.de> <Pine.LNX.4.55.0806041555370.28685@cliff.in.clinika.pl>
- <alpine.LFD.1.10.0806041801260.3235@apollo.tec.linutronix.de>
+	Wed, 4 Jun 2008 13:20:04 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:55420 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbYFDRUD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 13:20:03 -0400
+X-IronPort-AV: E=Sophos;i="4.27,590,1204520400"; 
+   d="scan'208";a="54636789"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] mtd m25p80: fix bug - ATmel spi flash fails to becopied to
+Date: Wed, 4 Jun 2008 18:20:52 +0100
+Message-ID: <8A42379416420646B9BFAC9682273B6D01FB8036@limkexm3.ad.analog.com>
+In-Reply-To: <1212598723.32207.130.camel@pmac.infradead.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] mtd m25p80: fix bug - ATmel spi flash fails to becopied to
+Thread-Index: AcjGZEpWE+wBxq7DRwG9Ml7v/U2dFQAArqxA
+References: <1211021526-24076-1-git-send-email-cooloney@kernel.org> <8A42379416420646B9BFAC9682273B6D0183AE38@limkexm3.ad.analog.com> <386072610805190253g42d47d81w794b3c14c15aa890@mail.gmail.com> <1212598723.32207.130.camel@pmac.infradead.org>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "David Woodhouse" <dwmw2@infradead.org>, "Bryan Wu" <cooloney@kernel.org>
+Cc: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       <linux-mtd@lists.infradead.org>, <linux-kernel@vger.kernel.org>,
+       <mike@steroidmicros.com>
+X-OriginalArrivalTime: 04 Jun 2008 17:19:59.0674 (UTC) FILETIME=[3798A1A0:01C8C667]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008, Thomas Gleixner wrote:
+David,
 
-> It does matter. When the interrupt is _not_ handled then it comes back
-> immediately for ever and after a while the kernel decides to disable
-> the legacy int, because nobody cares about the interrupt.
+Bryan sent an incremental update patch, some time ago.
+See below ...
 
- Mental shortcut, sorry -- making the interrupt be discarded through the
-primary rather than the secondary, etc. I/O APIC does not change anything.  
-Based on the description of the problem, the interupt will just have to be
-delivered somewhere, so I see little purpose in complicating the routing
-and causing additional sharing just to discard the interrupt elsewhere
-anyway.  If INTx messages cannot be blocked on the way anywhere, then the 
-originating I/O APIC should never get its inputs masked and the handler 
-should take care of the unwanted interrupts there.  This is at least my 
-opinion.
+Regards,
+Michael
 
- BTW, it could be possible to mask the interrupt by fiddling with the
-vector used and the TPR instead -- we have a range of low-priority vectors
-which are never used for APIC interrupts, so the TPR may be hardcoded to
-some non-zero value for all systems and then for the problematic chipsets
-handlers may change vectors to mask or unmask APIC interrupts.  This would
-have to be verified on actual hardware and be conditional as it is likely
-to cause troubles for systems using serial interrupt delivery over the
-inter-APIC bus (the vector, delivery mode, etc. are generally not meant to
-be changed with the input unmasked for these chips -- which just shows how
-braindead the idea of the mask having side effects is).  Just a thought.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-  Maciej
+remove duplicate code.
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/mtd/devices/m25p80.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index b10649b..7f89b54 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -122,8 +122,6 @@ static int write_sr(struct m25p *flash, u8 val)
+ 	flash->command[0] = OPCODE_WRSR;
+ 	flash->command[1] = val;
+ 
+-	spi_write(flash->spi, flash->command, 2);
+-
+ 	return spi_write(flash->spi, flash->command, 2);  }
+ 
+--
+1.5.5
+
+>-----Original Message-----
+>From: David Woodhouse [mailto:dwmw2@infradead.org]
+>Sent: Mittwoch, 4. Juni 2008 18:59
+>To: Bryan Wu
+>Cc: Hennerich, Michael; linux-mtd@lists.infradead.org; linux-
+>kernel@vger.kernel.org; mike@steroidmicros.com
+>Subject: Re: [PATCH 1/1] mtd m25p80: fix bug - ATmel spi flash fails to
+>becopied to
+>
+>On Mon, 2008-05-19 at 17:53 +0800, Bryan Wu wrote:
+>>
+>> >
+>> > I just noticed that write_sr contains a duplicated spi_write.
+>> > Bryan sends out a new patch.
+>> >
+>>
+>>
+>> No problem, it is my fault. I should review the patch carefully.
+>
+>Was there a new patch coming?
+>
+>--
+>dwmw2
