@@ -1,134 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761472AbYFDSYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761339AbYFDS1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761472AbYFDSYi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbYFDSY2
+	id S1761339AbYFDS1R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbYFDS1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:24:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49475
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752599AbYFDSY1 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:24:27 -0400
-Date: Wed, 04 Jun 2008 11:24:26 -0700 (PDT)
-Message-Id: <20080604.112426.62778239.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: ilpo.jarvinen@helsinki.fi, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, rjw@sisk.pl,
-       akpm@linux-foundation.org, johnpol@2ka.mipt.ru, mcmanus@ducksong.com
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080604072311.GA32491@elte.hu>
-References: <20080603094057.GA29480@elte.hu>
-	<Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
-	<20080604072311.GA32491@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Jun 2008 14:27:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44498 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755428AbYFDS1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 14:27:02 -0400
+Date: Wed, 4 Jun 2008 14:20:15 -0400
+From: Dave Jones <davej@redhat.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>, chucklever@gmail.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: NFS oops in 2.6.26rc4
+Message-ID: <20080604182015.GA20074@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Chuck Lever <chuck.lever@oracle.com>,
+	Trond Myklebust <Trond.Myklebust@netapp.com>, chucklever@gmail.com,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20080527190419.GA14577@redhat.com> <76bd70e30805301059v461e8f0eocc38b6fe36dd3b21@mail.gmail.com> <20080530182126.GB32480@redhat.com> <1212172308.8579.20.camel@localhost> <20080530190314.GC32480@redhat.com> <CEA741EF-8E34-40FD-82A8-747AE1B6E78F@oracle.com> <20080604141958.GA14148@redhat.com> <E1135064-06EA-405C-A967-DFB1DC9F0418@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1135064-06EA-405C-A967-DFB1DC9F0418@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 4 Jun 2008 09:23:11 +0200
+On Wed, Jun 04, 2008 at 02:13:08PM -0400, Chuck Lever wrote:
+ > 
+ > On Jun 4, 2008, at 10:19 AM, Dave Jones wrote:
+ > 
+ > > On Fri, May 30, 2008 at 03:37:01PM -0400, Chuck Lever wrote:
+ > >
+ > >>> Something else of note which I hadn't seen before, usually things  
+ > >>> lock
+ > >>> up just after that first oops. For some reason, today it survived
+ > >>> a little longer, but things really went downhill fast.
+ > >>> It survived a 'dmesg ; scp dmesg davej@gelk', and then wedged solid.
+ > >>> So as well as the oops, it seems we're corrupting memory too.
+ > >>> For reference, this kernel has both SLUB_DEBUG and PAGEALLOC_DEBUG
+ > >>> enabled.
+ > >>
+ > >> I haven't seen this kind of problem here with .26, but yes, it does
+ > >> look like something is clobbering memory during an NFS mount.
+ > >>
+ > >> I introduced some NFS mount parsing changes in this commit range:
+ > >>
+ > >>   2d767432..82d101d5
+ > >>
+ > >> A quick bisect should show which, if any of these, is the guilty
+ > >> party.  If any of these are the problem, I suspect it's 3f8400d1.
+ > >
+ > > I didn't get time to try this out yet (hopefully tomorrow).
+ > > In the meantime, we've just gotten word of another user seeing memory
+ > > corruption with nfs - https://bugzilla.redhat.com/show_bug.cgi?id=449958
+ > 
+ > 449958 could very well be the same problem.  The stack traceback is a  
+ > lot cleaner than the one you originally sent, but there are a lot of  
+ > similarities.  (I doubt this is related to symlinks, as the comment  
+ > suggests).
+ > 
+ > Is commit 86d61d863 applied to the current rawhide kernel?
 
-> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
->
-> > ...I couldn't immediately find anything obviously wrong with those 
-> > changes but the patch below might be worth of a try (without the 
-> > revert of course). If it ever spits out that WARN_ON for you, we were 
-> > playing with fire too much and it's better to return on the safe side 
-> > there...
-> 
-> i'll queue it up for testing, but no promises about speedy action here - 
-> the test cycle is really long with this bug.
+That kernel was .26rc4.git2, so unless it's only gone in in the last day
+or two, yes.  (Bandwidth impaired right now, and no local git repo to check)
 
-Ilpo posted another patch which fixes a locking bug in the
-code, please test with that patch.  I include it below so
-that you know exactly which one I am referring to.
+	Dave
 
-The quicker you test this, the faster I can merge it to
-Linus and get the bug fixed for good.
-
-[PATCH] tcp DEFER_ACCEPT: fix racy access to listen_sk
-
-It seems that replacement of DA code also moved parts outside
-of appropriate locking. The Ingo's problem seems to come from
-the fact that two flows could now race in
-(inet_csk_)reqsk_queue_add corrupting the queue. ...This can
-leave dangling socks around which won't resolve themselves
-without stimuli from outside (e.g., external RST would help
-I think).
-
-Then some details I'm not too sure of:
-I guess we want to put listen_sk->sk_state checking under the
-lock as well. I've not evaluated if ->sk_data_ready too
-requires locking but assumed it does.
-
-I'm by no means familiar with all locking variants, requirements,
-etc.
-
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
----
- net/ipv4/tcp_input.c |   23 +++++++++++++----------
- 1 files changed, 13 insertions(+), 10 deletions(-)
-
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index c9454f0..d21d2b9 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -4562,6 +4562,7 @@ static int tcp_defer_accept_check(struct sock *sk)
- 	struct tcp_sock *tp = tcp_sk(sk);
- 
- 	if (tp->defer_tcp_accept.request) {
-+		struct sock *listen_sk = tp->defer_tcp_accept.listen_sk;
- 		int queued_data =  tp->rcv_nxt - tp->copied_seq;
- 		int hasfin =  !skb_queue_empty(&sk->sk_receive_queue) ?
- 			tcp_hdr((struct sk_buff *)
-@@ -4570,8 +4571,9 @@ static int tcp_defer_accept_check(struct sock *sk)
- 		if (queued_data && hasfin)
- 			queued_data--;
- 
--		if (queued_data &&
--		    tp->defer_tcp_accept.listen_sk->sk_state == TCP_LISTEN) {
-+		bh_lock_sock(listen_sk);
-+
-+		if (queued_data && listen_sk->sk_state == TCP_LISTEN) {
- 			if (sock_flag(sk, SOCK_KEEPOPEN)) {
- 				inet_csk_reset_keepalive_timer(sk,
- 							       keepalive_time_when(tp));
-@@ -4579,23 +4581,24 @@ static int tcp_defer_accept_check(struct sock *sk)
- 				inet_csk_delete_keepalive_timer(sk);
- 			}
- 
--			inet_csk_reqsk_queue_add(
--				tp->defer_tcp_accept.listen_sk,
--				tp->defer_tcp_accept.request,
--				sk);
-+			inet_csk_reqsk_queue_add(listen_sk,
-+						 tp->defer_tcp_accept.request,
-+						 sk);
- 
- 			tp->defer_tcp_accept.listen_sk->sk_data_ready(
--				tp->defer_tcp_accept.listen_sk, 0);
-+						listen_sk, 0);
- 
--			sock_put(tp->defer_tcp_accept.listen_sk);
-+			sock_put(listen_sk);
- 			sock_put(sk);
- 			tp->defer_tcp_accept.listen_sk = NULL;
- 			tp->defer_tcp_accept.request = NULL;
--		} else if (hasfin ||
--			   tp->defer_tcp_accept.listen_sk->sk_state != TCP_LISTEN) {
-+		} else if (hasfin || listen_sk->sk_state != TCP_LISTEN) {
-+			bh_unlock_sock(listen_sk);
- 			tcp_reset(sk);
- 			return -1;
- 		}
-+
-+		bh_unlock_sock(listen_sk);
- 	}
- 	return 0;
- }
+-- 
+http://www.codemonkey.org.uk
