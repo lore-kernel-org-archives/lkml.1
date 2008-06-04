@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYFDIDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbYFDIG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbYFDIDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 04:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYFDIC5
+	id S1756089AbYFDIG7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 04:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYFDIGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 04:02:57 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:37020 "EHLO aun.it.uu.se"
+	Wed, 4 Jun 2008 04:06:44 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:37082 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752776AbYFDIC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 04:02:56 -0400
+	id S1752187AbYFDIGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 04:06:42 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18502.19495.626780.26511@harpo.it.uu.se>
-Date: Wed, 4 Jun 2008 10:02:47 +0200
+Message-ID: <18502.19722.944016.374271@harpo.it.uu.se>
+Date: Wed, 4 Jun 2008 10:06:34 +0200
 From: Mikael Pettersson <mikpe@it.uu.se>
-To: Rainer Koenig <Rainer.Koenig@fujitsu-siemens.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Who can backport the AHCI driver to older kernels
-In-Reply-To: <200806040650.12683.Rainer.Koenig@fujitsu-siemens.com>
-References: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com>
-	<200806031352.31940.elendil@planet.nl>
-	<18501.13296.224958.291840@harpo.it.uu.se>
-	<200806040650.12683.Rainer.Koenig@fujitsu-siemens.com>
+To: David Miller <davem@davemloft.net>
+Cc: airlied@gmail.com, mikpe@it.uu.se, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.26-rc1 broke X on SPARC Ultra5
+In-Reply-To: <20080603.135449.193702216.davem@davemloft.net>
+References: <20080603.062253.17158135.davem@davemloft.net>
+	<18501.39659.952880.727014@alkaid.it.uu.se>
+	<21d7e9970806031345u4e7838fdp60bbedadd65b5f2a@mail.gmail.com>
+	<20080603.135449.193702216.davem@davemloft.net>
 X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rainer Koenig writes:
- > Hi Mikael,
+David Miller writes:
+ > From: "Dave Airlie" <airlied@gmail.com>
+ > Date: Wed, 4 Jun 2008 06:45:57 +1000
  > 
- > Am Dienstag, 3. Juni 2008 14:07 schrieb Mikael Pettersson:
- > > Redhat seems to regularly backport the entire libata layer
- > > to at least 2.6.18 (RHEL5) and maybe also 2.6.9 (RHEL4).
+ > > Wow thats a major userspace regression to ship, we'd never get away
+ > > with doing that on x86 platforms.
  > 
- > Yes indeed we get perfect support from both Red Hat and SUSE for their 
- > enterprise level distribution. I already got a driver kit for the 
- > SLES10 kernel. The problem is that the targeted market is not willing
- > to use enterprise level (which means spend money for subscription) 
- > distros. They go for the "free" (as in free beer) distros and suffer 
- > from missing drivers. 
+ > x86 has how many maintainers and contributors last time you checked?
+ > 
+ > Meanwhile X itself shipped mostly-non-working for PCI devices on sparc
+ > for years.  And would you also not argue that it's broken to begin
+ > with that the older X servers cannot work properly without a root PCI
+ > controller being there?
+ > 
+ > The only way I can work around this issue is to provide a virtual host
+ > bridge driver in the kernel, and I tried to do that, but it doesn't
+ > work which is why the change got installed that did.
+ > 
+ > We'd need this because on many sparc64 machines the PCI host bridge
+ > (and some sub-bridges) aren't even accessible via PCI config space.
+ > 
+ > If you provide a virtual host bridge, you have to emulate all of
+ > the PCI config space accesses, you have to provide the expected
+ > linkage and hierarchy with the rest of the PCI devices, and you
+ > also have to do all of the I/O and MEM space range bits correctly
+ > too.
+ > 
+ > For PCI-E and sub-bridges this becomes even more complicated, and
+ > frankly a waste of time.
+ > 
+ > In short you have to implement an entire non-trivial emulation layer
+ > for this stuff.
+ > 
+ > I'm the only sparc64 platform developer, so my time is better spent
+ > moving forward and making sure that libpciaccess based X servers
+ > aren't so broken and do the right thing in a way which works in a
+ > maintainable long term manner.
 
-a) the RHEL sources are freely available
-b) lots of people and organisations grab, tweak, and build them
-   (including I might add many HPC sites using perfctr)
-c) there's at least one no-cost binary redistribution (CentOS)
-d) it's also easy to combine e.g. FC user-space with a
-   self-compiled RHEL kernel, at least as long as they're
-   closely matched (e.g. FC6 + RHEL5 is fine)
-   (heck, I've even run FC6 on top of a SLES10.1 kernel)
+Indeed. You need to prioritize, and FWIW I support your decision.
 
-So everything's that's needed is out there.
+/Mikael
