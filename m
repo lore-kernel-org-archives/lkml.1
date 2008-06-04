@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbYFDU7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759407AbYFDVEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760170AbYFDU7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYFDU7Y
+	id S1759407AbYFDVEA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 17:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbYFDVDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:59:24 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:43067 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201AbYFDU7Y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:59:24 -0400
-Date: Wed, 4 Jun 2008 22:58:30 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: =?ISO-8859-1?B?yXJpYw==?= Piel <Eric.Piel@tremplin-utc.net>
-Cc: Andrew Morton <akpm@osdl.org>, pavel@ucw.cz,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       HWMON <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection  System 3D
- ACPI driver -- please review!
-Message-ID: <20080604225830.1dff64fc@hyperion.delvare>
-In-Reply-To: <4846EBF5.2030406@tremplin-utc.net>
-References: <1212235533.3815.5.camel@localhost>
-	<4846EBF5.2030406@tremplin-utc.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Wed, 4 Jun 2008 17:03:52 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56237 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752903AbYFDVDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 17:03:52 -0400
+Date: Wed, 4 Jun 2008 16:03:41 -0500
+From: Paul Jackson <pj@sgi.com>
+To: markh@compro.net
+Cc: dmarkh@cfl.rr.com, nickpiggin@yahoo.com.au, a.p.zijlstra@chello.nl,
+       ioe-lkml@rameria.de, linux-kernel@vger.kernel.org, kernel@kolivas.org,
+       dfults@sgi.com, devik@cdi.cz, sivanich@sgi.com, dino@in.ibm.com,
+       emmanuel.pacaud@univ-poitiers.fr, deweerdt@free.fr, mingo@elte.hu,
+       colpatch@us.ibm.com, maxk@qualcomm.com, rostedt@goodmis.org,
+       oleg@tv-sign.ru, paulmck@us.ibm.com, menage@google.com,
+       rddunlap@osdl.org, suresh.b.siddha@intel.com, tglx@linutronix.de
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
+ have realtime uses)
+Message-Id: <20080604160341.7f8e5014.pj@sgi.com>
+In-Reply-To: <48470250.6010803@compro.net>
+References: <20080601213019.14ea8ef8.pj@sgi.com>
+	<200806030035.58387.ioe-lkml@rameria.de>
+	<1212446707.6269.26.camel@lappy.programming.kicks-ass.net>
+	<200806031603.40731.nickpiggin@yahoo.com.au>
+	<48466745.5050802@cfl.rr.com>
+	<20080604122644.cd73bfb9.pj@sgi.com>
+	<48470250.6010803@compro.net>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,
-
-On Wed, 04 Jun 2008 21:24:37 +0200, Éric Piel wrote:
-> We haven't received any review for this driver since last week's post by
-> Yan :-( That's why I'm adding explicitly as receivers of this email all
-> the people who have reviewed the first two previous takes. Apologies for
-> the possible multiple receptions.
+Mark wrote:
+> Yes to both questions. However after reading Max and Peter's response, I
+> guess there is another, probably better or _only_, way to get what I really
+> need anyway so please don't consider my intrusion into this thread as a NAK.
 > 
-> It would be _really really kind_ if some of you could take some time and
-> comment (or simply ACK ;-) ) this code. It adds support for hardware
-> which can be found in mostly every HP Compaq laptop less than three
-> years old. It's quite worthy.
-> 
-> Mark, as maintainer of the hwmon tree, would accept this driver? Let us
-> know if there are things we need to change.
+> I do not rely on this option as it is implemented. 
 
-If you didn't receive any answer, my guess is that it's because you're
-trying to add this driver to the wrong tree. Why would this driver go
-in drivers/hwmon and be reviewed by hwmon folks, when it doesn't expose
-a single hwmon attribute to user-space?
-
-I guess you thought putting the driver there would be fine because
-that's where the hdaps and ams drivers are, but IMHO the hdaps and ams
-drivers should never have been placed in drivers/hwmon. These devices
-really aren't hardware monitoring chips is the traditional sense of the
-term. They are different chips, serving different purposes and
-deserving a totally different interface. They'd better live in a
-different subsystem and be maintainer by a different crew with interest
-in these devices and hardware to test the drivers.
-
-This discussion thread might sched some light on a possible approach:
-http://marc.info/?l=lm-sensors&m=121127824726050&w=2
-
-So my advice is that you don't wait for a review from the hwmon people,
-because apparently we don't have much interest in this type of device,
-so you'll be waiting forever. You're much better adding the mdps driver
-to drivers/misc through Andrew Morton, at least until someone takes
-care of creating a subsystem for this type of devices and move all
-existing drivers there.
-
-Would someone object to moving the hdaps and ams (and possibly
-applesmc) drivers to drivers/misc?
+Thank-you for your clearly stated conclusions, and thanks for stopping by.
 
 -- 
-Jean Delvare
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
