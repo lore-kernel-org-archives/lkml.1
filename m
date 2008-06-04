@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbYFDS3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYFDSci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761419AbYFDS3s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYFDS3l
+	id S1761284AbYFDSci (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757568AbYFDSc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:29:41 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:17208 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbYFDS3j (ORCPT
+	Wed, 4 Jun 2008 14:32:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52947 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757415AbYFDSc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:29:39 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5310"; a="3679116"
-Message-ID: <4846DF25.4020300@qualcomm.com>
-Date: Wed, 04 Jun 2008 11:29:57 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: Andi Kleen <andi@firstfloor.org>, ioe-lkml@rameria.de, sivanich@sgi.com,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       kernel@kolivas.org, dfults@sgi.com, devik@cdi.cz, dino@in.ibm.com,
-       emmanuel.pacaud@univ-poitiers.fr, deweerdt@free.fr, mingo@elte.hu,
-       colpatch@us.ibm.com, nickpiggin@yahoo.com.au, rostedt@goodmis.org,
-       oleg@tv-sign.ru, paulmck@us.ibm.com, menage@google.com,
-       rddunlap@osdl.org, suresh.b.siddha@intel.com, tglx@linutronix.de
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
- have realtime uses)
-References: <20080601213019.14ea8ef8.pj@sgi.com>	<1212446707.6269.26.camel@lappy.programming.kicks-ass.net>	<48447C75.8040203@qualcomm.com>	<200806030156.00155.ioe-lkml@rameria.de>	<4844BB41.7000605@qualcomm.com>	<4845D825.6000403@qualcomm.com>	<20080603194148.56dfebe1.pj@sgi.com>	<48461ADA.8020303@qualcomm.com>	<877id5v1fg.fsf@basil.nowhere.org> <20080604124126.0d281a99.pj@sgi.com>
-In-Reply-To: <20080604124126.0d281a99.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Jun 2008 14:32:29 -0400
+Date: Wed, 4 Jun 2008 11:19:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, sct@redhat.com,
+       adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       tytso@mit.edu, yumiko.sugita.yf@hitachi.com,
+       satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
+ buffers
+Message-Id: <20080604111911.c1fe09c6.akpm@linux-foundation.org>
+In-Reply-To: <20080604101925.GB16572@duck.suse.cz>
+References: <4843CE15.6080506@hitachi.com>
+	<4843CEED.9080002@hitachi.com>
+	<20080603153050.fb99ac8a.akpm@linux-foundation.org>
+	<20080604101925.GB16572@duck.suse.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Jun 2008 12:19:25 +0200 Jan Kara <jack@suse.cz> wrote:
 
-
-Paul Jackson wrote:
-> Andi wrote:
->> Right now the system boot could put pages from some daemon in there before any 
->> cpusets are set up and there's no easy way to get them away again
+> On Tue 03-06-08 15:30:50, Andrew Morton wrote:
+> > On Mon, 02 Jun 2008 19:43:57 +0900
+> > Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> wrote:
+> > 
+> > > 
+> > > In ordered mode, we should abort journaling when an I/O error has
+> > > occurred on a file data buffer in the committing transaction.
+> > 
+> > Why should we do that?
+>   I see two reasons:
+> 1) If fs below us is returning IO errors, we don't really know how severe
+> it is so it's safest to stop accepting writes. Also user notices the
+> problem early this way. I agree that with the growing size of disks and
+> thus probability of seeing IO error, we should probably think of something
+> cleverer than this but aborting seems better than just doing nothing.
 > 
-> We (SGI) routinely handle that need with a custom init program,
-> invoked with the init= parameter to the booting kernel, which
-> sets up cpusets and then invokes the normal (real) init program
-> in a cpuset configured to exclude those CPUs and nodes which we
-> want to remain unloaded.  For example, on a 256 CPU, 64 node
-> system, we might have init running on a single node of 4 CPUs,
-> and leave the remaining 63 nodes and 252 CPUs isolated from all
-> the usual user level daemons started by init.
+> 2) If the IO error is just transient (i.e., link to NAS is disconnected for
+> a while), we would silently break ordering mode guarantees (user could be
+> able to see old / uninitialized data).
 > 
-> There is no need for additional kernel changes to accomplish this.
 
-You do not even need to replace /sbin/init for this, no ?
-Simply installing custom
-	/etc/init.d/create_cpusets
-with priority 0
-	# chkconfig: 12345 0 99
-will do the job.
+Does any other filesystem driver turn the fs read-only on the first
+write-IO-error?
 
-That script will move init itself into the appropriate cpuset and from then on
-everything will inherit it.
+It seems like a big policy change to me.  For a lot of applications
+it's effectively a complete outage and people might get a bit upset if
+this happens on the first blip from their NAS.
 
-Max
+<waves vigorously at linux-ext4 people>
