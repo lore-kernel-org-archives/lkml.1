@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761339AbYFDSTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761751AbYFDSUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761339AbYFDSTy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYFDSTr
+	id S1761751AbYFDSUx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbYFDSUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:19:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35834 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188AbYFDSTr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:19:47 -0400
-Subject: Re: Stop machine threads are getting preemted by the rt period
-	enforcement
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Max Krasnyansky <maxk@qualcomm.com>
-Cc: Dimitri Sivanich <sivanich@sgi.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       rostedt@goodmis.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>, "Randy.Dunlap" <rddunlap@osdl.org>,
-       suresh.b.siddha@intel.com
-In-Reply-To: <4846D9FE.4030804@qualcomm.com>
-References: <20080601213019.14ea8ef8.pj@sgi.com>
-	 <20080602164203.GA2477@sgi.com> <48443E66.6060205@qualcomm.com>
-	 <20080602214151.GA7072@sgi.com> <48446D46.2010903@qualcomm.com>
-	 <20080603144010.GA25948@sgi.com> <20080604140036.GC18993@sgi.com>
-	 <4846D9FE.4030804@qualcomm.com>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 20:18:26 +0200
-Message-Id: <1212603506.19205.2.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 14:20:44 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:44256 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754618AbYFDSUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 14:20:43 -0400
+Date: Wed, 4 Jun 2008 21:20:11 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 4 -
+	firmware/keyspan/mpr.fw.gen.S
+Message-ID: <20080604182011.GD4189@cs181133002.pp.htv.fi>
+References: <20080604180025.3ecd03ff.sfr@canb.auug.org.au> <48468091.5000102@linux.vnet.ibm.com> <1212580245.32207.51.camel@pmac.infradead.org> <54a3f4cc48b03f9fe63be0bcd7c2ab20@kernel.crashing.org> <1212601930.32207.134.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1212601930.32207.134.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-04 at 11:07 -0700, Max Krasnyansky wrote:
-> Peter, Ingo,
+On Wed, Jun 04, 2008 at 06:52:10PM +0100, David Woodhouse wrote:
+> On Wed, 2008-06-04 at 19:19 +0200, Segher Boessenkool wrote:
+> > It is a new feature in GNU make 3.81, which was released slightly
+> > over two years ago.
 > 
-> Take a look at the report below (came up during isolcpu= remove discussions).
+> Hm, Ok. I'll stick in a workaround. Thanks.
 > 
-> It looks like stop_machine threads are getting forcefully preempted because
-> they exceed their RT quanta. It's strange because rt period is pretty long.
-> But given that disabling rt period logic solves the issue the machine was not
-> really stuck.
+> diff --git a/firmware/Makefile b/firmware/Makefile
+> index b4f758a..166a9b0 100644
+> --- a/firmware/Makefile
+> +++ b/firmware/Makefile
+> @@ -83,6 +83,13 @@ wordsize_deps := $(wildcard include/config/64bit.h include/config/32bit.h \
+>  		include/config/superh32.h include/config/superh64.h \
+>  		include/config/x86_32.h include/config/x86_64.h)
+>  
+> +# Workaround for ancient versions of make, where .SECONDEXPANSION doesn't work.
 
-Yeah, I know, I'm already looking at this
+Can you write make < 3.81 instead?
+
+We do know the version and this will make it easier in a few years to 
+determine when the workaround will no longer be required.
+
+> +# It'll end up depending on these targets, so make them a PHONY rule which
+> +# depends on _all_ the directories in $(firmware-dirs), and it'll work out OK.
+> +PHONY += $(objtree)/$$(%) $(objtree)/$(obj)/$$(%)
+> +$(objtree)/$$(%) $(objtree)/$(obj)/$$(%): $(firmware-dirs)
+> +	@true
+> +
+>  # For the $$(dir %) trick, where we need % to be expanded first.
+>  .SECONDEXPANSION:
+>  
+> dwmw2
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
