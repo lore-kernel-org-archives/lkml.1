@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYFDMyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYFDMzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbYFDMyU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 08:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbYFDMxo
+	id S1756887AbYFDMzM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 08:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYFDMy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 08:53:44 -0400
-Received: from kumera.dghda.com ([80.68.90.171]:3657 "EHLO kumera.dghda.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755861AbYFDMxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 08:53:43 -0400
-From: "Duane Griffin" <duaneg@dghda.com>
-To: akpm@linux-foundation.org
-Cc: Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Duane Griffin <duaneg@dghda.com>
-Subject: [PATCH 3/3] ext4: don't inherit inappropriate inode flags from parent
-Date: Wed,  4 Jun 2008 13:46:28 +0100
-Message-Id: <1212583588-5754-4-git-send-email-duaneg@dghda.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1212583588-5754-3-git-send-email-duaneg@dghda.com>
-References: <1212583588-5754-1-git-send-email-duaneg@dghda.com>
- <1212583588-5754-2-git-send-email-duaneg@dghda.com>
- <1212583588-5754-3-git-send-email-duaneg@dghda.com>
+	Wed, 4 Jun 2008 08:54:58 -0400
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.68]:52514 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbYFDMy5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 08:54:57 -0400
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Wed, 4 Jun 2008 21:53:34 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Paul Menage" <menage@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: Re: [RFC][PATCH 2/2] memcg: hardwall hierarhcy for memcg
+Message-Id: <20080604215334.9f3a249b.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20080604182626.fcc26e24.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080604140329.8db1b67e.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830806040159w1026003fhe3212beac895927a@mail.gmail.com>
+	<20080604182626.fcc26e24.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At present INDEX and EXTENTS are the only flagis that new ext4 inodes do
-NOT inherit from their parent. In addition prevent the flags DIRTY, ECOMPR,
-IMAGIC, TOPDIR and HUGE_FILE from being inherited.
+> > > @@ -1096,6 +1238,12 @@ static void mem_cgroup_destroy(struct cg
+> > >        int node;
+> > >        struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+> > >
+> > > +       if (cont->parent &&
+> > > +           mem->hierarchy_model == MEMCG_HARDWALL_HIERARCHY) {
+> > > +               /* we did what we can...just returns what we borrow */
+> > > +               res_counter_return_resource(&mem->res, -1, NULL, 0);
+> > > +       }
+> > > +
+> > 
+> > Should we also re-account any remaining child usage to the parent?
+> > 
+> When this is called, there are no process in this group. Then, remaining
+> resources in this level is
+>   - file cache
+>   - swap cache (if shared)
+>   - shmem
+> 
+> And the biggest usage will be "file cache".
+> So, I don't think it's necessary to move child's usage to the parent,
+> in hurry. But maybe shmem is worth to be moved.
+> 
+> I'd like to revisit this when I implements "usage move at task move"
+> logic. (currenty, memory usage doesn't move to new cgroup at task_attach.)
+> 
+> It will help me to implement the logic "move remaining usage to the parent"
+> in clean way.
+> 
 
-Signed-off-by: Duane Griffin <duaneg@dghda.com>
+I agree that "usage move at task move" is needed before
+"move remaining usage to the parent".
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 8158083..de07dc7 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -235,6 +235,11 @@ struct ext4_group_desc
- #define EXT4_FL_USER_VISIBLE		0x000BDFFF /* User visible flags */
- #define EXT4_FL_USER_MODIFIABLE		0x000380FF /* User modifiable flags */
- 
-+/* Flags that should be inherited by new inodes from their parent. */
-+#define EXT4_FL_INHERITED ~(EXT4_DIRTY_FL | EXT4_ECOMPR_FL | EXT4_INDEX_FL |\
-+			    EXT4_IMAGIC_FL | EXT4_TOPDIR_FL |\
-+			    EXT4_HUGE_FILE_FL | EXT4_EXTENTS_FL)
-+
- /*
-  * Inode dynamic state flags
-  */
-diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index c6efbab..ff25d57 100644
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -702,7 +702,7 @@ got:
- 	 * newly created directory and file only if -o extent mount option is
- 	 * specified
- 	 */
--	ei->i_flags = EXT4_I(dir)->i_flags & ~(EXT4_INDEX_FL|EXT4_EXTENTS_FL);
-+	ei->i_flags = EXT4_I(dir)->i_flags & EXT4_FL_INHERITED;
- 	if (S_ISLNK(mode))
- 		ei->i_flags &= ~(EXT4_IMMUTABLE_FL|EXT4_APPEND_FL);
- 	/* dirsync only applies to directories */
--- 
-1.5.3.7
 
+Thanks,
+Daisuke Nishimura.
