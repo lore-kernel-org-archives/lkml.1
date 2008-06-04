@@ -1,83 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYFDExJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYFDEza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbYFDExJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 00:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYFDEw5
+	id S1757946AbYFDEza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 00:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbYFDEzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 00:52:57 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48365 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751092AbYFDEw4 (ORCPT
+	Wed, 4 Jun 2008 00:55:20 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53725 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbYFDEzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 00:52:56 -0400
-Date: Wed, 4 Jun 2008 13:58:15 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: [RFC][PATCH 0/2] memcg: hierarchy support (v3)
-Message-Id: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 00:55:19 -0400
+To: mtk.manpages@googlemail.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@lst.de,
+       miklos@szeredi.hu, viro@zeniv.linux.org.uk, jamie@shareable.org,
+       drepper@redhat.com, linux-fsdevel@vger.kernel.org,
+       subrata@linux.vnet.ibm.com
+In-reply-to: <E1K3kkj-0007gR-Pb@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Wed, 04 Jun 2008 06:37:37 +0200)
+Subject: Re: [parch 3/4] vfs: utimensat(): fix error checking for {UTIME_NOW,UTIME_OMIT}
+ case
+References: <4845C4CA.5070403@gmail.com> <E1K3kkj-0007gR-Pb@pomaz-ex.szeredi.hu>
+Message-Id: <E1K3l1W-0007ia-Vc@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 04 Jun 2008 06:54:58 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, this is third version.
+> > +	} else if ((times[0].tv_nsec == UTIME_NOW &&
+> > +		    times[1].tv_nsec == UTIME_OMIT)
+> > +		  ||
+> > +		   (times[0].tv_nsec == UTIME_OMIT &&
+> > +		    times[1].tv_nsec == UTIME_NOW)) {
+> 
 
-While small changes in codes, the whole _tone_ of code is changed.
-I'm not in hurry, any comments are welcome.
+> +
+> +		if (!is_owner_or_cap(inode))
+> +			goto mnt_drop_write_and_out;
 
-based on 2.6.26-rc2-mm1 + memcg patches in -mm queue.
+And in fact a little comment wouldn't hurt explaining what exactly is
+going on here with the permission checking.
 
-Changes from v2:
- - Named as HardWall policy.
- - rewrote the code to be read easily. changed the name of functions.
- - Added text.
- - supported hierarchy_model parameter.
-   Now, no_hierarchy and hardwall_hierarchy is implemented.
+The "/* Don't worry, the checks are done in inode_change_ok() */" is
+really reassuring, but unfortunately not exactly the truth (and never
+was).
 
-HardWall Policy:
-  - designed for strict resource isolation under hierarchy.
-    Usually, automatic load balancing between cgroup can break the
-    users assumption even if it's implemented very well.
-  - parent overcommits all children
-     parent->usage = resource used by itself + resource moved to children.
-     Of course, parent->limit > parent->usage. 
-  - when child's limit is set, the resouce moves.
-  - no automatic resource moving between parent <-> child
-
-Example)
-  1) Assume a cgroup with 1GB limits. (and no tasks belongs to this, now)
-     - group_A limit=1G,usage=0M.
-
-  2) create group B, C under A.
-     - group A limit=1G, usage=0M
-          - group B limit=0M, usage=0M.
-          - group C limit=0M, usage=0M.
-
-  3) increase group B's limit to 300M.
-     - group A limit=1G, usage=300M.
-          - group B limit=300M, usage=0M.
-          - group C limit=0M, usage=0M.
-
-  4) increase group C's limit to 500M
-     - group A limit=1G, usage=800M.
-          - group B limit=300M, usage=0M.
-          - group C limit=500M, usage=0M.
-
-  5) reduce group B's limit to 100M
-     - group A limit=1G, usage=600M.
-          - group B limit=100M, usage=0M.
-          - group C limit=500M, usage=0M.
-
-
-Thanks,
--Kame
+Miklos
 
