@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbYFDK1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbYFDK3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbYFDK1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 06:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbYFDK1T
+	id S1759640AbYFDK3u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 06:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbYFDK3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 06:27:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51784 "EHLO mx3.mail.elte.hu"
+	Wed, 4 Jun 2008 06:29:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46823 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760052AbYFDK1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 06:27:18 -0400
-Date: Wed, 4 Jun 2008 12:27:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: 32 bit use e820_register_active_regions
-Message-ID: <20080604102703.GE22971@elte.hu>
-References: <200806031025.55026.yhlu.kernel@gmail.com> <200806031934.01198.yhlu.kernel@gmail.com> <200806031935.05202.yhlu.kernel@gmail.com>
+	id S1752490AbYFDK3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 06:29:37 -0400
+Message-ID: <48466E8E.9070108@garzik.org>
+Date: Wed, 04 Jun 2008 06:29:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806031935.05202.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0272]
+To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] libata: Handle bay devices in dock stations
+References: <20080528143857.GB5585@homac.suse.de> <4845886E.2010505@garzik.org> <20080603182759.GB3556@homac>
+In-Reply-To: <20080603182759.GB3556@homac>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> so 32bit is more like 64bit, and more smart with combining e820 and numa.
+Holger Macht wrote:
+> * Differentiate between bay devices in dock stations and others:
 > 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>  - When an ACPI_NOTIFY_EJECT_REQUEST appears, just signal uevent to
+>    userspace (that is when the optional eject button on a bay device is
+>    pressed/pulled) giving the possibility to unmount file systems and to
+>    clean up. Also, only send uevent in case we get an EJECT_REQUEST
+>    without doing anything else. In other cases, you'll get an add/remove
+>    event because libata attaches/detaches the device.
+> 
+>  - In case of a dock event, which in turn signals an
+>    ACPI_NOTIFY_EJECT_REQUEST, immediately detach the device, because it
+>    may already have been gone
+> 
+> * In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
+>   the device has been plugged or unplugged. If plugged, hotplug it, if
+>   unplugged, just signal event to userspace
+>   (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
+> 
+> * Call ACPI _EJ0 for detached devices
+> 
+> Signed-off-by: Holger Macht <hmacht@suse.de>
+> ---
+> 
+> Previous patch differences:
+>  * Remove one call to ata_port_freeze
+>  * Add some documentation from Tejun
 
-applied, thanks.
+applied
 
-	Ingo
+
