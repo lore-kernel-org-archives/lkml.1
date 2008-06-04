@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762155AbYFDUDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbYFDUET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762155AbYFDUDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758480AbYFDUDL
+	id S1761575AbYFDUET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 16:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYFDUEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:03:11 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:63314 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756453AbYFDUDK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:03:10 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=kshVi3c0T6WIsAncPeLOlgQCxnQ6a4BBD7SYmu0tUHu/S3J2JFQBmHC3c1leJIliX
-	TuAfZQfMokPXWppOl9QvA==
-Date: Wed, 4 Jun 2008 13:02:43 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: menage@google.com, miaox@cn.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] cpusets: update tasks' cpus_allowed and mems_allowed
- after CPU/NODE offline/online
-In-Reply-To: <20080604144221.de09b709.pj@sgi.com>
-Message-ID: <alpine.DEB.1.10.0806041249390.23189@chino.kir.corp.google.com>
-References: <4845F864.8060102@cn.fujitsu.com> <6599ad830806040230l24bd1201y3cc0ea0273d835ad@mail.gmail.com> <6599ad830806040258h552e4623m5efae8202c5d026d@mail.gmail.com> <20080604122227.a092e70e.pj@sgi.com> <alpine.DEB.1.10.0806041149560.21323@chino.kir.corp.google.com>
- <20080604142540.6fa2bcc3.pj@sgi.com> <alpine.DEB.1.10.0806041232190.22192@chino.kir.corp.google.com> <20080604144221.de09b709.pj@sgi.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Jun 2008 16:04:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41589 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756640AbYFDUEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 16:04:09 -0400
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+From: Jon Masters <jcm@redhat.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Stefan Assmann <sassmann@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.55.0806042014110.28685@cliff.in.clinika.pl>
+References: <12124107071847-git-send-email-od@suse.de>
+	 <m1tzgauduu.fsf@frodo.ebiederm.org> <4846651F.4070802@suse.de>
+	 <m1ve0pqy06.fsf@frodo.ebiederm.org>  <48467DA7.9030309@suse.de>
+	 <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
+	 <Pine.LNX.4.55.0806042014110.28685@cliff.in.clinika.pl>
+Content-Type: text/plain
+Date: Wed, 04 Jun 2008 15:59:37 -0400
+Message-Id: <1212609577.8410.32.camel@londonpacket.bos.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008, Paul Jackson wrote:
 
-> How about also adding this check (NULL mm and struct subset cpus)
-> to sched_setaffinity?
+On Wed, 2008-06-04 at 20:19 +0100, Maciej W. Rozycki wrote:
+> On Wed, 4 Jun 2008, Jon Masters wrote:
 > 
-> Granted, this pair of checks, in cpusets and sched_setaffinity,
-> is getting to be a little more work than the PF_* flag.
+> > Meanwhile, I think this really shows that a couple of us who've been
+> > meaning to poke at per-device IRQs should do so once again. This is the
+> > real solution - kill off all those per-IRQ threads, have one per device
+> > and split each IRQ into a "top" and "bottom" (just kidding on the names)
+> > half. Have the first part be *incredibly* small and just return if the
+> > device actually was responsible for the IRQ (and quiesse it), and have
+> > the second part do the heavyweight handling. Since the second part can
+> > run as a thread (and actually sleep for however long, because it's now
+> > per device) - and since we have threaded tasklets and all this on RT
+> > anyway - we can just kill off most of the extra logic in many Linux
+> > interrupt handlers and have just the interrupt thread do the work. 
 > 
+>  This is how a lot of our drivers used to work in the old days -- modulo
+> implementation details.  It is still a good idea, but it requires more
+> care and effort to implement, so people tend to avoid it unless forced by
+> the design of hardware involved (cf. phylib in the interrupt mode).
 
-Yes, an alterative to the PF_CPU_BIND flag is to prevent calls to 
-set_cpus_allowed() for kthreads that should not change affinity.
+I disagree. I think it's now actually the *inverse*. It /used/ to be
+harder, because you didn't have a context in which you could do many
+things (so you need to schedule some kind of deferred work), but
+actually, it'll become a lot more attractive with device threads.
 
-> I guess one question would be how hard we want to work to avoid
-> consuming another PF_* flag.  I thought they were scarce, but I
-> might be wrong.
-> 
+The only real caveat is for performance critical cases (the reasons we
+have special softirqs and the like right now) but there will always be
+special cases. Still, I'd like it if writing a Linux interrupt handler
+came down to registering two functions - one lightweight tiny one, and
+one that's just a thread. Much less room for making mistakes.
 
-I think we both agree that in terms of the code itself, adding the flag 
-and doing the check in set_cpus_allowed() is the optimal solution.  It can 
-simply return -EINVAL for PF_CPU_BIND threads and the threads don't get 
-moved.
+Jon.
 
-It's debatable whether allocating an additional PF_* flag for this purpose 
-is worthwhile.
 
-I usually don't advocate against adding such bits that have a clear and 
-defined purpose for the sole reason that perhaps later we will need 
-additional bits that can't be worked around so easily as this one.  It's 
-helpful to be conservative in allocating new flags but not at the expense 
-of the code itself, especially when loopholes can easily be introduced 
-that would have been otherwise prevented.
-
-So I'll repost the patch and see where it goes.
-
-		David
