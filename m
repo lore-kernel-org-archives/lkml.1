@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbYFDWNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763191AbYFDWNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762943AbYFDWNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbYFDWLb
+	id S1763191AbYFDWNx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760307AbYFDWLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:11:31 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:25425 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758600AbYFDWL0 (ORCPT
+	Wed, 4 Jun 2008 18:11:34 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:33405 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759468AbYFDWL3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:11:26 -0400
-Message-Id: <20080604221127.564142220@ldl.fc.hp.com>
+	Wed, 4 Jun 2008 18:11:29 -0400
+Message-Id: <20080604221127.983575336@ldl.fc.hp.com>
 References: <20080604220933.168145536@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Jun 2008 16:09:37 -0600
+Date: Wed, 04 Jun 2008 16:09:39 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
@@ -27,163 +27,183 @@ Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
-Subject: [patch 04/18] PNP: define PNP-specific IORESOURCE_IO_* flags alongside IRQ, DMA, MEM
-Content-Disposition: inline; filename=pnp-io-option-flags
+Subject: [patch 06/18] PNP: introduce pnp_irq_mask_t typedef
+Content-Disposition: inline; filename=pnp-irq-bitmap-decl
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PNP previously defined PNP_PORT_FLAG_16BITADDR and PNP_PORT_FLAG_FIXED
-in a private header file, but put those flags in struct resource.flags
-fields.  Better to make them IORESOURCE_IO_* flags like the existing
-IRQ, DMA, and MEM flags.
+This adds a typedef for the IRQ bitmap, which should cause
+no functional change, but will make it easier to pass a
+pointer to a bitmap to pnp_register_irq_resource().
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Acked-by: Rene Herman <rene.herman@gmail.com>
 
----
- include/linux/ioport.h         |   10 +++++++---
- include/linux/pnp.h            |    3 ---
- drivers/pnp/interface.c        |    2 +-
- drivers/pnp/isapnp/core.c      |    4 ++--
- drivers/pnp/pnpacpi/rsparser.c |   10 +++++-----
- drivers/pnp/pnpbios/rsparser.c |    4 ++--
- 6 files changed, 17 insertions(+), 16 deletions(-)
-
-Index: work10/include/linux/ioport.h
+Index: work10/drivers/pnp/base.h
 ===================================================================
---- work10.orig/include/linux/ioport.h	2008-06-03 14:32:52.000000000 -0600
-+++ work10/include/linux/ioport.h	2008-06-03 14:33:22.000000000 -0600
-@@ -88,6 +88,10 @@ struct resource_list {
- #define IORESOURCE_MEM_SHADOWABLE	(1<<5)	/* dup: IORESOURCE_SHADOWABLE */
- #define IORESOURCE_MEM_EXPANSIONROM	(1<<6)
+--- work10.orig/drivers/pnp/base.h	2008-06-04 15:38:19.000000000 -0600
++++ work10/drivers/pnp/base.h	2008-06-04 15:38:25.000000000 -0600
+@@ -30,8 +30,10 @@ struct pnp_port {
+ };
  
-+/* PnP I/O specific bits (IORESOURCE_BITS) */
-+#define IORESOURCE_IO_16BIT_ADDR	(1<<0)
-+#define IORESOURCE_IO_FIXED		(1<<1)
+ #define PNP_IRQ_NR 256
++typedef struct { DECLARE_BITMAP(bits, PNP_IRQ_NR); } pnp_irq_mask_t;
 +
- /* PCI ROM control bits (IORESOURCE_BITS) */
- #define IORESOURCE_ROM_ENABLE		(1<<0)	/* ROM is enabled, same as PCI_ROM_ADDRESS_ENABLE */
- #define IORESOURCE_ROM_SHADOW		(1<<1)	/* ROM is copy at C000:0 */
-Index: work10/include/linux/pnp.h
+ struct pnp_irq {
+-	DECLARE_BITMAP(map, PNP_IRQ_NR);	/* bitmask for IRQ lines */
++	pnp_irq_mask_t map;	/* bitmap for IRQ lines */
+ 	unsigned char flags;	/* IRQ flags */
+ 	unsigned char pad;	/* pad */
+ 	struct pnp_irq *next;	/* next IRQ */
+Index: work10/drivers/pnp/resource.c
 ===================================================================
---- work10.orig/include/linux/pnp.h	2008-06-03 14:32:38.000000000 -0600
-+++ work10/include/linux/pnp.h	2008-06-03 14:33:01.000000000 -0600
-@@ -175,9 +175,6 @@ static inline int pnp_dma_valid(struct p
- }
+--- work10.orig/drivers/pnp/resource.c	2008-06-04 15:30:51.000000000 -0600
++++ work10/drivers/pnp/resource.c	2008-06-04 15:39:10.000000000 -0600
+@@ -98,13 +98,13 @@ int pnp_register_irq_resource(struct pnp
+ 		int i;
  
+ 		for (i = 0; i < 16; i++)
+-			if (test_bit(i, data->map))
++			if (test_bit(i, data->map.bits))
+ 				pcibios_penalize_isa_irq(i, 0);
+ 	}
+ #endif
  
--#define PNP_PORT_FLAG_16BITADDR	(1<<0)
--#define PNP_PORT_FLAG_FIXED	(1<<1)
--
- struct pnp_port {
- 	unsigned short min;	/* min base number */
- 	unsigned short max;	/* max base number */
+ #ifdef DEBUG
+-	bitmap_scnprintf(buf, sizeof(buf), data->map, PNP_IRQ_NR);
++	bitmap_scnprintf(buf, sizeof(buf), data->map.bits, PNP_IRQ_NR);
+ 	dev_dbg(&dev->dev, "  irq bitmask %s flags %#x\n", buf,
+ 		data->flags);
+ #endif
+@@ -653,7 +653,7 @@ static int pnp_possible_option(struct pn
+ 		case IORESOURCE_IRQ:
+ 			for (irq = tmp->irq; irq; irq = irq->next) {
+ 				if (start < PNP_IRQ_NR &&
+-				    test_bit(start, irq->map))
++				    test_bit(start, irq->map.bits))
+ 					return 1;
+ 			}
+ 			break;
+Index: work10/drivers/pnp/manager.c
+===================================================================
+--- work10.orig/drivers/pnp/manager.c	2008-06-04 15:28:38.000000000 -0600
++++ work10/drivers/pnp/manager.c	2008-06-04 15:38:25.000000000 -0600
+@@ -128,20 +128,20 @@ static int pnp_assign_irq(struct pnp_dev
+ 	res->start = -1;
+ 	res->end = -1;
+ 
+-	if (bitmap_empty(rule->map, PNP_IRQ_NR)) {
++	if (bitmap_empty(rule->map.bits, PNP_IRQ_NR)) {
+ 		res->flags |= IORESOURCE_DISABLED;
+ 		dev_dbg(&dev->dev, "  irq %d disabled\n", idx);
+ 		goto __add;
+ 	}
+ 
+ 	/* TBD: need check for >16 IRQ */
+-	res->start = find_next_bit(rule->map, PNP_IRQ_NR, 16);
++	res->start = find_next_bit(rule->map.bits, PNP_IRQ_NR, 16);
+ 	if (res->start < PNP_IRQ_NR) {
+ 		res->end = res->start;
+ 		goto __add;
+ 	}
+ 	for (i = 0; i < 16; i++) {
+-		if (test_bit(xtab[i], rule->map)) {
++		if (test_bit(xtab[i], rule->map.bits)) {
+ 			res->start = res->end = xtab[i];
+ 			if (pnp_check_irq(dev, res))
+ 				goto __add;
 Index: work10/drivers/pnp/interface.c
 ===================================================================
---- work10.orig/drivers/pnp/interface.c	2008-06-03 14:32:38.000000000 -0600
-+++ work10/drivers/pnp/interface.c	2008-06-03 14:33:01.000000000 -0600
-@@ -57,7 +57,7 @@ static void pnp_print_port(pnp_info_buff
- 		   "%sport 0x%x-0x%x, align 0x%x, size 0x%x, %i-bit address decoding\n",
- 		   space, port->min, port->max,
- 		   port->align ? (port->align - 1) : 0, port->size,
--		   port->flags & PNP_PORT_FLAG_16BITADDR ? 16 : 10);
-+		   port->flags & IORESOURCE_IO_16BIT_ADDR ? 16 : 10);
- }
+--- work10.orig/drivers/pnp/interface.c	2008-06-04 15:38:18.000000000 -0600
++++ work10/drivers/pnp/interface.c	2008-06-04 15:38:25.000000000 -0600
+@@ -67,7 +67,7 @@ static void pnp_print_irq(pnp_info_buffe
  
- static void pnp_print_irq(pnp_info_buffer_t * buffer, char *space,
+ 	pnp_printf(buffer, "%sirq ", space);
+ 	for (i = 0; i < PNP_IRQ_NR; i++)
+-		if (test_bit(i, irq->map)) {
++		if (test_bit(i, irq->map.bits)) {
+ 			if (!first) {
+ 				pnp_printf(buffer, ",");
+ 			} else {
+@@ -78,7 +78,7 @@ static void pnp_print_irq(pnp_info_buffe
+ 			else
+ 				pnp_printf(buffer, "%i", i);
+ 		}
+-	if (bitmap_empty(irq->map, PNP_IRQ_NR))
++	if (bitmap_empty(irq->map.bits, PNP_IRQ_NR))
+ 		pnp_printf(buffer, "<none>");
+ 	if (irq->flags & IORESOURCE_IRQ_HIGHEDGE)
+ 		pnp_printf(buffer, " High-Edge");
 Index: work10/drivers/pnp/isapnp/core.c
 ===================================================================
---- work10.orig/drivers/pnp/isapnp/core.c	2008-06-03 14:32:38.000000000 -0600
-+++ work10/drivers/pnp/isapnp/core.c	2008-06-03 14:33:01.000000000 -0600
-@@ -486,7 +486,7 @@ static void __init isapnp_parse_port_res
- 	port->max = (tmp[4] << 8) | tmp[3];
- 	port->align = tmp[5];
- 	port->size = tmp[6];
--	port->flags = tmp[0] ? PNP_PORT_FLAG_16BITADDR : 0;
-+	port->flags = tmp[0] ? IORESOURCE_IO_16BIT_ADDR : 0;
- 	pnp_register_port_resource(dev, option, port);
- }
- 
-@@ -507,7 +507,7 @@ static void __init isapnp_parse_fixed_po
- 	port->min = port->max = (tmp[1] << 8) | tmp[0];
- 	port->size = tmp[2];
- 	port->align = 0;
--	port->flags = PNP_PORT_FLAG_FIXED;
-+	port->flags = IORESOURCE_IO_FIXED;
- 	pnp_register_port_resource(dev, option, port);
- }
- 
+--- work10.orig/drivers/pnp/isapnp/core.c	2008-06-04 15:38:18.000000000 -0600
++++ work10/drivers/pnp/isapnp/core.c	2008-06-04 15:38:25.000000000 -0600
+@@ -441,7 +441,7 @@ static void __init isapnp_parse_irq_reso
+ 	if (!irq)
+ 		return;
+ 	bits = (tmp[1] << 8) | tmp[0];
+-	bitmap_copy(irq->map, &bits, 16);
++	bitmap_copy(irq->map.bits, &bits, 16);
+ 	if (size > 2)
+ 		irq->flags = tmp[2];
+ 	else
 Index: work10/drivers/pnp/pnpacpi/rsparser.c
 ===================================================================
---- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-03 14:32:38.000000000 -0600
-+++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-06-03 14:33:01.000000000 -0600
-@@ -178,7 +178,7 @@ static void pnpacpi_parse_allocated_iore
- 	u64 end = start + len - 1;
+--- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-06-04 15:38:18.000000000 -0600
++++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-06-04 15:38:25.000000000 -0600
+@@ -408,7 +408,7 @@ static __init void pnpacpi_parse_irq_opt
  
- 	if (io_decode == ACPI_DECODE_16)
--		flags |= PNP_PORT_FLAG_16BITADDR;
-+		flags |= IORESOURCE_IO_16BIT_ADDR;
- 	if (len == 0 || end >= 0x10003)
- 		flags |= IORESOURCE_DISABLED;
+ 	for (i = 0; i < p->interrupt_count; i++)
+ 		if (p->interrupts[i])
+-			__set_bit(p->interrupts[i], irq->map);
++			__set_bit(p->interrupts[i], irq->map.bits);
+ 	irq->flags = irq_flags(p->triggering, p->polarity, p->sharable);
  
-@@ -451,7 +451,7 @@ static __init void pnpacpi_parse_port_op
- 	port->align = io->alignment;
- 	port->size = io->address_length;
- 	port->flags = ACPI_DECODE_16 == io->io_decode ?
--	    PNP_PORT_FLAG_16BITADDR : 0;
-+	    IORESOURCE_IO_16BIT_ADDR : 0;
- 	pnp_register_port_resource(dev, option, port);
- }
+ 	pnp_register_irq_resource(dev, option, irq);
+@@ -429,7 +429,7 @@ static __init void pnpacpi_parse_ext_irq
  
-@@ -469,7 +469,7 @@ static __init void pnpacpi_parse_fixed_p
- 	port->min = port->max = io->address;
- 	port->size = io->address_length;
- 	port->align = 0;
--	port->flags = PNP_PORT_FLAG_FIXED;
-+	port->flags = IORESOURCE_IO_FIXED;
- 	pnp_register_port_resource(dev, option, port);
- }
+ 	for (i = 0; i < p->interrupt_count; i++)
+ 		if (p->interrupts[i])
+-			__set_bit(p->interrupts[i], irq->map);
++			__set_bit(p->interrupts[i], irq->map.bits);
+ 	irq->flags = irq_flags(p->triggering, p->polarity, p->sharable);
  
-@@ -575,7 +575,7 @@ static __init void pnpacpi_parse_address
- 		port->min = port->max = p->minimum;
- 		port->size = p->address_length;
- 		port->align = 0;
--		port->flags = PNP_PORT_FLAG_FIXED;
-+		port->flags = IORESOURCE_IO_FIXED;
- 		pnp_register_port_resource(dev, option, port);
- 	}
- }
-@@ -890,7 +890,7 @@ static void pnpacpi_encode_io(struct pnp
- 	struct acpi_resource_io *io = &resource->data.io;
+ 	pnp_register_irq_resource(dev, option, irq);
+Index: work10/drivers/pnp/quirks.c
+===================================================================
+--- work10.orig/drivers/pnp/quirks.c	2008-06-04 15:28:38.000000000 -0600
++++ work10/drivers/pnp/quirks.c	2008-06-04 15:38:25.000000000 -0600
+@@ -68,7 +68,7 @@ static void quirk_cmi8330_resources(stru
  
- 	/* Note: pnp_assign_port will copy pnp_port->flags into p->flags */
--	io->io_decode = (p->flags & PNP_PORT_FLAG_16BITADDR) ?
-+	io->io_decode = (p->flags & IORESOURCE_IO_16BIT_ADDR) ?
- 	    ACPI_DECODE_16 : ACPI_DECODE_10;
- 	io->minimum = p->start;
- 	io->maximum = p->end;
+ 		for (irq = res->irq; irq; irq = irq->next) {	// Valid irqs are 5, 7, 10
+ 			tmp = 0x04A0;
+-			bitmap_copy(irq->map, &tmp, 16);	// 0000 0100 1010 0000
++			bitmap_copy(irq->map.bits, &tmp, 16);	// 0000 0100 1010 0000
+ 		}
+ 
+ 		for (dma = res->dma; dma; dma = dma->next)	// Valid 8bit dma channels are 1,3
+@@ -187,7 +187,7 @@ static void quirk_ad1815_mpu_resources(s
+ 		if (!copy)
+ 			break;
+ 
+-		memcpy(copy->map, irq->map, sizeof copy->map);
++		bitmap_copy(copy->map.bits, irq->map.bits, PNP_IRQ_NR);
+ 		copy->flags = irq->flags;
+ 
+ 		copy->next = res->irq; /* Yes, this is NULL */
 Index: work10/drivers/pnp/pnpbios/rsparser.c
 ===================================================================
---- work10.orig/drivers/pnp/pnpbios/rsparser.c	2008-06-03 14:32:38.000000000 -0600
-+++ work10/drivers/pnp/pnpbios/rsparser.c	2008-06-03 14:33:01.000000000 -0600
-@@ -310,7 +310,7 @@ static __init void pnpbios_parse_port_op
- 	port->max = (p[5] << 8) | p[4];
- 	port->align = p[6];
- 	port->size = p[7];
--	port->flags = p[1] ? PNP_PORT_FLAG_16BITADDR : 0;
-+	port->flags = p[1] ? IORESOURCE_IO_16BIT_ADDR : 0;
- 	pnp_register_port_resource(dev, option, port);
- }
- 
-@@ -326,7 +326,7 @@ static __init void pnpbios_parse_fixed_p
- 	port->min = port->max = (p[2] << 8) | p[1];
- 	port->size = p[3];
- 	port->align = 0;
--	port->flags = PNP_PORT_FLAG_FIXED;
-+	port->flags = IORESOURCE_IO_FIXED;
- 	pnp_register_port_resource(dev, option, port);
- }
- 
+--- work10.orig/drivers/pnp/pnpbios/rsparser.c	2008-06-04 15:38:18.000000000 -0600
++++ work10/drivers/pnp/pnpbios/rsparser.c	2008-06-04 15:38:25.000000000 -0600
+@@ -275,7 +275,7 @@ static __init void pnpbios_parse_irq_opt
+ 	if (!irq)
+ 		return;
+ 	bits = (p[2] << 8) | p[1];
+-	bitmap_copy(irq->map, &bits, 16);
++	bitmap_copy(irq->map.bits, &bits, 16);
+ 	if (size > 2)
+ 		irq->flags = p[3];
+ 	else
 
 -- 
