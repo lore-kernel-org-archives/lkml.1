@@ -1,106 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762452AbYFDW2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762464AbYFDWbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762452AbYFDW2i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYFDW2b
+	id S1762464AbYFDWbU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbYFDWbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:28:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36963 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751945AbYFDW2a (ORCPT
+	Wed, 4 Jun 2008 18:31:10 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:51068 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755363AbYFDWbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:28:30 -0400
-Subject: Re: Kernel marker has no performance impact on ia64.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
-       Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080602232135.GA20173@Krystal>
-References: <48447052.3030300@redhat.com>
-	 <1212445965.6269.22.camel@lappy.programming.kicks-ass.net>
-	 <20080602232135.GA20173@Krystal>
-Content-Type: text/plain
-Date: Thu, 05 Jun 2008 00:27:29 +0200
-Message-Id: <1212618449.19205.35.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Wed, 4 Jun 2008 18:31:09 -0400
+Message-ID: <484717A6.4060403@keyaccess.nl>
+Date: Thu, 05 Jun 2008 00:31:02 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
+       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [patch 15/15] PNP: convert resource options to single linked
+ list
+References: <20080530224853.976744229@ldl.fc.hp.com> <4845D937.2000205@keyaccess.nl> <4846810B.2030301@keyaccess.nl> <200806041450.10576.bjorn.helgaas@hp.com>
+In-Reply-To: <200806041450.10576.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-06-02 at 19:21 -0400, Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Mon, 2008-06-02 at 18:12 -0400, Hideo AOKI wrote:
-> > > Hello,
-> > > 
-> > > I evaluated overhead of kernel marker using linux-2.6-sched-fixes
-> > > git tree, which includes several markers for LTTng, using an ia64
-> > > server.
-> > > 
-> > > While the immediate trace mark feature isn't implemented on ia64,
-> > > there is no major performance regression. So, I think that we 
-> > > don't have any issues to propose merging marker point patches 
-> > > into Linus's tree from the viewpoint of performance impact.
-> > 
-> > Performance is atm the least of the concerns regarding this work.
-> > 
-> > I'm still convinced markers are too ugly to live.
-> > 
-> > I also worry greatly about the fact that its too easy to expose too much
-> > to user-space. There are no clear rules and the free form marker format
-> > just begs for an inconsistent mess to arise.
-> > 
-> > IMHO the current free-form trace_mark() should be removed from the tree
-> > - its great for ad-hoc debugging but its a disaster waiting to happen
-> > for anything else. Anybody doing ad-hoc debugging can patch it in
-> > themselves if needed.
-> > 
-> > Regular trace points can be custom made; this has the advantages that it
-> > raises the implementation barrier and hopefully that encourages some
-> > thought in the process. It also avoid the code from growing into
-> > something that looks like someone had a long night of debugging.
-> > 
+On 04-06-08 22:50, Bjorn Helgaas wrote:
+
+> On Wednesday 04 June 2008 05:48:27 am Rene Herman wrote:
+>> On 04-06-08 01:52, Rene Herman wrote:
 > 
-> Maybe we could settle for an intermediate solution : I agree with you
-> that defining the trace points in headers, like you did for the
-> scheduler, makes the code much cleaner and makes things much easier to
-> maintain afterward. However, having the trace_mark mechanism underneath
-> helps a lot in plugging a generic tracer (actually, if we can settle the
-> marker issue, I've got a kernel tracer, LTTng, that I've been waiting
-> for quite a while to push to mainline that I would like to post someday).
+>> ADS7181 in fact might as well delete the IRQ from the dependents and add
+>> "irq 2/9,10,11 High-Edge Optinal" in front as an independent same as 
+>> ADS7151. That way, all the cloning can go.
 > 
-> So I would be in favor of requiring tracing statements to be described
-> in static inline functions, in header files, that could preferably call
-> trace_mark() and optionally also call other in-kernel tracers directly.
-> 
-> Ideally, we could re-use the immediate values infrastructure to control
-> activation of these trace points with minimal impact on the system.
-> 
-> One of my goal is to provide a mechanism that can feed both non-debug
-> and debug information to a generic tracing mechanism to allow
-> system-wide analysis of the kernel, both for production system and
-> kernel debugging.
+> We currently clone for AZT0002 as well as ADS7181.  Can we do the
+> same for both?  It would be nice to get rid of the cloning code
+> if we can.
 
-So are you proposing something like:
+Yes. AZT0002 (the MPU401 on an AZT2320 chip) is the exact same as 
+ADS7181 (the MPU401 on an AD1816 chip).
 
-static inline void 
-trace_sched_switch(struct task_struct *prev, struct task_struct *next)
-{
-	trace_mark(sched_switch, prev, next);
-}
+IORESOURCE_IRQ_OPTIONAL clears the path for doing things better. I see 
+its dependent 2 can then just go entirely in fact.
 
-dropping the silly fmt string but using the multiplex of trace_mark, and
-then doing the stringify bit:
+Hardware says:
 
-       "prev_pid %d next_pid %d prev_state %ld\n"
+Dependent: 00 - Priority preferred
+   irq 2/9 High-Edge
+   port 0x330-0x330, align 0xf, size 0x2, 16-bit address decoding
+Dependent: 01 - Priority acceptable
+   irq 2/9 High-Edge
+   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
+Dependent: 02 - Priority functional
+   irq 2/9,10,11 High-Edge
+   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
 
-in the actual tracer?
+We want it to end up as:
 
+irq 2/9,10,11 High-Edge (Optional)
+Dependent: 00 - Priority preferred
+   port 0x330-0x330, align 0xf, size 0x2, 16-bit address decoding
+Dependent: 01 - Priority acceptable
+   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
 
-IMHO the 'type safety' of the fmt string is over-rated, since it cannot
-distinguish between a task_struct * or a bio *, both are a pointers -
-and half arsed type safely is worse than no type safety.
+So walk dependents deleting IRQs, except last dependent IRQ which is 
+cloned into a new independent (inserted in front would be best for 
+ISAPnP since the spec does recommend this) while making it optional and 
+then just delete the last dependent completely (it would be same as the 
+previous dependent after all).
 
-
-
+Rene.
