@@ -1,47 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbYFDWsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762570AbYFDWwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762770AbYFDWsr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:48:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYFDWsf
+	id S1762570AbYFDWwU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYFDWwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:48:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52572
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753897AbYFDWse (ORCPT
+	Wed, 4 Jun 2008 18:52:11 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:51316 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752903AbYFDWwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:48:34 -0400
-Date: Wed, 04 Jun 2008 15:48:34 -0700 (PDT)
-Message-Id: <20080604.154834.80521372.davem@davemloft.net>
-To: mokuno@sm.sony.co.jp
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/12]: Proper compat WEXT support.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080604184955.B033.40F06B3A@sm.sony.co.jp>
-References: <20080603.132755.262737024.davem@davemloft.net>
-	<20080604184955.B033.40F06B3A@sm.sony.co.jp>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 18:52:10 -0400
+Date: Wed, 4 Jun 2008 18:51:55 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jack@suse.cz, hidehiro.kawai.ez@hitachi.com, sct@redhat.com,
+       adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
+	buffers
+Message-ID: <20080604225155.GB8727@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>, jack@suse.cz,
+	hidehiro.kawai.ez@hitachi.com, sct@redhat.com, adilger@sun.com,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	jbacik@redhat.com, cmm@us.ibm.com, yumiko.sugita.yf@hitachi.com,
+	satoshi.oshima.fk@hitachi.com
+References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com> <20080603153050.fb99ac8a.akpm@linux-foundation.org> <20080604101925.GB16572@duck.suse.cz> <20080604111911.c1fe09c6.akpm@linux-foundation.org> <20080604212202.GA8727@mit.edu> <20080604145848.e3da6f20.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604145848.e3da6f20.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
-Date: Wed, 04 Jun 2008 19:09:06 +0900
-
-> I'm testing these patches on my PS3.  I've found a problem.
+On Wed, Jun 04, 2008 at 02:58:48PM -0700, Andrew Morton wrote:
+> On Wed, 4 Jun 2008 17:22:02 -0400
+> Theodore Tso <tytso@mit.edu> wrote:
 > 
-> With 32-bit wireless-tools v28, the bitrates from the scan result were
-> wrong (with gelic/rt2x00 driver):
+> > On Wed, Jun 04, 2008 at 11:19:11AM -0700, Andrew Morton wrote:
+> > > Does any other filesystem driver turn the fs read-only on the first
+> > > write-IO-error?
+> 
 
-Thanks, I'll look into this when I get a chance.
+For failures to write to data blocks, I don't think any other
+filesystems turn the filesystem read-only.  Not that many other
+filesystems do the remount on read-only thing in general; remounting
+read/only is something that might be unique to ext2/3/4.
 
-I want to redesign the interfaces so that the callers give
-enough information to the helper routines such that the
-compat stuff can be handled completely inside of the
-helpers.
+> > It is similarly insane to ask a filesystem to figure out that a newly
+> > plugged in USB stick is the same one that the user had accidentally
+> > unplugged 30 seconds ago.  We don't want to put that kind of low-level
+> > knowlede about storage details in each different filesystem.
+> > 
+> > A much better place to put that kind of smarts is in a multipath
+> > module which sits in between the device and the filesystem.  It can
+> > retry writes from a transient failure, if a path goes down or if a
+> > iSCSI device temporarily drops off the network.
+> 
+> That's fine in theory, but we don't do any if that right now, do we?
 
-It is unpleasant (and error prone) to put this compat handling
-at all of the call sites.
+No, but I think it's insane to put any of this into the filesystem.  I
+don't want to put words in other people's mouths, but Mingming and I
+were chatting with Chris Mason the last two days at a BTRFS workshop
+(which is why we've been a bit slow on responding), and when discussed
+this thread informally, he agreed that it was really bad idea to try
+to put this kind of retry logic in an individual filesystem.
+
+> >  But if a filesystem
+> > gets a write failure, it has to assume that the write failure is
+> > permanent.
+> 
+> To that sector, yes.  But to the entire partition?
+
+I agree it's a bad idea.  OTOH, we really need a good way of notifying
+a system daemon or administrator, and not just rely on the application
+to DTRT when it receives an -EIO.  Probably what we should do is (1)
+return -EIO, (2) send a uevent that includes as much information as
+possible.  At the minimum, the block that had the write (or read)
+error, and if available the file name involved, and application and/or
+pid involved.  That way, the policy of what should happen in case of a
+data I/O error can be informed by what write just failed.  It might be
+that if the failure is to some critical application data, the right
+thing to do is to kill of the application server and let the HA system
+bring up the hotbackup.  Or if the failure is writing to a log file,
+some other recovery procedure is the right thing.   
+
+But forcing the entire filesystem read-only just because of a write
+failure to a data block is probably not the best way to go.
+
+> But afaict this patch changes things so that if we get a write failure
+> in a data block we make the entire fs read-only.  Which, as I said, is
+> often "dead box".
+> 
+> This seems like a quite major policy change to me.
+
+Agreed, and it's not appropriate.  I could imagine that for some
+setups it is the right policy, but the kernel should not be setting
+policy like this.  Maybe as a new tunable in the superblock, or maybe
+via a round-trip to userspace via a uevent, but certainly not as the
+new default behavior.
+
+Apologies, I'm still catching up on patches sent in the past few days,
+so I haven't had a chance to do a detailed review on Kawai-san's
+patches yet.  I do agree that if this patch is forcing the entire
+filesystem read-only on a write-failure to a data block, it's probably
+not appropriate.
+
+							- Ted
