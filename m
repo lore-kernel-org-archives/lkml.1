@@ -1,51 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761500AbYFDVT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbYFDVXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761500AbYFDVT4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 17:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbYFDVTs
+	id S1758635AbYFDVXG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 17:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYFDVWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 17:19:48 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:6836 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753231AbYFDVTr (ORCPT
+	Wed, 4 Jun 2008 17:22:53 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:40308 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751237AbYFDVWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 17:19:47 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5310"; a="3684852"
-Message-ID: <48470708.5030303@qualcomm.com>
-Date: Wed, 04 Jun 2008 14:20:08 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 4 Jun 2008 17:22:52 -0400
+Date: Wed, 4 Jun 2008 17:22:02 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
+	buffers
+Message-ID: <20080604212202.GA8727@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
+	Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, sct@redhat.com,
+	adilger@sun.com, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+	yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com> <20080603153050.fb99ac8a.akpm@linux-foundation.org> <20080604101925.GB16572@duck.suse.cz> <20080604111911.c1fe09c6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: andi@firstfloor.org, ioe-lkml@rameria.de, sivanich@sgi.com,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       kernel@kolivas.org, dfults@sgi.com, devik@cdi.cz, dino@in.ibm.com,
-       emmanuel.pacaud@univ-poitiers.fr, deweerdt@free.fr, mingo@elte.hu,
-       colpatch@us.ibm.com, nickpiggin@yahoo.com.au, rostedt@goodmis.org,
-       oleg@tv-sign.ru, paulmck@us.ibm.com, menage@google.com,
-       rddunlap@osdl.org, suresh.b.siddha@intel.com, tglx@linutronix.de
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
- have realtime uses)
-References: <20080601213019.14ea8ef8.pj@sgi.com>	<1212446707.6269.26.camel@lappy.programming.kicks-ass.net>	<48447C75.8040203@qualcomm.com>	<200806030156.00155.ioe-lkml@rameria.de>	<4844BB41.7000605@qualcomm.com>	<4845D825.6000403@qualcomm.com>	<20080603194148.56dfebe1.pj@sgi.com>	<48461ADA.8020303@qualcomm.com>	<877id5v1fg.fsf@basil.nowhere.org>	<20080604124126.0d281a99.pj@sgi.com>	<20080604200350.GL20824@one.firstfloor.org>	<20080604151622.a50b984f.pj@sgi.com>	<4846FC21.10304@firstfloor.org>	<20080604153819.3a3a5256.pj@sgi.com>	<4847063B.3030706@qualcomm.com> <20080604161744.4fcf7805.pj@sgi.com>
-In-Reply-To: <20080604161744.4fcf7805.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604111911.c1fe09c6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Paul Jackson wrote:
-> Max wrote:
->> Paul, I beleive you mentioned a while ago that the tools you guys use for this
->> aren't open source. Has that changed ?
+On Wed, Jun 04, 2008 at 11:19:11AM -0700, Andrew Morton wrote:
+> Does any other filesystem driver turn the fs read-only on the first
+> write-IO-error?
 > 
-> No change.
+> It seems like a big policy change to me.  For a lot of applications
+> it's effectively a complete outage and people might get a bit upset if
+> this happens on the first blip from their NAS.
 
-Ack.
+As I told Kawai-san when I met with him and his colleagues in Tokyo
+last week, it is the responsibility of the storage stack to retry
+errors as appropriate.  From the filesystem perspective, a read or a
+write operation succeeds, or fails.  A read or write operation could
+take a long time before returning, but the storage stack doesn't get
+to return a "fail, but try again at some point; maybe we'll succeed
+later, or if you try writing to a different block".  The only sane
+thing for a filesystem to do is to treat any failure as a hard
+failure.
 
-What do you of that idea btw ? ie Generally available "syspart" thing.
+It is similarly insane to ask a filesystem to figure out that a newly
+plugged in USB stick is the same one that the user had accidentally
+unplugged 30 seconds ago.  We don't want to put that kind of low-level
+knowlede about storage details in each different filesystem.
 
-Max
+A much better place to put that kind of smarts is in a multipath
+module which sits in between the device and the filesystem.  It can
+retry writes from a transient failure, if a path goes down or if a
+iSCSI device temporarily drops off the network.  But if a filesystem
+gets a write failure, it has to assume that the write failure is
+permanent.
 
+The question though is what should you do if you have a write failure
+in various different parts of the disk?  If you have a write failure
+in a data block, you can return -EIO to the user.  You could try
+reallocating to find another block, and try writing to that alternate
+location (although with modern filesystems that do block remapping,
+this is largely pointless, since an EIO failure on write probably
+means you've lost connectivity to the disk or the disk as run out of
+spare blocks).  But for a failure to write to the a critical part of
+the filesystem, like the inode table, or failure to write to the
+journal, what the heck can you do?  Remounting read-only is probably
+the best thing you can do.
+
+In theory, if it is a failure to write to the journal, you could fall
+back to no-journaled operation, and if ext3 could support running w/o
+a journal, that is possibly an option --- but again, it's very likely
+that the disk is totally gone (i.e., the user pulled the USB stick
+without unmounting), or the disk is out of spare blocks in its bad
+block remapping pool, and the system is probably going to be in deep
+trouble --- and the next failure to write some data might be critical
+application data.  You probably *are* better off failing the system
+hard, and letting the HA system swap in the hot spare backup, if this
+is some critical service.
+
+That being said, ext3 can be tuned (and it is the default today,
+although I should probably change the default to be remount-ro), so
+that its behaviour on write errors is, "don't worry, be happy", and
+just leave the filesystem mounted read/write.  That's actually quite
+dangerous for a critical production server, however.....
+
+							- Ted
