@@ -1,61 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbYFDPlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbYFDPpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759668AbYFDPlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbYFDPlJ
+	id S1760305AbYFDPpg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYFDPp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:41:09 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54090 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754983AbYFDPlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:41:08 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18dvmZvGSodUl/3GVpVqWiQ2q+CIDTftYYjDjrJt6
-	iw6IwuknIYpypF
-Date: Wed, 4 Jun 2008 17:41:27 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-X-X-Sender: lyakh@axis700.grange
-To: Adrian Bunk <bunk@kernel.org>
-cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-Subject: Re: [PATCH] spi: two bug-fixes
-In-Reply-To: <20080604153132.GB4189@cs181133002.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0806041737550.32657@axis700.grange>
-References: <Pine.LNX.4.64.0806041705430.32657@axis700.grange>
- <20080604153132.GB4189@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Wed, 4 Jun 2008 11:45:29 -0400
+Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:46035 "EHLO
+	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756823AbYFDPp2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:45:28 -0400
+Date: Wed, 4 Jun 2008 16:44:56 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: [PATCH] cputopology: Always define CPU topology information [4th try]
+Message-ID: <20080604154454.GD11300@solarflare.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008, Adrian Bunk wrote:
+Not all architectures and configurations define CPU topology information.
+This can result in an empty topology directory in sysfs, and requires
+in-kernel users to protect all uses with #ifdef - see
+<http://marc.info/?l=linux-netdev&m=120639033904472&w=2>.
 
-> On Wed, Jun 04, 2008 at 05:11:14PM +0200, Guennadi Liakhovetski wrote:
-> > Index: linux-2.6/drivers/gpio/mcp23s08.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/gpio/mcp23s08.c	2008-06-04 12:11:26.000000000 +0200
-> > +++ linux-2.6/drivers/gpio/mcp23s08.c	2008-06-04 12:11:50.000000000 +0200
-> > @@ -178,7 +178,7 @@
-> >  
-> >  	mutex_lock(&mcp->lock);
-> >  	t = mcp23s08_read_regs(mcp, 0, mcp->cache, sizeof mcp->cache);
-> > -	if (t < 0) {
-> > +	if ((int)t < 0) {
-> >  		seq_printf(s, " I/O ERROR %d\n", t);
-> >  		goto done;
-> >  	}
-> >...
-> 
-> The better fix of making "t" signed by Roel Kluin is already as
-> commit 1d1c1d9b557a12320174058d2d313ffb0f8611f4 in Linus' tree.
+The documentation of CPU topology specifies what the defaults should be
+if only partial information is available from the hardware.  So we can
+provide these defaults as a fallback.
 
-Good, thanks for letting know! David, please, let me know if you want me 
-to resubmit the second part of the patch separately, or if you can just 
-extract it from the original one.
+This patch:
 
-Thanks
-Guennadi
+- Adds default definitions of the 4 topology macros to <linux/topology.h>
+- Changes drivers/base/topology.c to use the topology macros unconditionally
+  and to cope with definitions that aren't lvalues
+- Updates documentation accordingly
+
+Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+ Documentation/cputopology.txt |   26 +++++++++-----------------
+ drivers/base/topology.c       |   38 ++++++++++----------------------------
+ include/linux/topology.h      |   13 +++++++++++++
+ 3 files changed, 32 insertions(+), 45 deletions(-)
+
+diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
+index b61cb95..bd699da 100644
+--- a/Documentation/cputopology.txt
++++ b/Documentation/cputopology.txt
+@@ -14,9 +14,8 @@ represent the thread siblings to cpu X in the same physical package;
+ To implement it in an architecture-neutral way, a new source file,
+ drivers/base/topology.c, is to export the 4 attributes.
+ 
+-If one architecture wants to support this feature, it just needs to
+-implement 4 defines, typically in file include/asm-XXX/topology.h.
+-The 4 defines are:
++For an architecture to support this feature, it must define some of
++these macros in include/asm-XXX/topology.h:
+ #define topology_physical_package_id(cpu)
+ #define topology_core_id(cpu)
+ #define topology_thread_siblings(cpu)
+@@ -25,17 +24,10 @@ The 4 defines are:
+ The type of **_id is int.
+ The type of siblings is cpumask_t.
+ 
+-To be consistent on all architectures, the 4 attributes should have
+-default values if their values are unavailable. Below is the rule.
+-1) physical_package_id: If cpu has no physical package id, -1 is the
+-default value.
+-2) core_id: If cpu doesn't support multi-core, its core id is 0.
+-3) thread_siblings: Just include itself, if the cpu doesn't support
+-HT/multi-thread.
+-4) core_siblings: Just include itself, if the cpu doesn't support
+-multi-core and HT/Multi-thread.
+-
+-So be careful when declaring the 4 defines in include/asm-XXX/topology.h.
+-
+-If an attribute isn't defined on an architecture, it won't be exported.
+-
++To be consistent on all architectures, include/linux/topology.h
++provides default definitions for any of the above macros that are
++not defined by include/asm-XXX/topology.h:
++1) physical_package_id: -1
++2) core_id: 0
++3) thread_siblings: just the given CPU
++4) core_siblings: just the given CPU
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index 1efe162..8999828 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -62,14 +62,16 @@ static ssize_t show_cpumap(int type, cpumask_t *mask, char *buf)
+ static ssize_t show_##name(struct sys_device *dev, char *buf)	\
+ {									\
+ 	unsigned int cpu = dev->id;					\
+-	return show_cpumap(0, &(topology_##name(cpu)), buf);		\
++	cpumask_t siblings = topology_##name(cpu);			\
++	return show_cpumap(0, &siblings, buf);				\
+ }
+ 
+ #define define_siblings_show_list(name)					\
+ static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
+ {									\
+ 	unsigned int cpu = dev->id;					\
+-	return show_cpumap(1, &(topology_##name(cpu)), buf);		\
++	cpumask_t siblings = topology_##name(cpu);			\
++	return show_cpumap(1, &siblings, buf);				\
+ }
+ 
+ #else
+@@ -93,47 +95,27 @@ static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
+ #define define_siblings_show_func(name)		\
+ 	define_siblings_show_map(name); define_siblings_show_list(name)
+ 
+-#ifdef	topology_physical_package_id
+ define_id_show_func(physical_package_id);
+ define_one_ro(physical_package_id);
+-#define ref_physical_package_id_attr	&attr_physical_package_id.attr,
+-#else
+-#define ref_physical_package_id_attr
+-#endif
+ 
+-#ifdef topology_core_id
+ define_id_show_func(core_id);
+ define_one_ro(core_id);
+-#define ref_core_id_attr		&attr_core_id.attr,
+-#else
+-#define ref_core_id_attr
+-#endif
+ 
+-#ifdef topology_thread_siblings
+ define_siblings_show_func(thread_siblings);
+ define_one_ro(thread_siblings);
+ define_one_ro(thread_siblings_list);
+-#define ref_thread_siblings_attr	\
+-		&attr_thread_siblings.attr, &attr_thread_siblings_list.attr,
+-#else
+-#define ref_thread_siblings_attr
+-#endif
+ 
+-#ifdef topology_core_siblings
+ define_siblings_show_func(core_siblings);
+ define_one_ro(core_siblings);
+ define_one_ro(core_siblings_list);
+-#define ref_core_siblings_attr		\
+-		&attr_core_siblings.attr, &attr_core_siblings_list.attr,
+-#else
+-#define ref_core_siblings_attr
+-#endif
+ 
+ static struct attribute *default_attrs[] = {
+-	ref_physical_package_id_attr
+-	ref_core_id_attr
+-	ref_thread_siblings_attr
+-	ref_core_siblings_attr
++	&attr_physical_package_id.attr,
++	&attr_core_id.attr,
++	&attr_thread_siblings.attr,
++	&attr_thread_siblings_list.attr,
++	&attr_core_siblings.attr,
++	&attr_core_siblings_list.attr,
+ 	NULL
+ };
+ 
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index 24f3d22..2158fc0 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -179,4 +179,17 @@ void arch_update_cpu_topology(void);
+ #endif
+ #endif /* CONFIG_NUMA */
+ 
++#ifndef topology_physical_package_id
++#define topology_physical_package_id(cpu)	((void)(cpu), -1)
++#endif
++#ifndef topology_core_id
++#define topology_core_id(cpu)			((void)(cpu), 0)
++#endif
++#ifndef topology_thread_siblings
++#define topology_thread_siblings(cpu)		cpumask_of_cpu(cpu)
++#endif
++#ifndef topology_core_siblings
++#define topology_core_siblings(cpu)		cpumask_of_cpu(cpu)
++#endif
++
+ #endif /* _LINUX_TOPOLOGY_H */
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
