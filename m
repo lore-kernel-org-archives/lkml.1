@@ -1,40 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbYFDWFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbYFDWIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762154AbYFDWFB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbYFDWEt
+	id S1761983AbYFDWIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbYFDWIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:04:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48545
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753544AbYFDWEs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:04:48 -0400
-Date: Wed, 04 Jun 2008 15:04:48 -0700 (PDT)
-Message-Id: <20080604.150448.68384714.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: pull request: wireless-2.6 2008-06-04
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080604205514.GB32186@tuxdriver.com>
-References: <20080604205514.GB32186@tuxdriver.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 18:08:42 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62900 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757778AbYFDWIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 18:08:41 -0400
+Date: Wed, 4 Jun 2008 23:07:52 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jon Masters <jcm@redhat.com>
+cc: Stefan Assmann <sassmann@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+In-Reply-To: <1212609577.8410.32.camel@londonpacket.bos.redhat.com>
+Message-ID: <Pine.LNX.4.55.0806042243080.28685@cliff.in.clinika.pl>
+References: <12124107071847-git-send-email-od@suse.de>  <m1tzgauduu.fsf@frodo.ebiederm.org>
+ <4846651F.4070802@suse.de>  <m1ve0pqy06.fsf@frodo.ebiederm.org> 
+ <48467DA7.9030309@suse.de>  <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
+  <Pine.LNX.4.55.0806042014110.28685@cliff.in.clinika.pl>
+ <1212609577.8410.32.camel@londonpacket.bos.redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 4 Jun 2008 16:55:14 -0400
+On Wed, 4 Jun 2008, Jon Masters wrote:
 
-> NOTE: This accounts for the net-2.6 rebase and drops the controversial
-> wireless.h patch...
-> 
-> Dave,
-> 
-> A smattering of fixes for 2.6.26...nothing major...
+> I disagree. I think it's now actually the *inverse*. It /used/ to be
+> harder, because you didn't have a context in which you could do many
+> things (so you need to schedule some kind of deferred work), but
+> actually, it'll become a lot more attractive with device threads.
 
-Pulled and pushed back out to net-2.6, thanks John.
+ Well, I mean it's easier to do all the handling sequentially in the
+hardirq context than split the thing and deal with all the communication,
+locking, possible races, etc. so people avoid it unless really forced to.  
+In principle all the interrupt handlers could be split like this except
+those really, really tiny ones or where latency is absolutely critical.  
+Yet it often does not happen.
+
+> The only real caveat is for performance critical cases (the reasons we
+> have special softirqs and the like right now) but there will always be
+> special cases. Still, I'd like it if writing a Linux interrupt handler
+> came down to registering two functions - one lightweight tiny one, and
+> one that's just a thread. Much less room for making mistakes.
+
+ The two will have to pass some state between each other, might run
+concurrently or in parallel, etc. and require some effort to be written
+correctly.
+
+  Maciej
