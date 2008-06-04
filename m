@@ -1,115 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbYFDRJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbYFDRLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759313AbYFDRJN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 13:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbYFDRIn
+	id S1760652AbYFDRLH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 13:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYFDRKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 13:08:43 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:47560 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755179AbYFDRIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 13:08:06 -0400
-Date: Wed, 4 Jun 2008 21:09:05 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race
-Message-ID: <20080604170905.GA10273@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Wed, 4 Jun 2008 13:10:53 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33072 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbYFDRKw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 13:10:52 -0400
+To: jack@suse.cz
+CC: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-reply-to: <20080604163412.GL16572@duck.suse.cz> (message from Jan Kara on
+	Wed, 4 Jun 2008 18:34:12 +0200)
+Subject: Re: Two questions on VFS/mm
+References: <20080604163412.GL16572@duck.suse.cz>
+Message-Id: <E1K3wVW-0001Hv-QD@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 04 Jun 2008 19:10:42 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-schedule() has the special "TASK_INTERRUPTIBLE && signal_pending()" case,
-this allows us to do
+(Added some CCs)
 
-	current->state = TASK_INTERRUPTIBLE;
-	schedule();
+>   could some kind soul knowledgable in VFS/mm help me with the following
+> two questions? I've spotted them when testing some ext4 for patches...
+>   1) In write_cache_pages() we do:
+> ...
+> 	lock_page(page);
+> 	...
+> 	if (!wbc->range_cyclic && page->index > end) {
+>                    done = 1;
+>                    unlock_page(page);
+>                    continue;
+>         }
+> 	...
+> 	ret = (*writepage)(page, wbc, data);
+> 
+>   Now the problem is that if range_cyclic is set, it can happen that the
+> page we give to the filesystem is beyond the current end of file (and can
+> be already processed by invalidatepage()). Is the filesystem supposed to
+> handle this (what would it be good for to give such a page to the fs?) or
+> is it just a bug in write_cache_pages()?
 
-without fear to sleep with pending signal.
+There may be a bug somewhere, but write_cache_pages() looks correct.
+It locks the page then checks for page->mapping to make sure the page
+wasn't truncated.  And truncation (including invalidatepage()) happens
+with the page locked, so that can't race with page writeback.
 
-However, the code like
+However the do_invalidatepage() in block_write_full_page() looks
+suspicious.  It calls invalidatepage(), but doesn't perform all the
+other things needed for truncation.  Maybe there's a valid reason for
+that, but I really don't have any idea what.
 
-	current->state = TASK_KILLABLE;
-	schedule();
+Miklos
 
-is not right, schedule() doesn't take TASK_WAKEKILL into account. This means
-that mutex_lock_killable(), wait_for_completion_killable(), down_killable(),
-schedule_timeout_killable() can miss SIGKILL (and btw the second SIGKILL has
-no effect).
-
-Introduce the new helper, signal_pending_state(), and change schedule() to
-use it.
-
-Note this "__TASK_STOPPED | __TASK_TRACED" check in signal_pending_state().
-Probably it would be better to remove it, but this will change the current
-behaviour and thus needs a separate discussion.
-
-Note also that with or without this patch TASK_WAKEKILL is not exactly right
-wrt /sbin/init, but this is another issue.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
- include/linux/sched.h |    2 ++
- kernel/signal.c       |   14 ++++++++++++++
- kernel/sched.c        |    6 ++----
- 3 files changed, 18 insertions(+), 4 deletions(-)
-
---- 26-rc2/include/linux/sched.h~1_SCHED_KILLABLE	2008-06-01 16:44:39.000000000 +0400
-+++ 26-rc2/include/linux/sched.h	2008-06-01 16:44:39.000000000 +0400
-@@ -2020,6 +2020,8 @@ static inline int signal_pending(struct 
- 	return unlikely(test_tsk_thread_flag(p,TIF_SIGPENDING));
- }
- 
-+extern int signal_pending_state(long state, struct task_struct *p);
-+
- extern int __fatal_signal_pending(struct task_struct *p);
- 
- static inline int fatal_signal_pending(struct task_struct *p)
---- 26-rc2/kernel/signal.c~1_SCHED_KILLABLE	2008-05-31 16:03:39.000000000 +0400
-+++ 26-rc2/kernel/signal.c	2008-06-04 19:57:34.000000000 +0400
-@@ -980,6 +980,20 @@ int __fatal_signal_pending(struct task_s
- }
- EXPORT_SYMBOL(__fatal_signal_pending);
- 
-+int signal_pending_state(long state, struct task_struct *p)
-+{
-+	if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
-+		return 0;
-+	if (!signal_pending(p))
-+		return 0;
-+
-+	if (state & TASK_INTERRUPTIBLE)
-+		return 1;
-+	if (state & (__TASK_STOPPED | __TASK_TRACED))
-+		return 0;
-+	return __fatal_signal_pending(p);
-+}
-+
- struct sighand_struct *lock_task_sighand(struct task_struct *tsk, unsigned long *flags)
- {
- 	struct sighand_struct *sighand;
---- 26-rc2/kernel/sched.c~1_SCHED_KILLABLE	2008-05-18 15:44:18.000000000 +0400
-+++ 26-rc2/kernel/sched.c	2008-06-04 17:42:59.000000000 +0400
-@@ -4510,12 +4510,10 @@ need_resched_nonpreemptible:
- 	clear_tsk_need_resched(prev);
- 
- 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
--		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
--				signal_pending(prev))) {
-+		if (unlikely(signal_pending_state(prev->state, prev)))
- 			prev->state = TASK_RUNNING;
--		} else {
-+		else
- 			deactivate_task(rq, prev, 1);
--		}
- 		switch_count = &prev->nvcsw;
- 	}
- 
+> 
+>   2) I have the following problem with page_mkwrite() when blocksize <
+> pagesize. What we want to do is to fill in a potential hole under a page
+> somebody wants to write to. But consider following scenario with a
+> filesystem with 1k blocksize:
+>   truncate("file", 1024);
+>   ptr = mmap("file");
+>   *ptr = 'a'
+>      -> page_mkwrite() is called.
+>         but "file" is only 1k large and we cannot really allocate blocks
+>         beyond end of file. So we allocate just one 1k block.
+>   truncate("file", 4096);
+>   *(ptr + 2048) = 'a'
+>      - nothing is called and later during writepage() time we are surprised
+>        we have a dirty page which is not backed by a filesystem block.
+> 
+>   How to solve this? One idea I have here is that when we handle truncate(),
+> we mark the original last page (if it is partial) as read-only again so
+> that page_mkwrite() is called on the next write to it. Is something like
+> this possible? Pointers to code doing something similar are welcome, I don't
+> really know these things ;).
+> 
+> 								Thanks
+> 									Honza
+> -- 
+> Jan Kara <jack@suse.cz>
+> SUSE Labs, CR
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
