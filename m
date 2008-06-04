@@ -1,67 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYFDKKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYFDKMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbYFDKKr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 06:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbYFDKK2
+	id S1759727AbYFDKMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 06:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYFDKMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 06:10:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39031 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755664AbYFDKK0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 06:10:26 -0400
-Subject: Re: [PATCH] console - Add configurable support for console charset
-	translation
-From: David Woodhouse <dwmw2@infradead.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Josh Boyer <jwboyer@gmail.com>, Tim Bird <tim.bird@am.sony.com>,
-       linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080604100721.GB27335@cs181133002.pp.htv.fi>
-References: <48447615.5050806@am.sony.com>
-	 <1212500751.16924.322.camel@pmac.infradead.org>
-	 <4845DB46.3020308@am.sony.com>
-	 <1212538597.4042.29.camel@shinybook.infradead.org>
-	 <20080603200349.3b1957e1@vader.jdub.homelinux.org>
-	 <1212541541.4042.41.camel@shinybook.infradead.org>
-	 <20080603221309.5e2762be@vader.jdub.homelinux.org>
-	 <1212570982.4042.64.camel@shinybook.infradead.org>
-	 <20080604100721.GB27335@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 11:10:15 +0100
-Message-Id: <1212574215.32207.9.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 4 Jun 2008 06:12:05 -0400
+Received: from www.tglx.de ([62.245.132.106]:48585 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754192AbYFDKMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 06:12:03 -0400
+Date: Wed, 4 Jun 2008 12:11:45 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Uwe.Kleine-Koenig@digi.com, gregkh@suse.de,
+       akpm@linux-foundation.org, hjk@linutronix.de, lethal@linux-sh.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Message-ID: <20080604101144.GA3207@local>
+References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-06-04 at 13:07 +0300, Adrian Bunk wrote:
-> On Wed, Jun 04, 2008 at 10:16:22AM +0100, David Woodhouse wrote:
-> > On Tue, 2008-06-03 at 22:13 -0500, Josh Boyer wrote:
-> > > 
-> > > >  git.infradead.org/embedded-2.6.git
-> > > 
-> > > Do you have plans to get that in -mm, or linux-next?
-> > 
-> > Should be already there in today's linux-next.
+On Wed, Jun 04, 2008 at 03:08:26PM +0900, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> Does this imply you want Linus to merge from this tree?
+> This patch adds a "Unique IRQ Mode" to the uio_pdrv UIO platform driver.
+> In this mode the user space driver is responsible for acknowledging and
+> re-enabling the interrupt. Shared interrupts are not supported.
 
-Yes.
+I still don't see any gain in this. This only works for embedded
+devices, so a user has to setup hardware specific code in his board
+support anyway. With your code, we would have to add something like this
+to the docs:
 
-> How does this tree fit into the usual maintainership inside the Linux 
-> kernel?
+IF you define an irq AND ommit the irq handler THEN we silently add a
+handler that blindly assumes the irq is not shared...
 
-Well, I was trying to avoid creating it -- because largely it doesn't.
-I was hoping that everything could go upstream through other routes.
-But Tim's patch really was a candidate for handling it myself (unless
-I'm just going to punt everything to Andrew), so I capitulated.
+In my opinion, this is confusing, and all it does is saving the need for a
+three-lines irq handler in the board support.
 
--- 
-dwmw2
+So, NAK to this until somebody convinces me that I completely missed the
+point.
 
+Thanks,
+Hans
+
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+> Think of this as V2 of "[PATCH 00/03][RFC] Reusable UIO Platform Driver".
+> Needs "[PATCH 0/1] UIO: Add a write() function to enable/disable interrupts"
+> 
+>  drivers/uio/uio_pdrv.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+> 
+> --- 0006/drivers/uio/uio_pdrv.c
+> +++ work/drivers/uio/uio_pdrv.c	2008-06-04 14:51:56.000000000 +0900
+> @@ -16,8 +16,34 @@
+>  
+>  struct uio_platdata {
+>  	struct uio_info *uioinfo;
+> +	unsigned long irq_disabled;
+>  };
+>  
+> +static irqreturn_t uio_pdrv_unique_handler(int irq, struct uio_info *dev_info)
+> +{
+> +	struct uio_platdata *priv = dev_info->priv;
+> +
+> +	/* In "Unique IRQ Mode", just disable the interrupt and remember
+> +	 * the state so we can enable it later.
+> +	 */
+> +	disable_irq(irq);
+> +	set_bit(0, &priv->irq_disabled);
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int uio_pdrv_unique_irqcontrol(struct uio_info *dev_info, s32 irq_on)
+> +{
+> +	struct uio_platdata *priv = dev_info->priv;
+> +
+> +	/* "Unique IRQ Mode" allows re-enabling of the interrupt */
+> +	if (irq_on && test_and_clear_bit(0, &priv->irq_disabled)) {
+> +		enable_irq(dev_info->irq);
+> +		return 0;
+> +	}
+> +
+> +	return -ENOSYS;
+> +}
+> +
+>  static int uio_pdrv_probe(struct platform_device *pdev)
+>  {
+>  	struct uio_info *uioinfo = pdev->dev.platform_data;
+> @@ -68,6 +94,23 @@ static int uio_pdrv_probe(struct platfor
+>  
+>  	pdata->uioinfo->priv = pdata;
+>  
+> +	/* This driver supports a special "Unique IRQ Mode".
+> +	 *
+> +	 * In this mode, no hardware specific kernel code is required to
+> +	 * acknowledge interrupts. Instead, the interrupt is disabled by
+> +	 * the interrupt handler. User space is responsible for performing
+> +	 * hardware specific acknowledge and enabling of interrupts.
+> +	 *
+> +	 * Interrupt sharing is _not_ supported by the "Unique IRQ Mode".
+> +	 *
+> +	 * Enable this mode by passing IRQ number but omitting irq callbacks.
+> +	 */
+> +	if (!uioinfo->handler && !uioinfo->irqcontrol && uioinfo->irq >= 0) {
+> +		uioinfo->irq_flags = IRQF_DISABLED;
+> +		uioinfo->handler = uio_pdrv_unique_handler;
+> +		uioinfo->irqcontrol = uio_pdrv_unique_irqcontrol;
+> +	}
+> +
+>  	ret = uio_register_device(&pdev->dev, pdata->uioinfo);
+>  
+>  	if (ret) {
