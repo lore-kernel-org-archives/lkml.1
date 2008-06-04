@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066AbYFDErS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751860AbYFDEri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756066AbYFDErS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 00:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYFDErJ
+	id S1751860AbYFDEri (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 00:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbYFDEr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 00:47:09 -0400
-Received: from dgate10.fujitsu-siemens.com ([80.70.172.49]:62474 "EHLO
-	dgate10.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751043AbYFDErI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 00:47:08 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
-  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
-   Received:From:Organization:To:Subject:Date:User-Agent:Cc:
-   References:In-Reply-To:MIME-Version:Content-Type:
-   Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=VuT3EZMn1LPy3p1QIBsb0bjl1qZf3jln4PwyYAeMGVz2kR0lCGvzT6Jh
-   /29C6mrth6GZbgEpbvSWr6Wap4RrXiH9uTWqzaYstHc5hAT9X+CzT+XDl
-   dWQz04t84c3uSE4;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.27,586,1204498800"; 
-   d="scan'208";a="16190000"
-X-IronPort-AV: E=Sophos;i="4.27,586,1204498800"; 
-   d="scan'208";a="31203873"
-From: Rainer Koenig <Rainer.Koenig@fujitsu-siemens.com>
-Organization: IP BC E SW OS
-To: Jan Engelhardt <jengelh@medozas.de>
-Subject: Re: Who can backport the AHCI driver to older kernels
-Date: Wed, 4 Jun 2008 06:47:02 +0200
-User-Agent: KMail/1.9.5
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806031247.42046.Rainer.Koenig@fujitsu-siemens.com> <alpine.LNX.1.10.0806031332410.4055@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0806031332410.4055@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200806040647.03185.Rainer.Koenig@fujitsu-siemens.com>
+	Wed, 4 Jun 2008 00:47:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43054 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756529AbYFDEr0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 00:47:26 -0400
+Date: Tue, 3 Jun 2008 23:47:12 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Cc: ioe-lkml@rameria.de, sivanich@sgi.com, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@kolivas.org, dfults@sgi.com,
+       devik@cdi.cz, dino@in.ibm.com, emmanuel.pacaud@univ-poitiers.fr,
+       deweerdt@free.fr, mingo@elte.hu, colpatch@us.ibm.com,
+       nickpiggin@yahoo.com.au, rostedt@goodmis.org, oleg@tv-sign.ru,
+       paulmck@us.ibm.com, menage@google.com, rddunlap@osdl.org,
+       suresh.b.siddha@intel.com, tglx@linutronix.de
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
+ have realtime uses)
+Message-Id: <20080603234712.ffb6708c.pj@sgi.com>
+In-Reply-To: <48461ADA.8020303@qualcomm.com>
+References: <20080601213019.14ea8ef8.pj@sgi.com>
+	<1212446707.6269.26.camel@lappy.programming.kicks-ass.net>
+	<48447C75.8040203@qualcomm.com>
+	<200806030156.00155.ioe-lkml@rameria.de>
+	<4844BB41.7000605@qualcomm.com>
+	<4845D825.6000403@qualcomm.com>
+	<20080603194148.56dfebe1.pj@sgi.com>
+	<48461ADA.8020303@qualcomm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+Max wrote:
+> Ingo's case is a bad example.
 
-Am Dienstag, 3. Juni 2008 13:37 schrieb Jan Engelhardt:
-> >The target market for those boards is using old fashioned
-> > distributions like CentOS, Debian, Fedora 8 openSUSE 10 and so on.
->
-> Wait a minute, that seems like an impossible dependency.
-> These boards cannot be targeted for these distro versions,
-> because the manufacturer knows (hopefully) that the shipped
-> kernel versions do not have the driver with the required
-> new code.
+Could be ... I wasn't paying close attention to the details.
 
-Yes, of course the manufacturer knows. But the customer wants to get the 
-benefits from the new chipset technologie (e.g. support for quad core 
-processors). The problem that we are facing is that we can't tell the 
-customer "You cannot install actual Linux distributions", especially 
-not when your customer is a firm that offers hosting services based on 
-that platform. :-)
+If so, a good product marketing manager would first upsell the customer
+to the better product, and then let falling sales guide the removal
+of the old product.
 
-This is a general problem that we frequently face with Linux. Whenever a 
-new piece of silicon is released it takes a while until the driver for 
-that (even if it just requires the addition of a device ID) is reaching
-the distributions. In the worst case the hardware platform will be "out 
-of sale" when the driver finally hits the distributions. :-/
+That is, if you can guide most of the users of "isolcpus=" to a better
+solution, in -their- view, so that they voluntary choose to migrate
+to the other solution, then you get to deprecate and then remove the
+old mechanism.
 
-So in the actual case we really suffer from a chipset that is not fully 
-supported by the distribution kernels. 
+To the extent that you can show that the old mechanism is costing us
+(maintenance, reliability, performance, impeding progress, ...) then
+you get to accelerate the deprecation period, even to the point of
+an immediate removal of the old feature, if it's of sufficiently little
+use and great pain.
 
-Thanks
-Rainer
+We do have one problem with letting "falling sales" guide feature
+removal.  Unlike Walmart, where they know what has sold where before
+the customer has even left the store, we can't easily track usage of
+kernel features.  Occassionally, we can stir the pot and get some
+feedback, as I've done on this thread, if we have a narrow target
+audience that we have good reason is especially interested.  But that
+only works occassionally.
+
 -- 
-Dipl.-Inf. (FH) Rainer Koenig
-Project Manager Linux Business Clients
-Dept. IP BC E SW OS
-
-Fujitsu Siemens Computers 
-Bürgermeister-Ullrich-Str. 100
-86199 Augsburg
-Germany
-
-Telephone: +49-821-804-3321
-Telefax:   +49-821-804-2131
-Mail:      mailto:Rainer.Koenig@fujitsu-siemens.com 
-
-Internet         www.fujitsu-siemens.com
-Company Details  www.fujitsu-siemens.com/imprint.html
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
