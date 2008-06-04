@@ -1,71 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbYFDXMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbYFDXWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762857AbYFDXMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 19:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757790AbYFDXMN
+	id S1761371AbYFDXWz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 19:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbYFDXWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 19:12:13 -0400
-Received: from ns.suse.de ([195.135.220.2]:43141 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754052AbYFDXMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 19:12:12 -0400
-From: Neil Brown <neilb@suse.de>
-To: Dave Jones <davej@redhat.com>
-Date: Thu, 5 Jun 2008 09:12:02 +1000
-MIME-Version: 1.0
+	Wed, 4 Jun 2008 19:22:45 -0400
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:61518 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752903AbYFDXWo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 19:22:44 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvYEAEy/RkhMQWRQ/2dsb2JhbACBVa8a
+Date: Wed, 4 Jun 2008 19:22:41 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Hideo AOKI <haoki@redhat.com>, mingo@elte.hu,
+       Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel marker has no performance impact on ia64.
+Message-ID: <20080604232241.GA8488@Krystal>
+References: <48447052.3030300@redhat.com> <1212445965.6269.22.camel@lappy.programming.kicks-ass.net> <20080602232135.GA20173@Krystal> <1212618449.19205.35.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18503.8514.710121.995152@notabene.brown>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25 md oops during boot.
-In-Reply-To: message from Dave Jones on Wednesday June 4
-References: <20080604154137.GA26157@redhat.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <1212618449.19205.35.camel@lappy.programming.kicks-ass.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:06:59 up  3:47,  4 users,  load average: 1.32, 1.16, 0.99
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday June 4, davej@redhat.com wrote:
-> Hi Neil,
->  Here's an odd one.
-> https://bugzilla.redhat.com/show_bug.cgi?id=442204
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Mon, 2008-06-02 at 19:21 -0400, Mathieu Desnoyers wrote:
+> > * Peter Zijlstra (peterz@infradead.org) wrote:
+> > > On Mon, 2008-06-02 at 18:12 -0400, Hideo AOKI wrote:
+> > > > Hello,
+> > > > 
+> > > > I evaluated overhead of kernel marker using linux-2.6-sched-fixes
+> > > > git tree, which includes several markers for LTTng, using an ia64
+> > > > server.
+> > > > 
+> > > > While the immediate trace mark feature isn't implemented on ia64,
+> > > > there is no major performance regression. So, I think that we 
+> > > > don't have any issues to propose merging marker point patches 
+> > > > into Linus's tree from the viewpoint of performance impact.
+> > > 
+> > > Performance is atm the least of the concerns regarding this work.
+> > > 
+> > > I'm still convinced markers are too ugly to live.
+> > > 
+> > > I also worry greatly about the fact that its too easy to expose too much
+> > > to user-space. There are no clear rules and the free form marker format
+> > > just begs for an inconsistent mess to arise.
+> > > 
+> > > IMHO the current free-form trace_mark() should be removed from the tree
+> > > - its great for ad-hoc debugging but its a disaster waiting to happen
+> > > for anything else. Anybody doing ad-hoc debugging can patch it in
+> > > themselves if needed.
+> > > 
+> > > Regular trace points can be custom made; this has the advantages that it
+> > > raises the implementation barrier and hopefully that encourages some
+> > > thought in the process. It also avoid the code from growing into
+> > > something that looks like someone had a long night of debugging.
+> > > 
+> > 
+> > Maybe we could settle for an intermediate solution : I agree with you
+> > that defining the trace points in headers, like you did for the
+> > scheduler, makes the code much cleaner and makes things much easier to
+> > maintain afterward. However, having the trace_mark mechanism underneath
+> > helps a lot in plugging a generic tracer (actually, if we can settle the
+> > marker issue, I've got a kernel tracer, LTTng, that I've been waiting
+> > for quite a while to push to mainline that I would like to post someday).
+> > 
+> > So I would be in favor of requiring tracing statements to be described
+> > in static inline functions, in header files, that could preferably call
+> > trace_mark() and optionally also call other in-kernel tracers directly.
+> > 
+> > Ideally, we could re-use the immediate values infrastructure to control
+> > activation of these trace points with minimal impact on the system.
+> > 
+> > One of my goal is to provide a mechanism that can feed both non-debug
+> > and debug information to a generic tracing mechanism to allow
+> > system-wide analysis of the kernel, both for production system and
+> > kernel debugging.
 > 
-> Slightly old (.25-rc8-git7), but I don't recall anything changing between
-> then and .25 final that could explain this.
+> So are you proposing something like:
 > 
-> 	Dave
+> static inline void 
+> trace_sched_switch(struct task_struct *prev, struct task_struct *next)
+> {
+> 	trace_mark(sched_switch, prev, next);
+> }
+> 
 
-Hi Dave.
+Not exactly. Something more along the lines of
 
-Yes, Odd.
+static inline void 
+trace_sched_switch(struct task_struct *prev, struct task_struct *next)
+{
+  /* Internal tracers. */
+  ftrace_sched_switch(prev, next);
+  othertracer_sched_switch(prev, next);
+  /*
+   * System-wide tracing. Useful information is exported here.
+   * Probes connecting to these markers are expected to only use the
+   * information provided to them for data collection purpose. Type
+   * casting pointers is discouraged.
+   */
+	trace_mark(kernel_sched_switch, "prev_pid %d next_pid %d prev_state %ld",
+    prev->pid, next->pid, prev->state);
+}
 
-It appear that sysfs_addrm_start is being called with parent_sd == NULL.
+> dropping the silly fmt string but using the multiplex of trace_mark, and
+> then doing the stringify bit:
+> 
+>        "prev_pid %d next_pid %d prev_state %ld\n"
+> 
+> in the actual tracer?
+> 
 
-That implies that sysfs_create_dir is being given a kobj where
-->parent is non-NULL, and ->parent->sd is NULL.
+It would make much more sense to put this formatting information along
+with the trace point (e.g. in a a kernel/sched-trace.h header) rather
+that to hide it in a tracer (loadable module) because this information
+is an interface to the trace point.
 
-So kobject_add is being given a parent with a NULL ->sd.
+> 
+> IMHO the 'type safety' of the fmt string is over-rated, since it cannot
+> distinguish between a task_struct * or a bio *, both are a pointers -
+> and half arsed type safely is worse than no type safety.
+> 
 
-So in bind_rdev_to_array,  mddev->kobj.sd is NULL.
+I totally agree with you that not having the capacity to inspect pointer
+types is a problem for tracers which wants to receive the "raw" pointer
+and deal with the data they need like big boys. On the other hand, it
+requires them to be closely tied to the kernel internals and therefore
+it makes sense to call them directly from the tracing site, thus
+bypassing the marker format string.
 
-So in md_probe, either kobject_init_and_add is failing
-to set up ->sd properly (which should result in an error message
-   "md: cannot register md0/md - name in use"
-) or alloc_disk is failing.
+However, letting the marker specify the data format so a tracer could
+format it into a memory buffer (in a binary or text format, depending on
+the implementation) or so that a tool like systemtap can use this
+identified information without having to be closely tied to the kernel
+makes sense to me.
 
+Mathieu
 
-The most likely scenario is that alloc_disk is failing, so the
-md_probe call in autorun_devices (line 3804 of md.c) fails.
-The following mddev_find creates a new mddev which is not properly
-initialised and gets used.
-
-I wouldn't say this is a likely scenario as it requires (I think)
-kmalloc failure very early in boot.  But I cannot see any other
-possible cause.
-
-I'll see about getting the error paths handled better.
-
-NeilBrown
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
