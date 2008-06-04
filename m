@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbYFDEwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYFDExJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbYFDEwI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 00:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYFDEv4
+	id S1757566AbYFDExJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 00:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYFDEw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 00:51:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:24774 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbYFDEvz (ORCPT
+	Wed, 4 Jun 2008 00:52:57 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48365 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbYFDEw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 00:51:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=svzc+wJnizs6I+HPe+FC+a5zackFdUnvaFfApK7yKmpEKDiV6LZEmjLyylgKtBZBW3aYjmOoiGPRO+hr8UUUI+Y9420zgyOgoPBwsBt6WBzwnZmWvQgUZq9ZkrQ1His7w3a7K10y/Z6MKs3Qt/110JdlJIhc8gp3J12vR/T+wBU=
-Message-ID: <86802c440806032151l5faedf22xe0107d4c99c55c21@mail.gmail.com>
-Date: Tue, 3 Jun 2008 21:51:55 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Glauber Costa" <gcosta@redhat.com>
-Subject: Re: [PATCH] Make x86 latest boot with non-discontig boxes
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1212552507-15134-1-git-send-email-gcosta@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Jun 2008 00:52:56 -0400
+Date: Wed, 4 Jun 2008 13:58:15 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "menage@google.com" <menage@google.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: [RFC][PATCH 0/2] memcg: hierarchy support (v3)
+Message-Id: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1212552507-15134-1-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 3, 2008 at 9:08 PM, Glauber Costa <gcosta@redhat.com> wrote:
-> Commit 0596152388e234efebce464355186ad9e16c8cb6
-> broke my box, since it removes completely the call to
-> memory_present() at e820 setup.
->
-> It seems to be really not needed with discontig memory,
-> but with flat and sparse, I get an early crash. The proposed patch
-> moves the call memory_present() to setup_memory, the one
-> present in setup_32.c.
->
-> Signed-off-by: Glauber Costa <gcosta@redhat.com>
-> CC: Yinghai Lu <yhlu.kernel@gmail.com>
-> ---
->  arch/x86/kernel/setup_32.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-> index 2901042..841eb2f 100644
-> --- a/arch/x86/kernel/setup_32.c
-> +++ b/arch/x86/kernel/setup_32.c
-> @@ -388,6 +388,8 @@ static unsigned long __init setup_memory(void)
->  #ifdef CONFIG_FLATMEM
->        max_mapnr = num_physpages;
->  #endif
-> +       memory_present(0, 0, max_pfn);
-> +
->        printk(KERN_NOTICE "%ldMB LOWMEM available.\n",
->                        pages_to_mb(max_low_pfn));
->
-> --
-thanks
+Hi, this is third version.
 
-http://lkml.org/lkml/2008/6/3/229
-[PATCH] x86: change propagate_e820_map back to find_max_pfn -32bit - fix
+While small changes in codes, the whole _tone_ of code is changed.
+I'm not in hurry, any comments are welcome.
 
-already address that.
+based on 2.6.26-rc2-mm1 + memcg patches in -mm queue.
 
-YH
+Changes from v2:
+ - Named as HardWall policy.
+ - rewrote the code to be read easily. changed the name of functions.
+ - Added text.
+ - supported hierarchy_model parameter.
+   Now, no_hierarchy and hardwall_hierarchy is implemented.
+
+HardWall Policy:
+  - designed for strict resource isolation under hierarchy.
+    Usually, automatic load balancing between cgroup can break the
+    users assumption even if it's implemented very well.
+  - parent overcommits all children
+     parent->usage = resource used by itself + resource moved to children.
+     Of course, parent->limit > parent->usage. 
+  - when child's limit is set, the resouce moves.
+  - no automatic resource moving between parent <-> child
+
+Example)
+  1) Assume a cgroup with 1GB limits. (and no tasks belongs to this, now)
+     - group_A limit=1G,usage=0M.
+
+  2) create group B, C under A.
+     - group A limit=1G, usage=0M
+          - group B limit=0M, usage=0M.
+          - group C limit=0M, usage=0M.
+
+  3) increase group B's limit to 300M.
+     - group A limit=1G, usage=300M.
+          - group B limit=300M, usage=0M.
+          - group C limit=0M, usage=0M.
+
+  4) increase group C's limit to 500M
+     - group A limit=1G, usage=800M.
+          - group B limit=300M, usage=0M.
+          - group C limit=500M, usage=0M.
+
+  5) reduce group B's limit to 100M
+     - group A limit=1G, usage=600M.
+          - group B limit=100M, usage=0M.
+          - group C limit=500M, usage=0M.
+
+
+Thanks,
+-Kame
+
