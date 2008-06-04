@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbYFDWIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbYFDWLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761983AbYFDWIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbYFDWIm
+	id S1762199AbYFDWLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYFDWLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:08:42 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62900 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757778AbYFDWIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 18:08:41 -0400
-Date: Wed, 4 Jun 2008 23:07:52 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jon Masters <jcm@redhat.com>
-cc: Stefan Assmann <sassmann@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
-In-Reply-To: <1212609577.8410.32.camel@londonpacket.bos.redhat.com>
-Message-ID: <Pine.LNX.4.55.0806042243080.28685@cliff.in.clinika.pl>
-References: <12124107071847-git-send-email-od@suse.de>  <m1tzgauduu.fsf@frodo.ebiederm.org>
- <4846651F.4070802@suse.de>  <m1ve0pqy06.fsf@frodo.ebiederm.org> 
- <48467DA7.9030309@suse.de>  <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
-  <Pine.LNX.4.55.0806042014110.28685@cliff.in.clinika.pl>
- <1212609577.8410.32.camel@londonpacket.bos.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Jun 2008 18:11:24 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:32838 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751895AbYFDWLX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 18:11:23 -0400
+Message-Id: <20080604221127.152591857@ldl.fc.hp.com>
+References: <20080604220933.168145536@ldl.fc.hp.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 04 Jun 2008 16:09:35 -0600
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: Adam Belay <ambx1@neo.rr.com>
+Cc: Adam M Belay <abelay@mit.edu>
+Cc: Li Shaohua <shaohua.li@intel.com>
+Cc: Matthieu Castet <castet.matthieu@free.fr>
+Cc: Thomas Renninger <trenn@suse.de>
+Cc: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>
+Subject: [patch 02/18] PNP: whitespace/coding style fixes
+Content-Disposition: inline; filename=pnp-interface-style
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008, Jon Masters wrote:
+No functional change; just make a couple declarations
+consistent with the rest of the file.
 
-> I disagree. I think it's now actually the *inverse*. It /used/ to be
-> harder, because you didn't have a context in which you could do many
-> things (so you need to schedule some kind of deferred work), but
-> actually, it'll become a lot more attractive with device threads.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Acked-by: Rene Herman <rene.herman@gmail.com>
 
- Well, I mean it's easier to do all the handling sequentially in the
-hardirq context than split the thing and deal with all the communication,
-locking, possible races, etc. so people avoid it unless really forced to.  
-In principle all the interrupt handlers could be split like this except
-those really, really tiny ones or where latency is absolutely critical.  
-Yet it often does not happen.
+Index: work10/drivers/pnp/interface.c
+===================================================================
+--- work10.orig/drivers/pnp/interface.c	2008-05-09 14:42:25.000000000 -0600
++++ work10/drivers/pnp/interface.c	2008-05-09 14:45:57.000000000 -0600
+@@ -216,12 +216,12 @@ static ssize_t pnp_show_options(struct d
+ 				struct device_attribute *attr, char *buf)
+ {
+ 	struct pnp_dev *dev = to_pnp_dev(dmdev);
++	pnp_info_buffer_t *buffer;
+ 	struct pnp_option *independent = dev->independent;
+ 	struct pnp_option *dependent = dev->dependent;
+ 	int ret, dep = 1;
+ 
+-	pnp_info_buffer_t *buffer = (pnp_info_buffer_t *)
+-	    pnp_alloc(sizeof(pnp_info_buffer_t));
++	buffer = pnp_alloc(sizeof(pnp_info_buffer_t));
+ 	if (!buffer)
+ 		return -ENOMEM;
+ 
+@@ -248,17 +248,18 @@ static ssize_t pnp_show_current_resource
+ 					  char *buf)
+ {
+ 	struct pnp_dev *dev = to_pnp_dev(dmdev);
++	pnp_info_buffer_t *buffer;
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+ 	int ret;
+-	pnp_info_buffer_t *buffer;
+ 
+ 	if (!dev)
+ 		return -EINVAL;
+ 
+-	buffer = (pnp_info_buffer_t *) pnp_alloc(sizeof(pnp_info_buffer_t));
++	buffer = pnp_alloc(sizeof(pnp_info_buffer_t));
+ 	if (!buffer)
+ 		return -ENOMEM;
++
+ 	buffer->len = PAGE_SIZE;
+ 	buffer->buffer = buf;
+ 	buffer->curr = buffer->buffer;
+@@ -295,9 +296,9 @@ static ssize_t pnp_show_current_resource
+ 	return ret;
+ }
+ 
+-static ssize_t
+-pnp_set_current_resources(struct device *dmdev, struct device_attribute *attr,
+-			  const char *ubuf, size_t count)
++static ssize_t pnp_set_current_resources(struct device *dmdev,
++					 struct device_attribute *attr,
++					 const char *ubuf, size_t count)
+ {
+ 	struct pnp_dev *dev = to_pnp_dev(dmdev);
+ 	char *buf = (void *)ubuf;
 
-> The only real caveat is for performance critical cases (the reasons we
-> have special softirqs and the like right now) but there will always be
-> special cases. Still, I'd like it if writing a Linux interrupt handler
-> came down to registering two functions - one lightweight tiny one, and
-> one that's just a thread. Much less room for making mistakes.
-
- The two will have to pass some state between each other, might run
-concurrently or in parallel, etc. and require some effort to be written
-correctly.
-
-  Maciej
+-- 
