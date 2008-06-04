@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbYFDNWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbYFDNW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834AbYFDNWF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 09:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYFDNVy
+	id S1753286AbYFDNW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 09:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbYFDNVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 09:21:54 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:17115 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbYFDNVx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 09:21:55 -0400
+Received: from styx.suse.cz ([82.119.242.94]:39670 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751936AbYFDNVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Jun 2008 09:21:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=c+Su4l8jUVX/uq06K3Yf7DGjDtIK62p4hfI4VGjvjVzpATMBXSeZ74Bt3nHSzsrPcZ
-         pGGwOvy+GnU8YenRbEzsIVRBQ62A3b6lgZiNPgpgXD72kZ00T3fZmbB1NeF6M+hPikQE
-         /w2wnx8gO14L99FXujxd/1fn5C5hD9WI/r8tY=
-Message-ID: <5d6222a80806040621g1e59491bjf02f55d9082986c0@mail.gmail.com>
-Date: Wed, 4 Jun 2008 10:21:52 -0300
-From: "Glauber Costa" <glommer@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] Make x86 latest boot with non-discontig boxes
-Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-In-Reply-To: <20080604103637.GA2837@elte.hu>
+Date: Wed, 4 Jun 2008 15:21:52 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       marcel@holtmann.org, linux-kernel@vger.kernel.org,
+       anssi.hannula@gmail.com, Jiri Slaby <jslaby@suse.cz>
+Subject: Re: [PATCH 06/10] HID: move logitech report quirks
+In-Reply-To: <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
+Message-ID: <Pine.LNX.4.64.0806041520140.10085@jikos.suse.cz>
+References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-2-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-3-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-4-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1212552507-15134-1-git-send-email-gcosta@redhat.com>
-	 <20080604103637.GA2837@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 4, 2008 at 7:36 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Glauber Costa <gcosta@redhat.com> wrote:
->
->> Commit 0596152388e234efebce464355186ad9e16c8cb6 broke my box, since it
->> removes completely the call to memory_present() at e820 setup.
->>
->> It seems to be really not needed with discontig memory, but with flat
->> and sparse, I get an early crash. The proposed patch moves the call
->> memory_present() to setup_memory, the one present in setup_32.c.
->
-> thanks for tracking it down. Could you check whether the latest
-> x86/master tree works fine now?
+On Fri, 16 May 2008, Jiri Slaby wrote:
 
-boots beautifully.
+>  static const struct hid_device_id hid_blacklist[] = {
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER) },
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER) },
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER_2) },
+>  	{ }
+>  };
+
+This shouldn't be needed as soon as the userspace supports the proper 
+module autoloading, right?
+
+> +#define LOGITECH_RDESC	0x1
+> +
+> +/*
+> + * Certain Logitech keyboards send in report #3 keys which are far
+> + * above the logical maximum described in descriptor. This extends
+> + * the original value of 0x28c of logical maximum to 0x104d
+> + */
+> +static void lg_report_fixup(struct hid_device *hdev, __u8 *rdesc,
+> +		unsigned int rsize)
+> +{
+> +	if (rsize >= 90 && rdesc[83] == 0x26
+> +			&& rdesc[84] == 0x8c
+> +			&& rdesc[85] == 0x02) {
+> +		dev_info(&hdev->dev, "fixing up Logitech keyboard report "
+> +				"descriptor\n");
+> +		rdesc[84] = rdesc[89] = 0x4d;
+> +		rdesc[85] = rdesc[90] = 0x10;
+> +	}
+> +}
+> +
+> +static const struct hid_device_id lg_devices[] = {
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER),
+> +		.driver_data = LOGITECH_RDESC },
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER),
+> +		.driver_data = LOGITECH_RDESC },
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER_2),
+> +		.driver_data = LOGITECH_RDESC },
+> +	{ }
+
+You set the LOGITECH_RDESC flag here, but it is then never used anywhere. 
+I guess that your original intent was to check for this flag in 
+lg_report_fixup(), right?
+
+Thanks,
 
 -- 
-Glauber Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
+Jiri Kosina
+SUSE Labs
