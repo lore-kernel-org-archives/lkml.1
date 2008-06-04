@@ -1,121 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbYFDJ5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbYFDJ60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759001AbYFDJ5W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 05:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYFDJ5M
+	id S1759453AbYFDJ60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 05:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYFDJ6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 05:57:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:3639 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753190AbYFDJ5K (ORCPT
+	Wed, 4 Jun 2008 05:58:18 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:28486 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753190AbYFDJ6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 05:57:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Q4wKXJsoYZkPlSYLzabkb3/QAWXZCPtlZhWOB+7Ae7X+nZ5JYdcVGGJq5PhhUlt7IY
-         Ya4GMHuHiAo598LdyCQwQoKbrMf4FXITeptVx8qwMoAGhurhng3USfdS2HRHaQWxUxwb
-         5lr2AiDfxod5AIKWPXtv4s9d1c2zsok46ijm0=
-Message-ID: <c4e36d110806040257y698dbde4w4e717522478b74b8@mail.gmail.com>
-Date: Wed, 4 Jun 2008 11:57:09 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: Re: BUG: using smp_processor_id() in preemptible [00000000] code: pm-suspend/17334
-Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-In-Reply-To: <48466349.1030907@qumranet.com>
+	Wed, 4 Jun 2008 05:58:17 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=HvSgs5Qj4rGMFQ5FKD8VFGURzatjBzBfQUt6+BKYFuYE5slC+BorxzBEme2e2nyLe
+	ZJHLl4oD/zinvtGKVSL6Q==
+Message-ID: <6599ad830806040258h552e4623m5efae8202c5d026d@mail.gmail.com>
+Date: Wed, 4 Jun 2008 02:58:09 -0700
+From: "Paul Menage" <menage@google.com>
+To: miaox@cn.fujitsu.com
+Subject: Re: [PATCH 2/2] cpusets: update tasks' cpus_allowed and mems_allowed after CPU/NODE offline/online
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       "Paul Jackson" <pj@sgi.com>, "David Rientjes" <rientjes@google.com>
+In-Reply-To: <6599ad830806040230l24bd1201y3cc0ea0273d835ad@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <c4e36d110806030142j379f5a63xfba7c3bbb9df602a@mail.gmail.com>
-	 <Pine.LNX.4.64.0806031350330.1716@twin.jikos.cz>
-	 <c4e36d110806030501g46363beev7126c8312aadd12e@mail.gmail.com>
-	 <Pine.LNX.4.64.0806031402450.6718@jikos.suse.cz>
-	 <48466349.1030907@qumranet.com>
+References: <4845F864.8060102@cn.fujitsu.com>
+	 <6599ad830806040230l24bd1201y3cc0ea0273d835ad@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/6/4 Avi Kivity <avi@qumranet.com>:
-> Jiri Kosina wrote:
+On Wed, Jun 4, 2008 at 2:30 AM, Paul Menage <menage@google.com> wrote:
+> On Tue, Jun 3, 2008 at 7:05 PM, Miao Xie <miaox@cn.fujitsu.com> wrote:
 >>
->> [ re-introduced LKML to CC, and also added KVM CCs]
->>
->> On Tue, 3 Jun 2008, Zdenek Kabelac wrote:
->>
->>
->>>
->>> 2008/6/3 Jiri Kosina <jkosina@suse.cz>:
->>>
->>>>
->>>> On Tue, 3 Jun 2008, Zdenek Kabelac wrote:
->>>>
->>>>
->>>>>
->>>>> Another backtrace from suspend code path:
->>>>> (T61, 2GB, C2D, no SD card)
->>>>> kernel from git 20080603, commit
->>>>> 1beee8dc8cf58e3f605bd7b34d7a39939be7d8d2
->>>>> ----
->>>>> agpgart-intel 0000:00:00.0: LATE suspend
->>>>> platform bay.0: LATE suspend
->>>>> platform dock.0: LATE suspend
->>>>> Extended CMOS year: 2000
->>>>>  hwsleep-0324 [00] enter_sleep_state     : Entering sleep state [S3]
->>>>> Back to C!
->>>>> BUG: using smp_processor_id() in preemptible [00000000] code:
->>>>> pm-suspend/17334
->>>>> caller is do_machine_check+0xa9/0x500
->>>>> Pid: 17334, comm: pm-suspend Not tainted 2.6.26-rc4 #31
->>>>> Call Trace:
->>>>>  [<ffffffff8118347c>] debug_smp_processor_id+0xcc/0xd0
->>>>>  [<ffffffff810184d9>] do_machine_check+0xa9/0x500
->>>>>  [<ffffffff81010e7b>] ? init_8259A+0x1b/0x120
->>>>>  [<ffffffff810189d6>] mce_init+0x56/0xf0
->>>>>  [<ffffffff81018a7b>] mce_resume+0xb/0x10
->>>>>  [<ffffffff81204fd0>] __sysdev_resume+0x20/0x60
->>>>>  [<ffffffff81205068>] sysdev_resume+0x58/0x90
->>>>>  [<ffffffff8120aac9>] device_power_up+0x9/0x10
->>>>>  [<ffffffff8106f4f7>] suspend_devices_and_enter+0x147/0x1a0
->>>>>  [<ffffffff8106f6c6>] enter_state+0x146/0x1d0
->>>>>  [<ffffffff8106f80a>] state_store+0xba/0x100
->>>>>  [<ffffffff81177ae7>] kobj_attr_store+0x17/0x20
->>>>>  [<ffffffff81110fea>] sysfs_write_file+0xca/0x140
->>>>>  [<ffffffff810ba00b>] vfs_write+0xcb/0x190
->>>>>  [<ffffffff810ba1c0>] sys_write+0x50/0x90
->>>>>  [<ffffffff8100c4fb>] system_call_after_swapgs+0x7b/0x80
->>>>>
->>>>
->>>> This looks very much like the oops you reported here:
->>>> http://lkml.org/lkml/2008/4/7/130
->>>>
->>>> Is this also a virtual machine run under KVM, as it has been in the
->>>> aforementioned thread?
->>>>
->>>
->>> Ahh yes - you are right , I've completely forget about that old post -
->>> I've thought  that my post are usually getting fixed sooner :)
->>> So yes - this is actually the same bug which is still not fixed within
->>> the latest kernel - the machine is running qemu guest (which seems to
->>> me now somehow also slower)
->>>
->>
->> OK, so it looks like KVM could be wrongly enabling IRQs/preemption on the
->> resume path. The original bug-report is on http://lkml.org/lkml/2008/4/7/130
->>
->>
+>> Maybe we need to add a flag in the task_struct to mark which task can't be
+>> unbound?
 >
-> Wait, is this in a virtual machine, or on a host that's also running a
-> virtual machine (or has the kvm modules loaded)?
->
-> I looked at the kvm host resume path, and it doesn't touch interrupts.
+> Yes, something like a PF_CPU_BOUND flag that gets set in
+> kthread_bind() and checked for in set_cpus_allowed() would be the
+> right way to handle that. We have an internal change like that against
+> an older kernel verison - I'll see if I can find someone to forward
+> port it and send it in.
 
-Oops is from my real-hardware T61 (host) running the kvm-qemu (guest)
-and was noticed after suspend.
-But everything seemed to work just fine - host&guest continued to
-operate normally after resume.
+And in fact they already did, and sent it to lkml a few months ago:
 
-Zdenek
+   http://marc.info/?l=linux-kernel&m=120419372032623
+
+Paul
