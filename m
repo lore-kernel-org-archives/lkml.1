@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760706AbYFDMCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbYFDMDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760706AbYFDMCB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 08:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbYFDMBv
+	id S1760678AbYFDMDR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 08:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbYFDMDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 08:01:51 -0400
-Received: from po-out-1718.google.com ([72.14.252.153]:55647 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754160AbYFDMBt (ORCPT
+	Wed, 4 Jun 2008 08:03:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55954 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750764AbYFDMDC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 08:01:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oaIZFiWQtQCEQPhAnT/aQv8Fa/fUOyYj4FIXIxICjEY6lMvOs0EO/hxOH/YJ7MOaXD
-         siPOyojEThGkoP8g5jCMXtk1gjjmBOAjBHPkX88vn9P0qvAMGeWBeYdckXZZEHSaF09v
-         H0cg948WVppb0aDaaVq9tQoK7j1MXowS0AcWQ=
-Message-ID: <cfd18e0f0806040501i43f4faeagd44599efea0463c6@mail.gmail.com>
-Date: Wed, 4 Jun 2008 14:01:48 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [parch 1/4] vfs: utimensat(): ignore tv_sec if tv_nsec == UTIME_OMIT or UTIME_NOW
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@lst.de,
-       viro@zeniv.linux.org.uk, jamie@shareable.org, drepper@redhat.com,
-       linux-fsdevel@vger.kernel.org, subrata@linux.vnet.ibm.com
-In-Reply-To: <E1K3kbK-0007c4-PF@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4845C4B4.8040706@gmail.com>
-	 <E1K3kbK-0007c4-PF@pomaz-ex.szeredi.hu>
+	Wed, 4 Jun 2008 08:03:02 -0400
+Date: Wed, 4 Jun 2008 12:47:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Trent Piepho <tpiepho@freescale.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, linux-arch@vger.kernel.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: MMIO and gcc re-ordering issue
+Message-ID: <20080604124714.55dbce65@core>
+In-Reply-To: <alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
+References: <1211852026.3286.36.camel@pasglop>
+	<Pine.LNX.4.64.0806031130130.3242@t2.domain.actdsltmp>
+	<alpine.LFD.1.10.0806031153360.3473@woody.linux-foundation.org>
+	<200806041205.45833.nickpiggin@yahoo.com.au>
+	<alpine.LFD.1.10.0806031932370.3473@woody.linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 4, 2008 at 6:27 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
->> The POSIX.1 draft spec for utimensat() says that if a times[n].tv_nsec
->> field is UTIME_OMIT or UTIME_NOW, then the value in the corresponding
->> tv_sec field is ignored.  However the current Linux implementation
->> requires the tv_sec value to be zero (or the EINVAL error results).
->> This requirement should be removed.
->>
->> CC: Miklos Szeredi <miklos@szeredi.hu>
->> CC: Al Viro <viro@zeniv.linux.org.uk>
->> CC: Ulrich Drepper <drepper@redhat.com>
->> Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
->
-> Would it be possible to quote the relevant parts of the draft?
+> Anyway, Intel certainly seems to document that WC memory is serialized by 
+> any access to UC memory.
 
-Will do, for the next revision of this patch series.
+I don't believe that is actually true on Pentium Pro at least.
 
-> Otherwise
->
-> Acked-by: Miklos Szeredi <mszeredi@suse.cz>
->
+>   So what started out as a "we can do accesses to the frame buffer more 
+>   efficiently without anybody ever even having to know or care" has 
+>   turned into a whole nightmare of people using it for other things, and 
+>   then you very much _do_ have to care! ]
 
+Notably graphics where 3Dfx lined the registers up specifically to make
+this work. We were also using it with I²O where it gave a small
+performance gain.
 
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Alan
