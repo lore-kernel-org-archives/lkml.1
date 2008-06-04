@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbYFDC7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbYFDC7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbYFDC7H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 22:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYFDC6z
+	id S1757540AbYFDC7c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 22:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYFDC7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 22:58:55 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34359 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181AbYFDC6y (ORCPT
+	Tue, 3 Jun 2008 22:59:21 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40920 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752181AbYFDC7U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 22:58:54 -0400
-Date: Wed, 04 Jun 2008 11:59:04 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
-Subject: Re: [PATCH 2/4] per-task-delay-accounting: update taskstats for memory
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20080603194216.fdf42dd4.kobayashi.kk@ncos.nec.co.jp>
-References: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp> <20080603194216.fdf42dd4.kobayashi.kk@ncos.nec.co.jp>
-Message-Id: <20080604115828.9405.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 3 Jun 2008 22:59:20 -0400
+Date: Tue, 3 Jun 2008 21:59:17 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: miaox@cn.fujitsu.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       menage@google.com
+Subject: Re: [PATCH 1/2] cpusets: restructure the function update_cpumask()
+ and update_nodemask()
+Message-Id: <20080603215917.7fd5af63.pj@sgi.com>
+In-Reply-To: <20080603191108.1c35d3c5.akpm@linux-foundation.org>
+References: <4843AFC9.7000100@cn.fujitsu.com>
+	<20080603150346.4611b5ab.akpm@linux-foundation.org>
+	<4845E80F.5000808@cn.fujitsu.com>
+	<4845F742.2070301@cn.fujitsu.com>
+	<20080603191108.1c35d3c5.akpm@linux-foundation.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Andrew wrote:
+> I already did that, didn't I?
 
-> Signed-off-by: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
-> ---
+Where can I find your attempted merge, Andrew?
 
-Please write patch desctiption :)
+Probably someplace I should know about ... sorry.
 
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
