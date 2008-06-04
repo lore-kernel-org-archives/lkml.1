@@ -1,94 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbYFDLSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbYFDLU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758888AbYFDLSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 07:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYFDLSg
+	id S1759243AbYFDLU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 07:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYFDLUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 07:18:36 -0400
-Received: from burp.tkv.asdf.org ([212.16.99.49]:46400 "EHLO burp.tkv.asdf.org"
+	Wed, 4 Jun 2008 07:20:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50709 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbYFDLSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 07:18:35 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Re: in_group_p test for another process?
-References: <aytzW-rV-23@gated-at.bofh.it>
-From: Markku Savela <msa@moth.iki.fi>
-Date: Wed, 04 Jun 2008 14:18:32 +0300
-In-Reply-To: <aytzW-rV-23@gated-at.bofh.it> (Markku Savela's message of "Wed\, 28 May 2008 15\:10\:16 +0200")
-Message-ID: <87bq2hcut3.fsf@burp.tkv.asdf.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1752475AbYFDLUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 07:20:17 -0400
+Date: Wed, 4 Jun 2008 13:19:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10638] sysbench+mysql(oltp, readonly) 30% regression
+	with 2.6.26-rc1
+Message-ID: <20080604111951.GA5507@elte.hu>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.IMB.TtBMIB@albercik> <1211131278.6463.7.camel@lappy.programming.kicks-ass.net> <1211135856.6463.22.camel@lappy.programming.kicks-ass.net> <1211160283.3177.134.camel@ymzhang> <1211176540.8292.3.camel@twins> <1211179767.3177.166.camel@ymzhang> <20080530094541.GA32508@elte.hu> <1212382657.3177.319.camel@ymzhang>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212382657.3177.319.camel@ymzhang>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some time ago, I asked...
 
-Markku Savela <msa@moth.iki.fi> writes:
-> If I have a PID and some GID at hand, how do I find whether the OHTER
-> process identified by PID has the GID in its supplementary set of
-> groups?
+* Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+
+> 
+> On Fri, 2008-05-30 at 11:45 +0200, Ingo Molnar wrote:
+> > Yanmin,
+> > 
+> > could you please check whether the performance regressions you 
+> > noticed are now fixed in upstream -git? [make sure merge 
+> > a7f75d3bed28 is included]
+> > 
+> > i believe most of the regressions to 2.6.25 you found should be 
+> > addressed - if not, please let me know which one is still hurting.
 >
-> I can find the "in_group_p" test, but that does it only for current process.
->
-> Do I have to write my own function that uses the "tasklist_lock",
-> finds task by "find_task_by_pid", and then calls
-> "groups_search(task->group_info, gid)"?
->
-> Can I do this in a module, or do I have to patch the "kernel/sys.c"
-> myself for a privately modified version of the kernel?
+> Most regressions are fixed.
 
-Well, I've wrote a modification to the kernel/sys.c and it seems to
-work for me. As I'm not really a hard core kernel expert, I'm not
-quite sure the solution is bullet proof. Thus, here is my added
-function that I use in my privately modified kernel for comments, if
-any:
+great - thanks for the exhaustive testing! In fact there should be nice 
+speedups in most of the categories as well ;-)
 
+out of the 5 issues, only one is inconclusive:
 
---- include/linux/sched-orig.h	2008-05-01 16:53:02.000000000 +0300
-+++ include/linux/sched.h	2008-05-30 11:18:35.000000000 +0300
-@@ -1582,6 +1582,7 @@
- 
- extern int in_group_p(gid_t);
- extern int in_egroup_p(gid_t);
-+extern int pid_in_egroup_p(gid_t, pid_t);
- 
- extern void proc_caches_init(void);
- extern void flush_signals(struct task_struct *);
---- kernel/sys-orig.c	2008-02-11 07:51:11.000000000 +0200
-+++ kernel/sys.c	2008-05-30 11:17:52.000000000 +0300
-@@ -1338,6 +1338,29 @@
- 
- EXPORT_SYMBOL(in_egroup_p);
- 
-+int pid_in_egroup_p(gid_t grp, pid_t pid)
-+{
-+	int retval = 1;
-+	struct task_struct *p;
-+
-+	if (pid <= 0)
-+		return 0;
-+
-+	read_lock(&tasklist_lock);
-+	p = find_task_by_vpid(pid);
-+	if (p) {
-+		task_lock(p);
-+		if (grp != p->egid)
-+			retval = groups_search(p->group_info, grp);
-+		task_unlock(p);
-+	}
-+	else
-+		retval = 0;
-+	read_unlock(&tasklist_lock);
-+	return retval;
-+}
-+EXPORT_SYMBOL(pid_in_egroup_p);
-+
- DECLARE_RWSEM(uts_sem);
- 
- EXPORT_SYMBOL(uts_sem);
+> On 16-thread tulsa machine, hackbench result becomes 34 seconds. 
+> 2.6.26-rc2's result is 40 seconds and 2.6.26-rc1's is 30 seconds. So 
+> there is much improvement. On another Montvale machine(supporting 
+> multi-threading, but I don't turn on it in BIOS), hackbench has the 
+> similiar behavior.
 
+okay, that's "hackbench 100", which creates a swarm of 2000 runnable 
+tasks and which is extremely sensitive to wakeup preemption details. It 
+is a volanomark work-alike, so if volanomark itself works fine (which it 
+does appear, from your other numbers) and this one regresses a bit, i'm 
+not sure there's anything fundamental to be worried about.
 
--- 
-Markku Savela
+Quite likely you'll get more stable results if you run it all batched 
+(which such workload really should):
+
+ schedtool -B -e hackbench 100
+
+right?
+
+the 16-thread tulsa machine, how is it laid out physically: 2 sockets, 4 
+cores per socket, 2 threads per core?
+
+	Ingo
