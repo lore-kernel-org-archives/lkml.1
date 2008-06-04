@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYFDPJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbYFDPLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbYFDPJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYFDPJZ
+	id S1752062AbYFDPLK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYFDPK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:09:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36494 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbYFDPJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:09:24 -0400
-Date: Wed, 4 Jun 2008 18:09:22 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: "=?UTF-8?Q?H=C3=A5kon_L=C3=B8vdal?=" <hlovdal@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bug] stuck localhost TCP connections, v2.6.26-rc3+
-In-Reply-To: <a01a16b50806040700h1efce63cq2a27b087df0d25be@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0806041802360.2580@wrl-59.cs.helsinki.fi>
-References: <20080526115628.GA31316@elte.hu> <1211966834.12349.62.camel@twins>
-  <a01a16b50805310725x4f1c375ep2d091bb044ac0787@mail.gmail.com> 
- <Pine.LNX.4.64.0805311839540.2657@wrl-59.cs.helsinki.fi>  <484191BD.8000904@gmail.com>
-  <Pine.LNX.4.64.0805312119270.2672@wrl-59.cs.helsinki.fi> 
- <a01a16b50805311325w7f58ca69h93d02af9bc28d2ea@mail.gmail.com> 
- <Pine.LNX.4.64.0805312332270.2760@wrl-59.cs.helsinki.fi> 
- <a01a16b50806031710u54b9297bkf1fad9c4f8fd581f@mail.gmail.com> 
- <Pine.LNX.4.64.0806041402211.16829@wrl-59.cs.helsinki.fi>
- <a01a16b50806040700h1efce63cq2a27b087df0d25be@mail.gmail.com>
+	Wed, 4 Jun 2008 11:10:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58640 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754779AbYFDPK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:10:56 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18hCDt19Xgh2Dme8AtQnaqkR0gc339+4eQTZwg7Tx
+	PiOkqbmoXHoT6s
+Date: Wed, 4 Jun 2008 17:11:14 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: linux-kernel@vger.kernel.org
+cc: dbrownell@users.sourceforge.net
+Subject: [PATCH] spi: two bug-fixes
+Message-ID: <Pine.LNX.4.64.0806041705430.32657@axis700.grange>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1745598132-1212592162=:2580"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Two SPI-related fixes: unsigned int cannot be less than zero, and the list
+search success check is wrong: for example, it didn't recognise failure for me
+when I requested port 0.
 
----696208474-1745598132-1212592162=:2580
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
-On Wed, 4 Jun 2008, Håkon Løvdal wrote:
+---
 
-> 2008/6/4 Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>:
->
-> > Usually such logs compress quite well. A best thing might be to put
-> > somewhere (if possible) and http:// reference them.
+It might be a good idea to get it in for 2.6.26. As a side note I was 
+surprised, that the compiler didn't generate a warning for "if (t<0)" for 
+unsigned t, whereas it does generate one for unsigned char with the same 
+flags (-Wall). I asked on gcc, there was one reply from Segher 
+Boessenkool, it is unclear if this is going to be recognised as a bug or 
+not: http://gcc.gnu.org/ml/gcc/2008-06/threads.html#00044
 
-> The largest file was a strace log of 1.5GB uncompressed. I will try to
-> sort out something.
+ arch/arm/mach-pxa/ssp.c |    2 +-
+ drivers/gpio/mcp23s08.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-I guess not all of the strace will be necessary anyway. You could first 
-leave that out completely and concentrate on the other logs first.
+Index: linux-2.6/drivers/gpio/mcp23s08.c
+===================================================================
+--- linux-2.6.orig/drivers/gpio/mcp23s08.c	2008-06-04 12:11:26.000000000 +0200
++++ linux-2.6/drivers/gpio/mcp23s08.c	2008-06-04 12:11:50.000000000 +0200
+@@ -178,7 +178,7 @@
+ 
+ 	mutex_lock(&mcp->lock);
+ 	t = mcp23s08_read_regs(mcp, 0, mcp->cache, sizeof mcp->cache);
+-	if (t < 0) {
++	if ((int)t < 0) {
+ 		seq_printf(s, " I/O ERROR %d\n", t);
+ 		goto done;
+ 	}
+Index: linux-2.6/arch/arm/mach-pxa/ssp.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-pxa/ssp.c	2008-06-04 12:11:26.000000000 +0200
++++ linux-2.6/arch/arm/mach-pxa/ssp.c	2008-06-04 12:11:50.000000000 +0200
+@@ -330,7 +330,7 @@
+ 
+ 	mutex_unlock(&ssp_lock);
+ 
+-	if (ssp->port_id != port)
++	if (&ssp->node == &ssp_list)
+ 		return NULL;
+ 
+ 	return ssp;
 
--- 
- i.
----696208474-1745598132-1212592162=:2580--
