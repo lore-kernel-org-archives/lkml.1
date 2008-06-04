@@ -1,113 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYFDLso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760198AbYFDLu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbYFDLso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 07:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYFDLsg
+	id S1760198AbYFDLu6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 07:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYFDLuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 07:48:36 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:35471 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752566AbYFDLsf (ORCPT
+	Wed, 4 Jun 2008 07:50:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33052 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752725AbYFDLut (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 07:48:35 -0400
-Message-ID: <4846810B.2030301@keyaccess.nl>
-Date: Wed, 04 Jun 2008 13:48:27 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: [patch 15/15] PNP: convert resource options to single linked
- list
-References: <20080530224853.976744229@ldl.fc.hp.com> <20080530224934.357694359@ldl.fc.hp.com> <4845A217.3030701@keyaccess.nl> <4845D937.2000205@keyaccess.nl>
-In-Reply-To: <4845D937.2000205@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 4 Jun 2008 07:50:49 -0400
+Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 4 -
+	firmware/keyspan/mpr.fw.gen.S
+From: David Woodhouse <dwmw2@infradead.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <48468091.5000102@linux.vnet.ibm.com>
+References: <20080604180025.3ecd03ff.sfr@canb.auug.org.au>
+	 <48468091.5000102@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 04 Jun 2008 12:50:45 +0100
+Message-Id: <1212580245.32207.51.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04-06-08 01:52, Rene Herman wrote:
+On Wed, 2008-06-04 at 17:16 +0530, Kamalesh Babulal wrote:
+> The next-20080604 kernel build fails on the x86_64 machine
+> 
+> make[1]: *** No rule to make target
+> `/usr/local/autobench/autotest/tmp/build/linux/$(dir)', needed by
+> `firmware/keyspan/mpr.fw.gen.S'.  Stop.
+> make: *** [firmware] Error 2
 
-Mmm. If you care for it:
+Hm, what version of make? Does .SECONDEXPANSION: not work everywhere?
 
-> === 4 === quirk_ad1815_mpu_resources, ADS7151
-> 
-> These results are with the dependent cloning already removed locally.
-> 
-> * pre-quirk:
-> 
-> irq 5,7,2/9,11,12 High-Edge
-> Dependent: 00 - Priority preferred
->   port 0x330-0x330, align 0x0, size 0x2, 10-bit address decoding
-> Dependent: 01 - Priority acceptable
->   port 0x300-0x300, align 0x0, size 0x2, 10-bit address decoding
-> Dependent: 02 - Priority functional
->   port 0x100-0x3fe, align 0x1, size 0x2, 10-bit address decoding
-> 
-> * post-quirk:
-> 
-> irq 5,7,2/9,11,12 High-Edge
-> Dependent: 00 - Priority preferred
->   port 0x330-0x330, align 0x0, size 0x2, 10-bit address decoding
-> Dependent: 01 - Priority acceptable
->   port 0x300-0x300, align 0x0, size 0x2, 10-bit address decoding
-> Dependent: 02 - Priority functional
->   port 0x100-0x3fe, align 0x1, size 0x2, 10-bit address decoding
-> 
-> 
-> See why that "(optional)" flag display is good? :-) I ofcourse tested 
-> things and the flag works great...
-> 
-> 
-> == 5 == quirk_add_irq_optional_dependent_sets, ADS7181
-> 
-> * pre-quirk:
-> 
-> Dependent: 00 - Priority preferred
->   irq 2/9 High-Edge
->   port 0x330-0x330, align 0xf, size 0x2, 16-bit address decoding
-> Dependent: 01 - Priority acceptable
->   irq 2/9 High-Edge
->   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
-> Dependent: 02 - Priority functional
->   irq 2/9,10,11 High-Edge
->   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
-> 
-> * post-quirk:
-> 
-> Dependent: 00 - Priority preferred
->   irq 2/9 High-Edge
->   port 0x330-0x330, align 0xf, size 0x2, 16-bit address decoding
-> Dependent: 01 - Priority acceptable
->   irq 2/9 High-Edge
->   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
-> Dependent: 02 - Priority functional
->   irq 2/9,10,11 High-Edge
->   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
-> Dependent: 03 - Priority functional
->   irq 2/9 High-Edge
->   port 0x330-0x330, align 0xf, size 0x2, 16-bit address decoding
-> Dependent: 04 - Priority functional
->   irq 2/9 High-Edge
->   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
-> Dependent: 05 - Priority functional
->   irq 2/9,10,11 High-Edge
->   port 0x300-0x330, align 0xf, size 0x2, 16-bit address decoding
+If you remove the '| $(objtree)/$$(dir %)' dependency from
+firmware/Makefile line 90, does it work then? You might have to remove
+other similar deps -- they're only for O= builds anyway.
 
-ADS7181 in fact might as well delete the IRQ from the dependents and add
-"irq 2/9,10,11 High-Edge Optinal" in front as an independent same as 
-ADS7151. That way, all the cloning can go.
+-- 
+dwmw2
 
-I'll probably place that on top if you don't, but you might already want 
-to since it loses all that code. Only difference would be that if IRQ 9 
-is taken and 10 free, the new situation would grab 330/10 while the old 
-would've taken 300/10, but that's in fact better...
-
-Rene.
