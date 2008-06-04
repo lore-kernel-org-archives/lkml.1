@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbYFDG6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYFDHGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbYFDG6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 02:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYFDG6h
+	id S1757458AbYFDHGP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 03:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYFDHGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 02:58:37 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53769 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751733AbYFDG6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 02:58:36 -0400
-Date: Wed, 4 Jun 2008 16:03:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [RFC][PATCH 1/2] memcg: res_counter hierarchy
-Message-Id: <20080604160356.f3f2488d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48463C14.4000705@cn.fujitsu.com>
-References: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080604140153.fec6cc99.kamezawa.hiroyu@jp.fujitsu.com>
-	<48463C14.4000705@cn.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 03:06:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:43059 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751990AbYFDHGC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 03:06:02 -0400
+Date: Wed, 4 Jun 2008 09:05:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+cc: =?ISO-8859-15?Q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Jan Altenberg <jan.altenberg@linutronix.de>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH 1/1] UIO: Add a write() function to enable/disable
+ interrupts
+In-Reply-To: <20080604063005.GA22952@digi.com>
+Message-ID: <alpine.LFD.1.10.0806040901400.3235@apollo.tec.linutronix.de>
+References: <20080522192252.GB3226@local> <20080522192637.GC3226@local> <20080523055527.GA28963@digi.com> <20080523104454.4e2af6ec@bluebox.local> <20080523091009.GA22821@digi.com> <20080523120308.7bec1e1c@bluebox.local> <20080523105604.GA23800@digi.com>
+ <20080523135557.27fe4855@bluebox.local> <20080523113650.2467f2ee.randy.dunlap@oracle.com> <20080524004917.6a226e96@dilbert.local> <20080604063005.GA22952@digi.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-80296366-1212563145=:3235"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Jun 2008 14:54:12 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> > Index: temp-2.6.26-rc2-mm1/Documentation/controllers/resource_counter.txt
-> > ===================================================================
-> > --- temp-2.6.26-rc2-mm1.orig/Documentation/controllers/resource_counter.txt
-> > +++ temp-2.6.26-rc2-mm1/Documentation/controllers/resource_counter.txt
-> > @@ -44,6 +44,13 @@ to work with it.
-> >   	Protects changes of the above values.
-> >  
-> >  
-> > + f. struct res_counter *parent
-> > +
-> > +	Parent res_counter under hierarchy.
-> > +
-> > + g. unsigned long long for_children
-> > +
-> > +	Resources assigned to children. This is included in usage.
+--8323328-80296366-1212563145=:3235
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 4 Jun 2008, Uwe Kleine-König wrote:
+> Hello Hans-Jürgen,
 > 
-> Since parent and for_children are also protected by res_count->lock,
-> the above text should appear before 'e. spinlock_t lock'.
-> 
-ok.
+> > Sometimes it is necessary to enable/disable the interrupt of a UIO device
+> > from the userspace part of the driver. With this patch, the UIO kernel driver
+> > can implement an "irqcontrol()" function that does this. Userspace can write
+> > an s32 value to /dev/uioX (usually 0 or 1 to turn the irq off or on). The
+> > UIO core will then call the driver's irqcontrol function.
+> IMHO it would make sense to demand that irqcontrol() is idempotent and
+> then call irqcontrol(ON) before blocking in read and poll.
+
+We thought about that, but it is racy. Also explicit control is way
+better than automagic hackery.
 
 Thanks,
--Kame
+	tglx
 
+
+
+--8323328-80296366-1212563145=:3235--
