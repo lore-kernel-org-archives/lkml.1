@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbYFDMWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbYFDM1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760858AbYFDMWH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 08:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYFDMVu
+	id S1760644AbYFDM1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 08:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYFDM13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 08:21:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:52237 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbYFDMVt (ORCPT
+	Wed, 4 Jun 2008 08:27:29 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:20276 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751456AbYFDM12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 08:21:49 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 9/12]: wext: Dispatch and handle compat ioctls entirely in net/wireless/wext.c
-Date: Wed, 4 Jun 2008 14:20:48 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com,
-       mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20080603.132842.123235332.davem@davemloft.net>
-In-Reply-To: <20080603.132842.123235332.davem@davemloft.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 4 Jun 2008 08:27:28 -0400
+Date: Wed, 4 Jun 2008 16:27:25 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, wim@iguana.be,
+       scottwood@freescale.com
+Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and
+	mpc8xx
+Message-ID: <20080604122725.GB2281@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru> <20080603164830.32457962.akpm@linux-foundation.org> <20080604001739.GB24548@polina.dev.rtsoft.ru> <20080603173214.0bf71571.akpm@linux-foundation.org> <18502.5368.786188.835122@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-Message-Id: <200806041420.49316.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18Rlgc81UinsQiKCfvLTZiYAC04C89+mdERP30
- hnV3/D2EPBc/ouByL5mkV13sYvskpC8RI2p/Ivdd3pganpJJ36
- 8ze5GkD2q0t+3QPpOsdcA==
+In-Reply-To: <18502.5368.786188.835122@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 June 2008, David Miller wrote:
-> Next we can kill the hacks in fs/compat_ioctl.c and also
-> dispatch compat ioctls down into the driver and 80211 protocol
-> helper layers in order to handle iw_point objects embedded in
-> stream replies which need to be translated.
+On Wed, Jun 04, 2008 at 02:07:20PM +1000, Paul Mackerras wrote:
+> Andrew Morton writes:
+> 
+> > On Wed, 4 Jun 2008 04:17:39 +0400
+> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > 
+> > > > Please put the subsystem identifier (eg, "watchdog" and "powerpc")
+> > > > outside the [], for reasons which should be in
+> > > > Documentation/SubmittingPatches, which used to be there but which got
+> > > > lost.  Bascially the text inside [] is for temporary not-for-committing
+> > > > information such as "rfc", "2.6.24-rc4", "resend", etc and should be stripped
+> > > > by the email recipient before merging.
+> > > 
+> > > Yeah, I know. It is just hard to remember all the preferences.
+> > > 
+> > > For example, PowerPC maintainers asking to do patches with "[POWERPC]"
+> > > identifier, this identifier purposely keeps intact for git-log.
+> > 
+> > Addition of "[powerpc]" if it was absent can be scripted.
+> > 
+> > However, the retaining of "[powerpc]" (etc) while not retaining "[rfc]"
+> > (etc) is not practical.
+> > 
+> > Plus putting things into git with "[powerpc]" in the title is wrong. 
+> > The chances are good that anyone who is taking such a patch off the
+> > git-commits list (say, for a backport) will lose that part of the
+> > title.  It should be "powerpc: "
+> 
+> I think Anton is confusing two things: 
 
-Great work! Thanks for getting one large chunk of fs/compat_ioctl.c
-removed on the way.
+I found original email.. yes, you indeed ask for [POWERPC] in git
+trees.
 
-> diff --git a/include/net/wext.h b/include/net/wext.h
-> index 80b31d8..6d76a39 100644
-> --- a/include/net/wext.h
-> +++ b/include/net/wext.h
-> @@ -12,6 +12,8 @@ extern int wext_proc_init(struct net *net);
->  extern void wext_proc_exit(struct net *net);
->  extern int wext_handle_ioctl(struct net *net, struct ifreq *ifr, unsigned int cmd,
->  			     void __user *arg);
-> +extern int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
-> +				    unsigned long arg);
+But. I believe anyone who send patches, tries to mimic existing practice,
+and thus please the maintainer. Personally, I'm doing git log subsystem/
+and looking for the preferred format for the commit message. And I'm not
+alone: linuxppc-dev is full of [POWERPC] in the patch subjects, despite
+the fact that you didn't explicitly ask for it.
 
-Is it intentional that the prototypes are so different? Why not
-pass a void __user *arg instead of unsigned long arg?
+Asking to send patches with "subsystem: " and then seeing them as
+"[SUBSYSTEM] " in git-log is more confusing. Since new authors will
+personalize this thinking: "Oh, maintainer fixed my negligence.
+Next time I should send a patch with [SUBSYSTEM]".
 
-> +int compat_wext_handle_ioctl(struct net *net, unsigned int cmd,
-> +			     unsigned long arg)
-> +{
-> +	void __user *argp = (void __user *)arg;
-
-For the conversion, you should also use compat_ptr() instead of the
-cast. This currently only makes a difference on s390, which does
-not have wireless, but it's better not to give wrong examples in the
-code.
-
-	Arnd <><
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
