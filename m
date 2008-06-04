@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbYFDQeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbYFDQeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbYFDQeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 12:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbYFDQeN
+	id S1754324AbYFDQeg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 12:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYFDQeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 12:34:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45688 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbYFDQeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 12:34:12 -0400
-Subject: Re: [patch 1/2] MTD: use list_for_each_entry() in add_mtd_device()
-From: David Woodhouse <dwmw2@infradead.org>
-To: matthias@kaehlcke.net
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20080531132808.984625508@kaehlcke.net>
-References: <20080531132808.644758754@kaehlcke.net>
-	 <20080531132808.984625508@kaehlcke.net>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 17:34:08 +0100
-Message-Id: <1212597248.32207.126.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 4 Jun 2008 12:34:16 -0400
+Received: from styx.suse.cz ([82.119.242.94]:48151 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754184AbYFDQeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 12:34:15 -0400
+Date: Wed, 4 Jun 2008 18:34:12 +0200
+From: Jan Kara <jack@suse.cz>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-ext4@vger.kernel.org
+Subject: Two questions on VFS/mm
+Message-ID: <20080604163412.GL16572@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-05-31 at 15:28 +0200, matthias@kaehlcke.net wrote:
-> -                       struct list_head *this;
-> +                       struct mtd_notifier *not
+  Hi,
 
-That's not even going to compile, surely?
+  could some kind soul knowledgable in VFS/mm help me with the following
+two questions? I've spotted them when testing some ext4 for patches...
+  1) In write_cache_pages() we do:
+...
+	lock_page(page);
+	...
+	if (!wbc->range_cyclic && page->index > end) {
+                   done = 1;
+                   unlock_page(page);
+                   continue;
+        }
+	...
+	ret = (*writepage)(page, wbc, data);
 
+  Now the problem is that if range_cyclic is set, it can happen that the
+page we give to the filesystem is beyond the current end of file (and can
+be already processed by invalidatepage()). Is the filesystem supposed to
+handle this (what would it be good for to give such a page to the fs?) or
+is it just a bug in write_cache_pages()?
+
+  2) I have the following problem with page_mkwrite() when blocksize <
+pagesize. What we want to do is to fill in a potential hole under a page
+somebody wants to write to. But consider following scenario with a
+filesystem with 1k blocksize:
+  truncate("file", 1024);
+  ptr = mmap("file");
+  *ptr = 'a'
+     -> page_mkwrite() is called.
+        but "file" is only 1k large and we cannot really allocate blocks
+        beyond end of file. So we allocate just one 1k block.
+  truncate("file", 4096);
+  *(ptr + 2048) = 'a'
+     - nothing is called and later during writepage() time we are surprised
+       we have a dirty page which is not backed by a filesystem block.
+
+  How to solve this? One idea I have here is that when we handle truncate(),
+we mark the original last page (if it is partial) as read-only again so
+that page_mkwrite() is called on the next write to it. Is something like
+this possible? Pointers to code doing something similar are welcome, I don't
+really know these things ;).
+
+								Thanks
+									Honza
 -- 
-dwmw2
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
