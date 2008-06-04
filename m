@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbYFDSqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbYFDSvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760738AbYFDSqk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYFDSqc
+	id S1759966AbYFDSvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbYFDSvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:46:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51816 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753286AbYFDSqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:46:31 -0400
-Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
-From: Jon Masters <jcm@redhat.com>
-To: Stefan Assmann <sassmann@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4846651F.4070802@suse.de>
-References: <12124107071847-git-send-email-od@suse.de>
-	 <m1tzgauduu.fsf@frodo.ebiederm.org>  <4846651F.4070802@suse.de>
+	Wed, 4 Jun 2008 14:51:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42365 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbYFDSvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 14:51:41 -0400
+Subject: Re: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080604173318.GH3549@parisc-linux.org>
+References: <20080604170905.GA10273@tv-sign.ru>
+	 <20080604173318.GH3549@parisc-linux.org>
 Content-Type: text/plain
-Date: Wed, 04 Jun 2008 14:44:00 -0400
-Message-Id: <1212605040.8410.8.camel@londonpacket.bos.redhat.com>
+Date: Wed, 04 Jun 2008 20:51:08 +0200
+Message-Id: <1212605468.19205.15.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2008-06-04 at 11:33 -0600, Matthew Wilcox wrote:
+> On Wed, Jun 04, 2008 at 09:09:05PM +0400, Oleg Nesterov wrote:
 
-On Wed, 2008-06-04 at 11:49 +0200, Stefan Assmann wrote:
+> > --- 26-rc2/kernel/sched.c~1_SCHED_KILLABLE	2008-05-18 15:44:18.000000000 +0400
+> > +++ 26-rc2/kernel/sched.c	2008-06-04 17:42:59.000000000 +0400
+> > @@ -4510,12 +4510,10 @@ need_resched_nonpreemptible:
+> >  	clear_tsk_need_resched(prev);
+> >  
+> >  	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
+> > -		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
+> > -				signal_pending(prev))) {
+> > +		if (unlikely(signal_pending_state(prev->state, prev)))
+> >  			prev->state = TASK_RUNNING;
+> > -		} else {
+> > +		else
+> >  			deactivate_task(rq, prev, 1);
+> > -		}
+> 
+> Getting rid of the extra braces is against CodingStyle:
 
-> On the chips (ICHx, ...) we saw, the interrupt lines on the PIC also go
-> to the first IO-APIC. So the boot interrupts go to both the PIC and the
-> first IO-APIC.
+No it doesn't.
 
-Yup, it's system dependent too, but it's a mess in many cases. I've seen
-numerous systems falling over - typically, the classical case will be
-some IO controller when under heavy load will stop doing interrupts.
-Another gotcha is that a lot of the time, these legacy interrupt (boot
-interrupts) happen to be shared between e.g. a disk controller and a USB
-host controller. On a server system running -RT, it's quite common that
-there won't be much going on with the other device, so the problem goes
-unnoticed for a long time...but it still bites you in the end.
+>   Do not unnecessarily use braces where a single statement will do.
+> 
+>   if (condition)
+>           action();
+> 
+>   This does not apply if one branch of a conditional statement is a single
+>   statement. Use braces in both branches.
+> 
+>   if (condition) {
+>           do_this();
+>           do_that();
+>   } else {
+>           otherwise();
+>   }
 
-> When running in APIC mode all PIC IRQs are disabled, except for the
-> timer maybe. Boot interrupts still arrive on the first IO-APIC and end
-> up as being counted as spurious interrupts.
+Which does not say anything about
 
-Yup. I think the good thing is that both SuSE and Red Hat have
-identified the same problems, posited the same root cause, and
-contemplated similar workarounds...so I think we understand it.
+ if (cond)
+   stmt1;
+ else
+   stmt2;
 
-Jon.
-
+like the above.
 
