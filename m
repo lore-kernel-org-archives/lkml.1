@@ -1,152 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbYFDIcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbYFDIgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757319AbYFDIcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 04:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753243AbYFDIc2
+	id S1756952AbYFDIgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 04:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbYFDIgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 04:32:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:47390 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbYFDIc0 (ORCPT
+	Wed, 4 Jun 2008 04:36:08 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48148 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbYFDIgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 04:32:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GmdmOrCpe6WKgYDDJyBmxvzq506R1zbrA1mAjv8rN1KDbma5ba7SQH1XMRf4MdxiH2W5Zl18vtNBkXuDrXXEOZTmaVUBfsJbjgOzqYCfuq1itotD9Z1oxGXEZ4FxwDMXeK8yGBFmGbzhSX9H5Q57kwxHCKx+siB6i7ejIQoZ8q4=
-Message-ID: <28c262360806040132i50a7cd4ep900600ce1d91464e@mail.gmail.com>
-Date: Wed, 4 Jun 2008 17:32:14 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] add a printk_init variant storing format strings in __initdata
-Cc: "Andy Whitcroft" <apw@shadowen.org>,
-       "David Brownell" <david-b@pacbell.net>, pavel@suse.cz,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       mingo@elte.hu, linux-embedded <linux-embedded@vger.kernel.org>
-In-Reply-To: <20080604011607.15dec5a7.akpm@linux-foundation.org>
+	Wed, 4 Jun 2008 04:36:06 -0400
+Date: Wed, 04 Jun 2008 17:36:20 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: menage@google.com, linux-kernel@vger.kernel.org,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH] cgroup: list_for_each cleanup
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20080604172812.941C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080529162257.03426e48.akpm@linux-foundation.org>
-	 <1212485252.0@pinky>
-	 <20080604011607.15dec5a7.akpm@linux-foundation.org>
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is important about embedded system, too.
-So I add CC, linux-embedded.
 
-On Wed, Jun 4, 2008 at 5:16 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 3 Jun 2008 10:27:32 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
->
->>
->> [As gcc seems unable to help us out selecting the appropriate data segment
->> for the code, how about we did something like this?]
->>
->> When using printk from __init functions it would be desirable to place
->> the printk format strings in __initdata.  Add a printk_init() variant
->> which does this.
->>
->> This printk_init() is necessarily a #define so that we can declare the
->> format string in static scope and mark it __initdata.  We then call a
->> newly introduced __printk_init() variant which is identicle to printk() but
->> marked __init itself.  By ensuring that an __init variant of printk is used
->> we get proper section violation warnings when this is used incorrectly:
->>
->>     WARNING: vmlinux.o(.text+0x3): Section mismatch in reference from the
->>       function something() to the variable .init.data:__printk_init_fmt.31426
->>     The function something() references
->>     the variable __initdata __printk_init_fmt.31426.
->>     This is often because something lacks a __initdata
->>     annotation or the annotation of __printk_init_fmt.31426 is wrong.
->>
->> Note I have followed printk's pattern for __cold annotations.
->>
->
-> Ho hum.  This give everyone another way in which to bury everyone else
-> with patches.
->
-> Wouldn't it be great if checkpatch were to detect
-> fail-to-use-printk_init() in an __init function?
->
-> oh, speaking of checkpatch: please use it :)
->
->> ---
->>  include/linux/kernel.h |   10 ++++++++++
->>  kernel/printk.c        |   12 ++++++++++++
->>  2 files changed, 22 insertions(+), 0 deletions(-)
->> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
->> index 792bf0a..7754196 100644
->> --- a/include/linux/kernel.h
->> +++ b/include/linux/kernel.h
->> @@ -180,6 +180,13 @@ struct pid;
->>  extern struct pid *session_of_pgrp(struct pid *pgrp);
->>
->>  #ifdef CONFIG_PRINTK
->> +#define printk_init(fmt, args...) \
->> +do { \
->> +        static char __printk_init_fmt[] __initdata = fmt; \
->> +        __printk_init(__printk_init_fmt, ##args); \
->> +} while (0)
->> +asmlinkage int __printk_init(const char * fmt, ...)
->> +     __attribute__ ((format (printf, 1, 2))) __cold;
->>  asmlinkage int vprintk(const char *fmt, va_list args)
->>       __attribute__ ((format (printf, 1, 0)));
->>  asmlinkage int printk(const char * fmt, ...)
->> @@ -196,6 +203,9 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
->>  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->>                                  unsigned int interval_msec);
->>  #else
->> +asmlinkage int printk_init(const char * fmt, ...)
->> +     __attribute__ ((format (printf, 1, 2))) __cold;
->> +static inline int __cold printk_init(const char *s, ...) { return 0; }
->>  static inline int vprintk(const char *s, va_list args)
->>       __attribute__ ((format (printf, 1, 0)));
->>  static inline int vprintk(const char *s, va_list args) { return 0; }
->> diff --git a/kernel/printk.c b/kernel/printk.c
->> index 8fb01c3..992a5c0 100644
->> --- a/kernel/printk.c
->> +++ b/kernel/printk.c
->> @@ -616,6 +616,18 @@ asmlinkage int printk(const char *fmt, ...)
->>       return r;
->>  }
->>
->> +asmlinkage __init int __printk_init(const char *fmt, ...)
->> +{
->> +     va_list args;
->> +     int r;
->> +
->> +     va_start(args, fmt);
->> +     r = vprintk(fmt, args);
->> +     va_end(args);
->> +
->> +     return r;
->> +}
->
-> We're going to want to be able to call printk_init() from modules.
-> Please fix and test that, if we decide to proceed.
->
-> Oh, and we're going to need printk_meminit() and printk_cpuinit() and
-> whatever.
->
-> Which probably means that __printk_init() can't be __init, unless all
-> the CONFIG_ settings which control __cpuinit, __meminit etc are blowing
-> in the right direction.
->
-> It would be good if we could get some idea of the savings here, because
-> boy this is going to be a pain.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+--------------------------
+while() {
+	list_entry();
+	...
+}
+--------------------------
+
+is equivalent to following code.
+
+--------------------------
+list_for_each_entry(){
+	...
+}
+--------------------------
+
+later can review easily more.
+
+this patch is just clean up.
+it doesn't have any behavor change.
 
 
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
--- 
-Kinds regards,
-MinChan Kim
+---
+ kernel/cgroup.c |   55 ++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 28 insertions(+), 27 deletions(-)
+
+Index: b/kernel/cgroup.c
+===================================================================
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -241,17 +241,20 @@ static int use_task_css_set_links;
+  */
+ static void unlink_css_set(struct css_set *cg)
+ {
++	struct cg_cgroup_link *link;
++	struct cg_cgroup_link *saved_link;
++
+ 	write_lock(&css_set_lock);
+ 	hlist_del(&cg->hlist);
+ 	css_set_count--;
+-	while (!list_empty(&cg->cg_links)) {
+-		struct cg_cgroup_link *link;
+-		link = list_entry(cg->cg_links.next,
+-				  struct cg_cgroup_link, cg_link_list);
++
++	list_for_each_entry_safe(link, saved_link, &cg->cg_links,
++				 cg_link_list) {
+ 		list_del(&link->cg_link_list);
+ 		list_del(&link->cgrp_link_list);
+ 		kfree(link);
+ 	}
++
+ 	write_unlock(&css_set_lock);
+ }
+ 
+@@ -363,15 +366,14 @@ static struct css_set *find_existing_css
+ static int allocate_cg_links(int count, struct list_head *tmp)
+ {
+ 	struct cg_cgroup_link *link;
++	struct cg_cgroup_link *saved_link;
+ 	int i;
+ 	INIT_LIST_HEAD(tmp);
+ 	for (i = 0; i < count; i++) {
+ 		link = kmalloc(sizeof(*link), GFP_KERNEL);
+ 		if (!link) {
+-			while (!list_empty(tmp)) {
+-				link = list_entry(tmp->next,
+-						  struct cg_cgroup_link,
+-						  cgrp_link_list);
++			list_for_each_entry_safe(link, saved_link, tmp,
++						 cgrp_link_list) {
+ 				list_del(&link->cgrp_link_list);
+ 				kfree(link);
+ 			}
+@@ -384,11 +386,10 @@ static int allocate_cg_links(int count, 
+ 
+ static void free_cg_links(struct list_head *tmp)
+ {
+-	while (!list_empty(tmp)) {
+-		struct cg_cgroup_link *link;
+-		link = list_entry(tmp->next,
+-				  struct cg_cgroup_link,
+-				  cgrp_link_list);
++	struct cg_cgroup_link *link;
++	struct cg_cgroup_link *saved_link;
++
++	list_for_each_entry_safe(link, saved_link, tmp, cgrp_link_list) {
+ 		list_del(&link->cgrp_link_list);
+ 		kfree(link);
+ 	}
+@@ -1093,6 +1094,8 @@ static void cgroup_kill_sb(struct super_
+ 	struct cgroupfs_root *root = sb->s_fs_info;
+ 	struct cgroup *cgrp = &root->top_cgroup;
+ 	int ret;
++	struct cg_cgroup_link *link;
++	struct cg_cgroup_link *saved_link;
+ 
+ 	BUG_ON(!root);
+ 
+@@ -1112,10 +1115,9 @@ static void cgroup_kill_sb(struct super_
+ 	 * root cgroup
+ 	 */
+ 	write_lock(&css_set_lock);
+-	while (!list_empty(&cgrp->css_sets)) {
+-		struct cg_cgroup_link *link;
+-		link = list_entry(cgrp->css_sets.next,
+-				  struct cg_cgroup_link, cgrp_link_list);
++
++	list_for_each_entry_safe(link, saved_link, &cgrp->css_sets,
++				 cgrp_link_list) {
+ 		list_del(&link->cg_link_list);
+ 		list_del(&link->cgrp_link_list);
+ 		kfree(link);
+@@ -1756,15 +1758,11 @@ int cgroup_add_files(struct cgroup *cgrp
+ int cgroup_task_count(const struct cgroup *cgrp)
+ {
+ 	int count = 0;
+-	struct list_head *l;
++	struct cg_cgroup_link *link;
+ 
+ 	read_lock(&css_set_lock);
+-	l = cgrp->css_sets.next;
+-	while (l != &cgrp->css_sets) {
+-		struct cg_cgroup_link *link =
+-			list_entry(l, struct cg_cgroup_link, cgrp_link_list);
++	list_for_each_entry(link, &cgrp->css_sets, cgrp_link_list) {
+ 		count += atomic_read(&link->cg->ref.refcount);
+-		l = l->next;
+ 	}
+ 	read_unlock(&css_set_lock);
+ 	return count;
+@@ -3072,16 +3070,19 @@ void __css_put(struct cgroup_subsys_stat
+  */
+ static void cgroup_release_agent(struct work_struct *work)
+ {
++	struct cgroup *cgrp;
++	struct cgroup *saved_cgrp;
++
+ 	BUG_ON(work != &release_agent_work);
+ 	mutex_lock(&cgroup_mutex);
+ 	spin_lock(&release_list_lock);
+-	while (!list_empty(&release_list)) {
++
++	list_for_each_entry_safe(cgrp, saved_cgrp, &release_list,
++				 release_list) {
+ 		char *argv[3], *envp[3];
+ 		int i;
+ 		char *pathbuf;
+-		struct cgroup *cgrp = list_entry(release_list.next,
+-						    struct cgroup,
+-						    release_list);
++
+ 		list_del_init(&cgrp->release_list);
+ 		spin_unlock(&release_list_lock);
+ 		pathbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+
+
