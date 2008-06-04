@@ -1,34 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761075AbYFDRL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbYFDRTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761075AbYFDRL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 13:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbYFDRLR
+	id S1760148AbYFDRTV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 13:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbYFDRTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 13:11:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36485 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754305AbYFDRLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 13:11:17 -0400
-Date: Wed, 4 Jun 2008 13:10:56 -0400
-From: Alan Cox <alan@redhat.com>
-To: Joe Peterson <joe@skyrush.com>
-Cc: Alan Cox <alan@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Newall <davidn@davidnewall.com>, Willy Tarreau <w@1wt.eu>,
-       Harald Dunkel <harald.dunkel@t-online.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: su gets stuck for root
-Message-ID: <20080604171056.GB17875@devserv.devel.redhat.com>
-References: <48438126.3080308@t-online.de> <20080602053256.GF5609@1wt.eu> <20080602091016.571dda7c@core> <4843B6EE.8080104@davidnewall.com> <20080602102033.63e4cd18@core> <48441138.90503@skyrush.com> <20080602155133.GC933@devserv.devel.redhat.com> <4846A9F4.40003@skyrush.com> <20080604151649.GB12625@devserv.devel.redhat.com> <4846C85E.7080309@skyrush.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4846C85E.7080309@skyrush.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+	Wed, 4 Jun 2008 13:19:09 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63929 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752009AbYFDRTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 13:19:08 -0400
+Date: Wed, 4 Jun 2008 18:18:28 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Stefan Assmann <sassmann@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+In-Reply-To: <alpine.LFD.1.10.0806041801260.3235@apollo.tec.linutronix.de>
+Message-ID: <Pine.LNX.4.55.0806041755040.28685@cliff.in.clinika.pl>
+References: <12124107071847-git-send-email-od@suse.de> <m1tzgauduu.fsf@frodo.ebiederm.org>
+ <4846651F.4070802@suse.de> <m1ve0pqy06.fsf@frodo.ebiederm.org>
+ <48467DA7.9030309@suse.de> <Pine.LNX.4.55.0806041555370.28685@cliff.in.clinika.pl>
+ <alpine.LFD.1.10.0806041801260.3235@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> tty = current->signal->tty = -142080000 or 0xf7880800
-> task->pgrg                 = -142405824 or 0xf7830f40
+On Wed, 4 Jun 2008, Thomas Gleixner wrote:
 
-task->pgrp is a struct pid - you need the value it holds
+> It does matter. When the interrupt is _not_ handled then it comes back
+> immediately for ever and after a while the kernel decides to disable
+> the legacy int, because nobody cares about the interrupt.
+
+ Mental shortcut, sorry -- making the interrupt be discarded through the
+primary rather than the secondary, etc. I/O APIC does not change anything.  
+Based on the description of the problem, the interupt will just have to be
+delivered somewhere, so I see little purpose in complicating the routing
+and causing additional sharing just to discard the interrupt elsewhere
+anyway.  If INTx messages cannot be blocked on the way anywhere, then the 
+originating I/O APIC should never get its inputs masked and the handler 
+should take care of the unwanted interrupts there.  This is at least my 
+opinion.
+
+ BTW, it could be possible to mask the interrupt by fiddling with the
+vector used and the TPR instead -- we have a range of low-priority vectors
+which are never used for APIC interrupts, so the TPR may be hardcoded to
+some non-zero value for all systems and then for the problematic chipsets
+handlers may change vectors to mask or unmask APIC interrupts.  This would
+have to be verified on actual hardware and be conditional as it is likely
+to cause troubles for systems using serial interrupt delivery over the
+inter-APIC bus (the vector, delivery mode, etc. are generally not meant to
+be changed with the input unmasked for these chips -- which just shows how
+braindead the idea of the mask having side effects is).  Just a thought.
+
+  Maciej
