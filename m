@@ -1,42 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYFDFzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbYFDFzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbYFDFzK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 01:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYFDFy6
+	id S1752292AbYFDFzn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 01:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYFDFz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 01:54:58 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40762 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbYFDFy5 (ORCPT
+	Wed, 4 Jun 2008 01:55:26 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:39294 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756341AbYFDFzY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 01:54:57 -0400
-Date: Wed, 4 Jun 2008 15:00:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/4] per-task-delay-accounting: add memory reclaim delay
-Message-Id: <20080604150024.a75d8534.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
-References: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 01:55:24 -0400
+To: mtk.manpages@googlemail.com
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@lst.de,
+       miklos@szeredi.hu, viro@zeniv.linux.org.uk, jamie@shareable.org,
+       drepper@redhat.com, linux-fsdevel@vger.kernel.org,
+       subrata@linux.vnet.ibm.com
+In-reply-to: <E1K3kot-0007gz-U7@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Wed, 04 Jun 2008 06:41:55 +0200)
+Subject: Re: [parch 4/4] vfs: utimensat(): fix write access check for futimens()
+References: <4845C4D2.8050408@gmail.com> <E1K3kot-0007gz-U7@pomaz-ex.szeredi.hu>
+Message-Id: <E1K3lxO-0007t2-2d@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 04 Jun 2008 07:54:46 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008 19:38:25 -0700
-Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp> wrote:
-
-> +	delayacct_freepages_start();
->  	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
-> +	delayacct_freepages_end();
+> At which point the "if (f)" and the "else" branches become equivalent
+> (the nameidata isn't interesting in the other case either).  So that
+> could be written as:
 > 
-Could you move this to vmscan.c do_try_to_free_pages().
-Then, memory reclaim from memory resource controller can be catched as well.
+> 		if (!is_owner_or_cap(inode)) {
+> 			error = permission(inode, MAY_WRITE, NULL);
+> 			if (error)
+> 				goto mnt_drop_write_and_out;
+> 		}
 
-Thanks,
--Kame
+And also the IS_IMMUTABLE() check can be removed, since it's checked
+by permission(MAY_WRITE) anyway.
 
+Miklos
