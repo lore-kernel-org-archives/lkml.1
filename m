@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbYFDVtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYFDVtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761273AbYFDVtj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 17:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYFDVtb
+	id S1755198AbYFDVtx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 17:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761371AbYFDVtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 17:49:31 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36134 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751237AbYFDVta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 17:49:30 -0400
-Date: Wed, 4 Jun 2008 23:50:12 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: Simplify vmlinux link
-Message-ID: <20080604215012.GD13032@uranus.ravnborg.org>
-References: <20080604214514.GA13032@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080604214514.GA13032@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 4 Jun 2008 17:49:40 -0400
+Received: from mail.codesourcery.com ([65.74.133.4]:56957 "EHLO
+	mail.codesourcery.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761225AbYFDVtj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 17:49:39 -0400
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Jun 2008 17:49:39 EDT
+Date: Wed, 4 Jun 2008 21:42:55 +0000 (UTC)
+From: "Joseph S. Myers" <joseph@codesourcery.com>
+X-X-Sender: jsm28@digraph.polyomino.org.uk
+To: Kumar Gala <galak@kernel.crashing.org>
+cc: David Miller <davem@davemloft.net>,
+       lkml List <linux-kernel@vger.kernel.org>, libc-alpha@sourceware.org
+Subject: Re: math-emu issue with fp divide
+In-Reply-To: <9BECB10D-536E-4242-A2F5-6E1EF8CBDB40@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.64.0806042134020.32021@digraph.polyomino.org.uk>
+References: <9BECB10D-536E-4242-A2F5-6E1EF8CBDB40@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 11:45:14PM +0200, Sam Ravnborg wrote:
-> Following two patches simplifies the foo used to link
-> vmlinux to a level where it is maintainable again.
-> 
-> The patches remove the KALLSYMS_EXTRA_PASS stuff and
-> move the vmlinux link stuff to a small shell script.
-> 
-> This need some testing as I have not even been able
-> to boot test this as my dev box is down.
-> So help and feedback is really appreciated.
-> 
-> Full patch below - I will post sepearate patches as follow-up.
-> 
-> Patches will be pushed out to kbuild-next only when I get
-> some positive reponse that it boots.
+On Wed, 4 Jun 2008, Kumar Gala wrote:
 
-This breaks um build btw.
-The 2/2 patch contains an attempt to fix it but I could not
-manage to tech ld how to find -lunit - despite that it worked with gcc.
+> I'm trying to move the powerpc math-emu
+> code to use the include/math-emu bits.
 
-	Sam
+I'd like to remind people that the include/math-emu code is based on an 
+old, buggy version of the soft-fp code in glibc.  RTH previously noted 
+<http://sourceware.org/ml/libc-alpha/2006-02/msg00075.html> that the fixes 
+should go in the kernel, when approving a patch of mine fixing various 
+bugs and speeding up soft-fp, and several more bugs have been fixed since 
+then in the course of GCC work on soft-float for Power and __float128 
+support for x86_64.
+
+So it may be better than the old code you're replacing, but it might still 
+be a good idea to merge things with the current glibc code, as a matter of 
+both correctness and performance.  (And there may well still be bugs left 
+in the code.)
+
+-- 
+Joseph S. Myers
+joseph@codesourcery.com
