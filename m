@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbYFDLww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758334AbYFDLxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbYFDLww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 07:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbYFDLwp
+	id S1758334AbYFDLxc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 07:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbYFDLxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 07:52:45 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40995 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751163AbYFDLwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 07:52:44 -0400
-Date: Wed, 4 Jun 2008 12:36:42 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Andrew Victor" <avictor.za@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, wim@iguana.be,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: AT91SAM9/CAP9 watchdog driver
-Message-ID: <20080604123642.51449a04@core>
-In-Reply-To: <cd73a99e0806040031s13e6b4a5ndc5fb3d931e1945f@mail.gmail.com>
-References: <cd73a99e0806010940g501f11b4jcb7caf6acfd5c49f@mail.gmail.com>
-	<20080603142316.c53b32b2.akpm@linux-foundation.org>
-	<cd73a99e0806040031s13e6b4a5ndc5fb3d931e1945f@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 4 Jun 2008 07:53:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41001 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753724AbYFDLxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 07:53:22 -0400
+Date: Wed, 4 Jun 2008 07:53:18 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Tom Tucker <tom@opengridcomputing.com>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       bfields@fieldses.org
+Subject: Re: [PATCH 0/3] have pooled sunrpc services make more intelligent
+ allocations
+Message-ID: <20080604075318.66fece9c@barsoom.rdu.redhat.com>
+In-Reply-To: <1212518245.29133.25.camel@trinity.ogc.int>
+References: <20080603110549.8631.46647.stgit@dantu.usersys.redhat.com>
+	<1212512022.29133.18.camel@trinity.ogc.int>
+	<20080603134257.1de3a1c3@tleilax.poochiereds.net>
+	<1212518245.29133.25.camel@trinity.ogc.int>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,18 +30,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008 09:31:50 +0200
-"Andrew Victor" <avictor.za@gmail.com> wrote:
+On Tue, 03 Jun 2008 13:37:25 -0500
+Tom Tucker <tom@opengridcomputing.com> wrote:
 
-> hi Andrew,
 > 
-> >> +             return 0;
-> >
-> > That looks like the wrong return value?
+> On Tue, 2008-06-03 at 13:42 -0400, Jeff Layton wrote:
+> > On Tue, 03 Jun 2008 11:53:42 -0500
+> > Tom Tucker <tom@opengridcomputing.com> wrote:
+> > 
+> > > Jeff:
+> > > 
+> > > This brings up an interesting issue with the RDMA transport and
+> > > RDMA_READ. RDMA_READ is submitted as part of fetching an RPC from the
+> > > client (e.g. NFS_WRITE). The xpo_recvfrom function doesn't block waiting
+> > > for the RDMA_READ to complete, but rather queues the RPC for subsequent
+> > > processing when the I/O completes and returns 0. 
+> > > 
+> > > I can use these new services to allocate CPU local pages for this I/O.
+> > > So far, so good. However, when the I/O completes, and the transport is
+> > > rescheduled for subsequent RPC completion processing, the pool/CPU that
+> > > is elected doesn't have any affinity for the CPU on which the I/O was
+> > > initially submitted. I think this means that the svc_process/reply steps
+> > > may occur on a CPU far away from the memory in which the data resides.
+> > > 
+> > > Am I making sense here? If so, any thoughts on what could/should be
+> > > done?
+> > > 
+> > > Thanks,
+> > > Tom
+> > > 
+> > 
+> > I confess I didn't think hard about the RDMA case here (and haven't
+> > been paying as much attention as I probably should to the design of
+> > it). So take my thoughts with a large chunk of salt...
+> > 
+> > On a NUMA box, the pages have to live _somewhere_ and some CPUs will be
+> > closer to them than others. If we're concerned about making sure that
+> > the post-RDMA_READ processing is done on a CPU close to the memory,
+> > then we don't have much choice but to try to make sure that this
+> > processing is only done on CPUs that are close to that memory.
+> > 
+> > Assuming that this post-processing is done by nfsd, I suppose we'd need
+> > to tag the post-RDMA_READ RPC with a poolid or something and make sure
+> > that only nfsds running on CPUs close to the memory pick it up. Perhaps
+> > there could be a per-pool queue for these RPC's or something...
+> > 
+> > Either way, the big question is whether that will be a net win or loss
+> > for throughput. i.e. are we better off waiting for the right nfsd to
+> > become available or allowing the first nfsd that becomes available to
+> > make the crosscalls needed to do the RPC? It's hard to say...
 > 
-> Since the watchdog registers are Write-Once, if the user does not
-> specify a "wdt_timeout" parameter we'd still like the driver to load
-> even if it's not enabled.
+> Not only that, but it would lead to more disorder in the RPC processing
+> which might kill write-behind.
+> 
 
-Surely you can avoid doing the register writes until after you check the
-validity of arguments ?
+Oof, yeah...good point...
+
+Another option might be to keep the nfsd that issued the RDMA_READ idle
+for a short time in the expectation that the RDMA_READ reply will come
+in soon. With a large enough pool of nfsd's I'd think that wouldn't
+cause too much of a problem. That might be easier to implement anyway,
+though we'd still have to think about how best to make sure that we
+dispatch the RDMA_READ reply to the right nfsd (or at least to the
+right svc pool).
+
+> > 
+> > In the near term, I doubt this patchset will harm the RDMA case. 
+> 
+> Agreed. 
+> 
+> > After
+> > all, the distribution of memory allocations is pretty lumpy now. On
+> > a NUMA box with RDMA you're probably doing a lot of crosscalls with
+> > the current code.
+> 
+> Probably no worse than the socket's transport since the skbuf's aren't
+> necessarily allocated on the CPU calling svc_recv.
+> 
+
+Right, it's certainly no worse than the current situation for the
+non-RDMA case.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
