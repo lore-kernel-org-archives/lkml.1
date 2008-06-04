@@ -1,194 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbYFDPpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbYFDPsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760305AbYFDPpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYFDPp3
+	id S1760905AbYFDPsp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbYFDPsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:45:29 -0400
-Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:46035 "EHLO
-	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756823AbYFDPp2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:45:28 -0400
-Date: Wed, 4 Jun 2008 16:44:56 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: [PATCH] cputopology: Always define CPU topology information [4th try]
-Message-ID: <20080604154454.GD11300@solarflare.com>
-Mime-Version: 1.0
+	Wed, 4 Jun 2008 11:48:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47509 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756572AbYFDPsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:48:36 -0400
+Date: Wed, 4 Jun 2008 11:41:37 -0400
+From: Dave Jones <davej@redhat.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.25 md oops during boot.
+Message-ID: <20080604154137.GA26157@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Neil Brown <neilb@suse.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not all architectures and configurations define CPU topology information.
-This can result in an empty topology directory in sysfs, and requires
-in-kernel users to protect all uses with #ifdef - see
-<http://marc.info/?l=linux-netdev&m=120639033904472&w=2>.
+Hi Neil,
+ Here's an odd one.
+https://bugzilla.redhat.com/show_bug.cgi?id=442204
 
-The documentation of CPU topology specifies what the defaults should be
-if only partial information is available from the hardware.  So we can
-provide these defaults as a fallback.
+Slightly old (.25-rc8-git7), but I don't recall anything changing between
+then and .25 final that could explain this.
 
-This patch:
+	Dave
 
-- Adds default definitions of the 4 topology macros to <linux/topology.h>
-- Changes drivers/base/topology.c to use the topology macros unconditionally
-  and to cope with definitions that aren't lvalues
-- Updates documentation accordingly
+BUG: unable to handle kernel NULL pointer dereference at 00000020
+IP: [<c04bbb65>] sysfs_addrm_start+0x21/0x7d
+Oops: 0000 [#1] SMP 
+Modules linked in: e1000(+) i2c_piix4 i2c_core sg ac button sr_mod cdrom
+ata_piix libata dm_snapshot dm_zero dm_mirror dm_mod mptspi mptscsih mptbase
+scsi_transport_spi sd_mod scsi_mod ext3 jbd mbcache uhci_hcd ohci_hcd ehci_hcd
+[last unloaded: scsi_wait_scan]
 
-Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
----
- Documentation/cputopology.txt |   26 +++++++++-----------------
- drivers/base/topology.c       |   38 ++++++++++----------------------------
- include/linux/topology.h      |   13 +++++++++++++
- 3 files changed, 32 insertions(+), 45 deletions(-)
+Pid: 742, comm: mdadm Not tainted (2.6.25-0.218.rc8.git7.fc9.i686 #1)
+EIP: 0060:[<c04bbb65>] EFLAGS: 00010246 CPU: 0
+EIP is at sysfs_addrm_start+0x21/0x7d
+EAX: c04bbc23 EBX: 00000000 ECX: 00000000 EDX: 00000062
+ESI: f6ecdc84 EDI: f6ecdc94 EBP: f6ecdc78 ESP: f6ecdc6c
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process mdadm (pid: 742, ti=f6ecd000 task=f6e22e80 task.ti=f6ecd000)
+Stack: f6ecdc84 f6e75bd0 fffffff4 f6ecdca0 c04bbfb7 00000000 00000000 00000000 
+       00000000 00000000 f7853dc4 fffffffe f7af6824 f6ecdcb4 c04bc01c f6ecdcac 
+       c04f08f2 f7853dc4 f6ecdcd0 c04f09ec f7af6824 f6ecdcd0 00000000 f7853dc4 
+Call Trace:
+ [<c04bbfb7>] ? create_dir+0x3a/0x72
+ [<c04bc01c>] ? sysfs_create_dir+0x2d/0x41
+ [<c04f08f2>] ? kobject_get+0x12/0x17
+ [<c04f09ec>] ? kobject_add_internal+0xa4/0x145
+ [<c04f0b21>] ? kobject_add_varg+0x35/0x41
+ [<c04f0b92>] ? kobject_add+0x43/0x49
+ [<c05948aa>] ? bind_rdev_to_array+0x124/0x1ab
+ [<c04cf900>] ? task_has_capability+0x47/0x76
+ [<c04f4f94>] ? copy_from_user+0x39/0x121
+ [<c05994d1>] ? md_ioctl+0xf75/0x183b
+ [<c04cfde2>] ? inode_has_perm+0x5b/0x65
+ [<c0490ce5>] ? d_free+0x3b/0x4d
+ [<c0492094>] ? dput+0x34/0xee
+ [<c04efb51>] ? _atomic_dec_and_lock+0x29/0x44
+ [<c04958b8>] ? mntput_no_expire+0x16/0x69
+ [<c0488796>] ? path_put+0x20/0x23
+ [<c048ab1b>] ? __link_path_walk+0xce7/0xcfc
+ [<c04e831d>] ? blkdev_driver_ioctl+0x49/0x5b
+ [<c04e8ab0>] ? blkdev_ioctl+0x781/0x79d
+ [<c04d06a8>] ? selinux_file_free_security+0x14/0x16
+ [<c04cfde2>] ? inode_has_perm+0x5b/0x65
+ [<c04d01b9>] ? file_has_perm+0x7c/0x85
+ [<c04a241b>] ? block_ioctl+0x16/0x1b
+ [<c04a2405>] ? block_ioctl+0x0/0x1b
+ [<c048c99e>] ? vfs_ioctl+0x22/0x69
+ [<c048cc1e>] ? do_vfs_ioctl+0x239/0x24c
+ [<c04d034f>] ? selinux_file_ioctl+0xa8/0xab
+ [<c048cc71>] ? sys_ioctl+0x40/0x5b
+ [<c0405cf6>] ? syscall_call+0x7/0xb
+ =======================
+Code: 89 31 8d 65 f4 5b 5e 5f 5d c3 55 b9 04 00 00 00 89 e5 57 89 c7 56 89 c6 53
+31 c0 89 d3 f3 ab b8 34 fc 71 c0 89 16 e8 1f e2 16 00 <8b> 53 20 b9 f0 b7 4b c0
+a1 88 f4 83 c0 53 e8 43 71 fd ff 5f 85 
+EIP: [<c04bbb65>] sysfs_addrm_start+0x21/0x7d SS:ESP 0068:f6ecdc6c
+---[ end trace ca143223eefdc828 ]---
 
-diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
-index b61cb95..bd699da 100644
---- a/Documentation/cputopology.txt
-+++ b/Documentation/cputopology.txt
-@@ -14,9 +14,8 @@ represent the thread siblings to cpu X in the same physical package;
- To implement it in an architecture-neutral way, a new source file,
- drivers/base/topology.c, is to export the 4 attributes.
- 
--If one architecture wants to support this feature, it just needs to
--implement 4 defines, typically in file include/asm-XXX/topology.h.
--The 4 defines are:
-+For an architecture to support this feature, it must define some of
-+these macros in include/asm-XXX/topology.h:
- #define topology_physical_package_id(cpu)
- #define topology_core_id(cpu)
- #define topology_thread_siblings(cpu)
-@@ -25,17 +24,10 @@ The 4 defines are:
- The type of **_id is int.
- The type of siblings is cpumask_t.
- 
--To be consistent on all architectures, the 4 attributes should have
--default values if their values are unavailable. Below is the rule.
--1) physical_package_id: If cpu has no physical package id, -1 is the
--default value.
--2) core_id: If cpu doesn't support multi-core, its core id is 0.
--3) thread_siblings: Just include itself, if the cpu doesn't support
--HT/multi-thread.
--4) core_siblings: Just include itself, if the cpu doesn't support
--multi-core and HT/Multi-thread.
--
--So be careful when declaring the 4 defines in include/asm-XXX/topology.h.
--
--If an attribute isn't defined on an architecture, it won't be exported.
--
-+To be consistent on all architectures, include/linux/topology.h
-+provides default definitions for any of the above macros that are
-+not defined by include/asm-XXX/topology.h:
-+1) physical_package_id: -1
-+2) core_id: 0
-+3) thread_siblings: just the given CPU
-+4) core_siblings: just the given CPU
-diff --git a/drivers/base/topology.c b/drivers/base/topology.c
-index 1efe162..8999828 100644
---- a/drivers/base/topology.c
-+++ b/drivers/base/topology.c
-@@ -62,14 +62,16 @@ static ssize_t show_cpumap(int type, cpumask_t *mask, char *buf)
- static ssize_t show_##name(struct sys_device *dev, char *buf)	\
- {									\
- 	unsigned int cpu = dev->id;					\
--	return show_cpumap(0, &(topology_##name(cpu)), buf);		\
-+	cpumask_t siblings = topology_##name(cpu);			\
-+	return show_cpumap(0, &siblings, buf);				\
- }
- 
- #define define_siblings_show_list(name)					\
- static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
- {									\
- 	unsigned int cpu = dev->id;					\
--	return show_cpumap(1, &(topology_##name(cpu)), buf);		\
-+	cpumask_t siblings = topology_##name(cpu);			\
-+	return show_cpumap(1, &siblings, buf);				\
- }
- 
- #else
-@@ -93,47 +95,27 @@ static ssize_t show_##name##_list(struct sys_device *dev, char *buf) \
- #define define_siblings_show_func(name)		\
- 	define_siblings_show_map(name); define_siblings_show_list(name)
- 
--#ifdef	topology_physical_package_id
- define_id_show_func(physical_package_id);
- define_one_ro(physical_package_id);
--#define ref_physical_package_id_attr	&attr_physical_package_id.attr,
--#else
--#define ref_physical_package_id_attr
--#endif
- 
--#ifdef topology_core_id
- define_id_show_func(core_id);
- define_one_ro(core_id);
--#define ref_core_id_attr		&attr_core_id.attr,
--#else
--#define ref_core_id_attr
--#endif
- 
--#ifdef topology_thread_siblings
- define_siblings_show_func(thread_siblings);
- define_one_ro(thread_siblings);
- define_one_ro(thread_siblings_list);
--#define ref_thread_siblings_attr	\
--		&attr_thread_siblings.attr, &attr_thread_siblings_list.attr,
--#else
--#define ref_thread_siblings_attr
--#endif
- 
--#ifdef topology_core_siblings
- define_siblings_show_func(core_siblings);
- define_one_ro(core_siblings);
- define_one_ro(core_siblings_list);
--#define ref_core_siblings_attr		\
--		&attr_core_siblings.attr, &attr_core_siblings_list.attr,
--#else
--#define ref_core_siblings_attr
--#endif
- 
- static struct attribute *default_attrs[] = {
--	ref_physical_package_id_attr
--	ref_core_id_attr
--	ref_thread_siblings_attr
--	ref_core_siblings_attr
-+	&attr_physical_package_id.attr,
-+	&attr_core_id.attr,
-+	&attr_thread_siblings.attr,
-+	&attr_thread_siblings_list.attr,
-+	&attr_core_siblings.attr,
-+	&attr_core_siblings_list.attr,
- 	NULL
- };
- 
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 24f3d22..2158fc0 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -179,4 +179,17 @@ void arch_update_cpu_topology(void);
- #endif
- #endif /* CONFIG_NUMA */
- 
-+#ifndef topology_physical_package_id
-+#define topology_physical_package_id(cpu)	((void)(cpu), -1)
-+#endif
-+#ifndef topology_core_id
-+#define topology_core_id(cpu)			((void)(cpu), 0)
-+#endif
-+#ifndef topology_thread_siblings
-+#define topology_thread_siblings(cpu)		cpumask_of_cpu(cpu)
-+#endif
-+#ifndef topology_core_siblings
-+#define topology_core_siblings(cpu)		cpumask_of_cpu(cpu)
-+#endif
-+
- #endif /* _LINUX_TOPOLOGY_H */
 
 -- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+http://www.codemonkey.org.uk
