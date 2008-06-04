@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYFDBTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYFDBU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYFDBTK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 21:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYFDBS4
+	id S1756793AbYFDBU2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 21:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbYFDBUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 21:18:56 -0400
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:37342 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752475AbYFDBS4 (ORCPT
+	Tue, 3 Jun 2008 21:20:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54450 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752544AbYFDBUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 21:18:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=bmNMoYD78Mv2fMqt1Ep7pWmT5Nn4fsXKA6/UAtELh/5bu1azJOt12rC6yBtbkvhzdFc22NaxvrMOQC5AHde+wHmonFBeMe58b4TqlD3jcwvXHUb6D+qaJIhR1efCttplO9bobrdxJqd8RjdwBbyv2AYEUshH4C63jmRMnlof1dA=  ;
-X-YMail-OSG: ObNuiIcVM1m5Xln5pPCiWim4VXm4jMyyAqjeCKNSAYFrUMDZNqe2azBfO__0MaCmMJJzzjHX1ddUPiaDA6AkP4rXdNdkpoU6XmmXghrRsbbAPLDWGQnBebXTFid99T0LJVc-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may have realtime uses)
-Date: Wed, 4 Jun 2008 11:18:39 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, Dimitri Sivanich <sivanich@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       "Derek L. Fults" <dfults@sgi.com>, devik <devik@cdi.cz>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
-       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Dobson <colpatch@us.ibm.com>, rostedt@goodmis.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Paul Menage <menage@google.com>, "Randy.Dunlap" <rddunlap@osdl.org>,
-       suresh.b.siddha@intel.com, Thomas Gleixner <tglx@linutronix.de>
-References: <20080601213019.14ea8ef8.pj@sgi.com> <4844BB41.7000605@qualcomm.com> <4845D825.6000403@qualcomm.com>
-In-Reply-To: <4845D825.6000403@qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 3 Jun 2008 21:20:18 -0400
+Date: Tue, 3 Jun 2008 18:20:14 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: akataria@vmware.com
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Dan Hecht <dhecht@vmware.com>,
+       Tim Mann <mann@vmware.com>, Zachary Amsden <zach@vmware.com>,
+       Sahil Rihan <srihan@vmware.com>
+Subject: Re: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+Message-ID: <20080603182014.79a38d03@infradead.org>
+In-Reply-To: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+References: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806041118.40675.nickpiggin@yahoo.com.au>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 June 2008 09:47, Max Krasnyanskiy wrote:
-> >> I would really appreciate some way to keep the kernel from using
-> >> a CPU at all to do fault isolation. If possible not even booting it.
-> >
-> > How does isolcpu= boot option helps in this case ?
-> > I suppose the closes option is maxcpus=. We can probably add ignorecpus=
-> > or something to handle your use case but it has nothing to do with
-> > isolcpus=.
->
-> btw Ingo, I just realized that maxcpu= option is exactly what you need.
-> Here is how you can use it.
-> Boot your system with maxcpus=1. That way the kernel will only bring up
-> processor 0. I'm assuming cpu0 is "good" otherwise your system is totally
-> busted :). Other cpus will stay off-line and will not be initialized.
-> Then once the system boots you can selectively bring "good" processors
-> online by doing
-> 	echo 1 > /sys/devices/system/cpu/cpuN/online
->
-> This actually solves the case you're talking about (ie ignoring bad
-> processors) instead of partially covering it with isolcpus=.
+On Tue, 03 Jun 2008 17:41:09 -0700
+Alok Kataria <akataria@vmware.com> wrote:
 
-For your case, that's probably the best way to solve it, yes.
+> On X86 platform we can use the value of cpu_khz computed during tsc
+> calibration to calculate the loops_per_jiffy value. Its very
+> important to keep the error in lpj values to minimum as any error in
+> that may result in kernel panic in check_timer. 
+> In virtualization environment on a highly overloaded host, the guest
+> delay calibration may sometimes result in errors beyond the ~50% that
+> timer_irq_works can handle, resulting in the guest panicking.
+\
+
+can you guarantee that the rate tsc ticks at is the same as the current
+CPU frequency? Answer: You can't....
+
+sadly we do need to calibrate this...
+
+In addition, clearly you can have different cpus in a system run at a
+different rate (both in terms of cpu_khz and, independently, in terms
+of tsc rate)
 
 
-> Dimitri, you can probably use that too. ie Boot the thing with most CPUs
-> offline and then bring them online. That way you'll know for sure that no
-> timers, works, hard-/soft-irqs, etc are running on them.
-
-When you bring a CPU online, in theory the sched domains should get
-set up for them, so you should start seeing processes get migrated
-onto it, and with them timers work queues etc.
-
-If you have irqbalanced running, it probably migrates irqs onto them
-as well if it needs to.
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
