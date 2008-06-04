@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762569AbYFDVxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbYFDVyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762569AbYFDVxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 17:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbYFDVxL
+	id S1762635AbYFDVyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 17:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbYFDVyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 17:53:11 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:43937 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751797AbYFDVxK (ORCPT
+	Wed, 4 Jun 2008 17:54:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:45123 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbYFDVyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 17:53:10 -0400
-Message-ID: <48470ED2.6030307@lwfinger.net>
-Date: Wed, 04 Jun 2008 16:53:22 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Compiler warning in v2.6.26-rc4-213-ge97dcb0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 4 Jun 2008 17:54:08 -0400
+Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
+	have realtime uses)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: trimarchimichael@yahoo.it
+Cc: Max Krasnyansky <maxk@qualcomm.com>, Mark Hounschell <dmarkh@cfl.rr.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Oeser <ioe-lkml@rameria.de>,
+       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, "Derek L. Fults" <dfults@sgi.com>,
+       devik <devik@cdi.cz>, Dimitri Sivanich <sivanich@sgi.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Emmanuel Pacaud <emmanuel.pacaud@univ-poitiers.fr>,
+       Frederik Deweerdt <deweerdt@free.fr>, Ingo Molnar <mingo@elte.hu>,
+       Matthew Dobson <colpatch@us.ibm.com>, rostedt@goodmis.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Paul Menage <menage@google.com>, "Randy.Dunlap" <rddunlap@osdl.org>,
+       suresh.b.siddha@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Fabio Checconi <fabio@gandalf.sssup.it>
+In-Reply-To: <725760.23277.qm@web26207.mail.ukl.yahoo.com>
+References: <725760.23277.qm@web26207.mail.ukl.yahoo.com>
+Content-Type: text/plain
+Date: Wed, 04 Jun 2008 23:52:27 +0200
+Message-Id: <1212616348.19205.29.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the version given in the subject, I get the following warning:
+On Wed, 2008-06-04 at 21:44 +0000, Michael Trimarchi wrote:
+> [ sorry if this is going OT ]
+>  
+> Hi,
+>  
+> >  
+> > Furthermore, cpusets allow for isolated but load-balanced RT domains. We
+> > now have a reasonably strong RT balancer, and I'm looking at implementing
+> > a full partitioned EDF scheduler somewhere in the future.
+> >  
+>  
+> I'm working on a partitioned EDF scheduler right now, and I have to
+> face several issues, starting from the interface to use to expose the
+> EDF scheduler to userspace, and the integration with the existing
+> sched_rt policy.
 
-   CC      drivers/serial/serial_core.o
-drivers/serial/serial_core.c:2300: warning: initialization from incompatible 
-pointer type
+I would add a sched_class above sched_rt and let sched_rt run in all
+unclaimed time by sched_edf.
 
-The problem arises in commit 64e9159f5d2c which has uart_set_ldisc as follows:
+Have you looked at deadline inheritance to replace PI? I think it can be
+done reasonably simple by replacing the plist with a RB tree.
 
-static void uart_set_ldisc(struct tty_struct *tty, int ldisc)
+> By now I'm experimenting with an additional sched_class that implements
+> a SCHED_EDF policy, extending the POSIX struct sched_param with the
+> EDF parameters of the task, do you see any better way to do that? 
+> Could that approach be reasonable?
 
-The set_ldisc routine has only one argument:
+Yes, that is the way I'm leaning.
 
-        void            (*set_ldisc)(struct uart_port *);
-
-I think this additional patch fixes the problem:
-
-Index: linux-2.6/drivers/serial/serial_core.c
-===================================================================
---- linux-2.6.orig/drivers/serial/serial_core.c
-+++ linux-2.6/drivers/serial/serial_core.c
-@@ -1165,7 +1165,7 @@ out:
-         return ret;
-  }
-
--static void uart_set_ldisc(struct tty_struct *tty, int ldisc)
-+static void uart_set_ldisc(struct tty_struct *tty)
-  {
-         struct uart_state *state = tty->driver_data;
-         struct uart_port *port = state->port;
-
-
-Larry
