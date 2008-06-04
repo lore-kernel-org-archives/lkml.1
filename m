@@ -1,111 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbYFDAdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbYFDAlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752107AbYFDAdF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 20:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbYFDAcu
+	id S1755310AbYFDAlX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 20:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYFDAlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 20:32:50 -0400
-Received: from mga11.intel.com ([192.55.52.93]:25336 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756891AbYFDAcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 20:32:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,586,1204531200"; 
-   d="scan'208";a="572066262"
-Date: Tue, 3 Jun 2008 17:23:07 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC] expand link_power_management_policy definition
-Message-ID: <20080603172307.1b963aac@appleyard>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	Tue, 3 Jun 2008 20:41:13 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:52043 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751753AbYFDAlN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 20:41:13 -0400
+Subject: [RFC PATCH] x86:Use cpu_khz for loops_per_jiffy calculation
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Dan Hecht <dhecht@vmware.com>,
+       Tim Mann <mann@vmware.com>, Zachary Amsden <zach@vmware.com>,
+       Sahil Rihan <srihan@vmware.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 03 Jun 2008 17:41:09 -0700
+Message-Id: <1212540069.19290.57.camel@promb-2n-dhcp368.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think I mentioned on the list a couple weeks ago that I favor just 
-expanding the definition of link power management to include
-the notion of simply powering the entire port off rather
-than adding new knobs to sysfs.  I wrote this completely untested and
-very incomplete patch to give you a better idea of what I am proposing.
-This patch adds a new valid value of "power_off" for the existing
-link_power_management_policy sysfs entry:
+On X86 platform we can use the value of cpu_khz computed during tsc calibration
+to calculate the loops_per_jiffy value. Its very important to keep the error in
+lpj values to minimum as any error in that may result in kernel panic in
+check_timer. 
+In virtualization environment on a highly overloaded host, the guest delay
+calibration may sometimes result in errors beyond the ~50% that timer_irq_works
+can handle, resulting in the guest panicking.
 
-power_off:  phy is not on at all.
-min_power:  driver uses minimum possible power. hotplug
-            may or may not be available.
-medium_power: best power/performance tradeoff.  hotplug
-            may or may not be available
-max_performance: max performance without regard to power
-            hot plug is available.
+This change could also help large MP systems in reducing their booting time.
 
-the default value for link_power_management_policy
-can be determined by the core and overriden by the
-driver, or just solely determined by the driver.
+Patch also does some formating changes to lpj_setup code to now have a single
+printk to print the calculated bogomips value.
 
-min_power and medium_power are only valid values for
-occupied ports.  right now, using min_power or medium_power
-mode means that hotplug is not available, although that's
-not necessarily got to be true in the future, since we
-could add polling or low power presence detect or even
-use mechanical interlock switch events.
+On top of current git.
 
-We could further add a "power_on" value to indicate that
-there's no device attached but we can detect one if it
-becomes available if you think that using max_performance 
-to indicate this state is too confusing.
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
 
----
- drivers/ata/libata-core.c |   10 ++++++++++
- drivers/ata/libata-scsi.c |    1 +
- include/linux/libata.h    |    1 +
- 3 files changed, 12 insertions(+)
-
-Index: linux-ahci-phy/drivers/ata/libata-core.c
+Index: linux-2.6/arch/x86/kernel/time_64.c
 ===================================================================
---- linux-ahci-phy.orig/drivers/ata/libata-core.c	2008-06-03 16:52:05.000000000 -0700
-+++ linux-ahci-phy/drivers/ata/libata-core.c	2008-06-03 17:02:34.000000000 -0700
-@@ -993,6 +993,16 @@ void ata_dev_enable_pm(struct ata_device
- 	int rc = 0;
- 	struct ata_port *ap = dev->link->ap;
+--- linux-2.6.orig/arch/x86/kernel/time_64.c	2008-05-23 16:56:24.000000000 -0700
++++ linux-2.6/arch/x86/kernel/time_64.c	2008-06-03 17:28:46.000000000 -0700
+@@ -123,6 +123,8 @@
+ 		(boot_cpu_data.x86_vendor == X86_VENDOR_AMD))
+ 		cpu_khz = calculate_cpu_khz();
  
-+	/*
-+	 * if we don't have a device attached, all we can
-+	 * do is power off
-+	 */
-+	if (!ata_dev_enabled(dev) && policy == POWER_OFF) {
-+		ap->flags |= ATA_FLAG_NO_HOTPLUG;
-+		ata_phy_offline(ap);
-+		return;
-+	}
++	lpj_tsc = ((unsigned long)cpu_khz * 1000)/HZ;
 +
- 	/* set HIPM first, then DIPM */
- 	if (ap->ops->enable_pm)
- 		rc = ap->ops->enable_pm(ap, policy);
-Index: linux-ahci-phy/drivers/ata/libata-scsi.c
-===================================================================
---- linux-ahci-phy.orig/drivers/ata/libata-scsi.c	2008-06-03 16:53:17.000000000 -0700
-+++ linux-ahci-phy/drivers/ata/libata-scsi.c	2008-06-03 16:53:34.000000000 -0700
-@@ -122,6 +122,7 @@ static const struct {
- 	{ MIN_POWER, "min_power" },
- 	{ MAX_PERFORMANCE, "max_performance" },
- 	{ MEDIUM_POWER, "medium_power" },
-+	{ POWER_OFF, "power_off" },
- };
+ 	if (unsynchronized_tsc())
+ 		mark_tsc_unstable("TSCs unsynchronized");
  
- static const char *ata_scsi_lpm_get(enum link_pm policy)
-Index: linux-ahci-phy/include/linux/libata.h
+Index: linux-2.6/include/linux/delay.h
 ===================================================================
---- linux-ahci-phy.orig/include/linux/libata.h	2008-06-03 16:52:32.000000000 -0700
-+++ linux-ahci-phy/include/linux/libata.h	2008-06-03 16:52:54.000000000 -0700
-@@ -443,6 +443,7 @@ enum link_pm {
- 	MIN_POWER,
- 	MAX_PERFORMANCE,
- 	MEDIUM_POWER,
-+	POWER_OFF,
- };
- extern struct device_attribute dev_attr_link_power_management_policy;
+--- linux-2.6.orig/include/linux/delay.h	2008-05-23 16:56:24.000000000 -0700
++++ linux-2.6/include/linux/delay.h	2008-06-03 17:28:46.000000000 -0700
+@@ -41,6 +41,7 @@
+ #define ndelay(x) ndelay(x)
+ #endif
  
++extern unsigned long lpj_tsc;
+ void calibrate_delay(void);
+ void msleep(unsigned int msecs);
+ unsigned long msleep_interruptible(unsigned int msecs);
+Index: linux-2.6/init/calibrate.c
+===================================================================
+--- linux-2.6.orig/init/calibrate.c	2008-05-23 16:56:24.000000000 -0700
++++ linux-2.6/init/calibrate.c	2008-06-03 17:28:46.000000000 -0700
+@@ -9,6 +9,7 @@
+ #include <linux/init.h>
+ #include <linux/timex.h>
+ 
++unsigned long lpj_tsc;
+ unsigned long preset_lpj;
+ static int __init lpj_setup(char *str)
+ {
+@@ -118,16 +119,14 @@
+ 
+ 	if (preset_lpj) {
+ 		loops_per_jiffy = preset_lpj;
+-		printk("Calibrating delay loop (skipped)... "
+-			"%lu.%02lu BogoMIPS preset\n",
+-			loops_per_jiffy/(500000/HZ),
+-			(loops_per_jiffy/(5000/HZ)) % 100);
++		printk("Calibrating delay loop skipped, "
++			"using preset value.. ");
++	} else if (lpj_tsc) {
++		loops_per_jiffy = lpj_tsc;
++		printk("Calibrating delay loop skipped, "
++			"using value calculated from tsc.. ");
+ 	} else if ((loops_per_jiffy = calibrate_delay_direct()) != 0) {
+ 		printk("Calibrating delay using timer specific routine.. ");
+-		printk("%lu.%02lu BogoMIPS (lpj=%lu)\n",
+-			loops_per_jiffy/(500000/HZ),
+-			(loops_per_jiffy/(5000/HZ)) % 100,
+-			loops_per_jiffy);
+ 	} else {
+ 		loops_per_jiffy = (1<<12);
+ 
+@@ -161,12 +160,7 @@
+ 			if (jiffies != ticks)	/* longer than 1 tick */
+ 				loops_per_jiffy &= ~loopbit;
+ 		}
+-
+-		/* Round the value and print it */
+-		printk("%lu.%02lu BogoMIPS (lpj=%lu)\n",
+-			loops_per_jiffy/(500000/HZ),
+-			(loops_per_jiffy/(5000/HZ)) % 100,
+-			loops_per_jiffy);
+ 	}
+-
++	printk("%lu.%02lu BogoMIPS (lpj=%lu)\n", loops_per_jiffy/(500000/HZ),
++		(loops_per_jiffy/(5000/HZ)) % 100, loops_per_jiffy);
+ }
+Index: linux-2.6/arch/x86/kernel/tsc_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/tsc_32.c	2008-05-27 12:28:16.000000000 -0700
++++ linux-2.6/arch/x86/kernel/tsc_32.c	2008-06-03 17:28:46.000000000 -0700
+@@ -401,6 +401,7 @@
+ void __init tsc_init(void)
+ {
+ 	int cpu;
++	u64 lpj;
+ 
+ 	if (!cpu_has_tsc || tsc_disabled) {
+ 		/* Disable the TSC in case of !cpu_has_tsc */
+@@ -421,6 +422,10 @@
+ 		return;
+ 	}
+ 
++	lpj = ((u64)cpu_khz * 1000);
++	do_div(lpj, HZ);
++	lpj_tsc = lpj;
++
+ 	printk("Detected %lu.%03lu MHz processor.\n",
+ 				(unsigned long)cpu_khz / 1000,
+ 				(unsigned long)cpu_khz % 1000);
+
+
