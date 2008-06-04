@@ -1,118 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbYFDJtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbYFDJ5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbYFDJtc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 05:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbYFDJtX
+	id S1759001AbYFDJ5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 05:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYFDJ5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 05:49:23 -0400
-Received: from mail.suse.de ([195.135.220.2]:49627 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbYFDJtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 05:49:22 -0400
-Message-ID: <4846651F.4070802@suse.de>
-Date: Wed, 04 Jun 2008 11:49:19 +0200
-From: Stefan Assmann <sassmann@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 4 Jun 2008 05:57:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:3639 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753190AbYFDJ5K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 05:57:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Q4wKXJsoYZkPlSYLzabkb3/QAWXZCPtlZhWOB+7Ae7X+nZ5JYdcVGGJq5PhhUlt7IY
+         Ya4GMHuHiAo598LdyCQwQoKbrMf4FXITeptVx8qwMoAGhurhng3USfdS2HRHaQWxUxwb
+         5lr2AiDfxod5AIKWPXtv4s9d1c2zsok46ijm0=
+Message-ID: <c4e36d110806040257y698dbde4w4e717522478b74b8@mail.gmail.com>
+Date: Wed, 4 Jun 2008 11:57:09 +0200
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Avi Kivity" <avi@qumranet.com>
+Subject: Re: BUG: using smp_processor_id() in preemptible [00000000] code: pm-suspend/17334
+Cc: "Jiri Kosina" <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+In-Reply-To: <48466349.1030907@qumranet.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Olaf Dabrunz <od@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jon Masters <jonathan@jonmasters.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
-References: <12124107071847-git-send-email-od@suse.de> <m1tzgauduu.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1tzgauduu.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c4e36d110806030142j379f5a63xfba7c3bbb9df602a@mail.gmail.com>
+	 <Pine.LNX.4.64.0806031350330.1716@twin.jikos.cz>
+	 <c4e36d110806030501g46363beev7126c8312aadd12e@mail.gmail.com>
+	 <Pine.LNX.4.64.0806031402450.6718@jikos.suse.cz>
+	 <48466349.1030907@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman schrieb:
-> Olaf Dabrunz <od@suse.de> writes:
-> 
->> These patches are against linux-2.6-tip, auto-x86-next.
+2008/6/4 Avi Kivity <avi@qumranet.com>:
+> Jiri Kosina wrote:
 >>
->> When IRQ lines on secondary or higher IO-APICs are masked (as done by
->> RT and others), many chipsets redirect IRQs on this line to the PIC, and
->> thereby regularly to the first IO-APIC in the system. This causes
->> spurious interrupts and can lead to disabled IRQ lines.
-> 
-> Sounds like good problem tracking.
-> 
->> Disabling this "boot interrupt" (as it is mostly used to supply all
->> IRQs to the legacy PIC during boot) is chipset-specific, and not
->> possible for all chips. This patchset disables the boot interrupt on
->> chipsets where this is possible and where we know how to do it.
-> 
-> I know to work around a similar issue we disable the interrupt inputs
-> on the PIC.  Is that not enough?  In particular what is enabled and
-> what is disabled when these interrupts are coming in.
-
-On the chips (ICHx, ...) we saw, the interrupt lines on the PIC also go
-to the first IO-APIC. So the boot interrupts go to both the PIC and the
-first IO-APIC.
-
-When running in APIC mode all PIC IRQs are disabled, except for the
-timer maybe. Boot interrupts still arrive on the first IO-APIC and end
-up as being counted as spurious interrupts.
-
->> When disabling the boot interrupt is not possible, the patches tell the
->> IRQ code to always use the redirected interrupt line (on the first
->> IO-APIC) instead of the "original" line on the secondary (tertiary ...)
->> IO-APIC. The original line remains masked, and IRQs always appear on
->> the boot interrupt line on the first IO-APIC instead.
-> 
-> In general we should not be disabling interrupts, especially in the
-> mainline kernel.  Artificially increasing interrupt sharing just so
-> you can be certain of disabling the interrupt line seems to be the
-> wrong approach.
-> 
-> Much better would be to get everything off of the shared boot
-> interrupt line, so you can disable that, if that is possible.
-> 
-
-The lines where the boot interrupts show up are usually hard wired to
-the first IO-APIC. It might be possible to move devices that share these
-lines to other interrupts but in many cases, especially on older ICHs,
-this is not possible.
-
-The wiring of the boot interrupts follows a fixed pattern on most
-bridges and generates a PCI IRQ. This ends up on the ICH or equivalent,
-where it either is hard-wired to IRQ 16 to 24, or can be routed to
-some IRQ through a programmable mapping. An example for the mappings
-on intel chips is in another mail in this thread.
-
-> For the mainstream kernel I expect we can even teach the drivers
-> not to call disable_irq.  As a function of last resort to deal
-> with screaming irqs, disable_irq seems reasonable.  Using disable_irq
-> on a regular basis appears to be asking for a trouble (as you have
-> found).
-
-We see these boot interrupts mainly in the RT kernels, which handle
-interrupts in threads. To do this, they mask the IRQ until it has been
-handled. The masking sets up the conditions on the chip so that boot
-interrupts are generated.
-
-When drivers call disable_irq, this is another possible cause for boot
-interrupts. We agree that this should probably be fixed.
-
-> As for the question about MSI.  Good MSI implementations have a mask
-> bit so we should be able to disable those reliably.  For other MSI
-> implementations we disable both the mask bit and the pci_intx
-> capability.  So there should be no way for the irq to leave the
-> device.  But it hardware is strange sometimes.
+>> [ re-introduced LKML to CC, and also added KVM CCs]
+>>
+>> On Tue, 3 Jun 2008, Zdenek Kabelac wrote:
+>>
+>>
+>>>
+>>> 2008/6/3 Jiri Kosina <jkosina@suse.cz>:
+>>>
+>>>>
+>>>> On Tue, 3 Jun 2008, Zdenek Kabelac wrote:
+>>>>
+>>>>
+>>>>>
+>>>>> Another backtrace from suspend code path:
+>>>>> (T61, 2GB, C2D, no SD card)
+>>>>> kernel from git 20080603, commit
+>>>>> 1beee8dc8cf58e3f605bd7b34d7a39939be7d8d2
+>>>>> ----
+>>>>> agpgart-intel 0000:00:00.0: LATE suspend
+>>>>> platform bay.0: LATE suspend
+>>>>> platform dock.0: LATE suspend
+>>>>> Extended CMOS year: 2000
+>>>>>  hwsleep-0324 [00] enter_sleep_state     : Entering sleep state [S3]
+>>>>> Back to C!
+>>>>> BUG: using smp_processor_id() in preemptible [00000000] code:
+>>>>> pm-suspend/17334
+>>>>> caller is do_machine_check+0xa9/0x500
+>>>>> Pid: 17334, comm: pm-suspend Not tainted 2.6.26-rc4 #31
+>>>>> Call Trace:
+>>>>>  [<ffffffff8118347c>] debug_smp_processor_id+0xcc/0xd0
+>>>>>  [<ffffffff810184d9>] do_machine_check+0xa9/0x500
+>>>>>  [<ffffffff81010e7b>] ? init_8259A+0x1b/0x120
+>>>>>  [<ffffffff810189d6>] mce_init+0x56/0xf0
+>>>>>  [<ffffffff81018a7b>] mce_resume+0xb/0x10
+>>>>>  [<ffffffff81204fd0>] __sysdev_resume+0x20/0x60
+>>>>>  [<ffffffff81205068>] sysdev_resume+0x58/0x90
+>>>>>  [<ffffffff8120aac9>] device_power_up+0x9/0x10
+>>>>>  [<ffffffff8106f4f7>] suspend_devices_and_enter+0x147/0x1a0
+>>>>>  [<ffffffff8106f6c6>] enter_state+0x146/0x1d0
+>>>>>  [<ffffffff8106f80a>] state_store+0xba/0x100
+>>>>>  [<ffffffff81177ae7>] kobj_attr_store+0x17/0x20
+>>>>>  [<ffffffff81110fea>] sysfs_write_file+0xca/0x140
+>>>>>  [<ffffffff810ba00b>] vfs_write+0xcb/0x190
+>>>>>  [<ffffffff810ba1c0>] sys_write+0x50/0x90
+>>>>>  [<ffffffff8100c4fb>] system_call_after_swapgs+0x7b/0x80
+>>>>>
+>>>>
+>>>> This looks very much like the oops you reported here:
+>>>> http://lkml.org/lkml/2008/4/7/130
+>>>>
+>>>> Is this also a virtual machine run under KVM, as it has been in the
+>>>> aforementioned thread?
+>>>>
+>>>
+>>> Ahh yes - you are right , I've completely forget about that old post -
+>>> I've thought  that my post are usually getting fixed sooner :)
+>>> So yes - this is actually the same bug which is still not fixed within
+>>> the latest kernel - the machine is running qemu guest (which seems to
+>>> me now somehow also slower)
+>>>
+>>
+>> OK, so it looks like KVM could be wrongly enabling IRQs/preemption on the
+>> resume path. The original bug-report is on http://lkml.org/lkml/2008/4/7/130
+>>
+>>
 >
-> That said have you tried clearing the PCI_COMMAND_INTX_DISABLE bit
-> of the PCI_COMMAND register to mask the boot interrupts?  I expect
-> that would work on quite a lot of modern hardware.
+> Wait, is this in a virtual machine, or on a host that's also running a
+> virtual machine (or has the kvm modules loaded)?
+>
+> I looked at the kvm host resume path, and it doesn't touch interrupts.
 
-Some chips (6700PXH, ...) are not PCIe 2.x (IIR the version correctly)
-compatible, and they do not support switching off INTx generation.
-We tried this anyway for the 6700PXH and it did not work.
+Oops is from my real-hardware T61 (host) running the kvm-qemu (guest)
+and was noticed after suspend.
+But everything seemed to work just fine - host&guest continued to
+operate normally after resume.
 
-Stefan and Olaf
-
--- 
-Stefan Assmann          | SUSE LINUX Products GmbH
-Software Engineer       | Maxfeldstr. 5, D-90409 Nuernberg
-Mail : sassmann@suse.de | GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Zdenek
