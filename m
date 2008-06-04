@@ -1,199 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYFDDlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbYFDD5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYFDDlj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 23:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbYFDDlb
+	id S1754412AbYFDD5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 23:57:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYFDD5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 23:41:31 -0400
-Received: from home.keithp.com ([63.227.221.253]:2179 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752592AbYFDDla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 23:41:30 -0400
-Subject: [intel-agp] Rewrite GTT on resume
-From: Keith Packard <keithp@keithp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>
-Cc: keithp@keithp.com
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-0FnBM33fErMYuTEz09KN"
-Date: Tue, 03 Jun 2008 20:41:20 -0700
-Message-Id: <1212550880.4677.5.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Tue, 3 Jun 2008 23:57:19 -0400
+Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:56451
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751660AbYFDD5S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Jun 2008 23:57:18 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH] sched: fix cpupri hotplug support
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutonix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Date: Tue, 03 Jun 2008 23:24:41 -0400
+Message-ID: <20080604032200.4821.87502.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ingo, Steven, Thomas,
+  This patch is critical to fix a snafu in the root-domain/cpupri code.  It
+  applies to 25.4-rt4, but as mentioned below it affects most recent -rt
+  kernels as well as sched-devel.  If you accept this patch, and you have
+  non-trivial merge issues with other flavors just let me know and I will port
+  it to those kernels as well.
 
---=-0FnBM33fErMYuTEz09KN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Regards
+-Greg
 
-On my Intel chipset (965GM), the GTT is entirely erased across
-suspend/resume. This patch simply re-plays the current mapping at resume
-time to restore the table.=20
+--------------------------------
+sched: fix cpupri hotplug support
 
-I noticed this once I started relying on persistent GTT mappings across
-VT switch in our GEM work -- the old X server and DRM code carefully
-unbind all memory from the GTT on VT switch, but GEM does not bother.
+The RT folks over at RedHat found an issue w.r.t. hotplug support which
+was traced to problems with the cpupri infrastructure in the scheduler:
 
-I placed the list management and rewrite code in the generic layer on
-the assumption that it will be needed on other hardware, but I did not
-add the rewrite call to anything other than the Intel resume function.
+https://bugzilla.redhat.com/show_bug.cgi?id=449676
 
+This bug affects 23-rt12+, 24-rtX, 25-rtX, and sched-devel.  This patch
+applies to 25.4-rt4, though it should trivially apply to most cpupri enabled
+kernels mentioned above.
 
-commit 1233057731935fb5e9fd115d3d2985802ab636c8
-Author: Keith Packard <keithp@keithp.com>
-Date:   Tue Jun 3 20:34:54 2008 -0700
+It turned out that the issue was that offline cpus could get inadvertently
+registered with cpupri so that they were erroneously selected during
+migration decisions.  The end result would be an OOPS as the offline cpu
+had tasks routed to it.
 
-    [INTEL-AGP] Re-write GATT on resume
-   =20
-    Keep a list of current GATT mappings. At resume time, rewrite them into=
- the
-    GATT. This is needed on Intel (at least) as the entire GATT is cleared
-    across suspend/resume.
+This patch adds a new per-sched-class pair of interfaces:
+online/offline. They allow for the sched-class to register for
+notification when a run-queue is taken online or offline.  Additionally,
+the existing join/leave-domain code has been unified behind the new
+online/offline handlers so that they do the right thing w.r.t. the online
+status of a particular CPU.
 
-diff --git a/drivers/char/agp/agp.h b/drivers/char/agp/agp.h
-index c69f795..253f56f 100644
---- a/drivers/char/agp/agp.h
-+++ b/drivers/char/agp/agp.h
-@@ -148,6 +148,8 @@ struct agp_bridge_data {
- 	char minor_version;
- 	struct list_head list;
- 	u32 apbase_config;
-+	/* list of agp_memory mapped to the aperture */
-+	struct list_head mapped_list;
- };
-=20
- #define KB(x)	((x) * 1024)
-diff --git a/drivers/char/agp/backend.c b/drivers/char/agp/backend.c
-index b1bdd01..a5f0ce2 100644
---- a/drivers/char/agp/backend.c
-+++ b/drivers/char/agp/backend.c
-@@ -183,6 +183,7 @@ static int agp_backend_initialize(struct agp_bridge_dat=
-a *bridge)
- 		rc =3D -EINVAL;
- 		goto err_out;
- 	}
-+	INIT_LIST_HEAD(&bridge->mapped_list);
-=20
- 	return 0;
-=20
-diff --git a/drivers/char/agp/generic.c b/drivers/char/agp/generic.c
-index 7fc0c99..cf99078 100644
---- a/drivers/char/agp/generic.c
-+++ b/drivers/char/agp/generic.c
-@@ -426,6 +426,8 @@ int agp_bind_memory(struct agp_memory *curr, off_t pg_s=
-tart)
-=20
- 	curr->is_bound =3D TRUE;
- 	curr->pg_start =3D pg_start;
-+	list_add (&curr->mapped_list, &agp_bridge->mapped_list);
-+=09
- 	return 0;
+I was able to easily reproduce the issue prior to this patch, and am no
+longer able to reproduce it after this patch.  I can offline cpus
+indefinately and everything seems to be in working order.
+
+Thanks to Arnaldo (acme) and Thomas (tglx) for doing the legwork to point
+me in the right direction. 
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutonix.de>
+CC: Steven Rostedt <rostedt@goodmis.org>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+
+ include/linux/sched.h |    2 ++
+ kernel/sched.c        |   19 +++++++++++++++++++
+ kernel/sched_rt.c     |   16 ++++++++++++----
+ 3 files changed, 33 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index bb71371..9c5b8c9 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -970,6 +970,8 @@ struct sched_class {
+ 
+ 	void (*join_domain)(struct rq *rq);
+ 	void (*leave_domain)(struct rq *rq);
++	void (*online)(struct rq *rq);
++	void (*offline)(struct rq *rq);
+ 
+ 	void (*switched_from) (struct rq *this_rq, struct task_struct *task,
+ 			       int running);
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0399411..fe96984 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6278,6 +6278,9 @@ static void unregister_sched_domain_sysctl(void)
  }
- EXPORT_SYMBOL(agp_bind_memory);
-@@ -458,10 +460,30 @@ int agp_unbind_memory(struct agp_memory *curr)
-=20
- 	curr->is_bound =3D FALSE;
- 	curr->pg_start =3D 0;
-+	list_del (&curr->mapped_list);
- 	return 0;
- }
- EXPORT_SYMBOL(agp_unbind_memory);
-=20
-+/**
-+ *	agp_rebind_emmory  -  Rewrite the entire GATT, useful on resume
-+ */
-+int agp_rebind_memory (void)
-+{
-+	struct agp_memory *curr;
-+	int ret_val;
-+=09
-+	list_for_each_entry(curr, &agp_bridge->mapped_list, mapped_list) {
-+		ret_val =3D curr->bridge->driver->insert_memory(curr,
-+							      curr->pg_start,
-+							      curr->type);
-+		if (ret_val !=3D 0)
-+			return ret_val;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(agp_rebind_memory);
+ #endif
+ 
++#define for_each_class(class) \
++   for (class = sched_class_highest; class; class = class->next)
 +
- /* End - Routines for handling swapping of agp_memory into the GATT */
-=20
-=20
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index eeea50a..7f1a96e 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -2176,6 +2176,7 @@ static void __devexit agp_intel_remove(struct pci_dev=
- *pdev)
- static int agp_intel_resume(struct pci_dev *pdev)
+ /*
+  * migration_call - callback that gets triggered when a CPU is added.
+  * Here we can start up the necessary migration thread for the new CPU.
+@@ -6314,8 +6317,15 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 		rq = cpu_rq(cpu);
+ 		spin_lock_irqsave(&rq->lock, flags);
+ 		if (rq->rd) {
++			const struct sched_class *class;
++
+ 			BUG_ON(!cpu_isset(cpu, rq->rd->span));
+ 			cpu_set(cpu, rq->rd->online);
++
++			for_each_class(class) {
++				if (class->online)
++					class->online(rq);
++			}
+ 		}
+ 		spin_unlock_irqrestore(&rq->lock, flags);
+ 		break;
+@@ -6375,8 +6385,17 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 		rq = cpu_rq(cpu);
+ 		spin_lock_irqsave(&rq->lock, flags);
+ 		if (rq->rd) {
++			const struct sched_class *class;
++
+ 			BUG_ON(!cpu_isset(cpu, rq->rd->span));
++
++			for_each_class(class) {
++				if (class->offline)
++					class->offline(rq);
++			}
++
+ 			cpu_clear(cpu, rq->rd->online);
++
+ 		}
+ 		spin_unlock_irqrestore(&rq->lock, flags);
+ 		break;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 425cf01..8baf2e8 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1101,8 +1101,11 @@ static void set_cpus_allowed_rt(struct task_struct *p, cpumask_t *new_mask)
+ }
+ 
+ /* Assumes rq->lock is held */
+-static void join_domain_rt(struct rq *rq)
++static void rq_online_rt(struct rq *rq)
  {
- 	struct agp_bridge_data *bridge =3D pci_get_drvdata(pdev);
-+	int ret_val;
-=20
- 	pci_restore_state(pdev);
-=20
-@@ -2203,6 +2204,10 @@ static int agp_intel_resume(struct pci_dev *pdev)
- 	else if (bridge->driver =3D=3D &intel_i965_driver)
- 		intel_i915_configure();
-=20
-+	ret_val =3D agp_rebind_memory();
-+	if (ret_val !=3D 0)
-+		return ret_val;
++	if (!cpu_isset(rq->cpu, rq->rd->online))
++		return;
 +
- 	return 0;
+ 	if (rq->rt.overloaded)
+ 		rt_set_overload(rq);
+ 
+@@ -1110,8 +1113,11 @@ static void join_domain_rt(struct rq *rq)
  }
- #endif
-diff --git a/include/linux/agp_backend.h b/include/linux/agp_backend.h
-index 03e3454..2fbfe4d 100644
---- a/include/linux/agp_backend.h
-+++ b/include/linux/agp_backend.h
-@@ -32,6 +32,8 @@
-=20
- #ifdef __KERNEL__
-=20
-+#include <linux/list.h>
+ 
+ /* Assumes rq->lock is held */
+-static void leave_domain_rt(struct rq *rq)
++static void rq_offline_rt(struct rq *rq)
+ {
++	if (!cpu_isset(rq->cpu, rq->rd->online))
++		return;
 +
- #ifndef TRUE
- #define TRUE 1
- #endif
-@@ -88,6 +90,8 @@ struct agp_memory {
- 	u8 is_bound;
- 	u8 is_flushed;
-         u8 vmalloc_flag;
-+	/* list of agp_memory mapped to the aperture */
-+	struct list_head mapped_list;
- };
-=20
- #define AGP_NORMAL_MEMORY 0
-@@ -106,6 +110,7 @@ extern struct agp_memory *agp_allocate_memory(struct ag=
-p_bridge_data *, size_t,
- extern int agp_copy_info(struct agp_bridge_data *, struct agp_kern_info *)=
-;
- extern int agp_bind_memory(struct agp_memory *, off_t);
- extern int agp_unbind_memory(struct agp_memory *);
-+extern int agp_rebind_memory (void);
- extern void agp_enable(struct agp_bridge_data *, u32);
- extern struct agp_bridge_data *agp_backend_acquire(struct pci_dev *);
- extern void agp_backend_release(struct agp_bridge_data *);
-
---=20
-keith.packard@intel.com
-
---=-0FnBM33fErMYuTEz09KN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIRg7gQp8BWwlsTdMRAgqdAKCgp94mzXnBLPcg8wtVjCWhQ5qvfgCfTAs6
-7HJK13K8L3OLanApCuQT4VM=
-=FAs/
------END PGP SIGNATURE-----
-
---=-0FnBM33fErMYuTEz09KN--
+ 	if (rq->rt.overloaded)
+ 		rt_clear_overload(rq);
+ 
+@@ -1278,8 +1284,10 @@ const struct sched_class rt_sched_class = {
+ 	.load_balance		= load_balance_rt,
+ 	.move_one_task		= move_one_task_rt,
+ 	.set_cpus_allowed       = set_cpus_allowed_rt,
+-	.join_domain            = join_domain_rt,
+-	.leave_domain           = leave_domain_rt,
++	.join_domain            = rq_online_rt,
++	.leave_domain           = rq_offline_rt,
++	.online                 = rq_online_rt,
++	.offline                = rq_offline_rt,
+ 	.pre_schedule		= pre_schedule_rt,
+ 	.post_schedule		= post_schedule_rt,
+ 	.task_wake_up		= task_wake_up_rt,
 
