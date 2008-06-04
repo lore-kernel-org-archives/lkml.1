@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYFDAQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758347AbYFDARy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbYFDAQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Jun 2008 20:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYFDAQk
+	id S1758347AbYFDARy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Jun 2008 20:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbYFDARq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Jun 2008 20:16:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42059 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752564AbYFDAQj (ORCPT
+	Tue, 3 Jun 2008 20:17:46 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:18624 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752771AbYFDARq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Jun 2008 20:16:39 -0400
-Subject: Re: [PATCH] console - Add configurable support for console charset
-	translation
-From: David Woodhouse <dwmw2@infradead.org>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux-tiny <Linux-tiny@selenic.com>,
-       linux-embedded <linux-embedded@vger.kernel.org>,
-       linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4845DB46.3020308@am.sony.com>
-References: <48447615.5050806@am.sony.com>
-	 <1212500751.16924.322.camel@pmac.infradead.org>
-	 <4845DB46.3020308@am.sony.com>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 01:16:37 +0100
-Message-Id: <1212538597.4042.29.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 3 Jun 2008 20:17:46 -0400
+Date: Wed, 4 Jun 2008 04:17:39 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: galak@kernel.crashing.org, wim@iguana.be, jochen@scram.de,
+       sfr@canb.auug.org.au, segher@kernel.crashing.org,
+       scottwood@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and
+	mpc8xx
+Message-ID: <20080604001739.GB24548@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080602173726.GA24556@polina.dev.rtsoft.ru> <20080603164830.32457962.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20080603164830.32457962.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-06-03 at 17:01 -0700, Tim Bird wrote:
-> This is clearly an improvement. But it is missing this part of the
-> original patch:
+On Tue, Jun 03, 2008 at 04:48:30PM -0700, Andrew Morton wrote:
+> On Mon, 2 Jun 2008 21:37:26 +0400
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > No comments on the previous version for two weeks... resending once
+> > again.
+> 
+> I did all the rework to make the patches apply on top of all the
+> pending watchdog work in Wim's tree and in -mm.  I haven't build tested
+> it yet.
 
-Oops, well spotted. I've updated the patch in the git tree; thanks.
+Thanks, I'll test it in run-time also.
 
-(that's what comes of applying patches by hand -- I _knew_ I had to do
-that hunk, but managed to forget about it within the space of about 30
-seconds when I was doing the other parts. I plead stupidity)
+> I'll assume that
+> 
+>  [PATCH 7/8] [POWERPC] fsl_soc: remove mpc83xx_wdt code
+> 
+> and
+> 
+>  [PATCH 8/8] [POWERPC] 86xx: mpc8610_hpcd: add watchdog node
+> 
+> are dependent upon the preceding six patches.  This might be wrong.
+
+This is correct.
+
+> Please put the subsystem identifier (eg, "watchdog" and "powerpc")
+> outside the [], for reasons which should be in
+> Documentation/SubmittingPatches, which used to be there but which got
+> lost.  Bascially the text inside [] is for temporary not-for-committing
+> information such as "rfc", "2.6.24-rc4", "resend", etc and should be stripped
+> by the email recipient before merging.
+
+Yeah, I know. It is just hard to remember all the preferences.
+
+For example, PowerPC maintainers asking to do patches with "[POWERPC]"
+identifier, this identifier purposely keeps intact for git-log.
 
 -- 
-dwmw2
-
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
