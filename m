@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761610AbYFDTAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbYFDTBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761610AbYFDTAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 15:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757599AbYFDTAI
+	id S1762045AbYFDTBo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 15:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbYFDTBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 15:00:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39639 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756191AbYFDTAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 15:00:06 -0400
-Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
-From: Jon Masters <jcm@redhat.com>
-To: Stefan Assmann <sassmann@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <48467DA7.9030309@suse.de>
-References: <12124107071847-git-send-email-od@suse.de>
-	 <m1tzgauduu.fsf@frodo.ebiederm.org> <4846651F.4070802@suse.de>
-	 <m1ve0pqy06.fsf@frodo.ebiederm.org>  <48467DA7.9030309@suse.de>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 14:57:39 -0400
-Message-Id: <1212605859.8410.22.camel@londonpacket.bos.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 15:01:37 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:53977 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758326AbYFDTBg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 15:01:36 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=ICfmfXiMwkRiJDphtxX9eSseXghYYAKcD74yQcHildouaHIuu/xKfqCuFAv8LfT75
+	FL/hoWDTAYr17bt8ibqNQ==
+Date: Wed, 4 Jun 2008 12:01:11 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Paul Menage <menage@google.com>, miaox@cn.fujitsu.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] cpusets: update tasks' cpus_allowed and mems_allowed
+ after CPU/NODE offline/online
+In-Reply-To: <20080604122227.a092e70e.pj@sgi.com>
+Message-ID: <alpine.DEB.1.10.0806041149560.21323@chino.kir.corp.google.com>
+References: <4845F864.8060102@cn.fujitsu.com> <6599ad830806040230l24bd1201y3cc0ea0273d835ad@mail.gmail.com> <6599ad830806040258h552e4623m5efae8202c5d026d@mail.gmail.com> <20080604122227.a092e70e.pj@sgi.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Jun 2008, Paul Jackson wrote:
 
-On Wed, 2008-06-04 at 13:33 +0200, Stefan Assmann wrote:
-> Eric W. Biederman schrieb:
-> > Stefan Assmann <sassmann@suse.de> writes:
-
-> > What is the reason why you don't simply disable the ioapic vector of
-> > the boot interrupt?  Do some devices not use anything else?
+> Do we need a new PF_* flag for this?  Perhaps one can test for this
+> by examining the currently available properties of tasks.  Would it
+> be sufficient to look for kernel threads (NULL mm_struct) whose
+> cpus_allowed is a strict subset of the online CPUs?
 > 
-> That's exactly the reason why disabling them is a bad idea, you end up
-> having devices fixed to IO-APIC pins that boot interrupts are routed to.
 
-Usually, it's a *really* ugly combo of devices too. The symptom to this
-problem was a large number of test systems that would fall over under
-heavy IO after some time. I spent many weeks at the end of last year
-trawling through the qla2xxx, megaraid/megasas, and other drivers
-looking for the "problem", we even shipped some systems to some of these
-hardware folks so they could hook up bus analyzers to see if the
-interrupts really were being generated, and a lot more fun.
+That would only identify kthreads that have been created with a subsequent 
+call to set_cpus_allowed() or kthread_bind().
 
-In the end, because I didn't have the level of information about the
-unfortunate implementation of some of these chipsets, I reworked a patch
-from Thomas that handles mask/unmask vs. edge->level->edge transition
-depending upon PCI quirks for known at-issue bridges. I've been hoping
-someone would dig up enough information to actually disable these
-horrible "features" so we can get that upstream and into RT.
+The PF_CPU_BOUND change targets only the latter since there are kthreads, 
+such as kstopmachine, that can continue to manipulate their cpus_allowed 
+during their lifetime.
 
-Meanwhile, I think this really shows that a couple of us who've been
-meaning to poke at per-device IRQs should do so once again. This is the
-real solution - kill off all those per-IRQ threads, have one per device
-and split each IRQ into a "top" and "bottom" (just kidding on the names)
-half. Have the first part be *incredibly* small and just return if the
-device actually was responsible for the IRQ (and quiesse it), and have
-the second part do the heavyweight handling. Since the second part can
-run as a thread (and actually sleep for however long, because it's now
-per device) - and since we have threaded tasklets and all this on RT
-anyway - we can just kill off most of the extra logic in many Linux
-interrupt handlers and have just the interrupt thread do the work. 
+Other kthreads such as the scheduler migration thread and soft lockup 
+watchdog thread, however, always stay bound to a single cpu by use of 
+kthread_bind().  These are the tasks that get the PF_CPU_BOUND flag and 
+cannot be rebound via set_cpus_allowed() because of their negative 
+effects.
 
-Anyway, that's the bluesky idea (and rejected OLS 2008 paper :P)...
-
-Jon.
-
-
+		David
