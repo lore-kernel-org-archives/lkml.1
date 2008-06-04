@@ -1,275 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbYFDSGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbYFDSHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761416AbYFDSGy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbYFDSGq
+	id S1761639AbYFDSHq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbYFDSHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:06:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:44983 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755116AbYFDSGp (ORCPT
+	Wed, 4 Jun 2008 14:07:38 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:47991 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753442AbYFDSHg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:06:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=IXQv0MJJLtP2izbr3yJ9wrOBSxpX0bFZorXWDcZN7f1dqJPbCIIBJ6eWbSCirp9LR
-	lKz/jh9VD7iAoZdXuKbkw==
-Message-ID: <da824cf30806041106p1de2355fg38594fcb9dcbf203@mail.gmail.com>
-Date: Wed, 4 Jun 2008 11:06:15 -0700
-From: "Grant Grundler" <grundler@google.com>
-To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
-Cc: linux-kernel@vger.kernel.org, mgross@linux.intel.com,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 4 Jun 2008 14:07:36 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5310"; a="3678240"
+Message-ID: <4846D9FE.4030804@qualcomm.com>
+Date: Wed, 04 Jun 2008 11:07:58 -0700
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Dimitri Sivanich <sivanich@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, rostedt@goodmis.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Paul Menage <menage@google.com>, "Randy.Dunlap" <rddunlap@osdl.org>,
+       suresh.b.siddha@intel.com
+Subject: Stop machine threads are getting preemted by the rt period enforcement
+References: <20080601213019.14ea8ef8.pj@sgi.com> <20080602164203.GA2477@sgi.com> <48443E66.6060205@qualcomm.com> <20080602214151.GA7072@sgi.com> <48446D46.2010903@qualcomm.com> <20080603144010.GA25948@sgi.com> <20080604140036.GC18993@sgi.com>
+In-Reply-To: <20080604140036.GC18993@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 4, 2008 at 7:47 AM, FUJITA Tomonori
-<fujita.tomonori@lab.ntt.co.jp> wrote:
-...
-> Now I try to fix Intel IOMMU code, the free space management
-> algorithm.
->
-> The major difference between Intel IOMMU code and the others is Intel
-> IOMMU code uses Red Black tree to manage free space while the others
-> use bitmap (swiotlb is the only exception).
->
-> The Red Black tree method consumes less memory than the bitmap method,
-> but it incurs more overheads (the RB tree method needs to walk through
-> the tree, allocates a new item, and insert it every time it maps an
-> I/O address). Intel IOMMU (and IOMMUs for virtualization) needs
-> multiple IOMMU address spaces. That's why the Red Black tree method is
-> chosen, I guess.
+Peter, Ingo,
 
-It's possible to split up one flat address space and share the IOMMU
-among several users. Each user gets her own segment of bitmap and
-corresponding IO Pdir. So I don't see allocation policy as a strong reason
-to use Red/Black Tree.
+Take a look at the report below (came up during isolcpu= remove discussions).
 
-I suspect R/B tree was chosen becuase they expected a host VM to allocate
-one large "static" entry for a guest OS and the guest would manage that range
-itself. R/B Tree seems like a very efficient way to handle that from the host
-VM point of view.
+It looks like stop_machine threads are getting forcefully preempted because
+they exceed their RT quanta. It's strange because rt period is pretty long.
+But given that disabling rt period logic solves the issue the machine was not
+really stuck.
 
-> Half a year ago, I tried to convert POWER IOMMU code to use the Red
-> Black method and saw performance drop:
->
-> http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg00650.html
->
-> So I tried to convert Intel IOMMU code to use the bitmap method to see
-> how much I can get.
->
-> I didn't see noticable performance differences with 1GbE. So I tried
-> the modified driver of a SCSI HBA that just does memory accesses to
-> emulate the performances of SSD disk drives, 10GbE, Infiniband, etc.
-
-You can easily emulate SSD drives by doing sequential 4K reads
-from a normal SATA HD. That should result in ~7-8K IOPS since the disk
-will recognize the sequential stream and read ahead. SAS/SCSI/FC will
-probably work the same way with different IOP rates.
-
-> I got the following results with one thread issuing 1KB I/Os:
->
->                    IOPS (I/O per second)
-> IOMMU disabled         145253.1 (1.000)
-> RB tree (mainline)     118313.0 (0.814)
-> Bitmap                 128954.1 (0.887)
-
-Just to make this clear, this is a 10% performance difference.
-
-But a second metric is more telling: CPU utilization.
-How much time was spent in the IOMMU code for each
-implementation with the same workload?
-
-This isn't a demand for that information but just a request
-to measure that in any future benchmarking.
-oprofile or perfmon2 are the best tools to determine that.
+Max
 
 
-> I've attached the patch to modify Intel IOMMU code to use the bitmap
-> method but I have no intention of arguing that Intel IOMMU code
-> consumes more memory for better performance. :) I want to do more
-> performance tests with 10GbE (probably, I have to wait for a server
-> box having VT-d, which is not available on the market now).
 
 
-> As I said, what I want to do now is to make Intel IOMMU code respect
-> drivers' DMA alignment. Well, it's easier to do that if Intel IOMMU
-> uses the bitmap method since I can simply convert the IOMMU code to
-> use lib/iommu-helper but I can modify the RB tree method too.
-
-Just as important as the allocation data structure is the allocation policy.
-The allocation policy will perform best if it matches the IO TLB
-replacement implemented in the IOMMU HW. Thrashing the IO TLB
-by allocating aliases to competing streams will hurt perf as well.
-Obviously a single benchmark is unlikely to detect this.
-
-> I'm just interested in other people's opinions on IOMMU
-> implementations, performances, possible future changes for performance
-> improvement, etc.
->
-> For further information:
->
-> LSF'08 "Storage Track" summary by Grant Grundler:
-> http://iou.parisc-linux.org/lsf2008/SUMMARY-Storage.txt
->
-> My LSF'08 slides:
-> http://iou.parisc-linux.org/lsf2008/IO-DMA_Representations-fujita_tomonori.pdf
-
-I personally found this to be one of the more interesting talks :)
-Excellent work!
-
-
-> Tis patch is against the latst git tree (note that it just converts
-> Intel IOMMU code to use the bitmap. It doesn't make it respect
-> drivers' DMA alignment yet).
-...
-
-
-> diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-> index f941f60..41ad545 100644
-> --- a/drivers/pci/dmar.c
-> +++ b/drivers/pci/dmar.c
-> @@ -26,7 +26,6 @@
->
->  #include <linux/pci.h>
->  #include <linux/dmar.h>
-> -#include "iova.h"
->  #include "intel-iommu.h"
->
->  #undef PREFIX
-> diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-> index 66c0fd2..839363a 100644
-> --- a/drivers/pci/intel-iommu.c
-> +++ b/drivers/pci/intel-iommu.c
-> @@ -32,8 +32,7 @@
->  #include <linux/dmar.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/mempool.h>
-> -#include <linux/timer.h>
-> -#include "iova.h"
-> +#include <linux/iommu-helper.h>
->  #include "intel-iommu.h"
->  #include <asm/proto.h> /* force_iommu in this header in x86-64*/
->  #include <asm/cacheflush.h>
-> @@ -51,33 +50,15 @@
->
->  #define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000) /* 10sec */
->
-> -#define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
-> -
-> -
-> -static void flush_unmaps_timeout(unsigned long data);
-> +#define DMA_ERROR_CODE (~(dma_addr_t)0x0)
->
-> -DEFINE_TIMER(unmap_timer,  flush_unmaps_timeout, 0, 0);
-> +#define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
->
->  static struct intel_iommu *g_iommus;
->
-> -#define HIGH_WATER_MARK 250
-> -struct deferred_flush_tables {
-> -       int next;
-> -       struct iova *iova[HIGH_WATER_MARK];
-> -       struct dmar_domain *domain[HIGH_WATER_MARK];
-> -};
-
-Sorry, I didn't see a replacement for the deferred_flush_tables.
-Mark Gross and I agree this substantially helps with unmap performance.
-See http://lkml.org/lkml/2008/3/3/373
-
-...
->  static void dmar_init_reserved_ranges(void)
->  {
->        struct pci_dev *pdev = NULL;
-> -       struct iova *iova;
->        int i;
->        u64 addr, size;
->
-> -       init_iova_domain(&reserved_iova_list, DMA_32BIT_PFN);
-> +       reserved_it_size = 1UL << (32 - PAGE_SHIFT_4K);
-
-Can you make reserved_it_size a module or kernel parameter?
-
-I've never been able to come up with a good heuristic
-for determining the size of the IOVA space. It generally
-does NOT need to map all of Host Physical RAM.
-The actual requirement depends entirely on the workload,
-type and number of IO devices installed. The problem is we
-don't know any of those things until well after the IOMMU
-is already needed.
-
-> +       reserved_it_map = kzalloc(reserved_it_size / BITS_PER_BYTE, GFP_ATOMIC);
-> +       BUG_ON(!reserved_it_map);
->
->        lockdep_set_class(&reserved_iova_list.iova_alloc_lock,
->                &reserved_alloc_key);
->        lockdep_set_class(&reserved_iova_list.iova_rbtree_lock,
->                &reserved_rbtree_key);
->
-> +       reserve_area(reserved_it_map, 0, IOVA_PFN(IOVA_START_ADDR));
-> +
->        /* IOAPIC ranges shouldn't be accessed by DMA */
-> -       iova = reserve_iova(&reserved_iova_list, IOVA_PFN(IOAPIC_RANGE_START),
-> -               IOVA_PFN(IOAPIC_RANGE_END));
-> -       if (!iova)
-> -               printk(KERN_ERR "Reserve IOAPIC range failed\n");
-> +       reserve_area(reserved_it_map, IOVA_PFN(IOAPIC_RANGE_START),
-> +                    IOVA_PFN(IOAPIC_RANGE_END));
->
->        /* Reserve all PCI MMIO to avoid peer-to-peer access */
->        for_each_pci_dev(pdev) {
-
-I didn't check....but reserving MMIO address space might be better done
-by looking at MMIO ranges routed by  all the top level PCI Host-bus controllers
-(aka PCI-e Root ports). Maybe this is an idea for Mark Gross to implement.
-
-
-> -static void domain_reserve_special_ranges(struct dmar_domain *domain)
-> -{
-> -       copy_reserved_iova(&reserved_iova_list, &domain->iovad);
->  }
->
->  static inline int guestwidth_to_adjustwidth(int gaw)
-> @@ -1191,38 +1163,52 @@ static inline int guestwidth_to_adjustwidth(int gaw)
->  static int domain_init(struct dmar_domain *domain, int guest_width)
->  {
->        struct intel_iommu *iommu;
-> -       int adjust_width, agaw;
-> +       int ret, adjust_width, agaw;
->        unsigned long sagaw;
->
-> -       init_iova_domain(&domain->iovad, DMA_32BIT_PFN);
->        spin_lock_init(&domain->mapping_lock);
->
-> -       domain_reserve_special_ranges(domain);
-> -
->        /* calculate AGAW */
->        iommu = domain->iommu;
-> +
->        if (guest_width > cap_mgaw(iommu->cap))
->                guest_width = cap_mgaw(iommu->cap);
->        domain->gaw = guest_width;
->        adjust_width = guestwidth_to_adjustwidth(guest_width);
->        agaw = width_to_agaw(adjust_width);
->        sagaw = cap_sagaw(iommu->cap);
-> +
-> +/*     domain->it_size = 1UL << (guest_width - PAGE_SHIFT_4K); */
-> +       domain->it_size = 1UL << (32 - PAGE_SHIFT_4K);
-
-"32-PAGE_SHIFT_4K" expression is used in several places but I didn't see
-an explanation of why 32. Can you add one someplace?
-
-out of time...
-
-thanks!
-grant
+Dimitri Sivanich wrote:
+> On Tue, Jun 03, 2008 at 09:40:10AM -0500, Dimitri Sivanich wrote:
+>> I tried the following scenario on an ia64 Altix running 2.6.26-rc4 with cpusets compiled in but cpuset fs unmounted.  Do your patches already address this?
+>>
+>> $ taskset -cp 3 $$   (attach to cpu 3)
+>> pid 4591's current affinity list: 0-3
+>> pid 4591's new affinity list: 3
+>> $ echo 0 > /sys/devices/system/cpu/cpu2/online  (down cpu 2)
+>>   (above command hangs)
+>>
+>> Backtrace of pid 4591 (bash)
+>>
+>> Call Trace:
+>>  [<a00000010078e990>] schedule+0x1210/0x13c0
+>>                                 sp=e0000060b6dffc90 bsp=e0000060b6df11e0
+>>  [<a00000010078ef60>] schedule_timeout+0x40/0x180
+>>                                 sp=e0000060b6dffce0 bsp=e0000060b6df11b0
+>>  [<a00000010078d3e0>] wait_for_common+0x240/0x3c0
+>>                                 sp=e0000060b6dffd10 bsp=e0000060b6df1180
+>>  [<a00000010078d760>] wait_for_completion+0x40/0x60
+>>                                 sp=e0000060b6dffd40 bsp=e0000060b6df1160
+>>  [<a000000100114ee0>] __stop_machine_run+0x120/0x160
+>>                                 sp=e0000060b6dffd40 bsp=e0000060b6df1120
+>>  [<a000000100765ae0>] _cpu_down+0x2a0/0x600
+>>                                 sp=e0000060b6dffd80 bsp=e0000060b6df10c8
+>>  [<a000000100765ea0>] cpu_down+0x60/0xa0
+>>                                 sp=e0000060b6dffe20 bsp=e0000060b6df10a0
+>>  [<a000000100768090>] store_online+0x50/0xe0
+>>                                 sp=e0000060b6dffe20 bsp=e0000060b6df1070
+>>  [<a0000001004f8800>] sysdev_store+0x60/0xa0
+>>                                 sp=e0000060b6dffe20 bsp=e0000060b6df1038
+>>  [<a00000010022e370>] sysfs_write_file+0x250/0x300
+>>                                 sp=e0000060b6dffe20 bsp=e0000060b6df0fe0
+>>  [<a00000010018a750>] vfs_write+0x1b0/0x300
+>>                                 sp=e0000060b6dffe20 bsp=e0000060b6df0f90
+>>  [<a00000010018b350>] sys_write+0x70/0xe0
+>>                                 sp=e0000060b6dffe20 bsp=e0000060b6df0f18
+>>  [<a00000010000af80>] ia64_ret_from_syscall+0x0/0x20
+>>                                 sp=e0000060b6dffe30 bsp=e0000060b6df0f18
+>>  [<a000000000010720>] ia64_ivt+0xffffffff00010720/0x400
+>>                                 sp=e0000060b6e00000 bsp=e0000060b6df0f18
+> 
+> The following workaround alleviates the symptom and hopefully is a hint as to the solution:
+> 	echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
