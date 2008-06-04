@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbYFDN5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbYFDN6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759819AbYFDN5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 09:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYFDN44
+	id S1760033AbYFDN6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 09:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYFDN6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 09:56:56 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:53303 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386AbYFDN44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 09:56:56 -0400
-Date: Wed, 4 Jun 2008 16:56:24 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] quota: Split out quota_struct.h out of quota.h
-Message-ID: <20080604135624.GA13683@cs181133002.pp.htv.fi>
-References: <12124266712214-git-send-email-jack@suse.cz> <12124266711334-git-send-email-jack@suse.cz> <12124266712838-git-send-email-jack@suse.cz> <12124266722979-git-send-email-jack@suse.cz> <12124266723968-git-send-email-jack@suse.cz> <12124266721420-git-send-email-jack@suse.cz>
+	Wed, 4 Jun 2008 09:58:13 -0400
+Received: from po-out-1718.google.com ([72.14.252.156]:2284 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYFDN6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 09:58:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=H+HVm726VqCCmKK19qqLk3P2R7q8pQqtxdspslPvR7J8xdYGXusGuPrR6b6rSxqFIE
+         YuMXClS4srDX/tE3Igy8QO1eI9gtcXfG3r5pQNRA669JH0jIpwSEm+cyKFBMNxNCL9zQ
+         esMP3jcGl4MGD69l7wZwfR9TYlFPXIDmuhKgA=
+Message-ID: <961aa3350806040658s1efbeecdi6e9eee15c59edda2@mail.gmail.com>
+Date: Wed, 4 Jun 2008 22:58:08 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Harvey Harrison" <harvey.harrison@gmail.com>
+Subject: Re: [PATCH 2/2] bluetooth: hci_bcsp.c small cleanups/api users
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Marcel Holtmann" <marcel@holtmann.org>
+In-Reply-To: <1212517161.11008.60.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <12124266721420-git-send-email-jack@suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <1212517161.11008.60.camel@brick>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 02, 2008 at 07:11:10PM +0200, Jan Kara wrote:
-> Split some structure definitions from quota.h to quota_struct.h so that they
-> can be separately included in fs.h. This makes it possible to declare some
-> useful inline functions in quota.h because it can now include fs.h.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
-> ---
->  include/linux/fs.h       |    2 +-
->  include/linux/quota.h    |  193 +---------------------------------------------
->  include/linux/quotaops.h |    1 +
->  include/linux/syscalls.h |    2 +-
->  4 files changed, 5 insertions(+), 193 deletions(-)
->...
+2008/6/4 Harvey Harrison <harvey.harrison@gmail.com>:
+> Use bitrev16 from lib/bitrev.c.
 
-Missing "git-add include/linux/quota_struct.h" ?
-
-> --- a/include/linux/quota.h
-> +++ b/include/linux/quota.h
-> @@ -37,13 +37,11 @@
->  
->  #include <linux/errno.h>
->  #include <linux/types.h>
-> +#include <linux/quota_struct.h>
->...
-
-This breaks our userspace headers.
-
-Please always run "make headers_check" after touching #include's
-under include/
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Please add "select CONFIG_BITREVERSE" in Kconfig when config
+option BT_HCIUART_BCSP is enabled.
