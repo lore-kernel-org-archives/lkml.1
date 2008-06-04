@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbYFDEQC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYFDE0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbYFDEQC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 00:16:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbYFDEPx
+	id S1752588AbYFDE0D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 00:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750770AbYFDEZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 00:15:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48182 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750708AbYFDEPx (ORCPT
+	Wed, 4 Jun 2008 00:25:51 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37325 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbYFDEZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 00:15:53 -0400
-Date: Tue, 3 Jun 2008 21:15:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: avorontsov@ru.mvista.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, wim@iguana.be,
-       scottwood@freescale.com
-Subject: Re: [PATCH 0/8 v4] mpc83xx_wdt rework, support for mpc8610 and
- mpc8xx
-Message-Id: <20080603211530.d6b3755a.akpm@linux-foundation.org>
-In-Reply-To: <18502.5368.786188.835122@cargo.ozlabs.ibm.com>
-References: <20080602173726.GA24556@polina.dev.rtsoft.ru>
-	<20080603164830.32457962.akpm@linux-foundation.org>
-	<20080604001739.GB24548@polina.dev.rtsoft.ru>
-	<20080603173214.0bf71571.akpm@linux-foundation.org>
-	<18502.5368.786188.835122@cargo.ozlabs.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Jun 2008 00:25:51 -0400
+Date: Wed, 04 Jun 2008 13:26:17 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+Subject: Re: [PATCH 4/4] per-task-delay-accounting: /proc export for memory reclaim delay
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080603211142.c0977893.kobayashi.kk@ncos.nec.co.jp>
+References: <20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080603211142.c0977893.kobayashi.kk@ncos.nec.co.jp>
+Message-Id: <20080604132513.9414.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Jun 2008 14:07:20 +1000 Paul Mackerras <paulus@samba.org> wrote:
+> > ----------------------------------------
+> > #!/usr/bin/perl
+> > 
+> > $stat = `cat /proc/$pid/stat`;
+> > @stat_list = split(/ / , $stat);
+> > print stat_list[$index];
+> >                  ^
+> >                  |
+> >                  use array index number
+> 
+> Certainly, it makes sense.
+> I thought this measurement value should be put
+> beside other delay account.
 
-> Looking at Linus' git tree, it's evident that some subsystems use the
-> the "[SUBSYSTEM]" notation and some use "subsystem:".  If there is now
-> an edict from on high that only "subsystem:" is acceptable, then I
-> must have missed that memo.
+Yeah, I'm looking forward to your v2 :)
 
-I'm all edicted out.  Sometimes one just puts forth the reasoning and
-lets others decide whether it's worth bothering about.  I could understand
-that decision being "no" :)
+Thanks!
+
+
