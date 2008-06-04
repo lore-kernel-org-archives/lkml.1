@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYFDU4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbYFDU7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759727AbYFDU4w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbYFDU4i
+	id S1760170AbYFDU7d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 16:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYFDU7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:56:38 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45546 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbYFDU4i (ORCPT
+	Wed, 4 Jun 2008 16:59:24 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:43067 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752201AbYFDU7Y convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:56:38 -0400
-Date: Wed, 4 Jun 2008 23:56:34 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: David Miller <davem@davemloft.net>
-cc: mingo@elte.hu, peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
-       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru,
-       mcmanus@ducksong.com
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-In-Reply-To: <20080604.112426.62778239.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0806042202030.6328@wrl-59.cs.helsinki.fi>
-References: <20080603094057.GA29480@elte.hu> <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
- <20080604072311.GA32491@elte.hu> <20080604.112426.62778239.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-246666717-1212606363=:6328"
-Content-ID: <Pine.LNX.4.64.0806042336130.8012@wrl-59.cs.helsinki.fi>
+	Wed, 4 Jun 2008 16:59:24 -0400
+Date: Wed, 4 Jun 2008 22:58:30 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: =?ISO-8859-1?B?yXJpYw==?= Piel <Eric.Piel@tremplin-utc.net>
+Cc: Andrew Morton <akpm@osdl.org>, pavel@ucw.cz,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       HWMON <lm-sensors@lm-sensors.org>
+Subject: Re: [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection  System 3D
+ ACPI driver -- please review!
+Message-ID: <20080604225830.1dff64fc@hyperion.delvare>
+In-Reply-To: <4846EBF5.2030406@tremplin-utc.net>
+References: <1212235533.3815.5.camel@localhost>
+	<4846EBF5.2030406@tremplin-utc.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Eric,
 
----696208474-246666717-1212606363=:6328
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0806042336131.8012@wrl-59.cs.helsinki.fi>
-
-On Wed, 4 Jun 2008, David Miller wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Wed, 4 Jun 2008 09:23:11 +0200
+On Wed, 04 Jun 2008 21:24:37 +0200, Éric Piel wrote:
+> We haven't received any review for this driver since last week's post by
+> Yan :-( That's why I'm adding explicitly as receivers of this email all
+> the people who have reviewed the first two previous takes. Apologies for
+> the possible multiple receptions.
 > 
-> > * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
-> >
-> > > ...I couldn't immediately find anything obviously wrong with those 
-> > > changes but the patch below might be worth of a try (without the 
-> > > revert of course). If it ever spits out that WARN_ON for you, we were 
-> > > playing with fire too much and it's better to return on the safe side 
-> > > there...
-> > 
-> > i'll queue it up for testing, but no promises about speedy action here - 
-> > the test cycle is really long with this bug.
+> It would be _really really kind_ if some of you could take some time and
+> comment (or simply ACK ;-) ) this code. It adds support for hardware
+> which can be found in mostly every HP Compaq laptop less than three
+> years old. It's quite worthy.
 > 
-> Ilpo posted another patch which fixes a locking bug in the
-> code, please test with that patch.  I include it below so
-> that you know exactly which one I am referring to.
+> Mark, as maintainer of the hwmon tree, would accept this driver? Let us
+> know if there are things we need to change.
 
-Do you know if TCP ever needs to lock the child sk again (after creating 
-it and it has started to live on its own) from a context that has already 
-locked the listen_sk (it could deadlock after this change)?
+If you didn't receive any answer, my guess is that it's because you're
+trying to add this driver to the wrong tree. Why would this driver go
+in drivers/hwmon and be reviewed by hwmon folks, when it doesn't expose
+a single hwmon attribute to user-space?
 
+I guess you thought putting the driver there would be fine because
+that's where the hdaps and ams drivers are, but IMHO the hdaps and ams
+drivers should never have been placed in drivers/hwmon. These devices
+really aren't hardware monitoring chips is the traditional sense of the
+term. They are different chips, serving different purposes and
+deserving a totally different interface. They'd better live in a
+different subsystem and be maintainer by a different crew with interest
+in these devices and hardware to test the drivers.
+
+This discussion thread might sched some light on a possible approach:
+http://marc.info/?l=lm-sensors&m=121127824726050&w=2
+
+So my advice is that you don't wait for a review from the hwmon people,
+because apparently we don't have much interest in this type of device,
+so you'll be waiting forever. You're much better adding the mdps driver
+to drivers/misc through Andrew Morton, at least until someone takes
+care of creating a subsystem for this type of devices and move all
+existing drivers there.
+
+Would someone object to moving the hdaps and ams (and possibly
+applesmc) drivers to drivers/misc?
 
 -- 
- i.
----696208474-246666717-1212606363=:6328--
+Jean Delvare
