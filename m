@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYFDOif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758578AbYFDOmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbYFDOif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 10:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYFDOi1
+	id S1758578AbYFDOmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 10:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYFDOmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 10:38:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:61364 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753596AbYFDOi0 convert rfc822-to-8bit (ORCPT
+	Wed, 4 Jun 2008 10:42:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52859 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752659AbYFDOmb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 10:38:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SMjbLFq3gST+EYv3ye6mF849n5tKjaZExkkuwikHbe3zEaqlrs6ORFS6MysqL0bs9n
-         7v/9/TJHxVJs4/7OCxh/oM75o+HKpWeFNYCU8CQSaL4pE73n6xuP6nhDEGax5GyUvb67
-         REwUggZ+0VbKNd0L9TC0TiuArbrVBKDf4774M=
-Message-ID: <e2e108260806040738y4ad06f22tddd15df71a0a6bbb@mail.gmail.com>
-Date: Wed, 4 Jun 2008 16:38:24 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: Lkm <lkm@lea-linux.com>
-Subject: Re: PROBLEM: Hardware clock instable
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200806041622.49593.lkm@lea-linux.com>
+	Wed, 4 Jun 2008 10:42:31 -0400
+From: Jean Delvare <jdelvare@suse.de>
+Organization: SuSE Linux
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] watchdog: Strip stray space in log message
+Date: Wed, 4 Jun 2008 16:42:15 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org
+References: <200806041538.53326.jdelvare@suse.de> <20080604150158.17a33e69@core>
+In-Reply-To: <20080604150158.17a33e69@core>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <200806041402.39515.lkm@lea-linux.com>
-	 <200806041517.43347.lkm@lea-linux.com>
-	 <e2e108260806040640k3ffb9712j443c2da37feb394c@mail.gmail.com>
-	 <200806041622.49593.lkm@lea-linux.com>
+Message-Id: <200806041642.15522.jdelvare@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 4, 2008 at 4:22 PM, Lkm <lkm@lea-linux.com> wrote:
-> Le Wednesday 04 June 2008 15:40:49 Bart Van AsscI de, vous avez écrit :
->> The reason I asked for the ntpd logs is that I'm still not sure
->> whether there is a hardware problem.
->
-> In fact i'm wondering too .... But we have so many server with the same
-> problem...
-...
-> 26 Feb 11:25:12 ntpd[2422]: time reset -0.492486 s
-> I Don't know if we have rebooted the server this day..
+Hi Alan,
 
-A "time reset" can happen for one of three reasons:
-* as a startup phenomenon (ntpd's frequency estimate is still converging).
-* because of a step in the reference clock.
-* because of instability of the hardware clock. Personally I have not
-yet seen this.
+Le mercredi 04 juin 2008, Alan Cox a écrit :
+> On Wed, 4 Jun 2008 15:38:53 +0200
+> Jean Delvare <jdelvare@suse.de> wrote:
+> 
+> > Strip a stray space in log messages of 3 watchdog drivers.
+> > (And fold these long lines to make checkpatch.pl happy.)
+> 
+> Don't break up strings of quoted text - it makes grepping for them much
+> harder.
 
->> And can you also post the
->> output of ntpq -pn ?
->>
-> ntpq -pn
->     remote           refid      st t when poll reach   delay   offset  jitter
-> ==============================================================================
-> +192.168.0.150   195.220.194.193  3 u  531 1024  377    1.398    0.606   0.402
-> *192.168.0.151   194.2.0.28       3 u  399 1024  377    0.554    0.426   0.172
+As written above, checkpatch.pl told me to break them up.
 
-This data looks normal -- both time servers have the same stratum,
-reachability == 0377, delay and offset are below 5ms, and jitter is
-below 1ms.
+CodingStyle says: "Long strings are as well broken into shorter
+strings." And quite rightly so IMHO, if you have to rely on grepping
+the whole kernel tree to find out where a log message comes from, it
+means that this log message is bad and needs to be improved.
 
-So I suggest that you observe the ntp logs for a few days and check
-whether the ntp daemon logs any error messages.
-
-Bart.
+Thanks,
+-- 
+Jean Delvare
+Suse L3
