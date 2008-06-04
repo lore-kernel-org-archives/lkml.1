@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763092AbYFDWRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763752AbYFDWRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763092AbYFDWRP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 18:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762148AbYFDWMP
+	id S1763752AbYFDWRa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 18:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762609AbYFDWMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 18:12:15 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:35837 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758873AbYFDWL7 (ORCPT
+	Wed, 4 Jun 2008 18:12:17 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:46648 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762721AbYFDWL7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Jun 2008 18:11:59 -0400
-Message-Id: <20080604221130.143096410@ldl.fc.hp.com>
+Message-Id: <20080604221129.362951051@ldl.fc.hp.com>
 References: <20080604220933.168145536@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Jun 2008 16:09:50 -0600
+Date: Wed, 04 Jun 2008 16:09:46 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, Rene Herman <rene.herman@gmail.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: Adam Belay <ambx1@neo.rr.com>
 Cc: Adam M Belay <abelay@mit.edu>
@@ -27,62 +27,52 @@ Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
-Subject: [patch 17/18] ISAPNP: handle independent options following dependent ones
-Content-Disposition: inline; filename=isapnp-enddep-bugfix
+Subject: [patch 13/18] PNPACPI: ignore _PRS interrupt numbers larger than PNP_IRQ_NR
+Content-Disposition: inline; filename=pnpacpi-extended-irq-option
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ISAPNP spec recommends that independent options precede
-dependent ones, but this is not actually required.  The current
-ISAPNP code incorrectly puts such trailing independent options
-at the end of the last dependent option list.
+ACPI Extended Interrupt Descriptors can encode 32-bit interrupt
+numbers, so an interrupt number may exceed the size of the bitmap
+we use to track possible IRQ settings.
 
-This patch fixes that bug by resetting the current option list
-to the independent list when we see an "End Dependent Functions"
-tag.  PNPBIOS and PNPACPI handle this the same way.
+To avoid corrupting memory, complain and ignore too-large interrupt
+numbers.
+
+There's similar code in pnpacpi_parse_irq_option(), but I didn't
+change that because the small IRQ descriptor can only encode
+IRQs 0-15, which do not exceed bitmap size.
+
+In the future, we could handle IRQ numbers greater than PNP_IRQ_NR
+by replacing the bitmap with a table or list.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Acked-by: Rene Herman <rene.herman@gmail.com>
 
-Index: work10/drivers/pnp/isapnp/core.c
+Index: work10/drivers/pnp/pnpacpi/rsparser.c
 ===================================================================
---- work10.orig/drivers/pnp/isapnp/core.c	2008-06-03 15:45:02.000000000 -0600
-+++ work10/drivers/pnp/isapnp/core.c	2008-06-03 15:49:38.000000000 -0600
-@@ -584,14 +584,14 @@ static int __init isapnp_create_device(s
- {
- 	int number = 0, skip = 0, priority, compat = 0;
- 	unsigned char type, tmp[17];
--	struct pnp_option *option;
-+	struct pnp_option *option, *option_independent;
- 	struct pnp_dev *dev;
- 	u32 eisa_id;
- 	char id[8];
+--- work10.orig/drivers/pnp/pnpacpi/rsparser.c	2008-05-30 13:23:34.000000000 -0600
++++ work10/drivers/pnp/pnpacpi/rsparser.c	2008-05-30 14:45:52.000000000 -0600
+@@ -421,9 +421,16 @@ static __init void pnpacpi_parse_ext_irq
+ 		return;
  
- 	if ((dev = isapnp_parse_device(card, size, number++)) == NULL)
- 		return 1;
--	option = pnp_register_independent_option(dev);
-+	option_independent = option = pnp_register_independent_option(dev);
- 	if (!option) {
- 		kfree(dev);
- 		return 1;
-@@ -613,6 +613,7 @@ static int __init isapnp_create_device(s
- 				size = 0;
- 				skip = 0;
- 				option = pnp_register_independent_option(dev);
-+				option_independent = option;
- 				if (!option) {
- 					kfree(dev);
- 					return 1;
-@@ -662,6 +663,10 @@ static int __init isapnp_create_device(s
- 		case _STAG_ENDDEP:
- 			if (size != 0)
- 				goto __skip;
-+			if (option_independent == option)
-+				dev_warn(&dev->dev, "missing "
-+					 "_STAG_STARTDEP tag\n");
-+			option = option_independent;
- 			dev_dbg(&dev->dev, "end dependent options\n");
- 			break;
- 		case _STAG_IOPORT:
+ 	bitmap_zero(map.bits, PNP_IRQ_NR);
+-	for (i = 0; i < p->interrupt_count; i++)
+-		if (p->interrupts[i])
+-			__set_bit(p->interrupts[i], map.bits);
++	for (i = 0; i < p->interrupt_count; i++) {
++		if (p->interrupts[i]) {
++			if (p->interrupts[i] < PNP_IRQ_NR)
++				__set_bit(p->interrupts[i], map.bits);
++			else
++				dev_err(&dev->dev, "ignoring IRQ %d option "
++					"(too large for %d entry bitmap)\n",
++					p->interrupts[i], PNP_IRQ_NR);
++		}
++	}
+ 
+ 	flags = irq_flags(p->triggering, p->polarity, p->sharable);
+ 	pnp_register_irq_resource(dev, option, &map, flags);
 
 -- 
