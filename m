@@ -1,70 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760702AbYFDOvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760949AbYFDOvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760702AbYFDOvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 10:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYFDOvd
+	id S1760949AbYFDOvz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 10:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbYFDOvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 4 Jun 2008 10:51:35 -0400
+Received: from qb-out-0506.google.com ([72.14.204.230]:61526 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754089AbYFDOvd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Jun 2008 10:51:33 -0400
-Received: from styx.suse.cz ([82.119.242.94]:43935 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751129AbYFDOvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 10:51:32 -0400
-Date: Wed, 4 Jun 2008 16:51:30 +0200
-From: Jan Kara <jack@suse.cz>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] quota: Split out quota_struct.h out of quota.h
-Message-ID: <20080604145130.GC16572@duck.suse.cz>
-References: <12124266712214-git-send-email-jack@suse.cz> <12124266711334-git-send-email-jack@suse.cz> <12124266712838-git-send-email-jack@suse.cz> <12124266722979-git-send-email-jack@suse.cz> <12124266723968-git-send-email-jack@suse.cz> <12124266721420-git-send-email-jack@suse.cz> <20080604135624.GA13683@cs181133002.pp.htv.fi>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:references
+         :in-reply-to:content-type:content-transfer-encoding:from;
+        b=RK5IFus0O86+Y+tzgnpfpsrdRt6FZ8EkYp/HbRxq0Z/Q9RFthcMYSqg+oLW3tJdKxa
+         hwm1xrozXiHbOQcbDJABMZ8/1KDlJ9oYG2NR8NDSTzDCCnJ8nNhOgr5SmFSPhhzPsLje
+         zACDraiHc5NeNANWUSFKh4F6JYXb+nWPE/+Qo=
+Message-ID: <4846ABD3.4000600@gmail.com>
+Date: Wed, 04 Jun 2008 16:50:59 +0200
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080604135624.GA13683@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: lkml <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
+       Miklos Szeredi <miklos@szeredi.hu>, viro@zeniv.linux.org.uk,
+       jamie@shareable.org, Ulrich Drepper <drepper@redhat.com>,
+       linux-fsdevel@vger.kernel.org,
+       Subrata Modak <subrata@linux.vnet.ibm.com>
+Subject: Re: [patch 3/4 v2] vfs: utimensat(): fix error checking for {UTIME_NOW,UTIME_OMIT}
+ case
+References: <484694E7.3080405@gmail.com>
+In-Reply-To: <484694E7.3080405@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 04-06-08 16:56:24, Adrian Bunk wrote:
-> On Mon, Jun 02, 2008 at 07:11:10PM +0200, Jan Kara wrote:
-> > Split some structure definitions from quota.h to quota_struct.h so that they
-> > can be separately included in fs.h. This makes it possible to declare some
-> > useful inline functions in quota.h because it can now include fs.h.
-> > 
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > ---
-> >  include/linux/fs.h       |    2 +-
-> >  include/linux/quota.h    |  193 +---------------------------------------------
-> >  include/linux/quotaops.h |    1 +
-> >  include/linux/syscalls.h |    2 +-
-> >  4 files changed, 5 insertions(+), 193 deletions(-)
-> >...
-> 
-> Missing "git-add include/linux/quota_struct.h" ?
-  Probably yes, I already noticed this and mailed Andrew a patch with this
-file included.
+Andrew,
 
-> > --- a/include/linux/quota.h
-> > +++ b/include/linux/quota.h
-> > @@ -37,13 +37,11 @@
-> >  
-> >  #include <linux/errno.h>
-> >  #include <linux/types.h>
-> > +#include <linux/quota_struct.h>
-> >...
-> 
-> This breaks our userspace headers.
-> 
-> Please always run "make headers_check" after touching #include's
-> under include/
-  I didn't know this existed :) I'll use it in future. Thanks. The question
-is how to fix this. Probably the best would be if didn't have to export new
-header file, wouldn't it? We can split the headers into quota.h containing
-structures and all other userspace stuff and quota_func.h carrying other
-kernel-internal stuff like inline functions etc. Oh well...
+This patch improves the indentation of the previous patch.
+(No other changes).
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Cheers,
+
+Michael
+
+--- linux-2.6.26-rc4/fs/utimes.c	2008-06-04 13:36:33.000000000 +0200
++++ linux-2.6.26-rc4-utimensat-fix-v4/fs/utimes.c	2008-06-04 13:35:14.000000000 +0200
+@@ -40,14 +40,9 @@
+
+ #endif
+
+-static bool nsec_special(long nsec)
+-{
+-	return nsec == UTIME_OMIT || nsec == UTIME_NOW;
+-}
+-
+ static bool nsec_valid(long nsec)
+ {
+-	if (nsec_special(nsec))
++	if (nsec == UTIME_OMIT || nsec == UTIME_NOW)
+ 		return true;
+
+ 	return nsec >= 0 && nsec <= 999999999;
+@@ -106,7 +101,7 @@
+ 		     times[1].tv_nsec == UTIME_NOW)
+ 		times = NULL;
+
+-	/* Don't worry, the checks are done in inode_change_ok() */
++	/* In most cases, the checks are done in inode_change_ok() */
+ 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
+ 	if (times) {
+ 		error = -EPERM;
+@@ -128,15 +123,26 @@
+ 			newattrs.ia_mtime.tv_nsec = times[1].tv_nsec;
+ 			newattrs.ia_valid |= ATTR_MTIME_SET;
+ 		}
+-	}
+
+-	/*
+-	 * If times is NULL or both times are either UTIME_OMIT or
+-	 * UTIME_NOW, then need to check permissions, because
+-	 * inode_change_ok() won't do it.
+-	 */
+-	if (!times || (nsec_special(times[0].tv_nsec) &&
+-		       nsec_special(times[1].tv_nsec))) {
++		/*
++		 * For the UTIME_OMIT/UTIME_NOW and UTIME_NOW/UTIME_OMIT
++		 * cases, we need to make an extra check that is not done by
++		 * inode_change_ok().
++		 */
++		if (((times[0].tv_nsec == UTIME_NOW &&
++			    times[1].tv_nsec == UTIME_OMIT)
++		     ||
++		     (times[0].tv_nsec == UTIME_OMIT &&
++			    times[1].tv_nsec == UTIME_NOW))
++		    && !is_owner_or_cap(inode))
++			goto mnt_drop_write_and_out;
++	} else {
++
++		/*
++		 * If times is NULL (or both times are UTIME_NOW),
++		 * then we need to check permissions, because
++		 * inode_change_ok() won't do it.
++		 */
+ 		error = -EACCES;
+                 if (IS_IMMUTABLE(inode))
+ 			goto mnt_drop_write_and_out;
+
+
