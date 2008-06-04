@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbYFDPIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbYFDPIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760087AbYFDPIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYFDPIE
+	id S1756063AbYFDPIe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758371AbYFDPIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:08:04 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53116 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750895AbYFDPIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:08:01 -0400
-Message-ID: <4846AFCF.30500@sgi.com>
-Date: Wed, 04 Jun 2008 08:07:59 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
+	Wed, 4 Jun 2008 11:08:15 -0400
+Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:45899 "EHLO
+	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758121AbYFDPIN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:08:13 -0400
+Date: Wed, 4 Jun 2008 16:07:07 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Lameter <clameter@sgi.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
-References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org>
-In-Reply-To: <20080529215827.b659d032.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] cputopology: Add default CPU topology information [3rd try]
+Message-ID: <20080604150705.GC11300@solarflare.com>
+References: <20080531214429.GQ1743@solarflare.com> <20080603130222.694c5675.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080603130222.694c5675.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andrew Morton wrote:
-> On Thu, 29 May 2008 20:56:20 -0700 Christoph Lameter <clameter@sgi.com> wrote:
+> On Sat, 31 May 2008 22:44:30 +0100
+> Ben Hutchings <bhutchings@solarflare.com> wrote:
 > 
->> In various places the kernel maintains arrays of pointers indexed by
->> processor numbers. These are used to locate objects that need to be used
->> when executing on a specirfic processor. Both the slab allocator
->> and the page allocator use these arrays and there the arrays are used in
->> performance critical code. The allocpercpu functionality is a simple
->> allocator to provide these arrays.
+> > Define the macros topology_{physical_package,core}_id() and
+> > topology_{thread,core}_siblings() in <asm-generic/topology.h> if they are not
+> > already defined.
+> > 
+> > Move inclusion of <asm-generic/topology.h> after definitions of these
+> > macros in <asm-powerpc/topology.h> and <asm-x86/topology.h>.
+> > 
+> > Change drivers/base/topology.c to use the topology macros unconditionally and
+> > to cope with definitions that aren't lvalues.
 > 
-> All seems reasonable to me.  The obvious question is "how do we size
-> the arena".  We either waste memory or, much worse, run out.
-> 
-> And running out is a real possibility, I think.  Most people will only
-> mount a handful of XFS filesystems.  But some customer will come along
-> who wants to mount 5,000, and distributors will need to cater for that,
-> but how can they?
-> 
-> I wonder if we can arrange for the default to be overridden via a
-> kernel boot option?
-> 
-> 
-> Another obvious question is "how much of a problem will we have with
-> internal fragmentation"?  This might be a drop-dead showstopper.
+> Can you please redo this against linux-next?
 
-One problem with variable sized cpu_alloc area is this comment in bitmap.h:
+Will do.
 
- * Note that nbits should be always a compile time evaluable constant.
- * Otherwise many inlines will generate horrible code.
+> That tree contains a number of directly conflicting changes.  In
+> particular, linux-next introduces alternate implementations of
+> show_##name and show_##name##_list in topology.c and from a quick peek,
+> your change could make them go away again.
 
-I'm guessing since this will be of low use and not performance critical,
-then we can ignore the "horrible code"?  ;-)
+I don't see what you're referring to.  The only things I'm removing are
+the attribute list macros, which are unnecessary if the list of attributes
+is constant.
 
-Thanks,
-Mike
+> Please also enhance the changelog so we have some idea of why you're
+> actually doing all this.  What do we gain?  Does it fix a bug?  If so,
+> what?  etc.
 
+I'll go back to the explanatory text from my first version.
+
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
