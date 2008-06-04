@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYFDFpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYFDFzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbYFDFpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 01:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbYFDFpV
+	id S1754763AbYFDFzK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 01:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYFDFy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 01:45:21 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59914 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751164AbYFDFpU (ORCPT
+	Wed, 4 Jun 2008 01:54:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40762 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750987AbYFDFy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 01:45:20 -0400
-X-Sasl-enc: Ta3GnHOYH7pctw0nKkCbK6AG87ZJxcLD7S+ozLq3Ikdf 1212558318
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: viro@ZenIV.linux.org.uk, jmoyer@redhat.com, torvalds@linux-foundation.org,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <E1K3ldP-0007pW-OA@pomaz-ex.szeredi.hu>
-References: <20080603105258.GV28946@ZenIV.linux.org.uk>
-	 <1212499623.3025.46.camel@raven.themaw.net>
-	 <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
-	 <1212509263.3025.66.camel@raven.themaw.net>
-	 <alpine.LFD.1.10.0806030926330.3473@woody.linux-foundation.org>
-	 <1212513189.3025.101.camel@raven.themaw.net>
-	 <20080603173029.GD28946@ZenIV.linux.org.uk>
-	 <x49ej7ejtry.fsf@segfault.boston.devel.redhat.com>
-	 <20080603191859.GG28946@ZenIV.linux.org.uk>
-	 <x49abi2jnwf.fsf@segfault.boston.devel.redhat.com>
-	 <20080603230026.GH28946@ZenIV.linux.org.uk>
-	 <1212547323.3146.45.camel@raven.themaw.net>
-	 <E1K3ldP-0007pW-OA@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Date: Wed, 04 Jun 2008 13:41:57 +0800
-Message-Id: <1212558119.3146.46.camel@raven.themaw.net>
+	Wed, 4 Jun 2008 01:54:57 -0400
+Date: Wed, 4 Jun 2008 15:00:24 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/4] per-task-delay-accounting: add memory reclaim delay
+Message-Id: <20080604150024.a75d8534.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
+References: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 3 Jun 2008 19:38:25 -0700
+Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp> wrote:
 
-On Wed, 2008-06-04 at 07:34 +0200, Miklos Szeredi wrote:
-> > Perhaps, if we didn't use /etc/mtab anywhere.
-> > It would make a difference if we could "mount" /proc/mounts onto a file
-> > such as /etc/mtab and everyone always did that.
+> +	delayacct_freepages_start();
+>  	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
+> +	delayacct_freepages_end();
 > 
-> That's actually remarkably close to being possible.  Loopback mounts
-> have already been fixed not to rely on /etc/mtab.  The only major
-> piece missing is "user" mounts, and there's already a patchset for
-> that waiting for review by the VFS maintainers.  After that, it's just
-> a "simple" issue of fixing up all the userspace pieces.  Could be
-> finished in the next decade, possibly ;)
+Could you move this to vmscan.c do_try_to_free_pages().
+Then, memory reclaim from memory resource controller can be catched as well.
 
-;)
-
+Thanks,
+-Kame
 
