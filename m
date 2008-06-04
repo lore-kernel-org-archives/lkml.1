@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbYFDHso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbYFDH7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758822AbYFDHso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 03:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYFDHsh
+	id S1758248AbYFDH7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 03:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYFDH7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 03:48:37 -0400
-Received: from sacred.ru ([62.205.161.221]:38015 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbYFDHsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 03:48:36 -0400
-Message-ID: <484646B4.3050904@openvz.org>
-Date: Wed, 04 Jun 2008 11:39:32 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Serge Hallyn <serue@us.ibm.com>, Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] devscgroup: relax task to dev_cgroup conversion
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Jun 2008 03:59:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58865 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752237AbYFDH7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 03:59:39 -0400
+Date: Wed, 4 Jun 2008 00:57:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, ebiederm@xmission.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] coredump: zap_threads() must skip kernel threads
+Message-Id: <20080604005743.29aed3a5.akpm@linux-foundation.org>
+In-Reply-To: <20080603214959.0208826FC96@magilla.localdomain>
+References: <20080601153045.GA8244@tv-sign.ru>
+	<20080603141548.15d60a32.akpm@linux-foundation.org>
+	<20080603214959.0208826FC96@magilla.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 04 Jun 2008 11:41:48 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two functions, that need to get a device_cgroup from a task (they
-are devcgroup_inode_permission and devcgroup_inode_mknod) make it
-in a strange way:
+On Tue,  3 Jun 2008 14:49:58 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
 
-They get a css_set from task, then a subsys_state from css_set,
-then a cgroup from the state and then a subsys_state again from
-the cgroup. Besides, the devices_subsys_id is read from memory,
-whilst there's a enum-ed constant for it.
+> > This is a bugfix, yes?
+> > 
+> > How does it get triggered?
+> 
+> Yes, I think it fixes a bug.  The trigger would be an aio request doing
+> some work (inside aio_kick_handler) simultaneous with some thread in the
+> requester's mm doing a core dump (inside zap_threads).
+> 
+> > Do you think the bug is sufficiently serious to fix it in 2.6.26?  In
+> > 2.6.25.x?  If so, it would be better if this patch were not dependent
+> > upon the preceding ones, which do not appear to be 2.6.26 or -stable
+> > material.
+> 
+> It has probably never been seen for real, but might be possible to produce
+> with an exploit that works hard to hit the race.  I'm not sure off hand
+> what all the bad effects would be, mainly those of SIGKILL'ing the
+> workqueue thread (keventd I guess).  The core-dumping threads will be stuck
+> in uninterruptible waits and never be killable.
+> 
+> Oleg's cleanups make the fix much nicer because there is an easy persistent
+> flag to check without races.  Probably the most isolated fix for this is
+> something like the bit below (wholly untested).  This is hairy enough that
+> I think Oleg's 1/3 + 2/3 would be preferable even for -stable.
 
-Optimize this part a bit:
-1. Get the subsys_stats form the task and be done - no 2 extra
-   dereferences,
-2. Use the device_subsys_id constant, not the value from memory
-   (i.e. one less dereference).
+OK, thanks.
 
-Found while preparing 2.6.26 OpenVZ port.
+I'll tentatively queue these three for 2.6.26 and will leave 2.6.25.x
+alone.  The bug seems sufficiently obscure?
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+(This required a bit of massaging of
+coredump-zap_threads-must-skip-kernel-threads.patch in fs/exec.c due, I
+assume, to dependencies on other things which we have queued for
+2.6.27).
 
----
- security/device_cgroup.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/security/device_cgroup.c b/security/device_cgroup.c
-index 15f2f80..f9941a7 100644
---- a/security/device_cgroup.c
-+++ b/security/device_cgroup.c
-@@ -506,7 +506,6 @@ struct cgroup_subsys devices_subsys = {
- 
- int devcgroup_inode_permission(struct inode *inode, int mask)
- {
--	struct cgroup *cgroup;
- 	struct dev_cgroup *dev_cgroup;
- 	struct dev_whitelist_item *wh;
- 
-@@ -515,8 +514,8 @@ int devcgroup_inode_permission(struct inode *inode, int mask)
- 		return 0;
- 	if (!S_ISBLK(inode->i_mode) && !S_ISCHR(inode->i_mode))
- 		return 0;
--	cgroup = task_cgroup(current, devices_subsys.subsys_id);
--	dev_cgroup = cgroup_to_devcgroup(cgroup);
-+	dev_cgroup = css_to_devcgroup(task_subsys_state(current,
-+				devices_subsys_id));
- 	if (!dev_cgroup)
- 		return 0;
- 
-@@ -547,12 +546,11 @@ acc_check:
- 
- int devcgroup_inode_mknod(int mode, dev_t dev)
- {
--	struct cgroup *cgroup;
- 	struct dev_cgroup *dev_cgroup;
- 	struct dev_whitelist_item *wh;
- 
--	cgroup = task_cgroup(current, devices_subsys.subsys_id);
--	dev_cgroup = cgroup_to_devcgroup(cgroup);
-+	dev_cgroup = css_to_devcgroup(task_subsys_state(current,
-+				devices_subsys_id));
- 	if (!dev_cgroup)
- 		return 0;
- 
--- 
-1.5.3.4
 
