@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbYFDUuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759727AbYFDU4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbYFDUuV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYFDUuJ
+	id S1759727AbYFDU4w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 16:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbYFDU4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:50:09 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:39557 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbYFDUuH (ORCPT
+	Wed, 4 Jun 2008 16:56:38 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45546 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752903AbYFDU4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:50:07 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 15/15] PNP: convert resource options to single linked list
-Date: Wed, 4 Jun 2008 14:50:09 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>
-References: <20080530224853.976744229@ldl.fc.hp.com> <4845D937.2000205@keyaccess.nl> <4846810B.2030301@keyaccess.nl>
-In-Reply-To: <4846810B.2030301@keyaccess.nl>
+	Wed, 4 Jun 2008 16:56:38 -0400
+Date: Wed, 4 Jun 2008 23:56:34 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: David Miller <davem@davemloft.net>
+cc: mingo@elte.hu, peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
+       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru,
+       mcmanus@ducksong.com
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+ v2.6.26-rc3+
+In-Reply-To: <20080604.112426.62778239.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0806042202030.6328@wrl-59.cs.helsinki.fi>
+References: <20080603094057.GA29480@elte.hu> <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
+ <20080604072311.GA32491@elte.hu> <20080604.112426.62778239.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806041450.10576.bjorn.helgaas@hp.com>
+Content-Type: MULTIPART/MIXED; boundary="-696208474-246666717-1212606363=:6328"
+Content-ID: <Pine.LNX.4.64.0806042336130.8012@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 June 2008 05:48:27 am Rene Herman wrote:
-> On 04-06-08 01:52, Rene Herman wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> ADS7181 in fact might as well delete the IRQ from the dependents and add
-> "irq 2/9,10,11 High-Edge Optinal" in front as an independent same as 
-> ADS7151. That way, all the cloning can go.
+---696208474-246666717-1212606363=:6328
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0806042336131.8012@wrl-59.cs.helsinki.fi>
 
-We currently clone for AZT0002 as well as ADS7181.  Can we do the
-same for both?  It would be nice to get rid of the cloning code
-if we can.
+On Wed, 4 Jun 2008, David Miller wrote:
 
-Bjorn
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Wed, 4 Jun 2008 09:23:11 +0200
+> 
+> > * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> >
+> > > ...I couldn't immediately find anything obviously wrong with those 
+> > > changes but the patch below might be worth of a try (without the 
+> > > revert of course). If it ever spits out that WARN_ON for you, we were 
+> > > playing with fire too much and it's better to return on the safe side 
+> > > there...
+> > 
+> > i'll queue it up for testing, but no promises about speedy action here - 
+> > the test cycle is really long with this bug.
+> 
+> Ilpo posted another patch which fixes a locking bug in the
+> code, please test with that patch.  I include it below so
+> that you know exactly which one I am referring to.
+
+Do you know if TCP ever needs to lock the child sk again (after creating 
+it and it has started to live on its own) from a context that has already 
+locked the listen_sk (it could deadlock after this change)?
 
 
+-- 
+ i.
+---696208474-246666717-1212606363=:6328--
