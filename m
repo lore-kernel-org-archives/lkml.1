@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761191AbYFDSlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbYFDSqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761191AbYFDSlA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 14:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbYFDSkw
+	id S1760738AbYFDSqk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 14:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYFDSqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 14:40:52 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49795 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754493AbYFDSkv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 14:40:51 -0400
-Date: Wed, 4 Jun 2008 19:24:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Andrew Victor" <avictor.za@gmail.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, wim@iguana.be,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: AT91SAM9/CAP9 watchdog driver
-Message-ID: <20080604192458.02f76022@core>
-In-Reply-To: <cd73a99e0806041136o2a9ee520q28752af9b6290644@mail.gmail.com>
-References: <cd73a99e0806010940g501f11b4jcb7caf6acfd5c49f@mail.gmail.com>
-	<20080603142316.c53b32b2.akpm@linux-foundation.org>
-	<cd73a99e0806040031s13e6b4a5ndc5fb3d931e1945f@mail.gmail.com>
-	<20080604123642.51449a04@core>
-	<cd73a99e0806041136o2a9ee520q28752af9b6290644@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 4 Jun 2008 14:46:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51816 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753286AbYFDSqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 14:46:31 -0400
+Subject: Re: [PATCH 0/7] Boot IRQ quirks and rerouting
+From: Jon Masters <jcm@redhat.com>
+To: Stefan Assmann <sassmann@suse.de>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Olaf Dabrunz <od@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <4846651F.4070802@suse.de>
+References: <12124107071847-git-send-email-od@suse.de>
+	 <m1tzgauduu.fsf@frodo.ebiederm.org>  <4846651F.4070802@suse.de>
+Content-Type: text/plain
+Date: Wed, 04 Jun 2008 14:44:00 -0400
+Message-Id: <1212605040.8410.8.camel@londonpacket.bos.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The issue above is rather that probe() should not fail if
-> at91_wdt_settimeout() returns -EINVAL, since we'd like the
-> driver/module to still load to allow the user to later specify a valid
-> timeout via ioctl(WDIOC_SETTIMEOUT).
 
-Every other watchdog behaves as follows
+On Wed, 2008-06-04 at 11:49 +0200, Stefan Assmann wrote:
 
-- If you specify a bogus value it doesn't load
-- If you specify no value you get a valid default
-- If you specify a valid value you get that
+> On the chips (ICHx, ...) we saw, the interrupt lines on the PIC also go
+> to the first IO-APIC. So the boot interrupts go to both the PIC and the
+> first IO-APIC.
 
-I don't believe yours should be different.
+Yup, it's system dependent too, but it's a mess in many cases. I've seen
+numerous systems falling over - typically, the classical case will be
+some IO controller when under heavy load will stop doing interrupts.
+Another gotcha is that a lot of the time, these legacy interrupt (boot
+interrupts) happen to be shared between e.g. a disk controller and a USB
+host controller. On a server system running -RT, it's quite common that
+there won't be much going on with the other device, so the problem goes
+unnoticed for a long time...but it still bites you in the end.
 
-Alan
+> When running in APIC mode all PIC IRQs are disabled, except for the
+> timer maybe. Boot interrupts still arrive on the first IO-APIC and end
+> up as being counted as spurious interrupts.
+
+Yup. I think the good thing is that both SuSE and Red Hat have
+identified the same problems, posited the same root cause, and
+contemplated similar workarounds...so I think we understand it.
+
+Jon.
+
+
