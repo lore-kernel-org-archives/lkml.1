@@ -1,42 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759467AbYFDPRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760607AbYFDPSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759467AbYFDPRZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYFDPRP
+	id S1760607AbYFDPSx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:18:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYFDPSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:17:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35881 "EHLO mx1.redhat.com"
+	Wed, 4 Jun 2008 11:18:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40842 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104AbYFDPRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:17:14 -0400
-Date: Wed, 4 Jun 2008 11:16:49 -0400
-From: Alan Cox <alan@redhat.com>
-To: Joe Peterson <joe@skyrush.com>
-Cc: Alan Cox <alan@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Newall <davidn@davidnewall.com>, Willy Tarreau <w@1wt.eu>,
-       Harald Dunkel <harald.dunkel@t-online.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: su gets stuck for root
-Message-ID: <20080604151649.GB12625@devserv.devel.redhat.com>
-References: <48434D57.6030801@skyrush.com> <48438126.3080308@t-online.de> <20080602053256.GF5609@1wt.eu> <20080602091016.571dda7c@core> <4843B6EE.8080104@davidnewall.com> <20080602102033.63e4cd18@core> <48441138.90503@skyrush.com> <20080602155133.GC933@devserv.devel.redhat.com> <4846A9F4.40003@skyrush.com>
+	id S1753124AbYFDPSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:18:44 -0400
+Date: Wed, 4 Jun 2008 17:18:42 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Petr Tesarik <ptesarik@suse.cz>, Christoph Hellwig <hch@lst.de>,
+       torvalds@osdl.org, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: Why is the rewritten ramdisk driver called brd instad of rd
+Message-ID: <20080604151842.GA30484@wotan.suse.de>
+References: <20080321130552.GA28274@lst.de> <1211880480.29836.11.camel@elijah.suse.cz> <20080528061130.GB16441@wotan.suse.de> <alpine.LNX.1.10.0806031309350.4055@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4846A9F4.40003@skyrush.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+In-Reply-To: <alpine.LNX.1.10.0806031309350.4055@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 08:43:00AM -0600, Joe Peterson wrote:
+On Tue, Jun 03, 2008 at 01:09:55PM +0200, Jan Engelhardt wrote:
 > 
-> So the error that gets returned to set_termios() is -512.
+> On Wednesday 2008-05-28 08:11, Nick Piggin wrote:
 > 
-> Also, the various checks before this point (of course) did not pass
-> (current->signal->tty != tty, !tty->pgrp, task_pgrp(current) ==
-> tty->pgrp, is_ignored(SIGTTOU), is_current_pgrp_orphaned()).  I have not
-> printed out the various values from these - let me know if this would be
-> helpful.  I wanted to pass this info along now in case it is of help.
+> >On Tue, May 27, 2008 at 11:28:00AM +0200, Petr Tesarik wrote:
+> >> On Fri, 2008-03-21 at 14:05 +0100, Christoph Hellwig wrote:
+> >> > Any reason why the rewritten ramdisk driver has a new name?  It's for
+> >> > all matters an inplace replacement of the old rd driver so it should
+> >> > be called rd.c / rd.ko to not confused instaler/developers/etc.
+> >> 
+> >> I think it's because the old rd played some dirty tricks with the page
+> >> cache, while the reworked one is a straightforward implementation of a
+> >> normal _b_lock device -> hence the "b".
+> >> 
+> >> No guarantee of correctness.
+> >
+> >Yeah it was a rwrite from scratch and it lived with the rd.c code for
+> >a while (although maybe never in mainline). I guess it might be good
+> >idea to rename it back to rd?
+> 
+> Just add a MODULE_ALIAS("rd").
 
-See what tty->pgrp is at that point when it hangs and that might identify
-who is owning the tty and tty setup
+Couldn't hurt... shall we merge this, then?
+
+
+Alias brd to rd in the hope of helping legacy users. Suggested by Jan.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+Index: linux-2.6/drivers/block/brd.c
+===================================================================
+--- linux-2.6.orig/drivers/block/brd.c	2008-06-05 00:51:53.000000000 +1000
++++ linux-2.6/drivers/block/brd.c	2008-06-05 00:52:43.000000000 +1000
+@@ -397,6 +397,7 @@ module_param(max_part, int, 0);
+ MODULE_PARM_DESC(max_part, "Maximum number of partitions per RAM disk");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_BLOCKDEV_MAJOR(RAMDISK_MAJOR);
++MODULE_ALIAS("rd");
+ 
+ #ifndef MODULE
+ /* Legacy boot options - nonmodular */
