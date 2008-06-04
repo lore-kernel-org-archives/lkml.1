@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762351AbYFDX3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763034AbYFDXaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762351AbYFDX3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 19:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYFDX3i
+	id S1763034AbYFDXaJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 19:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758401AbYFDX3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 19:29:38 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:27601 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752317AbYFDX3h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 19:29:37 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -8.389
-Message-ID: <48472551.9020202@tremplin-utc.net>
-Date: Thu, 05 Jun 2008 01:29:21 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.14) Gecko/20080504 Mandriva/2.0.0.14-1mdv2009.0 (2009.0) Thunderbird/2.0.0.14 Mnenhy/0.7.5.0
+	Wed, 4 Jun 2008 19:29:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46706 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752845AbYFDX3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 19:29:53 -0400
+From: Neil Brown <neilb@suse.de>
+To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Date: Thu, 5 Jun 2008 09:29:38 +1000
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       HWMON <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 2.6.25.4]  hwmon: HP Mobile Data Protection System 3D
- ACPI driver -- please review!
-References: <1212235533.3815.5.camel@localhost> <4846EBF5.2030406@tremplin-utc.net> <20080604230326.GA30475@elf.ucw.cz>
-In-Reply-To: <20080604230326.GA30475@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18503.9570.282729.926846@notabene.brown>
+Subject: Re: 2.6.25 md oops during boot.
+In-Reply-To: message from Neil Brown on Thursday June 5
+References: <20080604154137.GA26157@redhat.com>
+	<18503.8514.710121.995152@notabene.brown>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-05-06-08 01:03, Pavel Machek wrote/a écrit:
-> Hi!
->>> 3) Makes it possible to power the device off.
+On Thursday June 5, neilb@suse.de wrote:
 > 
-> But this part is what I don't understand. powering off does not seem
-> to belong there. Why can't you just use acpi to power down?
-Not sure what you mean. Are you saying acpi has already a user interface
-to power up/down a device? If so, I'm not aware of it, is it in /sys ?
-Or did you mean that there is already a kernel api to turn on/off a
-device via acpi, no need to access the device directly?
+> I wouldn't say this is a likely scenario as it requires (I think)
+> kmalloc failure very early in boot.  But I cannot see any other
+> possible cause.
 
-That said, this special /sys interface to power the device off is
-probably going to be used rarely. It was put there because it is costly
-to wake the device up each time we want to read it. What I could do is
-put a timer to turn the device off after 10s of non-usage, and power it
-on automatically again as soon as the user wants to read some info. That
-would permit to remove this interface.
+On closer inspection, I can see another possible cause.  I don't think
+it is likely (yet) but it might be possible.
 
-Eric
+If two threads enter md_probe for the same mddev, then the second one
+to get disks_mutex could exit before the first had called
+kobject_init_and_add, so it could make available an mddev where
+kobj.sd was NULL.
+
+I cannot imagine how two threads could be doing that so early in boot,
+but I cannot rule it out.
+
+This (untested) patch should close both these possible problems.
+
+NeilBrown
+
+
+-----------------
+Fix error paths if md_probe fails.
+
+md_probe can fail (e.g. alloc_disk could fail) without
+returning an error (as it alway returns NULL).
+So when we call mddev_find immediately afterwards, we need
+to check that md_probe actually succeeded.  This means checking
+that mdev->gendisk is non-NULL.
+
+Also there is a possible race - if two threads call md_probe
+for the same device, then one could exit (having checked that
+->gendisk exists) before the other has called kobject_init_and_add,
+thus returning an incomplete kobj which is cause problems when
+we try to add children to it.
+
+So extend the range of protection of disks_mutex slightly to
+avoid this possibility.
+
+Cc: Dave Jones <davej@redhat.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/md.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff .prev/drivers/md/md.c ./drivers/md/md.c
+--- .prev/drivers/md/md.c	2008-06-03 16:35:41.000000000 +1000
++++ ./drivers/md/md.c	2008-06-05 09:19:56.000000000 +1000
+@@ -3363,9 +3363,9 @@ static struct kobject *md_probe(dev_t de
+ 	disk->queue = mddev->queue;
+ 	add_disk(disk);
+ 	mddev->gendisk = disk;
+-	mutex_unlock(&disks_mutex);
+ 	error = kobject_init_and_add(&mddev->kobj, &md_ktype, &disk->dev.kobj,
+ 				     "%s", "md");
++	mutex_unlock(&disks_mutex);
+ 	if (error)
+ 		printk(KERN_WARNING "md: cannot register %s/md - name in use\n",
+ 		       disk->disk_name);
+@@ -3935,8 +3935,10 @@ static void autorun_devices(int part)
+ 
+ 		md_probe(dev, NULL, NULL);
+ 		mddev = mddev_find(dev);
+-		if (!mddev) {
+-			printk(KERN_ERR 
++		if (!mddev || !mddev->gendisk) {
++			if (mddev)
++				mddev_put(mddev);
++			printk(KERN_ERR
+ 				"md: cannot allocate memory for md drive.\n");
+ 			break;
+ 		}
+
 
