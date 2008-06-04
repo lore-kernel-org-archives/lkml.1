@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbYFDMzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYFDMzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbYFDMzM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 08:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYFDMy6
+	id S1757415AbYFDMzg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 08:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbYFDMzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 08:54:58 -0400
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.68]:52514 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbYFDMy5 (ORCPT
+	Wed, 4 Jun 2008 08:55:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42319 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009AbYFDMzY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 08:54:57 -0400
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Wed, 4 Jun 2008 21:53:34 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Paul Menage" <menage@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [RFC][PATCH 2/2] memcg: hardwall hierarhcy for memcg
-Message-Id: <20080604215334.9f3a249b.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <20080604182626.fcc26e24.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080604135815.498eaf82.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080604140329.8db1b67e.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830806040159w1026003fhe3212beac895927a@mail.gmail.com>
-	<20080604182626.fcc26e24.kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 08:55:24 -0400
+Date: Wed, 4 Jun 2008 08:55:21 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: =?iso-8859-1?Q?J=FCrgen?= Mell <j.mell@t-online.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, hpa@zytor.com, tglx@linutronix.de,
+       Simon Holm =?iso-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
+In-Reply-To: <20080604105317.GA17874@elte.hu>
+Message-ID: <Pine.LNX.4.58.0806040853320.18512@gandalf.stny.rr.com>
+References: <200806011101.06491.j.mell@t-online.de> <20080602213756.GB25114@linux-os.sc.intel.com>
+ <20080602225727.GC25114@linux-os.sc.intel.com> <200806040944.15815.j.mell@t-online.de>
+ <20080604105317.GA17874@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > @@ -1096,6 +1238,12 @@ static void mem_cgroup_destroy(struct cg
-> > >        int node;
-> > >        struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-> > >
-> > > +       if (cont->parent &&
-> > > +           mem->hierarchy_model == MEMCG_HARDWALL_HIERARCHY) {
-> > > +               /* we did what we can...just returns what we borrow */
-> > > +               res_counter_return_resource(&mem->res, -1, NULL, 0);
-> > > +       }
-> > > +
-> > 
-> > Should we also re-account any remaining child usage to the parent?
-> > 
-> When this is called, there are no process in this group. Then, remaining
-> resources in this level is
->   - file cache
->   - swap cache (if shared)
->   - shmem
-> 
-> And the biggest usage will be "file cache".
-> So, I don't think it's necessary to move child's usage to the parent,
-> in hurry. But maybe shmem is worth to be moved.
-> 
-> I'd like to revisit this when I implements "usage move at task move"
-> logic. (currenty, memory usage doesn't move to new cgroup at task_attach.)
-> 
-> It will help me to implement the logic "move remaining usage to the parent"
-> in clean way.
-> 
 
-I agree that "usage move at task move" is needed before
-"move remaining usage to the parent".
+On Wed, 4 Jun 2008, Ingo Molnar wrote:
+> * Jürgen Mell <j.mell@t-online.de> wrote:
+> >
+> > Thank you again!
 
+No, thank YOU. What you gave was excellent feedback.
 
-Thanks,
-Daisuke Nishimura.
+>
+> fix applied to tip/x86/urgent. Thanks everyone, nice find!
+>
+
+Ingo, should this be forward to the stable branch?
+
+-- Steve
+
