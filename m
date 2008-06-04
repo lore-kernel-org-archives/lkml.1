@@ -1,163 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbYFDLQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760340AbYFDLQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759974AbYFDLQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 07:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbYFDLP7
+	id S1760340AbYFDLQd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 07:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbYFDLQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 07:15:59 -0400
-Received: from [211.125.136.229] ([211.125.136.229]:37073 "EHLO
-	ms13.sony.co.jp" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754901AbYFDLP6 (ORCPT
+	Wed, 4 Jun 2008 07:16:06 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:6602 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756630AbYFDLQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 07:15:58 -0400
-Date: Wed, 04 Jun 2008 19:09:06 +0900
-From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/12]: Proper compat WEXT support.
-Cc: linux-wireless@vger.kernel.org, linville@tuxdriver.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080603.132755.262737024.davem@davemloft.net>
-References: <20080603.132755.262737024.davem@davemloft.net>
-Message-Id: <20080604184955.B033.40F06B3A@sm.sony.co.jp>
+	Wed, 4 Jun 2008 07:16:04 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC 1/3]  hvc_console: rework setup to replace irq functions with callbacks
+Date: Wed, 4 Jun 2008 13:15:42 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux PPC devel <linuxppc-dev@ozlabs.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>
+References: <200806031444.21945.borntraeger@de.ibm.com> <200806031445.22561.borntraeger@de.ibm.com> <200806041013.40692.rusty@rustcorp.com.au>
+In-Reply-To: <200806041013.40692.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.46 [ja]
+Content-Disposition: inline
+Message-Id: <200806041315.42593.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Mittwoch, 4. Juni 2008 schrieb Rusty Russell:
+> Two questions.  Is it possible to make the timer backoff a third kind of 
+> notifier?
 
-Thanks for updating the patch set!!
+I can try. The timer handling code is sprinkled a bit in hvc_console but it 
+should be possible.
 
-On Tue, 03 Jun 2008 13:27:55 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+> And is it possible to make the dependency static, rather than  
+> dynamic, or does someone need two options at runtime?
 
-
-> This is a refresh of my previous WEXT compat patch set.
-> 
-> I've actually tested these exact patches on sparc64 with a RNDIS based
-> USB wireless device from Linksys.  I was able to perform iwconfig
-> commands, check iwlist, bring up the interface and use it properly.
-> All with 32-bit tools.  I've also done an allmodconfig sanity
-> build check on sparc64.
-> 
-> The one thing I was not able to test yet is wpa_supplicant use, and
-> that likely doesn't work properly yet, but we can fix that on top and
-> these patches do not break native non-compat binaries.  They do make a
-> lot of compat stuff work which wasn't the case before.  So applying
-> this stuff makes sense, and we can get wpa_supplicant working if it
-> isn't working using follow-on patches.
-> 
-> The patch set starts by cleaning up the code so that we can avoid
-> having multiple copies of the WEXT main dispatch routines, one for
-> compat and one for the non-compat case.
-> 
-> Next, basic compat level handling of the WEXT ioctl is added, and the
-> equivalent code in the compat_ioctl.c file is removed.
-> 
-> Finally, compat IWE stream munging is added for the wireless layer.
-> When we get a compat WEXT ioctl request, we set a bit in the request
-> info blob, and the stream building helpers tip off this to format the
-> stream entries properly.
-
-
-I'm testing these patches on my PS3.  I've found a problem.
-
-With 32-bit wireless-tools v28, the bitrates from the scan result were
-wrong (with gelic/rt2x00 driver):
-
-[root@localhost wireless_tools.28]# ./iwlist wlan3 scanning
-Warning: Driver for device wlan3 has been compiled with version 22
-of Wireless Extension, while this program supports up to version 20.
-Some things may be broken...
-
-wlan3     Scan completed :
-          Cell 01 - Address: 00:06:25:C6:B9:A7
-                    ESSID:"planexuser"
-                    Mode:Master
-                    Channel:1
-                    Frequency:2.412 GHz (Channel 1)
-                    Quality=51/100  Signal level=-50 dBm  
-                    Encryption key:on
-                    IE: WPA Version 1
-                        Group Cipher : CCMP 
-                        Pairwise Ciphers (1) : CCMP 
-                        Authentication Suites (1) : PSK  
-                    Bit Rates:0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s
-                              0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s; 0 kb/s
-                              0 kb/s; 0 kb/s
-                    Extra:tsf=000000013f454d92
-
-With 32-bit wireless-tools v30 (i.e. the SOIGIWSCAN workaround
-included):
-
-[root@localhost wireless_tools.30]# ./iwlist wlan3 scanning
-wlan3     Scan completed :
-          Cell 01 - Address: 00:06:25:C6:B9:A7
-                    ESSID:"planexuser"
-                    Mode:Master
-                    Channel:1
-                    Frequency:2.412 GHz (Channel 1)
-                    Quality=48/100  Signal level=-68 dBm  
-                    Encryption key:on
-                    IE: WPA Version 1
-                        Group Cipher : CCMP
-                        Pairwise Ciphers (1) : CCMP
-                        Authentication Suites (1) : PSK
-                    Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
-                              24 Mb/s; 36 Mb/s; 54 Mb/s; 6 Mb/s; 9 Mb/s
-                              12 Mb/s; 48 Mb/s
-                    Extra:tsf=000000014e16ea91
-
-I think the callers of iwe_stream_add_value() need to do some
-preparations before the call if iocompat is needed, like the following.
-
----
- drivers/net/ps3_gelic_wireless.c |    7 +++++++
- net/mac80211/mlme.c              |   11 ++++++++++-
- 2 files changed, 17 insertions(+), 1 deletion(-)
-
---- a/drivers/net/ps3_gelic_wireless.c
-+++ b/drivers/net/ps3_gelic_wireless.c
-@@ -605,7 +605,14 @@ static char *gelic_wl_translate_scan(str
- 	iwe.cmd = SIOCGIWRATE;
- 	iwe.u.bitrate.fixed = iwe.u.bitrate.disabled = 0;
- 	/* to stuff multiple values in one event */
-+#ifdef CONFIG_COMPAT
-+	if (info->flags & IW_REQUEST_FLAG_COMPAT)
-+		tmp = ev + IW_EV_COMPAT_LCP_LEN;
-+	else
-+		tmp = ev + IW_EV_LCP_LEN;
-+#else
- 	tmp = ev + IW_EV_LCP_LEN;
-+#endif
- 	/* put them in ascendant order (older is first) */
- 	i = 0;
- 	j = 0;
---- a/net/mac80211/mlme.c
-+++ b/net/mac80211/mlme.c
-@@ -4147,9 +4147,18 @@ ieee80211_sta_scan_result(struct net_dev
- 
- 	if (bss && bss->supp_rates_len > 0) {
- 		/* display all supported rates in readable format */
--		char *p = current_ev + IW_EV_LCP_LEN;
-+		char *p;
- 		int i;
- 
-+#ifdef CONFIG_COMPAT
-+		if (info->flags & IW_REQUEST_FLAG_COMPAT)
-+			p = current_ev + IW_EV_COMPAT_LCP_LEN;
-+		else
-+			p = current_ev + IW_EV_LCP_LEN;
-+#else
-+		p = current_ev + IW_EV_LCP_LEN;
-+#endif
-+
- 		memset(&iwe, 0, sizeof(iwe));
- 		iwe.cmd = SIOCGIWRATE;
- 		/* Those two flags are ignored... */
-
--- 
-Masakazu Mokuno
-
+Not sure. Some drivers pass get the irq number from another component. If the 
+number is 0, the console is poll driven, otherwise irq driven.
