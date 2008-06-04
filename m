@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbYFDMOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYFDMOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761292AbYFDMOY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 08:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760779AbYFDMKc
+	id S1762021AbYFDMOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 08:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760806AbYFDMKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 08:10:32 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:61174 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760770AbYFDMKa (ORCPT
+	Wed, 4 Jun 2008 08:10:36 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:64902 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760793AbYFDMKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 08:10:30 -0400
+	Wed, 4 Jun 2008 08:10:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:references:user-agent:date:from:to:cc:subject
          :content-disposition;
-        b=Si8qIs9kLWXOydpsr/XKbCW3I+wsD/ovyxx2dx7isH271/fvW+TrrhXRU4XSISHCZP
-         LS/b4ZMu87IoCmkxR6SuEzn1qLe31xc951wWLQqz95W2jBa4IniyaDRNd8n68hhDz/vT
-         3DbZuhZeuDvOJfYuwLYaNzqlnihU4GqtHHXeo=
-Message-Id: <20080604115808.548356272@gmail.com>
+        b=RN3o+ypE8Hfsnql67e0XXAJAAznOXeRfnFQnUIz3x+bsGkVdgS/vA7y3C+y+qYxVwc
+         rNsmfNyp21QksjmoNKJHAXooBA3shU9cNMIxxlsuCXDFNFkplKL429evbZJg9nl0K8t4
+         wmFScH0y52hMxeVN7Xu/TpwYQUtZIp0JjXrCA=
+Message-Id: <20080604115813.346431431@gmail.com>
 References: <20080604115633.116832712@gmail.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 04 Jun 2008 20:56:46 +0900
+Date: Wed, 04 Jun 2008 20:56:47 +0900
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: Doug Warzecha <Douglas_Warzecha@dell.com>
-Subject: [patch -v3 13/22] dcdbas: use memory_read_from_buffer
-Content-Disposition: inline; filename=dcdbas-use-memory-read-from-buffer.patch
+Cc: Abhay Salunke <abhay_salunke@dell.com>
+Subject: [patch -v3 14/22] dell_rbu: use memory_read_from_buffer
+Content-Disposition: inline; filename=dell_rbu-use-memory-read-from-buffer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Doug Warzecha <Douglas_Warzecha@dell.com>
+Cc: Abhay Salunke <abhay_salunke@dell.com>
 ---
- drivers/firmware/dcdbas.c |   14 +++-----------
- 1 file changed, 3 insertions(+), 11 deletions(-)
+ drivers/firmware/dell_rbu.c |   29 ++++-------------------------
+ 1 file changed, 4 insertions(+), 25 deletions(-)
 
-Index: 2.6-git/drivers/firmware/dcdbas.c
+Index: 2.6-git/drivers/firmware/dell_rbu.c
 ===================================================================
---- 2.6-git.orig/drivers/firmware/dcdbas.c
-+++ 2.6-git/drivers/firmware/dcdbas.c
-@@ -34,6 +34,7 @@
- #include <linux/string.h>
- #include <linux/types.h>
- #include <linux/mutex.h>
+--- 2.6-git.orig/drivers/firmware/dell_rbu.c
++++ 2.6-git/drivers/firmware/dell_rbu.c
+@@ -44,6 +44,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/firmware.h>
+ #include <linux/dma-mapping.h>
 +#include <linux/fs.h>
- #include <asm/io.h>
  
- #include "dcdbas.h"
-@@ -152,20 +153,11 @@ static ssize_t smi_data_read(struct kobj
- 			     struct bin_attribute *bin_attr,
- 			     char *buf, loff_t pos, size_t count)
+ MODULE_AUTHOR("Abhay Salunke <abhay_salunke@dell.com>");
+ MODULE_DESCRIPTION("Driver for updating BIOS image on DELL systems");
+@@ -507,11 +508,6 @@ static ssize_t read_packet_data(char *bu
+ 
+ static ssize_t read_rbu_mono_data(char *buffer, loff_t pos, size_t count)
  {
--	size_t max_read;
- 	ssize_t ret;
- 
- 	mutex_lock(&smi_data_lock);
+-	unsigned char *ptemp = NULL;
+-	size_t bytes_left = 0;
+-	size_t data_length = 0;
+-	ssize_t ret_count = 0;
 -
--	if (pos >= smi_data_buf_size) {
--		ret = 0;
--		goto out;
+ 	/* check to see if we have something to return */
+ 	if ((rbu_data.image_update_buffer == NULL) ||
+ 		(rbu_data.bios_image_size == 0)) {
+@@ -519,28 +515,11 @@ static ssize_t read_rbu_mono_data(char *
+ 			"bios_image_size %lu\n",
+ 			rbu_data.image_update_buffer,
+ 			rbu_data.bios_image_size);
+-		ret_count = -ENOMEM;
+-		goto read_rbu_data_exit;
 -	}
 -
--	max_read = smi_data_buf_size - pos;
--	ret = min(max_read, count);
--	memcpy(buf, smi_data_buf + pos, ret);
--out:
-+	ret = memory_read_from_buffer(buf, count, &pos, smi_data_buf,
-+					smi_data_buf_size);
- 	mutex_unlock(&smi_data_lock);
- 	return ret;
+-	if (pos > rbu_data.bios_image_size) {
+-		ret_count = 0;
+-		goto read_rbu_data_exit;
++		return -ENOMEM;
+ 	}
+ 
+-	bytes_left = rbu_data.bios_image_size - pos;
+-	data_length = min(bytes_left, count);
+-
+-	ptemp = rbu_data.image_update_buffer;
+-	memcpy(buffer, (ptemp + pos), data_length);
+-
+-	if ((pos + count) > rbu_data.bios_image_size)
+-		/* this was the last copy */
+-		ret_count = bytes_left;
+-	else
+-		ret_count = count;
+-      read_rbu_data_exit:
+-	return ret_count;
++	return memory_read_from_buffer(buffer, count, &pos,
++			rbu_data.image_update_buffer, rbu_data.bios_image_size);
  }
+ 
+ static ssize_t read_rbu_data(struct kobject *kobj,
 
 -- 
