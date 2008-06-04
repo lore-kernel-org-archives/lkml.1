@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761340AbYFDUdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762017AbYFDUen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761340AbYFDUdz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 16:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYFDUdo
+	id S1762017AbYFDUen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 16:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYFDUec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 16:33:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35304 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753654AbYFDUdn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 16:33:43 -0400
-Message-ID: <4846FC21.10304@firstfloor.org>
-Date: Wed, 04 Jun 2008 22:33:37 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: maxk@qualcomm.com, ioe-lkml@rameria.de, sivanich@sgi.com,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       kernel@kolivas.org, dfults@sgi.com, devik@cdi.cz, dino@in.ibm.com,
-       emmanuel.pacaud@univ-poitiers.fr, deweerdt@free.fr, mingo@elte.hu,
-       colpatch@us.ibm.com, nickpiggin@yahoo.com.au, rostedt@goodmis.org,
-       oleg@tv-sign.ru, paulmck@us.ibm.com, menage@google.com,
-       rddunlap@osdl.org, suresh.b.siddha@intel.com, tglx@linutronix.de
-Subject: Re: Inquiry: Should we remove "isolcpus= kernel boot option? (may
- have realtime uses)
-References: <20080601213019.14ea8ef8.pj@sgi.com>	<1212446707.6269.26.camel@lappy.programming.kicks-ass.net>	<48447C75.8040203@qualcomm.com>	<200806030156.00155.ioe-lkml@rameria.de>	<4844BB41.7000605@qualcomm.com>	<4845D825.6000403@qualcomm.com>	<20080603194148.56dfebe1.pj@sgi.com>	<48461ADA.8020303@qualcomm.com>	<877id5v1fg.fsf@basil.nowhere.org>	<20080604124126.0d281a99.pj@sgi.com>	<20080604200350.GL20824@one.firstfloor.org> <20080604151622.a50b984f.pj@sgi.com>
-In-Reply-To: <20080604151622.a50b984f.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 16:34:32 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:42063 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752201AbYFDUeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 16:34:31 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] x86 atomic operations: atomic_or_long atomic_inc_short
+Cc: jeremy@goop.org, mingo@elte.hu
+Message-Id: <E1K3zfZ-0002Bj-8P@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Wed, 04 Jun 2008 15:33:17 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> I was responding to a need you noticed to isolate memory nodes (such as
-> from stray glibc pages placed by init or the shell running early
-> scripts), not to the need to isolate CPUs:
 
-Yes, but in practice (enough memory for bootup) isolating CPUs
-is equivalent to isolating nodes. So isolcpus=... tended to work.
+From: Cliff Wickman <cpw@sgi.com>
 
-I occasionally recommended it to people because it was much easier
-to explain than replacing init.
+Provide atomic operations for increment of a 16-bit integer and
+logical OR into a 64-bit integer.
 
-The perfect solution would be probably just fix it in init(8)
-and make it parse some command line option that then sets up
-the right cpusets.
+[ This patch was split off of patch:
+    SGI UV: TLB shootdown using broadcast assist unit
+  and improved with advice from Jeremy Fitzhardinge <jeremy@goop.org> ]
 
-But you asked for isolcpus=... use cases and I just wanted to describe
-one.
+Diffed against 2.6.26-rc4
 
-> So perhaps it boils down to a question of which is easiest to do,
-> the answer to which will vary depending on where you are in the food
-> chain of distributions.  Here "easy" means least likely to break
-> something else.  All these mechanisms are relatively trivial, until
-> one has to deal with conflicting software packages, configurations and
-> distributions, changing out from under oneself.
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
 
-One solution would be to move isolcpus=/isonodes= into init(8) and make
-sure it's always statically linked. But failing that keeping it in the
-kernel is not too bad. It's certainly not a lot of code.
+---
+ include/asm-x86/atomic_64.h |   26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-On the other hand if the kernel implemented a isolnodes=... it would
-be possible to exclude those nodes from the interleaving the kernel
-does at boot, which might be also beneficial and give slightly
-more isolation.
-
--Andi
+Index: linux/include/asm-x86/atomic_64.h
+===================================================================
+--- linux.orig/include/asm-x86/atomic_64.h
++++ linux/include/asm-x86/atomic_64.h
+@@ -431,6 +431,32 @@ static inline int atomic64_add_unless(at
+ 	return c != (u);
+ }
+ 
++/**
++ * atomic_inc_short - increment of a short integer
++ * @v: pointer to type int
++ *
++ * Atomically adds 1 to @v
++ * Returns the new value of @u
++ */
++static inline short int atomic_inc_short(short int *v)
++{
++	asm(LOCK_PREFIX "addw $1, %0" : "+m" (*v));
++	return *v;
++}
++
++/**
++ * atomic_or_long - OR of two long integers
++ * @v1: pointer to type unsigned long
++ * @v2: pointer to type unsigned long
++ *
++ * Atomically ORs @v1 and @v2
++ * Returns the result of the OR
++ */
++static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
++{
++	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
++}
++
+ #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
+ 
+ /* These are x86-specific, used by some header files */
