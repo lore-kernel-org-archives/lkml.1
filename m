@@ -1,394 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758474AbYFDHjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYFDHot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758474AbYFDHjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 03:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYFDHjE
+	id S1758560AbYFDHot (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 03:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYFDHok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 03:39:04 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:54807 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbYFDHjB (ORCPT
+	Wed, 4 Jun 2008 03:44:40 -0400
+Received: from mailout02.t-online.de ([194.25.134.17]:44960 "EHLO
+	mailout02.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbYFDHoi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 03:39:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=HdbR+bvCMTUPqmmhKEkqcygWJeyRHkffHePoDiZYYdTVFigDRCfORu/viSgzkk+knRcQQ5yqdsILwoTwuWskAuCbaKLNY2Zscl+pijkJJo6aI41Lmt/E7fBf8ZtXcP7MHQyGB4OYhQSuRWCK0gSDvef5i0KlwJjwfaGrPShohps=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] x86: e820 merge parse mem/memmap
-Date: Wed, 4 Jun 2008 00:39:16 -0700
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200806031025.55026.yhlu.kernel@gmail.com> <200806031934.01198.yhlu.kernel@gmail.com> <200806031935.05202.yhlu.kernel@gmail.com>
-In-Reply-To: <200806031935.05202.yhlu.kernel@gmail.com>
+	Wed, 4 Jun 2008 03:44:38 -0400
+From: =?iso-8859-1?q?J=FCrgen_Mell?= <j.mell@t-online.de>
+Reply-To: j.mell@t-online.de
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
+Date: Wed, 4 Jun 2008 09:44:15 +0200
+User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
+Cc: Andi Kleen <andi@firstfloor.org>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu,
+       hpa@zytor.com, tglx@linutronix.de,
+       Simon Holm =?iso-8859-1?q?Th=F8gersen?= <odie@cs.aau.dk>
+References: <200806011101.06491.j.mell@t-online.de> <20080602213756.GB25114@linux-os.sc.intel.com> <20080602225727.GC25114@linux-os.sc.intel.com>
+In-Reply-To: <20080602225727.GC25114@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200806040039.17091.yhlu.kernel@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806040944.15815.j.mell@t-online.de>
+X-ID: V8q+W+ZcwhgZ+nenLxb-u3ofpj5JcxU+seAV9bBBt7omPVPElR3cqV0bqjNwFqTwCS
+X-TOI-MSGID: 96c684ab-a30d-4f42-b451-b1ae66592073
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, 3rd June 2008, Suresh Siddha wrote:
+> On Mon, Jun 02, 2008 at 02:37:56PM -0700, Suresh Siddha wrote:
+> > On Sun, Jun 01, 2008 at 06:47:29PM +0200, Jürgen Mell wrote:
+> > > On Sonntag, 1. Juni 2008, Andi Kleen wrote:
+> > > > j.mell@t-online.de writes:
+> > > > > or it is restored more than
+> > > > > once. Please keep in mind, that I am always running two Einstein
+> > > > > processes simultaneously on my two cores!
+> > > > > I am willing to do further testing of this problem if someone
+> > > > > can give me a hint how to continue.
+> > > >
+> > > > My bet would have been actually on
+> > > > aa283f49276e7d840a40fb01eee6de97eaa7e012 because it does some
+> > > > nasty things (enable interrupts in the middle of __switch_to).
+> > > >
+> > > > I looked through the old patchkit and couldn't find any specific
+> > > > PREEMPT problems. All code it changes should run with preempt_off
+> > > >
+> > > > You could verify with sticking WARN_ON_ONCE(preemptible()) into
+> > > > all the places acc207616a91a413a50fdd8847a747c4a7324167
+> > > > changes (__unlazy_fpu, math_state_restore) and see if that
+> > > > triggers anywhere.
+> > >
+> > > No, that did not trigger. I put the WARN_ON_ONCE into process.c,
+> > > traps.c and also into the __unlazy_fpu macro in i387.h but I got no
+> > > messages anywhere (dmesg, /var/log/messages, /var/log/warn) when the
+> > > trap #8 occurred.
+> > > Meanwhile I am also running the tests on another machine to make
+> > > sure it is not a hardware-related problem.
+> > >
+> > > Any new ideas are welcome!
+> > >
+> > > Meanwhile I will go back to 2.6.20 and revert
+> > > aa283f49276e7d840a40fb01eee6de97eaa7e012. Maybe I got on a wrong
+> > > track...
+> >
+> > 2.6.20 doesn't have the commit
+> > 'aa283f49276e7d840a40fb01eee6de97eaa7e012'
+> >
+> > As you are seeing this corruption problem starting from 2.6.20,
+> > atleast recent(in 2.6.26 series) fpu changes don't play a role in
+> > this.
+> >
+> > I will try to reproduce your issue.
+>
+> Jürgen, I think I found the reason for your issue aswell.
+>
+> As you observed, it is probably coming from the commit
+> acc207616a91a413a50fdd8847a747c4a7324167, i386: add sleazy FPU
+> optimization
+>
+> It's a side affect though. This is the failing scenario:
+>
+> process 'A' in save_i387_ia32() just after clear_used_math()
+>
+> Got an interrupt and pre-empted out.
+>
+> At the next context switch to process 'A' again, kernel tries to restore
+> the math state proactively and sees a fpu_counter > 0 and
+> !tsk_used_math()
+>
+> This results in init_fpu() during the __switch_to()'s
+> math_state_restore()
+>
+> And resulting in fpu corruption which will be saved/restored
+> (save_i387_fxsave and restore_i387_fxsave) during the remaining
+> part of the signal handling after the context switch.
+>
+> So in short, yes the problem shows up for preempt enabled kernels and
+> the same patch I sent out 30 mins back (appended again) should fix your
+> issue aswell. Can you please test this and check if my theory is indeed
+> correct. If it fixes your issue aswell, then I will re-post the patch
+> with a new changelog and updated comments in the patch.
+>
 
-after we get 32 bit support e820_register_active_regions
+I have applied your patch to both an openSUSE 2.6.22.17 kernel and a 
+2.6.26-rc4 kernel.org kernel and run the test with Einstein@home on two 
+different machines. One machine is running 24 hours now, the other 18 
+hours. 
 
-we could merge parse mem/memmap
+During this time there were no faults on both machines.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+As it never before took more than 12 hours until the first appearance of 
+the problem, I think your patch fixed it. Very good work!
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -873,3 +873,89 @@ u64 __init e820_hole_size(u64 start, u64
- 	}
- 	return end - start - ((u64)ram << PAGE_SHIFT);
- }
-+
-+static void early_panic(char *msg)
-+{
-+	early_printk(msg);
-+	panic(msg);
-+}
-+
-+/* "mem=nopentium" disables the 4MB page tables. */
-+static int __init parse_memopt(char *p)
-+{
-+	u64 mem_size;
-+
-+	if (!p)
-+		return -EINVAL;
-+
-+#ifdef CONFIG_X86_32
-+	if (!strcmp(p, "nopentium")) {
-+		setup_clear_cpu_cap(X86_FEATURE_PSE);
-+		return 0;
-+	}
-+#endif
-+
-+	mem_size = memparse(p, &p);
-+	end_user_pfn = mem_size>>PAGE_SHIFT;
-+	return 0;
-+}
-+early_param("mem", parse_memopt);
-+
-+static int userdef __initdata;
-+
-+static int __init parse_memmap_opt(char *p)
-+{
-+	char *oldp;
-+	u64 start_at, mem_size;
-+
-+	if (!strcmp(p, "exactmap")) {
-+#ifdef CONFIG_CRASH_DUMP
-+		/*
-+		 * If we are doing a crash dump, we still need to know
-+		 * the real mem size before original memory map is
-+		 * reset.
-+		 */
-+		e820_register_active_regions(0, 0, -1UL);
-+		saved_max_pfn = e820_end_of_ram();
-+		remove_all_active_ranges();
-+#endif
-+		e820.nr_map = 0;
-+		userdef = 1;
-+		return 0;
-+	}
-+
-+	oldp = p;
-+	mem_size = memparse(p, &p);
-+	if (p == oldp)
-+		return -EINVAL;
-+
-+	userdef = 1;
-+	if (*p == '@') {
-+		start_at = memparse(p+1, &p);
-+		add_memory_region(start_at, mem_size, E820_RAM);
-+	} else if (*p == '#') {
-+		start_at = memparse(p+1, &p);
-+		add_memory_region(start_at, mem_size, E820_ACPI);
-+	} else if (*p == '$') {
-+		start_at = memparse(p+1, &p);
-+		add_memory_region(start_at, mem_size, E820_RESERVED);
-+	} else {
-+		end_user_pfn = (mem_size >> PAGE_SHIFT);
-+	}
-+	return *p == '\0' ? 0 : -EINVAL;
-+}
-+early_param("memmap", parse_memmap_opt);
-+
-+void __init finish_e820_parsing(void)
-+{
-+	if (userdef) {
-+		int nr = e820.nr_map;
-+
-+		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
-+			early_panic("Invalid user supplied memory map");
-+		e820.nr_map = nr;
-+
-+		printk(KERN_INFO "user-defined physical RAM map:\n");
-+		e820_print_map("user");
-+	}
-+}
-Index: linux-2.6/arch/x86/kernel/e820_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820_32.c
-+++ linux-2.6/arch/x86/kernel/e820_32.c
-@@ -207,36 +207,6 @@ void __init init_iomem_resources(struct 
- 	}
- }
- 
--void __init limit_regions(unsigned long long size)
--{
--	unsigned long long current_addr;
--	int i;
--
--	e820_print_map("limit_regions start");
--	for (i = 0; i < e820.nr_map; i++) {
--		current_addr = e820.map[i].addr + e820.map[i].size;
--		if (current_addr < size)
--			continue;
--
--		if (e820.map[i].type != E820_RAM)
--			continue;
--
--		if (e820.map[i].addr >= size) {
--			/*
--			 * This region starts past the end of the
--			 * requested size, skip it completely.
--			 */
--			e820.nr_map = i;
--		} else {
--			e820.nr_map = i + 1;
--			e820.map[i].size -= current_addr - size;
--		}
--		e820_print_map("limit_regions endfor");
--		return;
--	}
--	e820_print_map("limit_regions endfunc");
--}
--
- /* Overridden in paravirt.c if CONFIG_PARAVIRT */
- char * __init __attribute__((weak)) memory_setup(void)
- {
-@@ -249,93 +219,3 @@ void __init setup_memory_map(void)
- 	e820_print_map(memory_setup());
- }
- 
--static int __initdata user_defined_memmap;
--
--/*
-- * "mem=nopentium" disables the 4MB page tables.
-- * "mem=XXX[kKmM]" defines a memory region from HIGH_MEM
-- * to <mem>, overriding the bios size.
-- * "memmap=XXX[KkmM]@XXX[KkmM]" defines a memory region from
-- * <start> to <start>+<mem>, overriding the bios size.
-- *
-- * HPA tells me bootloaders need to parse mem=, so no new
-- * option should be mem=  [also see Documentation/i386/boot.txt]
-- */
--static int __init parse_mem(char *arg)
--{
--	if (!arg)
--		return -EINVAL;
--
--	if (strcmp(arg, "nopentium") == 0) {
--		setup_clear_cpu_cap(X86_FEATURE_PSE);
--	} else {
--		/* If the user specifies memory size, we
--		 * limit the BIOS-provided memory map to
--		 * that size. exactmap can be used to specify
--		 * the exact map. mem=number can be used to
--		 * trim the existing memory map.
--		 */
--		unsigned long long mem_size;
--
--		mem_size = memparse(arg, &arg);
--		limit_regions(mem_size);
--		user_defined_memmap = 1;
--	}
--	return 0;
--}
--early_param("mem", parse_mem);
--
--static int __init parse_memmap(char *arg)
--{
--	if (!arg)
--		return -EINVAL;
--
--	if (strcmp(arg, "exactmap") == 0) {
--#ifdef CONFIG_CRASH_DUMP
--		/* If we are doing a crash dump, we
--		 * still need to know the real mem
--		 * size before original memory map is
--		 * reset.
--		 */
--		e820_register_active_regions(0, 0, -1UL);
--		saved_max_pfn = e820_end_of_ram();
--		remove_all_active_ranges();
--#endif
--		e820.nr_map = 0;
--		user_defined_memmap = 1;
--	} else {
--		/* If the user specifies memory size, we
--		 * limit the BIOS-provided memory map to
--		 * that size. exactmap can be used to specify
--		 * the exact map. mem=number can be used to
--		 * trim the existing memory map.
--		 */
--		unsigned long long start_at, mem_size;
--
--		mem_size = memparse(arg, &arg);
--		if (*arg == '@') {
--			start_at = memparse(arg+1, &arg);
--			add_memory_region(start_at, mem_size, E820_RAM);
--		} else if (*arg == '#') {
--			start_at = memparse(arg+1, &arg);
--			add_memory_region(start_at, mem_size, E820_ACPI);
--		} else if (*arg == '$') {
--			start_at = memparse(arg+1, &arg);
--			add_memory_region(start_at, mem_size, E820_RESERVED);
--		} else {
--			limit_regions(mem_size);
--			user_defined_memmap = 1;
--		}
--	}
--	return 0;
--}
--early_param("memmap", parse_memmap);
--
--void __init finish_e820_parsing(void)
--{
--	if (user_defined_memmap) {
--		printk(KERN_INFO "user-defined physical RAM map:\n");
--		e820_print_map("user");
--	}
--}
--
-Index: linux-2.6/arch/x86/kernel/e820_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820_64.c
-+++ linux-2.6/arch/x86/kernel/e820_64.c
-@@ -96,75 +96,6 @@ char *__init machine_specific_memory_set
- 	return who;
- }
- 
--static int __init parse_memopt(char *p)
--{
--	if (!p)
--		return -EINVAL;
--	end_user_pfn = memparse(p, &p);
--	end_user_pfn >>= PAGE_SHIFT;
--	return 0;
--}
--early_param("mem", parse_memopt);
--
--static int userdef __initdata;
--
--static int __init parse_memmap_opt(char *p)
--{
--	char *oldp;
--	unsigned long long start_at, mem_size;
--
--	if (!strcmp(p, "exactmap")) {
--#ifdef CONFIG_CRASH_DUMP
--		/*
--		 * If we are doing a crash dump, we still need to know
--		 * the real mem size before original memory map is
--		 * reset.
--		 */
--		e820_register_active_regions(0, 0, -1UL);
--		saved_max_pfn = e820_end_of_ram();
--		remove_all_active_ranges();
--#endif
--		e820.nr_map = 0;
--		userdef = 1;
--		return 0;
--	}
--
--	oldp = p;
--	mem_size = memparse(p, &p);
--	if (p == oldp)
--		return -EINVAL;
--
--	userdef = 1;
--	if (*p == '@') {
--		start_at = memparse(p+1, &p);
--		add_memory_region(start_at, mem_size, E820_RAM);
--	} else if (*p == '#') {
--		start_at = memparse(p+1, &p);
--		add_memory_region(start_at, mem_size, E820_ACPI);
--	} else if (*p == '$') {
--		start_at = memparse(p+1, &p);
--		add_memory_region(start_at, mem_size, E820_RESERVED);
--	} else {
--		end_user_pfn = (mem_size >> PAGE_SHIFT);
--	}
--	return *p == '\0' ? 0 : -EINVAL;
--}
--early_param("memmap", parse_memmap_opt);
--
--void __init finish_e820_parsing(void)
--{
--	if (userdef) {
--		int nr = e820.nr_map;
--
--		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
--			early_panic("Invalid user supplied memory map");
--		e820.nr_map = nr;
--
--		printk(KERN_INFO "user-defined physical RAM map:\n");
--		e820_print_map("user");
--	}
--}
--
- int __init arch_get_ram_range(int slot, u64 *addr, u64 *size)
- {
- 	int i;
-Index: linux-2.6/include/asm-x86/e820.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820.h
-+++ linux-2.6/include/asm-x86/e820.h
-@@ -97,6 +97,8 @@ extern int e820_find_active_region(const
- extern void e820_register_active_regions(int nid, unsigned long start_pfn,
- 					 unsigned long end_pfn);
- extern u64 e820_hole_size(u64 start, u64 end);
-+extern void finish_e820_parsing(void);
-+
- #endif /* __ASSEMBLY__ */
- 
- #define ISA_START_ADDRESS	0xa0000
-Index: linux-2.6/include/asm-x86/e820_32.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_32.h
-+++ linux-2.6/include/asm-x86/e820_32.h
-@@ -19,9 +19,7 @@
- #ifndef __ASSEMBLY__
- 
- extern void setup_memory_map(void);
--extern void finish_e820_parsing(void);
- 
--extern void limit_regions(unsigned long long size);
- extern void init_iomem_resources(struct resource *code_resource,
- 				 struct resource *data_resource,
- 				 struct resource *bss_resource);
-Index: linux-2.6/include/asm-x86/e820_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/e820_64.h
-+++ linux-2.6/include/asm-x86/e820_64.h
-@@ -22,8 +22,6 @@ extern int is_memory_any_valid(unsigned 
- extern int e820_all_non_reserved(unsigned long start, unsigned long end);
- extern int is_memory_all_valid(unsigned long start, unsigned long end);
- 
--extern void finish_e820_parsing(void);
--
- #endif/*!__ASSEMBLY__*/
- 
- #endif/*__E820_HEADER*/
+I will continue running the test, but I believe we can call this fixed.
 
+Thank you again!
+                             Jürgen
