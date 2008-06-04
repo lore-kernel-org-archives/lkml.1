@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYFDEJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYFDELv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbYFDEJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 00:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbYFDEJ2
+	id S1752948AbYFDELv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 00:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbYFDELo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 00:09:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59733 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbYFDEJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 00:09:27 -0400
-From: Glauber Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] Make x86 latest boot with non-discontig boxes
-Date: Wed,  4 Jun 2008 01:08:27 -0300
-Message-Id: <1212552507-15134-1-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.5.4.5
+	Wed, 4 Jun 2008 00:11:44 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:43012 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbYFDELn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 00:11:43 -0400
+Date: Tue, 3 Jun 2008 21:11:42 -0700
+From: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 4/4] per-task-delay-accounting: /proc export for memory
+ reclaim delay
+Message-Id: <20080603211142.c0977893.kobayashi.kk@ncos.nec.co.jp>
+In-Reply-To: <20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20080603193825.12dbfff1.kobayashi.kk@ncos.nec.co.jp>
+	<20080603194608.ed76ecf3.kobayashi.kk@ncos.nec.co.jp>
+	<20080604120235.940B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 0596152388e234efebce464355186ad9e16c8cb6
-broke my box, since it removes completely the call to
-memory_present() at e820 setup.
+On Wed, 04 Jun 2008 12:07:29 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-It seems to be really not needed with discontig memory,
-but with flat and sparse, I get an early crash. The proposed patch
-moves the call memory_present() to setup_memory, the one
-present in setup_32.c.
+> ----------------------------------------
+> #!/usr/bin/perl
+> 
+> $stat = `cat /proc/$pid/stat`;
+> split
+> @stat_list = split(/ / , $stat);
+> print stat_list[$index];
+>                  ^
+>                  |
+>                  use array index number
 
-Signed-off-by: Glauber Costa <gcosta@redhat.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/kernel/setup_32.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 2901042..841eb2f 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -388,6 +388,8 @@ static unsigned long __init setup_memory(void)
- #ifdef CONFIG_FLATMEM
- 	max_mapnr = num_physpages;
- #endif
-+	memory_present(0, 0, max_pfn);
-+
- 	printk(KERN_NOTICE "%ldMB LOWMEM available.\n",
- 			pages_to_mb(max_low_pfn));
- 
--- 
-1.5.4.5
-
+Certainly, it makes sense.
+I thought this measurement value should be put
+beside other delay account.
