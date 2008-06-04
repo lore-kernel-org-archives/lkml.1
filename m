@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYFDPaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760250AbYFDPcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbYFDPaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 11:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbYFDPa1
+	id S1760250AbYFDPcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 11:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbYFDPcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 11:30:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60880 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750959AbYFDPa0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 11:30:26 -0400
-Message-ID: <4846B50F.5060808@sgi.com>
-Date: Wed, 04 Jun 2008 08:30:23 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 4 Jun 2008 11:32:07 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:36680 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754983AbYFDPcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 11:32:06 -0400
+Date: Wed, 4 Jun 2008 18:31:32 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
+Subject: Re: [PATCH] spi: two bug-fixes
+Message-ID: <20080604153132.GB4189@cs181133002.pp.htv.fi>
+References: <Pine.LNX.4.64.0806041705430.32657@axis700.grange>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Lameter <clameter@sgi.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [patch 02/41] cpu alloc: The allocator
-References: <20080530035620.587204923@sgi.com> <483F8AF7.9000309@cosmosbay.com> <Pine.LNX.4.64.0805292219220.12107@schroedinger.engr.sgi.com> <200805301552.25423.rusty@rustcorp.com.au>
-In-Reply-To: <200805301552.25423.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0806041705430.32657@axis700.grange>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Friday 30 May 2008 15:20:45 Christoph Lameter wrote:
->> On Fri, 30 May 2008, Eric Dumazet wrote:
->>>> +static DEFINE_PER_CPU(UNIT_TYPE, area[UNITS]);
->>> area[] is not guaranteed to be aligned on anything but 4 bytes.
->>>
->>> If someone then needs to call cpu_alloc(8, GFP_KERNEL, 8), it might get
->>> an non aligned result.
->>>
->>> Either you should add an __attribute__((__aligned__(PAGE_SIZE))),
->>> or take into account the real address of area[] in cpu_alloc() to avoid
->>> waste of up to PAGE_SIZE bytes
->>> per cpu.
->> I think cacheline aligning should be sufficient. People should not
->> allocate large page aligned objects here.
+On Wed, Jun 04, 2008 at 05:11:14PM +0200, Guennadi Liakhovetski wrote:
+> Two SPI-related fixes: unsigned int cannot be less than zero, and the list
+> search success check is wrong: for example, it didn't recognise failure for me
+> when I requested port 0.
 > 
-> I vaguely recall there were issues with this in the module code.  They might 
-> be gone now, but failing to meet alignment contraints without a big warning 
-> would suck.
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 > 
-> But modifying your code to consider the actual alignment is actually pretty 
-> trivial, AFAICT.
+> ---
 > 
-> Cheers,
-> Rusty.
+> It might be a good idea to get it in for 2.6.26. As a side note I was 
+> surprised, that the compiler didn't generate a warning for "if (t<0)" for 
+> unsigned t, whereas it does generate one for unsigned char with the same 
+> flags (-Wall). I asked on gcc, there was one reply from Segher 
+> Boessenkool, it is unclear if this is going to be recognised as a bug or 
+> not: http://gcc.gnu.org/ml/gcc/2008-06/threads.html#00044
+> 
+>  arch/arm/mach-pxa/ssp.c |    2 +-
+>  drivers/gpio/mcp23s08.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/drivers/gpio/mcp23s08.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/gpio/mcp23s08.c	2008-06-04 12:11:26.000000000 +0200
+> +++ linux-2.6/drivers/gpio/mcp23s08.c	2008-06-04 12:11:50.000000000 +0200
+> @@ -178,7 +178,7 @@
+>  
+>  	mutex_lock(&mcp->lock);
+>  	t = mcp23s08_read_regs(mcp, 0, mcp->cache, sizeof mcp->cache);
+> -	if (t < 0) {
+> +	if ((int)t < 0) {
+>  		seq_printf(s, " I/O ERROR %d\n", t);
+>  		goto done;
+>  	}
+>...
 
-So paraphrasing my earlier email, we should add:
+The better fix of making "t" signed by Roel Kluin is already as
+commit 1d1c1d9b557a12320174058d2d313ffb0f8611f4 in Linus' tree.
 
-	bitmap_find_free_area(bitmap, nbits, size, align, alignbase)
+cu
+Adrian
 
-so that > cacheline alignment is possible?
+-- 
 
-My thinking is that if we do go to true dynamically sized cpu_alloc area then
-allocating PAGE_SIZE units may be both practical and worthwhile...?
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Thanks,
-Mike
