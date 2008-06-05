@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbYFERdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbYFERgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbYFERdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 13:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbYFERdn
+	id S1759228AbYFERgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbYFERgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 13:33:43 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:45237 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757986AbYFERdk (ORCPT
+	Thu, 5 Jun 2008 13:36:14 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:63982 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752606AbYFERgN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 13:33:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=D/+6WQCPtgn5ZCo6LkidjQ6HS4HJBNLrtohZ7mOk3WiWsB91tB7/SnEgoLyt9DZQBl
-         JGP/NK6vtmni+a8MuV0fiHM1vQkVglvBc9IkxwqvJzYsxCMZNZwM4S0G6To1jnUJpRc4
-         iNubzjZ4KWL96JCYqIpYv/k0Yl9YZnS6RDWVI=
-Message-ID: <86802c440806051033k7a0a5306qc22555d3ebd48757@mail.gmail.com>
-Date: Thu, 5 Jun 2008 10:33:37 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: RFC [PATCH] x86: make generic arch support NUMAQ
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080605123933.GA22737@elte.hu>
+	Thu, 5 Jun 2008 13:36:13 -0400
+Message-ID: <fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
+Date: Thu, 5 Jun 2008 11:36:09 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+Cc: "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Jochen Friedrich" <jochen@scram.de>,
+       "Segher Boessenkool" <segher@kernel.crashing.org>,
+       "Gary Jennejohn" <garyj@denx.de>,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080605172723.GA14514@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200806050309.11197.yhlu.kernel@gmail.com>
-	 <20080605110002.GB17961@uranus.ravnborg.org>
-	 <20080605123933.GA22737@elte.hu>
+References: <20080605161624.GA517@polina.dev.rtsoft.ru>
+	 <fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
+	 <20080605172723.GA14514@polina.dev.rtsoft.ru>
+X-Google-Sender-Auth: aeec68df67846104
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 5, 2008 at 5:39 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Sam Ravnborg <sam@ravnborg.org> wrote:
->
->> > +#if defined(CONFIG_X86_NUMAQ) || defined(CONFIG_X86_GENERICARCH)
+On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Jun 05, 2008 at 10:45:17AM -0600, Grant Likely wrote:
+>> On Thu, Jun 5, 2008 at 10:16 AM, Anton Vorontsov
+>> <avorontsov@ru.mvista.com> wrote:
+>> > Here is v3. I'm out of ideas if you won't like it. :-)
+>> >
+>> > v3:
+>> > - Now these bindings are using bus notifiers chain, thus we adhere to the
+>> >  spi bus.
+>> >
+>> >  By the way, this scheme (IMO) looks good for I2C devices which needs
+>> >  platform_data extracted from the device tree too (Cc'ing Jochen).
+>> >
+>> > - Plus changed the OF bindings themselves, implemented voltage-range
+>> >  property. (Pierre, please take a look at vddrange_to_ocrmask(). I
+>> >  wonder if you would like this in the MMC core instead, with a kernel
+>> >  doc, of course.)
+>> >
+>> > v2:
+>> > - Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
 >>
->> I counted several places where you test for the above. Introducing a
->> CONFIG_X86_NUMAQ_OR_GENERIC would simplify stuff.
+>> Personally I think your v2 was better, and if I'm interpreting
+>> Pierre's comments correctly I think his main point is that instead of
+>> using the 'stock' probe/remove hooks for the spi mmc driver, the
+>> driver should be mildly reworked to provide a common block of code
+>> that can be used by both the OF and non-OF versions of the
+>> probe/remove routines.  I also think that is the way to go.
 >
-> Yinghai, please get rid of the NUMAQ build option altogether and
-> eliminate the subarch.
+> Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
+> host... The absence of enthusiasm I equaled to "no".
 >
-> We should keep a compatibility CONFIG_X86_NUMAQ that selects
-> X86_GENERICARCH, so that 'make oldconfig' on a NUMAQ config does the
-> right thing - but it's not a subarch anymore nor anything
-> user-configurable.
+> Heh.
 
-how about the Summit, and ES7000? You still have the two entries for them.
+I'm allergic to USB HCD code; I was probably having convulsions under my desk.
 
-Anyway, will remove entry in the list and make CONFIG_X86_NUMAQ select
-X86_GENERICARCH
+> p.s.
+> Btw, you forgot another downside of v2 approach: struct spi_driver
+> duplication... Not sure if everyone will be happy about it.
+>
+> Though, v2 is only version where we can make modular OF_MMC_SPI.
 
-and make the those ifdef only use X86_GENERICARCH...
+I think we've got our wires crossed.  I'm not referring to the option
+of an of_mmc_spi driver registering an mmc_spi device (which can then
+be probed by the mmc_spi_driver).  I'm referring to refactoring the
+probe/remove code so that common stuff is callable by both the mmc_spi
+and of_mmc_spi drivers without the oddity of the of_mmc_spi probe hook
+calling the mmc_spi probe hook.
 
-YH
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
