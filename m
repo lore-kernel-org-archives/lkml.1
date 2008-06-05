@@ -1,105 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYFENH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYFENLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbYFENH1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 09:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYFENHT
+	id S1757095AbYFENLT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 09:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYFENLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 09:07:19 -0400
-Received: from ns.km23152-01.keymachine.de ([87.118.114.125]:45124 "EHLO
-	km23152-01.keymachine.de" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753808AbYFENHR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 09:07:17 -0400
-Subject: [PATCH 2.6.26rc5] xfrm: SHA-256/384/512 HMAC support for IPsec
-From: Martin Willi <martin@strongswan.org>
-To: herbert@gondor.apana.org.au, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org
-X-Sieve: CMU Sieve 2.2
-X-DSPAM-Result: Whitelisted
-X-DSPAM-Processed: Thu Jun  5 14:48:08 2008
-X-DSPAM-Confidence: 0.9977
-X-DSPAM-Probability: 0.0000
-X-DSPAM-Signature: 4847e088304362021815202
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 05 Jun 2008 15:06:51 +0200
-Message-Id: <1212671211.6339.58.camel@martin>
+	Thu, 5 Jun 2008 09:11:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37125 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753181AbYFENLE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 09:11:04 -0400
+Date: Thu, 5 Jun 2008 13:54:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Olaf Hering <olaf@aepfle.de>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc5 (G5 SATA broken)
+Message-ID: <20080605135444.7a1e5158@core>
+In-Reply-To: <Pine.LNX.4.64.0806051255340.28792@blonde.site>
+References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
+	<20080605112436.GA4533@aepfle.de>
+	<Pine.LNX.4.64.0806051255340.28792@blonde.site>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8BIT
-X-DSPAM-Result: Whitelisted
-X-DSPAM-Processed: Thu Jun  5 15:07:54 2008
-X-DSPAM-Confidence: 0.9981
-X-DSPAM-Probability: 0.0000
-X-DSPAM-Signature: 4847e52a304361278018588
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RFC4868 defines the use of SHA256, SHA384 and SHA512 in HMAC using 128,
-192 and 256 bits truncation. This patch replaces the outdated SHA256
-algorithm with 96 bits truncation by the 128 bit variant and adds the
-SHA384/512 algorithms.
+> And the patch I'm finding successful is below: I won't sign it off,
+> for all I know it's reverting part of what Alan is trying to achieve;
+> but I expect it'll help towards the right fix.
 
-﻿Signed-off-by: Martin Willi <martin@strongswan.org>
+Its the right fix 
 
----
-Replacing the 96 bit truncation SHA256 algorithm might be problematic,
-but it is obsolete in IPsec and I don't see a way to register two
-different truncation lengths in XFRM.
+	ata_sff_check_altstatus() is a routine which does the altstatus
+check and may or may not call the helper
 
---- a/net/xfrm/xfrm_algo.c 2008-06-05 14:01:01.000000000 +0200
-+++ b/net/xfrm/xfrm_algo.c 2008-06-05 14:39:31.000000000 +0200
-@@ -187,7 +187,7 @@
- 
- 	.uinfo = {
- 		.auth = {
--			.icv_truncbits = 96,
-+			.icv_truncbits = 128,
- 			.icv_fullbits = 256,
- 		}
- 	},
-@@ -200,6 +200,42 @@
- 	}
- },
- {
-+	.name = "hmac(sha384)",
-+	.compat = "sha384",
-+
-+	.uinfo = {
-+		.auth = {
-+			.icv_truncbits = 192,
-+			.icv_fullbits = 384,
-+		}
-+	},
-+
-+	.desc = {
-+		.sadb_alg_id = SADB_X_AALG_SHA2_384HMAC,
-+		.sadb_alg_ivlen = 0,
-+		.sadb_alg_minbits = 384,
-+		.sadb_alg_maxbits = 384
-+	}
-+},
-+{
-+	.name = "hmac(sha512)",
-+	.compat = "sha512",
-+
-+	.uinfo = {
-+		.auth = {
-+			.icv_truncbits = 256,
-+			.icv_fullbits = 512,
-+		}
-+	},
-+
-+	.desc = {
-+		.sadb_alg_id = SADB_X_AALG_SHA2_512HMAC,
-+		.sadb_alg_ivlen = 0,
-+		.sadb_alg_minbits = 512,
-+		.sadb_alg_maxbits = 512
-+	}
-+},
-+{
- 	.name = "hmac(rmd160)",
- 	.compat = "rmd160",
+	ata_sff_check_status() is a default method for ap->ops->
 
-
-
+This lunatic naming leads to mistakes 8(
