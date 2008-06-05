@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbYFEQIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbYFEQIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759410AbYFEQIY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbYFEQIQ
+	id S1760599AbYFEQIh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbYFEQIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 5 Jun 2008 12:08:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43939 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751669AbYFEQIQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Jun 2008 12:08:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47358 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbYFEQIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:08:15 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: ip_fast_csum() requires a memory clobber on its inline
-	asm
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, matthew@wil.cx, linux-kernel@vger.kernel.org
-Date: Thu, 05 Jun 2008 17:07:35 +0100
-Message-ID: <20080605160735.2801.34832.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Thu, 5 Jun 2008 09:07:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Vitaliy Ivanov" <vitalivanov@gmail.com>
+Cc: torvalds@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
+       devzero@web.de, jsun@junsun.net, dwmw2@infradead.org,
+       protasnb@gmail.com, linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH resend] Adding dummy release functions to avoid
+ warnings.
+Message-Id: <20080605090725.96da4b75.akpm@linux-foundation.org>
+In-Reply-To: <35fbaa3e0806050239y5987fc33rd349be8d07bc1262@mail.gmail.com>
+References: <1208306056.15140.13.camel@pcvitaliy>
+	<35fbaa3e0806050239y5987fc33rd349be8d07bc1262@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ip_fast_csum() requires a memory clobber on its inline asm as it accesses
-memory in a fashion that gcc can't predict.
+On Thu, 5 Jun 2008 12:39:46 +0300 "Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
 
-The GCC manual says:
+> Hi all,
+> 
+> Natalie reported that patch wasn't accepted.
+> Please check this out. If I need to correct it somehow then pls let me know.
+> 
+> V.
+> 
+> ---------- Forwarded message ----------
+> From: Vitaliy Ivanov <vitalivanov@gmail.com>
+> Date: Wed, Apr 16, 2008 at 3:34 AM
+> Subject: [PATCH] Adding dummy release functions to avoid warnings.
+> To: linux-kernel@vger.kernel.org, devzero@web.de, jsun@junsun.net,
+> dwmw2@infradead.org
+> 
+> 
+> 
+> Subject: [PATCH] Adding dummy release functions to avoid warnings.
+> 
+> From: Vitaliy Ivanov <vitalivanov@gmail.com>
+> 
+> Trivial fix for #9690.
+> Added simple release functions that doing nothing.
+> Not sure whether we can leave it as is or to rework using
+> platform_device helpers like platform_device_alloc.
 
- If your assembler instructions access memory in an unpredictable
- fashion, add `memory' to the list of clobbered registers.  This will
- cause GCC to not keep memory values cached in registers across the
- assembler instruction and not optimize stores or loads to that memory.
+Please see Documentation/kobject.txt - search for the text
+"mocked mercilessly" :)
 
-The bug hasn't been noticed in FRV, but it has been seen in PA-RISC.
+> This approach is used in many drivers.
+> --
+> 
+>  drivers/mtd/maps/physmap.c |    6 ++++++
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Let's mock David too!
 
- include/asm-frv/checksum.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+>  drivers/video/hgafb.c      |   10 +++++++++-
 
-
-diff --git a/include/asm-frv/checksum.h b/include/asm-frv/checksum.h
-index 9b16898..269da09 100644
---- a/include/asm-frv/checksum.h
-+++ b/include/asm-frv/checksum.h
-@@ -75,7 +75,7 @@ __sum16 ip_fast_csum(const void *iph, unsigned int ihl)
- 	    : "=r" (sum), "=r" (iph), "=r" (ihl), "=r" (inc), "=&r"(tmp)
- 	    : "0" (sum), "1" (iph), "2" (ihl), "3" (4),
- 	    "m"(*(volatile struct { int _[100]; } *)iph)
--	    : "icc0", "icc1"
-+	    : "icc0", "icc1", "memory"
- 	    );
- 
- 	return (__force __sum16)~sum;
+I expect that
+hgafb-convert-to-new-platform-driver-api-bugzilla-9689.patch which I
+merged yesterday will help here.
 
