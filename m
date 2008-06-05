@@ -1,428 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbYFEFSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbYFEFUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625AbYFEFSa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 01:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYFEFSU
+	id S1759741AbYFEFUc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 01:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbYFEFUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 01:18:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34881 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751528AbYFEFSS (ORCPT
+	Thu, 5 Jun 2008 01:20:24 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44527 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546AbYFEFUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 01:18:18 -0400
-Date: Wed, 4 Jun 2008 22:17:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yan Burman <burman.yan@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Eric Piel <eric.piel@tremplin-utc.net>,
-       HWMON <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 2.6.25.4]  hwmon: HP Mobile Data Protection System 3D
- ACPI driver
-Message-Id: <20080604221724.48d06805.akpm@linux-foundation.org>
-In-Reply-To: <1212235533.3815.5.camel@localhost>
-References: <1212235533.3815.5.camel@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jun 2008 01:20:23 -0400
+Date: Thu, 5 Jun 2008 10:50:08 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org,
+       suresh.b.siddha@intel.com, aneesh.kumar@linux.vnet.ibm.com,
+       dhaval@linux.vnet.ibm.com, vatsa@linux.vnet.ibm.com,
+       David Bahi <DBahi@novell.com>
+Subject: Re: [ANNOUNCE] sched: schedtop utility
+Message-ID: <20080605052008.GA7635@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+References: <483545B4.BA47.005A.0@novell.com> <20080602124822.GA15410@in.ibm.com> <1212412051.6269.5.camel@lappy.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212412051.6269.5.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008 15:05:33 +0300 Yan Burman <burman.yan@gmail.com> wrote:
+Hi,
 
-> HP Mobile Data Protection System 4D ACPI driver. Similar to hdaps and applesmc in functionality.
-> This driver provides 3 kinds of functionality:
-> 1) Creates a misc device /dev/accel that acts similar to /dev/rtc and unblocks
-> the process reading from it when the device detects free-fall interrupt
-> 2) Functions as an input class device to provide similar functionality to
-> hdaps, in order to be able to use the laptop as a joystick
-> 3) Makes it possible to power the device off.
+On Mon, Jun 02, 2008 at 03:07:31PM +0200, Peter Zijlstra wrote:
+> On Mon, 2008-06-02 at 18:18 +0530, Ankita Garg wrote:
+> > Hi Gregory,
+> > 
+> > On Thu, May 22, 2008 at 08:06:44AM -0600, Gregory Haskins wrote:
+> > > Hi all scheduler developers,
+> > >   I had an itch to scratch w.r.t. watching the stats in /proc/schedstats, and it appears that the perl scripts referenced in Documentation/scheduler/sched-stats.txt do not support v14 from HEAD so I whipped up a little utility I call "schedtop".
+> > >
+> > 
+> > Nice tool! Helps in better visualization of the data in schedstats. 
+> > 
+> > Using the tool, realized that most of the timing related stats therein
+> > might not be completely usable in many scenarios, as might already be
+> > known.
+> > 
+> > Without any additional load on the system, all the stats are nice and
+> > sane. But, as soon as I ran my particular testcase, the data
+> > pertaining to the delta of run_delay/cpu_time went haywire! I understand
+> > that all the values are based on top of rq->clock, which relies on tsc that 
+> > is not synced across cpus and would result in skews/incorrect values.
+> > But, turns out to be not so reliable data for debugging. This is
+> > ofcourse nothing related to the tool, but for schedstat in
+> > general...rather just adding on to the already existing woes with non-syned 
+> > tscs :-)
 > 
-> Changes from previous post:
-> Clean up all checkpatch.pl warnings
-> Remove hdaps "compatibility" that made the drive disguise itself as hdaps
-> Always provide 3D sensor readings instead of selecting 2D or 3D operation
-> Make the driver load automatically for supported hardware
-> Identify laptop models based on DMI and adjust axis information accordingly
+> Thing is, things runtime should be calculated by using per cpu deltas.
+> You take a stamp when you get scheduled on the cpu and another one when
+> you stop running, then the delta is added to runtime.
 > 
-> The previous version of the driver seems to be used by quite a few people it seems
-> based on the feedback I'm getting by mail, so perhaps it can be considered for
-> inclusion in the kernel.
+> This is always on the same cpu - when you get migrated you're stopped
+> and re-scheduled so that should work out nicely.
+> 
+> So in that sense it shouldn't matter that the rq->clock values can get
+> skewed between cpus.
+>
+> So I'm still a little puzzled by your observations; though it could be
+> that the schedstat stuff got broken - I've never really looked too
+> closely at it.
 > 
 
-Patch looks reasonable, although my head's spinning a bit over the
-what-subsystem-is-this issue.
+Thanks Peter for the explanation...
+I agree with the above and that is the reason why I did not see weird
+values with cpu_time. But, run_delay still would suffer skews as the end
+points for delta could be taken on different cpus due to migration (more
+so on RT kernel due to the push-pull operations). With the below patch,
+I could not reproduce the issue I had seen earlier. After every dequeue,
+we take the delta and start wait measurements from zero when moved to a 
+different rq.
+ 
 
-> +	}
-> +
-> +	close(fd);
-> +	return EXIT_SUCCESS;
-> +}
->
-> ...
->
-> +#include <asm/atomic.h>
-> +
-> +#define VERSION "0.92"
+Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
 
-Beware that the version becomes essentially meaningless once the code
-is merged into mainline.  It cannot be used to identify the exact
-source code which a user is running - this is done via the main kernel
-version instead.
+Index: linux-2.6.24.4/kernel/sched.c
+===================================================================
+--- linux-2.6.24.4.orig/kernel/sched.c	2008-06-03 14:14:07.000000000 +0530
++++ linux-2.6.24.4/kernel/sched.c	2008-06-04 12:48:34.000000000 +0530
+@@ -948,6 +948,7 @@
+ 
+ static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
+ {
++	sched_info_dequeued(p);
+ 	p->sched_class->dequeue_task(rq, p, sleep);
+ 	p->se.on_rq = 0;
+ }
+Index: linux-2.6.24.4/kernel/sched_stats.h
+===================================================================
+--- linux-2.6.24.4.orig/kernel/sched_stats.h	2008-06-03 14:14:28.000000000 +0530
++++ linux-2.6.24.4/kernel/sched_stats.h	2008-06-05 10:39:39.000000000 +0530
+@@ -113,6 +113,13 @@
+ 	if (rq)
+ 		rq->rq_sched_info.cpu_time += delta;
+ }
++
++static inline void
++rq_sched_info_dequeued(struct rq *rq, unsigned long long delta)
++{
++	if (rq)
++		rq->rq_sched_info.run_delay += delta;
++}
+ # define schedstat_inc(rq, field)	do { (rq)->field++; } while (0)
+ # define schedstat_add(rq, field, amt)	do { (rq)->field += (amt); } while (0)
+ # define schedstat_set(var, val)	do { var = (val); } while (0)
+@@ -129,6 +136,11 @@
+ #endif
+ 
+ #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
++static inline void sched_info_reset_dequeued(struct task_struct *t)
++{
++	t->sched_info.last_queued = 0;
++}
++
+ /*
+  * Called when a process is dequeued from the active array and given
+  * the cpu.  We should note that with the exception of interactive
+@@ -138,15 +150,22 @@
+  * active queue, thus delaying tasks in the expired queue from running;
+  * see scheduler_tick()).
+  *
+- * This function is only called from sched_info_arrive(), rather than
+- * dequeue_task(). Even though a task may be queued and dequeued multiple
+- * times as it is shuffled about, we're really interested in knowing how
+- * long it was from the *first* time it was queued to the time that it
+- * finally hit a cpu.
++ * Though we are interested in knowing how long it was from the *first* time a
++ * task was queued to the time that it finally hit a cpu, we call this routine
++ * from dequeue_task() to account for possible rq->clock skew across cpus. The
++ * delta taken on each cpu would annul the skew.
+  */
+ static inline void sched_info_dequeued(struct task_struct *t)
+ {
+-	t->sched_info.last_queued = 0;
++	unsigned long long now = task_rq(t)->clock, delta = 0;
++
++	if(unlikely(sched_info_on()))
++		if(t->sched_info.last_queued)
++				delta = now - t->sched_info.last_queued;
++	sched_info_reset_dequeued(t);
++	t->sched_info.run_delay += delta;
++
++	rq_sched_info_dequeued(task_rq(t), delta);
+ }
+ 
+ /*
+@@ -160,7 +179,7 @@
+ 
+ 	if (t->sched_info.last_queued)
+ 		delta = now - t->sched_info.last_queued;
+-	sched_info_dequeued(t);
++	sched_info_reset_dequeued(t);
+ 	t->sched_info.run_delay += delta;
+ 	t->sched_info.last_arrival = now;
+ 	t->sched_info.pcount++;
 
-I'd suggest removal.
-
-> +#define DRIVER_NAME     "mdps"
-> +#define ACPI_MDPS_CLASS "accelerometer"
-> +#define ACPI_MDPS_ID    "HPQ0004"
-> +
->
-> ...
->
-> +/** Create a single value from 2 bytes received from the accelerometer
-> + * @param hi the high byte
-> + * @param lo the low byte
-> + * @return the resulting value
-> + */
-
-All these comments you have sort-of look like kerneldoc only they aren't.
-
-I suggest that either they be converted to kerneldoc or the /** and
-@param annotations be removed.
-
-
-> +static inline s16 mdps_glue_bytes(unsigned long hi, unsigned long lo)
-> +{
-> +	/* In "12 bit right justified" mode, bit 6, bit 7, bit 8 = bit 5 */
-> +	return (s16)((hi << 8) | lo);
-> +}
-> +
->
-> ...
->
-> +static int mdps_input_kthread(void *data)
-> +{
-> +	int x, y, z;
-> +
-> +	while (!kthread_should_stop()) {
-> +		mdps_get_xyz(mdps.device->handle, &x, &y, &z);
-> +		input_report_abs(mdps.idev, ABS_X, x - mdps.xcalib);
-> +		input_report_abs(mdps.idev, ABS_Y, y - mdps.ycalib);
-> +		input_report_abs(mdps.idev, ABS_Z, z - mdps.zcalib);
-> +
-> +		input_sync(mdps.idev);
-> +
-> +		try_to_freeze();
-> +		msleep_interruptible(MDPS_POLL_INTERVAL);
-> +	}
-> +
-> +	return 0;
-> +}
-
-This wakes up every 30 milliseconds which will make powertop users unhappy.
-
-Is this unavoidable?
-
->
-> ...
->
-> +static int mdps_misc_open(struct inode *inode, struct file *file)
-> +{
-> +	int ret;
-> +
-> +	if (!atomic_dec_and_test(&mdps.available)) {
-> +		atomic_inc(&mdps.available);
-> +		return -EBUSY; /* already open */
-> +	}
-
-These games with mdps.available are awkward and the above looks racy.
-
-It will work out better if it is converted to test_and_set_bit() and
-friends.
-
-> +	atomic_set(&mdps.count, 0);
-> +
-> +	/* Can't have shared interrupts here, since we have no way
-> +	 * to determine in interrupt context
-> +	 * if it was our device that caused the interrupt */
-> +	ret = request_irq(mdps.irq, mdps_irq, 0, "mdps", mdps_irq);
-> +	if (ret) {
-> +		atomic_inc(&mdps.available);
-> +		printk(KERN_ERR "mdps: IRQ%d allocation failed\n", mdps.irq);
-> +		return -ENODEV;
-> +	}
-> +
-> +	return 0;
-> +}
->
-> ...
->
-> +static ssize_t mdps_misc_read(struct file *file, char __user *buf,
-> +				size_t count, loff_t *pos)
-> +{
-> +	DECLARE_WAITQUEUE(wait, current);
-> +	u32 data;
-> +	ssize_t retval = count;
-> +
-> +	if (count != sizeof(u32))
-> +		return -EINVAL;
-> +
-> +	add_wait_queue(&mdps.misc_wait, &wait);
-> +	for (; ; ) {
-
-	for ( ; ; ) {
-
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		data = atomic_xchg(&mdps.count, 0);
-> +		if (data)
-> +			break;
-> +
-> +		if (file->f_flags & O_NONBLOCK) {
-> +			retval = -EAGAIN;
-> +			goto out;
-> +		}
-> +
-> +		if (signal_pending(current)) {
-> +			retval = -ERESTARTSYS;
-> +			goto out;
-> +		}
-> +
-> +		schedule();
-> +	}
-> +
-> +	/* make sure we are not going into copy_to_user() with
-> +	 * TASK_INTERRUPTIBLE state */
-> +	set_current_state(TASK_RUNNING);
-> +	if (copy_to_user(buf, &data, sizeof(data)))
-> +		retval = -EFAULT;
-> +
-> +out:
-> +	__set_current_state(TASK_RUNNING);
-> +	remove_wait_queue(&mdps.misc_wait, &wait);
-> +
-> +	return retval;
-> +}
-> +
->
-> ...
->
-> +static int mdps_dmi_matched(const struct dmi_system_id *dmi)
-> +{
-> +	mdps.ac = *(struct axis_conversion *)dmi->driver_data;
-
-Please remove the nasty-looking cast.  dmi_system_id.driver_data is
-already void*, and the cast will suppress compiler warnings which might
-be useful.
-
-> +	printk(KERN_INFO "mdps: hardware type %s found.\n", dmi->ident);
-> +
-> +	return 1;
-> +}
-> +
->
-> ...
->
-> +static int mdps_add(struct acpi_device *device)
-> +{
-> +	unsigned long val;
-> +	int ret;
-> +
-> +	if (!device)
-> +		return -EINVAL;
-> +
-> +	mdps.device = device;
-> +	strcpy(acpi_device_name(device), DRIVER_NAME);
-> +	strcpy(acpi_device_class(device), ACPI_MDPS_CLASS);
-
-So.. we avoid overflow via dead reckoning.  hm.
-
-> +	acpi_driver_data(device) = &mdps;
-> +
-> +	mdps_ALRD(device->handle, MDPS_WHO_AM_I, &val);
-> +	if (val != MDPS_ID) {
-> +		printk(KERN_ERR
-> +			"mdps: Accelerometer chip not LIS3LV02D{L,Q}\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	/* This is just to make sure that the same physical move
-> +	 * is reported identically */
-> +	if (dmi_check_system(mdps_dmi_ids) == 0) {
-> +		printk(KERN_INFO "mdps: laptop model unknown, "
-> +				 "using default axes configuration\n");
-> +		mdps.ac = mdps_axis_normal;
-> +	}
-> +
-> +	mdps_add_fs(device);
-> +	mdps_resume(device);
-> +
-> +	mdps_joystick_enable();
-> +
-> +	/* obtain IRQ number of our device from ACPI */
-> +	mdps_enum_resources(device);
-> +
-> +	if (power_off) /* see if user wanted to power off the device on load */
-> +		mdps_poweroff(mdps.device->handle);
-> +
-> +	/* if we did not get an IRQ from ACPI - we have nothing more to do */
-> +	if (!mdps.irq) {
-> +		printk(KERN_INFO
-> +			"mdps: No IRQ in ACPI. Disabling /dev/accel\n");
-> +		return 0;
-> +	}
-> +
-> +	atomic_set(&mdps.available, 1); /* init the misc device open count */
-> +	init_waitqueue_head(&mdps.misc_wait);
-
-It is preferable to do this at compile-time, which can be done with
-__WAIT_QUEUE_HEAD_INITIALIZER(), and a bit of pain.
-
-> +	ret = misc_register(&mdps_misc_device);
-> +	if (ret)
-> +		printk(KERN_ERR "mdps: misc_register failed\n");
-> +
-> +	return 0;
-> +}
->
-> ...
->
-> +static void mdps_joystick_enable(void)
-> +{
-> +	if (mdps.idev)
-> +		return;
-> +
-> +	mdps.idev = input_allocate_device();
-> +	if (!mdps.idev)
-> +		return;
-
-No error propagation or reporting here?
-
-> +	mdps_calibrate_joystick();
-> +
-> +	mdps.idev->name       = "HP Mobile Data Protection System";
-> +	mdps.idev->phys       = "mdps/input0";
-> +	mdps.idev->id.bustype = BUS_HOST;
-> +	mdps.idev->id.vendor  = 0;
-> +	mdps.idev->dev.parent   = &mdps.pdev->dev;
-> +
-> +	set_bit(EV_ABS, mdps.idev->evbit);
-> +
-> +	input_set_abs_params(mdps.idev, ABS_X, -MDPS_MAX_VAL, MDPS_MAX_VAL,
-> +		3, 0);
-> +	input_set_abs_params(mdps.idev, ABS_Y, -MDPS_MAX_VAL, MDPS_MAX_VAL,
-> +		3, 0);
-> +	input_set_abs_params(mdps.idev, ABS_Z, -MDPS_MAX_VAL, MDPS_MAX_VAL,
-> +		3, 0);
-> +
-> +	mdps.idev->open  = mdps_joystick_open;
-> +	mdps.idev->close = mdps_joystick_close;
-> +
-> +	if (input_register_device(mdps.idev)) {
-> +		input_free_device(mdps.idev);
-> +		mdps.idev = NULL;
-> +	}
-> +}
->
-> ...
->
-> +/* Sysfs stuff */
-
-Was it tested with CONFIG_SYSFS=n?
-
-> +static ssize_t mdps_position_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	int x, y, z;
-> +	mdps_get_xyz(mdps.device->handle, &x, &y, &z);
-
-We typically put a blank line between end-of-locals and start-of-code.
-
-> +	return sprintf(buf, "(%d,%d,%d)\n", x, y, z);
-> +}
-> +
-> +static ssize_t mdps_state_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%s\n", (mdps.is_on ? "on" : "off"));
-
-	strcpy(buf, mdps.is_on ? "on\n" : "off\n");
-
-:)
-
-> +}
->
-> ...
->
-> +static ssize_t mdps_rate_show(struct device *dev,
-> +			struct device_attribute *attr, char *buf)
-> +{
-> +	unsigned long ctrl;
-> +	int rate = 0;
-
-This is an unneeded initialisation to shut the compiler up.  Problems
-are a) it takes a lot of staring for the reader to work out why this
-initialisation is here and b) it generates extra code.
-
-unintialized_var() sovles both those issues, although some don't like it.
-
-> +	mdps_ALRD(mdps.device->handle, MDPS_CTRL_REG1, &ctrl);
-> +
-> +	/* get the sampling rate of the accelerometer in HZ */
-> +	switch ((ctrl & 0x30) >> 4) {
-> +	case 00:
-> +		rate = 40;
-> +		break;
-> +
-> +	case 01:
-> +		rate = 160;
-> +		break;
-> +
-> +	case 02:
-> +		rate = 640;
-> +		break;
-> +
-> +	case 03:
-> +		rate = 2560;
-> +		break;
-> +	}
-> +
-> +	return sprintf(buf, "%d\n", rate);
-> +}
-> +
-> +static ssize_t mdps_state_store(struct device *dev,
-> +				struct device_attribute *attr,
-> +				const char *buf, size_t count)
-> +{
-> +	int state;
-> +	if (sscanf(buf, "%d", &state) != 1 || (state != 1 && state != 0))
-> +		return -EINVAL;
-
-space-after-locals, please.
-
-> +	mdps.is_on = state;
-> +
-> +	if (mdps.is_on)
-> +		mdps_poweron(mdps.device->handle);
-> +	else
-> +		mdps_poweroff(mdps.device->handle);
-> +
-> +	return count;
-> +}
->
-> ...
->
-> +static int mdps_add_fs(struct acpi_device *device)
-> +{
-> +	mdps.pdev = platform_device_register_simple(DRIVER_NAME, -1, NULL, 0);
-> +	if (IS_ERR(mdps.pdev))
-> +		return PTR_ERR(mdps.pdev);
-
-in lots of places.
-
-> +	return sysfs_create_group(&mdps.pdev->dev.kobj, &mdps_attribute_group);
-> +}
-> +
->
-> ...
->
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
