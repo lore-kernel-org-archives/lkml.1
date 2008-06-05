@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbYFEQMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYFEQPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758990AbYFEQMY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYFEQMM
+	id S1757990AbYFEQPJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYFEQO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:12:12 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:10402 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbYFEQMK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:12:10 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.26-rc5
-Date: Thu, 5 Jun 2008 10:12:06 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Alejandro Riveira =?iso-8859-15?q?Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org> <20080605150306.18c00bd9@Varda> <alpine.LFD.1.10.0806050749570.3473@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0806050749570.3473@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8bit
+	Thu, 5 Jun 2008 12:14:57 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:43814 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbYFEQO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 12:14:57 -0400
+Date: Thu, 5 Jun 2008 20:16:12 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: TASK_WAKEKILL && /sbin/init (was: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race)
+Message-ID: <20080605161612.GB323@tv-sign.ru>
+References: <20080604170905.GA10273@tv-sign.ru> <20080604173318.GH3549@parisc-linux.org> <20080605152316.GA257@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806051012.07457.bjorn.helgaas@hp.com>
+In-Reply-To: <20080605152316.GA257@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 June 2008 08:54:24 am Linus Torvalds wrote:
+On 06/05, Oleg Nesterov wrote:
+>
+> Anyway. How about the (untested/uncompiled) patch for now? -EINTR or
+> -ERESTARTNOINTR looks "more correct" regardless.
 > 
-> On Thu, 5 Jun 2008, Alejandro Riveira Fernández wrote:
-> >
-> >  I got this on my dmesg; is this expected/harmaless?
-> >  (btw The wireless driver oops that i reported is gone as it is the 
-> >  bluetooth one ;)
-> > 
-> ..
-> > [    0.233795] system 00:08: iomem range 0x0-0x0 could not be reserved
-> > [    0.233795] system 00:08: iomem range 0x0-0x0 could not be reserved
-> .. repeated a lot ..
+> Oleg.
 > 
-> It's harmless but obviously irritating. The PnP resource manager changes 
-> need a few cleanups still - it's getting confused about IORESOURCE_UNSET 
-> vs IORESOURCE_DISABLED.
+> --- mm/filemap.c
+> +++ mm/filemap.c
+> @@ -188,7 +188,7 @@ static int sync_page(void *word)
+>  static int sync_page_killable(void *word)
+>  {
+>  	sync_page(word);
+> -	return fatal_signal_pending(current) ? -EINTR : 0;
+> +	return fatal_signal_pending(current) ? -ERESTARTNOINTR : 0;
 
-Here's the patch.  I reproduced the problem and verified that this
-fixes it.
+Forgot to mention, this part is questionable of course. And it can't
+prevent the case when "ret = sys_read(count)" succeeds, but ret < count.
 
-This should not add conflicts with any of the PNP patches that are
-currently in -mm (let me know if it does, of course).  After all
-those patches, IORESOURCE_UNSET is never set by PNP, but it should
-still be harmless to check for it.
+Oleg.
 
-
-
-PNP: skip UNSET MEM resources as well as DISABLED ones
-
-We don't need to reserve "unset" resources.  Trying to reserve
-them results in messages like this, which are ugly but harmless:
-
-    system 00:08: iomem range 0x0-0x0 could not be reserved
-
-Future PNP patches will remove use of IORESOURCE_UNSET, but
-we still need it for now.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: work11/drivers/pnp/system.c
-===================================================================
---- work11.orig/drivers/pnp/system.c	2008-06-05 09:46:33.000000000 -0600
-+++ work11/drivers/pnp/system.c	2008-06-05 09:48:09.000000000 -0600
-@@ -81,7 +81,8 @@ static void reserve_resources_of_dev(str
- 	}
- 
- 	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
--		if (res->flags & IORESOURCE_DISABLED)
-+		if (res->flags & IORESOURCE_UNSET ||
-+		    res->flags & IORESOURCE_DISABLED)
- 			continue;
- 
- 		reserve_range(dev, res->start, res->end, 0);
