@@ -1,49 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbYFEQPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760245AbYFEQQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760305AbYFEQPc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbYFEQPE
+	id S1760245AbYFEQQf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYFEQQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:15:04 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:21980 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755569AbYFEQPB (ORCPT
+	Thu, 5 Jun 2008 12:16:28 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:24353 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751669AbYFEQQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:15:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=RqJQ/bihfkEtJt/uuTjK5803h6NRjf2JhJW5+nLyBPeAxCVhmpS7RMMG3SeyvxDOx
-	BXL4RCoi0sd8o94oNYn4A==
-Message-ID: <4ca0a85e0806050914v5dc78fbcv373b08f09e37a337@mail.gmail.com>
-Date: Thu, 5 Jun 2008 12:14:43 -0400
-From: "Thomas Tuttle" <ttuttle@google.com>
-To: "Matt Mackall" <mpm@selenic.com>
-Subject: Re: [PATCH 3/5] pagemap: Make pagemap_read enforce reading in multiples of 8
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1212682175.3953.169.camel@calx>
+	Thu, 5 Jun 2008 12:16:27 -0400
+Date: Thu, 5 Jun 2008 20:16:24 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Grant Likely <grant.likely@secretlab.ca>
+Cc: Jochen Friedrich <jochen@scram.de>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Gary Jennejohn <garyj@denx.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+Message-ID: <20080605161624.GA517@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-References: <4ca0a85e0806050806r38de18dft8927e093a8e47abd@mail.gmail.com>
-	 <1212681822.3953.162.camel@calx>
-	 <4ca0a85e0806050905j6cf33f3dx9143333aa0a8b6e7@mail.gmail.com>
-	 <1212682175.3953.169.camel@calx>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 5, 2008 at 12:09 PM, Matt Mackall <mpm@selenic.com> wrote:
-> Yes, I got that, I'm just mathematically impaired this morning. Read
-> that as "when someone tries to do a *20* byte read, do a 16-byte read.."
-> In other words, round down to the nearest multiple of 8.
+Here is v3. I'm out of ideas if you won't like it. :-)
 
-Oh.  I would seriously question doing that, because it would allow
-reads that are improperly split up to fail silently.  What happens if
-someone tries to read 40 bytes, and (for some reason) it gets split
-into two 20-byte reads?  Instead of "12345" they'll get "12.34."
-(where . is 4 zero or garbage bytes).  I'd rather they get an error.
+v3:
+- Now these bindings are using bus notifiers chain, thus we adhere to the
+  spi bus.
 
---ttuttle
+  By the way, this scheme (IMO) looks good for I2C devices which needs
+  platform_data extracted from the device tree too (Cc'ing Jochen).
+
+- Plus changed the OF bindings themselves, implemented voltage-range
+  property. (Pierre, please take a look at vddrange_to_ocrmask(). I
+  wonder if you would like this in the MMC core instead, with a kernel
+  doc, of course.)
+
+v2:
+- Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
+
+v1:
+- Bindings were adhered to the OF SPI core. Withdrawn by OF people.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ Documentation/powerpc/booting-without-of.txt |   21 +++
+ drivers/of/Kconfig                           |    8 +
+ drivers/of/Makefile                          |    1 +
+ drivers/of/of_mmc_spi.c                      |  210 ++++++++++++++++++++++++++
+ 4 files changed, 240 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/of/of_mmc_spi.c
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 6e1711c..6c55f3f 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -3143,7 +3143,28 @@ platforms are moved over to use the flattened-device-tree model.
+ 			};
+ 		};
+ 
++    ...) MMC-over-SPI
+ 
++      Required properties:
++      - compatible : should be "mmc-spi".
++      - reg : should specify SPI address (chip-select number).
++      - max-speed : (optional) maximum frequency for this device (Hz).
++      - voltage-range : two cells are required, first cell specifies minimum
++        slot voltage (mV), second cell specifies maximum slot voltage (mV).
++      - gpios : (optional) may specify GPIOs in this order: Write-Protect GPIO,
++        Card-Detect GPIO.
++
++      Example:
++
++	mmc-slot@0 {
++		compatible = "mmc-spi";
++		reg = <0>;
++		max-speed = <50000000>;
++		/* Unregulated slot. */
++		voltage-range = <3300 3300>;
++		gpios = <&sdcsr_pio 1 0   /*  WP */
++			 &sdcsr_pio 0 1>; /* nCD */
++	};
+ 
+ VII - Marvell Discovery mv64[345]6x System Controller chips
+ ===========================================================
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index 3a7a11a..aadbfb3 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -13,3 +13,11 @@ config OF_I2C
+ 	depends on PPC_OF && I2C
+ 	help
+ 	  OpenFirmware I2C accessors
++
++config OF_MMC_SPI
++	bool "OpenFirmware bindings for MMC/SD over SPI"
++	depends on PPC_OF && SPI
++	default y if MMC_SPI
++	help
++	  Say Y here to enable OpenFirmware bindings for the MMC/SD over SPI
++	  driver.
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index 548772e..a7c44fc 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -2,3 +2,4 @@ obj-y = base.o
+ obj-$(CONFIG_OF_DEVICE) += device.o platform.o
+ obj-$(CONFIG_OF_GPIO)   += gpio.o
+ obj-$(CONFIG_OF_I2C)	+= of_i2c.o
++obj-$(CONFIG_OF_MMC_SPI)	+= of_mmc_spi.o
+diff --git a/drivers/of/of_mmc_spi.c b/drivers/of/of_mmc_spi.c
+new file mode 100644
+index 0000000..aa4e017
+--- /dev/null
++++ b/drivers/of/of_mmc_spi.c
+@@ -0,0 +1,210 @@
++/*
++ * OpenFirmware bindings for the MMC-over-SPI driver
++ *
++ * Copyright (c) MontaVista Software, Inc. 2008.
++ *
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/notifier.h>
++#include <linux/gpio.h>
++#include <linux/of.h>
++#include <linux/of_gpio.h>
++#include <linux/of_platform.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/mmc_spi.h>
++#include <linux/mmc/host.h>
++
++/*
++ * XXX: Place it somewhere in the generic MMC code?
++ */
++static int vdd_to_bitnum(int vdd)
++{
++	int bit;
++	const int max_bit = ilog2(MMC_VDD_35_36);
++
++	if (vdd < 1650 || vdd > 3600)
++		return -EINVAL;
++
++	if (vdd >= 1650 && vdd <= 1950)
++		return ilog2(MMC_VDD_165_195);
++
++	/* base 2000 mV, step 100 mV, bit's base 8 */
++	bit = (vdd - 2000) / 100 + 8;
++	if (bit > max_bit)
++		return max_bit;
++	return bit;
++}
++
++static int vddrange_to_ocrmask(int vdd_min, int vdd_max, unsigned int *mask)
++{
++	if (vdd_max < vdd_min)
++		return -EINVAL;
++
++	vdd_max = vdd_to_bitnum(vdd_max);
++	if (vdd_max < 0)
++		return -EINVAL;
++
++	vdd_min = vdd_to_bitnum(vdd_min);
++	if (vdd_min < 0)
++		return -EINVAL;
++
++	/* fill the mask, from max bit to min bit */
++	while (vdd_max >= vdd_min)
++		*mask |= 1 << vdd_max--;
++	return 0;
++}
++
++struct of_mmc_spi {
++	int wp_gpio;
++	int cd_gpio;
++	struct mmc_spi_platform_data mmc_pdata;
++};
++
++static struct of_mmc_spi *to_of_mmc_spi(struct device *dev)
++{
++	return container_of(dev->platform_data, struct of_mmc_spi, mmc_pdata);
++}
++
++static int mmc_get_ro(struct device *dev)
++{
++	struct of_mmc_spi *oms = to_of_mmc_spi(dev);
++
++	return gpio_get_value(oms->wp_gpio);
++}
++
++static int mmc_get_cd(struct device *dev)
++{
++	struct of_mmc_spi *oms = to_of_mmc_spi(dev);
++
++	return gpio_get_value(oms->cd_gpio);
++}
++
++static int of_mmc_spi_add(struct device *dev)
++{
++	int ret = -EINVAL;
++	struct device_node *np = dev->archdata.of_node;
++	struct of_mmc_spi *oms;
++	const u32 *voltage_range;
++	int size;
++
++	if (!np || !of_device_is_compatible(np, "mmc-spi"))
++		return NOTIFY_DONE;
++
++	oms = kzalloc(sizeof(*oms), GFP_KERNEL);
++	if (!oms)
++		return notifier_to_errno(-ENOMEM);
++
++	/* We don't support interrupts yet, let's poll. */
++	oms->mmc_pdata.caps |= MMC_CAP_NEEDS_POLL;
++
++	voltage_range = of_get_property(np, "voltage-range", &size);
++	if (!voltage_range || size < sizeof(*voltage_range) * 2) {
++		dev_err(dev, "OF: voltage-range unspecified\n");
++		goto err_ocr;
++	}
++
++	ret = vddrange_to_ocrmask(voltage_range[0], voltage_range[1],
++				  &oms->mmc_pdata.ocr_mask);
++	if (ret) {
++		dev_err(dev, "OF: specified voltage-range is invalid\n");
++		goto err_ocr;
++	}
++
++	oms->wp_gpio = of_get_gpio(np, 0);
++	if (gpio_is_valid(oms->wp_gpio)) {
++		ret = gpio_request(oms->wp_gpio, dev->bus_id);
++		if (ret < 0)
++			goto err_wp_gpio;
++		oms->mmc_pdata.get_ro = &mmc_get_ro;
++	}
++
++	oms->cd_gpio = of_get_gpio(np, 1);
++	if (gpio_is_valid(oms->cd_gpio)) {
++		ret = gpio_request(oms->cd_gpio, dev->bus_id);
++		if (ret < 0)
++			goto err_cd_gpio;
++		oms->mmc_pdata.get_cd = &mmc_get_cd;
++	}
++
++	dev->platform_data = &oms->mmc_pdata;
++
++	return NOTIFY_STOP;
++
++err_cd_gpio:
++	if (gpio_is_valid(oms->wp_gpio))
++		gpio_free(oms->wp_gpio);
++err_wp_gpio:
++err_ocr:
++	kfree(oms);
++	return notifier_to_errno(ret);
++}
++
++static int of_mmc_spi_del(struct device *dev)
++{
++	struct device_node *np = dev->archdata.of_node;
++	struct of_mmc_spi *oms;
++
++	if (!np || !of_device_is_compatible(np, "mmc-spi") ||
++			!dev->platform_data)
++		return NOTIFY_DONE;
++
++	oms = to_of_mmc_spi(dev);
++
++	if (gpio_is_valid(oms->cd_gpio))
++		gpio_free(oms->cd_gpio);
++	if (gpio_is_valid(oms->wp_gpio))
++		gpio_free(oms->wp_gpio);
++
++	kfree(oms);
++	return NOTIFY_STOP;
++}
++
++static int of_mmc_spi_notify(struct notifier_block *nb, unsigned long action,
++			     void *_dev)
++{
++	struct device *dev = _dev;
++
++	switch (action) {
++	case BUS_NOTIFY_ADD_DEVICE:
++		return of_mmc_spi_add(dev);
++	case BUS_NOTIFY_DEL_DEVICE:
++		return of_mmc_spi_del(dev);
++	};
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block of_mmc_spi_notifier = {
++	.notifier_call = of_mmc_spi_notify,
++};
++
++/*
++ * Should be called early enough, but after SPI core initializes. So, we
++ * use subsys_initcall (as in the SPI core), and link order guaranties
++ * that we'll be called at the right time.
++ */
++static int __init of_mmc_spi_init(void)
++{
++	int ret;
++
++	ret = bus_register_notifier(&spi_bus_type, &of_mmc_spi_notifier);
++	if (ret) {
++		pr_err("%s: unable to register notifier on the spi bus\n",
++			__func__);
++		return ret;
++	}
++
++	return 0;
++}
++subsys_initcall(of_mmc_spi_init);
++
++MODULE_DESCRIPTION("OpenFirmware bindings for the MMC-over-SPI driver");
++MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
++MODULE_LICENSE("GPL");
+-- 
+1.5.5.1
