@@ -1,76 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbYFEPW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYFEPWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbYFEPW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYFEPV4
+	id S1753477AbYFEPWn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYFEPV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:21:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:54369 "EHLO mail.goop.org"
+	Thu, 5 Jun 2008 11:21:57 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46609 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753243AbYFEPVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:21:55 -0400
-Message-ID: <4848046A.5060006@goop.org>
-Date: Thu, 05 Jun 2008 16:21:14 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Beulich <jbeulich@novell.com>, Stable Kernel <stable@kernel.org>
-Subject: [PATCH] x86: set PAE PHYSICAL_MASK_SHIFT to match 64-bit
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753478AbYFEPV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 11:21:56 -0400
+Date: Thu, 5 Jun 2008 19:23:13 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race
+Message-ID: <20080605152313.GA203@tv-sign.ru>
+References: <20080604170905.GA10273@tv-sign.ru> <20080604173318.GH3549@parisc-linux.org> <20080604180101.GA10295@tv-sign.ru> <20080604195232.GJ3549@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604195232.GJ3549@parisc-linux.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can
-potentially have the same number of physical address bits as the
-64-bit host ("Enhanced Legacy PAE Paging").
+On 06/04, Matthew Wilcox wrote:
+>
+> On Wed, Jun 04, 2008 at 10:01:01PM +0400, Oleg Nesterov wrote:
+> > > In my opinion, not checking for TASK_STOPPED or TASK_TRACED previously was
+> > > an oversight.  This should be fixed.
+> >
+> > Perhaps, and the changelog has a special note. But imho we need another patch
+> > for that, this is a user-visible change.
+>
+> It is?
 
-This is a bugfix for two cases:
-1. running a 32-bit PAE kernel on a machine with
-   more than 64GB RAM.
-2. running a 32-bit PAE Xen guest on a host machine with
-   more than 64GB RAM
+Think about ptrace_notify().
 
-In both cases, a pte could need to have more than 36 bits of physical,
-and masking it to 36-bits will cause fairly severe havoc.
+Don't get me wrong. As I said, I think this change would be nice (but I didn't
+think thoroughly yet), and it also allows us to cleanup (or fix?) ptrace_stop().
+But with another patch, please.
 
-The 46-bit mask used in 64-bit seems pretty arbitrary.  The physical
-size could be between 40 and 52 bits.  Setting the mask to 40 bits
-would restrict the physical size to 1TB, which is definitely too
-small.  Setting it to 52 would be ridiculously large, and runs the
-risk that one of the vendors may decide to put flags rather than
-physical address in one of the upper reserved bits.
+> > > This patch is going to add quite a few cycles to schedule().  Has anyone
+> > > done any benchmarks with a schedule-heavy workload?
+> >
+> > No, I didn't. This patch is bugfix.
+>
+> But there are other ways to fix the bug if this patch proves to be too
+> heavy-weight.
 
-Doing it "properly" would require testing cpuid leaf 0x80000008, but
-it would mean that we would lose the ability to make all these
-compile-time constants.
+If I knew a better solution, I wouldn't have sent this patch ;)
 
-So, stick with 46 bits.  It's enough for now.
+Yes, we can change all users of TASK_KILLABLE. But personally I think this
+would be wrong. I strongly believe this code
 
-[ Ingo: This needs a test, but I think it should be fairly low-risk.
-   If it checks out OK, it should be slipped to Linus fairly soon,
-   since it is a bugfix.  It's probably worth putting into stable
-   too. ]
+	current->state = TASK_KILLABLE;
+	schedule();
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Jan Beulich <jbeulich@novell.com>
-Cc: Stable Kernel <stable@kernel.org>
+should work "as expected".
 
-diff -r 0eebd30011dc include/asm-x86/page_32.h
---- a/include/asm-x86/page_32.h	Wed Jun 04 10:32:01 2008 +0100
-+++ b/include/asm-x86/page_32.h	Thu Jun 05 16:09:53 2008 +0100
-@@ -22,7 +22,7 @@
- 
- 
- #ifdef CONFIG_X86_PAE
--#define __PHYSICAL_MASK_SHIFT	36
-+#define __PHYSICAL_MASK_SHIFT	46
- #define __VIRTUAL_MASK_SHIFT	32
- #define PAGETABLE_LEVELS	3
- 
+Btw, I don't completely agree with "quite a few cycles". Let's look at the
+code again:
 
+	int signal_pending_state(long state, struct task_struct *p)
+	{
+		if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
+			return 0;
+		if (!signal_pending(p))
+			return 0;
+
+		if (state & TASK_INTERRUPTIBLE)
+			return 1;
+		if (state & (__TASK_STOPPED | __TASK_TRACED))
+			return 0;
+		return __fatal_signal_pending(p);
+	}
+
+The fast path is "(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)) + signal_pending(p)",
+basically the same that we do now. And we can inline this helper to eliminate the
+function call.
+
+But yes sure, it does bloat schedule(), and I would be happy to see the better way.
+That is why I didn't send this patch immediately, but started with
+"Q: down_killable() is racy? or schedule() is not right?".
+
+> > However, I think the new helper can have other users. Not that I have a strong
+> > opinion.
+>
+> I don't think so ...
+
+The only part I strongly disagree with. Imho, __down_common/__mutex_lock_common/etc
+should use this helper. What if we add another "interesting" state? Or find another
+bug? why should we copy-and-paste this code to yet another something_new_killable() ?
+
+Btw, if we make it inline, __down_common() won't suffer (but otoh, I think that these
+_common()'s shouldn't be inline).
+
+
+
+So. I can re-send this patch unchanged or with signal_pending_state() inlined,
+or I can wait for another solution.
+
+What do you think?
+
+Oleg.
 
