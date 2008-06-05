@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbYFEUfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbYFEUiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754433AbYFEUfG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 16:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759993AbYFEUew
+	id S1760249AbYFEUiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 16:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbYFEUiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 16:34:52 -0400
-Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:55153 "HELO
-	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759707AbYFEUev (ORCPT
+	Thu, 5 Jun 2008 16:38:10 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37486 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbYFEUiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 16:34:51 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] OLPC: pci: fix up PCI stuff so that PCI_GOANY supports OLPC
-Date: Thu, 5 Jun 2008 13:34:32 -0700
-User-Agent: KMail/1.9.9
-Cc: Andres Salomon <dilinger@queued.net>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de, rmh@aybabtu.com
-References: <20080605152914.6f4ca839@ephemeral> <20080605124220.5a6245ab.akpm@linux-foundation.org>
-In-Reply-To: <20080605124220.5a6245ab.akpm@linux-foundation.org>
+	Thu, 5 Jun 2008 16:38:09 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 5 Jun 2008 22:37:15 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH regression fix] x86: fix CONFIG_NONPROMISC_DEVMEM prompt and
+ help text
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <481DC997.3070901@s5r6.in-berlin.de>
+Message-ID: <tkrat.fcf3166d665fd601@s5r6.in-berlin.de>
+References: <481DC997.3070901@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806051334.32260.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, June 05, 2008 12:42 pm Andrew Morton wrote:
-> On Thu, 5 Jun 2008 15:29:14 -0400
->
-> Andres Salomon <dilinger@queued.net> wrote:
-> > Previously, one would have to specifically choose CONFIG_OLPC and
-> > CONFIG_PCI_GOOLPC in order to enable PCI_OLPC.  That doesn't really
-> > work for distro kernels, so this patch allows one to choose
-> > CONFIG_OLPC and CONFIG_PCI_GOANY in order to build in OLPC support in
-> > a generic kernel (as requested by Robert Millan).
-> >
-> > This also moves GOOLPC before GOANY in the menuconfig list.
-> >
-> > Finally, make pci_access_init return early if we detect OLPC hardware.
-> > There's no need to continue probing stuff, and pci_pcbios_init
-> > specifically trashes our settings (we didn't run into that before
-> > because PCI_GOANY wasn't supported).
-> >
-> > It would be great if we could sneak this in for 2.6.26..  *cough*  :)
->
-> It looks harmless enough.
->
-> > ---
-> >  arch/x86/Kconfig    |   11 +++++------
-> >  arch/x86/pci/init.c |    3 ++-
-> >  arch/x86/pci/olpc.c |    5 +++--
-> >  arch/x86/pci/pci.h  |    2 +-
->
-> But I never know whether arch/x86/pci is a Jesse thing or an Ingo
-> thing.  Usual answer: it's an everyone thing and we all make a big mess ;)
+Here is an attempt to translate the prompt and help text into something
+which is legible and, as a bonus, correct.
 
-Heh, yeah I've been taking quite a few x86 PCI patches (Ingo actually has a 
-queue of them for me now), so I can pick this one up and put it in what I 
-hope will be my final 2.6.26 pull request.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-Jesse
+Bogosity already reported on May 4.
+
+Besides, AFAICT it is a security option, not a debug option, hence
+misplaced in Kconfig.debug.  It would be an actual debug option if the
+logic was the inverse:  PROMISC_DEVMEM, bool "Promiscuous /dev/mem".
+
+ arch/x86/Kconfig.debug |   20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+Index: linux/arch/x86/Kconfig.debug
+===================================================================
+--- linux.orig/arch/x86/Kconfig.debug
++++ linux/arch/x86/Kconfig.debug
+@@ -6,15 +6,19 @@ config TRACE_IRQFLAGS_SUPPORT
+ source "lib/Kconfig.debug"
+ 
+ config NONPROMISC_DEVMEM
+-	bool "Disable promiscuous /dev/mem"
++	bool "Restricted access to /dev/mem"
+ 	help
+-	  The /dev/mem file by default only allows userspace access to PCI
+-	  space and the BIOS code and data regions. This is sufficient for
+-	  dosemu and X and all common users of /dev/mem. With this config
+-	  option, you allow userspace access to all of memory, including
+-	  kernel and userspace memory. Accidental access to this is
+-	  obviously disasterous, but specific access can be used by people
+-	  debugging the kernel.
++	  If this option is left off, you allow userspace access to all
++	  of memory, including kernel and userspace memory. Accidental
++	  access to this is obviously disastrous, but specific access can
++	  be used by people debugging the kernel.
++
++	  If this option is switched on, the /dev/mem file only allows
++	  userspace access to PCI space and the BIOS code and data regions.
++	  This is sufficient for dosemu and X and all common users of
++	  /dev/mem.
++
++	  If in doubt, say Y.
+ 
+ config EARLY_PRINTK
+ 	bool "Early printk" if EMBEDDED
+
+-- 
+Stefan Richter
+-=====-==--- -==- --=-=
+http://arcgraph.de/sr/
+
