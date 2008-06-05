@@ -1,79 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbYFEFXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYFEFtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753877AbYFEFXv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 01:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYFEFXn
+	id S1754270AbYFEFtZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 01:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYFEFtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 01:23:43 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58799 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbYFEFXn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 01:23:43 -0400
-Date: Thu, 5 Jun 2008 14:23:20 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+	Thu, 5 Jun 2008 01:49:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62520 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751529AbYFEFtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 01:49:14 -0400
+Message-ID: <48477DFB.5010906@cn.fujitsu.com>
+Date: Thu, 05 Jun 2008 13:47:39 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
 To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH] introduce task cgroup (#task restrictioon for
- prevent fork bomb by cgroup)
-Message-Id: <20080605142320.cdc8b21a.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+CC: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>
+Subject: Re: [RFC][PATCH] introduce task cgroup (#task restrictioon for prevent
+ fork bomb by cgroup)
 References: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+KOSAKI Motohiro wrote:
+> Hi
+> 
+> I create new cgroup of number task restriction.
+> Please any comments!
+> 
+> 
+> 
+> benefit
+> ========================================
+> 1. prevent fork bomb.
+> 
+> We already have "/prox/sys/kernel/threads-max".
+> but it isn't perfect solution.
+> because threads-max prevent any process creation.
+> then, System-administrator can't login and restore trouble.
+> 
+> restrict of cgroup is better solution.
+> it can prevent fork by network service daemon, but allow fork interactive operation.
+> 
+> 
+> 2. help implement batch processing
+> 
+> in general, batch environment need support #task restriction.
+> my patch help implement it.
+> 
+> 
+> usage
+> ========================================
+> 
+> # mount -t cgroup -o task none /dev/cgroup
+> # mkdir /dev/cgroup/foo
+> # cd /dev/cgroup/foo
+> # ls 
+> notify_on_release  task.max_tasks  task.nr_tasks  tasks
+> # echo 100 > task.max_tasks
+> # fork_bomb 1000 &  <- try create 1000 process
+> # pgrep fork_bomb|wc -l
+> 98
+> 
 
-I think this would be usefull.
+You are not handling task migration between groups, i.e.:
+	# echo $$ > /cgroup/1/tasks
+	# echo $$ > /cgroup/2/tasks
 
-On Thu, 05 Jun 2008 13:43:06 +0900, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> Index: b/kernel/cgroup_task.c
+> 
+> future work
+> ====================================
+> discussion cgroup guys more.
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Li Zefan <lizf@cn.fujitsu.com>
+> CC: Paul Menage <menage@google.com>
+> 
+> ---
+>  include/linux/cgroup.h        |    5 -
+>  include/linux/cgroup_subsys.h |    4 
+>  init/Kconfig                  |   10 ++
+>  kernel/Makefile               |    1 
+>  kernel/cgroup.c               |   16 +++
+>  kernel/cgroup_task.c          |  185 ++++++++++++++++++++++++++++++++++++++++++
+>  kernel/fork.c                 |    5 -
+>  7 files changed, 222 insertions(+), 4 deletions(-)
+> 
+> Index: b/include/linux/cgroup.h
 > ===================================================================
-> --- /dev/null
-> +++ b/kernel/cgroup_task.c
-> @@ -0,0 +1,185 @@
-> +/* cgroup_task.c - #task control group
-> + *
-> + * Copyright: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -27,7 +27,7 @@ extern int cgroup_init(void);
+>  extern void cgroup_init_smp(void);
+>  extern void cgroup_lock(void);
+>  extern void cgroup_unlock(void);
+> -extern void cgroup_fork(struct task_struct *p);
+> +extern int  cgroup_fork(struct task_struct *p);
+>  extern void cgroup_fork_callbacks(struct task_struct *p);
+>  extern void cgroup_post_fork(struct task_struct *p);
+>  extern void cgroup_exit(struct task_struct *p, int run_callbacks);
+> @@ -299,6 +299,7 @@ struct cgroup_subsys {
+>  			  struct cgroup *cgrp, struct task_struct *tsk);
+>  	void (*attach)(struct cgroup_subsys *ss, struct cgroup *cgrp,
+>  			struct cgroup *old_cgrp, struct task_struct *tsk);
+> +	int  (*can_fork)(struct cgroup_subsys *ss, struct task_struct *task);
+>  	void (*fork)(struct cgroup_subsys *ss, struct task_struct *task);
+>  	void (*exit)(struct cgroup_subsys *ss, struct task_struct *task);
+>  	int (*populate)(struct cgroup_subsys *ss,
+> @@ -381,7 +382,7 @@ int cgroup_attach_task(struct cgroup *, 
+>  static inline int cgroup_init_early(void) { return 0; }
+>  static inline int cgroup_init(void) { return 0; }
+>  static inline void cgroup_init_smp(void) {}
+> -static inline void cgroup_fork(struct task_struct *p) {}
+> +static inline int  cgroup_fork(struct task_struct *p) { return 0; }
+>  static inline void cgroup_fork_callbacks(struct task_struct *p) {}
+>  static inline void cgroup_post_fork(struct task_struct *p) {}
+>  static inline void cgroup_exit(struct task_struct *p, int callbacks) {}
+> Index: b/init/Kconfig
+> ===================================================================
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -289,6 +289,16 @@ config CGROUP_DEBUG
+>  
+>  	  Say N if unsure
+>  
+> +config CGROUP_TASK
+> +	bool "Simple number of task accounting cgroup subsystem"
+> +	depends on CGROUPS && EXPERIMENTAL
+> +	default n
+> +	help
+> +          Provides a simple number of task accounting cgroup subsystem for
+> +	  prevent fork bomb.
 > +
-> +#include <linux/res_counter.h>
-I don't think it's needed.
-Or, are you planning to implement this feature by using res_counter?
+> +	  Say N if unsure
+> +
+>  config CGROUP_NS
+>          bool "Namespace cgroup subsystem"
+>          depends on CGROUPS
+> Index: b/kernel/Makefile
+> ===================================================================
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -46,6 +46,7 @@ obj-$(CONFIG_KEXEC) += kexec.o
+>  obj-$(CONFIG_COMPAT) += compat.o
+>  obj-$(CONFIG_CGROUPS) += cgroup.o
+>  obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
+> +obj-$(CONFIG_CGROUP_TASK) += cgroup_task.o
+>  obj-$(CONFIG_CPUSETS) += cpuset.o
+>  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
+>  obj-$(CONFIG_UTS_NS) += utsname.o
+> Index: b/kernel/cgroup.c
+> ===================================================================
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -2719,13 +2719,27 @@ static struct file_operations proc_cgrou
+>   * At the point that cgroup_fork() is called, 'current' is the parent
+>   * task, and the passed argument 'child' points to the child task.
+>   */
+> -void cgroup_fork(struct task_struct *child)
+> +int cgroup_fork(struct task_struct *child)
+>  {
+> +	int i;
+> +	int ret;
+> +
+> +	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
 
-> +static int task_cgroup_max_tasks_write(struct cgroup *cgrp,
-> +				       struct cftype *cftype,
-> +				       s64 max_tasks)
-> +{
-> +	struct task_cgroup *taskcg;
-> +
-> +	if ((max_tasks > INT_MAX) ||
-> +	    (max_tasks < INT_MIN))
-> +		return -EINVAL;
-> +
-> +	taskcg = task_cgroup_from_cgrp(cgrp);
-> +
-> +	spin_lock(&taskcg->lock);
-> +	if (max_tasks < taskcg->nr_tasks)
-> +		return -EBUSY;
-need spin_unlock().
+Maybe you need to add this in cgroup_init_subsys():
 
+-       need_forkexit_callback |= ss->fork || ss->exit;
++       need_forkexit_callback |= ss->fork || ss->exit || ss->can_fork;
 
-Thanks,
-Daisuke Nishimura.
+and then we can do:
+
+if (need_forkexit_callback) {
+	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+		...
+	}
+}
+
+> +		struct cgroup_subsys *ss = subsys[i];
+> +		if (ss->can_fork) {
+> +			ret = ss->can_fork(ss, child);
+> +			if (ret)
+> +				return ret;
+> +		}
+> +	}
+> +
+>  	task_lock(current);
+>  	child->cgroups = current->cgroups;
+>  	get_css_set(child->cgroups);
+>  	task_unlock(current);
+>  	INIT_LIST_HEAD(&child->cg_list);
+> +
+> +	return 0;
+>  }
