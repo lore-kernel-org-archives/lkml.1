@@ -1,182 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbYFEL2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbYFEL3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756629AbYFEL2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 07:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbYFEL2d
+	id S1757024AbYFEL3Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 07:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbYFEL27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 07:28:33 -0400
-Received: from www.tglx.de ([62.245.132.106]:43797 "EHLO www.tglx.de"
+	Thu, 5 Jun 2008 07:28:59 -0400
+Received: from md2.t-2.net ([84.255.209.81]:11729 "EHLO md2.t-2.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754932AbYFEL2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 07:28:32 -0400
-Date: Thu, 5 Jun 2008 13:27:44 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
-       Uwe.Kleine-Koenig@digi.com, gregkh@suse.de, akpm@linux-foundation.org,
-       lethal@linux-sh.org, tglx@linutronix.de
-Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
-Message-ID: <20080605112744.GB3198@local>
-References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se> <20080604101144.GA3207@local> <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com> <20080605090916.GA3198@local> <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com>
+	id S1755425AbYFEL26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 07:28:58 -0400
+X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 07:28:58 EDT
+Date: Thu, 5 Jun 2008 13:23:57 +0200
+From: Andrej Hocevar <and.hocevar@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM with kernel
+Message-ID: <20080605112357.GA7588@stoa>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <aec7e5c30806050246t248abc39vbc1e71d4475a0a0d@mail.gmail.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Junkmail-Status: score=10/150, host=md2.t-2.net
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A0B0201.4847CCCA.0092,ss=1,fgs=0,
+	ip=84.255.194.172,
+	so=2008-05-01 23:44:25,
+	dmn=5.4.3/2008-02-01
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 06:46:35PM +0900, Magnus Damm wrote:
-> On Thu, Jun 5, 2008 at 6:09 PM, Hans J. Koch <hjk@linutronix.de> wrote:
-> > On Thu, Jun 05, 2008 at 10:25:27AM +0900, Magnus Damm wrote:
-> >> On Wed, Jun 4, 2008 at 7:11 PM, Hans J. Koch <hjk@linutronix.de> wrote:
-> >> > On Wed, Jun 04, 2008 at 03:08:26PM +0900, Magnus Damm wrote:
-> >> >> From: Magnus Damm <damm@igel.co.jp>
-> >> >>
-> >> >> This patch adds a "Unique IRQ Mode" to the uio_pdrv UIO platform driver.
-> >> >> In this mode the user space driver is responsible for acknowledging and
-> >> >> re-enabling the interrupt. Shared interrupts are not supported.
-> >> >
-> >> > I still don't see any gain in this. This only works for embedded
-> >> > devices, so a user has to setup hardware specific code in his board
-> >> > support anyway.
-> >>
-> >> Exactly what in my patch makes this platform driver only suitable for
-> >> embedded devices?
-> >
-> > You assume the interrupt is not shared. You can never do that on a
-> > normal x86 PC, for example. E.g. for a PCI card you don't know which irq
-> > it'll get and if it is shared or not.
-> 
-> So your main objection against this patch is that you cannot use it
-> with shared interrupts?
+I got this right after resuming from hibernation. Unfortunatelly, I
+don't have the kernel-sources anymore as I've actually upgraded to
+2.6.25.4. 
 
-I think I've explained my objections detailed enough.
 
-> 
-> >> > With your code, we would have to add something like this
-> >> > to the docs:
-> >> >
-> >> > IF you define an irq AND ommit the irq handler THEN we silently add a
-> >> > handler that blindly assumes the irq is not shared...
-> >>
-> >> I'm not sure if silently and blindly are the first words that pop into
-> >> my mind, but sure. Documentation is a good idea. Just let me know
-> >> which uio_pdrv document you want me to modify.
-> >
-> > Stuff that is useful for other driver writers and not only for userspace
-> > people should be added to Documentation/Docbook/uio_howto.tmpl.
-> > Unfortunately, I forgot to ask Uwe to do this, so I'll probably have to
-> > do it myself one day ;-)
-> 
-> Right.
-> 
-> >> > In my opinion, this is confusing, and all it does is saving the need for a
-> >> > three-lines irq handler in the board support.
-> >>
-> >> You propose that I put the callbacks in my board support code instead
-> >> of modifying the driver.
-> >
-> > That's what uio_pdrv does.
-> 
-> Yes.
-> 
-> >> I don't think the board support level is the
-> >> proper place for this code.
-> >
-> > You have to write code there anyway, e.g. code that configures your GPIO
-> > as input, makes it generate interrupts and so on. And of course, you
-> > have to setup your platform device as well. If you simply add the irq
-> > handler, you can use uio_pdrv as-is. And if you _know_ that on your
-> > platform the irq is not shared, this might really be a one-liner that
-> > simply calls irq_disable. That's OK in board specific code, but not in a
-> > generic driver.
-> 
-> Ever heard about system on chip?
 
-ATM, I work with iMX31 and AT91SAM9263, before that I had a PXA270,
-can't remember what was before that...
-So yes, I've heard of SoC.
+Buffer I/O error on device sda1, logical block 0
+lost page write due to I/O error on sda1
+scsi 1:0:0:0: Direct-Access     WD       5000AAKS Externa 106a PQ: 0
+ANSI: 4
+sd 1:0:0:0: [sdb] 976773168 512-byte hardware sectors (500108 MB)
+sd 1:0:0:0: [sdb] Write Protect is off
+sd 1:0:0:0: [sdb] Mode Sense: 11 00 00 00
+sd 1:0:0:0: [sdb] Assuming drive cache: write through
+sd 1:0:0:0: [sdb] 976773168 512-byte hardware sectors (500108 MB)
+sd 1:0:0:0: [sdb] Write Protect is off
+sd 1:0:0:0: [sdb] Mode Sense: 11 00 00 00
+sd 1:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1 sdb2 sdb3
+ sd 1:0:0:0: [sdb] Attached SCSI disk
+usb-storage: device scan complete
+------------[ cut here ]------------
+WARNING: at fs/buffer.c:1183 mark_buffer_dirty+0x20/0x6a()
+Modules linked in: xt_state xt_tcpudp iptable_filter ip_tables x_tables
+nf_nat_ftp nf_nat nf_conntrack_ipv4 nf_conntrack_ftp nf_conntrack ppdev
+lp cpufreq_stats fuse sr_mod sbp2 sd_mod parport_pc parport
+snd_intel8x0 snd_ac97_codec rtc ac97_bus snd_pcm_oss snd_mixer_oss
+snd_pcm 8250_pci snd_timer 8250 serial_core snd_page_alloc rng_core
+video output evdev ide_cd_mod cdrom ide_disk usb_storage usbhid
+scsi_mod ohci1394 piix ieee1394 ide_core ehci_hcd uhci_hcd usbcore unix
+[last unloaded: firmware_class]
+Pid: 7364, comm: umount Not tainted 2.6.25.3summer #1
+[<c011767f>] warn_on_slowpath+0x40/0x4f
+[<c013c6d5>] generic_writepages+0x1a/0x21
+[<c014dd56>] check_bytes_and_report+0x25/0x98
+[<c014dd56>] check_bytes_and_report+0x25/0x98
+[<c014e046>] check_object+0x114/0x19f
+[<c0192fdf>] journal_destroy+0x11e/0x125
+[<c014e561>] __slab_free+0x1be/0x1ed
+[<c0192fdf>] journal_destroy+0x11e/0x125
+[<c014eb91>] kfree+0x79/0x81
+[<c0192fdf>] journal_destroy+0x11e/0x125
+[<c0192fdf>] journal_destroy+0x11e/0x125
+[<c0124ac8>] autoremove_wake_function+0x0/0x2d
+[<c016a436>] mark_buffer_dirty+0x20/0x6a
+[<c018a729>] ext3_put_super+0x41/0x137
+[<c0153257>] generic_shutdown_super+0x4a/0xad
+[<c01532c6>] kill_block_super+0xc/0x1b
+[<c0153334>] deactivate_super+0x2c/0x3f
+[<c01620bf>] sys_umount+0x231/0x269
+[<c014e561>] __slab_free+0x1be/0x1ed
+[<c01543ef>] sys_stat64+0xf/0x23
+[<c01440c0>] remove_vma+0x36/0x3b
+[<c0144938>] do_munmap+0x181/0x19b
+[<c0162102>] sys_oldumount+0xb/0xe
+[<c010393e>] syscall_call+0x7/0xb
+=======================
+---[ end trace 02c95bee20be13a0 ]---
 
-> Not all platform devices need board
-> specific setup.
 
-If it's a device within the SoC, you won't use UIO for that. If you did,
-your platform would depend on certain userspace software which is simply
-crap. And devices outside the SoC are board specific.
+	Andrej
 
-> 
-> >> The patch contains no board specific code,
-> >> and it is independent of both architecture and cpu model.
-> >
-> > Every platform device driver depends on board support.
-> 
-> Is that so? I suggest that you have a look at the mfd drivers and think again.
-
-All I said about board support also applies to platform support files
-like at91sam9263_devices.c, I'm simply talking about the file where you
-define your struct platform_device.
-
-> 
-> >> > So, NAK to this until somebody convinces me that I completely missed the
-> >> > point.
-> >>
-> >> We can reuse this driver for _many_ different SuperH processor models.
-> >> Most of these processor models even have more than one hardware block
-> >> that can be exported to user space using this uio_pdrv driver in
-> >> "Unique IRQ Mode". There is nothing board specific with this at all,
-> >> so yes, I think you are missing the point.
-> >
-> > First, I won't accept anything that changes the current UIO behaviour.
-> > If uio_info->irq is not set, then uio_register_device will fail. That's
-> > it. Your patch redefines the meaning of irq-not-set if uio_pdrv is used.
-> 
-> How is this changing the UIO behavior? I'm modifying the uio_pdrv
-> driver, which is a driver that you didn't even write yourself.
-
-uio_pdrv is a generic driver, so I consider it part of the UIO
-framework. It adds new possibilities for authors of UIO platform device
-drivers (which are the vast majority of all UIO drivers). It is not just
-another UIO driver, but part of the system. It'll appear in UIO
-documentation, I'll explain it in future UIO presentations, and so on.
-
-And I consider it my job to make sure that such generic code is clean,
-obvious, and consistent.
-
-> And yet
-> you seem to have very strong feelings against this patch.
-
-I explained why. My reasons are purely technical, please don't take this
-as a personal offense.
-
-> 
-> > Second, if we decide to introduce new UIO capabilities, there must be an
-> > obvious advantage. E.g., uio_pdrv saves the trouble of writing almost
-> > identical UIO platform drivers over and over again. A programmer only
-> > needs to touch the board support file he has to set up anyway which
-> > makes his board support patches simpler and easier to maintain. Your
-> > patch adds code that is not obvious, just to save a few lines of board
-> > support code. It doesn't add new possibilities, everything can be done
-> > with uio_pdrv alone.
-> 
-> Again, it's not board support code. And it's pretty obvious.
-> 
-> >> Maybe you prefer that I repost my "Reusable UIO Platform Driver"
-> >> instead of modifying uio_pdrv?
-> >
-> > If you have an idea that adds new possibilities, feel free to post it.
-> > If you come up with something that just adds confusion but no
-> > advantages, I'll never accept it.
-> 
-> You don't have to accept it. I'll just repost my original driver and
-> let someone else merge it then.
-
-Unfortunately, I'm one of the two UIO maintainers, so I feel obliged to
-review your patch and give my opinion. That doesn't mean I'm
-the big boss who makes the final decision. I can be critized and
-overridden. If Greg loves your patch and merges it, fine. Try it.
-
-Thanks,
-Hans
-
+--
+www.ljudmila.org/ludliteratura
