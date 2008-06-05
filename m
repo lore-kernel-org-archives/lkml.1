@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbYFEIv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYFEIxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbYFEIv3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 04:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYFEIvT
+	id S1755215AbYFEIxa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 04:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYFEIxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 04:51:19 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:21247 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752706AbYFEIvS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 04:51:18 -0400
-Message-Id: <4847C54B.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Thu, 05 Jun 2008 09:51:55 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-Subject: operation ordering during pgd_alloc/pgd_free
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 5 Jun 2008 04:53:23 -0400
+Received: from sacred.ru ([62.205.161.221]:53035 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752040AbYFEIxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 04:53:22 -0400
+Message-ID: <4847A7BE.5010603@openvz.org>
+Date: Thu, 05 Jun 2008 12:45:50 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH 2/2] devscgroup: make white list more compact in some cases
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 05 Jun 2008 12:48:06 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At present, pgd_ctor() adds a new pgd to pgd_list solely based on
-!SHARED_KERNEL_PMD. For PAE && !SHARED_KERNEL_PMD (i.e. Xen)
-this doesn't seem correct, as the pgd is still empty, which will confuse
-vmalloc_sync_all(). So in this case, list insertion should only happen at
-the end of pgd_prepopulate_pmd().
+Consider you added a 'c foo:bar r' permission to some cgroup and then
+(a bit later) 'c'foo:bar w' for it. After this you'll see a
+c foo:bar r
+c foo:bar w
+lines in a devices.list file.
 
-Likewise, pgd_free() calls pgd_mop_up_pmds() *before* pgd_dtor(),
-with the former zeroing pgd entries as it goes and only the latter
-removing the pgd from the list. Just as above this can confuse
-vmalloc_sync_all(), so here I would think that the two calls should just
-be swapped. However, if they get swapped, careful inspection of the
-interaction with save/restore will be needed - XenSource's Linux tree
-has a comment specifically to that effect:
+Another example - consider you added 10 'c foo:bar r' permissions to
+some cgroup (e.g. by mistake). After this you'll see 10
+c foo:bar r
+lines in a list file.
 
-/*
- * After this the pgd should not be pinned for the duration of this
- * function's execution. We should never sleep and thus never race:
- *  1. User pmds will not become write-protected under our feet due
- *     to a concurrent mm_pin_all().
- *  2. The machine addresses in PGD entries will not become invalid
- *     due to a concurrent save/restore.
- */
+This is weird. This situation also has one more annoying consequence. 
+Having many items in a white list makes permissions checking slower, 
+sine it has to walk a longer list.
 
-Since that tree doesn't support preemption, this is perhaps fine, but
-likely going to cause problems in the (preemptable) pv-ops code.
+The proposal is to merge permissions for items, that correspond to the
+same device.
 
-The issue with vmalloc_sync_all() would even go unnoticed, since the
-patch to unify the pgd_list mechanism with x86-64 removed the
-BUG_ON() that was meant to trigger on issues like this.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-But maybe I'm missing something?
+---
+ security/device_cgroup.c |   18 ++++++++++++++++--
+ 1 files changed, 16 insertions(+), 2 deletions(-)
 
-Jan
+diff --git a/security/device_cgroup.c b/security/device_cgroup.c
+index f9941a7..baf3488 100644
+--- a/security/device_cgroup.c
++++ b/security/device_cgroup.c
+@@ -106,7 +106,7 @@ free_and_exit:
+ static int dev_whitelist_add(struct dev_cgroup *dev_cgroup,
+ 			struct dev_whitelist_item *wh)
+ {
+-	struct dev_whitelist_item *whcopy;
++	struct dev_whitelist_item *whcopy, *walk;
+ 
+ 	whcopy = kmalloc(sizeof(*whcopy), GFP_KERNEL);
+ 	if (!whcopy)
+@@ -114,7 +114,21 @@ static int dev_whitelist_add(struct dev_cgroup *dev_cgroup,
+ 
+ 	memcpy(whcopy, wh, sizeof(*whcopy));
+ 	spin_lock(&dev_cgroup->lock);
+-	list_add_tail(&whcopy->list, &dev_cgroup->whitelist);
++	list_for_each_entry(walk, &dev_cgroup->whitelist, list) {
++		if (walk->type != wh->type)
++			continue;
++		if (walk->major != wh->major)
++			continue;
++		if (walk->minor != wh->minor)
++			continue;
++
++		walk->access |= wh->access;
++		kfree(whcopy);
++		whcopy = NULL;
++	}
++
++	if (whcopy != NULL)
++		list_add_tail(&whcopy->list, &dev_cgroup->whitelist);
+ 	spin_unlock(&dev_cgroup->lock);
+ 	return 0;
+ }
+-- 
+1.5.3.4
 
