@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYFEKVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbYFEKXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbYFEKVj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 06:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbYFEKV3
+	id S1756558AbYFEKXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 06:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYFEKXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 06:21:29 -0400
-Received: from mailmxout.mailmx.agnat.pl ([193.239.44.238]:2707 "EHLO
-	mailmxout.mailmx.agnat.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbYFEKV3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 06:21:29 -0400
-X-Greylist: delayed 771 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 06:21:29 EDT
-From: Arkadiusz Miskiewicz <arekm@pld-linux.org>
-Organization: SelfOrganizing
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 00/18] firmware: moving drivers to request_firmware()
-Date: Thu, 5 Jun 2008 12:07:50 +0200
-User-Agent: PLD Linux KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <20080605.foo@pmac.infradead.org>
-In-Reply-To: <20080605.foo@pmac.infradead.org>
+	Thu, 5 Jun 2008 06:23:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46498 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753341AbYFEKXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 06:23:00 -0400
+Date: Thu, 5 Jun 2008 12:22:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Travis <travis@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
+	area
+Message-ID: <20080605102222.GA21319@elte.hu>
+References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806051207.50556.arekm@pld-linux.org>
-X-Authenticated-Id: arekm
+In-Reply-To: <20080604003019.509483000@polaris-admin.engr.sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 June 2008, David Woodhouse wrote:
-> Ignoring the set of 'make fw->data const' patches which have mostly
-> been already posted and are fairly trivial, this is the current content
-> of the firmware tree at git.infradead.org/users/dwmw2/firmware-2.6.git
->
-> It starts by giving a way to build arbitrary firmware blobs into the
-> kernel while letting request_firmware() find them there, and then sets
-> about converting drivers to use request_firmware() instead of static
-> data blobs, now that we can do that without forcing the users to
-> actually  satisfy the firmware requests from userspace.
 
-Will there be a way for userspace to know what firmware file is needed by 
-which driver? 
+* Mike Travis <travis@sgi.com> wrote:
 
-So for example geninitrd/mkinitrd will be able to put only required firmware 
-files into initrd/initramfs (without a need to maintain separate database 
-with driver <-> firmware file name mapping).
+>   * Declare the pda as a per cpu variable.
+> 
+>   * Make the x86_64 per cpu area start at zero.
+> 
+>   * Since the pda is now the first element of the per_cpu area, cpu_pda()
+>     is no longer needed and per_cpu() can be used instead.  This also makes
+>     the _cpu_pda[] table obsolete.
+> 
+>   * Since %gs is pointing to the pda, it will then also point to the per cpu
+>     variables and can be accessed thusly:
+> 
+> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
+> 
+> Based on linux-2.6.tip
 
--- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+-tip testing found an instantaneous reboot crash on 64-bit x86, with 
+this config:
+
+  http://redhat.com/~mingo/misc/config-Thu_Jun__5_11_43_51_CEST_2008.bad
+
+there is no boot log as the instantaneous reboot happens before anything 
+is printed to the (early-) serial console. I have bisected it down to:
+
+| 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f is first bad commit
+| commit 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f
+| Author: Mike Travis <travis@sgi.com>
+| Date:   Tue Jun 3 17:30:21 2008 -0700
+|
+|     x86_64: Fold pda into per cpu area
+
+the big problem is not just this crash, but that the patch is _way_ too 
+big:
+
+ arch/x86/Kconfig                 |    3 +
+ arch/x86/kernel/head64.c         |   34 ++++++--------
+ arch/x86/kernel/irq_64.c         |   36 ++++++++-------
+ arch/x86/kernel/setup.c          |   90 ++++++++++++---------------------------
+ arch/x86/kernel/setup64.c        |    5 --
+ arch/x86/kernel/smpboot.c        |   51 ----------------------
+ arch/x86/kernel/traps_64.c       |   11 +++-
+ arch/x86/kernel/vmlinux_64.lds.S |    1 
+ include/asm-x86/percpu.h         |   48 ++++++--------------
+ 9 files changed, 89 insertions(+), 190 deletions(-)
+
+considering the danger involved, this is just way too large, and there's 
+no reasonable debugging i can do in the bisection to narrow it down any 
+further.
+
+Please resubmit with the bug fixed and with a proper splitup, the more 
+patches you manage to create, the better. For a dangerous code area like 
+this, with a track record of frequent breakages in the past, i would not 
+mind a "one line of code changed per patch" splitup either. (Feel free 
+to send a git tree link for us to try as well.)
+
+	Ingo
