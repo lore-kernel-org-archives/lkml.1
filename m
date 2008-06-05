@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYFERC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYFERGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbYFERC2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 13:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYFERCU
+	id S1757990AbYFERGz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbYFERGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 13:02:20 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41620 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbYFERCT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 13:02:19 -0400
-Message-ID: <48481846.6060407@kernel.org>
-Date: Thu, 05 Jun 2008 09:45:58 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       Stable Kernel <stable@kernel.org>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: set PAE PHYSICAL_MASK_SHIFT to match 64-bit
-References: <4848046A.5060006@goop.org> <484823BD.76E4.0078.0@novell.com> <4848096D.9010603@goop.org>
-In-Reply-To: <4848096D.9010603@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 5 Jun 2008 13:06:47 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:58067 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750971AbYFERGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 13:06:46 -0400
+Date: Thu, 5 Jun 2008 19:06:57 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Geoffrey Wossum <geoffrey@pager.net>, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: AT32 ASoC Driver Patches on alsa-devel
+Message-ID: <20080605190657.754df524@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <s5hod6f3jrq.wl%tiwai@suse.de>
+References: <200806050851.47319.geoffrey@pager.net>
+	<20080605162206.0a34a54e@hskinnemo-gx745.norway.atmel.com>
+	<200806051000.56969.geoffrey@pager.net>
+	<20080605182409.6285ee4b@hskinnemo-gx745.norway.atmel.com>
+	<s5hod6f3jrq.wl%tiwai@suse.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jun 2008 17:06:21.0933 (UTC) FILETIME=[7A9901D0:01C8C72E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> 
-> We could have an auction:
-> 
->    Do I hear 46? 47? 48?  50?  52!  Going once, twice, 52 bits!
-> 
-> Anyway, we can fix it later in a separate patch.  This is a 
-> change-as-little-as-possible bugfix patch.
-> 
+Takashi Iwai <tiwai@suse.de> wrote:
+> Of course, important.  And it's actually done in a different way...
+[...]
+> Of course, important.  And it's actually done in a different way...
 
-It should either be 52 bits or dynamic based on CPUID information.  The 
-latter is very expensive.
+But why?
 
-If there end up being additional control bits assigned in this space we 
-won't use them  since we know the size of the address space (which won't 
-include the control bits) and thus will leave them at zero.
+> Ideally, more fusion would be possible, but practically it's not
+> always worth.  I don't think you want to merge codes between ext3 and
+> reiserfs although both have similar "design goals" :)
 
-It's largely theoretical, since I believe Linux on x86-64 relies on 
-virtual >= physical+N, where I believe N is about 3 bits, and the page 
-table format or page size need to change to support more than 48 bits of 
-virtual address space.
+Still, both plug into the same VFS layer...
 
-	-hpa
+Reiser4 tried to invent its own plugin system. IIRC that didn't fly
+particularly well.
+
+Haavard
