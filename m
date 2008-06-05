@@ -1,124 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbYFESlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762536AbYFESnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762784AbYFESlT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbYFESlK
+	id S1762536AbYFESnG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYFESmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:41:10 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:49082 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753684AbYFESlI (ORCPT
+	Thu, 5 Jun 2008 14:42:54 -0400
+Received: from ag-out-0708.google.com ([72.14.246.244]:20766 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbYFESmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:41:08 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:mime-version:
-	content-type:content-transfer-encoding:content-disposition;
-	b=N52DEtZZMKfTjr0C6fiZs0bApAFgjP75MmlKM5X4z49Iuoimv3VlNPx67Miqr2Z0r
-	G89V21pdOcUL9LLMGXrww==
-Message-ID: <4ca0a85e0806051140m4709cddat793f72043cccc17@mail.gmail.com>
-Date: Thu, 5 Jun 2008 14:40:59 -0400
-From: "Thomas Tuttle" <ttuttle@google.com>
-To: mpm@selenic.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] pagemap: Add documentation for pagemap
+	Thu, 5 Jun 2008 14:42:53 -0400
+Message-ID: <fa686aa40806051142q61ba471fl772ed32586b70e5c@mail.gmail.com>
+Date: Thu, 5 Jun 2008 12:42:49 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+Cc: "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Jochen Friedrich" <jochen@scram.de>,
+       "Segher Boessenkool" <segher@kernel.crashing.org>,
+       "Gary Jennejohn" <garyj@denx.de>,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080605183146.GA29092@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20080605161624.GA517@polina.dev.rtsoft.ru>
+	 <fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
+	 <20080605172723.GA14514@polina.dev.rtsoft.ru>
+	 <fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
+	 <20080605180058.GA21429@polina.dev.rtsoft.ru>
+	 <fa686aa40806051118y39cbf14fye5268c819d4bbbfc@mail.gmail.com>
+	 <20080605183146.GA29092@polina.dev.rtsoft.ru>
+X-Google-Sender-Auth: c4d29bb5f231fece
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a quick explanation of the pagemap interface from a userspace point
-of view, and an example of how to use it (in English, not code).
+On Thu, Jun 5, 2008 at 12:31 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Jun 05, 2008 at 12:18:56PM -0600, Grant Likely wrote:
+>> On Thu, Jun 5, 2008 at 12:00 PM, Anton Vorontsov
+>> <avorontsov@ru.mvista.com> wrote:
+>> > On Thu, Jun 05, 2008 at 11:36:09AM -0600, Grant Likely wrote:
+>> >> On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
+>> >> <avorontsov@ru.mvista.com> wrote:
+>> >> > Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
+>> >> > host... The absence of enthusiasm I equaled to "no".
+>> >> >
+>> >> > Heh.
+>> >>
+>> >> I'm allergic to USB HCD code; I was probably having convulsions under my desk.
+>> >
+>> > :-)
+>> >
+>> > Ok, I also mentioned drivers/ata/pata_of_platform.c (OF version is using
+>> > common code from drivers/ata/pata_platform.c).
+>> >
+>> > Please look there, and tell me if this is what you have in mind. (ignore
+>> > _probe in the __pata_platform_probe name. Imagine
+>> > pata_platform_add_controller or something).
+>>
+>> Yes, I like that.  I've done something very similar for drivers with
+>> both of and non-of bindings.  For another example, this time all
+>> contained within a single .c file, see drivers/video/xilinxfb.c
+>
+> Ok, great. As I said previously, this is quite easy to do.
+>
+>> >> > p.s.
+>> >> > Btw, you forgot another downside of v2 approach: struct spi_driver
+>> >> > duplication... Not sure if everyone will be happy about it.
+>> >> >
+>> >> > Though, v2 is only version where we can make modular OF_MMC_SPI.
+>> >>
+>> >> I think we've got our wires crossed.  I'm not referring to the option
+>> >> of an of_mmc_spi driver registering an mmc_spi device (which can then
+>> >> be probed by the mmc_spi_driver).
+>> >
+>> > I'm not refrering to this option either.
+>>
+>> Okay, I'm confused then.  Where is the duplication of struct spi_driver?
+>
+> Here it is http://lkml.org/lkml/2008/5/23/299
+> + static struct spi_driver of_mmc_spi_driver = {
 
-Signed-off-by: Thomas  Tuttle
----
- Documentation/vm/pagemap.txt |   77 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 77 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/vm/pagemap.txt
+Right; I was going down the wrong thought path.  I have no problem with this.
 
-diff --git a/Documentation/vm/pagemap.txt b/Documentation/vm/pagemap.txt
-new file mode 100644
-index 0000000..b33a5e4
---- /dev/null
-+++ b/Documentation/vm/pagemap.txt
-@@ -0,0 +1,77 @@
-+pagemap, from the userspace perspective
-+---------------------------------------
-+
-+pagemap is a new (as of 2.6.25) set of interfaces in the kernel that allow
-+userspace programs to examine the page tables and related information by
-+reading files in /proc.
-+
-+There are three components to pagemap:
-+
-+ * /proc/pid/pagemap.  This file lets a userspace process find out which
-+   physical frame each virtual page is mapped to.  It contains one 64-bit
-+   value for each virtual page, containing the following data (from
-+   fs/proc/task_mmu.c, above pagemap_read):
-+
-+    * Bits 0-55  page frame number (PFN) if present
-+    * Bits 0-4   swap type if swapped
-+    * Bits 5-55  swap offset if swapped
-+    * Bits 55-60 page shift (page size = 1<<page shift)
-+    * Bit  61    reserved for future use
-+    * Bit  62    page swapped
-+    * Bit  63    page present
-+
-+   If the page is not present but in swap, then the PFN contains an
-+   encoding of the swap file number and the page's offset into the
-+   swap. Unmapped pages return a null PFN. This allows determining
-+   precisely which pages are mapped (or in swap) and comparing mapped
-+   pages between processes.
-+
-+   Efficient users of this interface will use /proc/pid/maps to
-+   determine which areas of memory are actually mapped and llseek to
-+   skip over unmapped regions.
-+
-+ * /proc/kpagecount.  This file contains a 64-bit count of the number of
-+   times each page is mapped, indexed by PFN.
-+
-+ * /proc/kpageflags.  This file contains a 64-bit set of flags for each
-+   page, indexed by PFN.
-+
-+   The flags are (from fs/proc/proc_misc, above kpageflags_read):
-+
-+     0. LOCKED
-+     1. ERROR
-+     2. REFERENCED
-+     3. UPTODATE
-+     4. DIRTY
-+     5. LRU
-+     6. ACTIVE
-+     7. SLAB
-+     8. WRITEBACK
-+     9. RECLAIM
-+    10. BUDDY
-+
-+Using pagemap to do something useful:
-+
-+The general procedure for using pagemap to find out about a process' memory
-+usage goes like this:
-+
-+ 1. Read /proc/pid/maps to determine which parts of the memory space are
-+    mapped to what.
-+ 2. Select the maps you are interested in -- all of them, or a particular
-+    library, or the stack or the heap, etc.
-+ 3. Open /proc/pid/pagemap and seek to the pages you would like to examine.
-+ 4. Read a u64 for each page from pagemap.
-+ 5. Open /proc/kpagecount and/or /proc/kpageflags.  For each PFN you just
-+    read, seek to that entry in the file, and read the data you want.
-+
-+For example, to find the "unique set size" (USS), which is the amount of
-+memory that a process is using that is not shared with any other process,
-+you can go through every map in the process, find the PFNs, look those up
-+in kpagecount, and tally up the number of pages that are only referenced
-+once.
-+
-+Other notes:
-+
-+Reading from any of the files will return -EINVAL if you are not starting
-+the read on an 8-byte boundary (e.g., if you seeked an odd number of bytes
-+into the file), or if the size of the read is not a multiple of 8 bytes.
---
-1.5.3.6
+BTW, while on that topic, I think it is reasonable to roll the members
+of of_mmc_spi into either the mmc_spi_platform_data or the
+mmc_spi_host structure.  It is just 2 integers and that would
+eliminate storing driver data pointers in seemingly random places.
+
+> And here http://lkml.org/lkml/2008/5/24/153 David Brownell says:
+>> The only thing that looks odd to me about this is that the wrapper
+>> is a spi_device rather than an of_device.  To me it makes more sense
+>> to just have an of_device setting up the right spi_device.  (Though
+>> maybe I missed some discussion about why that can't work.)
+
+Yeah; I'm not fond of that approach.  It incurs runtime cost of
+multiple 'struct device' for a single device which is unnecessary.
+
+> I hope the bottom line is that we're now all happy to create another
+> spi_driver to handle "OF MMC-o-SPI" devices..?
+
+Yes, I'm cool with it.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
