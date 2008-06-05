@@ -1,113 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYFEMh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbYFEMjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbYFEMh6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 08:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbYFEMhv
+	id S1758389AbYFEMjY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 08:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbYFEMjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 08:37:51 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:50422 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756897AbYFEMhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 08:37:50 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: wim@iguana.be
-Subject: [hpwdt] BUG: unable to handle kernel paging request
-Date: Thu, 5 Jun 2008 15:37:26 +0300
-User-Agent: KMail/1.9.9
-Cc: thomas.mingarelli@hp.com, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	Thu, 5 Jun 2008 08:39:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37527 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755864AbYFEMjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 08:39:16 -0400
+Date: Thu, 5 Jun 2008 07:39:10 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix compile warning in io_apic_{32,64}.c
+Message-ID: <20080605123910.GA5938@sgi.com>
+References: <20080605120557.GB14755@alberich.amd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806051537.28651.caglar@pardus.org.tr>
+In-Reply-To: <20080605120557.GB14755@alberich.amd.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi;
+On Thu, Jun 05, 2008 at 02:05:57PM +0200, Andreas Herrmann wrote:
+> Commit 05f2d12c3563dea8c81b301f9f3cf7919af23b13
+> (x86: change GET_APIC_ID() from an inline function to an out-of-line function)
+> 
+> introduced a compile warning
+> 
+> arch/x86/kernel/io_apic_64.c: In function 'print_local_APIC':
+> arch/x86/kernel/io_apic_64.c:1152: warning: 'v' is used uninitialized in this function
+> 
+> in some debug code -- which is not enabled by default.
+> This patch reverts the code changes in print_local_APIC.
+> 
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> 
+> --
+> diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+> index a40d54f..9a3446f 100644
+> --- a/arch/x86/kernel/io_apic_32.c
+> +++ b/arch/x86/kernel/io_apic_32.c
+> @@ -1489,8 +1489,8 @@ void /*__init*/ print_local_APIC(void * dummy)
+>  
+>  	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
+>  		smp_processor_id(), hard_smp_processor_id());
+> -	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v,
+> -			GET_APIC_ID(read_apic_id()));
+> +	v = apic_read(APIC_ID);
+> +	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(v));
+>  	v = apic_read(APIC_LVR);
+>  	printk(KERN_INFO "... APIC VERSION: %08x\n", v);
+>  	ver = GET_APIC_VERSION(v);
+> diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+> index ef1a8df..59ed52c 100644
+> --- a/arch/x86/kernel/io_apic_64.c
+> +++ b/arch/x86/kernel/io_apic_64.c
+> @@ -1077,7 +1077,8 @@ void __apicdebuginit print_local_APIC(void * dummy)
+>  
+>  	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
+>  		smp_processor_id(), hard_smp_processor_id());
+> -	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(read_apic_id()));
+> +	v = apic_read(APIC_ID);
 
-One of our buildfarm servers (HP Proliant DL380g5) gaves following BUG output 
-and fails to boot while trying to "modprobe hpwdt" module with 2.6.25.4 + 
-current stable-queue patchset + and some distro specific patches (but none of 
-the patches touches drivers/watchdog/hpwdt.c) 
+I don't think this work on UV systems. Because of processor limitations, not
+all of the APICID bits are contained in the hardware APIC_ID register. See
+read_apic_id() in arch/x86/kernel/genapic_64.c.
 
-[...]
-hpwdt: New timer passed in is 30 seconds.
-BUG: unable to handle kernel paging request at 003ac122
-IP: [<c0100009>]
-*pde = 00000000·
-Oops: 0000 [#1] SMP·
-Modules linked in: bnx2(+) joydev ipmi_si(+) thermal container processor 
-ipmi_msghandler button shpchp(+) iTCO_wdt i5000_edac(+) hpwdt(+) 
-iTCO_vendor_support e1000e(+) pci_hotplug
-edac_core sg ext3 jbd mbcache sr_mod cdrom usbhid hid ff_memless ata_piix 
-cciss uhci_hcd pata_acpi ata_generic libata scsi_mod dock ehci_hcd usbcore
-
-Pid: 1079, comm: modprobe Not tainted (2.6.25.4-96 #1)
-EIP: 0060:[<c0100009>] EFLAGS: 00210246 CPU: 1
-EIP is at 0xc0100009
-EAX: c00f0000 EBX: c00ffee0 ECX: 00000000 EDX: 00002000
-ESI: f90a4d4c EDI: f7511000 EBP: f7bd7dcc ESP: f7bd7dac
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process modprobe (pid: 1079, ti=f7bd6000 task=f7b60e60 task.ti=f7bd6000)
-Stack: f7511000 c00f0000 f7bd7dcc c00f0000 c00ffee0 f90a4cc0 f90a4c90 
-f7511000·
-       f7bd7de0 c01e553f f7511054 00000000 f90a4cc0 f7bd7df4 c024106f 
-f751110c·
-       f7511054 f90a4cc0 f7bd7e08 c0241160 f7bd7e14 00000000 c03baf10 
-f7bd7e2c·
-Call Trace:
- [<c01e553f>] ? pci_device_probe+0x39/0x59
- [<c024106f>] ? driver_probe_device+0xa0/0x136
- [<c0241160>] ? __driver_attach+0x5b/0x91
- [<c0240a4c>] ? bus_for_each_dev+0x3b/0x63
- [<c0240f14>] ? driver_attach+0x14/0x16
- [<c0241105>] ? __driver_attach+0x0/0x91
- [<c024044a>] ? bus_add_driver+0x9d/0x1ba
- [<c02412d4>] ? driver_register+0x47/0xa7
- [<c0168441>] ? __vunmap+0x93/0x9b
- [<c01e56f4>] ? __pci_register_driver+0x35/0x61
- [<f882a017>] ? hpwdt_init+0x17/0x19 [hpwdt]
- [<c0141e8e>] ? sys_init_module+0x18ab/0x19c8
- [<f909e000>] ? i5000_put_devices+0x0/0x33 [i5000_edac]
- [<c0132199>] ? param_get_int+0x0/0x15
- [<c01bfdf6>] ? security_file_permission+0xf/0x11
- [<c017598d>] ? sys_read+0x3b/0x60
- [<c01049b0>] ? sysenter_past_esp+0x6d/0xa5
- [<c02d0000>] ? calibrate_delay+0x3f/0x277
- =======================
-Code: 00 00 2a 80 32 80 50 20 20 38 30 33 43 4f 4d 50 41 51 ea 00 50 00 f0 31 
-32 2f 33 31 2f 39 39 20 fc 00 f6 86 11 02 00 00 40 75 14 <0f> 01 15 22 c1 3a 
-00 b8 18 00 00 00 8e d8 8e c0 8e e0 8e e8 fc·
-EIP: [<c0100009>] 0xc0100009 SS:ESP 0068:f7bd7dac
----[ end trace b5fae4656daaaae4 ]---
-[...]
-
-Removing hpwdt.ko and rebooting solves this problem, you can find .config/full 
-dmesg and lspci -vv outputs from [1]
-
-I didn't try 2.6.26-rc4 on that machine cause the only relevant change seems 
-following
-
-git log v2.6.25..HEAD ./drivers/watchdog/hpwdt.c
-
-commit 7f7f894c6d3285407b2493d1575500fb25e3d495
-Author: Mingarelli, Thomas <Thomas.Mingarelli@hp.com>
-Date:   Tue Mar 25 17:17:30 2008 +0000
-
-    [WATCHDOG] hpwdt: Fix NMI handling.
+I have not seen the compiler warning. What tree/options cause the error???
 
 
-[1] http://cekirdek.pardus.org.tr/~caglar/watchdog/
+> +	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(v));
+>  	v = apic_read(APIC_LVR);
+>  	printk(KERN_INFO "... APIC VERSION: %08x\n", v);
+>  	ver = GET_APIC_VERSION(v);
+> 
+> 
+> 
 
-If anything else is needed please just tell...
-
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+--- jack
