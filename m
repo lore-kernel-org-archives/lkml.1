@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbYFEQIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbYFEQKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760599AbYFEQIh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbYFEQIR
+	id S1759918AbYFEQKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYFEQKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:08:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43939 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751669AbYFEQIQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:08:16 -0400
-Date: Thu, 5 Jun 2008 09:07:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Vitaliy Ivanov" <vitalivanov@gmail.com>
-Cc: torvalds@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       devzero@web.de, jsun@junsun.net, dwmw2@infradead.org,
-       protasnb@gmail.com, linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH resend] Adding dummy release functions to avoid
- warnings.
-Message-Id: <20080605090725.96da4b75.akpm@linux-foundation.org>
-In-Reply-To: <35fbaa3e0806050239y5987fc33rd349be8d07bc1262@mail.gmail.com>
-References: <1208306056.15140.13.camel@pcvitaliy>
-	<35fbaa3e0806050239y5987fc33rd349be8d07bc1262@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 5 Jun 2008 12:10:36 -0400
+Received: from waste.org ([66.93.16.53]:49246 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750764AbYFEQKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 12:10:35 -0400
+Subject: Re: [PATCH 3/5] pagemap: Make pagemap_read enforce reading in
+	multiples of 8
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Tuttle <ttuttle@google.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4ca0a85e0806050905j6cf33f3dx9143333aa0a8b6e7@mail.gmail.com>
+References: <4ca0a85e0806050806r38de18dft8927e093a8e47abd@mail.gmail.com>
+	 <1212681822.3953.162.camel@calx>
+	 <4ca0a85e0806050905j6cf33f3dx9143333aa0a8b6e7@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 05 Jun 2008 11:09:35 -0500
+Message-Id: <1212682175.3953.169.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008 12:39:46 +0300 "Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
 
-> Hi all,
+On Thu, 2008-06-05 at 12:05 -0400, Thomas Tuttle wrote:
+> On Thu, Jun 5, 2008 at 12:03 PM, Matt Mackall <mpm@selenic.com> wrote:
+> >
+> > On Thu, 2008-06-05 at 11:06 -0400, Thomas Tuttle wrote:
+> >> Since kpagecount and kpageflags require reads in multiples of 8, and
+> >> it simplifies add_to_pagemap significantly, I added the same
+> >> requirement to /proc/pid/pagemap.
+> >
+> > I'm generally fine with this. Another approach that's perhaps more
+> > friendly is when someone tries to do a 24-byte read, do a 16-byte read,
+> > leaving the file pointer aligned. Not sure if that's completely kosher
+> > though.
 > 
-> Natalie reported that patch wasn't accepted.
-> Please check this out. If I need to correct it somehow then pls let me know.
-> 
-> V.
-> 
-> ---------- Forwarded message ----------
-> From: Vitaliy Ivanov <vitalivanov@gmail.com>
-> Date: Wed, Apr 16, 2008 at 3:34 AM
-> Subject: [PATCH] Adding dummy release functions to avoid warnings.
-> To: linux-kernel@vger.kernel.org, devzero@web.de, jsun@junsun.net,
-> dwmw2@infradead.org
-> 
-> 
-> 
-> Subject: [PATCH] Adding dummy release functions to avoid warnings.
-> 
-> From: Vitaliy Ivanov <vitalivanov@gmail.com>
-> 
-> Trivial fix for #9690.
-> Added simple release functions that doing nothing.
-> Not sure whether we can leave it as is or to rework using
-> platform_device helpers like platform_device_alloc.
+> This doesn't require that they read exactly 8 bytes, just that they
+> read some multiple of 8 bytes.  (They can read 8, 16, 24, etc..., just
+> not something like 12.)
 
-Please see Documentation/kobject.txt - search for the text
-"mocked mercilessly" :)
+Yes, I got that, I'm just mathematically impaired this morning. Read
+that as "when someone tries to do a *20* byte read, do a 16-byte read.."
+In other words, round down to the nearest multiple of 8.
 
-> This approach is used in many drivers.
-> --
-> 
->  drivers/mtd/maps/physmap.c |    6 ++++++
-
-Let's mock David too!
-
->  drivers/video/hgafb.c      |   10 +++++++++-
-
-I expect that
-hgafb-convert-to-new-platform-driver-api-bugzilla-9689.patch which I
-merged yesterday will help here.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
