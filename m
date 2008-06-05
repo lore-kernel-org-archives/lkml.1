@@ -1,258 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbYFEDZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbYFED2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760828AbYFEDZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 23:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYFEDZj
+	id S1763473AbYFED2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 23:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbYFED2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 23:25:39 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:32831 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbYFEDZi (ORCPT
+	Wed, 4 Jun 2008 23:28:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:53174 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbYFED2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 23:25:38 -0400
-Message-ID: <48475B96.1030102@jp.fujitsu.com>
-Date: Thu, 05 Jun 2008 12:20:54 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 4 Jun 2008 23:28:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WnY24i08BvpdWYKLzJtZJkdlU/5XVsGhjeoFV24kflUwyQzYims06b3/Do1VAsMH6V
+         zk2wWtVa02cgmHa/YJZ2ADwAYWSGaIx3qiKufCfu9FlBZ0JXzqi/nyT/+WVxmudDyyLg
+         urp77dllNdvptCN1BzEGtjvDZxdIDxfr7QhIw=
+Message-ID: <170fa0d20806042028r738795d2h6b6452ecb3e0f4b7@mail.gmail.com>
+Date: Wed, 4 Jun 2008 23:28:09 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Theodore Tso" <tytso@mit.edu>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Jan Kara" <jack@suse.cz>,
+       "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>, sct@redhat.com,
+       adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data buffers
+In-Reply-To: <20080604212202.GA8727@mit.edu>
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       jbarnes@virtuousgeek.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
-       greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
-       linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4, v14] PCI, ACPI: Physical PCI slot objects
-References: <20080604200829.GC379@ldl.fc.hp.com> <48475056.6040300@jp.fujitsu.com> <20080605030728.GA11528@ldl.fc.hp.com>
-In-Reply-To: <20080605030728.GA11528@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com>
+	 <20080603153050.fb99ac8a.akpm@linux-foundation.org>
+	 <20080604101925.GB16572@duck.suse.cz>
+	 <20080604111911.c1fe09c6.akpm@linux-foundation.org>
+	 <20080604212202.GA8727@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex-san,
+On Wed, Jun 4, 2008 at 5:22 PM, Theodore Tso <tytso@mit.edu> wrote:
 
-Thank you for updated patch. I'll try it.
-Unfortunately, I'm a little busy on the other jobs, so the test
-report might be delayed until the beginning of next week.
+> That being said, ext3 can be tuned (and it is the default today,
+> although I should probably change the default to be remount-ro), so
+> that its behaviour on write errors is, "don't worry, be happy", and
+> just leave the filesystem mounted read/write.  That's actually quite
+> dangerous for a critical production server, however.....
 
-Thanks,
-Kenji Kaneshige
+I'm not completely sure which "it" you mean in "it is the default
+today" (seems like you mean errors=continue) but isn't remount-ro
+already the ext3 default?
 
-
-Alex Chiang wrote:
-> Hi Kenji-san,
-> 
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> I tried to test your patch using latest linux-next, but I could
->> not apply your patch with the following messages:
-> 
-> Sorry, that latest patch series was against Linus' tree, not
-> linux-next.
-> 
->> I think maybe your patch is conflicting with the following patch.
->>
->> commit 372fa8fa0a77c47c7bcfae0ccd14e0c5f97d17fe
->> Author: Kay Sievers <kay.sievers@vrfy.org>
->> Date:   Fri May 2 06:02:41 2008 +0200
->>
->>    driver-core: prepare for removal of 20 char limit from struct device
->>
->>    The access of struct device->bus_id is replaced by dev_name(), to
->>    be able to use the non-limited kobject name after the conversion
->>    of the device register callers.
-> 
-> Yes, thanks for pointing this out. I've fixed patch 1/4.
-> 
-> I verified that patches 2, 3 and 4 apply cleanly against
-> linux-next, so this should be the only fix you'll need.
-> 
-> Sorry for the confusion.
-> 
-> /ac
-> 
-> commit c0175afea14cdaff3c33d894eb474eed1dcfa65d
-> Author: Alex Chiang <achiang@hp.com>
-> Date:   Wed Jun 4 21:04:46 2008 -0600
-> 
->     Construct one fakephp slot per PCI slot
->     
->     Register one slot per slot, rather than one slot per function.  Change the
->     name of the slot to fake%d instead of the pci address.
->     
->     Signed-off-by: Alex Chiang <achiang@hp.com>
->     Signed-off-by: Matthew Wilcox <matthew@wil.cx>
->     Cc: Greg KH <greg@kroah.com>
->     Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
->     Cc: Len Brown <lenb@kernel.org>
->     Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> 
-> diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
-> index d3393f4..e066959 100644
-> --- a/drivers/pci/hotplug/fakephp.c
-> +++ b/drivers/pci/hotplug/fakephp.c
-> @@ -66,6 +66,7 @@ struct dummy_slot {
->  	struct pci_dev *dev;
->  	struct work_struct remove_work;
->  	unsigned long removed;
-> +	char name[8];
->  };
->  
->  static int debug;
-> @@ -101,6 +102,7 @@ static int add_slot(struct pci_dev *dev)
->  	struct dummy_slot *dslot;
->  	struct hotplug_slot *slot;
->  	int retval = -ENOMEM;
-> +	static int count = 1;
->  
->  	slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
->  	if (!slot)
-> @@ -114,15 +116,13 @@ static int add_slot(struct pci_dev *dev)
->  	slot->info->max_bus_speed = PCI_SPEED_UNKNOWN;
->  	slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
->  
-> -	slot->name = kstrdup(dev_name(&dev->dev), GFP_KERNEL);
-> -	if (!slot->name)
-> -		goto error_info;
-> -	dbg("slot->name = %s\n", slot->name);
-> -
->  	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
->  	if (!dslot)
-> -		goto error_name;
-> +		goto error_info;
->  
-> +	slot->name = dslot->name;
-> +	snprintf(slot->name, sizeof(dslot->name), "fake%d", count++);
-> +	dbg("slot->name = %s\n", slot->name);
->  	slot->ops = &dummy_hotplug_slot_ops;
->  	slot->release = &dummy_release;
->  	slot->private = dslot;
-> @@ -140,8 +140,6 @@ static int add_slot(struct pci_dev *dev)
->  
->  error_dslot:
->  	kfree(dslot);
-> -error_name:
-> -	kfree(slot->name);
->  error_info:
->  	kfree(slot->info);
->  error_slot:
-> @@ -153,17 +151,17 @@ error:
->  static int __init pci_scan_buses(void)
->  {
->  	struct pci_dev *dev = NULL;
-> -	int retval = 0;
-> +	int lastslot = 0;
->  
->  	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
-> -		retval = add_slot(dev);
-> -		if (retval) {
-> -			pci_dev_put(dev);
-> -			break;
-> -		}
-> +		if (PCI_FUNC(dev->devfn) > 0 &&
-> +				lastslot == PCI_SLOT(dev->devfn))
-> +			continue;
-> +		lastslot = PCI_SLOT(dev->devfn);
-> +		add_slot(dev);
->  	}
->  
-> -	return retval;
-> +	return 0;
->  }
->  
->  static void remove_slot(struct dummy_slot *dslot)
-> @@ -301,23 +299,9 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
->  	return 0;
->  }
->  
-> -/* find the hotplug_slot for the pci_dev */
-> -static struct hotplug_slot *get_slot_from_dev(struct pci_dev *dev)
-> -{
-> -	struct dummy_slot *dslot;
-> -
-> -	list_for_each_entry(dslot, &slot_list, node) {
-> -		if (dslot->dev == dev)
-> -			return dslot->slot;
-> -	}
-> -	return NULL;
-> -}
-> -
-> -
->  static int disable_slot(struct hotplug_slot *slot)
->  {
->  	struct dummy_slot *dslot;
-> -	struct hotplug_slot *hslot;
->  	struct pci_dev *dev;
->  	int func;
->  
-> @@ -327,41 +311,27 @@ static int disable_slot(struct hotplug_slot *slot)
->  
->  	dbg("%s - physical_slot = %s\n", __func__, slot->name);
->  
-> -	/* don't disable bridged devices just yet, we can't handle them easily... */
-> -	if (dslot->dev->subordinate) {
-> -		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
-> -		return -ENODEV;
-> -	}
-> -	if (test_and_set_bit(0, &dslot->removed)) {
-> -		dbg("Slot already scheduled for removal\n");
-> -		return -ENODEV;
-> -	}
-> -	/* search for subfunctions and disable them first */
-> -	if (!(dslot->dev->devfn & 7)) {
-> -		for (func = 1; func < 8; func++) {
-> -			dev = pci_get_slot(dslot->dev->bus,
-> -					dslot->dev->devfn + func);
-> -			if (dev) {
-> -				hslot = get_slot_from_dev(dev);
-> -				if (hslot)
-> -					disable_slot(hslot);
-> -				else {
-> -					err("Hotplug slot not found for subfunction of PCI device\n");
-> -					return -ENODEV;
-> -				}
-> -				pci_dev_put(dev);
-> -			} else
-> -				dbg("No device in slot found\n");
-> +	for (func = 7; func >= 0; func--) {
-> +		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
-> +		if (!dev)
-> +			continue;
-> +
-> +		if (test_and_set_bit(0, &dslot->removed)) {
-> +			dbg("Slot already scheduled for removal\n");
-> +			return -ENODEV;
->  		}
-> -	}
->  
-> -	/* remove the device from the pci core */
-> -	pci_remove_bus_device(dslot->dev);
-> +		/* queue work item to blow away this sysfs entry and other
-> +		 * parts.
-> +		 */
-> +		INIT_WORK(&dslot->remove_work, remove_slot_worker);
-> +		queue_work(dummyphp_wq, &dslot->remove_work);
->  
-> -	/* queue work item to blow away this sysfs entry and other parts. */
-> -	INIT_WORK(&dslot->remove_work, remove_slot_worker);
-> -	queue_work(dummyphp_wq, &dslot->remove_work);
-> +		/* blow away this sysfs entry and other parts. */
-> +		remove_slot(dslot);
->  
-> +		pci_dev_put(dev);
-> +	}
->  	return 0;
->  }
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-
-
+see commit: 1eca93f9cafdec4a332ace9b0fc0d3886d430c28
