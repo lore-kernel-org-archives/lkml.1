@@ -1,94 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbYFEV5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYFEWDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760646AbYFEV5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 17:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYFEV5I
+	id S1755721AbYFEWDo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 18:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYFEWDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 17:57:08 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:44882 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbYFEV5H (ORCPT
+	Thu, 5 Jun 2008 18:03:06 -0400
+Received: from mga06.intel.com ([134.134.136.21]:47598 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751250AbYFEWDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 17:57:07 -0400
-Message-ID: <15271334.1212702611270.JavaMail.oracle@acsmt304.oracle.com>
-Date: Thu, 5 Jun 2008 16:50:11 -0500 (CDT)
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-kernel@vger.kernel.org
-Subject: x86_64 boot hang when CONFIG_NUMA=n
-Cc: x86@kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-Mailer: Oracle Webmail Client(UIX)
-Content-Language: en-US
-Accept-Language: en-US
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 5 Jun 2008 18:03:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,597,1204531200"; 
+   d="scan'208";a="288789415"
+Date: Thu, 5 Jun 2008 15:02:16 -0700
+From: mark gross <mgross@linux.intel.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+Message-ID: <20080605220216.GA12927@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 05 Jun 2008 22:02:16.0938 (UTC) FILETIME=[D167C4A0:01C8C757]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2.6.26-rc[2345], I am seeing a hang during boot with CONFIG_NUMA=n, but changing
-to CONFIG_NUMA=y allows successful boot.
+On Wed, Jun 04, 2008 at 11:47:01PM +0900, FUJITA Tomonori wrote:
+> I resumed the work to make the IOMMU respect drivers' DMA alignment
+> (since I got a desktop box having VT-d). In short, some IOMMUs
+> allocate memory areas spanning driver's segment boundary limit (DMA
+> alignment). It forces drivers to have a workaround to split up scatter
+> entries into smaller chunks again. To remove such work around in
+> drivers, I modified several IOMMUs, X86_64 (Calgary and Gart), Alpha,
+> POWER, PARISC, IA64, SPARC64, and swiotlb.
+> 
+> Now I try to fix Intel IOMMU code, the free space management
+> algorithm.
+> 
+> The major difference between Intel IOMMU code and the others is Intel
+> IOMMU code uses Red Black tree to manage free space while the others
+> use bitmap (swiotlb is the only exception).
+> 
+> The Red Black tree method consumes less memory than the bitmap method,
+> but it incurs more overheads (the RB tree method needs to walk through
+> the tree, allocates a new item, and insert it every time it maps an
+> I/O address). Intel IOMMU (and IOMMUs for virtualization) needs
+> multiple IOMMU address spaces. That's why the Red Black tree method is
+> chosen, I guess.
+> 
+> Half a year ago, I tried to convert POWER IOMMU code to use the Red
+> Black method and saw performance drop:
+> 
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg00650.html
+> 
+> So I tried to convert Intel IOMMU code to use the bitmap method to see
+> how much I can get.
+> 
+> I didn't see noticable performance differences with 1GbE. So I tried
+> the modified driver of a SCSI HBA that just does memory accesses to
+> emulate the performances of SSD disk drives, 10GbE, Infiniband, etc.
+> 
+> I got the following results with one thread issuing 1KB I/Os:
+> 
+>                     IOPS (I/O per second)
+> IOMMU disabled         145253.1 (1.000)
+> RB tree (mainline)     118313.0 (0.814)
+> Bitmap                 128954.1 (0.887)
+>
 
-This is on a 4-way AMD64 (HP) server with 8 GB RAM.
+FWIW: You'll see bigger deltas if you boot with intel_iommu=strict, but
+those will be because of waiting on IOMMU hardware to flush caches and
+may further hide effects of gong with a bitmap as opposed to a RB tree.
+ 
+> 
+> I've attached the patch to modify Intel IOMMU code to use the bitmap
+> method but I have no intention of arguing that Intel IOMMU code
+> consumes more memory for better performance. :) I want to do more
+> performance tests with 10GbE (probably, I have to wait for a server
+> box having VT-d, which is not available on the market now).
+> 
+> As I said, what I want to do now is to make Intel IOMMU code respect
+> drivers' DMA alignment. Well, it's easier to do that if Intel IOMMU
+> uses the bitmap method since I can simply convert the IOMMU code to
+> use lib/iommu-helper but I can modify the RB tree method too.
+>
 
-Using initcall_debug, the last output on a hang is from arch/x86/pci/k8-bus_64.c:
+I'm going to be out of contact for a few weeks but this work sounds
+interesting.  
+ 
+> I'm just interested in other people's opinions on IOMMU
+> implementations, performances, possible future changes for performance
+> improvement, etc.
+> 
+> For further information:
+> 
+> LSF'08 "Storage Track" summary by Grant Grundler:
+> http://iou.parisc-linux.org/lsf2008/SUMMARY-Storage.txt
+> 
+> My LSF'08 slides:
+> http://iou.parisc-linux.org/lsf2008/IO-DMA_Representations-fujita_tomonori.pdf
+> 
+> 
+> Tis patch is against the latst git tree (note that it just converts
+> Intel IOMMU code to use the bitmap. It doesn't make it respect
+> drivers' DMA alignment yet).
+> 
 
-calling  early_fill_mp_bus_info+0x0/0x7b2
-node 0 link 1: io port [1000, 3fff]
-node 1 link 2: io port [4000, ffff]
-TOM: 0000000080000000 aka 2048M
-node 0 link 1: mmio [e8000000, fddfffff]
-node 1 link 2: mmio [fde00000, fdffffff]
-node 0 link 1: mmio [80000000, 83ffffff]
-node 1 link 2: mmio [84000000, 8fffffff]
-node 0 link 1: mmio [a0000, bffff]
-TOM2: 0000000280000000 aka 10240M
-bus: [00,3f] on node 0 link 1
-bus: 00 index 0 io port: [0, 3fff]
-bus: 00 index 1 mmio: [90000000, fddfffff]
-bus: 00 index 2 mmio: [80000000, 83ffffff]
-bus: 00 index 3 mmio: [a0000, bffff]
-bus: 00 index 4 mmio: [fe000000, ffffffff]
-bus: 00 index 5 mmio: [280000000, fcffffffff]
-bus: [40,ff] on node 1 link 2
-bus: 40 index 0 io port: [4000, ffff]
-bus: 40 index 1 mmio: [fde00000, fdffffff]
+I'll look closely at your patch later.
 
+--mgross
 
-There should be an index 2 line printed next, like this slightly modifed for debug
-version does (with CONFIG_NUMA=y), or maybe the following line(s) just aren't
-making it to the (net)console log and some other initcall function is actually
-hanging:  (??)
-
-bus: [40,ff] on node 1 link 2
-bus: 40 index 0/3 io port: [4000, ffff]
-bus: 40 index 1/3 mmio: [fde00000, fdffffff]
-bus: 40 index 2/3 mmio: [84000000, 8fffffff]
-early_fill_mp_bus_info: done
-
-
-Has anyone seen something like this?  Any patches to test?
-
-The next initcall functions (on a working boot) are:
-
-calling  arch_kdebugfs_init+0x0/0x8
-initcall arch_kdebugfs_init+0x0/0x8 returned 0 after 0 msecs
-calling  mtrr_if_init+0x0/0x77
-initcall mtrr_if_init+0x0/0x77 returned 0 after 0 msecs
-calling  ffh_cstate_init+0x0/0x31
-initcall ffh_cstate_init+0x0/0x31 returned -1 after 0 msecs
-initcall ffh_cstate_init+0x0/0x31 returned with error code -1
-calling  acpi_pci_init+0x0/0x4a
-ACPI: bus type pci registered
-initcall acpi_pci_init+0x0/0x4a returned 0 after 0 msecs
-
-
-Thanks,
----
-~Randy
 
