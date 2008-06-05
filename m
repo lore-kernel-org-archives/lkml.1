@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYFEKoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbYFEKq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYFEKoK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 06:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYFEKnz
+	id S1756435AbYFEKq5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 06:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbYFEKqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 06:43:55 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59610 "EHLO pasmtpB.tele.dk"
+	Thu, 5 Jun 2008 06:46:47 -0400
+Received: from mx1.melware.net ([78.47.171.162]:37871 "EHLO mx1.melware.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754455AbYFEKny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 06:43:54 -0400
-Date: Thu, 5 Jun 2008 12:44:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD-FAILURE] linux-next: Tree for June 4 - firmware/keyspan/mpr.fw.gen.S
-Message-ID: <20080605104434.GA17961@uranus.ravnborg.org>
-References: <20080604180025.3ecd03ff.sfr@canb.auug.org.au> <48468091.5000102@linux.vnet.ibm.com> <1212586717.32207.71.camel@pmac.infradead.org> <20080605091319.GA17469@uranus.ravnborg.org> <1212657333.32207.178.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1212657333.32207.178.camel@pmac.infradead.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1754433AbYFEKqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 06:46:46 -0400
+X-Greylist: delayed 1299 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 06:46:46 EDT
+Date: Thu, 5 Jun 2008 12:25:06 +0200 (CEST)
+From: Armin Schindler <armin@melware.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] isdn divas: fix proc creation
+In-Reply-To: <20080530233445.GB7358@martell.zuzino.mipt.ru>
+Message-ID: <alpine.DEB.0.99.0806051221380.30590@k10.melware.de>
+References: <20080530233445.GB7358@martell.zuzino.mipt.ru>
+Organization: Cytronics & Melware
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 10:15:33AM +0100, David Woodhouse wrote:
-> On Thu, 2008-06-05 at 11:13 +0200, Sam Ravnborg wrote:
-> > On Wed, Jun 04, 2008 at 02:38:37PM +0100, David Woodhouse wrote:
-> > > On Wed, 2008-06-04 at 17:16 +0530, Kamalesh Babulal wrote:
-> > > > Hi Stephen,
-> > > > 
-> > > > The next-20080604 kernel build fails on the x86_64 machine
-> > > > 
-> > > > make[1]: *** No rule to make target `/usr/local/autobench/autotest/tmp/build/linux/$(dir)', needed by `firmware/keyspan/mpr.fw.gen.S'.  Stop.
-> > > > make: *** [firmware] Error 2
-> > > 
-> > > Does this 'fix' it?
-> > 
-> > The correct fix is to get rid of make 3.81 features.
-> > We do want the kernel buildable with make 3.79 and we have today only two
-> > places where we do need a newer version of make:
-> > 
-> > 	scripts/Makefile.headerinst
-> > and now
-> > 	firmware/Makefile
-> > 
-> > Both places should be reworked to avoid this dependency.
-> > I plan to take care of Makfile.headerinst soonish in an attempt
-> > to speed up the checking process (has been on my TODO list for a long time),
-> > 
-> > And we should not introuduce the below make 3.81 specific feature.
-> > I have not looked into alternative - sorry.
-> 
-> I've committed an alternative for firmware/Makefile.
-> What's the problem in Makefile.headersinst?
+On Sat, 31 May 2008, Alexey Dobriyan wrote:
+> 1. creating proc entry and not saving pointer to PDE and checking it
+>   is not going to work.
 
-It uses order-only in this line:
-$(objhdr-y) $(subdir-y) $(header-y) $(unifdef-y): | $(INSTALL_HDR_PATH)/$(_dst) $(unwanted)
+I don't know where you found this. I have look even in older versions, but
+the pointer divas_proc_entry is set by proc_create(). The patch to
+divasproc.c is wrong, it exists from the beginning of the driver.
+(2.6.25.4 doesn't contain the bug you describe).
 
-Not a big deal as this is only used during make headers_*
+> 2. if proc entry wasn't created, no reason to remove it on error path.
 
-	Sam
+Agreed here. The reason for doing remove_divas_proc() anyway, was to
+make sure all possible settings done in !create_divas_proc() are
+reverted. But since nothing else is done here, it is okay to remove it.
+
+Armin
+
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+>
+> drivers/isdn/hardware/eicon/divasmain.c |    1 -
+> drivers/isdn/hardware/eicon/divasproc.c |    4 ++--
+> 2 files changed, 2 insertions(+), 3 deletions(-)
+>
+> --- a/drivers/isdn/hardware/eicon/divasmain.c
+> +++ b/drivers/isdn/hardware/eicon/divasmain.c
+> @@ -806,7 +806,6 @@ static int DIVA_INIT_FUNCTION divas_init(void)
+>
+> 	if (!create_divas_proc()) {
+> #ifdef MODULE
+> -		remove_divas_proc();
+> 		divas_unregister_chrdev();
+> 		divasfunc_exit();
+> #endif
+> --- a/drivers/isdn/hardware/eicon/divasproc.c
+> +++ b/drivers/isdn/hardware/eicon/divasproc.c
+> @@ -125,8 +125,8 @@ static const struct file_operations divas_fops = {
+>
+> int create_divas_proc(void)
+> {
+> -	proc_create(divas_proc_name, S_IFREG | S_IRUGO, proc_net_eicon,
+> -		    &divas_fops);
+> +	divas_proc_entry = proc_create(divas_proc_name, S_IFREG | S_IRUGO,
+> +					proc_net_eicon, &divas_fops);
+> 	if (!divas_proc_entry)
+> 		return (0);
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
