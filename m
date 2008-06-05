@@ -1,85 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763507AbYFEDJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbYFEDZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763507AbYFEDJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 23:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYFEDJl
+	id S1760828AbYFEDZt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 23:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbYFEDZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 23:09:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38200 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751450AbYFEDJk (ORCPT
+	Wed, 4 Jun 2008 23:25:39 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:32831 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbYFEDZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 23:09:40 -0400
-Date: Wed, 4 Jun 2008 20:08:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-In-Reply-To: <20080605015634.GC4327@wotan.suse.de>
-Message-ID: <alpine.LFD.1.10.0806041956030.3473@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org> <20080602185433.GB4081@elte.hu>
- <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org> <20080602230316.GA24159@elte.hu> <20080603032403.GA17089@wotan.suse.de> <alpine.LFD.1.10.0806041249470.3473@woody.linux-foundation.org> <alpine.LFD.1.10.0806041320020.3473@woody.linux-foundation.org>
- <20080605015634.GC4327@wotan.suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 4 Jun 2008 23:25:38 -0400
+Message-ID: <48475B96.1030102@jp.fujitsu.com>
+Date: Thu, 05 Jun 2008 12:20:54 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       jbarnes@virtuousgeek.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, kristen.c.accardi@intel.com,
+       greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
+       linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4, v14] PCI, ACPI: Physical PCI slot objects
+References: <20080604200829.GC379@ldl.fc.hp.com> <48475056.6040300@jp.fujitsu.com> <20080605030728.GA11528@ldl.fc.hp.com>
+In-Reply-To: <20080605030728.GA11528@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alex-san,
+
+Thank you for updated patch. I'll try it.
+Unfortunately, I'm a little busy on the other jobs, so the test
+report might be delayed until the beginning of next week.
+
+Thanks,
+Kenji Kaneshige
 
 
-On Thu, 5 Jun 2008, Nick Piggin wrote:
+Alex Chiang wrote:
+> Hi Kenji-san,
 > 
-> I'd have thought that for a case like this, you'd simply hit the store
-> alias logic and store forwarding would stall because it doesn't have
-> the full data.
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> I tried to test your patch using latest linux-next, but I could
+>> not apply your patch with the following messages:
+> 
+> Sorry, that latest patch series was against Linus' tree, not
+> linux-next.
+> 
+>> I think maybe your patch is conflicting with the following patch.
+>>
+>> commit 372fa8fa0a77c47c7bcfae0ccd14e0c5f97d17fe
+>> Author: Kay Sievers <kay.sievers@vrfy.org>
+>> Date:   Fri May 2 06:02:41 2008 +0200
+>>
+>>    driver-core: prepare for removal of 20 char limit from struct device
+>>
+>>    The access of struct device->bus_id is replaced by dev_name(), to
+>>    be able to use the non-limited kobject name after the conversion
+>>    of the device register callers.
+> 
+> Yes, thanks for pointing this out. I've fixed patch 1/4.
+> 
+> I verified that patches 2, 3 and 4 apply cleanly against
+> linux-next, so this should be the only fix you'll need.
+> 
+> Sorry for the confusion.
+> 
+> /ac
+> 
+> commit c0175afea14cdaff3c33d894eb474eed1dcfa65d
+> Author: Alex Chiang <achiang@hp.com>
+> Date:   Wed Jun 4 21:04:46 2008 -0600
+> 
+>     Construct one fakephp slot per PCI slot
+>     
+>     Register one slot per slot, rather than one slot per function.  Change the
+>     name of the slot to fake%d instead of the pci address.
+>     
+>     Signed-off-by: Alex Chiang <achiang@hp.com>
+>     Signed-off-by: Matthew Wilcox <matthew@wil.cx>
+>     Cc: Greg KH <greg@kroah.com>
+>     Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+>     Cc: Len Brown <lenb@kernel.org>
+>     Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+>     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> 
+> diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+> index d3393f4..e066959 100644
+> --- a/drivers/pci/hotplug/fakephp.c
+> +++ b/drivers/pci/hotplug/fakephp.c
+> @@ -66,6 +66,7 @@ struct dummy_slot {
+>  	struct pci_dev *dev;
+>  	struct work_struct remove_work;
+>  	unsigned long removed;
+> +	char name[8];
+>  };
+>  
+>  static int debug;
+> @@ -101,6 +102,7 @@ static int add_slot(struct pci_dev *dev)
+>  	struct dummy_slot *dslot;
+>  	struct hotplug_slot *slot;
+>  	int retval = -ENOMEM;
+> +	static int count = 1;
+>  
+>  	slot = kzalloc(sizeof(struct hotplug_slot), GFP_KERNEL);
+>  	if (!slot)
+> @@ -114,15 +116,13 @@ static int add_slot(struct pci_dev *dev)
+>  	slot->info->max_bus_speed = PCI_SPEED_UNKNOWN;
+>  	slot->info->cur_bus_speed = PCI_SPEED_UNKNOWN;
+>  
+> -	slot->name = kstrdup(dev_name(&dev->dev), GFP_KERNEL);
+> -	if (!slot->name)
+> -		goto error_info;
+> -	dbg("slot->name = %s\n", slot->name);
+> -
+>  	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+>  	if (!dslot)
+> -		goto error_name;
+> +		goto error_info;
+>  
+> +	slot->name = dslot->name;
+> +	snprintf(slot->name, sizeof(dslot->name), "fake%d", count++);
+> +	dbg("slot->name = %s\n", slot->name);
+>  	slot->ops = &dummy_hotplug_slot_ops;
+>  	slot->release = &dummy_release;
+>  	slot->private = dslot;
+> @@ -140,8 +140,6 @@ static int add_slot(struct pci_dev *dev)
+>  
+>  error_dslot:
+>  	kfree(dslot);
+> -error_name:
+> -	kfree(slot->name);
+>  error_info:
+>  	kfree(slot->info);
+>  error_slot:
+> @@ -153,17 +151,17 @@ error:
+>  static int __init pci_scan_buses(void)
+>  {
+>  	struct pci_dev *dev = NULL;
+> -	int retval = 0;
+> +	int lastslot = 0;
+>  
+>  	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+> -		retval = add_slot(dev);
+> -		if (retval) {
+> -			pci_dev_put(dev);
+> -			break;
+> -		}
+> +		if (PCI_FUNC(dev->devfn) > 0 &&
+> +				lastslot == PCI_SLOT(dev->devfn))
+> +			continue;
+> +		lastslot = PCI_SLOT(dev->devfn);
+> +		add_slot(dev);
+>  	}
+>  
+> -	return retval;
+> +	return 0;
+>  }
+>  
+>  static void remove_slot(struct dummy_slot *dslot)
+> @@ -301,23 +299,9 @@ static int enable_slot(struct hotplug_slot *hotplug_slot)
+>  	return 0;
+>  }
+>  
+> -/* find the hotplug_slot for the pci_dev */
+> -static struct hotplug_slot *get_slot_from_dev(struct pci_dev *dev)
+> -{
+> -	struct dummy_slot *dslot;
+> -
+> -	list_for_each_entry(dslot, &slot_list, node) {
+> -		if (dslot->dev == dev)
+> -			return dslot->slot;
+> -	}
+> -	return NULL;
+> -}
+> -
+> -
+>  static int disable_slot(struct hotplug_slot *slot)
+>  {
+>  	struct dummy_slot *dslot;
+> -	struct hotplug_slot *hslot;
+>  	struct pci_dev *dev;
+>  	int func;
+>  
+> @@ -327,41 +311,27 @@ static int disable_slot(struct hotplug_slot *slot)
+>  
+>  	dbg("%s - physical_slot = %s\n", __func__, slot->name);
+>  
+> -	/* don't disable bridged devices just yet, we can't handle them easily... */
+> -	if (dslot->dev->subordinate) {
+> -		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+> -		return -ENODEV;
+> -	}
+> -	if (test_and_set_bit(0, &dslot->removed)) {
+> -		dbg("Slot already scheduled for removal\n");
+> -		return -ENODEV;
+> -	}
+> -	/* search for subfunctions and disable them first */
+> -	if (!(dslot->dev->devfn & 7)) {
+> -		for (func = 1; func < 8; func++) {
+> -			dev = pci_get_slot(dslot->dev->bus,
+> -					dslot->dev->devfn + func);
+> -			if (dev) {
+> -				hslot = get_slot_from_dev(dev);
+> -				if (hslot)
+> -					disable_slot(hslot);
+> -				else {
+> -					err("Hotplug slot not found for subfunction of PCI device\n");
+> -					return -ENODEV;
+> -				}
+> -				pci_dev_put(dev);
+> -			} else
+> -				dbg("No device in slot found\n");
+> +	for (func = 7; func >= 0; func--) {
+> +		dev = pci_get_slot(dslot->dev->bus, dslot->dev->devfn + func);
+> +		if (!dev)
+> +			continue;
+> +
+> +		if (test_and_set_bit(0, &dslot->removed)) {
+> +			dbg("Slot already scheduled for removal\n");
+> +			return -ENODEV;
+>  		}
+> -	}
+>  
+> -	/* remove the device from the pci core */
+> -	pci_remove_bus_device(dslot->dev);
+> +		/* queue work item to blow away this sysfs entry and other
+> +		 * parts.
+> +		 */
+> +		INIT_WORK(&dslot->remove_work, remove_slot_worker);
+> +		queue_work(dummyphp_wq, &dslot->remove_work);
+>  
+> -	/* queue work item to blow away this sysfs entry and other parts. */
+> -	INIT_WORK(&dslot->remove_work, remove_slot_worker);
+> -	queue_work(dummyphp_wq, &dslot->remove_work);
+> +		/* blow away this sysfs entry and other parts. */
+> +		remove_slot(dslot);
+>  
+> +		pci_dev_put(dev);
+> +	}
+>  	return 0;
+>  }
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
-That's _one_ possible implementation. 
 
-Quite frankly, I think it's the less likely one. It's much more likely 
-that the cache read access and the store buffer probe happen in parallel 
-(this is a really important hotpath for any CPU, but even more so x86 
-where there are more of loads and stores that are spills). And then the 
-store buffer logic would return the data and a bytemask mask (where the 
-mask would be all zeroes for a miss), and the returned value is just the 
-appropriate mix of the two.
-
-> I'd like to know for sure.
-
-You'd have to ask somebody very knowledgeable inside Intel and AMD, and it 
-is quite likely that different microarchitectures have different 
-approaches...
-
-> The other thing that could be possible, and I'd imagine maybe more likely
-> to be implemented in a real CPU because it should give more imrpovement
-> (and which does break my algorithm) is just that the load to the cacheline
-> may get to execute first, then if the cacheline gets evicted and
-> modified by another CPU before our store completes, we effectively see
-> store/load reordering again.
-
-Oh, absolutely, the perfect algorithm would actually get the right answer 
-and notice that the cacheline got evicted, and retried the whole sequence 
-such that it is coherent. 
-
-But we do know that Intel expressly documents loads and stores to pass 
-each other and documents the fact that the store buffer is there. So I bet 
-that this is visible in some micro-architecture, even if it's not 
-necessarily visible in _all_ of them.
-
-The recent Intel memory ordering whitepaper makes it very clear that loads 
-can pass earlier stores and in particular that the store buffer allows 
-intra-processor forwarding to subsequent loads (2.4 in their whitepaper). 
-It _could_ be just a "for future CPU's", but quite frankly, I'm 100% sure 
-it isn't. The store->load forwarding is such a critical performance issue 
-that I can pretty much guarantee that it doesn't always hit the cacheline.
-
-Of course, the partial store forwarding case is not nearly as important, 
-and stalling is quite a reasonable implementation approach. I just 
-personally suspect that doing the unconditional byte-masking is actually 
-_simpler_ to implement than the stall, so..
-
-			Linus
