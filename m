@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbYFEIqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbYFEIv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbYFEIqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 04:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYFEIpw
+	id S1754938AbYFEIv3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 04:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYFEIvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 04:45:52 -0400
-Received: from host2.marvell.com ([65.219.4.2]:35722 "EHLO maili.marvell.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752875AbYFEIpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 04:45:52 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Subject: RE: [PATCH] spi: fix list scan success verification in PXA ssp driver
-Date: Thu, 5 Jun 2008 01:45:47 -0700
-Message-ID: <E913911567467945BBEB9277E27868B0D6A414@msiexch01.marvell.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] spi: fix list scan success verification in PXA ssp driver
-thread-index: AcjG51ujSSvVOGcPSWODK2LCONH8ZwAADZ+Q
-References: <Pine.LNX.4.64.0806051027340.6598@axis700.grange>
-From: "Eric Miao" <ymiao3@marvell.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@pengutronix.de>,
-       <linux-kernel@vger.kernel.org>
-Cc: <dbrownell@users.sourceforge.net>,
-       <spi-devel-general@lists.sourceforge.net>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>
+	Thu, 5 Jun 2008 04:51:19 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:21247 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752706AbYFEIvS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 04:51:18 -0400
+Message-Id: <4847C54B.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Thu, 05 Jun 2008 09:51:55 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
+Subject: operation ordering during pgd_alloc/pgd_free
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m558k5Hl022003
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
+At present, pgd_ctor() adds a new pgd to pgd_list solely based on
+!SHARED_KERNEL_PMD. For PAE && !SHARED_KERNEL_PMD (i.e. Xen)
+this doesn't seem correct, as the pgd is still empty, which will confuse
+vmalloc_sync_all(). So in this case, list insertion should only happen at
+the end of pgd_prepopulate_pmd().
 
-And this should really go through the ARM tree, please submit the patch
-to RMK's patch system. Thanks.
+Likewise, pgd_free() calls pgd_mop_up_pmds() *before* pgd_dtor(),
+with the former zeroing pgd entries as it goes and only the latter
+removing the pgd from the list. Just as above this can confuse
+vmalloc_sync_all(), so here I would think that the two calls should just
+be swapped. However, if they get swapped, careful inspection of the
+interaction with save/restore will be needed - XenSource's Linux tree
+has a comment specifically to that effect:
 
-Cheers
-- eric
+/*
+ * After this the pgd should not be pinned for the duration of this
+ * function's execution. We should never sleep and thus never race:
+ *  1. User pmds will not become write-protected under our feet due
+ *     to a concurrent mm_pin_all().
+ *  2. The machine addresses in PGD entries will not become invalid
+ *     due to a concurrent save/restore.
+ */
 
-> -----Original Message-----
-> From: Guennadi Liakhovetski [mailto:g.liakhovetski@pengutronix.de]
-> Sent: Thursday, June 05, 2008 4:37 PM
-> To: linux-kernel@vger.kernel.org
-> Cc: dbrownell@users.sourceforge.net; Eric Miao;
-> spi-devel-general@lists.sourceforge.net
-> Subject: [PATCH] spi: fix list scan success verification in PXA ssp driver
-> 
-> The list search success check in arch/arm/mach-pxa/ssp.c is wrong: for
-> example, it didn't recognise failure for me when I requested port 0.
-> 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-> 
-> ---
-> 
->  arch/arm/mach-pxa/ssp.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/arch/arm/mach-pxa/ssp.c
-> ===================================================================
-> --- linux-2.6.orig/arch/arm/mach-pxa/ssp.c	2008-06-04 12:11:26.000000000
-> +0200
-> +++ linux-2.6/arch/arm/mach-pxa/ssp.c	2008-06-04 12:11:50.000000000 +0200
-> @@ -330,7 +330,7 @@
-> 
->  	mutex_unlock(&ssp_lock);
-> 
-> -	if (ssp->port_id != port)
-> +	if (&ssp->node == &ssp_list)
->  		return NULL;
-> 
->  	return ssp;
+Since that tree doesn't support preemption, this is perhaps fine, but
+likely going to cause problems in the (preemptable) pv-ops code.
 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+The issue with vmalloc_sync_all() would even go unnoticed, since the
+patch to unify the pgd_list mechanism with x86-64 removed the
+BUG_ON() that was meant to trigger on issues like this.
+
+But maybe I'm missing something?
+
+Jan
+
