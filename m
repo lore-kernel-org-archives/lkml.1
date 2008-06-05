@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbYFEGaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYFEGfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbYFEGaR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 02:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYFEGaF
+	id S1753517AbYFEGfl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 02:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYFEGfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 02:30:05 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:29154 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098AbYFEGaC convert rfc822-to-8bit (ORCPT
+	Thu, 5 Jun 2008 02:35:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58664 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751055AbYFEGfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 02:30:02 -0400
-Date: Thu, 5 Jun 2008 08:29:50 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: =?ISO-8859-1?B?yXJpYw==?= Piel <Eric.Piel@tremplin-utc.net>
-Cc: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@osdl.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       HWMON <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection  System 3D 
- ACPI driver -- please review!
-Message-ID: <20080605082950.6957f1a2@hyperion.delvare>
-In-Reply-To: <484728B2.1000209@tremplin-utc.net>
-References: <1212235533.3815.5.camel@localhost>
-	<4846EBF5.2030406@tremplin-utc.net>
-	<20080604225830.1dff64fc@hyperion.delvare>
-	<20080604230510.GB30475@elf.ucw.cz>
-	<484728B2.1000209@tremplin-utc.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Thu, 5 Jun 2008 02:35:30 -0400
+Date: Wed, 4 Jun 2008 23:33:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Wilcox <matthew@wil.cx>, kristen.c.accardi@intel.com,
+       greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
+       linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kobject: Export kobject_rename for pci_hotplug_core
+Message-Id: <20080604233348.eb46d8de.akpm@linux-foundation.org>
+In-Reply-To: <48478247.30809@jp.fujitsu.com>
+References: <20080604200829.GC379@ldl.fc.hp.com>
+	<20080604201606.GE379@ldl.fc.hp.com>
+	<20080604224838.6b556a51.akpm@linux-foundation.org>
+	<48478247.30809@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Jun 2008 01:43:46 +0200, Éric Piel wrote:
-> 05-06-08 01:05, Pavel Machek wrote/a écrit:
-> >> So my advice is that you don't wait for a review from the hwmon people,
-> >> because apparently we don't have much interest in this type of device,
-> >> so you'll be waiting forever. You're much better adding the mdps driver
-> >> to drivers/misc through Andrew Morton, at least until someone takes
-> >> care of creating a subsystem for this type of devices and move all
-> >> existing drivers there.
+On Thu, 05 Jun 2008 15:05:59 +0900 Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+
+> Andrew Morton wrote:
+> > On Wed, 4 Jun 2008 14:16:06 -0600 Alex Chiang <achiang@hp.com> wrote:
 > > 
-> > Just create drivers/accel ... accelerometers are quite common these
-> > days. Going to drivers/misc is okay, too, I guess -- moves are easy
-> > with git ;-).
->
-> Yes, why not do one little step to the correct direction now and create
-> drivers/accel, it will likely be the chosen name anyway! That will not
-> yet be a "real" subsystem, just a place to put all the related drivers
-> already present together.
+> >> From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> >>
+> >> Export kobject_rename() to fix the following link error.  This happens when
+> >> pci_hotplug_core driver is compiled as a kernel module.
+> >>
+> >> ERROR: "kobject_rename" [drivers/pci/hotplug/pci_hotplug.ko] undefined!
+> >> make[1]: *** [__modpost] Error 1
+> >> make: *** [modules] Error 2
+> >> make: *** Waiting for unfinished jobs....
+> >>
+> >> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> >> Acked-by: Alex Chiang <achiang@hp.com>
+> >> Cc: Greg KH <greg@kroah.com>
+> >> Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> >> Cc: Len Brown <lenb@kernel.org>
+> >> Signed-off-by: Alex Chiang <achiang@hp.com>
+> >> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> >> ---
+> >>  lib/kobject.c |    1 +
+> >>  1 files changed, 1 insertions(+), 0 deletions(-)
+> >>
+> >> diff --git a/lib/kobject.c b/lib/kobject.c
+> >> index 718e510..dcade05 100644
+> >> --- a/lib/kobject.c
+> >> +++ b/lib/kobject.c
+> >> @@ -439,6 +439,7 @@ out:
+> >>  
+> >>  	return error;
+> >>  }
+> >> +EXPORT_SYMBOL_GPL(kobject_rename);
+> > 
+> > Shouldn't this go straight into 2.6.26?
+> > 
+> > 
+> 
+> I think "No", because currently its only required by Alex's "pci slot"
+> patches.
 
-Well, I would expect all these accelerometer drivers to have a common,
-standardized interface, so this should most probably become a real
-subsystem in the long run.
+In that case the fix should be integrated into the patch which it is
+fixing.
 
-> Anyone against this idea?
+Well, it doesn't _have_ to be integrated because in this case it can
+precede acpi-pci-slot-detection-driver.patch.  But we might as well
+fold it, to keep the commit noise level down.
 
-I am in favor of it.
-
--- 
-Jean Delvare
