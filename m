@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbYFEBHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbYFEBLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbYFEBHK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 21:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbYFEBGy
+	id S1762696AbYFEBLx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 21:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbYFEBLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 21:06:54 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53950 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760551AbYFEBGu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 21:06:50 -0400
-X-Sasl-enc: ZM8NNGve//JTfgVygM5zCdBkelQGHgdmP9oAc5P6YwgL 1212628009
-Date: Wed, 4 Jun 2008 22:06:47 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@suse.cz>
-Cc: =?iso-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>,
-       Andrew Morton <akpm@osdl.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       HWMON <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 2.6.25.4]  hwmon: HP Mobile Data Protection System 3D
-	ACPI driver -- please review!
-Message-ID: <20080605010647.GC16599@khazad-dum.debian.net>
-References: <1212235533.3815.5.camel@localhost> <4846EBF5.2030406@tremplin-utc.net> <20080604230326.GA30475@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080604230326.GA30475@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Jun 2008 21:11:44 -0400
+Received: from mga01.intel.com ([192.55.52.88]:48075 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751742AbYFEBLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 21:11:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,592,1204531200"; 
+   d="scan'208";a="572640256"
+Subject: Re: [patch -v3 16/22] acpi: use memory_read_from_buffer
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org
+In-Reply-To: <20080604115824.062644468@gmail.com>
+References: <20080604115633.116832712@gmail.com>
+	 <20080604115824.062644468@gmail.com>
+Content-Type: text/plain
+Date: Thu, 05 Jun 2008 09:21:26 +0800
+Message-Id: <1212628886.10730.2.camel@yakui_zhao.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Jun 2008, Pavel Machek wrote:
-> > > 3) Makes it possible to power the device off.
+On Wed, 2008-06-04 at 20:56 +0900, Akinobu Mita wrote:
+> plain text document attachment
+> (acpi-use-memory-read-from-buffer.patch)
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: linux-acpi@vger.kernel.org
+> ---
+>  drivers/acpi/system.c |   15 ++-------------
+>  1 file changed, 2 insertions(+), 13 deletions(-)
 > 
-> But this part is what I don't understand. powering off does not seem
-> to belong there. Why can't you just use acpi to power down?
+> Index: 2.6-git/drivers/acpi/system.c
+> ===================================================================
+> --- 2.6-git.orig/drivers/acpi/system.c
+> +++ 2.6-git/drivers/acpi/system.c
+> @@ -77,7 +77,6 @@ static ssize_t acpi_table_show(struct ko
+>  	    container_of(bin_attr, struct acpi_table_attr, attr);
+>  	struct acpi_table_header *table_header = NULL;
+>  	acpi_status status;
+> -	ssize_t ret_count = count;
+>  
+>  	status =
+>  	    acpi_get_table(table_attr->name, table_attr->instance,
+> @@ -85,18 +84,8 @@ static ssize_t acpi_table_show(struct ko
+>  	if (ACPI_FAILURE(status))
+>  		return -ENODEV;
+>  
+> -	if (offset >= table_header->length) {
+> -		ret_count = 0;
+> -		goto end;
+> -	}
+> -
+> -	if (offset + ret_count > table_header->length)
+> -		ret_count = table_header->length - offset;
+> -
+> -	memcpy(buf, ((char *)table_header) + offset, ret_count);
+> -
+> -      end:
+> -	return ret_count;
+> +	return memory_read_from_buffer(buf, count, &offset,
+> +					table_header, table_header->length);
+>  }
+it seems that there is no definition of memory_read_from_buffer. 
+Where is the function of memory_read_from_buffer defined?
+Is there a bug about the current function of acpi_table_show?
+Thanks.
+>  
+>  static void acpi_table_attr_init(struct acpi_table_attr *table_attr,
+> 
 
-I think he means power down the g-sensors and related filters and A/D
-circuitry.  The out-of-tree version of the HDAPS driver can do it as
-well.
-
-For what is it worth, I think drivers/accel is a good idea, and I think
-the other accel drivers should be moved there.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
