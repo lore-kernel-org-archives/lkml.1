@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbYFEIlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYFEInR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbYFEIlI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 04:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYFEIkz
+	id S1754848AbYFEInR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 04:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYFEInG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 04:40:55 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52992 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751713AbYFEIky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 04:40:54 -0400
-Message-ID: <4847A690.302@sgi.com>
-Date: Thu, 05 Jun 2008 10:40:48 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 5 Jun 2008 04:43:06 -0400
+Received: from sacred.ru ([62.205.161.221]:56976 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751721AbYFEInF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 04:43:05 -0400
+Message-ID: <4847A67D.9060006@openvz.org>
+Date: Thu, 05 Jun 2008 12:40:29 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Jeremy Higdon <jeremy@sgi.com>,
-       Roland Dreier <rdreier@cisco.com>, benh@kernel.crashing.org,
-       Arjan van de Ven <arjan@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tpiepho@freescale.com,
-       linuxppc-dev@ozlabs.org, scottwood@freescale.com,
-       torvalds@linux-foundation.org, David Miller <davem@davemloft.net>,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: MMIO and gcc re-ordering issue
-References: <1211852026.3286.36.camel@pasglop> <4843C3D7.7000609@sgi.com> <200806031433.12460.nickpiggin@yahoo.com.au> <200806030952.10360.jbarnes@virtuousgeek.org>
-In-Reply-To: <200806030952.10360.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Serge Hallyn <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] devscgroup: check for device permissions at mount time
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 05 Jun 2008 12:42:46 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> Now, in hindsight, using a PIO write set & test flag approach in 
-> writeX/spin_unlock (ala powerpc) might have been a better approach, but iirc 
-> that never came up in the discussion, probably because we were focused on PCI 
-> posting and not uncached vs. cached ordering.
+Currently even if a task sits in an all-denied cgroup it can still 
+mount any block device in any mode it wants.
 
-Hi Jesse,
+Put a proper check in do_open for block device to prevent this.
 
-I am going to take a stab at implementing this so we can see how much
-of an impact it will have.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-Cheers,
-Jes
+---
+ fs/block_dev.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index a0e9596..7e1c7a3 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -24,6 +24,7 @@
+ #include <linux/namei.h>
+ #include <linux/log2.h>
+ #include <linux/hardirq.h>
++#include <linux/device_cgroup.h>
+ 
+ #include <asm/uaccess.h>
+ #include "internal.h"
+@@ -933,9 +934,14 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+ {
+ 	struct module *owner = NULL;
+ 	struct gendisk *disk;
+-	int ret = -ENXIO;
++	int ret;
+ 	int part;
+ 
++	ret = devcgroup_inode_permission(bdev->bd_inode, file->f_mode);
++	if (ret != 0)
++		return ret;
++
++	ret = -ENXIO;
+ 	file->f_mapping = bdev->bd_inode->i_mapping;
+ 	lock_kernel();
+ 	disk = get_gendisk(bdev->bd_dev, &part);
+-- 
+1.5.3.4
+
