@@ -1,112 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYFEOft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYFEOnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756722AbYFEOft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 10:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYFEOfl
+	id S1754799AbYFEOnY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 10:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYFEOnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 10:35:41 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:42765 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752391AbYFEOfk (ORCPT
+	Thu, 5 Jun 2008 10:43:14 -0400
+Received: from rtsoft3.corbina.net ([85.21.88.6]:24135 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752035AbYFEOnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 10:35:40 -0400
-X-BigFish: VPS-13(z2d9boz98dR7efVzz10d3izzz32i6bh43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K1ZV6Z-02-HP4-01
-Date: Thu, 5 Jun 2008 16:35:10 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Jack Steiner <steiner@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix compile warning in io_apic_{32,64}.c
-Message-ID: <20080605143510.GA8372@alberich.amd.com>
-References: <20080605120557.GB14755@alberich.amd.com> <20080605123910.GA5938@sgi.com>
+	Thu, 5 Jun 2008 10:43:13 -0400
+Date: Thu, 5 Jun 2008 18:43:10 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Marc Pignat <marc.pignat@hevs.ch>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: [PATCH 3/3] mmc: change .get_ro() callback semantics
+Message-ID: <20080605144310.GA31596@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080523154204.GA19803@polina.dev.rtsoft.ru> <20080523154347.GC24862@polina.dev.rtsoft.ru> <200806031207.49843.marc.pignat@hevs.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <20080605123910.GA5938@sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 05 Jun 2008 14:35:05.0630 (UTC) FILETIME=[58B313E0:01C8C719]
+In-Reply-To: <200806031207.49843.marc.pignat@hevs.ch>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 02:39:10PM +0200, Jack Steiner wrote:
-> I have not seen the compiler warning. What tree/options cause the error???
+On Tue, Jun 03, 2008 at 12:07:49PM +0200, Marc Pignat wrote:
+> Hi all!
+> 
+> On Friday 23 May 2008, Anton Vorontsov wrote:
+> > get_ro() callback must return values >= 0 for its logical state, and
+> ...
+> >  static void pxamci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+> > diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+> > index f2e9885..ef3b773 100644
+> > --- a/include/linux/mmc/host.h
+> > +++ b/include/linux/mmc/host.h
+> > @@ -55,6 +55,9 @@ struct mmc_host_ops {
+> >  	 * Avoid calling these three functions too often or in a "fast path",
+> >  	 * since underlaying controller might implement them in an expensive
+> >  	 * and/or slow way.
+> > +	 *
+> > +	 * .get_ro and .get_cd should return >= 0 for their logical values,
+> > +	 * or negative errno value in case of error.
+> >  	 */
+> 
+> I would suggest to use something more strict (bulletproof), something like:
+> 
+> /*
+>  * get_ro will return:
+>  *   0 for a read/write card
+>  *   1 for a read-only card 
 
-Sure. It's currently dead code. I use it from time to time for debugging.
-At least you have to do something like
+This isn't always practical. For example, host is using u8 register for
+the status, so it might safely return u8 & mask, that will always fit
+into int. Or very smart/adventurous authors might be aware that, for the
+particular host, mask's bit isn't last, and safely do uXX & mask. :-)
 
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index ef1a8df..ddfdabd 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -1045,7 +1045,6 @@ void __apicdebuginit print_IO_APIC(void)
-        return;
- }
- 
--#if 0
- 
- static __apicdebuginit void print_APIC_bitfield (int base)
- {
-@@ -1181,7 +1180,6 @@ void __apicdebuginit print_PIC(void)
-        printk(KERN_DEBUG "... PIC ELCR: %04x\n", v);
- }
- 
--#endif  /*  0  */
- 
- void __init enable_IO_APIC(void)
- {
+The above is weak argument of course, since it is about optimization.
 
+As an counter-evidence, the strict scheme that you described probably
+less error prone. But is it? To implement it we'll need something like
+WARN_ON(ret > 0 && ret != 1) to catch erroneous users. Take a closer
+look though, will it catch uXX & lastbit case? Nope. :-)
 
-to compile it.
+We can catch bogus users though... via hack (_assuming_ that there
+are no errno values of 1 << (sizeof(int) * 8 - 1)), i.e.
+WARN_ON(ret == (1 << (sizeof(int) * 8 - 1)). Though, to do so, we don't
+need the strict scheme, this debugging hack will work in the current
+scheme too.
 
-> I don't think this work on UV systems. Because of processor limitations, not
-> all of the APICID bits are contained in the hardware APIC_ID register. See
-> read_apic_id() in arch/x86/kernel/genapic_64.c.
-
-I am not that familar with UV. So can't really comment on that.
-But then it seems that the proper adaption for print_local_APIC to avoid the warning is
----
-[PATCH] x86: fix compile warning in io_apic_{32,64}.c
-
-Commit 05f2d12c3563dea8c81b301f9f3cf7919af23b13
-(x86: change GET_APIC_ID() from an inline function to an out-of-line function)
-introduced a compile warning:
-
-arch/x86/kernel/io_apic_64.c: In function 'print_local_APIC':
-arch/x86/kernel/io_apic_64.c:1152: warning: 'v' is used uninitialized in this function
-
-in some debug code -- which is disabled by default.
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
---
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index a40d54f..4fbf656 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -1489,6 +1489,7 @@ void /*__init*/ print_local_APIC(void * dummy)
- 
- 	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
- 		smp_processor_id(), hard_smp_processor_id());
-+	v = apic_read(APIC_ID);
- 	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v,
- 			GET_APIC_ID(read_apic_id()));
- 	v = apic_read(APIC_LVR);
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index ef1a8df..c7c6b00 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -1077,6 +1077,7 @@ void __apicdebuginit print_local_APIC(void * dummy)
- 
- 	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
- 		smp_processor_id(), hard_smp_processor_id());
-+	v = apic_read(APIC_ID);
- 	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(read_apic_id()));
- 	v = apic_read(APIC_LVR);
- 	printk(KERN_INFO "... APIC VERSION: %08x\n", v);
-
-
-
-
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
