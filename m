@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762653AbYFEVBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYFEVCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762653AbYFEVBy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 17:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbYFEVBo
+	id S1763397AbYFEVCS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 17:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYFEVB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 17:01:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33004 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbYFEVBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 17:01:43 -0400
-Message-ID: <48485435.7020308@garzik.org>
-Date: Thu, 05 Jun 2008 17:01:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 5 Jun 2008 17:01:59 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:30561 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbYFEVB6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 17:01:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=voOcdbR/4fCwu+fW6qDAGGCWNj9Ff0OTupTodhFGjv+4MyezxMBR0gqRYYjD/jt13A
+         PSzeGZj/ke6wY+xYoBwSW4Hb+m8irLpNRD63kMcah2CsGaavCRO4v9aXzxjEEnkBd77k
+         K67R2kMlOfOjR5PLv6stUTF4m5z7XASrz4jDA=
+Message-ID: <dd18b0c30806051401j28a57871ke4e1c76a4c8ea425@mail.gmail.com>
+Date: Thu, 5 Jun 2008 21:01:55 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: GPE storm detected, disabling EC GPE
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/18] firmware: moving drivers to request_firmware()
-References: <20080605.foo@pmac.infradead.org>  <48483BA9.1070200@garzik.org>	 <1212695675.32207.288.camel@pmac.infradead.org>	 <4848489C.6010903@garzik.org> <1212699190.32207.293.camel@pmac.infradead.org>
-In-Reply-To: <1212699190.32207.293.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> On Thu, 2008-06-05 at 16:12 -0400, Jeff Garzik wrote:
->> Well, I should ask, is this purely an internal build detail?
->>
->> The developer (and user) should never ever see a .ihex file, outside of 
->> an active kernel compile.  Wrapping the original firmware makes it more 
->> difficult to verify, compare and/or change.  In-tree, we should see the 
->> vendor firmware blobs as shipped, with no wrapping or modification or 
->> anything.
-> 
-> It's a build-and-shipping detail, at least in the kernel source tree.
-> 
-> Rather than putting binary blobs into git (which admittedly we could,
-> but it's suboptimal), we just run them through 'objcopy -Oihex' first.
-> 
-> It's not 'wrapped'; it's not any more difficult to verify, compare or
-> change.
+FWIW I noticed a post where the person had changed 5 to 20, and it
+seemed to work for them;
+So with that in mind I decide to give that a go, here is the location:
+drivers/acpi/ec.c
+@@ -527,47 +488,51 @@ static u32 acpi_ec_gpe_handler(void *data)
+ {
+        acpi_status status = AE_OK;
+        struct acpi_ec *ec = data;
+       u8 state = acpi_ec_read_status(ec);
 
-If the sha1 sum of what is in the kernel tree differs from what the 
-vendor provided, then it is OBVIOUSLY more difficult to verify that you 
-have the original firmware as provided by the vendor.
+        pr_debug(PREFIX "~~~> interrupt\n");
+       atomic_inc(&ec->irq_count);
+-       if (atomic_read(&ec->irq_count) > 5) {
++       if (atomic_read(&ec->irq_count) > 20) {
+               pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
+               ec_switch_to_poll_mode(ec);
+               goto end;
+       }
 
-Put the binary blobs into the git tree, __without modification or 
-wrapping__.
+Now I don't know if this will work for other brands, but for
+me(Macbook Pro ATI chipset) I have not received the
+GPE storm detected, disabling EC GPE message, but it's only been an
+hour, maybe after two or three this might appear.
+Also is this good or bad to set 5 to 20 for the system?
+regards;
 
-	Jeff
-
-
-
+-- 
+Justin P. Mattock
