@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbYFEVah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759707AbYFEVdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757715AbYFEVah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 17:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYFEVa2
+	id S1759707AbYFEVdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 17:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYFEVd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 17:30:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47366 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751509AbYFEVa1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 17:30:27 -0400
-Date: Thu, 5 Jun 2008 14:29:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ian Kent <raven@themaw.net>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, Miklos Szeredi <miklos@szeredi.hu>,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Jeff Moyer <jmoyer@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.26-rc4
-In-Reply-To: <1212651099.3047.44.camel@raven.themaw.net>
-Message-ID: <alpine.LFD.1.10.0806051427310.3473@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>  <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>  <20080603095713.GR28946@ZenIV.linux.org.uk>  <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk> 
- <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>  <20080603104035.GT28946@ZenIV.linux.org.uk>  <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>  <20080603105258.GV28946@ZenIV.linux.org.uk>  <1212499623.3025.46.camel@raven.themaw.net>  <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
- <1212651099.3047.44.camel@raven.themaw.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 5 Jun 2008 17:33:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34414 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752381AbYFEVdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 17:33:25 -0400
+Message-ID: <48485BA3.60809@garzik.org>
+Date: Thu, 05 Jun 2008 17:33:23 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Woodhouse <dwmw2@infradead.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/18] firmware: moving drivers to request_firmware()
+References: <20080605.foo@pmac.infradead.org>  <48483BA9.1070200@garzik.org>	 <1212695675.32207.288.camel@pmac.infradead.org>	 <4848489C.6010903@garzik.org>	 <1212699190.32207.293.camel@pmac.infradead.org>	 <48485435.7020308@garzik.org> <1212268943.2534.16.camel@shinybook.infradead.org>
+In-Reply-To: <1212268943.2534.16.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 5 Jun 2008, Ian Kent wrote:
+David Woodhouse wrote:
+> On Thu, 2008-06-05 at 17:01 -0400, Jeff Garzik wrote:
+>> If the sha1 sum of what is in the kernel tree differs from what the 
+>> vendor provided, then it is OBVIOUSLY more difficult to verify that
+>> you have the original firmware as provided by the vendor.
+>>
+>> Put the binary blobs into the git tree, __without modification or 
+>> wrapping__.
 > 
-> Keep in mind this doesn't address any other autofs4 issues but I it
-> should allow us to identify if this was in fact the root cause of the
-> problem Jesper reported.
+> We don't have them in that form right now. Of the firmware blobs I've
+> encountered so far -- even the ones which were in a file on their own --
+> none of them are in binary form; they're _all_ in some ASCII
+> representation which can be processed with 'diff'. That includes char
+> arrays, arrays of larger integers which need endian-awareness, 'hex
+> record' structures, and probably a bunch of other abominations I have
+> yet to encounter as I work through them.
+> 
+> None of them have just been binary files in the source tree.
 
-Jesper, can you test this? I think you said you could trigger this in ~24 
-hours or so? I'd love to have some testing of some heavy autofs user. Even 
-if it's not a guarantee of a fix (due to reproducing the bug not being 
-entirely trivial), at least I'd like to know that it doesn't introduce any 
-obvious new problems either..
+Right.  And now you are creating Yet Another Format, rather than 
+rendering the firmware back into the preferred format:  binary blob.
 
-			Linus
+_If_ you are changing form of current in-tree firmwares at all, there is 
+no excuse not use direct binary blob -- the least common denominator for 
+all relevant operations.
+
+Storing the firmware in .ihex is just as bad as storing the firmware in 
+source code -- it's a pointless wrapper that makes firmware verification 
+and updates far more difficult than they should be.
+
+	Jeff
+
+
+
