@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYFESj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760138AbYFESjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbYFESj1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbYFESjP
+	id S1760138AbYFESjs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYFESji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:39:15 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63808 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751691AbYFESjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:39:14 -0400
-Date: Thu, 5 Jun 2008 19:33:04 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 8/8] x86: I/O APIC: Timer through 8259A second-chance
-In-Reply-To: <20080605150327.GA22128@elte.hu>
-Message-ID: <Pine.LNX.4.55.0806051911500.2875@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805271950010.18833@cliff.in.clinika.pl>
- <20080531101832.GA15170@elte.hu> <20080605091949.GA2307@elte.hu>
- <Pine.LNX.4.55.0806051541210.2875@cliff.in.clinika.pl> <20080605150327.GA22128@elte.hu>
+	Thu, 5 Jun 2008 14:39:38 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:48817 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbYFESjh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 14:39:37 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:mime-version:
+	content-type:content-transfer-encoding:content-disposition;
+	b=YPM8dtpW+H7IKzyxUjxhTd5VaOy6tGDm6bES5d4TqauqrQE5kmo7iqkSw44+EMb0W
+	qlAF24eVjCL8aSwrQYBVw==
+Message-ID: <4ca0a85e0806051139q28d70661w569a036f54dcf89b@mail.gmail.com>
+Date: Thu, 5 Jun 2008 14:39:25 -0400
+From: "Thomas Tuttle" <ttuttle@google.com>
+To: mpm@selenic.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] pagemap: Return map count, not reference count, in /proc/kpagecount. (v2 of series)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008, Ingo Molnar wrote:
+Since pagemap is all about examining pages mapped into processes' memory
+spaces, it makes sense for kpagecount to return the map counts, not the
+reference counts.
 
-> NOTE: you need to copy out and use the boot parameters from the boot 
-> log:
-> 
->  [ 0.000000] Command line: root=/dev/sda6 console=ttyS0,115200 
->  earlyprintk=se rial,ttyS0,115200 debug initcall_debug apic=verbose 
->  sysrq_always_enabled ignore _loglevel selinux=0 nmi_watchdog=1 
->  profile=0 maxcpus=1 nosmp no_hz=off highres =0 noapic nolapic_timer 
->  hpet=disable idle=mwait
-> 
-> as -tip testing occasionally randomizes boot parameters too. (to find 
-> regressions like this) Let me know if you cannot reproduce this.
+Signed-off-by: Thomas Tuttle
+---
+ fs/proc/proc_misc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- Thanks.  I figured out I cannot build an x86-64 kernel, because my i386
-compiler does not support the target.  Probably because of target library
-dependencies at the time I built my compiler.  I would have to build a
-bare-iron cross-compiler for the x86-64 which I'd rather not to just to
-fix this small problem -- it usually takes a few days to sort out all the
-pesky details when doing such a build from scratch, so it better be well
-justified.
+diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index 32dc14c..5a16090 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -726,7 +726,7 @@ static ssize_t kpagecount_read(struct file *file,
+char __user *buf,
+                if (!ppage)
+                        pcount = 0;
+                else
+-                       pcount = atomic_read(&ppage->_count);
++                       pcount = page_mapcount(ppage);
 
- However, the reason is quite clear to me -- the command line specifies
-"noapic" among others (there is also "nosmp", but probably overridden by
-"maxcpus=1" -- I am afraid there is no clear precedence among these
-options), so the bug is the I/O APIC NMI watchdog is tried at all.  This
-is also clearly seen from the log where the I/O APIC is not set up at all.  
-
- A fix along the lines of what I implemented for "nosmp" in the
-"nosmp-watchdog" patch is needed which I will post shortly.  It's needed
-both for the i386 and the x86-64 target; hopefully the latter does not
-differ too much from the former.
-
-  Maciej
+                if (put_user(pcount, out++)) {
+                        ret = -EFAULT;
+--
+1.5.3.6
