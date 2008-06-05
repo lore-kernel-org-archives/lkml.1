@@ -1,172 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763334AbYFEXTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762595AbYFEX2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763334AbYFEXTX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 19:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbYFEXTM
+	id S1762595AbYFEX2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 19:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYFEX2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 19:19:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42708 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbYFEXTL (ORCPT
+	Thu, 5 Jun 2008 19:28:05 -0400
+Received: from homer.mvista.com ([63.81.120.158]:17704 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbYFEX2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 19:19:11 -0400
-Date: Thu, 5 Jun 2008 19:19:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, akpm@osdl.org
-Subject: [PATCH -v2] ftrace: disable function tracing bringing up new CPU
-In-Reply-To: <Pine.LNX.4.58.0806051648380.13380@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0806051916190.16872@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0806051648380.13380@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Jun 2008 19:28:04 -0400
+Date: Thu, 5 Jun 2008 16:27:59 -0700
+From: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: akpm@linux-foundation.org, nagar@watson.ibm.com, balbir@in.ibm.com,
+       sekharan@us.ibm.com, kosaki.motohiro@jp.fujitsu.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: [PATCH 0/3 v2] per-task-delay-accounting: add memory reclaim delay
+Message-Id: <20080605162759.a6adf291.kobayashi.kk@ncos.nec.co.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  I noticed that I left a "unsigned long flags" in the version I sent out.
-  That was due to my first faulty implementation that used a spin lock.
-  Please use this patch instead. The only difference between this patch
-  and the one I sent out is that I removed the unused flags variables
-  from ftrace_enable() and ftrace_disable().
-]
+Hi.
 
-Peter Zijlstra found that taking down and bringing up a new CPU caused
-ftrace to crash the kernel. This was due to some arch calls that were
-being traced by the function tracer before the smp_processor_id was set
-up. Since the function tracer uses smp_processor_id it caused a triple
-fault.
+This is v2 of accounting memory reclaim patch series.
+Thanks to Kosaki-san, Kamezawa-san, Andrew for comments and advice!
+These patches were fixed about the following.
 
-Instead of adding notrace all over the architecture code to prevent
-this problem, it is easier to simply disable the function tracer
-when bringing up a new CPU.
+Against: next-20080605
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/linux/ftrace.h            |   11 ++++++++---
- kernel/cpu.c                      |    9 +++++++++
- kernel/trace/ftrace.c             |   24 ++++++++++++++++++++++++
- kernel/trace/trace_irqsoff.c      |    3 +++
- kernel/trace/trace_sched_wakeup.c |    2 +-
- 5 files changed, 45 insertions(+), 4 deletions(-)
+1) Change Log
 
-Index: linux-tip.git/include/linux/ftrace.h
-===================================================================
---- linux-tip.git.orig/include/linux/ftrace.h	2008-06-05 14:51:47.000000000 -0400
-+++ linux-tip.git/include/linux/ftrace.h	2008-06-05 16:52:32.000000000 -0400
-@@ -33,10 +33,15 @@ void clear_ftrace_function(void);
- extern void ftrace_stub(unsigned long a0, unsigned long a1);
- extern void mcount(void);
+ o Add accounting memory reclaim delay from memcgroup.
+   For accounting both global and cgroup memory reclaim,
+   accounting point was moved from try_to_free_pages() to do_try_to_free_pages.
 
-+void ftrace_enable(void);
-+void ftrace_disable(void);
-+
- #else /* !CONFIG_FTRACE */
--# define register_ftrace_function(ops) do { } while (0)
--# define unregister_ftrace_function(ops) do { } while (0)
--# define clear_ftrace_function(ops) do { } while (0)
-+# define register_ftrace_function(ops)		do { } while (0)
-+# define unregister_ftrace_function(ops)	do { } while (0)
-+# define clear_ftrace_function(ops)		do { } while (0)
-+# define ftrace_enable()			do { } while (0)
-+# define ftrace_disable()			do { } while (0)
- #endif /* CONFIG_FTRACE */
-
- #ifdef CONFIG_DYNAMIC_FTRACE
-Index: linux-tip.git/kernel/cpu.c
-===================================================================
---- linux-tip.git.orig/kernel/cpu.c	2008-06-05 14:50:44.000000000 -0400
-+++ linux-tip.git/kernel/cpu.c	2008-06-05 14:51:50.000000000 -0400
-@@ -14,6 +14,7 @@
- #include <linux/kthread.h>
- #include <linux/stop_machine.h>
- #include <linux/mutex.h>
-+#include <linux/ftrace.h>
-
- /* Serializes the updates to cpu_online_map, cpu_present_map */
- static DEFINE_MUTEX(cpu_add_remove_lock);
-@@ -300,8 +301,16 @@ static int __cpuinit _cpu_up(unsigned in
- 		goto out_notify;
- 	}
-
-+	/*
-+	 * Disable function tracing while bringing up a new CPU.
-+	 * We don't want to trace functions that can not handle a
-+	 * smp_processor_id() call.
-+	 */
-+	ftrace_disable();
-+
- 	/* Arch-specific enabling code. */
- 	ret = __cpu_up(cpu);
-+	ftrace_enable();
- 	if (ret != 0)
- 		goto out_notify;
- 	BUG_ON(!cpu_online(cpu));
-Index: linux-tip.git/kernel/trace/ftrace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ftrace.c	2008-06-05 14:50:44.000000000 -0400
-+++ linux-tip.git/kernel/trace/ftrace.c	2008-06-05 18:17:14.000000000 -0400
-@@ -148,6 +148,30 @@ static int __unregister_ftrace_function(
- 	return ret;
- }
-
-+static int ftrace_disabled_count;
-+static int save_ftrace_enabled;
-+
-+void ftrace_disable(void)
-+{
-+	mutex_lock(&ftrace_sysctl_lock);
-+
-+	save_ftrace_enabled = ftrace_enabled;
-+	ftrace_enabled = 0;
-+}
-+
-+void ftrace_enable(void)
-+{
-+	/* ftrace_enable must be paired with ftrace_disable */
-+	if (!mutex_is_locked(&ftrace_sysctl_lock)) {
-+		WARN_ON(1);
-+		return;
-+	}
-+
-+	ftrace_enabled = save_ftrace_enabled;
-+
-+	mutex_unlock(&ftrace_sysctl_lock);
-+}
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
-
- static struct task_struct *ftraced_task;
-Index: linux-tip.git/kernel/trace/trace_irqsoff.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace_irqsoff.c	2008-06-05 14:50:44.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace_irqsoff.c	2008-06-05 14:51:50.000000000 -0400
-@@ -76,6 +76,9 @@ irqsoff_tracer_call(unsigned long ip, un
- 	long disabled;
- 	int cpu;
-
-+	if (unlikely(!ftrace_enabled))
-+		return;
-+
- 	/*
- 	 * Does not matter if we preempt. We test the flags
- 	 * afterward, to see if irqs are disabled or not.
-Index: linux-tip.git/kernel/trace/trace_sched_wakeup.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace_sched_wakeup.c	2008-06-05 14:50:44.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace_sched_wakeup.c	2008-06-05 14:51:50.000000000 -0400
-@@ -44,7 +44,7 @@ wakeup_tracer_call(unsigned long ip, uns
- 	int resched;
- 	int cpu;
-
--	if (likely(!wakeup_task))
-+	if (likely(!wakeup_task) || !ftrace_enabled)
- 		return;
-
- 	resched = need_resched();
+ o Drop the patch regarding /proc export for memory reclaim delay.
+   Because it seems that two separate ways to report are not necessary,
+   this patch series supports only NETLINK and doesn't add a field to /proc/<pid>/stat.
 
 
+2) Confirm the fix regarding memcgroup.
+
+  o Previous patch can't catch memory reclaim delay from memcgroup.
+
+    $ echo 10M > /cgroups/0/memory.limit_in_bytes
+
+    $ ls -s test.dat
+    500496 test.dat
+
+    $ time tar cvf test.tar test.dat
+    real    0m21.957s
+    user    0m0.032s
+    sys     0m2.348s
+
+    $ ./delayget -d -p <pid>
+    CPU             count     real total  virtual total    delay total
+                     2441     2288143000     2438256954       22371958
+    IO              count    delay total
+                     2444    18745251314
+    SWAP            count    delay total
+                        0              0
+    RECLAIM         count    delay total
+                        0              0
+
+  o Current patch can catch memory reclaim delay from memcgroup.
+
+    $ echo 10M > /cgroups/0/memory.limit_in_bytes
+
+    $ ls -s test.dat
+    500496 test.dat
+
+    $ time tar cvf test.tar test.dat
+    real    0m22.563s
+    user    0m0.028s
+    sys     0m2.440s
+
+    $ ./delayget -d -p <pid>
+    CPU             count     real total  virtual total    delay total
+                     2640     2456153500     2478353004       28366219
+    IO              count    delay total
+                     2628    19894214188
+    SWAP            count    delay total
+                        0              0
+    RECLAIM         count    delay total
+                     6600    10682486085
