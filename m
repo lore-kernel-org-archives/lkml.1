@@ -1,111 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYFEPWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbYFEPW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbYFEPWn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYFEPV5
+	id S1758512AbYFEPW5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759591AbYFEPWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:21:57 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:46609 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbYFEPV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:21:56 -0400
-Date: Thu, 5 Jun 2008 19:23:13 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race
-Message-ID: <20080605152313.GA203@tv-sign.ru>
-References: <20080604170905.GA10273@tv-sign.ru> <20080604173318.GH3549@parisc-linux.org> <20080604180101.GA10295@tv-sign.ru> <20080604195232.GJ3549@parisc-linux.org>
-Mime-Version: 1.0
+	Thu, 5 Jun 2008 11:22:32 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46847 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759556AbYFEPWa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 11:22:30 -0400
+Date: Thu, 5 Jun 2008 16:22:28 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Geoffrey Wossum <geoffrey@pager.net>, kernel@avr32linux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: AT32 ASoC Driver Patches on alsa-devel
+Message-ID: <20080605152228.GA24014@rakim.wolfsonmicro.main>
+Mail-Followup-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+	Geoffrey Wossum <geoffrey@pager.net>, kernel@avr32linux.org,
+	linux-kernel@vger.kernel.org
+References: <200806050851.47319.geoffrey@pager.net> <20080605162206.0a34a54e@hskinnemo-gx745.norway.atmel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080604195232.GJ3549@parisc-linux.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080605162206.0a34a54e@hskinnemo-gx745.norway.atmel.com>
+X-Cookie: Violence is molding.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/04, Matthew Wilcox wrote:
->
-> On Wed, Jun 04, 2008 at 10:01:01PM +0400, Oleg Nesterov wrote:
-> > > In my opinion, not checking for TASK_STOPPED or TASK_TRACED previously was
-> > > an oversight.  This should be fixed.
-> >
-> > Perhaps, and the changelog has a special note. But imho we need another patch
-> > for that, this is a user-visible change.
->
-> It is?
+On Thu, Jun 05, 2008 at 04:22:06PM +0200, Haavard Skinnemoen wrote:
 
-Think about ptrace_notify().
+> I have to admit I don't understand the current sound situation at all.
+> With this driver, we now have:
+>   * A "regular" ALSA driver for the AC97C (not based on ASoC)
+>   * Two different "generic" AC97 layers: one in sound/pci/ac97 and one
+>     in sound/soc/ac97 (the AC97C driver uses the former)
 
-Don't get me wrong. As I said, I think this change would be nice (but I didn't
-think thoroughly yet), and it also allows us to cleanup (or fix?) ptrace_stop().
-But with another patch, please.
+There is AC97 support in ASoC but there's no sound/soc/ac97?  Briefly,
+the generic ALSA AC97 support is focused on handling standard AC97 parts
+without additional features while the ASoC layer requires more per-board
+setup but supports codecs with large extensions to the AC97 standard
+such as the additional of secondary I2S interfaces that can't readily be
+accomodated in the vanilla AC97 driver.
 
-> > > This patch is going to add quite a few cycles to schedule().  Has anyone
-> > > done any benchmarks with a schedule-heavy workload?
-> >
-> > No, I didn't. This patch is bugfix.
->
-> But there are other ways to fix the bug if this patch proves to be too
-> heavy-weight.
+For systems using only AC97 codecs with only small non-standard features
+the vanilla AC97 driver provides a turnkey solution with no machine
+specific code at all.  It should be possible to implement it in terms of
+ASoC but nobody has tried yet and it's not 100% clear that it's worth
+the code churn.
 
-If I knew a better solution, I wouldn't have sent this patch ;)
+>   * An OSS driver for the AP7000 Audio Bitstream DAC
+>   * An i2s driver for the AT73C213 chip using the SSC controller and SPI
 
-Yes, we can change all users of TASK_KILLABLE. But personally I think this
-would be wrong. I strongly believe this code
+These drivers will be working in the way people were doing embedded
+audio prior to ASoC.  Support for each system was provided by a
+monolithic driver which implemented support for the codec, the audio
+controller on the SoC and any other components on the board.  This
+resulted in a lot of redundancy since multiple systems using the same
+components would find it hard to share code for them and the
+abstractions providing the reuse that did exist often ended up getting
+done multiple times.
 
-	current->state = TASK_KILLABLE;
-	schedule();
+ASoC improves code reuse here by separating out the support for codecs
+and SoC CPUs from the machine drivers, providing a layer for gluing them
+together and fitting them into the ALSA core.  An ASoC machine driver
+can be little more than the equivalent of "I have a codec of this type
+connected to this I2S interface on my CPU and clocked in this way" but
+it can support more complex scenarios.
 
-should work "as expected".
+It also provides a generic power management infrastructure for these
+systems, allowing unused parts of the audio subsystem to be put into low
+power states when they are not being used as part of an active audio
+path.
 
-Btw, I don't completely agree with "quite a few cycles". Let's look at the
-code again:
+>   * Another SSC driver based on the ASoC layer
+>   * Some sort of "AT32 PCM" layer which apparently can only be used
+>     with the SSC controller
+>   * The above two being essentially identical to similar drivers for
+>     AT91
 
-	int signal_pending_state(long state, struct task_struct *p)
-	{
-		if (!(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)))
-			return 0;
-		if (!signal_pending(p))
-			return 0;
+These drivers provide the CPU side support for the system within ASoC.
+I suspect from what you are saying that the two Atmel ASoC platform
+driver sets could be implemented with a common core with some per-CPU
+glue to plug them together but I've never looked at either platform in
+sufficient detail.
 
-		if (state & TASK_INTERRUPTIBLE)
-			return 1;
-		if (state & (__TASK_STOPPED | __TASK_TRACED))
-			return 0;
-		return __fatal_signal_pending(p);
-	}
+The PCM layer in these drivers represents the DMA controller part of the
+SoC hardware - the DMA control is split out in ASoC because most SoCs
+have generic DMA engines which are shared between multiple audio
+interface controllers (eg, I2S and AC97) so there's no point in
+repeating the code to glue them into ALSA DMA.
 
-The fast path is "(state & (TASK_INTERRUPTIBLE | TASK_WAKEKILL)) + signal_pending(p)",
-basically the same that we do now. And we can inline this helper to eliminate the
-function call.
+> Can someone please help me out here? In particular, what is ASoC and
+> why should I want to use it?
 
-But yes sure, it does bloat schedule(), and I would be happy to see the better way.
-That is why I didn't send this patch immediately, but started with
-"Q: down_killable() is racy? or schedule() is not right?".
+Hopefully I answered that above.  There's a more detailed overview in
+Documentation/sound/alsa/soc/overview.txt:
 
-> > However, I think the new helper can have other users. Not that I have a strong
-> > opinion.
->
-> I don't think so ...
-
-The only part I strongly disagree with. Imho, __down_common/__mutex_lock_common/etc
-should use this helper. What if we add another "interesting" state? Or find another
-bug? why should we copy-and-paste this code to yet another something_new_killable() ?
-
-Btw, if we make it inline, __down_common() won't suffer (but otoh, I think that these
-_common()'s shouldn't be inline).
-
-
-
-So. I can re-send this patch unchanged or with signal_pending_state() inlined,
-or I can wait for another solution.
-
-What do you think?
-
-Oleg.
-
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/sound/alsa/soc/overview.txt;h=1e4c6d3655f2089c875ff381759ebd5528fe2ad3;hb=HEAD
