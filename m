@@ -1,125 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbYFEWcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763051AbYFEWc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762189AbYFEWcp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 18:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYFEWcf
+	id S1763051AbYFEWc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 18:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbYFEWcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 18:32:35 -0400
-Received: from mga02.intel.com ([134.134.136.20]:13068 "EHLO mga02.intel.com"
+	Thu, 5 Jun 2008 18:32:42 -0400
+Received: from mga11.intel.com ([192.55.52.93]:63004 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752416AbYFEWce convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 18:32:34 -0400
+	id S1754570AbYFEWcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 18:32:41 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.27,597,1204531200"; 
-   d="scan'208";a="257052793"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+   d="scan'208";a="573089782"
+Message-ID: <48486920.4040006@intel.com>
+Date: Thu, 05 Jun 2008 15:30:56 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/2] Eliminate double kfree
-Date: Thu, 5 Jun 2008 15:32:31 -0700
-Message-ID: <5389061B65D50446B1783B97DFDB392D0A275662@orsmsx411.amr.corp.intel.com>
-In-Reply-To: <Pine.LNX.4.64.0805291504030.26229@ask.diku.dk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] Eliminate double kfree
-Thread-Index: AcjHXArOURWSVMjsTBafHUqu/W/YSw==
-References: <Pine.LNX.4.64.0805291504030.26229@ask.diku.dk>
-From: "Gross, Mark" <mark.gross@intel.com>
-To: "Julia Lawall" <julia@diku.dk>, <jbarnes@virtuousgeek.org>,
-       <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <kernel-janitors@vger.kernel.org>
-X-OriginalArrivalTime: 05 Jun 2008 22:32:32.0212 (UTC) FILETIME=[0B649940:01C8C75C]
+To: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: "Brown, Len" <len.brown@intel.com>, cpufreq@lists.linux.org.uk,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: bug? acpi p-state + ondemand keeps dropping max freq
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jun 2008 22:32:39.0888 (UTC) FILETIME=[0FF7DD00:01C8C75C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+I've consistently experienced the following bizarre problem since 2.6.20, all the
+way up to 2.6.25.3 (regressed yesterday and each of these kernels exposes this
+behaviour):
 
->-----Original Message-----
->From: Julia Lawall [mailto:julia@diku.dk]
->Sent: Thursday, May 29, 2008 6:05 AM
->To: jbarnes@virtuousgeek.org; linux-pci@vger.kernel.org; linux-
->kernel@vger.kernel.org; kernel-janitors@vger.kernel.org
->Subject: [PATCH 1/2] Eliminate double kfree
->
->From: Julia Lawall <julia@diku.dk>
->
->The destination of goto error also does a kfree(g_iommus), so it is not
->correct to do one here.
->
->This was found using the following semantic match.
->(http://www.emn.fr/x-info/coccinelle/)
->
->// <smpl>
->@r1@
->expression E;
->position p1,p2;
->@@
->
->kfree@p1(E);
->...
->kfree@p2(E);
->
->@subexps@
->expression E1;
->position r1.p1,p;
->@@
->
->kfree@p1(<+... E1@p ...+>);
->
->@recollect@
->position subexps.p;
->expression E1;
->@@
->
->E1@p
->
->@doublekfree@
->position r1.p1,r1.p2;
->expression recollect.E1,E2,E;
->position p;
->statement S;
->@@
->
->kfree@p1(E);
-><+... E1@p=E2 ...+> // the actual semantic match contains other
-assignments
->kfree@p2(E);
->
->@notdoublekfree@
->position r1.p1,r1.p2;
->position any doublekfree.p;
->expression E,E1,E2;
->@@
->
->* kfree@p1(E);
->... when != E1@p
->    when != E1@p = E2 // needed to match a variable decl
->* kfree@p2(E);
->// </smpl>
->
->Signed-off-by: Julia Lawall <julia@diku.dk>
->---
->
->diff -u -p a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
->--- a/drivers/pci/intel-iommu.c	2008-05-15 18:11:35.000000000
-+0200
->+++ b/drivers/pci/intel-iommu.c	2008-05-24 21:20:24.000000000
-+0200
->@@ -1725,7 +1725,6 @@ int __init init_dmars(void)
-> 	deferred_flush = kzalloc(g_num_of_iommus *
-> 		sizeof(struct deferred_flush_tables), GFP_KERNEL);
-> 	if (!deferred_flush) {
->-		kfree(g_iommus);
-> 		ret = -ENOMEM;
-> 		goto error;
-> 	}
-ACK.
+/sys/devices/system/cpu/cpu0/cpufreq # grep . *
+affected_cpus:0
+cpuinfo_cur_freq:800000
+cpuinfo_max_freq:1866000
+cpuinfo_min_freq:800000
+scaling_available_frequencies:1866000 1600000 1333000 1066000 800000
+scaling_available_governors:ondemand performance
+scaling_cur_freq:800000
+scaling_driver:acpi-cpufreq
+scaling_governor:ondemand
+scaling_max_freq:800000
+scaling_min_freq:800000
 
-Thanks,
 
---mgross
+
+Notice that scaling_mx_freq dropped down to the lowest possible value and as such
+my CPU is only working at 800MHz. At boot time this field properly displays
+1866MHz and everything works OK. After a certain period (?) this value drops down
+and I cannot manually elevate it back to the normal level:
+
+# echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+800000
+# echo 1866000 > scaling_max_freq ; cat scaling_max_freq
+800000
+
+
+This renders my Dothan to utterly poor speeds. (standard T43)
+
+performance cpufreq governor makes no difference - I still can't change the
+frequency upper/lower values.
+
+Auke
