@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbYFEMkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYFEMmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbYFEMkA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 08:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757128AbYFEMjv
+	id S1758553AbYFEMmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 08:42:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbYFEMm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 08:39:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54075 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757091AbYFEMju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 08:39:50 -0400
-Date: Thu, 5 Jun 2008 14:39:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: RFC [PATCH] x86: make generic arch support NUMAQ
-Message-ID: <20080605123933.GA22737@elte.hu>
-References: <200806050309.11197.yhlu.kernel@gmail.com> <20080605110002.GB17961@uranus.ravnborg.org>
+	Thu, 5 Jun 2008 08:42:28 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57721 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757091AbYFEMm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 08:42:28 -0400
+Date: Thu, 5 Jun 2008 14:42:26 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>
+Subject: [PATCH 0/2] New split of quota headers
+Message-ID: <20080605124226.GF27370@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080605110002.GB17961@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  Hello Andrew,
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+  after Adrian's comments and a bit of thinking, I've decided to split
+quota headers differently which also solves the issue with new header file
+which should be exported. I found out it is enough to move some functions
+into quotaops.h where they logically also fit nicely. So please replace
+my patches:
++ ext4-add-explicit-include-of-linux-quotah-into-ext4_jbd2h.patch
++ ext2-add-explicit-include-of-linux-quotah-into-superc.patch
++ quota-split-out-quota_structh-out-of-quotah.patch
++ quota-convert-macros-to-inline-functions.patch
 
-> > +#if defined(CONFIG_X86_NUMAQ) || defined(CONFIG_X86_GENERICARCH)
-> 
-> I counted several places where you test for the above. Introducing a 
-> CONFIG_X86_NUMAQ_OR_GENERIC would simplify stuff.
+with the two patches which will follow. Thanks and sorry for additional
+work.
 
-Yinghai, please get rid of the NUMAQ build option altogether and 
-eliminate the subarch.
-
-We should keep a compatibility CONFIG_X86_NUMAQ that selects 
-X86_GENERICARCH, so that 'make oldconfig' on a NUMAQ config does the 
-right thing - but it's not a subarch anymore nor anything 
-user-configurable.
-
-All that together would be a very nice simplification.
-
-	Ingo
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
