@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763624AbYFEBXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763353AbYFEBXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763624AbYFEBXa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 21:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763049AbYFEBWG
+	id S1763353AbYFEBXo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 21:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763119AbYFEBWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 21:22:06 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55237 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762959AbYFEBVc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 21:21:32 -0400
-Message-Id: <20080605021504.134644327@jp.fujitsu.com>
-References: <20080605021211.871673550@jp.fujitsu.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 05 Jun 2008 11:12:12 +0900
-From: kosaki.motohiro@jp.fujitsu.com
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com
-Subject: [PATCH 1/5] fix incorrect variable type of do_try_to_free_pages()
-Content-Disposition: inline; filename=01-fix-do_try_to_free_pages-ret.patch
+	Wed, 4 Jun 2008 21:22:07 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63000 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1763015AbYFEBWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 21:22:04 -0400
+Message-ID: <48473F59.7000908@cn.fujitsu.com>
+Date: Thu, 05 Jun 2008 09:20:25 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, alan@redhat.com
+Subject: [PATCH -mmotm] drivers/char/rtc.c: fix build failure
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Smarter retry of costly-order allocations" patch series change behaver of do_try_to_free_pages().
-but unfortunately ret variable tyep unchanged.
 
-thus, overflow problem is possible.
+This patch caused build failure:
+	rtc-push-the-bkl-down-into-the-driver-ioctl-method.patch
 
+drivers/char/rtc.c:721: error: conflicting types for ‘rtc_ioctl’
+drivers/char/rtc.c:146: error: previous declaration of ‘rtc_ioctl’ was here
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- mm/vmscan.c |    2 +-
+ rtc.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1317,7 +1317,7 @@ static unsigned long do_try_to_free_page
- 					struct scan_control *sc)
- {
- 	int priority;
--	int ret = 0;
-+	unsigned long ret = 0;
- 	unsigned long total_scanned = 0;
- 	unsigned long nr_reclaimed = 0;
- 	struct reclaim_state *reclaim_state = current->reclaim_state;
-
--- 
+--- a/drivers/char/rtc.c.old	2008-06-05 09:11:20.000000000 +0800
++++ a/drivers/char/rtc.c	2008-06-05 09:11:28.000000000 +0800
+@@ -143,7 +143,7 @@ static DEFINE_TIMER(rtc_irq_timer, rtc_d
+ static ssize_t rtc_read(struct file *file, char __user *buf,
+ 			size_t count, loff_t *ppos);
+ 
+-static int rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
++static long rtc_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+ static void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+ 
+ #ifdef RTC_IRQ
