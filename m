@@ -1,119 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYFEWDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761501AbYFEWE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbYFEWDo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 18:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYFEWDG
+	id S1761501AbYFEWE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 18:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYFEWET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 18:03:06 -0400
-Received: from mga06.intel.com ([134.134.136.21]:47598 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751250AbYFEWDE (ORCPT
+	Thu, 5 Jun 2008 18:04:19 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:17817 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbYFEWES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 18:03:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,597,1204531200"; 
-   d="scan'208";a="288789415"
-Date: Thu, 5 Jun 2008 15:02:16 -0700
-From: mark gross <mgross@linux.intel.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
-Message-ID: <20080605220216.GA12927@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 5 Jun 2008 18:04:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=T++VYj+zGvOkkVaNJzvTFrXZ065bo2RIWLxSJvv4N6VEjTiVNN5ASPvbGmswQczbz
+	gFq3/SviuDyiVBpm/vI9g==
+Message-ID: <6599ad830806051504t52398ed1ya742f0145067ffa@mail.gmail.com>
+Date: Thu, 5 Jun 2008 15:04:12 -0700
+From: "Paul Menage" <menage@google.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] introduce task cgroup (#task restrictioon for prevent fork bomb by cgroup)
+Cc: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       "Li Zefan" <lizf@cn.fujitsu.com>
+In-Reply-To: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 05 Jun 2008 22:02:16.0938 (UTC) FILETIME=[D167C4A0:01C8C757]
+References: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 11:47:01PM +0900, FUJITA Tomonori wrote:
-> I resumed the work to make the IOMMU respect drivers' DMA alignment
-> (since I got a desktop box having VT-d). In short, some IOMMUs
-> allocate memory areas spanning driver's segment boundary limit (DMA
-> alignment). It forces drivers to have a workaround to split up scatter
-> entries into smaller chunks again. To remove such work around in
-> drivers, I modified several IOMMUs, X86_64 (Calgary and Gart), Alpha,
-> POWER, PARISC, IA64, SPARC64, and swiotlb.
-> 
-> Now I try to fix Intel IOMMU code, the free space management
-> algorithm.
-> 
-> The major difference between Intel IOMMU code and the others is Intel
-> IOMMU code uses Red Black tree to manage free space while the others
-> use bitmap (swiotlb is the only exception).
-> 
-> The Red Black tree method consumes less memory than the bitmap method,
-> but it incurs more overheads (the RB tree method needs to walk through
-> the tree, allocates a new item, and insert it every time it maps an
-> I/O address). Intel IOMMU (and IOMMUs for virtualization) needs
-> multiple IOMMU address spaces. That's why the Red Black tree method is
-> chosen, I guess.
-> 
-> Half a year ago, I tried to convert POWER IOMMU code to use the Red
-> Black method and saw performance drop:
-> 
-> http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-11/msg00650.html
-> 
-> So I tried to convert Intel IOMMU code to use the bitmap method to see
-> how much I can get.
-> 
-> I didn't see noticable performance differences with 1GbE. So I tried
-> the modified driver of a SCSI HBA that just does memory accesses to
-> emulate the performances of SSD disk drives, 10GbE, Infiniband, etc.
-> 
-> I got the following results with one thread issuing 1KB I/Os:
-> 
->                     IOPS (I/O per second)
-> IOMMU disabled         145253.1 (1.000)
-> RB tree (mainline)     118313.0 (0.814)
-> Bitmap                 128954.1 (0.887)
->
+Hi Kosaki,
 
-FWIW: You'll see bigger deltas if you boot with intel_iommu=strict, but
-those will be because of waiting on IOMMU hardware to flush caches and
-may further hide effects of gong with a bitmap as opposed to a RB tree.
- 
-> 
-> I've attached the patch to modify Intel IOMMU code to use the bitmap
-> method but I have no intention of arguing that Intel IOMMU code
-> consumes more memory for better performance. :) I want to do more
-> performance tests with 10GbE (probably, I have to wait for a server
-> box having VT-d, which is not available on the market now).
-> 
-> As I said, what I want to do now is to make Intel IOMMU code respect
-> drivers' DMA alignment. Well, it's easier to do that if Intel IOMMU
-> uses the bitmap method since I can simply convert the IOMMU code to
-> use lib/iommu-helper but I can modify the RB tree method too.
->
+The basic idea of a task-limiting subsystem is good, thanks.
 
-I'm going to be out of contact for a few weeks but this work sounds
-interesting.  
- 
-> I'm just interested in other people's opinions on IOMMU
-> implementations, performances, possible future changes for performance
-> improvement, etc.
-> 
-> For further information:
-> 
-> LSF'08 "Storage Track" summary by Grant Grundler:
-> http://iou.parisc-linux.org/lsf2008/SUMMARY-Storage.txt
-> 
-> My LSF'08 slides:
-> http://iou.parisc-linux.org/lsf2008/IO-DMA_Representations-fujita_tomonori.pdf
-> 
-> 
-> Tis patch is against the latst git tree (note that it just converts
-> Intel IOMMU code to use the bitmap. It doesn't make it respect
-> drivers' DMA alignment yet).
-> 
+On Wed, Jun 4, 2008 at 9:43 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -2719,13 +2719,27 @@ static struct file_operations proc_cgrou
+>  * At the point that cgroup_fork() is called, 'current' is the parent
+>  * task, and the passed argument 'child' points to the child task.
+>  */
+> -void cgroup_fork(struct task_struct *child)
+> +int cgroup_fork(struct task_struct *child)
+>  {
+> +       int i;
+> +       int ret;
+> +
+> +       for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> +               struct cgroup_subsys *ss = subsys[i];
+> +               if (ss->can_fork) {
+> +                       ret = ss->can_fork(ss, child);
+> +                       if (ret)
+> +                               return ret;
+> +               }
+> +       }
+> +
+>        task_lock(current);
+>        child->cgroups = current->cgroups;
+>        get_css_set(child->cgroups);
+>        task_unlock(current);
+>        INIT_LIST_HEAD(&child->cg_list);
+> +
+> +       return 0;
+>  }
 
-I'll look closely at your patch later.
+I don't think this is the right way to handle this check. This isn't a
+generic control groups callback, it's one that specific for a
+particular subsystem. So the right way to handle it is to call
+task_cgroup_can_fork() from the same place that the RLIM_NPROC limit
+is checked.
 
---mgross
+If it later turned out that multiple cgroup subsystems wanted to be
+able to prevent forking, then it might make sense to have a generic
+cgroup callback, but for just one subsystem it's cleaner to call
+directly.
 
+> +
+> +static int task_cgroup_populate(struct cgroup_subsys *ss,
+> +                               struct cgroup *cgrp)
+> +{
+> +       if (task_cgroup_subsys.disabled)
+> +               return 0;
 
+I don't think you should need this check - if the subsystem is
+disabled, it'll never be mounted in the first place.
+
+Paul
