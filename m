@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762202AbYFETbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbYFETic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762202AbYFETbQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 15:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYFETbB
+	id S1760828AbYFETic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 15:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYFETiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 15:31:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53157 "EHLO
+	Thu, 5 Jun 2008 15:38:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46501 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750767AbYFETbA (ORCPT
+	by vger.kernel.org with ESMTP id S1751320AbYFETiW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 15:31:00 -0400
-Date: Thu, 5 Jun 2008 12:30:45 -0700
+	Thu, 5 Jun 2008 15:38:22 -0400
+Date: Thu, 5 Jun 2008 12:37:32 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: cmm@us.ibm.com, jack@suse.cz, linux-ext4@vger.kernel.org,
-       aneesh.kumar@linux.vnet.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext2: Use page_mkwrite vma_operations to get mmap write
- notification.
-Message-Id: <20080605123045.445e380a.akpm@linux-foundation.org>
-In-Reply-To: <1212685513-32237-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1212685513-32237-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Thomas Tuttle" <ttuttle@google.com>
+Cc: mpm@selenic.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] pagemap: Require reads of /proc/pid/pagemap to be
+ multiples of 8 (v2 of series)
+Message-Id: <20080605123732.98dc47fb.akpm@linux-foundation.org>
+In-Reply-To: <4ca0a85e0806051138q2a6a6aeav941e46c67ee12bd0@mail.gmail.com>
+References: <4ca0a85e0806051138q2a6a6aeav941e46c67ee12bd0@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,130 +27,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  5 Jun 2008 22:35:12 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Thu, 5 Jun 2008 14:38:10 -0400
+"Thomas Tuttle" <ttuttle@google.com> wrote:
 
-> We would like to get notified when we are doing a write on mmap
-> section.  The changes are needed to handle ENOSPC when writing to an
-> mmap section of files with holes.
+> This matches the behavior of /proc/kpage{count,flags}, and simplifies
+> the logic a bit.
 > 
+> I also changed out and end in struct pagemapread to be u64* instead of
+> char*, which makes put_user work the way it was intended.  (Before, it
+> was only copying the bottom byte of a pagemap entry, because the target
+> of the copy was a char*.)
 
-Whoa.  You didn't copy anything like enough mailing lists for a change
-of this magnitude.  I added some.
+This one is for 2.6.25.x?
 
-This is a large change in behaviour!
+Is so, the maintainers are going to wonder why the heck we sent it to
+them.  It does fix a bug, but it is far from clear what that bug is.
 
-a) applications will now get a synchronous SIGBUS when modifying a
-   page over an ENOSPC filesystem.  Whereas previously they could have
-   proceeded to completion and then detected the error via an fsync().
+Can we have a better description please?
 
-   It's going to take more than one skimpy little paragraph to
-   justify this, and to demonstrate that it is preferable, and to
-   convince us that nothing will break from this user-visible behaviour
-   change.
+> Signed-off-by: Thomas Tuttle
 
-b) we're now doing fs operations (and some I/O) in the pagefault
-   code.  This has several implications:
-
-   - performance changes
-
-   - potential for deadlocks when a process takes the fault from
-     within a copy_to_user() in, say, mm/filemap.c
-
-   - performing additional memory allocations within that
-     copy_to_user().  Possibility that these will reenter the
-     filesystem.
-
-And that's just ext2.
-
-For ext3 things are even more complex, because we have the
-journal_start/journal_end pair which is effectively another "lock" for
-ranking/deadlock purposes.  And now we're taking i_alloc_sem and
-lock_page and we're doing ->writepage() and its potential
-journal_start(), all potentially within the context of a
-copy_to_user().
-
-Now, things become easier because copy_to_user() only happens on the
-read() side of things, where we don't hold lock_page() and things are
-generally simpler.
-
-But still, this is a high-risk change.  I think we should require a lot
-of convincing that issues such as the above have been suitably
-considered and addressed, and that the change has had *intense*
-testing.
-
-> index 47d88da..cc2e106 100644
-> --- a/fs/ext2/ext2.h
-> +++ b/fs/ext2/ext2.h
-> @@ -136,6 +136,7 @@ extern void ext2_get_inode_flags(struct ext2_inode_info *);
->  int __ext2_write_begin(struct file *file, struct address_space *mapping,
->  		loff_t pos, unsigned len, unsigned flags,
->  		struct page **pagep, void **fsdata);
-> +extern int ext2_page_mkwrite(struct vm_area_struct *vma, struct page *page);
->  
->  /* ioctl.c */
->  extern long ext2_ioctl(struct file *, unsigned int, unsigned long);
-> diff --git a/fs/ext2/file.c b/fs/ext2/file.c
-> index 5f2fa9c..d539dcf 100644
-> --- a/fs/ext2/file.c
-> +++ b/fs/ext2/file.c
-> @@ -18,6 +18,7 @@
->   * 	(jj@sunsite.ms.mff.cuni.cz)
->   */
->  
-> +#include <linux/mm.h>
->  #include <linux/time.h>
->  #include "ext2.h"
->  #include "xattr.h"
-> @@ -38,6 +39,24 @@ static int ext2_release_file (struct inode * inode, struct file * filp)
->  	return 0;
->  }
->  
-> +static struct vm_operations_struct ext2_file_vm_ops = {
-> +	.fault		= filemap_fault,
-> +	.page_mkwrite   = ext2_page_mkwrite,
-> +};
-> +
-> +static int ext2_file_mmap(struct file *file, struct vm_area_struct *vma)
-> +{
-> +	struct address_space *mapping = file->f_mapping;
-> +
-> +	if (!mapping->a_ops->readpage)
-> +		return -ENOEXEC;
-
-this copied-and-pasted test can now be removed.
-
-> +	file_accessed(file);
-> +	vma->vm_ops = &ext2_file_vm_ops;
-> +	vma->vm_flags |= VM_CAN_NONLINEAR;
-> +	return 0;
-> +}
-> +
-> +
->  /*
->   * We have mostly NULL's here: the current defaults are ok for
->   * the ext2 filesystem.
-> @@ -52,7 +71,7 @@ static int ext2_release_file (struct inode * inode, struct file * filp)
->  #ifdef CONFIG_COMPAT
->  	.compat_ioctl	= ext2_compat_ioctl,
->  #endif
-> -	.mmap		= generic_file_mmap,
-> +	.mmap		= ext2_file_mmap,
->  	.open		= generic_file_open,
->  	.release	= ext2_release_file,
->  	.fsync		= ext2_sync_file,
-> diff --git a/fs/ext2/inode.c b/fs/ext2/inode.c
-> index 384fc0d..d4c5c23 100644
-> --- a/fs/ext2/inode.c
-> +++ b/fs/ext2/inode.c
-> @@ -1443,3 +1443,8 @@ int ext2_setattr(struct dentry *dentry, struct iattr *iattr)
->  		error = ext2_acl_chmod(inode);
->  	return error;
->  }
-> +
-> +int ext2_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-> +{
-> +	return block_page_mkwrite(vma, page, ext2_get_block);
-> +}
-> -- 
-> 1.5.5.1.357.g1af8b.dirty
+Please include <ttuttle@google.com> in the signoffs.
