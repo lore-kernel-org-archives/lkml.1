@@ -1,116 +1,352 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYFEJj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYFEJmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbYFEJj4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 05:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFEJjs
+	id S1755464AbYFEJmq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 05:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYFEJmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 05:39:48 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:36724 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbYFEJjr (ORCPT
+	Thu, 5 Jun 2008 05:42:38 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:58736 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbYFEJmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 05:39:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Q6wkyELqyExT0/1qAbx3awgLe+9mikieTGBR+oBpM/+NbSv5/PCtkTmvrwyOKoRUHQ
-         enX+AR49PSfcKWvaYfz8ERH3r/rMYVxpNpJqL6hBx5BnHd4zmTRKeJj+PEbFa0igDwTD
-         CVhMJgwFAdZthDrjirhBOzsbR/BOLMtJHtuic=
-Message-ID: <35fbaa3e0806050239y5987fc33rd349be8d07bc1262@mail.gmail.com>
-Date: Thu, 5 Jun 2008 12:39:46 +0300
-From: "Vitaliy Ivanov" <vitalivanov@gmail.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Subject: [PATCH resend] Adding dummy release functions to avoid warnings.
-Cc: lkml <linux-kernel@vger.kernel.org>, devzero@web.de, jsun@junsun.net,
-       dwmw2@infradead.org, protasnb@gmail.com
-In-Reply-To: <1208306056.15140.13.camel@pcvitaliy>
+	Thu, 5 Jun 2008 05:42:37 -0400
+Message-ID: <4847B3CB.5020700@linux.vnet.ibm.com>
+Date: Thu, 05 Jun 2008 15:07:15 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       balajirrao@gmail.com, containers@lists.osdl.org, menage@google.com,
+       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl
+Subject: Re: [-mm] CPU controller statistics (v5)
+References: <20080603200515.GA25753@balbir.in.ibm.com> <20080604144408.be680056.akpm@linux-foundation.org>
+In-Reply-To: <20080604144408.be680056.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1208306056.15140.13.camel@pcvitaliy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Andrew Morton wrote:
+> On Wed, 4 Jun 2008 01:35:15 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> From: Balaji Rao <balajirrao@gmail.com>
+>>
+>> This is a repost of Balaji's patches at
+>> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/11/1791504
+>> I've made changes to the format exported to user space. I've used
+>> clock_t, since /proc/<pid>/stat uses the same format to export data.
+>>
+>> I've run some basic tests to verify that the patches work.
+>>
+>> Andrew could you please consider them for inclusion if there are no
+>> objections to this patch. This patch helps fill a void in the controllers
+>> we have w.r.t. statistics
+>>
+>> The patch is against the latest git.
+>>
+> 
+> That is not a changelog.  Please always include a (good) changelog with
+> each iteration of a patch.
+> 
 
-Natalie reported that patch wasn't accepted.
-Please check this out. If I need to correct it somehow then pls let me know.
+Sure, will do
 
-V.
+> Were all my previous comments addressed?  Most, it seems.
+> 
 
----------- Forwarded message ----------
-From: Vitaliy Ivanov <vitalivanov@gmail.com>
-Date: Wed, Apr 16, 2008 at 3:34 AM
-Subject: [PATCH] Adding dummy release functions to avoid warnings.
-To: linux-kernel@vger.kernel.org, devzero@web.de, jsun@junsun.net,
-dwmw2@infradead.org
+Yes, Balaji did work on addressing them
 
+>> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+>> index e155aa7..60a25cb 100644
+>> --- a/include/linux/cgroup.h
+>> +++ b/include/linux/cgroup.h
+>> @@ -293,6 +293,7 @@ int cgroup_is_descendant(const struct cgroup *cgrp);
+>>  struct cgroup_subsys {
+>>  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
+>>  						  struct cgroup *cgrp);
+>> +	void (*initialize)(int early);
+>>  	void (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+>>  	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+>>  	int (*can_attach)(struct cgroup_subsys *ss,
+>> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+>> index 15ac0e1..77569d7 100644
+>> --- a/kernel/cgroup.c
+>> +++ b/kernel/cgroup.c
+>> @@ -2553,6 +2553,9 @@ int __init cgroup_init_early(void)
+>>  
+>>  		if (ss->early_init)
+>>  			cgroup_init_subsys(ss);
+>> +
+>> +		if (ss->initialize)
+>> +			ss->initialize(1);
+>>  	}
+>>  	return 0;
+>>  }
+>> @@ -2577,6 +2580,9 @@ int __init cgroup_init(void)
+>>  		struct cgroup_subsys *ss = subsys[i];
+>>  		if (!ss->early_init)
+>>  			cgroup_init_subsys(ss);
+>> +
+>> +		if (ss->initialize)
+>> +			ss->initialize(0);
+> 
+> Can we avoid these tests?  By requiring that cgroup_subsys.initialize()
+> always be non-zero?  It might make sense, and it might not...
+> 
 
+They are really hard to avoid, otherwise we might be taking away the flexibility
+we have.
 
-Subject: [PATCH] Adding dummy release functions to avoid warnings.
+>>  	}
+>>  
+>>  	/* Add init_css_set to the hash table */
+>> diff --git a/kernel/sched.c b/kernel/sched.c
+>> index bfb8ad8..d6df3d3 100644
+>> --- a/kernel/sched.c
+>> +++ b/kernel/sched.c
+>> @@ -245,11 +245,32 @@ static DEFINE_MUTEX(sched_domains_mutex);
+>>  struct cfs_rq;
+>>  
+>>  static LIST_HEAD(task_groups);
+>> +#ifdef CONFIG_CGROUP_SCHED
+>> +#define CPU_CGROUP_STAT_THRESHOLD (1 << 30)
+>> +enum cpu_cgroup_stat_index {
+>> +	CPU_CGROUP_STAT_UTIME, /* Usertime of the task group */
+>> +	CPU_CGROUP_STAT_STIME, /* Kerneltime of the task group */
+>> +
+>> +	CPU_CGROUP_STAT_NSTATS,
+>> +};
+>> +
+>> +struct cpu_cgroup_stat {
+>> +	struct percpu_counter cpustat[CPU_CGROUP_STAT_NSTATS];
+>> +};
+>> +
+>> +static void __cpu_cgroup_stat_add(struct cpu_cgroup_stat *stat,
+>> +		enum cpu_cgroup_stat_index idx, s64 val)
+>> +{
+>> +	if (stat)
+>> +		percpu_counter_add(&stat->cpustat[idx], val);
+>> +}
+>> +#endif
+>>  
+>>  /* task group related information */
+>>  struct task_group {
+>>  #ifdef CONFIG_CGROUP_SCHED
+>>  	struct cgroup_subsys_state css;
+>> +	struct cpu_cgroup_stat *stat;
+>>  #endif
+>>  
+>>  #ifdef CONFIG_FAIR_GROUP_SCHED
+>> @@ -3885,6 +3906,16 @@ void account_user_time(struct task_struct *p, cputime_t cputime)
+>>  		cpustat->nice = cputime64_add(cpustat->nice, tmp);
+>>  	else
+>>  		cpustat->user = cputime64_add(cpustat->user, tmp);
+>> +
+>> +       /* Charge the task's group */
+>> +#ifdef CONFIG_CGROUP_SCHED
+>> +	{
+>> +		struct task_group *tg;
+>> +		tg = task_group(p);
+>> +		__cpu_cgroup_stat_add(tg->stat, CPU_CGROUP_STAT_UTIME,
+>> +				cputime_to_msecs(cputime) * NSEC_PER_MSEC);
+>> +	}
+>> +#endif
+>>  }
+>>  
+>>  /*
+>> @@ -3942,8 +3973,17 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
+>>  		cpustat->irq = cputime64_add(cpustat->irq, tmp);
+>>  	else if (softirq_count())
+>>  		cpustat->softirq = cputime64_add(cpustat->softirq, tmp);
+>> -	else if (p != rq->idle)
+>> +	else if (p != rq->idle) {
+>>  		cpustat->system = cputime64_add(cpustat->system, tmp);
+>> +#ifdef CONFIG_CGROUP_SCHED
+>> +		{
+>> +			struct task_group *tg;
+>> +			tg = task_group(p);
+>> +			__cpu_cgroup_stat_add(tg->stat, CPU_CGROUP_STAT_STIME,
+>> +				cputime_to_msecs(cputime) * NSEC_PER_MSEC);
+>> +		}
+>> +#endif
+> 
+> The above two almost-identical code sequences should, I suggest, be
+> broken out into a standalone helper function, which has two
+> implementations, the CONFIG_CGROUP_SCHED=n version of which is a
+> do-nothing stub, in the usual fashion.
+> 
+> I suggested this last time.
+> 
 
-From: Vitaliy Ivanov <vitalivanov@gmail.com>
+OK, will do. I thought that we had addressed this, but we let this one slip.
+Will fix.
 
-Trivial fix for #9690.
-Added simple release functions that doing nothing.
-Not sure whether we can leave it as is or to rework using
-platform_device helpers like platform_device_alloc.
-This approach is used in many drivers.
+>> +	}
+>>  	else if (atomic_read(&rq->nr_iowait) > 0)
+>>  		cpustat->iowait = cputime64_add(cpustat->iowait, tmp);
+>>  	else
+>> @@ -8325,6 +8365,24 @@ unsigned long sched_group_shares(struct task_group *tg)
+>>  }
+>>  #endif
+>>  
+>> +static s64 cpu_cgroup_read_stat(struct cpu_cgroup_stat *stat,
+>> +		enum cpu_cgroup_stat_index idx)
+>> +{
+>> +	if (stat)
+>> +		return nsec_to_clock_t(
+>> +				percpu_counter_read(&stat->cpustat[idx]));
+>> +
+>> +	return 0;
+>> +}
+> 
+> ick at the code layout.  How about this:
+> 
+> 	if (!stat)
+> 		return 0;
+> 	return nsec_to_clock_t(percpu_counter_read(&stat->cpustat[idx]));
+> 
+> ?
 
+Definitely! My bad again - I should have reviewed the patch more closely.
 
-Signed-off-by: Vitaliy Ivanov <vitalivanov@gmail.com>
+> 
+>> +static const struct cpu_cgroup_stat_desc {
+>> +	const char *msg;
+>> +	u64 unit;
+>> +} cpu_cgroup_stat_desc[] = {
+>> +	[CPU_CGROUP_STAT_UTIME] = { "utime", 1, },
+>> +	[CPU_CGROUP_STAT_STIME] = { "stime", 1, },
+>> +};
+>> +
+>>  #ifdef CONFIG_RT_GROUP_SCHED
+>>  /*
+>>   * Ensure that the real time constraints are schedulable.
+>> @@ -8551,10 +8609,41 @@ static inline struct task_group *cgroup_tg(struct cgroup *cgrp)
+>>  			    struct task_group, css);
+>>  }
+>>  
+>> +static int cpu_cgroup_stats_show(struct cgroup *cgrp, struct cftype *cft,
+>> +		struct cgroup_map_cb *cb)
+>> +{
+>> +	struct task_group *tg = cgroup_tg(cgrp);
+>> +	struct cpu_cgroup_stat *stat = tg->stat;
+>> +	int i;
+>> +	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++) {
+> 
+> Please prefer to put a blank line between end-of-locals and
+> start-of-code.  It does make the code somewhat easier to read.
+> 
 
---
+Sure, will fix.
 
- drivers/mtd/maps/physmap.c |    6 ++++++
- drivers/video/hgafb.c      |   10 +++++++++-
- 2 files changed, 15 insertions(+), 1 deletions(-)
+> 
+>> +		s64 val;
+>> +		val = cpu_cgroup_read_stat(stat, i);
+>> +		val *= cpu_cgroup_stat_desc[i].unit;
+>> +		cb->fill(cb, cpu_cgroup_stat_desc[i].msg, val);
+>> +	}
+>> +	return 0;
+>> +}
+>> +
+>> +static void cpu_cgroup_initialize(int early)
+>> +{
+>> +	int i;
+>> +	struct cpu_cgroup_stat *stat;
+>> +
+>> +	if (!early) {
+> 
+> like that.
+> 
+>> +		stat = kmalloc(sizeof(struct cpu_cgroup_stat)
+>> +				, GFP_KERNEL);
+>> +		for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
+>> +			percpu_counter_init(
+>> +					&stat->cpustat[i], 0);
+> 
+> Suppose the kmalloc failed?
+> 
 
-diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
-index bc4649a..5bdbd04 100644
---- a/drivers/mtd/maps/physmap.c
-+++ b/drivers/mtd/maps/physmap.c
-@@ -264,11 +264,17 @@ static struct resource physmap_flash_resource = {
-       .flags          = IORESOURCE_MEM,
- };
+Good point. Just goes to show that picking up someone elses code and working off
+ it, requires more effort that I put in.
 
-+/* Fake release func.*/
-+static void physmap_flash_release(struct device *dev)
-+{
-+}
-+
- static struct platform_device physmap_flash = {
-       .name           = "physmap-flash",
-       .id             = 0,
-       .dev            = {
-               .platform_data  = &physmap_flash_data,
-+               .release        = physmap_flash_release,
-       },
-       .num_resources  = 1,
-       .resource       = &physmap_flash_resource,
-diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
-index fb9e672..8707115 100644
---- a/drivers/video/hgafb.c
-+++ b/drivers/video/hgafb.c
-@@ -623,8 +623,16 @@ static struct device_driver hgafb_driver = {
-       .remove = hgafb_remove,
- };
+>> +		init_task_group.stat = stat;
+>> +	}
+>> +}
+> 
+> more icky layout, and what's that comma doing there?
+> 
+> Again, please use a bit of thought rather than blindly whacking in
+> newlines everywhere.
+> 
 
-+/* Fake release func.*/
-+static void hgafb_device_release(struct device *dev)
-+{
-+}
-+
- static struct platform_device hgafb_device = {
--       .name = "hgafb",
-+       .name   = "hgafb",
-+       .dev    = {
-+               .release = hgafb_device_release,
-+       },
- };
+Sure, will do
 
- static int __init hgafb_init(void)
+> static void cpu_cgroup_initialize(int early)
+> {
+> 	int i;
+> 	struct cpu_cgroup_stat *stat;
+> 
+> 	if (early)
+> 		return;
+> 
+> 	stat = kmalloc(sizeof(struct cpu_cgroup_stat), GFP_KERNEL);
+> 	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
+> 		percpu_counter_init(&stat->cpustat[i], 0);
+> 	init_task_group.stat = stat;
+> }
+> 
+> is better, yes?
+> 
+> 
+
+Yep
+
+> Also, if this code is likely to be executed with any frequency then the
+> test of `early' could be inlined:
+> 
+> static inline void cpu_cgroup_initialize(int early)
+> {
+> 	if (unlikely(!early))
+> 		__cpu_cgroup_initialize();
+> }
+> 
+> yes?
+> 
+
+Definitely
+
+> 
+>>  static struct cgroup_subsys_state *
+>>  cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+>>  {
+>>  	struct task_group *tg, *parent;
+>> +	int i;
+>>  
+>>  	if (!cgrp->parent) {
+>>  		/* This is early initialization for the top cgroup */
+>> @@ -8567,6 +8656,10 @@ cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+>>  	if (IS_ERR(tg))
+>>  		return ERR_PTR(-ENOMEM);
+>>  
+>> +	tg->stat = kmalloc(sizeof(struct cpu_cgroup_stat), GFP_KERNEL);
+>> +	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
+>> +		percpu_counter_init(&tg->stat->cpustat[i], 0);
+> 
+> Which will crash the machine if the kmalloc failed.
+> 
+> 
+> 
+> c'mon guys, that wasn't a great effort.
+
+Yes, true. I might be better off, rewriting it. I'll see.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
