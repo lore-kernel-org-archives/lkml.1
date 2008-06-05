@@ -1,114 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758972AbYFEPJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758448AbYFEPLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758972AbYFEPJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYFEPJX
+	id S1758448AbYFEPLx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbYFEPLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:09:23 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9961 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbYFEPJW (ORCPT
+	Thu, 5 Jun 2008 11:11:43 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:7354 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753425AbYFEPLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:09:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:mime-version:content-type;
-	b=NdqqTh7l2DNiB8Fe99a3nOZpBVm8X+FqotO99JosFr6ByDYlFsYl9zXXhd2P9aZYB
-	xX1EAZ9XDzVyYW/OjWUmA==
-Message-ID: <4ca0a85e0806050809t7c138b23o4599f9c91a9125af@mail.gmail.com>
-Date: Thu, 5 Jun 2008 11:09:04 -0400
-From: "Thomas Tuttle" <ttuttle@google.com>
-To: mpm@selenic.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] pagemap: Wrote some userspace-oriented documentation for pagemap
+	Thu, 5 Jun 2008 11:11:42 -0400
+Date: Thu, 5 Jun 2008 09:11:40 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, jbarnes@virtuousgeek.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Matthew Wilcox <matthew@wil.cx>, kristen.c.accardi@intel.com,
+       greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
+       linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kobject: Export kobject_rename for pci_hotplug_core
+Message-ID: <20080605151140.GA12991@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	jbarnes@virtuousgeek.org,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Matthew Wilcox <matthew@wil.cx>, kristen.c.accardi@intel.com,
+	greg@kroah.com, lenb@kernel.org, pbadari@us.ibm.com,
+	linux-pci@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20080604200829.GC379@ldl.fc.hp.com> <20080604201606.GE379@ldl.fc.hp.com> <20080604224838.6b556a51.akpm@linux-foundation.org> <48478247.30809@jp.fujitsu.com> <20080604233348.eb46d8de.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_811_22037180.1212678544995"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080604233348.eb46d8de.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_811_22037180.1212678544995
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+* Andrew Morton <akpm@linux-foundation.org>:
+> On Thu, 05 Jun 2008 15:05:59 +0900 Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
+> 
+> > Andrew Morton wrote:
+> > > On Wed, 4 Jun 2008 14:16:06 -0600 Alex Chiang <achiang@hp.com> wrote:
+> > > 
+> > >> From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> > >>
+> > >> Export kobject_rename() to fix the following link error.  This happens when
+> > >> pci_hotplug_core driver is compiled as a kernel module.
+> > >>
+> > >> ERROR: "kobject_rename" [drivers/pci/hotplug/pci_hotplug.ko] undefined!
+> > >> make[1]: *** [__modpost] Error 1
+> > >> make: *** [modules] Error 2
+> > >> make: *** Waiting for unfinished jobs....
+> > >>
+> > >> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> > >> Acked-by: Alex Chiang <achiang@hp.com>
+> > >> Cc: Greg KH <greg@kroah.com>
+> > >> Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > >> Cc: Len Brown <lenb@kernel.org>
+> > >> Signed-off-by: Alex Chiang <achiang@hp.com>
+> > >> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > >> ---
+> > >>  lib/kobject.c |    1 +
+> > >>  1 files changed, 1 insertions(+), 0 deletions(-)
+> > >>
+> > >> diff --git a/lib/kobject.c b/lib/kobject.c
+> > >> index 718e510..dcade05 100644
+> > >> --- a/lib/kobject.c
+> > >> +++ b/lib/kobject.c
+> > >> @@ -439,6 +439,7 @@ out:
+> > >>  
+> > >>  	return error;
+> > >>  }
+> > >> +EXPORT_SYMBOL_GPL(kobject_rename);
+> > > 
+> > > Shouldn't this go straight into 2.6.26?
 
-This is just a quick bit of documentation for pagemap from a userspace
-perspective, so users of the interface don't have to dig in to the
-source code.  It describes the three interfaces (pagemap, kpagecount,
-kpageflags), and explains how they might be used.
+Originally, gregkh told me "no" because then he would have to
+deal with a bunch of patching removing an unused interface, which
+is why it showed up as a separate patch in my series.
 
-------=_Part_811_22037180.1212678544995
-Content-Type: text/x-patch;
- name=0005-Wrote-userspace-oriented-documentation-for-pagemap.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fh3hhhyt0
-Content-Disposition: attachment;
- filename=0005-Wrote-userspace-oriented-documentation-for-pagemap.patch
+> > I think "No", because currently its only required by Alex's "pci slot"
+> > patches.
+> 
+> In that case the fix should be integrated into the patch which it is
+> fixing.
+> 
+> Well, it doesn't _have_ to be integrated because in this case it can
+> precede acpi-pci-slot-detection-driver.patch.  But we might as well
+> fold it, to keep the commit noise level down.
 
-RnJvbSA0NjUyZWE4NDgzMmM5Y2EyMzY0N2MwZjllM2Q2NDJiYjY0NDFlNmY3IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBUaG9tYXMgVHV0dGxlIDx0dHV0dGxlQGdvb2dsZS5jb20+CkRh
-dGU6IFRodSwgNSBKdW4gMjAwOCAxMDo1MDowNCAtMDQwMApTdWJqZWN0OiBbUEFUQ0hdIFdyb3Rl
-IHVzZXJzcGFjZS1vcmllbnRlZCBkb2N1bWVudGF0aW9uIGZvciBwYWdlbWFwLgoKVGhpcyBpcyBq
-dXN0IGEgcXVpY2sgZXhwbGFuYXRpb24gb2YgaG93IHBhZ2VtYXAgd29ya3MgZnJvbSBhIHVzZXJz
-cGFjZQpwZXJzcGVjdGl2ZSwgYWxvbmcgd2l0aCBhIHF1aWNrIGV4YW1wbGUgb2Ygd2hhdCBpdCBj
-YW4gYmUgdXNlZCBmb3IuCgpTaWduZWQtb2ZmLWJ5OiBUaG9tYXMgVHV0dGxlIDx0dHV0dGxlQGdv
-b2dsZS5jb20+Ci0tLQogRG9jdW1lbnRhdGlvbi92bS9wYWdlbWFwLnR4dCB8ICAgNzcgKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCiAxIGZpbGVzIGNoYW5nZWQsIDc3
-IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pCiBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1l
-bnRhdGlvbi92bS9wYWdlbWFwLnR4dAoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vdm0vcGFn
-ZW1hcC50eHQgYi9Eb2N1bWVudGF0aW9uL3ZtL3BhZ2VtYXAudHh0Cm5ldyBmaWxlIG1vZGUgMTAw
-NjQ0CmluZGV4IDAwMDAwMDAuLmIzM2E1ZTQKLS0tIC9kZXYvbnVsbAorKysgYi9Eb2N1bWVudGF0
-aW9uL3ZtL3BhZ2VtYXAudHh0CkBAIC0wLDAgKzEsNzcgQEAKK3BhZ2VtYXAsIGZyb20gdGhlIHVz
-ZXJzcGFjZSBwZXJzcGVjdGl2ZQorLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tCisKK3BhZ2VtYXAgaXMgYSBuZXcgKGFzIG9mIDIuNi4yNSkgc2V0IG9mIGludGVyZmFjZXMg
-aW4gdGhlIGtlcm5lbCB0aGF0IGFsbG93Cit1c2Vyc3BhY2UgcHJvZ3JhbXMgdG8gZXhhbWluZSB0
-aGUgcGFnZSB0YWJsZXMgYW5kIHJlbGF0ZWQgaW5mb3JtYXRpb24gYnkgCityZWFkaW5nIGZpbGVz
-IGluIC9wcm9jLgorCitUaGVyZSBhcmUgdGhyZWUgY29tcG9uZW50cyB0byBwYWdlbWFwOgorCisg
-KiAvcHJvYy9waWQvcGFnZW1hcC4gIFRoaXMgZmlsZSBsZXRzIGEgdXNlcnNwYWNlIHByb2Nlc3Mg
-ZmluZCBvdXQgd2hpY2gKKyAgIHBoeXNpY2FsIGZyYW1lIGVhY2ggdmlydHVhbCBwYWdlIGlzIG1h
-cHBlZCB0by4gIEl0IGNvbnRhaW5zIG9uZSA2NC1iaXQKKyAgIHZhbHVlIGZvciBlYWNoIHZpcnR1
-YWwgcGFnZSwgY29udGFpbmluZyB0aGUgZm9sbG93aW5nIGRhdGEgKGZyb20KKyAgIGZzL3Byb2Mv
-dGFza19tbXUuYywgYWJvdmUgcGFnZW1hcF9yZWFkKToKKworICAgICogQml0cyAwLTU1ICBwYWdl
-IGZyYW1lIG51bWJlciAoUEZOKSBpZiBwcmVzZW50CisgICAgKiBCaXRzIDAtNCAgIHN3YXAgdHlw
-ZSBpZiBzd2FwcGVkCisgICAgKiBCaXRzIDUtNTUgIHN3YXAgb2Zmc2V0IGlmIHN3YXBwZWQKKyAg
-ICAqIEJpdHMgNTUtNjAgcGFnZSBzaGlmdCAocGFnZSBzaXplID0gMTw8cGFnZSBzaGlmdCkKKyAg
-ICAqIEJpdCAgNjEgICAgcmVzZXJ2ZWQgZm9yIGZ1dHVyZSB1c2UKKyAgICAqIEJpdCAgNjIgICAg
-cGFnZSBzd2FwcGVkCisgICAgKiBCaXQgIDYzICAgIHBhZ2UgcHJlc2VudAorCisgICBJZiB0aGUg
-cGFnZSBpcyBub3QgcHJlc2VudCBidXQgaW4gc3dhcCwgdGhlbiB0aGUgUEZOIGNvbnRhaW5zIGFu
-CisgICBlbmNvZGluZyBvZiB0aGUgc3dhcCBmaWxlIG51bWJlciBhbmQgdGhlIHBhZ2UncyBvZmZz
-ZXQgaW50byB0aGUKKyAgIHN3YXAuIFVubWFwcGVkIHBhZ2VzIHJldHVybiBhIG51bGwgUEZOLiBU
-aGlzIGFsbG93cyBkZXRlcm1pbmluZworICAgcHJlY2lzZWx5IHdoaWNoIHBhZ2VzIGFyZSBtYXBw
-ZWQgKG9yIGluIHN3YXApIGFuZCBjb21wYXJpbmcgbWFwcGVkCisgICBwYWdlcyBiZXR3ZWVuIHBy
-b2Nlc3Nlcy4KKworICAgRWZmaWNpZW50IHVzZXJzIG9mIHRoaXMgaW50ZXJmYWNlIHdpbGwgdXNl
-IC9wcm9jL3BpZC9tYXBzIHRvCisgICBkZXRlcm1pbmUgd2hpY2ggYXJlYXMgb2YgbWVtb3J5IGFy
-ZSBhY3R1YWxseSBtYXBwZWQgYW5kIGxsc2VlayB0bworICAgc2tpcCBvdmVyIHVubWFwcGVkIHJl
-Z2lvbnMuCisKKyAqIC9wcm9jL2twYWdlY291bnQuICBUaGlzIGZpbGUgY29udGFpbnMgYSA2NC1i
-aXQgY291bnQgb2YgdGhlIG51bWJlciBvZgorICAgdGltZXMgZWFjaCBwYWdlIGlzIG1hcHBlZCwg
-aW5kZXhlZCBieSBQRk4uCisKKyAqIC9wcm9jL2twYWdlZmxhZ3MuICBUaGlzIGZpbGUgY29udGFp
-bnMgYSA2NC1iaXQgc2V0IG9mIGZsYWdzIGZvciBlYWNoCisgICBwYWdlLCBpbmRleGVkIGJ5IFBG
-Ti4KKworICAgVGhlIGZsYWdzIGFyZSAoZnJvbSBmcy9wcm9jL3Byb2NfbWlzYywgYWJvdmUga3Bh
-Z2VmbGFnc19yZWFkKToKKworICAgICAwLiBMT0NLRUQKKyAgICAgMS4gRVJST1IKKyAgICAgMi4g
-UkVGRVJFTkNFRAorICAgICAzLiBVUFRPREFURQorICAgICA0LiBESVJUWQorICAgICA1LiBMUlUK
-KyAgICAgNi4gQUNUSVZFCisgICAgIDcuIFNMQUIKKyAgICAgOC4gV1JJVEVCQUNLCisgICAgIDku
-IFJFQ0xBSU0KKyAgICAxMC4gQlVERFkKKworVXNpbmcgcGFnZW1hcCB0byBkbyBzb21ldGhpbmcg
-dXNlZnVsOgorCitUaGUgZ2VuZXJhbCBwcm9jZWR1cmUgZm9yIHVzaW5nIHBhZ2VtYXAgdG8gZmlu
-ZCBvdXQgYWJvdXQgYSBwcm9jZXNzJyBtZW1vcnkKK3VzYWdlIGdvZXMgbGlrZSB0aGlzOgorCisg
-MS4gUmVhZCAvcHJvYy9waWQvbWFwcyB0byBkZXRlcm1pbmUgd2hpY2ggcGFydHMgb2YgdGhlIG1l
-bW9yeSBzcGFjZSBhcmUKKyAgICBtYXBwZWQgdG8gd2hhdC4KKyAyLiBTZWxlY3QgdGhlIG1hcHMg
-eW91IGFyZSBpbnRlcmVzdGVkIGluIC0tIGFsbCBvZiB0aGVtLCBvciBhIHBhcnRpY3VsYXIKKyAg
-ICBsaWJyYXJ5LCBvciB0aGUgc3RhY2sgb3IgdGhlIGhlYXAsIGV0Yy4KKyAzLiBPcGVuIC9wcm9j
-L3BpZC9wYWdlbWFwIGFuZCBzZWVrIHRvIHRoZSBwYWdlcyB5b3Ugd291bGQgbGlrZSB0byBleGFt
-aW5lLgorIDQuIFJlYWQgYSB1NjQgZm9yIGVhY2ggcGFnZSBmcm9tIHBhZ2VtYXAuCisgNS4gT3Bl
-biAvcHJvYy9rcGFnZWNvdW50IGFuZC9vciAvcHJvYy9rcGFnZWZsYWdzLiAgRm9yIGVhY2ggUEZO
-IHlvdSBqdXN0CisgICAgcmVhZCwgc2VlayB0byB0aGF0IGVudHJ5IGluIHRoZSBmaWxlLCBhbmQg
-cmVhZCB0aGUgZGF0YSB5b3Ugd2FudC4KKworRm9yIGV4YW1wbGUsIHRvIGZpbmQgdGhlICJ1bmlx
-dWUgc2V0IHNpemUiIChVU1MpLCB3aGljaCBpcyB0aGUgYW1vdW50IG9mIAorbWVtb3J5IHRoYXQg
-YSBwcm9jZXNzIGlzIHVzaW5nIHRoYXQgaXMgbm90IHNoYXJlZCB3aXRoIGFueSBvdGhlciBwcm9j
-ZXNzLAoreW91IGNhbiBnbyB0aHJvdWdoIGV2ZXJ5IG1hcCBpbiB0aGUgcHJvY2VzcywgZmluZCB0
-aGUgUEZOcywgbG9vayB0aG9zZSB1cAoraW4ga3BhZ2Vjb3VudCwgYW5kIHRhbGx5IHVwIHRoZSBu
-dW1iZXIgb2YgcGFnZXMgdGhhdCBhcmUgb25seSByZWZlcmVuY2VkCitvbmNlLgorCitPdGhlciBu
-b3RlczoKKworUmVhZGluZyBmcm9tIGFueSBvZiB0aGUgZmlsZXMgd2lsbCByZXR1cm4gLUVJTlZB
-TCBpZiB5b3UgYXJlIG5vdCBzdGFydGluZwordGhlIHJlYWQgb24gYW4gOC1ieXRlIGJvdW5kYXJ5
-IChlLmcuLCBpZiB5b3Ugc2Vla2VkIGFuIG9kZCBudW1iZXIgb2YgYnl0ZXMKK2ludG8gdGhlIGZp
-bGUpLCBvciBpZiB0aGUgc2l6ZSBvZiB0aGUgcmVhZCBpcyBub3QgYSBtdWx0aXBsZSBvZiA4IGJ5
-dGVzLgotLSAKMS41LjMuNgoK
-------=_Part_811_22037180.1212678544995--
+Ok, that makes sense to me.
+
+/ac
+
