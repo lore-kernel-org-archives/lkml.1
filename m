@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbYFEPEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbYFEPE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbYFEPEn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbYFEPEd
+	id S1758522AbYFEPE5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758816AbYFEPEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:04:33 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9160 "EHLO
+	Thu, 5 Jun 2008 11:04:42 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9200 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753247AbYFEPEc (ORCPT
+	with ESMTP id S1753994AbYFEPEl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:04:32 -0400
+	Thu, 5 Jun 2008 11:04:41 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:date:from:to:subject:mime-version:content-type;
-	b=Isiv7jt+SFsH3Pgh9u0yxWRLY8DxIG7tEFZU67v7KYqoCUWWkjrZ5G1lHfNR3nPpW
-	p/XP8OYiF6EVchvDhLBRg==
-Message-ID: <4ca0a85e0806050804q4c164105uc386dcae2ccd21d@mail.gmail.com>
-Date: Thu, 5 Jun 2008 11:04:21 -0400
+	b=vvb7SCtkh5M+bfQdS9zW/65Il54esazEyOhljoZCvEqA40/LetTMheIVMKvI3WTYO
+	blMg+5CbK4KmWR4R79IZA==
+Message-ID: <4ca0a85e0806050804s798bba46wcb29d2582120bfab@mail.gmail.com>
+Date: Thu, 5 Jun 2008 11:04:33 -0400
 From: "Thomas Tuttle" <ttuttle@google.com>
 To: mpm@selenic.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] pagemap: Modify add_to_pagemap to use copy_to_user instead of put_user.
+Subject: [PATCH 2/5] pagemap: Change kpagecount to return the map count, not the reference count, of a page.
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_779_990246.1212678261265"
+	boundary="----=_Part_783_29067150.1212678274037"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_779_990246.1212678261265
+------=_Part_783_29067150.1212678274037
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-While fiddling with pagemap, I discovered a bug in add_to_pagemap.
-When it is copying an entry that is not at the end of the buffer, it
-uses put_user to copy a u64 into a char* buffer.  The problem is that
-put_user determines how much to copy based on the size of the
-*destination*, not the source, so it only copied one byte.  To fix
-this, I replaced the call to put_user with a call to copy_to_user, as
-is used when copying the last (possibly partial) PFN into the buffer.
+When trying to use pagemap to calculate the "proportional set size"
+[1] of a process, I discovered that there were often references to
+pages that could not be discovered by kpagecount.  I changed
+kpagecount to return the number of times a page is mapped, rather than
+referenced, so kpagecount is more useful for determining how many
+processes are using a page.
 
-------=_Part_779_990246.1212678261265
+
+[1] PSS is the amount of memory used by a process, weighted by 1 / the
+number of processes sharing the memory -- so a 128K library shared by
+2 processes counts as 64K PSS for each of them.
+
+------=_Part_783_29067150.1212678274037
 Content-Type: text/x-patch;
- name=0001-Modified-add_to_pagemap-to-use-copy_to_user-instead.patch
+ name=0002-Changed-kpagecount-to-return-the-map-count-not-the.patch
 Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fh3hbi0r0
+X-Attachment-Id: f_fh3haq7u0
 Content-Disposition: attachment;
- filename=0001-Modified-add_to_pagemap-to-use-copy_to_user-instead.patch
+ filename=0002-Changed-kpagecount-to-return-the-map-count-not-the.patch
 
-RnJvbSAzMjQwYmUwZDQ4OWU5MTRiYmI1YTU1OWMyMTQxM2UzOTg4OTkzNGVmIE1vbiBTZXAgMTcg
+RnJvbSBmZjJlMjg0MmI3NjYyMzIyMDY4ZTU2MDJhZmM4MmQ1YWQyZWU4MjdmIE1vbiBTZXAgMTcg
 MDA6MDA6MDAgMjAwMQpGcm9tOiBUaG9tYXMgVHV0dGxlIDx0dHV0dGxlQGdvb2dsZS5jb20+CkRh
-dGU6IFRodSwgNSBKdW4gMjAwOCAwOTozNzoyNCAtMDQwMApTdWJqZWN0OiBbUEFUQ0hdIE1vZGlm
-aWVkIGFkZF90b19wYWdlbWFwIHRvIHVzZSBjb3B5X3RvX3VzZXIgaW5zdGVhZCBvZiBwdXRfdXNl
-ci4KIFVzaW5nIHB1dF91c2VyIG9ubHkgY29waWVzIHRoZSBsb3cgYnl0ZSBvZiB0aGUgcGFnZWNv
-dW50LCBiZWNhdXNlIHRoZQogZGVzdGluYXRpb24gYnVmZmVyIGlzIGEgY2hhciouCgpTaWduZWQt
-b2ZmLWJ5OiBUaG9tYXMgVHV0dGxlIDx0dHV0dGxlQGdvb2dsZS5jb20+Ci0tLQogZnMvcHJvYy90
-YXNrX21tdS5jIHwgICAgMiArLQogMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMoKyksIDEg
-ZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZnMvcHJvYy90YXNrX21tdS5jIGIvZnMvcHJvYy90
-YXNrX21tdS5jCmluZGV4IDg4NzE3YzAuLjk5MTUyMDIgMTAwNjQ0Ci0tLSBhL2ZzL3Byb2MvdGFz
-a19tbXUuYworKysgYi9mcy9wcm9jL3Rhc2tfbW11LmMKQEAgLTUzMSw3ICs1MzEsNyBAQCBzdGF0
-aWMgaW50IGFkZF90b19wYWdlbWFwKHVuc2lnbmVkIGxvbmcgYWRkciwgdTY0IHBmbiwKIAkJcmV0
-dXJuIFBNX0VORF9PRl9CVUZGRVI7CiAJfQogCi0JaWYgKHB1dF91c2VyKHBmbiwgcG0tPm91dCkp
-CisJaWYgKGNvcHlfdG9fdXNlcihwbS0+b3V0LCAmcGZuLCBQTV9FTlRSWV9CWVRFUykpCiAJCXJl
-dHVybiAtRUZBVUxUOwogCXBtLT5vdXQgKz0gUE1fRU5UUllfQllURVM7CiAJcmV0dXJuIDA7Ci0t
-IAoxLjUuMy42Cgo=
-------=_Part_779_990246.1212678261265--
+dGU6IFRodSwgNSBKdW4gMjAwOCAwOTozOToxMiAtMDQwMApTdWJqZWN0OiBbUEFUQ0hdIENoYW5n
+ZWQga3BhZ2Vjb3VudCB0byByZXR1cm4gdGhlIG1hcCBjb3VudCwgbm90IHRoZSByZWZlcmVuY2Ug
+Y291bnQsIG9mIGEgcGFnZS4KIFRoaXMgZW5zdXJlcyB0aGF0LCBpZiB5b3UgcmVhZCB0aGUgcGFn
+ZW1hcCBvZiBldmVyeSBwcm9jZXNzLCBhbmQgdGFsbHkgdGhlCiBudW1iZXIgb2YgcmVmZXJlbmNl
+cyB0byBhIHBhZ2UsIGl0IG1hdGNoZXMgd2hhdCBpcyBpbiBrcGFnZWNvdW50LgoKLS0tCiBmcy9w
+cm9jL3Byb2NfbWlzYy5jIHwgICAgMiArLQogMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMo
+KyksIDEgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZnMvcHJvYy9wcm9jX21pc2MuYyBiL2Zz
+L3Byb2MvcHJvY19taXNjLmMKaW5kZXggMzJkYzE0Yy4uNWExNjA5MCAxMDA2NDQKLS0tIGEvZnMv
+cHJvYy9wcm9jX21pc2MuYworKysgYi9mcy9wcm9jL3Byb2NfbWlzYy5jCkBAIC03MjYsNyArNzI2
+LDcgQEAgc3RhdGljIHNzaXplX3Qga3BhZ2Vjb3VudF9yZWFkKHN0cnVjdCBmaWxlICpmaWxlLCBj
+aGFyIF9fdXNlciAqYnVmLAogCQlpZiAoIXBwYWdlKQogCQkJcGNvdW50ID0gMDsKIAkJZWxzZQot
+CQkJcGNvdW50ID0gYXRvbWljX3JlYWQoJnBwYWdlLT5fY291bnQpOworCQkJcGNvdW50ID0gcGFn
+ZV9tYXBjb3VudChwcGFnZSk7CiAKIAkJaWYgKHB1dF91c2VyKHBjb3VudCwgb3V0KyspKSB7CiAJ
+CQlyZXQgPSAtRUZBVUxUOwotLSAKMS41LjMuNgoK
+------=_Part_783_29067150.1212678274037--
