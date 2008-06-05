@@ -1,97 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYFEKdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYFEKeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbYFEKdT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 06:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbYFEKdB
+	id S1756795AbYFEKeA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 06:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbYFEKdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 06:33:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47821 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754760AbYFEKdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 06:33:00 -0400
-Date: Thu, 5 Jun 2008 06:32:53 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: "Daniel J Blueman" <daniel.blueman@gmail.com>
-Cc: chucklever@gmail.com, linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-Message-ID: <20080605063253.40787ca3@tleilax.poochiereds.net>
-In-Reply-To: <6278d2220806050128x6e892df3p1632d6ae6b40b55b@mail.gmail.com>
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-	<20080604203504.62730951@tleilax.poochiereds.net>
-	<6278d2220806050128x6e892df3p1632d6ae6b40b55b@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+	Thu, 5 Jun 2008 06:33:50 -0400
+Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:1734 "EHLO
+	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754433AbYFEKdt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 06:33:49 -0400
+Subject: [PATCH] Net: reorder udp_iter_state to remove padding on 64bit
+	builds
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 05 Jun 2008 11:33:39 +0100
+Message-Id: <1212662019.3039.14.camel@castor.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008 09:28:51 +0100
-"Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
+reorder udp_iter_state to remove padding on 64bit builds
 
-> On Thu, Jun 5, 2008 at 1:35 AM, Jeff Layton <jlayton@redhat.com> wrote:
-> > On Thu, 5 Jun 2008 00:33:54 +0100
-> > "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
-> >
-> >> Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
-> >> the past, I have a minimal test-case I sometimes run:
-> >>
-> >> $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
-> >>
-> >> After ~100 iterations, I saw the 'mount.nfs4: internal error',
-> >> followed by symptoms of memory corruption [1], a locking issue with
-> >> the reporting [2] and another (related?) memory-corruption issue
-> >> (off-by-1?) [3]. A little analysis shows memory being overwritten by
-> >> (likely) a poison value, which gets complicated if it's not
-> >> use-after-free...
-> >>
-> >> Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
-> >> 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
-> >>
-> >> I'm happy to decode addresses, test patches etc.
-> >>
-> >> Daniel
-> >>
-> >
-> > Looks like it fell down while trying to take down the kthread during a
-> > failed mount attempt. I have to wonder if I might have introduced a
-> > race when I changed nfs4 callback thread to kthread API. I think we may
-> > need the BKL around the last 2 statements in the main callback thread
-> > function. If you can easily reproduce this, could you test the
-> > following patch and let me know if it helps?
-> >
-> > Note that this patch is entirely untested, so test it someplace
-> > non-critical ;-).
-> >
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> >
-> >
-> > diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
-> > index c1e7c83..a3e83f9 100644
-> > --- a/fs/nfs/callback.c
-> > +++ b/fs/nfs/callback.c
-> > @@ -90,9 +90,9 @@ nfs_callback_svc(void *vrqstp)
-> >                preverr = err;
-> >                svc_process(rqstp);
-> >        }
-> > -       unlock_kernel();
-> >        nfs_callback_info.task = NULL;
-> >        svc_exit_thread(rqstp);
-> > +       unlock_kernel();
-> >        return 0;
-> >  }
-> 
-> This doesn't resolve the issue, alas. I'll hunker down to the
-> bisection in the next few days.
-> 
-> Thanks,
->   Daniel
+shrinks from 24 to 16 bytes, moving to a smaller slab when CONFIG_NET_NS
+is undefined & seq_net_private = {}
 
-Yeah, after I sent that I went back and looked and it seemed like
-while we don't hold the BKL there, access to the callback info is still
-serialized via a semaphore. Thanks for testing it anyway...
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
 
--- 
-Jeff Layton <jlayton@redhat.com>
+---
+static analysis found this padding in udp_iter_state.
+
+I've boot tested 2.6.26-rc4 + patch on desktop AMD64, and successfully
+run a simple UDP test case.
+
+Richard
+
+
+
+diff --git a/include/net/udp.h b/include/net/udp.h
+index ccce837..7a86848 100644
+--- a/include/net/udp.h
++++ b/include/net/udp.h
+@@ -196,8 +196,8 @@ struct udp_seq_afinfo {
+ struct udp_iter_state {
+ 	struct seq_net_private  p;
+ 	sa_family_t		family;
+-	struct hlist_head	*hashtable;
+ 	int			bucket;
++	struct hlist_head	*hashtable;
+ };
+ 
+ #ifdef CONFIG_PROC_FS
+
+
