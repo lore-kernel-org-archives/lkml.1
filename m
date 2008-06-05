@@ -1,72 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762996AbYFEUyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762598AbYFEUyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762996AbYFEUyA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 16:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbYFEUxt
+	id S1762598AbYFEUyc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 16:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYFEUyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 16:53:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56088 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761202AbYFEUxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 16:53:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [Bug #10822] sky2 oops in 2.6.26-rc3
-Date: Thu, 5 Jun 2008 22:54:34 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Stephen Hemminger" <shemminger@linux-foundation.org>
-References: <90LLR3uLHfN.A.NZC.LqZQIB@albercik> <18497.59633.817344.933052@harpo.it.uu.se> <20080531172322.633ea573@infradead.org>
-In-Reply-To: <20080531172322.633ea573@infradead.org>
+	Thu, 5 Jun 2008 16:54:10 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60514 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762511AbYFEUyI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 16:54:08 -0400
+Date: Thu, 5 Jun 2008 16:54:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, akpm@osdl.org
+Subject: [PATCH] ftrace: disable function tracing bringing up new CPU
+Message-ID: <Pine.LNX.4.58.0806051648380.13380@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806052254.34861.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 1 of June 2008, Arjan van de Ven wrote:
-> On Sun, 1 Jun 2008 02:10:25 +0200
-> Mikael Pettersson <mikpe@it.uu.se> wrote:
-> 
-> > On Sat, 31 May 2008 19:48:06 +0200 (CEST), Rafael J. Wysocki wrote:
-> > >This message has been generated automatically as a part of a report
-> > >of recent regressions.
-> > >
-> > >The following bug entry is on the current list of known regressions
-> > >from 2.6.25.  Please verify if it still should be listed.
-> > >
-> > >
-> > >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10822
-> > >Subject		: sky2 oops in 2.6.26-rc3
-> > >Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-> > >Date		: 2008-05-25 17:27 (7 days old)
-> > >References	:
-> > >http://marc.info/?l=linux-netdev&amp;m=121173650915153&amp= ;w=4
-> > >Handled-By	: Stephen Hemminger
-> > ><shemminger@linux-foundation.org>
-> > 
-> > It's a one-off crash that hasn't happened since I reported it.
-> > And the fact that it happended while I was running 2.6.26-rc3
-> > may just be coincidental and/or caused by temperamental HW.
-> > 
-> > My intention was never to classify this as a regression, I
-> > just wanted to report a failure data point in case a pattern
-> > emerges.
-> 
-> http://www.kerneloops.org/search.php?search=sky2_mac_int
-> 
-> shows that it happened around 2.6.23-rc1 era once as well...
-> but not more than that.
-> 
-> That almost makes it look like a hw issue, and very unlikely as a
-> regression.
 
-Dropped from the list of recent regressions.
+Peter Zijlstra found that taking down and bringing up a new CPU caused
+ftrace to crash the kernel. This was due to some arch calls that were
+being traced by the function tracer before the smp_processor_id was set
+up. Since the function tracer uses smp_processor_id it caused a triple
+fault.
 
-Thanks,
-Rafael
+Instead of adding notrace all over the architecture code to prevent
+this problem, it is easier to simply disable the function tracer
+when bringing up a new CPU.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/linux/ftrace.h            |   11 ++++++++---
+ kernel/cpu.c                      |    9 +++++++++
+ kernel/trace/ftrace.c             |   28 ++++++++++++++++++++++++++++
+ kernel/trace/trace_irqsoff.c      |    3 +++
+ kernel/trace/trace_sched_wakeup.c |    2 +-
+ 5 files changed, 49 insertions(+), 4 deletions(-)
+
+Index: linux-tip.git/include/linux/ftrace.h
+===================================================================
+--- linux-tip.git.orig/include/linux/ftrace.h	2008-06-05 14:51:47.000000000 -0400
++++ linux-tip.git/include/linux/ftrace.h	2008-06-05 16:52:32.000000000 -0400
+@@ -33,10 +33,15 @@ void clear_ftrace_function(void);
+ extern void ftrace_stub(unsigned long a0, unsigned long a1);
+ extern void mcount(void);
+
++void ftrace_enable(void);
++void ftrace_disable(void);
++
+ #else /* !CONFIG_FTRACE */
+-# define register_ftrace_function(ops) do { } while (0)
+-# define unregister_ftrace_function(ops) do { } while (0)
+-# define clear_ftrace_function(ops) do { } while (0)
++# define register_ftrace_function(ops)		do { } while (0)
++# define unregister_ftrace_function(ops)	do { } while (0)
++# define clear_ftrace_function(ops)		do { } while (0)
++# define ftrace_enable()			do { } while (0)
++# define ftrace_disable()			do { } while (0)
+ #endif /* CONFIG_FTRACE */
+
+ #ifdef CONFIG_DYNAMIC_FTRACE
+Index: linux-tip.git/kernel/cpu.c
+===================================================================
+--- linux-tip.git.orig/kernel/cpu.c	2008-06-05 14:50:44.000000000 -0400
++++ linux-tip.git/kernel/cpu.c	2008-06-05 14:51:50.000000000 -0400
+@@ -14,6 +14,7 @@
+ #include <linux/kthread.h>
+ #include <linux/stop_machine.h>
+ #include <linux/mutex.h>
++#include <linux/ftrace.h>
+
+ /* Serializes the updates to cpu_online_map, cpu_present_map */
+ static DEFINE_MUTEX(cpu_add_remove_lock);
+@@ -300,8 +301,16 @@ static int __cpuinit _cpu_up(unsigned in
+ 		goto out_notify;
+ 	}
+
++	/*
++	 * Disable function tracing while bringing up a new CPU.
++	 * We don't want to trace functions that can not handle a
++	 * smp_processor_id() call.
++	 */
++	ftrace_disable();
++
+ 	/* Arch-specific enabling code. */
+ 	ret = __cpu_up(cpu);
++	ftrace_enable();
+ 	if (ret != 0)
+ 		goto out_notify;
+ 	BUG_ON(!cpu_online(cpu));
+Index: linux-tip.git/kernel/trace/ftrace.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/ftrace.c	2008-06-05 14:50:44.000000000 -0400
++++ linux-tip.git/kernel/trace/ftrace.c	2008-06-05 16:41:09.000000000 -0400
+@@ -148,6 +148,34 @@ static int __unregister_ftrace_function(
+ 	return ret;
+ }
+
++static int ftrace_disabled_count;
++static int save_ftrace_enabled;
++
++void ftrace_disable(void)
++{
++	unsigned long flags;
++
++	mutex_lock(&ftrace_sysctl_lock);
++
++	save_ftrace_enabled = ftrace_enabled;
++	ftrace_enabled = 0;
++}
++
++void ftrace_enable(void)
++{
++	unsigned long flags;
++
++	/* ftrace_enable must be paired with ftrace_disable */
++	if (!mutex_is_locked(&ftrace_sysctl_lock)) {
++		WARN_ON(1);
++		return;
++	}
++
++	ftrace_enabled = save_ftrace_enabled;
++
++	mutex_unlock(&ftrace_sysctl_lock);
++}
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+
+ static struct task_struct *ftraced_task;
+Index: linux-tip.git/kernel/trace/trace_irqsoff.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace_irqsoff.c	2008-06-05 14:50:44.000000000 -0400
++++ linux-tip.git/kernel/trace/trace_irqsoff.c	2008-06-05 14:51:50.000000000 -0400
+@@ -76,6 +76,9 @@ irqsoff_tracer_call(unsigned long ip, un
+ 	long disabled;
+ 	int cpu;
+
++	if (unlikely(!ftrace_enabled))
++		return;
++
+ 	/*
+ 	 * Does not matter if we preempt. We test the flags
+ 	 * afterward, to see if irqs are disabled or not.
+Index: linux-tip.git/kernel/trace/trace_sched_wakeup.c
+===================================================================
+--- linux-tip.git.orig/kernel/trace/trace_sched_wakeup.c	2008-06-05 14:50:44.000000000 -0400
++++ linux-tip.git/kernel/trace/trace_sched_wakeup.c	2008-06-05 14:51:50.000000000 -0400
+@@ -44,7 +44,7 @@ wakeup_tracer_call(unsigned long ip, uns
+ 	int resched;
+ 	int cpu;
+
+-	if (likely(!wakeup_task))
++	if (likely(!wakeup_task) || !ftrace_enabled)
+ 		return;
+
+ 	resched = need_resched();
