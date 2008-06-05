@@ -1,105 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYFEOZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYFEOaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758526AbYFEOZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 10:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755818AbYFEOZJ
+	id S1757926AbYFEOaW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 10:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYFEOaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 10:25:09 -0400
-Received: from zux006-004-203.adsl.green.ch ([81.6.4.203]:42083 "EHLO
-	mailx.swiss-it.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755582AbYFEOZH (ORCPT
+	Thu, 5 Jun 2008 10:30:09 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:35009 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755326AbYFEOaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 10:25:07 -0400
-X-Greylist: delayed 1192 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 10:25:07 EDT
-Message-ID: <4847F310.7020207@swiss-it.ch>
-Date: Thu, 05 Jun 2008 16:07:12 +0200
-From: =?UTF-8?B?QWRyaWFuLUtlbiBSw7xlZ3NlZ2dlcg==?= 
-	<rueegsegger@swiss-it.ch>
-Organization: secunet SwissIT AG
-User-Agent: Icedove 1.5.0.14eol (X11/20080509)
+	Thu, 5 Jun 2008 10:30:07 -0400
+Date: Thu, 5 Jun 2008 10:29:48 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
+	buffers
+Message-ID: <20080605142948.GA25477@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+	Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+	sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+	yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com> <20080603153050.fb99ac8a.akpm@linux-foundation.org> <20080604101925.GB16572@duck.suse.cz> <20080604111911.c1fe09c6.akpm@linux-foundation.org> <20080604212202.GA8727@mit.edu> <20080604145848.e3da6f20.akpm@linux-foundation.org> <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz> <4847CF07.1020904@hitachi.com>
 MIME-Version: 1.0
-To: Martin Willi <martin@strongswan.org>
-CC: herbert@gondor.apana.org.au, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.26rc5] xfrm: SHA-256/384/512 HMAC support for IPsec
-References: <1212671211.6339.58.camel@martin>
-In-Reply-To: <1212671211.6339.58.camel@martin>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4847CF07.1020904@hitachi.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Willi wrote:
-> RFC4868 defines the use of SHA256, SHA384 and SHA512 in HMAC using 128,
-> 192 and 256 bits truncation. This patch replaces the outdated SHA256
-> algorithm with 96 bits truncation by the 128 bit variant and adds the
-> SHA384/512 algorithms.
+On Thu, Jun 05, 2008 at 08:33:27PM +0900, Hidehiro Kawai wrote:
 > 
-> ﻿Signed-off-by: Martin Willi <martin@strongswan.org>
+> My patch doesn't change the policy.  JBD aborts the journal when
+> it detects I/O error in file data since 2.6.11.  Perhaps this patch:
+> http://marc.info/?l=linux-kernel&m=110483888632225
+> I just added missing error checkings.
 > 
-> ---
-> Replacing the 96 bit truncation SHA256 algorithm might be problematic,
-> but it is obsolete in IPsec and I don't see a way to register two
-> different truncation lengths in XFRM.
 
-You could register a new SADB algorithm id in pfkeyv2.h and add a new
-entry to the aalg_list analogous to how GCM is doing that in the aead_list.
+Looking at the code paths touched by patch you referenced, you are
+correct.  And Andrew even signed off on it.  :-)
 
-Adrian
+But if someone was only examining the patch, it wasn't obvious that
+the journal was getting aborted when the JBD layer was forcing buffers
+from t_sync_datalist to disk.  So I suspect the change went in without
+proper consideration of the net effect.  You just called it out
+explicitly in the subject line, which caused Andrew to ask some good
+questions; questions that weren't asked in 2005.
 
-> --- a/net/xfrm/xfrm_algo.c 2008-06-05 14:01:01.000000000 +0200
-> +++ b/net/xfrm/xfrm_algo.c 2008-06-05 14:39:31.000000000 +0200
-> @@ -187,7 +187,7 @@
->  
->  	.uinfo = {
->  		.auth = {
-> -			.icv_truncbits = 96,
-> +			.icv_truncbits = 128,
->  			.icv_fullbits = 256,
->  		}
->  	},
-> @@ -200,6 +200,42 @@
->  	}
->  },
->  {
-> +	.name = "hmac(sha384)",
-> +	.compat = "sha384",
-> +
-> +	.uinfo = {
-> +		.auth = {
-> +			.icv_truncbits = 192,
-> +			.icv_fullbits = 384,
-> +		}
-> +	},
-> +
-> +	.desc = {
-> +		.sadb_alg_id = SADB_X_AALG_SHA2_384HMAC,
-> +		.sadb_alg_ivlen = 0,
-> +		.sadb_alg_minbits = 384,
-> +		.sadb_alg_maxbits = 384
-> +	}
-> +},
-> +{
-> +	.name = "hmac(sha512)",
-> +	.compat = "sha512",
-> +
-> +	.uinfo = {
-> +		.auth = {
-> +			.icv_truncbits = 256,
-> +			.icv_fullbits = 512,
-> +		}
-> +	},
-> +
-> +	.desc = {
-> +		.sadb_alg_id = SADB_X_AALG_SHA2_512HMAC,
-> +		.sadb_alg_ivlen = 0,
-> +		.sadb_alg_minbits = 512,
-> +		.sadb_alg_maxbits = 512
-> +	}
-> +},
-> +{
->  	.name = "hmac(rmd160)",
->  	.compat = "rmd160",
-> 
+> I agree.  I understood that there is a case where we don't want to
+> make the fs read-only when writing file data failed.  OTOH there are
+> people who want to make the fs read-only to avoid the damage from
+> expanding.  Introducing the tunable would be better.
+> I'm going to send a patch to make this behavior tunable if some of you
+> agree on this way.
+
+Note that doing this right may be tricky, since in the case where we
+aren't aborting the journal, we need to set the appropriate flags in
+the page cache so that when the user calls fsync() or close(), that
+they get the EIO error.
+
+						- Ted
