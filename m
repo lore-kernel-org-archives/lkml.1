@@ -1,98 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbYFEKXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbYFEKdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbYFEKXQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 06:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYFEKXA
+	id S1755936AbYFEKdT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 06:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbYFEKdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 06:23:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46498 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Jun 2008 06:33:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47821 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753341AbYFEKXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 06:23:00 -0400
-Date: Thu, 5 Jun 2008 12:22:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
-	area
-Message-ID: <20080605102222.GA21319@elte.hu>
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080604003019.509483000@polaris-admin.engr.sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754760AbYFEKdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 06:33:00 -0400
+Date: Thu, 5 Jun 2008 06:32:53 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Cc: chucklever@gmail.com, linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
+Message-ID: <20080605063253.40787ca3@tleilax.poochiereds.net>
+In-Reply-To: <6278d2220806050128x6e892df3p1632d6ae6b40b55b@mail.gmail.com>
+References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
+	<20080604203504.62730951@tleilax.poochiereds.net>
+	<6278d2220806050128x6e892df3p1632d6ae6b40b55b@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 5 Jun 2008 09:28:51 +0100
+"Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
 
-* Mike Travis <travis@sgi.com> wrote:
-
->   * Declare the pda as a per cpu variable.
+> On Thu, Jun 5, 2008 at 1:35 AM, Jeff Layton <jlayton@redhat.com> wrote:
+> > On Thu, 5 Jun 2008 00:33:54 +0100
+> > "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
+> >
+> >> Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
+> >> the past, I have a minimal test-case I sometimes run:
+> >>
+> >> $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
+> >>
+> >> After ~100 iterations, I saw the 'mount.nfs4: internal error',
+> >> followed by symptoms of memory corruption [1], a locking issue with
+> >> the reporting [2] and another (related?) memory-corruption issue
+> >> (off-by-1?) [3]. A little analysis shows memory being overwritten by
+> >> (likely) a poison value, which gets complicated if it's not
+> >> use-after-free...
+> >>
+> >> Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
+> >> 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
+> >>
+> >> I'm happy to decode addresses, test patches etc.
+> >>
+> >> Daniel
+> >>
+> >
+> > Looks like it fell down while trying to take down the kthread during a
+> > failed mount attempt. I have to wonder if I might have introduced a
+> > race when I changed nfs4 callback thread to kthread API. I think we may
+> > need the BKL around the last 2 statements in the main callback thread
+> > function. If you can easily reproduce this, could you test the
+> > following patch and let me know if it helps?
+> >
+> > Note that this patch is entirely untested, so test it someplace
+> > non-critical ;-).
+> >
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> >
+> >
+> > diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
+> > index c1e7c83..a3e83f9 100644
+> > --- a/fs/nfs/callback.c
+> > +++ b/fs/nfs/callback.c
+> > @@ -90,9 +90,9 @@ nfs_callback_svc(void *vrqstp)
+> >                preverr = err;
+> >                svc_process(rqstp);
+> >        }
+> > -       unlock_kernel();
+> >        nfs_callback_info.task = NULL;
+> >        svc_exit_thread(rqstp);
+> > +       unlock_kernel();
+> >        return 0;
+> >  }
 > 
->   * Make the x86_64 per cpu area start at zero.
+> This doesn't resolve the issue, alas. I'll hunker down to the
+> bisection in the next few days.
 > 
->   * Since the pda is now the first element of the per_cpu area, cpu_pda()
->     is no longer needed and per_cpu() can be used instead.  This also makes
->     the _cpu_pda[] table obsolete.
-> 
->   * Since %gs is pointing to the pda, it will then also point to the per cpu
->     variables and can be accessed thusly:
-> 
-> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
-> 
-> Based on linux-2.6.tip
+> Thanks,
+>   Daniel
 
--tip testing found an instantaneous reboot crash on 64-bit x86, with 
-this config:
+Yeah, after I sent that I went back and looked and it seemed like
+while we don't hold the BKL there, access to the callback info is still
+serialized via a semaphore. Thanks for testing it anyway...
 
-  http://redhat.com/~mingo/misc/config-Thu_Jun__5_11_43_51_CEST_2008.bad
-
-there is no boot log as the instantaneous reboot happens before anything 
-is printed to the (early-) serial console. I have bisected it down to:
-
-| 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f is first bad commit
-| commit 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f
-| Author: Mike Travis <travis@sgi.com>
-| Date:   Tue Jun 3 17:30:21 2008 -0700
-|
-|     x86_64: Fold pda into per cpu area
-
-the big problem is not just this crash, but that the patch is _way_ too 
-big:
-
- arch/x86/Kconfig                 |    3 +
- arch/x86/kernel/head64.c         |   34 ++++++--------
- arch/x86/kernel/irq_64.c         |   36 ++++++++-------
- arch/x86/kernel/setup.c          |   90 ++++++++++++---------------------------
- arch/x86/kernel/setup64.c        |    5 --
- arch/x86/kernel/smpboot.c        |   51 ----------------------
- arch/x86/kernel/traps_64.c       |   11 +++-
- arch/x86/kernel/vmlinux_64.lds.S |    1 
- include/asm-x86/percpu.h         |   48 ++++++--------------
- 9 files changed, 89 insertions(+), 190 deletions(-)
-
-considering the danger involved, this is just way too large, and there's 
-no reasonable debugging i can do in the bisection to narrow it down any 
-further.
-
-Please resubmit with the bug fixed and with a proper splitup, the more 
-patches you manage to create, the better. For a dangerous code area like 
-this, with a track record of frequent breakages in the past, i would not 
-mind a "one line of code changed per patch" splitup either. (Feel free 
-to send a git tree link for us to try as well.)
-
-	Ingo
+-- 
+Jeff Layton <jlayton@redhat.com>
