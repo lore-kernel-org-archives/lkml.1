@@ -1,122 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762503AbYFET5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762697AbYFEUEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762503AbYFET5i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 15:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYFET5b
+	id S1762697AbYFEUEy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 16:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYFEUEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 15:57:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:61531 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbYFET5a (ORCPT
+	Thu, 5 Jun 2008 16:04:46 -0400
+Received: from deep2.securesites.net ([198.65.247.173]:2483 "EHLO
+	deep2.securesites.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbYFEUEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 15:57:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:message-id:
-	user-agent:mime-version:content-type;
-	b=ZVPGDS5s2fUixSQmVV29mPlV/wfBv0eBgoJj+ld4yYvJD92dEhHaqpRzJ1Oh8Pgrt
-	Uo8bWJQZW9deyhS061R4A==
-Date: Thu, 5 Jun 2008 12:57:11 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, Paul Menage <menage@google.com>,
-       Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org
-Subject: [patch] sched: prevent bound kthreads from changing cpus_allowed
-Message-ID: <alpine.DEB.1.10.0806051255500.31157@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Jun 2008 16:04:45 -0400
+X-Greylist: delayed 2018 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 16:04:45 EDT
+Date: Thu, 5 Jun 2008 13:30:50 -0600
+From: Scott Wiersdorf <scott@perlcode.org>
+To: Balbir Singh <balbir@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, matt@bluehost.com
+Subject: [PATCH] getdelays.c
+Message-ID: <20080605193050.GA3754@perlcode.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
+X-Original-Status: RO
+X-Original-Status: RO
+X-Original-Status: RO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kthreads that have called kthread_bind() are bound to specific cpus, so
-other tasks should not be able to change their cpus_allowed from under
-them.  Otherwise, it is possible to move kthreads, such as the migration
-or software watchdog threads, so they are not allowed access to the cpu
-they work on.
+File: Documentation/accounting/getdelays.c
 
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Menage <menage@google.com>
-Cc: Paul Jackson <pj@sgi.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- include/linux/sched.h |    1 +
- kernel/cpuset.c       |   14 +++++++++++++-
- kernel/kthread.c      |    1 +
- kernel/sched.c        |    6 ++++++
- 4 files changed, 21 insertions(+), 1 deletions(-)
+Linux version: 2.6.25-4
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1504,6 +1504,7 @@ static inline void put_task_struct(struct task_struct *t)
- #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */
- #define PF_SPREAD_PAGE	0x01000000	/* Spread page cache over cpuset */
- #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
-+#define PF_THREAD_BOUND	0x04000000	/* Thread bound to specific cpu */
- #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
- #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
- #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1190,6 +1190,15 @@ static int cpuset_can_attach(struct cgroup_subsys *ss,
+Description:
+
+This patch adds a USR1 signal handler to getdelays.c, which causes
+getdelays to close its logfile and reopen it (if '-w logfile' is
+specified). This is useful in situations when getdelays is running for
+a long time (i.e, the log file growing) and you need to rotate the
+logs but don't want to lose any log data.
+
+
+Sample usage:
+
+1  # ./getdelays -m0,1,2,3 -l -w getdelays.log &
+   (time passes)
+2  # mv getdelays.log getdelays.log.1
+3  # kill -USR1 <getdelays pid>
+
+line 1: starts the program
+line 2: renames the logfile. The log descriptor is still open and data
+        being written to the log (assuming we didn't cross mountpoints)
+line 3: getdelays closes the old descriptor and reopens getdelays.log
+
+
+Note on 'volatile' usage:
+
+I know this is generally frowned on, but I think it's needed here to
+avoid the compiler optimizing away the variable (it will appear as if
+it's never called, since it's value only changes in the signal
+handler).
+
+
+Patch:
+<patch>
+--- getdelays.c	2008-05-15 09:00:12.000000000 -0600
++++ getdelays.c	2008-06-05 02:23:57.000000000 -0600
+@@ -50,6 +50,7 @@ int dbg;
+ int print_delays;
+ int print_io_accounting;
+ int print_task_context_switch_counts;
++volatile sig_atomic_t reopen_log = 0;
+ __u64 stime, utime;
  
- 	if (cpus_empty(cs->cpus_allowed) || nodes_empty(cs->mems_allowed))
- 		return -ENOSPC;
-+	if (tsk->flags & PF_THREAD_BOUND) {
-+		cpumask_t mask;
+ #define PRINTF(fmt, arg...) {			\
+@@ -80,6 +81,7 @@ static void usage(void)
+ 	fprintf(stderr, "  -l: listen forever\n");
+ 	fprintf(stderr, "  -v: debug on\n");
+ 	fprintf(stderr, "  -C: container path\n");
++	fprintf(stderr, "\nSend USR1 to reopen the logfile if -w is used.\n");
+ }
+ 
+ /*
+@@ -231,6 +233,30 @@ void print_ioacct(struct taskstats *t)
+ 		(unsigned long long)t->cancelled_write_bytes);
+ }
+ 
++void catch_usr1(int sig)
++{
++	reopen_log = 1;
++	signal(sig, catch_usr1);
++}
 +
-+		mutex_lock(&callback_mutex);
-+		mask = cs->cpus_allowed;
-+		mutex_unlock(&callback_mutex);
-+		if (!cpus_equal(tsk->cpus_allowed, mask))
-+			return -EINVAL;
++int reopen_logfile(int fd, char *logfile)
++{
++	if (fd) {
++		PRINTF("USR1 received. Closing logfile.\n");
++		close(fd);
 +	}
- 
- 	return security_task_setscheduler(tsk, 0, NULL);
- }
-@@ -1203,11 +1212,14 @@ static void cpuset_attach(struct cgroup_subsys *ss,
- 	struct mm_struct *mm;
- 	struct cpuset *cs = cgroup_cs(cont);
- 	struct cpuset *oldcs = cgroup_cs(oldcont);
-+	int err;
- 
- 	mutex_lock(&callback_mutex);
- 	guarantee_online_cpus(cs, &cpus);
--	set_cpus_allowed_ptr(tsk, &cpus);
-+	err = set_cpus_allowed_ptr(tsk, &cpus);
- 	mutex_unlock(&callback_mutex);
-+	if (err)
-+		return;
- 
- 	from = oldcs->mems_allowed;
- 	to = cs->mems_allowed;
-diff --git a/kernel/kthread.c b/kernel/kthread.c
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -180,6 +180,7 @@ void kthread_bind(struct task_struct *k, unsigned int cpu)
- 	set_task_cpu(k, cpu);
- 	k->cpus_allowed = cpumask_of_cpu(cpu);
- 	k->rt.nr_cpus_allowed = 1;
-+	k->flags |= PF_THREAD_BOUND;
- }
- EXPORT_SYMBOL(kthread_bind);
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -5565,6 +5565,12 @@ int set_cpus_allowed_ptr(struct task_struct *p, const cpumask_t *new_mask)
- 		goto out;
++	fd = open(logfile, O_WRONLY | O_CREAT | O_TRUNC,
++		  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
++	if (fd == -1) {
++		perror("Cannot open output file\n");
++		exit(1);
++	}
++
++	reopen_log = 0;
++
++	return fd;
++}
++
+ int main(int argc, char *argv[])
+ {
+ 	int c, rc, rep_len, aggr_len, len2, cmd_type;
+@@ -320,12 +346,8 @@ int main(int argc, char *argv[])
  	}
  
-+	if (unlikely((p->flags & PF_THREAD_BOUND) && p != current &&
-+		     !cpus_equal(p->cpus_allowed, *new_mask))) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
- 	if (p->sched_class->set_cpus_allowed)
- 		p->sched_class->set_cpus_allowed(p, new_mask);
- 	else {
+ 	if (write_file) {
+-		fd = open(logfile, O_WRONLY | O_CREAT | O_TRUNC,
+-			  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+-		if (fd == -1) {
+-			perror("Cannot open output file\n");
+-			exit(1);
+-		}
++		fd = reopen_logfile(fd, logfile);
++		signal(SIGUSR1, catch_usr1); /* only set when write_file is set */
+ 	}
+ 
+ 	if ((nl_sd = create_nl_socket(NETLINK_GENERIC)) < 0)
+@@ -444,6 +466,9 @@ int main(int argc, char *argv[])
+ 								err(1,"write error\n");
+ 							}
+ 						}
++						if (reopen_log) {
++							fd = reopen_logfile(fd, logfile);
++						}
+ 						if (!loop)
+ 							goto done;
+ 						break;
+</patch>
+
+Scott
+-- 
+Scott Wiersdorf
+<scott@perlcode.org>
