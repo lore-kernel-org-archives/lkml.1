@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760511AbYFEQUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbYFEQVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760511AbYFEQUw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYFEQUp
+	id S1760904AbYFEQVV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYFEQVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:20:45 -0400
-Received: from waste.org ([66.93.16.53]:39448 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753125AbYFEQUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:20:44 -0400
-Subject: Re: [PATCH 1/5] pagemap: Modify add_to_pagemap to use copy_to_user
-	instead of put_user.
-From: Matt Mackall <mpm@selenic.com>
-To: Thomas Tuttle <ttuttle@google.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4ca0a85e0806050901q52deba94r3056fdb0e7d46c8c@mail.gmail.com>
-References: <4ca0a85e0806050804q4c164105uc386dcae2ccd21d@mail.gmail.com>
-	 <1212681477.3953.154.camel@calx>
-	 <4ca0a85e0806050901q52deba94r3056fdb0e7d46c8c@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 05 Jun 2008 11:20:10 -0500
-Message-Id: <1212682810.3953.180.camel@calx>
+	Thu, 5 Jun 2008 12:21:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57012 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753223AbYFEQVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 12:21:08 -0400
+Date: Thu, 5 Jun 2008 09:20:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, Jan Kara <jack@suse.cz>,
+       sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
+ buffers
+Message-Id: <20080605092006.ba7dceef.akpm@linux-foundation.org>
+In-Reply-To: <20080605142948.GA25477@mit.edu>
+References: <4843CE15.6080506@hitachi.com>
+	<4843CEED.9080002@hitachi.com>
+	<20080603153050.fb99ac8a.akpm@linux-foundation.org>
+	<20080604101925.GB16572@duck.suse.cz>
+	<20080604111911.c1fe09c6.akpm@linux-foundation.org>
+	<20080604212202.GA8727@mit.edu>
+	<20080604145848.e3da6f20.akpm@linux-foundation.org>
+	<20080604225155.GB8727@mit.edu>
+	<20080605093536.GE27370@duck.suse.cz>
+	<4847CF07.1020904@hitachi.com>
+	<20080605142948.GA25477@mit.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 5 Jun 2008 10:29:48 -0400 Theodore Tso <tytso@mit.edu> wrote:
 
-On Thu, 2008-06-05 at 12:01 -0400, Thomas Tuttle wrote:
-> On Thu, Jun 5, 2008 at 11:57 AM, Matt Mackall <mpm@selenic.com> wrote:
-> >
-> > On Thu, 2008-06-05 at 11:04 -0400, Thomas Tuttle wrote:
-> >> While fiddling with pagemap, I discovered a bug in add_to_pagemap.
-> >> When it is copying an entry that is not at the end of the buffer, it
-> >> uses put_user to copy a u64 into a char* buffer.  The problem is that
-> >> put_user determines how much to copy based on the size of the
-> >> *destination*, not the source, so it only copied one byte.  To fix
-> >> this, I replaced the call to put_user with a call to copy_to_user, as
-> >> is used when copying the last (possibly partial) PFN into the buffer.0
-> >
-> > This looks fine to me, so:
-> >
-> > Acked-by: Matt Mackall <mpm@selenic.com>
-> >
-> > But your 3/5 undoes this, right? So we should just take one or the other
-> > route. While I like going the simplifying route, it's not very pretty
-> > from the user interface point of view. But it does have plenty of
-> > precedent in direct-I/O-like things.
+> On Thu, Jun 05, 2008 at 08:33:27PM +0900, Hidehiro Kawai wrote:
+> > 
+> > My patch doesn't change the policy.  JBD aborts the journal when
+> > it detects I/O error in file data since 2.6.11.  Perhaps this patch:
+> > http://marc.info/?l=linux-kernel&m=110483888632225
+> > I just added missing error checkings.
+> > 
 > 
-> No, my 3/5 further keeps the use of copy_to_user instead of put_user,
-> but eliminates entirely the code for partial reads.  3/5 depends on
-> 1/5.
+> Looking at the code paths touched by patch you referenced, you are
+> correct.  And Andrew even signed off on it.  :-)
+> 
+> But if someone was only examining the patch, it wasn't obvious that
+> the journal was getting aborted when the JBD layer was forcing buffers
+> from t_sync_datalist to disk.  So I suspect the change went in without
+> proper consideration of the net effect.  You just called it out
+> explicitly in the subject line, which caused Andrew to ask some good
+> questions; questions that weren't asked in 2005.
 
-Hmm, I read this backwards the first time through then. Rather than
-finding a small bug at the end of the buffer, you've found a REALLY BIG
-WEAR-A-BROWN-PAPER-BAG-ON-MY-HEAD BUG.
+Sigh. An object lesson in the value of good changelogging :(
 
-Sigh. ﻿Some clever person (me?) probably removed a cast or changed a
-pointer type somewhere along the way and didn't notice the fallout
-because the MSBs still came through.
-
-I'm pretty sure we want to do the put_user because it's faster. On a
-64-bit system, it boils down to a simple assignment. If we commit
-ourselves to the alignment thing, then we should probably just change
-all the relevant pointers to u64, and then it will just do the right
-thing.
-
-ps: perhaps put_user can be made to compare the src and dst sizes at
-compile time?
-
--- 
-Mathematics is the supreme nostalgia of our time.
+I guess we need to undo this.  And yes, propagating errors into AS_EIO
+is the way.  I guess that's safe without holding lock_page(), as long
+as the bh is pinned.
 
