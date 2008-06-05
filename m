@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbYFEQ64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbYFERC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752427AbYFEQ64 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYFEQ6r
+	id S1757966AbYFERC2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYFERCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:58:47 -0400
-Received: from mailout.softservecom.com ([195.160.232.25]:51019 "EHLO
-	mailout.softservecom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751322AbYFEQ6q (ORCPT
+	Thu, 5 Jun 2008 13:02:20 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41620 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbYFERCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:58:46 -0400
-X-Greylist: delayed 1557 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 12:58:46 EDT
-Subject: Re: [PATCH resend] Adding dummy release functions to avoid
-	warnings.
-From: Vitaliy Ivanov <vitalivanov@gmail.com>
-Reply-To: vitalivanov@gmail.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, lkml <linux-kernel@vger.kernel.org>,
-       devzero@web.de, jsun@junsun.net, dwmw2@infradead.org,
-       protasnb@gmail.com, linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <20080605090725.96da4b75.akpm@linux-foundation.org>
-References: <1208306056.15140.13.camel@pcvitaliy>
-	 <35fbaa3e0806050239y5987fc33rd349be8d07bc1262@mail.gmail.com>
-	 <20080605090725.96da4b75.akpm@linux-foundation.org>
-Content-Type: text/plain
-Message-Id: <1212683557.21310.32.camel@dell1.softservecom.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.4.5 (1.4.5-21.el3) 
-Date: Thu, 05 Jun 2008 19:32:37 +0300
+	Thu, 5 Jun 2008 13:02:19 -0400
+Message-ID: <48481846.6060407@kernel.org>
+Date: Thu, 05 Jun 2008 09:45:58 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Stable Kernel <stable@kernel.org>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: set PAE PHYSICAL_MASK_SHIFT to match 64-bit
+References: <4848046A.5060006@goop.org> <484823BD.76E4.0078.0@novell.com> <4848096D.9010603@goop.org>
+In-Reply-To: <4848096D.9010603@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
-
-On Thu, 2008-06-05 at 19:07, Andrew Morton wrote:
-> On Thu, 5 Jun 2008 12:39:46 +0300 "Vitaliy Ivanov" <vitalivanov@gmail.com> wrote:
-> > Trivial fix for #9690.
-> > Added simple release functions that doing nothing.
-> > Not sure whether we can leave it as is or to rework using
-> > platform_device helpers like platform_device_alloc.
+Jeremy Fitzhardinge wrote:
 > 
-> Please see Documentation/kobject.txt - search for the text
-> "mocked mercilessly" :)
+> We could have an auction:
 > 
-> > This approach is used in many drivers.
-> > --
-> > 
-> >  drivers/mtd/maps/physmap.c |    6 ++++++
+>    Do I hear 46? 47? 48?  50?  52!  Going once, twice, 52 bits!
 > 
-> Let's mock David too!
+> Anyway, we can fix it later in a separate patch.  This is a 
+> change-as-little-as-possible bugfix patch.
+> 
 
-Damn. I knew that everything is not so easy here;) Got it. Tnx.
+It should either be 52 bits or dynamic based on CPUID information.  The 
+latter is very expensive.
 
-But in such case there are _again_ many drivers that do implement such
-fake functions. Again is because when I tried to port some usb driver
-there were issues with locking that was not correct but many drivers
-worked exactly this incorrect way.
+If there end up being additional control bits assigned in this space we 
+won't use them  since we know the size of the address space (which won't 
+include the control bits) and thus will leave them at zero.
 
-Anyway, tnx for clarifying this.
+It's largely theoretical, since I believe Linux on x86-64 relies on 
+virtual >= physical+N, where I believe N is about 3 bits, and the page 
+table format or page size need to change to support more than 48 bits of 
+virtual address space.
 
-V.
-
+	-hpa
