@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758500AbYFESJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760626AbYFESLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758500AbYFESJV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYFESJL
+	id S1760626AbYFESLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYFESLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:09:11 -0400
-Received: from mbox1.netikka.net ([213.250.81.202]:39269 "EHLO
-	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbYFESJK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:09:10 -0400
-X-Greylist: delayed 806 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 14:09:10 EDT
-Message-ID: <48482BC3.4070402@mandriva.org>
-Date: Thu, 05 Jun 2008 21:09:07 +0300
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080504)
+	Thu, 5 Jun 2008 14:11:12 -0400
+Received: from xenotime.net ([66.160.160.81]:45212 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753293AbYFESLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 14:11:11 -0400
+Date: Thu, 5 Jun 2008 11:10:59 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
+cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Subject: [PATCH -next] x86: fix longstanding setup.c printk format warning
+Message-ID: <Pine.LNX.4.64.0806051107200.702@shark.he.net>
 MIME-Version: 1.0
-To: Tomas Winkler <tomasw@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: iwl4965 oops in 2.6.25-rc5 x86_64
-References: <4848289D.1080205@mandriva.org> <1ba2fa240806051103q652accf5t1bd1d94630ebea5b@mail.gmail.com>
-In-Reply-To: <1ba2fa240806051103q652accf5t1bd1d94630ebea5b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tomas Winkler skrev:
->>
-> Can you please verify with latest wireless-testing. git
-> Thanks
-> Tomas
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Yep. will do...
+Note: for -next only, not mainline.
 
-I'll report back as soon as I have tried..
+Fix setup.c printk format warning:
 
---
-Thomas
+linux-next-20080605/arch/x86/kernel/setup.c: In function 'setup_per_cpu_areas':
+linux-next-20080605/arch/x86/kernel/setup.c:173: warning: format '%lu' expects type 'long unsigned int', but argument 2 has type 'ssize_t'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/kernel/setup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next-20080605.orig/arch/x86/kernel/setup.c
++++ linux-next-20080605/arch/x86/kernel/setup.c
+@@ -169,7 +169,7 @@ void __init setup_per_cpu_areas(void)
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+ 	size = PERCPU_ENOUGH_ROOM;
+-	printk(KERN_INFO "PERCPU: Allocating %lu bytes of per cpu data\n",
++	printk(KERN_INFO "PERCPU: Allocating %zd bytes of per cpu data\n",
+ 			  size);
+ 
+ 	for_each_possible_cpu(cpu) {
