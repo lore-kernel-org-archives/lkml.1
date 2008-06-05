@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYFERsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbYFERwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbYFERsd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 13:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYFERsW
+	id S1758395AbYFERwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYFERwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 13:48:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53706 "EHLO mx1.redhat.com"
+	Thu, 5 Jun 2008 13:52:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53913 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455AbYFERsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 13:48:21 -0400
-Date: Thu, 5 Jun 2008 13:44:10 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, peterz@infradead.org,
-       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
-       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/1] x86: fix text_poke
-Message-ID: <20080605174410.GA29189@redhat.com>
-Mime-Version: 1.0
+	id S1752455AbYFERwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 13:52:38 -0400
+Date: Thu, 5 Jun 2008 13:45:35 -0400
+From: Dave Jones <davej@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: via agp patches
+Message-ID: <20080605174535.GA10361@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org
+References: <20080531003214.GA6208@suse.de> <20080531003250.GB6208@suse.de> <20080531144715.GA22616@redhat.com> <20080531174113.GA18996@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20080531174113.GA18996@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, May 31, 2008 at 10:41:13AM -0700, Greg KH wrote:
+ > On Sat, May 31, 2008 at 10:47:15AM -0400, Dave Jones wrote:
+ > > On Fri, May 30, 2008 at 05:32:50PM -0700, Greg KH wrote:
+ > >  > 
+ > >  > Looks like this adds a new device id, I have no idea why they remove
+ > >  > another one at the same time...
+ > > 
+ > > I sent a patch adding the missing ident to airlied a few weeks back.
+ > > I think it's currently in -mm.
+ > 
+ > Great.
+ > 
+ > > The removal of the other id is a mystery to me.
+ > 
+ > Here's what I got back from Via about this:
+ > 	VT3336 is a chipset for AMD Athlon/K8 CPU. Due to K8's unique
+ > 	architecture, the AGP resource and behavior are different from
+ > 	the traditional AGP which resides only in chipset. AGP is used
+ > 	by 3D driver which wasn't available for the VT3336 and VT3364
+ > 	generation until now.  Unfortunately, by testing, VT3364 works
+ > 	but VT3336 doesn't. That is why the subtraction. I think other
+ > 	options are leaving it in the AGP, but removing it from our DRI
+ > 	driver. Or, just leave it in both but warn people for issues in
+ > 	the release note.
+ > 
+ > 
+ > So it sounds like it would be good to remove that id.
 
-On Fri, 25 Apr 2008, Linus wrote:
+Sounds plausible. This needs to go in the changelog.
+A lot of their K8 chipsets were also used on P4 (I think they
+abstracted the architectural differences with V-Link), but
+if they claim this wasn't used on any of the P4 boards,
+I guess they would know better than us.
 
-> On Fri, 25 Apr 2008, Mathieu Desnoyers wrote:
-> > The point is to provide a way to dynamically enable code at runtime
-> > without noticeable performance impact on the system.
-> 
-> Quite frankly, maybe I'm a bit dense, but why don't you just recompile the 
-> whole original function (at run-time), load that new version of a function 
-> as a mini-module, and then insert a marker at the top of the old function 
-> that just does a "jmp replacementfunction".
-> 
-> That has _zero_ cost for the non-marker case, and allows you to do pretty 
-> much any arbitrary code changes for the marker case.
-> [...]
-> Yeah, this requires you to basically recompile some function snippet when 
-> you insert a probe, but if that scares people, you could basically do it 
-> using the old code and inserting the markers and "relinking" it - avoiding 
-> the C compiler, and just basically have an "assembly recompiler".
+(The irony here is that the cset that introduced that ID came
+ from a patch where someone copied a giant diff on one of VIA's
+ earlier portals).
 
-Linus, was it your intention to signal that you would veto any uses of
-the current trace_mark mechanism, and wait for this hypothetical
-function-recompilation-splicing widget as a replacement?  This is how
-some people are interpreting this old thread.
+	Dave
 
-A number of problems with the new idea were brought up, and no one
-appears to have taken interest in trying to build it to see if they
-can be overcome or if there are more.
-
-On the other hand, a number of concerns with the markers have been
-dealt with since, such as performance numbers showing near-zero
-impact, and a variety of experience with the few dozen lttng markers
-and the tools that consume the data.  The current debate appears to be
-stuck on fuzzier aesthetic issues.
-
-
-How are we to move forward?  Do you see any *harm* in letting in the
-lttng markers soon?
-
-Could it be that once this "recompile function with instrumentation on
-the fly" machinery comes into existence eventually, then these exact
-same marker points could be reinterpreted as one particular potential
-instrumentation spot?  (This could be something as simple as building
-the kernel with CONFIG_MARKERS=n by default so the markers are
-compiled out, then having selected alternative functions built with
-CONFIG_MARKERS=y.)
-
-- FChE
+-- 
+http://www.codemonkey.org.uk
