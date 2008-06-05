@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbYFEPn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYFEPtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758974AbYFEPn0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbYFEPnS
+	id S1757566AbYFEPtN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYFEPtC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:43:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:35819 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753496AbYFEPnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:43:18 -0400
-Message-ID: <4848096D.9010603@goop.org>
-Date: Thu, 05 Jun 2008 16:42:37 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 5 Jun 2008 11:49:02 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:53523 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753243AbYFEPtB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 11:49:01 -0400
+Date: Thu, 5 Jun 2008 09:48:44 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: TASK_WAKEKILL && /sbin/init (was: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race)
+Message-ID: <20080605154844.GN3549@parisc-linux.org>
+References: <20080604170905.GA10273@tv-sign.ru> <20080604173318.GH3549@parisc-linux.org> <20080605152316.GA257@tv-sign.ru>
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Stable Kernel <stable@kernel.org>,
-       x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: set PAE PHYSICAL_MASK_SHIFT to match 64-bit
-References: <4848046A.5060006@goop.org> <484823BD.76E4.0078.0@novell.com>
-In-Reply-To: <484823BD.76E4.0078.0@novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080605152316.GA257@tv-sign.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Hmm? There's 11 bits available - why would anyone want to assign bits
-> from the sufficiently official (at least as far as AMD is concerned, I'm not
-> sure I saw a precise statement on Intel's side) frame number bits?
+On Thu, Jun 05, 2008 at 07:23:16PM +0400, Oleg Nesterov wrote:
+> Sorry Matthew, I left this part unanswered because I didn't have the
+> time yesterday...
 
-The Intel docs list those 11 bits as available to software, and are not 
-reserved for any future flags they may want to add.  I was a bit 
-surprised too.
+That's OK, thanks for picking it up again.
 
->  And
-> even if they would, it would certainly take some control register bit to
-> enable the feature, so shrinking the mask if that would ever happen
-> would seem more appropriate.
->   
+> On 06/04, Matthew Wilcox wrote:
+> >
+> > On Wed, Jun 04, 2008 at 09:09:05PM +0400, Oleg Nesterov wrote:
+> > > Note also that with or without this patch TASK_WAKEKILL is not exactly right
+> > > wrt /sbin/init, but this is another issue.
+> >
+> > That's certainly an interesting conversation to have.
+> 
+> If lock_page_killable() fails because the task was killed by SIGKILL or
+> another fatal signal, do_generic_file_read() returns -EIO.
+> 
+> This seems to be OK, because in fact the userspace won't see this error, the
+> task will dequeue SIGKILL and exit.
+> 
+> However, /sbin/init is different, it will dequeue SIGKILL, ignore it, and be
+> confused by this bogus -EIO. Please note that while this bug is not likely,
+> it is _not_ theoretical. It does happen that user-space sends the unhandled
+> fatal signals to init.
 
-I suppose.
+Have you actually tested this?  I thought it was handled by:
 
-> Bottom line - I'd suggest pushing both 32- and 64-bits up to 52.
->   
+                /*
+                 * Global init gets no signals it doesn't want.
+                 */
+                if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+                    !signal_group_exit(signal))
+                        continue;
 
-We could have an auction:
+in get_signal_to_deliver().
 
-    Do I hear 46? 47? 48?  50?  52!  Going once, twice, 52 bits!
-
-Anyway, we can fix it later in a separate patch.  This is a 
-change-as-little-as-possible bugfix patch.
-
-    J
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
