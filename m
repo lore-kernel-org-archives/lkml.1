@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761157AbYFESt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762942AbYFESum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761157AbYFESt7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYFEStu
+	id S1762942AbYFESum (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760255AbYFESt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:49:50 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45251 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754277AbYFESts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:49:48 -0400
-Date: Thu, 05 Jun 2008 12:49:41 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data	buffers
-In-reply-to: <20080605092006.ba7dceef.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, Jan Kara <jack@suse.cz>,
-       sct@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Message-id: <20080605184941.GX2961@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <20080603153050.fb99ac8a.akpm@linux-foundation.org>
- <20080604101925.GB16572@duck.suse.cz>
- <20080604111911.c1fe09c6.akpm@linux-foundation.org>
- <20080604212202.GA8727@mit.edu>
- <20080604145848.e3da6f20.akpm@linux-foundation.org>
- <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz>
- <4847CF07.1020904@hitachi.com> <20080605142948.GA25477@mit.edu>
- <20080605092006.ba7dceef.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 5 Jun 2008 14:49:58 -0400
+Received: from waste.org ([66.93.16.53]:55874 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756725AbYFESt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 14:49:57 -0400
+Subject: Re: [PATCH 3/4] pagemap: Return EINVAL, not EIO, for unaligned
+	reads of kpagecount or kpageflags (v2 of series)
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Tuttle <ttuttle@google.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4ca0a85e0806051140r5985f6a4h42f12e60fe29050e@mail.gmail.com>
+References: <4ca0a85e0806051140r5985f6a4h42f12e60fe29050e@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 05 Jun 2008 13:49:17 -0500
+Message-Id: <1212691757.3953.191.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jun 05, 2008  09:20 -0700, Andrew Morton wrote:
-> On Thu, 5 Jun 2008 10:29:48 -0400 Theodore Tso <tytso@mit.edu> wrote:
-> > On Thu, Jun 05, 2008 at 08:33:27PM +0900, Hidehiro Kawai wrote:
-> > > 
-> > > My patch doesn't change the policy.  JBD aborts the journal when
-> > > it detects I/O error in file data since 2.6.11.  Perhaps this patch:
-> > > http://marc.info/?l=linux-kernel&m=110483888632225
-> > > I just added missing error checkings.
-> > 
-> > Looking at the code paths touched by patch you referenced, you are
-> > correct.  And Andrew even signed off on it.  :-)
-> > 
-> > But if someone was only examining the patch, it wasn't obvious that
-> > the journal was getting aborted when the JBD layer was forcing buffers
-> > from t_sync_datalist to disk.  So I suspect the change went in without
-> > proper consideration of the net effect.  You just called it out
-> > explicitly in the subject line, which caused Andrew to ask some good
-> > questions; questions that weren't asked in 2005.
-> 
-> Sigh. An object lesson in the value of good changelogging :(
 
-... and the value of "diff -p" so it is clear what function is being changed.
+On Thu, 2008-06-05 at 14:40 -0400, Thomas Tuttle wrote:
+> If the user tries to read from a position that is not a multiple of 8, or
+> read a number of bytes that is not a multiple of 8, they have passed an
+> invalid argument to read, for the purpose of reading these files.  It's
+> not an IO error because we didn't encounter any trouble finding the data
+> they asked for.
 
-> I guess we need to undo this.  And yes, propagating errors into AS_EIO
-> is the way.  I guess that's safe without holding lock_page(), as long
-> as the bh is pinned.
+Hmm. I seem to recall choosing EIO because that's what unaligned reads
+with direct I/O report. I don't particularly care though.
 
-Something like the following instead if -EIO and journal abort:
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-		if (!buffer_uptodate(bh)) {
-			set_bit(AS_EIO, &bh->b_page->mapping->flags);
-			SetPageError(bh->b_page);
-		}
-
-It seems end_buffer_async_write() does this already, but
-journal_do_submit_data() uses end_buffer_write_sync() and it does not
-do either of those operations.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
