@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759235AbYFEPGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbYFEPHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759235AbYFEPGT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbYFEPGJ
+	id S1758919AbYFEPHr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:07:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYFEPHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:06:09 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9486 "EHLO
+	Thu, 5 Jun 2008 11:07:38 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9736 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754009AbYFEPGI (ORCPT
+	with ESMTP id S1754881AbYFEPHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:06:08 -0400
+	Thu, 5 Jun 2008 11:07:37 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:date:from:to:subject:mime-version:content-type;
-	b=Bu5B5jdFx9/U/avG+f43ybIZmR++UZOuXKB3J4jTO1dSR95JdTPpJZEUQwzKLILAa
-	DDNjsQ/vCkfw05AxRPdug==
-Message-ID: <4ca0a85e0806050806r38de18dft8927e093a8e47abd@mail.gmail.com>
-Date: Thu, 5 Jun 2008 11:06:02 -0400
+	b=wP81euH3Jj8okDa4bfvREhoK1aIPCE9WTjz5n7nG7+Azy5Y0iuZA+70gEtAJawQOD
+	wSl+trvL5AQuMFvdiTpUw==
+Message-ID: <4ca0a85e0806050807v1ad0c309y75badc3fff7b796f@mail.gmail.com>
+Date: Thu, 5 Jun 2008 11:07:29 -0400
 From: "Thomas Tuttle" <ttuttle@google.com>
 To: mpm@selenic.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] pagemap: Make pagemap_read enforce reading in multiples of 8
+Subject: [PATCH 4/5] pagemap: Make /proc/kpage{count,flags} return EINVAL (not EIO) on unaligned read.
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_791_16639639.1212678362473"
+	boundary="----=_Part_798_26001927.1212678449278"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_791_16639639.1212678362473
+------=_Part_798_26001927.1212678449278
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-Since kpagecount and kpageflags require reads in multiples of 8, and
-it simplifies add_to_pagemap significantly, I added the same
-requirement to /proc/pid/pagemap.
+If a process tries to read at a position that's not a multiple of 8,
+or for a count that's not a multiple of 8, they've passed an invalid
+argument to read (for this file), so we should return EINVAL.
 
-------=_Part_791_16639639.1212678362473
+------=_Part_798_26001927.1212678449278
 Content-Type: text/x-patch;
- name=0003-Make-pagemap_read-enforce-reading-in-multiples-of-8.patch
+ name=0004-Make-proc-kpage-count-flags-return-EINVAL-not-EIO.patch
 Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fh3hdp6l0
+X-Attachment-Id: f_fh3hfk250
 Content-Disposition: attachment;
- filename=0003-Make-pagemap_read-enforce-reading-in-multiples-of-8.patch
+ filename=0004-Make-proc-kpage-count-flags-return-EINVAL-not-EIO.patch
 
-RnJvbSAyNTkwODczMWI2NzA2OWQ2Y2Y1NmQ4YWY1MjJiNTU0NzllYTc1NzM2IE1vbiBTZXAgMTcg
+RnJvbSBmMDM3MjlkM2RhM2E3ZTM4ZTNkOGZiYTI4MjZlYTlkZDg4YmFhYWYxIE1vbiBTZXAgMTcg
 MDA6MDA6MDAgMjAwMQpGcm9tOiBUaG9tYXMgVHV0dGxlIDx0dHV0dGxlQGdvb2dsZS5jb20+CkRh
-dGU6IFRodSwgNSBKdW4gMjAwOCAxMDo0NTo1NSAtMDQwMApTdWJqZWN0OiBbUEFUQ0hdIE1ha2Ug
-cGFnZW1hcF9yZWFkIGVuZm9yY2UgcmVhZGluZyBpbiBtdWx0aXBsZXMgb2YgOC4KClByZXZpb3Vz
-bHksIC9wcm9jL3BpZC9wYWdlbWFwIHdvdWxkIGFsbG93IHJlYWRzIG9mIGxlbmd0aHMgdGhhdCB3
-ZXJlIG5vdAptdWx0aXBsZXMgb2YgOCB0byBzdWNjZWVkIChhbmQgd291bGQgcmV0dXJuIGNvcnJl
-Y3QgZGF0YSksIGJ1dCBoYWQgbm8gd2F5Cm9mIHJlYWRpbmcgdGhlIHJlbWFpbmRlciBvZiB0aGUg
-cGFydGlhbCB2YWx1ZSByZXR1cm5lZC4KCi9wcm9jL2twYWdle2NvdW50LGZsYWdzfSBhcmUgYWxz
-byBhcnJheXMgb2YgdTY0cywgYW5kIHRoZXkgcmVxdWlyZSB0aGF0CnJlYWRzIGFyZSBhIG11bHRp
-cGxlIG9mIDguICBUaGlzIHBhdGNoIG1ha2VzIC9wcm9jL3BpZC9wYWdlbWFwIGNvbnNpc3RlbnQu
-CgpTaWduZWQtb2ZmLWJ5OiBUaG9tYXMgVHV0dGxlIDx0dHV0dGxlQGdvb2dsZS5jb20+Ci0tLQog
-ZnMvcHJvYy90YXNrX21tdS5jIHwgICAxOCArKysrLS0tLS0tLS0tLS0tLS0KIDEgZmlsZXMgY2hh
-bmdlZCwgNCBpbnNlcnRpb25zKCspLCAxNCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9mcy9w
-cm9jL3Rhc2tfbW11LmMgYi9mcy9wcm9jL3Rhc2tfbW11LmMKaW5kZXggOTkxNTIwMi4uM2Y2ZDY4
-MCAxMDA2NDQKLS0tIGEvZnMvcHJvYy90YXNrX21tdS5jCisrKyBiL2ZzL3Byb2MvdGFza19tbXUu
-YwpAQCAtNTE5LDIxICs1MTksMTEgQEAgc3RydWN0IHBhZ2VtYXByZWFkIHsKIHN0YXRpYyBpbnQg
-YWRkX3RvX3BhZ2VtYXAodW5zaWduZWQgbG9uZyBhZGRyLCB1NjQgcGZuLAogCQkJICBzdHJ1Y3Qg
-cGFnZW1hcHJlYWQgKnBtKQogewotCS8qCi0JICogTWFrZSBzdXJlIHRoZXJlJ3Mgcm9vbSBpbiB0
-aGUgYnVmZmVyIGZvciBhbgotCSAqIGVudGlyZSBlbnRyeS4gIE90aGVyd2lzZSwgb25seSBjb3B5
-IHBhcnQgb2YKLQkgKiB0aGUgcGZuLgotCSAqLwotCWlmIChwbS0+b3V0ICsgUE1fRU5UUllfQllU
-RVMgPj0gcG0tPmVuZCkgewotCQlpZiAoY29weV90b191c2VyKHBtLT5vdXQsICZwZm4sIHBtLT5l
-bmQgLSBwbS0+b3V0KSkKLQkJCXJldHVybiAtRUZBVUxUOwotCQlwbS0+b3V0ID0gcG0tPmVuZDsK
-LQkJcmV0dXJuIFBNX0VORF9PRl9CVUZGRVI7Ci0JfQotCiAJaWYgKGNvcHlfdG9fdXNlcihwbS0+
-b3V0LCAmcGZuLCBQTV9FTlRSWV9CWVRFUykpCiAJCXJldHVybiAtRUZBVUxUOwogCXBtLT5vdXQg
-Kz0gUE1fRU5UUllfQllURVM7CisJaWYgKHBtLT5vdXQgPj0gcG0tPmVuZCkKKwkJcmV0dXJuIFBN
-X0VORF9PRl9CVUZGRVI7CiAJcmV0dXJuIDA7CiB9CiAKQEAgLTYzMyw4ICs2MjMsOCBAQCBzdGF0
-aWMgc3NpemVfdCBwYWdlbWFwX3JlYWQoc3RydWN0IGZpbGUgKmZpbGUsIGNoYXIgX191c2VyICpi
-dWYsCiAJCWdvdG8gb3V0X3Rhc2s7CiAKIAlyZXQgPSAtRUlOVkFMOwotCS8qIGZpbGUgcG9zaXRp
-b24gbXVzdCBiZSBhbGlnbmVkICovCi0JaWYgKCpwcG9zICUgUE1fRU5UUllfQllURVMpCisJLyog
-ZmlsZSBwb3NpdGlvbiBhbmQgY291bnQgbXVzdCBiZSBhbGlnbmVkICovCisJaWYgKCgqcHBvcyAl
-IFBNX0VOVFJZX0JZVEVTKSB8fCAoY291bnQgJSBQTV9FTlRSWV9CWVRFUykpCiAJCWdvdG8gb3V0
-X3Rhc2s7CiAKIAlyZXQgPSAwOwotLSAKMS41LjMuNgoK
-------=_Part_791_16639639.1212678362473--
+dGU6IFRodSwgNSBKdW4gMjAwOCAxMDo0OTowMSAtMDQwMApTdWJqZWN0OiBbUEFUQ0hdIE1ha2Ug
+L3Byb2Mva3BhZ2V7Y291bnQsZmxhZ3N9IHJldHVybiBFSU5WQUwgKG5vdCBFSU8pIG9uIHVuYWxp
+Z25lZCByZWFkLgoKVGhpcyBpcyB3aGF0IC9wcm9jL3BpZC9wYWdlbWFwIGRvZXMsIGFuZCBzZWVt
+cyB0byBtYWtlIG1vcmUgc2Vuc2UsIGFzIHRoZQplcnJvciBpcyByZWFsbHkgdGhhdCB0aGUgcmVh
+ZCBoYWQgYW4gaW52YWxpZCBhcmd1bWVudCAobG9jYXRpb24gb3Igc2l6ZSksCm5vdCB0aGF0IHRo
+ZSB1bmRlcmx5aW5nIGRhdGEgY291bGQgbm90IGJlIGFjY2Vzc2VkLgoKU2lnbmVkLW9mZi1ieTog
+VGhvbWFzIFR1dHRsZSA8dHR1dHRsZUBnb29nbGUuY29tPgotLS0KIGZzL3Byb2MvcHJvY19taXNj
+LmMgfCAgICA0ICsrLS0KIDEgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAyIGRlbGV0
+aW9ucygtKQoKZGlmZiAtLWdpdCBhL2ZzL3Byb2MvcHJvY19taXNjLmMgYi9mcy9wcm9jL3Byb2Nf
+bWlzYy5jCmluZGV4IDVhMTYwOTAuLjdlMjc3ZjIgMTAwNjQ0Ci0tLSBhL2ZzL3Byb2MvcHJvY19t
+aXNjLmMKKysrIGIvZnMvcHJvYy9wcm9jX21pc2MuYwpAQCAtNzE2LDcgKzcxNiw3IEBAIHN0YXRp
+YyBzc2l6ZV90IGtwYWdlY291bnRfcmVhZChzdHJ1Y3QgZmlsZSAqZmlsZSwgY2hhciBfX3VzZXIg
+KmJ1ZiwKIAlwZm4gPSBzcmMgLyBLUE1TSVpFOwogCWNvdW50ID0gbWluX3Qoc2l6ZV90LCBjb3Vu
+dCwgKG1heF9wZm4gKiBLUE1TSVpFKSAtIHNyYyk7CiAJaWYgKHNyYyAmIEtQTU1BU0sgfHwgY291
+bnQgJiBLUE1NQVNLKQotCQlyZXR1cm4gLUVJTzsKKwkJcmV0dXJuIC1FSU5WQUw7CiAKIAl3aGls
+ZSAoY291bnQgPiAwKSB7CiAJCXBwYWdlID0gTlVMTDsKQEAgLTc4Miw3ICs3ODIsNyBAQCBzdGF0
+aWMgc3NpemVfdCBrcGFnZWZsYWdzX3JlYWQoc3RydWN0IGZpbGUgKmZpbGUsIGNoYXIgX191c2Vy
+ICpidWYsCiAJcGZuID0gc3JjIC8gS1BNU0laRTsKIAljb3VudCA9IG1pbl90KHVuc2lnbmVkIGxv
+bmcsIGNvdW50LCAobWF4X3BmbiAqIEtQTVNJWkUpIC0gc3JjKTsKIAlpZiAoc3JjICYgS1BNTUFT
+SyB8fCBjb3VudCAmIEtQTU1BU0spCi0JCXJldHVybiAtRUlPOworCQlyZXR1cm4gLUVJTlZBTDsK
+IAogCXdoaWxlIChjb3VudCA+IDApIHsKIAkJcHBhZ2UgPSBOVUxMOwotLSAKMS41LjMuNgoK
+------=_Part_798_26001927.1212678449278--
