@@ -1,127 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763388AbYFEBWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763498AbYFEBWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763388AbYFEBWc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 21:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762968AbYFEBV7
+	id S1763498AbYFEBWs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 21:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762985AbYFEBWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 21:21:59 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54035 "EHLO
+	Wed, 4 Jun 2008 21:22:03 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54037 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762941AbYFEBV2 (ORCPT
+	with ESMTP id S1762949AbYFEBVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 21:21:28 -0400
-Message-Id: <20080605021211.871673550@jp.fujitsu.com>
+	Wed, 4 Jun 2008 21:21:30 -0400
+Message-Id: <20080605021505.306358710@jp.fujitsu.com>
+References: <20080605021211.871673550@jp.fujitsu.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 05 Jun 2008 11:12:11 +0900
+Date: Thu, 05 Jun 2008 11:12:15 +0900
 From: kosaki.motohiro@jp.fujitsu.com
 To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: kosaki.motohiro@jp.fujitsu.com
-Subject: [PATCH 0/5] page reclaim throttle v7
+Subject: [PATCH 4/5] add throttle to shrink_zone()
+Content-Disposition: inline; filename=04-reclaim-throttle-v7.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-I post latest version of page reclaim patch series.
-
-This patch is holding up very well under usex stress test
-over 24+ hours :)
+add throttle to shrink_zone() for performance improvement and prevent incorrect oom.
 
 
-Against: 2.6.26-rc2-mm1
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
+---
+ include/linux/mmzone.h |    2 +
+ include/linux/sched.h  |    1 
+ mm/Kconfig             |   10 +++++++
+ mm/page_alloc.c        |    3 ++
+ mm/vmscan.c            |   62 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 5 files changed, 77 insertions(+), 1 deletion(-)
 
-changelog
-========================================
-  v6 -> v7
-     o rebase to 2.6.26-rc2-mm1
-     o get_vm_stat: make cpu-unplug safety.
-     o mark vm_max_nr_task_per_zone __read_mostly.
-     o add check __GFP_FS, __GFP_IO for avoid deadlock.
-     o fixed compile error on x86_64.
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -328,6 +328,8 @@ struct zone {
+ 	unsigned long		spanned_pages;	/* total size, including holes */
+ 	unsigned long		present_pages;	/* amount of memory (excluding holes) */
+ 
++	atomic_t		nr_reclaimers;
++	wait_queue_head_t	reclaim_throttle_waitq;
+ 	/*
+ 	 * rarely used fields:
+ 	 */
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3500,6 +3500,9 @@ static void __paginginit free_area_init_
+ 		zone->nr_scan_inactive = 0;
+ 		zap_zone_vm_stats(zone);
+ 		zone->flags = 0;
++		atomic_set(&zone->nr_reclaimers, 0);
++		init_waitqueue_head(&zone->reclaim_throttle_waitq);
++
+ 		if (!size)
+ 			continue;
+ 
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -74,6 +74,11 @@ struct scan_control {
+ 
+ 	int order;
+ 
++	/* Can shrink be cutted off if other task freeded enough page. */
++	int may_cut_off;
++
++	unsigned long was_freed;
++
+ 	/* Which cgroup do we reclaim from */
+ 	struct mem_cgroup *mem_cgroup;
+ 
+@@ -120,6 +125,7 @@ struct scan_control {
+ int vm_swappiness = 60;
+ long vm_total_pages;	/* The total number of pages which the VM controls */
+ 
++#define MAX_RECLAIM_TASKS CONFIG_NR_MAX_RECLAIM_TASKS_PER_ZONE
+ static LIST_HEAD(shrinker_list);
+ static DECLARE_RWSEM(shrinker_rwsem);
+ 
+@@ -1187,7 +1193,52 @@ static int shrink_zone(int priority, str
+ 	unsigned long nr_inactive;
+ 	unsigned long nr_to_scan;
+ 	unsigned long nr_reclaimed = 0;
++	int ret = 0;
++	int throttle_on = 0;
++	unsigned long freed;
++	unsigned long threshold;
++
++	/* !__GFP_IO and/or !__GFP_FS task may grab some locks.
++	   thus, if these tasks wait on other, it may cause deadlock. */
++	if ((sc->gfp_mask & (__GFP_IO | __GFP_FS)) != (__GFP_IO | __GFP_FS))
++		goto shrinking;
++
++	/* avoid recursing wait_evnet for avoid deadlock. */
++	if (current->flags & PF_RECLAIMING)
++		goto shrinking;
++
++	throttle_on = 1;
++	current->flags |= PF_RECLAIMING;
++	wait_event(zone->reclaim_throttle_waitq,
++		 atomic_add_unless(&zone->nr_reclaimers, 1, MAX_RECLAIM_TASKS));
++
++
++	/* in some situation (e.g. hibernation), shrink processing shouldn't be
++	   cut off even though large memory freeded.  */
++	if (!sc->may_cut_off)
++		goto shrinking;
++
++	/* kswapd is no related for user latency experience. */
++	if (current->flags & PF_KSWAPD)
++		goto shrinking;
++
++	/* x4 ratio mean we want rarely check.
++	   because frequently check decrease performance. */
++	threshold = ((1 << sc->order) + zone->pages_high) * 4;
++	freed = get_vm_event(PGFREE);
++
++	/* reclaim still necessary? */
++	if (scan_global_lru(sc) &&
++	    freed - sc->was_freed >= threshold) {
++		if (zone_watermark_ok(zone, sc->order, zone->pages_high,
++				      gfp_zone(sc->gfp_mask), 0)) {
++			ret = -EAGAIN;
++			goto out;
++		}
++		sc->was_freed = freed;
++	}
+ 
++shrinking:
+ 	if (scan_global_lru(sc)) {
+ 		/*
+ 		 * Add one to nr_to_scan just to make sure that the kernel
+@@ -1239,9 +1290,16 @@ static int shrink_zone(int priority, str
+ 		}
+ 	}
+ 
++out:
++	if (throttle_on) {
++		current->flags &= ~PF_RECLAIMING;
++		atomic_dec(&zone->nr_reclaimers);
++		wake_up(&zone->reclaim_throttle_waitq);
++	}
++
+ 	sc->nr_reclaimed += nr_reclaimed;
+ 	throttle_vm_writeout(sc->gfp_mask);
+-	return 0;
++	return ret;
+ }
+ 
+ /*
+@@ -1439,6 +1497,8 @@ unsigned long try_to_free_pages(struct z
+ 		.order = order,
+ 		.mem_cgroup = NULL,
+ 		.isolate_pages = isolate_pages_global,
++		.may_cut_off = 1,
++		.was_freed = get_vm_event(PGFREE),
+ 	};
+ 
+ 	return do_try_to_free_pages(zonelist, &sc);
+Index: b/mm/Kconfig
+===================================================================
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -205,3 +205,13 @@ config NR_QUICK
+ config VIRT_TO_BUS
+ 	def_bool y
+ 	depends on !ARCH_NO_VIRT_TO_BUS
++
++config NR_MAX_RECLAIM_TASKS_PER_ZONE
++	int "maximum number of reclaiming tasks at the same time"
++	default 3
++	help
++	  This value determines the number of threads which can do page reclaim
++	  in a zone simultaneously. If this is too big, performance under heavy memory
++	  pressure will decrease.
++	  If unsure, use default.
++
+Index: b/include/linux/sched.h
+===================================================================
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1510,6 +1510,7 @@ static inline void put_task_struct(struc
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
++#define PF_RECLAIMING   0x80000000      /* The task have page reclaim throttling ticket */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
 
-  v5 -> v6
-     o rebase to 2.6.25-mm1
-     o use PGFREE statics instead wall time.
-     o separate function type change patch and introduce throttle patch.
-
-  v4 -> v5
-     o rebase to 2.6.25-rc8-mm1
-
-  v3 -> v4:
-     o fixed recursive shrink_zone problem.
-     o add last_checked variable in shrink_zone for 
-       prevent corner case regression.
-
-  v2 -> v3:
-     o use wake_up() instead wake_up_all()
-     o max reclaimers can be changed Kconfig option and sysctl.
-     o some cleanups
-
-  v1 -> v2:
-     o make per zone throttle 
-
-
-
-background
-=====================================
-current VM implementation doesn't has limit of # of parallel reclaim.
-when heavy workload, it bring to 2 bad things
-  - heavy lock contention
-  - unnecessary swap out
-
-at end of last year, KAMEZAWA Hiroyuki proposed the patch of page 
-reclaim throttle and explain it improve reclaim time.
-	http://marc.info/?l=linux-mm&m=119667465917215&w=2
-
-but unfortunately it works only memcgroup reclaim.
-since, I implement it again for support global reclaim and mesure it.
-
-
-benefit
-=====================================
-<<1. fix the bug of incorrect OOM killer>>
-
-if do following commanc, sometimes OOM killer happened.
-(OOM happend about 10%)
-
- $ ./hackbench 125 process 1000
-
-because following bad scenario is happend.
-
-   1. memory shortage happend.
-   2. many task call shrink_zone at the same time.
-   3. thus, All page are isolated from LRU at the same time.
-   4. the last task can't isolate any page from LRU.
-   5. it cause reclaim failure.
-   6. it cause OOM killer.
-
-my patch is directly solution for that problem.
-
-
-<<2. performance improvement>>
-I mesure RvR Split LRU series + page reclaim throttle series performance by hackbench.
-
-result number mean seconds (i.e. smaller is better)
-
-
-                                + split_lru   improvement
-   num_group   2.6.26-rc2-mm1   + throttle    ratio
-   -----------------------------------------------------------------
-   100         28.383           28.247
-   110         31.237           30.83
-   120         33.282           33.473
-   130         36.530           37.356
-   140        101.041           44.873         >200%  
-   150        795.020           96.265         >800%
-
-
-Why this patch imrove performance?
-
-vanilla kernel get unstable performance at swap happend because
-unnecessary swap out happend freqently.
-this patch doesn't improvement best case, but be able to prevent worst case.
-thus, The average performance of hackbench increase largely.
-
+-- 
