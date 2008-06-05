@@ -1,92 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbYFERgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYFERsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759228AbYFERgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 13:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbYFERgO
+	id S1756590AbYFERsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYFERsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 13:36:14 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:63982 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752606AbYFERgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 13:36:13 -0400
-Message-ID: <fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
-Date: Thu, 5 Jun 2008 11:36:09 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
-Cc: "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Jochen Friedrich" <jochen@scram.de>,
-       "Segher Boessenkool" <segher@kernel.crashing.org>,
-       "Gary Jennejohn" <garyj@denx.de>,
-       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080605172723.GA14514@polina.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jun 2008 13:48:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53706 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752455AbYFERsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 13:48:21 -0400
+Date: Thu, 5 Jun 2008 13:44:10 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>, peterz@infradead.org,
+       Jiri Slaby <jirislaby@gmail.com>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, rjw@sisk.pl, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       herbert@gondor.apana.org.au, penberg@cs.helsinki.fi, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, pageexec@freemail.hu,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/1] x86: fix text_poke
+Message-ID: <20080605174410.GA29189@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080605161624.GA517@polina.dev.rtsoft.ru>
-	 <fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
-	 <20080605172723.GA14514@polina.dev.rtsoft.ru>
-X-Google-Sender-Auth: aeec68df67846104
+In-Reply-To: <alpine.LFD.1.10.0804251456410.2779@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Thu, Jun 05, 2008 at 10:45:17AM -0600, Grant Likely wrote:
->> On Thu, Jun 5, 2008 at 10:16 AM, Anton Vorontsov
->> <avorontsov@ru.mvista.com> wrote:
->> > Here is v3. I'm out of ideas if you won't like it. :-)
->> >
->> > v3:
->> > - Now these bindings are using bus notifiers chain, thus we adhere to the
->> >  spi bus.
->> >
->> >  By the way, this scheme (IMO) looks good for I2C devices which needs
->> >  platform_data extracted from the device tree too (Cc'ing Jochen).
->> >
->> > - Plus changed the OF bindings themselves, implemented voltage-range
->> >  property. (Pierre, please take a look at vddrange_to_ocrmask(). I
->> >  wonder if you would like this in the MMC core instead, with a kernel
->> >  doc, of course.)
->> >
->> > v2:
->> > - Bindings were adhered to the MMC_SPI driver. Withdrawn by Pierre Ossman.
->>
->> Personally I think your v2 was better, and if I'm interpreting
->> Pierre's comments correctly I think his main point is that instead of
->> using the 'stock' probe/remove hooks for the spi mmc driver, the
->> driver should be mildly reworked to provide a common block of code
->> that can be used by both the OF and non-OF versions of the
->> probe/remove routines.  I also think that is the way to go.
->
-> Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
-> host... The absence of enthusiasm I equaled to "no".
->
-> Heh.
 
-I'm allergic to USB HCD code; I was probably having convulsions under my desk.
+On Fri, 25 Apr 2008, Linus wrote:
 
-> p.s.
-> Btw, you forgot another downside of v2 approach: struct spi_driver
-> duplication... Not sure if everyone will be happy about it.
->
-> Though, v2 is only version where we can make modular OF_MMC_SPI.
+> On Fri, 25 Apr 2008, Mathieu Desnoyers wrote:
+> > The point is to provide a way to dynamically enable code at runtime
+> > without noticeable performance impact on the system.
+> 
+> Quite frankly, maybe I'm a bit dense, but why don't you just recompile the 
+> whole original function (at run-time), load that new version of a function 
+> as a mini-module, and then insert a marker at the top of the old function 
+> that just does a "jmp replacementfunction".
+> 
+> That has _zero_ cost for the non-marker case, and allows you to do pretty 
+> much any arbitrary code changes for the marker case.
+> [...]
+> Yeah, this requires you to basically recompile some function snippet when 
+> you insert a probe, but if that scares people, you could basically do it 
+> using the old code and inserting the markers and "relinking" it - avoiding 
+> the C compiler, and just basically have an "assembly recompiler".
 
-I think we've got our wires crossed.  I'm not referring to the option
-of an of_mmc_spi driver registering an mmc_spi device (which can then
-be probed by the mmc_spi_driver).  I'm referring to refactoring the
-probe/remove code so that common stuff is callable by both the mmc_spi
-and of_mmc_spi drivers without the oddity of the of_mmc_spi probe hook
-calling the mmc_spi probe hook.
+Linus, was it your intention to signal that you would veto any uses of
+the current trace_mark mechanism, and wait for this hypothetical
+function-recompilation-splicing widget as a replacement?  This is how
+some people are interpreting this old thread.
 
-Cheers,
-g.
+A number of problems with the new idea were brought up, and no one
+appears to have taken interest in trying to build it to see if they
+can be overcome or if there are more.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+On the other hand, a number of concerns with the markers have been
+dealt with since, such as performance numbers showing near-zero
+impact, and a variety of experience with the few dozen lttng markers
+and the tools that consume the data.  The current debate appears to be
+stuck on fuzzier aesthetic issues.
+
+
+How are we to move forward?  Do you see any *harm* in letting in the
+lttng markers soon?
+
+Could it be that once this "recompile function with instrumentation on
+the fly" machinery comes into existence eventually, then these exact
+same marker points could be reinterpreted as one particular potential
+instrumentation spot?  (This could be something as simple as building
+the kernel with CONFIG_MARKERS=n by default so the markers are
+compiled out, then having selected alternative functions built with
+CONFIG_MARKERS=y.)
+
+- FChE
