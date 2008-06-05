@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760732AbYFETOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbYFETRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760732AbYFETOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 15:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYFETOJ
+	id S1761220AbYFETRQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 15:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYFETRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 15:14:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52565 "EHLO mx1.redhat.com"
+	Thu, 5 Jun 2008 15:17:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35635 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752197AbYFETOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 15:14:08 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: linux1394-devel@lists.sourceforge.net
-Subject: Re: [PATCH] firewire: fw-ohci: write selfIDBufferPtr before LinkControl.rcvSelfID
-Date: Thu, 5 Jun 2008 15:13:27 -0400
-User-Agent: KMail/1.9.9
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org
-References: <tkrat.1dfeb5ce5dd30360@s5r6.in-berlin.de> <tkrat.8c942d590ea22fd3@s5r6.in-berlin.de> <tkrat.999def4a37c1ecd9@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.999def4a37c1ecd9@s5r6.in-berlin.de>
+	id S1751274AbYFETRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 15:17:03 -0400
+Message-ID: <48483BA9.1070200@garzik.org>
+Date: Thu, 05 Jun 2008 15:16:57 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Woodhouse <dwmw2@infradead.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/18] firmware: moving drivers to request_firmware()
+References: <20080605.foo@pmac.infradead.org>
+In-Reply-To: <20080605.foo@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806051513.27568.jwilson@redhat.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 June 2008 02:50:53 pm Stefan Richter wrote:
-> OHCI 1.1 clause 5.10 requires that selfIDBufferPtr is valid when a 1 is
-> written into LinkControl.rcvSelfID.
->
-> This driver bug has so far not been known to cause harm because most
-> chips obviously accept a later selfIDBufferPtr write.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+David Woodhouse wrote:
+> Ignoring the set of 'make fw->data const' patches which have mostly
+> been already posted and are fairly trivial, this is the current content
+> of the firmware tree at git.infradead.org/users/dwmw2/firmware-2.6.git
+> 
+> It starts by giving a way to build arbitrary firmware blobs into the
+> kernel while letting request_firmware() find them there, and then sets
+> about converting drivers to use request_firmware() instead of static
+> data blobs, now that we can do that without forcing the users to
+> actually  satisfy the firmware requests from userspace.
+> 
+> Rather than including binary blobs in the git tree, we carry them as
+> .ihex files -- which as an added bonus can have comments and licensing
+> information appended after the EOF record.
+> 
+> For the USB drivers which actually _want_ Intel HEX files in their
+> original form as individual records, we have a binary representation
+> of such and a tool to convert the original .HEX files into .fw files
+> in that form. And associated helpers in the kernel for validating and
+> using them. 
+> 
+> We also add a 'make firmware_install' target, which is intended to
+> install the firmware blobs into /lib/firmware/ where the userspace
+> loader to find them.
 
-I vaguely recall discussing this one before. Doesn't seem to have caused any 
-problems in practice, but yeah, should go ahead and be more spec compliant 
-here.
+Why do we need the .ihex format?
 
-Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+We should be loading firmwares exactly as they come from the vendor, 
+without any wrappers.
 
--- 
-Jarod Wilson
-jwilson@redhat.com
+	Jeff
+
+
+
+
