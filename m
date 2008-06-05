@@ -1,72 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYFEOaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbYFEOaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbYFEOaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 10:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYFEOaJ
+	id S1758981AbYFEOaq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 10:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbYFEOaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 10:30:09 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:35009 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755326AbYFEOaH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 10:30:07 -0400
-Date: Thu, 5 Jun 2008 10:29:48 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
-	buffers
-Message-ID: <20080605142948.GA25477@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-	Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-	sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
-	yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com> <20080603153050.fb99ac8a.akpm@linux-foundation.org> <20080604101925.GB16572@duck.suse.cz> <20080604111911.c1fe09c6.akpm@linux-foundation.org> <20080604212202.GA8727@mit.edu> <20080604145848.e3da6f20.akpm@linux-foundation.org> <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz> <4847CF07.1020904@hitachi.com>
+	Thu, 5 Jun 2008 10:30:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48011 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755904AbYFEOae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 10:30:34 -0400
+Message-ID: <4847F811.7060406@redhat.com>
+Date: Thu, 05 Jun 2008 10:28:33 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4847CF07.1020904@hitachi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Hideo AOKI <haoki@redhat.com>, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Kernel marker has no performance impact on ia64.
+References: <48447052.3030300@redhat.com>	 <1212445965.6269.22.camel@lappy.programming.kicks-ass.net>	 <20080602232135.GA20173@Krystal>	 <1212618449.19205.35.camel@lappy.programming.kicks-ass.net>	 <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1212653539.19205.47.camel@lappy.programming.kicks-ass.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 08:33:27PM +0900, Hidehiro Kawai wrote:
+Hi Peter and Mathieu,
+
+Peter Zijlstra wrote:
+> On Wed, 2008-06-04 at 19:22 -0400, Mathieu Desnoyers wrote:
+>> * Peter Zijlstra (peterz@infradead.org) wrote:
 > 
-> My patch doesn't change the policy.  JBD aborts the journal when
-> it detects I/O error in file data since 2.6.11.  Perhaps this patch:
-> http://marc.info/?l=linux-kernel&m=110483888632225
-> I just added missing error checkings.
+>>> So are you proposing something like:
+>>>
+>>> static inline void 
+>>> trace_sched_switch(struct task_struct *prev, struct task_struct *next)
+>>> {
+>>> 	trace_mark(sched_switch, prev, next);
+>>> }
+>>>
+>> Not exactly. Something more along the lines of
+>>
+>> static inline void 
+>> trace_sched_switch(struct task_struct *prev, struct task_struct *next)
+>> {
+>>   /* Internal tracers. */
+>>   ftrace_sched_switch(prev, next);
+>>   othertracer_sched_switch(prev, next);
+>>   /*
+>>    * System-wide tracing. Useful information is exported here.
+>>    * Probes connecting to these markers are expected to only use the
+>>    * information provided to them for data collection purpose. Type
+>>    * casting pointers is discouraged.
+>>    */
+>> 	trace_mark(kernel_sched_switch, "prev_pid %d next_pid %d prev_state %ld",
+>>     prev->pid, next->pid, prev->state);
+>> }
 > 
+> Advantage of my method would be that ftrace (and othertracer) can use
+> the same marker and doesn't need yet another hoook.
 
-Looking at the code paths touched by patch you referenced, you are
-correct.  And Andrew even signed off on it.  :-)
+If so, I'd like to suggest below changes,
 
-But if someone was only examining the patch, it wasn't obvious that
-the journal was getting aborted when the JBD layer was forcing buffers
-from t_sync_datalist to disk.  So I suspect the change went in without
-proper consideration of the net effect.  You just called it out
-explicitly in the subject line, which caused Andrew to ask some good
-questions; questions that weren't asked in 2005.
+- introduce below macro in marker.h
 
-> I agree.  I understood that there is a case where we don't want to
-> make the fs read-only when writing file data failed.  OTOH there are
-> people who want to make the fs read-only to avoid the damage from
-> expanding.  Introducing the tunable would be better.
-> I'm going to send a patch to make this behavior tunable if some of you
-> agree on this way.
+#define DEFINE_TRACE(name, vargs, args...)	\
+static inline void trace_##name vargs		\
+{						\
+	trace_mark(name, #vargs, ##args);	\
+}
 
-Note that doing this right may be tricky, since in the case where we
-aren't aborting the journal, we need to set the appropriate flags in
-the page cache so that when the user calls fsync() or close(), that
-they get the EIO error.
+- remove __marker_check_format from __trace_mark
+- and write a definition in sched_trace.h
 
-						- Ted
+DEFINE_TRACE(sched_switch, (struct task_struct *prev, struct task_struct *next),
+	     prev, next);
+
+Thus, we can remove fmt string and also ensure the type checking, because;
+- Type checking at the trace point is done by the compiler.
+- Type checking of probe handler can be done by comparing #vargs strings.
+
+Thanks,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
