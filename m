@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbYFETRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYFETRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761220AbYFETRQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 15:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYFETRE
+	id S1754954AbYFETRc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 15:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbYFETRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 15:17:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35635 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbYFETRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 15:17:05 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36258 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbYFETRD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Jun 2008 15:17:03 -0400
-Message-ID: <48483BA9.1070200@garzik.org>
-Date: Thu, 05 Jun 2008 15:16:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+Date: Thu, 5 Jun 2008 14:16:47 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] devscgroup: make white list more compact in some
+	cases
+Message-ID: <20080605191647.GA27304@us.ibm.com>
+References: <4847A7BE.5010603@openvz.org> <20080605142338.GB11919@us.ibm.com>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/18] firmware: moving drivers to request_firmware()
-References: <20080605.foo@pmac.infradead.org>
-In-Reply-To: <20080605.foo@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080605142338.GB11919@us.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> Ignoring the set of 'make fw->data const' patches which have mostly
-> been already posted and are fairly trivial, this is the current content
-> of the firmware tree at git.infradead.org/users/dwmw2/firmware-2.6.git
+Quoting Serge E. Hallyn (serue@us.ibm.com):
+> Quoting Pavel Emelyanov (xemul@openvz.org):
+> > Consider you added a 'c foo:bar r' permission to some cgroup and then
+> > (a bit later) 'c'foo:bar w' for it. After this you'll see a
+> > c foo:bar r
+> > c foo:bar w
+> > lines in a devices.list file.
+> > 
+> > Another example - consider you added 10 'c foo:bar r' permissions to
+> > some cgroup (e.g. by mistake). After this you'll see 10
+> > c foo:bar r
+> > lines in a list file.
+> > 
+> > This is weird. This situation also has one more annoying consequence. 
+> > Having many items in a white list makes permissions checking slower, 
+> > sine it has to walk a longer list.
+> > 
+> > The proposal is to merge permissions for items, that correspond to the
+> > same device.
+> > 
+> > Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 > 
-> It starts by giving a way to build arbitrary firmware blobs into the
-> kernel while letting request_firmware() find them there, and then sets
-> about converting drivers to use request_firmware() instead of static
-> data blobs, now that we can do that without forcing the users to
-> actually  satisfy the firmware requests from userspace.
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
 > 
-> Rather than including binary blobs in the git tree, we carry them as
-> .ihex files -- which as an added bonus can have comments and licensing
-> information appended after the EOF record.
+> Thanks.  I suppose if it was deemed worth it, the other thing you could
+> do would be to detect when you have a rule
 > 
-> For the USB drivers which actually _want_ Intel HEX files in their
-> original form as individual records, we have a binary representation
-> of such and a tool to convert the original .HEX files into .fw files
-> in that form. And associated helpers in the kernel for validating and
-> using them. 
+> 	c foo:bar r
 > 
-> We also add a 'make firmware_install' target, which is intended to
-> install the firmware blobs into /lib/firmware/ where the userspace
-> loader to find them.
+> and you add a rule
+> 
+> 	c foo:(all) r
 
-Why do we need the .ihex format?
+But a private email response preferred the each-entry-is-separate
+semantics, so I retract that suggestion.
 
-We should be loading firmwares exactly as they come from the vendor, 
-without any wrappers.
-
-	Jeff
-
-
-
-
+-serge
