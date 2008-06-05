@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbYFEMA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYFEMHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbYFEMA3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 08:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbYFEMAQ
+	id S1757336AbYFEMHR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 08:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbYFEMHC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 08:00:16 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:48896 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755976AbYFEMAO (ORCPT
+	Thu, 5 Jun 2008 08:07:02 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:41857 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756134AbYFEMHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 08:00:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sodxIl550tmIAMas/NGsEFIWI3vHBcdUcmp626qKnq+8PGYvj08RM5Cynx0pbB1e56
-         rWOkIPW31V8UnTzeBr0pJYciUEpxW0iqFk3e9jWjMJF1NUlta6wFJ92JrfvAjUrY5TOx
-         BpZhfCxzVNFQRpVjS+GfcNgdLBH/7KCzCovhE=
-Message-ID: <87a5b0800806050500pa48f081j75fa58e696ed8cc8@mail.gmail.com>
-Date: Thu, 5 Jun 2008 13:00:03 +0100
-From: "Will Newton" <will.newton@gmail.com>
-To: me@felipebalbi.com
-Subject: Re: [PATCH] fsl_usb2_udc: Add a wmb before priming endpoint.
-Cc: linux-usb@vger.kernel.org,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>, leoli@freescale.com
-In-Reply-To: <20080603172415.GB29125@kedavra.cpe.vivax.com.br>
+	Thu, 5 Jun 2008 08:07:00 -0400
+X-BigFish: VPS11(z2d9bozzz10d3izzz32i6bh43j66h)
+X-Spam-TCS-SCL: 5:0
+X-WSS-ID: 0K1ZOB6-01-8BJ-01
+Date: Thu, 5 Jun 2008 14:05:57 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: fix compile warning in io_apic_{32,64}.c
+Message-ID: <20080605120557.GB14755@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-References: <87a5b0800806030820i16b36366qf199e1c56d729fbe@mail.gmail.com>
-	 <20080603172415.GB29125@kedavra.cpe.vivax.com.br>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 05 Jun 2008 12:05:53.0204 (UTC) FILETIME=[80A34740:01C8C704]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 3, 2008 at 6:24 PM, Felipe Balbi <me@felipebalbi.com> wrote:
-> On Tue, Jun 03, 2008 at 04:20:25PM +0100, Will Newton wrote:
->> Add a wmb to fsl_queue_td before priming the endpoint. This ensures that the
->> modifications to the QH are seen by the hardware.
->>
->> Signed-off-by: Will Newton <will.newton@gmail.com>
->> ---
->>  drivers/usb/gadget/fsl_usb2_udc.c |    2 ++
->>  1 files changed, 2 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/usb/gadget/fsl_usb2_udc.c
->> b/drivers/usb/gadget/fsl_usb2_udc.c
->> index 1868754..dd06a5b 100644
->> --- a/drivers/usb/gadget/fsl_usb2_udc.c
->> +++ b/drivers/usb/gadget/fsl_usb2_udc.c
->> @@ -653,6 +653,8 @@ static int fsl_queue_td(struct fsl_ep *ep, struct
->> fsl_req *req)
->>                       | EP_QUEUE_HEAD_STATUS_HALT));
->>       dQH->size_ioc_int_sts &= temp;
->>
->> +     wmb();
->
-> checkpatch.pl will complain that there's not comment above the memory
-> barrier. Could you just add it and in one line summarize why wmb()??
+Commit 05f2d12c3563dea8c81b301f9f3cf7919af23b13
+(x86: change GET_APIC_ID() from an inline function to an out-of-line function)
 
-Yes, I'll do that and resend the patch along with the rest of the series I have.
+introduced a compile warning
 
-My checkpatch does not seem to complain about the missing comment btw.
+arch/x86/kernel/io_apic_64.c: In function 'print_local_APIC':
+arch/x86/kernel/io_apic_64.c:1152: warning: 'v' is used uninitialized in this function
+
+in some debug code -- which is not enabled by default.
+This patch reverts the code changes in print_local_APIC.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+
+--
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index a40d54f..9a3446f 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -1489,8 +1489,8 @@ void /*__init*/ print_local_APIC(void * dummy)
+ 
+ 	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
+ 		smp_processor_id(), hard_smp_processor_id());
+-	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v,
+-			GET_APIC_ID(read_apic_id()));
++	v = apic_read(APIC_ID);
++	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(v));
+ 	v = apic_read(APIC_LVR);
+ 	printk(KERN_INFO "... APIC VERSION: %08x\n", v);
+ 	ver = GET_APIC_VERSION(v);
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index ef1a8df..59ed52c 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -1077,7 +1077,8 @@ void __apicdebuginit print_local_APIC(void * dummy)
+ 
+ 	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
+ 		smp_processor_id(), hard_smp_processor_id());
+-	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(read_apic_id()));
++	v = apic_read(APIC_ID);
++	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(v));
+ 	v = apic_read(APIC_LVR);
+ 	printk(KERN_INFO "... APIC VERSION: %08x\n", v);
+ 	ver = GET_APIC_VERSION(v);
+
+
+
+
