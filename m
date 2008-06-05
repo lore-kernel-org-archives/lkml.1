@@ -1,103 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758512AbYFEPW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYFEP1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758512AbYFEPW5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759591AbYFEPWc
+	id S1758128AbYFEP1s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbYFEP1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:22:32 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46847 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759556AbYFEPWa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:22:30 -0400
-Date: Thu, 5 Jun 2008 16:22:28 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Geoffrey Wossum <geoffrey@pager.net>, kernel@avr32linux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: AT32 ASoC Driver Patches on alsa-devel
-Message-ID: <20080605152228.GA24014@rakim.wolfsonmicro.main>
-Mail-Followup-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-	Geoffrey Wossum <geoffrey@pager.net>, kernel@avr32linux.org,
-	linux-kernel@vger.kernel.org
-References: <200806050851.47319.geoffrey@pager.net> <20080605162206.0a34a54e@hskinnemo-gx745.norway.atmel.com>
+	Thu, 5 Jun 2008 11:27:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:50805 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbYFEP1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 11:27:40 -0400
+Message-ID: <484805C4.7030809@goop.org>
+Date: Thu, 05 Jun 2008 16:27:00 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080605162206.0a34a54e@hskinnemo-gx745.norway.atmel.com>
-X-Cookie: Violence is molding.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Cliff Wickman <cpw@sgi.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH 1/1] x86 atomic operations: atomic_or_long atomic_inc_short
+References: <E1K3zfZ-0002Bj-8P@eag09.americas.sgi.com>
+In-Reply-To: <E1K3zfZ-0002Bj-8P@eag09.americas.sgi.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 04:22:06PM +0200, Haavard Skinnemoen wrote:
+Cliff Wickman wrote:
+> From: Cliff Wickman <cpw@sgi.com>
+>
+> Provide atomic operations for increment of a 16-bit integer and
+> logical OR into a 64-bit integer.
+>
+> [ This patch was split off of patch:
+>     SGI UV: TLB shootdown using broadcast assist unit
+>   and improved with advice from Jeremy Fitzhardinge <jeremy@goop.org> ]
+>
+> Diffed against 2.6.26-rc4
+>
+> Signed-off-by: Cliff Wickman <cpw@sgi.com>
+>   
+Reviewed-by: Jeremy Fitzhardinge <jeremy@goop.org>
 
-> I have to admit I don't understand the current sound situation at all.
-> With this driver, we now have:
->   * A "regular" ALSA driver for the AC97C (not based on ASoC)
->   * Two different "generic" AC97 layers: one in sound/pci/ac97 and one
->     in sound/soc/ac97 (the AC97C driver uses the former)
+> ---
+>  include/asm-x86/atomic_64.h |   26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>
+> Index: linux/include/asm-x86/atomic_64.h
+> ===================================================================
+> --- linux.orig/include/asm-x86/atomic_64.h
+> +++ linux/include/asm-x86/atomic_64.h
+> @@ -431,6 +431,32 @@ static inline int atomic64_add_unless(at
+>  	return c != (u);
+>  }
+>  
+> +/**
+> + * atomic_inc_short - increment of a short integer
+> + * @v: pointer to type int
+> + *
+> + * Atomically adds 1 to @v
+> + * Returns the new value of @u
+> + */
+> +static inline short int atomic_inc_short(short int *v)
+> +{
+> +	asm(LOCK_PREFIX "addw $1, %0" : "+m" (*v));
+> +	return *v;
+> +}
+> +
+> +/**
+> + * atomic_or_long - OR of two long integers
+> + * @v1: pointer to type unsigned long
+> + * @v2: pointer to type unsigned long
+> + *
+> + * Atomically ORs @v1 and @v2
+> + * Returns the result of the OR
+> + */
+> +static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
+> +{
+> +	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
+> +}
+> +
+>  #define atomic64_inc_not_zero(v) atomic64_add_unless((v), 1, 0)
+>  
+>  /* These are x86-specific, used by some header files */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
-There is AC97 support in ASoC but there's no sound/soc/ac97?  Briefly,
-the generic ALSA AC97 support is focused on handling standard AC97 parts
-without additional features while the ASoC layer requires more per-board
-setup but supports codecs with large extensions to the AC97 standard
-such as the additional of secondary I2S interfaces that can't readily be
-accomodated in the vanilla AC97 driver.
-
-For systems using only AC97 codecs with only small non-standard features
-the vanilla AC97 driver provides a turnkey solution with no machine
-specific code at all.  It should be possible to implement it in terms of
-ASoC but nobody has tried yet and it's not 100% clear that it's worth
-the code churn.
-
->   * An OSS driver for the AP7000 Audio Bitstream DAC
->   * An i2s driver for the AT73C213 chip using the SSC controller and SPI
-
-These drivers will be working in the way people were doing embedded
-audio prior to ASoC.  Support for each system was provided by a
-monolithic driver which implemented support for the codec, the audio
-controller on the SoC and any other components on the board.  This
-resulted in a lot of redundancy since multiple systems using the same
-components would find it hard to share code for them and the
-abstractions providing the reuse that did exist often ended up getting
-done multiple times.
-
-ASoC improves code reuse here by separating out the support for codecs
-and SoC CPUs from the machine drivers, providing a layer for gluing them
-together and fitting them into the ALSA core.  An ASoC machine driver
-can be little more than the equivalent of "I have a codec of this type
-connected to this I2S interface on my CPU and clocked in this way" but
-it can support more complex scenarios.
-
-It also provides a generic power management infrastructure for these
-systems, allowing unused parts of the audio subsystem to be put into low
-power states when they are not being used as part of an active audio
-path.
-
->   * Another SSC driver based on the ASoC layer
->   * Some sort of "AT32 PCM" layer which apparently can only be used
->     with the SSC controller
->   * The above two being essentially identical to similar drivers for
->     AT91
-
-These drivers provide the CPU side support for the system within ASoC.
-I suspect from what you are saying that the two Atmel ASoC platform
-driver sets could be implemented with a common core with some per-CPU
-glue to plug them together but I've never looked at either platform in
-sufficient detail.
-
-The PCM layer in these drivers represents the DMA controller part of the
-SoC hardware - the DMA control is split out in ASoC because most SoCs
-have generic DMA engines which are shared between multiple audio
-interface controllers (eg, I2S and AC97) so there's no point in
-repeating the code to glue them into ALSA DMA.
-
-> Can someone please help me out here? In particular, what is ASoC and
-> why should I want to use it?
-
-Hopefully I answered that above.  There's a more detailed overview in
-Documentation/sound/alsa/soc/overview.txt:
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/sound/alsa/soc/overview.txt;h=1e4c6d3655f2089c875ff381759ebd5528fe2ad3;hb=HEAD
