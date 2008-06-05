@@ -1,148 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYFERK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbYFERKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbYFERK0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 13:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYFERKR
+	id S1758096AbYFERKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYFERKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 5 Jun 2008 13:10:20 -0400
+Received: from mail.pager.net ([209.253.16.26]:36092 "EHLO barracuda.pager.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752427AbYFERKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Jun 2008 13:10:17 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:24511 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751386AbYFERKP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 13:10:15 -0400
-Date: Thu, 5 Jun 2008 21:10:13 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Marc Pignat <marc.pignat@hevs.ch>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net
-Subject: [PATCH] mmc: toughen get_ro() and get_cd() return values
-Message-ID: <20080605171013.GA10513@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080523154204.GA19803@polina.dev.rtsoft.ru> <200806031207.49843.marc.pignat@hevs.ch> <20080605144310.GA31596@polina.dev.rtsoft.ru> <200806051759.00202.marc.pignat@hevs.ch>
+X-ASG-Debug-ID: 1212685816-683d00390000-xx1T2L
+X-Barracuda-URL: http://192.168.1.240:8000/cgi-bin/mark.cgi
+From: Geoffrey Wossum <geoffrey@pager.net>
+Organization: Long Range Systems
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+X-ASG-Orig-Subj: Re: AT32 ASoC Driver Patches on alsa-devel
+Subject: Re: AT32 ASoC Driver Patches on alsa-devel
+Date: Thu, 5 Jun 2008 12:10:47 -0500
+User-Agent: KMail/1.9.9
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
+References: <200806050851.47319.geoffrey@pager.net> <200806051000.56969.geoffrey@pager.net> <20080605182409.6285ee4b@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <20080605182409.6285ee4b@hskinnemo-gx745.norway.atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200806051759.00202.marc.pignat@hevs.ch>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200806051210.47986.geoffrey@pager.net>
+X-Barracuda-Connect: UNKNOWN[192.168.1.1]
+X-Barracuda-Start-Time: 1212685816
+X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at pager.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the sake of safety, document that drivers should return only
-1 or 0 from the get_ro() and get_cd() callbacks. Also document context
-in which these callbacks should be executed.
+On Thursday 05 June 2008 11:24:09 am Haavard Skinnemoen wrote:
+> Geoffrey Wossum <geoffrey@pager.net> wrote:
+> > On Thursday 05 June 2008 09:22:06 am Haavard Skinnemoen wrote:
+> > > Geoffrey Wossum <geoffrey@pager.net> wrote:
 
-wbsd driver modified to comply with this requirement.
+> > To paraphrase Andy Tanenbaum, the great thing about standards is there's
+> > so many to choose from.
+>
+> Heh.
 
-Also, fix mmc_spi driver to not return raw values from the platform
-get_cd hook (oops).
+I quote that a lot.  Along with Philip K. Dicks's "Sometimes an appropriate 
+response to reality is to go insane."
 
-Suggested-by: Marc Pignat <marc.pignat@hevs.ch>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Hmm...I take it you're talking about the SSC driver? That is supposed
+> to be usable on AT91 as well, so perhaps the right thing to do is
+> porting the AT91 driver over to use it.
+
+Yes, the SSC code.  It'd be cool if it abstracted out even more, but I 
+understand the difficulties in making that happen.
+
+> I see you've added a few SSC-related constants...those should probably
+> go into include/linux/atmel-ssc.h.
+
+I wasn't sure if having these in atmel-ssc.h fit with ya'lls plans for it, but 
+if it does, great.
+
+
+> >  But I needed an AT32 layer quickly, and I don't
+> > have any AT91 hardware, so I couldn't really go mucking about in the AT91
+> > code since I wouldn't be able to test it.  I don't feel especially bad,
+> > though, since at91_mci.c and atmel-mci.c commit essentially the same sin.
+>
+> Yeah, I guess you're right. I do have a long-term goal merging those
+> two drivers, but it will be a bit difficult because the DMA interface
+> is quite different.
+
+The PDC interface is closer (if not exactly the same).  One issue is the SSC 
+interface, which you have said could be used on the AT91.  After that, the 
+main differences are that the DMA buffer has to be allocated differently, and 
+the mmap() implementation is different.
+
+> That's certainly a good reason, though I don't understand why reusing
+> code isn't important on non-SoC platforms.
+
+Please don't take my answer as authoritative, but I think it's because on a 
+typical PC the exact CODEC being used tends to be hidden from you.  And you 
+normally don't use I2S or PCM directly.  A PC sound card is more of a black 
+box.
+
+> Another good reason, but again I don't understand why power management
+> isn't important on PCs.
+
+It is important, and becoming more important all the time.  I think the main 
+reasons this isn't a priority on a PC right now are:
+ - I think PC sound cards tend to be black boxes regarding power consumption, 
+especially those white box cards you can get at Fry's and similar places.   
+ - A few extra mA aren't as important when you're plugged in, or you have a 
+laptop, which has a honkin' big battery compared to a PDA type device
+ - A few extra mA are dwarfed by other things in a PC, like the processor.  My 
+Intel T7200 burns 34 W at full tilt.  The AT32AP7000 is going to be something 
+like, what, 250 mW?  Even throttled all the way down my T7200 is going to be 
+13 W.  Turning off all or part of the CODEC and saving 15 - 30 mW is a lot 
+bigger deal on the AVR32 than it would be on my laptop.
+ - As you say, there is more code due to the power management, which requires 
+modifying a lot of working drivers, for little benefit in the forseeable 
+future.
+
 ---
+Geoffrey
 
-On Thu, Jun 05, 2008 at 05:58:59PM +0200, Marc Pignat wrote:
-[...]
-> > >  * get_ro will return:
-> > >  *   0 for a read/write card
-> > >  *   1 for a read-only card 
-> > 
-> > This isn't always practical. For example, host is using u8 register for
-> > the status, so it might safely return u8 & mask, that will always fit
-> > into int. Or very smart/adventurous authors might be aware that, for the
-> > particular host, mask's bit isn't last, and safely do uXX & mask. :-)
-> > 
-> > The above is weak argument of course, since it is about optimization.
-> 
-> Ack, we will gain at most 1-4 assembly instructions, in a function that
-> is unlikely to be called more than once a second.
-> 
-> > 
-> > As an counter-evidence, the strict scheme that you described probably
-> > less error prone. But is it? To implement it we'll need something like
-> > WARN_ON(ret > 0 && ret != 1) to catch erroneous users. Take a closer
-> > look though, will it catch uXX & lastbit case? Nope. :-)
-> 
-> WARN_ON(ret > 0 && ret != 1 || ret == INT_MIN) will do ;)
-> 
-> I agree with you once more, I never thinked about a runtime check.
-> 
-> I don't really want to see a WARN_ON(foo) after each call to get_ro or get_cd.
-> 
-> But I'm sure if we specify "give me a positive value when a card is detected",
-> someone will write gpio & bit, and three years later, someone will fall in
-> the (gpio & lastbit < 0 case).
-> 
-> So we should specify: "give me 1 whan a card is present, 0 when not, -ENOSYS if
-> you don't know and a negative errno when something else goes wrong".
 
-Well, ok.
-
-Pierre, I see you didn't yet pushed out the mmc tree, so.. would you
-prefer this patch folded into 0/3 series and resent?
-
- drivers/mmc/host/mmc_spi.c |    2 +-
- drivers/mmc/host/wbsd.c    |    2 +-
- include/linux/mmc/host.h   |   16 ++++++++++++++--
- 3 files changed, 16 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/mmc/host/mmc_spi.c b/drivers/mmc/host/mmc_spi.c
-index 85d9853..4e82f64 100644
---- a/drivers/mmc/host/mmc_spi.c
-+++ b/drivers/mmc/host/mmc_spi.c
-@@ -1139,7 +1139,7 @@ static int mmc_spi_get_cd(struct mmc_host *mmc)
- 	struct mmc_spi_host *host = mmc_priv(mmc);
- 
- 	if (host->pdata && host->pdata->get_cd)
--		return host->pdata->get_cd(mmc->parent);
-+		return !!host->pdata->get_cd(mmc->parent);
- 	return -ENOSYS;
- }
- 
-diff --git a/drivers/mmc/host/wbsd.c b/drivers/mmc/host/wbsd.c
-index be624a0..9283b85 100644
---- a/drivers/mmc/host/wbsd.c
-+++ b/drivers/mmc/host/wbsd.c
-@@ -939,7 +939,7 @@ static int wbsd_get_ro(struct mmc_host *mmc)
- 
- 	spin_unlock_bh(&host->lock);
- 
--	return csr & WBSD_WRPT;
-+	return !!(csr & WBSD_WRPT);
- }
- 
- static const struct mmc_host_ops wbsd_ops = {
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index ef3b773..753b723 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -56,8 +56,20 @@ struct mmc_host_ops {
- 	 * since underlaying controller might implement them in an expensive
- 	 * and/or slow way.
- 	 *
--	 * .get_ro and .get_cd should return >= 0 for their logical values,
--	 * or negative errno value in case of error.
-+	 * Also note that these functions might sleep, so don't call them
-+	 * in the atomic contexts!
-+	 *
-+	 * Return values for the get_ro callback should be:
-+	 *   0 for a read/write card
-+	 *   1 for a read-only card
-+	 *   -ENOSYS when not supported (equal to NULL callback)
-+	 *   or a negative errno value when something bad happened
-+	 *
-+	 * Return values for the get_ro callback should be:
-+	 *   0 for a absent card
-+	 *   1 for a present card
-+	 *   -ENOSYS when not supported (equal to NULL callback)
-+	 *   or a negative errno value when something bad happened
- 	 */
- 	void	(*set_ios)(struct mmc_host *host, struct mmc_ios *ios);
- 	int	(*get_ro)(struct mmc_host *host);
--- 
-1.5.5.1
 
