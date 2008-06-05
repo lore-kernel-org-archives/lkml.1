@@ -1,60 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbYFEK4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756619AbYFEK7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234AbYFEK4l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 06:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbYFEK4e
+	id S1756619AbYFEK7a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 06:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYFEK7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 06:56:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:32503 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754182AbYFEK4d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 06:56:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=ltBwKfmTXxrGtQFcxP9j8/rtkGYQz5B8MmP04wPjh1J3hZxxjYV3Ckb+xoJ7x7a7bf
-         xYbYLffcXQ3LoxfDARi0d1bovysjou8iaD13SWEMEhgG5vFIbXJroQxCpEC/saAXxU9Z
-         GVaGxdFZFj8MHNp/3phFPDZjLKJaguOqlKJoA=
-Message-ID: <2f11576a0806050356ua1d86fo3a46863d21f195f5@mail.gmail.com>
-Date: Thu, 5 Jun 2008 19:56:32 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH] introduce task cgroup (#task restrictioon for prevent fork bomb by cgroup)
-Cc: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
-       "Li Zefan" <lizf@cn.fujitsu.com>, "Paul Menage" <menage@google.com>
-In-Reply-To: <20080605142320.cdc8b21a.nishimura@mxp.nes.nec.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jun 2008 06:59:22 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35869 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753030AbYFEK7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 06:59:21 -0400
+Date: Thu, 5 Jun 2008 13:00:02 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: RFC [PATCH] x86: make generic arch support NUMAQ
+Message-ID: <20080605110002.GB17961@uranus.ravnborg.org>
+References: <200806050309.11197.yhlu.kernel@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080605142320.cdc8b21a.nishimura@mxp.nes.nec.co.jp>
-X-Google-Sender-Auth: ef3a1ab01f83f428
+In-Reply-To: <200806050309.11197.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nishimura-san,
+Hi Yinghai Lu.
 
-Thanks good point out.
+Some random comments after skimming through the diff.
 
->> +#include <linux/res_counter.h>
-> I don't think it's needed.
-> Or, are you planning to implement this feature by using res_counter?
+In general I like the simplification moving numaq.
+But there is too much ifdef going on - and it
+can be done better.
+Part of this may belong in a followup patch - other parts
+should be addressed in this patch.
 
-your are right.
-my early version use res_counter, but it isn't used currently.
+> +#if defined(CONFIG_X86_NUMAQ) || defined(CONFIG_X86_GENERICARCH)
+
+I counted several places where you test for the above.
+Introducing a CONFIG_X86_NUMAQ_OR_GENERIC would simplify stuff.
 
 
->> +     spin_lock(&taskcg->lock);
->> +     if (max_tasks < taskcg->nr_tasks)
->> +             return -EBUSY;
-> need spin_unlock().
+> -obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+> +
+> +ifeq ($(CONFIG_X86_NUMAQ), y)
+> +obj-y				+= numaq_32.o
+> +else
+> +ifeq ($(CONFIG_X86_GENERICARCH), y)
+> +obj-$(CONFIG_NUMA)		+= numaq_32.o
+> +endif
+> +endif
 
-Yes, of cource.
-I'll fix it.
+Can we move these dependencies to Kconfig?
+It should looks roughtly like this in the Makefile:
 
-Thanks!
+obj-$(CONFIG_X86_NUMAQ)           += numaq_32.o
+obj-$(CONFIG_X86_NUMA_OR_GENERIC) += numaq_32.o
+
+
+> -#ifndef CONFIG_X86_NUMAQ
+>  static void __init setup_ioapic_ids_from_mpc(void)
+>  {
+>  	union IO_APIC_reg_00 reg_00;
+> @@ -1725,6 +1724,11 @@ static void __init setup_ioapic_ids_from_mpc(void)
+>  	unsigned char old_id;
+>  	unsigned long flags;
+>  
+> +#if defined(CONFIG_X86_NUMAQ) || defined(CONFIG_X86_GENERICARCH)
+> +	if (found_numaq)
+> +		return;
+> +#endif
+This ifdef should be found in a .h file defining a simple inline.
+Then you could just do:
+	if (found_numaq())
+		return;
+
+> +
+> +int mp_bus_id_to_node[MAX_MP_BUSSES];
+> +
+> +int mp_bus_id_to_local[MAX_MP_BUSSES];
+
+static? and introduce helper functions with proper
+prototypes in a .h file?
+
+> +++ b/arch/x86/mach-generic/probe.c
+> @@ -16,6 +16,9 @@
+>  #include <asm/apicdef.h>
+>  #include <asm/genapic.h>
+>  
+> +#ifdef CONFIG_NUMA
+> +extern struct genapic apic_numaq;
+> +#endif
+
+No reason to use ifdef araound a extern.
+
+> diff --git a/arch/x86/pci/Makefile_32 b/arch/x86/pci/Makefile_32
+> index 89ec35d..88d6fcc 100644
+> --- a/arch/x86/pci/Makefile_32
+> +++ b/arch/x86/pci/Makefile_32
+> @@ -16,7 +16,13 @@ pci-y				+= legacy.o irq.o
+>  # Careful: VISWS and NUMAQ overrule the pci-y above. The colons are
+>  # therefor correct. This needs a proper fix by distangling the code.
+>  pci-$(CONFIG_X86_VISWS)		:= visws.o fixup.o
+> -pci-$(CONFIG_X86_NUMAQ)		:= numa.o irq.o
+> +
+> +ifeq ($(CONFIG_X86_NUMAQ), y)
+> +pci-y				:= numa.o irq.o
+> +endif
+> +ifeq ($(CONFIG_X86_GENERICARCH), y)
+> +pci-y				+= numa.o
+> +endif
+
+Use:
+pci-$(CONFIG_X86_NUMAQ)       :=  numa.o irq.o
+pci-$(CONFIG_X86_GENERICARCH) += numa.o
+
+
+> diff --git a/arch/x86/pci/numa.c b/arch/x86/pci/numa.c
+> index d9afbae..a4ff536 100644
+> --- a/arch/x86/pci/numa.c
+> +++ b/arch/x86/pci/numa.c
+> @@ -11,38 +11,18 @@
+>  #define XQUAD_PORTIO_BASE 0xfe400000
+>  #define XQUAD_PORTIO_QUAD 0x40000  /* 256k per quad. */
+>  
+> -int mp_bus_id_to_node[MAX_MP_BUSSES];
+> +extern int mp_bus_id_to_node[MAX_MP_BUSSES];
+>  #define BUS2QUAD(global) (mp_bus_id_to_node[global])
+>  
+> -int mp_bus_id_to_local[MAX_MP_BUSSES];
+> +extern int mp_bus_id_to_local[MAX_MP_BUSSES];
+>  #define BUS2LOCAL(global) (mp_bus_id_to_local[global])
+
+Move extern to .h file and consider introducing a helper function.
+
+> --- a/include/asm-x86/mmzone_32.h
+> +++ b/include/asm-x86/mmzone_32.h
+> @@ -12,9 +12,10 @@
+>  extern struct pglist_data *node_data[];
+>  #define NODE_DATA(nid)	(node_data[nid])
+>  
+> -#ifdef CONFIG_X86_NUMAQ
+> +#if defined(CONFIG_X86_NUMAQ) || defined(CONFIG_X86_GENERICARCH)
+>  	#include <asm/numaq.h>
+> -#elif defined(CONFIG_ACPI_SRAT)/* summit or generic arch */
+> +#endif
+> +#if defined(CONFIG_ACPI_SRAT)/* summit or generic arch */
+>  	#include <asm/srat.h>
+>  #endif
+
+Move ifdef to .h files.
+If at all needed.
+
+> +#if defined(CONFIG_ACPI_SRAT)
+>  	if (get_memcfg_from_srat())
+>  		return;
+>  #endif
+
+Create a dummy inline in a .h file for this function
+so we can drop the ifdef here.
+
+
+	Sam
