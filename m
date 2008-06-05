@@ -1,44 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760907AbYFESr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761157AbYFESt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760907AbYFESr2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYFESrT
+	id S1761157AbYFESt7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbYFEStu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:47:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49493 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753216AbYFESrS (ORCPT
+	Thu, 5 Jun 2008 14:49:50 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45251 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754277AbYFESts (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:47:18 -0400
-Date: Thu, 5 Jun 2008 11:42:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Cc: tigran@aivazian.fsnet.co.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Remove BKL from the bfs driver
-Message-Id: <20080605114213.239d66aa.akpm@linux-foundation.org>
-In-Reply-To: <1212690397-25693-1-git-send-email-dmitri.vorobiev@movial.fi>
-References: <1212690397-25693-1-git-send-email-dmitri.vorobiev@movial.fi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jun 2008 14:49:48 -0400
+Date: Thu, 05 Jun 2008 12:49:41 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data	buffers
+In-reply-to: <20080605092006.ba7dceef.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, Jan Kara <jack@suse.cz>,
+       sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Message-id: <20080605184941.GX2961@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20080603153050.fb99ac8a.akpm@linux-foundation.org>
+ <20080604101925.GB16572@duck.suse.cz>
+ <20080604111911.c1fe09c6.akpm@linux-foundation.org>
+ <20080604212202.GA8727@mit.edu>
+ <20080604145848.e3da6f20.akpm@linux-foundation.org>
+ <20080604225155.GB8727@mit.edu> <20080605093536.GE27370@duck.suse.cz>
+ <4847CF07.1020904@hitachi.com> <20080605142948.GA25477@mit.edu>
+ <20080605092006.ba7dceef.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  5 Jun 2008 21:26:35 +0300
-Dmitri Vorobiev <dmitri.vorobiev@movial.fi> wrote:
+On Jun 05, 2008  09:20 -0700, Andrew Morton wrote:
+> On Thu, 5 Jun 2008 10:29:48 -0400 Theodore Tso <tytso@mit.edu> wrote:
+> > On Thu, Jun 05, 2008 at 08:33:27PM +0900, Hidehiro Kawai wrote:
+> > > 
+> > > My patch doesn't change the policy.  JBD aborts the journal when
+> > > it detects I/O error in file data since 2.6.11.  Perhaps this patch:
+> > > http://marc.info/?l=linux-kernel&m=110483888632225
+> > > I just added missing error checkings.
+> > 
+> > Looking at the code paths touched by patch you referenced, you are
+> > correct.  And Andrew even signed off on it.  :-)
+> > 
+> > But if someone was only examining the patch, it wasn't obvious that
+> > the journal was getting aborted when the JBD layer was forcing buffers
+> > from t_sync_datalist to disk.  So I suspect the change went in without
+> > proper consideration of the net effect.  You just called it out
+> > explicitly in the subject line, which caused Andrew to ask some good
+> > questions; questions that weren't asked in 2005.
+> 
+> Sigh. An object lesson in the value of good changelogging :(
 
-> This removes quite a few instances of BKL usage in the bfs
-> driver. Given the purpose and the user base of this driver,
-> I do not believe that a finer-granularity lock than the big
-> fat filesystem-wide mutex I have implemented here is needed.
+... and the value of "diff -p" so it is clear what function is being changed.
 
-How well tested was this?  With lockdep enabled?
+> I guess we need to undo this.  And yes, propagating errors into AS_EIO
+> is the way.  I guess that's safe without holding lock_page(), as long
+> as the bh is pinned.
 
-Because the new mutex cannot be taken recursively, whereas the BKL can.
-And there's potential for ab/ba deadlocks with, for example, i_mutex.
+Something like the following instead if -EIO and journal abort:
 
-However I don't see any such problems from a moderately intensive
-review.
+		if (!buffer_uptodate(bh)) {
+			set_bit(AS_EIO, &bh->b_page->mapping->flags);
+			SetPageError(bh->b_page);
+		}
+
+It seems end_buffer_async_write() does this already, but
+journal_do_submit_data() uses end_buffer_write_sync() and it does not
+do either of those operations.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
