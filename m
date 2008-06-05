@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYFEIdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYFEIh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbYFEIdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 04:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYFEIdH
+	id S1754617AbYFEIh0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 04:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYFEIhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 04:33:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44594 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbYFEIdG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 04:33:06 -0400
-Date: Thu, 05 Jun 2008 17:31:50 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: [PATCH -mm 11/14] bootmem: respect goal more likely
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <87abi0semc.fsf@saeurebad.de>
-References: <20080605115235.6453.E1E9C6FF@jp.fujitsu.com> <87abi0semc.fsf@saeurebad.de>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080605170323.645F.E1E9C6FF@jp.fujitsu.com>
+	Thu, 5 Jun 2008 04:37:13 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49224 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751721AbYFEIhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 04:37:12 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1++3MUf2Dy+yCNdfNr96ixqH2qymYjkyJGXhRld8E
+	GP5YsveZAk8ILg
+Date: Thu, 5 Jun 2008 10:37:21 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: linux-kernel@vger.kernel.org
+cc: dbrownell@users.sourceforge.net, eric miao <eric.miao@marvell.com>,
+       spi-devel-general@lists.sourceforge.net
+Subject: [PATCH] spi: fix list scan success verification in PXA ssp driver
+Message-ID: <Pine.LNX.4.64.0806051027340.6598@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The list search success check in arch/arm/mach-pxa/ssp.c is wrong: for 
+example, it didn't recognise failure for me when I requested port 0.
 
-I gotcha!  :-)
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
- 	max -= PFN_DOWN(bdata->node_boot_start);
- 	start -= PFN_DOWN(bdata->node_boot_start);
-+	fallback -= PFN_DOWN(bdata->node_boot_start);
+---
+
+ arch/arm/mach-pxa/ssp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/arch/arm/mach-pxa/ssp.c
+===================================================================
+--- linux-2.6.orig/arch/arm/mach-pxa/ssp.c	2008-06-04 12:11:26.000000000 +0200
++++ linux-2.6/arch/arm/mach-pxa/ssp.c	2008-06-04 12:11:50.000000000 +0200
+@@ -330,7 +330,7 @@
  
- 	if (bdata->last_success > start) {
--		/* Set goal here to trigger a retry on failure */
--		start = goal = ALIGN(bdata->last_success, step);
-+		fallback = start; -------------------------------- (*)
-+		start = ALIGN(bdata->last_success, step);
- 	}
-
-(*) is root cause. "fallback" is set as 0, because start is index of bitmap
-at here. When normal zone is allocated first, and DMA zone is required by
-alloc_bootmem_low() later and first page is free yet, fallback is set as 0.
-
-+	if (fallback) {
-+		start = ALIGN(fallback, step);
-+		fallback = 0;
-+		goto find_block;
-+	}
-+
-
-As a result, this retry code is skipped, and alloc_bootmem_low() fails. 
-So, when I change here from fallback to a retry_flag, my box can boot up.
-
-Thanks.
--- 
-Yasunori Goto 
-
+ 	mutex_unlock(&ssp_lock);
+ 
+-	if (ssp->port_id != port)
++	if (&ssp->node == &ssp_list)
+ 		return NULL;
+ 
+ 	return ssp;
 
