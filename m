@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761579AbYFES3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761717AbYFESai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761579AbYFES3b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbYFES3W
+	id S1761717AbYFESai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbYFESa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:29:22 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:49311 "EHLO mx.tdiedrich.de"
+	Thu, 5 Jun 2008 14:30:27 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:39350 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752121AbYFES3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:29:21 -0400
-Date: Thu, 5 Jun 2008 20:28:49 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Avi Kivity <avi@qumranet.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: kvm: unable to handle kernel NULL pointer dereference
-Message-ID: <20080605182847.GA12176@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Chris Wright <chrisw@sous-sol.org>, Avi Kivity <avi@qumranet.com>,
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080601084802.GA3146@yamamaya.is-a-geek.org> <4846716E.5000506@qumranet.com> <20080604181019.GB10897@yamamaya.is-a-geek.org> <20080605042535.GC30402@sequoia.sous-sol.org> <20080605060931.GA11704@yamamaya.is-a-geek.org> <20080605072728.GF30402@sequoia.sous-sol.org>
+	id S1753876AbYFESa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 14:30:27 -0400
+Date: Thu, 5 Jun 2008 21:29:49 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Buesch <mb@bu3sch.de>, "John W. Linville" <linville@tuxdriver.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+Subject: [2.6 patch] include/linux/ssb/ssb_driver_gige.h typo fix
+Message-ID: <20080605182945.GO1469@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080605072728.GF30402@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> Sorry, my math was bad.  I gave you 0xffffffff8021d44f + 7 + 0x6f9cba,
-> but it should have been 0xffffffff8021d44f - 17 + 0x6f9cba.  Which is
-> correct (as one would hope, it was a grasp at straws).
-> 
-> Oh, wait.  Is this a laptop?  Do you suspend/resume?  Suspend will free
-> svm_data, and on resume, any launching a guest will definitely hit the
-> oops you are seeing.
+This patch fixes a typo in the name of a config variable.
 
-No, this is my desktop, but I hibernate daily and always see below
-message.
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> Do you ever see this in dmesg?
-> 
->   svm_cpu_init: svm_data is NULL on 0
+---
+2aab8eeb46b30baf987c344e1b144caec365373a diff --git a/include/linux/ssb/ssb_driver_gige.h b/include/linux/ssb/ssb_driver_gige.h
+index 01fbdf5..942e387 100644
+--- a/include/linux/ssb/ssb_driver_gige.h
++++ b/include/linux/ssb/ssb_driver_gige.h
+@@ -100,7 +100,7 @@ extern char * nvram_get(const char *name);
+ /* Get the device MAC address */
+ static inline void ssb_gige_get_macaddr(struct pci_dev *pdev, u8 *macaddr)
+ {
+-#ifdef CONFIG_BCM947XX
++#ifdef CONFIG_BCM47XX
+ 	char *res = nvram_get("et0macaddr");
+ 	if (res)
+ 		memcpy(macaddr, res, 6);
 
-Yes:
-[...]
-PM: Creating hibernation image: 
-PM: Need to copy 126181 pages
-PM: Normal pages needed: 126181 + 1024 + 38, available pages: 397721
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-svm_cpu_init: svm_data is NULL on 0
-[...]
-
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
