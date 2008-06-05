@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbYFEOoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbYFEOpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbYFEOoW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 10:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYFEOoL
+	id S1755882AbYFEOpa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 10:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYFEOpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 10:44:11 -0400
-Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:44240 "EHLO
-	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753197AbYFEOoK (ORCPT
+	Thu, 5 Jun 2008 10:45:20 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:46425 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753193AbYFEOpT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 10:44:10 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Thomas Bleher <ThomasBleher@gmx.de>
-Subject: Re: ARM on qemu: running kernel 2.6.20 or newer?
-Date: Thu, 5 Jun 2008 16:44:06 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, dada1@cosmosbay.com
-References: <20080605135149.GA20870@j-crew.de>
-In-reply-To: <20080605135149.GA20870@j-crew.de>
+	Thu, 5 Jun 2008 10:45:19 -0400
+Date: Thu, 5 Jun 2008 16:45:11 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] libata: fix G5 SATA broken on -rc5
+Message-ID: <20080605144511.GA6562@aepfle.de>
+References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org> <20080605112436.GA4533@aepfle.de> <Pine.LNX.4.64.0806051255340.28792@blonde.site> <20080605135444.7a1e5158@core> <Pine.LNX.4.64.0806051436180.5315@blonde.site>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200806051644.07430.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Jun 2008 14:44:08.0575 (UTC) FILETIME=[9C51E8F0:01C8C71A]
+In-Reply-To: <Pine.LNX.4.64.0806051436180.5315@blonde.site>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Bleher wrote:
-> I'm trying to run an ARM kernel on qemu (0.9.1-5) on a Debian AMD64
-> system. 2.6.19 worked fine, but all newer kernel releases[1] result in
-> qemu consuming 100% of the CPU without ever outputting anything to the
-> console.
+On Thu, Jun 05, Hugh Dickins wrote:
 
-The daily built armel versatile D-I images [1] worked fine for me in qemu 
-just a few days ago. They use 2.6.24. There's one issue [2] related to 
-serial console, but graphics mode works fine.
+> Fix G5 SATA irq 18: nobody cared, reported on -rc5 by Olaf Hering:
+> fixlet to a57c1bade5a0ee5cd8b74502db9cbebb7f5780b2 libata-sff:
+> Fix oops reported in kerneloops.org for pnp devices with no ctl
+>     
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-Cheers,
-FJP
 
-[1] http://wiki.debian.org/ArmEabiHowto
-[2] http://bugs.debian.org/484366
+Tested-by: Olaf Hering <olaf@aepfle.de>
+
