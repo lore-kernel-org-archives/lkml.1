@@ -1,293 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbYFENxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYFENyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbYFENxV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 09:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYFENxG
+	id S1757338AbYFENyw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 09:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYFENyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 09:53:06 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34490 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753296AbYFENxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 09:53:04 -0400
-X-Authenticated: #2253541
-X-Provags-ID: V01U2FsdGVkX184vawtgHQ4JcvCTC0tnY5aC4W0j6/l+w046swUwV
-	FkD+Qkt/DDCrAd
-Date: Thu, 5 Jun 2008 15:53:03 +0200
-From: Thomas Bleher <ThomasBleher@gmx.de>
-To: linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
-Subject: ARM on qemu: running kernel 2.6.20 or newer?
-Message-ID: <20080605135149.GA20870@j-crew.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-Accept-Language: de, en
-X-Operating-System: Linux 2.6.18 x86_64
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Y-GMX-Trusted: 0
+	Thu, 5 Jun 2008 09:54:45 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:55390 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbYFENyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 09:54:44 -0400
+Date: Thu, 5 Jun 2008 15:54:15 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Felipe Balbi <felipebalbi@users.sourceforge.net>
+Subject: Re: [patch 2.6.26-rc4] add HAVE_CLK to Kconfig, for driver
+ dependencies
+Message-ID: <20080605155415.3b3f503a@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <200805291156.51933.david-b@pacbell.net>
+References: <200805291156.51933.david-b@pacbell.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jun 2008 13:53:40.0306 (UTC) FILETIME=[8F54BB20:01C8C713]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is anyone testing ARM kernels on qemu?
+David Brownell <david-b@pacbell.net> wrote:
+> From: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> This patch flags platforms as HAVE_CLK (or not) in Kconfig,
+> so that otherwise portable drivers which need those calls
+> can list that dependency.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-I'm trying to run an ARM kernel on qemu (0.9.1-5) on a Debian AMD64
-system. 2.6.19 worked fine, but all newer kernel releases[1] result in
-qemu consuming 100% of the CPU without ever outputting anything to the
-console.
+Great idea! This will allow us to clean up some of the dependency mess
+in the shared AVR32/AT91 drivers and get better compile-testing
+coverage.
 
-I did a bisect, and the failing commit is
-    1c69d921ed9cc6593ad4f60c0f9951cb0d62b0b4 (v2.6.19-1675-g1c69d92)
-    [PATCH] rcu: add a prefetch() in rcu_do_batch()
-but I have no idea what could make the boot fail there.
-
-The kernel is cross-compiled using gcc 4.3.1 from Emdebian.org.
-
-Does anyone have any idea what might be wrong here? I have a hard time
-imagining that I'm the only one running newer ARM kernels on qemu. Any
-pointers to working configs or patches to make it work would be very
-much appreciated.
-
-Regards,
-Thomas Bleher
-
-PS: Please CC me on replys. Thanks!
-
-[1] I tested 2.6.2{0..5} and 2.6.26-rc5.
-
-$ grep ^C .config:
-CONFIG_ARM=y
-CONFIG_MMU=y
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_TRACE_IRQFLAGS_SUPPORT=y
-CONFIG_HARDIRQS_SW_RESEND=y
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_RWSEM_GENERIC_SPINLOCK=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_VECTORS_BASE=0xffff0000
-CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=32
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SWAP=y
-CONFIG_SYSVIPC=y
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_INITRAMFS_SOURCE=""
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_EPOLL=y
-CONFIG_SHMEM=y
-CONFIG_SLAB=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_RT_MUTEXES=y
-CONFIG_BASE_SMALL=0
-CONFIG_BLOCK=y
-CONFIG_IOSCHED_NOOP=y
-CONFIG_IOSCHED_AS=y
-CONFIG_IOSCHED_DEADLINE=y
-CONFIG_IOSCHED_CFQ=y
-CONFIG_DEFAULT_AS=y
-CONFIG_DEFAULT_IOSCHED="anticipatory"
-CONFIG_ARCH_INTEGRATOR=y
-CONFIG_ARCH_INTEGRATOR_CP=y
-CONFIG_ARCH_CINTEGRATOR=y
-CONFIG_CPU_32=y
-CONFIG_CPU_ARM926T=y
-CONFIG_CPU_ARM1026=y
-CONFIG_CPU_32v5=y
-CONFIG_CPU_ABRT_EV5T=y
-CONFIG_CPU_ABRT_EV5TJ=y
-CONFIG_CPU_CACHE_VIVT=y
-CONFIG_CPU_COPY_V4WB=y
-CONFIG_CPU_TLB_V4WBI=y
-CONFIG_CPU_CP15=y
-CONFIG_CPU_CP15_MMU=y
-CONFIG_ARM_THUMB=y
-CONFIG_ICST525=y
-CONFIG_ARM_AMBA=y
-CONFIG_HZ=100
-CONFIG_AEABI=y
-CONFIG_OABI_COMPAT=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-CONFIG_SPLIT_PTLOCK_CPUS=4096
-CONFIG_LEDS=y
-CONFIG_LEDS_TIMER=y
-CONFIG_LEDS_CPU=y
-CONFIG_ALIGNMENT_TRAP=y
-CONFIG_ZBOOT_ROM_TEXT=0x0
-CONFIG_ZBOOT_ROM_BSS=0x0
-CONFIG_CMDLINE=""
-CONFIG_CPU_FREQ=y
-CONFIG_CPU_FREQ_TABLE=y
-CONFIG_CPU_FREQ_STAT=y
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-CONFIG_CPU_FREQ_GOV_USERSPACE=y
-CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-CONFIG_CPU_FREQ_INTEGRATOR=y
-CONFIG_FPE_NWFPE=y
-CONFIG_VFP=y
-CONFIG_BINFMT_ELF=y
-CONFIG_BINFMT_MISC=y
-CONFIG_PM=y
-CONFIG_PM_LEGACY=y
-CONFIG_APM=y
-CONFIG_NET=y
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-CONFIG_INET=y
-CONFIG_IP_MULTICAST=y
-CONFIG_IP_FIB_HASH=y
-CONFIG_IP_PNP=y
-CONFIG_IP_PNP_DHCP=y
-CONFIG_IP_PNP_BOOTP=y
-CONFIG_NET_IPIP=y
-CONFIG_NET_IPGRE=y
-CONFIG_NET_IPGRE_BROADCAST=y
-CONFIG_IP_MROUTE=y
-CONFIG_IP_PIMSM_V1=y
-CONFIG_IP_PIMSM_V2=y
-CONFIG_ARPD=y
-CONFIG_SYN_COOKIES=y
-CONFIG_INET_AH=y
-CONFIG_INET_ESP=y
-CONFIG_INET_IPCOMP=y
-CONFIG_INET_XFRM_TUNNEL=y
-CONFIG_INET_TUNNEL=y
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-CONFIG_BRIDGE=y
-CONFIG_VLAN_8021Q=y
-CONFIG_LLC=y
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-CONFIG_CONNECTOR=y
-CONFIG_PROC_EVENTS=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_BLK_DEV_NBD=y
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_COUNT=16
-CONFIG_BLK_DEV_RAM_SIZE=8192
-CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_NETDEVICES=y
-CONFIG_NET_ETHERNET=y
-CONFIG_MII=y
-CONFIG_SMC91X=y
-CONFIG_INPUT=y
-CONFIG_INPUT_MOUSEDEV=y
-CONFIG_INPUT_MOUSEDEV_PSAUX=y
-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-CONFIG_INPUT_KEYBOARD=y
-CONFIG_KEYBOARD_ATKBD=y
-CONFIG_INPUT_MOUSE=y
-CONFIG_MOUSE_PS2=y
-CONFIG_INPUT_MISC=y
-CONFIG_SERIO=y
-CONFIG_SERIO_AMBAKMI=y
-CONFIG_SERIO_LIBPS2=y
-CONFIG_VT=y
-CONFIG_VT_CONSOLE=y
-CONFIG_HW_CONSOLE=y
-CONFIG_SERIAL_AMBA_PL011=y
-CONFIG_SERIAL_AMBA_PL011_CONSOLE=y
-CONFIG_SERIAL_CORE=y
-CONFIG_SERIAL_CORE_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-CONFIG_LEGACY_PTY_COUNT=256
-CONFIG_HW_RANDOM=y
-CONFIG_FB=y
-CONFIG_FB_CFB_FILLRECT=y
-CONFIG_FB_CFB_COPYAREA=y
-CONFIG_FB_CFB_IMAGEBLIT=y
-CONFIG_FB_MODE_HELPERS=y
-CONFIG_FB_TILEBLITTING=y
-CONFIG_FB_ARMCLCD=y
-CONFIG_DUMMY_CONSOLE=y
-CONFIG_FRAMEBUFFER_CONSOLE=y
-CONFIG_FONT_8x8=y
-CONFIG_FONT_8x16=y
-CONFIG_LOGO=y
-CONFIG_LOGO_LINUX_MONO=y
-CONFIG_LOGO_LINUX_VGA16=y
-CONFIG_LOGO_LINUX_CLUT224=y
-CONFIG_USB_ARCH_HAS_HCD=y
-CONFIG_MMC=y
-CONFIG_MMC_BLOCK=y
-CONFIG_MMC_ARMMMCI=y
-CONFIG_RTC_LIB=y
-CONFIG_RTC_CLASS=y
-CONFIG_RTC_INTF_SYSFS=y
-CONFIG_RTC_INTF_PROC=y
-CONFIG_RTC_INTF_DEV=y
-CONFIG_EXT2_FS=y
-CONFIG_INOTIFY=y
-CONFIG_DNOTIFY=y
-CONFIG_PROC_FS=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-CONFIG_RAMFS=y
-CONFIG_CRAMFS=y
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-CONFIG_NFSD=y
-CONFIG_NFSD_V3=y
-CONFIG_ROOT_NFS=y
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_EXPORTFS=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-CONFIG_SMB_FS=y
-CONFIG_PARTITION_ADVANCED=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_MAGIC_SYSRQ=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_LOG_BUF_SHIFT=14
-CONFIG_DETECT_SOFTLOCKUP=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_INFO=y
-CONFIG_FRAME_POINTER=y
-CONFIG_FORCED_INLINING=y
-CONFIG_DEBUG_ERRORS=y
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_HASH=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_HMAC=y
-CONFIG_CRYPTO_MD5=y
-CONFIG_CRYPTO_SHA1=y
-CONFIG_CRYPTO_CBC=y
-CONFIG_CRYPTO_DES=y
-CONFIG_CRYPTO_DEFLATE=y
-CONFIG_CRC32=y
-CONFIG_ZLIB_INFLATE=y
-CONFIG_ZLIB_DEFLATE=y
-CONFIG_PLIST=y
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
