@@ -1,142 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbYFEXdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763842AbYFEXdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763695AbYFEXdM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 19:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYFEXc6
+	id S1763842AbYFEXdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 19:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbYFEXdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 19:32:58 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:54222 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754215AbYFEXc5 (ORCPT
+	Thu, 5 Jun 2008 19:33:42 -0400
+Received: from homer.mvista.com ([63.81.120.158]:20138 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753268AbYFEXdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 19:32:57 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] fat: Relax the permission check of fat_setattr()
-Date: Fri, 06 Jun 2008 08:32:50 +0900
-Message-ID: <8763sntq3h.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Thu, 5 Jun 2008 19:33:41 -0400
+Date: Thu, 5 Jun 2008 16:33:38 -0700
+From: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+To: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, nagar@watson.ibm.com, balbir@in.ibm.com,
+       sekharan@us.ibm.com, kosaki.motohiro@jp.fujitsu.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: [PATCH 3/3 v2] per-task-delay-accounting: update document and
+ getdelays.c for memory reclaim
+Message-Id: <20080605163338.8880eb7f.kobayashi.kk@ncos.nec.co.jp>
+In-Reply-To: <20080605162759.a6adf291.kobayashi.kk@ncos.nec.co.jp>
+References: <20080605162759.a6adf291.kobayashi.kk@ncos.nec.co.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-New chmod() allows only acceptable permission, and if not acceptable,
-it returns -EPERM. Old one allows even if it can't store permission to
-on disk inode. But it seems too strict for users.
+Update document and make getdelays.c show delay accounting for memory reclaim.
 
-E.g. https://bugzilla.redhat.com/show_bug.cgi?id=449080: With new one,
-rsync couldn't create the temporary file.
+For making a distinction between "swapping in pages" and "memory reclaim"
+in getdelays.c, MEM is changed to SWAP.
 
-So, this patch allows like old one, but now it doesn't change the
-permission if it can't store, and it returns 0.
-
-Also, this patch fixes missing check.
-
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Signed-off-by: Keika Kobayashi <kobayashi.kk@ncos.nec.co.jp>
 ---
+ Documentation/accounting/delay-accounting.txt |   11 ++++++++---
+ Documentation/accounting/getdelays.c          |    8 ++++++--
+ 2 files changed, 14 insertions(+), 5 deletions(-)
 
- fs/fat/file.c |   44 +++++++++++++++++++++++++++-----------------
- 1 file changed, 27 insertions(+), 17 deletions(-)
-
-diff -puN fs/fat/file.c~fat_setattr-fix fs/fat/file.c
---- linux-2.6/fs/fat/file.c~fat_setattr-fix	2008-06-05 06:48:11.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/file.c	2008-06-05 09:58:14.000000000 +0900
-@@ -257,26 +257,34 @@ int fat_getattr(struct vfsmount *mnt, st
+diff --git a/Documentation/accounting/delay-accounting.txt b/Documentation/accounting/delay-accounting.txt
+index 1443cd7..8a12f07 100644
+--- a/Documentation/accounting/delay-accounting.txt
++++ b/Documentation/accounting/delay-accounting.txt
+@@ -11,6 +11,7 @@ the delays experienced by a task while
+ a) waiting for a CPU (while being runnable)
+ b) completion of synchronous block I/O initiated by the task
+ c) swapping in pages
++d) memory reclaim
+ 
+ and makes these statistics available to userspace through
+ the taskstats interface.
+@@ -41,7 +42,7 @@ this structure. See
+      include/linux/taskstats.h
+ for a description of the fields pertaining to delay accounting.
+ It will generally be in the form of counters returning the cumulative
+-delay seen for cpu, sync block I/O, swapin etc.
++delay seen for cpu, sync block I/O, swapin, memory reclaim etc.
+ 
+ Taking the difference of two successive readings of a given
+ counter (say cpu_delay_total) for a task will give the delay
+@@ -94,7 +95,9 @@ CPU	count	real total	virtual total	delay total
+ 	7876	92005750	100000000	24001500
+ IO	count	delay total
+ 	0	0
+-MEM	count	delay total
++SWAP	count	delay total
++	0	0
++RECLAIM	count	delay total
+ 	0	0
+ 
+ Get delays seen in executing a given simple command
+@@ -108,5 +111,7 @@ CPU	count	real total	virtual total	delay total
+ 	6	4000250		4000000		0
+ IO	count	delay total
+ 	0	0
+-MEM	count	delay total
++SWAP	count	delay total
++	0	0
++RECLAIM	count	delay total
+ 	0	0
+diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
+index 40121b5..3f7755f 100644
+--- a/Documentation/accounting/getdelays.c
++++ b/Documentation/accounting/getdelays.c
+@@ -196,14 +196,18 @@ void print_delayacct(struct taskstats *t)
+ 	       "      %15llu%15llu%15llu%15llu\n"
+ 	       "IO    %15s%15s\n"
+ 	       "      %15llu%15llu\n"
+-	       "MEM   %15s%15s\n"
++	       "SWAP  %15s%15s\n"
++	       "      %15llu%15llu\n"
++	       "RECLAIM  %12s%15s\n"
+ 	       "      %15llu%15llu\n",
+ 	       "count", "real total", "virtual total", "delay total",
+ 	       t->cpu_count, t->cpu_run_real_total, t->cpu_run_virtual_total,
+ 	       t->cpu_delay_total,
+ 	       "count", "delay total",
+ 	       t->blkio_count, t->blkio_delay_total,
+-	       "count", "delay total", t->swapin_count, t->swapin_delay_total);
++	       "count", "delay total", t->swapin_count, t->swapin_delay_total,
++	       "count", "delay total",
++	       t->freepages_count, t->freepages_delay_total);
  }
- EXPORT_SYMBOL_GPL(fat_getattr);
  
--static int fat_check_mode(const struct msdos_sb_info *sbi, struct inode *inode,
--			  mode_t mode)
-+static int fat_sanitize_mode(const struct msdos_sb_info *sbi,
-+			     struct inode *inode, umode_t *mode_ptr)
- {
--	mode_t mask, req = mode & ~S_IFMT;
-+	mode_t mask, perm;
- 
--	if (S_ISREG(mode))
-+	/*
-+	 * Note, the basic check is already done by a caller of
-+	 * (attr->ia_mode & ~MSDOS_VALID_MODE)
-+	 */
-+
-+	if (S_ISREG(inode->i_mode))
- 		mask = sbi->options.fs_fmask;
- 	else
- 		mask = sbi->options.fs_dmask;
- 
-+	perm = *mode_ptr & ~(S_IFMT | mask);
-+
- 	/*
- 	 * Of the r and x bits, all (subject to umask) must be present. Of the
- 	 * w bits, either all (subject to umask) or none must be present.
- 	 */
--	req &= ~mask;
--	if ((req & (S_IRUGO | S_IXUGO)) != (inode->i_mode & (S_IRUGO|S_IXUGO)))
-+	if ((perm & (S_IRUGO | S_IXUGO)) != (inode->i_mode & (S_IRUGO|S_IXUGO)))
- 		return -EPERM;
--	if ((req & S_IWUGO) && ((req & S_IWUGO) != (S_IWUGO & ~mask)))
-+	if ((perm & S_IWUGO) && ((perm & S_IWUGO) != (S_IWUGO & ~mask)))
- 		return -EPERM;
- 
-+	*mode_ptr &= S_IFMT | perm;
-+
- 	return 0;
- }
- 
-@@ -299,7 +307,7 @@ int fat_setattr(struct dentry *dentry, s
- {
- 	struct msdos_sb_info *sbi = MSDOS_SB(dentry->d_sb);
- 	struct inode *inode = dentry->d_inode;
--	int mask, error = 0;
-+	int error = 0;
- 	unsigned int ia_valid;
- 
- 	lock_kernel();
-@@ -332,12 +340,13 @@ int fat_setattr(struct dentry *dentry, s
- 			error = 0;
- 		goto out;
- 	}
-+
- 	if (((attr->ia_valid & ATTR_UID) &&
- 	     (attr->ia_uid != sbi->options.fs_uid)) ||
- 	    ((attr->ia_valid & ATTR_GID) &&
- 	     (attr->ia_gid != sbi->options.fs_gid)) ||
- 	    ((attr->ia_valid & ATTR_MODE) &&
--	     fat_check_mode(sbi, inode, attr->ia_mode) < 0))
-+	     (attr->ia_mode & ~MSDOS_VALID_MODE)))
- 		error = -EPERM;
- 
- 	if (error) {
-@@ -346,15 +355,16 @@ int fat_setattr(struct dentry *dentry, s
- 		goto out;
- 	}
- 
--	error = inode_setattr(inode, attr);
--	if (error)
--		goto out;
-+	/*
-+	 * We don't return -EPERM here. Yes, strange, but this is too
-+	 * old behavior.
-+	 */
-+	if (attr->ia_valid & ATTR_MODE) {
-+		if (fat_sanitize_mode(sbi, inode, &attr->ia_mode) < 0)
-+			attr->ia_valid &= ~ATTR_MODE;
-+	}
- 
--	if (S_ISDIR(inode->i_mode))
--		mask = sbi->options.fs_dmask;
--	else
--		mask = sbi->options.fs_fmask;
--	inode->i_mode &= S_IFMT | (S_IRWXUGO & ~mask);
-+	error = inode_setattr(inode, attr);
- out:
- 	unlock_kernel();
- 	return error;
-_
-
+ void task_context_switch_counts(struct taskstats *t)
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+1.5.0.6
+
