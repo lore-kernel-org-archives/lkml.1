@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYFETnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761817AbYFETs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYFETnw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 15:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYFETnm
+	id S1761817AbYFETs3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 15:48:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYFETsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 15:43:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48690 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752393AbYFETnl (ORCPT
+	Thu, 5 Jun 2008 15:48:22 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:51322 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbYFETsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 15:43:41 -0400
-Date: Thu, 5 Jun 2008 12:42:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       tglx@linutronix.de, rmh@aybabtu.com,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] OLPC: pci: fix up PCI stuff so that PCI_GOANY supports
- OLPC
-Message-Id: <20080605124220.5a6245ab.akpm@linux-foundation.org>
-In-Reply-To: <20080605152914.6f4ca839@ephemeral>
-References: <20080605152914.6f4ca839@ephemeral>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jun 2008 15:48:21 -0400
+Date: Thu, 5 Jun 2008 15:47:32 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Nix <nix@esperi.org.uk>
+Cc: dhazelton@enter.net, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
+Message-ID: <20080605194732.GB13348@c2.user-mode-linux.org>
+References: <20080603123211.e129c222.akpm@linux-foundation.org> <200806031543.56864.dhazelton@enter.net> <878wxmfg99.fsf@hades.wkstn.nix> <20080603130709.fcf6a751.akpm@linux-foundation.org> <20080603210048.GA12182@c2.user-mode-linux.org> <4846A75E.40305@goop.org> <20080604193715.GA11943@c2.user-mode-linux.org> <4846F577.10603@goop.org> <20080605153008.GC7311@c2.user-mode-linux.org> <87k5h392bd.fsf@hades.wkstn.nix>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87k5h392bd.fsf@hades.wkstn.nix>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008 15:29:14 -0400
-Andres Salomon <dilinger@queued.net> wrote:
-
-> Previously, one would have to specifically choose CONFIG_OLPC and
-> CONFIG_PCI_GOOLPC in order to enable PCI_OLPC.  That doesn't really
-> work for distro kernels, so this patch allows one to choose
-> CONFIG_OLPC and CONFIG_PCI_GOANY in order to build in OLPC support in
-> a generic kernel (as requested by Robert Millan).
+On Thu, Jun 05, 2008 at 07:14:30PM +0100, Nix wrote:
+> It comes with glibc, and even ls uses it (for clock_gettime(), to
+> determine what format to use for date display).
 > 
-> This also moves GOOLPC before GOANY in the menuconfig list.
-> 
-> Finally, make pci_access_init return early if we detect OLPC hardware.
-> There's no need to continue probing stuff, and pci_pcbios_init
-> specifically trashes our settings (we didn't run into that before
-> because PCI_GOANY wasn't supported).
-> 
-> It would be great if we could sneak this in for 2.6.26..  *cough*  :)
-> 
+> I'd say using it is about as safe as can be.
 
-It looks harmless enough.
+Without adding -lrt to the link line here (F7), I get
 
-> ---
->  arch/x86/Kconfig    |   11 +++++------
->  arch/x86/pci/init.c |    3 ++-
->  arch/x86/pci/olpc.c |    5 +++--
->  arch/x86/pci/pci.h  |    2 +-
+arch/um/os-Linux/built-in.o: In function `nsecs':
+/home/jdike/linux/2.6/linux-2.6.22/arch/um/os-Linux/time.c:84: undefined reference to `clock_gettime'
+collect2: ld returned 1 exit status
 
-But I never know whether arch/x86/pci is a Jesse thing or an Ingo
-thing.  Usual answer: it's an everyone thing and we all make a big mess ;)
+A little odd for a system call...
 
+> Does this really only apply on top of 2.6.22? Which of the bewildering
+> blizzard of time-fixup patches we've been exchanging do I need? :)
 
+I have it on top of 2.6.26-rc2-mm1, plus all the other patches I've
+sent to Andrew.  The patch which started this discussion is the one
+you really need though, since this backs it out.
+
+    	   		Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
