@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbYFERN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYFERTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759328AbYFERN7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 13:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYFERNv
+	id S1755330AbYFERTc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYFERTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 13:13:51 -0400
-Received: from po-out-1718.google.com ([72.14.252.152]:41098 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbYFERNu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 13:13:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=WA1Vo4zK606FTmfyVxErWKncKQh8GyLgZ9D1UzWIXQmjRLvudspaSS5gF4qIphcd7e
-         x6VV+irJYT0nzgjOac+RN8LuXo44BD9wvuTI1clJomdeFcw/OvDqFTNYpkMpl2JiYGzv
-         m2iss0tZd9NdEi77rotWLjUh9ikS7e/GeWIVA=
-Message-ID: <89cb5ede0806051013o15e2d51tb9acf9e237b15d38@mail.gmail.com>
-Date: Thu, 5 Jun 2008 20:13:48 +0300
-From: "Khaled Al-Hamwi" <khaled.linux@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: SMP Affinity Issue with IRQ#
+	Thu, 5 Jun 2008 13:19:22 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:47499 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751802AbYFERTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 13:19:19 -0400
+Date: Thu, 5 Jun 2008 10:49:57 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Serge Hallyn <serue@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] devscgroup: check for device permissions at mount
+	time
+Message-ID: <20080605154956.GC11919@us.ibm.com>
+References: <4847A67D.9060006@openvz.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4847A67D.9060006@openvz.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
+Quoting Pavel Emelyanov (xemul@openvz.org):
+> Currently even if a task sits in an all-denied cgroup it can still 
+> mount any block device in any mode it wants.
+> 
+> Put a proper check in do_open for block device to prevent this.
+> 
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-I am trying to evaluate the performance of a Linux box when working as
-IP forwarder.
-I have a hardware traffic generator IXIA T400 on one end.
-On the other end, I have a Linux box with kernel 2.6.16 and quad-core xeon CPU.
+Crud.  Tested and confirmed, and this patches fixes it.
 
-These two systems are connected through two crossover Gigabit cables and NICs.
-The traffic is sent from IXIA through one NIC to the forwarding machine
-and then it is forwarded back through the other NIC to IXIA.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Tested-by: Serge Hallyn <serue@us.ibm.com>
 
-I have two issues related to SMP affinity.
-The first one is that when I set the SMP affinity through
-/proc/irq/<IRQ#>/smp_affinity, it changes dynamically.
-Is there any load balancing in the system that changes the affinity
-after some time or after some packets are received?
-Is there a way to set it permanently?
+thanks,
+-serge
 
-The second issue is that changing the SMP affinity results in
-different delay and throughput measurements.
-I am assigning each NIC to a different CPU.
-If I used a different assignment but still each NIC is assigned to a
-different CPU, I am getting different performance results.
-I would expect that changing the assignment should yield the same
-performance results.
-The CPUs are identical and should have similar performance.
-Here, I have two examples of two different assignments:
-Example 1:
-/proc/irq/16/smp_affinity (eth0)  ->   CPU#1
-/proc/irq/20/smp_affinity (eth1)  ->   CPU#2
-Example 2:
-/proc/irq/16/smp_affinity (eth0)  ->   CPU#3
-/proc/irq/20/smp_affinity (eth1)  ->   CPU#2
-Which one of these two configurations can be used as a reference for
-performance evaluation?
-
-Any ideas??
-
-Your help is appreciated.
-
-Thank you,
-Khaled
+> ---
+>  fs/block_dev.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/block_dev.c b/fs/block_dev.c
+> index a0e9596..7e1c7a3 100644
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/namei.h>
+>  #include <linux/log2.h>
+>  #include <linux/hardirq.h>
+> +#include <linux/device_cgroup.h>
+> 
+>  #include <asm/uaccess.h>
+>  #include "internal.h"
+> @@ -933,9 +934,14 @@ static int do_open(struct block_device *bdev, struct file *file, int for_part)
+>  {
+>  	struct module *owner = NULL;
+>  	struct gendisk *disk;
+> -	int ret = -ENXIO;
+> +	int ret;
+>  	int part;
+> 
+> +	ret = devcgroup_inode_permission(bdev->bd_inode, file->f_mode);
+> +	if (ret != 0)
+> +		return ret;
+> +
+> +	ret = -ENXIO;
+>  	file->f_mapping = bdev->bd_inode->i_mapping;
+>  	lock_kernel();
+>  	disk = get_gendisk(bdev->bd_dev, &part);
+> -- 
+> 1.5.3.4
