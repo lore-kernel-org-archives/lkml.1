@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759590AbYFEQDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758999AbYFEQEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759590AbYFEQDU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYFEQDK
+	id S1758999AbYFEQEk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbYFEQEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:03:10 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37909 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbYFEQDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:03:09 -0400
-Date: Thu, 5 Jun 2008 20:04:50 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: TASK_WAKEKILL && /sbin/init (was: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race)
-Message-ID: <20080605160450.GA323@tv-sign.ru>
-References: <20080604170905.GA10273@tv-sign.ru> <20080604173318.GH3549@parisc-linux.org> <20080605152316.GA257@tv-sign.ru> <20080605154844.GN3549@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 5 Jun 2008 12:04:31 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:19673 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbYFEQEa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 12:04:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=kaCNWyiAoXi+LkvW4RqtLCEsTWQGMBv73LMRmZZxo7BNENIHSpYZ672n8T9Khrl0Z
+	+BHOvmhG7/aI91waWtzqg==
+Message-ID: <4ca0a85e0806050903o5960bfb9o482e4124b631f6cb@mail.gmail.com>
+Date: Thu, 5 Jun 2008 12:03:53 -0400
+From: "Thomas Tuttle" <ttuttle@google.com>
+To: "Matt Mackall" <mpm@selenic.com>
+Subject: Re: [PATCH 2/5] pagemap: Change kpagecount to return the map count, not the reference count, of a page.
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1212681667.3953.159.camel@calx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080605154844.GN3549@parisc-linux.org>
-User-Agent: Mutt/1.5.11
+References: <4ca0a85e0806050804s798bba46wcb29d2582120bfab@mail.gmail.com>
+	 <1212681667.3953.159.camel@calx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/05, Matthew Wilcox wrote:
+On Thu, Jun 5, 2008 at 12:01 PM, Matt Mackall <mpm@selenic.com> wrote:
 >
-> On Thu, Jun 05, 2008 at 07:23:16PM +0400, Oleg Nesterov wrote:
-> > 
-> > If lock_page_killable() fails because the task was killed by SIGKILL or
-> > another fatal signal, do_generic_file_read() returns -EIO.
-> > 
-> > This seems to be OK, because in fact the userspace won't see this error, the
-> > task will dequeue SIGKILL and exit.
-> > 
-> > However, /sbin/init is different, it will dequeue SIGKILL, ignore it, and be
-> > confused by this bogus -EIO. Please note that while this bug is not likely,
-> > it is _not_ theoretical. It does happen that user-space sends the unhandled
-> > fatal signals to init.
-> 
-> Have you actually tested this?
+> On Thu, 2008-06-05 at 11:04 -0400, Thomas Tuttle wrote:
+>> When trying to use pagemap to calculate the "proportional set size"
+>> [1] of a process, I discovered that there were often references to
+>> pages that could not be discovered by kpagecount.  I changed
+>> kpagecount to return the number of times a page is mapped, rather than
+>> referenced, so kpagecount is more useful for determining how many
+>> processes are using a page.
+>
+> I'm pretty sure this has been suggested before and I was just too
+> thick-skulled to get it. Yes, the reference count is less useful.
+>
+> Acked-by: Matt Mackall <mpm@selenic.com>
+>
+> ps: It's much prefered to send patches inline.
 
-No I didn't. And I would be happy to be wrong. But,
+Oh.  Sorry about that.  (It's been a while since I sent patches to LKML.)
 
-> I thought it was handled by:
-> 
->                 /*
->                  * Global init gets no signals it doesn't want.
->                  */
->                 if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
->                     !signal_group_exit(signal))
->                         continue;
-> 
-> in get_signal_to_deliver().
-
-This is what I am talking about. The SIGNAL_UNKILLABLE task (init) dequeues
-the pending SIGKILL and just ignores it. Then it returns to the user space
-with -EIO.
-
-But when we send SIGKILL, the sender wakes up the TASK_KILLABLE task, and
-after that fatal_signal_pending() is true. Once again, it is not hard to
-fix this problem in kernel/signal.c, but _perhaps_ the change in filemap.c
-makes sense anyway.
-
-Oleg.
-
+--ttuttle
