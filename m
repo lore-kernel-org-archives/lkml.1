@@ -1,44 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762919AbYFEB7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763252AbYFECBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762919AbYFEB7N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 21:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYFEB66
+	id S1763252AbYFECBe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 22:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYFECB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 21:58:58 -0400
-Received: from mail.suse.de ([195.135.220.2]:53998 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752752AbYFEB66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 21:58:58 -0400
-Date: Thu, 5 Jun 2008 03:58:57 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Wed, 4 Jun 2008 22:01:26 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55907 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbYFECB0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 22:01:26 -0400
+Date: Thu, 5 Jun 2008 11:06:37 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: kosaki.motohiro@jp.fujitsu.com
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-Message-ID: <20080605015857.GD4327@wotan.suse.de>
-References: <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org> <20080602185433.GB4081@elte.hu> <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org> <20080602230316.GA24159@elte.hu> <20080603032403.GA17089@wotan.suse.de> <alpine.LFD.1.10.0806041249470.3473@woody.linux-foundation.org> <alpine.LFD.1.10.0806041320020.3473@woody.linux-foundation.org> <20080605015634.GC4327@wotan.suse.de>
+Subject: Re: [PATCH 0/5] page reclaim throttle v7
+Message-Id: <20080605110637.d50af953.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080605021211.871673550@jp.fujitsu.com>
+References: <20080605021211.871673550@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080605015634.GC4327@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 03:56:34AM +0200, Nick Piggin wrote:
-> 
-> The other thing that could be possible, and I'd imagine maybe more likely
-> to be implemented in a real CPU because it should give more imrpovement
-> (and which does break my algorithm) is just that the load to the cacheline
-> may get to execute first, then if the cacheline gets evicted and
-> modified by another CPU before our store completes, we effectively see
-> store/load reordering again.
+On Thu, 05 Jun 2008 11:12:11 +0900
+kosaki.motohiro@jp.fujitsu.com wrote:
 
-Well, I should qualify that: it doesn't actually break my algorithm
-because you can still implement the unlock without atomic RMWs.
-This may require you to have an mfence there, but we can still get
-away without atomics (whether that's much cheaper or not, I haven't
-measured recently!)
+> Hi
+> 
+> I post latest version of page reclaim patch series.
+> 
+> This patch is holding up very well under usex stress test
+> over 24+ hours :)
+> 
+> 
+> Against: 2.6.26-rc2-mm1
+> 
+I like this series and I'd like to support this under memcg when
+this goes to mainline. (it seems better to test this for a while
+before adding some memcg-related changes.)
+
+Then, please give me inputs.
+What do you think do I have to do for supporting this in memcg ?
+Handling the case of scan_global_lru(sc)==false is enough ?
+
+
+Thanks,
+-Kame
+
+
+> 
+> changelog
+> ========================================
+>   v6 -> v7
+>      o rebase to 2.6.26-rc2-mm1
+>      o get_vm_stat: make cpu-unplug safety.
+>      o mark vm_max_nr_task_per_zone __read_mostly.
+>      o add check __GFP_FS, __GFP_IO for avoid deadlock.
+>      o fixed compile error on x86_64.
+> 
+>   v5 -> v6
+>      o rebase to 2.6.25-mm1
+>      o use PGFREE statics instead wall time.
+>      o separate function type change patch and introduce throttle patch.
+> 
+>   v4 -> v5
+>      o rebase to 2.6.25-rc8-mm1
+> 
+>   v3 -> v4:
+>      o fixed recursive shrink_zone problem.
+>      o add last_checked variable in shrink_zone for 
+>        prevent corner case regression.
+> 
+>   v2 -> v3:
+>      o use wake_up() instead wake_up_all()
+>      o max reclaimers can be changed Kconfig option and sysctl.
+>      o some cleanups
+> 
+>   v1 -> v2:
+>      o make per zone throttle 
+> 
+> 
+> 
+> background
+> =====================================
+> current VM implementation doesn't has limit of # of parallel reclaim.
+> when heavy workload, it bring to 2 bad things
+>   - heavy lock contention
+>   - unnecessary swap out
+> 
+> at end of last year, KAMEZAWA Hiroyuki proposed the patch of page 
+> reclaim throttle and explain it improve reclaim time.
+> 	http://marc.info/?l=linux-mm&m=119667465917215&w=2
+> 
+> but unfortunately it works only memcgroup reclaim.
+> since, I implement it again for support global reclaim and mesure it.
+> 
+> 
+> benefit
+> =====================================
+> <<1. fix the bug of incorrect OOM killer>>
+> 
+> if do following commanc, sometimes OOM killer happened.
+> (OOM happend about 10%)
+> 
+>  $ ./hackbench 125 process 1000
+> 
+> because following bad scenario is happend.
+> 
+>    1. memory shortage happend.
+>    2. many task call shrink_zone at the same time.
+>    3. thus, All page are isolated from LRU at the same time.
+>    4. the last task can't isolate any page from LRU.
+>    5. it cause reclaim failure.
+>    6. it cause OOM killer.
+> 
+> my patch is directly solution for that problem.
+> 
+> 
+> <<2. performance improvement>>
+> I mesure RvR Split LRU series + page reclaim throttle series performance by hackbench.
+> 
+> result number mean seconds (i.e. smaller is better)
+> 
+> 
+>                                 + split_lru   improvement
+>    num_group   2.6.26-rc2-mm1   + throttle    ratio
+>    -----------------------------------------------------------------
+>    100         28.383           28.247
+>    110         31.237           30.83
+>    120         33.282           33.473
+>    130         36.530           37.356
+>    140        101.041           44.873         >200%  
+>    150        795.020           96.265         >800%
+> 
+> 
+> Why this patch imrove performance?
+> 
+> vanilla kernel get unstable performance at swap happend because
+> unnecessary swap out happend freqently.
+> this patch doesn't improvement best case, but be able to prevent worst case.
+> thus, The average performance of hackbench increase largely.
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
