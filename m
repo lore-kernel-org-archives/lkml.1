@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbYFEU6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762095AbYFEU7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762662AbYFEU6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 16:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYFEU6I
+	id S1762095AbYFEU7b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 16:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbYFEU7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 16:58:08 -0400
-Received: from outbound-mail-149.bluehost.com ([67.222.38.39]:35587 "HELO
-	outbound-mail-149.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751429AbYFEU6H (ORCPT
+	Thu, 5 Jun 2008 16:59:22 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43815 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbYFEU7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 16:58:07 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 1/2] Eliminate double kfree
-Date: Thu, 5 Jun 2008 13:58:02 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0805291504030.26229@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0805291504030.26229@ask.diku.dk>
+	Thu, 5 Jun 2008 16:59:21 -0400
+Date: Thu, 5 Jun 2008 10:19:18 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: =?iso-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>,
+       Andrew Morton <akpm@osdl.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       HWMON <lm-sensors@lm-sensors.org>
+Subject: Re: [PATCH 2.6.25.4]  hwmon: HP Mobile Data Protection System 3D
+	ACPI driver -- please review!
+Message-ID: <20080605081918.GA31075@elf.ucw.cz>
+References: <1212235533.3815.5.camel@localhost> <4846EBF5.2030406@tremplin-utc.net> <20080604230326.GA30475@elf.ucw.cz> <20080605010647.GC16599@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806051358.02217.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+In-Reply-To: <20080605010647.GC16599@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 29, 2008 6:04 am Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> The destination of goto error also does a kfree(g_iommus), so it is not
-> correct to do one here.
+On Wed 2008-06-04 22:06:47, Henrique de Moraes Holschuh wrote:
+> On Thu, 05 Jun 2008, Pavel Machek wrote:
+> > > > 3) Makes it possible to power the device off.
+> > 
+> > But this part is what I don't understand. powering off does not seem
+> > to belong there. Why can't you just use acpi to power down?
+> 
+> I think he means power down the g-sensors and related filters and A/D
+> circuitry.  The out-of-tree version of the HDAPS driver can do it as
+> well.
 
-Thanks Julia, I'll put this in linux-next.
+Yes, I misunderstood.
 
-Jesse
+> For what is it worth, I think drivers/accel is a good idea, and I think
+> the other accel drivers should be moved there.
+
+Agreed.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
