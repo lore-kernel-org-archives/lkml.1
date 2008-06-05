@@ -1,111 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYFEPOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbYFEPWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbYFEPOs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbYFEPOk
+	id S1756968AbYFEPWL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYFEPVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:14:40 -0400
-Received: from mail.pager.net ([209.253.16.26]:34369 "EHLO barracuda.pager.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753496AbYFEPOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:14:40 -0400
-X-Greylist: delayed 857 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 11:14:39 EDT
-X-ASG-Debug-ID: 1212678020-026a00640000-xx1T2L
-X-Barracuda-URL: http://192.168.1.240:8000/cgi-bin/mark.cgi
-From: Geoffrey Wossum <geoffrey@pager.net>
-Organization: Long Range Systems
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-X-ASG-Orig-Subj: Re: AT32 ASoC Driver Patches on alsa-devel
-Subject: Re: AT32 ASoC Driver Patches on alsa-devel
-Date: Thu, 5 Jun 2008 10:00:56 -0500
-User-Agent: KMail/1.9.9
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
-References: <200806050851.47319.geoffrey@pager.net> <20080605162206.0a34a54e@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080605162206.0a34a54e@hskinnemo-gx745.norway.atmel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jun 2008 11:21:55 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:46605 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbYFEPVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 11:21:54 -0400
+Date: Thu, 5 Jun 2008 19:23:16 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: TASK_WAKEKILL && /sbin/init (was: [PATCH 1/2] schedule: fix TASK_WAKEKILL vs SIGKILL race)
+Message-ID: <20080605152316.GA257@tv-sign.ru>
+References: <20080604170905.GA10273@tv-sign.ru> <20080604173318.GH3549@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806051000.56969.geoffrey@pager.net>
-X-Barracuda-Connect: LRS-CiscoRouter[192.168.1.1]
-X-Barracuda-Start-Time: 1212678020
-X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at pager.net
+In-Reply-To: <20080604173318.GH3549@parisc-linux.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 June 2008 09:22:06 am Haavard Skinnemoen wrote:
-> Geoffrey Wossum <geoffrey@pager.net> wrote:
-> > For anyone that's interested, there's patches to add ALSA System-on-Chip
-> > sound platform drivers for the AVR32 being discussed on the alsa-devel
-> > mailing list right now.
+Sorry Matthew, I left this part unanswered because I didn't have the
+time yesterday...
+
+On 06/04, Matthew Wilcox wrote:
 >
-> Hmm. For something that depends on a metric shitload of middle layers,
-> it is surprisingly large...
+> On Wed, Jun 04, 2008 at 09:09:05PM +0400, Oleg Nesterov wrote:
+> > Note also that with or without this patch TASK_WAKEKILL is not exactly right
+> > wrt /sbin/init, but this is another issue.
+>
+> That's certainly an interesting conversation to have.
 
-Partly because the code attempts to handle every contingency an application 
-might throw at (different sample rates, formats, clocking options, etc.).  
-Partly because it also has some concern for power management.
+If lock_page_killable() fails because the task was killed by SIGKILL or another
+fatal signal, do_generic_file_read() returns -EIO.
 
+This seems to be OK, because in fact the userspace won't see this error, the
+task will dequeue SIGKILL and exit.
 
-> I have to admit I don't understand the current sound situation at all.
-> With this driver, we now have:
+However, /sbin/init is different, it will dequeue SIGKILL, ignore it, and be
+confused by this bogus -EIO. Please note that while this bug is not likely,
+it is _not_ theoretical. It does happen that user-space sends the unhandled
+fatal signals to init.
 
-To paraphrase Andy Tanenbaum, the great thing about standards is there's so 
-many to choose from.
+Imho, this is 2.6.26 material. Unless I missed something, of course.
 
+It is not clear to me what should we do. I'd like very much to avoid adding
+more SIGNAL_UNKILLABLE checks, but perhaps we don't have another choice.
+We can fix the bug with
 
->   * An OSS driver for the AP7000 Audio Bitstream DAC
-OSS <shudder>
+	--- kernel/signal.c
+	+++ kernel/signal.c
+	@@ -974,7 +974,7 @@ void zap_other_threads(struct task_struc
+	 
+	 int fastcall __fatal_signal_pending(struct task_struct *tsk)
+	 {
+	-	return sigismember(&tsk->pending.signal, SIGKILL);
+	+	return signal_group_exit(tsk->signal);
+	 }
 
+, but this makes __fatal_signal_pending() slower, and because we use
+tsk->signal, schedule() (in particular) can't use this helper.
 
->   * A "regular" ALSA driver for the AC97C (not based on ASoC)
-I don't have an AC97 CODEC.
+Anyway. How about the (untested/uncompiled) patch for now? -EINTR or
+-ERESTARTNOINTR looks "more correct" regardless.
 
+Oleg.
 
->   * An i2s driver for the AT73C213 chip using the SSC controller and SPI
-Strongly coupled to the AT73C213, not the chip I'm using, although it did 
-provide a good example of working code.  This is where I figured out I needed 
-to use big endian.
-
-
->   * Some sort of "AT32 PCM" layer which apparently can only be used
->     with the SSC controller
-This IS sort of confusing.  It's really more of a generic SSC / PDC driver 
-than a "PCM layer".  Its existence is largely an artifact of it being in the 
-AT91 ASoC platform code, which I "ported" to get the AT32 platform code.  Its 
-existence in the AT91 platform driver is an artifact of the AT91 driver being 
-based on the PXA platform driver.  In other words, I'm not really the one to 
-explain the design rationale behind it.
-
+--- mm/filemap.c
++++ mm/filemap.c
+@@ -188,7 +188,7 @@ static int sync_page(void *word)
+ static int sync_page_killable(void *word)
+ {
+ 	sync_page(word);
+-	return fatal_signal_pending(current) ? -EINTR : 0;
++	return fatal_signal_pending(current) ? -ERESTARTNOINTR : 0;
+ }
  
->   * The above two being essentially identical to similar drivers for
->     AT91
-Yes, I didn't particularly like making the AT32 code almost exactly like the 
-AT91 code, and most of the differences are due to changes in some kernel APIs 
-rather than the peripherals really being different (BTW, the changes in the 
-AT32 are an improvement!).  But I needed an AT32 layer quickly, and I don't 
-have any AT91 hardware, so I couldn't really go mucking about in the AT91 
-code since I wouldn't be able to test it.  I don't feel especially bad, 
-though, since at91_mci.c and atmel-mci.c commit essentially the same sin.
+ /**
+@@ -1000,8 +1000,9 @@ page_ok:
+ 
+ page_not_up_to_date:
+ 		/* Get exclusive access to the page ... */
+-		if (lock_page_killable(page))
+-			goto readpage_eio;
++		error = lock_page_killable(page);
++		if (error)
++			goto readpage_error;
+ 
+ 		/* Did it get truncated before we got the lock? */
+ 		if (!page->mapping) {
+@@ -1029,8 +1030,9 @@ readpage:
+ 		}
+ 
+ 		if (!PageUptodate(page)) {
+-			if (lock_page_killable(page))
+-				goto readpage_eio;
++			error = lock_page_killable(page);
++			if (error)
++				goto readpage_error;
+ 			if (!PageUptodate(page)) {
+ 				if (page->mapping == NULL) {
+ 					/*
 
-
-> Can someone please help me out here? In particular, what is ASoC and
-> why should I want to use it?
-
-Number 1 reason (for me):  The only driver for my CODEC (WM8510) was an ASoC 
-driver.  Using sound system other than ASoC would require porting / rewriting 
-this driver.  Since an AT91 ASoC platform driver already existed, and would 
-be virtually the same as the AT32 platform driver, this was the best choice 
-for getting sound quickly.  So this essentially boils down to code reuse.  
-And if we switch CODEC's for some reason, it's less work.
-
-Another highly compelling reason: power consumption.  Only powers up parts of 
-the audio pathway that are currently needed.
-
-For more reasons:  http://alsa-project.org/main/index.php/ASoC
-Legal notice: I received no compensation for this endosement :)
-
----
-Geoffrey
