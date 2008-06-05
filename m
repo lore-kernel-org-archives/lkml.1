@@ -1,115 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbYFEXxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763386AbYFEX73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761962AbYFEXxd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 19:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYFEXx0
+	id S1763386AbYFEX73 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 19:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbYFEX7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 19:53:26 -0400
-Received: from hs-out-0708.google.com ([64.233.178.241]:33495 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbYFEXxZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 19:53:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=N3c7u9F/dPg5wcLsu0PK0Kq1CWM0L5Uh6ONXbD0HwvaMITKuld/RO526g7B/zEP6SZ
-         ylVP1B1qa65lkdk0hxN1i8QpFZnaDnFZAj1a3RQcttJ0FwQ8EhXXD/m+xeRCPEbufpis
-         dcokC9nuLgZQPmj8Ac+cPpnBxb++dD3XnKRFQ=
-Message-ID: <48487C69.7000202@gmail.com>
-Date: Thu, 05 Jun 2008 20:53:13 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 5 Jun 2008 19:59:19 -0400
+Received: from ozlabs.org ([203.10.76.45]:44433 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752850AbYFEX7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 19:59:18 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: [patch 04/41] cpu ops: Core piece for generic atomic per cpu operations
+Date: Fri, 6 Jun 2008 09:59:12 +1000
+User-Agent: KMail/1.9.9
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20080530035620.587204923@sgi.com> <200806021200.41652.rusty@rustcorp.com.au> <4846DC6B.6030802@sgi.com>
+In-Reply-To: <4846DC6B.6030802@sgi.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sitsofe Wheeler <sitsofe@yahoo.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [X86][BISECTED] WARNING: at kernel/lockdep.c:2680
-References: <4844868F.20104@gmail.com> <1212483192.6304.8.camel@twins> <d1af83620806030522i4b8120dgda19d3196f0838f5@mail.gmail.com> <g26kkr$4qc$1@ger.gmane.org> <20080605130823.GD6332@elte.hu>
-In-Reply-To: <20080605130823.GD6332@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806060959.13362.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> 
->> OK I've managed to bisect this down to commit 
->> [c6531cce6e6e4b99bcda46b6268d6f2d9e30aea4] (sched: do not trace 
->> sched_clock):
->>
->> commit c6531cce6e6e4b99bcda46b6268d6f2d9e30aea4
->> Author: Ingo Molnar <mingo@elte.hu>
->> Date:   Mon May 12 21:21:14 2008 +0200
->>
->>     sched: do not trace sched_clock
->>
->>     The tracer uses sched_clock, so do not trace it.
->>
->>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
->>
->> Reverting this made the lockdep warning go away. Here is the bisection log:
-> 
-> ah, good find! Does the patch below (instead of the full revert) fix it 
-> as well? I've queued the fix up into tip/tracing/ftrace.
-> 
-> 	Ingo
-> 
-> ---------------->
-> Subject: sched: sched_clock() lockdep fix
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Thu Jun 05 15:04:17 CEST 2008
-> 
-> Sitsofe Wheeler reported a lockdep warning and bisected it down to:
-> 
->> commit c6531cce6e6e4b99bcda46b6268d6f2d9e30aea4
->> Author: Ingo Molnar <mingo@elte.hu>
->> Date:   Mon May 12 21:21:14 2008 +0200
->>
->>     sched: do not trace sched_clock
-> 
-> do not use raw irq flags in cpu_clock() as it causes lockdep to lose
-> track of the true state of the IRQ flag.
-> 
-> Reported-and-bisected-by: Sitsofe Wheeler <sitsofe@yahoo.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/sched.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux/kernel/sched.c
-> ===================================================================
-> --- linux.orig/kernel/sched.c
-> +++ linux/kernel/sched.c
-> @@ -862,7 +862,7 @@ unsigned long long notrace cpu_clock(int
->  	unsigned long long prev_cpu_time, time, delta_time;
->  	unsigned long flags;
->  
-> -	raw_local_irq_save(flags);
-> +	local_irq_save(flags);
->  	prev_cpu_time = per_cpu(prev_cpu_time, cpu);
->  	time = __cpu_clock(cpu) + per_cpu(time_offset, cpu);
->  	delta_time = time-prev_cpu_time;
-> @@ -871,7 +871,7 @@ unsigned long long notrace cpu_clock(int
->  		time = __sync_cpu_clock(time, cpu);
->  		per_cpu(prev_cpu_time, cpu) = time;
->  	}
-> -	raw_local_irq_restore(flags);
-> +	local_irq_restore(flags);
->  
->  	return time;
->  }
-> 
+On Thursday 05 June 2008 04:18:19 Mike Travis wrote:
+> > cpu_local_inc() does all this: it takes the name of a local_t var, and is
+> > expected to increment this cpu's version of that.  You ripped this out
+> > and called it CPU_INC().
+>
+> Hi,
+>
+> I'm attempting to test both approaches to compare the object generated in
+> order to understand the issues involved here.  Here's my code:
+>
+>         void test_cpu_inc(int *s)
+>         {
+>                 __CPU_INC(s);
+>         }
+>
+>         void test_local_inc(local_t *t)
+>         {
+>                 __local_inc(THIS_CPU(t));
+>         }
+>
+>         void test_cpu_local_inc(local_t *t)
+>         {
+>                 __cpu_local_inc(t);
+>         }
+>
+> But I don't know how I can use cpu_local_inc because the pointer to the
+> object is not &__get_cpu_var(l):
 
-I didn't manage to get through a bisection run for the warning - thanks 
-to Sitsofe for doing it.  The patch does eliminate the warning for me.
+Yes.  Because the only true per-cpu vars are the static ones, cpu_local_inc() 
+only works on identifiers, not arbitrary pointers.  Once this is fixed, we 
+should be enhancing the infrastructure to allow that (AFAICT it's not too 
+hard, but we should add an __percpu marker for sparse).
 
-Thanks,
+> At the minimum, we would need a new local_t op to get the correct
+> CPU_ALLOC'd pointer value for the increment.  These new local_t ops for
+> CPU_ALLOC'd variables could use CPU_XXX primitives to implement them, or
+> just a base val_to_ptr primitive to replace __get_cpu_var().
 
--- 
-Kevin Winchester
+I think the latter: __get_cpu_ptr() perhaps?
+
+> I did notice this in local.h:
+>
+> 	 * X86_64: This could be done better if we moved the per cpu data directly
+> 	 * after GS.
+>
+> ... which it now is, so true per_cpu variables could be optimized better as
+> well.
+
+Indeed.
+
+>
+> Also, the above cpu_local_wrap(...) adds:
+>
+> 	#define cpu_local_wrap(l)               \
+> 	({                                      \
+> 	        preempt_disable();              \
+> 	        (l);                            \
+> 	        preempt_enable();               \
+> 	})                                      \
+>
+> ... and there isn't a non-preemption version that I can find.
+
+Yes, this should be fixed.  I thought i386 had optimized versions pre-merge, 
+but I was wrong (%gs for per-cpu came later, and noone cleaned up these naive 
+versions).  Did you want me to write them?
+
+I actually think that using local_t == atomic_t is better than 
+preempt_disable/enable for most archs which can't do atomic deref-and-inc.
+
+> One other distinction is CPU_INC increments an arbitrary sized variable
+> while local_inc requires a local_t variable.  This may not make it usable
+> in all cases.
+
+You might be right, but note that local_t is 64 bit on 64-bit platforms.  And 
+speculation of possible use cases isn't a good reason to rip out working 
+infrastructure :)
+
+Cheers,
+Rusty.
+
+
+>
+> Thanks,
+> Mike
+
 
