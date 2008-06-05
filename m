@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbYFEM1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYFEM3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbYFEM1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 08:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757105AbYFEM0w
+	id S1758048AbYFEM3i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 08:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbYFEM3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 08:26:52 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53780 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757024AbYFEM0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 08:26:51 -0400
-X-Sasl-enc: 4Q0BAsVkMs6aw5zUc/I1s4w3xmF5O0zAx63ay5VZzuPb 1212668810
-Message-ID: <4847DB82.60408@ladisch.de>
-Date: Thu, 05 Jun 2008 14:26:42 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Thu, 5 Jun 2008 08:29:30 -0400
+Received: from sorrow.cyrius.com ([65.19.161.204]:3646 "EHLO sorrow.cyrius.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753869AbYFEM33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 08:29:29 -0400
+X-Greylist: delayed 1872 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 08:29:29 EDT
+Date: Thu, 5 Jun 2008 13:57:59 +0200
+From: Martin Michlmayr <tbm@cyrius.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Chris Dearman <chris@mips.com>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: mips/kernel/traps.c build error
+Message-ID: <20080605115759.GA5043@deprecation.cyrius.com>
+References: <20080525164311.GB1791@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/18] ihex.h: binary representation of ihex records
-References: <20080605.foo@pmac.infradead.org> <E1K4C9q-0001dA-5i@bombadil.infradead.org>
-In-Reply-To: <E1K4C9q-0001dA-5i@bombadil.infradead.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080525164311.GB1791@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> Some devices need their firmware as a set of {address, len, data...}
-> records in some specific order rather than a simple blob.
+* Adrian Bunk <bunk@kernel.org> [2008-05-25 19:43]:
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/kernel/traps.c: In function 'show_raw_backtrace':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/kernel/traps.c:92: error: cast from pointer to integer of different size
+> make[2]: *** [arch/mips/kernel/traps.o] Error 1
+> 
+> <--  snip  -->
+> 
+> "[MIPS] Fix check for valid stack pointer during backtrace" in the mips 
+> tree fixes it, and should therefore also go into 2.6.26.
 
-At least in the case of EZ-USB-based devices, this is not a requirement.
-It seems most tools just do not bother to order the records in Intel hex
-files.  Any firmware that is downloaded with the EZ-USB's "load
-internal" request (0xa0) can be converted to a plain memory dump.
-
-
-Regards,
-Clemens
+It's still not in mainline as of rc5.
+-- 
+Martin Michlmayr
+http://www.cyrius.com/
