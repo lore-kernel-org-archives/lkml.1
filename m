@@ -1,115 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762536AbYFESnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762733AbYFESnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762536AbYFESnG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYFESmy
+	id S1762733AbYFESnc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759013AbYFESnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:42:54 -0400
-Received: from ag-out-0708.google.com ([72.14.246.244]:20766 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbYFESmx (ORCPT
+	Thu, 5 Jun 2008 14:43:22 -0400
+Received: from vs166246.vserver.de ([62.75.166.246]:34558 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbYFESnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:42:53 -0400
-Message-ID: <fa686aa40806051142q61ba471fl772ed32586b70e5c@mail.gmail.com>
-Date: Thu, 5 Jun 2008 12:42:49 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
-Cc: "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Jochen Friedrich" <jochen@scram.de>,
-       "Segher Boessenkool" <segher@kernel.crashing.org>,
-       "Gary Jennejohn" <garyj@denx.de>,
-       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080605183146.GA29092@polina.dev.rtsoft.ru>
+	Thu, 5 Jun 2008 14:43:21 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] include/linux/ssb/ssb_driver_gige.h typo fix
+Date: Thu, 5 Jun 2008 20:42:43 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "John W. Linville" <linville@tuxdriver.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@crashcourse.ca>
+References: <20080605182945.GO1469@cs181133002.pp.htv.fi>
+In-Reply-To: <20080605182945.GO1469@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080605161624.GA517@polina.dev.rtsoft.ru>
-	 <fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
-	 <20080605172723.GA14514@polina.dev.rtsoft.ru>
-	 <fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
-	 <20080605180058.GA21429@polina.dev.rtsoft.ru>
-	 <fa686aa40806051118y39cbf14fye5268c819d4bbbfc@mail.gmail.com>
-	 <20080605183146.GA29092@polina.dev.rtsoft.ru>
-X-Google-Sender-Auth: c4d29bb5f231fece
+Message-Id: <200806052042.43670.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 5, 2008 at 12:31 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> On Thu, Jun 05, 2008 at 12:18:56PM -0600, Grant Likely wrote:
->> On Thu, Jun 5, 2008 at 12:00 PM, Anton Vorontsov
->> <avorontsov@ru.mvista.com> wrote:
->> > On Thu, Jun 05, 2008 at 11:36:09AM -0600, Grant Likely wrote:
->> >> On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
->> >> <avorontsov@ru.mvista.com> wrote:
->> >> > Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
->> >> > host... The absence of enthusiasm I equaled to "no".
->> >> >
->> >> > Heh.
->> >>
->> >> I'm allergic to USB HCD code; I was probably having convulsions under my desk.
->> >
->> > :-)
->> >
->> > Ok, I also mentioned drivers/ata/pata_of_platform.c (OF version is using
->> > common code from drivers/ata/pata_platform.c).
->> >
->> > Please look there, and tell me if this is what you have in mind. (ignore
->> > _probe in the __pata_platform_probe name. Imagine
->> > pata_platform_add_controller or something).
->>
->> Yes, I like that.  I've done something very similar for drivers with
->> both of and non-of bindings.  For another example, this time all
->> contained within a single .c file, see drivers/video/xilinxfb.c
->
-> Ok, great. As I said previously, this is quite easy to do.
->
->> >> > p.s.
->> >> > Btw, you forgot another downside of v2 approach: struct spi_driver
->> >> > duplication... Not sure if everyone will be happy about it.
->> >> >
->> >> > Though, v2 is only version where we can make modular OF_MMC_SPI.
->> >>
->> >> I think we've got our wires crossed.  I'm not referring to the option
->> >> of an of_mmc_spi driver registering an mmc_spi device (which can then
->> >> be probed by the mmc_spi_driver).
->> >
->> > I'm not refrering to this option either.
->>
->> Okay, I'm confused then.  Where is the duplication of struct spi_driver?
->
-> Here it is http://lkml.org/lkml/2008/5/23/299
-> + static struct spi_driver of_mmc_spi_driver = {
+On Thursday 05 June 2008 20:29:49 Adrian Bunk wrote:
+> This patch fixes a typo in the name of a config variable.
 
-Right; I was going down the wrong thought path.  I have no problem with this.
+Well, it's not a typo. It was renamed. Good catch anyway. :)
 
-BTW, while on that topic, I think it is reasonable to roll the members
-of of_mmc_spi into either the mmc_spi_platform_data or the
-mmc_spi_host structure.  It is just 2 integers and that would
-eliminate storing driver data pointers in seemingly random places.
+> Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> And here http://lkml.org/lkml/2008/5/24/153 David Brownell says:
->> The only thing that looks odd to me about this is that the wrapper
->> is a spi_device rather than an of_device.  To me it makes more sense
->> to just have an of_device setting up the right spi_device.  (Though
->> maybe I missed some discussion about why that can't work.)
+Reviewed-by: Michael Buesch <mb@bu3sch.de>
 
-Yeah; I'm not fond of that approach.  It incurs runtime cost of
-multiple 'struct device' for a single device which is unnecessary.
+> ---
+> 2aab8eeb46b30baf987c344e1b144caec365373a diff --git a/include/linux/ssb/ssb_driver_gige.h b/include/linux/ssb/ssb_driver_gige.h
+> index 01fbdf5..942e387 100644
+> --- a/include/linux/ssb/ssb_driver_gige.h
+> +++ b/include/linux/ssb/ssb_driver_gige.h
+> @@ -100,7 +100,7 @@ extern char * nvram_get(const char *name);
+>  /* Get the device MAC address */
+>  static inline void ssb_gige_get_macaddr(struct pci_dev *pdev, u8 *macaddr)
+>  {
+> -#ifdef CONFIG_BCM947XX
+> +#ifdef CONFIG_BCM47XX
+>  	char *res = nvram_get("et0macaddr");
+>  	if (res)
+>  		memcpy(macaddr, res, 6);
+> 
+> 
+> 
 
-> I hope the bottom line is that we're now all happy to create another
-> spi_driver to handle "OF MMC-o-SPI" devices..?
 
-Yes, I'm cool with it.
-
-Cheers,
-g.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Greetings Michael.
