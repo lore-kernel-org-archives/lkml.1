@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbYFEEZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078AbYFEE3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbYFEEZy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 00:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYFEEZq
+	id S1753078AbYFEE3V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 00:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbYFEE3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 00:25:46 -0400
-Received: from sous-sol.org ([216.99.217.87]:37422 "EHLO sous-sol.org"
+	Thu, 5 Jun 2008 00:29:14 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33835 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751127AbYFEEZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 00:25:44 -0400
-Date: Wed, 4 Jun 2008 21:25:35 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, Avi Kivity <avi@qumranet.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: kvm: unable to handle kernel NULL pointer dereference
-Message-ID: <20080605042535.GC30402@sequoia.sous-sol.org>
-References: <20080601084802.GA3146@yamamaya.is-a-geek.org> <4846716E.5000506@qumranet.com> <20080604181019.GB10897@yamamaya.is-a-geek.org>
-MIME-Version: 1.0
+	id S1751042AbYFEE3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 00:29:13 -0400
+Date: Thu, 5 Jun 2008 06:29:08 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
+Message-ID: <20080605042908.GC11811@wotan.suse.de>
+References: <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org> <20080602185433.GB4081@elte.hu> <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org> <20080602230316.GA24159@elte.hu> <20080603032403.GA17089@wotan.suse.de> <alpine.LFD.1.10.0806041249470.3473@woody.linux-foundation.org> <alpine.LFD.1.10.0806041320020.3473@woody.linux-foundation.org> <20080605015634.GC4327@wotan.suse.de> <alpine.LFD.1.10.0806041956030.3473@woody.linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080604181019.GB10897@yamamaya.is-a-geek.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <alpine.LFD.1.10.0806041956030.3473@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tobias Diedrich (ranma+kernel@tdiedrich.de) wrote:
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
-> IP: [<ffffffff8021d44f>] svm_vcpu_run+0x34/0x351
-> PGD 7e01b067 PUD 7bc86067 PMD 0 
-> Oops: 0000 [1] PREEMPT 
-> CPU 0 
-> Modules linked in: zaurus cdc_ether usbnet snd_hda_intel k8temp radeon drm snd_emu10k1_synth snd_emux_synth snd_seq_virmidi snd_seq_midi_emul snd_emu10k1 snd_seq_midi snd_rawmidi snd_ac97_codec ac97_bus snd_util_mem forcedeth emu10k1_gp gameport snd_hwdep pata_amd [last unloaded: snd_hda_intel]
-> Pid: 11113, comm: kvm Tainted: G        W 2.6.26-rc4 #29
-> RIP: 0010:[<ffffffff8021d44f>]  [<ffffffff8021d44f>] svm_vcpu_run+0x34/0x351
-> RSP: 0018:ffff81007866fc38  EFLAGS: 00010046
-> RAX: ffff810076d42040 RBX: 00000000fffffffc RCX: 0000000000000000
-> RDX: ffff810076d42040 RSI: ffff810079b41000 RDI: ffff810076d42040
-> RBP: ffff81007866fc88 R08: 0000000000000002 R09: 0000000000000001
-> R10: ffffffff804237e5 R11: ffff81007866fc88 R12: ffff810076d42040
-> R13: 0000000000000000 R14: ffff810079b41000 R15: 000000000000ae80
-> FS:  00000000419b1950(0063) GS:ffffffff808bc000(0000) knlGS:00000000f712b6c0
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000000000000008 CR3: 0000000079b8d000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process kvm (pid: 11113, threadinfo ffff81007866e000, task ffff810019db8300)
-> Stack:  ffff81007866fc68 ffff810076d42040 ffff810076d42040 ffff81007bc600a8
->  ffff810076d42040 00000000fffffffc ffff810076d42040 0000000000000000
->  ffff810079b41000 000000000000ae80 ffff81007866fcc8 ffffffff8020fa41
-> Call Trace:
->  [<ffffffff8020fa41>] kvm_arch_vcpu_ioctl_run+0x46a/0x6df
->  [<ffffffff8020ab98>] kvm_vcpu_ioctl+0xfd/0x3d0
->  [<ffffffff80293df1>] ? kmem_cache_free+0x6e/0x81
->  [<ffffffff8024cf89>] ? __dequeue_signal+0x1c/0x167
->  [<ffffffff802a322e>] vfs_ioctl+0x2a/0x77
->  [<ffffffff802a34d6>] do_vfs_ioctl+0x25b/0x270
->  [<ffffffff802a352d>] sys_ioctl+0x42/0x65
->  [<ffffffff8021fffb>] system_call_after_swapgs+0x7b/0x80
+On Wed, Jun 04, 2008 at 08:08:37PM -0700, Linus Torvalds wrote:
 > 
-> Code: 55 41 54 53 48 83 ec 28 48 89 7d b8 48 8b 87 50 15 00 00 48 8b 0d ba 9c 6f 00 c6 40 5c 00 48 8b 45 b8 83 b8 a0 00 00 00 00 75 0d <48> 8b 51 08 48 39 90 68 15 00 00 74 4f 8b 41 14 3b 41 10 76 1a 
-> RIP  [<ffffffff8021d44f>] svm_vcpu_run+0x34/0x351
+> 
+> On Thu, 5 Jun 2008, Nick Piggin wrote:
+> > 
+> > I'd have thought that for a case like this, you'd simply hit the store
+> > alias logic and store forwarding would stall because it doesn't have
+> > the full data.
+> 
+> That's _one_ possible implementation. 
+> 
+> Quite frankly, I think it's the less likely one. It's much more likely 
+> that the cache read access and the store buffer probe happen in parallel 
+> (this is a really important hotpath for any CPU, but even more so x86 
+> where there are more of loads and stores that are spills). And then the 
+> store buffer logic would return the data and a bytemask mask (where the 
+> mask would be all zeroes for a miss), and the returned value is just the 
+> appropriate mix of the two.
+> 
+> > I'd like to know for sure.
+> 
+> You'd have to ask somebody very knowledgeable inside Intel and AMD, and it 
+> is quite likely that different microarchitectures have different 
+> approaches...
 
-Odd, svm_data is NULL, so svm_data->asid_generation is oopsing.
+Well, it would just be nice to hear a "no we'll never do that", "we
+already do", or "you can't rely on it" ;)
 
-  static void pre_svm_run(struct vcpu_svm *svm)
-  {
-  	int cpu = raw_smp_processor_id();
-  
-  	struct svm_cpu_data *svm_data = per_cpu(svm_data, cpu);
-  
-  	svm->vmcb->control.tlb_ctl = TLB_CONTROL_DO_NOTHING;
-  	if (svm->vcpu.cpu != cpu ||
-  	    svm->asid_generation != svm_data->asid_generation) <--- here <---
-  		new_asid(svm, svm_data);
-  }
+ 
+> > The other thing that could be possible, and I'd imagine maybe more likely
+> > to be implemented in a real CPU because it should give more imrpovement
+> > (and which does break my algorithm) is just that the load to the cacheline
+> > may get to execute first, then if the cacheline gets evicted and
+> > modified by another CPU before our store completes, we effectively see
+> > store/load reordering again.
+> 
+> Oh, absolutely, the perfect algorithm would actually get the right answer 
+> and notice that the cacheline got evicted, and retried the whole sequence 
+> such that it is coherent. 
+> 
+> But we do know that Intel expressly documents loads and stores to pass 
+> each other and documents the fact that the store buffer is there. So I bet 
+> that this is visible in some micro-architecture, even if it's not 
+> necessarily visible in _all_ of them.
+> 
+> The recent Intel memory ordering whitepaper makes it very clear that loads 
+> can pass earlier stores and in particular that the store buffer allows 
+> intra-processor forwarding to subsequent loads (2.4 in their whitepaper). 
+> It _could_ be just a "for future CPU's", but quite frankly, I'm 100% sure 
+> it isn't. The store->load forwarding is such a critical performance issue 
+> that I can pretty much guarantee that it doesn't always hit the cacheline.
 
-Doesn't really make any sense to find svm_data == NULL, since it's
-allocated during module init (or boot in this case).  If that allocation
-failed, you shouldn't ever get as far as vcpu_run.
+Well I have a simple test case to show loads pass earlier non conflicting
+stores in the case that loads do not come from the store buffer (ie.
+*inter* processor forwarding).
 
-I'm assuming that:
-gdb -q vmlinux
-(gdb) p/x 0xffffffff8021d456 + 0x6f9cba
-is the same as
-(gdb) p/x &per_cpu__svm_data
+And store forwarding, by definition means that the load can complete before
+the store can possibly be visible to another CPU I'd say. So yes, I'm
+sure this does happen too.
 
-Otherwise, seems a bit like memory corruption (doesn't happen here w/
-your .config).
-
-thanks,
--chris
