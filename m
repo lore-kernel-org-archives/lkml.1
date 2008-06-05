@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbYFEKq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756060AbYFEKvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbYFEKq5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 06:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbYFEKqr
+	id S1756060AbYFEKvn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 06:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYFEKvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 06:46:47 -0400
-Received: from mx1.melware.net ([78.47.171.162]:37871 "EHLO mx1.melware.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754433AbYFEKqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 06:46:46 -0400
-X-Greylist: delayed 1299 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 06:46:46 EDT
-Date: Thu, 5 Jun 2008 12:25:06 +0200 (CEST)
-From: Armin Schindler <armin@melware.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] isdn divas: fix proc creation
-In-Reply-To: <20080530233445.GB7358@martell.zuzino.mipt.ru>
-Message-ID: <alpine.DEB.0.99.0806051221380.30590@k10.melware.de>
-References: <20080530233445.GB7358@martell.zuzino.mipt.ru>
-Organization: Cytronics & Melware
+	Thu, 5 Jun 2008 06:51:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:24580 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbYFEKvf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 06:51:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=iWz20CnB8RwY7wUKP9VpjERI3TNlu6f0a7siuISNrC/ljTzAuvzJjjdv31kel3q7/X
+         4f2DlAnZJUqpTC6bj+kI6AIWwRpaSl8WQFo1sAW54S4LjYJC7hhgTMinGMs4nk9LWFGH
+         Qp2+WjToF7VOO+H/NgCCAHC1Zu0kP5UBcJuZw=
+Message-ID: <2f11576a0806050351o60dc1351q35f74d4e9836e20d@mail.gmail.com>
+Date: Thu, 5 Jun 2008 19:51:35 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] introduce task cgroup (#task restrictioon for prevent fork bomb by cgroup)
+Cc: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       "Li Zefan" <lizf@cn.fujitsu.com>, "Paul Menage" <menage@google.com>
+In-Reply-To: <20080605092745.GA3734@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080605132512.9C31.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20080605092745.GA3734@linux.vnet.ibm.com>
+X-Google-Sender-Auth: ba7c65181590d81e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 May 2008, Alexey Dobriyan wrote:
-> 1. creating proc entry and not saving pointer to PDE and checking it
->   is not going to work.
+Hi
 
-I don't know where you found this. I have look even in older versions, but
-the pointer divas_proc_entry is set by proc_create(). The patch to
-divasproc.c is wrong, it exists from the beginning of the driver.
-(2.6.25.4 doesn't contain the bug you describe).
+Thank you for careful review.
 
-> 2. if proc entry wasn't created, no reason to remove it on error path.
+>> +     struct task_cgroup *taskcg;
+>> +
+>> +     if ((max_tasks > INT_MAX) ||
+>> +         (max_tasks < INT_MIN))
+>
+> It should be < -1 I think.
 
-Agreed here. The reason for doing remove_divas_proc() anyway, was to
-make sure all possible settings done in !create_divas_proc() are
-reverted. But since nothing else is done here, it is okay to remove it.
+OK.
+I'll fix it at next post.
 
-Armin
 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
+
+>> +     spin_lock(&taskcg->lock);
+>> +     if (max_tasks < taskcg->nr_tasks)
+>> +             return -EBUSY;
 >
-> drivers/isdn/hardware/eicon/divasmain.c |    1 -
-> drivers/isdn/hardware/eicon/divasproc.c |    4 ++--
-> 2 files changed, 2 insertions(+), 3 deletions(-)
->
-> --- a/drivers/isdn/hardware/eicon/divasmain.c
-> +++ b/drivers/isdn/hardware/eicon/divasmain.c
-> @@ -806,7 +806,6 @@ static int DIVA_INIT_FUNCTION divas_init(void)
->
-> 	if (!create_divas_proc()) {
-> #ifdef MODULE
-> -		remove_divas_proc();
-> 		divas_unregister_chrdev();
-> 		divasfunc_exit();
-> #endif
-> --- a/drivers/isdn/hardware/eicon/divasproc.c
-> +++ b/drivers/isdn/hardware/eicon/divasproc.c
-> @@ -125,8 +125,8 @@ static const struct file_operations divas_fops = {
->
-> int create_divas_proc(void)
-> {
-> -	proc_create(divas_proc_name, S_IFREG | S_IRUGO, proc_net_eicon,
-> -		    &divas_fops);
-> +	divas_proc_entry = proc_create(divas_proc_name, S_IFREG | S_IRUGO,
-> +					proc_net_eicon, &divas_fops);
-> 	if (!divas_proc_entry)
-> 		return (0);
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> Shouldn't you drop the lock here?
+
+you are right.
+Thanks.
+
+
+> How does this controller affect performance? Do you have some numbers?
+
+No.
+but I have plan to mesure it at nearly future.
+Thanks.
