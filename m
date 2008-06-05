@@ -1,122 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbYFEQmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbYFEQoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbYFEQmR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFEQmD
+	id S1757676AbYFEQoc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYFEQoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:42:03 -0400
-Received: from saeurebad.de ([85.214.36.134]:33046 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920AbYFEQmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:42:01 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 11/14] bootmem: respect goal more likely
-References: <20080605115235.6453.E1E9C6FF@jp.fujitsu.com>
-	<87abi0semc.fsf@saeurebad.de>
-	<20080605170323.645F.E1E9C6FF@jp.fujitsu.com>
-Date: Thu, 05 Jun 2008 18:41:11 +0200
-In-Reply-To: <20080605170323.645F.E1E9C6FF@jp.fujitsu.com> (Yasunori Goto's
-	message of "Thu, 05 Jun 2008 17:31:50 +0900")
-Message-ID: <87zlpz6di0.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 5 Jun 2008 12:44:24 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:60382
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752653AbYFEQoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 12:44:23 -0400
+Date: Thu, 5 Jun 2008 18:44:21 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, kvm@vger.kernel.org,
+       Kanoj Sarcar <kanojsarcar@yahoo.com>, Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Izik Eidus <izike@qumranet.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 2 of 3] mm_take_all_locks
+Message-ID: <20080605164421.GG15502@duo.random>
+References: <082f312bc6821733b1c3.1212680169@duo.random> <alpine.LFD.1.10.0806050913060.3473@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0806050913060.3473@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jun 05, 2008 at 09:15:41AM -0700, Linus Torvalds wrote:
+> 
+> Just a small comment fix.
+> 
+> On Thu, 5 Jun 2008, Andrea Arcangeli wrote:
+> > +		/*
+> > +		 * AS_MM_ALL_LOCKS can't change from under us because
+> > +		 * we hold the global_mm_spinlock.
+> 
+> There's no global_mm_spinlock, you mean the 'mm_all_locks_mutex'.
+> 
+> (There was at least one other case where you had that comment issue).
 
-Yasunori Goto <y-goto@jp.fujitsu.com> writes:
+From: Andrea Arcangeli <andrea@qumranet.com>
 
-> I gotcha!  :-)
->
->  	max -= PFN_DOWN(bdata->node_boot_start);
->  	start -= PFN_DOWN(bdata->node_boot_start);
-> +	fallback -= PFN_DOWN(bdata->node_boot_start);
->  
->  	if (bdata->last_success > start) {
-> -		/* Set goal here to trigger a retry on failure */
-> -		start = goal = ALIGN(bdata->last_success, step);
-> +		fallback = start; -------------------------------- (*)
-> +		start = ALIGN(bdata->last_success, step);
->  	}
->
-> (*) is root cause. "fallback" is set as 0, because start is index of bitmap
-> at here. When normal zone is allocated first, and DMA zone is required by
-> alloc_bootmem_low() later and first page is free yet, fallback is set as 0.
->
-> +	if (fallback) {
-> +		start = ALIGN(fallback, step);
-> +		fallback = 0;
-> +		goto find_block;
-> +	}
-> +
->
-> As a result, this retry code is skipped, and alloc_bootmem_low() fails. 
-> So, when I change here from fallback to a retry_flag, my box can boot
-> up.
+Indeed, I meant mm_all_locks_mutex, this will fix it, or if you prefer
+a resubmit of the 2/3 let me know. Thanks!
 
-Ah, you got there too :-)
-
-Here is the original Email I wrote but waited to send out until after I
-slept:
-
+Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
 ---
 
-Hi Yasunori,
-
-here is hopefully the fix to your bootup problem.  Let me explain:
-
-This is the last but one bootmem allocation on your box:
-
-Jun  5 11:50:43 localhost kernel: bootmem::alloc_bootmem_core nid=0 size=40000 [16 pages] align=80 goal=100000000 limit=0
-Jun  5 11:50:43 localhost kernel: bootmem::__reserve nid=0 start=1020588 end=1020598 flags=1
-
-(->last_success is at 1020588 now)
-
-And this is the last one:
-
-Jun  5 11:50:43 localhost kernel: bootmem::alloc_bootmem_core nid=0 size=8000 [2 pages] align=80 goal=0 limit=ffffffff
-
-Goal is zero.  So sidx is set to zero as well.  last_success is bigger
-than sidx, so fallback gets the value of sidx and sidx is updated to
-last_succes.  But now sidx (1020588) is bigger than the limit (3ffff)
-and we fail the first search iteration because of that.  We should
-fall back to the original sidx stored in fallback now but take a look
-at what value fallback must have for this branch to be taken...
-
-I am pretty sure this is the bug you encountered.  I spotted it in the
-code but your logfile proves my theory. 
-
-	Hannes
-
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -444,7 +444,11 @@ static void * __init alloc_bootmem_core(
- 	midx = max - PFN_DOWN(bdata->node_boot_start);
- 
- 	if (bdata->last_success > sidx) {
--		fallback = sidx;
-+		/*
-+		 * Handle the valid case of sidx being zero and still
-+		 * catch the fallback below.
-+		 */
-+		fallback = sidx + 1;
- 		sidx = ALIGN(bdata->last_success, step);
- 	}
- 
-@@ -493,7 +497,7 @@ find_block:
- 	}
- 
- 	if (fallback) {
--		sidx = ALIGN(fallback, step);
-+		sidx = ALIGN(fallback - 1, step);
- 		fallback = 0;
- 		goto find_block;
- 	}
+diff -r 082f312bc682 mm/mmap.c
+--- a/mm/mmap.c	Thu Jun 05 17:30:17 2008 +0200
++++ b/mm/mmap.c	Thu Jun 05 18:40:23 2008 +0200
+@@ -2263,7 +2263,7 @@ static void vm_lock_anon_vma(struct anon
+ 	if (!test_bit(0, (unsigned long *) &anon_vma->head.next)) {
+ 		/*
+ 		 * The LSB of head.next can't change from under us
+-		 * because we hold the global_mm_spinlock.
++		 * because we hold the mm_all_locks_mutex.
+ 		 */
+ 		spin_lock(&anon_vma->lock);
+ 		/*
+@@ -2286,11 +2286,11 @@ static void vm_lock_mapping(struct addre
+ 	if (!test_bit(AS_MM_ALL_LOCKS, &mapping->flags)) {
+ 		/*
+ 		 * AS_MM_ALL_LOCKS can't change from under us because
+-		 * we hold the global_mm_spinlock.
++		 * we hold the mm_all_locks_mutex.
+ 		 *
+ 		 * Operations on ->flags have to be atomic because
+ 		 * even if AS_MM_ALL_LOCKS is stable thanks to the
+-		 * global_mm_spinlock, there may be other cpus
++		 * mm_all_locks_mutex, there may be other cpus
+ 		 * changing other bitflags in parallel to us.
+ 		 */
+ 		if (test_and_set_bit(AS_MM_ALL_LOCKS, &mapping->flags))
+@@ -2362,7 +2362,7 @@ static void vm_unlock_anon_vma(struct an
+ 	if (test_bit(0, (unsigned long *) &anon_vma->head.next)) {
+ 		/*
+ 		 * The LSB of head.next can't change to 0 from under
+-		 * us because we hold the global_mm_spinlock.
++		 * us because we hold the mm_all_locks_mutex.
+ 		 *
+ 		 * We must however clear the bitflag before unlocking
+ 		 * the vma so the users using the anon_vma->head will
+@@ -2384,7 +2384,7 @@ static void vm_unlock_mapping(struct add
+ 	if (test_bit(AS_MM_ALL_LOCKS, &mapping->flags)) {
+ 		/*
+ 		 * AS_MM_ALL_LOCKS can't change to 0 from under us
+-		 * because we hold the global_mm_spinlock.
++		 * because we hold the mm_all_locks_mutex.
+ 		 */
+ 		spin_unlock(&mapping->i_mmap_lock);
+ 		if (!test_and_clear_bit(AS_MM_ALL_LOCKS,
