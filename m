@@ -1,156 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763252AbYFECBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760515AbYFECWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763252AbYFECBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 22:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbYFECB0
+	id S1760515AbYFECWZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 22:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbYFECWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 22:01:26 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55907 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbYFECB0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 22:01:26 -0400
-Date: Thu, 5 Jun 2008 11:06:37 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: kosaki.motohiro@jp.fujitsu.com
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/5] page reclaim throttle v7
-Message-Id: <20080605110637.d50af953.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080605021211.871673550@jp.fujitsu.com>
-References: <20080605021211.871673550@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 22:22:16 -0400
+Received: from saeurebad.de ([85.214.36.134]:49065 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752752AbYFECWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 22:22:15 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, David Airlie <airlied@redhat.com>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference (drm_getunique)
+References: <g276vj$7f0$2@ger.gmane.org> <87y75kaeg7.fsf@saeurebad.de>
+Date: Thu, 05 Jun 2008 04:21:26 +0200
+In-Reply-To: <87y75kaeg7.fsf@saeurebad.de> (Johannes Weiner's message of "Thu,
+	05 Jun 2008 02:54:48 +0200")
+Message-ID: <87wsl4aaft.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Jun 2008 11:12:11 +0900
-kosaki.motohiro@jp.fujitsu.com wrote:
+Hi,
 
-> Hi
-> 
-> I post latest version of page reclaim patch series.
-> 
-> This patch is holding up very well under usex stress test
-> over 24+ hours :)
-> 
-> 
-> Against: 2.6.26-rc2-mm1
-> 
-I like this series and I'd like to support this under memcg when
-this goes to mainline. (it seems better to test this for a while
-before adding some memcg-related changes.)
+Johannes Weiner <hannes@saeurebad.de> writes:
 
-Then, please give me inputs.
-What do you think do I have to do for supporting this in memcg ?
-Handling the case of scan_global_lru(sc)==false is enough ?
+> Hi,
+>
+> Sitsofe Wheeler <sitsofe@yahoo.com> writes:
+>
+>> While flipping back and forth between the vts/Xorg and doing iperf test
+>> over the wifi connection the following error appeared in next-20080604.
+>>
+>> [ 4305.767435] BUG: unable to handle kernel NULL pointer dereference at 00000000
+>> [ 4305.767452] IP: [<c02511d4>] drm_getunique+0xc/0x30
+>> [ 4305.767466] *pde = 00000000
+>> [ 4305.767474] Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+>> [ 4305.767483] last sysfs file: /sys/devices/system/cpu/cpu1/cache/index2/shared_cpu_map
+>> [ 4305.767492] Modules linked in:
+>> [ 4305.767498]
+>> [ 4305.767503] Pid: 8373, comm: unix2_chkpwd Tainted: G        W (2.6.26-rc4-next-20080604skw #177)
+>> [ 4305.767513] EIP: 0060:[<c02511d4>] EFLAGS: 00210246 CPU: 0
+>> [ 4305.767521] EIP is at drm_getunique+0xc/0x30
+>> [ 4305.767527] EAX: f7d8ea70 EBX: 00000000 ECX: 00000028 EDX: 00000000
+>> [ 4305.767535] ESI: f7d8ea70 EDI: 00005401 EBP: ed383f34 ESP: ed383f2c
+>> [ 4305.767543]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+>> [ 4305.767550] Process unix2_chkpwd (pid: 8373, ti=ed382000 task=f6efdee0 task.ti=ed382000)
+>> [ 4305.767558] Stack: 00000000 c04940a4 ed383f58 c0250637 f1e03f50 f7d8ea70 f7d8eaf0 c02511c8
+>> [ 4305.767574]        c04944c4 d603b200 bfda0500 ed383f74 c017ebba bfda0500 00005401 d603b200
+>> [ 4305.767589]        d603b200 bfda0500 ed383f98 c017ee0a 00000001 ffffffea f1c0c100 ed383fb0
+>> [ 4305.767605] Call Trace:
+>> [ 4305.767611]  [<c0250637>] ? drm_ioctl+0x1b0/0x225
+>> [ 4305.767622]  [<c02511c8>] ? drm_getunique+0x0/0x30
+>> [ 4305.767632]  [<c017ebba>] ? vfs_ioctl+0x4e/0x67
+>> [ 4305.767643]  [<c017ee0a>] ? do_vfs_ioctl+0x237/0x245
+>> [ 4305.767652]  [<c017ee44>] ? sys_ioctl+0x2c/0x48
+>> [ 4305.767661]  [<c0102c35>] ? sysenter_past_esp+0x6a/0xa5
+>
+> Hm, in drm_getunique, dev is not NULL as it was already dereferenced in
+> drm_ioctl.  file_priv is not used at all.  So only data is left.
+>
+> data is kdata in drm_ioctl and only NULL if the ioctl request is neither
+> input nor output.
+>
+> I have not found a check on cmd in the callpath that would filter out
+> malformed requests.  So the user would be allowed to pass in a valid
+> request number with wrong flags here, correct?
+>
+> 	Hannes
+>
+> ---
+> drm: check ioctl direction before dispatching
+>
+> The userland might specify a valid ioctl request number with a wrong
+> direction.  Precheck the direction of the dispatcher function beforehand
+> because we prepare arguments based on this parameter and the dispatched
+> function relies on them being valid.
+>
+> Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> CC: David Airlie <airlied@redhat.com>
+> ---
+>
+> Compile-time tested only!
 
+Make that run-time tested, also.  This does not just affect linux-next.
+The following program oopses my box running Linus' current git:
 
-Thanks,
--Kame
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
+#include <drm/drm.h>
 
-> 
-> changelog
-> ========================================
->   v6 -> v7
->      o rebase to 2.6.26-rc2-mm1
->      o get_vm_stat: make cpu-unplug safety.
->      o mark vm_max_nr_task_per_zone __read_mostly.
->      o add check __GFP_FS, __GFP_IO for avoid deadlock.
->      o fixed compile error on x86_64.
-> 
->   v5 -> v6
->      o rebase to 2.6.25-mm1
->      o use PGFREE statics instead wall time.
->      o separate function type change patch and introduce throttle patch.
-> 
->   v4 -> v5
->      o rebase to 2.6.25-rc8-mm1
-> 
->   v3 -> v4:
->      o fixed recursive shrink_zone problem.
->      o add last_checked variable in shrink_zone for 
->        prevent corner case regression.
-> 
->   v2 -> v3:
->      o use wake_up() instead wake_up_all()
->      o max reclaimers can be changed Kconfig option and sysctl.
->      o some cleanups
-> 
->   v1 -> v2:
->      o make per zone throttle 
-> 
-> 
-> 
-> background
-> =====================================
-> current VM implementation doesn't has limit of # of parallel reclaim.
-> when heavy workload, it bring to 2 bad things
->   - heavy lock contention
->   - unnecessary swap out
-> 
-> at end of last year, KAMEZAWA Hiroyuki proposed the patch of page 
-> reclaim throttle and explain it improve reclaim time.
-> 	http://marc.info/?l=linux-mm&m=119667465917215&w=2
-> 
-> but unfortunately it works only memcgroup reclaim.
-> since, I implement it again for support global reclaim and mesure it.
-> 
-> 
-> benefit
-> =====================================
-> <<1. fix the bug of incorrect OOM killer>>
-> 
-> if do following commanc, sometimes OOM killer happened.
-> (OOM happend about 10%)
-> 
->  $ ./hackbench 125 process 1000
-> 
-> because following bad scenario is happend.
-> 
->    1. memory shortage happend.
->    2. many task call shrink_zone at the same time.
->    3. thus, All page are isolated from LRU at the same time.
->    4. the last task can't isolate any page from LRU.
->    5. it cause reclaim failure.
->    6. it cause OOM killer.
-> 
-> my patch is directly solution for that problem.
-> 
-> 
-> <<2. performance improvement>>
-> I mesure RvR Split LRU series + page reclaim throttle series performance by hackbench.
-> 
-> result number mean seconds (i.e. smaller is better)
-> 
-> 
->                                 + split_lru   improvement
->    num_group   2.6.26-rc2-mm1   + throttle    ratio
->    -----------------------------------------------------------------
->    100         28.383           28.247
->    110         31.237           30.83
->    120         33.282           33.473
->    130         36.530           37.356
->    140        101.041           44.873         >200%  
->    150        795.020           96.265         >800%
-> 
-> 
-> Why this patch imrove performance?
-> 
-> vanilla kernel get unstable performance at swap happend because
-> unnecessary swap out happend freqently.
-> this patch doesn't improvement best case, but be able to prevent worst case.
-> thus, The average performance of hackbench increase largely.
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+#define DRM_DFILE		"/dev/dri/card0"
+#define DRM_IOCTL_CAPUT		_IO(DRM_IOCTL_BASE, 0x01)
 
+int main(void)
+{
+	int fd = open(DRM_DFILE, O_RDONLY);
+
+	if (fd < 0)
+		return 1;
+
+	ioctl(fd, DRM_IOCTL_CAPUT);
+	perror("ioctl");
+	close(fd);
+	return 0;
+}
+
+->
+
+[  714.581505] BUG: unable to handle kernel NULL pointer dereference at 00000000
+[  714.583459] IP: [<c027d491>] drm_getunique+0x11/0x40
+[  714.585460] *pde = 00000000 
+[  714.587389] Oops: 0000 [#1] PREEMPT 
+[  714.588271] Modules linked in: snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_page_alloc
+[  714.588271] 
+[  714.588271] Pid: 1339, comm: break-drm Not tainted (2.6.26-rc4-00232-gedeb280 #43)
+[  714.588271] EIP: 0060:[<c027d491>] EFLAGS: 00010282 CPU: 0
+[  714.588271] EIP is at drm_getunique+0x11/0x40
+[  714.588271] EAX: cf861000 EBX: 00000000 ECX: 00000000 EDX: 00000000
+[  714.588271] ESI: cf861000 EDI: cfa87700 EBP: 00000000 ESP: cecc3f20
+[  714.588271]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  714.588271] Process break-drm (pid: 1339, ti=cecc2000 task=cf9a6dc0 task.ti=cecc2000)
+[  714.588271] Stack: c027d480 cf861000 c027c592 ced53b7c b7fc00d0 c0159f3b ced53b7c 000000ce 
+[  714.588271]        00000000 00000000 00006401 00000000 cf861024 c04730a0 ced33700 bf965788 
+[  714.588271]        00006401 c017aea8 bf965788 ced33700 ced33700 00000003 cecc2000 c017b0fb 
+[  714.588271] Call Trace:
+[  714.588271]  [<c027d480>] drm_getunique+0x0/0x40
+[  714.588271]  [<c027c592>] drm_ioctl+0x1a2/0x2e0
+[  714.588271]  [<c0159f3b>] handle_mm_fault+0xeb/0x5e0
+[  714.588271]  [<c017aea8>] vfs_ioctl+0x78/0x90
+[  714.588271]  [<c017b0fb>] do_vfs_ioctl+0x23b/0x2c0
+[  714.588271]  [<c016ce2a>] do_sys_open+0xba/0xe0
+[  714.588271]  [<c017b1bd>] sys_ioctl+0x3d/0x70
+[  714.588271]  [<c0103152>] syscall_call+0x7/0xb
+[  714.588271]  =======================
+[  714.588271] Code: 8b 04 24 e8 e2 1b 12 00 31 c0 5b 5b 5e 5f 5d c3 8d 76 00 8d bc 27 00 00 00 00 83 ec 08 89 1c 24 89 d3 89 74 24 04 89 c6 8b 48 04 <39> 0a 73 11 89 0b 31 d2 8b 1c 24 89 d0 8b 74 24 04 83 c4 08 c3 
+[  714.588271] EIP: [<c027d491>] drm_getunique+0x11/0x40 SS:ESP 0068:cecc3f20
+[  714.659745] ---[ end trace fd8339ca8c62cb63 ]---
+[  714.663840] [drm:drm_release] *ERROR* Device busy: 1 0
+
+My patch fixes this, but here is a better one that checks the whole cmd
+against the allowed one.  Otherwise, it would be possible to trap the
+kernel into allocating 2^15-1 bytes through kmalloc, too, at least on
+this configuration here with _IOC_SIZEBITS == 14.
+
+---
+drm: sanity-check ioctl request
+
+drm_ioctl looks up a dispatcher function for special ioctls but it does
+not precheck the commands against the registered ones, allowing users to
+pass bogus values and potentially oops the kernel, as happened to
+Sitsofe Wheeler who reported this bug.
+
+This patch checks the incoming ioctl command against the defined ones
+before dispatching to the handler.
+
+Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+CC: David Airlie <airlied@redhat.com>
+---
+
+diff --git a/drivers/char/drm/drm_drv.c b/drivers/char/drm/drm_drv.c
+index fc54140..9731f2a 100644
+--- a/drivers/char/drm/drm_drv.c
++++ b/drivers/char/drm/drm_drv.c
+@@ -475,6 +475,10 @@ int drm_ioctl(struct inode *inode, struct file *filp,
+ 	else
+ 		goto err_i1;
+ 
++	/* user request sane? */
++	if (ioctl->cmd != cmd)
++		goto err_i1;
++
+ 	func = ioctl->func;
+ 	/* is there a local override? */
+ 	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->driver->dma_ioctl)
