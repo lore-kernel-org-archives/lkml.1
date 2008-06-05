@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbYFESYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761227AbYFES00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761332AbYFESYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYFESYI
+	id S1761227AbYFES00 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYFES0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:24:08 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:55528 "EHLO smtp6.pp.htv.fi"
+	Thu, 5 Jun 2008 14:26:18 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:39087 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753944AbYFESYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:24:07 -0400
-Date: Thu, 5 Jun 2008 21:23:28 +0300
+	id S1753289AbYFES0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 14:26:17 -0400
+Date: Thu, 5 Jun 2008 21:25:40 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, rmk@arm.linux.org.uk
-Subject: [2.6 patch] remove include/linux/pm_legacy.h
-Message-ID: <20080605182311.GC1469@cs181133002.pp.htv.fi>
+To: Sunil Mushran <sunil.mushran@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
+       joel.becker@oracle.com
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] ocfs2/cluster/tcp.c: make some functions static
+Message-ID: <20080605182539.GF1469@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -25,98 +24,146 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the obsolete and no longer used 
-include/linux/pm_legacy.h
+Commit 0f475b2abed6cbccee1da20a0bef2895eb2a0edd
+(ocfs2/net: Silence build warnings) made sense
+as far as it fixed compile warnings, but it was
+not required that it made the functions global.
 
-Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-BTW: arch/arm/mach-sa1100/h3600.c:h3800_pm_callback() still tries to 
-     handle PM_{SUSPEND,RESUME}, but that's not touched by this patch.
+ fs/ocfs2/cluster/tcp.c          |   44 ++++++++++++++++++++++++++------
+ fs/ocfs2/cluster/tcp_internal.h |   32 -----------------------
+ 2 files changed, 37 insertions(+), 39 deletions(-)
 
- arch/frv/kernel/pm.c            |    1 
- arch/mips/au1000/common/power.c |    1 
- arch/x86/kernel/apm_32.c        |    1 
- include/linux/pm_legacy.h       |   35 --------------------------------
- 4 files changed, 38 deletions(-)
-
-b72cb105a5c8e961825b6ec9558c7c7ab4c18070 diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
-index 73f3aee..d1113c5 100644
---- a/arch/frv/kernel/pm.c
-+++ b/arch/frv/kernel/pm.c
-@@ -14,7 +14,6 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/pm.h>
--#include <linux/pm_legacy.h>
- #include <linux/sched.h>
- #include <linux/interrupt.h>
- #include <linux/sysctl.h>
-diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
-index 2166b9e..bd854a6 100644
---- a/arch/mips/au1000/common/power.c
-+++ b/arch/mips/au1000/common/power.c
-@@ -31,7 +31,6 @@
+dd88fbb63c1952663eed2f1d93b85a95938cf37c diff --git a/fs/ocfs2/cluster/tcp.c b/fs/ocfs2/cluster/tcp.c
+index a27d615..2bcf706 100644
+--- a/fs/ocfs2/cluster/tcp.c
++++ b/fs/ocfs2/cluster/tcp.c
+@@ -143,8 +143,8 @@ static void o2net_sc_postpone_idle(struct o2net_sock_container *sc);
+ static void o2net_sc_reset_idle_timer(struct o2net_sock_container *sc);
  
- #include <linux/init.h>
- #include <linux/pm.h>
--#include <linux/pm_legacy.h>
- #include <linux/sysctl.h>
- #include <linux/jiffies.h>
+ #ifdef CONFIG_DEBUG_FS
+-void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+-		    u32 msgkey, struct task_struct *task, u8 node)
++static void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
++			   u32 msgkey, struct task_struct *task, u8 node)
+ {
+ 	INIT_LIST_HEAD(&nst->st_net_debug_item);
+ 	nst->st_task = task;
+@@ -153,31 +153,61 @@ void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+ 	nst->st_node = node;
+ }
  
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index bf9290e..fa1f3be 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -218,7 +218,6 @@
- #include <linux/time.h>
- #include <linux/sched.h>
- #include <linux/pm.h>
--#include <linux/pm_legacy.h>
- #include <linux/capability.h>
- #include <linux/device.h>
- #include <linux/kernel.h>
-diff --git a/include/linux/pm_legacy.h b/include/linux/pm_legacy.h
-deleted file mode 100644
-index 446f4f4..0000000
---- a/include/linux/pm_legacy.h
-+++ /dev/null
-@@ -1,35 +0,0 @@
--#ifndef __LINUX_PM_LEGACY_H__
--#define __LINUX_PM_LEGACY_H__
+-void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
++static void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
+ {
+ 	do_gettimeofday(&nst->st_sock_time);
+ }
+ 
+-void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
++static void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
+ {
+ 	do_gettimeofday(&nst->st_send_time);
+ }
+ 
+-void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
++static void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
+ {
+ 	do_gettimeofday(&nst->st_status_time);
+ }
+ 
+-void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
++static void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
+ 					 struct o2net_sock_container *sc)
+ {
+ 	nst->st_sc = sc;
+ }
+ 
+-void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
++static void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id)
+ {
+ 	nst->st_id = msg_id;
+ }
++
++#else  /* CONFIG_DEBUG_FS */
++
++static inline void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
++				  u32 msgkey, struct task_struct *task, u8 node)
++{
++}
++
++static inline void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
++{
++}
++
++static inline void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
++{
++}
++
++static inline void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
++{
++}
++
++static inline void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
++						struct o2net_sock_container *sc)
++{
++}
++
++static inline void o2net_set_nst_msg_id(struct o2net_send_tracking *nst,
++					u32 msg_id)
++{
++}
++
+ #endif /* CONFIG_DEBUG_FS */
+ 
+ static inline int o2net_reconnect_delay(void)
+diff --git a/fs/ocfs2/cluster/tcp_internal.h b/fs/ocfs2/cluster/tcp_internal.h
+index 18307ff..8d58cfe 100644
+--- a/fs/ocfs2/cluster/tcp_internal.h
++++ b/fs/ocfs2/cluster/tcp_internal.h
+@@ -224,42 +224,10 @@ struct o2net_send_tracking {
+ 	struct timeval			st_send_time;
+ 	struct timeval			st_status_time;
+ };
 -
+-void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+-		    u32 msgkey, struct task_struct *task, u8 node);
+-void o2net_set_nst_sock_time(struct o2net_send_tracking *nst);
+-void o2net_set_nst_send_time(struct o2net_send_tracking *nst);
+-void o2net_set_nst_status_time(struct o2net_send_tracking *nst);
+-void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
+-				  struct o2net_sock_container *sc);
+-void o2net_set_nst_msg_id(struct o2net_send_tracking *nst, u32 msg_id);
 -
--#ifdef CONFIG_PM_LEGACY
+ #else
+ struct o2net_send_tracking {
+ 	u32	dummy;
+ };
 -
--/*
-- * Register a device with power management
-- */
--struct pm_dev __deprecated *
--pm_register(pm_dev_t type, unsigned long id, pm_callback callback);
--
--/*
-- * Send a request to all devices
-- */
--int __deprecated pm_send_all(pm_request_t rqst, void *data);
--
--#else /* CONFIG_PM_LEGACY */
--
--static inline struct pm_dev *pm_register(pm_dev_t type,
--					 unsigned long id,
--					 pm_callback callback)
+-static inline void o2net_init_nst(struct o2net_send_tracking *nst, u32 msgtype,
+-				  u32 msgkey, struct task_struct *task, u8 node)
 -{
--	return NULL;
 -}
--
--static inline int pm_send_all(pm_request_t rqst, void *data)
+-static inline void o2net_set_nst_sock_time(struct o2net_send_tracking *nst)
 -{
--	return 0;
 -}
--
--#endif /* CONFIG_PM_LEGACY */
--
--#endif /* __LINUX_PM_LEGACY_H__ */
--
+-static inline void o2net_set_nst_send_time(struct o2net_send_tracking *nst)
+-{
+-}
+-static inline void o2net_set_nst_status_time(struct o2net_send_tracking *nst)
+-{
+-}
+-static inline void o2net_set_nst_sock_container(struct o2net_send_tracking *nst,
+-						struct o2net_sock_container *sc)
+-{
+-}
+-static inline void o2net_set_nst_msg_id(struct o2net_send_tracking *nst,
+-					u32 msg_id)
+-{
+-}
+ #endif	/* CONFIG_DEBUG_FS */
+ 
+ #endif /* O2CLUSTER_TCP_INTERNAL_H */
 
