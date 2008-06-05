@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbYFEHn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYFEHrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbYFEHn1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 03:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYFEHnQ
+	id S1754202AbYFEHrm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 03:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYFEHrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 03:43:16 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:36968 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752391AbYFEHnP (ORCPT
+	Thu, 5 Jun 2008 03:47:33 -0400
+Received: from tribbles2.addix.net ([212.51.16.14]:58968 "EHLO
+	tribbles2.addix.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbYFEHrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 03:43:15 -0400
-Date: Thu, 5 Jun 2008 09:43:08 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Miller <davem@davemloft.net>
-cc: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
-       linville@tuxdriver.com, mokuno@sm.sony.co.jp, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/12]: wext: Emit event stream entries correctly when
- compat.
-In-Reply-To: <20080603.135728.103448928.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0806050940290.14577@vixen.sonytel.be>
-References: <20080603.132856.202640855.davem@davemloft.net>
- <1212526129.14371.5.camel@johannes.berg> <20080603.135728.103448928.davem@davemloft.net>
+	Thu, 5 Jun 2008 03:47:32 -0400
+X-Greylist: delayed 1708 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 03:47:32 EDT
+Message-ID: <4847935D.2070201@cruise.de>
+Date: Thu, 05 Jun 2008 09:18:53 +0200
+From: Uwe Klein <uwe.klein@cruise.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040114
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-1031041274-1212651788=:14577"
+CC: Tim Bird <tim.bird@am.sony.com>, linux-tiny <Linux-tiny@selenic.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-embedded <linux-embedded@vger.kernel.org>
+Subject: Re: [PATCH] console - Add configurable support for console charset
+ translation
+References: <48447615.5050806@am.sony.com>	<20080604103353.GC27335@cs181133002.pp.htv.fi>	<4846E44A.1010601@am.sony.com>	<20080604191522.GA18873@uranus.ravnborg.org>	<4846EBAE.2000604@am.sony.com> <20080604202314.GG4189@cs181133002.pp.htv.fi>
+In-Reply-To: <20080604202314.GG4189@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ADDIX-Mailscanner-Information: Bitte wenden Sie sich an uns, falls Sie mehr Informationen haben moechten.
+X-ADDIX-Scan: Virenfrei
+X-ADDIX-From: uwe.klein@cruise.de
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Adrian Bunk wrote:
 
----584349381-1031041274-1212651788=:14577
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+ > I'm coming more from the point that drivers/media/ might be the area
+ > in the kernel that currently offers the biggest flexibility - and this
+ > stuff breaks multiple times for each kernel release, and sorting this
+ > out is often nontrivial.
 
-On Tue, 3 Jun 2008, David Miller wrote:
-> > Did you miss drivers/net/ps3_gelic_wireless.c?
-> 
-> Likely yes, I guess that won't get hit with an allmodconfig
-> build on sparc64 :(
-> 
-> It would be really nice if we had some more compat layers
-> so that the ps3 bus probing layer just nopped out but you
-> could at least build test drivers on other platforms.
+Only partially connected:
+I have run into trouble in conjunction with the rtai patches
+and the no_console option regularly over a couple of years.
 
-That wouldn't help, as it runs on top of an hypervisor API.
+compiling is ok linking breaks on afair on ?*pcspeaker*?
+and some other symbols. reported it as a bug with rtai.
 
-The wired part may be merged back with spider_net one day...
+Due to time constraints I reactivated the console and moved on.
 
-With kind regards,
+Imho  TINY setup and RT patches go together on a regular basis.
+so some breakage goes beyond the kernel.
 
-Geert Uytterhoeven
-Software Architect
+uwe
 
-Sony Techsoft Centre
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-Sony Technology and Software Centre Europe
-A division of Sony Service Centre (Europe) N.V.
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium
-VAT BE 0413.825.160 · RPR Brussels
-Fortis 293-0376800-10 GEBA-BE-BB
----584349381-1031041274-1212651788=:14577--
+-- 
+Uwe Klein [mailto:uwe.klein@cruise.de]
+KLEIN MESSGERAETE Habertwedt 1
+D-24376 Groedersby b. Kappeln, GERMANY
+phone: +49 4642 920 123 FAX: +49 4642 920 125
