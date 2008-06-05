@@ -1,118 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762365AbYFESiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbYFESj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762365AbYFESiY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYFESiQ
+	id S1754613AbYFESj1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbYFESjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:38:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:48579 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754277AbYFESiP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:38:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:mime-version:
-	content-type:content-transfer-encoding:content-disposition;
-	b=plx8hJqjPIGyFJ+vD+F1FzehKuCEuJuwIlosrMDdnegoNUgqx29c3NYbnX5I2jIhp
-	hReHQoY1Eimg1PThLNeWg==
-Message-ID: <4ca0a85e0806051138q2a6a6aeav941e46c67ee12bd0@mail.gmail.com>
-Date: Thu, 5 Jun 2008 14:38:10 -0400
-From: "Thomas Tuttle" <ttuttle@google.com>
-To: mpm@selenic.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] pagemap: Require reads of /proc/pid/pagemap to be multiples of 8 (v2 of series)
+	Thu, 5 Jun 2008 14:39:15 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63808 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751691AbYFESjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 14:39:14 -0400
+Date: Thu, 5 Jun 2008 19:33:04 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 8/8] x86: I/O APIC: Timer through 8259A second-chance
+In-Reply-To: <20080605150327.GA22128@elte.hu>
+Message-ID: <Pine.LNX.4.55.0806051911500.2875@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805271950010.18833@cliff.in.clinika.pl>
+ <20080531101832.GA15170@elte.hu> <20080605091949.GA2307@elte.hu>
+ <Pine.LNX.4.55.0806051541210.2875@cliff.in.clinika.pl> <20080605150327.GA22128@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This matches the behavior of /proc/kpage{count,flags}, and simplifies
-the logic a bit.
+On Thu, 5 Jun 2008, Ingo Molnar wrote:
 
-I also changed out and end in struct pagemapread to be u64* instead of
-char*, which makes put_user work the way it was intended.  (Before, it
-was only copying the bottom byte of a pagemap entry, because the target
-of the copy was a char*.)
+> NOTE: you need to copy out and use the boot parameters from the boot 
+> log:
+> 
+>  [ 0.000000] Command line: root=/dev/sda6 console=ttyS0,115200 
+>  earlyprintk=se rial,ttyS0,115200 debug initcall_debug apic=verbose 
+>  sysrq_always_enabled ignore _loglevel selinux=0 nmi_watchdog=1 
+>  profile=0 maxcpus=1 nosmp no_hz=off highres =0 noapic nolapic_timer 
+>  hpet=disable idle=mwait
+> 
+> as -tip testing occasionally randomizes boot parameters too. (to find 
+> regressions like this) Let me know if you cannot reproduce this.
 
-Signed-off-by: Thomas Tuttle
----
- fs/proc/task_mmu.c |   28 +++++++++-------------------
- 1 files changed, 9 insertions(+), 19 deletions(-)
+ Thanks.  I figured out I cannot build an x86-64 kernel, because my i386
+compiler does not support the target.  Probably because of target library
+dependencies at the time I built my compiler.  I would have to build a
+bare-iron cross-compiler for the x86-64 which I'd rather not to just to
+fix this small problem -- it usually takes a few days to sort out all the
+pesky details when doing such a build from scratch, so it better be well
+justified.
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 88717c0..01f9bff 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -496,7 +496,7 @@ const struct file_operations proc_clear_refs_operations = {
- };
+ However, the reason is quite clear to me -- the command line specifies
+"noapic" among others (there is also "nosmp", but probably overridden by
+"maxcpus=1" -- I am afraid there is no clear precedence among these
+options), so the bug is the I/O APIC NMI watchdog is tried at all.  This
+is also clearly seen from the log where the I/O APIC is not set up at all.  
 
- struct pagemapread {
--       char __user *out, *end;
-+       u64 __user *out, *end;
- };
+ A fix along the lines of what I implemented for "nosmp" in the
+"nosmp-watchdog" patch is needed which I will post shortly.  It's needed
+both for the i386 and the x86-64 target; hopefully the latter does not
+differ too much from the former.
 
- #define PM_ENTRY_BYTES      sizeof(u64)
-@@ -519,21 +519,11 @@ struct pagemapread {
- static int add_to_pagemap(unsigned long addr, u64 pfn,
-                          struct pagemapread *pm)
- {
--       /*
--        * Make sure there's room in the buffer for an
--        * entire entry.  Otherwise, only copy part of
--        * the pfn.
--        */
--       if (pm->out + PM_ENTRY_BYTES >= pm->end) {
--               if (copy_to_user(pm->out, &pfn, pm->end - pm->out))
--                       return -EFAULT;
--               pm->out = pm->end;
--               return PM_END_OF_BUFFER;
--       }
--
-        if (put_user(pfn, pm->out))
-                return -EFAULT;
--       pm->out += PM_ENTRY_BYTES;
-+       pm->out++;
-+       if (pm->out >= pm->end)
-+               return PM_END_OF_BUFFER;
-        return 0;
- }
-
-@@ -634,7 +624,7 @@ static ssize_t pagemap_read(struct file *file,
-char __user * buf,
-
-        ret = -EINVAL;
-        /* file position must be aligned */
--       if (*ppos % PM_ENTRY_BYTES)
-+       if ((*ppos % PM_ENTRY_BYTES) || (count % PM_ENTRY_BYTES))
-                goto out_task;
-
-        ret = 0;
-@@ -664,8 +654,8 @@ static ssize_t pagemap_read(struct file *file,
-char __user * buf,
-                goto out_pages;
-        }
-
--       pm.out = buf;
--       pm.end = buf + count;
-+       pm.out = (u64*)buf;
-+       pm.end = (u64*)(buf + count);
-
-        if (!ptrace_may_attach(task)) {
-                ret = -EIO;
-@@ -690,9 +680,9 @@ static ssize_t pagemap_read(struct file *file,
-char __user * buf,
-                if (ret == PM_END_OF_BUFFER)
-                        ret = 0;
-                /* don't need mmap_sem for these, but this looks cleaner */
--               *ppos += pm.out - buf;
-+               *ppos += (char*)pm.out - buf;
-                if (!ret)
--                       ret = pm.out - buf;
-+                       ret = (char*)pm.out - buf;
-        }
-
- out_pages:
---
-1.5.3.6
+  Maciej
