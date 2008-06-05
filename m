@@ -1,47 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYFENLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbYFENjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbYFENLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 09:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYFENLF
+	id S1756258AbYFENjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 09:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbYFENj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 09:11:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37125 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753181AbYFENLE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 09:11:04 -0400
-Date: Thu, 5 Jun 2008 13:54:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Olaf Hering <olaf@aepfle.de>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.26-rc5 (G5 SATA broken)
-Message-ID: <20080605135444.7a1e5158@core>
-In-Reply-To: <Pine.LNX.4.64.0806051255340.28792@blonde.site>
-References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
-	<20080605112436.GA4533@aepfle.de>
-	<Pine.LNX.4.64.0806051255340.28792@blonde.site>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Jun 2008 09:39:29 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54927 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753018AbYFENj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 09:39:28 -0400
+Date: Thu, 5 Jun 2008 08:38:44 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: David Miller <davem@davemloft.net>
+cc: joseph@codesourcery.com, linux-kernel@vger.kernel.org,
+       libc-alpha@sourceware.org
+Subject: Re: math-emu issue with fp divide
+In-Reply-To: <20080604.144950.117343339.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0806050837230.24924@blarg.am.freescale.net>
+References: <9BECB10D-536E-4242-A2F5-6E1EF8CBDB40@kernel.crashing.org>
+ <Pine.LNX.4.64.0806042134020.32021@digraph.polyomino.org.uk>
+ <20080604.144950.117343339.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And the patch I'm finding successful is below: I won't sign it off,
-> for all I know it's reverting part of what Alan is trying to achieve;
-> but I expect it'll help towards the right fix.
+On Wed, 4 Jun 2008, David Miller wrote:
 
-Its the right fix 
+> From: "Joseph S. Myers" <joseph@codesourcery.com>
+> Date: Wed, 4 Jun 2008 21:42:55 +0000 (UTC)
+>
+> > On Wed, 4 Jun 2008, Kumar Gala wrote:
+> >
+> > > I'm trying to move the powerpc math-emu
+> > > code to use the include/math-emu bits.
+> >
+> > I'd like to remind people that the include/math-emu code is based on an
+> > old, buggy version of the soft-fp code in glibc.  RTH previously noted
+> > <http://sourceware.org/ml/libc-alpha/2006-02/msg00075.html> that the fixes
+> > should go in the kernel, when approving a patch of mine fixing various
+> > bugs and speeding up soft-fp, and several more bugs have been fixed since
+> > then in the course of GCC work on soft-float for Power and __float128
+> > support for x86_64.
+> >
+> > So it may be better than the old code you're replacing, but it might still
+> > be a good idea to merge things with the current glibc code, as a matter of
+> > both correctness and performance.  (And there may well still be bugs left
+> > in the code.)
+>
+> Once the GCC folks started looking into using the soft-fp bits I knew
+> this situation would develop.  The kernel side would have some set of
+> fixes and the glibc/gcc side would have yet another set.
+>
+> To be honest this doesn't surprise me...
+>
 
-	ata_sff_check_altstatus() is a routine which does the altstatus
-check and may or may not call the helper
+Now that I'm digging into this a bit I'm thinking my issue has to do with
+the fix you put in place from back in Aug 2007 (commit
+405849610fd96b4f34cd1875c4c033228fea6c0f):
 
-	ata_sff_check_status() is a default method for ap->ops->
+[MATH-EMU]: Fix underflow exception reporting.
 
-This lunatic naming leads to mistakes 8(
+    2) we ended up rounding back up to normal (this is the case where
+       we set the exponent to 1 and set the fraction to zero), this
+       should set inexact too
+...
+
+    Another example, "0x0.0000000000001p-1022 / 16.0", should signal both
+    inexact and underflow.  The cpu implementations and ieee1754
+    literature is very clear about this.  This is case #2 above.
+
+I'm not clear from your commit comment on what actual number
+0x0.0....01p-1022 is?
+
+It looks like the case I have we are exact before rounding, but think it
+looks like the rounding case since it appears as if "overflow is set".
+
+000.FFFFFFFFFFFFF / 3FE.FFFFFFFFFFFFE = 001.0000000000000
+
+I think the following adds the check for my case and still works for the
+issue your commit was trying to resolve.  Take a look any and all comments
+are welcome since this code is pretty complicated:
+
+- k
+
+diff --git a/include/math-emu/op-common.h b/include/math-emu/op-common.h
+index cc1ec39..bc50aa0 100644
+--- a/include/math-emu/op-common.h
++++ b/include/math-emu/op-common.h
+@@ -139,18 +139,27 @@ do {								\
+ 	if (X##_e <= _FP_WFRACBITS_##fs)			\
+ 	  {							\
+ 	    _FP_FRAC_SRS_##wc(X, X##_e, _FP_WFRACBITS_##fs);	\
+-	    _FP_ROUND(wc, X);					\
+ 	    if (_FP_FRAC_HIGH_##fs(X)				\
+ 		& (_FP_OVERFLOW_##fs >> 1))			\
+ 	      {							\
+ 	        X##_e = 1;					\
+ 	        _FP_FRAC_SET_##wc(X, _FP_ZEROFRAC_##wc);	\
+-	        FP_SET_EXCEPTION(FP_EX_INEXACT);		\
+ 	      }							\
+ 	    else						\
+ 	      {							\
+-		X##_e = 0;					\
+-		_FP_FRAC_SRL_##wc(X, _FP_WORKBITS);		\
++		_FP_ROUND(wc, X);				\
++		if (_FP_FRAC_HIGH_##fs(X)			\
++		   & (_FP_OVERFLOW_##fs >> 1))			\
++		  {						\
++		    X##_e = 1;					\
++		    _FP_FRAC_SET_##wc(X, _FP_ZEROFRAC_##wc);	\
++		    FP_SET_EXCEPTION(FP_EX_INEXACT);		\
++		  }						\
++		else						\
++		  {						\
++		    X##_e = 0;					\
++		    _FP_FRAC_SRL_##wc(X, _FP_WORKBITS);		\
++		  }						\
+ 	      }							\
+ 	    if ((FP_CUR_EXCEPTIONS & FP_EX_INEXACT) ||		\
+ 		(FP_TRAPPING_EXCEPTIONS & FP_EX_UNDERFLOW))	\
