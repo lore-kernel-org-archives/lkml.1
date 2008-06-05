@@ -1,132 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbYFEJUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbYFEJYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbYFEJUc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 05:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYFEJUX
+	id S1755001AbYFEJYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 05:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYFEJYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 05:20:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46444 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752904AbYFEJUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 05:20:20 -0400
-Date: Thu, 5 Jun 2008 11:19:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 8/8] x86: I/O APIC: Timer through 8259A second-chance
-Message-ID: <20080605091949.GA2307@elte.hu>
-References: <Pine.LNX.4.55.0805271950010.18833@cliff.in.clinika.pl> <20080531101832.GA15170@elte.hu>
+	Thu, 5 Jun 2008 05:24:09 -0400
+Received: from server009.webpack.hosteurope.de ([80.237.130.17]:39609 "EHLO
+	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753179AbYFEJYH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 05:24:07 -0400
+X-Greylist: delayed 1406 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Jun 2008 05:24:06 EDT
+From: Daniel Exner <dex@dragonslave.de>
+Reply-To: webmaster@dragonslave.de
+To: linux-kernel@vger.kernel.org
+Subject: linux-next Regression: Unable to locate IOAPIC
+Date: Thu, 5 Jun 2008 11:00:12 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-next@vger.kernel.org, dex@dragonslave.de
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080531101832.GA15170@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200806051100.12885.dex@dragonslave.de>
+X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1212657846;1aef4432;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-Maciej,
+(Added myself to CC, because I'm not subscribed)
 
--tip testing found an IO-APIC related hang, and i bisected it down to 
-the problem below. What do you think about my solution? Another option 
-would be to add the lapic as a clockevent device in the failure path. 
-(since we know the NMI watchdog wont work)
+with linux-next snapshot 20080604 my Laptop morphes into sitting duck and I 
+think this is due to this:
 
-	Ingo
+dmesg | grep "GSI 11"
+ACPI: PCI Interrupt 0000:00:11.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> 
+IRQ 11
+ERROR: Unable to locate IOAPIC for GSI 11
+ACPI: PCI Interrupt 0000:00:11.1[B] -> Link [LNKB] -> GSI 11 (level, low) -> 
+IRQ 11
+ERROR: Unable to locate IOAPIC for GSI 11
+ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LNKG] -> GSI 11 (level, low) -> 
+IRQ 11
+ERROR: Unable to locate IOAPIC for GSI 11
+ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LNKH] -> GSI 11 (level, low) -> 
+IRQ 11
+ERROR: Unable to locate IOAPIC for GSI 11
+ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKD] -> GSI 11 (level, low) -> 
+IRQ 11
+ERROR: Unable to locate IOAPIC for GSI 11
+ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> 
+IRQ 11
+ERROR: Unable to locate IOAPIC for GSI 11
 
------------->
-Subject: x86, io-apic: fix nmi_watchdog=1 bootup hang
-From: Ingo Molnar <mingo@elte.hu>
+dmesg | grep APIC
+Local APIC disabled by BIOS -- you can enable it with "lapic"
+mapped APIC to ffffb000 (011ed000)
+Local APIC not detected. Using dummy APIC emulation
 
-nmi_watchdog=1 hangs on 64-bit:
+lspci
+00:00.0 Host bridge: ALi Corporation M1644/M1644T Northbridge+Trident (rev 01)
+00:01.0 PCI bridge: ALi Corporation PCI to AGP Controller
+00:02.0 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
+00:04.0 IDE interface: ALi Corporation M5229 IDE (rev c3)
+00:06.0 Multimedia audio controller: ALi Corporation M5451 PCI AC-Link 
+Controller Audio Device (rev 01)
+00:07.0 ISA bridge: ALi Corporation M1533/M1535 PCI to ISA Bridge [Aladdin 
+IV/V/V+]
+00:08.0 Bridge: ALi Corporation M7101 Power Management Controller [PMU]
+00:0a.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] 
+(rev 0d)
+00:11.0 CardBus bridge: Toshiba America Info Systems ToPIC100 PCI to Cardbus 
+Bridge with ZV Support (rev 32)
+00:11.1 CardBus bridge: Toshiba America Info Systems ToPIC100 PCI to Cardbus 
+Bridge with ZV Support (rev 32)
+01:00.0 VGA compatible controller: Trident Microsystems CyberBlade XPAi1 (rev 
+82)
+02:00.0 Ethernet controller: Atheros Communications, Inc. AR5212 802.11abg NIC 
+(rev 01)
 
-[    0.250000] Detected 12.564 MHz APIC timer.
-[    0.254178] APIC timer registered as dummy, due to nmi_watchdog=1!
-[    0.260366] Testing NMI watchdog ... <4>WARNING: CPU#0: NMI appears to be stuck (0->0)!
-[    ...     ]
-[    0.470003] calling  genl_init+0x0/0xd0
-[  hard hang ]
+cat /proc/interrupts
+           CPU0
+  0:     412517    XT-PIC-XT        timer
+  1:       1990    XT-PIC-XT        i8042
+  2:          0    XT-PIC-XT        cascade
+  3:          2    XT-PIC-XT
+  4:          4    XT-PIC-XT
+  5:          3    XT-PIC-XT
+  6:          5    XT-PIC-XT        floppy
+  7:          2    XT-PIC-XT
+  8:          0    XT-PIC-XT        rtc0
+  9:        242    XT-PIC-XT        acpi
+ 10:          2    XT-PIC-XT
+ 11:       8465    XT-PIC-XT        ohci_hcd:usb1, ALI 5451, yenta, yenta, 
+ath, eth0
+ 12:        245    XT-PIC-XT        i8042
+ 14:       6054    XT-PIC-XT        ide0
+ 15:      28729    XT-PIC-XT        ide1
+NMI:          0   Non-maskable interrupts
+LOC:          0   Local timer interrupts
+RES:          0   Rescheduling interrupts
+CAL:          0   function call interrupts
+TLB:          0   TLB shootdowns
+TRM:          0   Thermal event interrupts
+SPU:          0   Spurious interrupts
+ERR:          0
+MIS:          0
 
-bisected it down to:
+cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 8
+model name      : Pentium III (Coppermine)
+stepping        : 10
+cpu MHz         : 1095.477
+cache size      : 256 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 2
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat 
+pse36 mmx fxsr sse up
+bogomips        : 2193.07
+clflush size    : 32
+power management:
 
- git-bisect start
- git-bisect good 1beee8dc8cf58e3f605bd7b34d7a39939be7d8d2
- git-bisect bad 11582ece0aaa2d0f94f345c08a4ab9997078a083
- git-bisect bad 5479c623bb44089844022c03d4c0eb16d5b7a15f
- git-bisect bad cfb4c7fabeb499e1c29f9d1878968e37a938e28a
- git-bisect good 246dd412d31e4f5de1d43aa6422a325b785f36e4
- git-bisect bad 3f8237eaff7dc1e35fa791dae095574fd974e671
- git-bisect good 90e23b13ab849e2a11f00c655eb3a2011b4623be
- git-bisect bad 833526a34eeefc117df3191a594c3c3a4f15a9ac
- git-bisect good 791b93d3dfaf16c23e978bec0cc0a3dd9d855d63
- git-bisect bad 65767c64068f2c93e56a1accfed5c78230ac12d7
- git-bisect bad 2abc5c05dd82c188e3bdf6641a274f013348d14b
- git-bisect bad 317e1f2597ffb4d4db940577bbe56dc6e881ef07
 
-| 317e1f2597ffb4d4db940577bbe56dc6e881ef07 is first bad commit
-| commit 317e1f2597ffb4d4db940577bbe56dc6e881ef07
-| Author: Maciej W. Rozycki <macro@linux-mips.org>
-| Date:   Wed May 21 22:10:22 2008 +0100
-|     x86: I/O APIC: clean up the 8259A on a NMI watchdog failure
+AFAIK this chipset doesnt provide a usable IO-APIC, but older Kernels upto 
+2.6.25.4 didn't have a problem with this.
+Will try 2.6.26-rc5 today..
 
-the problem is that in the dummy-lapic branch we rely on the i8259A
-but if the NMI watchdog fails we turn off IRQ 0 - which doesnt work
-too well ;-)
+If you want some other infos (config etc.) just let me know.
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/apic_32.c |    6 ++++--
- arch/x86/kernel/apic_64.c |    6 ++++--
- 2 files changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux/arch/x86/kernel/apic_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic_32.c
-+++ linux/arch/x86/kernel/apic_32.c
-@@ -547,11 +547,13 @@ void __init setup_boot_APIC_clock(void)
- 		 * PIT/HPET going.  Otherwise register lapic as a dummy
- 		 * device.
- 		 */
--		if (nmi_watchdog != NMI_IO_APIC)
-+		if (nmi_watchdog != NMI_IO_APIC) {
- 			lapic_clockevent.features &= ~CLOCK_EVT_FEAT_DUMMY;
--		else
-+		} else {
- 			printk(KERN_WARNING "APIC timer registered as dummy,"
- 			       " due to nmi_watchdog=1!\n");
-+			timer_through_8259 = 1;
-+		}
- 	}
- 
- 	/* Setup the lapic or request the broadcast */
-Index: linux/arch/x86/kernel/apic_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic_64.c
-+++ linux/arch/x86/kernel/apic_64.c
-@@ -413,11 +413,13 @@ void __init setup_boot_APIC_clock(void)
- 	 * PIT/HPET going.  Otherwise register lapic as a dummy
- 	 * device.
- 	 */
--	if (nmi_watchdog != NMI_IO_APIC)
-+	if (nmi_watchdog != NMI_IO_APIC) {
- 		lapic_clockevent.features &= ~CLOCK_EVT_FEAT_DUMMY;
--	else
-+	} else {
- 		printk(KERN_WARNING "APIC timer registered as dummy,"
- 		       " due to nmi_watchdog=1!\n");
-+		timer_through_8259 = 1;
-+	}
- 
- 	setup_APIC_timer();
- }
-
+--
+Greetings
+Daniel Exner
