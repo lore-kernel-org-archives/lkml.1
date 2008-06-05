@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbYFEGAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYFEGEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756311AbYFEGAs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 02:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYFEGAe
+	id S1754936AbYFEGEZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 02:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYFEGES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 02:00:34 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:57285 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbYFEGAd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 02:00:33 -0400
-Date: Thu, 05 Jun 2008 02:00:31 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: Kernel GPF ACPI
-In-reply-to: <alpine.LFD.1.10.0806050152510.4914@localhost.localdomain>
-X-X-Sender: lenb@localhost.localdomain
-To: Mike White <argentia@operamail.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Message-id: <alpine.LFD.1.10.0806050158160.4914@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20080603021645.A63FDCBC9E@ws5-11.us4.outblaze.com>
- <alpine.LFD.1.10.0806050152510.4914@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 5 Jun 2008 02:04:18 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50453 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751529AbYFEGER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 02:04:17 -0400
+Message-ID: <48478187.7080204@cn.fujitsu.com>
+Date: Thu, 05 Jun 2008 14:02:47 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Paul Menage <menage@google.com>
+Subject: [PATCH] cgroup: anotate two variables with __read_mostly
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+- need_forkexit_callback will be read only after system boot.
+- use_task_css_set_links will be read only after it's set.
 
-> > Jun  2 00:51:01 deathscape kernel: Call Trace:
-> > Jun  2 00:51:01 deathscape kernel:  [<ffffffff8033321e>] acpi_get_data+0x3e/0x6e
-> > Jun  2 00:51:01 deathscape kernel:  [<ffffffff8033e980>] acpi_bus_get_device+0x25/0x68
-> > Jun  2 00:51:01 deathscape kernel:  [<ffffffff880135c5>] :thermal:acpi_thermal_trip_seq_show+0x12b/0x257
-> > Jun  2 00:51:01 deathscape kernel:  [<ffffffff802a19c2>] seq_read+0x105/0x28b
-> > Jun  2 00:51:01 deathscape kernel:  [<ffffffff8028943d>] vfs_read+0xcb/0x153
-> > Jun  2 00:51:01 deathscape kernel:  [<ffffffff802897d1>] sys_read+0x45/0x6e
-> > Jun  2 00:51:01 deathscape kernel:  [<ffffffff80209dac>] tracesys+0xdc/0xe1
-> > Jun  2 00:51:01 deathscape kernel: 
-> > Jun  2 00:51:01 deathscape kernel: 
-> > Jun  2 00:51:01 deathscape kernel: Code: 80 7f 08 0f 48 0f 44 c7 c3 48 89 f8 c3 31 c0 48 85 ff 74 0d 
-> > Jun  2 00:51:01 deathscape kernel: RIP  [<ffffffff80333fda>] acpi_ns_map_handle_to_node+0x14/0x1d
-> > Jun  2 00:51:01 deathscape kernel:  RSP <ffff810111ae7e10>
-> > 
-> 
-> searching for acpi_thermal_trip_seq_show on kerneloops.org shows that this
-> may still be a problem -- at least up through 2.6.24.
+And these 2 variables are checked when a new process is forked.
 
-ah yes, I thought this rang a bell...
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/cgroup.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Happily I find that kerneloops now has links to bugzilla -- sorry i didn't 
-my previous message...
-
-This issue should be gone as of 2.6.25, please let me know if it isn't.
-
-https://bugzilla.novell.com/show_bug.cgi?id=350017
-http://bugzilla.kernel.org/show_bug.cgi?id=10252
-
-thanks,
--Len
-
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 15ac0e1..f5a1273 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -118,7 +118,7 @@ static int root_count;
+  * extra work in the fork/exit path if none of the subsystems need to
+  * be called.
+  */
+-static int need_forkexit_callback;
++static int need_forkexit_callback __read_mostly;
+ static int need_mm_owner_callback __read_mostly;
+ 
+ /* convenient tests for these bits */
+@@ -220,7 +220,7 @@ static struct hlist_head *css_set_hash(struct cgroup_subsys_state *css[])
+  * task until after the first call to cgroup_iter_start(). This
+  * reduces the fork()/exit() overhead for people who have cgroups
+  * compiled into their kernel but not actually in use */
+-static int use_task_css_set_links;
++static int use_task_css_set_links __read_mostly;
+ 
+ /* When we create or destroy a css_set, the operation simply
+  * takes/releases a reference count on all the cgroups referenced
+-- 
+1.5.4.rc3
