@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbYFENo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbYFENpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756582AbYFENo1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 09:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYFENoS
+	id S1757357AbYFENpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 09:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYFENpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 09:44:18 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:16893 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbYFENoR (ORCPT
+	Thu, 5 Jun 2008 09:45:11 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:48817 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753907AbYFENpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 09:44:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=utE+lyRwwHj+Wq2BUI5rHwZTcbT8Jz3gvoGbFfgGUezIiSaKauldJkG8rz2dlj4n5I
-         J//iOjv6xGyXDPOMJL6SNWZBC5md6xUico0PpvjXqYv9sb6zbBAf10AS8ev4UGbCdNWj
-         cE/kbTtfxbTDeG1NZ5LZOAr8tDMJQlN1yb9xk=
-Message-ID: <ea11fea30806050644o216c798pbe88d269a63f64f2@mail.gmail.com>
-Date: Thu, 5 Jun 2008 19:14:15 +0530
-From: "Manish Katiyar" <mkatiyar@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Subject: [PATCH] : Fix unused variable 'loops' warning in arch/x86/boot/a20.c
+	Thu, 5 Jun 2008 09:45:10 -0400
+Date: Thu, 5 Jun 2008 14:44:39 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeff Garzik <jeff@garzik.org>
+cc: Olaf Hering <olaf@aepfle.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] libata: fix G5 SATA broken on -rc5
+In-Reply-To: <20080605135444.7a1e5158@core>
+Message-ID: <Pine.LNX.4.64.0806051436180.5315@blonde.site>
+References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
+ <20080605112436.GA4533@aepfle.de> <Pine.LNX.4.64.0806051255340.28792@blonde.site>
+ <20080605135444.7a1e5158@core>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following patch fixes the below warning message :
-arch/x86/boot/a20.c:118: warning: unused variable 'loops'
+Fix G5 SATA irq 18: nobody cared, reported on -rc5 by Olaf Hering:
+fixlet to a57c1bade5a0ee5cd8b74502db9cbebb7f5780b2 libata-sff:
+Fix oops reported in kerneloops.org for pnp devices with no ctl
+    
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
 
-=================================================
+ drivers/ata/libata-sff.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Signed-off-by : Manish Katiyar <mkatiyar@gmail.com>
-
-diff --git a/arch/x86/boot/a20.c b/arch/x86/boot/a20.c
-index 90943f8..d9f13bf 100644
---- a/arch/x86/boot/a20.c
-+++ b/arch/x86/boot/a20.c
-@@ -115,8 +115,6 @@ static void enable_a20_fast(void)
-
- int enable_a20(void)
- {
--       int loops = A20_ENABLE_LOOPS;
--
- #if defined(CONFIG_X86_ELAN)
-        /* Elan croaks if we try to touch the KBC */
-        enable_a20_fast();
-@@ -128,6 +126,7 @@ int enable_a20(void)
-        enable_a20_kbc();
-        return 0;
- #else
-+       int loops = A20_ENABLE_LOOPS;
-        while (loops--) {
-                /* First, check to see if A20 is already enabled
-                   (legacy free, etc.) */
-
-
-================================================
-
--- 
-Thanks & Regards,
-********************************************
-Manish Katiyar ( http://mkatiyar.googlepages.com )
-3rd Floor, Fair Winds Block
-EGL Software Park
-Off Intermediate Ring Road
-Bangalore 560071, India
-***********************************************
+--- 2.6.26-rc5/drivers/ata/libata-sff.c	2008-06-05 07:18:07.000000000 +0100
++++ linux/drivers/ata/libata-sff.c	2008-06-05 12:42:39.000000000 +0100
+@@ -278,7 +278,7 @@ static u8 ata_sff_irq_status(struct ata_
+ 		    	return status;
+ 	}
+ 	/* Clear INTRQ latch */
+-	status = ata_sff_check_status(ap);
++	status = ap->ops->sff_check_status(ap);
+ 	return status;
+ }
+ 
