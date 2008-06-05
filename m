@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbYFEQVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbYFEQWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbYFEQVV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 12:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbYFEQVK
+	id S1760781AbYFEQWL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 12:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbYFEQV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 12:21:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57012 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753223AbYFEQVI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 12:21:08 -0400
-Date: Thu, 5 Jun 2008 09:20:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>, Jan Kara <jack@suse.cz>,
-       sct@redhat.com, adilger@sun.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, jbacik@redhat.com, cmm@us.ibm.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
- buffers
-Message-Id: <20080605092006.ba7dceef.akpm@linux-foundation.org>
-In-Reply-To: <20080605142948.GA25477@mit.edu>
-References: <4843CE15.6080506@hitachi.com>
-	<4843CEED.9080002@hitachi.com>
-	<20080603153050.fb99ac8a.akpm@linux-foundation.org>
-	<20080604101925.GB16572@duck.suse.cz>
-	<20080604111911.c1fe09c6.akpm@linux-foundation.org>
-	<20080604212202.GA8727@mit.edu>
-	<20080604145848.e3da6f20.akpm@linux-foundation.org>
-	<20080604225155.GB8727@mit.edu>
-	<20080605093536.GE27370@duck.suse.cz>
-	<4847CF07.1020904@hitachi.com>
-	<20080605142948.GA25477@mit.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 5 Jun 2008 12:21:56 -0400
+Received: from waste.org ([66.93.16.53]:45169 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754570AbYFEQVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 12:21:55 -0400
+Subject: Re: [PATCH 3/5] pagemap: Make pagemap_read enforce reading in
+	multiples of 8
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Tuttle <ttuttle@google.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4ca0a85e0806050914v5dc78fbcv373b08f09e37a337@mail.gmail.com>
+References: <4ca0a85e0806050806r38de18dft8927e093a8e47abd@mail.gmail.com>
+	 <1212681822.3953.162.camel@calx>
+	 <4ca0a85e0806050905j6cf33f3dx9143333aa0a8b6e7@mail.gmail.com>
+	 <1212682175.3953.169.camel@calx>
+	 <4ca0a85e0806050914v5dc78fbcv373b08f09e37a337@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 05 Jun 2008 11:21:25 -0500
+Message-Id: <1212682885.3953.183.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008 10:29:48 -0400 Theodore Tso <tytso@mit.edu> wrote:
 
-> On Thu, Jun 05, 2008 at 08:33:27PM +0900, Hidehiro Kawai wrote:
-> > 
-> > My patch doesn't change the policy.  JBD aborts the journal when
-> > it detects I/O error in file data since 2.6.11.  Perhaps this patch:
-> > http://marc.info/?l=linux-kernel&m=110483888632225
-> > I just added missing error checkings.
-> > 
+On Thu, 2008-06-05 at 12:14 -0400, Thomas Tuttle wrote:
+> On Thu, Jun 5, 2008 at 12:09 PM, Matt Mackall <mpm@selenic.com> wrote:
+> > Yes, I got that, I'm just mathematically impaired this morning. Read
+> > that as "when someone tries to do a *20* byte read, do a 16-byte read.."
+> > In other words, round down to the nearest multiple of 8.
 > 
-> Looking at the code paths touched by patch you referenced, you are
-> correct.  And Andrew even signed off on it.  :-)
-> 
-> But if someone was only examining the patch, it wasn't obvious that
-> the journal was getting aborted when the JBD layer was forcing buffers
-> from t_sync_datalist to disk.  So I suspect the change went in without
-> proper consideration of the net effect.  You just called it out
-> explicitly in the subject line, which caused Andrew to ask some good
-> questions; questions that weren't asked in 2005.
+> Oh.  I would seriously question doing that, because it would allow
+> reads that are improperly split up to fail silently.  What happens if
+> someone tries to read 40 bytes, and (for some reason) it gets split
+> into two 20-byte reads?  Instead of "12345" they'll get "12.34."
+> (where . is 4 zero or garbage bytes).  I'd rather they get an error.
 
-Sigh. An object lesson in the value of good changelogging :(
+I suppose you're right, people usually don't check those return codes.
 
-I guess we need to undo this.  And yes, propagating errors into AS_EIO
-is the way.  I guess that's safe without holding lock_page(), as long
-as the bh is pinned.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
