@@ -1,99 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbYFELRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYFELYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbYFELRK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 07:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbYFELQy
+	id S1756387AbYFELYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 07:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbYFELYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 07:16:54 -0400
-Received: from styx.suse.cz ([82.119.242.94]:50487 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753890AbYFELQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 07:16:52 -0400
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a
-	race
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Luming Yu <luming.yu@gmail.com>
-Cc: Roland McGrath <roland@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	 <20080527040454.053C526FA9E@magilla.localdomain>
-	 <3877989d0805262249yab130cbyfc5f5e54065cec5c@mail.gmail.com>
-	 <20080527061209.9A24426FAA6@magilla.localdomain>
-	 <1211869515.29836.2.camel@elijah.suse.cz>
-	 <3877989d0806022304w35764b17p9d4c3c95eceae0f5@mail.gmail.com>
-	 <48450864.6080707@suse.cz> <48455619.6040608@suse.cz>
-	 <3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
-	 <48465D5C.8000804@suse.cz>
-	 <3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: SuSE CR
-Date: Thu, 05 Jun 2008 13:16:45 +0200
-Message-Id: <1212664605.15747.16.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	Thu, 5 Jun 2008 07:24:40 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:48763 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755258AbYFELYj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 07:24:39 -0400
+Date: Thu, 5 Jun 2008 13:24:36 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@ozlabs.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc5
+Message-ID: <20080605112436.GA4533@aepfle.de>
+References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-05 at 09:49 +0800, Luming Yu wrote:
-> On Wed, Jun 4, 2008 at 5:16 PM, Petr Tesarik <ptesarik@suse.cz> wrote:
-> > Luming Yu wrote:
-> >>> It's definitely a bug in strace. For some reason (I don't care about)
-> >>> the execve() syscall produces an extra notification. However, this
-> >>> notification message is suppressed when SIGTRAP is blocked. This
-> >>> explains why the test case fails only when SIGTRAP is blocked.
-> >>
-> >> This is exact problem I suspected and I was trying to address in my hack..
-> >> Since there are several processes involved in the pretty complex
-> >> ptrace scenario.,
-> >> I need to capture all processes context with kdump to confirm this is
-> >> exact root-cause
-> >> for the problem. But kdump doesn't work for me..I'm trying to solve it now..
-> >>
-> >> I'm also in doubt about the semantic correctness of the test case..
-> >> Since SIGTRAP is so necessary to get ptrace work, is it legitimate to
-> >> block it in test case?
-> >>
-> >> One more thing I need to say is:
-> >> Same strace works for utrace enabled kernel on IA64.. If the bug is in
-> >> strace, how could it happen?
-> >
-> > No idea, but send me the strace.log file from running
-> >
-> > strace -o strace.log strace -f -o log.txt ./test1
-> >
-> > and I may be able to tell.
-> 
-> Please check the attachment!
-> 
-> >
-> > Petr Tesarik
-> >
+On Wed, Jun 04, Linus Torvalds wrote:
 
-Hm, I think without utrace, it gets out-of-sync once, so syscall entries
-and exits are swapped from that point on. With utrace, it gets
-out-of-sync _twice_, so it eventually looks fine. But the strace output
-definitely looks incorrect even with utrace:
+> Another week, another batch of mostly pretty small fixes. Hopefully the 
+> regression list is shrinking, and we've fixed at least a couple of the 
+> oopses on Arjan's list.
 
-5718  execve("./test2.sh", [], [/* 23 vars */]) = 1
-5718  execve("", [0x840c001000100003, 0x26230c14203032, 0x8cb0008800140a81, 0xa643100801808402, 0x2400905000040088, 0x11600a0072000001, 0xad814a00402e0, 0x2200012464009344, 0x1180418512c40026, 0x400003081880008, 0x2100010840910404, 0x8045120000800003, 0x6400000c0000600, 0xc20063440501400, 0x1048015002008081, 0xe02226005008c010, ...], [/* 0 vars */]) = 1
-5718  access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+SATA on a dualcore G5 is broken, it happend between
+c3b25b32e8bef526cca748e1ba023c6bdd705a99..53c8ba95402be65d412a806cda3430f0e72cd107
 
-Note that strace missed a brk() syscall, although I can actually see
-this in the other trace you sent me:
+irq 18: nobody cared (try booting with the "irqpoll" option)
+Disabling IRQ #18
 
-wait4(-1, [{WIFSTOPPED(s) && WSTOPSIG(s) == SIGTRAP}], __WALL, NULL) = 5704
-ptrace(PTRACE_PEEKUSER, 5704, psr, NULL) = 4398046511120
-ptrace(PTRACE_PEEKUSER, 5704, r15, NULL) = 1060
-ptrace(PTRACE_SYSCALL, 5704, 0x1, SIG_0) = 0
 
-Look at the value of r15, and compare it with unistd.h:
-#define __NR_brk                        1060
+ctrl alt del on the USB keyboard does not trigger a reboot.
+Sometimes the cursor stops blinking, sometimes just nothing happens
+after ctrl alt del.
 
-I _guess_ this is caused by the fact that test2.sh is a shell script, so
-the kernel executes the shell, and maybe utrace produces a second execve
-notifications in this case? Roland, can you shed some light?
 
-Petr Tesarik
+Does 53c8ba95402be65d412a806cda3430f0e72cd107 work for others on G5?
