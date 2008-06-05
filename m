@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbYFESPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbYFESTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760872AbYFESPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbYFESP0
+	id S1758121AbYFESTK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbYFESTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:15:26 -0400
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:40849 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751869AbYFESPZ (ORCPT
+	Thu, 5 Jun 2008 14:19:00 -0400
+Received: from ag-out-0708.google.com ([72.14.246.251]:45371 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbYFESTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:15:25 -0400
-To: Jeff Dike <jdike@addtoit.com>
-Cc: dhazelton@enter.net, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
-References: <20080603190235.GA9511@c2.user-mode-linux.org>
-	<20080603123211.e129c222.akpm@linux-foundation.org>
-	<200806031543.56864.dhazelton@enter.net>
-	<878wxmfg99.fsf@hades.wkstn.nix>
-	<20080603130709.fcf6a751.akpm@linux-foundation.org>
-	<20080603210048.GA12182@c2.user-mode-linux.org>
-	<4846A75E.40305@goop.org>
-	<20080604193715.GA11943@c2.user-mode-linux.org>
-	<4846F577.10603@goop.org>
-	<20080605153008.GC7311@c2.user-mode-linux.org>
-From: Nix <nix@esperi.org.uk>
-Emacs: more boundary conditions than the Middle East.
-Date: Thu, 05 Jun 2008 19:14:30 +0100
-In-Reply-To: <20080605153008.GC7311@c2.user-mode-linux.org> (Jeff Dike's message of "Thu, 5 Jun 2008 11:30:08 -0400")
-Message-ID: <87k5h392bd.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Thu, 5 Jun 2008 14:19:00 -0400
+Message-ID: <fa686aa40806051118y39cbf14fye5268c819d4bbbfc@mail.gmail.com>
+Date: Thu, 5 Jun 2008 12:18:56 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] [RFC v3] OF: OpenFirmware bindings for the mmc_spi driver
+Cc: "Pierre Ossman" <drzeus-mmc@drzeus.cx>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Jochen Friedrich" <jochen@scram.de>,
+       "Segher Boessenkool" <segher@kernel.crashing.org>,
+       "Gary Jennejohn" <garyj@denx.de>,
+       "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080605180058.GA21429@polina.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-CTc-dcc2-Metrics: hades 1031; Body=6 Fuz1=6 Fuz2=6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080605161624.GA517@polina.dev.rtsoft.ru>
+	 <fa686aa40806050945h5e61910flb63a8d00e1d2b0e8@mail.gmail.com>
+	 <20080605172723.GA14514@polina.dev.rtsoft.ru>
+	 <fa686aa40806051036x22cd6a2bkc58650f5e69960fe@mail.gmail.com>
+	 <20080605180058.GA21429@polina.dev.rtsoft.ru>
+X-Google-Sender-Auth: d8eb40d09a5af812
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5 Jun 2008, Jeff Dike verbalised:
-> Aha, I was looking at timer_* and not getting reasonable-looking
-> results.  The one questionable aspect of this is that I need to pull
-> in a new library (librt) and I wonder how many people don't have it
-> installed...
-
-It comes with glibc, and even ls uses it (for clock_gettime(), to
-determine what format to use for date display).
-
-I'd say using it is about as safe as can be.
-
-> Anyway, the patch below seems to make the guest behave reasonably in
-> the face of the host time doing funky things...
+On Thu, Jun 5, 2008 at 12:00 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Jun 05, 2008 at 11:36:09AM -0600, Grant Likely wrote:
+>> On Thu, Jun 5, 2008 at 11:27 AM, Anton Vorontsov
+>> <avorontsov@ru.mvista.com> wrote:
+>> > Well, I mentioned the usb_add_hcd()-alike approach for the mmc_spi
+>> > host... The absence of enthusiasm I equaled to "no".
+>> >
+>> > Heh.
+>>
+>> I'm allergic to USB HCD code; I was probably having convulsions under my desk.
 >
-> Give it a spin and let me know how it does.  If there aren't any
-> problems, I'll get it into mainline.
+> :-)
+>
+> Ok, I also mentioned drivers/ata/pata_of_platform.c (OF version is using
+> common code from drivers/ata/pata_platform.c).
+>
+> Please look there, and tell me if this is what you have in mind. (ignore
+> _probe in the __pata_platform_probe name. Imagine
+> pata_platform_add_controller or something).
 
-Rebuilding for a test now.
+Yes, I like that.  I've done something very similar for drivers with
+both of and non-of bindings.  For another example, this time all
+contained within a single .c file, see drivers/video/xilinxfb.c
+
+>> > p.s.
+>> > Btw, you forgot another downside of v2 approach: struct spi_driver
+>> > duplication... Not sure if everyone will be happy about it.
+>> >
+>> > Though, v2 is only version where we can make modular OF_MMC_SPI.
+>>
+>> I think we've got our wires crossed.  I'm not referring to the option
+>> of an of_mmc_spi driver registering an mmc_spi device (which can then
+>> be probed by the mmc_spi_driver).
+>
+> I'm not refrering to this option either.
+
+Okay, I'm confused then.  Where is the duplication of struct spi_driver?
+
+Cheers,
+g.
 
 -- 
-`If you are having a "ua luea luea le ua le" kind of day, I can only
- assume that you are doing no work due [to] incapacitating nausea caused 
- by numerous lazy demons.' --- Frossie
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
