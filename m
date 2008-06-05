@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761003AbYFESXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbYFESYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761003AbYFESXe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 14:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbYFESX0
+	id S1761332AbYFESYR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 14:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbYFESYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 14:23:26 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:38951 "EHLO smtp4.pp.htv.fi"
+	Thu, 5 Jun 2008 14:24:08 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:55528 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753684AbYFESXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 14:23:25 -0400
-Date: Thu, 5 Jun 2008 21:22:37 +0300
+	id S1753944AbYFESYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 14:24:07 -0400
+Date: Thu, 5 Jun 2008 21:23:28 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, zippel@linux-m68k.org
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] m68k: make multi_defconfig the default defconfig
-Message-ID: <20080605182235.GB1469@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@suse.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, rmk@arm.linux.org.uk
+Subject: [2.6 patch] remove include/linux/pm_legacy.h
+Message-ID: <20080605182311.GC1469@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,23 +25,98 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems to match the intention behind multi_defconfig to make it the 
-default defconfig.
+This patch removes the obsolete and no longer used 
+include/linux/pm_legacy.h
 
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-55c8d7ed853df41c5fe97a1e529a2ddeeded98ef diff --git a/arch/m68k/Makefile b/arch/m68k/Makefile
-index b15173f..8133dbc 100644
---- a/arch/m68k/Makefile
-+++ b/arch/m68k/Makefile
-@@ -13,7 +13,7 @@
- # Copyright (C) 1994 by Hamish Macdonald
- #
+
+BTW: arch/arm/mach-sa1100/h3600.c:h3800_pm_callback() still tries to 
+     handle PM_{SUSPEND,RESUME}, but that's not touched by this patch.
+
+ arch/frv/kernel/pm.c            |    1 
+ arch/mips/au1000/common/power.c |    1 
+ arch/x86/kernel/apm_32.c        |    1 
+ include/linux/pm_legacy.h       |   35 --------------------------------
+ 4 files changed, 38 deletions(-)
+
+b72cb105a5c8e961825b6ec9558c7c7ab4c18070 diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
+index 73f3aee..d1113c5 100644
+--- a/arch/frv/kernel/pm.c
++++ b/arch/frv/kernel/pm.c
+@@ -14,7 +14,6 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/pm.h>
+-#include <linux/pm_legacy.h>
+ #include <linux/sched.h>
+ #include <linux/interrupt.h>
+ #include <linux/sysctl.h>
+diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
+index 2166b9e..bd854a6 100644
+--- a/arch/mips/au1000/common/power.c
++++ b/arch/mips/au1000/common/power.c
+@@ -31,7 +31,6 @@
  
--KBUILD_DEFCONFIG := amiga_defconfig
-+KBUILD_DEFCONFIG := multi_defconfig
+ #include <linux/init.h>
+ #include <linux/pm.h>
+-#include <linux/pm_legacy.h>
+ #include <linux/sysctl.h>
+ #include <linux/jiffies.h>
  
- # override top level makefile
- AS += -m68020
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index bf9290e..fa1f3be 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -218,7 +218,6 @@
+ #include <linux/time.h>
+ #include <linux/sched.h>
+ #include <linux/pm.h>
+-#include <linux/pm_legacy.h>
+ #include <linux/capability.h>
+ #include <linux/device.h>
+ #include <linux/kernel.h>
+diff --git a/include/linux/pm_legacy.h b/include/linux/pm_legacy.h
+deleted file mode 100644
+index 446f4f4..0000000
+--- a/include/linux/pm_legacy.h
++++ /dev/null
+@@ -1,35 +0,0 @@
+-#ifndef __LINUX_PM_LEGACY_H__
+-#define __LINUX_PM_LEGACY_H__
+-
+-
+-#ifdef CONFIG_PM_LEGACY
+-
+-/*
+- * Register a device with power management
+- */
+-struct pm_dev __deprecated *
+-pm_register(pm_dev_t type, unsigned long id, pm_callback callback);
+-
+-/*
+- * Send a request to all devices
+- */
+-int __deprecated pm_send_all(pm_request_t rqst, void *data);
+-
+-#else /* CONFIG_PM_LEGACY */
+-
+-static inline struct pm_dev *pm_register(pm_dev_t type,
+-					 unsigned long id,
+-					 pm_callback callback)
+-{
+-	return NULL;
+-}
+-
+-static inline int pm_send_all(pm_request_t rqst, void *data)
+-{
+-	return 0;
+-}
+-
+-#endif /* CONFIG_PM_LEGACY */
+-
+-#endif /* __LINUX_PM_LEGACY_H__ */
+-
 
