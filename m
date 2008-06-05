@@ -1,88 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762920AbYFETBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYFETDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762920AbYFETBn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 15:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbYFETBe
+	id S1762562AbYFETDW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 15:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYFETDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 15:01:34 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:40029 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754613AbYFETBc (ORCPT
+	Thu, 5 Jun 2008 15:03:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37311 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752066AbYFETDO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 15:01:32 -0400
-Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Grant Grundler <grundler@google.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, mgross@linux.intel.com,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <da824cf30806051134u4fb8d419p2ba2dafcb1ba33a7@mail.gmail.com>
-References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
-	 <da824cf30806041106p1de2355fg38594fcb9dcbf203@mail.gmail.com>
-	 <20080605235322L.fujita.tomonori@lab.ntt.co.jp>
-	 <da824cf30806051134u4fb8d419p2ba2dafcb1ba33a7@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 05 Jun 2008 14:01:28 -0500
-Message-Id: <1212692488.4241.8.camel@localhost.localdomain>
+	Thu, 5 Jun 2008 15:03:14 -0400
+Date: Thu, 5 Jun 2008 12:02:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Thomas Tuttle" <ttuttle@google.com>
+Cc: mpm@selenic.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] pagemap: Modify add_to_pagemap to use copy_to_user
+ instead of put_user.
+Message-Id: <20080605120221.c09dc274.akpm@linux-foundation.org>
+In-Reply-To: <4ca0a85e0806050804q4c164105uc386dcae2ccd21d@mail.gmail.com>
+References: <4ca0a85e0806050804q4c164105uc386dcae2ccd21d@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-06-05 at 11:34 -0700, Grant Grundler wrote:
-> On Thu, Jun 5, 2008 at 7:49 AM, FUJITA Tomonori
-> <fujita.tomonori@lab.ntt.co.jp> wrote:
-> ...
-> >> You can easily emulate SSD drives by doing sequential 4K reads
-> >> from a normal SATA HD. That should result in ~7-8K IOPS since the disk
-> >> will recognize the sequential stream and read ahead. SAS/SCSI/FC will
-> >> probably work the same way with different IOP rates.
-> >
-> > Yeah, probabaly right. I thought that 10GbE give the IOMMU more
-> > workloads than SSD does and tried to emulate something like that.
-> 
-> 10GbE might exercise a different code path. NICs typically use map_single
+On Thu, 5 Jun 2008 11:04:21 -0400
+"Thomas Tuttle" <ttuttle@google.com> wrote:
 
-map_page, actually, but effectively the same thing.  However, all
-they're really doing is their own implementation of sg list mapping.
+> While fiddling with pagemap, I discovered a bug in add_to_pagemap.
 
-> and storage devices typically use map_sg.  But they both exercise the same
-> underlying resource management code since it's the same IOMMU they poke at.
-> 
-> ...
-> >> Sorry, I didn't see a replacement for the deferred_flush_tables.
-> >> Mark Gross and I agree this substantially helps with unmap performance.
-> >> See http://lkml.org/lkml/2008/3/3/373
-> >
-> > Yeah, I can add a nice trick in parisc sba_iommu uses. I'll try next
-> > time.
-> >
-> > But it probably gives the bitmap method less gain than the RB tree
-> > since clear the bitmap takes less time than changing the tree.
-> >
-> > The deferred_flush_tables also batches flushing TLB. The patch flushes
-> > TLB only when it reaches the end of the bitmap (it's a trick that some
-> > IOMMUs like SPARC does).
-> 
-> The batching of the TLB flushes is the key thing. I was being paranoid
-> by not marking the resource free until after the TLB was flushed. If we
-> know the allocation is going to be circular through the bitmap, flushing
-> the TLB once per iteration through the bitmap should be sufficient since
-> we can guarantee the IO Pdir resource won't get re-used until a full
-> cycle through the bitmap has been completed.
+so...  afaict we have some fairly significant problems in here and a
+version 2 of the patchset is in order?
 
-Not necessarily ... there's a safety vs performance issue here.  As long
-as the iotlb mapping persists, the device can use it to write to the
-memory.  If you fail to flush, you lose the ability to detect device dma
-after free (because the iotlb may still be valid).  On standard systems,
-this happens so infrequently as to be worth the tradeoff.  However, in
-virtualised systems, which is what the intel iommu is aimed at, stale
-iotlb entries can be used by malicious VMs to gain access to memory
-outside of their VM, so the intel people at least need to say whether
-they're willing to accept this speed for safety tradeoff.
+If so, when preparing that patchset please do have a think about which
+of the fixes you believe should be backported into 2.6.25.x and prepare
+the patches so that those fixes come first, to ease that backporting.
 
-James
-
-
+Thanks.
