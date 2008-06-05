@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763474AbYFEB4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762919AbYFEB7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763474AbYFEB4u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 21:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbYFEB4i
+	id S1762919AbYFEB7N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 21:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYFEB66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 21:56:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53866 "EHLO mx1.suse.de"
+	Wed, 4 Jun 2008 21:58:58 -0400
+Received: from mail.suse.de ([195.135.220.2]:53998 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756680AbYFEB4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 21:56:36 -0400
-Date: Thu, 5 Jun 2008 03:56:34 +0200
+	id S1752752AbYFEB66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 21:58:58 -0400
+Date: Thu, 5 Jun 2008 03:58:57 +0200
 From: Nick Piggin <npiggin@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
@@ -17,106 +17,28 @@ Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH 0/3] 64-bit futexes: Intro
-Message-ID: <20080605015634.GC4327@wotan.suse.de>
-References: <alpine.LFD.1.10.0805302109370.3141@woody.linux-foundation.org> <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org> <20080602185433.GB4081@elte.hu> <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org> <20080602230316.GA24159@elte.hu> <20080603032403.GA17089@wotan.suse.de> <alpine.LFD.1.10.0806041249470.3473@woody.linux-foundation.org> <alpine.LFD.1.10.0806041320020.3473@woody.linux-foundation.org>
+Message-ID: <20080605015857.GD4327@wotan.suse.de>
+References: <alpine.LFD.1.10.0805302116440.3141@woody.linux-foundation.org> <4840D63F.2090407@redhat.com> <alpine.LFD.1.10.0805311438080.3141@woody.linux-foundation.org> <20080602185433.GB4081@elte.hu> <alpine.LFD.1.10.0806021246060.3141@woody.linux-foundation.org> <20080602230316.GA24159@elte.hu> <20080603032403.GA17089@wotan.suse.de> <alpine.LFD.1.10.0806041249470.3473@woody.linux-foundation.org> <alpine.LFD.1.10.0806041320020.3473@woody.linux-foundation.org> <20080605015634.GC4327@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0806041320020.3473@woody.linux-foundation.org>
+In-Reply-To: <20080605015634.GC4327@wotan.suse.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 01:38:50PM -0700, Linus Torvalds wrote:
+On Thu, Jun 05, 2008 at 03:56:34AM +0200, Nick Piggin wrote:
 > 
-> 
-> On Wed, 4 Jun 2008, Linus Torvalds wrote:
-> > 
-> > So when you do
-> > 
-> > 	movb reg,(byteptr)
-> > 	movl (byteptr),reg
-> > 
-> > you may actually get old data in the upper 24 bits, along with new data in 
-> > the lower 8.
-> 
-> Put another way: the CPU may internally effectively rewrite the two 
-> instructions as
-> 
-> 	movb reg,tmpreg		(tmp = writebuffer)
-> 	movl (byteptr),reg	(do the 32-bit read of the old cached contents)
-> 	movb tmpreg,reg		(writebuffer snoop by reads)
-> 	movb tmpreg,(byteptr)	(writebuffer actually drains into cacheline)
-> 
-> and *if* your algorithm is robust wrt these kinds of rewrites, you're ok. 
-> But notice how there are two accesses to the cacheline, and how they are 
-> actually in the "wrong" order, and how the cacheline could have been 
-> updated by another CPU in between.
-> 
-> Does this actually happen? Yeah, I do believe it does. Is it a deathknell 
-> for anybody trying to be clever with overlapping reads/writes? No, you can 
-> still have things like causality rules that guarantee that your algorithm 
-> is perfectly stable in the face of these kinds of reordering. But it *is* 
-> one of the few re-orderings that I think is theoretically archtiecturally 
-> visible.
-> 
-> For example, let's start out with a 32-bit word that contains zero, and 
-> three CPU's. One CPU does
-> 
-> 	cmpxchgl 0->0x01010101,mem
-> 
-> another one does
-> 
-> 	cmpxchlg 0x01010101->0x02020202,mem
-> 
-> and the third one does that
-> 
-> 	movb $0x03,mem
-> 	movl mem,reg
-> 
-> and after it all completed, you may have 0x02020203 in memory, but "reg" 
-> on the third CPU contains 0x01010103.
-> 
-> Note how NO OTHER CPU could _possibly_ have seen that value! That value 
-> never ever existed in any caches. If the final value was 0x02020203, then 
-> both the cmpxchgl's must have worked, so the cache coherency contents 
-> *must* have gone from 0 -> 0x01010101 -> 0x02020202 -> 0x02020203 (with 
-> the movb actually getting the exclusive cache access last).
-> 
-> So the third CPU saw a value for that load that actually *never* existed 
-> in any cache-line: 0x01010103.  Exactly because the x86 memory ordering 
-> allows the store buffer contents to be forwarded within a CPU core.
-> 
-> And this is why atomic locked instructions are special. They bypass the 
-> store buffer (or at least they _act_ as if they do - they likely actually 
-> use the store buffer, but they flush it and the instruction pipeline 
-> before the load and wait for it to drain after, and have a lock on the 
-> cacheline that they take as part o the load, and release as part of the 
-> store - all to make sure that the cacheline doesn't go away in between and 
-> that nobody else can see the store buffer contents while this is going 
-> on).
-> 
-> This is also why there is so much room for improvement in locked 
-> instruction performance - you don't _have_ to flush things if you just are 
-> very careful about tracking how and when you use which elements in the 
-> store buffer, and track the ordering of cache accesses by all of this.
+> The other thing that could be possible, and I'd imagine maybe more likely
+> to be implemented in a real CPU because it should give more imrpovement
+> (and which does break my algorithm) is just that the load to the cacheline
+> may get to execute first, then if the cacheline gets evicted and
+> modified by another CPU before our store completes, we effectively see
+> store/load reordering again.
 
-I see what you're saying, but I hadn't really considered it before.
-Not that I've attempted to do much of these sub-word operations
-without consulting you first (which brings us here) ;).
-
-I'd have thought that for a case like this, you'd simply hit the store
-alias logic and store forwarding would stall because it doesn't have
-the full data.
-
-I'd like to know for sure.
-
-The other thing that could be possible, and I'd imagine maybe more likely
-to be implemented in a real CPU because it should give more imrpovement
-(and which does break my algorithm) is just that the load to the cacheline
-may get to execute first, then if the cacheline gets evicted and
-modified by another CPU before our store completes, we effectively see
-store/load reordering again.
-
-
+Well, I should qualify that: it doesn't actually break my algorithm
+because you can still implement the unlock without atomic RMWs.
+This may require you to have an mfence there, but we can still get
+away without atomics (whether that's much cheaper or not, I haven't
+measured recently!)
