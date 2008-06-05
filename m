@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762163AbYFEAfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761318AbYFEAuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762163AbYFEAfV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Jun 2008 20:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbYFEAfJ
+	id S1761318AbYFEAuK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Jun 2008 20:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYFEAt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Jun 2008 20:35:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57853 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757984AbYFEAfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Jun 2008 20:35:08 -0400
-Date: Wed, 4 Jun 2008 20:35:04 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: "Daniel J Blueman" <daniel.blueman@gmail.com>
-Cc: linux-nfs@vger.kernel.org, nfsv4@linux-nfs.org,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.26-rc4] mount.nfsv4/memory poisoning issues...
-Message-ID: <20080604203504.62730951@tleilax.poochiereds.net>
-In-Reply-To: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-References: <6278d2220806041633n3bfe3dd2ke9602697697228b@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.8; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Jun 2008 20:49:58 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:42785 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbYFEAt5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Jun 2008 20:49:57 -0400
+Date: Wed, 4 Jun 2008 20:49:25 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Thorsten Knabe <linux@thorsten-knabe.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Linux 2.6.25.4 task_struct leak
+Message-ID: <20080605004925.GA15461@c2.user-mode-linux.org>
+References: <483EC624.90503@thorsten-knabe.de> <20080601213134.GJ4018@sequoia.sous-sol.org> <20080602010546.GA8578@c2.user-mode-linux.org> <484719C7.2020502@thorsten-knabe.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <484719C7.2020502@thorsten-knabe.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008 00:33:54 +0100
-"Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
+On Thu, Jun 05, 2008 at 12:40:07AM +0200, Thorsten Knabe wrote:
+> I can start other 32-bit applications, for example compile an UML
+> kernel, within the chroot without leaking task_structs, but as soon as I
+> start an UML instance, I see leaked task_structs. Starting and
+> immediately shutting down an UML instacne leaks approximately 2000
+> task_structs. The number of leaked task_structs on the host seems to be
+> equal to the number of processes that have been created (and destroyed)
+> within the UML instances.
 
-> Having experienced 'mount.nfs4: internal error' when mounting nfsv4 in
-> the past, I have a minimal test-case I sometimes run:
-> 
-> $ while :; do mount -t nfs4 filer:/store /store; umount /store; done
-> 
-> After ~100 iterations, I saw the 'mount.nfs4: internal error',
-> followed by symptoms of memory corruption [1], a locking issue with
-> the reporting [2] and another (related?) memory-corruption issue
-> (off-by-1?) [3]. A little analysis shows memory being overwritten by
-> (likely) a poison value, which gets complicated if it's not
-> use-after-free...
-> 
-> Anyone dare confirm this issue? NFSv4 server is x86-64 Ubuntu 8.04
-> 2.6.24-18, client U8.04 2.6.26-rc4; batteries included [4].
-> 
-> I'm happy to decode addresses, test patches etc.
-> 
-> Daniel
-> 
+I misunderstood - I thought you were seeing a task_struct leak within
+UML rather than a leak on the host elicited by UML.
 
-Looks like it fell down while trying to take down the kthread during a
-failed mount attempt. I have to wonder if I might have introduced a
-race when I changed nfs4 callback thread to kthread API. I think we may
-need the BKL around the last 2 statements in the main callback thread
-function. If you can easily reproduce this, could you test the
-following patch and let me know if it helps?
+> As far as I understand the UML code in the kernel, an UML kernel uses
+> some unusual clone() flags when creating new processes, which are seldom
+> used by other applications and could be related to the bug.
 
-Note that this patch is entirely untested, so test it someplace
-non-critical ;-).
+Yes, it does.  I don't see the flags causing a leak, though.  What
+might be more likely (although I really have no idea) is ptrace.
+Possibly a reference is held when it should have been dropped.  This
+might also show up with strace or gdb.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
+      	   	   Jeff
 
-
-diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
-index c1e7c83..a3e83f9 100644
---- a/fs/nfs/callback.c
-+++ b/fs/nfs/callback.c
-@@ -90,9 +90,9 @@ nfs_callback_svc(void *vrqstp)
- 		preverr = err;
- 		svc_process(rqstp);
- 	}
--	unlock_kernel();
- 	nfs_callback_info.task = NULL;
- 	svc_exit_thread(rqstp);
-+	unlock_kernel();
- 	return 0;
- }
- 
+-- 
+Work email - jdike at linux dot intel dot com
