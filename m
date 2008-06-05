@@ -1,120 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYFEJfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYFEJio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbYFEJfv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 05:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYFEJfk
+	id S1755352AbYFEJio (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 05:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYFEJig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 05:35:40 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48712 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751551AbYFEJfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 05:35:39 -0400
-Date: Thu, 5 Jun 2008 11:35:37 +0200
-From: Jan Kara <jack@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       hidehiro.kawai.ez@hitachi.com, sct@redhat.com, adilger@sun.com,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       jbacik@redhat.com, cmm@us.ibm.com, yumiko.sugita.yf@hitachi.com,
-       satoshi.oshima.fk@hitachi.com
-Subject: Re: [PATCH 1/5] jbd: strictly check for write errors on data
-	buffers
-Message-ID: <20080605093536.GE27370@duck.suse.cz>
-References: <4843CE15.6080506@hitachi.com> <4843CEED.9080002@hitachi.com> <20080603153050.fb99ac8a.akpm@linux-foundation.org> <20080604101925.GB16572@duck.suse.cz> <20080604111911.c1fe09c6.akpm@linux-foundation.org> <20080604212202.GA8727@mit.edu> <20080604145848.e3da6f20.akpm@linux-foundation.org> <20080604225155.GB8727@mit.edu>
+	Thu, 5 Jun 2008 05:38:36 -0400
+Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:48506 "EHLO
+	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbYFEJig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 05:38:36 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4847B415.2080708@cam.ac.uk>
+Date: Thu, 05 Jun 2008 10:38:29 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080604225155.GB8727@mit.edu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jean Delvare <khali@linux-fr.org>
+CC: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>,
+       Andrew Morton <akpm@osdl.org>, Torokhov <dmitry.torokhov@gmail.com>,
+       Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       HWMON <lm-sensors@lm-sensors.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Pavel Machek <pavel@suse.cz>, Yan@ATrpms.net, Dmitry@ATrpms.net,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [lm-sensors] [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection
+ System 3D ACPI driver -- please review!
+References: <1212235533.3815.5.camel@localhost>	<4846EBF5.2030406@tremplin-utc.net>	<20080604225830.1dff64fc@hyperion.delvare>	<20080604230510.GB30475@elf.ucw.cz>	<484728B2.1000209@tremplin-utc.net> <20080605082950.6957f1a2@hyperion.delvare>
+In-Reply-To: <20080605082950.6957f1a2@hyperion.delvare>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 04-06-08 18:51:55, Theodore Tso wrote:
-> On Wed, Jun 04, 2008 at 02:58:48PM -0700, Andrew Morton wrote:
-> > On Wed, 4 Jun 2008 17:22:02 -0400
-> > Theodore Tso <tytso@mit.edu> wrote:
-> > 
-> > > On Wed, Jun 04, 2008 at 11:19:11AM -0700, Andrew Morton wrote:
-> > > > Does any other filesystem driver turn the fs read-only on the first
-> > > > write-IO-error?
-> > 
+Jean Delvare wrote:
+> On Thu, 05 Jun 2008 01:43:46 +0200, Éric Piel wrote:
+>> 05-06-08 01:05, Pavel Machek wrote/a écrit:
+>>>> So my advice is that you don't wait for a review from the hwmon people,
+>>>> because apparently we don't have much interest in this type of device,
+>>>> so you'll be waiting forever. You're much better adding the mdps driver
+>>>> to drivers/misc through Andrew Morton, at least until someone takes
+>>>> care of creating a subsystem for this type of devices and move all
+>>>> existing drivers there.
+>>> Just create drivers/accel ... accelerometers are quite common these
+>>> days. Going to drivers/misc is okay, too, I guess -- moves are easy
+>>> with git ;-).
+>> Yes, why not do one little step to the correct direction now and create
+>> drivers/accel, it will likely be the chosen name anyway! That will not
+>> yet be a "real" subsystem, just a place to put all the related drivers
+>> already present together.
 > 
-> For failures to write to data blocks, I don't think any other
-> filesystems turn the filesystem read-only.  Not that many other
-> filesystems do the remount on read-only thing in general; remounting
-> read/only is something that might be unique to ext2/3/4.
+> Well, I would expect all these accelerometer drivers to have a common,
+> standardized interface, so this should most probably become a real
+> subsystem in the long run.
 > 
-> > > It is similarly insane to ask a filesystem to figure out that a newly
-> > > plugged in USB stick is the same one that the user had accidentally
-> > > unplugged 30 seconds ago.  We don't want to put that kind of low-level
-> > > knowlede about storage details in each different filesystem.
-> > > 
-> > > A much better place to put that kind of smarts is in a multipath
-> > > module which sits in between the device and the filesystem.  It can
-> > > retry writes from a transient failure, if a path goes down or if a
-> > > iSCSI device temporarily drops off the network.
-> > 
-> > That's fine in theory, but we don't do any if that right now, do we?
+>> Anyone against this idea?
 > 
-> No, but I think it's insane to put any of this into the filesystem.  I
-> don't want to put words in other people's mouths, but Mingming and I
-> were chatting with Chris Mason the last two days at a BTRFS workshop
-> (which is why we've been a bit slow on responding), and when discussed
-> this thread informally, he agreed that it was really bad idea to try
-> to put this kind of retry logic in an individual filesystem.
-> 
-> > >  But if a filesystem
-> > > gets a write failure, it has to assume that the write failure is
-> > > permanent.
-> > 
-> > To that sector, yes.  But to the entire partition?
-> 
-> I agree it's a bad idea.  OTOH, we really need a good way of notifying
-> a system daemon or administrator, and not just rely on the application
-> to DTRT when it receives an -EIO.  Probably what we should do is (1)
-> return -EIO, (2) send a uevent that includes as much information as
-> possible.  At the minimum, the block that had the write (or read)
-> error, and if available the file name involved, and application and/or
-> pid involved.  That way, the policy of what should happen in case of a
-> data I/O error can be informed by what write just failed.  It might be
-> that if the failure is to some critical application data, the right
-> thing to do is to kill of the application server and let the HA system
-> bring up the hotbackup.  Or if the failure is writing to a log file,
-> some other recovery procedure is the right thing.   
-> 
-> But forcing the entire filesystem read-only just because of a write
-> failure to a data block is probably not the best way to go.
-  OK, you've convinced me that aborting journal because of EIO on data
-block isn't the best thing to do. But it is a bit problematic to return EIO
-to userspace - we usually find this in commit code so we work on behalf of
-kjournald and user already thinks the write has succeeded (which is
-basically problem of any cached write). So the best thing we can do is set
-AS_EIO on the mapping and hope userspace will notice (we report such error
-when user does fsync/sync/sync_file_range).
-  Sending some event to userspace is certainly possible but can hardly be
-more specific than "IO error at block %lu of file %s".
+> I am in favor of it.
+The upshot of the discussion Jean referenced was that the there were a 
+number of other devices / sensors that will form part of the same system.
 
-> > But afaict this patch changes things so that if we get a write failure
-> > in a data block we make the entire fs read-only.  Which, as I said, is
-> > often "dead box".
-> > 
-> > This seems like a quite major policy change to me.
-> 
-> Agreed, and it's not appropriate.  I could imagine that for some
-> setups it is the right policy, but the kernel should not be setting
-> policy like this.  Maybe as a new tunable in the superblock, or maybe
-> via a round-trip to userspace via a uevent, but certainly not as the
-> new default behavior.
-  Yes, I believe a tunable in superblock controlling how do we behave on
-EIO error in data block would be the best solution.
+For an initial bash I'm throwing in a couple of accelerometers, ADC's and
+probably one or two other sensors as well.  Haven't come up with a good
+name as yet, but the point is that accelerometers would be just part of
+the relevant subsystem.
 
-> Apologies, I'm still catching up on patches sent in the past few days,
-> so I haven't had a chance to do a detailed review on Kawai-san's
-> patches yet.  I do agree that if this patch is forcing the entire
-> filesystem read-only on a write-failure to a data block, it's probably
-> not appropriate.
+Based on one suggestion (and current layout in my source tree), 
+drivers/industrialio/accelerometer
+drivers/industrialio/adc
+and crucially for all those weird and wonderful sensors,
+drivers/industrialio/misc
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+The reason for making it an io system is that many chips combine ADCs and
+DACs.  Also suggestions for alternative names would be most welcome.
+
+Still, it may take some time to iron out the various kinks in this system
+and get it fully tested, so may be worth putting stuff elsewhere for now
+with the intention to move it as and when the more unified stuff has been
+written.
+
+Also, the LI3L02DQ (very similar to the chip you are using) is one of my
+test chips, so combining the two drivers should be straight forward.
+Also the driver I have is SPI only, so this may give us an easy way to
+test a combined driver.
+
+Jonathan
