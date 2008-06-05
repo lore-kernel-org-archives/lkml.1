@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbYFEVe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYFEVmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761451AbYFEVe5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 17:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYFEVes
+	id S1757349AbYFEVmz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 17:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbYFEVmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 17:34:48 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:39260 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752171AbYFEVer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 17:34:47 -0400
-Message-ID: <48485BEB.6030107@krogh.cc>
-Date: Thu, 05 Jun 2008 23:34:35 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Thu, 5 Jun 2008 17:42:45 -0400
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:50242 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752588AbYFEVmo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 17:42:44 -0400
+To: Jeff Dike <jdike@addtoit.com>
+Cc: dhazelton@enter.net, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/6] UML - Deal with host time going backwards
+References: <20080603123211.e129c222.akpm@linux-foundation.org>
+	<200806031543.56864.dhazelton@enter.net>
+	<878wxmfg99.fsf@hades.wkstn.nix>
+	<20080603130709.fcf6a751.akpm@linux-foundation.org>
+	<20080603210048.GA12182@c2.user-mode-linux.org>
+	<4846A75E.40305@goop.org>
+	<20080604193715.GA11943@c2.user-mode-linux.org>
+	<4846F577.10603@goop.org>
+	<20080605153008.GC7311@c2.user-mode-linux.org>
+	<87k5h392bd.fsf@hades.wkstn.nix>
+	<20080605194732.GB13348@c2.user-mode-linux.org>
+From: Nix <nix@esperi.org.uk>
+Emacs: where editing text is like playing Paganini on a glass harmonica.
+Date: Thu, 05 Jun 2008 22:41:55 +0100
+In-Reply-To: <20080605194732.GB13348@c2.user-mode-linux.org> (Jeff Dike's message of "Thu, 5 Jun 2008 15:47:32 -0400")
+Message-ID: <87bq2f8spo.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ian Kent <raven@themaw.net>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Jeff Moyer <jmoyer@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.26-rc4
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>  <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>  <20080603095713.GR28946@ZenIV.linux.org.uk>  <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>  <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>  <20080603104035.GT28946@ZenIV.linux.org.uk>  <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>  <20080603105258.GV28946@ZenIV.linux.org.uk>  <1212499623.3025.46.camel@raven.themaw.net>  <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org> <1212651099.3047.44.camel@raven.themaw.net> <alpine.LFD.1.10.0806051427310.3473@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0806051427310.3473@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-DCC-dcc-servers-Metrics: hades 1049; Body=6 Fuz1=6 Fuz2=6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 5 Jun 2008, Ian Kent wrote:
->> Keep in mind this doesn't address any other autofs4 issues but I it
->> should allow us to identify if this was in fact the root cause of the
->> problem Jesper reported.
-> 
-> Jesper, can you test this? I think you said you could trigger this in ~24 
-> hours or so? I'd love to have some testing of some heavy autofs user. Even 
-> if it's not a guarantee of a fix (due to reproducing the bug not being 
-> entirely trivial), at least I'd like to know that it doesn't introduce any 
-> obvious new problems either..
+On 5 Jun 2008, Jeff Dike uttered the following:
 
-Yes, I'll apply it an report back. Dont expect anything before early 
-next week.
+> On Thu, Jun 05, 2008 at 07:14:30PM +0100, Nix wrote:
+>> It comes with glibc, and even ls uses it (for clock_gettime(), to
+>> determine what format to use for date display).
+>> 
+>> I'd say using it is about as safe as can be.
+>
+> Without adding -lrt to the link line here (F7), I get
 
-Jesper
+Yes, you'll definitely *need* -lrt for clock_*().
+
+> arch/um/os-Linux/built-in.o: In function `nsecs':
+> /home/jdike/linux/2.6/linux-2.6.22/arch/um/os-Linux/time.c:84: undefined reference to `clock_gettime'
+> collect2: ld returned 1 exit status
+>
+> A little odd for a system call...
+
+I think it's in there because it's part of the POSIX realtime
+extensions, so you should have to, as it were, assent to using something
+that's not as portable as just using libc. It makes more sense than
+libm, anyway.
+
+(It's completely moot for UML of course :) )
+
 -- 
-Jesper
+`If you are having a "ua luea luea le ua le" kind of day, I can only
+ assume that you are doing no work due [to] incapacitating nausea caused 
+ by numerous lazy demons.' --- Frossie
