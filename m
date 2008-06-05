@@ -1,108 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbYFERKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759328AbYFERN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbYFERKl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 13:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbYFERKU
+	id S1759328AbYFERN7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 13:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYFERNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 13:10:20 -0400
-Received: from mail.pager.net ([209.253.16.26]:36092 "EHLO barracuda.pager.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752427AbYFERKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 13:10:17 -0400
-X-ASG-Debug-ID: 1212685816-683d00390000-xx1T2L
-X-Barracuda-URL: http://192.168.1.240:8000/cgi-bin/mark.cgi
-From: Geoffrey Wossum <geoffrey@pager.net>
-Organization: Long Range Systems
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-X-ASG-Orig-Subj: Re: AT32 ASoC Driver Patches on alsa-devel
-Subject: Re: AT32 ASoC Driver Patches on alsa-devel
-Date: Thu, 5 Jun 2008 12:10:47 -0500
-User-Agent: KMail/1.9.9
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org
-References: <200806050851.47319.geoffrey@pager.net> <200806051000.56969.geoffrey@pager.net> <20080605182409.6285ee4b@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080605182409.6285ee4b@hskinnemo-gx745.norway.atmel.com>
+	Thu, 5 Jun 2008 13:13:51 -0400
+Received: from po-out-1718.google.com ([72.14.252.152]:41098 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbYFERNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 13:13:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=WA1Vo4zK606FTmfyVxErWKncKQh8GyLgZ9D1UzWIXQmjRLvudspaSS5gF4qIphcd7e
+         x6VV+irJYT0nzgjOac+RN8LuXo44BD9wvuTI1clJomdeFcw/OvDqFTNYpkMpl2JiYGzv
+         m2iss0tZd9NdEi77rotWLjUh9ikS7e/GeWIVA=
+Message-ID: <89cb5ede0806051013o15e2d51tb9acf9e237b15d38@mail.gmail.com>
+Date: Thu, 5 Jun 2008 20:13:48 +0300
+From: "Khaled Al-Hamwi" <khaled.linux@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: SMP Affinity Issue with IRQ#
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200806051210.47986.geoffrey@pager.net>
-X-Barracuda-Connect: UNKNOWN[192.168.1.1]
-X-Barracuda-Start-Time: 1212685816
-X-Barracuda-Virus-Scanned: by Barracuda Spam Firewall at pager.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 June 2008 11:24:09 am Haavard Skinnemoen wrote:
-> Geoffrey Wossum <geoffrey@pager.net> wrote:
-> > On Thursday 05 June 2008 09:22:06 am Haavard Skinnemoen wrote:
-> > > Geoffrey Wossum <geoffrey@pager.net> wrote:
+Hi list,
 
-> > To paraphrase Andy Tanenbaum, the great thing about standards is there's
-> > so many to choose from.
->
-> Heh.
+I am trying to evaluate the performance of a Linux box when working as
+IP forwarder.
+I have a hardware traffic generator IXIA T400 on one end.
+On the other end, I have a Linux box with kernel 2.6.16 and quad-core xeon CPU.
 
-I quote that a lot.  Along with Philip K. Dicks's "Sometimes an appropriate 
-response to reality is to go insane."
+These two systems are connected through two crossover Gigabit cables and NICs.
+The traffic is sent from IXIA through one NIC to the forwarding machine
+and then it is forwarded back through the other NIC to IXIA.
 
-> Hmm...I take it you're talking about the SSC driver? That is supposed
-> to be usable on AT91 as well, so perhaps the right thing to do is
-> porting the AT91 driver over to use it.
+I have two issues related to SMP affinity.
+The first one is that when I set the SMP affinity through
+/proc/irq/<IRQ#>/smp_affinity, it changes dynamically.
+Is there any load balancing in the system that changes the affinity
+after some time or after some packets are received?
+Is there a way to set it permanently?
 
-Yes, the SSC code.  It'd be cool if it abstracted out even more, but I 
-understand the difficulties in making that happen.
+The second issue is that changing the SMP affinity results in
+different delay and throughput measurements.
+I am assigning each NIC to a different CPU.
+If I used a different assignment but still each NIC is assigned to a
+different CPU, I am getting different performance results.
+I would expect that changing the assignment should yield the same
+performance results.
+The CPUs are identical and should have similar performance.
+Here, I have two examples of two different assignments:
+Example 1:
+/proc/irq/16/smp_affinity (eth0)  ->   CPU#1
+/proc/irq/20/smp_affinity (eth1)  ->   CPU#2
+Example 2:
+/proc/irq/16/smp_affinity (eth0)  ->   CPU#3
+/proc/irq/20/smp_affinity (eth1)  ->   CPU#2
+Which one of these two configurations can be used as a reference for
+performance evaluation?
 
-> I see you've added a few SSC-related constants...those should probably
-> go into include/linux/atmel-ssc.h.
+Any ideas??
 
-I wasn't sure if having these in atmel-ssc.h fit with ya'lls plans for it, but 
-if it does, great.
+Your help is appreciated.
 
-
-> >  But I needed an AT32 layer quickly, and I don't
-> > have any AT91 hardware, so I couldn't really go mucking about in the AT91
-> > code since I wouldn't be able to test it.  I don't feel especially bad,
-> > though, since at91_mci.c and atmel-mci.c commit essentially the same sin.
->
-> Yeah, I guess you're right. I do have a long-term goal merging those
-> two drivers, but it will be a bit difficult because the DMA interface
-> is quite different.
-
-The PDC interface is closer (if not exactly the same).  One issue is the SSC 
-interface, which you have said could be used on the AT91.  After that, the 
-main differences are that the DMA buffer has to be allocated differently, and 
-the mmap() implementation is different.
-
-> That's certainly a good reason, though I don't understand why reusing
-> code isn't important on non-SoC platforms.
-
-Please don't take my answer as authoritative, but I think it's because on a 
-typical PC the exact CODEC being used tends to be hidden from you.  And you 
-normally don't use I2S or PCM directly.  A PC sound card is more of a black 
-box.
-
-> Another good reason, but again I don't understand why power management
-> isn't important on PCs.
-
-It is important, and becoming more important all the time.  I think the main 
-reasons this isn't a priority on a PC right now are:
- - I think PC sound cards tend to be black boxes regarding power consumption, 
-especially those white box cards you can get at Fry's and similar places.   
- - A few extra mA aren't as important when you're plugged in, or you have a 
-laptop, which has a honkin' big battery compared to a PDA type device
- - A few extra mA are dwarfed by other things in a PC, like the processor.  My 
-Intel T7200 burns 34 W at full tilt.  The AT32AP7000 is going to be something 
-like, what, 250 mW?  Even throttled all the way down my T7200 is going to be 
-13 W.  Turning off all or part of the CODEC and saving 15 - 30 mW is a lot 
-bigger deal on the AVR32 than it would be on my laptop.
- - As you say, there is more code due to the power management, which requires 
-modifying a lot of working drivers, for little benefit in the forseeable 
-future.
-
----
-Geoffrey
-
-
-
+Thank you,
+Khaled
