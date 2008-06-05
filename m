@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbYFEPiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbYFEPij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbYFEPiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 11:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYFEPiM
+	id S1758842AbYFEPij (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 11:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbYFEPiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 11:38:12 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:54866
+	Thu, 5 Jun 2008 11:38:15 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:54890
 	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753243AbYFEPiL (ORCPT
+	with ESMTP id S1753243AbYFEPiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 11:38:11 -0400
+	Thu, 5 Jun 2008 11:38:12 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 0 of 3] mmu notifier v18
-Message-Id: <patchbomb.1212680167@duo.random>
-Date: Thu, 05 Jun 2008 17:36:07 +0200
+Subject: [PATCH 1 of 3] list_del_init_rcu
+X-Mercurial-Node: becc195598f802256a03467abc572078be32d84c
+Message-Id: <becc195598f802256a03.1212680168@duo.random>
+In-Reply-To: <patchbomb.1212680167@duo.random>
+Date: Thu, 05 Jun 2008 17:36:08 +0200
 From: Andrea Arcangeli <andrea@qumranet.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -37,8 +39,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This splits the list.h changes in patch number 1, mm_take_all_locks patch 2,
-and mmu-notifier-core becomes patch 3 as requested.
+From: Andrea Arcangeli <andrea@qumranet.com>
 
-mm_take/drop_all_locks have been cleaned up as requested to move the bitflips
-in proper methods outside the main vma loop.
+Introduces list_del_init_rcu and documents it (fixes a comment for
+list_del_rcu too).
+
+Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+
+diff -r 86e3ce291996 -r becc195598f8 include/linux/list.h
+--- a/include/linux/list.h	Wed Jun 04 10:35:03 2008 -0700
++++ b/include/linux/list.h	Thu Jun 05 17:30:14 2008 +0200
+@@ -747,7 +747,7 @@ static inline void hlist_del(struct hlis
+  * or hlist_del_rcu(), running on this same list.
+  * However, it is perfectly legal to run concurrently with
+  * the _rcu list-traversal primitives, such as
+- * hlist_for_each_entry().
++ * hlist_for_each_entry_rcu().
+  */
+ static inline void hlist_del_rcu(struct hlist_node *n)
+ {
+@@ -760,6 +760,34 @@ static inline void hlist_del_init(struct
+ 	if (!hlist_unhashed(n)) {
+ 		__hlist_del(n);
+ 		INIT_HLIST_NODE(n);
++	}
++}
++
++/**
++ * hlist_del_init_rcu - deletes entry from hash list with re-initialization
++ * @n: the element to delete from the hash list.
++ *
++ * Note: list_unhashed() on the node return true after this. It is
++ * useful for RCU based read lockfree traversal if the writer side
++ * must know if the list entry is still hashed or already unhashed.
++ *
++ * In particular, it means that we can not poison the forward pointers
++ * that may still be used for walking the hash list and we can only
++ * zero the pprev pointer so list_unhashed() will return true after
++ * this.
++ *
++ * The caller must take whatever precautions are necessary (such as
++ * holding appropriate locks) to avoid racing with another
++ * list-mutation primitive, such as hlist_add_head_rcu() or
++ * hlist_del_rcu(), running on this same list.  However, it is
++ * perfectly legal to run concurrently with the _rcu list-traversal
++ * primitives, such as hlist_for_each_entry_rcu().
++ */
++static inline void hlist_del_init_rcu(struct hlist_node *n)
++{
++	if (!hlist_unhashed(n)) {
++		__hlist_del(n);
++		n->pprev = NULL;
+ 	}
+ }
+ 
