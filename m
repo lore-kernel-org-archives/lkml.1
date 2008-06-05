@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbYFEGgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbYFEGuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbYFEGgU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 02:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYFEGgH
+	id S1753827AbYFEGuB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 02:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYFEGtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 02:36:07 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:6273 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbYFEGgF (ORCPT
+	Thu, 5 Jun 2008 02:49:51 -0400
+Received: from mail37.messagelabs.com ([216.82.244.163]:47810 "EHLO
+	mail37.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbYFEGtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 02:36:05 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=nacyJgQd/y0BloCn2AWj6gU78XyELQGJUbvADrFPUBBo+FpEBDAAzYD4mGiJnaKSZ
-	E6Tfo6/L71gE+OwHNuGLA==
-Message-ID: <6599ad830806042335o7d8b93bdw13072267e4c5b455@mail.gmail.com>
-Date: Wed, 4 Jun 2008 23:35:56 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] cgroup: anotate two variables with __read_mostly
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linux Containers" <containers@lists.linux-foundation.org>
-In-Reply-To: <48478187.7080204@cn.fujitsu.com>
+	Thu, 5 Jun 2008 02:49:51 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-14.tower-37.messagelabs.com!1212648589!1584110!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.14]
+Date: Thu, 5 Jun 2008 08:49:45 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+CC: "Hans J. Koch" <hjk@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       <gregkh@suse.de>, <akpm@linux-foundation.org>, <lethal@linux-sh.org>,
+       <tglx@linutronix.de>
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Message-ID: <20080605064945.GA32554@digi.com>
+References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se> <20080604101144.GA3207@local> <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-References: <48478187.7080204@cn.fujitsu.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 05 Jun 2008 06:49:46.0360 (UTC) FILETIME=[57848F80:01C8C6D8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 4, 2008 at 11:02 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->
-> - need_forkexit_callback will be read only after system boot.
-> - use_task_css_set_links will be read only after it's set.
->
-> And these 2 variables are checked when a new process is forked.
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Hello Magnus,
 
-Acked-by: Paul Menage <menage@google.com>
+Magnus Damm wrote:
+> ... "Unique IRQ Mode". ...
+BTW, I wouldn't call it "Unique IRQ Mode" because the non-shared irq is
+only a result from automatically disabling the irq.  IMHO something like
+"No IRQ Handler Mode" is more suitable.
 
-Thanks.
+Best regards
+Uwe
 
-Paul
-
-> ---
->  kernel/cgroup.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 15ac0e1..f5a1273 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -118,7 +118,7 @@ static int root_count;
->  * extra work in the fork/exit path if none of the subsystems need to
->  * be called.
->  */
-> -static int need_forkexit_callback;
-> +static int need_forkexit_callback __read_mostly;
->  static int need_mm_owner_callback __read_mostly;
->
->  /* convenient tests for these bits */
-> @@ -220,7 +220,7 @@ static struct hlist_head *css_set_hash(struct cgroup_subsys_state *css[])
->  * task until after the first call to cgroup_iter_start(). This
->  * reduces the fork()/exit() overhead for people who have cgroups
->  * compiled into their kernel but not actually in use */
-> -static int use_task_css_set_links;
-> +static int use_task_css_set_links __read_mostly;
->
->  /* When we create or destroy a css_set, the operation simply
->  * takes/releases a reference count on all the cgroups referenced
-> --
-> 1.5.4.rc3
->
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
