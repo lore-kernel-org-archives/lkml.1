@@ -1,162 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762874AbYFEWkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762608AbYFEWoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762874AbYFEWkM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 18:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbYFEWj7
+	id S1762608AbYFEWoc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 18:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYFEWoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 18:39:59 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:19569 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbYFEWj6 (ORCPT
+	Thu, 5 Jun 2008 18:44:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:1819 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbYFEWoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 18:39:58 -0400
+	Thu, 5 Jun 2008 18:44:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=to:subject:content-disposition:organization:date:mime-version
-         :content-type:content-transfer-encoding:message-id:from;
-        b=kPaFkhJk39AQX1v2kOG1s0Kl9MgRm6QVP3sH/33nEuIJPhvEOdEj0WnmA/giBHxYQQ
-         lSLbsP/1imm04Rj4D5WWTOfHNEJIHovBCT5GBqsAlM8V8/6irWe/oNnhuz3eoL/Bm83G
-         H6sWdzj7YYUWs/MqKphbOptrCRex4/i/mDQRQ=
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
-Content-Disposition: inline
-Organization: M1K0
-Date: Fri, 6 Jun 2008 00:39:48 +0200
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uy1ld/VqEFsFS6wCUOBaMj/RXnu7IVCoTQGz8kceo8DzLyNxbXl7dr2URDkNFauM5C
+         8kmQYHVOrsgBvDetdjHnIu4rHG5xld4XyrHjeqF44eofLZv2Wxw9nSgyfaxpGnFV3foB
+         O0JvsFc1QkFs0av3nHeDOFPx4gI7pqp58OtZY=
+Date: Fri, 6 Jun 2008 06:44:10 +0800
+From: Yan Li <elliot.li.tech@gmail.com>
+To: Milan Broz <mbroz@redhat.com>
+Cc: Yan Li <elliot.li.tech@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ritesh Raj Sarraf <rrs@researchut.com>,
+       Christophe Saout <christophe@saout.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, Herbert Xu <herbert@gondor.apana.org.au>,
+       rjmaomao@gmail.com, Alasdair G Kergon <agk@redhat.com>,
+       dm-crypt@saout.de
+Subject: Re: 2.6.24 Kernel Soft Lock Up with heavy I/O in dm-crypt
+Message-ID: <20080605224410.GA7584@yantp.cn.ibm.com>
+References: <20080602030738.GA7761@yantp.cn.ibm.com> <48439890.6030904@redhat.com> <20080602123145.GA8258@yantp.cn.ibm.com> <4843ECB8.4010002@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200806060039.48488.m1k0@wp.pl>
-From: =?utf-8?q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
+Content-Type: multipart/mixed; boundary="LQksG6bCIzRHxTLp"
+Content-Disposition: inline
+In-Reply-To: <4843ECB8.4010002@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-according to  http://www.kernel.org/pub/linux/docs/lkml/reporting-bugs.html
-[1.] One line summary of the problem: 
-[2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
 
-[2.] Full description of the problem/report:
-linux: gentoo
-kernel vanilla-sources-2-6-26-rc5
-laptop: Asus S96S
-WiFi: intel 4695
-WiFi not working.
-In the same config, but with gentoo-sources-2.6.23 WiFi working well.
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-dmesg - 2.6.23
-iwl4965: Intel(R) Wireless WiFi Link 4965AGN driver for Linux, 1.2.25ds
-iwl4965: Copyright(c) 2003-2007 Intel Corporation
-ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 21
-PCI: Setting latency timer of device 0000:04:00.0 to 64
-iwl4965: Detected Intel Wireless WiFi Link 4965AGN
-wmaster0: Selected rate control algorithm 'iwl-4965-rs'
-...
-ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 21
-PM: Writing back config space on device 0000:04:00.0 at offset 1 (was 100102, 
-writing 100106)
-iwl4965: Tunable channels: 13 802.11bg, 19 802.11a channels
-ADDRCONF(NETDEV_UP): wlan0: link is not ready
-r8169: eth0: link up
-wlan0: Initial auth_alg=0
-wlan0: authenticate with AP 00:01:e3:06:00:35
-wlan0: RX authentication from 00:01:e3:06:00:35 (alg=0 transaction=2 status=0)
-wlan0: authenticated
-wlan0: associate with AP 00:01:e3:06:00:35
-wlan0: authentication frame received from 00:01:e3:06:00:35, but not in 
-authenticate state - ignored
-wlan0: RX AssocResp from 00:01:e3:06:00:35 (capab=0x11 status=0 aid=2)
-wlan0: associated
-ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-wlan0: no IPv6 routers present
+On Mon, Jun 02, 2008 at 02:51:04PM +0200, Milan Broz wrote:
+> Patch for 2.6.24 kernel
+> Add cond_resched() to prevent stuck in big bio processing.
 
-dmesg 2.6.26
-iwl4965: Intel(R) Wireless WiFi Link 4965AGN driver for Linux, 1.2.26kds
-iwl4965: Copyright(c) 2003-2008 Intel Corporation
-ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-PCI: Setting latency timer of device 0000:04:00.0 to 64
-iwl4965: Detected Intel Wireless WiFi Link 4965AGN
-iwl4965: Tunable channels: 13 802.11bg, 19 802.11a channels
-phy0: Selected rate control algorithm 'iwl-4965-rs'
-ACPI: PCI interrupt for device 0000:04:00.0 disabled
-EXT3 FS on sda3, internal journal
-Adding 987988k swap on /dev/sda2.  Priority:-1 extents:1 across:987988k
-r8169: eth0: link up
-ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-PM: Writing back config space on device 0000:04:00.0 at offset 1 (was 100102, 
-writing 100106)
-firmware: requesting iwlwifi-4965-1.ucode
-Registered led device: iwl-phy0:radio
-Registered led device: iwl-phy0:assoc
-Registered led device: iwl-phy0:RX
-Registered led device: iwl-phy0:TX
-ADDRCONF(NETDEV_UP): wlan0: link is not ready
-iwl4965: Error sending REPLY_WEPKEY: enqueue_hcmd failed: -5
-mac80211-phy0: failed to remove key (0, ff:ff:ff:ff:ff:ff) from hardware (-5)
-iwl4965: Error sending REPLY_TX_PWR_TABLE_CMD: enqueue_hcmd failed: -5
-iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
-iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
-...
-iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
-ACPI: PCI interrupt for device 0000:04:00.0 disabled
+This patch actual has lead to performance _gain_.
 
+Test Result, performance gain:
+aes-cbc-essiv:sha256, keysize 128: 2.53%
+aes-xts-plain, keysize 256: 0.26%
+aes-xts-plain, keysize 512: 9.31%
 
-[3.] Keywords (i.e., modules, networking, kernel):
-kernel, wifi, iwlwifi, asus, laptop
-[4.] Kernel version (from /proc/version):
-Linux version 2.6.23-gentoo-r2 (root@laptok) (gcc version 4.2.2 (Gentoo 4.2.2 
-p1.0)) #3 SMP Sun Jan 13 12:46:44 CET 2008
-[5.] Output of Oops.. message (if applicable) with symbolic information 
-     resolved (see Documentation/oops-tracing.txt)
-none
-[6.] A small shell script or example program which triggers the
-     problem (if possible)
-dmesg | grep -E '(KB)|(KiB)|(MB)'
-[7.] Environment
-[7.1.] Software (add the output of the ver_linux script here)
-[7.2.] Processor information (from /proc/cpuinfo):
+Test kernel:
+AMD64 2.6.24 from Debian Etch-and-a-half
+
+Test command:
+# dd if=/dev/zero of=/dev/mapper/open_device bs=500M count=100
+
+This would write 50G zero data to an open LUKS raw device (no
+filesystem overhead here), as 500M per block.  This will stress mainly
+the cryptographic and dm code, with little overhead. During the test,
+the CPU usage was always full, thus HD speed was not bottleneck.
+
+The count is 10 times bigger than my initial plan.  Any by doing this
+I found that, on my server, all the encryption methods has triggered
+soft lockup for at least one time.  So this problem is universal, not
+only with XTS or LRW operation mode.
+
+With patched kernel, soft lockup _no longer_ occurred.
+
+This server has 2G memory, Intel Xeon Duo @ 1.86GHz.
+
+The command will be run	for 3 times, and average speed of last two
+runs will be taken as result score.
+  
+Device was synced (luksClose ; sync ; luksOpen) between tests.
+
+With my test script (Makefile), calculation spreadsheet and raw test
+result attached.
+
+-- 
+Li, Yan
+
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=Makefile
+
+# dm-crypt stress & benchmark
+# Copyright Yan Li <elliot.li.tech@gmail.com>
+# License: GPLv3 or above
+
+# README
+# this test should be run in runlevel 1
+# check dmsg after test for soft lockup
+
+all: show_sysinfo prepare test
+
+show_sysinfo:
+	echo ============ SYS INFO ============
+	uname -a
+	cat /proc/cpuinfo
+	free
+	hdparm -I /dev/sdc
+
+prepare:
+	/etc/init.d/boinc-client stop
+	/etc/init.d/mysql stop
+	/etc/init.d/apache2 stop
+	[ -b /dev/mapper/ohome ] && cryptsetup luksClose ohome || true
+	sync
+
+test: test_cbc_128 test_xts_256 test_xts_512
+
+# device ohome must be closed
+test_cbc_128:
+	echo ============ TEST: aes-cbc-essiv:sha256 keysize: 128 ============
+	echo "abc123" | cryptsetup -s 128 -c aes-cbc-essiv:sha256 -d - luksFormat /dev/bigotvg/home
+	echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ WARM UP ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ ROUND 1 ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ ROUND 2 ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	cryptsetup luksClose ohome
+
+# device ohome must be closed
+test_xts_256:
+	echo ============ TEST: aes-xts-plain keysize: 256 ============
+	echo "abc123" | cryptsetup -s 256 -c aes-xts-plain -d - luksFormat /dev/bigotvg/home
+	echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ WARM UP ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ ROUND 1 ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ ROUND 2 ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	cryptsetup luksClose ohome
+
+# device ohome must be closed
+test_xts_512:
+	echo ============ TEST: aes-xts-plain keysize: 512 ============
+	echo "abc123" | cryptsetup -s 512 -c aes-xts-plain -d - luksFormat /dev/bigotvg/home
+	echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ WARM UP ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ ROUND 1 ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	echo ============ ROUND 2 ============
+	dd if=/dev/zero of=/dev/mapper/ohome bs=500M count=100
+	cryptsetup luksClose ohome && sync && echo "abc123" | cryptsetup luksOpen /dev/bigotvg/home ohome
+	sync
+	sleep 2
+	cryptsetup luksClose ohome
+
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="2008-06-05-patched.out"
+
+echo ============ SYS INFO ============
+============ SYS INFO ============
+uname -a
+Linux bigot 2.6.24-etchnhalf.1-amd64 #1 SMP Wed Jun 4 08:56:22 CST 2008 x86_64 GNU/Linux
 cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
-stepping        : 10
-cpu MHz         : 1995.081
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm 
-constant_tsc arch_perfmon pebs bts pni monitor ds_cpl vmx est tm2 ssse3 cx16 
-xtpr lahf_lm
-bogomips        : 3992.41
-clflush size    : 64
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Xeon(R) CPU            3040  @ 1.86GHz
+stepping	: 2
+cpu MHz		: 1862.000
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 3726.81
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
 
-X 2
+processor	: 1
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 15
+model name	: Intel(R) Xeon(R) CPU            3040  @ 1.86GHz
+stepping	: 2
+cpu MHz		: 1862.000
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 10
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips	: 3724.06
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 36 bits physical, 48 bits virtual
+power management:
 
-[7.3.] Module information (from /proc/modules):
-[7.4.] Loaded driver and hardware information (/proc/ioports, /proc/iomem)
-[7.5.] PCI information ('lspci -vvv' as root)
-[7.6.] SCSI information (from /proc/scsi/scsi)
-[7.7.] Other information that might be relevant to the problem
-       (please look in /proc and include all information that you
-       think to be relevant):
-[X.] Other notes, patches, fixes, workarounds:
-compressed files:
-dmesg-2.6.23
-dmesg-2.6.26
-.config-2.6.26
-.config-2.6.23
-at http://michal.kudla.googlepages.com/iwl-problem.tar.gz
+free
+             total       used       free     shared    buffers     cached
+Mem:       2062188      54756    2007432          0       5020      15292
+-/+ buffers/cache:      34444    2027744
+Swap:      5863704          0    5863704
+hdparm -I /dev/sdc
+
+/dev/sdc:
+
+ATA device, with non-removable media
+	Model Number:       ST3500320NS                             
+	Serial Number:      9QM1NV32
+	Firmware Revision:  SN04    
+Standards:
+	Used: ATA/ATAPI-6 T13 1410D revision 2 
+	Supported: 6 5 4 
+Configuration:
+	Logical		max	current
+	cylinders	16383	16383
+	heads		16	16
+	sectors/track	63	63
+	--
+	CHS current addressable sectors:   16514064
+	LBA    user addressable sectors:  268435455
+	LBA48  user addressable sectors:  976773168
+	device size with M = 1024*1024:      476940 MBytes
+	device size with M = 1000*1000:      500107 MBytes (500 GB)
+Capabilities:
+	LBA, IORDY(can be disabled)
+	Queue depth: 32
+	Standby timer values: spec'd by Standard, no device specific minimum
+	R/W multiple sector transfer: Max = 16	Current = 8
+	Recommended acoustic management value: 254, current value: 0
+	DMA: mdma0 mdma1 mdma2 udma0 udma1 udma2 udma3 udma4 udma5 *udma6 
+	     Cycle time: min=120ns recommended=120ns
+	PIO: pio0 pio1 pio2 pio3 pio4 
+	     Cycle time: no flow control=120ns  IORDY flow control=120ns
+Commands/features:
+	Enabled	Supported:
+	   *	SMART feature set
+	    	Security Mode feature set
+	   *	Power Management feature set
+	   *	Write cache
+	   *	Look-ahead
+	   *	Host Protected Area feature set
+	   *	WRITE_BUFFER command
+	   *	READ_BUFFER command
+	   *	DOWNLOAD_MICROCODE
+	    	SET_MAX security extension
+	   *	48-bit Address feature set
+	   *	Device Configuration Overlay feature set
+	   *	Mandatory FLUSH_CACHE
+	   *	FLUSH_CACHE_EXT
+	   *	SMART error logging
+	   *	SMART self-test
+	    	General Purpose Logging feature set
+	   *	64-bit World wide name
+	   *	Write-Read-Verify feature set
+	   *	WRITE_UNCORRECTABLE command
+	   *	SATA-I signaling speed (1.5Gb/s)
+	   *	SATA-II signaling speed (3.0Gb/s)
+	   *	Native Command Queueing (NCQ)
+	   *	Phy event counters
+	   *	Software settings preservation
+	   *	SMART Command Transport (SCT) feature set
+	   *	SCT LBA Segment Access (AC2)
+	   *	SCT Error Recovery Control (AC3)
+	   *	SCT Features Control (AC4)
+	   *	SCT Data Tables (AC5)
+Security: 
+	Master password revision code = 65534
+		supported
+	not	enabled
+	not	locked
+		frozen
+	not	expired: security count
+		supported: enhanced erase
+Checksum: correct
+/etc/init.d/boinc-client stop
+Stopping BOINC core client: boinc_client not running.
+/etc/init.d/mysql stop
+Stopping MySQL database server: mysqld.
+/etc/init.d/apache2 stop
+Stopping web server (apache2)...apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.0.1 for ServerName
+httpd (no pid file) not running
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+--LQksG6bCIzRHxTLp--
