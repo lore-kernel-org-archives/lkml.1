@@ -1,96 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbYFEOaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYFEOft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758981AbYFEOaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 10:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbYFEOaf
+	id S1756722AbYFEOft (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 10:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYFEOfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 10:30:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48011 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755904AbYFEOae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 10:30:34 -0400
-Message-ID: <4847F811.7060406@redhat.com>
-Date: Thu, 05 Jun 2008 10:28:33 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 5 Jun 2008 10:35:41 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:42765 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752391AbYFEOfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 10:35:40 -0400
+X-BigFish: VPS-13(z2d9boz98dR7efVzz10d3izzz32i6bh43j66h)
+X-Spam-TCS-SCL: 5:0
+X-WSS-ID: 0K1ZV6Z-02-HP4-01
+Date: Thu, 5 Jun 2008 16:35:10 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Jack Steiner <steiner@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix compile warning in io_apic_{32,64}.c
+Message-ID: <20080605143510.GA8372@alberich.amd.com>
+References: <20080605120557.GB14755@alberich.amd.com> <20080605123910.GA5938@sgi.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Hideo AOKI <haoki@redhat.com>, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: Kernel marker has no performance impact on ia64.
-References: <48447052.3030300@redhat.com>	 <1212445965.6269.22.camel@lappy.programming.kicks-ass.net>	 <20080602232135.GA20173@Krystal>	 <1212618449.19205.35.camel@lappy.programming.kicks-ass.net>	 <20080604232241.GA8488@Krystal> <1212653539.19205.47.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1212653539.19205.47.camel@lappy.programming.kicks-ass.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080605123910.GA5938@sgi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 05 Jun 2008 14:35:05.0630 (UTC) FILETIME=[58B313E0:01C8C719]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter and Mathieu,
+On Thu, Jun 05, 2008 at 02:39:10PM +0200, Jack Steiner wrote:
+> I have not seen the compiler warning. What tree/options cause the error???
 
-Peter Zijlstra wrote:
-> On Wed, 2008-06-04 at 19:22 -0400, Mathieu Desnoyers wrote:
->> * Peter Zijlstra (peterz@infradead.org) wrote:
-> 
->>> So are you proposing something like:
->>>
->>> static inline void 
->>> trace_sched_switch(struct task_struct *prev, struct task_struct *next)
->>> {
->>> 	trace_mark(sched_switch, prev, next);
->>> }
->>>
->> Not exactly. Something more along the lines of
->>
->> static inline void 
->> trace_sched_switch(struct task_struct *prev, struct task_struct *next)
->> {
->>   /* Internal tracers. */
->>   ftrace_sched_switch(prev, next);
->>   othertracer_sched_switch(prev, next);
->>   /*
->>    * System-wide tracing. Useful information is exported here.
->>    * Probes connecting to these markers are expected to only use the
->>    * information provided to them for data collection purpose. Type
->>    * casting pointers is discouraged.
->>    */
->> 	trace_mark(kernel_sched_switch, "prev_pid %d next_pid %d prev_state %ld",
->>     prev->pid, next->pid, prev->state);
->> }
-> 
-> Advantage of my method would be that ftrace (and othertracer) can use
-> the same marker and doesn't need yet another hoook.
+Sure. It's currently dead code. I use it from time to time for debugging.
+At least you have to do something like
 
-If so, I'd like to suggest below changes,
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index ef1a8df..ddfdabd 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -1045,7 +1045,6 @@ void __apicdebuginit print_IO_APIC(void)
+        return;
+ }
+ 
+-#if 0
+ 
+ static __apicdebuginit void print_APIC_bitfield (int base)
+ {
+@@ -1181,7 +1180,6 @@ void __apicdebuginit print_PIC(void)
+        printk(KERN_DEBUG "... PIC ELCR: %04x\n", v);
+ }
+ 
+-#endif  /*  0  */
+ 
+ void __init enable_IO_APIC(void)
+ {
 
-- introduce below macro in marker.h
 
-#define DEFINE_TRACE(name, vargs, args...)	\
-static inline void trace_##name vargs		\
-{						\
-	trace_mark(name, #vargs, ##args);	\
-}
+to compile it.
 
-- remove __marker_check_format from __trace_mark
-- and write a definition in sched_trace.h
+> I don't think this work on UV systems. Because of processor limitations, not
+> all of the APICID bits are contained in the hardware APIC_ID register. See
+> read_apic_id() in arch/x86/kernel/genapic_64.c.
 
-DEFINE_TRACE(sched_switch, (struct task_struct *prev, struct task_struct *next),
-	     prev, next);
+I am not that familar with UV. So can't really comment on that.
+But then it seems that the proper adaption for print_local_APIC to avoid the warning is
+---
+[PATCH] x86: fix compile warning in io_apic_{32,64}.c
 
-Thus, we can remove fmt string and also ensure the type checking, because;
-- Type checking at the trace point is done by the compiler.
-- Type checking of probe handler can be done by comparing #vargs strings.
+Commit 05f2d12c3563dea8c81b301f9f3cf7919af23b13
+(x86: change GET_APIC_ID() from an inline function to an out-of-line function)
+introduced a compile warning:
 
-Thanks,
+arch/x86/kernel/io_apic_64.c: In function 'print_local_APIC':
+arch/x86/kernel/io_apic_64.c:1152: warning: 'v' is used uninitialized in this function
 
--- 
-Masami Hiramatsu
+in some debug code -- which is disabled by default.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+--
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index a40d54f..4fbf656 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -1489,6 +1489,7 @@ void /*__init*/ print_local_APIC(void * dummy)
+ 
+ 	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
+ 		smp_processor_id(), hard_smp_processor_id());
++	v = apic_read(APIC_ID);
+ 	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v,
+ 			GET_APIC_ID(read_apic_id()));
+ 	v = apic_read(APIC_LVR);
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index ef1a8df..c7c6b00 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -1077,6 +1077,7 @@ void __apicdebuginit print_local_APIC(void * dummy)
+ 
+ 	printk("\n" KERN_DEBUG "printing local APIC contents on CPU#%d/%d:\n",
+ 		smp_processor_id(), hard_smp_processor_id());
++	v = apic_read(APIC_ID);
+ 	printk(KERN_INFO "... APIC ID:      %08x (%01x)\n", v, GET_APIC_ID(read_apic_id()));
+ 	v = apic_read(APIC_LVR);
+ 	printk(KERN_INFO "... APIC VERSION: %08x\n", v);
 
-e-mail: mhiramat@redhat.com
+
+
+
 
