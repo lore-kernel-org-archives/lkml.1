@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbYFFVeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932962AbYFFViW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933298AbYFFVeA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 17:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759356AbYFFVdv
+	id S932962AbYFFViW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 17:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYFFViM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 17:33:51 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:55587 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756850AbYFFVdv (ORCPT
+	Fri, 6 Jun 2008 17:38:12 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:32452 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753421AbYFFViK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 17:33:51 -0400
-Date: Fri, 6 Jun 2008 14:33:45 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Corey Minyard <minyard@acm.org>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, dvhltc@us.ibm.com, niv@us.ibm.com
-Subject: Re: Recoverable MCA interrupts from NMI handlers?  IPMI and RCU?
-Message-ID: <20080606213345.GD25053@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080606152134.GA13641@linux.vnet.ibm.com> <4849A3AC.5090107@acm.org>
+	Fri, 6 Jun 2008 17:38:10 -0400
+Date: Sat, 7 Jun 2008 00:36:59 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Grant Grundler <grundler@google.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mgross@linux.intel.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+Message-ID: <20080606213659.GC15085@il.ibm.com>
+References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp> <da824cf30806041106p1de2355fg38594fcb9dcbf203@mail.gmail.com> <20080606202119.GQ15085@il.ibm.com> <da824cf30806061428t4b7ed816i74d961946d77c88b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4849A3AC.5090107@acm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <da824cf30806061428t4b7ed816i74d961946d77c88b@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 03:53:00PM -0500, Corey Minyard wrote:
-> Paul E. McKenney wrote:
-> >Hello!
-> >
-> >A couple of questions about the x86 architecture...
-> >
-> >1.	Can recoverable machine-check exceptions occur from within
-> >	NMI handlers?  If so, there is a bug in preemptable RCU's
-> >	CONFIG_NO_HZ handling that could be fixed by a patch something
-> >	like the one shown below (untested, probably does not even
-> >	compile).
-> >
-> >2.	Does the IPMI subsystem make use of RCU read-side primitives
-> >	from within SMI handlers?  If so, we need the SMI handlers to
-> >	invoke rcu_irq_enter() upon entry and rcu_irq_exit() upon exit
-> >	when they are invoked from dynticks idle state.  Or something
-> >	similar, depending on restrictions on code within SMI handlers.
-> >  
-> If you mean the IPMI driver, it does not tie into any SMI.  It 
-> theoretically could since there's a bit for that in the watchdog timer, 
-> but there's been no demand and I haven't looked at it.  I guess it would 
-> be better than an NMI.
-> 
-> If it did tie in, it would most likely just panic to get useful 
-> information out before the watchdog reset the system.
+On Fri, Jun 06, 2008 at 02:28:36PM -0700, Grant Grundler wrote:
 
-Thanks for the info!  I will stop worrying about SMIs and RCU, then.
+> Historically the IOMMUs needed physically contiguous memory and
+> resizing essentially meant quiescing all DMA, moving the IO Pdir
+> data to the new bigger location, allocating a new bitmap and cloning
+> the state into that as well, and then resuming DMA operations. The
+> DMA quiesce requirement effectively meant a reboot. My understanding
+> of Vt-d is the ranges can be added range at a time and thus can be
+> easily resized.
 
-						Thanx, Paul
+VT-d uses a multi-level page-table, so there would be no problem
+resizing.
+
+> But it will mean more complex logic in the IOMMU bitmap handling for
+> a domain which owns multiple bitmaps and thus a slightly higher CPU
+> utilization cost. At least that's my guess. I'm not working on any
+> IOMMU code lately...
+
+The logic seems pretty simple to me, all we need to do is keep track
+of how many entries are currently allocated in the bitmap vs. the size
+of the bitmap. Once we get to the half-way point, double the size of
+the bitmap. Having said that, I'm not sure it's worth it, and have no
+plans to implement it :-)
+
+Cheers,
+Muli
