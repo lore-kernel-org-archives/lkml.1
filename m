@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbYFFBkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbYFFBmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761317AbYFFBkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 21:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYFFBkb
+	id S1763628AbYFFBmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 21:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYFFBmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 21:40:31 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:50478 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbYFFBka (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 21:40:30 -0400
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Beulich <jbeulich@novell.com>, Stable Kernel <stable@kernel.org>
-Subject: Re: [PATCH] x86: set PAE PHYSICAL_MASK_SHIFT to match 64-bit
-From: Andi Kleen <andi@firstfloor.org>
-References: <4848046A.5060006@goop.org>
-Date: Fri, 06 Jun 2008 03:40:24 +0200
-In-Reply-To: <4848046A.5060006@goop.org> (Jeremy Fitzhardinge's message of "Thu, 05 Jun 2008 16:21:14 +0100")
-Message-ID: <87ve0ntk6v.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 5 Jun 2008 21:42:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61825 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753571AbYFFBmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 21:42:09 -0400
+Message-ID: <4848955D.2020302@cn.fujitsu.com>
+Date: Fri, 06 Jun 2008 09:39:41 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Jun 2008 01:33:16.0160 (UTC) FILETIME=[4AE3C000:01C8C775]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [PATCH] memcg: clean up checking of  the disabled flag
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
->
-> The 46-bit mask used in 64-bit seems pretty arbitrary. 
+Those checks are unnecessary, because when the subsystem is disabled
+it can't be mounted, so those functions won't get called.
 
-The rationale for the 46 bits is that the kernel needs roughly 4x as 
-much virtual space as physical space and the virtual space is limited
-to 48bits.
+The check is needed in functions which will be called in other places
+except cgroup.
 
-To be exact 47 bits is always user space and the 47 bits remaining
-for the kernel are split into half, with one half for the direct mapping
-and the other half for random mappings.  With some pushing you could
-extend it to 46.5 bits or so, but beyond that you'll be in trouble.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ memcontrol.c |    8 --------
+ 1 file changed, 8 deletions(-)
 
-It's not arbitrary at all.
-
--Andi
-
+--- a/mm/memcontrol.c	2008-06-06 09:15:56.000000000 +0800
++++ b/mm/memcontrol.c	2008-06-06 09:09:04.000000000 +0800
+@@ -845,9 +845,6 @@ static int mem_cgroup_force_empty(struct
+ 	int ret = -EBUSY;
+ 	int node, zid;
+ 
+-	if (mem_cgroup_subsys.disabled)
+-		return 0;
+-
+ 	css_get(&mem->css);
+ 	/*
+ 	 * page reclaim code (kswapd etc..) will move pages between
+@@ -1105,8 +1102,6 @@ static void mem_cgroup_destroy(struct cg
+ static int mem_cgroup_populate(struct cgroup_subsys *ss,
+ 				struct cgroup *cont)
+ {
+-	if (mem_cgroup_subsys.disabled)
+-		return 0;
+ 	return cgroup_add_files(cont, ss, mem_cgroup_files,
+ 					ARRAY_SIZE(mem_cgroup_files));
+ }
+@@ -1119,9 +1114,6 @@ static void mem_cgroup_move_task(struct 
+ 	struct mm_struct *mm;
+ 	struct mem_cgroup *mem, *old_mem;
+ 
+-	if (mem_cgroup_subsys.disabled)
+-		return;
+-
+ 	mm = get_task_mm(p);
+ 	if (mm == NULL)
+ 		return;
