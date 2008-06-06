@@ -1,84 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763928AbYFFUI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932194AbYFFUaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763928AbYFFUI6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 16:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbYFFUIu
+	id S932194AbYFFUaQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 16:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbYFFUaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 16:08:50 -0400
-Received: from linode.ducksong.com ([64.22.125.164]:33177 "EHLO
-	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756096AbYFFUIt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 16:08:49 -0400
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
-	v2.6.26-rc3+
-From: Patrick McManus <mcmanus@ducksong.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       David Miller <davem@davemloft.net>, peterz@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       rjw@sisk.pl, Andrew Morton <akpm@linux-foundation.org>,
-       johnpol@2ka.mipt.ru
-In-Reply-To: <20080606183926.GB12651@elte.hu>
-References: <20080603.150344.145518113.davem@davemloft.net>
-	 <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>
-	 <20080605142244.GA19216@elte.hu>
-	 <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi>
-	 <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi>
-	 <1212708571.19522.10.camel@tng>
-	 <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi>
-	 <1212772293.23706.22.camel@tng> <20080606173339.GA30894@elte.hu>
-	 <Pine.LNX.4.64.0806062037240.9424@wrl-59.cs.helsinki.fi>
-	 <20080606183926.GB12651@elte.hu>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 16:08:57 -0400
-Message-Id: <1212782937.23706.46.camel@tng>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 16:30:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33080 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754191AbYFFUaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 16:30:00 -0400
+Message-Id: <20080606202858.570020389@redhat.com>
+References: <20080606202838.390050172@redhat.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 06 Jun 2008 16:28:42 -0400
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+From: Rik van Riel <riel@redhat.com>
+Subject: [PATCH -mm 04/25] free swap space on swap-in/activation
+Content-Disposition: inline; filename=rvr-00-linux-2.6-swapfree.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is all a bit confusing, but here are the conclusions I have drawn.
+From: Rik van Riel <riel@redhat.com>
 
-There definitely is a problem with the locking of the DA commit
-ec3c0982a2dd1e671bad8e9d26c28dcba0039d87 . That code was part of 26-rc1
-but it never appeared in 25. It exists in pretty much the same form in
-rc5 (there was 1 patch to it over that time to fix a different problem).
+Free swap cache entries when swapping in pages if vm_swap_full()
+[swap space > 1/2 used].  Uses new pagevec to reduce pressure
+on locks.
 
-We're certain this code has a problem with the accept queue both because
-of code inspection and the fact that Ingo can back it out (as the
-significant part of the 3-patch revert) and the problem goes away in his
-testing.
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
 
-I have run tests that can reproduce the hung socket with distcc over
-localhost using 26-rc5. I can also apparently cure it using the locking
-fix patch Ilpo sent (c9454f0..d21d2b9) on top of that. (My test of rc5
-+lockpatch is at 4.5+ hrs and counting without failures, it fails 6
-times an hour with vanilla rc5)
+---
+ include/linux/pagevec.h |    1 +
+ include/linux/swap.h    |    6 ++++++
+ mm/swap.c               |   18 ++++++++++++++++++
+ mm/swapfile.c           |   25 ++++++++++++++++++++++---
+ mm/vmscan.c             |    7 +++++++
+ 5 files changed, 54 insertions(+), 3 deletions(-)
 
-Based on all of that, the right thing to do seems to be to apply the
-lockpatch (c9454f0..d21d2b9) to Linus's tree and not revert anything -
-just fix the code and I'll send Ilpo and Ingo cookies at Christmas time
-for being  great guys. Alternatively, Ingo could run the distcc servers
-and clients on -tip with the lockpatch (nothing reverted) for more
-testing.
+Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-23 14:21:33.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-23 14:21:33.000000000 -0400
+@@ -619,6 +619,9 @@ free_it:
+ 		continue;
+ 
+ activate_locked:
++		/* Not a candidate for swapping, so reclaim swap space. */
++		if (PageSwapCache(page) && vm_swap_full())
++			remove_exclusive_swap_page_ref(page);
+ 		SetPageActive(page);
+ 		pgactivate++;
+ keep_locked:
+@@ -1203,6 +1206,8 @@ static void shrink_active_list(unsigned 
+ 			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
+ 			pgmoved = 0;
+ 			spin_unlock_irq(&zone->lru_lock);
++			if (vm_swap_full())
++				pagevec_swap_free(&pvec);
+ 			__pagevec_release(&pvec);
+ 			spin_lock_irq(&zone->lru_lock);
+ 		}
+@@ -1212,6 +1217,8 @@ static void shrink_active_list(unsigned 
+ 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+ 	__count_vm_events(PGDEACTIVATE, pgdeactivate);
+ 	spin_unlock_irq(&zone->lru_lock);
++	if (vm_swap_full())
++		pagevec_swap_free(&pvec);
+ 
+ 	pagevec_release(&pvec);
+ }
+Index: linux-2.6.26-rc2-mm1/mm/swap.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/swap.c	2008-05-23 14:21:33.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/swap.c	2008-05-23 14:21:33.000000000 -0400
+@@ -443,6 +443,24 @@ void pagevec_strip(struct pagevec *pvec)
+ 	}
+ }
+ 
++/*
++ * Try to free swap space from the pages in a pagevec
++ */
++void pagevec_swap_free(struct pagevec *pvec)
++{
++	int i;
++
++	for (i = 0; i < pagevec_count(pvec); i++) {
++		struct page *page = pvec->pages[i];
++
++		if (PageSwapCache(page) && !TestSetPageLocked(page)) {
++			if (PageSwapCache(page))
++				remove_exclusive_swap_page_ref(page);
++			unlock_page(page);
++		}
++	}
++}
++
+ /**
+  * pagevec_lookup - gang pagecache lookup
+  * @pvec:	Where the resulting pages are placed
+Index: linux-2.6.26-rc2-mm1/include/linux/pagevec.h
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/include/linux/pagevec.h	2008-05-23 14:21:33.000000000 -0400
++++ linux-2.6.26-rc2-mm1/include/linux/pagevec.h	2008-05-23 14:21:33.000000000 -0400
+@@ -25,6 +25,7 @@ void __pagevec_release_nonlru(struct pag
+ void __pagevec_free(struct pagevec *pvec);
+ void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru);
+ void pagevec_strip(struct pagevec *pvec);
++void pagevec_swap_free(struct pagevec *pvec);
+ unsigned pagevec_lookup(struct pagevec *pvec, struct address_space *mapping,
+ 		pgoff_t start, unsigned nr_pages);
+ unsigned pagevec_lookup_tag(struct pagevec *pvec,
+Index: linux-2.6.26-rc2-mm1/include/linux/swap.h
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/include/linux/swap.h	2008-05-23 14:21:33.000000000 -0400
++++ linux-2.6.26-rc2-mm1/include/linux/swap.h	2008-05-23 14:21:33.000000000 -0400
+@@ -265,6 +265,7 @@ extern sector_t swapdev_block(int, pgoff
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int can_share_swap_page(struct page *);
+ extern int remove_exclusive_swap_page(struct page *);
++extern int remove_exclusive_swap_page_ref(struct page *);
+ struct backing_dev_info;
+ 
+ /* linux/mm/thrash.c */
+@@ -353,6 +354,11 @@ static inline int remove_exclusive_swap_
+ 	return 0;
+ }
+ 
++static inline int remove_exclusive_swap_page_ref(struct page *page)
++{
++	return 0;
++}
++
+ static inline swp_entry_t get_swap_page(void)
+ {
+ 	swp_entry_t entry;
+Index: linux-2.6.26-rc2-mm1/mm/swapfile.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/swapfile.c	2008-05-23 14:21:21.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/swapfile.c	2008-05-23 14:21:33.000000000 -0400
+@@ -343,7 +343,7 @@ int can_share_swap_page(struct page *pag
+  * Work out if there are any other processes sharing this
+  * swap cache page. Free it if you can. Return success.
+  */
+-int remove_exclusive_swap_page(struct page *page)
++static int remove_exclusive_swap_page_count(struct page *page, int count)
+ {
+ 	int retval;
+ 	struct swap_info_struct * p;
+@@ -356,7 +356,7 @@ int remove_exclusive_swap_page(struct pa
+ 		return 0;
+ 	if (PageWriteback(page))
+ 		return 0;
+-	if (page_count(page) != 2) /* 2: us + cache */
++	if (page_count(page) != count) /* us + cache + ptes */
+ 		return 0;
+ 
+ 	entry.val = page_private(page);
+@@ -369,7 +369,7 @@ int remove_exclusive_swap_page(struct pa
+ 	if (p->swap_map[swp_offset(entry)] == 1) {
+ 		/* Recheck the page count with the swapcache lock held.. */
+ 		write_lock_irq(&swapper_space.tree_lock);
+-		if ((page_count(page) == 2) && !PageWriteback(page)) {
++		if ((page_count(page) == count) && !PageWriteback(page)) {
+ 			__delete_from_swap_cache(page);
+ 			SetPageDirty(page);
+ 			retval = 1;
+@@ -387,6 +387,25 @@ int remove_exclusive_swap_page(struct pa
+ }
+ 
+ /*
++ * Most of the time the page should have two references: one for the
++ * process and one for the swap cache.
++ */
++int remove_exclusive_swap_page(struct page *page)
++{
++	return remove_exclusive_swap_page_count(page, 2);
++}
++
++/*
++ * The pageout code holds an extra reference to the page.  That raises
++ * the reference count to test for to 2 for a page that is only in the
++ * swap cache plus 1 for each process that maps the page.
++ */
++int remove_exclusive_swap_page_ref(struct page *page)
++{
++	return remove_exclusive_swap_page_count(page, 2 + page_mapcount(page));
++}
++
++/*
+  * Free the swap entry like above, but also try to
+  * free the page cache entry if it is the last user.
+  */
 
-The only lingering problem is Ingo's report yesterday
-http://marc.info/?l=linux-netdev&m=121267587715976&w=2
-of a distcc hang. In this one it was not over localhost and the distcc
-server had the ec3c DA changes totally reverted. (The server is really
-the only stack that matters in this case - the client is not impacted by
-the DA changes). This has to be a different issue, because the ec3c code
-we're talking about here wasn't on the server at all. As Ilpo mentions,
-Hakon is beleived to have a different problem and maybe you've tripped
-over that too?
-
-If we're sure of that conclusion we should just take Ilpo's DA patch as
-that will narrow the field for finding Hakon's issue. Its just with all
-of these data points I'm not sure if I'm reaching the right conclusion.
-
-
-
+-- 
+All Rights Reversed
 
