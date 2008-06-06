@@ -1,60 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762999AbYFFSdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763800AbYFFSgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762999AbYFFSdS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 14:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYFFSdH
+	id S1763800AbYFFSgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 14:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbYFFSgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 14:33:07 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:53819 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753234AbYFFSdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 14:33:06 -0400
-Date: Fri, 6 Jun 2008 21:32:22 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Hinko =?utf-8?Q?Ko=C4=8Devar?= <hinko.kocevar@cetrtapot.si>,
-       starvik@axis.com, jesper.nilsson@axis.com
-Cc: linux-kernel@vger.kernel.org, dev-etrax@axis.com,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 2.6.26-rc5 0/2] cris: compile fixes for 2.6.26-rc5
-Message-ID: <20080606183222.GE2201@cs181133002.pp.htv.fi>
-References: <4849213A.4080001@cetrtapot.si>
+	Fri, 6 Jun 2008 14:36:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33633 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751713AbYFFSgC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 14:36:02 -0400
+Date: Fri, 6 Jun 2008 11:35:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ben Dooks <ben@fluff.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc5
+In-Reply-To: <20080605144318.GA5839@fluff.org.uk>
+Message-ID: <alpine.LFD.1.10.0806061134380.3473@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0806042018060.3473@woody.linux-foundation.org> <20080605144318.GA5839@fluff.org.uk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4849213A.4080001@cetrtapot.si>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 01:36:26PM +0200, Hinko Kočevar wrote:
-> Hi,
+
+
+On Thu, 5 Jun 2008, Ben Dooks wrote:
 > 
-> Current status of cris architecture is that current GIT tree at 2.6.26-rc5 does
-> not even compile.
->...
+> Is it too early to ask how long before 2.6.26 is released?
 
-@Mikael, Jesper:
+Hmm. Depends on just how the regression list ends up looking. I don't 
+think we're in bad shape, so maybe -rc7 can be the last one. 
 
-BTW:
-What happened with the stuff you have?
-It seems you missed to merge for 2.6.26?
-
-Can you try to not miss the merge window for 2.6.27, and also publish 
-your queued patches in a way that they might get into the -next tree
-(Stephen Cc'ed for possibly discussing details)?
-
-> Best regards,
-> Hinko
-
-TIA
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+		Linus
