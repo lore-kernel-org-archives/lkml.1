@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765373AbYFFQw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765330AbYFFQx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765373AbYFFQw0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 12:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYFFQwS
+	id S1765330AbYFFQx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 12:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbYFFQxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 12:52:18 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:35145 "EHLO relay.sgi.com"
+	Fri, 6 Jun 2008 12:53:21 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:35176 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753241AbYFFQwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 12:52:17 -0400
-Date: Fri, 6 Jun 2008 11:52:16 -0500
+	id S1754179AbYFFQxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 12:53:20 -0400
+Date: Fri, 6 Jun 2008 11:53:19 -0500
 From: Dean Nelson <dcn@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 09/18] base xpc_rsvd_page's timestamp on jiffies
-Message-ID: <20080606165216.GJ13695@sgi.com>
+Subject: [Patch 10/18] move xpc_allocate() into xpc_send()/xpc_send_notify()
+Message-ID: <20080606165319.GK13695@sgi.com>
 References: <20080606164034.GA13695@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,254 +25,574 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change XPC's reserved page timestamp to be based on jiffies.
+Move xpc_allocate() functionality into xpc_send()/xpc_send_notify() so
+xpc_allocate() no longer needs to be called by XPNET.
 
 Signed-off-by: Dean Nelson <dcn@sgi.com>
 
- drivers/misc/sgi-xp/xpc.h           |   26 ++-----------------------
- drivers/misc/sgi-xp/xpc_main.c      |   16 +++++++--------
- drivers/misc/sgi-xp/xpc_partition.c |   33 ++++++++++++++++----------------
- drivers/misc/sgi-xp/xpc_sn2.c       |   16 +++++----------
- 4 files changed, 34 insertions(+), 57 deletions(-)
+---
+
+ drivers/misc/sgi-xp/xp.h          |   44 +++++--------
+ drivers/misc/sgi-xp/xp_main.c     |   23 ++----
+ drivers/misc/sgi-xp/xpc.h         |    9 --
+ drivers/misc/sgi-xp/xpc_channel.c |  112 +++++++++++-----------------------
+ drivers/misc/sgi-xp/xpc_main.c    |   14 +---
+ drivers/misc/sgi-xp/xpc_sn2.c     |   64 ++++++++-----------
+ drivers/misc/sgi-xp/xpnet.c       |   11 +--
+ 7 files changed, 106 insertions(+), 171 deletions(-)
 
 Index: linux-2.6/drivers/misc/sgi-xp/xpc.h
 ===================================================================
---- linux-2.6.orig/drivers/misc/sgi-xp/xpc.h	2008-06-02 07:08:34.000000000 -0500
-+++ linux-2.6/drivers/misc/sgi-xp/xpc.h	2008-06-02 07:10:00.361526785 -0500
-@@ -115,8 +115,8 @@ struct xpc_rsvd_page {
- 		u64 vars_pa;	/* physical address of struct xpc_vars */
- 		u64 activate_mq_gpa;	/* global phys address of activate_mq */
- 	} sn;
--	struct timespec stamp;	/* time when reserved page was setup by XPC */
--	u64 pad2[9];		/* align to last u64 in 2nd 64-byte cacheline */
-+	unsigned long stamp;	/* time when reserved page was setup by XPC */
-+	u64 pad2[10];		/* align to last u64 in 2nd 64-byte cacheline */
- 	u64 SAL_nasids_size;	/* SAL: size of each nasid mask in bytes */
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc.h	2008-05-30 13:56:28.094130052 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc.h	2008-05-30 13:56:29.354288024 -0500
+@@ -624,9 +624,7 @@ extern void (*xpc_IPI_send_closereply) (
+ extern void (*xpc_IPI_send_openrequest) (struct xpc_channel *, unsigned long *);
+ extern void (*xpc_IPI_send_openreply) (struct xpc_channel *, unsigned long *);
+ 
+-extern enum xp_retval (*xpc_allocate_msg) (struct xpc_channel *, u32,
+-					   struct xpc_msg **);
+-extern enum xp_retval (*xpc_send_msg) (struct xpc_channel *, struct xpc_msg *,
++extern enum xp_retval (*xpc_send_msg) (struct xpc_channel *, u32, void *, u16,
+ 				       u8, xpc_notify_func, void *);
+ extern void (*xpc_received_msg) (struct xpc_channel *, struct xpc_msg *);
+ 
+@@ -664,9 +662,8 @@ extern void *xpc_kzalloc_cacheline_align
+ extern void xpc_initiate_connect(int);
+ extern void xpc_initiate_disconnect(int);
+ extern enum xp_retval xpc_allocate_msg_wait(struct xpc_channel *);
+-extern enum xp_retval xpc_initiate_allocate(short, int, u32, void **);
+-extern enum xp_retval xpc_initiate_send(short, int, void *);
+-extern enum xp_retval xpc_initiate_send_notify(short, int, void *,
++extern enum xp_retval xpc_initiate_send(short, int, u32, void *, u16);
++extern enum xp_retval xpc_initiate_send_notify(short, int, u32, void *, u16,
+ 					       xpc_notify_func, void *);
+ extern void xpc_initiate_received(short, int, void *);
+ extern void xpc_process_channel_activity(struct xpc_partition *);
+Index: linux-2.6/drivers/misc/sgi-xp/xpc_main.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc_main.c	2008-05-30 13:56:28.126134064 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc_main.c	2008-05-30 13:56:29.386292036 -0500
+@@ -217,12 +217,9 @@ void (*xpc_IPI_send_openrequest) (struct
+ void (*xpc_IPI_send_openreply) (struct xpc_channel *ch,
+ 				unsigned long *irq_flags);
+ 
+-enum xp_retval (*xpc_allocate_msg) (struct xpc_channel *ch, u32 flags,
+-				    struct xpc_msg **address_of_msg);
+-
+-enum xp_retval (*xpc_send_msg) (struct xpc_channel *ch, struct xpc_msg *msg,
+-				u8 notify_type, xpc_notify_func func,
+-				void *key);
++enum xp_retval (*xpc_send_msg) (struct xpc_channel *ch, u32 flags,
++				void *payload, u16 payload_size, u8 notify_type,
++				xpc_notify_func func, void *key);
+ void (*xpc_received_msg) (struct xpc_channel *ch, struct xpc_msg *msg);
+ 
+ /*
+@@ -1286,9 +1283,8 @@ xpc_init(void)
+ 
+ 	/* set the interface to point at XPC's functions */
+ 	xpc_set_interface(xpc_initiate_connect, xpc_initiate_disconnect,
+-			  xpc_initiate_allocate, xpc_initiate_send,
+-			  xpc_initiate_send_notify, xpc_initiate_received,
+-			  xpc_initiate_partid_to_nasids);
++			  xpc_initiate_send, xpc_initiate_send_notify,
++			  xpc_initiate_received, xpc_initiate_partid_to_nasids);
+ 
+ 	return 0;
+ 
+Index: linux-2.6/drivers/misc/sgi-xp/xpc_sn2.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc_sn2.c	2008-05-30 13:56:28.106131557 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc_sn2.c	2008-05-30 13:56:29.406294543 -0500
+@@ -1532,18 +1532,6 @@ xpc_allocate_msg_sn2(struct xpc_channel 
+ 	enum xp_retval ret;
+ 	s64 put;
+ 
+-	/* this reference will be dropped in xpc_send_msg_sn2() */
+-	xpc_msgqueue_ref(ch);
+-
+-	if (ch->flags & XPC_C_DISCONNECTING) {
+-		xpc_msgqueue_deref(ch);
+-		return ch->reason;
+-	}
+-	if (!(ch->flags & XPC_C_CONNECTED)) {
+-		xpc_msgqueue_deref(ch);
+-		return xpNotConnected;
+-	}
+-
+ 	/*
+ 	 * Get the next available message entry from the local message queue.
+ 	 * If none are available, we'll make sure that we grab the latest
+@@ -1582,16 +1570,12 @@ xpc_allocate_msg_sn2(struct xpc_channel 
+ 		if (ret == xpTimeout)
+ 			xpc_IPI_send_local_msgrequest_sn2(ch);
+ 
+-		if (flags & XPC_NOWAIT) {
+-			xpc_msgqueue_deref(ch);
++		if (flags & XPC_NOWAIT)
+ 			return xpNoWait;
+-		}
+ 
+ 		ret = xpc_allocate_msg_wait(ch);
+-		if (ret != xpInterrupted && ret != xpTimeout) {
+-			xpc_msgqueue_deref(ch);
++		if (ret != xpInterrupted && ret != xpTimeout)
+ 			return ret;
+-		}
+ 	}
+ 
+ 	/* get the message's address and initialize it */
+@@ -1606,7 +1590,6 @@ xpc_allocate_msg_sn2(struct xpc_channel 
+ 		(void *)msg, msg->number, ch->partid, ch->number);
+ 
+ 	*address_of_msg = msg;
+-
+ 	return xpSuccess;
+ }
+ 
+@@ -1616,23 +1599,37 @@ xpc_allocate_msg_sn2(struct xpc_channel 
+  * message is being sent to.
+  */
+ static enum xp_retval
+-xpc_send_msg_sn2(struct xpc_channel *ch, struct xpc_msg *msg, u8 notify_type,
+-		 xpc_notify_func func, void *key)
++xpc_send_msg_sn2(struct xpc_channel *ch, u32 flags, void *payload,
++		 u16 payload_size, u8 notify_type, xpc_notify_func func,
++		 void *key)
+ {
+ 	enum xp_retval ret = xpSuccess;
++	struct xpc_msg *msg = msg;
+ 	struct xpc_notify *notify = notify;
+-	s64 put, msg_number = msg->number;
++	s64 msg_number;
++	s64 put;
+ 
+ 	DBUG_ON(notify_type == XPC_N_CALL && func == NULL);
+-	DBUG_ON((((u64)msg - (u64)ch->local_msgqueue) / ch->msg_size) !=
+-		msg_number % ch->local_nentries);
+-	DBUG_ON(msg->flags & XPC_M_READY);
++
++	if (XPC_MSG_SIZE(payload_size) > ch->msg_size)
++		return xpPayloadTooBig;
++
++	xpc_msgqueue_ref(ch);
+ 
+ 	if (ch->flags & XPC_C_DISCONNECTING) {
+-		/* drop the reference grabbed in xpc_allocate_msg_sn2() */
+-		xpc_msgqueue_deref(ch);
+-		return ch->reason;
++		ret = ch->reason;
++		goto out_1;
+ 	}
++	if (!(ch->flags & XPC_C_CONNECTED)) {
++		ret = xpNotConnected;
++		goto out_1;
++	}
++
++	ret = xpc_allocate_msg_sn2(ch, flags, &msg);
++	if (ret != xpSuccess)
++		goto out_1;
++
++	msg_number = msg->number;
+ 
+ 	if (notify_type != 0) {
+ 		/*
+@@ -1663,13 +1660,12 @@ xpc_send_msg_sn2(struct xpc_channel *ch,
+ 				atomic_dec(&ch->n_to_notify);
+ 				ret = ch->reason;
+ 			}
+-
+-			/* drop reference grabbed in xpc_allocate_msg_sn2() */
+-			xpc_msgqueue_deref(ch);
+-			return ret;
++			goto out_1;
+ 		}
+ 	}
+ 
++	memcpy(&msg->payload, payload, payload_size);
++
+ 	msg->flags |= XPC_M_READY;
+ 
+ 	/*
+@@ -1684,7 +1680,7 @@ xpc_send_msg_sn2(struct xpc_channel *ch,
+ 	if (put == msg_number)
+ 		xpc_send_msgs_sn2(ch, put);
+ 
+-	/* drop the reference grabbed in xpc_allocate_msg_sn2() */
++out_1:
+ 	xpc_msgqueue_deref(ch);
+ 	return ret;
+ }
+@@ -1821,8 +1817,6 @@ xpc_init_sn2(void)
+ 	xpc_IPI_send_openrequest = xpc_IPI_send_openrequest_sn2;
+ 	xpc_IPI_send_openreply = xpc_IPI_send_openreply_sn2;
+ 
+-	xpc_allocate_msg = xpc_allocate_msg_sn2;
+-
+ 	xpc_send_msg = xpc_send_msg_sn2;
+ 	xpc_received_msg = xpc_received_msg_sn2;
+ }
+Index: linux-2.6/drivers/misc/sgi-xp/xp.h
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xp.h	2008-05-30 13:56:17.164759937 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xp.h	2008-05-30 13:56:29.430297552 -0500
+@@ -116,12 +116,6 @@
+  * The size of the payload is defined by the user via xpc_connect(). A user-
+  * defined message resides in the payload area.
+  *
+- * The user should have no dealings with the message header, but only the
+- * message's payload. When a message entry is allocated (via xpc_allocate())
+- * a pointer to the payload area is returned and not the actual beginning of
+- * the XPC message. The user then constructs a message in the payload area
+- * and passes that pointer as an argument on xpc_send() or xpc_send_notify().
+- *
+  * The size of a message entry (within a message queue) must be a cacheline
+  * sized multiple in order to facilitate the BTE transfer of messages from one
+  * message queue to another. A macro, XPC_MSG_SIZE(), is provided for the user
+@@ -221,9 +215,10 @@ enum xp_retval {
+ 	xpBteCopyError,		/* 52: bte_copy() returned error */
+ 	xpSalError,		/* 53: sn SAL error */
+ 	xpRsvdPageNotSet,	/* 54: the reserved page is not set up */
++	xpPayloadTooBig,	/* 55: payload too large for message slot */
+ 
+-	xpUnsupported,		/* 55: unsupported functionality or resource */
+-	xpUnknownReason		/* 56: unknown reason - must be last in enum */
++	xpUnsupported,		/* 56: unsupported functionality or resource */
++	xpUnknownReason		/* 57: unknown reason - must be last in enum */
  };
  
-@@ -125,26 +125,6 @@ struct xpc_rsvd_page {
- #define XPC_SUPPORTS_RP_STAMP(_version) \
- 			(_version >= _XPC_VERSION(1, 1))
+ /*
+@@ -304,16 +299,15 @@ struct xpc_registration {
  
--#define ZERO_STAMP	((struct timespec){0, 0})
--/*
-- * compare stamps - the return value is:
-- *
-- *	< 0,	if stamp1 < stamp2
-- *	= 0,	if stamp1 == stamp2
-- *	> 0,	if stamp1 > stamp2
-- */
--static inline int
--xpc_compare_stamps(struct timespec *stamp1, struct timespec *stamp2)
+ #define XPC_CHANNEL_REGISTERED(_c)	(xpc_registrations[_c].func != NULL)
+ 
+-/* the following are valid xpc_allocate() flags */
++/* the following are valid xpc_send() or xpc_send_notify() flags */
+ #define XPC_WAIT	0	/* wait flag */
+ #define XPC_NOWAIT	1	/* no wait flag */
+ 
+ struct xpc_interface {
+ 	void (*connect) (int);
+ 	void (*disconnect) (int);
+-	enum xp_retval (*allocate) (short, int, u32, void **);
+-	enum xp_retval (*send) (short, int, void *);
+-	enum xp_retval (*send_notify) (short, int, void *,
++	enum xp_retval (*send) (short, int, u32, void *, u16);
++	enum xp_retval (*send_notify) (short, int, u32, void *, u16,
+ 					xpc_notify_func, void *);
+ 	void (*received) (short, int, void *);
+ 	enum xp_retval (*partid_to_nasids) (short, void *);
+@@ -323,10 +317,9 @@ extern struct xpc_interface xpc_interfac
+ 
+ extern void xpc_set_interface(void (*)(int),
+ 			      void (*)(int),
+-			      enum xp_retval (*)(short, int, u32, void **),
+-			      enum xp_retval (*)(short, int, void *),
+-			      enum xp_retval (*)(short, int, void *,
+-						  xpc_notify_func, void *),
++			      enum xp_retval (*)(short, int, u32, void *, u16),
++			      enum xp_retval (*)(short, int, u32, void *, u16,
++						 xpc_notify_func, void *),
+ 			      void (*)(short, int, void *),
+ 			      enum xp_retval (*)(short, void *));
+ extern void xpc_clear_interface(void);
+@@ -336,22 +329,19 @@ extern enum xp_retval xpc_connect(int, x
+ extern void xpc_disconnect(int);
+ 
+ static inline enum xp_retval
+-xpc_allocate(short partid, int ch_number, u32 flags, void **payload)
 -{
--	int ret;
+-	return xpc_interface.allocate(partid, ch_number, flags, payload);
+-}
 -
--	ret = stamp1->tv_sec - stamp2->tv_sec;
--	if (ret == 0)
--		ret = stamp1->tv_nsec - stamp2->tv_nsec;
+-static inline enum xp_retval
+-xpc_send(short partid, int ch_number, void *payload)
++xpc_send(short partid, int ch_number, u32 flags, void *payload,
++	 u16 payload_size)
+ {
+-	return xpc_interface.send(partid, ch_number, payload);
++	return xpc_interface.send(partid, ch_number, flags, payload,
++				  payload_size);
+ }
+ 
+ static inline enum xp_retval
+-xpc_send_notify(short partid, int ch_number, void *payload,
+-		xpc_notify_func func, void *key)
++xpc_send_notify(short partid, int ch_number, u32 flags, void *payload,
++		u16 payload_size, xpc_notify_func func, void *key)
+ {
+-	return xpc_interface.send_notify(partid, ch_number, payload, func, key);
++	return xpc_interface.send_notify(partid, ch_number, flags, payload,
++					 payload_size, func, key);
+ }
+ 
+ static inline void
+Index: linux-2.6/drivers/misc/sgi-xp/xpnet.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpnet.c	2008-05-30 13:56:06.039365201 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpnet.c	2008-05-30 13:56:29.450300060 -0500
+@@ -438,7 +438,8 @@ xpnet_dev_hard_start_xmit(struct sk_buff
+ {
+ 	struct xpnet_pending_msg *queued_msg;
+ 	enum xp_retval ret;
+-	struct xpnet_message *msg;
++	u8 msg_buffer[XPNET_MSG_SIZE];
++	struct xpnet_message *msg = (struct xpnet_message *)&msg_buffer[0];
+ 	u64 start_addr, end_addr;
+ 	long dp;
+ 	u8 second_mac_octet;
+@@ -524,11 +525,6 @@ xpnet_dev_hard_start_xmit(struct sk_buff
+ 
+ 		/* found a partition to send to */
+ 
+-		ret = xpc_allocate(dest_partid, XPC_NET_CHANNEL,
+-				   XPC_NOWAIT, (void **)&msg);
+-		if (unlikely(ret != xpSuccess))
+-			continue;
+-
+ 		msg->embedded_bytes = embedded_bytes;
+ 		if (unlikely(embedded_bytes != 0)) {
+ 			msg->version = XPNET_VERSION_EMBED;
+@@ -553,7 +549,8 @@ xpnet_dev_hard_start_xmit(struct sk_buff
+ 
+ 		atomic_inc(&queued_msg->use_count);
+ 
+-		ret = xpc_send_notify(dest_partid, XPC_NET_CHANNEL, msg,
++		ret = xpc_send_notify(dest_partid, XPC_NET_CHANNEL, XPC_NOWAIT,
++				      &msg, sizeof(msg) + embedded_bytes - 1,
+ 				      xpnet_send_completed, queued_msg);
+ 		if (unlikely(ret != xpSuccess)) {
+ 			atomic_dec(&queued_msg->use_count);
+Index: linux-2.6/drivers/misc/sgi-xp/xp_main.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xp_main.c	2008-05-30 13:56:05.887346143 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xp_main.c	2008-05-30 13:56:29.470302567 -0500
+@@ -58,10 +58,9 @@ xpc_notloaded(void)
+ struct xpc_interface xpc_interface = {
+ 	(void (*)(int))xpc_notloaded,
+ 	(void (*)(int))xpc_notloaded,
+-	(enum xp_retval(*)(short, int, u32, void **))xpc_notloaded,
+-	(enum xp_retval(*)(short, int, void *))xpc_notloaded,
+-	(enum xp_retval(*)(short, int, void *, xpc_notify_func, void *))
+-	    xpc_notloaded,
++	(enum xp_retval(*)(short, int, u32, void *, u16))xpc_notloaded,
++	(enum xp_retval(*)(short, int, u32, void *, u16, xpc_notify_func,
++			   void *))xpc_notloaded,
+ 	(void (*)(short, int, void *))xpc_notloaded,
+ 	(enum xp_retval(*)(short, void *))xpc_notloaded
+ };
+@@ -73,16 +72,14 @@ EXPORT_SYMBOL_GPL(xpc_interface);
+ void
+ xpc_set_interface(void (*connect) (int),
+ 		  void (*disconnect) (int),
+-		  enum xp_retval (*allocate) (short, int, u32, void **),
+-		  enum xp_retval (*send) (short, int, void *),
+-		  enum xp_retval (*send_notify) (short, int, void *,
++		  enum xp_retval (*send) (short, int, u32, void *, u16),
++		  enum xp_retval (*send_notify) (short, int, u32, void *, u16,
+ 						  xpc_notify_func, void *),
+ 		  void (*received) (short, int, void *),
+ 		  enum xp_retval (*partid_to_nasids) (short, void *))
+ {
+ 	xpc_interface.connect = connect;
+ 	xpc_interface.disconnect = disconnect;
+-	xpc_interface.allocate = allocate;
+ 	xpc_interface.send = send;
+ 	xpc_interface.send_notify = send_notify;
+ 	xpc_interface.received = received;
+@@ -98,13 +95,11 @@ xpc_clear_interface(void)
+ {
+ 	xpc_interface.connect = (void (*)(int))xpc_notloaded;
+ 	xpc_interface.disconnect = (void (*)(int))xpc_notloaded;
+-	xpc_interface.allocate = (enum xp_retval(*)(short, int, u32,
+-						     void **))xpc_notloaded;
+-	xpc_interface.send = (enum xp_retval(*)(short, int, void *))
++	xpc_interface.send = (enum xp_retval(*)(short, int, u32, void *, u16))
+ 	    xpc_notloaded;
+-	xpc_interface.send_notify = (enum xp_retval(*)(short, int, void *,
+-							xpc_notify_func,
+-							void *))xpc_notloaded;
++	xpc_interface.send_notify = (enum xp_retval(*)(short, int, u32, void *,
++						       u16, xpc_notify_func,
++						       void *))xpc_notloaded;
+ 	xpc_interface.received = (void (*)(short, int, void *))
+ 	    xpc_notloaded;
+ 	xpc_interface.partid_to_nasids = (enum xp_retval(*)(short, void *))
+Index: linux-2.6/drivers/misc/sgi-xp/xpc_channel.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc_channel.c	2008-05-30 13:56:26.849974086 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc_channel.c	2008-05-30 13:56:29.490305075 -0500
+@@ -1192,87 +1192,54 @@ xpc_allocate_msg_wait(struct xpc_channel
+ }
+ 
+ /*
+- * Allocate an entry for a message from the message queue associated with the
+- * specified channel. NOTE that this routine can sleep waiting for a message
+- * entry to become available. To not sleep, pass in the XPC_NOWAIT flag.
++ * Send a message that contains the user's payload on the specified channel
++ * connected to the specified partition.
+  *
+- * Arguments:
++ * NOTE that this routine can sleep waiting for a message entry to become
++ * available. To not sleep, pass in the XPC_NOWAIT flag.
+  *
+- *	partid - ID of partition to which the channel is connected.
+- *	ch_number - channel #.
+- *	flags - see xpc.h for valid flags.
+- *	payload - address of the allocated payload area pointer (filled in on
+- * 	          return) in which the user-defined message is constructed.
+- */
+-enum xp_retval
+-xpc_initiate_allocate(short partid, int ch_number, u32 flags, void **payload)
+-{
+-	struct xpc_partition *part = &xpc_partitions[partid];
+-	enum xp_retval ret = xpUnknownReason;
+-	struct xpc_msg *msg = NULL;
+-
+-	DBUG_ON(partid < 0 || partid >= xp_max_npartitions);
+-	DBUG_ON(ch_number < 0 || ch_number >= part->nchannels);
+-
+-	*payload = NULL;
+-
+-	if (xpc_part_ref(part)) {
+-		ret = xpc_allocate_msg(&part->channels[ch_number], flags, &msg);
+-		xpc_part_deref(part);
+-
+-		if (msg != NULL)
+-			*payload = &msg->payload;
+-	}
 -
 -	return ret;
 -}
 -
- /*
-  * Define the structures by which XPC variables can be exported to other
-  * partitions. (There are two: struct xpc_vars and struct xpc_vars_part)
-@@ -492,7 +472,7 @@ struct xpc_partition {
- 	/* XPC HB infrastructure */
- 
- 	u8 remote_rp_version;	/* version# of partition's rsvd pg */
--	struct timespec remote_rp_stamp; /* time when rsvd pg was initialized */
-+	unsigned long remote_rp_stamp; /* time when rsvd pg was initialized */
- 	u64 remote_rp_pa;	/* phys addr of partition's rsvd pg */
- 	u64 remote_vars_pa;	/* phys addr of partition's vars */
- 	u64 remote_vars_part_pa;	/* phys addr of partition's vars part */
-Index: linux-2.6/drivers/misc/sgi-xp/xpc_sn2.c
-===================================================================
---- linux-2.6.orig/drivers/misc/sgi-xp/xpc_sn2.c	2008-06-02 07:08:34.000000000 -0500
-+++ linux-2.6/drivers/misc/sgi-xp/xpc_sn2.c	2008-06-02 07:09:09.923429772 -0500
-@@ -597,8 +597,8 @@ xpc_initiate_partition_activation_sn2(st
+-/*
+- * Send a message previously allocated using xpc_initiate_allocate() on the
+- * specified channel connected to the specified partition.
+- *
+- * This routine will not wait for the message to be received, nor will
+- * notification be given when it does happen. Once this routine has returned
+- * the message entry allocated via xpc_initiate_allocate() is no longer
+- * accessable to the caller.
+- *
+- * This routine, although called by users, does not call xpc_part_ref() to
+- * ensure that the partition infrastructure is in place. It relies on the
+- * fact that we called xpc_msgqueue_ref() in xpc_allocate_msg().
++ * Once sent, this routine will not wait for the message to be received, nor
++ * will notification be given when it does happen.
+  *
+  * Arguments:
+  *
+  *	partid - ID of partition to which the channel is connected.
+  *	ch_number - channel # to send message on.
+- *	payload - pointer to the payload area allocated via
+- *			xpc_initiate_allocate().
++ *	flags - see xp.h for valid flags.
++ *	payload - pointer to the payload which is to be sent.
++ *	payload_size - size of the payload in bytes.
   */
- static void
- xpc_update_partition_info_sn2(struct xpc_partition *part, u8 remote_rp_version,
--			      struct timespec *remote_rp_stamp,
--			      u64 remote_rp_pa, u64 remote_vars_pa,
-+			      unsigned long *remote_rp_stamp, u64 remote_rp_pa,
-+			      u64 remote_vars_pa,
- 			      struct xpc_vars_sn2 *remote_vars)
+ enum xp_retval
+-xpc_initiate_send(short partid, int ch_number, void *payload)
++xpc_initiate_send(short partid, int ch_number, u32 flags, void *payload,
++		  u16 payload_size)
  {
- 	part->remote_rp_version = remote_rp_version;
-@@ -606,8 +606,8 @@ xpc_update_partition_info_sn2(struct xpc
- 		part->remote_rp_version);
+ 	struct xpc_partition *part = &xpc_partitions[partid];
+-	struct xpc_msg *msg = XPC_MSG_ADDRESS(payload);
+-	enum xp_retval ret;
++	enum xp_retval ret = xpUnknownReason;
  
- 	part->remote_rp_stamp = *remote_rp_stamp;
--	dev_dbg(xpc_part, "  remote_rp_stamp (tv_sec = 0x%lx tv_nsec = 0x%lx\n",
--		part->remote_rp_stamp.tv_sec, part->remote_rp_stamp.tv_nsec);
-+	dev_dbg(xpc_part, "  remote_rp_stamp = 0x%016lx\n",
-+		part->remote_rp_stamp);
+-	dev_dbg(xpc_chan, "msg=0x%p, partid=%d, channel=%d\n", (void *)msg,
++	dev_dbg(xpc_chan, "payload=0x%p, partid=%d, channel=%d\n", payload,
+ 		partid, ch_number);
  
- 	part->remote_rp_pa = remote_rp_pa;
- 	dev_dbg(xpc_part, "  remote_rp_pa = 0x%016lx\n", part->remote_rp_pa);
-@@ -664,8 +664,7 @@ xpc_identify_act_IRQ_req_sn2(int nasid)
- 	u64 remote_vars_pa;
- 	int remote_rp_version;
- 	int reactivate = 0;
--	int stamp_diff;
--	struct timespec remote_rp_stamp = { 0, 0 }; /*>>> ZERO_STAMP */
-+	unsigned long remote_rp_stamp = 0;
- 	short partid;
- 	struct xpc_partition *part;
- 	enum xp_retval ret;
-@@ -788,10 +787,7 @@ xpc_identify_act_IRQ_req_sn2(int nasid)
- 	} else {
- 		DBUG_ON(!XPC_SUPPORTS_DISENGAGE_REQUEST(remote_vars->version));
+ 	DBUG_ON(partid < 0 || partid >= xp_max_npartitions);
+ 	DBUG_ON(ch_number < 0 || ch_number >= part->nchannels);
+-	DBUG_ON(msg == NULL);
++	DBUG_ON(payload == NULL);
  
--		stamp_diff = xpc_compare_stamps(&part->remote_rp_stamp,
--						&remote_rp_stamp);
--		if (stamp_diff != 0) {
--			DBUG_ON(stamp_diff >= 0);
-+		if (remote_rp_stamp != part->remote_rp_stamp) {
- 
- 			/*
- 			 * Other side rebooted and the previous XPC did support
-Index: linux-2.6/drivers/misc/sgi-xp/xpc_main.c
-===================================================================
---- linux-2.6.orig/drivers/misc/sgi-xp/xpc_main.c	2008-06-02 07:08:34.000000000 -0500
-+++ linux-2.6/drivers/misc/sgi-xp/xpc_main.c	2008-06-02 07:09:09.943432190 -0500
-@@ -233,7 +233,7 @@ xpc_timeout_partition_disengage_request(
- {
- 	struct xpc_partition *part = (struct xpc_partition *)data;
- 
--	DBUG_ON(time_before(jiffies, part->disengage_request_timeout));
-+	DBUG_ON(time_is_after_jiffies(part->disengage_request_timeout));
- 
- 	(void)xpc_partition_disengaged(part);
- 
-@@ -262,7 +262,7 @@ xpc_hb_beater(unsigned long dummy)
- {
- 	xpc_increment_heartbeat();
- 
--	if (time_after_eq(jiffies, xpc_hb_check_timeout))
-+	if (time_is_before_eq_jiffies(xpc_hb_check_timeout))
- 		wake_up_interruptible(&xpc_act_IRQ_wq);
- 
- 	xpc_hb_timer.expires = jiffies + (xpc_hb_interval * HZ);
-@@ -312,7 +312,7 @@ xpc_hb_checker(void *ignore)
- 			atomic_read(&xpc_act_IRQ_rcvd) - last_IRQ_count);
- 
- 		/* checking of remote heartbeats is skewed by IRQ handling */
--		if (time_after_eq(jiffies, xpc_hb_check_timeout)) {
-+		if (time_is_before_eq_jiffies(xpc_hb_check_timeout)) {
- 			dev_dbg(xpc_part, "checking remote heartbeats\n");
- 			xpc_check_remote_hb();
- 
-@@ -344,8 +344,8 @@ xpc_hb_checker(void *ignore)
- 		(void)wait_event_interruptible(xpc_act_IRQ_wq,
- 					       (last_IRQ_count <
- 						atomic_read(&xpc_act_IRQ_rcvd)
--						|| time_after_eq(jiffies,
--							xpc_hb_check_timeout) ||
-+						|| time_is_before_eq_jiffies(
-+						xpc_hb_check_timeout) ||
- 						xpc_exiting));
- 	}
- 
-@@ -929,7 +929,7 @@ xpc_do_exit(enum xp_retval reason)
- 		}
- 
- 		if (xpc_partition_engaged(-1UL)) {
--			if (time_after(jiffies, printmsg_time)) {
-+			if (time_is_before_jiffies(printmsg_time)) {
- 				dev_info(xpc_part, "waiting for remote "
- 					 "partitions to disengage, timeout in "
- 					 "%ld seconds\n",
-@@ -964,7 +964,7 @@ xpc_do_exit(enum xp_retval reason)
- 	DBUG_ON(xpc_any_hbs_allowed() != 0);
- 
- 	/* indicate to others that our reserved page is uninitialized */
--	xpc_rsvd_page->stamp = ZERO_STAMP;
-+	xpc_rsvd_page->stamp = 0;
- 
- 	if (reason == xpUnloading) {
- 		(void)unregister_die_notifier(&xpc_die_notifier);
-@@ -1295,7 +1295,7 @@ xpc_init(void)
- 	/* initialization was not successful */
- out_4:
- 	/* indicate to others that our reserved page is uninitialized */
--	xpc_rsvd_page->stamp = ZERO_STAMP;
-+	xpc_rsvd_page->stamp = 0;
- 
- 	(void)unregister_die_notifier(&xpc_die_notifier);
- 	(void)unregister_reboot_notifier(&xpc_reboot_notifier);
-Index: linux-2.6/drivers/misc/sgi-xp/xpc_partition.c
-===================================================================
---- linux-2.6.orig/drivers/misc/sgi-xp/xpc_partition.c	2008-06-02 07:08:34.000000000 -0500
-+++ linux-2.6/drivers/misc/sgi-xp/xpc_partition.c	2008-06-02 07:09:09.959434124 -0500
-@@ -152,6 +152,7 @@ xpc_setup_rsvd_page(void)
- {
- 	struct xpc_rsvd_page *rp;
- 	u64 rp_pa;
-+	unsigned long new_stamp;
- 
- 	/* get the local reserved page's address */
- 
-@@ -201,7 +202,10 @@ xpc_setup_rsvd_page(void)
- 	 * This signifies to the remote partition that our reserved
- 	 * page is initialized.
- 	 */
--	rp->stamp = CURRENT_TIME;
-+	new_stamp = jiffies;
-+	if (new_stamp == 0 || new_stamp == rp->stamp)
-+		new_stamp++;
-+	rp->stamp = new_stamp;
- 
- 	return rp;
- }
-@@ -350,18 +354,8 @@ xpc_get_remote_rp(int nasid, u64 *discov
- 			discovered_nasids[i] |= remote_part_nasids[i];
- 	}
- 
--	/* check that the partid is valid and is for another partition */
--
--	if (remote_rp->SAL_partid < 0 ||
--	    remote_rp->SAL_partid >= xp_max_npartitions) {
--		return xpInvalidPartid;
--	}
--
--	if (remote_rp->SAL_partid == sn_partition_id)
--		return xpLocalPartid;
--
--	/* see if the rest of the reserved page has been set up by XPC */
--	if (timespec_equal(&remote_rp->stamp, &ZERO_STAMP))
-+	/* see if the reserved page has been set up by XPC */
-+	if (remote_rp->stamp == 0)
- 		return xpRsvdPageNotSet;
- 
- 	if (XPC_VERSION_MAJOR(remote_rp->version) !=
-@@ -369,8 +363,15 @@ xpc_get_remote_rp(int nasid, u64 *discov
- 		return xpBadVersion;
- 	}
- 
--	if (remote_rp->max_npartitions <= sn_partition_id)
-+	/* check that both local and remote partids are valid for each side */
-+	if (remote_rp->SAL_partid < 0 ||
-+	    remote_rp->SAL_partid >= xp_max_npartitions ||
-+	    remote_rp->max_npartitions <= sn_partition_id) {
- 		return xpInvalidPartid;
+-	ret = xpc_send_msg(&part->channels[ch_number], msg, 0, NULL, NULL);
++	if (xpc_part_ref(part)) {
++		ret = xpc_send_msg(&part->channels[ch_number], flags, payload,
++				   payload_size, 0, NULL, NULL);
++		xpc_part_deref(part);
 +	}
-+
-+	if (remote_rp->SAL_partid == sn_partition_id)
-+		return xpLocalPartid;
  
- 	return xpSuccess;
+ 	return ret;
  }
-@@ -388,8 +389,8 @@ xpc_partition_disengaged(struct xpc_part
- 	disengaged = (xpc_partition_engaged(1UL << partid) == 0);
- 	if (part->disengage_request_timeout) {
- 		if (!disengaged) {
--			if (time_before(jiffies,
--			    part->disengage_request_timeout)) {
-+			if (time_is_after_jiffies(part->
-+						  disengage_request_timeout)) {
- 				/* timelimit hasn't been reached yet */
- 				return 0;
- 			}
+ 
+ /*
+- * Send a message previously allocated using xpc_initiate_allocate on the
+- * specified channel connected to the specified partition.
++ * Send a message that contains the user's payload on the specified channel
++ * connected to the specified partition.
+  *
+- * This routine will not wait for the message to be sent. Once this routine
+- * has returned the message entry allocated via xpc_initiate_allocate() is no
+- * longer accessable to the caller.
++ * NOTE that this routine can sleep waiting for a message entry to become
++ * available. To not sleep, pass in the XPC_NOWAIT flag.
++ *
++ * This routine will not wait for the message to be sent or received.
+  *
+  * Once the remote end of the channel has received the message, the function
+  * passed as an argument to xpc_initiate_send_notify() will be called. This
+@@ -1282,38 +1249,37 @@ xpc_initiate_send(short partid, int ch_n
+  *
+  * If this routine returns an error, the caller's function will NOT be called.
+  *
+- * This routine, although called by users, does not call xpc_part_ref() to
+- * ensure that the partition infrastructure is in place. It relies on the
+- * fact that we called xpc_msgqueue_ref() in xpc_allocate_msg().
+- *
+  * Arguments:
+  *
+  *	partid - ID of partition to which the channel is connected.
+  *	ch_number - channel # to send message on.
+- *	payload - pointer to the payload area allocated via
+- *			xpc_initiate_allocate().
++ *	flags - see xp.h for valid flags.
++ *	payload - pointer to the payload which is to be sent.
++ *	payload_size - size of the payload in bytes.
+  *	func - function to call with asynchronous notification of message
+  *		  receipt. THIS FUNCTION MUST BE NON-BLOCKING.
+  *	key - user-defined key to be passed to the function when it's called.
+  */
+ enum xp_retval
+-xpc_initiate_send_notify(short partid, int ch_number, void *payload,
+-			 xpc_notify_func func, void *key)
++xpc_initiate_send_notify(short partid, int ch_number, u32 flags, void *payload,
++			 u16 payload_size, xpc_notify_func func, void *key)
+ {
+ 	struct xpc_partition *part = &xpc_partitions[partid];
+-	struct xpc_msg *msg = XPC_MSG_ADDRESS(payload);
+-	enum xp_retval ret;
++	enum xp_retval ret = xpUnknownReason;
+ 
+-	dev_dbg(xpc_chan, "msg=0x%p, partid=%d, channel=%d\n", (void *)msg,
++	dev_dbg(xpc_chan, "payload=0x%p, partid=%d, channel=%d\n", payload,
+ 		partid, ch_number);
+ 
+ 	DBUG_ON(partid < 0 || partid >= xp_max_npartitions);
+ 	DBUG_ON(ch_number < 0 || ch_number >= part->nchannels);
+-	DBUG_ON(msg == NULL);
++	DBUG_ON(payload == NULL);
+ 	DBUG_ON(func == NULL);
+ 
+-	ret = xpc_send_msg(&part->channels[ch_number], msg, XPC_N_CALL,
+-			   func, key);
++	if (xpc_part_ref(part)) {
++		ret = xpc_send_msg(&part->channels[ch_number], flags, payload,
++				   payload_size, XPC_N_CALL, func, key);
++		xpc_part_deref(part);
++	}
+ 	return ret;
+ }
+ 
+@@ -1372,7 +1338,7 @@ xpc_deliver_msg(struct xpc_channel *ch)
+  *	partid - ID of partition to which the channel is connected.
+  *	ch_number - channel # message received on.
+  *	payload - pointer to the payload area allocated via
+- *			xpc_initiate_allocate().
++ *			xpc_initiate_send() or xpc_initiate_send_notify().
+  */
+ void
+ xpc_initiate_received(short partid, int ch_number, void *payload)
