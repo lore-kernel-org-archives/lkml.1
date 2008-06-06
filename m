@@ -1,163 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYFFKr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbYFFKtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbYFFKr4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbYFFKrl
+	id S1757314AbYFFKtb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYFFKtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:47:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57988 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755153AbYFFKrk (ORCPT
+	Fri, 6 Jun 2008 06:49:22 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:57202 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753387AbYFFKtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:47:40 -0400
-Date: Fri, 6 Jun 2008 03:47:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?UTF-8?Q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
-Message-Id: <20080606034738.9835782d.akpm@linux-foundation.org>
-In-Reply-To: <200806060039.48488.m1k0@wp.pl>
-References: <200806060039.48488.m1k0@wp.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 06:49:21 -0400
+X-BigFish: VPS-3(zz18c1K655Oc8kzz10d3izzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0K21FDX-02-KBH-01
+In-Reply-To: <alpine.LFD.1.10.0806052239110.3235@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.10.0806052239110.3235@apollo.tec.linutronix.de>
+From: Robert Richter <robert.richter@amd.com>
+Date: Fri, 6 Jun 2008 12:01:13 +0200
+Subject: [PATCH] fix build bug in "x86: add PCI extended config space access for AMD Barcelona" (try #3)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Message-ID: <20080606104814.484CF806B@erda.amd.com>
+X-OriginalArrivalTime: 06 Jun 2008 10:48:14.0523 (UTC) FILETIME=[D242B8B0:01C8C7C2]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-wireless)
+Much more less code now.
 
-On Fri, 6 Jun 2008 00:39:48 +0200 Micha__ Kud__a <michal.kudla@gmail.com> wrote:
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ arch/x86/kernel/cpu/amd.c    |    2 --
+ arch/x86/kernel/cpu/amd_64.c |    1 +
+ arch/x86/kernel/cpu/cpu.h    |    5 +++++
+ arch/x86/kernel/setup.c      |    4 ++--
+ arch/x86/kernel/setup.h      |   26 --------------------------
+ arch/x86/kernel/setup_64.c   |    2 --
+ include/asm-x86/mmconfig.h   |    6 ------
+ 7 files changed, 8 insertions(+), 38 deletions(-)
+ delete mode 100644 arch/x86/kernel/setup.h
 
-> Hello,
-> according to  http://www.kernel.org/pub/linux/docs/lkml/reporting-bugs.html
-> [1.] One line summary of the problem: 
-> [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 656b40a..a38d54f 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -4,10 +4,8 @@
+ #include <asm/io.h>
+ #include <asm/processor.h>
+ #include <asm/apic.h>
+-#include <asm/mmconfig.h>
+ 
+ #include <mach_apic.h>
+-#include "../setup.h"
+ #include "cpu.h"
+ 
+ /*
+diff --git a/arch/x86/kernel/cpu/amd_64.c b/arch/x86/kernel/cpu/amd_64.c
+index 180097e..626fc21 100644
+--- a/arch/x86/kernel/cpu/amd_64.c
++++ b/arch/x86/kernel/cpu/amd_64.c
+@@ -6,6 +6,7 @@
+ #include <asm/cacheflush.h>
+ 
+ #include <mach_apic.h>
++#include "cpu.h"
+ 
+ extern int __cpuinit get_model_name(struct cpuinfo_x86 *c);
+ extern void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c);
+diff --git a/arch/x86/kernel/cpu/cpu.h b/arch/x86/kernel/cpu/cpu.h
+index 783691b..f5d5bb1 100644
+--- a/arch/x86/kernel/cpu/cpu.h
++++ b/arch/x86/kernel/cpu/cpu.h
+@@ -1,3 +1,4 @@
++#ifdef CONFIG_X86_32
+ 
+ struct cpu_model_info {
+ 	int vendor;
+@@ -36,3 +37,7 @@ extern struct cpu_vendor_dev __x86cpuvendor_start[], __x86cpuvendor_end[];
+ 
+ extern int get_model_name(struct cpuinfo_x86 *c);
+ extern void display_cacheinfo(struct cpuinfo_x86 *c);
++
++#endif /* CONFIG_X86_32 */
++
++extern void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c);
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index d8f1712..f2dc414 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -136,6 +136,8 @@ void __init setup_per_cpu_areas(void)
+ 	setup_cpumask_of_cpu();
+ }
+ 
++#endif
++
+ #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
+ 
+ void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c)
+@@ -148,5 +150,3 @@ void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c)
+ 	}
+ 	set_cpu_cap(c, X86_FEATURE_PCI_EXT_CFG);
+ }
+-
+-#endif
+diff --git a/arch/x86/kernel/setup.h b/arch/x86/kernel/setup.h
+deleted file mode 100644
+index 66cc2c7..0000000
+--- a/arch/x86/kernel/setup.h
++++ /dev/null
+@@ -1,26 +0,0 @@
+-/*
+- * Internal declarations for shared x86 setup code.
+- *
+- * Copyright (c) 2008 Advanced Micro Devices, Inc.
+- * Contributed by Robert Richter <robert.richter@amd.com>
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of version 2 of the GNU General Public
+- * License as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+- * 02111-1307 USA
+- */
+-
+-#ifndef _ARCH_X86_KERNEL_SETUP_H
+-
+-extern void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c);
+-
+-#endif	/* _ARCH_X86_KERNEL_SETUP_H */
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 215bd67..25afdd8 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -73,8 +73,6 @@
+ #include <asm/pat.h>
+ #include <asm/mmconfig.h>
+ 
+-#include "setup.h"
+-
+ #include <mach_apic.h>
+ #ifdef CONFIG_PARAVIRT
+ #include <asm/paravirt.h>
+diff --git a/include/asm-x86/mmconfig.h b/include/asm-x86/mmconfig.h
+index 691798f..95beda0 100644
+--- a/include/asm-x86/mmconfig.h
++++ b/include/asm-x86/mmconfig.h
+@@ -9,10 +9,4 @@ static inline void fam10h_check_enable_mmcfg(void) { }
+ static inline void check_enable_amd_mmconf_dmi(void) { }
+ #endif
+ 
+-#if defined(CONFIG_SMP) && defined(CONFIG_X86_64)
+-extern void __cpuinit amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c);
+-#else
+-static inline void amd_enable_pci_ext_cfg(struct cpuinfo_x86 *c) { }
+-#endif
+-
+ #endif
+-- 
+1.5.5.3
 
-Thanks.  Do you know if it worked in 2.6.24 or 2.6.25?
-
-> [2.] Full description of the problem/report:
-> linux: gentoo
-> kernel vanilla-sources-2-6-26-rc5
-> laptop: Asus S96S
-> WiFi: intel 4695
-> WiFi not working.
-> In the same config, but with gentoo-sources-2.6.23 WiFi working well.
-> 
-> dmesg - 2.6.23
-> iwl4965: Intel(R) Wireless WiFi Link 4965AGN driver for Linux, 1.2.25ds
-> iwl4965: Copyright(c) 2003-2007 Intel Corporation
-> ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 21
-> PCI: Setting latency timer of device 0000:04:00.0 to 64
-> iwl4965: Detected Intel Wireless WiFi Link 4965AGN
-> wmaster0: Selected rate control algorithm 'iwl-4965-rs'
-> ...
-> ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 21
-> PM: Writing back config space on device 0000:04:00.0 at offset 1 (was 100102, 
-> writing 100106)
-> iwl4965: Tunable channels: 13 802.11bg, 19 802.11a channels
-> ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> r8169: eth0: link up
-> wlan0: Initial auth_alg=0
-> wlan0: authenticate with AP 00:01:e3:06:00:35
-> wlan0: RX authentication from 00:01:e3:06:00:35 (alg=0 transaction=2 status=0)
-> wlan0: authenticated
-> wlan0: associate with AP 00:01:e3:06:00:35
-> wlan0: authentication frame received from 00:01:e3:06:00:35, but not in 
-> authenticate state - ignored
-> wlan0: RX AssocResp from 00:01:e3:06:00:35 (capab=0x11 status=0 aid=2)
-> wlan0: associated
-> ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-> wlan0: no IPv6 routers present
-> 
-> dmesg 2.6.26
-> iwl4965: Intel(R) Wireless WiFi Link 4965AGN driver for Linux, 1.2.26kds
-> iwl4965: Copyright(c) 2003-2008 Intel Corporation
-> ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-> PCI: Setting latency timer of device 0000:04:00.0 to 64
-> iwl4965: Detected Intel Wireless WiFi Link 4965AGN
-> iwl4965: Tunable channels: 13 802.11bg, 19 802.11a channels
-> phy0: Selected rate control algorithm 'iwl-4965-rs'
-> ACPI: PCI interrupt for device 0000:04:00.0 disabled
-> EXT3 FS on sda3, internal journal
-> Adding 987988k swap on /dev/sda2.  Priority:-1 extents:1 across:987988k
-> r8169: eth0: link up
-> ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-> PM: Writing back config space on device 0000:04:00.0 at offset 1 (was 100102, 
-> writing 100106)
-> firmware: requesting iwlwifi-4965-1.ucode
-> Registered led device: iwl-phy0:radio
-> Registered led device: iwl-phy0:assoc
-> Registered led device: iwl-phy0:RX
-> Registered led device: iwl-phy0:TX
-> ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> iwl4965: Error sending REPLY_WEPKEY: enqueue_hcmd failed: -5
-> mac80211-phy0: failed to remove key (0, ff:ff:ff:ff:ff:ff) from hardware (-5)
-> iwl4965: Error sending REPLY_TX_PWR_TABLE_CMD: enqueue_hcmd failed: -5
-> iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
-> iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
-> ...
-> iwl4965: WARNING: Requesting MAC access during RFKILL wakes up NIC
-> ACPI: PCI interrupt for device 0000:04:00.0 disabled
-> 
-> 
-> [3.] Keywords (i.e., modules, networking, kernel):
-> kernel, wifi, iwlwifi, asus, laptop
-> [4.] Kernel version (from /proc/version):
-> Linux version 2.6.23-gentoo-r2 (root@laptok) (gcc version 4.2.2 (Gentoo 4.2.2 
-> p1.0)) #3 SMP Sun Jan 13 12:46:44 CET 2008
-> [5.] Output of Oops.. message (if applicable) with symbolic information 
->      resolved (see Documentation/oops-tracing.txt)
-> none
-> [6.] A small shell script or example program which triggers the
->      problem (if possible)
-> dmesg | grep -E '(KB)|(KiB)|(MB)'
-> [7.] Environment
-> [7.1.] Software (add the output of the ver_linux script here)
-> [7.2.] Processor information (from /proc/cpuinfo):
-> cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 Duo CPU     T7300  @ 2.00GHz
-> stepping        : 10
-> cpu MHz         : 1995.081
-> cache size      : 4096 KB
-> physical id     : 0
-> siblings        : 2
-> core id         : 0
-> cpu cores       : 2
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm 
-> constant_tsc arch_perfmon pebs bts pni monitor ds_cpl vmx est tm2 ssse3 cx16 
-> xtpr lahf_lm
-> bogomips        : 3992.41
-> clflush size    : 64
-> 
-> X 2
-> 
-> [7.3.] Module information (from /proc/modules):
-> [7.4.] Loaded driver and hardware information (/proc/ioports, /proc/iomem)
-> [7.5.] PCI information ('lspci -vvv' as root)
-> [7.6.] SCSI information (from /proc/scsi/scsi)
-> [7.7.] Other information that might be relevant to the problem
->        (please look in /proc and include all information that you
->        think to be relevant):
-> [X.] Other notes, patches, fixes, workarounds:
-> compressed files:
-> dmesg-2.6.23
-> dmesg-2.6.26
-> .config-2.6.26
-> .config-2.6.23
-> at http://michal.kudla.googlepages.com/iwl-problem.tar.gz
 
