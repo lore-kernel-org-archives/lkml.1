@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbYFFGWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764681AbYFFGW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764411AbYFFGWM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 02:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYFFGV4
+	id S1764681AbYFFGW1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 02:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbYFFGV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 02:21:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:29770 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbYFFGVz (ORCPT
+	Fri, 6 Jun 2008 02:21:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55281 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751613AbYFFGV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 02:21:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fsl28XN2f/6oSVf6hPMQGc5cO4B3KDwpFrGgXCDDeRShz5caq1HXwQIhaLf6zSYohP
-         ajc1wjoRgPFLulPWshLPQOEfd81pkaqMwiM2kT3kRMk6zt0bhyKqYQCeBfh4Tf/cTzLd
-         zbdZxf//FOZ5vmajGEUoJA+RHOnR5+l47FeSQ=
-Date: Fri, 6 Jun 2008 10:17:44 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Armin Schindler <armin@melware.de>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] isdn divas: fix proc creation
-Message-ID: <20080606061744.GB4977@martell.zuzino.mipt.ru>
-References: <20080530233445.GB7358@martell.zuzino.mipt.ru> <alpine.DEB.0.99.0806051221380.30590@k10.melware.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.0.99.0806051221380.30590@k10.melware.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 6 Jun 2008 02:21:56 -0400
+Date: Thu, 5 Jun 2008 23:21:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: chris2553@googlemail.com
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+Message-Id: <20080605232145.cdae753f.akpm@linux-foundation.org>
+In-Reply-To: <200806060607.29460.chris2553@googlemail.com>
+References: <200806010415.05290.chris2553@googlemail.com>
+	<20080605221709.f248eb90.akpm@linux-foundation.org>
+	<200806060607.29460.chris2553@googlemail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 05, 2008 at 12:25:06PM +0200, Armin Schindler wrote:
-> On Sat, 31 May 2008, Alexey Dobriyan wrote:
->> 1. creating proc entry and not saving pointer to PDE and checking it
->>   is not going to work.
->
-> I don't know where you found this. I have look even in older versions, but
-> the pointer divas_proc_entry is set by proc_create(). The patch to
-> divasproc.c is wrong, it exists from the beginning of the driver.
-> (2.6.25.4 doesn't contain the bug you describe).
+On Fri, 6 Jun 2008 06:07:29 +0000 Chris Clayton <chris2553@googlemail.com> wrote:
 
-Check mainline kernel, namely, 2.6.26-rc5.
+> On Friday 06 June 2008, Andrew Morton wrote:
+> > On Sun, 1 Jun 2008 04:15:05 +0000 Chris Clayton <chris2553@googlemail.com> 
+> wrote:
+> > > Hi,
+> > >
+> > > I've just started testing 2.6.26 on my desktop machine and have found
+> > > that I get a long pause (20 seconds or so) as the system boots. By pause
+> > > I mean that the boot messages that normally scroll by stop doing so for,
+> > > as I say, about 20 seconds.
+> > >
+> > > I've done a bisect and arrived at:
+> > >
+> > > b0ed43360fdca227048d88a08290365cb681c1a8 is first bad commit
+> > > commit b0ed43360fdca227048d88a08290365cb681c1a8
+> > > Author: Hannes Reinecke <hare@suse.de>
+> > > Date:   Tue Mar 18 14:32:28 2008 +0100
+> > >
+> > >     [SCSI] add scsi_host and scsi_target to scsi_bus
+> > >
+> > >     This patch implements scsi_host and scsi_target device types
+> > >     and adds both to the scsi_bus.
+> > >
+> > >     Signed-off-by: Hannes Reinecke <hare@suse.de>
+> > >     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > >     Signed-off-by: James Bottomley
+> > > <James.Bottomley@HansenPartnership.com>
+> > >
+> > > :040000 040000 4e3140909966b4c9aa987d34ee4078d283fe0351
+> > >
+> > > 46e4fd28cc537ba700eb4f5652abf043fed4d76d M      drivers
+> > >
+> > > The config file for that kernel is attached as are the kernel log for
+> > > booting that kernel and the bisect log.
+> > >
+> > > I've also noticed that it takes much longer for icons to appear on my
+> > > desktop when I plug a usb storage device in. (The icons are shown/hidden
+> > > by a simple sctript that is run via udev when the device is
+> > > attached/detached.)
+> >
+> > Do you believe that this is the same period?  20 seconds?
+> >
+> 
+> Thanks for the reply, Andrew. I was beginning to think that I'd committed an 
+> LKML sin :-)
 
->> --- a/drivers/isdn/hardware/eicon/divasproc.c
->> +++ b/drivers/isdn/hardware/eicon/divasproc.c
->> @@ -125,8 +125,8 @@ static const struct file_operations divas_fops = {
->>
->> int create_divas_proc(void)
->> {
->> -	proc_create(divas_proc_name, S_IFREG | S_IRUGO, proc_net_eicon,
->> -		    &divas_fops);
->> +	divas_proc_entry = proc_create(divas_proc_name, S_IFREG | S_IRUGO,
->> +					proc_net_eicon, &divas_fops);
->> 	if (!divas_proc_entry)
->> 		return (0);
+Well you did - you reported a bug.
+
+<watches wodim wibble for five minutes then report "CD/DVD-Recorder
+not ready."  Pretends not to have noticed.>
+
+> Yes, it is about the same. On 2.6.25.4 (and earlier), the icons appear within a 
+> second or two, but with 2.6.26-rc2 or later, it takes about 20 seconds. I've 
+> now built and installed -rc5 and am seeing the same behaviour.
+> 
+> I've also built -rc5 on my laptop. On that my kernel uses the older IDE drivers 
+> rather than libata. The boot proceeds with no pause, but I do see the same 
+> delay in the desktop icons appearing when I attach a usb-storage device.
+
+OK that makes sense.  ata and usb use the scsi layer.  IDE does not.
 
