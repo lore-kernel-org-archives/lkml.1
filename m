@@ -1,128 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbYFFOH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYFFOJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbYFFOH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 10:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYFFOHM
+	id S1757780AbYFFOJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 10:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYFFOJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 10:07:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:21762 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbYFFOHK (ORCPT
+	Fri, 6 Jun 2008 10:09:11 -0400
+Received: from pecan.exetel.com.au ([220.233.0.17]:38640 "EHLO
+	smtp.po.exetel.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752859AbYFFOJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 10:07:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rK+9Le12xYPRHZqILfEv5fjty3VnA2XBP/kYR9ffzoGLgAuUvRmXkkyu5SqZPSxBZZ
-         uNrJIaJOtlqWHQYf5W02AYmN/+OJhHsyQU1Q3+tCEl27lk4kVkgO1S4pTt4LyEVVF5GB
-         dvsDBp6YtdHDz2vpUcqZTbX3dALS25HHjrcLo=
-Message-ID: <19f34abd0806060707x7570c835u4b1837b54dfa36ba@mail.gmail.com>
-Date: Fri, 6 Jun 2008 16:07:09 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: linux-next: Tree for June 5
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au>
-	 <20080605195604.41623687.akpm@linux-foundation.org>
-	 <20080606071707.GB9708@elte.hu>
-	 <20080606002957.6329a0ec.akpm@linux-foundation.org>
-	 <20080606024811.70db9ab2.akpm@linux-foundation.org>
-	 <20080606035413.37f340ef.akpm@linux-foundation.org>
-	 <20080606115759.GA29321@elte.hu>
-	 <19f34abd0806060533x6d3ff66tc29306143103fc40@mail.gmail.com>
-	 <48493CBD.1000202@sgi.com>
-	 <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
+	Fri, 6 Jun 2008 10:09:10 -0400
+X-Greylist: delayed 1527 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 10:09:10 EDT
+From: oakad@exemail.com.au
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Alex Dubov <oakad@yahoo.com>
+Subject: [PATCH 2/3] memstick: add "start" and "stop" methods to memstick device
+Date: Fri,  6 Jun 2008 23:30:31 +1000
+Message-Id: <1212759032-11793-3-git-send-email-oakad@exemail.com.au>
+X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <1212759032-11793-2-git-send-email-oakad@exemail.com.au>
+References: <1212759032-11793-1-git-send-email-oakad@exemail.com.au>
+ <1212759032-11793-2-git-send-email-oakad@exemail.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 6, 2008 at 3:50 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Fri, Jun 6, 2008 at 3:33 PM, Mike Travis <travis@sgi.com> wrote:
->> Vegard Nossum wrote:
->>>
->>> I reproced it with gc 4.1.2. I think the error is somewhere in kernel/sched.c.
->>>
->>> static int __build_sched_domains(const cpumask_t *cpu_map,
->>>                                  struct sched_domain_attr *attr)
->>> {
->>> ...
->>>         for (i = 0; i < MAX_NUMNODES; i++) {
->>> ...
->>>                 sg = kmalloc_node(sizeof(struct sched_group), GFP_KERNEL, i);
->>> ...
->>>
->>> This code is calling into the allocator with a spurious value of i,
->>> which causes SLAB to use an index (of 4 in my case) that is out of
->>> bounds for its nodelist array (at least it hasn't been initialized).
->>>
->>> This bit of code (a bit further down, inside the same loop) is also dubious:
->>>
->>>                         sg = kmalloc_node(sizeof(struct sched_group),
->>>                                           GFP_KERNEL, i);
->>>                         if (!sg) {
->>>                                 printk(KERN_WARNING
->>>                                 "Can not alloc domain group for node %d\n", j);
->>>                                 goto error;
->>>                         }
->>>
->>> Where it passes i to kmalloc_node() but reports an allocation for node
->>> j. Which one is correct?
->>>
->
-> Hm, I think I'm wrong and the code is correct. However...
->
->>> Hope this helps, will send an update if I find out more.
->>>
->>>
->>> Vegard
->>>
->>
->> Thanks Vegard for tracking this down.  My thoughts were along the same
->> wavelength... ;-)
+From: Alex Dubov <oakad@yahoo.com>
 
-...
+In some cases it may be desirable to ensure that associated driver is not going
+to access the media in some period of time. "start" and "stop" methods are
+provided therefore to allow it.
 
->
-> This is a P4 3.0GHz with 1 physical CPU (but HT, so two logical CPUs).
-> Yet node 4 is claimed to have a cpu too. That's bogus!
->
-> (But I don't think it's an error in sched.c any more, probably the
-> code that sets up the node maps.)
+Signed-off-by: Alex Dubov <oakad@yahoo.com>
+---
+ drivers/memstick/core/memstick.c    |   11 ++++++++---
+ drivers/memstick/core/mspro_block.c |   33 +++++++++++++++++++++++++++++++++
+ include/linux/memstick.h            |    4 ++++
+ 3 files changed, 45 insertions(+), 3 deletions(-)
 
-Aha.
-
-The error is of course that the node masks for nodes > nr_node_ids are
-not valid. While this function ignores that:
-
-cpumask_t *_node_to_cpumask_ptr(int node)
-{
-        if (node_to_cpumask_map == NULL) {
-                printk(KERN_WARNING
-                        "_node_to_cpumask_ptr(%d): no node_to_cpumask_map!\n",
-                        node);
-                dump_stack();
-                return &cpu_online_map;
-        }
-        return &node_to_cpumask_map[node];
-}
-EXPORT_SYMBOL(_node_to_cpumask_ptr);
-
-Notice the return statement. It needs to check if node < nr_node_ids.
-
-
-Vegard
-
+diff --git a/drivers/memstick/core/memstick.c b/drivers/memstick/core/memstick.c
+index 3c7d9a7..7162f77 100644
+--- a/drivers/memstick/core/memstick.c
++++ b/drivers/memstick/core/memstick.c
+@@ -433,8 +433,11 @@ static void memstick_check(struct work_struct *work)
+ 
+ 	dev_dbg(&host->dev, "memstick_check started\n");
+ 	mutex_lock(&host->lock);
+-	if (!host->card)
+-		memstick_power_on(host);
++	if (!host->card) {
++		if (memstick_power_on(host))
++			goto out_power_off;
++	} else
++		host->card->stop(host->card);
+ 
+ 	card = memstick_alloc_card(host);
+ 
+@@ -452,7 +455,8 @@ static void memstick_check(struct work_struct *work)
+ 			    || !(host->card->check(host->card))) {
+ 				device_unregister(&host->card->dev);
+ 				host->card = NULL;
+-			}
++			} else
++				host->card->start(host->card);
+ 		}
+ 
+ 		if (!host->card) {
+@@ -465,6 +469,7 @@ static void memstick_check(struct work_struct *work)
+ 			kfree(card);
+ 	}
+ 
++out_power_off:
+ 	if (!host->card)
+ 		host->set_param(host, MEMSTICK_POWER, MEMSTICK_POWER_OFF);
+ 
+diff --git a/drivers/memstick/core/mspro_block.c b/drivers/memstick/core/mspro_block.c
+index 477d0fb..004ac4d 100644
+--- a/drivers/memstick/core/mspro_block.c
++++ b/drivers/memstick/core/mspro_block.c
+@@ -752,6 +752,37 @@ static int mspro_block_has_request(struct mspro_block_data *msb)
+ 	return rc;
+ }
+ 
++static void mspro_block_stop(struct memstick_dev *card)
++{
++	struct mspro_block_data *msb = memstick_get_drvdata(card);
++	int rc = 0;
++	unsigned long flags;
++
++	while (1) {
++		spin_lock_irqsave(&msb->q_lock, flags);
++		if (!msb->has_request) {
++			blk_stop_queue(msb->queue);
++			rc = 1;
++		}
++		spin_unlock_irqrestore(&msb->q_lock, flags);
++
++		if (rc)
++			break;
++
++		wait_for_completion(&card->mrq_complete);
++	}
++}
++
++static void mspro_block_start(struct memstick_dev *card)
++{
++	struct mspro_block_data *msb = memstick_get_drvdata(card);
++	unsigned long flags;
++
++	spin_lock_irqsave(&msb->q_lock, flags);
++	blk_start_queue(msb->queue);
++	spin_unlock_irqrestore(&msb->q_lock, flags);
++}
++
+ static int mspro_block_queue_thread(void *data)
+ {
+ 	struct memstick_dev *card = data;
+@@ -1272,6 +1303,8 @@ static int mspro_block_probe(struct memstick_dev *card)
+ 	rc = mspro_block_init_disk(card);
+ 	if (!rc) {
+ 		card->check = mspro_block_check_card;
++		card->stop = mspro_block_stop;
++		card->start = mspro_block_start;
+ 		return 0;
+ 	}
+ 
+diff --git a/include/linux/memstick.h b/include/linux/memstick.h
+index 2fe599c..a9f998a 100644
+--- a/include/linux/memstick.h
++++ b/include/linux/memstick.h
+@@ -263,6 +263,10 @@ struct memstick_dev {
+ 	/* Get next request from the media driver.                         */
+ 	int                      (*next_request)(struct memstick_dev *card,
+ 						 struct memstick_request **mrq);
++	/* Tell the media driver to stop doing things                      */
++	void                     (*stop)(struct memstick_dev *card);
++	/* Allow the media driver to continue                              */
++	void                     (*start)(struct memstick_dev *card);
+ 
+ 	struct device            dev;
+ };
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+1.5.3.6
+
