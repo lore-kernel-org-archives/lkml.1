@@ -1,188 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbYFFOgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759321AbYFFOh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbYFFOgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 10:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755703AbYFFOgH
+	id S1759321AbYFFOh1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 10:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbYFFOhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 10:36:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:44651 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753127AbYFFOgF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 10:36:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=UenFqguzC4u4/c/bo0umf8MeIKPhDHnLe5xrq52I2h5mkL47W6qOHt1/f1+gUl4wPB
-         kQ+qRLAk2d/ExTH7FM+pHSxcnfNYkVTZerXBPUwrxWTh1V9xXL1suCL51kAWKzKPFDYo
-         Dat9BUPuvWqfl4eYHVlCuh7prlH58XbqYtsr8=
-Message-ID: <19f34abd0806060736m10424455kfbc3e6272d18646e@mail.gmail.com>
-Date: Fri, 6 Jun 2008 16:36:04 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mike Travis" <travis@sgi.com>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: linux-next: Tree for June 5
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <484947A9.5050804@sgi.com>
+	Fri, 6 Jun 2008 10:37:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34322 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755703AbYFFOhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 10:37:13 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18Uy3Mgon0U/0QgBnNT0R/LQGK8l8EBSirQWUctO1
+	rnnjJDtVF+vcD0
+Date: Fri, 6 Jun 2008 16:37:05 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+X-X-Sender: lyakh@axis700.grange
+To: linux-kernel@vger.kernel.org
+cc: David Brownell <david-b@pacbell.net>,
+       spi-devel-general@lists.sourceforge.net
+Subject: [PATCH] gpio: gpio driver for max7301 SPI GPIO expander
+Message-ID: <Pine.LNX.4.64.0806061625260.3338@axis700.grange>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_2738_20405039.1212762964578"
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au>
-	 <20080606002957.6329a0ec.akpm@linux-foundation.org>
-	 <20080606024811.70db9ab2.akpm@linux-foundation.org>
-	 <20080606035413.37f340ef.akpm@linux-foundation.org>
-	 <20080606115759.GA29321@elte.hu>
-	 <19f34abd0806060533x6d3ff66tc29306143103fc40@mail.gmail.com>
-	 <48493CBD.1000202@sgi.com>
-	 <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
-	 <19f34abd0806060707x7570c835u4b1837b54dfa36ba@mail.gmail.com>
-	 <484947A9.5050804@sgi.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_2738_20405039.1212762964578
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Juergen Beisert <j.beisert@pengutronix.de>
 
-On Fri, Jun 6, 2008 at 4:20 PM, Mike Travis <travis@sgi.com> wrote:
-> Vegard Nossum wrote:
->> On Fri, Jun 6, 2008 at 3:50 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->>> On Fri, Jun 6, 2008 at 3:33 PM, Mike Travis <travis@sgi.com> wrote:
->>>> Vegard Nossum wrote:
->>>>> I reproced it with gc 4.1.2. I think the error is somewhere in kernel/sched.c.
->>>>>
->>>>> static int __build_sched_domains(const cpumask_t *cpu_map,
->>>>>                                  struct sched_domain_attr *attr)
->>>>> {
->>>>> ...
->>>>>         for (i = 0; i < MAX_NUMNODES; i++) {
->>>>> ...
->>>>>                 sg = kmalloc_node(sizeof(struct sched_group), GFP_KERNEL, i);
->>>>> ...
->>>>>
->>>>> This code is calling into the allocator with a spurious value of i,
->>>>> which causes SLAB to use an index (of 4 in my case) that is out of
->>>>> bounds for its nodelist array (at least it hasn't been initialized).
->>>>>
+Maxim's MAX7301 is an SPI GPIO expander with 28 GPIOs. Note: MAX7301's interrupt
+feature is not supported yet.
 
-...
+Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 
->> The error is of course that the node masks for nodes > nr_node_ids are
->> not valid. While this function ignores that:
->>
->> cpumask_t *_node_to_cpumask_ptr(int node)
->> {
->>         if (node_to_cpumask_map == NULL) {
->>                 printk(KERN_WARNING
->>                         "_node_to_cpumask_ptr(%d): no node_to_cpumask_map!\n",
->>                         node);
->>                 dump_stack();
->>                 return &cpu_online_map;
->>         }
->>         return &node_to_cpumask_map[node];
->> }
->> EXPORT_SYMBOL(_node_to_cpumask_ptr);
->>
->> Notice the return statement. It needs to check if node < nr_node_ids.
->>
+---
 
-...
+I know it produces a warning
 
->
-> Thanks, yes I had that some after thought.  It should check the node
-> index if CONFIG_DEBUG_PER_CPU_MAPS is enabled.  One gotcha is that
-> nr_node_ids is intialized to MAX_NUMNODES until setup_node_to_cpumask_map()
-> sets it to the correct value.  So uses before that should be caught by
-> the earlier check.
+warning: ignoring return value of 'gpiochip_remove', declared with attribute warn_unused_result
 
-I think it should always check the node index. The code in
-kernel/sched.c (see above) calls node_to_cpumask(i) on nodes 0 < i <
-MAX_NUMNODES and it WILL use invalid pointers. Or should
-kernel/sched.c be changed to use nr_node_ids instead of MAX_NUMNODES?
-I believe there are more places that do this than just sched.c.
+but I really don't see a need to evaluate gpiochip_remove return value at 
+that place. Maybe it shouldn't be declared with warn_unused_result?
 
-I have attached two patches. The sched one fixes Andrew's boot
-problem. The x86 one is untested, but I believe it is better to BUG
-than silently corrupt some arbitrary memory. (Then the callers can be
-found easily and fixed at least.)
+ drivers/gpio/Kconfig        |    7 
+ drivers/gpio/Makefile       |    1 
+ drivers/gpio/max7301.c      |  324 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/spi/max7301.h |    9 +
+ 4 files changed, 341 insertions(+)
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
-
-------=_Part_2738_20405039.1212762964578
-Content-Type: text/x-patch;
- name=0001-sched-don-t-call-node_to_cpumask-on-nodes-nr_no.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fh4vlwy60
-Content-Disposition: attachment;
- filename=0001-sched-don-t-call-node_to_cpumask-on-nodes-nr_no.patch
-
-RnJvbSAyMTZkY2JkZWM3OWQ3NmM0ZDczOGYyYzBhYWQ0MTA2MWY4MDU2NGU0IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWZWdhcmQgTm9zc3VtIDx2ZWdhcmRub0BiZW4uaWZpLnVpby5u
-bz4KRGF0ZTogRnJpLCA2IEp1biAyMDA4IDE2OjMxOjE5ICswMjAwClN1YmplY3Q6IFtQQVRDSF0g
-c2NoZWQ6IGRvbid0IGNhbGwgbm9kZV90b19jcHVtYXNrKCkgb24gbm9kZXMgPiBucl9ub2RlX2lk
-cwoKU2lnbmVkLW9mZi1ieTogVmVnYXJkIE5vc3N1bSA8dmVnYXJkbm9AYmVuLmlmaS51aW8ubm8+
-Ci0tLQoga2VybmVsL3NjaGVkLmMgfCAgIDEwICsrKysrLS0tLS0KIDEgZmlsZXMgY2hhbmdlZCwg
-NSBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2tlcm5lbC9zY2hl
-ZC5jIGIva2VybmVsL3NjaGVkLmMKaW5kZXggZmM5YmE5MC4uOGFiOWNkNiAxMDA2NDQKLS0tIGEv
-a2VybmVsL3NjaGVkLmMKKysrIGIva2VybmVsL3NjaGVkLmMKQEAgLTY3NzAsNyArNjc3MCw3IEBA
-IHN0YXRpYyB2b2lkIGZyZWVfc2NoZWRfZ3JvdXBzKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwg
-Y3B1bWFza190ICpub2RlbWFzaykKIAkJaWYgKCFzY2hlZF9ncm91cF9ub2RlcykKIAkJCWNvbnRp
-bnVlOwogCi0JCWZvciAoaSA9IDA7IGkgPCBNQVhfTlVNTk9ERVM7IGkrKykgeworCQlmb3IgKGkg
-PSAwOyBpIDwgbnJfbm9kZV9pZHM7IGkrKykgewogCQkJc3RydWN0IHNjaGVkX2dyb3VwICpvbGRz
-ZywgKnNnID0gc2NoZWRfZ3JvdXBfbm9kZXNbaV07CiAKIAkJCSpub2RlbWFzayA9IG5vZGVfdG9f
-Y3B1bWFzayhpKTsKQEAgLTcwOTcsNyArNzA5Nyw3IEBAIHN0YXRpYyBpbnQgX19idWlsZF9zY2hl
-ZF9kb21haW5zKGNvbnN0IGNwdW1hc2tfdCAqY3B1X21hcCwKICNlbmRpZgogCiAJLyogU2V0IHVw
-IHBoeXNpY2FsIGdyb3VwcyAqLwotCWZvciAoaSA9IDA7IGkgPCBNQVhfTlVNTk9ERVM7IGkrKykg
-eworCWZvciAoaSA9IDA7IGkgPCBucl9ub2RlX2lkczsgaSsrKSB7CiAJCVNDSEVEX0NQVU1BU0tf
-VkFSKG5vZGVtYXNrLCBhbGxtYXNrcyk7CiAJCVNDSEVEX0NQVU1BU0tfVkFSKHNlbmRfY292ZXJl
-ZCwgYWxsbWFza3MpOwogCkBAIC03MTIxLDcgKzcxMjEsNyBAQCBzdGF0aWMgaW50IF9fYnVpbGRf
-c2NoZWRfZG9tYWlucyhjb25zdCBjcHVtYXNrX3QgKmNwdV9tYXAsCiAJCQkJCXNlbmRfY292ZXJl
-ZCwgdG1wbWFzayk7CiAJfQogCi0JZm9yIChpID0gMDsgaSA8IE1BWF9OVU1OT0RFUzsgaSsrKSB7
-CisJZm9yIChpID0gMDsgaSA8IG5yX25vZGVfaWRzOyBpKyspIHsKIAkJLyogU2V0IHVwIG5vZGUg
-Z3JvdXBzICovCiAJCXN0cnVjdCBzY2hlZF9ncm91cCAqc2csICpwcmV2OwogCQlTQ0hFRF9DUFVN
-QVNLX1ZBUihub2RlbWFzaywgYWxsbWFza3MpOwpAQCAtNzE2MCw5ICs3MTYwLDkgQEAgc3RhdGlj
-IGludCBfX2J1aWxkX3NjaGVkX2RvbWFpbnMoY29uc3QgY3B1bWFza190ICpjcHVfbWFwLAogCQlj
-cHVzX29yKCpjb3ZlcmVkLCAqY292ZXJlZCwgKm5vZGVtYXNrKTsKIAkJcHJldiA9IHNnOwogCi0J
-CWZvciAoaiA9IDA7IGogPCBNQVhfTlVNTk9ERVM7IGorKykgeworCQlmb3IgKGogPSAwOyBqIDwg
-bnJfbm9kZV9pZHM7IGorKykgewogCQkJU0NIRURfQ1BVTUFTS19WQVIobm90Y292ZXJlZCwgYWxs
-bWFza3MpOwotCQkJaW50IG4gPSAoaSArIGopICUgTUFYX05VTU5PREVTOworCQkJaW50IG4gPSAo
-aSArIGopICUgbnJfbm9kZV9pZHM7CiAJCQlub2RlX3RvX2NwdW1hc2tfcHRyKHBub2RlbWFzaywg
-bik7CiAKIAkJCWNwdXNfY29tcGxlbWVudCgqbm90Y292ZXJlZCwgKmNvdmVyZWQpOwotLSAKMS41
-LjMuMQoK
-------=_Part_2738_20405039.1212762964578
-Content-Type: text/x-patch;
- name=0001-x86-don-t-return-invalid-pointers-from-node_to_cpum.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fh4vokq51
-Content-Disposition: attachment;
- filename=0001-x86-don-t-return-invalid-pointers-from-node_to_cpum.patch
-
-RnJvbSBiOTkzZTczNDliOTU0NTU1NzE1YzJhZGFkNjkwNzExNDY1YmJkNjBjIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBWZWdhcmQgTm9zc3VtIDx2ZWdhcmQubm9zc3VtQGdtYWlsLmNv
-bT4KRGF0ZTogRnJpLCA2IEp1biAyMDA4IDE2OjMzOjI1ICswMjAwClN1YmplY3Q6IFtQQVRDSF0g
-eDg2OiBkb24ndCByZXR1cm4gaW52YWxpZCBwb2ludGVycyBmcm9tIG5vZGVfdG9fY3B1bWFzaygp
-CgpTaWduZWQtb2ZmLWJ5OiBWZWdhcmQgTm9zc3VtIDx2ZWdhcmQubm9zc3VtQGdtYWlsLmNvbT4K
-LS0tCiBhcmNoL3g4Ni9rZXJuZWwvc2V0dXAuYyB8ICAgIDIgKysKIDEgZmlsZXMgY2hhbmdlZCwg
-MiBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tl
-cm5lbC9zZXR1cC5jIGIvYXJjaC94ODYva2VybmVsL3NldHVwLmMKaW5kZXggOGVjZjdiNC4uODQx
-MWM1NSAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL3NldHVwLmMKKysrIGIvYXJjaC94ODYv
-a2VybmVsL3NldHVwLmMKQEAgLTM4NSw2ICszODUsNyBAQCBjcHVtYXNrX3QgKl9ub2RlX3RvX2Nw
-dW1hc2tfcHRyKGludCBub2RlKQogCQlkdW1wX3N0YWNrKCk7CiAJCXJldHVybiAmY3B1X29ubGlu
-ZV9tYXA7CiAJfQorCUJVR19PTihub2RlID49IG5yX25vZGVfaWRzKTsKIAlyZXR1cm4gJm5vZGVf
-dG9fY3B1bWFza19tYXBbbm9kZV07CiB9CiBFWFBPUlRfU1lNQk9MKF9ub2RlX3RvX2NwdW1hc2tf
-cHRyKTsKQEAgLTQwMCw2ICs0MDEsNyBAQCBjcHVtYXNrX3Qgbm9kZV90b19jcHVtYXNrKGludCBu
-b2RlKQogCQlkdW1wX3N0YWNrKCk7CiAJCXJldHVybiBjcHVfb25saW5lX21hcDsKIAl9CisJQlVH
-X09OKG5vZGUgPj0gbnJfbm9kZV9pZHMpOwogCXJldHVybiBub2RlX3RvX2NwdW1hc2tfbWFwW25v
-ZGVdOwogfQogRVhQT1JUX1NZTUJPTChub2RlX3RvX2NwdW1hc2spOwotLSAKMS41LjQuMQoK
-------=_Part_2738_20405039.1212762964578--
+Index: linux-2.6/drivers/gpio/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/gpio/Kconfig	2008-06-05 11:24:20.000000000 +0200
++++ linux-2.6/drivers/gpio/Kconfig	2008-06-05 11:25:24.000000000 +0200
+@@ -78,6 +78,12 @@
+ 
+ comment "SPI GPIO expanders:"
+ 
++config GPIO_MAX7301
++	tristate "Maxim MAX7301 GPIO expander"
++	depends on SPI_MASTER
++	help
++	  gpio driver for Maxim MAX7301 SPI GPIO expander.
++
+ config GPIO_MCP23S08
+ 	tristate "Microchip MCP23S08 I/O expander"
+ 	depends on SPI_MASTER
+Index: linux-2.6/drivers/gpio/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/gpio/Makefile	2008-06-05 11:24:20.000000000 +0200
++++ linux-2.6/drivers/gpio/Makefile	2008-06-05 11:25:24.000000000 +0200
+@@ -4,6 +4,7 @@
+ 
+ obj-$(CONFIG_HAVE_GPIO_LIB)	+= gpiolib.o
+ 
++obj-$(CONFIG_GPIO_MAX7301)	+= max7301.o
+ obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
+ obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
+ obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
+Index: linux-2.6/drivers/gpio/max7301.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/drivers/gpio/max7301.c	2008-06-05 11:25:24.000000000 +0200
+@@ -0,0 +1,333 @@
++/**
++ * drivers/gpio/max7301.c
++ *
++ * Copyright (C) 2006 Juergen Beisert, Pengutronix
++ * Copyright (C) 2008 Guennadi Liakhovetski, Pengutronix
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * The Maxim's MAX7301 device is an SPI driven GPIO expander. There are
++ * 28 GPIOs. 8 of them can trigger an interrupt. See datasheet for more
++ * details
++ * Note:
++ * - DIN must be stable at the rising edge of clock.
++ * - when writing:
++ *   - always clock in 16 clocks at once
++ *   - at DIN: D15 first, D0 last
++ *   - D0..D7 = databyte, D8..D14 = commandbyte
++ *   - D15 = low -> write command
++ * - when reading
++ *   - always clock in 16 clocks at once
++ *   - at DIN: D15 first, D0 last
++ *   - D0..D7 = dummy, D8..D14 = register address
++ *   - D15 = high -> read command
++ *   - raise CS and assert it again
++ *   - always clock in 16 clocks at once
++ *   - at DOUT: D15 first, D0 last
++ *   - D0..D7 contains the data from the first cycle
++ *
++ * The driver exports a standard gpiochip interface
++ */
++
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/mutex.h>
++#include <linux/spi/spi.h>
++#include <linux/spi/max7301.h>
++#include <linux/gpio.h>
++
++#define DRIVER_NAME "max7301"
++
++/*
++ * Pin configurations, see MAX7301 datasheet page 6
++ */
++#define PIN_CONFIG_MASK 0x03
++#define PIN_CONFIG_IN_PULLUP 0x03
++#define PIN_CONFIG_IN_WO_PULLUP 0x02
++#define PIN_CONFIG_OUT 0x01
++
++#define PIN_NUMBER 28
++
++
++/*
++ * Some registers must be read back to modify.
++ * To save time we cache them here in memory
++ */
++struct max7301 {
++	struct mutex	lock;
++	u8		port_config[8];	/* field 0 is unused */
++	u32		out_level;	/* cached output levels */
++	struct gpio_chip chip;
++	struct spi_device *spi;
++};
++
++/**
++ * max7301_write - Write a new register content
++ * @spi: The SPI device
++ * @reg: Register offset
++ * @val: Value to write
++ *
++ * A write to the MAX7301 means one message with one transfer
++ *
++ * Returns 0 if successfull or a negative value on error
++ */
++static int max7301_write(struct spi_device *spi, unsigned int reg, unsigned int val)
++{
++	u16 word = ((reg & 0x7F) << 8) | (val & 0xFF);
++	return spi_write(spi, (const u8*)&word, sizeof(word));
++}
++
++/**
++ * max7301_read - Read back register content
++ * @spi: The SPI device
++ * @reg: Register offset
++ *
++ * A read from the MAX7301 means one message with two transfers
++ *
++ * Returns positive 8 bit value from device if successfull or a
++ * negative value on error
++ */
++static int max7301_read(struct spi_device *spi, unsigned int reg)
++{
++	int ret;
++	u16 word;
++
++	word = 0x8000 | (reg << 8);
++	if ((ret = spi_write(spi, (const u8*)&word, sizeof(word))) != 0)
++		return ret;
++	/*
++	 * FIXME: This read should write 0x0000 (=NOOP at MAX7301 side)
++	 */
++	if ((ret = spi_read(spi, (u8*)&word, sizeof(word))))
++		return ret;
++	return word;
++}
++
++static int max7301_direction_input(struct gpio_chip *chip, unsigned offset)
++{
++	struct max7301 *ts = container_of(chip, struct max7301, chip);
++	u8 *config;
++	int ret;
++
++	/* First 4 pins are unused in the controller */
++	offset += 4;
++
++	config = &ts->port_config[offset >> 2];
++
++	mutex_lock(&ts->lock);
++
++	/* Standard GPIO API doesn't support pull-ups, has to be extended.
++	 * Hard-coding no pollup for now. */
++	*config = (*config & ~(3 << (offset & 3))) | (1 << (offset & 3));
++
++	ret = max7301_write(ts->spi, 0x08 + (offset >> 2), *config);
++
++	mutex_unlock(&ts->lock);
++
++	return ret;
++}
++
++static int __max7301_set(struct max7301 *ts, unsigned offset, int value)
++{
++	if (value) {
++		ts->out_level |= 1 << offset;
++		return max7301_write(ts->spi, 0x20 + offset, 0x01);
++	} else {
++		ts->out_level &= ~(1 << offset);
++		return max7301_write(ts->spi, 0x20 + offset, 0x00);
++	}
++}
++
++static int max7301_direction_output(struct gpio_chip *chip, unsigned offset,
++				    int value)
++{
++	struct max7301 *ts = container_of(chip, struct max7301, chip);
++	u8 *config;
++	int ret;
++
++	/* First 4 pins are unused in the controller */
++	offset += 4;
++
++	config = &ts->port_config[offset >> 2];
++
++	mutex_lock(&ts->lock);
++
++	*config = (*config & ~(3 << (offset & 3))) | (1 << (offset & 3));
++
++	ret = __max7301_set(ts, offset, value);
++
++	if (!ret)
++		ret = max7301_write(ts->spi, 0x08 + (offset >> 2), *config);
++
++	mutex_unlock(&ts->lock);
++
++	return ret;
++}
++
++static int max7301_get(struct gpio_chip *chip, unsigned offset)
++{
++	struct max7301 *ts = container_of(chip, struct max7301, chip);
++	int config, level = -EINVAL;
++
++	/* First 4 pins are unused in the controller */
++	offset += 4;
++
++	mutex_lock(&ts->lock);
++
++	config = (ts->port_config[offset >> 2] >> ((offset & 3) * 2)) & 3;
++
++	switch (config) {
++	case 1:
++		/* Output: return cached level */
++		level =  !!(ts->out_level & (1 << offset));
++		break;
++	case 2:
++	case 3:
++		/* Input: read out */
++		level = max7301_read(ts->spi, 0x20 + offset) & 0x01;
++	}
++	mutex_unlock(&ts->lock);
++
++	return level;
++}
++
++static void max7301_set(struct gpio_chip *chip, unsigned offset, int value)
++{
++	struct max7301 *ts = container_of(chip, struct max7301, chip);
++
++	/* First 4 pins are unused in the controller */
++	offset += 4;
++
++	mutex_lock(&ts->lock);
++
++	__max7301_set(ts, offset, value);
++
++	mutex_unlock(&ts->lock);
++}
++
++static int __devinit max7301_probe(struct spi_device *spi)
++{
++	struct max7301 *ts;
++	struct max7301_platform_data *pdata;
++	int i, ret;
++
++	pdata = spi->dev.platform_data;
++	if (!pdata || !pdata->base)
++		return -ENODEV;
++
++	/*
++	 * bits_per_word cannot be configured in platform data
++	 */
++	spi->bits_per_word = 16;
++
++	spi->master->setup(spi);
++
++	ts = kzalloc(sizeof(struct max7301), GFP_KERNEL);
++	if (!ts)
++		return -ENOMEM;
++
++	mutex_init(&ts->lock);
++
++	dev_set_drvdata(&spi->dev, ts);
++
++	/* Power up the chip and disable IRQ output */
++	max7301_write(spi, 0x04, 0x01);
++
++	ts->spi = spi;
++
++	ts->chip.label = DRIVER_NAME,
++
++	ts->chip.direction_input = max7301_direction_input;
++	ts->chip.get = max7301_get;
++	ts->chip.direction_output = max7301_direction_output;
++	ts->chip.set = max7301_set;
++
++	ts->chip.base = pdata->base;
++	ts->chip.ngpio = PIN_NUMBER;
++	ts->chip.can_sleep = 1;
++	ts->chip.dev = &spi->dev;
++	ts->chip.owner = THIS_MODULE;
++
++	ret = gpiochip_add(&ts->chip);
++	if (ret)
++		goto exit_destroy;
++
++	/*
++	 * tristate all pins in hardware and cache the
++	 * register values for later use.
++	 */
++	for (i = 1; i < 8; i++) {
++		int j;
++		/* 0xAA means input with internal pullup disabled */
++		max7301_write(spi, 0x08 + i, 0xAA);
++		ts->port_config[i] = 0xAA;
++		for (j = 0; j < 4; j++) {
++			int idx = ts->chip.base + (i - 1) * 4 + j;
++			ret = gpio_direction_input(idx);
++			if (ret)
++				goto exit_remove;
++			gpio_free(idx);
++		}
++	}
++	return ret;
++
++exit_remove:
++	gpiochip_remove(&ts->chip);
++exit_destroy:
++	dev_set_drvdata(&spi->dev, NULL);
++	mutex_destroy(&ts->lock);
++	kfree(ts);
++	return ret;
++}
++
++static int max7301_remove(struct spi_device *spi)
++{
++	struct max7301 *ts;
++	int ret;
++
++	ts = dev_get_drvdata(&spi->dev);
++	if (ts == NULL)
++		return -ENODEV;
++
++	dev_set_drvdata(&spi->dev, NULL);
++
++	/* Power down the chip and disable IRQ output */
++	max7301_write(spi, 0x04, 0x00);
++
++	ret = gpiochip_remove(&ts->chip);
++	if (!ret) {
++		mutex_destroy(&ts->lock);
++		kfree(ts);
++	} else
++		dev_err(&spi->dev, "Failed to remove the GPIO controller: %d\n", ret);
++
++	return ret;
++}
++
++static struct spi_driver max7301_driver = {
++	.driver = {
++		.name		= DRIVER_NAME,
++		.owner		= THIS_MODULE,
++	},
++	.probe		= max7301_probe,
++	.remove		= __devexit_p(max7301_remove),
++};
++
++static int __init max7301_init(void)
++{
++	return spi_register_driver(&max7301_driver);
++}
++
++static void __exit max7301_exit(void)
++{
++	spi_unregister_driver(&max7301_driver);
++}
++
++module_init(max7301_init);
++module_exit(max7301_exit);
++
++MODULE_AUTHOR("Juergen Beisert");
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("MAX7301 SPI based GPIO-Expander");
+Index: linux-2.6/include/linux/spi/max7301.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/include/linux/spi/max7301.h	2008-06-05 11:25:24.000000000 +0200
+@@ -0,0 +1,9 @@
++#ifndef LINUX_SPI_MAX7301_H
++#define LINUX_SPI_MAX7301_H
++
++struct max7301_platform_data {
++	/* number assigned to the first GPIO */
++	unsigned	base;
++};
++
++#endif
