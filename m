@@ -1,214 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763439AbYFFApg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbYFFAyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763439AbYFFApg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 20:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYFFApZ
+	id S1762203AbYFFAyw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 20:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbYFFAyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 20:45:25 -0400
-Received: from yergi.telenet-ops.be ([195.130.132.36]:58605 "EHLO
-	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753129AbYFFApY (ORCPT
+	Thu, 5 Jun 2008 20:54:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:61747 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbYFFAyl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 20:45:24 -0400
-Message-ID: <48488878.5040708@telenet.be>
-Date: Fri, 06 Jun 2008 02:44:40 +0200
-From: Ian Schram <ischram@telenet.be>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 5 Jun 2008 20:54:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qOvGEW2EjnXHHsvYPgxTMXblehz0ii/C9b7/z/AXHBIC48+0H7mBmHEApC4iszPtnO
+         LWVq6ZwIVqn9AQ5OquvbWaMQYkZWDx/3MOB7kmPbpOD+YF/BuvlgXy8KTnh4lEdMS327
+         BB1G2Ixe1m6djYZeTRo7DVt0wYWxhqP7G9QQI=
+Message-ID: <86802c440806051754l5c921437o15ab12882f42a25d@mail.gmail.com>
+Date: Thu, 5 Jun 2008 17:54:40 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [PATCH] x86: make generic arch support NUMAQ v2
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200806051714.54932.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-To: Thomas Backlund <tmb@mandriva.org>
-CC: Tomas Winkler <tomasw@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: iwl4965 oops in 2.6.26-rc5 x86_64
-References: <4848289D.1080205@mandriva.org> <1ba2fa240806051103q652accf5t1bd1d94630ebea5b@mail.gmail.com> <48482BC3.4070402@mandriva.org> <4848482C.2080208@mandriva.org> <48485F12.2050908@mandriva.org>
-In-Reply-To: <48485F12.2050908@mandriva.org>
-X-Enigmail-Version: 0.95.6
-OpenPGP: url=http://fenix.cmi.ua.ac.be/~p035300/ischram.asc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200806050309.11197.yhlu.kernel@gmail.com>
+	 <200806051714.54932.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Isn't this the Oops Joonwoo Park wanted to patch with
+On Thu, Jun 5, 2008 at 5:14 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+> so it could fallback to normal numa.
+>
+> NUMAQ depends on GENERICARCH
+>
+> also decouple genericarch numa with acpi.
+>
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>
+> Index: linux-2.6/arch/x86/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/Kconfig
+> +++ linux-2.6/arch/x86/Kconfig
+> @@ -264,17 +264,6 @@ config X86_VOYAGER
+>          If you do not specifically know you have a Voyager based machine,
+>          say N here, otherwise the kernel you build will not be bootable.
+>
+> -config X86_NUMAQ
+> -       bool "NUMAQ (IBM/Sequent)"
+> -       depends on SMP && X86_32 && PCI
+> -       select NUMA
+> -       help
+> -         This option is used for getting Linux to run on a (IBM/Sequent) NUMA
+> -         multiquad box. This changes the way that processors are bootstrapped,
+> -         and uses Clustered Logical APIC addressing mode instead of Flat Logical.
+> -         You will need a new lynxer.elf file to flash your firmware with - send
+> -         email to <Martin.Bligh@us.ibm.com>.
+> -
+>  config X86_SUMMIT
+>        bool "Summit/EXA (IBM x440)"
+>        depends on X86_32 && SMP
+> @@ -307,12 +296,12 @@ config X86_VISWS
+>          and vice versa. See <file:Documentation/sgi-visws.txt> for details.
+>
+>  config X86_GENERICARCH
+> -       bool "Generic architecture (Summit, bigsmp, ES7000, default)"
+> +       bool "Generic architecture (NUMAQ, Summit, bigsmp, ES7000, default)"
+>        depends on X86_32
+>        help
+> -          This option compiles in the Summit, bigsmp, ES7000, default subarchitectures.
+> -         It is intended for a generic binary kernel.
+> -         If you want a NUMA kernel, select ACPI.   We need SRAT for NUMA.
+> +          This option compiles in the NUMAQ, Summit, bigsmp, ES7000, default
+> +         subarchitectures.  It is intended for a generic binary kernel.
+> +         You need enable NUMA, otherwise NUMAQ is skipped.
+>
+>  config X86_ES7000
+>        bool "Support for Unisys ES7000 IA32 series"
+> @@ -348,6 +337,17 @@ config X86_VSMP
+>
+>  endchoice
+>
+> +config X86_NUMAQ
+> +       bool "NUMAQ (IBM/Sequent)"
+> +       depends on SMP && X86_32 && PCI && X86_GENERICARCH
+> +       select NUMA
+> +       help
+> +         This option is used for getting Linux to run on a NUMAQ (IBM/Sequent)
+> +         NUMA multiquad box. This changes the way that processors are
+> +         bootstrapped, and uses Clustered Logical APIC addressing mode instead
+> +         of Flat Logical.  You will need a new lynxer.elf file to flash your
+> +         firmware with - send email to <Martin.Bligh@us.ibm.com>.
+> +
+>  config SCHED_NO_NO_OMIT_FRAME_POINTER
+>        def_bool y
+>        prompt "Single-depth WCHAN output"
+> @@ -908,9 +908,9 @@ config X86_PAE
+>  config NUMA
+>        bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
+>        depends on SMP
+> -       depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || (X86_SUMMIT || X86_GENERICARCH) && ACPI) && EXPERIMENTAL)
+> +       depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_GENERICARCH || X86_SUMMIT && ACPI) && EXPERIMENTAL)
+>        default n if X86_PC
+> -       default y if (X86_NUMAQ || X86_SUMMIT)
+> +       default y if (X86_NUMAQ || X86_SUMMIT || X86_GENERICARCH)
+>        help
+>          Enable NUMA (Non Uniform Memory Access) support.
+>          The kernel will try to allocate memory used by a CPU on the
 
-"[PATCH] iwlwifi: fix oops on wep key insertion" 27/5/2008
+Sam,
 
-invalid length of webkey that would/should be handled in mac80211?
+now NUMAQ depends on GENERICARCH.
 
-ian
+and Ingo want to make oldconfig to migration NUMAQ....to select GENERICARCH...
 
-Thomas Backlund wrote:
-> Thomas Backlund skrev:
->> Thomas Backlund skrev:
->>> Tomas Winkler skrev:
->>>>>
->>>> Can you please verify with latest wireless-testing. git
->>>> Thanks
->>>> Tomas
->>>
->>> Yep. will do...
->>>
->>> I'll report back as soon as I have tried..
->>>
->>
->> No go...
->>
->>> Jun  5 22:53:42 5720g kernel: firmware: requesting 
->>> iwlwifi-4965-1.ucode                                                                                      
->>> Jun  5 22:53:42 5720g kernel: Registered led device: 
->>> iwl-phy0:radio                                                                                          
->>> Jun  5 22:53:42 5720g kernel: Registered led device: 
->>> iwl-phy0:assoc                                                                                          
->>> Jun  5 22:53:42 5720g kernel: Registered led device: 
->>> iwl-phy0:RX                                                                                             
->>> Jun  5 22:53:42 5720g kernel: Registered led device: 
->>> iwl-phy0:TX                                                                                             
->>> Jun  5 22:53:42 5720g kernel: ADDRCONF(NETDEV_UP): wlan0: link is not 
->>> ready                                                                                  
->>> Jun  5 22:53:43 5720g kernel: BUG: unable to handle kernel NULL 
->>> pointer dereference at 
->>> 0000000000000000                                                      
->>> Jun  5 22:53:43 5720g kernel: IP: [<ffffffffa02a6dfc>] 
->>> :iwlcore:iwl_enqueue_hcmd+0x142/0x227                                                                 
->>> Jun  5 22:53:43 5720g kernel: PGD 
->>> 0                                                                                                                          
->>> Jun  5 22:53:43 5720g kernel: Oops: 0000 [1] 
->>> SMP                                                                                                             
->>> Jun  5 22:53:43 5720g kernel: CPU 
->>> 1                                                                                                                          
->>> Jun  5 22:53:43 5720g kernel: Modules linked in: af_packet kvm_intel 
->>> kvm snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq 
->>> snd_seq_device snd_pcm_oss snd_mixer_oss ipv6 xt_tcpudp 
->>> iptable_filter ip_tables x_tables binfmt_misc loop dm_mod 
->>> cpufreq_ondemand cpufreq_conservative cpufreq_powersave acpi_cpufreq 
->>> freq_table tifm_sd tifm_7xx1 tifm_core nvram pcmcia ohci1394 ieee1394 
->>> mmc_block arc4 ecb sr_mod cdrom crypto_blkcipher sg battery video ac 
->>> yenta_socket output container firewire_ohci rsrc_nonstatic 
->>> pcmcia_core sdhci firewire_core iwl4965 iwlcore mmc_core crc_itu_t 
->>> i2c_i801 snd_hda_intel rfkill snd_pcsp intel_agp iTCO_wdt nsc_ircc 
->>> thermal acer_wmi processor tg3 iTCO_vendor_support snd_pcm joydev 
->>> i2c_core snd_timer rtc_cmos button firmware_class rtc_core mac80211 
->>> led_class evdev serio_raw snd irda soundcore wmi rtc_lib crc_ccitt 
->>> snd_page_alloc cfg80211 ide_generic piix ide_core ata_piix ahci 
->>> libata dock sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd 
->>> usbcore [last unlo
->> aded: 
->> nf_conntrack]                                                                                            
->>
->>> Jun  5 22:53:43 5720g kernel: Pid: 10, comm: events/1 Not tainted 
->>> 2.6.26-rc4-wl 
->>> #1                                                                           
->>> Jun  5 22:53:43 5720g kernel: RIP: 0010:[<ffffffffa02a6dfc>]  
->>> [<ffffffffa02a6dfc>] 
->>> :iwlcore:iwl_enqueue_hcmd+0x142/0x227                                     
->>> Jun  5 22:53:43 5720g kernel: RSP: 0018:ffff81013fb15b90  EFLAGS: 
->>> 00010086                                                                                   
->>> Jun  5 22:53:43 5720g kernel: RAX: 0000000000000000 RBX: 
->>> 0000000000000000 RCX: 
->>> 0000000000000064                                                              
->>> Jun  5 22:53:43 5720g kernel: RDX: 0000000000000024 RSI: 
->>> 0000000000000000 RDI: 
->>> ffff810139a4c578                                                              
->>> Jun  5 22:53:43 5720g kernel: RBP: ffff81013fb15be0 R08: 
->>> ffff810139b31200 R09: 
->>> 0000000000000560                                                              
->>> Jun  5 22:53:43 5720g kernel: R10: ffff81013fb15a60 R11: 
->>> ffff81013fb10a78 R12: 
->>> ffff810139a4c560                                                              
->>> Jun  5 22:53:43 5720g kernel: R13: ffff81013bd51ba0 R14: 
->>> ffff81013fb15d00 R15: 
->>> 0000000000000004                                                              
->>> Jun  5 22:53:43 5720g kernel: FS:  0000000000000000(0000) 
->>> GS:ffff81013fab8ac0(0000) 
->>> knlGS:0000000000000000                                                   
->>> Jun  5 22:53:43 5720g kernel: CS:  0010 DS: 0018 ES: 0018 CR0: 
->>> 000000008005003b                                                                              
->>> Jun  5 22:53:43 5720g kernel: CR2: 0000000000000000 CR3: 
->>> 0000000000201000 CR4: 
->>> 00000000000026e0                                                              
->>> Jun  5 22:53:43 5720g kernel: DR0: 0000000000000000 DR1: 
->>> 0000000000000000 DR2: 
->>> 0000000000000000                                                              
->>> Jun  5 22:53:43 5720g kernel: DR3: 0000000000000000 DR6: 
->>> 00000000ffff0ff0 DR7: 
->>> 0000000000000400                                                              
->>> Jun  5 22:53:43 5720g kernel: Process events/1 (pid: 10, threadinfo 
->>> ffff81013fb14000, task 
->>> ffff81013fb102c0)                                                 
->>> Jun  5 22:53:43 5720g kernel: Stack:  ffffffff806f8338 
->>> ffffffff8075bca0 ffff81013bd52610 
->>> 006881013fb10a10                                                    
->>> Jun  5 22:53:43 5720g kernel:  0000000000000006 ffff81013dc86500 
->>> ffff81013fb15d00 
->>> ffff81013bd51ba0                                                           
->>> Jun  5 22:53:43 5720g kernel:  0000000000000246 0000000000000000 
->>> ffff81013fb15c60 
->>> ffffffffa02a5431                                                           
->>> Jun  5 22:53:43 5720g kernel: Call 
->>> Trace:                                                                                                                    
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa02a5431>] 
->>> :iwlcore:iwl_send_cmd_sync+0x8b/0x24e                                                                    
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff80257f1d>] ? 
->>> __lock_acquire+0xbee/0xd5a                                                                             
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa02a5645>] 
->>> :iwlcore:iwl_send_cmd+0x16/0x19                                                                          
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa02a84b3>] 
->>> :iwlcore:iwl_send_static_wepkey_cmd+0xcb/0xd5                                                            
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa02a855f>] 
->>> :iwlcore:iwl_set_default_wep_key+0xa2/0xbc                                                               
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa02b98ae>] 
->>> :iwl4965:iwl4965_mac_set_key+0xed/0x136                                                                  
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa01762da>] 
->>> :mac80211:__ieee80211_key_todo+0x109/0x203                                                               
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa017647a>] 
->>> :mac80211:ieee80211_key_todo+0x17/0x25                                                                   
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa0176491>] 
->>> :mac80211:key_todo+0x9/0xb                                                                               
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8024717c>] 
->>> run_workqueue+0xfc/0x203                                                                                 
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffffa0176488>] ? 
->>> :mac80211:key_todo+0x0/0xb                                                                             
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff80247363>] 
->>> worker_thread+0xe0/0xf1                                                                                  
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8024ad24>] ? 
->>> autoremove_wake_function+0x0/0x38                                                                      
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff80247283>] ? 
->>> worker_thread+0x0/0xf1                                                                                 
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8024a9f3>] 
->>> kthread+0x49/0x76                                                                                        
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8020d238>] child_rip+0xa/0x12
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8020c7cc>] ? 
->>> restore_args+0x0/0x30
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8024a9aa>] ? kthread+0x0/0x76
->>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8020d22e>] ? child_rip+0x0/0x12
->>> Jun  5 22:53:43 5720g kernel:
->>> Jun  5 22:53:43 5720g kernel:
->>> Jun  5 22:53:43 5720g kernel: Code: 69 c8 58 01 00 00 41 8a 06 4d 89 
->>> cc 4d 03 a5 10 45 00 00 41 88 44 24 14 4c 89 e7 f3 a5 49 8d 7c 24 18 
->>> 41 0f b7 4e 02 49 8b 76 18 <f3> a4 41 c6 44 24 15 00 41 0f b6 95 e4 
->>> 44 00 00 89 d0 80 cc 04
->>> Jun  5 22:53:43 5720g kernel: RIP  [<ffffffffa02a6dfc>] 
->>> :iwlcore:iwl_enqueue_hcmd+0x142/0x227
->>> Jun  5 22:53:43 5720g kernel:  RSP <ffff81013fb15b90>
->>> Jun  5 22:53:43 5720g kernel: CR2: 0000000000000000
->>> Jun  5 22:53:43 5720g kernel: ---[ end trace 58a672208ff93cb1 ]---
->>
->>
->> And for reference I also tried 2.6.25.4 wich works as it should
->>
-> 
-> And I have now tested 2.6.26-rc1 wich also has the oops, so I guess it's 
-> bisect time...
-> 
->> -- 
->> Thomas
->>
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+but if i add select X86_GENERICARCH, make oldconfig will get
+
+> make ARCH=i386 oldconfig
+scripts/kconfig/conf -o arch/x86/Kconfig
+arch/x86/Kconfig:299:error: found recursive dependency:
+X86_GENERICARCH -> X86_NUMAQ -> X86_GENERICARCH -> <choice>
+make[1]: *** [oldconfig] Error 1
+make: *** [oldconfig] Error 2
+
+YH
