@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932742AbYFFW5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbYFFW6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932742AbYFFW5O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 18:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYFFW5C
+	id S933242AbYFFW6A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 18:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932885AbYFFW5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 18:57:02 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35375 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752862AbYFFW5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 18:57:01 -0400
-Subject: patch usb-digi_accelport.c-trivial-sparse-lock-annotation.patch added to gregkh-2.6 tree
-To: harvey.harrison@gmail.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk
-From: <gregkh@suse.de>
-Date: Fri, 06 Jun 2008 15:51:37 -0700
-In-Reply-To: <1212167934.28403.196.camel@brick>
-Message-ID: <12127926972392@kroah.org>
+	Fri, 6 Jun 2008 18:57:48 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:22947 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932877AbYFFW5a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 18:57:30 -0400
+Message-ID: <4849C0D8.3050006@ct.jp.nec.com>
+Date: Fri, 06 Jun 2008 15:57:28 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Cc: Michael Neuling <mikey@neuling.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Update taskstats-struct document for scaled time accounting
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-This is a note to let you know that I've just added the patch titled
+Update Documentation/accounting/taskstats-struct.txt for TASKSTATS_VERSION 6,
+adding scaled time accounting.
 
-     Subject: USB: digi_accelport.c trivial sparse lock annotation
-
-to my gregkh-2.6 tree.  Its filename is
-
-     usb-digi_accelport.c-trivial-sparse-lock-annotation.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From harvey.harrison@gmail.com  Fri Jun  6 15:16:54 2008
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Fri, 30 May 2008 10:18:53 -0700
-Subject: USB: digi_accelport.c trivial sparse lock annotation
-To: Greg KH <gregkh@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
-Message-ID: <1212167934.28403.196.camel@brick>
-
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- drivers/usb/serial/digi_acceleport.c |    1 +
- 1 file changed, 1 insertion(+)
+ Documentation/accounting/taskstats-struct.txt |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
---- a/drivers/usb/serial/digi_acceleport.c
-+++ b/drivers/usb/serial/digi_acceleport.c
-@@ -571,6 +571,7 @@ static struct usb_serial_driver digi_acc
- static long cond_wait_interruptible_timeout_irqrestore(
- 	wait_queue_head_t *q, long timeout,
- 	spinlock_t *lock, unsigned long flags)
-+__releases(lock)
- {
- 	DEFINE_WAIT(wait);
+diff --git a/Documentation/accounting/taskstats-struct.txt b/Documentation/accounting/taskstats-struct.txt
+index 8aa7529..cd784f4 100644
+--- a/Documentation/accounting/taskstats-struct.txt
++++ b/Documentation/accounting/taskstats-struct.txt
+@@ -24,6 +24,8 @@ There are three different groups of fields in the struct taskstats:
  
+ 4) Per-task and per-thread context switch count statistics
+ 
++5) Time accounting for SMT machines
++
+ Future extension should add fields to the end of the taskstats struct, and
+ should not change the relative position of each field within the struct.
+ 
+@@ -164,4 +166,8 @@ struct taskstats {
+ 	__u64	nvcsw;			/* Context voluntary switch counter */
+ 	__u64	nivcsw;			/* Context involuntary switch counter */
+ 
++5) Time accounting for SMT machines
++	__u64	ac_utimescaled;		/* utime scaled on frequency etc */
++	__u64	ac_stimescaled;		/* stime scaled on frequency etc */
++	__u64	cpu_scaled_run_real_total; /* scaled cpu_run_real_total */
+ }
+-- 
+1.5.4.1
 
-
-Patches currently in gregkh-2.6 which might be from harvey.harrison@gmail.com are
-
-usb/usb-use-get_unaligned_-helpers-for-kl5kusb105-driver.patch
-usb/usb-cp2101.c-fix-sparse-signedness-mismatch-warnings.patch
-usb/usb-digi_accelport.c-trivial-sparse-lock-annotation.patch
-usb/usb-speedtch.c-fix-sparse-shadowed-variable-warning.patch
