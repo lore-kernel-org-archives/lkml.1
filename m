@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYFFEtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbYFFEvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbYFFEtY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 00:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbYFFEtR
+	id S1757730AbYFFEvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 00:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYFFEvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 00:49:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47824 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbYFFEtQ (ORCPT
+	Fri, 6 Jun 2008 00:51:44 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:4579 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177AbYFFEvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 00:49:16 -0400
-Date: Thu, 5 Jun 2008 21:45:36 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Beulich <jbeulich@novell.com>, Stable Kernel <stable@kernel.org>
-Subject: Re: [PATCH] x86: set PAE PHYSICAL_MASK_SHIFT to match 64-bit
-Message-ID: <20080605214536.0e289ebb@infradead.org>
-In-Reply-To: <4848046A.5060006@goop.org>
-References: <4848046A.5060006@goop.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 6 Jun 2008 00:51:43 -0400
+Date: Thu, 5 Jun 2008 22:51:38 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       jbarnes@virtuousgeek.org, Matthew Wilcox <matthew@wil.cx>,
+       kristen.c.accardi@intel.com, greg@kroah.com, lenb@kernel.org,
+       pbadari@us.ibm.com, linux-pci@vger.kernel.org,
+       pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kobject: Export kobject_rename for pci_hotplug_core
+Message-ID: <20080606045138.GA28538@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	jbarnes@virtuousgeek.org, Matthew Wilcox <matthew@wil.cx>,
+	kristen.c.accardi@intel.com, greg@kroah.com, lenb@kernel.org,
+	pbadari@us.ibm.com, linux-pci@vger.kernel.org,
+	pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20080604200829.GC379@ldl.fc.hp.com> <20080604201606.GE379@ldl.fc.hp.com> <20080604224838.6b556a51.akpm@linux-foundation.org> <48478247.30809@jp.fujitsu.com> <20080604233348.eb46d8de.akpm@linux-foundation.org> <20080605151140.GA12991@ldl.fc.hp.com> <1212725261.12464.4.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1212725261.12464.4.camel@pasglop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 05 Jun 2008 16:21:14 +0100
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+> BTW. In the meantime, your current patch set seems fine to go.
 
-> When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can
-> potentially have the same number of physical address bits as the
-> 64-bit host ("Enhanced Legacy PAE Paging").
-> 
+That sounds suspiciously like an Acked-by: to me... ;)
 
-the problem on 32 bit is that if you have that much ram, you run out of
-lowmem FAST.... so you have bigger problems.
+> I'll add code to actually do the renumbering of the slot
+> separately, along with some other cleanup & rework of the
+> pseries PCI hotplug I started doing.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Great, thanks!
+
+/ac
+
