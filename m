@@ -1,216 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757176AbYFFN1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbYFFN3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757176AbYFFN1K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 09:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbYFFN0y
+	id S1757315AbYFFN3Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 09:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbYFFN27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 09:26:54 -0400
-Received: from mail.leadpile.com ([209.234.164.13]:33486 "EHLO
-	mail.leadpile.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752197AbYFFN0w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 09:26:52 -0400
-X-Greylist: delayed 2647 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 09:26:51 EDT
-Message-ID: <484930A3.1020103@embedromix.ro>
-Date: Fri, 06 Jun 2008 15:42:11 +0300
-From: "Catalin(ux) M BOIE" <catab@embedromix.ro>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 6 Jun 2008 09:28:59 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:57127 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753063AbYFFN26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 09:28:58 -0400
+Message-ID: <48493B95.5070706@sgi.com>
+Date: Fri, 06 Jun 2008 06:28:53 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, rmk+serial@arm.linux.org.uk,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] Add support for a no-name 4 ports multiserial card
-References: <1212736393-6837-1-git-send-email-catab@embedromix.ro> <20080606111400.1eefc4fd@core>
-In-Reply-To: <20080606111400.1eefc4fd@core>
-Content-Type: multipart/mixed;
- boundary="------------050202010100060907030506"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 5
+References: <20080605175217.cee497f3.sfr@canb.auug.org.au>	<20080605195604.41623687.akpm@linux-foundation.org>	<20080606071707.GB9708@elte.hu>	<20080606002957.6329a0ec.akpm@linux-foundation.org>	<20080606024811.70db9ab2.akpm@linux-foundation.org> <20080606035413.37f340ef.akpm@linux-foundation.org>
+In-Reply-To: <20080606035413.37f340ef.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050202010100060907030506
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Alan Cox wrote:
-> On Fri,  6 Jun 2008 10:13:13 +0300
-> "Catalin(ux) M BOIE" <catab@embedromix.ro> wrote:
+Andrew Morton wrote:
+> On Fri, 6 Jun 2008 02:48:11 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
->> It is a no-name PCI card. I found no reference to a producer so I
->> used the fake name "PDR".
+>> I'll try a linear search starting at
 > 
-> We don't really want to get fake names into pci_ids. I'd rather
-
-Thanks Alan for review!
-
+> 	ff0e010ef613b0e7136f2f40ec4b51273676b085
+> 	Author: Mike Travis <travis@sgi.com>  2008-05-12 12:21:12
+> 	Committer: Thomas Gleixner <tglx@linutronix.de>  2008-05-23 09:05:25
+> 	Parent: b65e04b53ffcb4002737a5346c9ff8865c37be58 (x86: don't call pxm_to_node again)
+> 	Child:  dfdf1d75efee39e9396f8384c6f3bf555349ed60 (x86: modify Kconfig to allow up to 4096 cpus)
+> 	Branch: 
+> 	Follows: v2.6.26-rc2
+> 	Precedes: next-20080526
 > 
->>  		.vendor		= PCI_VENDOR_ID_PLX,
->> +		.device		= PCI_DEVICE_ID_PLX_9050,
->> +		.subvendor	= PCI_VENDOR_ID_PLX,
->> +		.subdevice	= PCI_SUBDEVICE_ID_PDR,
-> 
-> Either the hex or a local and obviously unknown name like ID_UNKNOWN_1
-
-Do you agree to use ID_UNKNOWN_0x1584?
-
-> 
->> +	pbn_plx_pdr,
-> 
-> _unknown1
-
-And here pbn_plx_unknown_0x1584?
-
->>  	pbn_oxsemi,
->>  	pbn_intel_i960,
->>  	pbn_sgi_ioc3,
->> @@ -1186,6 +1196,13 @@ static struct pciserial_board pci_boards[] __devinitdata = {
->>  		.base_baud	= 115200,
->>  		.uart_offset	= 8,
->>  	},
->> +	/* PDR */
->> +	[pbn_plx_pdr] = {
-> 
-> Ditto
-> 
->> +	/* PDR */
-> 
-> Ditto
-> 
->> +	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
->> +		PCI_VENDOR_ID_PLX,
->> +		PCI_SUBDEVICE_ID_PDR, 0, 0,
-> 
-> Ditto
+> 	    x86: fix remove cpu_pda table patch
 > 
 > 
->> +#define PCI_SUBDEVICE_ID_PDR		0x1584
->> +
+> Good
 > 
-> And not in here at all.
+> 	dfdf1d75efee39e9396f8384c6f3bf555349ed60
+> 	Author: Mike Travis <travis@sgi.com>  2008-05-12 12:21:12
+> 	Committer: Thomas Gleixner <tglx@linutronix.de>  2008-05-23 09:05:39
+> 	Parent: ff0e010ef613b0e7136f2f40ec4b51273676b085 (x86: fix remove cpu_pda table patch)
+> 	Child:  29657a44f8660acd8751d7e9f5aac06ec8633481 (x86: cleanup early per cpu variables/accesses v4)
+> 	Branch: 
+> 	Follows: v2.6.26-rc2
+> 	Precedes: next-20080526
 > 
-> Alan
+> 	    x86: modify Kconfig to allow up to 4096 cpus
+> 
+> Good
+> 
+> 	29657a44f8660acd8751d7e9f5aac06ec8633481
+> 	Author: Mike Travis <travis@sgi.com>  2008-05-12 12:21:12
+> 	Committer: Thomas Gleixner <tglx@linutronix.de>  2008-05-23 09:07:23
+> 	Parent: dfdf1d75efee39e9396f8384c6f3bf555349ed60 (x86: modify Kconfig to allow up to 4096 cpus)
+> 	Child:  543e21916497be5a4005fd5820264ce1de9bd56d (x86: restore pda nodenumber field)
+> 	Branch: 
+> 	Follows: v2.6.26-rc2
+> 	Precedes: next-20080526
+> 
+> 	    x86: cleanup early per cpu variables/accesses v4
+> 
+> Good
+> 
+> 
+> 	543e21916497be5a4005fd5820264ce1de9bd56d
+> 	Author: Mike Travis <travis@sgi.com>  2008-05-12 12:21:12
+> 	Committer: Thomas Gleixner <tglx@linutronix.de>  2008-05-23 09:07:37
+> 	Parent: 29657a44f8660acd8751d7e9f5aac06ec8633481 (x86: cleanup early per cpu variables/accesses v4)
+> 	Child:  a9ad585c8a18f7ba754b85f5786976609b9d7d29 (x86: remove the static 256k node_to_cpumask_map)
+> 	Branch: 
+> 	Follows: v2.6.26-rc2
+> 	Precedes: next-20080526
+> 
+> 	    x86: restore pda nodenumber field
+> 
+> Good
+> 
+> 	a9ad585c8a18f7ba754b85f5786976609b9d7d29
+> 	Author: Mike Travis <travis@sgi.com>  2008-05-12 12:21:12
+> 	Committer: Thomas Gleixner <tglx@linutronix.de>  2008-05-23 09:07:47
+> 	Parent: 543e21916497be5a4005fd5820264ce1de9bd56d (x86: restore pda nodenumber field)
+> 	Child:  78d49c6d890aee9cf8aea371011c9d7b0121b822 (x86: remove static boot_cpu_pda array v2)
+> 	Branch: 
+> 	Follows: v2.6.26-rc2
+> 	Precedes: next-20080526
+> 
+> 	    x86: remove the static 256k node_to_cpumask_map
+> 
+> crash, as described earlier.
+> 
+> I don't know what happened to that early exception - it didn't come back.
+> 
+> The below revert gets linux-next working for me.
 
-If you agree, the patch is attached.
-If not, let me know and I will correct it.
+Did you try using the DEBUG_PER_CPU_MAPS option?  This should trigger on any
+use of the node_to_cpumask map before it's been allocated.  (Hmm, I should
+check if it also validates the node number - as when MAX_NUMNODES is used
+instead of nr_node_ids.)
 
-Thank you!
+Also, could you send me the config file and a short description of what kind
+of system you are testing on?
 
--- 
-Catalin(ux) M BOIE
-http://kernel.embedromix.ro/
-
---------------050202010100060907030506
-Content-Type: text/plain;
- name="0001-Add-support-for-a-no-name-4-ports-multiserial-card.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-Add-support-for-a-no-name-4-ports-multiserial-card.patc";
- filename*1="h"
-
->From 5beb2583b6f69a8ea3ad0d8e033cf4e55f5d530d Mon Sep 17 00:00:00 2001
-From: Catalin(ux) M BOIE <catab@embedromix.ro>
-Date: Tue, 8 Apr 2008 00:59:20 +0300
-Subject: [PATCH] Add support for a no-name 4 ports multiserial card
-
-It is a no-name PCI card. I found no reference to a producer so I
-used "UNKNOWN_0x1584" as the name.
-
-Full lspci:
-01:07.0 0780: 10b5:9050 (rev 01)
-        Subsystem: 10b5:1584
-        Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- \
-                ParErr- Stepping- SERR+ FastB2B-
-        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- \
-                DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-        Interrupt: pin A routed to IRQ 10
-        Region 1: I/O ports at ec00 [size=128]
-        Region 2: I/O ports at e480 [size=32]
-        Region 3: I/O ports at e400 [size=8]
-        Capabilities: [40] Power Management version 1
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA \
-                        PME(D0+,D1-,D2-,D3hot+,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [48] #06 [0080]
-        Capabilities: [4c] Vital Product Data
-
-After:
-0000:01:07.0: ttyS4 at I/O 0xe480 (irq = 10) is a 16550A
-0000:01:07.0: ttyS5 at I/O 0xe488 (irq = 10) is a 16550A
-0000:01:07.0: ttyS6 at I/O 0xe490 (irq = 10) is a 16550A
-0000:01:07.0: ttyS7 at I/O 0xe498 (irq = 10) is a 16550A
-
-Signed-off-by: Catalin(ux) M BOIE <catab@embedromix.ro>
----
- drivers/serial/8250_pci.c |   25 +++++++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 788c355..3ad5941 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -769,6 +769,9 @@ pci_default_setup(struct serial_private *priv, struct pciserial_board *board,
- #define PCI_SUBDEVICE_ID_POCTAL232	0x0308
- #define PCI_SUBDEVICE_ID_POCTAL422	0x0408
- 
-+/* Unknown vendors/cards - this should not be in linux/pci_ids.h */
-+#define PCI_SUBDEVICE_ID_UNKNOWN_0x1584	0x1584
-+
- /*
-  * Master list of serial port init/setup/exit quirks.
-  * This does not describe the general nature of the port.
-@@ -884,6 +887,15 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
- 	},
- 	{
- 		.vendor		= PCI_VENDOR_ID_PLX,
-+		.device		= PCI_DEVICE_ID_PLX_9050,
-+		.subvendor	= PCI_VENDOR_ID_PLX,
-+		.subdevice	= PCI_SUBDEVICE_ID_UNKNOWN_0x1584,
-+		.init		= pci_plx9050_init,
-+		.setup		= pci_default_setup,
-+		.exit		= __devexit_p(pci_plx9050_exit),
-+	},
-+	{
-+		.vendor		= PCI_VENDOR_ID_PLX,
- 		.device		= PCI_DEVICE_ID_PLX_ROMULUS,
- 		.subvendor	= PCI_VENDOR_ID_PLX,
- 		.subdevice	= PCI_DEVICE_ID_PLX_ROMULUS,
-@@ -1156,6 +1168,7 @@ enum pci_board_num_t {
- 	pbn_panacom4,
- 	pbn_exsys_4055,
- 	pbn_plx_romulus,
-+	pbn_plx_unknown_0x1584,
- 	pbn_oxsemi,
- 	pbn_intel_i960,
- 	pbn_sgi_ioc3,
-@@ -1186,6 +1199,13 @@ static struct pciserial_board pci_boards[] __devinitdata = {
- 		.base_baud	= 115200,
- 		.uart_offset	= 8,
- 	},
-+	/* Unknow card - subdevice 0x1584 */
-+	[pbn_plx_unknown_0x1584] = {
-+		.flags		= FL_BASE0,
-+		.num_ports	= 4,
-+		.base_baud	= 115200,
-+		.uart_offset	= 8,
-+	},
- 	[pbn_b0_1_115200] = {
- 		.flags		= FL_BASE0,
- 		.num_ports	= 1,
-@@ -2199,6 +2219,11 @@ static struct pci_device_id serial_pci_tbl[] = {
- 	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_1077,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_b2_4_921600 },
-+	/* Unknown card - subdevice 0x1584 */
-+	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
-+		PCI_VENDOR_ID_PLX,
-+		PCI_SUBDEVICE_ID_UNKNOWN_0x1584, 0, 0,
-+		pbn_plx_unknown_0x1584 },
- 	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
- 		PCI_SUBVENDOR_ID_KEYSPAN,
- 		PCI_SUBDEVICE_ID_KEYSPAN_SX2, 0, 0,
--- 
-1.5.5.1
-
-
---------------050202010100060907030506--
+Thanks,
+Mike
