@@ -1,118 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933393AbYFFX1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbYFFXcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933393AbYFFX1z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 19:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbYFFX1p
+	id S933367AbYFFXcs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 19:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757858AbYFFXcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 19:27:45 -0400
-Received: from sous-sol.org ([216.99.217.87]:33338 "EHLO sous-sol.org"
+	Fri, 6 Jun 2008 19:32:39 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37231 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757858AbYFFX1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 19:27:43 -0400
-Date: Fri, 6 Jun 2008 16:27:27 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.5
-Message-ID: <20080606232727.GU30402@sequoia.sous-sol.org>
-References: <20080606232653.GT30402@sequoia.sous-sol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080606232653.GT30402@sequoia.sous-sol.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1757593AbYFFXci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 19:32:38 -0400
+Subject: Re: [PATCH] kobject: Export kobject_rename for pci_hotplug_core
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Alex Chiang <achiang@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       jbarnes@virtuousgeek.org, Matthew Wilcox <matthew@wil.cx>,
+       kristen.c.accardi@intel.com, greg@kroah.com, lenb@kernel.org,
+       pbadari@us.ibm.com, linux-pci@vger.kernel.org,
+       pcihpd-discuss@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20080606045138.GA28538@ldl.fc.hp.com>
+References: <20080604200829.GC379@ldl.fc.hp.com>
+	 <20080604201606.GE379@ldl.fc.hp.com>
+	 <20080604224838.6b556a51.akpm@linux-foundation.org>
+	 <48478247.30809@jp.fujitsu.com>
+	 <20080604233348.eb46d8de.akpm@linux-foundation.org>
+	 <20080605151140.GA12991@ldl.fc.hp.com> <1212725261.12464.4.camel@pasglop>
+	 <20080606045138.GA28538@ldl.fc.hp.com>
+Content-Type: text/plain
+Date: Sat, 07 Jun 2008 09:20:00 +1000
+Message-Id: <1212794400.12464.36.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index d921f0b..c5208db 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 25
--EXTRAVERSION = .4
-+EXTRAVERSION = .5
- NAME = Funky Weasel is Jiggy wit it
- 
- # *DOCUMENTATION*
-diff --git a/fs/cifs/asn1.c b/fs/cifs/asn1.c
-index bcda2c6..5dbba89 100644
---- a/fs/cifs/asn1.c
-+++ b/fs/cifs/asn1.c
-@@ -186,6 +186,11 @@ asn1_length_decode(struct asn1_ctx *ctx, unsigned int *def, unsigned int *len)
- 			}
- 		}
- 	}
-+
-+	/* don't trust len bigger than ctx buffer */
-+	if (*len > ctx->end - ctx->pointer)
-+		return 0;
-+
- 	return 1;
- }
- 
-@@ -203,6 +208,10 @@ asn1_header_decode(struct asn1_ctx *ctx,
- 	if (!asn1_length_decode(ctx, &def, &len))
- 		return 0;
- 
-+	/* primitive shall be definite, indefinite shall be constructed */
-+	if (*con == ASN1_PRI && !def)
-+		return 0;
-+
- 	if (def)
- 		*eoc = ctx->pointer + len;
- 	else
-@@ -389,6 +398,11 @@ asn1_oid_decode(struct asn1_ctx *ctx,
- 	unsigned long *optr;
- 
- 	size = eoc - ctx->pointer + 1;
-+
-+	/* first subid actually encodes first two subids */
-+	if (size < 2 || size > ULONG_MAX/sizeof(unsigned long))
-+		return 0;
-+
- 	*oid = kmalloc(size * sizeof(unsigned long), GFP_ATOMIC);
- 	if (*oid == NULL)
- 		return 0;
-diff --git a/net/ipv4/netfilter/nf_nat_snmp_basic.c b/net/ipv4/netfilter/nf_nat_snmp_basic.c
-index 540ce6a..5f35f0b 100644
---- a/net/ipv4/netfilter/nf_nat_snmp_basic.c
-+++ b/net/ipv4/netfilter/nf_nat_snmp_basic.c
-@@ -231,6 +231,11 @@ static unsigned char asn1_length_decode(struct asn1_ctx *ctx,
- 			}
- 		}
- 	}
-+
-+	/* don't trust len bigger than ctx buffer */
-+	if (*len > ctx->end - ctx->pointer)
-+		return 0;
-+
- 	return 1;
- }
- 
-@@ -249,6 +254,10 @@ static unsigned char asn1_header_decode(struct asn1_ctx *ctx,
- 	if (!asn1_length_decode(ctx, &def, &len))
- 		return 0;
- 
-+	/* primitive shall be definite, indefinite shall be constructed */
-+	if (*con == ASN1_PRI && !def)
-+		return 0;
-+
- 	if (def)
- 		*eoc = ctx->pointer + len;
- 	else
-@@ -433,6 +442,11 @@ static unsigned char asn1_oid_decode(struct asn1_ctx *ctx,
- 	unsigned long *optr;
- 
- 	size = eoc - ctx->pointer + 1;
-+
-+	/* first subid actually encodes first two subids */
-+	if (size < 2 || size > ULONG_MAX/sizeof(unsigned long))
-+		return 0;
-+
- 	*oid = kmalloc(size * sizeof(unsigned long), GFP_ATOMIC);
- 	if (*oid == NULL) {
- 		if (net_ratelimit())
+On Thu, 2008-06-05 at 22:51 -0600, Alex Chiang wrote:
+> * Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+> > BTW. In the meantime, your current patch set seems fine to go.
+> 
+> That sounds suspiciously like an Acked-by: to me... ;)
+
+Yup, the only thing is .. I would like to do a few more tests to make
+sure we didn't break an obscure setup but I suppose we can always
+do fixup patches if necessary. So yes,
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> > I'll add code to actually do the renumbering of the slot
+> > separately, along with some other cleanup & rework of the
+> > pseries PCI hotplug I started doing.
+> 
+> Great, thanks!
+> 
+
