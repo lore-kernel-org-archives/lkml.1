@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761506AbYFFPNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761046AbYFFPOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761506AbYFFPNy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 11:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758174AbYFFPNb
+	id S1761046AbYFFPOV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 11:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbYFFPOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 11:13:31 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42195 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757736AbYFFPN3 (ORCPT
+	Fri, 6 Jun 2008 11:14:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:9826 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759445AbYFFPN6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 11:13:29 -0400
-Subject: Re: [regression/bisected] corrupt CD data after media change and
-	delay
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: David Martin <tasio@hierro.tasio.net>, Maarten Bressers <mbres@gentoo.org>,
-       Daniel Drake <dsd@gentoo.org>, linux-scsi@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>
-In-Reply-To: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0806061458300.6228@vixen.sonytel.be>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 10:13:22 -0500
-Message-Id: <1212765202.16182.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+	Fri, 6 Jun 2008 11:13:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qnYsfyxys1EMmLmDsYGLQzjZDFNlFpTf2dPWyUaC0H0EHbBhdzT8TFpcrHtThCEHcQ
+         Ntbhx8TN0obD15bmeoDgO49b/jpkfSVGh0TqZkvFEiEQjNjZKRzuNMAjeOJ7O8bfZqW8
+         DSjBXix9sjHP08uLZO4Tu1xRkOtRHOR0DGvu4=
+Message-ID: <19f34abd0806060813t10d422fel10dcb25c71f3b032@mail.gmail.com>
+Date: Fri, 6 Jun 2008 17:13:58 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: linux-next: Tree for June 5
+Cc: "Mike Travis" <travis@sgi.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080606150102.GA14141@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080606024811.70db9ab2.akpm@linux-foundation.org>
+	 <20080606115759.GA29321@elte.hu>
+	 <19f34abd0806060533x6d3ff66tc29306143103fc40@mail.gmail.com>
+	 <48493CBD.1000202@sgi.com>
+	 <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
+	 <19f34abd0806060707x7570c835u4b1837b54dfa36ba@mail.gmail.com>
+	 <484947A9.5050804@sgi.com>
+	 <19f34abd0806060736m10424455kfbc3e6272d18646e@mail.gmail.com>
+	 <20080606145717.GA5300@elte.hu> <20080606150102.GA14141@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-06-06 at 16:06 +0200, Geert Uytterhoeven wrote:
-> 	Hi all,
-> 
-> When mounting a CD/DVD more than 30 seconds after inserting it, and reading
-> from it, we get:
-> 
->     attempt to access beyond end of device
->     sr0: rw=0, want=371932, limit=371928
->     Buffer I/O error on device sr0, logical block 92982
->     attempt to access beyond end of device
->     sr0: rw=0, want=371936, limit=371928
->     Buffer I/O error on device sr0, logical block 92983
->     attempt to access beyond end of device
->     sr0: rw=0, want=371940, limit=371928
->     Buffer I/O error on device sr0, logical block 92984
->     attempt to access beyond end of device
->     sr0: rw=0, want=371944, limit=371928
->     Buffer I/O error on device sr0, logical block 92985
->     attempt to access beyond end of device
->     sr0: rw=0, want=371948, limit=371928
->     Buffer I/O error on device sr0, logical block 92986
->     ...
-> 
-> It can be reproduced on a PS3 with busybox userland using:
-> 
->     # Insert first CD
->     $ mount /dev/sr0 /mnt
->     $ ls -R /mnt
->     $ umount /mnt
->     $ eject
->     # Remove first CD
-> 
->     # Insert second CD
->     # Wait at least 30 seconds
->     $ mount /dev/sr0 /mnt
->     $ tar cf /dev/null /mnt
-> 
-> It does not happen when mounting the second CD within 30 seconds after
-> inserting it, which is consistent with
-> 
->     #define SR_TIMEOUT     (30 * HZ)
-> 
-> I can't seem to reproduce it with a Debian or Fedora Core 6 userland.
-> 
-> The problem is present in 2.6.25.
-> 2.6.24 is OK.
+On Fri, Jun 6, 2008 at 5:01 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> > Subject: [PATCH] sched: don't call node_to_cpumask() on nodes >
+>> > nr_node_ids
+>>
+>> AFAICS this is not yet required for v2.6.26, as the requirement to
+>> never iterate to MAX_NUMNODES and call nr_cpus_node() with the index
+>> only got introduced by Mike's patch.
+>
+> the one below is needed as well i think.
 
-Hmm ... how are you preventing HAL from automatically mounting the CD?
-
-Also, in the two different situations, what does
-
-cat /sys/block/sr0/size
-
-(assuming your cd is sr0) give you?  My first theory is an incorrect
-size propagating from something.
-
-James
+Yeah. I think you had better take Mike's patches, I don't trust even
+that my patch and your fixlet does everything correctly.
 
 
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
