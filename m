@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764102AbYFFC3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764153AbYFFC34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764102AbYFFC3k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Jun 2008 22:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763613AbYFFC2e
+	id S1764153AbYFFC34 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Jun 2008 22:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763631AbYFFC2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Jun 2008 22:28:34 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64197 "EHLO serum.com.pl"
+	Thu, 5 Jun 2008 22:28:35 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64214 "EHLO serum.com.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763387AbYFFC2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Jun 2008 22:28:22 -0400
-Date: Fri, 6 Jun 2008 03:28:02 +0100 (BST)
+	id S1763431AbYFFC2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Jun 2008 22:28:31 -0400
+Date: Fri, 6 Jun 2008 03:28:13 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
 To: Ingo Molnar <mingo@elte.hu>
 cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] x86: APIC/SMP: Downgrade the NMI watchdog for "nosmp"
-Message-ID: <Pine.LNX.4.55.0806060233540.2875@cliff.in.clinika.pl>
+Subject: [PATCH 5/5] x86: APIC/SMP: Downgrade the NMI watchdog for "noapic"
+Message-ID: <Pine.LNX.4.55.0806060306400.2875@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,22 +23,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
  If configured to use the I/O APIC, the NMI watchdog is deemed to fail if 
-the chip has been deactivated as a result of "nosmp".  Downgrade to the 
+the chip has been deactivated as a result of "noapic".  Downgrade to the 
 local APIC watchdog similarly to what is done for the UP case.
 
 Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
-patch-2.6.26-rc1-20080505-nosmp-watchdog-1
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/smpboot.c linux-2.6.26-rc1-20080505/arch/x86/kernel/smpboot.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/smpboot.c	2008-05-21 06:24:25.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/smpboot.c	2008-06-05 21:45:41.000000000 +0000
-@@ -1147,6 +1147,9 @@ static int __init smp_sanity_check(unsig
- 	if (!max_cpus) {
- 		printk(KERN_INFO "SMP mode deactivated.\n");
- 		smpboot_clear_io_apic();
-+
+patch-2.6.26-rc1-20080505-noapic-watchdog-0
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/include/asm-x86/mach-default/smpboot_hooks.h linux-2.6.26-rc1-20080505/include/asm-x86/mach-default/smpboot_hooks.h
+--- linux-2.6.26-rc1-20080505.macro/include/asm-x86/mach-default/smpboot_hooks.h	2008-05-05 02:55:57.000000000 +0000
++++ linux-2.6.26-rc1-20080505/include/asm-x86/mach-default/smpboot_hooks.h	2008-06-05 22:11:30.000000000 +0000
+@@ -41,8 +41,10 @@ static inline void __init smpboot_setup_
+ 	 */
+ 	if (!skip_ioapic_setup && nr_ioapics)
+ 		setup_IO_APIC();
+-	else
++	else {
+ 		nr_ioapics = 0;
 +		localise_nmi_watchdog();
-+
- #ifdef CONFIG_X86_32
- 		connect_bsp_APIC();
- #endif
++	}
+ }
+ 
+ static inline void smpboot_clear_io_apic(void)
