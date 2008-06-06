@@ -1,77 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763487AbYFFS0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764192AbYFFS0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763487AbYFFS0Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 14:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbYFFSZ4
+	id S1764192AbYFFS0j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 14:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762886AbYFFS0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 14:25:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44935 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756969AbYFFSZz (ORCPT
+	Fri, 6 Jun 2008 14:26:16 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:43174 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762733AbYFFS0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 14:25:55 -0400
-Date: Fri, 6 Jun 2008 11:25:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Denys Fedoryshchenko" <denys@visp.net.lb>, linux-kernel@vger.kernel.org
-Subject: Re: strange timestamp in dmesg
-Message-Id: <20080606112547.13b78888.akpm@linux-foundation.org>
-In-Reply-To: <87hcc6u109.fsf@basil.nowhere.org>
-References: <20080605115256.M13181@visp.net.lb>
-	<20080606031939.285679c9.akpm@linux-foundation.org>
-	<87hcc6u109.fsf@basil.nowhere.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 14:26:13 -0400
+X-IronPort-AV: E=Sophos;i="4.27,601,1204531200"; 
+   d="scan'208";a="109527402"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 06 Jun 2008 11:26:11 -0700
+Message-ID: <adad4muctdo.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Jun 2008 18:26:12.0293 (UTC) FILETIME=[CC49AF50:01C8C802]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Jun 2008 15:49:26 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+Linus, please pull from
 
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> >> supports DPO and FUA
-> >> [    9.801761] sd 1:0:1:0: [sdc] 143374744 512-byte hardware sectors (73408 MB)
-> >> [    9.673388] sd 1:0:1:0: [sdc] Write Protect is off
-> >> [    9.673395] sd 1:0:1:0: [sdc] Mode Sense: ab 00 10 08
-> >> [    9.806210] sd 1:0:1:0: [sdc] Write cache: enabled, read cache: enabled,
-> >> supports DPO and FUA
-> >> [    9.806220]  sdc: sdc1
-> >> [    9.682136] sd 1:0:1:0: [sdc] Attached SCSI disk
-> >> [   13.786405] SGI XFS with large block numbers, no debug enabled
-> >> [   13.633457] XFS mounting filesystem sdb2
-> >> [   13.724345] Starting XFS recovery on filesystem: sdb2 (logdev: internal)
-> >> [   14.251356] Ending XFS recovery on filesystem: sdb2 (logdev: internal)
-> >> [   15.379298] XFS mounting filesystem sdc1
-> >> [   15.468255] Starting XFS recovery on filesystem: sdc1 (logdev: internal)
-> >> [   14.514314] Ending XFS recovery on filesystem: sdc1 (logdev: internal)
-> >> [   14.767260] warning: `squid' uses 32-bit capabilities (legacy support in use)
-> >> [   17.589751] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full
-> >> Duplex, Flow Control: RX/TX
-> >> 
-> >
-> > whoa, that's weird.  We've seen timestamps jump forward a single hop of
-> > ~100000 seconds, but that's all over the place.
-> 
-> No it's expected since printk uses sched_clock() and sched clock is not synchronous
-> between CPUs on systems without synchronized/invariant TSC (like Opteron)
-> All sched_clock() users are expected to handle it.
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-We've seen a storm of hey-my-timestamps-went-weird reports in just the
-past month or so.  I don't recall it being (such) a problem before that.
+This tree is also available from kernel.org mirrors at:
 
-Did we change something?
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-> I always advocated just always using jiffies for printk. The only drawback would
-> be that it won't increase in interrupt off sections, but if you have
-> one that is longer than a jiffie then you have enough other problems.
+This will get some small fixes for various low-level driver issues:
 
-I forget why, but we _were_ going to have an (arch-overrideable)
-printk_clock() function.  And we still could.  The x86 implementation
-of that could fall back to jiffies if the TSCs are out of whack?
+Chien Tung (1):
+      MAINTAINERS: Update NetEffect (iw_nes) entry
 
-<googles>
+Joachim Fenkes (1):
+      IB/ehca: Reject send WRs only for RESET, INIT and RTR state
 
-In fact it looks like we _did_ have a printk_clock(), only someone stole it.
+Ralph Campbell (2):
+      IB/ipath: Fix device capability flags
+      IB/ipath: Fix SM trap forwarding
+
+Roland Dreier (1):
+      IB/ipath: Avoid test_bit() on u64 SDMA status value
+
+ MAINTAINERS                                |    4 ++--
+ drivers/infiniband/hw/ehca/ehca_reqs.c     |    6 ++++--
+ drivers/infiniband/hw/ipath/ipath_kernel.h |    5 +++++
+ drivers/infiniband/hw/ipath/ipath_mad.c    |    4 ++++
+ drivers/infiniband/hw/ipath/ipath_sdma.c   |   12 ++++--------
+ drivers/infiniband/hw/ipath/ipath_verbs.c  |    3 ++-
+ 6 files changed, 21 insertions(+), 13 deletions(-)
+
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 0a6d2ca..bd3badb 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2866,8 +2866,8 @@ S:	Maintained
+ NETEFFECT IWARP RNIC DRIVER (IW_NES)
+ P:	Faisal Latif
+ M:	flatif@neteffect.com
+-P:	Nishi Gupta
+-M:	ngupta@neteffect.com
++P:	Chien Tung
++M:	ctung@neteffect.com
+ P:	Glenn Streiff
+ M:	gstreiff@neteffect.com
+ L:	general@lists.openfabrics.org
+diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
+index bbe0436..f093b00 100644
+--- a/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -421,8 +421,10 @@ int ehca_post_send(struct ib_qp *qp,
+ 	int ret = 0;
+ 	unsigned long flags;
+ 
+-	if (unlikely(my_qp->state != IB_QPS_RTS)) {
+-		ehca_err(qp->device, "QP not in RTS state  qpn=%x", qp->qp_num);
++	/* Reject WR if QP is in RESET, INIT or RTR state */
++	if (unlikely(my_qp->state < IB_QPS_RTS)) {
++		ehca_err(qp->device, "Invalid QP state  qp_state=%d qpn=%x",
++			 my_qp->state, qp->qp_num);
+ 		return -EINVAL;
+ 	}
+ 
+diff --git a/drivers/infiniband/hw/ipath/ipath_kernel.h b/drivers/infiniband/hw/ipath/ipath_kernel.h
+index 59a8b25..0bd8bcb 100644
+--- a/drivers/infiniband/hw/ipath/ipath_kernel.h
++++ b/drivers/infiniband/hw/ipath/ipath_kernel.h
+@@ -232,6 +232,11 @@ struct ipath_sdma_desc {
+ #define IPATH_SDMA_TXREQ_S_ABORTED   2
+ #define IPATH_SDMA_TXREQ_S_SHUTDOWN  3
+ 
++#define IPATH_SDMA_STATUS_SCORE_BOARD_DRAIN_IN_PROG	(1ull << 63)
++#define IPATH_SDMA_STATUS_ABORT_IN_PROG			(1ull << 62)
++#define IPATH_SDMA_STATUS_INTERNAL_SDMA_ENABLE		(1ull << 61)
++#define IPATH_SDMA_STATUS_SCB_EMPTY			(1ull << 30)
++
+ /* max dwords in small buffer packet */
+ #define IPATH_SMALLBUF_DWORDS (dd->ipath_piosize2k >> 2)
+ 
+diff --git a/drivers/infiniband/hw/ipath/ipath_mad.c b/drivers/infiniband/hw/ipath/ipath_mad.c
+index 1ff46ae..5f9315d 100644
+--- a/drivers/infiniband/hw/ipath/ipath_mad.c
++++ b/drivers/infiniband/hw/ipath/ipath_mad.c
+@@ -1492,6 +1492,10 @@ static int process_subn(struct ib_device *ibdev, int mad_flags,
+ 			goto bail;
+ 		}
+ 
++	case IB_MGMT_METHOD_TRAP:
++	case IB_MGMT_METHOD_REPORT:
++	case IB_MGMT_METHOD_REPORT_RESP:
++	case IB_MGMT_METHOD_TRAP_REPRESS:
+ 	case IB_MGMT_METHOD_GET_RESP:
+ 		/*
+ 		 * The ib_mad module will call us to process responses
+diff --git a/drivers/infiniband/hw/ipath/ipath_sdma.c b/drivers/infiniband/hw/ipath/ipath_sdma.c
+index 0a8c1b8..eaba032 100644
+--- a/drivers/infiniband/hw/ipath/ipath_sdma.c
++++ b/drivers/infiniband/hw/ipath/ipath_sdma.c
+@@ -263,14 +263,10 @@ static void sdma_abort_task(unsigned long opaque)
+ 		hwstatus = ipath_read_kreg64(dd,
+ 				dd->ipath_kregs->kr_senddmastatus);
+ 
+-		if (/* ScoreBoardDrainInProg */
+-		    test_bit(63, &hwstatus) ||
+-		    /* AbortInProg */
+-		    test_bit(62, &hwstatus) ||
+-		    /* InternalSDmaEnable */
+-		    test_bit(61, &hwstatus) ||
+-		    /* ScbEmpty */
+-		    !test_bit(30, &hwstatus)) {
++		if ((hwstatus & (IPATH_SDMA_STATUS_SCORE_BOARD_DRAIN_IN_PROG |
++				 IPATH_SDMA_STATUS_ABORT_IN_PROG	     |
++				 IPATH_SDMA_STATUS_INTERNAL_SDMA_ENABLE)) ||
++		    !(hwstatus & IPATH_SDMA_STATUS_SCB_EMPTY)) {
+ 			if (dd->ipath_sdma_reset_wait > 0) {
+ 				/* not done shutting down sdma */
+ 				--dd->ipath_sdma_reset_wait;
+diff --git a/drivers/infiniband/hw/ipath/ipath_verbs.c b/drivers/infiniband/hw/ipath/ipath_verbs.c
+index e0ec540..7779165 100644
+--- a/drivers/infiniband/hw/ipath/ipath_verbs.c
++++ b/drivers/infiniband/hw/ipath/ipath_verbs.c
+@@ -1494,7 +1494,8 @@ static int ipath_query_device(struct ib_device *ibdev,
+ 
+ 	props->device_cap_flags = IB_DEVICE_BAD_PKEY_CNTR |
+ 		IB_DEVICE_BAD_QKEY_CNTR | IB_DEVICE_SHUTDOWN_PORT |
+-		IB_DEVICE_SYS_IMAGE_GUID;
++		IB_DEVICE_SYS_IMAGE_GUID | IB_DEVICE_RC_RNR_NAK_GEN |
++		IB_DEVICE_PORT_ACTIVE_EVENT | IB_DEVICE_SRQ_RESIZE;
+ 	props->page_size_cap = PAGE_SIZE;
+ 	props->vendor_id = dev->dd->ipath_vendorid;
+ 	props->vendor_part_id = dev->dd->ipath_deviceid;
