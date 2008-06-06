@@ -1,102 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759196AbYFFOlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYFFOlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759196AbYFFOlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 10:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbYFFOl3
+	id S1757400AbYFFOlz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 10:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbYFFOlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 10:41:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:32883 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756634AbYFFOl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 10:41:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-Date: Fri, 6 Jun 2008 16:42:06 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: chris2553@googlemail.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>
-References: <200806010415.05290.chris2553@googlemail.com> <200806060607.29460.chris2553@googlemail.com> <1212761485.3466.6.camel@localhost.localdomain>
-In-Reply-To: <1212761485.3466.6.camel@localhost.localdomain>
+	Fri, 6 Jun 2008 10:41:42 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:48829 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759305AbYFFOll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 10:41:41 -0400
+Message-ID: <48494CA2.40102@sgi.com>
+Date: Fri, 06 Jun 2008 07:41:38 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 5
+References: <20080605175217.cee497f3.sfr@canb.auug.org.au>	 <20080606002957.6329a0ec.akpm@linux-foundation.org>	 <20080606024811.70db9ab2.akpm@linux-foundation.org>	 <20080606035413.37f340ef.akpm@linux-foundation.org>	 <20080606115759.GA29321@elte.hu>	 <19f34abd0806060533x6d3ff66tc29306143103fc40@mail.gmail.com>	 <48493CBD.1000202@sgi.com>	 <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>	 <19f34abd0806060707x7570c835u4b1837b54dfa36ba@mail.gmail.com>	 <484947A9.5050804@sgi.com> <19f34abd0806060736m10424455kfbc3e6272d18646e@mail.gmail.com>
+In-Reply-To: <19f34abd0806060736m10424455kfbc3e6272d18646e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806061642.07563.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 6 of June 2008, James Bottomley wrote:
-> On Fri, 2008-06-06 at 06:07 +0000, Chris Clayton wrote:
-> > On Friday 06 June 2008, Andrew Morton wrote:
-> > > On Sun, 1 Jun 2008 04:15:05 +0000 Chris Clayton <chris2553@googlemail.com> 
-> > wrote:
-> > > > Hi,
-> > > >
-> > > > I've just started testing 2.6.26 on my desktop machine and have found
-> > > > that I get a long pause (20 seconds or so) as the system boots. By pause
-> > > > I mean that the boot messages that normally scroll by stop doing so for,
-> > > > as I say, about 20 seconds.
-> > > >
-> > > > I've done a bisect and arrived at:
-> > > >
-> > > > b0ed43360fdca227048d88a08290365cb681c1a8 is first bad commit
-> > > > commit b0ed43360fdca227048d88a08290365cb681c1a8
-> > > > Author: Hannes Reinecke <hare@suse.de>
-> > > > Date:   Tue Mar 18 14:32:28 2008 +0100
-> > > >
-> > > >     [SCSI] add scsi_host and scsi_target to scsi_bus
-> > > >
-> > > >     This patch implements scsi_host and scsi_target device types
-> > > >     and adds both to the scsi_bus.
-> > > >
-> > > >     Signed-off-by: Hannes Reinecke <hare@suse.de>
-> > > >     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> > > >     Signed-off-by: James Bottomley
-> > > > <James.Bottomley@HansenPartnership.com>
-> > > >
-> > > > :040000 040000 4e3140909966b4c9aa987d34ee4078d283fe0351
-> > > >
-> > > > 46e4fd28cc537ba700eb4f5652abf043fed4d76d M      drivers
-> > > >
-> > > > The config file for that kernel is attached as are the kernel log for
-> > > > booting that kernel and the bisect log.
-> > > >
-> > > > I've also noticed that it takes much longer for icons to appear on my
-> > > > desktop when I plug a usb storage device in. (The icons are shown/hidden
-> > > > by a simple sctript that is run via udev when the device is
-> > > > attached/detached.)
-> > >
-> > > Do you believe that this is the same period?  20 seconds?
-> > >
-> > 
-> > Thanks for the reply, Andrew. I was beginning to think that I'd committed an 
-> > LKML sin :-)
-> > 
-> > Yes, it is about the same. On 2.6.25.4 (and earlier), the icons appear within a 
-> > second or two, but with 2.6.26-rc2 or later, it takes about 20 seconds. I've 
-> > now built and installed -rc5 and am seeing the same behaviour.
-> > 
-> > I've also built -rc5 on my laptop. On that my kernel uses the older IDE drivers 
-> > rather than libata. The boot proceeds with no pause, but I do see the same 
-> > delay in the desktop icons appearing when I attach a usb-storage device.
-> > 
-> > > > Let me know of any way I can help solve this.
-> > > >
-> > > > Please cc me to any reply as I'm not subscribed.
-> > >
-> > > cc's added.
-> > >
-> > > Rafael, we might need to track this as a post-2.6.26 regression.
+Vegard Nossum wrote:
+> On Fri, Jun 6, 2008 at 4:20 PM, Mike Travis <travis@sgi.com> wrote:
+>> Vegard Nossum wrote:
+>>> On Fri, Jun 6, 2008 at 3:50 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>>>> On Fri, Jun 6, 2008 at 3:33 PM, Mike Travis <travis@sgi.com> wrote:
+>>>>> Vegard Nossum wrote:
+>>>>>> I reproced it with gc 4.1.2. I think the error is somewhere in kernel/sched.c.
+>>>>>>
+>>>>>> static int __build_sched_domains(const cpumask_t *cpu_map,
+>>>>>>                                  struct sched_domain_attr *attr)
+>>>>>> {
+>>>>>> ...
+>>>>>>         for (i = 0; i < MAX_NUMNODES; i++) {
+>>>>>> ...
+>>>>>>                 sg = kmalloc_node(sizeof(struct sched_group), GFP_KERNEL, i);
+>>>>>> ...
+>>>>>>
+>>>>>> This code is calling into the allocator with a spurious value of i,
+>>>>>> which causes SLAB to use an index (of 4 in my case) that is out of
+>>>>>> bounds for its nodelist array (at least it hasn't been initialized).
+>>>>>>
 > 
-> It already is ... as I asked in the actual bug (but no-one seems to have
-> noticed, so I assume the bug entry isn't set up correctly).
+> ...
+> 
+>>> The error is of course that the node masks for nodes > nr_node_ids are
+>>> not valid. While this function ignores that:
+>>>
+>>> cpumask_t *_node_to_cpumask_ptr(int node)
+>>> {
+>>>         if (node_to_cpumask_map == NULL) {
+>>>                 printk(KERN_WARNING
+>>>                         "_node_to_cpumask_ptr(%d): no node_to_cpumask_map!\n",
+>>>                         node);
+>>>                 dump_stack();
+>>>                 return &cpu_online_map;
+>>>         }
+>>>         return &node_to_cpumask_map[node];
+>>> }
+>>> EXPORT_SYMBOL(_node_to_cpumask_ptr);
+>>>
+>>> Notice the return statement. It needs to check if node < nr_node_ids.
+>>>
+> 
+> ...
+> 
+>> Thanks, yes I had that some after thought.  It should check the node
+>> index if CONFIG_DEBUG_PER_CPU_MAPS is enabled.  One gotcha is that
+>> nr_node_ids is intialized to MAX_NUMNODES until setup_node_to_cpumask_map()
+>> sets it to the correct value.  So uses before that should be caught by
+>> the earlier check.
+> 
+> I think it should always check the node index. The code in
+> kernel/sched.c (see above) calls node_to_cpumask(i) on nodes 0 < i <
+> MAX_NUMNODES and it WILL use invalid pointers. Or should
+> kernel/sched.c be changed to use nr_node_ids instead of MAX_NUMNODES?
+> I believe there are more places that do this than just sched.c.
 
-The bug reporter has no Bugzilla account, so I couldn't add him to the CC list
-of the bug.
+Yes, using MAX_NUMNODES is usually incorrect (the same for NR_CPUS).
+When I originally submitted the patch I searched for all usages to
+make sure they were correct.  Unfortunately, later changes might not
+have been validated.  (Hmm, maybe adding to checkpatch.pl a similar
+warning as it now does for NR_CPUS...?)
+
+> 
+> I have attached two patches. The sched one fixes Andrew's boot
+> problem. The x86 one is untested, but I believe it is better to BUG
+> than silently corrupt some arbitrary memory. (Then the callers can be
+> found easily and fixed at least.)
+
+Andrew (or maybe it was Ingo) had suggested that instead of BUG use
+dump_stack() and continue whenever possible.  In this case returning
+an empty cpumask would be correct.
 
 Thanks,
-Rafael
+Mike
