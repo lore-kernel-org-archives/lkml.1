@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932357AbYFFUxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932860AbYFFUxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932357AbYFFUxV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 16:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYFFUxL
+	id S932860AbYFFUxo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 16:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbYFFUxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 16:53:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47826 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbYFFUxK (ORCPT
+	Fri, 6 Jun 2008 16:53:19 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:50165 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765208AbYFFUxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 16:53:10 -0400
-Date: Fri, 6 Jun 2008 13:42:27 -0700
-From: Greg KH <greg@kroah.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, Gene Heskett <gene.heskett@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: 2.6.25.1, stray noise in dmesg
-Message-ID: <20080606204227.GC11209@kroah.com>
-References: <200805021126.15225.gene.heskett@gmail.com> <200806052050.34537.elendil@planet.nl> <20080605193815.GA32072@kroah.com> <200806061455.57361.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200806061455.57361.elendil@planet.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 6 Jun 2008 16:53:18 -0400
+Date: Fri, 06 Jun 2008 15:53:00 -0500
+From: Corey Minyard <minyard@acm.org>
+Subject: Re: Recoverable MCA interrupts from NMI handlers?  IPMI and RCU?
+In-reply-to: <20080606152134.GA13641@linux.vnet.ibm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, dvhltc@us.ibm.com, niv@us.ibm.com
+Message-id: <4849A3AC.5090107@acm.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <20080606152134.GA13641@linux.vnet.ibm.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 02:55:55PM +0200, Frans Pop wrote:
-> On Thursday 05 June 2008, Greg KH wrote:
-> > On Thu, Jun 05, 2008 at 08:50:33PM +0200, Frans Pop wrote:
-> > > On Friday 02 May 2008, Frans Pop wrote:
-> > > > I'm seeing these too (hub 5-0):
-> > > > hub 5-0:1.0: USB hub found
-> > > > hub 5-0:1.0: unable to enumerate USB device on port 5
-> > > > hub 5-0:1.0: unable to enumerate USB device on port 7
-> > >
-> > > Note that in my case this is not with an external hub or anything,
-> > > but just the internal USB ports of the system.
-> > >
-> > > One thing with this message is that because of its "error" status, it
-> > > also shows when the system is booted with the "quiet" option. Could
-> > > it be an option to apply the following patch so that at least that is
-> > > avoided?
-> >
-> > I agree, I'll change the message to be this, thanks for the patch.
-> 
-> I'm not sure that it is needed anymore. Looks like for me the messages 
-> have disappeared with -rc5, probably due to 3a31155cfff0935e (Alan Stern,
-> "USB: EHCI: suppress unwanted error messages").
-> So it wasn't broken hardware after all :-)
-> 
-> If that solves all or most cases the error was being hit, lowering its 
-> severity is probably not needed.
+Paul E. McKenney wrote:
+> Hello!
+>
+> A couple of questions about the x86 architecture...
+>
+> 1.	Can recoverable machine-check exceptions occur from within
+> 	NMI handlers?  If so, there is a bug in preemptable RCU's
+> 	CONFIG_NO_HZ handling that could be fixed by a patch something
+> 	like the one shown below (untested, probably does not even
+> 	compile).
+>
+> 2.	Does the IPMI subsystem make use of RCU read-side primitives
+> 	from within SMI handlers?  If so, we need the SMI handlers to
+> 	invoke rcu_irq_enter() upon entry and rcu_irq_exit() upon exit
+> 	when they are invoked from dynticks idle state.  Or something
+> 	similar, depending on restrictions on code within SMI handlers.
+>   
+If you mean the IPMI driver, it does not tie into any SMI.  It 
+theoretically could since there's a bit for that in the watchdog timer, 
+but there's been no demand and I haven't looked at it.  I guess it would 
+be better than an NMI.
 
-Ah, nevermind then, I'll not worry about this :)
+If it did tie in, it would most likely just panic to get useful 
+information out before the watchdog reset the system.
 
-thanks,
-
-greg k-h
+-corey
