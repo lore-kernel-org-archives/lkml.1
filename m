@@ -1,90 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbYFFKDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYFFKEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbYFFKDY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbYFFKDK
+	id S1755520AbYFFKEt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbYFFKEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:03:10 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50722 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753200AbYFFKDI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:03:08 -0400
-Date: Fri, 6 Jun 2008 13:03:02 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Patrick McManus <mcmanus@ducksong.com>
-cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
-       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-In-Reply-To: <1212708571.19522.10.camel@tng>
-Message-ID: <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi>
-References: <20080603094057.GA29480@elte.hu>  <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
-  <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi> 
- <20080603.150344.145518113.davem@davemloft.net> 
- <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>  <20080605142244.GA19216@elte.hu>
-  <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi> 
- <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi> <1212708571.19522.10.camel@tng>
+	Fri, 6 Jun 2008 06:04:41 -0400
+Received: from www.tglx.de ([62.245.132.106]:43023 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbYFFKEl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 06:04:41 -0400
+Date: Fri, 6 Jun 2008 12:04:23 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>,
+       "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, akpm@linux-foundation.org, lethal@linux-sh.org,
+       tglx@linutronix.de
+Subject: Re: [PATCH] uio_pdrv: Unique IRQ Mode
+Message-ID: <20080606100423.GA3213@local>
+References: <20080604060826.17162.46972.sendpatchset@rx1.opensource.se> <20080604101144.GA3207@local> <aec7e5c30806041825o4c6c859fp8380063e9384622@mail.gmail.com> <20080605064945.GA32554@digi.com> <aec7e5c30806051955q5f812e41y9c2f322d98333232@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-516156546-1212746582=:16829"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aec7e5c30806051955q5f812e41y9c2f322d98333232@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----696208474-516156546-1212746582=:16829
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 5 Jun 2008, Patrick McManus wrote:
-
-> On Fri, 2008-06-06 at 00:13 +0300, Ilpo Järvinen wrote:
+On Fri, Jun 06, 2008 at 11:55:30AM +0900, Magnus Damm wrote:
+> Hi Uwe,
 > 
-> > 
-> > I'm out of new ideas what could be still wrong (I got confused and
-> > lost 
-> > track number of times while I tried to verify socket locking today and 
-> > probably don't have more time for that now)... Unless somebody else 
-> > (Patrick?) comes up with something quickly,
+> On Thu, Jun 5, 2008 at 3:49 PM, Uwe Kleine-KÃ¶nig
+> <Uwe.Kleine-Koenig@digi.com> wrote:
+> > Hello Magnus,
+> >
+> > Magnus Damm wrote:
+> >> ... "Unique IRQ Mode". ...
+> > BTW, I wouldn't call it "Unique IRQ Mode" because the non-shared irq is
+> > only a result from automatically disabling the irq.  IMHO something like
+> > "No IRQ Handler Mode" is more suitable.
 > 
-> Sorry, I don't see anything - it seems to boil down to the same code in
-> the DA and non-DA case as far as I can tell, but after a while all the
-> twisty passages seem to look alike.
+> That may be a good idea. Any name is fine with me.
+> 
+> Hopefully a better name will make people less confused. =)
 
-:-)
- 
-This Ingo's testcase should anyway be quite "simple", I mean that distcc 
-shouldn't do anything unexpected in a sense it shouldn't abort the flows 
-by not sending data, close the listening socket or other things like that.
+I didn't criticize the name. My objection is that you want to introduce
+an optional special handling for cases where the interrupt line is not
+shared, e.g. a GPIO line. In that case, the handler _could_ look like
+this:
 
-> If Ingo confirms that the recv end was running the locking patch code,
-> it would be interesting to just confirm the sysreq+t looks the same as
-> before - it is possible the patch turned the race into a non-obvious
-> deadlock.
+static irqreturn_t my_handler(int irq, struct uio_info *info)
+{
+	irq_disable(MY_GPIO_LINE);
+	return IRQ_HANDLED;
+}
 
-...Yes, but we want that from the receiver's host rather than from the 
-sender end. Also checking that sender is still doing window probes once 
-per 2min is probably worth of it though a change in that is quite 
-unlikely.
+This solution is only second best, if possible, the irq should be
+properly acknowledged within the chip, but it could be done like this.
+Note that this doesn't work on every platform, it assumes that each GPIO
+line has its own irq number. (Did you ever think about fixing Kconfig so
+that this option is disabled on platforms where it is not possible or
+not sensible to do this?)
 
-> I'm sure your smaller revert will make the problem go away just as the
-> larger one did, fwiw. 
+You now suggest that if somebody doesn't fill in an irq handler, we
+should make the above the default. This would save somebody the trouble
+to add the above 5 lines to the 30 lines of board/platform support code
+he has to write anyway. That's the only gain, and that is not enough.
 
-I'd very much except it to.
+Giving it a different name doesn't make it better.
 
-> The other odd thing is that Ingo did a lot of experimentation and was
-> only making this happen on localhost before (though I agree there is
-> nothing inherent about that lock and localhost) - isn't it odd that the
-> first trigger of it now is between two hosts? What do you make of that?
+Thanks,
+Hans
 
-...No, it occurred couple of times in the past between host as well, 
-nothing new in that.
-
--- 
- i.
----696208474-516156546-1212746582=:16829--
