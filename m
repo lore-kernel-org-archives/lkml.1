@@ -1,174 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbYFFM4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbYFFNI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbYFFM4x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 08:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYFFM4o
+	id S1756200AbYFFNI0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 09:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYFFNIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 08:56:44 -0400
-Received: from bokovka.donpac.ru ([80.254.111.46]:58287 "EHLO
-	bokovka.donpac.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbYFFM4n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 08:56:43 -0400
-Date: Fri, 6 Jun 2008 16:52:33 +0400
-From: Andrey Panin <pazke@pazke.donpac.ru>
-To: "Catalin(ux) M BOIE" <catab@embedromix.ro>
-Cc: linux-kernel@vger.kernel.org, rmk+serial@arm.linux.org.uk,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] Add support for a no-name 4 ports multiserial card
-Message-ID: <20080606125233.GA31927@pazke.donpac.ru>
-Mail-Followup-To: "Catalin(ux) M BOIE" <catab@embedromix.ro>,
-	linux-kernel@vger.kernel.org, rmk+serial@arm.linux.org.uk,
-	linux-serial@vger.kernel.org
-References: <1212736393-6837-1-git-send-email-catab@embedromix.ro>
+	Fri, 6 Jun 2008 09:08:14 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:33681 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751315AbYFFNIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 09:08:13 -0400
+Message-ID: <484936B8.6020706@sgi.com>
+Date: Fri, 06 Jun 2008 06:08:08 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
-Content-Disposition: inline
-In-Reply-To: <1212736393-6837-1-git-send-email-catab@embedromix.ro>
-X-Uname: Linux 2.6.23-rc3 x86_64
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
+References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org> <4846AFCF.30500@sgi.com> <4848CC22.6090109@cosmosbay.com>
+In-Reply-To: <4848CC22.6090109@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Dumazet wrote:
+> Mike Travis a écrit :
+>> Andrew Morton wrote:
+>>> On Thu, 29 May 2008 20:56:20 -0700 Christoph Lameter <clameter@sgi.com> wrote:
+>>>
+>>>> In various places the kernel maintains arrays of pointers indexed by
+>>>> processor numbers. These are used to locate objects that need to be used
+>>>> when executing on a specirfic processor. Both the slab allocator
+>>>> and the page allocator use these arrays and there the arrays are used in
+>>>> performance critical code. The allocpercpu functionality is a simple
+>>>> allocator to provide these arrays.
+>>> All seems reasonable to me.  The obvious question is "how do we size
+>>> the arena".  We either waste memory or, much worse, run out.
+>>>
+>>> And running out is a real possibility, I think.  Most people will only
+>>> mount a handful of XFS filesystems.  But some customer will come along
+>>> who wants to mount 5,000, and distributors will need to cater for that,
+>>> but how can they?
+>>>
+>>> I wonder if we can arrange for the default to be overridden via a
+>>> kernel boot option?
+>>>
+>>>
+>>> Another obvious question is "how much of a problem will we have with
+>>> internal fragmentation"?  This might be a drop-dead showstopper.
+> 
+> Christoph & Mike,
+> 
+> Please forgive me if I beat a dead horse, but this percpu stuff
+> should find its way.
+> 
+> I wonder why you absolutely want to have only one chunk holding
+> all percpu variables, static(vmlinux) & static(modules)
+> & dynamically allocated.
+> 
+> Its *not* possible to put an arbitrary limit to this global zone.
+> You'll allways find somebody to break this limit. This is the point
+> we must solve, before coding anything.
+> 
+> Have you considered using a list of fixed size chunks, each chunk
+> having its own bitmap ?
+> 
+> We only want fix offsets between CPU locations. For a given variable,
+> we MUST find addresses for all CPUS looking at the same offset table.
+> (Then we can optimize things on x86, using %gs/%fs register, instead
+> of a table lookup)
+> 
+> We could chose chunk size at compile time, depending on various
+> parameters (32/64 bit arches, or hugepage sizes on NUMA),
+> and a minimum value (ABI guarantee)
+> 
+> On x86_64 && NUMA we could use 2 Mbytes chunks, while
+> on x86_32 or non NUMA we should probably use 64 Kbytes.
+> 
+> At boot time, we setup the first chunk (chunk 0) and copy 
+> .data.percpu on this chunk, for each possible cpu, and we
+> build the bitmap for future dynamic/module percpu allocations.
+> So we still have the restriction that sizeofsection(.data.percpu)
+> should fit in the chunk 0. Not a problem in practice.
+> 
+> Then if we need to expand percpu zone for heavy duty machine,
+> and chunk 0 is already filled, we can add as many 2 M/ 64K 
+> chunks we need.
+> 
+> This would limit the dynamic percpu allocation to 64 kbytes for
+> a given variable, so huge users should probably still use a
+> different allocator (like oprofile alloc_cpu_buffers() function)
+> But at least we dont anymore limit the total size of percpu area.
+> 
+> I understand you want to offset percpu data to 0, but for
+> static percpu data. (pda being included in, to share %gs)
+> 
+> For dynamically allocated percpu variables (including modules
+> ".data.percpu"), nothing forces you to have low offsets,
+> relative to %gs/%fs register. Access to these variables
+> will be register indirect based anyway (eg %gs:(%rax) )
+> 
+> 
+> 1) NUMA case
+> 
+> For a 64 bit NUMA arch, chunk size of 2Mbytes
+> 
+> Allocates 2Mb for each possible processor (on its preferred memory
+> node), and compute values to setup offset_of_cpu[NR_CPUS] array.
+> 
+> Chunk 0
+> CPU 0 : virtual address XXXXXX        
+> CPU 1 : virtual address XXXXXX + offset_of_cpu[1]
+> ...
+> CPU n : virtual address XXXXXX + offset_of_cpu[n]
+> + a shared bitmap
+> 
+> 
+> For next chunks, we could use vmalloc() zone to find 
+> nr_possible_cpus virtual addresses ranges where you can map
+> a 2Mb page per possible cpu, as long as we respect the relative
+> delta between each cpu block, that was computed when
+> chunk 0 was setup.
+> 
+> Chunk 1..n
+> CPU 0 : virtual address YYYYYYYYYYYYYY   
+> CPU 1 : virtual address YYYYYYYYYYYYYY + offset_of_cpu[1]
+> ...
+> CPU n : virtual address YYYYYYYYYYYYYY + offset_of_cpu[n]
+> + a shared bitmap (32Kbytes if 8 bytes granularity in allocator)
+> 
+> For a variable located in chunk 0, its 'address' relative to current
+> cpu %gs will be some number between [0 and 2^20-1]
+> 
+> For a variable located in chunk 1, its 'address' relative to current
+> cpu %gs will be some number between
+> [YYYYYYYYYYYYYY - XXXXXX  and YYYYYYYYYYYYYY - XXXXXX + 2^20 - 1],
+> not necessarly [2^20 to 2^21 - 1]
+> 
+> 
+> Chunk 0 would use normal memory (no vmap TLB cost), only next ones need vmalloc().
+> 
+> So the extra TLB cost would only be taken for very special NUMA setups
+> (only if using a lot of percpu allocations)
+> 
+> Also, using a 2Mb page granularity probably wastes about 2Mb per cpu, but
+> this is nothing for NUMA machines :)
+> 
+> 2) SMP && !NUMA
+> 
+> On non NUMA machines, we dont need vmalloc games, since we can allocate
+> chunk space using contiguous memory, (size = nr_possible_cpus*64Kbytes)
+> 
+> offset_of_cpu[N] = N * CHUNK_SIZE
+> 
+> (On a 4 CPU x86_32 machine, allocate a 256 Kbyte bloc then divide it in
+> 64 kb blocs)
+> If this order-6 allocation fails, then fallback to vmalloc(), but most
+> percpu allocations happens at boot time, when memory is not yet fragmented...
+> 
+> 
+> 3) UP case : fallback to standard allocators. No need for bitmaps.
+> 
+> 
+> NUMA special casing can be implemented later of course...
+> 
+> Thanks for reading
+> 
+> 
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Wow!  Thanks for the detail!  It's extremely useful (to me at least)
+to see it spelled out.
 
-On 158, 06 06, 2008 at 10:13:13AM +0300, Catalin(ux) M BOIE wrote:
-> It is a no-name PCI card. I found no reference to a producer so I
-> used the fake name "PDR".
->=20
-> Full lspci:
-> 01:07.0 0780: 10b5:9050 (rev 01)
->         Subsystem: 10b5:1584
->         Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- \
->                 ParErr- Stepping- SERR+ FastB2B-
->         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- \
->                 DEVSEL=3Dmedium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
->         Interrupt: pin A routed to IRQ 10
->         Region 1: I/O ports at ec00 [size=3D128]
->         Region 2: I/O ports at e480 [size=3D32]
->         Region 3: I/O ports at e400 [size=3D8]
->         Capabilities: [40] Power Management version 1
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D0mA \
->                         PME(D0+,D1-,D2-,D3hot+,D3cold-)
->                 Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->         Capabilities: [48] #06 [0080]
->         Capabilities: [4c] Vital Product Data
->=20
-> After:
-> 0000:01:07.0: ttyS4 at I/O 0xe480 (irq =3D 10) is a 16550A
-> 0000:01:07.0: ttyS5 at I/O 0xe488 (irq =3D 10) is a 16550A
-> 0000:01:07.0: ttyS6 at I/O 0xe490 (irq =3D 10) is a 16550A
-> 0000:01:07.0: ttyS7 at I/O 0xe498 (irq =3D 10) is a 16550A
->=20
-> Signed-off-by: Catalin(ux) M BOIE <catab@embedromix.ro>
-> ---
->  drivers/serial/8250_pci.c |   22 ++++++++++++++++++++++
->  include/linux/pci_ids.h   |    2 ++
->  2 files changed, 24 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-> index 788c355..77d9f77 100644
-> --- a/drivers/serial/8250_pci.c
-> +++ b/drivers/serial/8250_pci.c
-> @@ -884,6 +884,15 @@ static struct pci_serial_quirk pci_serial_quirks[] _=
-_refdata =3D {
->  	},
->  	{
->  		.vendor		=3D PCI_VENDOR_ID_PLX,
-> +		.device		=3D PCI_DEVICE_ID_PLX_9050,
-> +		.subvendor	=3D PCI_VENDOR_ID_PLX,
-> +		.subdevice	=3D PCI_SUBDEVICE_ID_PDR,
-> +		.init		=3D pci_plx9050_init,
-> +		.setup		=3D pci_default_setup,
-> +		.exit		=3D __devexit_p(pci_plx9050_exit),
-> +	},
-> +	{
-> +		.vendor		=3D PCI_VENDOR_ID_PLX,
->  		.device		=3D PCI_DEVICE_ID_PLX_ROMULUS,
->  		.subvendor	=3D PCI_VENDOR_ID_PLX,
->  		.subdevice	=3D PCI_DEVICE_ID_PLX_ROMULUS,
-> @@ -1156,6 +1165,7 @@ enum pci_board_num_t {
->  	pbn_panacom4,
->  	pbn_exsys_4055,
->  	pbn_plx_romulus,
-> +	pbn_plx_pdr,
->  	pbn_oxsemi,
->  	pbn_intel_i960,
->  	pbn_sgi_ioc3,
-> @@ -1186,6 +1196,13 @@ static struct pciserial_board pci_boards[] __devin=
-itdata =3D {
->  		.base_baud	=3D 115200,
->  		.uart_offset	=3D 8,
->  	},
-> +	/* PDR */
-> +	[pbn_plx_pdr] =3D {
-> +		.flags		=3D FL_BASE0,
-> +		.num_ports	=3D 4,
-> +		.base_baud	=3D 115200,
-> +		.uart_offset	=3D 8,
-> +	},
+Since Christoph is still on vacation I'll try to summarize where we're
+at at the moment.  (Besides being stuck on a boot up problem with the
+%gs based percpu variables that is. ;-)
 
-This definition is not needed, just use pbn_b0_4_115200.
+Yes, the problem is we need to use virtual addresses to expand the
+percpu areas since each cpu needs the same fixed offset to the newly
+allocated variables.  This was in the prior (v2) version of cpu_alloc
+so I'm looking at pulling that forward.  And I also figured that the
+size of the expansion allocations should be based on the system size
+to minimize the effect on small systems (seems to be my life the
+past 6 months... ;-)
 
->  	[pbn_b0_1_115200] =3D {
->  		.flags		=3D FL_BASE0,
->  		.num_ports	=3D 1,
-> @@ -2199,6 +2216,11 @@ static struct pci_device_id serial_pci_tbl[] =3D {
->  	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_1077,
->  		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
->  		pbn_b2_4_921600 },
-> +	/* PDR */
-> +	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
-> +		PCI_VENDOR_ID_PLX,
-> +		PCI_SUBDEVICE_ID_PDR, 0, 0,
-> +		pbn_plx_pdr },
->  	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
->  		PCI_SUBVENDOR_ID_KEYSPAN,
->  		PCI_SUBDEVICE_ID_KEYSPAN_SX2, 0, 0,
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index 9b940e6..17a01b1 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -966,6 +966,8 @@
->  #define PCI_DEVICE_ID_PLX_9080		0x9080
->  #define PCI_DEVICE_ID_PLX_GTEK_SERIAL2	0xa001
-> =20
-> +#define PCI_SUBDEVICE_ID_PDR		0x1584
-> +
->  #define PCI_VENDOR_ID_MADGE		0x10b6
->  #define PCI_DEVICE_ID_MADGE_MK2		0x0002
-> =20
-> --=20
-> 1.5.5.1
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->=20
+I'm also looking at integrating more into the already present
+infrastructure (thanks Rusty!) so there are less "diffs" (and less
+new testing needed.)  And of course, there's the complexities
+of submitting patches to many architectures simultaneously.
 
---=20
-Andrey Panin		| Linux and UNIX system administrator
-pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
+Hopefully, I'll have something for review soon.
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Thanks again,
+Mike
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFISTMRIWZCBzwS8mkRAjtxAKDDPyX0kavONORHg/rWTMYo0iWLXQCgweks
-ZzmeCMGPAe7Q405U0l14p7k=
-=F1et
------END PGP SIGNATURE-----
-
---a8Wt8u1KmwUX3Y2C--
