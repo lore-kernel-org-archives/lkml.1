@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763220AbYFFRAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764329AbYFFRCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763220AbYFFRAm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 13:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYFFRAe
+	id S1764329AbYFFRCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 13:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbYFFRCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 13:00:34 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:55852 "EHLO relay.sgi.com"
+	Fri, 6 Jun 2008 13:02:10 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:41062 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754932AbYFFRAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 13:00:33 -0400
-Date: Fri, 6 Jun 2008 12:00:32 -0500
+	id S1756037AbYFFRCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 13:02:08 -0400
+Date: Fri, 6 Jun 2008 12:02:07 -0500
 From: Dean Nelson <dcn@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 16/18] enable XPNET to handle more than 64 partitions
-Message-ID: <20080606170032.GQ13695@sgi.com>
+Subject: [Patch 17/18] isolate remote copy buffer to sn2 only
+Message-ID: <20080606170207.GR13695@sgi.com>
 References: <20080606164034.GA13695@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,401 +25,522 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable XPNET to support more than 64 partitions.
+Make the remote copy buffer an sn2 only item.
 
 Signed-off-by: Dean Nelson <dcn@sgi.com>
 
 ---
 
- drivers/misc/sgi-xp/xpc.h         |    3 
- drivers/misc/sgi-xp/xpc_channel.c |  197 +-------------------------------
- drivers/misc/sgi-xp/xpc_main.c    |    2 
- drivers/misc/sgi-xp/xpc_sn2.c     |  205 ++++++++++++++++++++++++++++++++--
- 4 files changed, 204 insertions(+), 203 deletions(-)
+ drivers/misc/sgi-xp/xp.h            |   10 ---
+ drivers/misc/sgi-xp/xpc.h           |   39 +++-----------
+ drivers/misc/sgi-xp/xpc_main.c      |   31 ++---------
+ drivers/misc/sgi-xp/xpc_partition.c |   31 ++++-------
+ drivers/misc/sgi-xp/xpc_sn2.c       |   88 +++++++++++++++++++++++++-------
+ 5 files changed, 97 insertions(+), 102 deletions(-)
 
-Index: linux-2.6/drivers/misc/sgi-xp/xpnet.c
+Index: linux-2.6/drivers/misc/sgi-xp/xpc.h
 ===================================================================
---- linux-2.6.orig/drivers/misc/sgi-xp/xpnet.c	2008-05-28 10:48:52.000000000 -0500
-+++ linux-2.6/drivers/misc/sgi-xp/xpnet.c	2008-05-30 13:21:33.065013335 -0500
-@@ -21,7 +21,6 @@
-  */
- 
- #include <linux/module.h>
--#include <linux/types.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/ioport.h>
-@@ -32,8 +31,6 @@
- #include <linux/mii.h>
- #include <linux/smp.h>
- #include <linux/string.h>
--#include <asm/sn/io.h>
--#include <asm/sn/sn_sal.h>
- #include <asm/atomic.h>
- #include "xp.h"
- 
-@@ -104,7 +101,6 @@ struct xpnet_message {
-  * then be released.
-  */
- struct xpnet_pending_msg {
--	struct list_head free_list;
- 	struct sk_buff *skb;
- 	atomic_t use_count;
- };
-@@ -120,7 +116,7 @@ struct net_device *xpnet_device;
-  * When we are notified of other partitions activating, we add them to
-  * our bitmask of partitions to which we broadcast.
-  */
--static u64 xpnet_broadcast_partitions;
-+static unsigned long *xpnet_broadcast_partitions;
- /* protect above */
- static DEFINE_SPINLOCK(xpnet_broadcast_lock);
- 
-@@ -140,16 +136,13 @@ static DEFINE_SPINLOCK(xpnet_broadcast_l
- #define XPNET_DEF_MTU (0x8000UL)
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc.h	2008-06-06 08:04:49.741302190 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc.h	2008-06-06 08:04:57.942317909 -0500
+@@ -151,26 +151,6 @@ struct xpc_vars_sn2 {
+ #define XPC_V_VERSION _XPC_VERSION(3, 1)    /* version 3.1 of the cross vars */
  
  /*
-- * The partition id is encapsulated in the MAC address.  The following
-- * define locates the octet the partid is in.
-+ * The partid is encapsulated in the MAC address beginning in the following
-+ * octet and it consists of two octets.
-  */
--#define XPNET_PARTID_OCTET	1
--#define XPNET_LICENSE_OCTET	2
-+#define XPNET_PARTID_OCTET	2
-+
-+/* Define the XPNET debug device structures to be used with dev_dbg() et al */
- 
--/*
-- * Define the XPNET debug device structure that is to be used with dev_dbg(),
-- * dev_err(), dev_warn(), and dev_info().
+- * The following pertains to ia64-sn2 only.
+- *
+- * Memory for XPC's amo variables is allocated by the MSPEC driver. These
+- * pages are located in the lowest granule. The lowest granule uses 4k pages
+- * for cached references and an alternate TLB handler to never provide a
+- * cacheable mapping for the entire region. This will prevent speculative
+- * reading of cached copies of our lines from being issued which will cause
+- * a PI FSB Protocol error to be generated by the SHUB. For XPC, we need 64
+- * amo variables (based on XP_MAX_NPARTITIONS_SN2) to identify the senders of
+- * NOTIFY IRQs, 128 amo variables (based on XP_NASID_MASK_WORDS) to identify
+- * the senders of ACTIVATE IRQs, 1 amo variable to identify which remote
+- * partitions (i.e., XPCs) consider themselves currently engaged with the
+- * local XPC and 1 amo variable to request partition deactivation.
 - */
- struct device_driver xpnet_dbg_name = {
- 	.name = "xpnet"
- };
-@@ -231,7 +224,7 @@ xpnet_receive(short partid, int channel,
- 					  (void *)msg->buf_pa, msg->size);
- 
- 		ret = xp_remote_memcpy((void *)((u64)skb->data &
--				                ~(L1_CACHE_BYTES - 1)),
-+						~(L1_CACHE_BYTES - 1)),
- 				       (void *)msg->buf_pa, msg->size);
- 
- 		if (ret != xpSuccess) {
-@@ -283,8 +276,6 @@ static void
- xpnet_connection_activity(enum xp_retval reason, short partid, int channel,
- 			  void *data, void *key)
- {
--	long bp;
+-#define XPC_NOTIFY_IRQ_AMOS	0
+-#define XPC_ACTIVATE_IRQ_AMOS	(XPC_NOTIFY_IRQ_AMOS + XP_MAX_NPARTITIONS_SN2)
+-#define XPC_ENGAGED_PARTITIONS_AMO (XPC_ACTIVATE_IRQ_AMOS + XP_NASID_MASK_WORDS)
+-#define XPC_DEACTIVATE_REQUEST_AMO  (XPC_ENGAGED_PARTITIONS_AMO + 1)
 -
- 	DBUG_ON(partid < 0 || partid >= xp_max_npartitions);
- 	DBUG_ON(channel != XPC_NET_CHANNEL);
- 
-@@ -297,31 +288,28 @@ xpnet_connection_activity(enum xp_retval
- 
- 	case xpConnected:	/* connection completed to a partition */
- 		spin_lock_bh(&xpnet_broadcast_lock);
--		xpnet_broadcast_partitions |= 1UL << (partid - 1);
--		bp = xpnet_broadcast_partitions;
-+		__set_bit(partid, xpnet_broadcast_partitions);
- 		spin_unlock_bh(&xpnet_broadcast_lock);
- 
- 		netif_carrier_on(xpnet_device);
- 
--		dev_dbg(xpnet, "%s connection created to partition %d; "
--			"xpnet_broadcast_partitions=0x%lx\n",
--			xpnet_device->name, partid, bp);
-+		dev_dbg(xpnet, "%s connected to partition %d\n",
-+			xpnet_device->name, partid);
- 		break;
- 
- 	default:
- 		spin_lock_bh(&xpnet_broadcast_lock);
--		xpnet_broadcast_partitions &= ~(1UL << (partid - 1));
--		bp = xpnet_broadcast_partitions;
-+		__clear_bit(partid, xpnet_broadcast_partitions);
- 		spin_unlock_bh(&xpnet_broadcast_lock);
- 
--		if (bp == 0)
-+		if (bitmap_empty((unsigned long *)xpnet_broadcast_partitions,
-+				 xp_max_npartitions)) {
- 			netif_carrier_off(xpnet_device);
-+		}
- 
--		dev_dbg(xpnet, "%s disconnected from partition %d; "
--			"xpnet_broadcast_partitions=0x%lx\n",
--			xpnet_device->name, partid, bp);
-+		dev_dbg(xpnet, "%s disconnected from partition %d\n",
-+			xpnet_device->name, partid);
- 		break;
--
- 	}
- }
- 
-@@ -424,36 +412,72 @@ xpnet_send_completed(enum xp_retval reas
- 	}
- }
- 
-+static void
-+xpnet_send(struct sk_buff *skb, struct xpnet_pending_msg *queued_msg,
-+	   u64 start_addr, u64 end_addr, u16 embedded_bytes, int dest_partid)
-+{
-+	u8 msg_buffer[XPNET_MSG_SIZE];
-+	struct xpnet_message *msg = (struct xpnet_message *)&msg_buffer;
-+	enum xp_retval ret;
-+
-+	msg->embedded_bytes = embedded_bytes;
-+	if (unlikely(embedded_bytes != 0)) {
-+		msg->version = XPNET_VERSION_EMBED;
-+		dev_dbg(xpnet, "calling memcpy(0x%p, 0x%p, 0x%lx)\n",
-+			&msg->data, skb->data, (size_t)embedded_bytes);
-+		skb_copy_from_linear_data(skb, &msg->data,
-+					  (size_t)embedded_bytes);
-+	} else {
-+		msg->version = XPNET_VERSION;
-+	}
-+	msg->magic = XPNET_MAGIC;
-+	msg->size = end_addr - start_addr;
-+	msg->leadin_ignore = (u64)skb->data - start_addr;
-+	msg->tailout_ignore = end_addr - (u64)skb_tail_pointer(skb);
-+	msg->buf_pa = __pa(start_addr);
-+
-+	dev_dbg(xpnet, "sending XPC message to %d:%d\n"
-+		KERN_DEBUG "msg->buf_pa=0x%lx, msg->size=%u, "
-+		"msg->leadin_ignore=%u, msg->tailout_ignore=%u\n",
-+		dest_partid, XPC_NET_CHANNEL, msg->buf_pa, msg->size,
-+		msg->leadin_ignore, msg->tailout_ignore);
-+
-+	atomic_inc(&queued_msg->use_count);
-+
-+	ret = xpc_send_notify(dest_partid, XPC_NET_CHANNEL, XPC_NOWAIT, msg,
-+			      XPNET_MSG_SIZE, xpnet_send_completed, queued_msg);
-+	if (unlikely(ret != xpSuccess))
-+		atomic_dec(&queued_msg->use_count);
-+}
-+
- /*
-  * Network layer has formatted a packet (skb) and is ready to place it
-  * "on the wire".  Prepare and send an xpnet_message to all partitions
-  * which have connected with us and are targets of this packet.
+-/*
+  * The following structure describes the per partition specific variables.
   *
-  * MAC-NOTE:  For the XPNET driver, the MAC address contains the
-- * destination partition_id.  If the destination partition id word
-- * is 0xff, this packet is to broadcast to all partitions.
-+ * destination partid.  If the destination partid octets are 0xffff,
-+ * this packet is to be broadcast to all connected partitions.
+  * An array of these structures, one per partition, will be defined. As a
+@@ -214,9 +194,10 @@ struct xpc_vars_part_sn2 {
+ #define XPC_RP_VARS_SIZE	L1_CACHE_ALIGN(sizeof(struct xpc_vars_sn2))
+ 
+ #define XPC_RP_PART_NASIDS(_rp) ((u64 *)((u8 *)(_rp) + XPC_RP_HEADER_SIZE))
+-#define XPC_RP_MACH_NASIDS(_rp) (XPC_RP_PART_NASIDS(_rp) + xp_nasid_mask_words)
+-#define XPC_RP_VARS(_rp)	((struct xpc_vars_sn2 *)(XPC_RP_MACH_NASIDS(_rp) + \
+-				    xp_nasid_mask_words))
++#define XPC_RP_MACH_NASIDS(_rp) (XPC_RP_PART_NASIDS(_rp) + xpc_nasid_mask_words)
++#define XPC_RP_VARS(_rp)	((struct xpc_vars_sn2 *) \
++				 (XPC_RP_MACH_NASIDS(_rp) + \
++				  xpc_nasid_mask_words))
+ 
+ /*
+  * Functions registered by add_timer() or called by kernel_thread() only
+@@ -225,11 +206,11 @@ struct xpc_vars_part_sn2 {
+  * the passed argument.
   */
- static int
- xpnet_dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
- {
- 	struct xpnet_pending_msg *queued_msg;
--	enum xp_retval ret;
--	u8 msg_buffer[XPNET_MSG_SIZE];
--	struct xpnet_message *msg = (struct xpnet_message *)&msg_buffer[0];
- 	u64 start_addr, end_addr;
--	long dp;
--	u8 second_mac_octet;
- 	short dest_partid;
--	struct xpnet_dev_private *priv;
--	u16 embedded_bytes;
--
--	priv = (struct xpnet_dev_private *)dev->priv;
-+	struct xpnet_dev_private *priv = (struct xpnet_dev_private *)dev->priv;
-+	u16 embedded_bytes = 0;
+ #define XPC_PACK_ARGS(_arg1, _arg2) \
+-			((((u64) _arg1) & 0xffffffff) | \
+-			((((u64) _arg2) & 0xffffffff) << 32))
++			((((u64)_arg1) & 0xffffffff) | \
++			((((u64)_arg2) & 0xffffffff) << 32))
  
- 	dev_dbg(xpnet, ">skb->head=0x%p skb->data=0x%p skb->tail=0x%p "
- 		"skb->end=0x%p skb->len=%d\n", (void *)skb->head,
- 		(void *)skb->data, skb_tail_pointer(skb), skb_end_pointer(skb),
- 		skb->len);
+-#define XPC_UNPACK_ARG1(_args)	(((u64) _args) & 0xffffffff)
+-#define XPC_UNPACK_ARG2(_args)	((((u64) _args) >> 32) & 0xffffffff)
++#define XPC_UNPACK_ARG1(_args)	(((u64)_args) & 0xffffffff)
++#define XPC_UNPACK_ARG2(_args)	((((u64)_args) >> 32) & 0xffffffff)
  
-+	if (skb->data[0] == 0x33) {
-+		dev_kfree_skb(skb);
-+		return 0;	/* nothing needed to be done */
-+	}
+ /*
+  * Define a Get/Put value pair (pointers) used with a message queue.
+@@ -710,12 +691,10 @@ extern void xpc_exit_uv(void);
+ 
+ /* found in xpc_partition.c */
+ extern int xpc_exiting;
+-extern int xp_nasid_mask_words;
++extern int xpc_nasid_mask_words;
+ extern struct xpc_rsvd_page *xpc_rsvd_page;
+ extern u64 *xpc_mach_nasids;
+ extern struct xpc_partition *xpc_partitions;
+-extern char *xpc_remote_copy_buffer;
+-extern void *xpc_remote_copy_buffer_base;
+ extern void *xpc_kmalloc_cacheline_aligned(size_t, gfp_t, void **);
+ extern struct xpc_rsvd_page *xpc_setup_rsvd_page(void);
+ extern int xpc_identify_activate_IRQ_sender(void);
+Index: linux-2.6/drivers/misc/sgi-xp/xpc_main.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc_main.c	2008-06-06 08:04:49.773306154 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc_main.c	2008-06-06 08:04:57.950318900 -0500
+@@ -877,7 +877,6 @@ xpc_do_exit(enum xp_retval reason)
+ 		unregister_sysctl_table(xpc_sysctl);
+ 
+ 	kfree(xpc_partitions);
+-	kfree(xpc_remote_copy_buffer_base);
+ 
+ 	if (is_shub())
+ 		xpc_exit_sn2();
+@@ -1031,7 +1030,9 @@ xpc_init(void)
+ 	short partid;
+ 	struct xpc_partition *part;
+ 	struct task_struct *kthread;
+-	size_t buf_size;
 +
- 	/*
- 	 * The xpnet_pending_msg tracks how many outstanding
- 	 * xpc_send_notifies are relying on this skb.  When none
-@@ -465,7 +489,6 @@ xpnet_dev_hard_start_xmit(struct sk_buff
- 			 "packet\n", sizeof(struct xpnet_pending_msg));
++	snprintf(xpc_part->bus_id, BUS_ID_SIZE, "part");
++	snprintf(xpc_chan->bus_id, BUS_ID_SIZE, "chan");
  
- 		priv->stats.tx_errors++;
--
- 		return -ENOMEM;
- 	}
- 
-@@ -474,7 +497,6 @@ xpnet_dev_hard_start_xmit(struct sk_buff
- 	end_addr = L1_CACHE_ALIGN((u64)skb_tail_pointer(skb));
- 
- 	/* calculate how many bytes to embed in the XPC message */
--	embedded_bytes = 0;
- 	if (unlikely(skb->len <= XPNET_MSG_DATA_MAX)) {
- 		/* skb->data does fit so embed */
- 		embedded_bytes = skb->len;
-@@ -490,78 +512,28 @@ xpnet_dev_hard_start_xmit(struct sk_buff
- 	atomic_set(&queued_msg->use_count, 1);
- 	queued_msg->skb = skb;
- 
--	second_mac_octet = skb->data[XPNET_PARTID_OCTET];
--	if (second_mac_octet == 0xff) {
-+	if (skb->data[0] == 0xff) {
- 		/* we are being asked to broadcast to all partitions */
--		dp = xpnet_broadcast_partitions;
--	} else if (second_mac_octet != 0) {
--		dp = xpnet_broadcast_partitions &
--		    (1UL << (second_mac_octet - 1));
--	} else {
--		/* 0 is an invalid partid.  Ignore */
--		dp = 0;
--	}
--	dev_dbg(xpnet, "destination Partitions mask (dp) = 0x%lx\n", dp);
--
--	/*
--	 * If we wanted to allow promiscuous mode to work like an
--	 * unswitched network, this would be a good point to OR in a
--	 * mask of partitions which should be receiving all packets.
--	 */
--
--	/*
--	 * Main send loop.
--	 */
--	for (dest_partid = 0; dp && dest_partid < xp_max_npartitions;
--	     dest_partid++) {
-+		for_each_bit(dest_partid, xpnet_broadcast_partitions,
-+			     xp_max_npartitions) {
- 
--		if (!(dp & (1UL << (dest_partid - 1)))) {
--			/* not destined for this partition */
--			continue;
-+			xpnet_send(skb, queued_msg, start_addr, end_addr,
-+				   embedded_bytes, dest_partid);
- 		}
-+	} else {
-+		dest_partid = (short)skb->data[XPNET_PARTID_OCTET + 1];
-+		dest_partid |= (short)skb->data[XPNET_PARTID_OCTET + 0] << 8;
- 
--		/* remove this partition from the destinations mask */
--		dp &= ~(1UL << (dest_partid - 1));
--
--		/* found a partition to send to */
-+		if (dest_partid >= 0 &&
-+		    dest_partid < xp_max_npartitions &&
-+		    test_bit(dest_partid, xpnet_broadcast_partitions) != 0) {
- 
--		msg->embedded_bytes = embedded_bytes;
--		if (unlikely(embedded_bytes != 0)) {
--			msg->version = XPNET_VERSION_EMBED;
--			dev_dbg(xpnet, "calling memcpy(0x%p, 0x%p, 0x%lx)\n",
--				&msg->data, skb->data, (size_t)embedded_bytes);
--			skb_copy_from_linear_data(skb, &msg->data,
--						  (size_t)embedded_bytes);
--		} else {
--			msg->version = XPNET_VERSION;
--		}
--		msg->magic = XPNET_MAGIC;
--		msg->size = end_addr - start_addr;
--		msg->leadin_ignore = (u64)skb->data - start_addr;
--		msg->tailout_ignore = end_addr - (u64)skb_tail_pointer(skb);
--		msg->buf_pa = __pa(start_addr);
--
--		dev_dbg(xpnet, "sending XPC message to %d:%d\n"
--			KERN_DEBUG "msg->buf_pa=0x%lx, msg->size=%u, "
--			"msg->leadin_ignore=%u, msg->tailout_ignore=%u\n",
--			dest_partid, XPC_NET_CHANNEL, msg->buf_pa, msg->size,
--			msg->leadin_ignore, msg->tailout_ignore);
--
--		atomic_inc(&queued_msg->use_count);
--
--		ret = xpc_send_notify(dest_partid, XPC_NET_CHANNEL, XPC_NOWAIT,
--				      &msg, sizeof(msg) + embedded_bytes - 1,
--				      xpnet_send_completed, queued_msg);
--		if (unlikely(ret != xpSuccess)) {
--			atomic_dec(&queued_msg->use_count);
--			continue;
-+			xpnet_send(skb, queued_msg, start_addr, end_addr,
-+				   embedded_bytes, dest_partid);
- 		}
- 	}
- 
- 	if (atomic_dec_return(&queued_msg->use_count) == 0) {
--		dev_dbg(xpnet, "no partitions to receive packet destined for "
--			"%d\n", dest_partid);
--
- 		dev_kfree_skb(skb);
- 		kfree(queued_msg);
- 	}
-@@ -589,23 +561,28 @@ xpnet_dev_tx_timeout(struct net_device *
- static int __init
- xpnet_init(void)
- {
--	int i;
--	u32 license_num;
--	int result = -ENOMEM;
-+	int result;
- 
--	if (!ia64_platform_is("sn2"))
-+	if (!is_shub() && !is_uv())
+ 	if (is_shub()) {
+ 		/*
+@@ -1054,26 +1055,12 @@ xpc_init(void)
  		return -ENODEV;
+ 	}
  
- 	dev_info(xpnet, "registering network device %s\n", XPNET_DEVICE_NAME);
- 
-+	xpnet_broadcast_partitions = kzalloc(BITS_TO_LONGS(xp_max_npartitions) *
-+					     sizeof(long), GFP_KERNEL);
-+	if (xpnet_broadcast_partitions == NULL)
-+		return -ENOMEM;
-+
- 	/*
- 	 * use ether_setup() to init the majority of our device
- 	 * structure and then override the necessary pieces.
- 	 */
- 	xpnet_device = alloc_netdev(sizeof(struct xpnet_dev_private),
- 				    XPNET_DEVICE_NAME, ether_setup);
--	if (xpnet_device == NULL)
-+	if (xpnet_device == NULL) {
-+		kfree(xpnet_broadcast_partitions);
- 		return -ENOMEM;
-+	}
- 
- 	netif_carrier_off(xpnet_device);
- 
-@@ -623,14 +600,10 @@ xpnet_init(void)
- 	 * MAC addresses.  We chose the first octet of the MAC to be unlikely
- 	 * to collide with any vendor's officially issued MAC.
- 	 */
--	xpnet_device->dev_addr[0] = 0xfe;
--	xpnet_device->dev_addr[XPNET_PARTID_OCTET] = sn_partition_id;
--	license_num = sn_partition_serial_number_val();
--	for (i = 3; i >= 0; i--) {
--		xpnet_device->dev_addr[XPNET_LICENSE_OCTET + i] =
--		    license_num & 0xff;
--		license_num = license_num >> 8;
--	}
-+	xpnet_device->dev_addr[0] = 0x02;     /* locally administered, no OUI */
-+
-+	xpnet_device->dev_addr[XPNET_PARTID_OCTET + 1] = sn_partition_id;
-+	xpnet_device->dev_addr[XPNET_PARTID_OCTET + 0] = (sn_partition_id >> 8);
- 
- 	/*
- 	 * ether_setup() sets this to a multicast device.  We are
-@@ -646,8 +619,10 @@ xpnet_init(void)
- 	xpnet_device->features = NETIF_F_NO_CSUM;
- 
- 	result = register_netdev(xpnet_device);
--	if (result != 0)
-+	if (result != 0) {
- 		free_netdev(xpnet_device);
-+		kfree(xpnet_broadcast_partitions);
-+	}
- 
- 	return result;
- }
-@@ -661,8 +636,8 @@ xpnet_exit(void)
- 		 xpnet_device[0].name);
- 
- 	unregister_netdev(xpnet_device);
+-	snprintf(xpc_part->bus_id, BUS_ID_SIZE, "part");
+-	snprintf(xpc_chan->bus_id, BUS_ID_SIZE, "chan");
 -
- 	free_netdev(xpnet_device);
-+	kfree(xpnet_broadcast_partitions);
- }
+-	buf_size = max(XPC_RP_VARS_SIZE,
+-		       XPC_RP_HEADER_SIZE + XP_NASID_MASK_BYTES);
+-	xpc_remote_copy_buffer = xpc_kmalloc_cacheline_aligned(buf_size,
+-							       GFP_KERNEL,
+-						  &xpc_remote_copy_buffer_base);
+-	if (xpc_remote_copy_buffer == NULL) {
+-		dev_err(xpc_part, "can't get memory for remote copy buffer\n");
+-		ret = -ENOMEM;
+-		goto out_1;
+-	}
+-
+ 	xpc_partitions = kzalloc(sizeof(struct xpc_partition) *
+ 				 xp_max_npartitions, GFP_KERNEL);
+ 	if (xpc_partitions == NULL) {
+ 		dev_err(xpc_part, "can't get memory for partition structure\n");
+ 		ret = -ENOMEM;
+-		goto out_2;
++		goto out_1;
+ 	}
  
- module_exit(xpnet_exit);
+ 	/*
+@@ -1115,7 +1102,7 @@ xpc_init(void)
+ 	if (xpc_rsvd_page == NULL) {
+ 		dev_err(xpc_part, "can't setup our reserved page\n");
+ 		ret = -EBUSY;
+-		goto out_3;
++		goto out_2;
+ 	}
+ 
+ 	/* add ourselves to the reboot_notifier_list */
+@@ -1136,7 +1123,7 @@ xpc_init(void)
+ 	if (IS_ERR(kthread)) {
+ 		dev_err(xpc_part, "failed while forking hb check thread\n");
+ 		ret = -EBUSY;
+-		goto out_4;
++		goto out_3;
+ 	}
+ 
+ 	/*
+@@ -1164,18 +1151,16 @@ xpc_init(void)
+ 	return 0;
+ 
+ 	/* initialization was not successful */
+-out_4:
++out_3:
+ 	/* indicate to others that our reserved page is uninitialized */
+ 	xpc_rsvd_page->stamp = 0;
+ 
+ 	(void)unregister_die_notifier(&xpc_die_notifier);
+ 	(void)unregister_reboot_notifier(&xpc_reboot_notifier);
+-out_3:
++out_2:
+ 	if (xpc_sysctl)
+ 		unregister_sysctl_table(xpc_sysctl);
+ 	kfree(xpc_partitions);
+-out_2:
+-	kfree(xpc_remote_copy_buffer_base);
+ out_1:
+ 	if (is_shub())
+ 		xpc_exit_sn2();
+Index: linux-2.6/drivers/misc/sgi-xp/xpc_partition.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc_partition.c	2008-06-06 06:50:22.011329664 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc_partition.c	2008-06-06 08:04:57.986323359 -0500
+@@ -34,21 +34,12 @@ struct xpc_rsvd_page *xpc_rsvd_page;
+ static u64 *xpc_part_nasids;
+ u64 *xpc_mach_nasids;
+ 
+-/* >>> next two variables should be 'xpc_' if they remain here */
+-static int xp_sizeof_nasid_mask;	/* actual size in bytes of nasid mask */
+-int xp_nasid_mask_words;	/* actual size in words of nasid mask */
++static int xpc_sizeof_nasid_mask;	/* actual size in bytes of nasid mask */
++int xpc_nasid_mask_words;	/* actual size in words of nasid mask */
+ 
+ struct xpc_partition *xpc_partitions;
+ 
+ /*
+- * Generic buffer used to store a local copy of portions of a remote
+- * partition's reserved page (either its header and part_nasids mask,
+- * or its vars).
+- */
+-char *xpc_remote_copy_buffer;
+-void *xpc_remote_copy_buffer_base;
+-
+-/*
+  * Guarantee that the kmalloc'd memory is cacheline aligned.
+  */
+ void *
+@@ -176,9 +167,9 @@ xpc_setup_rsvd_page(void)
+ 		/* SAL_version 1 didn't set the nasids_size field */
+ 		rp->SAL_nasids_size = 128;
+ 	}
+-	xp_sizeof_nasid_mask = rp->SAL_nasids_size;
+-	xp_nasid_mask_words = DIV_ROUND_UP(xp_sizeof_nasid_mask,
+-					   BYTES_PER_WORD);
++	xpc_sizeof_nasid_mask = rp->SAL_nasids_size;
++	xpc_nasid_mask_words = DIV_ROUND_UP(xpc_sizeof_nasid_mask,
++					    BYTES_PER_WORD);
+ 
+ 	/* setup the pointers to the various items in the reserved page */
+ 	xpc_part_nasids = XPC_RP_PART_NASIDS(rp);
+@@ -222,14 +213,14 @@ xpc_get_remote_rp(int nasid, u64 *discov
+ 
+ 	/* pull over the reserved page header and part_nasids mask */
+ 	ret = xp_remote_memcpy(remote_rp, (void *)*remote_rp_pa,
+-			       XPC_RP_HEADER_SIZE + xp_sizeof_nasid_mask);
++			       XPC_RP_HEADER_SIZE + xpc_sizeof_nasid_mask);
+ 	if (ret != xpSuccess)
+ 		return ret;
+ 
+ 	if (discovered_nasids != NULL) {
+ 		u64 *remote_part_nasids = XPC_RP_PART_NASIDS(remote_rp);
+ 
+-		for (i = 0; i < xp_nasid_mask_words; i++)
++		for (i = 0; i < xpc_nasid_mask_words; i++)
+ 			discovered_nasids[i] |= remote_part_nasids[i];
+ 	}
+ 
+@@ -414,12 +405,12 @@ xpc_discovery(void)
+ 	enum xp_retval ret;
+ 
+ 	remote_rp = xpc_kmalloc_cacheline_aligned(XPC_RP_HEADER_SIZE +
+-						  xp_sizeof_nasid_mask,
++						  xpc_sizeof_nasid_mask,
+ 						  GFP_KERNEL, &remote_rp_base);
+ 	if (remote_rp == NULL)
+ 		return;
+ 
+-	discovered_nasids = kzalloc(sizeof(u64) * xp_nasid_mask_words,
++	discovered_nasids = kzalloc(sizeof(u64) * xpc_nasid_mask_words,
+ 				    GFP_KERNEL);
+ 	if (discovered_nasids == NULL) {
+ 		kfree(remote_rp_base);
+@@ -521,10 +512,10 @@ xpc_initiate_partid_to_nasids(short part
+ 	if (part->remote_rp_pa == 0)
+ 		return xpPartitionDown;
+ 
+-	memset(nasid_mask, 0, XP_NASID_MASK_BYTES);
++	memset(nasid_mask, 0, xpc_sizeof_nasid_mask);
+ 
+ 	part_nasid_pa = (u64)XPC_RP_PART_NASIDS(part->remote_rp_pa);
+ 
+ 	return xp_remote_memcpy(nasid_mask, (void *)part_nasid_pa,
+-				xp_sizeof_nasid_mask);
++				xpc_sizeof_nasid_mask);
+ }
+Index: linux-2.6/drivers/misc/sgi-xp/xpc_sn2.c
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xpc_sn2.c	2008-06-06 08:04:49.793308632 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xpc_sn2.c	2008-06-06 08:04:57.994324350 -0500
+@@ -19,6 +19,43 @@
+ #include <asm/sn/sn_sal.h>
+ #include "xpc.h"
+ 
++/*
++ * Define the number of u64s required to represent all the C-brick nasids
++ * as a bitmap.  The cross-partition kernel modules deal only with
++ * C-brick nasids, thus the need for bitmaps which don't account for
++ * odd-numbered (non C-brick) nasids.
++ */
++#define XPC_MAX_PHYSNODES_SN2	(MAX_NUMALINK_NODES / 2)
++#define XP_NASID_MASK_BYTES_SN2	((XPC_MAX_PHYSNODES_SN2 + 7) / 8)
++#define XP_NASID_MASK_WORDS_SN2	((XPC_MAX_PHYSNODES_SN2 + 63) / 64)
++
++/*
++ * Memory for XPC's amo variables is allocated by the MSPEC driver. These
++ * pages are located in the lowest granule. The lowest granule uses 4k pages
++ * for cached references and an alternate TLB handler to never provide a
++ * cacheable mapping for the entire region. This will prevent speculative
++ * reading of cached copies of our lines from being issued which will cause
++ * a PI FSB Protocol error to be generated by the SHUB. For XPC, we need 64
++ * amo variables (based on XP_MAX_NPARTITIONS_SN2) to identify the senders of
++ * NOTIFY IRQs, 128 amo variables (based on XP_NASID_MASK_WORDS_SN2) to identify
++ * the senders of ACTIVATE IRQs, 1 amo variable to identify which remote
++ * partitions (i.e., XPCs) consider themselves currently engaged with the
++ * local XPC and 1 amo variable to request partition deactivation.
++ */
++#define XPC_NOTIFY_IRQ_AMOS_SN2		0
++#define XPC_ACTIVATE_IRQ_AMOS_SN2	(XPC_NOTIFY_IRQ_AMOS_SN2 + \
++					 XP_MAX_NPARTITIONS_SN2)
++#define XPC_ENGAGED_PARTITIONS_AMO_SN2	(XPC_ACTIVATE_IRQ_AMOS_SN2 + \
++					 XP_NASID_MASK_WORDS_SN2)
++#define XPC_DEACTIVATE_REQUEST_AMO_SN2	(XPC_ENGAGED_PARTITIONS_AMO_SN2 + 1)
++
++/*
++ * Buffer used to store a local copy of portions of a remote partition's
++ * reserved page (either its header and part_nasids mask, or its vars).
++ */
++static char *xpc_remote_copy_buffer_sn2;
++static void *xpc_remote_copy_buffer_base_sn2;
++
+ static struct xpc_vars_sn2 *xpc_vars;	/* >>> Add _sn2 suffix? */
+ static struct xpc_vars_part_sn2 *xpc_vars_part; /* >>> Add _sn2 suffix? */
+ 
+@@ -176,7 +213,7 @@ xpc_send_activate_IRQ_sn2(u64 amos_page_
+ 	int w_index = XPC_NASID_W_INDEX(from_nasid);
+ 	int b_index = XPC_NASID_B_INDEX(from_nasid);
+ 	struct amo *amos = (struct amo *)__va(amos_page_pa +
+-					      (XPC_ACTIVATE_IRQ_AMOS *
++					      (XPC_ACTIVATE_IRQ_AMOS_SN2 *
+ 					      sizeof(struct amo)));
+ 
+ 	(void)xpc_send_IRQ_sn2(&amos[w_index], (1UL << b_index), to_nasid,
+@@ -189,7 +226,7 @@ xpc_send_local_activate_IRQ_sn2(int from
+ 	int w_index = XPC_NASID_W_INDEX(from_nasid);
+ 	int b_index = XPC_NASID_B_INDEX(from_nasid);
+ 	struct amo *amos = (struct amo *)__va(xpc_vars->amos_page_pa +
+-					      (XPC_ACTIVATE_IRQ_AMOS *
++					      (XPC_ACTIVATE_IRQ_AMOS_SN2 *
+ 					      sizeof(struct amo)));
+ 
+ 	/* fake the sending and receipt of an activate IRQ from remote nasid */
+@@ -395,7 +432,7 @@ xpc_indicate_partition_engaged_sn2(struc
+ {
+ 	unsigned long irq_flags;
+ 	struct amo *amo = (struct amo *)__va(part->sn.sn2.remote_amos_page_pa +
+-					     (XPC_ENGAGED_PARTITIONS_AMO *
++					     (XPC_ENGAGED_PARTITIONS_AMO_SN2 *
+ 					     sizeof(struct amo)));
+ 
+ 	local_irq_save(irq_flags);
+@@ -422,7 +459,7 @@ xpc_indicate_partition_disengaged_sn2(st
+ 	struct xpc_partition_sn2 *part_sn2 = &part->sn.sn2;
+ 	unsigned long irq_flags;
+ 	struct amo *amo = (struct amo *)__va(part_sn2->remote_amos_page_pa +
+-					     (XPC_ENGAGED_PARTITIONS_AMO *
++					     (XPC_ENGAGED_PARTITIONS_AMO_SN2 *
+ 					     sizeof(struct amo)));
+ 
+ 	local_irq_save(irq_flags);
+@@ -455,7 +492,7 @@ xpc_indicate_partition_disengaged_sn2(st
+ static int
+ xpc_partition_engaged_sn2(short partid)
+ {
+-	struct amo *amo = xpc_vars->amos_page + XPC_ENGAGED_PARTITIONS_AMO;
++	struct amo *amo = xpc_vars->amos_page + XPC_ENGAGED_PARTITIONS_AMO_SN2;
+ 
+ 	/* our partition's amo variable ANDed with partid mask */
+ 	return (FETCHOP_LOAD_OP(TO_AMO((u64)&amo->variable), FETCHOP_LOAD) &
+@@ -465,7 +502,7 @@ xpc_partition_engaged_sn2(short partid)
+ static int
+ xpc_any_partition_engaged_sn2(void)
+ {
+-	struct amo *amo = xpc_vars->amos_page + XPC_ENGAGED_PARTITIONS_AMO;
++	struct amo *amo = xpc_vars->amos_page + XPC_ENGAGED_PARTITIONS_AMO_SN2;
+ 
+ 	/* our partition's amo variable */
+ 	return FETCHOP_LOAD_OP(TO_AMO((u64)&amo->variable), FETCHOP_LOAD) != 0;
+@@ -474,7 +511,7 @@ xpc_any_partition_engaged_sn2(void)
+ static void
+ xpc_assume_partition_disengaged_sn2(short partid)
+ {
+-	struct amo *amo = xpc_vars->amos_page + XPC_ENGAGED_PARTITIONS_AMO;
++	struct amo *amo = xpc_vars->amos_page + XPC_ENGAGED_PARTITIONS_AMO_SN2;
+ 
+ 	/* clear bit(s) based on partid mask in our partition's amo */
+ 	FETCHOP_STORE_OP(TO_AMO((u64)&amo->variable), FETCHOP_AND,
+@@ -599,12 +636,12 @@ xpc_rsvd_page_init_sn2(struct xpc_rsvd_p
+ 	       xp_max_npartitions);
+ 
+ 	/* initialize the activate IRQ related amo variables */
+-	for (i = 0; i < xp_nasid_mask_words; i++)
+-		(void)xpc_init_IRQ_amo_sn2(XPC_ACTIVATE_IRQ_AMOS + i);
++	for (i = 0; i < xpc_nasid_mask_words; i++)
++		(void)xpc_init_IRQ_amo_sn2(XPC_ACTIVATE_IRQ_AMOS_SN2 + i);
+ 
+ 	/* initialize the engaged remote partitions related amo variables */
+-	(void)xpc_init_IRQ_amo_sn2(XPC_ENGAGED_PARTITIONS_AMO);
+-	(void)xpc_init_IRQ_amo_sn2(XPC_DEACTIVATE_REQUEST_AMO);
++	(void)xpc_init_IRQ_amo_sn2(XPC_ENGAGED_PARTITIONS_AMO_SN2);
++	(void)xpc_init_IRQ_amo_sn2(XPC_DEACTIVATE_REQUEST_AMO_SN2);
+ 
+ 	return xpSuccess;
+ }
+@@ -657,7 +694,7 @@ xpc_check_remote_hb_sn2(void)
+ 	short partid;
+ 	enum xp_retval ret;
+ 
+-	remote_vars = (struct xpc_vars_sn2 *)xpc_remote_copy_buffer;
++	remote_vars = (struct xpc_vars_sn2 *)xpc_remote_copy_buffer_sn2;
+ 
+ 	for (partid = 0; partid < xp_max_npartitions; partid++) {
+ 
+@@ -749,7 +786,7 @@ xpc_request_partition_deactivation_sn2(s
+ 	struct xpc_partition_sn2 *part_sn2 = &part->sn.sn2;
+ 	unsigned long irq_flags;
+ 	struct amo *amo = (struct amo *)__va(part_sn2->remote_amos_page_pa +
+-					     (XPC_DEACTIVATE_REQUEST_AMO *
++					     (XPC_DEACTIVATE_REQUEST_AMO_SN2 *
+ 					     sizeof(struct amo)));
+ 
+ 	local_irq_save(irq_flags);
+@@ -784,7 +821,7 @@ xpc_cancel_partition_deactivation_reques
+ {
+ 	unsigned long irq_flags;
+ 	struct amo *amo = (struct amo *)__va(part->sn.sn2.remote_amos_page_pa +
+-					     (XPC_DEACTIVATE_REQUEST_AMO *
++					     (XPC_DEACTIVATE_REQUEST_AMO_SN2 *
+ 					     sizeof(struct amo)));
+ 
+ 	local_irq_save(irq_flags);
+@@ -808,7 +845,7 @@ xpc_cancel_partition_deactivation_reques
+ static int
+ xpc_partition_deactivation_requested_sn2(short partid)
+ {
+-	struct amo *amo = xpc_vars->amos_page + XPC_DEACTIVATE_REQUEST_AMO;
++	struct amo *amo = xpc_vars->amos_page + XPC_DEACTIVATE_REQUEST_AMO_SN2;
+ 
+ 	/* our partition's amo variable ANDed with partid mask */
+ 	return (FETCHOP_LOAD_OP(TO_AMO((u64)&amo->variable), FETCHOP_LOAD) &
+@@ -898,7 +935,7 @@ xpc_identify_activate_IRQ_req_sn2(int na
+ 
+ 	/* pull over the reserved page structure */
+ 
+-	remote_rp = (struct xpc_rsvd_page *)xpc_remote_copy_buffer;
++	remote_rp = (struct xpc_rsvd_page *)xpc_remote_copy_buffer_sn2;
+ 
+ 	ret = xpc_get_remote_rp(nasid, NULL, remote_rp, &remote_rp_pa);
+ 	if (ret != xpSuccess) {
+@@ -917,7 +954,7 @@ xpc_identify_activate_IRQ_req_sn2(int na
+ 
+ 	/* pull over the cross partition variables */
+ 
+-	remote_vars = (struct xpc_vars_sn2 *)xpc_remote_copy_buffer;
++	remote_vars = (struct xpc_vars_sn2 *)xpc_remote_copy_buffer_sn2;
+ 
+ 	ret = xpc_get_remote_vars_sn2(remote_vars_pa, remote_vars);
+ 	if (ret != xpSuccess) {
+@@ -996,10 +1033,10 @@ xpc_identify_activate_IRQ_sender_sn2(voi
+ 	int n_IRQs_detected = 0;
+ 	struct amo *act_amos;
+ 
+-	act_amos = xpc_vars->amos_page + XPC_ACTIVATE_IRQ_AMOS;
++	act_amos = xpc_vars->amos_page + XPC_ACTIVATE_IRQ_AMOS_SN2;
+ 
+ 	/* scan through act amo variable looking for non-zero entries */
+-	for (word = 0; word < xp_nasid_mask_words; word++) {
++	for (word = 0; word < xpc_nasid_mask_words; word++) {
+ 
+ 		if (xpc_exiting)
+ 			break;
+@@ -2334,6 +2371,7 @@ int
+ xpc_init_sn2(void)
+ {
+ 	int ret;
++	size_t buf_size;
+ 
+ 	xpc_rsvd_page_init = xpc_rsvd_page_init_sn2;
+ 	xpc_increment_heartbeat = xpc_increment_heartbeat_sn2;
+@@ -2378,6 +2416,16 @@ xpc_init_sn2(void)
+ 	xpc_send_msg = xpc_send_msg_sn2;
+ 	xpc_received_msg = xpc_received_msg_sn2;
+ 
++	buf_size = max(XPC_RP_VARS_SIZE,
++		       XPC_RP_HEADER_SIZE + XP_NASID_MASK_BYTES_SN2);
++	xpc_remote_copy_buffer_sn2 = xpc_kmalloc_cacheline_aligned(buf_size,
++								   GFP_KERNEL,
++					      &xpc_remote_copy_buffer_base_sn2);
++	if (xpc_remote_copy_buffer_sn2 == NULL) {
++		dev_err(xpc_part, "can't get memory for remote copy buffer\n");
++		return -ENOMEM;
++	}
++
+ 	/* open up protections for IPI and [potentially] amo operations */
+ 	xpc_allow_IPI_ops_sn2();
+ 	xpc_allow_amo_ops_shub_wars_1_1_sn2();
+@@ -2394,6 +2442,7 @@ xpc_init_sn2(void)
+ 		dev_err(xpc_part, "can't register ACTIVATE IRQ handler, "
+ 			"errno=%d\n", -ret);
+ 		xpc_disallow_IPI_ops_sn2();
++		kfree(xpc_remote_copy_buffer_base_sn2);
+ 	}
+ 	return ret;
+ }
+@@ -2403,4 +2452,5 @@ xpc_exit_sn2(void)
+ {
+ 	free_irq(SGI_XPC_ACTIVATE, NULL);
+ 	xpc_disallow_IPI_ops_sn2();
++	kfree(xpc_remote_copy_buffer_base_sn2);
+ }
+Index: linux-2.6/drivers/misc/sgi-xp/xp.h
+===================================================================
+--- linux-2.6.orig/drivers/misc/sgi-xp/xp.h	2008-06-05 19:46:55.103592966 -0500
++++ linux-2.6/drivers/misc/sgi-xp/xp.h	2008-06-06 08:04:58.014326827 -0500
+@@ -61,16 +61,6 @@
+ #define XP_MAX_NPARTITIONS_UV	256
+ 
+ /*
+- * Define the number of u64s required to represent all the C-brick nasids
+- * as a bitmap.  The cross-partition kernel modules deal only with
+- * C-brick nasids, thus the need for bitmaps which don't account for
+- * odd-numbered (non C-brick) nasids.
+- */
+-#define XP_MAX_PHYSNODE_ID	(MAX_NUMALINK_NODES / 2)
+-#define XP_NASID_MASK_BYTES	((XP_MAX_PHYSNODE_ID + 7) / 8)
+-#define XP_NASID_MASK_WORDS	((XP_MAX_PHYSNODE_ID + 63) / 64)
+-
+-/*
+  * XPC establishes channel connections between the local partition and any
+  * other partition that is currently up. Over these channels, kernel-level
+  * `users' can communicate with their counterparts on the other partitions.
