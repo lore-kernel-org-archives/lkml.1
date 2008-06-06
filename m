@@ -1,153 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764883AbYFFI3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764522AbYFFI3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764883AbYFFI3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 04:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYFFI3A
+	id S1764522AbYFFI3b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 04:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759556AbYFFI3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 04:29:00 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57484 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752699AbYFFI25 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 04:28:57 -0400
-X-Sasl-enc: AvqhScivSNpjDFSO9FkuFapMYu/9cfHm+JJGQJ2ao/Ns 1212740936
-Subject: Re: Linux 2.6.26-rc4
-From: Ian Kent <raven@themaw.net>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Miklos Szeredi <miklos@szeredi.hu>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jeff Moyer <jmoyer@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1212740486.3035.41.camel@raven.themaw.net>
-References: <alpine.LFD.1.10.0805261127030.2958@woody.linux-foundation.org>
-	 <47107.195.41.66.226.1212486572.squirrel@mail.jabbernet.dk>
-	 <20080603095713.GR28946@ZenIV.linux.org.uk>
-	 <5440.195.41.66.226.1212487482.squirrel@mail.jabbernet.dk>
-	 <E1K3TWc-0005gV-1l@pomaz-ex.szeredi.hu>
-	 <20080603104035.GT28946@ZenIV.linux.org.uk>
-	 <E1K3U1F-0005le-07@pomaz-ex.szeredi.hu>
-	 <20080603105258.GV28946@ZenIV.linux.org.uk>
-	 <1212499623.3025.46.camel@raven.themaw.net>
-	 <alpine.LFD.1.10.0806030751040.3473@woody.linux-foundation.org>
-	 <1212651099.3047.44.camel@raven.themaw.net>  <4848D7E7.60203@krogh.cc>
-	 <1212740486.3035.41.camel@raven.themaw.net>
-Content-Type: text/plain
-Date: Fri, 06 Jun 2008 16:25:19 +0800
-Message-Id: <1212740720.3035.45.camel@raven.themaw.net>
+	Fri, 6 Jun 2008 04:29:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48156 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756568AbYFFI3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 04:29:05 -0400
+Date: Fri, 6 Jun 2008 18:28:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: linux-next: Tree for June 5
+Message-Id: <20080606182858.60490e47.sfr@canb.auug.org.au>
+In-Reply-To: <20080606082325.GA10826@elte.hu>
+References: <20080605175217.cee497f3.sfr@canb.auug.org.au>
+	<20080605195604.41623687.akpm@linux-foundation.org>
+	<20080606071707.GB9708@elte.hu>
+	<20080606072536.GA19334@elte.hu>
+	<20080606003327.9ac0e91b.akpm@linux-foundation.org>
+	<20080606074137.GA28962@elte.hu>
+	<20080606004743.a78180c3.akpm@linux-foundation.org>
+	<20080606082325.GA10826@elte.hu>
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__6_Jun_2008_18_28_58_+1000_dDSE69frW00/Ecm8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__6_Jun_2008_18_28_58_+1000_dDSE69frW00/Ecm8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2008-06-06 at 16:21 +0800, Ian Kent wrote:
-> On Fri, 2008-06-06 at 08:23 +0200, Jesper Krogh wrote:
-> > Hi.
-> > 
-> > This isn't a test of the proposed patch. I just got another variatioin 
-> > of the problem in the log. (I've tried running the automount daemon both 
-> > with and without the --ghost option) that is the only change I can see. 
-> > Still 2.6.26-rc4..
-> 
-> Right.
-> 
-> Whether that would make a difference depends largely on your map
-> configuration. If you have simple indirect or direct maps then then
-> using the --ghost option (or just adding the "browse" option if you're
-> using version 5) should prevent the code that turns the dentry negative
-> from being executed at all. If you're using submounts in your map, or
-> the "hosts" map or you have multi-mount entries in the maps then that
-> code could still be executed.
-> 
+On Fri, 6 Jun 2008 10:23:25 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> hm, which commit is this exactly? I've never hit it myself in bisection=20
+> (and there are days when i bisect -tip several times). We'll respin=20
+> tip/tracing/mmiotrace if it's bisection-hostile. You can probably nudge=20
+> it into building via "git-bisect next".
 
-btw, I'm currently testing with these additional changes.
-I don't think they will result in functional differences but it's best
-we keep in sync.
+See my other email.  This is because the ftrace tree does not merge well
+with the rcu tree.
 
-autofs4 - leave rehash dentry positive fix
+I may start merging such build breakage fixes into the actual merge
+commits that cause them.  That will make linux-next more bisectable, but
+means I have to remember that I did it for Linus' sake.
 
-From: Ian Kent <raven@themaw.net>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Change ENOSPC to ENOMEM.
-Make autofs4_init_ino() always set mode field.
+--Signature=_Fri__6_Jun_2008_18_28_58_+1000_dDSE69frW00/Ecm8
+Content-Type: application/pgp-signature
 
-Signed-off-by: Ian Kent <raven@themaw.net>
----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- fs/autofs4/inode.c |    2 +-
- fs/autofs4/root.c  |   10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+iEYEARECAAYFAkhI9UoACgkQTgG2atn1QN8TsgCdHa5kJFDPfB+pID6L+a0TWSjX
+PUQAnjvR/aa/6RqBPLRWJWVb7HMNNuxN
+=pDow
+-----END PGP SIGNATURE-----
 
-
-diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
-index ec9a641..3221506 100644
---- a/fs/autofs4/inode.c
-+++ b/fs/autofs4/inode.c
-@@ -45,7 +45,6 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
- 
- 	if (!reinit) {
- 		ino->flags = 0;
--		ino->mode = mode;
- 		ino->inode = NULL;
- 		ino->dentry = NULL;
- 		ino->size = 0;
-@@ -53,6 +52,7 @@ struct autofs_info *autofs4_init_ino(struct autofs_info *ino,
- 		atomic_set(&ino->count, 0);
- 	}
- 
-+	ino->mode = mode;
- 	ino->last_used = jiffies;
- 
- 	ino->sbi = sbi;
-diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-index 6ce603b..f438e6b 100644
---- a/fs/autofs4/root.c
-+++ b/fs/autofs4/root.c
-@@ -713,13 +713,13 @@ static int autofs4_dir_symlink(struct inode *dir,
- 
- 	ino = autofs4_init_ino(ino, sbi, S_IFLNK | 0555);
- 	if (!ino)
--		return -ENOSPC;
-+		return -ENOMEM;
- 
- 	cp = kmalloc(ino->size + 1, GFP_KERNEL);
- 	if (!cp) {
- 		if (!dentry->d_fsdata)
- 			kfree(ino);
--		return -ENOSPC;
-+		return -ENOMEM;
- 	}
- 
- 	strcpy(cp, symname);
-@@ -733,7 +733,7 @@ static int autofs4_dir_symlink(struct inode *dir,
- 			kfree(cp);
- 			if (!dentry->d_fsdata)
- 				kfree(ino);
--			return -ENOSPC;
-+			return -ENOMEM;
- 		}
- 
- 		d_add(dentry, inode);
-@@ -866,7 +866,7 @@ static int autofs4_dir_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 
- 	ino = autofs4_init_ino(ino, sbi, S_IFDIR | 0555);
- 	if (!ino)
--		return -ENOSPC;
-+		return -ENOMEM;
- 
- 	inode = dentry->d_inode;
- 	if (inode)
-@@ -876,7 +876,7 @@ static int autofs4_dir_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- 		if (!inode) {
- 			if (!dentry->d_fsdata)
- 				kfree(ino);
--			return -ENOSPC;
-+			return -ENOMEM;
- 		}
- 
- 		d_add(dentry, inode);
-
-
+--Signature=_Fri__6_Jun_2008_18_28_58_+1000_dDSE69frW00/Ecm8--
