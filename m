@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbYFFFuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbYFFGGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764175AbYFFFuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 01:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbYFFFub
+	id S1760061AbYFFGGe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 02:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYFFGGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 01:50:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47399 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751692AbYFFFua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 01:50:30 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/t3DZkU8Ht3K+mGbIHPJjzWfrHnK+roWA/UNW3id
-	kkfpZArGbdr+Ic
-Date: Fri, 6 Jun 2008 07:50:37 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: David Brownell <david-b@pacbell.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] generic GPIO parameter API
-In-Reply-To: <200806052229.37143.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.64.0806060744450.14536@axis700.grange>
-References: <Pine.LNX.4.64.0806021841500.30390@axis700.grange>
- <200806052229.37143.david-b@pacbell.net>
+	Fri, 6 Jun 2008 02:06:24 -0400
+Received: from ns.suse.de ([195.135.220.2]:38311 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750713AbYFFGGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 02:06:24 -0400
+Date: Thu, 5 Jun 2008 18:44:37 -0700
+From: Greg KH <gregkh@suse.de>
+To: Dave Airlie <airlied@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: via agp patches
+Message-ID: <20080606014437.GE3325@suse.de>
+References: <20080531003214.GA6208@suse.de> <21d7e9970805311550r182c5291ta4c55e8069e631a1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21d7e9970805311550r182c5291ta4c55e8069e631a1@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-On Thu, 5 Jun 2008, David Brownell wrote:
-
-> On Monday 02 June 2008, Guennadi Liakhovetski wrote:
-> > Hi,
-> > 
-> > as far as I understand, the current GPIO API only presents very basic GPIO 
-> > functionality: direction and level reading and writing. Whereas many GPIO 
-> > controllers have many further configurable parameters: pull-ups and 
-> > pull-downs, drive strength, slew rate, etc.
+On Sun, Jun 01, 2008 at 08:50:39AM +1000, Dave Airlie wrote:
+> On Sat, May 31, 2008 at 10:32 AM, Greg KH <gregkh@suse.de> wrote:
+> > Recently VIA has been distributing some pre-build kernel modules for
+> > their latest video cards without the source for it.  So I asked, and got
+> > the patches.  I've forward ported them to the current 2.6.26-rc4 tree,
+> > and they also apply cleanly to 2.6.25 as well.  They are here in the
+> > three emails after this one.
+> >
+> > I'm still working on getting some more information on exactly what these
+> > patches each do for a good changelog, but until then, if anyone has the
+> > hardware and wants to play with the code, here it is.
+> >
+> > If anyone has any questions, please let me know.
+> >
 > 
-> Not at all how I'd describe it.  Those omitted mechanisms are part
-> of pin configuration, in the same way as function multiplexing is.
-> (That is, assigning a given pin for use as a GPIO, vs hooking it up
-> to an I2C, MMC, SPI, LCD, I2S, or memory controller.)
-> 
-> Those mechanisms are highly chip-specific.  Far more so than simple
-> boolean GPIO mechanisms.  With rare exceptions, they're needed only
-> in platform-specific board setup code, which is already accessing
-> lots of platform-specific programming interfaces.  I'm really not
-> keen on having them become part of the GPIO framework.  The thought
-> makes me think of trying to swallow a kitchen sink; sorry ...
+> Like I can pull the cleanups and style one no problems, but really any
+> functional changes need to be explained with some detail, and the drm
+> changes need to be submitted to dri-devel@lists.sf.net and Thomas
+> Hellstrom would need to at least understand them before we could let
+> them into the kernel.
 
-Thanks for the lengthy explanation with numerous examples - this is 
-appreciated. But I'll omit that for this reply. Just a short question so 
-far - how would you handle an external GPIO expander with an additional 
-functionality, naimly, a possibility to switch pull-ups to GPIO pins, 
-specifically, it defines 4 modes for a pin: out high, out low, in without 
-a pullup and in with a pullup. And if the user application wants to decide 
-at run-time which pull-ups to switch and when? It's a MAX7301 from Maxim 
-btw.
+Ok, I'm pushing back on them to get this information, and the userspace
+portions to match up so that we can see, and actually use this new
+kernel driver.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+> VIA need to deal with the openchrome project to get those sort of
+> changes into an upstream X.org related driver.
+
+I agree, am trying to get them to do this...
+
+thanks,
+
+greg k-h
