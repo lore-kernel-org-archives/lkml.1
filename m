@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764127AbYFFFlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764068AbYFFFsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764127AbYFFFlR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 01:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYFFFlE
+	id S1764068AbYFFFsf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 01:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYFFFsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 01:41:04 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:13113 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753114AbYFFFlC (ORCPT
+	Fri, 6 Jun 2008 01:48:25 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:57319 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753426AbYFFFsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 01:41:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=mcF9RGl0ZRjutL1LGJTVKbrvLVdUkQsXg+xSmDxkXs3JsAzYnQ0lDRU+++RZMZpR4D
-         A/yPhZM1U9b2mZ5Z4lhJk7KkvirEGdNpE6ngD2dRlJEFuYlA5+erjzrGY9whcX9t31Tm
-         jAvZ10WKBGwdWpyAhTUXOCdgETFGCuDqFXmSU=
-Message-ID: <86802c440806052241q90bb2dcmef9e98f2e24291e8@mail.gmail.com>
-Date: Thu, 5 Jun 2008 22:41:01 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: x86_64 boot hang when CONFIG_NUMA=n
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org
-In-Reply-To: <15271334.1212702611270.JavaMail.oracle@acsmt304.oracle.com>
+	Fri, 6 Jun 2008 01:48:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=SFCBa3G8/6VZA02nmfmGw/mnzVta9SWEjqfUNqLI0yQH3QHs8yR1/EWgDyoYcO2yd
+	W4NAXNlZ3xEUNCGfJ+iyw==
+Message-ID: <da824cf30806052248h3ac4ff21ocada15c376b399af@mail.gmail.com>
+Date: Thu, 5 Jun 2008 22:48:13 -0700
+From: "Grant Grundler" <grundler@google.com>
+To: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+Cc: James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org,
+       mgross@linux.intel.com, linux-scsi@vger.kernel.org,
+       "Alex Williamson" <alex.williamson@hp.com>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+In-Reply-To: <20080606133955B.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <15271334.1212702611270.JavaMail.oracle@acsmt304.oracle.com>
+References: <20080605235322L.fujita.tomonori@lab.ntt.co.jp>
+	 <da824cf30806051134u4fb8d419p2ba2dafcb1ba33a7@mail.gmail.com>
+	 <1212692488.4241.8.camel@localhost.localdomain>
+	 <20080606133955B.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 5, 2008 at 2:50 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On 2.6.26-rc[2345], I am seeing a hang during boot with CONFIG_NUMA=n, but changing
-> to CONFIG_NUMA=y allows successful boot.
+On Thu, Jun 5, 2008 at 9:44 PM, FUJITA Tomonori
+<fujita.tomonori@lab.ntt.co.jp> wrote:
+...
+> The current Intel IOMMU scheme is a bit unbalanced. It invalidates the
+> translation table every time dma_unmap_* is called, but it does the
+> batching of the TLB flushes. But it's what the most of Linux's IOMMU
+> code does.
 >
-> This is on a 4-way AMD64 (HP) server with 8 GB RAM.
->
-> Using initcall_debug, the last output on a hang is from arch/x86/pci/k8-bus_64.c:
->
-> calling  early_fill_mp_bus_info+0x0/0x7b2
-> node 0 link 1: io port [1000, 3fff]
-> node 1 link 2: io port [4000, ffff]
-> TOM: 0000000080000000 aka 2048M
-> node 0 link 1: mmio [e8000000, fddfffff]
-> node 1 link 2: mmio [fde00000, fdffffff]
-> node 0 link 1: mmio [80000000, 83ffffff]
-> node 1 link 2: mmio [84000000, 8fffffff]
-> node 0 link 1: mmio [a0000, bffff]
-> TOM2: 0000000280000000 aka 10240M
-> bus: [00,3f] on node 0 link 1
-> bus: 00 index 0 io port: [0, 3fff]
-> bus: 00 index 1 mmio: [90000000, fddfffff]
-> bus: 00 index 2 mmio: [80000000, 83ffffff]
-> bus: 00 index 3 mmio: [a0000, bffff]
-> bus: 00 index 4 mmio: [fe000000, ffffffff]
-> bus: 00 index 5 mmio: [280000000, fcffffffff]
-> bus: [40,ff] on node 1 link 2
-> bus: 40 index 0 io port: [4000, ffff]
-> bus: 40 index 1 mmio: [fde00000, fdffffff]
->
->
-> There should be an index 2 line printed next, like this slightly modifed for debug
-> version does (with CONFIG_NUMA=y), or maybe the following line(s) just aren't
-> making it to the (net)console log and some other initcall function is actually
-> hanging:  (??)
->
-> bus: [40,ff] on node 1 link 2
-> bus: 40 index 0/3 io port: [4000, ffff]
-> bus: 40 index 1/3 mmio: [fde00000, fdffffff]
-> bus: 40 index 2/3 mmio: [84000000, 8fffffff]
-> early_fill_mp_bus_info: done
->
->
-> Has anyone seen something like this?  Any patches to test?
->
-> The next initcall functions (on a working boot) are:
->
-> calling  arch_kdebugfs_init+0x0/0x8
-> initcall arch_kdebugfs_init+0x0/0x8 returned 0 after 0 msecs
-> calling  mtrr_if_init+0x0/0x77
-> initcall mtrr_if_init+0x0/0x77 returned 0 after 0 msecs
-> calling  ffh_cstate_init+0x0/0x31
-> initcall ffh_cstate_init+0x0/0x31 returned -1 after 0 msecs
-> initcall ffh_cstate_init+0x0/0x31 returned with error code -1
-> calling  acpi_pci_init+0x0/0x4a
-> ACPI: bus type pci registered
-> initcall acpi_pci_init+0x0/0x4a returned 0 after 0 msecs
+> I think that only PARISC (and IA64, of course) IOMMUs do the batching
+> of invalidating the translation table entries.
 
-can you send out your config?
+1/2 correct. PARISC and IA64 could be the same in this regard but are not.
+See where sba_mark_invalid() is called in the respective sba_iommu.c.
+PARISC invalidates the IO Pdir entry immediately but batches the
+IO TLB shootdown and resource "free". IA64 could (and probably should)
+do the same. Added Alex Williamson and Bjorn Helgaas to CC list.
+Not an urgent issue though unless they are doing perf measurements
+with SSDs or other block device with equivalent IOPS.
 
-YH
+Since parisc-linux is unlikely to ever run VM's and the IOMMU has a
+very limited number of IO TLB entries (8 or 16 about), I'm thinking the
+batching is a waste of time and parisc should follow SPARC behavior.
+I'll chat more with jejb/kyle/willy about it sometime.
+
+thanks,
+grant
