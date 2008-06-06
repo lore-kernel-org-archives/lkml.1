@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbYFFUVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbYFFUNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932367AbYFFUVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 16:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759405AbYFFUVL
+	id S932341AbYFFUNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 16:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758499AbYFFUNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 16:21:11 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:37284 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759321AbYFFUVJ (ORCPT
+	Fri, 6 Jun 2008 16:13:13 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:29489 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755896AbYFFUNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 16:21:09 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5312"; a="3745408"
-Message-ID: <48499C32.6070703@qualcomm.com>
-Date: Fri, 06 Jun 2008 13:21:06 -0700
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 6 Jun 2008 16:13:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=jb1S38jazqcfJm99mdUHqp8xUxkcZVSMoZdMMeNemlEkWlI5VnR8T+taWNYayzCnWSd3VcErpAalRj2tkkbka5ihKWxvjQvztdc5cgfiLSXvkpAfOG2OafnmzSdsSSlVPa36H2NXQQXylwSbVPdPdGQRW4gQI+HWU755NPAOj34=  ;
+X-YMail-OSG: lD4X8KMVM1lbGjUh9UCSaUE6kCwJyw8KyncFoL2rAywiyFc6dcnHU8CBB73RbqV2zFFDRQG52AZsAUZO4yepCiE181nFkJ1oAcrgJOWXopWlcWiVbXkYRUuoYs_1KhCXK88-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Leon Woestenberg" <leon.woestenberg@gmail.com>
+Subject: Re: Locking in the (now generic) GPIO infrastructure?
+Date: Fri, 6 Jun 2008 13:13:10 -0700
+User-Agent: KMail/1.9.9
+Cc: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Linux Kernel list" <linux-kernel@vger.kernel.org>
+References: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com> <200806060553.48057.david-b@pacbell.net> <c384c5ea0806061223k44a7db74hbdf2ed6f422442b2@mail.gmail.com>
+In-Reply-To: <c384c5ea0806061223k44a7db74hbdf2ed6f422442b2@mail.gmail.com>
 MIME-Version: 1.0
-To: Ang Way Chuang <wcang@nav6.org>, David Miller <davem@davemloft.net>,
-       "Zabele, Stephen (US SSA)" <steve.zabele@baesystems.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NET: Proper handling of IPv6 header in tun driver when
- TUN_NO_PI is set
-References: <4849162D.7000401@nav6.org>
-In-Reply-To: <4849162D.7000401@nav6.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806061313.11021.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Max Krasnyansky <maxk@qualcomm.com>
+On Friday 06 June 2008, Leon Woestenberg wrote:
+> In fact, on the IXP4xx, gpio_set_value() is just gpio_line_set(),
 
-Dave, can you please add this patch to your tree.
-
---
-Steve, this is what I meant by "we do not need extra copy_from_user". We 
-already do copy into the SKB and can parse the header right there.
-
-Max
+OK, so the generic GPIO calls are inheriting a locking bug
+from the older code.  Calls to the older stuff should probably
+start getting phased out.
 
 
-
-
-Ang Way Chuang wrote:
-> By default, tun.c running in TUN_TUN_DEV mode will set the protocol of 
-> packet to IPv4 if TUN_NO_PI is set. My program failed to work when I 
-> assumed that the driver will check the first nibble of packet, determine 
-> IP version and set the appropriate protocol.
+> so I 
+> think it is valid to understand where the locking should occur (lowest
+> level, higher level?)
 > 
-> The test for this change was conducted on 2.6.24.7 kernel. But the diff 
-> is produced using git commit
-> c3b25b32e8bef526cca748e1ba023c6bdd705a99. I couldn't test it on kernel 
-> version greater than 2.6.25 due to out of tree driver failing to 
-> compile. But tun_get_user doesn't change that much between 2.6.24 and 
-> 2.6.26, so it should work, I hope :-D. This patch is trivial because 
-> this problem can also be fixed by not using TUN_NO_PI.
+> > most spinlocks to establish its atomicity guarantee; it's
+> > described as "spinlock-safe", and in distinction to the
+> > gpio_set_value_cansleep() call which could use a mutex or
+> > other sleeping synch primitive.
+> >
 > 
-> Signed-off-by: Ang Way Chuang <wcang@nav6.org>
-> ---
-> 
-> diff --git a/drivers/net/tun.c b/drivers/net/tun.c
-> index 0ce07a3..77964bc 100644
-> --- a/drivers/net/tun.c
-> +++ b/drivers/net/tun.c
-> @@ -313,6 +313,21 @@ static __inline__ ssize_t tun_get_user(struct 
-> tun_struct *tun, struct iovec *iv,
-> 
->         switch (tun->flags & TUN_TYPE_MASK) {
->         case TUN_TUN_DEV:
-> +               if (tun->flags & TUN_NO_PI) {
-> +                       switch (skb->data[0] & 0xf0) {
-> +                       case 0x40:
-> +                               pi.proto = __constant_htons(ETH_P_IP);
-> +                               break;
-> +                       case 0x60:
-> +                               pi.proto = __constant_htons(ETH_P_IPV6);
-> +                               break;
-> +                       default:
-> +                               tun->dev->stats.rx_dropped++;
-> +                               kfree_skb(skb);
-> +                               return -EINVAL;
-> +                       }
-> +               }
-> +
->                 skb_reset_mac_header(skb);
->                 skb->protocol = pi.proto;
->                 skb->dev = tun->dev;
-> 
-> -- 
-> 
+> So, the solution (for the upstream work on -rt) would be to add
+> spinlock protection to gpio_line_set(), mutex protection for
+> _cansleep() variants?
+
+Given this is on -RT, yes it seems like a spinlock is needed
+to protect against preemption (but not against concurrency,
+which those XScale chips don't provide).
+
+Though with that addition, the size of that function exceeds
+what I'd call appropriate to inline.
+
+- Dave
 
