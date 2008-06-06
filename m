@@ -1,125 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYFFNPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYFFNQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbYFFNPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 09:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYFFNPW
+	id S1755153AbYFFNQH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 09:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYFFNPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 09:15:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:49271 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754231AbYFFNPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 09:15:21 -0400
-Message-ID: <48493861.3050402@sgi.com>
-Date: Fri, 06 Jun 2008 06:15:13 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
+	Fri, 6 Jun 2008 09:15:46 -0400
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:49235 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756765AbYFFNPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 09:15:41 -0400
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [crash, bisected] Re: [PATCH 3/4] x86_64: Fold pda into per cpu
- area
-References: <20080604003018.538497000@polaris-admin.engr.sgi.com> <20080604003019.509483000@polaris-admin.engr.sgi.com> <20080605102222.GA21319@elte.hu> <48480DFB.7000404@sgi.com> <4848F55C.90904@goop.org>
-In-Reply-To: <4848F55C.90904@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: Jan Beulich <jbeulich@novell.com>, Stable Kernel <stable@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH UPDATED] x86: set PAE PHYSICAL_MASK_SHIFT to 44 bits.
+From: Andi Kleen <andi@firstfloor.org>
+References: <4848046A.5060006@goop.org> <484823BD.76E4.0078.0@novell.com>
+	<484901A3.3040401@goop.org>
+Date: Fri, 06 Jun 2008 15:15:37 +0200
+In-Reply-To: <484901A3.3040401@goop.org> (Jeremy Fitzhardinge's message of "Fri, 06 Jun 2008 10:21:39 +0100")
+Message-ID: <87lk1iu2km.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Jun 2008 13:08:29.0113 (UTC) FILETIME=[69BF4290:01C8C7D6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Mike Travis wrote:
->> Ingo Molnar wrote:
->>  
->>> * Mike Travis <travis@sgi.com> wrote:
->>>
->>>    
->>>>   * Declare the pda as a per cpu variable.
->>>>
->>>>   * Make the x86_64 per cpu area start at zero.
->>>>
->>>>   * Since the pda is now the first element of the per_cpu area,
->>>> cpu_pda()
->>>>     is no longer needed and per_cpu() can be used instead.  This
->>>> also makes
->>>>     the _cpu_pda[] table obsolete.
->>>>
->>>>   * Since %gs is pointing to the pda, it will then also point to the
->>>> per cpu
->>>>     variables and can be accessed thusly:
->>>>
->>>>     %gs:[&per_cpu_xxxx - __per_cpu_start]
->>>>
->>>> Based on linux-2.6.tip
->>>>       
->>> -tip testing found an instantaneous reboot crash on 64-bit x86, with
->>> this config:
->>>
->>>   http://redhat.com/~mingo/misc/config-Thu_Jun__5_11_43_51_CEST_2008.bad
->>>
->>> there is no boot log as the instantaneous reboot happens before
->>> anything is printed to the (early-) serial console. I have bisected
->>> it down to:
->>>
->>> | 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f is first bad commit
->>> | commit 7670dc09e89a2b151a1cf49eccebc07c41c2ce9f
->>> | Author: Mike Travis <travis@sgi.com>
->>> | Date:   Tue Jun 3 17:30:21 2008 -0700
->>> |
->>> |     x86_64: Fold pda into per cpu area
->>>
->>> the big problem is not just this crash, but that the patch is _way_
->>> too big:
->>>
->>>  arch/x86/Kconfig                 |    3 +
->>>  arch/x86/kernel/head64.c         |   34 ++++++--------
->>>  arch/x86/kernel/irq_64.c         |   36 ++++++++-------
->>>  arch/x86/kernel/setup.c          |   90
->>> ++++++++++++---------------------------
->>>  arch/x86/kernel/setup64.c        |    5 --
->>>  arch/x86/kernel/smpboot.c        |   51 ----------------------
->>>  arch/x86/kernel/traps_64.c       |   11 +++-
->>>  arch/x86/kernel/vmlinux_64.lds.S |    1
->>>  include/asm-x86/percpu.h         |   48 ++++++--------------
->>>  9 files changed, 89 insertions(+), 190 deletions(-)
->>>
->>> considering the danger involved, this is just way too large, and
->>> there's no reasonable debugging i can do in the bisection to narrow
->>> it down any further.
->>>
->>> Please resubmit with the bug fixed and with a proper splitup, the
->>> more patches you manage to create, the better. For a dangerous code
->>> area like this, with a track record of frequent breakages in the
->>> past, i would not mind a "one line of code changed per patch" splitup
->>> either. (Feel free to send a git tree link for us to try as well.)
->>>
->>>     Ingo
->>>     
->>
->> Thanks for the feedback Ingo.  I'll test the above config and look at
->> splitting up the patch.  The difficulty is making each patch
->> independently
->> compilable and testable.
-> 
-> FWIW, I'm getting past the "crashes very, very early" stage with this
-> series applied when booting under Xen.  Then it crashes pretty early,
-> but that's not your fault...
-> 
->    J
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Hi Jeremy,
+> When a 64-bit x86 processor runs in 32-bit PAE mode, a pte can
+> potentially have the same number of physical address bits as the
+> 64-bit host ("Enhanced Legacy PAE Paging").  This means, in theory,
+> we could have up to 52 bits of physical address in a pte.
+>
+> The 32-bit kernel uses a 32-bit unsigned long to represent a pfn.
+> This means that it can only represent physical addresses up to 32+12=44
+> bits wide.  Rather than widening pfns everywhere, just set 2^44 as the
+> Linux x86_32-PAE architectural limit for physical address size.
 
-Yes we have a simulator for Nahelem that also breezes past the boot up
-problem (actually makes it to the kernel login prompt.)  Weirdly, the
-problem doesn't exist in an earlier code base so my changes are tickling
-something else newly introduced.  I'm attempting to see if I can use
-GRUB 2 with the GDB stubs to track it down (which is time consuming in
-itself to setup.)
+43bits might be actally safer because of potential sign bugs.
 
-It is definitely related to basing percpu variable offsets from %gs and
-(I think) interrupts.
+But of course it won't work anyways likely.
 
-Thanks,
-Mike
+-Andi
