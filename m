@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbYFFVFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbYFFVH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933071AbYFFVFo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 17:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932175AbYFFVEw
+	id S932743AbYFFVH1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 17:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758765AbYFFVHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 17:04:52 -0400
-Received: from deep2.securesites.net ([198.65.247.173]:1177 "EHLO
-	deep2.securesites.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759785AbYFFVEv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 17:04:51 -0400
-X-Greylist: delayed 1324 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 17:04:49 EDT
-Date: Fri, 6 Jun 2008 14:47:04 -0600
-From: Scott Wiersdorf <scott@bluehost.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Balbir Singh <balbir@in.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, matt@bluehost.com
-Subject: Re: [PATCH 2.6.25-4] getdelays.c: signal handling for log rotation
-Message-ID: <20080606204704.GA4330@perlcode.org>
-References: <20080605194334.GA56830@perlcode.org> <87d4muu0k2.fsf@basil.nowhere.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87d4muu0k2.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.4.2.3i
+	Fri, 6 Jun 2008 17:07:14 -0400
+Received: from www.tglx.de ([62.245.132.106]:47246 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758664AbYFFVHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 17:07:13 -0400
+Date: Fri, 6 Jun 2008 23:06:47 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Top kernel oopses/warnings for the week of Friday June 6th,
+ 2008
+In-Reply-To: <20080606135532.0dd2b2f6@linux.intel.com>
+Message-ID: <alpine.LFD.1.10.0806062303400.3235@apollo.tec.linutronix.de>
+References: <484988C8.1080105@linux.intel.com> <alpine.LFD.1.10.0806062234420.3235@apollo.tec.linutronix.de> <20080606135532.0dd2b2f6@linux.intel.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 03:59:09PM +0200, Andi Kleen wrote:
-> Scott Wiersdorf <scott@perlcode.org> writes:
+On Fri, 6 Jun 2008, Arjan van de Ven wrote:
+> On Fri, 6 Jun 2008 22:37:50 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> > This adds a USR1 signal handler to getdelays.c, which causes getdelays
-> > to close its logfile and reopen it (if '-w logfile' is
-> > specified). This is useful in situations when getdelays is running for
-> > a long time (i.e, the log file growing) and you need to rotate the
-> > logs but don't want to lose any log data.
+> > On Fri, 6 Jun 2008, Arjan van de Ven wrote:
+> > > 
+> > > Rank 8: tick_broadcast_oneshot_control (deadlock)
+> > > 	Reported 95 times (315 total reports)
+> > > 	The deadlock/timeout detector triggers in this codepath
+> > > rather agressively. I'm hesitant
+> > > 	to pin this one on bad hardware, it's happening too
+> > > repeastedly too much.
+> > > 	This deadlock was last seen in version 2.6.25.3, and first
+> > > seen in 2.6.24-rc4.
+> > > 	More info:
+> > > http://www.kerneloops.org/searchweek.php?search=tick_broadcast_oneshot_control
+> > 
+> > Is there a way to tell on which kind of systems this shows
+> > up ?
 > 
-> You could do the same by sending SIGSTOP; copy file; truncate file; SIGCONT
+> https://bugzilla.redhat.com/show_bug.cgi?id=444059
+> https://bugzilla.redhat.com/show_bug.cgi?id=442920
+> 
+> either one of those persons might be willing to help;)
 
-Actually, I was wrong in my previous reply. Sorry for my error. The
-above will work fine (no data loss; I guess the data queues somewhere
-in some magic way?)
+Sigh, the magically resolved bug which takes ages to reproduce and
+therefor makes bisection across thousands of commits a nightmare.
 
-I still think a single handler is elegant enough though, and works
-better with many log rotation systems that want to send a single
-signal to a pid (it's what we need where I'm working now, hence the
-patch).
+I was more looking for an "easy" reproducer :)
 
-Scott
--- 
-Scott Wiersdorf
-<scott@bluehost.com>
+Thanks,
+
+	tglx
