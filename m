@@ -1,98 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761721AbYFFS0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763487AbYFFS0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761721AbYFFS0A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 14:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbYFFSZq
+	id S1763487AbYFFS0Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 14:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbYFFSZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 14:25:46 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37154 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755455AbYFFSZp (ORCPT
+	Fri, 6 Jun 2008 14:25:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44935 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756969AbYFFSZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 14:25:45 -0400
-Date: Fri, 6 Jun 2008 21:25:42 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Patrick McManus <mcmanus@ducksong.com>
-cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
-       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-In-Reply-To: <1212772293.23706.22.camel@tng>
-Message-ID: <Pine.LNX.4.64.0806062020270.9424@wrl-59.cs.helsinki.fi>
-References: <20080603094057.GA29480@elte.hu>  <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi>
-  <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi> 
- <20080603.150344.145518113.davem@davemloft.net> 
- <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>  <20080605142244.GA19216@elte.hu>
-  <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi> 
- <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi>  <1212708571.19522.10.camel@tng>
-  <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi>
- <1212772293.23706.22.camel@tng>
+	Fri, 6 Jun 2008 14:25:55 -0400
+Date: Fri, 6 Jun 2008 11:25:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Denys Fedoryshchenko" <denys@visp.net.lb>, linux-kernel@vger.kernel.org
+Subject: Re: strange timestamp in dmesg
+Message-Id: <20080606112547.13b78888.akpm@linux-foundation.org>
+In-Reply-To: <87hcc6u109.fsf@basil.nowhere.org>
+References: <20080605115256.M13181@visp.net.lb>
+	<20080606031939.285679c9.akpm@linux-foundation.org>
+	<87hcc6u109.fsf@basil.nowhere.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008, Patrick McManus wrote:
+On Fri, 06 Jun 2008 15:49:26 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-> > This Ingo's testcase should anyway be quite "simple", I mean that distcc 
-> > shouldn't do anything unexpected in a sense it shouldn't abort the flows 
-> > by not sending data, close the listening socket or other things like that.
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> maybe - I've noted that I can get the distcc server to crash with just a
-> little fuzz (telnet to it and close the telnet) - but it is true I
-> haven't seen anything odd using the distcc client.
+> >> supports DPO and FUA
+> >> [    9.801761] sd 1:0:1:0: [sdc] 143374744 512-byte hardware sectors (73408 MB)
+> >> [    9.673388] sd 1:0:1:0: [sdc] Write Protect is off
+> >> [    9.673395] sd 1:0:1:0: [sdc] Mode Sense: ab 00 10 08
+> >> [    9.806210] sd 1:0:1:0: [sdc] Write cache: enabled, read cache: enabled,
+> >> supports DPO and FUA
+> >> [    9.806220]  sdc: sdc1
+> >> [    9.682136] sd 1:0:1:0: [sdc] Attached SCSI disk
+> >> [   13.786405] SGI XFS with large block numbers, no debug enabled
+> >> [   13.633457] XFS mounting filesystem sdb2
+> >> [   13.724345] Starting XFS recovery on filesystem: sdb2 (logdev: internal)
+> >> [   14.251356] Ending XFS recovery on filesystem: sdb2 (logdev: internal)
+> >> [   15.379298] XFS mounting filesystem sdc1
+> >> [   15.468255] Starting XFS recovery on filesystem: sdc1 (logdev: internal)
+> >> [   14.514314] Ending XFS recovery on filesystem: sdc1 (logdev: internal)
+> >> [   14.767260] warning: `squid' uses 32-bit capabilities (legacy support in use)
+> >> [   17.589751] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full
+> >> Duplex, Flow Control: RX/TX
+> >> 
+> >
+> > whoa, that's weird.  We've seen timestamps jump forward a single hop of
+> > ~100000 seconds, but that's all over the place.
+> 
+> No it's expected since printk uses sched_clock() and sched clock is not synchronous
+> between CPUs on systems without synchronized/invariant TSC (like Opteron)
+> All sched_clock() users are expected to handle it.
 
-In addition I think I've also seen some bits floating around that 
-occassionally distcc does something weird in a correct setup too.
+We've seen a storm of hey-my-timestamps-went-weird reports in just the
+past month or so.  I don't recall it being (such) a problem before that.
 
-I briefly looked how distcc behaved while doing the stress_accept. Distcc 
-basically seems to have n processes each accept()ing and some kind of 
-memleak killer by limiting number of successive accepts then exit, while 
-the parent who did the listen is only periodically (had some sleep(1)s) 
-collecting dead ones & respawning them.
+Did we change something?
 
-> Anyhow, my news is that using rc5 I have managed to reproduce it on
-> localhost - so it isn't just ingo anymore ! ;)
+> I always advocated just always using jiffies for printk. The only drawback would
+> be that it won't increase in interrupt off sections, but if you have
+> one that is longer than a jiffie then you have enough other problems.
 
-Also Peter Z has reported it earlier, it was distcc+localhost for him as 
-well.
+I forget why, but we _were_ going to have an (arch-overrideable)
+printk_clock() function.  And we still could.  The x86 implementation
+of that could fall back to jiffies if the TSCs are out of whack?
 
-> and has intentionally broken dependencies so it just keeps recompiling 
-> stuff.
+<googles>
 
-...Trying to invent perpetual motion machine? :-/
-
-> The input files are
-> approximately 135k, 98k, and 16k after running gcc -E on them (which I
-> what I assume distcc does before putting them down the socket).
->
-> On rc5 I could get the lockup in under 20 minutes.. usually 10. I think
-> I did it 4 times. My compile test is probably a better trigger than the
-> kernel compile because the distcc connects are never staggered like they
-> would be in a large directory of files. (3 files, -j4).
-
-It could be even easier if you make next in path gcc to play with 
-nice, trying a number of different values might reveal some really fast 
-to reproduce scenario.
-
-> When I apply the locking patch you (Ilpo) wrote, I cannot reproduce the
-> error at all in the first 90 minutes of testing. I'll let the test run
-> and update the list.
-
-At least it helps some :-), like it should.
-
-> I'm holding out hope that Ingo's report did not have the locking patch
-> on the distcc server end - because it certainly makes a difference for 
-> me.
-
-...He had some issue with different versions being deployed at least in 
-the past, and I failed to follow his latest answer :-).
-
-
--- 
- i.
+In fact it looks like we _did_ have a printk_clock(), only someone stole it.
