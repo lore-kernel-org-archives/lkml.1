@@ -1,268 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbYFFONW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYFFONg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758693AbYFFONW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 10:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbYFFOMz
+	id S1758976AbYFFONg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 10:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbYFFONH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 10:12:55 -0400
-Received: from pecan.exetel.com.au ([220.233.0.17]:59024 "EHLO
-	smtp.po.exetel.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754972AbYFFOMy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 10:12:54 -0400
-From: oakad@exemail.com.au
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Alex Dubov <oakad@yahoo.com>
-Subject: [PATCH 1/3] memstick: allow "set_param" method to return an error code
-Date: Fri,  6 Jun 2008 23:30:30 +1000
-Message-Id: <1212759032-11793-2-git-send-email-oakad@exemail.com.au>
-X-Mailer: git-send-email 1.5.3.6
-In-Reply-To: <1212759032-11793-1-git-send-email-oakad@exemail.com.au>
-References: <1212759032-11793-1-git-send-email-oakad@exemail.com.au>
+	Fri, 6 Jun 2008 10:13:07 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59433 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758429AbYFFONE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 10:13:04 -0400
+Message-ID: <484945EC.3020508@sgi.com>
+Date: Fri, 06 Jun 2008 07:13:00 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 5
+References: <20080605175217.cee497f3.sfr@canb.auug.org.au>	 <20080605195604.41623687.akpm@linux-foundation.org>	 <20080606071707.GB9708@elte.hu>	 <20080606002957.6329a0ec.akpm@linux-foundation.org>	 <20080606024811.70db9ab2.akpm@linux-foundation.org>	 <20080606035413.37f340ef.akpm@linux-foundation.org>	 <20080606115759.GA29321@elte.hu>	 <19f34abd0806060533x6d3ff66tc29306143103fc40@mail.gmail.com>	 <48493CBD.1000202@sgi.com> <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
+In-Reply-To: <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Dubov <oakad@yahoo.com>
+Vegard Nossum wrote:
+> On Fri, Jun 6, 2008 at 3:33 PM, Mike Travis <travis@sgi.com> wrote:
+>> Vegard Nossum wrote:
+>>> I reproced it with gc 4.1.2. I think the error is somewhere in kernel/sched.c.
+>>>
+>>> static int __build_sched_domains(const cpumask_t *cpu_map,
+>>>                                  struct sched_domain_attr *attr)
+>>> {
+>>> ...
+>>>         for (i = 0; i < MAX_NUMNODES; i++) {
+>>> ...
+>>>                 sg = kmalloc_node(sizeof(struct sched_group), GFP_KERNEL, i);
+>>> ...
+>>>
+>>> This code is calling into the allocator with a spurious value of i,
+>>> which causes SLAB to use an index (of 4 in my case) that is out of
+>>> bounds for its nodelist array (at least it hasn't been initialized).
+>>>
+>>> This bit of code (a bit further down, inside the same loop) is also dubious:
+>>>
+>>>                         sg = kmalloc_node(sizeof(struct sched_group),
+>>>                                           GFP_KERNEL, i);
+>>>                         if (!sg) {
+>>>                                 printk(KERN_WARNING
+>>>                                 "Can not alloc domain group for node %d\n", j);
+>>>                                 goto error;
+>>>                         }
+>>>
+>>> Where it passes i to kmalloc_node() but reports an allocation for node
+>>> j. Which one is correct?
+>>>
+> 
+> Hm, I think I'm wrong and the code is correct. However...
+> 
+>>> Hope this helps, will send an update if I find out more.
+>>>
+>>>
+>>> Vegard
+>>>
+>> Thanks Vegard for tracking this down.  My thoughts were along the same
+>> wavelength... ;-)
+> 
+> I applied this patch
+> @@ -7133,6 +7133,14 @@ static int __build_sched_domains(const
+> cpumask_t *cpu_map,
+>                 cpus_clear(*covered);
+> 
+>                 cpus_and(*nodemask, *nodemask, *cpu_map);
+> +
+> +               printk("node %d\n", i);
+> +               for (j = 0; j < NR_CPUS; ++j)
+> +                       printk("%c", cpu_isset(j, *nodemask) ? 'X' : '.');
+> +               printk("\n");
+> +
+> +               printk("empty = %d\n", cpus_empty(*nodemask));
+> +
+>                 if (cpus_empty(*nodemask)) {
+>                         sched_group_nodes[i] = NULL;
+>                         continue;
+> 
+> and it shows some really strange output, maybe it makes sense to you:
+> 
+> (the X means cpu is in the node)
+> 
+> Total of 2 processors activated (11976.24 BogoMIPS).
+> node 0
+> XX..............................................................................
+> ................................................................................
+> ................................................................................
+> ...............
+> empty = 0
+> node 1
+> XX..............................................................................
+> ................................................................................
+> ................................................................................
+> ...............
+> empty = 0
+> l3 = cachep->nodelists[0] (size-64) = ffff81003f824340
+> node 2
+> ................................................................................
+> ................................................................................
+> ................................................................................
+> ...............
+> empty = 1
+> node 3
+> ................................................................................
+> ................................................................................
+> ................................................................................
+> ...............
+> empty = 1
+> node 4
+> X...............................................................................
+> ................................................................................
+> ................................................................................
+> ...............
+> empty = 0
+> 
+> This is a P4 3.0GHz with 1 physical CPU (but HT, so two logical CPUs).
+> Yet node 4 is claimed to have a cpu too. That's bogus!
+> 
+> (But I don't think it's an error in sched.c any more, probably the
+> code that sets up the node maps.)
+> 
+> 
+> Vegard
+> 
 
-Some controllers (Jmicron, for instance) can report temporal failure condition
-during power-on. It is desirable to account for this using a return value of
-"set_param" device method. The return value can also be handy to distinguish
-between supported and unsupported device parameters in run time.
+Could you send me the full console log and your config file?  The setup of
+the node_to_cpumask map is dependent on the early discovery (usually in the
+apic code) and there's been some changes in that area recently.
 
-Signed-off-by: Alex Dubov <oakad@yahoo.com>
----
- drivers/memstick/core/memstick.c  |   18 +++++++---
- drivers/memstick/host/jmb38x_ms.c |   69 ++++++++++++++++++++++++++----------
- drivers/memstick/host/tifm_ms.c   |   17 ++++-----
- include/linux/memstick.h          |    2 +-
- 4 files changed, 72 insertions(+), 34 deletions(-)
-
-diff --git a/drivers/memstick/core/memstick.c b/drivers/memstick/core/memstick.c
-index 61b98c3..3c7d9a7 100644
---- a/drivers/memstick/core/memstick.c
-+++ b/drivers/memstick/core/memstick.c
-@@ -415,10 +415,14 @@ err_out:
- 	return NULL;
- }
- 
--static void memstick_power_on(struct memstick_host *host)
-+static int memstick_power_on(struct memstick_host *host)
- {
--	host->set_param(host, MEMSTICK_POWER, MEMSTICK_POWER_ON);
--	host->set_param(host, MEMSTICK_INTERFACE, MEMSTICK_SERIAL);
-+	int rc = host->set_param(host, MEMSTICK_POWER, MEMSTICK_POWER_ON);
-+
-+	if (!rc)
-+		rc = host->set_param(host, MEMSTICK_INTERFACE, MEMSTICK_SERIAL);
-+
-+	return rc;
- }
- 
- static void memstick_check(struct work_struct *work)
-@@ -573,11 +577,15 @@ EXPORT_SYMBOL(memstick_suspend_host);
-  */
- void memstick_resume_host(struct memstick_host *host)
- {
-+	int rc = 0;
-+
- 	mutex_lock(&host->lock);
- 	if (host->card)
--		memstick_power_on(host);
-+		rc = memstick_power_on(host);
- 	mutex_unlock(&host->lock);
--	memstick_detect_change(host);
-+
-+	if (!rc)
-+		memstick_detect_change(host);
- }
- EXPORT_SYMBOL(memstick_resume_host);
- 
-diff --git a/drivers/memstick/host/jmb38x_ms.c b/drivers/memstick/host/jmb38x_ms.c
-index a054668..10be6f3 100644
---- a/drivers/memstick/host/jmb38x_ms.c
-+++ b/drivers/memstick/host/jmb38x_ms.c
-@@ -609,36 +609,68 @@ static void jmb38x_ms_request(struct memstick_host *msh)
- 	spin_unlock_irqrestore(&host->lock, flags);
- }
- 
--static void jmb38x_ms_reset(struct jmb38x_ms_host *host)
-+static int jmb38x_ms_reset(struct jmb38x_ms_host *host)
- {
--	unsigned int host_ctl = readl(host->addr + HOST_CONTROL);
-+	int cnt;
- 
--	writel(HOST_CONTROL_RESET_REQ, host->addr + HOST_CONTROL);
-+	writel(HOST_CONTROL_RESET_REQ | HOST_CONTROL_CLOCK_EN
-+	       | readl(host->addr + HOST_CONTROL),
-+	       host->addr + HOST_CONTROL);
-+	mmiowb();
-+
-+	for (cnt = 0; cnt < 20; ++cnt) {
-+		if (!(HOST_CONTROL_RESET_REQ
-+		      & readl(host->addr + HOST_CONTROL)))
-+			goto reset_next;
- 
--	while (HOST_CONTROL_RESET_REQ
--	       & (host_ctl = readl(host->addr + HOST_CONTROL))) {
- 		ndelay(20);
--		dev_dbg(&host->chip->pdev->dev, "reset %08x\n", host_ctl);
- 	}
-+	dev_dbg(&host->chip->pdev->dev, "reset_req timeout\n");
-+	return -EIO;
- 
--	writel(HOST_CONTROL_RESET, host->addr + HOST_CONTROL);
-+reset_next:
-+	writel(HOST_CONTROL_RESET | HOST_CONTROL_CLOCK_EN
-+	       | readl(host->addr + HOST_CONTROL),
-+	       host->addr + HOST_CONTROL);
-+	mmiowb();
-+
-+	for (cnt = 0; cnt < 20; ++cnt) {
-+		if (!(HOST_CONTROL_RESET
-+		      & readl(host->addr + HOST_CONTROL)))
-+			goto reset_ok;
-+
-+		ndelay(20);
-+	}
-+	dev_dbg(&host->chip->pdev->dev, "reset timeout\n");
-+	return -EIO;
-+
-+reset_ok:
- 	mmiowb();
- 	writel(INT_STATUS_ALL, host->addr + INT_SIGNAL_ENABLE);
- 	writel(INT_STATUS_ALL, host->addr + INT_STATUS_ENABLE);
-+	return 0;
- }
- 
--static void jmb38x_ms_set_param(struct memstick_host *msh,
--				enum memstick_param param,
--				int value)
-+static int jmb38x_ms_set_param(struct memstick_host *msh,
-+			       enum memstick_param param,
-+			       int value)
- {
- 	struct jmb38x_ms_host *host = memstick_priv(msh);
- 	unsigned int host_ctl = readl(host->addr + HOST_CONTROL);
- 	unsigned int clock_ctl = CLOCK_CONTROL_40MHZ, clock_delay = 0;
-+	int rc = 0;
- 
--	switch (param) {
-+	switch(param) {
- 	case MEMSTICK_POWER:
- 		if (value == MEMSTICK_POWER_ON) {
--			jmb38x_ms_reset(host);
-+			rc = jmb38x_ms_reset(host);
-+			if (rc)
-+				return rc;
-+
-+			host_ctl = 7;
-+			host_ctl |= HOST_CONTROL_POWER_EN
-+				 | HOST_CONTROL_CLOCK_EN;
-+			writel(host_ctl, host->addr + HOST_CONTROL);
- 
- 			writel(host->id ? PAD_PU_PD_ON_MS_SOCK1
- 					: PAD_PU_PD_ON_MS_SOCK0,
-@@ -647,11 +679,7 @@ static void jmb38x_ms_set_param(struct memstick_host *msh,
- 			writel(PAD_OUTPUT_ENABLE_MS,
- 			       host->addr + PAD_OUTPUT_ENABLE);
- 
--			host_ctl = 7;
--			host_ctl |= HOST_CONTROL_POWER_EN
--				 | HOST_CONTROL_CLOCK_EN;
--			writel(host_ctl, host->addr + HOST_CONTROL);
--
-+			msleep(10);
- 			dev_dbg(&host->chip->pdev->dev, "power on\n");
- 		} else if (value == MEMSTICK_POWER_OFF) {
- 			host_ctl &= ~(HOST_CONTROL_POWER_EN
-@@ -660,7 +688,8 @@ static void jmb38x_ms_set_param(struct memstick_host *msh,
- 			writel(0, host->addr + PAD_OUTPUT_ENABLE);
- 			writel(PAD_PU_PD_OFF, host->addr + PAD_PU_PD);
- 			dev_dbg(&host->chip->pdev->dev, "power off\n");
--		}
-+		} else
-+			return -EINVAL;
- 		break;
- 	case MEMSTICK_INTERFACE:
- 		host_ctl &= ~(3 << HOST_CONTROL_IF_SHIFT);
-@@ -686,12 +715,14 @@ static void jmb38x_ms_set_param(struct memstick_host *msh,
- 			host_ctl &= ~HOST_CONTROL_REI;
- 			clock_ctl = CLOCK_CONTROL_60MHZ;
- 			clock_delay = 0;
--		}
-+		} else
-+			return -EINVAL;
- 		writel(host_ctl, host->addr + HOST_CONTROL);
- 		writel(clock_ctl, host->addr + CLOCK_CONTROL);
- 		writel(clock_delay, host->addr + CLOCK_DELAY);
- 		break;
- 	};
-+	return 0;
- }
- 
- #ifdef CONFIG_PM
-diff --git a/drivers/memstick/host/tifm_ms.c b/drivers/memstick/host/tifm_ms.c
-index 8577de4..1445876 100644
---- a/drivers/memstick/host/tifm_ms.c
-+++ b/drivers/memstick/host/tifm_ms.c
-@@ -489,15 +489,12 @@ static void tifm_ms_request(struct memstick_host *msh)
- 	return;
- }
- 
--static void tifm_ms_set_param(struct memstick_host *msh,
--			      enum memstick_param param,
--			      int value)
-+static int tifm_ms_set_param(struct memstick_host *msh,
-+			     enum memstick_param param,
-+			     int value)
- {
- 	struct tifm_ms *host = memstick_priv(msh);
- 	struct tifm_dev *sock = host->dev;
--	unsigned long flags;
--
--	spin_lock_irqsave(&sock->lock, flags);
- 
- 	switch (param) {
- 	case MEMSTICK_POWER:
-@@ -512,7 +509,8 @@ static void tifm_ms_set_param(struct memstick_host *msh,
- 			writel(TIFM_MS_SYS_FCLR | TIFM_MS_SYS_INTCLR,
- 			       sock->addr + SOCK_MS_SYSTEM);
- 			writel(0xffffffff, sock->addr + SOCK_MS_STATUS);
--		}
-+		} else
-+			return -EINVAL;
- 		break;
- 	case MEMSTICK_INTERFACE:
- 		if (value == MEMSTICK_SERIAL) {
-@@ -525,11 +523,12 @@ static void tifm_ms_set_param(struct memstick_host *msh,
- 			writel(TIFM_CTRL_FAST_CLK
- 			       | readl(sock->addr + SOCK_CONTROL),
- 			       sock->addr + SOCK_CONTROL);
--		}
-+		} else
-+			return -EINVAL;
- 		break;
- 	};
- 
--	spin_unlock_irqrestore(&sock->lock, flags);
-+	return 0;
- }
- 
- static void tifm_ms_abort(unsigned long data)
-diff --git a/include/linux/memstick.h b/include/linux/memstick.h
-index 37a5cdb..2fe599c 100644
---- a/include/linux/memstick.h
-+++ b/include/linux/memstick.h
-@@ -284,7 +284,7 @@ struct memstick_host {
- 	/* Notify the host that some requests are pending. */
- 	void                (*request)(struct memstick_host *host);
- 	/* Set host IO parameters (power, clock, etc).     */
--	void                (*set_param)(struct memstick_host *host,
-+	int                 (*set_param)(struct memstick_host *host,
- 					 enum memstick_param param,
- 					 int value);
- 	unsigned long       private[0] ____cacheline_aligned;
--- 
-1.5.3.6
-
+Thanks,
+Mike
