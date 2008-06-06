@@ -1,48 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYFFHSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764359AbYFFHTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbYFFHSn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 03:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYFFHSg
+	id S1764359AbYFFHTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 03:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbYFFHTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 03:18:36 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:36602 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753448AbYFFHSf (ORCPT
+	Fri, 6 Jun 2008 03:19:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:1428 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbYFFHTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 03:18:35 -0400
-Date: Fri, 6 Jun 2008 09:18:31 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       sshtylyov@ru.mvista.com
-Subject: Re: [PATCH 0/9] au1xmmc updates #3
-Message-ID: <20080606071831.GC16498@roarinelk.homelinux.net>
-References: <20080519080339.GA21985@roarinelk.homelinux.net> <20080605230923.0268dd23@mjolnir.drzeus.cx>
+	Fri, 6 Jun 2008 03:19:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Rt7A3/e0lFdDmET4euecWax0K6oNrXOy4rAUIaumIcdTeA7QrRajBYkaaipz3cuGTp
+         UTTGzeK6Hf4PMdL7TkA6JEG2geKG079Oz8Uiwiz1K9m+QCBB7q1AY2xzts7t78e+AGUy
+         HlnDZEGHNLlWoD0/+IrFVxRuBl/HKs1c0alVI=
+Message-ID: <4848E49B.8060505@gmail.com>
+Date: Fri, 06 Jun 2008 09:17:47 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080605230923.0268dd23@mjolnir.drzeus.cx>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Nick Piggin <npiggin@suse.de>
+CC: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc][patch] mm: vmap rewrite
+References: <20080605102015.GA11366@wotan.suse.de>
+In-Reply-To: <20080605102015.GA11366@wotan.suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
+On 06/05/2008 12:20 PM, Nick Piggin wrote:
+> Rewrite the vmap allocator to use rbtrees and lazy tlb flushing, and provide a
+> fast, scalable percpu frontend for small vmaps.
+[...]
+> ===================================================================
+> Index: linux-2.6/mm/vmalloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/vmalloc.c
+> +++ linux-2.6/mm/vmalloc.c
+[...]
+> @@ -18,16 +19,17 @@
+[...]
+> -DEFINE_RWLOCK(vmlist_lock);
+> -struct vm_struct *vmlist;
+> -
+> -static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
+> -			    int node, void *caller);
+> +/** Page table manipulation functions **/
 
-On Thu, Jun 05, 2008 at 11:09:23PM +0200, Pierre Ossman wrote:
-> On Mon, 19 May 2008 10:03:39 +0200
-> Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
-> 
-> > Hello,
-> > 
-> > The following set of patches remove demoboard-specific code from the
-> > au1xmmc.c driver and adds new features.
-> > 
-> 
-> The role of maintainer is vacant if you want it. *nudge* ;)
+Do not use /** for non-kdoc comments.
 
+>  static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
+>  {
+[...]
+> @@ -103,18 +95,24 @@ static int vmap_pte_range(pmd_t *pmd, un
+>  	if (!pte)
+>  		return -ENOMEM;
+>  	do {
+> -		struct page *page = **pages;
+> -		WARN_ON(!pte_none(*pte));
+> -		if (!page)
+> +		struct page *page = pages[*nr];
+> +
+> +		if (unlikely(!pte_none(*pte))) {
+> +			WARN_ON(1);
+> +			return -EBUSY;
+> +		}
 
-I'll do it as long as I have hardware or you find someone better.
+this just may be
+if (WARN_ON(!pte_none(*pte)))
+   return -EBUSY;
 
-Thanks!
-	Manuel Lauss
+> +		if (unlikely(!page)) {
+> +			WARN_ON(1);
+>  			return -ENOMEM;
+> +		}
+
+same here
+
+>  		set_pte_at(&init_mm, addr, pte, mk_pte(page, prot));
+> -		(*pages)++;
+> +		(*nr)++;
+>  	} while (pte++, addr += PAGE_SIZE, addr != end);
+>  	return 0;
+>  }
+[...]
+> -static struct vm_struct *
+> -__get_vm_area_node(unsigned long size, unsigned long flags, unsigned long start,
+> -		unsigned long end, int node, gfp_t gfp_mask, void *caller)
+> +
+> +/** Global kva allocator **/
+
+here too
+
+> +static struct vmap_area *__find_vmap_area(unsigned long addr)
+>  {
+> -	struct vm_struct **p, *tmp, *area;
+> -	unsigned long align = 1;
+> +        struct rb_node *n = vmap_area_root.rb_node;
+
+It's padded by spaces here.
+
+> +
+> +        while (n) {
+> +		struct vmap_area *va;
+> +
+> +                va = rb_entry(n, struct vmap_area, rb_node);
+> +                if (addr < va->va_start)
+> +                        n = n->rb_left;
+> +                else if (addr > va->va_start)
+> +                        n = n->rb_right;
+> +                else
+> +                        return va;
+> +        }
+> +
+> +        return NULL;
+> +}
+[...]
+> +/** Per cpu kva allocator **/
+
+standard /* comment */
+
+> +#define ULONG_BITS		(8*sizeof(unsigned long))
+> +#if BITS_PER_LONG < 64
+
+Can these 2 differ?
+
+> +/*
+> + * vmap space is limited on 32 bit architectures. Ensure there is room for at
+> + * least 16 percpu vmap blocks per CPU.
+> + */
+> +#define VMAP_BBMAP_BITS		min(1024, (128*1024*1024 / PAGE_SIZE / NR_CPUS / 16))
+> +#define VMAP_BBMAP_BITS		(1024) /* 4MB with 4K pages */
+> +#define VMAP_BBMAP_LONGS	BITS_TO_LONGS(VMAP_BBMAP_BITS)
+> +#define VMAP_BLOCK_SIZE		(VMAP_BBMAP_BITS * PAGE_SIZE)
+> +
+> +struct vmap_block_queue {
+> +	spinlock_t lock;
+> +	struct list_head free;
+> +	struct list_head dirty;
+> +	unsigned int nr_dirty;
+> +};
+> +
+> +struct vmap_block {
+> +	spinlock_t lock;
+> +	struct vmap_area *va;
+> +	struct vmap_block_queue *vbq;
+> +	unsigned long free, dirty;
+> +	unsigned long alloc_map[VMAP_BBMAP_LONGS];
+> +	unsigned long dirty_map[VMAP_BBMAP_LONGS];
+
+DECLARE_BITMAP(x, VMAP_BBMAP_BITS)?
