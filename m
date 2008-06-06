@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbYFFIwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYFFIw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbYFFIwM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 04:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYFFIv5
+	id S1754919AbYFFIw2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 04:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYFFIwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 04:51:57 -0400
-Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:34700 "EHLO
-	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbYFFIv4 (ORCPT
+	Fri, 6 Jun 2008 04:52:13 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42975 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753853AbYFFIwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 04:51:56 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4848FAA9.6020808@cam.ac.uk>
-Date: Fri, 06 Jun 2008 09:51:53 +0100
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-CC: Jean Delvare <khali@linux-fr.org>, Andrew Morton <akpm@osdl.org>,
-       Torokhov <dmitry.torokhov@gmail.com>, Burman <burman.yan@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, HWMON <lm-sensors@lm-sensors.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Pavel Machek <pavel@suse.cz>, Yan@ATrpms.net, Dmitry@ATrpms.net,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [lm-sensors] [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection
- System 3D ACPI driver -- please review!
-References: <1212235533.3815.5.camel@localhost>	<4846EBF5.2030406@tremplin-utc.net>	<20080604225830.1dff64fc@hyperion.delvare>	<20080604230510.GB30475@elf.ucw.cz>	<484728B2.1000209@tremplin-utc.net> <20080605082950.6957f1a2@hyperion.delvare> <4847B415.2080708@cam.ac.uk> <48484DD6.3050706@tremplin-utc.net>
-In-Reply-To: <48484DD6.3050706@tremplin-utc.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 04:52:11 -0400
+Date: Fri, 6 Jun 2008 09:52:00 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Locking in the (now generic) GPIO infrastructure?
+Message-ID: <20080606085200.GC2765@flint.arm.linux.org.uk>
+References: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 04, 2008 at 01:00:19PM +0200, Leon Woestenberg wrote:
+> include/asm-arm/arch-ixp4xx/platform.h:
+> static inline void gpio_line_set(u8 line, int value)
+> {
+> 	if (value == IXP4XX_GPIO_HIGH)
+> 	    *IXP4XX_GPIO_GPOUTR |= (1 << line);
+> 	else if (value == IXP4XX_GPIO_LOW)
+> 	    *IXP4XX_GPIO_GPOUTR &= ~(1 << line);
+> }
+> 
+> Under a Linux kernel where multiple drivers are accessing GPIO, the
+> latter does not seem safe against preemption (assuming the memory
+> read-modify-write is not atomic).
 
->> Still, it may take some time to iron out the various kinks in this system
->> and get it fully tested, so may be worth putting stuff elsewhere for now
->> with the intention to move it as and when the more unified stuff has been
->> written.
-> Yes, so I'll keep my plan of first submitting the driver with the
-> current interface, and latter updating the interface to the new
-> subsystem when you have stabilised its interface.
-Probably best plan!
-> BTW, just by curiosity, is your tree available publicly somewhere?
-Not just yet. (doesn't all work as of yet and I need to get at least a couple
-of devices working with it be sure I haven't written something too device
-specific)
+or even interrupts.
 
-I'll post to the relevant mailing lists when it reaches a more reasonable 
-state and the 'arguments' can begin ;)
+> Shouldn't GPIO access be protected against concurrent access here?
 
-Jonathan
-
+Definitely.  It's certainly buggy as currently stands.
