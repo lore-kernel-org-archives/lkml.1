@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbYFFGGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764218AbYFFGGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbYFFGGe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 02:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYFFGGY
+	id S1764218AbYFFGGv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 02:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbYFFGG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 02:06:24 -0400
-Received: from ns.suse.de ([195.135.220.2]:38311 "EHLO mx1.suse.de"
+	Fri, 6 Jun 2008 02:06:29 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38672 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750713AbYFFGGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 02:06:24 -0400
-Date: Thu, 5 Jun 2008 18:44:37 -0700
+	id S1755001AbYFFGG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 02:06:28 -0400
+Date: Thu, 5 Jun 2008 18:45:00 -0700
 From: Greg KH <gregkh@suse.de>
-To: Dave Airlie <airlied@gmail.com>
-Cc: linux-kernel@vger.kernel.org
+To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
 Subject: Re: via agp patches
-Message-ID: <20080606014437.GE3325@suse.de>
-References: <20080531003214.GA6208@suse.de> <21d7e9970805311550r182c5291ta4c55e8069e631a1@mail.gmail.com>
+Message-ID: <20080606014500.GF3325@suse.de>
+References: <20080531003214.GA6208@suse.de> <20080531003250.GB6208@suse.de> <20080531144715.GA22616@redhat.com> <20080531174113.GA18996@suse.de> <20080605174535.GA10361@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <21d7e9970805311550r182c5291ta4c55e8069e631a1@mail.gmail.com>
+In-Reply-To: <20080605174535.GA10361@redhat.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 01, 2008 at 08:50:39AM +1000, Dave Airlie wrote:
-> On Sat, May 31, 2008 at 10:32 AM, Greg KH <gregkh@suse.de> wrote:
-> > Recently VIA has been distributing some pre-build kernel modules for
-> > their latest video cards without the source for it.  So I asked, and got
-> > the patches.  I've forward ported them to the current 2.6.26-rc4 tree,
-> > and they also apply cleanly to 2.6.25 as well.  They are here in the
-> > three emails after this one.
-> >
-> > I'm still working on getting some more information on exactly what these
-> > patches each do for a good changelog, but until then, if anyone has the
-> > hardware and wants to play with the code, here it is.
-> >
-> > If anyone has any questions, please let me know.
-> >
+On Thu, Jun 05, 2008 at 01:45:35PM -0400, Dave Jones wrote:
+> On Sat, May 31, 2008 at 10:41:13AM -0700, Greg KH wrote:
+>  > On Sat, May 31, 2008 at 10:47:15AM -0400, Dave Jones wrote:
+>  > > On Fri, May 30, 2008 at 05:32:50PM -0700, Greg KH wrote:
+>  > >  > 
+>  > >  > Looks like this adds a new device id, I have no idea why they remove
+>  > >  > another one at the same time...
+>  > > 
+>  > > I sent a patch adding the missing ident to airlied a few weeks back.
+>  > > I think it's currently in -mm.
+>  > 
+>  > Great.
+>  > 
+>  > > The removal of the other id is a mystery to me.
+>  > 
+>  > Here's what I got back from Via about this:
+>  > 	VT3336 is a chipset for AMD Athlon/K8 CPU. Due to K8's unique
+>  > 	architecture, the AGP resource and behavior are different from
+>  > 	the traditional AGP which resides only in chipset. AGP is used
+>  > 	by 3D driver which wasn't available for the VT3336 and VT3364
+>  > 	generation until now.  Unfortunately, by testing, VT3364 works
+>  > 	but VT3336 doesn't. That is why the subtraction. I think other
+>  > 	options are leaving it in the AGP, but removing it from our DRI
+>  > 	driver. Or, just leave it in both but warn people for issues in
+>  > 	the release note.
+>  > 
+>  > 
+>  > So it sounds like it would be good to remove that id.
 > 
-> Like I can pull the cleanups and style one no problems, but really any
-> functional changes need to be explained with some detail, and the drm
-> changes need to be submitted to dri-devel@lists.sf.net and Thomas
-> Hellstrom would need to at least understand them before we could let
-> them into the kernel.
+> Sounds plausible. This needs to go in the changelog.
 
-Ok, I'm pushing back on them to get this information, and the userspace
-portions to match up so that we can see, and actually use this new
-kernel driver.
+I will put it there.
 
-> VIA need to deal with the openchrome project to get those sort of
-> changes into an upstream X.org related driver.
+> A lot of their K8 chipsets were also used on P4 (I think they
+> abstracted the architectural differences with V-Link), but
+> if they claim this wasn't used on any of the P4 boards,
+> I guess they would know better than us.
 
-I agree, am trying to get them to do this...
+One would hope :)
 
 thanks,
 
