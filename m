@@ -1,113 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932245AbYFFTtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbYFFTuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932245AbYFFTtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 15:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbYFFTtE
+	id S932287AbYFFTuV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 15:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbYFFTuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 15:49:04 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:57613 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756645AbYFFTtC (ORCPT
+	Fri, 6 Jun 2008 15:50:05 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33295 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754800AbYFFTuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 15:49:02 -0400
-Date: Fri, 6 Jun 2008 20:48:56 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: greg@kroah.com, justinmattock@gmail.com, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] isight_firmware: Avoid crash on loading invalid firmware
-Message-ID: <20080606194856.GA17708@srcf.ucam.org>
-References: <dd18b0c30806041213x45b7efdfo42de9b214a7ce9df@mail.gmail.com> <20080606002601.a0f6c47c.akpm@linux-foundation.org> <dd18b0c30806060137j7edc751se364ff21cfc8911b@mail.gmail.com> <20080606121136.GA9087@srcf.ucam.org> <20080606110711.a9a6a4f6.akpm@linux-foundation.org> <dd18b0c30806061110qd3100b4p1ee9f8ef493a56c6@mail.gmail.com> <dd18b0c30806061138h69c87d6am898a4eb409d379e1@mail.gmail.com> <20080606185548.GB8576@kroah.com> <20080606192135.GA16727@srcf.ucam.org> <20080606123511.38ffbdde.akpm@linux-foundation.org>
+	Fri, 6 Jun 2008 15:50:03 -0400
+Date: Fri, 6 Jun 2008 22:49:59 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Ingo Molnar <mingo@elte.hu>
+cc: Patrick McManus <mcmanus@ducksong.com>, David Miller <davem@davemloft.net>,
+       peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
+       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+ v2.6.26-rc3+
+In-Reply-To: <20080606183926.GB12651@elte.hu>
+Message-ID: <Pine.LNX.4.64.0806062151490.9424@wrl-59.cs.helsinki.fi>
+References: <20080603.150344.145518113.davem@davemloft.net>
+ <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi> <20080605142244.GA19216@elte.hu>
+ <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi>
+ <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi> <1212708571.19522.10.camel@tng>
+ <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi> <1212772293.23706.22.camel@tng>
+ <20080606173339.GA30894@elte.hu> <Pine.LNX.4.64.0806062037240.9424@wrl-59.cs.helsinki.fi>
+ <20080606183926.GB12651@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080606123511.38ffbdde.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: MULTIPART/MIXED; boundary="-696208474-368817069-1212778513=:9424"
+Content-ID: <Pine.LNX.4.64.0806062227352.9424@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Different tools generate slightly different formats of the isight 
-firmware. Ensure that the firmware buffer is not overrun, while still 
-ensuring that the correct amount of data is written if trailing data is 
-preseent. Fixes crash reported by Justin Mattock.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+---696208474-368817069-1212778513=:9424
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0806062200351.9424@wrl-59.cs.helsinki.fi>
 
----
+On Fri, 6 Jun 2008, Ingo Molnar wrote:
 
-Identical to the previous patch, just acknowledges Justin Mattock's (not 
-Maddock, Andrew :p) report in the changelog.
+> 
+> * Ilpo Järvinen <ilpo.jarvinen@helsinki.fi> wrote:
+> 
+> > If you want an older kernel, you would have to go basically to 2.6.25 
+> > or so.
+> 
+> correct, that's what i use as fallback, some distro kernel which is 
+> 2.6.25 or older.
+> 
+> but i'm confused a bit, you say v2.6.25-rc6-475-gec3c098 introduced the 
+> locking problem - so 2.6.25 is affected as well?
 
-diff --git a/drivers/usb/misc/isight_firmware.c b/drivers/usb/misc/isight_firmware.c
-index 390e048..9f30aa1 100644
---- a/drivers/usb/misc/isight_firmware.c
-+++ b/drivers/usb/misc/isight_firmware.c
-@@ -39,9 +39,12 @@ static int isight_firmware_load(struct usb_interface *intf,
- 	struct usb_device *dev = interface_to_usbdev(intf);
- 	int llen, len, req, ret = 0;
- 	const struct firmware *firmware;
--	unsigned char *buf;
-+	unsigned char *buf = kmalloc(50, GFP_KERNEL);
- 	unsigned char data[4];
--	char *ptr;
-+	u8 *ptr;
-+
-+	if (!buf)
-+		return -ENOMEM;
- 
- 	if (request_firmware(&firmware, "isight.fw", &dev->dev) != 0) {
- 		printk(KERN_ERR "Unable to load isight firmware\n");
-@@ -59,7 +62,7 @@ static int isight_firmware_load(struct usb_interface *intf,
- 		goto out;
- 	}
- 
--	while (1) {
-+	while (ptr+4 <= firmware->data+firmware->size) {
- 		memcpy(data, ptr, 4);
- 		len = (data[0] << 8 | data[1]);
- 		req = (data[2] << 8 | data[3]);
-@@ -71,10 +74,14 @@ static int isight_firmware_load(struct usb_interface *intf,
- 			continue;
- 
- 		for (; len > 0; req += 50) {
--			llen = len > 50 ? 50 : len;
-+			llen = min(len, 50);
- 			len -= llen;
--
--			buf = kmalloc(llen, GFP_KERNEL);
-+			if (ptr+llen > firmware->data+firmware->size) {
-+				printk(KERN_ERR
-+				       "Malformed isight firmware");
-+				ret = -ENODEV;
-+				goto out;
-+			}
- 			memcpy(buf, ptr, llen);
- 
- 			ptr += llen;
-@@ -89,16 +96,18 @@ static int isight_firmware_load(struct usb_interface *intf,
- 				goto out;
- 			}
- 
--			kfree(buf);
- 		}
- 	}
-+
- 	if (usb_control_msg
- 	    (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, 0xe600, 0, "\0", 1,
- 	     300) != 1) {
- 		printk(KERN_ERR "isight firmware loading completion failed\n");
- 		ret = -ENODEV;
- 	}
-+
- out:
-+	kfree(buf);
- 	release_firmware(firmware);
- 	return ret;
- }
+No, you're probably just falling into a git-describe trap I also used
+to fall:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ijjarvin@pointhope:~/linux/mainline$ git-log -n 1 --pretty=oneline 
+ec3c0982a2dd1e671bad8e9d26c28dcba0039d87 ^v2.6.25 | cat -
+ec3c0982a2dd1e671bad8e9d26c28dcba0039d87 [TCP]: TCP_DEFER_ACCEPT updates - 
+process as established
+ijjarvin@pointhope:~/linux/mainline$ git-log -n 1 --pretty=oneline 
+ec3c0982a2dd1e671bad8e9d26c28dcba0039d87 ^v2.6.26-rc1 | cat -
+ijjarvin@pointhope:~/linux/mainline$ git-describe 
+ec3c0982a2dd1e671bad8e9d26c28dcba0039d87
+v2.6.25-rc6-475-gec3c098
+ijjarvin@pointhope:~/linux/mainline$ 
+
+The git-describe is not the way one can determine into which mainline
+tag a commit was included, it basically just provides the closest tag 
+among ancestors, which can be a vastly different one and has _no_ 
+relation whatsoever to the tag we'd desire to get. In here, Dave had 
+net-2.6 based on 2.5.25-rc6ish (or alternatively last merge to net-2.6 
+from Linus' tree's content came from that point of time), but Linus did 
+the merge from 2.6.25 but git-describe won't look anything that happens 
+after the asked commit. This is similar to the 
+bisect-lands-lower-tag-than-select-good-commit-was "mystery" that was 
+recently discussed extensively, again the Makefile only tracks ancestors, 
+not the future.
+
+If somebody knows a trivial command to get that future information (to
+where merged info), I'd pretty interested to hear.
+
+> This is a significant 
+> question because the fallback kernel is kernel-2.6.25.3-18.fc9.x86_64 on 
+> the 16-way box. (all other build-boxes have 2.6.24 or older as a 
+> fallback kernel)
+
+Please do get the receiver state if you still see such problem with it, 
+it is also relevant but it a different problem then (I'm yet to analyze 
+the data Håkan was collecting, dl it already by didn't even look into 
+that yet).
+
+...Or also if you see stuck TCPs with other cases I've told should fix it:
+
+1. 2.6.25 (pre-ec3c to be accurate)
+2. 3+1 revert
+3. ec3c+locking fix (this is the most unsure one because it still would 
+have the reversed socket lock taking order though nothing bad has been 
+found by some review neither by me nor Patrick)
+
+Please collect at least /proc/net/tcp and the netstat -np, if there's 
+process associated to the flow with _Recv-Q_ (in localhost case there 
+are two of them, the other with Send-Q), also where the process is
+waiting is useful. Hopefully clear enough now... :-)
+
+> > To summarize. Both 3changes+1fix revert (you refer to it only as 
+> > 3-patch revert) _and_ the locking fix I made should fix the problem 
+> > (obviously they exclude each other). ...And end which is significant 
+> > is the one which has LISTENing sockets (please keep this in mind if 
+> > you still get the hang and provide some info).
+> 
+> ok.
+> 
+> For completeness, let me repeat the patch i referred to as the 
+> '3-patch-revert' below. (which indeed is 3+1 as you note)
+
+...I know because there never have been any 3-patch-revert made... :-)
+
+> this is the patch that appears to be working empirically. (Disclaimer: 
+> it might just hide the problem, change timings, have a lucky code 
+> layout, etc.)
+
+Sure, but the revert also removes the obvious locking problem that was 
+introduced in ec3c.
+
+
+--
+ i.
+
+---696208474-368817069-1212778513=:9424--
