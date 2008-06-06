@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763807AbYFFFT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbYFFFY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763807AbYFFFT3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 01:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYFFFTT
+	id S1760904AbYFFFY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 01:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbYFFFYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 01:19:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44975 "EHLO
+	Fri, 6 Jun 2008 01:24:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58111 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752697AbYFFFTS (ORCPT
+	by vger.kernel.org with ESMTP id S1751618AbYFFFYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 01:19:18 -0400
-Date: Thu, 5 Jun 2008 22:18:42 -0700
+	Fri, 6 Jun 2008 01:24:46 -0400
+Date: Thu, 5 Jun 2008 22:23:55 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: Re: forcedeth: lockdep warning on ethtool -s
-Message-Id: <20080605221842.a444ec9d.akpm@linux-foundation.org>
-In-Reply-To: <20080601083700.GA3036@yamamaya.is-a-geek.org>
-References: <20080601083700.GA3036@yamamaya.is-a-geek.org>
+To: Chris Vine <chris@cvine.freeserve.co.uk>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: pppd and 2.6.25 serial driver
+Message-Id: <20080605222355.be299fff.akpm@linux-foundation.org>
+In-Reply-To: <20080601215621.256db193@boulder.homenet>
+References: <20080601215621.256db193@boulder.homenet>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,80 +26,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jun 2008 10:37:01 +0200 Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
+On Sun, 1 Jun 2008 21:56:21 +0100 Chris Vine <chris@cvine.freeserve.co.uk> wrote:
 
-> Hi,
+> Because I have had to resort to using dial-up this weekend, I noticed
+> that the serial driver for the 8250/16550 UART in the 2.6.25 kernel does
+> not work correctly with ppp-2.4.4. After establishing a dial-up modem
+> connection it becomes unresponsive and pppd will exit waiting to
+> establish a ppp connection after sending LCP configuration requests.  I
+> have tested this with two different dial-up modems and at two different
+> dial-up providers, with the 2.6.25.3 and 2.6.25.4 kernels.
 > 
-> After enabling CONFIG_LOCKDEP and CONFIG_PROVE_LOCKING I get the
-> following warning when ethtool -s is first called on one of the
-> forcedeth ports:
+> pppd works fine with the 2.6.25 kernel if the serial driver is not used
+> (for example if establishing a ppp connection over (in kernel) ATM or
+> via an (out of kernel tree) softmodem driver I have.
 > 
-> =================================
-> [ INFO: inconsistent lock state ]
-> 2.6.26-rc4 #28
-> ---------------------------------
-> inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> ethtool/1985 [HC0[0]:SC0[1]:HE1:SE0] takes:
->  (&np->lock){++..}, at: [<ffffffffa000c5fd>] nv_set_settings+0xc8/0x3de [forcedeth]
-> {in-hardirq-W} state was registered at:
->   [<ffffffffffffffff>] 0xffffffffffffffff
-> irq event stamp: 3606
-> hardirqs last  enabled at (3605): [<ffffffff8068106f>] _spin_unlock_irqrestore+0x3f/0x68
-> hardirqs last disabled at (3604): [<ffffffff80680d38>] _spin_lock_irqsave+0x13/0x46
-> softirqs last  enabled at (3534): [<ffffffff80246ba5>] __do_softirq+0xbc/0xc5
-> softirqs last disabled at (3606): [<ffffffff80680b33>] _spin_lock_bh+0x11/0x41
+> The serial driver in 2.6.24.7 works correctly, and the good news is
+> that 2.6.26-rc2 also works fine.
 > 
-> other info that might help us debug this:
-> 2 locks held by ethtool/1985:
->  #0:  (rtnl_mutex){--..}, at: [<ffffffff80596072>] rtnl_lock+0x12/0x14
->  #1:  (_xmit_ETHER){-+..}, at: [<ffffffffa000c5e8>] nv_set_settings+0xb3/0x3de [forcedeth]
-> 
-> stack backtrace:
-> Pid: 1985, comm: ethtool Not tainted 2.6.26-rc4 #28
-> 
-> Call Trace:
->  [<ffffffff8025f190>] print_usage_bug+0x162/0x173
->  [<ffffffff8025fa8b>] mark_lock+0x231/0x41f
->  [<ffffffff802607cf>] __lock_acquire+0x4e7/0xcac
->  [<ffffffff8025fe64>] ? trace_hardirqs_on+0xf1/0x115
->  [<ffffffff80272c3a>] ? disable_irq_nosync+0x6f/0x7b
->  [<ffffffff80261375>] lock_acquire+0x55/0x6e
->  [<ffffffffa000c5fd>] ? :forcedeth:nv_set_settings+0xc8/0x3de
->  [<ffffffff80680b15>] _spin_lock+0x2f/0x3c
->  [<ffffffffa000c5fd>] :forcedeth:nv_set_settings+0xc8/0x3de
->  [<ffffffff8058f8bb>] dev_ethtool+0x186/0xea3
->  [<ffffffff8067f446>] ? mutex_lock_nested+0x243/0x275
->  [<ffffffff8025df2b>] ? debug_mutex_free_waiter+0x46/0x4a
->  [<ffffffff8067f469>] ? mutex_lock_nested+0x266/0x275
->  [<ffffffff8058e1ce>] dev_ioctl+0x4eb/0x600
->  [<ffffffff8068106f>] ? _spin_unlock_irqrestore+0x3f/0x68
->  [<ffffffff80580f91>] sock_ioctl+0x1f5/0x202
->  [<ffffffff802a322e>] vfs_ioctl+0x2a/0x77
->  [<ffffffff802a34d6>] do_vfs_ioctl+0x25b/0x270
->  [<ffffffff806807b6>] ? trace_hardirqs_on_thunk+0x35/0x3a
->  [<ffffffff802a352d>] sys_ioctl+0x42/0x65
->  [<ffffffff8021fffb>] system_call_after_swapgs+0x7b/0x80
-> 
-> 
-> I think this is caused by the following snippet in nv_set_settings:
-> 
-> 	netif_carrier_off(dev);
-> 	if (netif_running(dev)) {
-> 		nv_disable_irq(dev);
-> 		netif_tx_lock_bh(dev);
-> 		spin_lock(&np->lock);
-> 		/* stop engines */
-> 		nv_stop_rxtx(dev);
-> 		spin_unlock(&np->lock);
-> 		netif_tx_unlock_bh(dev);
-> 	}
-> 
-> 
-> Because of nv_disable_irq this is probably not really a problem
-> though (I guess) and replacing the spin_lock with spin_lock_irqsave
-> could keep interrupts disabled for a longer period of time because
-> of delays in nv_stop_rx and nv_stop_tx.
 
-Could you please try that and if it works, send the patch?
+Fun.  Presumably that means there's some serial fix which we forgot
+to backport.  Or it isn't in 2.6.25.x yet.
 
-Thanks.
