@@ -1,102 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYFFKUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbYFFKUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbYFFKUV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYFFKUK
+	id S1756460AbYFFKUh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYFFKUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:20:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54594 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753368AbYFFKUI (ORCPT
+	Fri, 6 Jun 2008 06:20:11 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56409 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbYFFKUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:20:08 -0400
-Date: Fri, 6 Jun 2008 03:19:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Denys Fedoryshchenko" <denys@visp.net.lb>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: strange timestamp in dmesg
-Message-Id: <20080606031939.285679c9.akpm@linux-foundation.org>
-In-Reply-To: <20080605115256.M13181@visp.net.lb>
-References: <20080605115256.M13181@visp.net.lb>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 6 Jun 2008 06:20:09 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18505.3955.869044.188567@frecb006361.adech.frec.bull.fr>
+Date: Fri, 6 Jun 2008 12:20:35 +0200
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC -mm 0/6] sysv ipc: scale msgmnb with the number of cpus
+In-Reply-To: <200806061823.22639.nickpiggin@yahoo.com.au>
+References: <20080606060955.317871352@bull.net>
+	<200806061823.22639.nickpiggin@yahoo.com.au>
+X-Mailer: VM 7.19 under Emacs 23.0.50.1
+From: Solofo.Ramangalahy@bull.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Jun 2008 14:54:07 +0300 "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
+Hi Nick,
 
-> I notice that timestamp shifting back in dmesg.
-> Probably it is because machine is dual CPU opteron. I am not sure that such
-> behaviour is good, and i think even dangerous, and maybe affect something else.
-> 
-> 
-> Here is dmesg example
-> [    7.065265] sky2 eth1: enabling interface
-> [    7.093844] nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
-> [    8.308842] Fusion MPT base driver 3.04.06
-> [    8.308850] Copyright (c) 1999-2007 LSI Corporation
-> [    7.719943] Fusion MPT SAS Host driver 3.04.06
-> [    7.773135] Fusion MPT SPI Host driver 3.04.06
-> [    7.773196] ACPI: PCI Interrupt 0000:02:05.0[A] -> GSI 26 (level, low) ->
-> IRQ 26
-> [    7.773233] mptbase: ioc0: Initiating bringup
-> [    7.983821] ioc0: LSI53C1020A A1: Capabilities={Initiator}
-> [    8.051145] scsi1 : ioc0: LSI53C1020A A1, FwRev=01032700h, Ports=1,
-> MaxQ=222, IRQ=26
-> [    9.730853] scsi 1:0:0:0: Direct-Access     SEAGATE  ST373207LW       0004
-> PQ: 0 ANSI: 3
-> [    9.730853]  target1:0:0: Beginning Domain Validation
-> [    9.690641]  target1:0:0: Ending Domain Validation
-> [   10.586005]  target1:0:0: FAST-160 WIDE SCSI 320.0 MB/s DT IU QAS RTI
-> WRFLOW PCOMP (6.25 ns, offset 63)
-> [    9.622284] sd 1:0:0:0: [sdb] 143374744 512-byte hardware sectors (73408 MB)
-> [    9.624360] sd 1:0:0:0: [sdb] Write Protect is off
-> [    9.624360] sd 1:0:0:0: [sdb] Mode Sense: ab 00 10 08
-> [    9.695636] sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled,
-> supports DPO and FUA
-> [    9.759418] sd 1:0:0:0: [sdb] 143374744 512-byte hardware sectors (73408 MB)
-> [    9.630037] sd 1:0:0:0: [sdb] Write Protect is off
-> [    9.630037] sd 1:0:0:0: [sdb] Mode Sense: ab 00 10 08
-> [    9.700212] sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled,
-> supports DPO and FUA
-> [    9.700212]  sdb: sdb1 sdb2
-> [    9.769373] sd 1:0:0:0: [sdb] Attached SCSI disk
-> [    9.774370] scsi 1:0:1:0: Direct-Access     SEAGATE  ST373207LW       0004
-> PQ: 0 ANSI: 3
-> [    9.774393]  target1:0:1: Beginning Domain Validation
-> [    9.733244]  target1:0:1: Ending Domain Validation
-> [    9.733289]  target1:0:1: FAST-160 WIDE SCSI 320.0 MB/s DT IU QAS RTI
-> WRFLOW PCOMP (6.25 ns, offset 63)
-> [   10.631379] sd 1:0:1:0: [sdc] 143374744 512-byte hardware sectors (73408 MB)
-> [   10.632811] sd 1:0:1:0: [sdc] Write Protect is off
-> [   10.632819] sd 1:0:1:0: [sdc] Mode Sense: ab 00 10 08
-> [    9.671056] sd 1:0:1:0: [sdc] Write cache: enabled, read cache: enabled,
-> supports DPO and FUA
-> [    9.801761] sd 1:0:1:0: [sdc] 143374744 512-byte hardware sectors (73408 MB)
-> [    9.673388] sd 1:0:1:0: [sdc] Write Protect is off
-> [    9.673395] sd 1:0:1:0: [sdc] Mode Sense: ab 00 10 08
-> [    9.806210] sd 1:0:1:0: [sdc] Write cache: enabled, read cache: enabled,
-> supports DPO and FUA
-> [    9.806220]  sdc: sdc1
-> [    9.682136] sd 1:0:1:0: [sdc] Attached SCSI disk
-> [   13.786405] SGI XFS with large block numbers, no debug enabled
-> [   13.633457] XFS mounting filesystem sdb2
-> [   13.724345] Starting XFS recovery on filesystem: sdb2 (logdev: internal)
-> [   14.251356] Ending XFS recovery on filesystem: sdb2 (logdev: internal)
-> [   15.379298] XFS mounting filesystem sdc1
-> [   15.468255] Starting XFS recovery on filesystem: sdc1 (logdev: internal)
-> [   14.514314] Ending XFS recovery on filesystem: sdc1 (logdev: internal)
-> [   14.767260] warning: `squid' uses 32-bit capabilities (legacy support in use)
-> [   17.589751] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full
-> Duplex, Flow Control: RX/TX
-> 
+Nick Piggin writes:
+ > On Friday 06 June 2008 16:09, Solofo.Ramangalahy@bull.net wrote:
+ > > The size in bytes of a SysV IPC message queue, msgmnb, is too small
+ > > for large machines, but we don't want to bloat small machines
+ > 
+ > What's your evidence for this? Can you provide before / after
+ > performance numbers?
 
-whoa, that's weird.  We've seen timestamps jump forward a single hop of
-~100000 seconds, but that's all over the place.
+Maybe I have not been clear enough that this is not directly about
+performance, but more changing default value. So maybe "scale" in the
+title is misleading.
 
-Which kernel version is this, and in which kernel did it start happening?
+The evidence would be that these default values are changed either
+by a patch or "manually":
+ > > Several methods are used already to modify (mainly increase) msgmnb:
+ > > . distribution specific patch
+ > > . system wide sysctl.conf
+ > > . application specific tuning via /proc/sys/kernel/msgmnb
 
-Thanks.
+Further "evidence" could be googling for "linux msgmnb 65536", to see
+that tuning for benchmarks or recommended application configuration
+increase the value.
+
+This is just settings default values. Performance test results would
+not be different from those obtained by setting the values before
+running the tests.
+
+So here :
+ > > Here is the timeline of the evolution of MSG* #defines:
+ > > Year             1994         1999         1999          2008
+ > > Version           1.0       2.3.27       2.3.30        2.6.24
+ > > #define MSGMNI    128          128           16            16
+ > > #define MSGMAX   4056         8192         8192          8192
+ > > #define MSGMNB  16384        16384        16384         16384
+
+I have 65536 instead of 16384 for msgmnb
+(1982 instead of 16 for msgmni)
+for my 4 cpus/4GB x86_64 machine.
+
+Some result with pmsg used in recent discussions about performance gives:
+16384/16: 
+./pmsg 4 10 |grep Total
+Total: 9795993
+
+65536/1982:
+./pmsg 4 10 |grep Total
+Total: 9829590
+
+ > Also, when scaling things like this, it is probably more usual to
+ > use a log scale rather than linear, so that's a thought.
+
+Agreed, in general.
+Here, there are only 4 values, so I do not think it is worth using a
+log scale.
+If different values are desirable (finer grain, bigger,...), then the
+formula can be easily refined:
+min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
+What I did for the formula is simply taking the old value, a known
+modified value and the intermediate values.
+
+I hope this answers your questions,
+-- 
+solofo
+
+
+
+
+
