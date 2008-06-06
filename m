@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYFFK2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYFFKaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbYFFK2t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYFFK2j
+	id S1756167AbYFFKaG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYFFK3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:28:39 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:40437 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbYFFK2i (ORCPT
+	Fri, 6 Jun 2008 06:29:53 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50806 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753580AbYFFK3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:28:38 -0400
-Date: Fri, 6 Jun 2008 11:28:58 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Cc: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Locking in the (now generic) GPIO infrastructure?
-Message-ID: <20080606102858.GD14683@trinity.fluff.org>
-References: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
+	Fri, 6 Jun 2008 06:29:52 -0400
+Date: Fri, 6 Jun 2008 11:14:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Catalin(ux) M BOIE" <catab@embedromix.ro>
+Cc: linux-kernel@vger.kernel.org, rmk+serial@arm.linux.org.uk,
+       linux-serial@vger.kernel.org
+Subject: Re: [PATCH] Add support for a no-name 4 ports multiserial card
+Message-ID: <20080606111400.1eefc4fd@core>
+In-Reply-To: <1212736393-6837-1-git-send-email-catab@embedromix.ro>
+References: <1212736393-6837-1-git-send-email-catab@embedromix.ro>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 04, 2008 at 01:00:19PM +0200, Leon Woestenberg wrote:
-> Hello,
-> 
-> compare void gpio_line_set() in
-> 
-> arch/arm/plat-iop/gpio.c:
-> void gpio_line_set(int line, int value)
-> {
-> 	unsigned long flags;
-> 
-> 	local_irq_save(flags);
-> 	if (value == GPIO_LOW) {
-> 		*IOP3XX_GPOD &= ~(1 << line);
-> 	} else if (value == GPIO_HIGH) {
-> 		*IOP3XX_GPOD |= 1 << line;
-> 	}
-> 	local_irq_restore(flags);
-> }
-> 
-> with
-> 
-> include/asm-arm/arch-ixp4xx/platform.h:
-> static inline void gpio_line_set(u8 line, int value)
-> {
-> 	if (value == IXP4XX_GPIO_HIGH)
-> 	    *IXP4XX_GPIO_GPOUTR |= (1 << line);
-> 	else if (value == IXP4XX_GPIO_LOW)
-> 	    *IXP4XX_GPIO_GPOUTR &= ~(1 << line);
-> }
+On Fri,  6 Jun 2008 10:13:13 +0300
+"Catalin(ux) M BOIE" <catab@embedromix.ro> wrote:
 
-Yes, that looks rather buggy to me, and also sub-optimal to boot. The
-u8 line should be changed to just 'unsigned' having the compiler truncate
-to 8bit isn't useful when then used with a shift.
+> It is a no-name PCI card. I found no reference to a producer so I
+> used the fake name "PDR".
 
-static inline void gpio_line_set(unsigned line, int value)
-{
-	unsigned long flags;
-	unsigned regval;
+We don't really want to get fake names into pci_ids. I'd rather
 
-	local_irq_save(flags);
 
-	regval = *IXP4XX_GPIO_GPOUTR;
+>  		.vendor		= PCI_VENDOR_ID_PLX,
+> +		.device		= PCI_DEVICE_ID_PLX_9050,
+> +		.subvendor	= PCI_VENDOR_ID_PLX,
+> +		.subdevice	= PCI_SUBDEVICE_ID_PDR,
 
-	if (value == IXP4XX_GPIO_HIGH)
-		regval |= (1 << line);
-	else if (value == IXP4XX_GPIO_LOW)
-	   	regval &= ~(1 << line);
+Either the hex or a local and obviously unknown name like ID_UNKNOWN_1
 
-	*IXP4XX_GPIO_GPOUTR = regval;
-	local_irq_restore(flags);
-}
- 
-> Under a Linux kernel where multiple drivers are accessing GPIO, the
-> latter does not seem safe against preemption (assuming the memory
-> read-modify-write is not atomic).
-> 
-> Shouldn't GPIO access be protected against concurrent access here?
-> 
-> Documentation/gpio.txt does not really mention the locking mechanism
-> assumed to modify GPIO lines.
 
-I think it depends on whether gpiolib is being used or not, there may
-be some locking in there.
+> +	pbn_plx_pdr,
 
--- 
-Ben
+_unknown1
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+>  	pbn_oxsemi,
+>  	pbn_intel_i960,
+>  	pbn_sgi_ioc3,
+> @@ -1186,6 +1196,13 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+>  		.base_baud	= 115200,
+>  		.uart_offset	= 8,
+>  	},
+> +	/* PDR */
+> +	[pbn_plx_pdr] = {
 
+Ditto
+
+> +	/* PDR */
+
+Ditto
+
+> +	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
+> +		PCI_VENDOR_ID_PLX,
+> +		PCI_SUBDEVICE_ID_PDR, 0, 0,
+
+Ditto
+
+
+> +#define PCI_SUBDEVICE_ID_PDR		0x1584
+> +
+
+And not in here at all.
+
+Alan
