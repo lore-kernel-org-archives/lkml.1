@@ -1,72 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYFFFkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764127AbYFFFlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbYFFFkM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 01:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759348AbYFFFj5
+	id S1764127AbYFFFlR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 01:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYFFFlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 01:39:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40858 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756746AbYFFFjy (ORCPT
+	Fri, 6 Jun 2008 01:41:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:13113 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753114AbYFFFlC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 01:39:54 -0400
-Date: Thu, 5 Jun 2008 22:39:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
-Subject: Re: [WARNING] local_bh_enable with irqs disabled:
-Message-Id: <20080605223917.0a02804d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0806031529520.21106@axis700.grange>
-References: <Pine.LNX.4.64.0806031529520.21106@axis700.grange>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 6 Jun 2008 01:41:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=mcF9RGl0ZRjutL1LGJTVKbrvLVdUkQsXg+xSmDxkXs3JsAzYnQ0lDRU+++RZMZpR4D
+         A/yPhZM1U9b2mZ5Z4lhJk7KkvirEGdNpE6ngD2dRlJEFuYlA5+erjzrGY9whcX9t31Tm
+         jAvZ10WKBGwdWpyAhTUXOCdgETFGCuDqFXmSU=
+Message-ID: <86802c440806052241q90bb2dcmef9e98f2e24291e8@mail.gmail.com>
+Date: Thu, 5 Jun 2008 22:41:01 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: x86_64 boot hang when CONFIG_NUMA=n
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+In-Reply-To: <15271334.1212702611270.JavaMail.oracle@acsmt304.oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <15271334.1212702611270.JavaMail.oracle@acsmt304.oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Jun 2008 15:32:39 +0200 (CEST) Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+On Thu, Jun 5, 2008 at 2:50 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On 2.6.26-rc[2345], I am seeing a hang during boot with CONFIG_NUMA=n, but changing
+> to CONFIG_NUMA=y allows successful boot.
+>
+> This is on a 4-way AMD64 (HP) server with 8 GB RAM.
+>
+> Using initcall_debug, the last output on a hang is from arch/x86/pci/k8-bus_64.c:
+>
+> calling  early_fill_mp_bus_info+0x0/0x7b2
+> node 0 link 1: io port [1000, 3fff]
+> node 1 link 2: io port [4000, ffff]
+> TOM: 0000000080000000 aka 2048M
+> node 0 link 1: mmio [e8000000, fddfffff]
+> node 1 link 2: mmio [fde00000, fdffffff]
+> node 0 link 1: mmio [80000000, 83ffffff]
+> node 1 link 2: mmio [84000000, 8fffffff]
+> node 0 link 1: mmio [a0000, bffff]
+> TOM2: 0000000280000000 aka 10240M
+> bus: [00,3f] on node 0 link 1
+> bus: 00 index 0 io port: [0, 3fff]
+> bus: 00 index 1 mmio: [90000000, fddfffff]
+> bus: 00 index 2 mmio: [80000000, 83ffffff]
+> bus: 00 index 3 mmio: [a0000, bffff]
+> bus: 00 index 4 mmio: [fe000000, ffffffff]
+> bus: 00 index 5 mmio: [280000000, fcffffffff]
+> bus: [40,ff] on node 1 link 2
+> bus: 40 index 0 io port: [4000, ffff]
+> bus: 40 index 1 mmio: [fde00000, fdffffff]
+>
+>
+> There should be an index 2 line printed next, like this slightly modifed for debug
+> version does (with CONFIG_NUMA=y), or maybe the following line(s) just aren't
+> making it to the (net)console log and some other initcall function is actually
+> hanging:  (??)
+>
+> bus: [40,ff] on node 1 link 2
+> bus: 40 index 0/3 io port: [4000, ffff]
+> bus: 40 index 1/3 mmio: [fde00000, fdffffff]
+> bus: 40 index 2/3 mmio: [84000000, 8fffffff]
+> early_fill_mp_bus_info: done
+>
+>
+> Has anyone seen something like this?  Any patches to test?
+>
+> The next initcall functions (on a working boot) are:
+>
+> calling  arch_kdebugfs_init+0x0/0x8
+> initcall arch_kdebugfs_init+0x0/0x8 returned 0 after 0 msecs
+> calling  mtrr_if_init+0x0/0x77
+> initcall mtrr_if_init+0x0/0x77 returned 0 after 0 msecs
+> calling  ffh_cstate_init+0x0/0x31
+> initcall ffh_cstate_init+0x0/0x31 returned -1 after 0 msecs
+> initcall ffh_cstate_init+0x0/0x31 returned with error code -1
+> calling  acpi_pci_init+0x0/0x4a
+> ACPI: bus type pci registered
+> initcall acpi_pci_init+0x0/0x4a returned 0 after 0 msecs
 
-> Hi
-> 
-> got this whem rmmod-ing a gpiochip driver. IRQs were disabled in 
-> gpiochip_remove().
-> 
-> ------------[ cut here ]------------
-> WARNING: at kernel/softirq.c:141 local_bh_enable+0x8c/0xac()
-> Modules linked in: max7301(-) pxa2xx_spi vfat fat usbhid
-> [<c0024bd0>] (dump_stack+0x0/0x14) from [<c0032068>] (warn_on_slowpath+0x4c/0x68)
-> [<c003201c>] (warn_on_slowpath+0x0/0x68) from [<c003823c>] (local_bh_enable+0x8c/0xac)
->  r6:c3eac1e0 r5:c03195f0 r4:c3dde000
-> [<c00381b0>] (local_bh_enable+0x0/0xac) from [<c01f2764>] (sk_filter+0x34/0x94)
->  r5:c3eac1e0 r4:00000000
-> [<c01f2730>] (sk_filter+0x0/0x94) from [<c01f55b0>] (netlink_broadcast+0x1a4/0x438)
->  r5:c3db2010 r4:c3db2000
-> [<c01f540c>] (netlink_broadcast+0x0/0x438) from [<c0115e18>] (kobject_uevent_env+0x338/0x3ec)
-> [<c0115ae0>] (kobject_uevent_env+0x0/0x3ec) from [<c0115ee0>] (kobject_uevent+0x14/0x18)
-> [<c0115ecc>] (kobject_uevent+0x0/0x18) from [<c01538c0>] (device_del+0x13c/0x16c)
-> [<c0153784>] (device_del+0x0/0x16c) from [<c0153908>] (device_unregister+0x18/0x24)
->  r6:40000013 r5:c3eab000 r4:c3eab000
-> [<c01538f0>] (device_unregister+0x0/0x24) from [<c01258b0>] (gpiochip_remove+0xa0/0x13c)
->  r4:c3cfb0dc
-> [<c0125810>] (gpiochip_remove+0x0/0x13c) from [<bf01d0cc>] (max7301_remove+0x40/0x80 [max7301])
->  r6:ffffffed r5:c3eade00 r4:c3cfb0c0
-> [<bf01d08c>] (max7301_remove+0x0/0x80 [max7301]) from [<c0179888>] (spi_drv_remove+0x24/0x28)
->  r6:c3dde000 r5:bf01dcac r4:c3eade00
-> [<c0179864>] (spi_drv_remove+0x0/0x28) from [<c0155c7c>] (__device_release_driver+0x6c/0xa0)
-> [<c0155c10>] (__device_release_driver+0x0/0xa0) from [<c01561a8>] (driver_detach+0xcc/0xe0)
->  r5:c3eade00 r4:c3eadea8
-> [<c01560dc>] (driver_detach+0x0/0xe0) from [<c0154ed8>] (bus_remove_driver+0x94/0xbc)
->  r7:00000000 r6:c030be4c r5:bf01dcac r4:bf01dce0
-> [<c0154e44>] (bus_remove_driver+0x0/0xbc) from [<c0156234>] (driver_unregister+0x48/0x4c)
->  r6:c3dde000 r5:bf01dcac r4:bf01dce0
-> [<c01561ec>] (driver_unregister+0x0/0x4c) from [<bf01d428>] (max7301_exit+0x14/0x1c [max7301])
->  r5:00000000 r4:bf01dce0
-> [<bf01d414>] (max7301_exit+0x0/0x1c [max7301]) from [<c005a298>] (sys_delete_module+0x150/0x210)
-> [<c005a148>] (sys_delete_module+0x0/0x210) from [<c0020c00>] (ret_fast_syscall+0x0/0x2c)
->  r8:c0020d84 r7:00000081 r6:bec61470 r5:bec61458 r4:bec63c70
+can you send out your config?
 
-Which kernel version are you running?
-
-Please check 2.6.25 - its gpiochip_remove() seems innocent enough.
+YH
