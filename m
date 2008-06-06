@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYFFKSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbYFFKUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbYFFKSK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYFFKR4
+	id S1756072AbYFFKUV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYFFKUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:17:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56512 "EHLO
+	Fri, 6 Jun 2008 06:20:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54594 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751571AbYFFKRy (ORCPT
+	by vger.kernel.org with ESMTP id S1753368AbYFFKUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:17:54 -0400
-Date: Fri, 6 Jun 2008 03:17:18 -0700
+	Fri, 6 Jun 2008 06:20:08 -0400
+Date: Fri, 6 Jun 2008 03:19:39 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: webmaster@dragonslave.de
-Cc: Daniel Exner <dex@dragonslave.de>, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: linux-next Regression: Unable to locate IOAPIC
-Message-Id: <20080606031718.36cbbdc9.akpm@linux-foundation.org>
-In-Reply-To: <200806051100.12885.dex@dragonslave.de>
-References: <200806051100.12885.dex@dragonslave.de>
+To: "Denys Fedoryshchenko" <denys@visp.net.lb>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: strange timestamp in dmesg
+Message-Id: <20080606031939.285679c9.akpm@linux-foundation.org>
+In-Reply-To: <20080605115256.M13181@visp.net.lb>
+References: <20080605115256.M13181@visp.net.lb>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,121 +26,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-acpi)
+On Thu, 5 Jun 2008 14:54:07 +0300 "Denys Fedoryshchenko" <denys@visp.net.lb> wrote:
 
-On Thu, 5 Jun 2008 11:00:12 +0200 Daniel Exner <dex@dragonslave.de> wrote:
-
-> Hi!
-> 
-> (Added myself to CC, because I'm not subscribed)
-> 
-> with linux-next snapshot 20080604 my Laptop morphes into sitting duck and I 
-> think this is due to this:
-
-I assume 2.6.26-rc5 is OK?
-
-> dmesg | grep "GSI 11"
-> ACPI: PCI Interrupt 0000:00:11.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> 
-> IRQ 11
-> ERROR: Unable to locate IOAPIC for GSI 11
-> ACPI: PCI Interrupt 0000:00:11.1[B] -> Link [LNKB] -> GSI 11 (level, low) -> 
-> IRQ 11
-> ERROR: Unable to locate IOAPIC for GSI 11
-> ACPI: PCI Interrupt 0000:00:02.0[A] -> Link [LNKG] -> GSI 11 (level, low) -> 
-> IRQ 11
-> ERROR: Unable to locate IOAPIC for GSI 11
-> ACPI: PCI Interrupt 0000:00:06.0[A] -> Link [LNKH] -> GSI 11 (level, low) -> 
-> IRQ 11
-> ERROR: Unable to locate IOAPIC for GSI 11
-> ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKD] -> GSI 11 (level, low) -> 
-> IRQ 11
-> ERROR: Unable to locate IOAPIC for GSI 11
-> ACPI: PCI Interrupt 0000:02:00.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> 
-> IRQ 11
-> ERROR: Unable to locate IOAPIC for GSI 11
-> 
-> dmesg | grep APIC
-> Local APIC disabled by BIOS -- you can enable it with "lapic"
-> mapped APIC to ffffb000 (011ed000)
-> Local APIC not detected. Using dummy APIC emulation
-> 
-> lspci
-> 00:00.0 Host bridge: ALi Corporation M1644/M1644T Northbridge+Trident (rev 01)
-> 00:01.0 PCI bridge: ALi Corporation PCI to AGP Controller
-> 00:02.0 USB Controller: ALi Corporation USB 1.1 Controller (rev 03)
-> 00:04.0 IDE interface: ALi Corporation M5229 IDE (rev c3)
-> 00:06.0 Multimedia audio controller: ALi Corporation M5451 PCI AC-Link 
-> Controller Audio Device (rev 01)
-> 00:07.0 ISA bridge: ALi Corporation M1533/M1535 PCI to ISA Bridge [Aladdin 
-> IV/V/V+]
-> 00:08.0 Bridge: ALi Corporation M7101 Power Management Controller [PMU]
-> 00:0a.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 100] 
-> (rev 0d)
-> 00:11.0 CardBus bridge: Toshiba America Info Systems ToPIC100 PCI to Cardbus 
-> Bridge with ZV Support (rev 32)
-> 00:11.1 CardBus bridge: Toshiba America Info Systems ToPIC100 PCI to Cardbus 
-> Bridge with ZV Support (rev 32)
-> 01:00.0 VGA compatible controller: Trident Microsystems CyberBlade XPAi1 (rev 
-> 82)
-> 02:00.0 Ethernet controller: Atheros Communications, Inc. AR5212 802.11abg NIC 
-> (rev 01)
-> 
-> cat /proc/interrupts
->            CPU0
->   0:     412517    XT-PIC-XT        timer
->   1:       1990    XT-PIC-XT        i8042
->   2:          0    XT-PIC-XT        cascade
->   3:          2    XT-PIC-XT
->   4:          4    XT-PIC-XT
->   5:          3    XT-PIC-XT
->   6:          5    XT-PIC-XT        floppy
->   7:          2    XT-PIC-XT
->   8:          0    XT-PIC-XT        rtc0
->   9:        242    XT-PIC-XT        acpi
->  10:          2    XT-PIC-XT
->  11:       8465    XT-PIC-XT        ohci_hcd:usb1, ALI 5451, yenta, yenta, 
-> ath, eth0
->  12:        245    XT-PIC-XT        i8042
->  14:       6054    XT-PIC-XT        ide0
->  15:      28729    XT-PIC-XT        ide1
-> NMI:          0   Non-maskable interrupts
-> LOC:          0   Local timer interrupts
-> RES:          0   Rescheduling interrupts
-> CAL:          0   function call interrupts
-> TLB:          0   TLB shootdowns
-> TRM:          0   Thermal event interrupts
-> SPU:          0   Spurious interrupts
-> ERR:          0
-> MIS:          0
-> 
-> cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 8
-> model name      : Pentium III (Coppermine)
-> stepping        : 10
-> cpu MHz         : 1095.477
-> cache size      : 256 KB
-> fdiv_bug        : no
-> hlt_bug         : no
-> f00f_bug        : no
-> coma_bug        : no
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 2
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat 
-> pse36 mmx fxsr sse up
-> bogomips        : 2193.07
-> clflush size    : 32
-> power management:
+> I notice that timestamp shifting back in dmesg.
+> Probably it is because machine is dual CPU opteron. I am not sure that such
+> behaviour is good, and i think even dangerous, and maybe affect something else.
 > 
 > 
-> AFAIK this chipset doesnt provide a usable IO-APIC, but older Kernels upto 
-> 2.6.25.4 didn't have a problem with this.
-> Will try 2.6.26-rc5 today..
-> 
-> If you want some other infos (config etc.) just let me know.
+> Here is dmesg example
+> [    7.065265] sky2 eth1: enabling interface
+> [    7.093844] nf_conntrack version 0.5.0 (16384 buckets, 65536 max)
+> [    8.308842] Fusion MPT base driver 3.04.06
+> [    8.308850] Copyright (c) 1999-2007 LSI Corporation
+> [    7.719943] Fusion MPT SAS Host driver 3.04.06
+> [    7.773135] Fusion MPT SPI Host driver 3.04.06
+> [    7.773196] ACPI: PCI Interrupt 0000:02:05.0[A] -> GSI 26 (level, low) ->
+> IRQ 26
+> [    7.773233] mptbase: ioc0: Initiating bringup
+> [    7.983821] ioc0: LSI53C1020A A1: Capabilities={Initiator}
+> [    8.051145] scsi1 : ioc0: LSI53C1020A A1, FwRev=01032700h, Ports=1,
+> MaxQ=222, IRQ=26
+> [    9.730853] scsi 1:0:0:0: Direct-Access     SEAGATE  ST373207LW       0004
+> PQ: 0 ANSI: 3
+> [    9.730853]  target1:0:0: Beginning Domain Validation
+> [    9.690641]  target1:0:0: Ending Domain Validation
+> [   10.586005]  target1:0:0: FAST-160 WIDE SCSI 320.0 MB/s DT IU QAS RTI
+> WRFLOW PCOMP (6.25 ns, offset 63)
+> [    9.622284] sd 1:0:0:0: [sdb] 143374744 512-byte hardware sectors (73408 MB)
+> [    9.624360] sd 1:0:0:0: [sdb] Write Protect is off
+> [    9.624360] sd 1:0:0:0: [sdb] Mode Sense: ab 00 10 08
+> [    9.695636] sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled,
+> supports DPO and FUA
+> [    9.759418] sd 1:0:0:0: [sdb] 143374744 512-byte hardware sectors (73408 MB)
+> [    9.630037] sd 1:0:0:0: [sdb] Write Protect is off
+> [    9.630037] sd 1:0:0:0: [sdb] Mode Sense: ab 00 10 08
+> [    9.700212] sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled,
+> supports DPO and FUA
+> [    9.700212]  sdb: sdb1 sdb2
+> [    9.769373] sd 1:0:0:0: [sdb] Attached SCSI disk
+> [    9.774370] scsi 1:0:1:0: Direct-Access     SEAGATE  ST373207LW       0004
+> PQ: 0 ANSI: 3
+> [    9.774393]  target1:0:1: Beginning Domain Validation
+> [    9.733244]  target1:0:1: Ending Domain Validation
+> [    9.733289]  target1:0:1: FAST-160 WIDE SCSI 320.0 MB/s DT IU QAS RTI
+> WRFLOW PCOMP (6.25 ns, offset 63)
+> [   10.631379] sd 1:0:1:0: [sdc] 143374744 512-byte hardware sectors (73408 MB)
+> [   10.632811] sd 1:0:1:0: [sdc] Write Protect is off
+> [   10.632819] sd 1:0:1:0: [sdc] Mode Sense: ab 00 10 08
+> [    9.671056] sd 1:0:1:0: [sdc] Write cache: enabled, read cache: enabled,
+> supports DPO and FUA
+> [    9.801761] sd 1:0:1:0: [sdc] 143374744 512-byte hardware sectors (73408 MB)
+> [    9.673388] sd 1:0:1:0: [sdc] Write Protect is off
+> [    9.673395] sd 1:0:1:0: [sdc] Mode Sense: ab 00 10 08
+> [    9.806210] sd 1:0:1:0: [sdc] Write cache: enabled, read cache: enabled,
+> supports DPO and FUA
+> [    9.806220]  sdc: sdc1
+> [    9.682136] sd 1:0:1:0: [sdc] Attached SCSI disk
+> [   13.786405] SGI XFS with large block numbers, no debug enabled
+> [   13.633457] XFS mounting filesystem sdb2
+> [   13.724345] Starting XFS recovery on filesystem: sdb2 (logdev: internal)
+> [   14.251356] Ending XFS recovery on filesystem: sdb2 (logdev: internal)
+> [   15.379298] XFS mounting filesystem sdc1
+> [   15.468255] Starting XFS recovery on filesystem: sdc1 (logdev: internal)
+> [   14.514314] Ending XFS recovery on filesystem: sdc1 (logdev: internal)
+> [   14.767260] warning: `squid' uses 32-bit capabilities (legacy support in use)
+> [   17.589751] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full
+> Duplex, Flow Control: RX/TX
 > 
 
+whoa, that's weird.  We've seen timestamps jump forward a single hop of
+~100000 seconds, but that's all over the place.
+
+Which kernel version is this, and in which kernel did it start happening?
+
+Thanks.
