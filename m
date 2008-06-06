@@ -1,87 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762425AbYFFTlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764150AbYFFToP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762425AbYFFTlI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 15:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbYFFTk5
+	id S1764150AbYFFToP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 15:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbYFFTn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 15:40:57 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55092 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754419AbYFFTk4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 15:40:56 -0400
-Date: Fri, 6 Jun 2008 20:40:36 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Catalin(ux) M BOIE" <catab@embedromix.ro>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH] Add support for a no-name 4 ports multiserial card
-Message-ID: <20080606194036.GB18231@flint.arm.linux.org.uk>
-References: <1212736393-6837-1-git-send-email-catab@embedromix.ro> <20080606111400.1eefc4fd@core>
+	Fri, 6 Jun 2008 15:43:58 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:42455 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752298AbYFFTn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 15:43:57 -0400
+Subject: Re: [PATCH 1/2] make walk_memory_resource available with
+	MEMORY_HOTPLUG=n
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Hannes Hering <hannes.hering@linux.vnet.ibm.com>, tklein@de.ibm.com,
+       themann@de.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+       ossthema@de.ibm.com, Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <20080603223054.GC7475@localdomain>
+References: <200805071443.20192.hannes.hering@linux.vnet.ibm.com>
+	 <20080528164405.GA4836@localdomain>
+	 <200806031007.40162.hannes.hering@linux.vnet.ibm.com>
+	 <20080603204908.GB7475@localdomain>
+	 <1212527335.23656.2.camel@badari-desktop> <4845B382.20205@garzik.org>
+	 <20080603223054.GC7475@localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Jun 2008 12:43:22 -0700
+Message-Id: <1212781402.23656.45.camel@badari-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080606111400.1eefc4fd@core>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 11:14:00AM +0100, Alan Cox wrote:
-> On Fri,  6 Jun 2008 10:13:13 +0300
-> "Catalin(ux) M BOIE" <catab@embedromix.ro> wrote:
-> 
-> > It is a no-name PCI card. I found no reference to a producer so I
-> > used the fake name "PDR".
-> 
-> We don't really want to get fake names into pci_ids. I'd rather
-> 
-> 
-> >  		.vendor		= PCI_VENDOR_ID_PLX,
-> > +		.device		= PCI_DEVICE_ID_PLX_9050,
-> > +		.subvendor	= PCI_VENDOR_ID_PLX,
-> > +		.subdevice	= PCI_SUBDEVICE_ID_PDR,
-> 
-> Either the hex or a local and obviously unknown name like ID_UNKNOWN_1
-> 
-> 
-> > +	pbn_plx_pdr,
-> 
-> _unknown1
-> 
-> >  	pbn_oxsemi,
-> >  	pbn_intel_i960,
-> >  	pbn_sgi_ioc3,
-> > @@ -1186,6 +1196,13 @@ static struct pciserial_board pci_boards[] __devinitdata = {
-> >  		.base_baud	= 115200,
-> >  		.uart_offset	= 8,
-> >  	},
-> > +	/* PDR */
-> > +	[pbn_plx_pdr] = {
-> 
-> Ditto
-> 
-> > +	/* PDR */
-> 
-> Ditto
-> 
-> > +	{	PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
-> > +		PCI_VENDOR_ID_PLX,
-> > +		PCI_SUBDEVICE_ID_PDR, 0, 0,
-> 
-> Ditto
-> 
-> 
-> > +#define PCI_SUBDEVICE_ID_PDR		0x1584
-> > +
-> 
-> And not in here at all.
 
-And there's no need for half the patch either - which I tried to explain
-in a previous reply to Catalin but I just got repeated "My email address
-has changed to ..." responses... so I gave up.
+On Tue, 2008-06-03 at 17:30 -0500, Nathan Lynch wrote:
+> The ehea driver was recently changed[1] to use walk_memory_resource() to
+> detect the system's memory layout.  However, walk_memory_resource() is
+> available only when memory hotplug is enabled.  So CONFIG_EHEA was
+> made to depend on MEMORY_HOTPLUG [2], but it is inappropriate for a
+> network driver to have such a dependency.
+> 
+> Make the declaration of walk_memory_resource() and its powerpc
+> implementation (ehea is powerpc-specific) unconditionally available.
+> 
+> [1] 48cfb14f8b89d4d5b3df6c16f08b258686fb12ad
+>     "ehea: Add DLPAR memory remove support"
+> 
+> [2] fb7b6ca2b6b7c23b52be143bdd5f55a23b9780c8
+>     "ehea: Add dependency to Kconfig"
+> 
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> ---
+>  arch/powerpc/mm/mem.c          |    3 +--
+>  include/linux/memory_hotplug.h |   16 ++++++++--------
+>  2 files changed, 9 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index f67e118..51f82d8 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -151,6 +151,7 @@ out:
+>  	return ret;
+>  }
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+> +#endif /* CONFIG_MEMORY_HOTPLUG */
+> 
+>  /*
+>   * walk_memory_resource() needs to make sure there is no holes in a given
+> @@ -184,8 +185,6 @@ walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+>  }
+>  EXPORT_SYMBOL_GPL(walk_memory_resource);
+> 
+> -#endif /* CONFIG_MEMORY_HOTPLUG */
+> -
+>  void show_mem(void)
+>  {
+>  	unsigned long total = 0, reserved = 0;
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index 73e3586..ea9f5ad 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -77,14 +77,6 @@ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+>  extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+>  	unsigned long nr_pages);
+> 
+> -/*
+> - * Walk through all memory which is registered as resource.
+> - * arg is (start_pfn, nr_pages, private_arg_pointer)
+> - */
+> -extern int walk_memory_resource(unsigned long start_pfn,
+> -			unsigned long nr_pages, void *arg,
+> -			int (*func)(unsigned long, unsigned long, void *));
+> -
+>  #ifdef CONFIG_NUMA
+>  extern int memory_add_physaddr_to_nid(u64 start);
+>  #else
+> @@ -199,6 +191,14 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
+> 
+>  #endif /* ! CONFIG_MEMORY_HOTPLUG */
+> 
+> +/*
+> + * Walk through all memory which is registered as resource.
+> + * arg is (start_pfn, nr_pages, private_arg_pointer)
+> + */
+> +extern int walk_memory_resource(unsigned long start_pfn,
+> +			unsigned long nr_pages, void *arg,
+> +			int (*func)(unsigned long, unsigned long, void *));
+> +
+>  extern int add_memory(int nid, u64 start, u64 size);
+>  extern int arch_add_memory(int nid, u64 start, u64 size);
+>  extern int remove_memory(u64 start, u64 size);
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Sorry. I couldn't get back earlier.
+
+Acked-by: Badari Pulavarty <pbadari@us.ibm.com>
+
