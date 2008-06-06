@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760802AbYFFQft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbYFFQgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760802AbYFFQft (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 12:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbYFFQfj
+	id S1763003AbYFFQgv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 12:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757151AbYFFQgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 12:35:39 -0400
-Received: from mga11.intel.com ([192.55.52.93]:16751 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbYFFQfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 12:35:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,601,1204531200"; 
-   d="scan'208";a="337061535"
-Message-ID: <48496714.6030005@intel.com>
-Date: Fri, 06 Jun 2008 09:34:28 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
+	Fri, 6 Jun 2008 12:36:42 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:9571 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752371AbYFFQgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 12:36:41 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: IB/ehca: Reject send WRs only for RESET, INIT and RTR state
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>, cpufreq@lists.linux.org.uk,
-       Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: bug? acpi p-state + ondemand keeps dropping max freq
-References: <48486920.4040006@intel.com> <20080606041358.GA3457@khazad-dum.debian.net>
-In-Reply-To: <20080606041358.GA3457@khazad-dum.debian.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+X-Length: 2328
+Date: Fri, 6 Jun 2008 18:35:43 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jun 2008 16:35:38.0282 (UTC) FILETIME=[5A1BF0A0:01C8C7F3]
+Message-Id: <200806061835.43802.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> On Thu, 05 Jun 2008, Kok, Auke wrote:
->> This renders my Dothan to utterly poor speeds. (standard T43)
-> 
-> Which ThinkPad T43 model and BIOS revision?
-> 
-> I have a T43 2687DDU with the latest BIOS, and I have never seen
-> anything like that happening.  Is it overheating or something like that?
-> 
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_reqs.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-T43 2668NU3 Version: 1YET59WW (1.24 )
+diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
+index bbe0436..f093b00 100644
+--- a/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -421,8 +421,10 @@ int ehca_post_send(struct ib_qp *qp,
+ 	int ret = 0;
+ 	unsigned long flags;
+ 
+-	if (unlikely(my_qp->state != IB_QPS_RTS)) {
+-		ehca_err(qp->device, "QP not in RTS state  qpn=%x", qp->qp_num);
++	/* Reject WR if QP is in RESET, INIT or RTR state */
++	if (unlikely(my_qp->state < IB_QPS_RTS)) {
++		ehca_err(qp->device, "Invalid QP state  qp_state=%d qpn=%x",
++			 my_qp->state, qp->qp_num);
+ 		return -EINVAL;
+ 	}
+ 
+-- 
+1.5.5
 
-hardly overheating:
 
-  Thermal zone 1 : ok, 49 C
-
-it goes maybe up to 56C during work, but that's it.
-
-Auke
