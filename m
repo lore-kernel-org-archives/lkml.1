@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbYFFPJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760119AbYFFPL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759613AbYFFPJw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 11:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbYFFPJo
+	id S1760119AbYFFPL2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 11:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757268AbYFFPLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 11:09:44 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4542 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755976AbYFFPJn (ORCPT
+	Fri, 6 Jun 2008 11:11:20 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:24453 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756423AbYFFPLT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 11:09:43 -0400
-Date: Fri, 6 Jun 2008 16:09:42 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, perex@perex.cz, alsa-devel@alsa-project.org
-Subject: Re: [PATCH] ac97: add support for wm9711 master left inv switch
-Message-ID: <20080606150941.GF24872@sirena.org.uk>
-Mail-Followup-To: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
-	linux-kernel@vger.kernel.org, perex@perex.cz,
-	alsa-devel@alsa-project.org
-References: <Pine.LNX.4.64.0806061659550.3338@axis700.grange>
+	Fri, 6 Jun 2008 11:11:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=f31neKP99gX9p0raToqB3TTJKDVzd4rlCKgJFzryVoyM2gITBEU4c6oQQ1EYFCeEbj
+         mMR4z1hFmR8hjFXC+DhSHam5yGg/WClVB0Xs+Sm/OtML5O2EoaZNTpYxxz+yRwgVdI3/
+         CKdgfGQk7OexjFIjumrf2JqfSWmsMWySlySzA=
+Date: Fri, 6 Jun 2008 11:11:08 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Eric Piel <eric.piel@tremplin-utc.net>
+Cc: Andrew Morton <akpm@osdl.org>, pavel@ucw.cz,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Yan Burman <burman.yan@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       HWMON <lm-sensors@lm-sensors.org>
+Subject: Re: [PATCH 2.6.25.4]  hwmon: HP Mobile Data Protection System 3D
+	ACPI driver -- please review!
+Message-ID: <20080606111051.ZZRA012@mailhub.coreip.homeip.net>
+References: <1212235533.3815.5.camel@localhost> <4846EBF5.2030406@tremplin-utc.net> <20080606102636.ZZRA012@mailhub.coreip.homeip.net> <484950D2.9070809@tremplin-utc.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0806061659550.3338@axis700.grange>
-X-Cookie: Non-sequiturs make me eat lampshades.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <484950D2.9070809@tremplin-utc.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 06, 2008 at 05:02:57PM +0200, Guennadi Liakhovetski wrote:
-> From: Juergen Beisert <j.beisert@pengutronix.de>
-> 
-> This patch adds support for Master Left Inv Switch on wm9711.
-> At least required to drive the mono speaker on the PXA270 platfrom
-> 
-> Signed-off-by: Juergen Beisert <j.beisert@pengutronix.de>
+On Fri, Jun 06, 2008 at 04:59:30PM +0200, Eric Piel wrote:
+> Dmitry Torokhov wrote:
+>> Hi,
+> Hello,
+>>
+>>
+>> I would recommend converting the input piece to input_polled_device
+>> instead of managing the polling thread by yourselves.
+> Yes, you are right, I had forgotten about this one! That said, for now I'm 
+> working on removing the polling and relying only the interrupts. So if it 
+> works that shouldn't be needed :-)
+>
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Oh, great, this is even better.
 
-Note that ALSA patches should really be CCed to the alsa-devel mailing
-list (CC added).
-
->  sound/pci/ac97/ac97_patch.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux-2.6/sound/pci/ac97/ac97_patch.c
-> ===================================================================
-> --- linux-2.6.orig/sound/pci/ac97/ac97_patch.c	2008-05-26 12:19:23.000000000 +0200
-> +++ linux-2.6/sound/pci/ac97/ac97_patch.c	2008-05-27 13:23:11.000000000 +0200
-> @@ -669,6 +669,7 @@
->  AC97_SINGLE("Mic 2 Volume", AC97_MIC, 0, 31, 1),
->  AC97_SINGLE("Mic 20dB Boost Switch", AC97_MIC, 7, 1, 0),
->  
-> +AC97_SINGLE("Master Left Inv Switch", AC97_MASTER, 6, 1, 0),
->  AC97_SINGLE("Master ZC Switch", AC97_MASTER, 7, 1, 0),
->  AC97_SINGLE("Headphone ZC Switch", AC97_HEADPHONE, 7, 1, 0),
->  AC97_SINGLE("Mono ZC Switch", AC97_MASTER_MONO, 7, 1, 0),
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+Dmitry
