@@ -1,77 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbYFFLVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYFFLcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbYFFLVT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 07:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYFFLVK
+	id S1754527AbYFFLcs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 07:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYFFLch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 07:21:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:19534 "EHLO
+	Fri, 6 Jun 2008 07:32:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:29292 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbYFFLVI (ORCPT
+	with ESMTP id S1752949AbYFFLcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 07:21:08 -0400
+	Fri, 6 Jun 2008 07:32:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=HN+4wGytskBCb5E2Dj4uQOv1tlUwYQSQe50MgYsuuLALA252GZG2Mrlt68OxGyP0UW
-         S+Tw9bj6iMRZ9WaXBtFUJdSVDE5Ah9nGXogQISqZqtOiXca90rdxymE2gUKJ/+gfIbgn
-         Gp7ZznVEs4RTLvXy8f7oqELxlfdwf1lp6Ka7U=
-Message-ID: <19f34abd0806060421y5ec0a4f7je592f6ba5b575ee4@mail.gmail.com>
-Date: Fri, 6 Jun 2008 13:21:07 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for June 5
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "Mike Travis" <travis@sgi.com>
-In-Reply-To: <20080606035413.37f340ef.akpm@linux-foundation.org>
+        b=LioN79AjJ3edlh4/P00h8VFQ2izxzvzjF9miFwtQ00Zi1BHTt7Ek78RkcRPBm/otKz
+         q8iCYWeHk6OXA2ird75R6X8WlSSnFppCpwz0Jxw0eri913t0R+dUfnmgmrcgYKXqECWI
+         6uDxiO2H0xv122b9MYssn5/UOVlXlNjyAf7H0=
+Message-ID: <1ba2fa240806060432t73ecb318x89e877241aa6ef55@mail.gmail.com>
+Date: Fri, 6 Jun 2008 14:32:27 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Ian Schram" <ischram@telenet.be>
+Subject: Re: iwl4965 oops in 2.6.26-rc5 x86_64
+Cc: "Thomas Backlund" <tmb@mandriva.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <48488878.5040708@telenet.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au>
-	 <20080605195604.41623687.akpm@linux-foundation.org>
-	 <20080606071707.GB9708@elte.hu>
-	 <20080606002957.6329a0ec.akpm@linux-foundation.org>
-	 <20080606024811.70db9ab2.akpm@linux-foundation.org>
-	 <20080606035413.37f340ef.akpm@linux-foundation.org>
+References: <4848289D.1080205@mandriva.org>
+	 <1ba2fa240806051103q652accf5t1bd1d94630ebea5b@mail.gmail.com>
+	 <48482BC3.4070402@mandriva.org> <4848482C.2080208@mandriva.org>
+	 <48485F12.2050908@mandriva.org> <48488878.5040708@telenet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 6, 2008 at 12:54 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 6 Jun 2008 02:48:11 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-
-...
-
-> commit a9ad585c8a18f7ba754b85f5786976609b9d7d29
-> Author: Mike Travis <travis@sgi.com>
-> Date:   Mon May 12 21:21:12 2008 +0200
+On Fri, Jun 6, 2008 at 3:44 AM, Ian Schram <ischram@telenet.be> wrote:
+> Isn't this the Oops Joonwoo Park wanted to patch with
 >
->    x86: remove the static 256k node_to_cpumask_map
+> "[PATCH] iwlwifi: fix oops on wep key insertion" 27/5/2008
 >
->      * Consolidate node_to_cpumask operations and remove the 256k
->        byte node_to_cpumask_map.  This is done by allocating the
->        node_to_cpumask_map array after the number of possible nodes
->        (nr_node_ids) is known.
+> invalid length of webkey that would/should be handled in mac80211?
 >
->      * Debug printouts when CONFIG_DEBUG_PER_CPU_MAPS is active have
->        been increased.  It now shows faults when calling node_to_cpumask()
->        and node_to_cpumask_ptr().
+> ian
 
-This might be obvious, but maybe enabling CONFIG_DEBUG_PER_CPU_MAPS
-will give you some more (valuable) info? It looks to me like maybe
-nr_node_ids is returning inconsistent numbers or used somewhere before
-it's properly initialized.
+Yes, it looks like.
+Thomas can you send out your wpa_supplicant config fiele
 
+I will provide a patch that disable hw encryption on long wep keys. It
+get lost in my todo list.
+Tomas
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+>
+> Thomas Backlund wrote:
+>>
+>> Thomas Backlund skrev:
+>>>
+>>> Thomas Backlund skrev:
+>>>>
+>>>> Tomas Winkler skrev:
+>>>>>>
+>>>>> Can you please verify with latest wireless-testing. git
+>>>>> Thanks
+>>>>> Tomas
+>>>>
+>>>> Yep. will do...
+>>>>
+>>>> I'll report back as soon as I have tried..
+>>>>
+>>>
+>>> No go...
+>>>
+>>>> Jun  5 22:53:42 5720g kernel: firmware: requesting iwlwifi-4965-1.ucode
+>>>>
+>>>>          Jun  5 22:53:42 5720g kernel: Registered led device: iwl-phy0:radio
+>>>>
+>>>>              Jun  5 22:53:42 5720g kernel: Registered led device:
+>>>> iwl-phy0:assoc
+>>>>                            Jun  5 22:53:42 5720g kernel: Registered led
+>>>> device: iwl-phy0:RX
+>>>>                                     Jun  5 22:53:42 5720g kernel: Registered
+>>>> led device: iwl-phy0:TX
+>>>>                                         Jun  5 22:53:42 5720g kernel:
+>>>> ADDRCONF(NETDEV_UP): wlan0: link is not ready
+>>>>                                                    Jun  5 22:53:43 5720g
+>>>> kernel: BUG: unable to handle kernel NULL pointer dereference at
+>>>> 0000000000000000                                                      Jun  5
+>>>> 22:53:43 5720g kernel: IP: [<ffffffffa02a6dfc>]
+>>>> :iwlcore:iwl_enqueue_hcmd+0x142/0x227
+>>>>                           Jun  5 22:53:43 5720g kernel: PGD 0
+>>>>
+>>>>                                Jun  5 22:53:43 5720g kernel: Oops: 0000 [1]
+>>>> SMP
+>>>>                                     Jun  5 22:53:43 5720g kernel: CPU 1
+>>>>
+>>>>                                          Jun  5 22:53:43 5720g kernel:
+>>>> Modules linked in: af_packet kvm_intel kvm snd_seq_dummy snd_seq_oss
+>>>> snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ipv6
+>>>> xt_tcpudp iptable_filter ip_tables x_tables binfmt_misc loop dm_mod
+>>>> cpufreq_ondemand cpufreq_conservative cpufreq_powersave acpi_cpufreq
+>>>> freq_table tifm_sd tifm_7xx1 tifm_core nvram pcmcia ohci1394 ieee1394
+>>>> mmc_block arc4 ecb sr_mod cdrom crypto_blkcipher sg battery video ac
+>>>> yenta_socket output container firewire_ohci rsrc_nonstatic pcmcia_core sdhci
+>>>> firewire_core iwl4965 iwlcore mmc_core crc_itu_t i2c_i801 snd_hda_intel
+>>>> rfkill snd_pcsp intel_agp iTCO_wdt nsc_ircc thermal acer_wmi processor tg3
+>>>> iTCO_vendor_support snd_pcm joydev i2c_core snd_timer rtc_cmos button
+>>>> firmware_class rtc_core mac80211 led_class evdev serio_raw snd irda
+>>>> soundcore wmi rtc_lib crc_ccitt snd_page_alloc cfg80211 ide_generic piix
+>>>> ide_core ata_piix ahci libata dock sd_mod scsi_mod ext3 jbd uhci_hcd
+>>>> ohci_hcd ehci_hcd usbcore [last unlo
+>>>
+>>> aded: nf_conntrack]
+>>>
+>>>>
+>>>> Jun  5 22:53:43 5720g kernel: Pid: 10, comm: events/1 Not tainted
+>>>> 2.6.26-rc4-wl #1
+>>>>               Jun  5 22:53:43 5720g kernel: RIP: 0010:[<ffffffffa02a6dfc>]
+>>>>  [<ffffffffa02a6dfc>] :iwlcore:iwl_enqueue_hcmd+0x142/0x227
+>>>>                     Jun  5 22:53:43 5720g kernel: RSP: 0018:ffff81013fb15b90
+>>>>  EFLAGS: 00010086
+>>>>                         Jun  5 22:53:43 5720g kernel: RAX: 0000000000000000
+>>>> RBX: 0000000000000000 RCX: 0000000000000064
+>>>>                              Jun  5 22:53:43 5720g kernel: RDX:
+>>>> 0000000000000024 RSI: 0000000000000000 RDI: ffff810139a4c578
+>>>>                                              Jun  5 22:53:43 5720g kernel:
+>>>> RBP: ffff81013fb15be0 R08: ffff810139b31200 R09: 0000000000000560
+>>>>                                                    Jun  5 22:53:43 5720g
+>>>> kernel: R10: ffff81013fb15a60 R11: ffff81013fb10a78 R12: ffff810139a4c560
+>>>>                                                            Jun  5 22:53:43
+>>>> 5720g kernel: R13: ffff81013bd51ba0 R14: ffff81013fb15d00 R15:
+>>>> 0000000000000004
+>>>>  Jun  5 22:53:43 5720g kernel: FS:  0000000000000000(0000)
+>>>> GS:ffff81013fab8ac0(0000) knlGS:0000000000000000
+>>>>                       Jun  5 22:53:43 5720g kernel: CS:  0010 DS: 0018 ES:
+>>>> 0018 CR0: 000000008005003b
+>>>>                            Jun  5 22:53:43 5720g kernel: CR2:
+>>>> 0000000000000000 CR3: 0000000000201000 CR4: 00000000000026e0
+>>>>                                              Jun  5 22:53:43 5720g kernel:
+>>>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>>>>                                                    Jun  5 22:53:43 5720g
+>>>> kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>>>>                                                            Jun  5 22:53:43
+>>>> 5720g kernel: Process events/1 (pid: 10, threadinfo ffff81013fb14000, task
+>>>> ffff81013fb102c0)                                                 Jun  5
+>>>> 22:53:43 5720g kernel: Stack:  ffffffff806f8338 ffffffff8075bca0
+>>>> ffff81013bd52610 006881013fb10a10
+>>>>          Jun  5 22:53:43 5720g kernel:  0000000000000006 ffff81013dc86500
+>>>> ffff81013fb15d00 ffff81013bd51ba0
+>>>>                 Jun  5 22:53:43 5720g kernel:  0000000000000246
+>>>> 0000000000000000 ffff81013fb15c60 ffffffffa02a5431
+>>>>                                 Jun  5 22:53:43 5720g kernel: Call Trace:
+>>>>
+>>>>                                      Jun  5 22:53:43 5720g kernel:
+>>>>  [<ffffffffa02a5431>] :iwlcore:iwl_send_cmd_sync+0x8b/0x24e
+>>>>                                                    Jun  5 22:53:43 5720g
+>>>> kernel:  [<ffffffff80257f1d>] ? __lock_acquire+0xbee/0xd5a
+>>>>                                                           Jun  5 22:53:43
+>>>> 5720g kernel:  [<ffffffffa02a5645>] :iwlcore:iwl_send_cmd+0x16/0x19
+>>>>                                                                  Jun  5
+>>>> 22:53:43 5720g kernel:  [<ffffffffa02a84b3>]
+>>>> :iwlcore:iwl_send_static_wepkey_cmd+0xcb/0xd5
+>>>>                              Jun  5 22:53:43 5720g kernel:
+>>>>  [<ffffffffa02a855f>] :iwlcore:iwl_set_default_wep_key+0xa2/0xbc
+>>>>                                                   Jun  5 22:53:43 5720g
+>>>> kernel:  [<ffffffffa02b98ae>] :iwl4965:iwl4965_mac_set_key+0xed/0x136
+>>>>                                                            Jun  5 22:53:43
+>>>> 5720g kernel:  [<ffffffffa01762da>]
+>>>> :mac80211:__ieee80211_key_todo+0x109/0x203
+>>>>                             Jun  5 22:53:43 5720g kernel:
+>>>>  [<ffffffffa017647a>] :mac80211:ieee80211_key_todo+0x17/0x25
+>>>>                                                   Jun  5 22:53:43 5720g
+>>>> kernel:  [<ffffffffa0176491>] :mac80211:key_todo+0x9/0xb
+>>>>                                                           Jun  5 22:53:43
+>>>> 5720g kernel:  [<ffffffff8024717c>] run_workqueue+0xfc/0x203
+>>>>                                                                 Jun  5
+>>>> 22:53:43 5720g kernel:  [<ffffffffa0176488>] ? :mac80211:key_todo+0x0/0xb
+>>>>
+>>>> Jun  5 22:53:43 5720g kernel:  [<ffffffff80247363>] worker_thread+0xe0/0xf1
+>>>>
+>>>>      Jun  5 22:53:43 5720g kernel:  [<ffffffff8024ad24>] ?
+>>>> autoremove_wake_function+0x0/0x38
+>>>>                            Jun  5 22:53:43 5720g kernel:
+>>>>  [<ffffffff80247283>] ? worker_thread+0x0/0xf1
+>>>>                                                   Jun  5 22:53:43 5720g
+>>>> kernel:  [<ffffffff8024a9f3>] kthread+0x49/0x76
+>>>>                                                            Jun  5 22:53:43
+>>>> 5720g kernel:  [<ffffffff8020d238>] child_rip+0xa/0x12
+>>>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8020c7cc>] ?
+>>>> restore_args+0x0/0x30
+>>>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8024a9aa>] ? kthread+0x0/0x76
+>>>> Jun  5 22:53:43 5720g kernel:  [<ffffffff8020d22e>] ? child_rip+0x0/0x12
+>>>> Jun  5 22:53:43 5720g kernel:
+>>>> Jun  5 22:53:43 5720g kernel:
+>>>> Jun  5 22:53:43 5720g kernel: Code: 69 c8 58 01 00 00 41 8a 06 4d 89 cc
+>>>> 4d 03 a5 10 45 00 00 41 88 44 24 14 4c 89 e7 f3 a5 49 8d 7c 24 18 41 0f b7
+>>>> 4e 02 49 8b 76 18 <f3> a4 41 c6 44 24 15 00 41 0f b6 95 e4 44 00 00 89 d0 80
+>>>> cc 04
+>>>> Jun  5 22:53:43 5720g kernel: RIP  [<ffffffffa02a6dfc>]
+>>>> :iwlcore:iwl_enqueue_hcmd+0x142/0x227
+>>>> Jun  5 22:53:43 5720g kernel:  RSP <ffff81013fb15b90>
+>>>> Jun  5 22:53:43 5720g kernel: CR2: 0000000000000000
+>>>> Jun  5 22:53:43 5720g kernel: ---[ end trace 58a672208ff93cb1 ]---
+>>>
+>>>
+>>> And for reference I also tried 2.6.25.4 wich works as it should
+>>>
+>>
+>> And I have now tested 2.6.26-rc1 wich also has the oops, so I guess it's
+>> bisect time...
+>>
+>>> --
+>>> Thomas
+>>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-wireless"
+>> in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>>
+>
