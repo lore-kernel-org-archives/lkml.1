@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYFFIuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbYFFIwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbYFFIuW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 04:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbYFFIuI
+	id S1753954AbYFFIwM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 04:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbYFFIv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 04:50:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53105 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbYFFIuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 04:50:06 -0400
-Date: Fri, 6 Jun 2008 10:49:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: linux-next: Tree for June 5
-Message-ID: <20080606084949.GA28190@elte.hu>
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au> <20080605195604.41623687.akpm@linux-foundation.org> <20080606071707.GB9708@elte.hu> <20080606072536.GA19334@elte.hu> <20080606003327.9ac0e91b.akpm@linux-foundation.org> <20080606074137.GA28962@elte.hu> <20080606004743.a78180c3.akpm@linux-foundation.org> <20080606082325.GA10826@elte.hu> <20080606013835.8dfd838b.akpm@linux-foundation.org>
+	Fri, 6 Jun 2008 04:51:57 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:34700 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751473AbYFFIv4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 04:51:56 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4848FAA9.6020808@cam.ac.uk>
+Date: Fri, 06 Jun 2008 09:51:53 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080606013835.8dfd838b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
+CC: Jean Delvare <khali@linux-fr.org>, Andrew Morton <akpm@osdl.org>,
+       Torokhov <dmitry.torokhov@gmail.com>, Burman <burman.yan@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, HWMON <lm-sensors@lm-sensors.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Pavel Machek <pavel@suse.cz>, Yan@ATrpms.net, Dmitry@ATrpms.net,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [lm-sensors] [PATCH 2.6.25.4] hwmon: HP Mobile Data Protection
+ System 3D ACPI driver -- please review!
+References: <1212235533.3815.5.camel@localhost>	<4846EBF5.2030406@tremplin-utc.net>	<20080604225830.1dff64fc@hyperion.delvare>	<20080604230510.GB30475@elf.ucw.cz>	<484728B2.1000209@tremplin-utc.net> <20080605082950.6957f1a2@hyperion.delvare> <4847B415.2080708@cam.ac.uk> <48484DD6.3050706@tremplin-utc.net>
+In-Reply-To: <48484DD6.3050706@tremplin-utc.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+>> Still, it may take some time to iron out the various kinks in this system
+>> and get it fully tested, so may be worth putting stuff elsewhere for now
+>> with the intention to move it as and when the more unified stuff has been
+>> written.
+> Yes, so I'll keep my plan of first submitting the driver with the
+> current interface, and latter updating the interface to the new
+> subsystem when you have stabilised its interface.
+Probably best plan!
+> BTW, just by curiosity, is your tree available publicly somewhere?
+Not just yet. (doesn't all work as of yet and I need to get at least a couple
+of devices working with it be sure I haven't written something too device
+specific)
 
-> > most of the -tip topics (there are 75 of them currently) are present 
-> > in linux-next - about ~70% of all -tip commits are in linux-next 
-> > already. The stuff that is not in linux-next yet is either because 
-> > it's: miscellany fixes (i.e. intentionally grabbed out-of-tree to 
-> > make our tests work better), not cooked enough yet, or because we 
-> > are still working it out - tip is less than a month old still.
-> > 
-> > in general the rule is that if there's anything we want to push 
-> > upstream, it will show up in linux-next.
-> 
-> I don't think it's a good idea for you guys to be off working on 
-> 2.6.28 material when we're trying to stabilise 2.6.25, 2.6.26 and 
-> preparing for 2.6.27.
-> 
-> What's especially regrettable is that, afaik, you are expending 
-> testing resources on a tree which nobody will ever run rather than 
-> upon the tree which everyone _will_ run :( [...]
+I'll post to the relevant mailing lists when it reaches a more reasonable 
+state and the 'arguments' can begin ;)
 
-what do you mean? We are testing commits that everybody will run and are 
-pre-filtering them for sanity and stability before they hit linux-next.
+Jonathan
 
-	Ingo
