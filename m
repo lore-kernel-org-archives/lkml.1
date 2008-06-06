@@ -1,155 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760085AbYFFFbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbYFFFjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760085AbYFFFbg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 01:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYFFFbW
+	id S1762559AbYFFFjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 01:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYFFFjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 01:31:22 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:34366 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752584AbYFFFbV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 01:31:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=UIrfW5vptrfnw55/G4Hr1yCqKtgH4IAGvMtmN9XnhZz2iEUkj6zrwM5jQSC4b4VFfh4zVaVZNRMiLr5JFnr+2ARD+3rBspWZoOKQk3S3ag2cmysgHCfykOFjR/5Bclk/vAH0/WkvR7YJntXzUiIowQOGgwYX4EoiNFogNEZ9aw0=  ;
-X-YMail-OSG: .SXSKAYVM1l0RJhmdEJ0fRL2OE.T8bRZsoRRRtVFp6hLlXkHyn7QjcT.YjMZjUcTmUmjma.A.iFLZd1e9neqZpcUcvtYJgKgjpwaFCzt4n.RqMKXq_1Nkc9nm.kbgxhQSlw-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [RFC] generic GPIO parameter API
-Date: Thu, 5 Jun 2008 22:29:37 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0806021841500.30390@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0806021841500.30390@axis700.grange>
+	Fri, 6 Jun 2008 01:39:13 -0400
+Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:44395
+	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752584AbYFFFjM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 01:39:12 -0400
+X-Greylist: delayed 334 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 01:39:11 EDT
+Message-ID: <4848CC22.6090109@cosmosbay.com>
+Date: Fri, 06 Jun 2008 07:33:22 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200806052229.37143.david-b@pacbell.net>
+To: Mike Travis <travis@sgi.com>, Christoph Lameter <clameter@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
+References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org> <4846AFCF.30500@sgi.com>
+In-Reply-To: <4846AFCF.30500@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 June 2008, Guennadi Liakhovetski wrote:
-> Hi,
-> 
-> as far as I understand, the current GPIO API only presents very basic GPIO 
-> functionality: direction and level reading and writing. Whereas many GPIO 
-> controllers have many further configurable parameters: pull-ups and 
-> pull-downs, drive strength, slew rate, etc.
+Mike Travis a écrit :
+> Andrew Morton wrote:
+>> On Thu, 29 May 2008 20:56:20 -0700 Christoph Lameter <clameter@sgi.com> wrote:
+>>
+>>> In various places the kernel maintains arrays of pointers indexed by
+>>> processor numbers. These are used to locate objects that need to be used
+>>> when executing on a specirfic processor. Both the slab allocator
+>>> and the page allocator use these arrays and there the arrays are used in
+>>> performance critical code. The allocpercpu functionality is a simple
+>>> allocator to provide these arrays.
+>> All seems reasonable to me.  The obvious question is "how do we size
+>> the arena".  We either waste memory or, much worse, run out.
+>>
+>> And running out is a real possibility, I think.  Most people will only
+>> mount a handful of XFS filesystems.  But some customer will come along
+>> who wants to mount 5,000, and distributors will need to cater for that,
+>> but how can they?
+>>
+>> I wonder if we can arrange for the default to be overridden via a
+>> kernel boot option?
+>>
+>>
+>> Another obvious question is "how much of a problem will we have with
+>> internal fragmentation"?  This might be a drop-dead showstopper.
 
-Not at all how I'd describe it.  Those omitted mechanisms are part
-of pin configuration, in the same way as function multiplexing is.
-(That is, assigning a given pin for use as a GPIO, vs hooking it up
-to an I2C, MMC, SPI, LCD, I2S, or memory controller.)
+Christoph & Mike,
 
-Those mechanisms are highly chip-specific.  Far more so than simple
-boolean GPIO mechanisms.  With rare exceptions, they're needed only
-in platform-specific board setup code, which is already accessing
-lots of platform-specific programming interfaces.  I'm really not
-keen on having them become part of the GPIO framework.  The thought
-makes me think of trying to swallow a kitchen sink; sorry ...
+Please forgive me if I beat a dead horse, but this percpu stuff
+should find its way.
+
+I wonder why you absolutely want to have only one chunk holding
+all percpu variables, static(vmlinux) & static(modules)
+& dynamically allocated.
+
+Its *not* possible to put an arbitrary limit to this global zone.
+You'll allways find somebody to break this limit. This is the point
+we must solve, before coding anything.
+
+Have you considered using a list of fixed size chunks, each chunk
+having its own bitmap ?
+
+We only want fix offsets between CPU locations. For a given variable,
+we MUST find addresses for all CPUS looking at the same offset table.
+(Then we can optimize things on x86, using %gs/%fs register, instead
+of a table lookup)
+
+We could chose chunk size at compile time, depending on various
+parameters (32/64 bit arches, or hugepage sizes on NUMA),
+and a minimum value (ABI guarantee)
+
+On x86_64 && NUMA we could use 2 Mbytes chunks, while
+on x86_32 or non NUMA we should probably use 64 Kbytes.
+
+At boot time, we setup the first chunk (chunk 0) and copy 
+.data.percpu on this chunk, for each possible cpu, and we
+build the bitmap for future dynamic/module percpu allocations.
+So we still have the restriction that sizeofsection(.data.percpu)
+should fit in the chunk 0. Not a problem in practice.
+
+Then if we need to expand percpu zone for heavy duty machine,
+and chunk 0 is already filled, we can add as many 2 M/ 64K 
+chunks we need.
+
+This would limit the dynamic percpu allocation to 64 kbytes for
+a given variable, so huge users should probably still use a
+different allocator (like oprofile alloc_cpu_buffers() function)
+But at least we dont anymore limit the total size of percpu area.
+
+I understand you want to offset percpu data to 0, but for
+static percpu data. (pda being included in, to share %gs)
+
+For dynamically allocated percpu variables (including modules
+".data.percpu"), nothing forces you to have low offsets,
+relative to %gs/%fs register. Access to these variables
+will be register indirect based anyway (eg %gs:(%rax) )
 
 
+1) NUMA case
 
-> And it is desirable to be able  
-> to access those features too. Of course, we cannot extent the API with all 
-> these possible functions. Would a generic GPIO parameter handling API be 
-> desirable?
+For a 64 bit NUMA arch, chunk size of 2Mbytes
 
-Were a general interface for this needed, I'd call it a "pin config"
-interface (or something similar).
+Allocates 2Mb for each possible processor (on its preferred memory
+node), and compute values to setup offset_of_cpu[NR_CPUS] array.
 
-Some platforms would have simple mappings of GPIOs to pins; others
-don't, with a GPIO appearing on multiple pins.  (Potentially with
-different drive options, etc.)  Such a mapping would make this API
-seem quite simple, where it's practical.
-
-A reverse mapping would (pin to GPIO) would likewise not always
-be simple, when multiple GPIOs could be routed to a given pin.
-It'd be easy to handle the case of a pin that has no GPIO function;
-just return an errno instead of a GPIO number.
-
-Of course such a programming interface wouldn't be usable on all
-systems ... ones where the configurations are ganged don't have
-per-pin parameters like this.  (Examples include cases where one
-bit reconfigures several pins, or several parameters of one pin.)
+Chunk 0
+CPU 0 : virtual address XXXXXX        
+CPU 1 : virtual address XXXXXX + offset_of_cpu[1]
+...
+CPU n : virtual address XXXXXX + offset_of_cpu[n]
++ a shared bitmap
 
 
-> Like 
-> 
-> struct gpio_parameter {
-> 	char *name;
-> 	void *arg;
-> 	int (*get)(struct gpio_chip *chip, void *arg, unsigned offset, 
-> 			int value);
-> 	int (*set)(struct gpio_chip *chip, void *arg, unsigned offset, 
-> 			int value);
-> };
-> 
-> int gpio_register_parameter(struct gpio_chip *chip, struct gpio_parameter 
-> 				*param);
-> struct gpio_parameter *gpio_find_parameter(struct gpio_chip *chip, char 
-> 						*name);
-> 
-> The parameters should be accessible from the kernel and over sysfs, based 
-> on the gpio-sysfs interface. Would this be useful?
+For next chunks, we could use vmalloc() zone to find 
+nr_possible_cpus virtual addresses ranges where you can map
+a 2Mb page per possible cpu, as long as we respect the relative
+delta between each cpu block, that was computed when
+chunk 0 was setup.
 
-I don't have any use cases for such an interface myself.
+Chunk 1..n
+CPU 0 : virtual address YYYYYYYYYYYYYY   
+CPU 1 : virtual address YYYYYYYYYYYYYY + offset_of_cpu[1]
+...
+CPU n : virtual address YYYYYYYYYYYYYY + offset_of_cpu[n]
++ a shared bitmap (32Kbytes if 8 bytes granularity in allocator)
 
-That's the sort of thing I'd expect to do in configfs, if I
-needed a userspace solution.
+For a variable located in chunk 0, its 'address' relative to current
+cpu %gs will be some number between [0 and 2^20-1]
 
-Have you looked at the existing solutions for such stuff?  IMO
-the platform code solves this well enough.  Of interest, the
-model it uses isn't "pin and attributes", in most cases.  (Or
-at least, not directly.)  Examples that come quickly to mind:
+For a variable located in chunk 1, its 'address' relative to current
+cpu %gs will be some number between
+[YYYYYYYYYYYYYY - XXXXXX  and YYYYYYYYYYYYYY - XXXXXX + 2^20 - 1],
+not necessarly [2^20 to 2^21 - 1]
 
-  arch/arm/plat-omap/mux.c
-  arch/arm/mach-omap1/mux.c
-  arch/arm/mach-omap2/mux.c
-  include/asm-arm/arch-omap/mux.h
-	OMAP2/OMAP3 has a much cleaner hardware design than OMAP1.
-	In both cases there's a plethora of pin/ball config options at
-	several levels ... family (omap15xx, omap16xx, omap7xx, etc)
-	chip (1611, 2430, etc), revision (es2.0, es2.1, etc) etc.
 
-	A conclusion here is that such configuration is rarely used
-	outside board setup code.  (And such usage is being removed.)
+Chunk 0 would use normal memory (no vmap TLB cost), only next ones need vmalloc().
 
-  arch/arm/mach-at91/gpio.c
-  include/asm-arm/arch-at91/gpio.h ... the at91_set_*() calls
-  arch/avr32/mach-at32ap/pio.c
-  include/asm-avr32/arch-at32ap/portmux.h ... at32_select_*()
-	Essentially the same very simple hardware design, on two
-	different SOC frameworks.  Again, such configuration is
-	rarely used outside board setup (maybe never).
+So the extra TLB cost would only be taken for very special NUMA setups
+(only if using a lot of percpu allocations)
 
-	These don't use symbolic pin config identifiers, though
-	some similar code (in u-Boot or some other pre-Linux code)
-	uses them to specify pin configurations that affect several
-	characteristics (somewhat like the new MFP stuff on PXA).
+Also, using a 2Mb page granularity probably wastes about 2Mb per cpu, but
+this is nothing for NUMA machines :)
 
-  arch/arm/mach-pxa/mfp*c
-  include/asm-arm/arch-pxa/mfp*h
-	Confusing terminology (never talks "pin", always "GPIO"
-	even for non-GPIO functions) and what I think of as a
-	kind of quirky hardware model ... and this MFP stuff is
-	pretty new, I've not seen pxa3xx docs to explain it.
-	But again, this is mostly for board setup.
+2) SMP && !NUMA
 
-  arch/arm/mach-davinci/mux.c
-  include/asm-arm/arch-davinici/mux.h
-	Not clear from the source code, but these are all
-	ganged config options.  See the chip docs.
+On non NUMA machines, we dont need vmalloc games, since we can allocate
+chunk space using contiguous memory, (size = nr_possible_cpus*64Kbytes)
 
-It's worth noting that FPGA pin configurations are fancier than
-any of these, in all cases I've had occasion to look at, but
-such configuration is done when the configuration bitstream is
-generated (from Verilog, VHDL, or whatever) not at runtime.
+offset_of_cpu[N] = N * CHUNK_SIZE
 
-- Dave
+(On a 4 CPU x86_32 machine, allocate a 256 Kbyte bloc then divide it in
+64 kb blocs)
+If this order-6 allocation fails, then fallback to vmalloc(), but most
+percpu allocations happens at boot time, when memory is not yet fragmented...
+
+
+3) UP case : fallback to standard allocators. No need for bitmaps.
+
+
+NUMA special casing can be implemented later of course...
+
+Thanks for reading
+
+
