@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764463AbYFFGTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764411AbYFFGWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764463AbYFFGTg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 02:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764535AbYFFGRr
+	id S1764411AbYFFGWM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 02:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYFFGV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 02:17:47 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59299 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753425AbYFFGRq (ORCPT
+	Fri, 6 Jun 2008 02:21:56 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:29770 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbYFFGVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 02:17:46 -0400
-Message-Id: <20080606060958.873465466@bull.net>
-References: <20080606060955.317871352@bull.net>
-User-Agent: quilt/0.46-1
-Date: Fri, 06 Jun 2008 08:10:01 +0200
-From: <Solofo.Ramangalahy@bull.net>
-To: <linux-kernel@vger.kernel.org>
-Cc: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
-Subject: [RFC -mm 6/6] sysv ipc: documentation for msgmnb scaling wrt. cpus
-Content-Disposition: inline;
- filename=ipc-documentation-scale-msgmnb-with-the-number-of-cpus.patch
+	Fri, 6 Jun 2008 02:21:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fsl28XN2f/6oSVf6hPMQGc5cO4B3KDwpFrGgXCDDeRShz5caq1HXwQIhaLf6zSYohP
+         ajc1wjoRgPFLulPWshLPQOEfd81pkaqMwiM2kT3kRMk6zt0bhyKqYQCeBfh4Tf/cTzLd
+         zbdZxf//FOZ5vmajGEUoJA+RHOnR5+l47FeSQ=
+Date: Fri, 6 Jun 2008 10:17:44 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Armin Schindler <armin@melware.de>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] isdn divas: fix proc creation
+Message-ID: <20080606061744.GB4977@martell.zuzino.mipt.ru>
+References: <20080530233445.GB7358@martell.zuzino.mipt.ru> <alpine.DEB.0.99.0806051221380.30590@k10.melware.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.0.99.0806051221380.30590@k10.melware.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
+On Thu, Jun 05, 2008 at 12:25:06PM +0200, Armin Schindler wrote:
+> On Sat, 31 May 2008, Alexey Dobriyan wrote:
+>> 1. creating proc entry and not saving pointer to PDE and checking it
+>>   is not going to work.
+>
+> I don't know where you found this. I have look even in older versions, but
+> the pointer divas_proc_entry is set by proc_create(). The patch to
+> divasproc.c is wrong, it exists from the beginning of the driver.
+> (2.6.25.4 doesn't contain the bug you describe).
 
-Add documentation to explain how to disable and reenable the
-computation mechanism.
+Check mainline kernel, namely, 2.6.26-rc5.
 
-Signed-off-by: Solofo Ramangalahy <Solofo.Ramangalahy@bull.net>
+>> --- a/drivers/isdn/hardware/eicon/divasproc.c
+>> +++ b/drivers/isdn/hardware/eicon/divasproc.c
+>> @@ -125,8 +125,8 @@ static const struct file_operations divas_fops = {
+>>
+>> int create_divas_proc(void)
+>> {
+>> -	proc_create(divas_proc_name, S_IFREG | S_IRUGO, proc_net_eicon,
+>> -		    &divas_fops);
+>> +	divas_proc_entry = proc_create(divas_proc_name, S_IFREG | S_IRUGO,
+>> +					proc_net_eicon, &divas_fops);
+>> 	if (!divas_proc_entry)
+>> 		return (0);
 
----
-
- Documentation/sysctl/kernel.txt |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
-
-Index: b/Documentation/sysctl/kernel.txt
-===================================================================
---- a/Documentation/sysctl/kernel.txt
-+++ b/Documentation/sysctl/kernel.txt
-@@ -179,6 +179,33 @@ kernel stack.
- 
- ==============================================================
- 
-+msgmnb
-+
-+Maximum size in bytes, not in message count, of a single SystemV IPC
-+message queue (b stands for bytes).
-+
-+This value is dynamic and depends on the online cpu count of the
-+machine (taking cpu hotplug into account).
-+
-+Computed values are between MSGMNB and MSGMNB*MSG_CPU_SCALE #define
-+constants (currently [16384,65536]).
-+
-+The exact value is automatically (re)computed, but:
-+. If the value is positioned from user space (via procfs or sysctl()),
-+  to a positive value then the automatic recomputation is
-+  disabled. This leaves control to user space. E.g.
-+
-+  # echo 16384 > /proc/sys/kernel/msgmnb
-+
-+. If the value is positioned from user space to a negative value, then
-+  the computation is reenabled. E.g.
-+
-+  # echo -1 > /proc/sys/kernel/msgmnb
-+
-+See recompute_msgmnb() function in ipc/ directory for details.
-+
-+==============================================================
-+
- osrelease, ostype & version:
- 
- # cat osrelease
-
--- 
-Solofo Ramangalahy
-Bull SA.
