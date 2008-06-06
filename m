@@ -1,142 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbYFFVNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbYFFVOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932926AbYFFVNS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 17:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbYFFVM6
+	id S933017AbYFFVOk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 17:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760798AbYFFVO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 17:12:58 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44359 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755666AbYFFVM5 (ORCPT
+	Fri, 6 Jun 2008 17:14:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:39901 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759101AbYFFVO2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 17:12:57 -0400
-Date: Sat, 7 Jun 2008 00:12:55 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Patrick McManus <mcmanus@ducksong.com>,
-       Arjan van de Ven <arjan@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       peterz@infradead.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>, rjw@sisk.pl,
-       Andrew Morton <akpm@linux-foundation.org>, johnpol@2ka.mipt.ru
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-In-Reply-To: <1212782937.23706.46.camel@tng>
-Message-ID: <Pine.LNX.4.64.0806062314420.9424@wrl-59.cs.helsinki.fi>
-References: <20080603.150344.145518113.davem@davemloft.net> 
- <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>  <20080605142244.GA19216@elte.hu>
-  <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi> 
- <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi>  <1212708571.19522.10.camel@tng>
-  <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi> 
- <1212772293.23706.22.camel@tng> <20080606173339.GA30894@elte.hu> 
- <Pine.LNX.4.64.0806062037240.9424@wrl-59.cs.helsinki.fi>  <20080606183926.GB12651@elte.hu>
- <1212782937.23706.46.camel@tng>
+	Fri, 6 Jun 2008 17:14:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fDT/v6fM04IXyG3Yi1R4fLCiBWaDM0/LQg6DKReTBc/YjNE5ImspCqKVmaIdoanRLn
+         5HH6PXail7c1rjUI0FLVQKgDAE37VSLpwRHkLJYT2prPsrKwK0EchdHeod8lgS/AOFhI
+         jwIY2bwqD62k4kAdjhqtRFcAGQa3S08SHBxS4=
+Message-ID: <dd18b0c30806061414k6b7a2f04g87e7594066f0f015@mail.gmail.com>
+Date: Fri, 6 Jun 2008 21:14:27 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Matthew Garrett" <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] isight_firmware: Avoid crash on loading invalid firmware
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, greg@kroah.com,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+In-Reply-To: <20080606194856.GA17708@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-1018668328-1212784580=:9424"
-Content-ID: <Pine.LNX.4.64.0806070006270.9424@wrl-59.cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <dd18b0c30806041213x45b7efdfo42de9b214a7ce9df@mail.gmail.com>
+	 <dd18b0c30806060137j7edc751se364ff21cfc8911b@mail.gmail.com>
+	 <20080606121136.GA9087@srcf.ucam.org>
+	 <20080606110711.a9a6a4f6.akpm@linux-foundation.org>
+	 <dd18b0c30806061110qd3100b4p1ee9f8ef493a56c6@mail.gmail.com>
+	 <dd18b0c30806061138h69c87d6am898a4eb409d379e1@mail.gmail.com>
+	 <20080606185548.GB8576@kroah.com>
+	 <20080606192135.GA16727@srcf.ucam.org>
+	 <20080606123511.38ffbdde.akpm@linux-foundation.org>
+	 <20080606194856.GA17708@srcf.ucam.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----696208474-1018668328-1212784580=:9424
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0806062336291.9424@wrl-59.cs.helsinki.fi>
-
-...added Arjan.
-
-On Fri, 6 Jun 2008, Patrick McManus wrote:
-
-> This is all a bit confusing, but here are the conclusions I have drawn.
-
-Your observations here match what I've understood :-).
-
-> There definitely is a problem with the locking of the DA commit
-> ec3c0982a2dd1e671bad8e9d26c28dcba0039d87 . That code was part of 26-rc1
-> but it never appeared in 25. It exists in pretty much the same form in
-> rc5 (there was 1 patch to it over that time to fix a different problem).
+On Fri, Jun 6, 2008 at 7:48 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> Different tools generate slightly different formats of the isight
+> firmware. Ensure that the firmware buffer is not overrun, while still
+> ensuring that the correct amount of data is written if trailing data is
+> preseent. Fixes crash reported by Justin Mattock.
 >
-> We're certain this code has a problem with the accept queue both because
-> of code inspection and the fact that Ingo can back it out (as the
-> significant part of the 3-patch revert) and the problem goes away in his
-> testing.
-
-Problems were at least these:
-- Accept queue addition was racy and could leave dangling items
-- Dangling items caused inconsistent sk_ack_backlog
-- Checking for still in LISTEN state was racy, could be changed after
-  the check was made (shouldn't happen with distcc though)
-
-I didn't read ->sk_data_ready that carefully, it could have some 
-additional problems that are not listed (but they all should be fixed
-by the added locking anyway).
-
-AFAICT, rest of that ec3c change is safe wrt. locking, just holding sk is 
-enough for the rest and those bits mostly shouldn't anyway be executed 
-with a distcc setup.
-
-> I have run tests that can reproduce the hung socket with distcc over
-> localhost using 26-rc5. I can also apparently cure it using the locking
-> fix patch Ilpo sent (c9454f0..d21d2b9) on top of that. (My test of rc5
-> +lockpatch is at 4.5+ hrs and counting without failures, it fails 6
-> times an hour with vanilla rc5)
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
 >
-> Based on all of that, the right thing to do seems to be to apply the
-> lockpatch (c9454f0..d21d2b9) to Linus's tree and not revert anything -
-> just fix the code and I'll send Ilpo and Ingo cookies at Christmas time
-> for being  great guys. Alternatively, Ingo could run the distcc servers
-> and clients on -tip with the lockpatch (nothing reverted) for more
-> testing.
+> ---
+>
+> Identical to the previous patch, just acknowledges Justin Mattock's (not
+> Maddock, Andrew :p) report in the changelog.
+>
+> diff --git a/drivers/usb/misc/isight_firmware.c b/drivers/usb/misc/isight_firmware.c
+> index 390e048..9f30aa1 100644
+> --- a/drivers/usb/misc/isight_firmware.c
+> +++ b/drivers/usb/misc/isight_firmware.c
+> @@ -39,9 +39,12 @@ static int isight_firmware_load(struct usb_interface *intf,
+>        struct usb_device *dev = interface_to_usbdev(intf);
+>        int llen, len, req, ret = 0;
+>        const struct firmware *firmware;
+> -       unsigned char *buf;
+> +       unsigned char *buf = kmalloc(50, GFP_KERNEL);
+>        unsigned char data[4];
+> -       char *ptr;
+> +       u8 *ptr;
+> +
+> +       if (!buf)
+> +               return -ENOMEM;
+>
+>        if (request_firmware(&firmware, "isight.fw", &dev->dev) != 0) {
+>                printk(KERN_ERR "Unable to load isight firmware\n");
+> @@ -59,7 +62,7 @@ static int isight_firmware_load(struct usb_interface *intf,
+>                goto out;
+>        }
+>
+> -       while (1) {
+> +       while (ptr+4 <= firmware->data+firmware->size) {
+>                memcpy(data, ptr, 4);
+>                len = (data[0] << 8 | data[1]);
+>                req = (data[2] << 8 | data[3]);
+> @@ -71,10 +74,14 @@ static int isight_firmware_load(struct usb_interface *intf,
+>                        continue;
+>
+>                for (; len > 0; req += 50) {
+> -                       llen = len > 50 ? 50 : len;
+> +                       llen = min(len, 50);
+>                        len -= llen;
+> -
+> -                       buf = kmalloc(llen, GFP_KERNEL);
+> +                       if (ptr+llen > firmware->data+firmware->size) {
+> +                               printk(KERN_ERR
+> +                                      "Malformed isight firmware");
+> +                               ret = -ENODEV;
+> +                               goto out;
+> +                       }
+>                        memcpy(buf, ptr, llen);
+>
+>                        ptr += llen;
+> @@ -89,16 +96,18 @@ static int isight_firmware_load(struct usb_interface *intf,
+>                                goto out;
+>                        }
+>
+> -                       kfree(buf);
+>                }
+>        }
+> +
+>        if (usb_control_msg
+>            (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, 0xe600, 0, "\0", 1,
+>             300) != 1) {
+>                printk(KERN_ERR "isight firmware loading completion failed\n");
+>                ret = -ENODEV;
+>        }
+> +
+>  out:
+> +       kfree(buf);
+>        release_firmware(firmware);
+>        return ret;
+>  }
+>
+> --
+> Matthew Garrett | mjg59@srcf.ucam.org
+>
 
-Anyway, we still would have an option to revert both the DA change + the 
-locking fix later if the problem is still clearly more likely than with 
-stable-2.6.25.
-
-> The only lingering problem is Ingo's report yesterday
-> http://marc.info/?l=linux-netdev&m=121267587715976&w=2
-> of a distcc hang. In this one it was not over localhost and the distcc
-> server had the ec3c DA changes totally reverted. (The server is really
-> the only stack that matters in this case - the client is not impacted by
-> the DA changes).
-
-It definately didn't fit to picture that well if we would be talking just 
-a single bug here.
-
-...I wish Ingo would have provided the receiver state already then. :-)
-
-> This has to be a different issue, because the ec3c code
-> we're talking about here wasn't on the server at all. As Ilpo mentions,
-> Hakon is beleived to have a different problem and maybe you've tripped
-> over that too?
-
-...The Håkon's case is definately different thing, also the symptoms 
-are quite different because there's no deadlock at all but the TCP flow 
-eventually dies, I don't yet know with what timescale that dying happens.
-Only common denominator actually was this receiver process missing, though 
-it provably still was there.
-
-Besides, I don't know how long Ingo waited in this case until concluding 
-that the TCP was stuck again?
-
-> If we're sure of that conclusion we should just take Ilpo's DA patch as
-> that will narrow the field for finding Hakon's issue. Its just with all
-> of these data points I'm not sure if I'm reaching the right conclusion.
-
-Lets widen the scope to two to three bugs then, one down already...
-
-In case you missed btw, also Arjan reported some problem quite early, but 
-in his case claws mua+imap was the workload, so I doubt that DEFER_ACCEPT 
-would be involved but who knows without strace, here:
-  http://marc.info/?l=linux-kernel&m=121182171000434&w=2
-
-Arjan, can you please check if your workload uses setsockopt 
-TCP_DEFER_ACCEPT for the LISTENing socket? ...If not, then your case
-is different from Ingo's.
-
+Also not matlock(not the T.V. show). Now onto the status:  I think
+there might be something going on with this patch, or the module
+itself I keep getting ACPI EC: GPE storm
+detected(http://bugzilla.kernel.org/show_bug.cgi?id=10724) , yesterday
+I modified drivers/acpi/ec.c and was not receiving this message the
+rest of the day, after applying the patch to isight_firmware and
+loading, I'm receiving this message probably within 20 minutes of
+being up. Now I'm not sure If it's because I modified ec.c, or not
+that's causing this. I'll have to run a couple of experiments to see.
+has anybody seen the same message?
+regards;
 
 -- 
- i.
----696208474-1018668328-1212784580=:9424--
+Justin P. Mattock
