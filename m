@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbYFFFSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763807AbYFFFT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758563AbYFFFSQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 01:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYFFFSC
+	id S1763807AbYFFFT3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 01:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYFFFTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 01:18:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35162 "EHLO
+	Fri, 6 Jun 2008 01:19:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44975 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752459AbYFFFSA (ORCPT
+	by vger.kernel.org with ESMTP id S1752697AbYFFFTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 01:18:00 -0400
-Date: Thu, 5 Jun 2008 22:17:09 -0700
+	Fri, 6 Jun 2008 01:19:18 -0400
+Date: Thu, 5 Jun 2008 22:18:42 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: chris2553@googlemail.com
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       Hannes Reinecke <hare@suse.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2,6.26-rc4-git2 - long pause during boot
-Message-Id: <20080605221709.f248eb90.akpm@linux-foundation.org>
-In-Reply-To: <200806010415.05290.chris2553@googlemail.com>
-References: <200806010415.05290.chris2553@googlemail.com>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: forcedeth: lockdep warning on ethtool -s
+Message-Id: <20080605221842.a444ec9d.akpm@linux-foundation.org>
+In-Reply-To: <20080601083700.GA3036@yamamaya.is-a-geek.org>
+References: <20080601083700.GA3036@yamamaya.is-a-geek.org>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,48 +27,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Jun 2008 04:15:05 +0000 Chris Clayton <chris2553@googlemail.com> wrote:
+On Sun, 1 Jun 2008 10:37:01 +0200 Tobias Diedrich <ranma+kernel@tdiedrich.de> wrote:
 
 > Hi,
 > 
-> I've just started testing 2.6.26 on my desktop machine and have found that I get 
-> a long pause (20 seconds or so) as the system boots. By pause I mean that the 
-> boot messages that normally scroll by stop doing so for, as I say, about 20 
-> seconds.
+> After enabling CONFIG_LOCKDEP and CONFIG_PROVE_LOCKING I get the
+> following warning when ethtool -s is first called on one of the
+> forcedeth ports:
 > 
-> I've done a bisect and arrived at:
+> =================================
+> [ INFO: inconsistent lock state ]
+> 2.6.26-rc4 #28
+> ---------------------------------
+> inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> ethtool/1985 [HC0[0]:SC0[1]:HE1:SE0] takes:
+>  (&np->lock){++..}, at: [<ffffffffa000c5fd>] nv_set_settings+0xc8/0x3de [forcedeth]
+> {in-hardirq-W} state was registered at:
+>   [<ffffffffffffffff>] 0xffffffffffffffff
+> irq event stamp: 3606
+> hardirqs last  enabled at (3605): [<ffffffff8068106f>] _spin_unlock_irqrestore+0x3f/0x68
+> hardirqs last disabled at (3604): [<ffffffff80680d38>] _spin_lock_irqsave+0x13/0x46
+> softirqs last  enabled at (3534): [<ffffffff80246ba5>] __do_softirq+0xbc/0xc5
+> softirqs last disabled at (3606): [<ffffffff80680b33>] _spin_lock_bh+0x11/0x41
 > 
-> b0ed43360fdca227048d88a08290365cb681c1a8 is first bad commit
-> commit b0ed43360fdca227048d88a08290365cb681c1a8
-> Author: Hannes Reinecke <hare@suse.de>
-> Date:   Tue Mar 18 14:32:28 2008 +0100
+> other info that might help us debug this:
+> 2 locks held by ethtool/1985:
+>  #0:  (rtnl_mutex){--..}, at: [<ffffffff80596072>] rtnl_lock+0x12/0x14
+>  #1:  (_xmit_ETHER){-+..}, at: [<ffffffffa000c5e8>] nv_set_settings+0xb3/0x3de [forcedeth]
 > 
->     [SCSI] add scsi_host and scsi_target to scsi_bus
+> stack backtrace:
+> Pid: 1985, comm: ethtool Not tainted 2.6.26-rc4 #28
 > 
->     This patch implements scsi_host and scsi_target device types
->     and adds both to the scsi_bus.
+> Call Trace:
+>  [<ffffffff8025f190>] print_usage_bug+0x162/0x173
+>  [<ffffffff8025fa8b>] mark_lock+0x231/0x41f
+>  [<ffffffff802607cf>] __lock_acquire+0x4e7/0xcac
+>  [<ffffffff8025fe64>] ? trace_hardirqs_on+0xf1/0x115
+>  [<ffffffff80272c3a>] ? disable_irq_nosync+0x6f/0x7b
+>  [<ffffffff80261375>] lock_acquire+0x55/0x6e
+>  [<ffffffffa000c5fd>] ? :forcedeth:nv_set_settings+0xc8/0x3de
+>  [<ffffffff80680b15>] _spin_lock+0x2f/0x3c
+>  [<ffffffffa000c5fd>] :forcedeth:nv_set_settings+0xc8/0x3de
+>  [<ffffffff8058f8bb>] dev_ethtool+0x186/0xea3
+>  [<ffffffff8067f446>] ? mutex_lock_nested+0x243/0x275
+>  [<ffffffff8025df2b>] ? debug_mutex_free_waiter+0x46/0x4a
+>  [<ffffffff8067f469>] ? mutex_lock_nested+0x266/0x275
+>  [<ffffffff8058e1ce>] dev_ioctl+0x4eb/0x600
+>  [<ffffffff8068106f>] ? _spin_unlock_irqrestore+0x3f/0x68
+>  [<ffffffff80580f91>] sock_ioctl+0x1f5/0x202
+>  [<ffffffff802a322e>] vfs_ioctl+0x2a/0x77
+>  [<ffffffff802a34d6>] do_vfs_ioctl+0x25b/0x270
+>  [<ffffffff806807b6>] ? trace_hardirqs_on_thunk+0x35/0x3a
+>  [<ffffffff802a352d>] sys_ioctl+0x42/0x65
+>  [<ffffffff8021fffb>] system_call_after_swapgs+0x7b/0x80
 > 
->     Signed-off-by: Hannes Reinecke <hare@suse.de>
->     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
->     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 > 
-> :040000 040000 4e3140909966b4c9aa987d34ee4078d283fe0351 
-> 46e4fd28cc537ba700eb4f5652abf043fed4d76d M      drivers
+> I think this is caused by the following snippet in nv_set_settings:
 > 
-> The config file for that kernel is attached as are the kernel log for booting 
-> that kernel and the bisect log.
+> 	netif_carrier_off(dev);
+> 	if (netif_running(dev)) {
+> 		nv_disable_irq(dev);
+> 		netif_tx_lock_bh(dev);
+> 		spin_lock(&np->lock);
+> 		/* stop engines */
+> 		nv_stop_rxtx(dev);
+> 		spin_unlock(&np->lock);
+> 		netif_tx_unlock_bh(dev);
+> 	}
 > 
-> I've also noticed that it takes much longer for icons to appear on my desktop 
-> when I plug a usb storage device in. (The icons are shown/hidden by a simple 
-> sctript that is run via udev when the device is attached/detached.)
+> 
+> Because of nv_disable_irq this is probably not really a problem
+> though (I guess) and replacing the spin_lock with spin_lock_irqsave
+> could keep interrupts disabled for a longer period of time because
+> of delays in nv_stop_rx and nv_stop_tx.
 
-Do you believe that this is the same period?  20 seconds?
+Could you please try that and if it works, send the patch?
 
-> Let me know of any way I can help solve this.
-> 
-> Please cc me to any reply as I'm not subscribed.
-
-cc's added.
-
-Rafael, we might need to track this as a post-2.6.26 regression.
-
+Thanks.
