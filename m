@@ -1,63 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbYFFOjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759196AbYFFOlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758635AbYFFOjb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 10:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbYFFOjX
+	id S1759196AbYFFOlk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 10:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbYFFOl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 10:39:23 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40031 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752137AbYFFOjX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 10:39:23 -0400
-Date: Fri, 6 Jun 2008 10:39:19 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Pavel Machek <pavel@suse.cz>
-cc: gregkh@suse.de, Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: 2.6.25-rc6: CONFIG_USB_PERSIST forced on
-In-Reply-To: <20080606092546.GA2596@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.0806061030210.2354-100000@iolanthe.rowland.org>
+	Fri, 6 Jun 2008 10:41:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32883 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756634AbYFFOl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 10:41:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: 2,6.26-rc4-git2 - long pause during boot
+Date: Fri, 6 Jun 2008 16:42:06 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: chris2553@googlemail.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Hannes Reinecke <hare@suse.de>
+References: <200806010415.05290.chris2553@googlemail.com> <200806060607.29460.chris2553@googlemail.com> <1212761485.3466.6.camel@localhost.localdomain>
+In-Reply-To: <1212761485.3466.6.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200806061642.07563.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008, Pavel Machek wrote:
-
-> Hi!
+On Friday, 6 of June 2008, James Bottomley wrote:
+> On Fri, 2008-06-06 at 06:07 +0000, Chris Clayton wrote:
+> > On Friday 06 June 2008, Andrew Morton wrote:
+> > > On Sun, 1 Jun 2008 04:15:05 +0000 Chris Clayton <chris2553@googlemail.com> 
+> > wrote:
+> > > > Hi,
+> > > >
+> > > > I've just started testing 2.6.26 on my desktop machine and have found
+> > > > that I get a long pause (20 seconds or so) as the system boots. By pause
+> > > > I mean that the boot messages that normally scroll by stop doing so for,
+> > > > as I say, about 20 seconds.
+> > > >
+> > > > I've done a bisect and arrived at:
+> > > >
+> > > > b0ed43360fdca227048d88a08290365cb681c1a8 is first bad commit
+> > > > commit b0ed43360fdca227048d88a08290365cb681c1a8
+> > > > Author: Hannes Reinecke <hare@suse.de>
+> > > > Date:   Tue Mar 18 14:32:28 2008 +0100
+> > > >
+> > > >     [SCSI] add scsi_host and scsi_target to scsi_bus
+> > > >
+> > > >     This patch implements scsi_host and scsi_target device types
+> > > >     and adds both to the scsi_bus.
+> > > >
+> > > >     Signed-off-by: Hannes Reinecke <hare@suse.de>
+> > > >     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > > >     Signed-off-by: James Bottomley
+> > > > <James.Bottomley@HansenPartnership.com>
+> > > >
+> > > > :040000 040000 4e3140909966b4c9aa987d34ee4078d283fe0351
+> > > >
+> > > > 46e4fd28cc537ba700eb4f5652abf043fed4d76d M      drivers
+> > > >
+> > > > The config file for that kernel is attached as are the kernel log for
+> > > > booting that kernel and the bisect log.
+> > > >
+> > > > I've also noticed that it takes much longer for icons to appear on my
+> > > > desktop when I plug a usb storage device in. (The icons are shown/hidden
+> > > > by a simple sctript that is run via udev when the device is
+> > > > attached/detached.)
+> > >
+> > > Do you believe that this is the same period?  20 seconds?
+> > >
+> > 
+> > Thanks for the reply, Andrew. I was beginning to think that I'd committed an 
+> > LKML sin :-)
+> > 
+> > Yes, it is about the same. On 2.6.25.4 (and earlier), the icons appear within a 
+> > second or two, but with 2.6.26-rc2 or later, it takes about 20 seconds. I've 
+> > now built and installed -rc5 and am seeing the same behaviour.
+> > 
+> > I've also built -rc5 on my laptop. On that my kernel uses the older IDE drivers 
+> > rather than libata. The boot proceeds with no pause, but I do see the same 
+> > delay in the desktop icons appearing when I attach a usb-storage device.
+> > 
+> > > > Let me know of any way I can help solve this.
+> > > >
+> > > > Please cc me to any reply as I'm not subscribed.
+> > >
+> > > cc's added.
+> > >
+> > > Rafael, we might need to track this as a post-2.6.26 regression.
 > 
-> In 2.6.26-rc5, 
-> 
-> -config USB_PERSIST
-> -       bool "USB device persistence during system suspend (DANGEROUS)"
-> 
-> is now on. Given that it was previously marked "DANGEROUS", that seems
-> quite a change to me.
+> It already is ... as I asked in the actual bug (but no-one seems to have
+> noticed, so I assume the bug entry isn't set up correctly).
 
-It is.  Basically I did it because Linus asked for it -- or at least,
-for something like it.  He felt that the danger of not having
-USB_PERSIST when you need it is worse than the danger of having it when
-you don't want it.
+The bug reporter has no Bugzilla account, so I couldn't add him to the CC list
+of the bug.
 
-> Besides, it seems to have broken usblp hibernation support, and maybe
-> other devices that does not have reset_resume() present. (Big thanks
-> for Oliver for doing investigation).
-
-URL?  It's hard to see how lack of reset-resume support would mess 
-anything up worse than it would be without USB_PERSIST.
-
-> [Or is it that now USB_PERSIST is conditional on /sys fs setting, so
-> while setting it on individual device is dangerous, it is still N by
-> default? Changelog does not tell me...?]
-
-USB_PERSIST is (and has always been) conditional on the power/persist
-sysfs attribute setting.  The difference is that now the setting starts
-out as On whereas before it started out as Off, and there no longer is
-a Kconfig option to remove USB_PERSIST entirely.
-
-Alan Stern
-
+Thanks,
+Rafael
