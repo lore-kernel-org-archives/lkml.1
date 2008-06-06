@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbYFFRbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760440AbYFFRea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762943AbYFFRbN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 13:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbYFFRa6
+	id S1760440AbYFFRea (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 13:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYFFReU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 13:30:58 -0400
-Received: from server009.webpack.hosteurope.de ([80.237.130.17]:48077 "EHLO
-	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752042AbYFFRa6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 13:30:58 -0400
-From: Daniel Exner <dex@dragonslave.de>
-Reply-To: webmaster@dragonslave.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next Regression: Unable to locate IOAPIC
-Date: Fri, 6 Jun 2008 19:30:28 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <200806051100.12885.dex@dragonslave.de> <20080606031718.36cbbdc9.akpm@linux-foundation.org>
-In-Reply-To: <20080606031718.36cbbdc9.akpm@linux-foundation.org>
+	Fri, 6 Jun 2008 13:34:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34420 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752588AbYFFReT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 13:34:19 -0400
+Date: Fri, 6 Jun 2008 19:33:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Patrick McManus <mcmanus@ducksong.com>
+Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, peterz@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       rjw@sisk.pl, Andrew Morton <akpm@linux-foundation.org>,
+       johnpol@2ka.mipt.ru
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+	v2.6.26-rc3+
+Message-ID: <20080606173339.GA30894@elte.hu>
+References: <Pine.LNX.4.64.0806032245490.3474@wrl-59.cs.helsinki.fi> <Pine.LNX.4.64.0806040052270.3474@wrl-59.cs.helsinki.fi> <20080603.150344.145518113.davem@davemloft.net> <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi> <20080605142244.GA19216@elte.hu> <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi> <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi> <1212708571.19522.10.camel@tng> <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi> <1212772293.23706.22.camel@tng>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200806061930.29046.dex@dragonslave.de>
-X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1212773457;e9358223;
+In-Reply-To: <1212772293.23706.22.camel@tng>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.3
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> (cc linux-acpi)
->
-> On Thu, 5 Jun 2008 11:00:12 +0200 Daniel Exner <dex@dragonslave.de> wrote:
-> > Hi!
-> >
-> > (Added myself to CC, because I'm not subscribed)
-> >
-> > with linux-next snapshot 20080604 my Laptop morphes into sitting duck and
-> > I think this is due to this:
->
-> I assume 2.6.26-rc5 is OK?
-Indeed.. just tried it with (nearly) the same config: no unable to locate 
-IOAPIC
 
-Will try todays next snapshot above -rc5 now.
+* Patrick McManus <mcmanus@ducksong.com> wrote:
 
-BTW: Any chance to get this damn thing to not route everything by IRQ 11 !?
+> When I apply the locking patch you (Ilpo) wrote, I cannot reproduce 
+> the error at all in the first 90 minutes of testing. I'll let the test 
+> run and update the list.
+> 
+> I'm holding out hope that Ingo's report did not have the locking patch 
+> on the distcc server end - because it certainly makes a difference for 
+> me.
 
-Greetings
-Daniel Exner
+Hm, the distcc server had the full 3-patch-revert from Ilpo, was that 
+supposed to fix the problem too, indirectly?
+
+The box is running that 3-patch revert right now as well:
+
+ phoenix:~> uptime
+  19:20:28 up  9:58,  2 users,  load average: 7.75, 13.88, 30.95
+ phoenix:~> uname -a
+ Linux phoenix 2.6.26-rc4 #2352 SMP Fri Jun 6 09:18:07 CEST 2008 x86_64 x86_64 x86_64 GNU/Linux
+
+... and i never saw a single hang today in the 10 hours of uptime this 
+box has. (and it built a good 500 kernel today) Nor any hang yesterday, 
+and that was a good 500 kernels too.
+
+You can see it that the box built more than two thousand kernels in the 
+past few days alone, so it's a rather busy little bee. The other 
+testboxes built even more kernels - a quad box built and booted 2500 
+kernels:
+
+ #define UTS_VERSION "#2524 SMP PREEMPT Fri Jun 6 19:22:21 CEST 2008"
+
+and i never saw a hang on that box either. 
+
+a third box has:
+
+ titan:~> uname -a
+ Linux titan 2.6.26-rc5-00002-g737697d-dirty #2557 SMP PREEMPT Fri Jun 6 
+ 19:24:00 CEST 2008 x86_64 x86_64 x86_64 GNU/Linux
+
+(this is the one that showed the hang for the first time)
+
+The total count of kernel bootups i did this week for -tip QA was 
+somewhere between five and ten thousand random build+bootups - and the 
+only time i got a hang was when i removed the 3-patch-revert 
+intentionally, on one of the boxes.
+
+Maybe that 3-patch-revert just makes this locking bug a bit less likely 
+to trigger, by accident? Out tip test-setup is specialized to find 
+arch/x86 and scheduler bugs, not primarily to find networking bugs. (but 
+at this test volume, and given that it makes use of distcc, it will 
+trigger them too.)
+
+i have a rather accurate timeline of when the hang first occured, do we 
+know the timeline of the introduction of the locking bug by any chance? 
+Which commit introduced it? (Ilpo's commit log does not say it)
+
+Your test results are compelling nevertheless so i'll do a retest in any 
+case, with all boxes either running an older kernel or a kernel with the 
+locking fix.
+
+	Ingo
