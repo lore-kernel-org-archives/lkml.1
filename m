@@ -1,99 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbYFFKUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYFFK2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbYFFKUh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 06:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYFFKUL
+	id S1755538AbYFFK2t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 06:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYFFK2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 06:20:11 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:56409 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbYFFKUJ (ORCPT
+	Fri, 6 Jun 2008 06:28:39 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:40437 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbYFFK2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 06:20:09 -0400
-MIME-Version: 1.0
+	Fri, 6 Jun 2008 06:28:38 -0400
+Date: Fri, 6 Jun 2008 11:28:58 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Locking in the (now generic) GPIO infrastructure?
+Message-ID: <20080606102858.GD14683@trinity.fluff.org>
+References: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18505.3955.869044.188567@frecb006361.adech.frec.bull.fr>
-Date: Fri, 6 Jun 2008 12:20:35 +0200
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC -mm 0/6] sysv ipc: scale msgmnb with the number of cpus
-In-Reply-To: <200806061823.22639.nickpiggin@yahoo.com.au>
-References: <20080606060955.317871352@bull.net>
-	<200806061823.22639.nickpiggin@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 23.0.50.1
-From: Solofo.Ramangalahy@bull.net
+Content-Disposition: inline
+In-Reply-To: <c384c5ea0806040400j35236d5fo3854ce2ed30cd755@mail.gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+On Wed, Jun 04, 2008 at 01:00:19PM +0200, Leon Woestenberg wrote:
+> Hello,
+> 
+> compare void gpio_line_set() in
+> 
+> arch/arm/plat-iop/gpio.c:
+> void gpio_line_set(int line, int value)
+> {
+> 	unsigned long flags;
+> 
+> 	local_irq_save(flags);
+> 	if (value == GPIO_LOW) {
+> 		*IOP3XX_GPOD &= ~(1 << line);
+> 	} else if (value == GPIO_HIGH) {
+> 		*IOP3XX_GPOD |= 1 << line;
+> 	}
+> 	local_irq_restore(flags);
+> }
+> 
+> with
+> 
+> include/asm-arm/arch-ixp4xx/platform.h:
+> static inline void gpio_line_set(u8 line, int value)
+> {
+> 	if (value == IXP4XX_GPIO_HIGH)
+> 	    *IXP4XX_GPIO_GPOUTR |= (1 << line);
+> 	else if (value == IXP4XX_GPIO_LOW)
+> 	    *IXP4XX_GPIO_GPOUTR &= ~(1 << line);
+> }
 
-Nick Piggin writes:
- > On Friday 06 June 2008 16:09, Solofo.Ramangalahy@bull.net wrote:
- > > The size in bytes of a SysV IPC message queue, msgmnb, is too small
- > > for large machines, but we don't want to bloat small machines
- > 
- > What's your evidence for this? Can you provide before / after
- > performance numbers?
+Yes, that looks rather buggy to me, and also sub-optimal to boot. The
+u8 line should be changed to just 'unsigned' having the compiler truncate
+to 8bit isn't useful when then used with a shift.
 
-Maybe I have not been clear enough that this is not directly about
-performance, but more changing default value. So maybe "scale" in the
-title is misleading.
+static inline void gpio_line_set(unsigned line, int value)
+{
+	unsigned long flags;
+	unsigned regval;
 
-The evidence would be that these default values are changed either
-by a patch or "manually":
- > > Several methods are used already to modify (mainly increase) msgmnb:
- > > . distribution specific patch
- > > . system wide sysctl.conf
- > > . application specific tuning via /proc/sys/kernel/msgmnb
+	local_irq_save(flags);
 
-Further "evidence" could be googling for "linux msgmnb 65536", to see
-that tuning for benchmarks or recommended application configuration
-increase the value.
+	regval = *IXP4XX_GPIO_GPOUTR;
 
-This is just settings default values. Performance test results would
-not be different from those obtained by setting the values before
-running the tests.
+	if (value == IXP4XX_GPIO_HIGH)
+		regval |= (1 << line);
+	else if (value == IXP4XX_GPIO_LOW)
+	   	regval &= ~(1 << line);
 
-So here :
- > > Here is the timeline of the evolution of MSG* #defines:
- > > Year             1994         1999         1999          2008
- > > Version           1.0       2.3.27       2.3.30        2.6.24
- > > #define MSGMNI    128          128           16            16
- > > #define MSGMAX   4056         8192         8192          8192
- > > #define MSGMNB  16384        16384        16384         16384
+	*IXP4XX_GPIO_GPOUTR = regval;
+	local_irq_restore(flags);
+}
+ 
+> Under a Linux kernel where multiple drivers are accessing GPIO, the
+> latter does not seem safe against preemption (assuming the memory
+> read-modify-write is not atomic).
+> 
+> Shouldn't GPIO access be protected against concurrent access here?
+> 
+> Documentation/gpio.txt does not really mention the locking mechanism
+> assumed to modify GPIO lines.
 
-I have 65536 instead of 16384 for msgmnb
-(1982 instead of 16 for msgmni)
-for my 4 cpus/4GB x86_64 machine.
+I think it depends on whether gpiolib is being used or not, there may
+be some locking in there.
 
-Some result with pmsg used in recent discussions about performance gives:
-16384/16: 
-./pmsg 4 10 |grep Total
-Total: 9795993
-
-65536/1982:
-./pmsg 4 10 |grep Total
-Total: 9829590
-
- > Also, when scaling things like this, it is probably more usual to
- > use a log scale rather than linear, so that's a thought.
-
-Agreed, in general.
-Here, there are only 4 values, so I do not think it is worth using a
-log scale.
-If different values are desirable (finer grain, bigger,...), then the
-formula can be easily refined:
-min(MSGMNB * num_online_cpus(), MSGMNB * MSG_CPU_SCALE);
-What I did for the formula is simply taking the old value, a known
-modified value and the intermediate values.
-
-I hope this answers your questions,
 -- 
-solofo
+Ben
 
-
-
-
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
