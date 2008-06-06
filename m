@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbYFFV2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932977AbYFFV24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763106AbYFFV2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 17:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYFFV2I
+	id S932977AbYFFV24 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 17:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754770AbYFFV2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 17:28:08 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:38711 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbYFFV2F (ORCPT
+	Fri, 6 Jun 2008 17:28:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:49863 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757314AbYFFV2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 17:28:05 -0400
-Date: Sat, 7 Jun 2008 00:28:01 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Patrick McManus <mcmanus@ducksong.com>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, peterz@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       rjw@sisk.pl, Andrew Morton <akpm@linux-foundation.org>,
-       johnpol@2ka.mipt.ru
-Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
- v2.6.26-rc3+
-In-Reply-To: <20080606142358.5af75c32@infradead.org>
-Message-ID: <Pine.LNX.4.64.0806070027200.9424@wrl-59.cs.helsinki.fi>
-References: <20080603.150344.145518113.davem@davemloft.net>
- <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi> <20080605142244.GA19216@elte.hu>
- <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi>
- <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi> <1212708571.19522.10.camel@tng>
- <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi> <1212772293.23706.22.camel@tng>
- <20080606173339.GA30894@elte.hu> <Pine.LNX.4.64.0806062037240.9424@wrl-59.cs.helsinki.fi>
- <20080606183926.GB12651@elte.hu> <1212782937.23706.46.camel@tng>
- <Pine.LNX.4.64.0806062314420.9424@wrl-59.cs.helsinki.fi>
- <20080606142358.5af75c32@infradead.org>
+	Fri, 6 Jun 2008 17:28:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=YZb/UnpRL1e/Z08fGPJyRc1ugfc+EXR1OpJkMymKI+Bn8/CKY18zJmLxk3SkDPjOl
+	6Lwn9BdprAkYQxyGazucQ==
+Message-ID: <da824cf30806061428t4b7ed816i74d961946d77c88b@mail.gmail.com>
+Date: Fri, 6 Jun 2008 14:28:36 -0700
+From: "Grant Grundler" <grundler@google.com>
+To: "Muli Ben-Yehuda" <muli@il.ibm.com>
+Subject: Re: Intel IOMMU (and IOMMU for Virtualization) performances
+Cc: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mgross@linux.intel.com,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20080606202119.GQ15085@il.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1269415095-1212787681=:9424"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080604235053K.fujita.tomonori@lab.ntt.co.jp>
+	 <da824cf30806041106p1de2355fg38594fcb9dcbf203@mail.gmail.com>
+	 <20080606202119.GQ15085@il.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, Jun 6, 2008 at 1:21 PM, Muli Ben-Yehuda <muli@il.ibm.com> wrote:
+....
+>> It's possible to split up one flat address space and share the IOMMU
+>> among several users. Each user gets her own segment of bitmap and
+>> corresponding IO Pdir. So I don't see allocation policy as a strong
+>> reason to use Red/Black Tree.
+>
+> Do you mean multiple users sharing the same I/O address space (but
+> each user using a different segment), or multiple users, each with its
+> own I/O address space, but only using a specific segment of that
+> address space and using a single bitmap to represent free space in all
+> segments?
 
----696208474-1269415095-1212787681=:9424
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Yes, I meant the former.
 
-On Fri, 6 Jun 2008, Arjan van de Ven wrote:
+> If the former, then you are losing some of the benefit of
+> the IOMMU since all users can DMA to other users areas (same I/O
+> address space). If the latter, having a bitmap per IO address space
+> seems simpler and would have the same memory consumption.
 
-> On Sat, 7 Jun 2008 00:12:55 +0300 (EEST)
-> "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
-> > Arjan, can you please check if your workload uses setsockopt 
-> > TCP_DEFER_ACCEPT for the LISTENing socket? ...If not, then your case
-> > is different from Ingo's.
-> 
-> at this point the observed hung I had seems to be the app doing
-> something bad (it's the app that hung) so for now please disregard my
-> previous comments on this topic.
 
-...Ok, thanks for letting us know.
+Agreed. It's a trade off.
 
--- 
- i.
----696208474-1269415095-1212787681=:9424--
+...
+>> I've never been able to come up with a good heuristic for
+>> determining the size of the IOVA space. It generally does NOT need
+>> to map all of Host Physical RAM.  The actual requirement depends
+>> entirely on the workload, type and number of IO devices
+>> installed. The problem is we don't know any of those things until
+>> well after the IOMMU is already needed.
+>
+> Why not do what hash-tables implementation do, start small and resize
+> when we approach half-full?
+
+Historically the IOMMUs needed physically contiguous memory and
+resizing essentially meant quiescing all DMA, moving the IO Pdir data
+to the new bigger location,  allocating a new bitmap and cloning the
+state into that as well, and then resuming DMA operations. The DMA
+quiesce requirement effectively meant a reboot. My understanding of
+Vt-d is the ranges can be added range at a time and thus can be easily
+resized. But it will mean more complex logic in the IOMMU bitmap
+handling for a domain which owns multiple bitmaps and thus a slightly
+higher CPU utilization cost. At least that's my guess. I'm not working
+on any IOMMU code lately...
+
+thanks,
+grant
