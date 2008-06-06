@@ -1,36 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbYFFUGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763928AbYFFUI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932319AbYFFUGX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 16:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYFFUGJ
+	id S1763928AbYFFUI6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 16:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbYFFUIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 16:06:09 -0400
-Received: from server.zsirmo.hu ([84.21.11.243]:34933 "EHLO server.zsirmo.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754618AbYFFUGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 16:06:08 -0400
-X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 16:06:07 EDT
-Message-ID: <48499731.1080807@gmail.com>
-Date: Fri, 06 Jun 2008 21:59:45 +0200
-From: Zsiros Attila <zsirmo@gmail.com>
-Reply-To: zsirmo@zsirmo.hu
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080423)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: bug report
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 6 Jun 2008 16:08:50 -0400
+Received: from linode.ducksong.com ([64.22.125.164]:33177 "EHLO
+	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756096AbYFFUIt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 16:08:49 -0400
+Subject: Re: [fixed] [patch] Re: [bug] stuck localhost TCP connections,
+	v2.6.26-rc3+
+From: Patrick McManus <mcmanus@ducksong.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, peterz@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       rjw@sisk.pl, Andrew Morton <akpm@linux-foundation.org>,
+       johnpol@2ka.mipt.ru
+In-Reply-To: <20080606183926.GB12651@elte.hu>
+References: <20080603.150344.145518113.davem@davemloft.net>
+	 <Pine.LNX.4.64.0806040208350.7315@wrl-59.cs.helsinki.fi>
+	 <20080605142244.GA19216@elte.hu>
+	 <Pine.LNX.4.64.0806052059380.31672@wrl-59.cs.helsinki.fi>
+	 <Pine.LNX.4.64.0806052355420.2522@wrl-59.cs.helsinki.fi>
+	 <1212708571.19522.10.camel@tng>
+	 <Pine.LNX.4.64.0806061248410.16829@wrl-59.cs.helsinki.fi>
+	 <1212772293.23706.22.camel@tng> <20080606173339.GA30894@elte.hu>
+	 <Pine.LNX.4.64.0806062037240.9424@wrl-59.cs.helsinki.fi>
+	 <20080606183926.GB12651@elte.hu>
+Content-Type: text/plain
+Date: Fri, 06 Jun 2008 16:08:57 -0400
+Message-Id: <1212782937.23706.46.camel@tng>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hy!
+This is all a bit confusing, but here are the conclusions I have drawn.
 
-I have a problem.
+There definitely is a problem with the locking of the DA commit
+ec3c0982a2dd1e671bad8e9d26c28dcba0039d87 . That code was part of 26-rc1
+but it never appeared in 25. It exists in pretty much the same form in
+rc5 (there was 1 patch to it over that time to fix a different problem).
 
-http://www.cyberszeg.hu/log/kern.log
-http://www.cyberszeg.hu/log/config-2.6.25.4
-http://www.cyberszeg.hu/log/lspci.txt
-http://www.cyberszeg.hu/log/ifconfig.txt
+We're certain this code has a problem with the accept queue both because
+of code inspection and the fact that Ingo can back it out (as the
+significant part of the 3-patch revert) and the problem goes away in his
+testing.
 
-Best regards Zsirmo
+I have run tests that can reproduce the hung socket with distcc over
+localhost using 26-rc5. I can also apparently cure it using the locking
+fix patch Ilpo sent (c9454f0..d21d2b9) on top of that. (My test of rc5
++lockpatch is at 4.5+ hrs and counting without failures, it fails 6
+times an hour with vanilla rc5)
+
+Based on all of that, the right thing to do seems to be to apply the
+lockpatch (c9454f0..d21d2b9) to Linus's tree and not revert anything -
+just fix the code and I'll send Ilpo and Ingo cookies at Christmas time
+for being  great guys. Alternatively, Ingo could run the distcc servers
+and clients on -tip with the lockpatch (nothing reverted) for more
+testing.
+
+The only lingering problem is Ingo's report yesterday
+http://marc.info/?l=linux-netdev&m=121267587715976&w=2
+of a distcc hang. In this one it was not over localhost and the distcc
+server had the ec3c DA changes totally reverted. (The server is really
+the only stack that matters in this case - the client is not impacted by
+the DA changes). This has to be a different issue, because the ec3c code
+we're talking about here wasn't on the server at all. As Ilpo mentions,
+Hakon is beleived to have a different problem and maybe you've tripped
+over that too?
+
+If we're sure of that conclusion we should just take Ilpo's DA patch as
+that will narrow the field for finding Hakon's issue. Its just with all
+of these data points I'm not sure if I'm reaching the right conclusion.
+
+
+
+
