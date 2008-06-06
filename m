@@ -1,142 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYFFONg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYFFOOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbYFFONg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 10:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758514AbYFFONH
+	id S1758611AbYFFOOY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 10:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbYFFOOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 10:13:07 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:59433 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758429AbYFFONE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 10:13:04 -0400
-Message-ID: <484945EC.3020508@sgi.com>
-Date: Fri, 06 Jun 2008 07:13:00 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 6 Jun 2008 10:14:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41750 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754689AbYFFOOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 10:14:14 -0400
+Message-ID: <484944C8.9000208@redhat.com>
+Date: Fri, 06 Jun 2008 10:08:08 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
+       systemtap-ml <systemtap@sources.redhat.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for June 5
-References: <20080605175217.cee497f3.sfr@canb.auug.org.au>	 <20080605195604.41623687.akpm@linux-foundation.org>	 <20080606071707.GB9708@elte.hu>	 <20080606002957.6329a0ec.akpm@linux-foundation.org>	 <20080606024811.70db9ab2.akpm@linux-foundation.org>	 <20080606035413.37f340ef.akpm@linux-foundation.org>	 <20080606115759.GA29321@elte.hu>	 <19f34abd0806060533x6d3ff66tc29306143103fc40@mail.gmail.com>	 <48493CBD.1000202@sgi.com> <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
-In-Reply-To: <19f34abd0806060650q203bef48rd3b20c0cabec4774@mail.gmail.com>
+Subject: [PATCH -mm 1/2] kprobes: indirectly call kprobe_target
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
-> On Fri, Jun 6, 2008 at 3:33 PM, Mike Travis <travis@sgi.com> wrote:
->> Vegard Nossum wrote:
->>> I reproced it with gc 4.1.2. I think the error is somewhere in kernel/sched.c.
->>>
->>> static int __build_sched_domains(const cpumask_t *cpu_map,
->>>                                  struct sched_domain_attr *attr)
->>> {
->>> ...
->>>         for (i = 0; i < MAX_NUMNODES; i++) {
->>> ...
->>>                 sg = kmalloc_node(sizeof(struct sched_group), GFP_KERNEL, i);
->>> ...
->>>
->>> This code is calling into the allocator with a spurious value of i,
->>> which causes SLAB to use an index (of 4 in my case) that is out of
->>> bounds for its nodelist array (at least it hasn't been initialized).
->>>
->>> This bit of code (a bit further down, inside the same loop) is also dubious:
->>>
->>>                         sg = kmalloc_node(sizeof(struct sched_group),
->>>                                           GFP_KERNEL, i);
->>>                         if (!sg) {
->>>                                 printk(KERN_WARNING
->>>                                 "Can not alloc domain group for node %d\n", j);
->>>                                 goto error;
->>>                         }
->>>
->>> Where it passes i to kmalloc_node() but reports an allocation for node
->>> j. Which one is correct?
->>>
-> 
-> Hm, I think I'm wrong and the code is correct. However...
-> 
->>> Hope this helps, will send an update if I find out more.
->>>
->>>
->>> Vegard
->>>
->> Thanks Vegard for tracking this down.  My thoughts were along the same
->> wavelength... ;-)
-> 
-> I applied this patch
-> @@ -7133,6 +7133,14 @@ static int __build_sched_domains(const
-> cpumask_t *cpu_map,
->                 cpus_clear(*covered);
-> 
->                 cpus_and(*nodemask, *nodemask, *cpu_map);
-> +
-> +               printk("node %d\n", i);
-> +               for (j = 0; j < NR_CPUS; ++j)
-> +                       printk("%c", cpu_isset(j, *nodemask) ? 'X' : '.');
-> +               printk("\n");
-> +
-> +               printk("empty = %d\n", cpus_empty(*nodemask));
-> +
->                 if (cpus_empty(*nodemask)) {
->                         sched_group_nodes[i] = NULL;
->                         continue;
-> 
-> and it shows some really strange output, maybe it makes sense to you:
-> 
-> (the X means cpu is in the node)
-> 
-> Total of 2 processors activated (11976.24 BogoMIPS).
-> node 0
-> XX..............................................................................
-> ................................................................................
-> ................................................................................
-> ...............
-> empty = 0
-> node 1
-> XX..............................................................................
-> ................................................................................
-> ................................................................................
-> ...............
-> empty = 0
-> l3 = cachep->nodelists[0] (size-64) = ffff81003f824340
-> node 2
-> ................................................................................
-> ................................................................................
-> ................................................................................
-> ...............
-> empty = 1
-> node 3
-> ................................................................................
-> ................................................................................
-> ................................................................................
-> ...............
-> empty = 1
-> node 4
-> X...............................................................................
-> ................................................................................
-> ................................................................................
-> ...............
-> empty = 0
-> 
-> This is a P4 3.0GHz with 1 physical CPU (but HT, so two logical CPUs).
-> Yet node 4 is claimed to have a cpu too. That's bogus!
-> 
-> (But I don't think it's an error in sched.c any more, probably the
-> code that sets up the node maps.)
-> 
-> 
-> Vegard
-> 
+Call kprobe_target indirectly. This prevents gcc to unroll
+a noinline function in caller function.
 
-Could you send me the full console log and your config file?  The setup of
-the node_to_cpumask map is dependent on the early discovery (usually in the
-apic code) and there's been some changes in that area recently.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+CC: Jim Keniston <jkenisto@us.ibm.com>
+CC: David Miller <davem@davemloft.net>
+---
+I ported patches which had been discussed on
+http://sources.redhat.com/bugzilla/show_bug.cgi?id=3542
 
-Thanks,
-Mike
+ tests/test_kprobes.c |   21 ++++++---------------
+ 1 file changed, 6 insertions(+), 15 deletions(-)
+
+Index: 2.6.26-rc2-mm1/tests/test_kprobes.c
+===================================================================
+--- 2.6.26-rc2-mm1.orig/tests/test_kprobes.c
++++ 2.6.26-rc2-mm1/tests/test_kprobes.c
+@@ -22,21 +22,10 @@
+
+ static u32 rand1, preh_val, posth_val, jph_val;
+ static int errors, handler_errors, num_tests;
++static u32 (*target)(u32 value);
+
+ static noinline u32 kprobe_target(u32 value)
+ {
+-	/*
+-	 * gcc ignores noinline on some architectures unless we stuff
+-	 * sufficient lard into the function. The get_kprobe() here is
+-	 * just for that.
+-	 *
+-	 * NOTE: We aren't concerned about the correctness of get_kprobe()
+-	 * here; hence, this call is neither under !preempt nor with the
+-	 * kprobe_mutex held. This is fine(tm)
+-	 */
+-	if (get_kprobe((void *)0xdeadbeef))
+-		printk(KERN_INFO "Kprobe smoke test: probe on 0xdeadbeef!\n");
+-
+ 	return (value / div_factor);
+ }
+
+@@ -74,7 +63,7 @@ static int test_kprobe(void)
+ 		return ret;
+ 	}
+
+-	ret = kprobe_target(rand1);
++	ret = target(rand1);
+ 	unregister_kprobe(&kp);
+
+ 	if (preh_val == 0) {
+@@ -121,7 +110,7 @@ static int test_jprobe(void)
+ 		return ret;
+ 	}
+
+-	ret = kprobe_target(rand1);
++	ret = target(rand1);
+ 	unregister_jprobe(&jp);
+ 	if (jph_val == 0) {
+ 		printk(KERN_ERR "Kprobe smoke test failed: "
+@@ -177,7 +166,7 @@ static int test_kretprobe(void)
+ 		return ret;
+ 	}
+
+-	ret = kprobe_target(rand1);
++	ret = target(rand1);
+ 	unregister_kretprobe(&rp);
+ 	if (krph_val != rand1) {
+ 		printk(KERN_ERR "Kprobe smoke test failed: "
+@@ -193,6 +182,8 @@ int init_test_probes(void)
+ {
+ 	int ret;
+
++	target = kprobe_target;
++
+ 	do {
+ 		rand1 = random32();
+ 	} while (rand1 <= div_factor);
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
