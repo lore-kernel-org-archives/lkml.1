@@ -1,175 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbYFFFjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbYFFFkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762559AbYFFFjW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 01:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYFFFjN
+	id S1753437AbYFFFkM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 01:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759348AbYFFFj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 01:39:13 -0400
-Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:44395
-	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752584AbYFFFjM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 01:39:12 -0400
-X-Greylist: delayed 334 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Jun 2008 01:39:11 EDT
-Message-ID: <4848CC22.6090109@cosmosbay.com>
-Date: Fri, 06 Jun 2008 07:33:22 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Mike Travis <travis@sgi.com>, Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [patch 00/41] cpu alloc / cpu ops v3: Optimize per cpu access
-References: <20080530035620.587204923@sgi.com> <20080529215827.b659d032.akpm@linux-foundation.org> <4846AFCF.30500@sgi.com>
-In-Reply-To: <4846AFCF.30500@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 6 Jun 2008 01:39:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40858 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756746AbYFFFjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Jun 2008 01:39:54 -0400
+Date: Thu, 5 Jun 2008 22:39:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: Re: [WARNING] local_bh_enable with irqs disabled:
+Message-Id: <20080605223917.0a02804d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0806031529520.21106@axis700.grange>
+References: <Pine.LNX.4.64.0806031529520.21106@axis700.grange>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis a écrit :
-> Andrew Morton wrote:
->> On Thu, 29 May 2008 20:56:20 -0700 Christoph Lameter <clameter@sgi.com> wrote:
->>
->>> In various places the kernel maintains arrays of pointers indexed by
->>> processor numbers. These are used to locate objects that need to be used
->>> when executing on a specirfic processor. Both the slab allocator
->>> and the page allocator use these arrays and there the arrays are used in
->>> performance critical code. The allocpercpu functionality is a simple
->>> allocator to provide these arrays.
->> All seems reasonable to me.  The obvious question is "how do we size
->> the arena".  We either waste memory or, much worse, run out.
->>
->> And running out is a real possibility, I think.  Most people will only
->> mount a handful of XFS filesystems.  But some customer will come along
->> who wants to mount 5,000, and distributors will need to cater for that,
->> but how can they?
->>
->> I wonder if we can arrange for the default to be overridden via a
->> kernel boot option?
->>
->>
->> Another obvious question is "how much of a problem will we have with
->> internal fragmentation"?  This might be a drop-dead showstopper.
+On Tue, 3 Jun 2008 15:32:39 +0200 (CEST) Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-Christoph & Mike,
+> Hi
+> 
+> got this whem rmmod-ing a gpiochip driver. IRQs were disabled in 
+> gpiochip_remove().
+> 
+> ------------[ cut here ]------------
+> WARNING: at kernel/softirq.c:141 local_bh_enable+0x8c/0xac()
+> Modules linked in: max7301(-) pxa2xx_spi vfat fat usbhid
+> [<c0024bd0>] (dump_stack+0x0/0x14) from [<c0032068>] (warn_on_slowpath+0x4c/0x68)
+> [<c003201c>] (warn_on_slowpath+0x0/0x68) from [<c003823c>] (local_bh_enable+0x8c/0xac)
+>  r6:c3eac1e0 r5:c03195f0 r4:c3dde000
+> [<c00381b0>] (local_bh_enable+0x0/0xac) from [<c01f2764>] (sk_filter+0x34/0x94)
+>  r5:c3eac1e0 r4:00000000
+> [<c01f2730>] (sk_filter+0x0/0x94) from [<c01f55b0>] (netlink_broadcast+0x1a4/0x438)
+>  r5:c3db2010 r4:c3db2000
+> [<c01f540c>] (netlink_broadcast+0x0/0x438) from [<c0115e18>] (kobject_uevent_env+0x338/0x3ec)
+> [<c0115ae0>] (kobject_uevent_env+0x0/0x3ec) from [<c0115ee0>] (kobject_uevent+0x14/0x18)
+> [<c0115ecc>] (kobject_uevent+0x0/0x18) from [<c01538c0>] (device_del+0x13c/0x16c)
+> [<c0153784>] (device_del+0x0/0x16c) from [<c0153908>] (device_unregister+0x18/0x24)
+>  r6:40000013 r5:c3eab000 r4:c3eab000
+> [<c01538f0>] (device_unregister+0x0/0x24) from [<c01258b0>] (gpiochip_remove+0xa0/0x13c)
+>  r4:c3cfb0dc
+> [<c0125810>] (gpiochip_remove+0x0/0x13c) from [<bf01d0cc>] (max7301_remove+0x40/0x80 [max7301])
+>  r6:ffffffed r5:c3eade00 r4:c3cfb0c0
+> [<bf01d08c>] (max7301_remove+0x0/0x80 [max7301]) from [<c0179888>] (spi_drv_remove+0x24/0x28)
+>  r6:c3dde000 r5:bf01dcac r4:c3eade00
+> [<c0179864>] (spi_drv_remove+0x0/0x28) from [<c0155c7c>] (__device_release_driver+0x6c/0xa0)
+> [<c0155c10>] (__device_release_driver+0x0/0xa0) from [<c01561a8>] (driver_detach+0xcc/0xe0)
+>  r5:c3eade00 r4:c3eadea8
+> [<c01560dc>] (driver_detach+0x0/0xe0) from [<c0154ed8>] (bus_remove_driver+0x94/0xbc)
+>  r7:00000000 r6:c030be4c r5:bf01dcac r4:bf01dce0
+> [<c0154e44>] (bus_remove_driver+0x0/0xbc) from [<c0156234>] (driver_unregister+0x48/0x4c)
+>  r6:c3dde000 r5:bf01dcac r4:bf01dce0
+> [<c01561ec>] (driver_unregister+0x0/0x4c) from [<bf01d428>] (max7301_exit+0x14/0x1c [max7301])
+>  r5:00000000 r4:bf01dce0
+> [<bf01d414>] (max7301_exit+0x0/0x1c [max7301]) from [<c005a298>] (sys_delete_module+0x150/0x210)
+> [<c005a148>] (sys_delete_module+0x0/0x210) from [<c0020c00>] (ret_fast_syscall+0x0/0x2c)
+>  r8:c0020d84 r7:00000081 r6:bec61470 r5:bec61458 r4:bec63c70
 
-Please forgive me if I beat a dead horse, but this percpu stuff
-should find its way.
+Which kernel version are you running?
 
-I wonder why you absolutely want to have only one chunk holding
-all percpu variables, static(vmlinux) & static(modules)
-& dynamically allocated.
-
-Its *not* possible to put an arbitrary limit to this global zone.
-You'll allways find somebody to break this limit. This is the point
-we must solve, before coding anything.
-
-Have you considered using a list of fixed size chunks, each chunk
-having its own bitmap ?
-
-We only want fix offsets between CPU locations. For a given variable,
-we MUST find addresses for all CPUS looking at the same offset table.
-(Then we can optimize things on x86, using %gs/%fs register, instead
-of a table lookup)
-
-We could chose chunk size at compile time, depending on various
-parameters (32/64 bit arches, or hugepage sizes on NUMA),
-and a minimum value (ABI guarantee)
-
-On x86_64 && NUMA we could use 2 Mbytes chunks, while
-on x86_32 or non NUMA we should probably use 64 Kbytes.
-
-At boot time, we setup the first chunk (chunk 0) and copy 
-.data.percpu on this chunk, for each possible cpu, and we
-build the bitmap for future dynamic/module percpu allocations.
-So we still have the restriction that sizeofsection(.data.percpu)
-should fit in the chunk 0. Not a problem in practice.
-
-Then if we need to expand percpu zone for heavy duty machine,
-and chunk 0 is already filled, we can add as many 2 M/ 64K 
-chunks we need.
-
-This would limit the dynamic percpu allocation to 64 kbytes for
-a given variable, so huge users should probably still use a
-different allocator (like oprofile alloc_cpu_buffers() function)
-But at least we dont anymore limit the total size of percpu area.
-
-I understand you want to offset percpu data to 0, but for
-static percpu data. (pda being included in, to share %gs)
-
-For dynamically allocated percpu variables (including modules
-".data.percpu"), nothing forces you to have low offsets,
-relative to %gs/%fs register. Access to these variables
-will be register indirect based anyway (eg %gs:(%rax) )
-
-
-1) NUMA case
-
-For a 64 bit NUMA arch, chunk size of 2Mbytes
-
-Allocates 2Mb for each possible processor (on its preferred memory
-node), and compute values to setup offset_of_cpu[NR_CPUS] array.
-
-Chunk 0
-CPU 0 : virtual address XXXXXX        
-CPU 1 : virtual address XXXXXX + offset_of_cpu[1]
-...
-CPU n : virtual address XXXXXX + offset_of_cpu[n]
-+ a shared bitmap
-
-
-For next chunks, we could use vmalloc() zone to find 
-nr_possible_cpus virtual addresses ranges where you can map
-a 2Mb page per possible cpu, as long as we respect the relative
-delta between each cpu block, that was computed when
-chunk 0 was setup.
-
-Chunk 1..n
-CPU 0 : virtual address YYYYYYYYYYYYYY   
-CPU 1 : virtual address YYYYYYYYYYYYYY + offset_of_cpu[1]
-...
-CPU n : virtual address YYYYYYYYYYYYYY + offset_of_cpu[n]
-+ a shared bitmap (32Kbytes if 8 bytes granularity in allocator)
-
-For a variable located in chunk 0, its 'address' relative to current
-cpu %gs will be some number between [0 and 2^20-1]
-
-For a variable located in chunk 1, its 'address' relative to current
-cpu %gs will be some number between
-[YYYYYYYYYYYYYY - XXXXXX  and YYYYYYYYYYYYYY - XXXXXX + 2^20 - 1],
-not necessarly [2^20 to 2^21 - 1]
-
-
-Chunk 0 would use normal memory (no vmap TLB cost), only next ones need vmalloc().
-
-So the extra TLB cost would only be taken for very special NUMA setups
-(only if using a lot of percpu allocations)
-
-Also, using a 2Mb page granularity probably wastes about 2Mb per cpu, but
-this is nothing for NUMA machines :)
-
-2) SMP && !NUMA
-
-On non NUMA machines, we dont need vmalloc games, since we can allocate
-chunk space using contiguous memory, (size = nr_possible_cpus*64Kbytes)
-
-offset_of_cpu[N] = N * CHUNK_SIZE
-
-(On a 4 CPU x86_32 machine, allocate a 256 Kbyte bloc then divide it in
-64 kb blocs)
-If this order-6 allocation fails, then fallback to vmalloc(), but most
-percpu allocations happens at boot time, when memory is not yet fragmented...
-
-
-3) UP case : fallback to standard allocators. No need for bitmaps.
-
-
-NUMA special casing can be implemented later of course...
-
-Thanks for reading
-
-
+Please check 2.6.25 - its gpiochip_remove() seems innocent enough.
