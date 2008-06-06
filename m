@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbYFFR3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbYFFRbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761386AbYFFR3r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 13:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYFFR3j
+	id S1762943AbYFFRbN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 13:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbYFFRa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 13:29:39 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:30197 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbYFFR3j (ORCPT
+	Fri, 6 Jun 2008 13:30:58 -0400
+Received: from server009.webpack.hosteurope.de ([80.237.130.17]:48077 "EHLO
+	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752042AbYFFRa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 13:29:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Z3p9U5GTHNOOKe5BHaQJZMQBp3UXo4LsAmrkvN6SUOuXJvD2thaitsm+byAuFvUXjf
-         UzRhu41hES/SqMrRD56D9b9kSJRFXcmC8VKqw/alQV+qWlL1/i8VyTZj2qiimjQ8Cpcy
-         he+qYpkp6DVGPgBbE3AZ4Vpg6GUPKkOlh6xsE=
-Date: Fri, 6 Jun 2008 21:29:21 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] x86: NMI watchdog downgrade changes
-Message-ID: <20080606172921.GB7051@cvg>
-References: <Pine.LNX.4.55.0806060311510.2875@cliff.in.clinika.pl>
+	Fri, 6 Jun 2008 13:30:58 -0400
+From: Daniel Exner <dex@dragonslave.de>
+Reply-To: webmaster@dragonslave.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next Regression: Unable to locate IOAPIC
+Date: Fri, 6 Jun 2008 19:30:28 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <200806051100.12885.dex@dragonslave.de> <20080606031718.36cbbdc9.akpm@linux-foundation.org>
+In-Reply-To: <20080606031718.36cbbdc9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0806060311510.2875@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200806061930.29046.dex@dragonslave.de>
+X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1212773457;e9358223;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Fri, Jun 06, 2008 at 03:27:02AM +0100]
-| Ingo,
-| 
-|  This is a series of patches in response to your earlier report to fix the
-| problem where the I/O APIC NMI watchdog is attempted where it should not
-| be, fails and then disables the timer leading the system to a fatal
-| failure.  Please put in tip/x86/apic, replacing the patch named
-| nosmp-watchdog or 'x86: APIC/SMP: Downgrade the NMI watchdog for "nosmp"'
-| in the sequence.
-| 
-|   Maciej
-| 
+Andrew Morton wrote:
+> (cc linux-acpi)
+>
+> On Thu, 5 Jun 2008 11:00:12 +0200 Daniel Exner <dex@dragonslave.de> wrote:
+> > Hi!
+> >
+> > (Added myself to CC, because I'm not subscribed)
+> >
+> > with linux-next snapshot 20080604 my Laptop morphes into sitting duck and
+> > I think this is due to this:
+>
+> I assume 2.6.26-rc5 is OK?
+Indeed.. just tried it with (nearly) the same config: no unable to locate 
+IOAPIC
 
-I've tested it over tip/x86/apic and it solved problems for me.
-Thanks Maciej!
+Will try todays next snapshot above -rc5 now.
 
-		- Cyrill -
+BTW: Any chance to get this damn thing to not route everything by IRQ 11 !?
+
+Greetings
+Daniel Exner
