@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762621AbYFFTf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932150AbYFFThk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762621AbYFFTf7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Jun 2008 15:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755585AbYFFTft
+	id S932150AbYFFThk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Jun 2008 15:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368AbYFFTha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Jun 2008 15:35:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37899 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755537AbYFFTfs (ORCPT
+	Fri, 6 Jun 2008 15:37:30 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:11252 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753699AbYFFTh3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Jun 2008 15:35:48 -0400
-Date: Fri, 6 Jun 2008 12:35:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: greg@kroah.com, justinmattock@gmail.com, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] isight_firmware: Avoid crash on loading invalid
- firmware
-Message-Id: <20080606123511.38ffbdde.akpm@linux-foundation.org>
-In-Reply-To: <20080606192135.GA16727@srcf.ucam.org>
-References: <dd18b0c30806041213x45b7efdfo42de9b214a7ce9df@mail.gmail.com>
-	<20080606002601.a0f6c47c.akpm@linux-foundation.org>
-	<dd18b0c30806060137j7edc751se364ff21cfc8911b@mail.gmail.com>
-	<20080606121136.GA9087@srcf.ucam.org>
-	<20080606110711.a9a6a4f6.akpm@linux-foundation.org>
-	<dd18b0c30806061110qd3100b4p1ee9f8ef493a56c6@mail.gmail.com>
-	<dd18b0c30806061138h69c87d6am898a4eb409d379e1@mail.gmail.com>
-	<20080606185548.GB8576@kroah.com>
-	<20080606192135.GA16727@srcf.ucam.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Jun 2008 15:37:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=organization:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id:from;
+        b=nslbNaOBA6jRe/rhvH69WGv837XrpiFeBMn/bBzHFWHkFAxXkTb/kzlgFlTfkrwWd2
+         MLLMAVNZQt4zihkHW8Gv3gRY9t5dS0l4vURIPbdLlynW6yJ3bkmvBROWZbmP/DO+JuWJ
+         9M5RO7eGrBRGyy6/83YhX8flK3m/LtsL4B7iQ=
+Organization: M1K0
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+Date: Fri, 6 Jun 2008 21:37:22 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+References: <200806060039.48488.m1k0@wp.pl> <20080606034738.9835782d.akpm@linux-foundation.org>
+In-Reply-To: <20080606034738.9835782d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200806062137.22994.Michal.Kudla@gmail.com>
+From: =?utf-8?q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Jun 2008 20:21:35 +0100
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+W liście datowanym na piątek, 6 czerwca 2008, Andrew Morton pisze:
+>AM > [2.6.26-rc5] iwlwifi 4965 not working - last on 2.6.23
+>AM
+>AM Thanks.  Do you know if it worked in 2.6.24 or 2.6.25?
 
-> Different tools generate slightly different formats of the isight 
-> firmware. Ensure that the firmware buffer is not overrun, while still 
-> ensuring that the correct amount of data is written if trailing data is 
-> prseent.
+I checked:
+- vanilla-sources-2.6.24.7 (works),
+- gentoo-sources-2.6.25-r4 (don't work)
 
-It would have been nice to have mentioned this Justin Maddock fellow
-in the changelog.
+I uploaded files:
+.config-2.6.23
+.config.2.6.24.7
+.config.2.6.25-gentoo-r4
+.config-2.6.26
+dmesg-2.6.23
+dmesg-2.6.24.txt
+dmesg-2.6.25.txt
+dmesg-2.6.26
+http://michal.kudla.googlepages.com/iwlwifi-problem-2.bz2
 
+more infos about 2.6.25 anf iwlwifi:
+http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1657 
+http://bugs.gentoo.org/show_bug.cgi?format=multiple&id=218565 
